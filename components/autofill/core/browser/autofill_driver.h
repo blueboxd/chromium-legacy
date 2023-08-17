@@ -87,11 +87,6 @@ class AutofillDriver {
   // frame.
   virtual bool CanShowAutofillUi() const = 0;
 
-  // Sets whether the keyboard should be suppressed. Used to keep the keyboard
-  // hidden while the bottom sheet (e.g. Touch To Fill) is shown. Forwarded to
-  // the last-queried source remembered by `ContentAutofillRouter`.
-  virtual void SetShouldSuppressKeyboard(bool suppress) = 0;
-
   // Triggers a form extraction of the new forms in the AutofillAgent. This is
   // necessary when a form is seen in a child frame and it is not known which
   // form is its parent.
@@ -142,7 +137,7 @@ class AutofillDriver {
   //
   // This method is a no-op if the renderer is not currently available.
   virtual std::vector<FieldGlobalId> FillOrPreviewForm(
-      mojom::RendererFormDataAction action,
+      mojom::AutofillActionPersistence action_persistence,
       const FormData& data,
       const url::Origin& triggered_origin,
       const base::flat_map<FieldGlobalId, ServerFieldType>& field_type_map) = 0;
@@ -163,7 +158,7 @@ class AutofillDriver {
   //
   // This method is a no-op if the renderer is not currently available.
   virtual void UndoAutofill(
-      mojom::RendererFormDataAction renderer_action,
+      mojom::AutofillActionPersistence action_persistence,
       const FormData& data,
       const url::Origin& triggered_origin,
       const base::flat_map<FieldGlobalId, ServerFieldType>& field_type_map) = 0;

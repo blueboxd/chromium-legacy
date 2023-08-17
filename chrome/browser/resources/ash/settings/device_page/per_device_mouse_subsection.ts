@@ -24,6 +24,7 @@ import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {PolymerElementProperties} from 'chrome://resources/polymer/v3_0/polymer/interfaces.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
+import {isRevampWayfindingEnabled} from '../common/load_time_booleans.js';
 import {DeepLinkingMixin} from '../deep_linking_mixin.js';
 import {Setting} from '../mojom-webui/setting.mojom-webui.js';
 import {RouteObserverMixin} from '../route_observer_mixin.js';
@@ -89,17 +90,6 @@ export class SettingsPerDeviceMouseSubsectionElement extends
         },
       },
 
-      scrollAccelerationPref: {
-        type: Object,
-        value() {
-          return {
-            key: 'fakeScrollAccelerationPref',
-            type: chrome.settingsPrivate.PrefType.BOOLEAN,
-            value: true,
-          };
-        },
-      },
-
       scrollSensitivityPref: {
         type: Object,
         value() {
@@ -112,6 +102,11 @@ export class SettingsPerDeviceMouseSubsectionElement extends
       },
 
       reverseScrollValue: {
+        type: Boolean,
+        value: false,
+      },
+
+      scrollAccelerationValue: {
         type: Boolean,
         value: false,
       },
@@ -141,6 +136,7 @@ export class SettingsPerDeviceMouseSubsectionElement extends
         value() {
           return loadTimeData.getBoolean('allowScrollSettings');
         },
+        reflectToAttribute: true,
       },
 
       /**
@@ -153,6 +149,13 @@ export class SettingsPerDeviceMouseSubsectionElement extends
         type: Array,
         value: [1, 2, 3, 4, 5],
         readOnly: true,
+      },
+
+      isRevampWayfindingEnabled_: {
+        type: Boolean,
+        value: () => {
+          return isRevampWayfindingEnabled();
+        },
       },
 
       mouse: {
@@ -193,9 +196,9 @@ export class SettingsPerDeviceMouseSubsectionElement extends
       'onSettingsChanged(primaryRightPref.value,' +
           'accelerationPref.value,' +
           'sensitivityPref.value,' +
-          'scrollAccelerationPref.value,' +
           'scrollSensitivityPref.value,' +
-          'reverseScrollValue)',
+          'reverseScrollValue,' +
+          'scrollAccelerationValue)',
       'onPoliciesChanged(mousePolicies)',
       'updateSettingsToCurrentPrefs(mouse)',
     ];
@@ -218,15 +221,16 @@ export class SettingsPerDeviceMouseSubsectionElement extends
   private primaryRightPref: chrome.settingsPrivate.PrefObject;
   private accelerationPref: chrome.settingsPrivate.PrefObject;
   private sensitivityPref: chrome.settingsPrivate.PrefObject;
-  private scrollAccelerationPref: chrome.settingsPrivate.PrefObject;
   private scrollSensitivityPref: chrome.settingsPrivate.PrefObject;
   private reverseScrollValue: boolean;
+  private scrollAccelerationValue: boolean;
   private isInitialized: boolean = false;
   private isPeripheralCustomizationEnabled_: boolean;
   private inputDeviceSettingsProvider: InputDeviceSettingsProviderInterface =
       getInputDeviceSettingsProvider();
   private mouseIndex: number;
   private isLastDevice: boolean;
+  private isRevampWayfindingEnabled_: boolean;
 
   private updateSettingsToCurrentPrefs(): void {
     // `updateSettingsToCurrentPrefs` gets called when the `keyboard` object
@@ -237,10 +241,9 @@ export class SettingsPerDeviceMouseSubsectionElement extends
     this.set('accelerationPref.value', this.mouse.settings.accelerationEnabled);
     this.set('sensitivityPref.value', this.mouse.settings.sensitivity);
     this.set(
-        'scrollAccelerationPref.value', this.mouse.settings.scrollAcceleration);
-    this.set(
         'scrollSensitivityPref.value', this.mouse.settings.scrollSensitivity);
     this.reverseScrollValue = this.mouse.settings.reverseScrolling;
+    this.scrollAccelerationValue = this.mouse.settings.scrollAcceleration;
     this.isInitialized = true;
   }
 
@@ -267,6 +270,10 @@ export class SettingsPerDeviceMouseSubsectionElement extends
     this.reverseScrollValue = !this.reverseScrollValue;
   }
 
+  private onMouseScrollAccelerationRowClicked_(): void {
+    this.scrollAccelerationValue = !this.scrollAccelerationValue;
+  }
+
   private onSettingsChanged(): void {
     if (!this.isInitialized) {
       return;
@@ -277,9 +284,9 @@ export class SettingsPerDeviceMouseSubsectionElement extends
       swapRight: this.primaryRightPref.value,
       accelerationEnabled: this.accelerationPref.value,
       sensitivity: this.sensitivityPref.value,
-      scrollAcceleration: this.scrollAccelerationPref.value,
       scrollSensitivity: this.scrollSensitivityPref.value,
       reverseScrolling: this.reverseScrollValue,
+      scrollAcceleration: this.scrollAccelerationValue,
     };
 
     if (settingsAreEqual(newSettings, this.mouse.settings)) {
@@ -312,6 +319,19 @@ export class SettingsPerDeviceMouseSubsectionElement extends
     return tempEl.innerHTML;
   }
 
+  private getCursorSpeedString(): TrustedHTML {
+    return this.i18nAdvanced(
+        loadTimeData.getBoolean('allowScrollSettings') ? 'cursorSpeed' :
+                                                         'mouseSpeed');
+  }
+
+  private getCursorAccelerationString(): TrustedHTML {
+    return this.i18nAdvanced(
+        loadTimeData.getBoolean('allowScrollSettings') ?
+            'cursorAccelerationLabel' :
+            'mouseAccelerationLabel');
+  }
+
   private onCustomizeButtonsClick(): void {
     const url =
         new URLSearchParams(`mouseId=${encodeURIComponent(this.mouse.id)}`);
@@ -319,6 +339,13 @@ export class SettingsPerDeviceMouseSubsectionElement extends
     Router.getInstance().navigateTo(
         routes.CUSTOMIZE_MOUSE_BUTTONS,
         /* dynamicParams= */ url, /* removeSearch= */ true);
+  }
+
+  private getMouseAccelerationDescription(): string {
+    if (this.isRevampWayfindingEnabled_) {
+      return this.i18n('mouseAccelerationDescription');
+    }
+    return '';
   }
 }
 

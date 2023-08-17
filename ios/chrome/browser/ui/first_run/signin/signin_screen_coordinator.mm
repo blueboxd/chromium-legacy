@@ -32,10 +32,6 @@
 #import "ios/chrome/browser/ui/first_run/tos/tos_coordinator.h"
 #import "ios/chrome/browser/ui/first_run/uma/uma_coordinator.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 @interface SigninScreenCoordinator () <IdentityChooserCoordinatorDelegate,
                                        SigninScreenViewControllerDelegate,
                                        TOSCommands,
@@ -123,7 +119,7 @@
                         accessPoint:_accessPoint
                         promoAction:_promoAction];
   self.mediator.consumer = self.viewController;
-  if (self.mediator.firstRun) {
+  if (self.mediator.ignoreDismissGesture) {
     self.viewController.modalInPresentation = YES;
   }
   BOOL animated = self.baseNavigationController.topViewController != nil;
@@ -142,12 +138,13 @@
   [super stop];
 }
 
-- (void)dealloc {
-  // TODO(crbug.com/1454777)
-  DUMP_WILL_BE_CHECK(!self.authenticationService);
-}
-
 #pragma mark - Private
+
+- (void)stopUMACoordinator {
+  [self.UMACoordinator stop];
+  self.UMACoordinator.delegate = nil;
+  self.UMACoordinator = nil;
+}
 
 // Starts the coordinator to present the Add Account module.
 - (void)triggerAddAccount {
@@ -317,7 +314,7 @@
                         UMAReportingUserChoice:(BOOL)UMAReportingUserChoice {
   DCHECK(self.UMACoordinator);
   DCHECK_EQ(self.UMACoordinator, coordinator);
-  self.UMACoordinator = nil;
+  [self stopUMACoordinator];
   DCHECK(self.mediator);
   self.mediator.UMAReportingUserChoice = UMAReportingUserChoice;
 }

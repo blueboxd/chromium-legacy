@@ -125,8 +125,8 @@
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "base/system/sys_info.h"
 #include "chrome/browser/ash/extensions/install_limiter.h"
+#include "chrome/browser/ash/fileapi/file_system_backend.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
-#include "storage/browser/file_system/file_system_backend.h"
 #include "storage/browser/file_system/file_system_context.h"
 #endif
 
@@ -392,6 +392,10 @@ ExtensionService::ExtensionService(
       omaha_attributes_handler_(extension_prefs,
                                 ExtensionRegistry::Get(profile),
                                 this),
+      extension_telemetry_service_verdict_handler_(
+          extension_prefs,
+          ExtensionRegistry::Get(profile),
+          this),
       registry_(ExtensionRegistry::Get(profile)),
       pending_extension_manager_(profile),
       install_directory_(install_directory),
@@ -926,6 +930,15 @@ void ExtensionService::PerformActionBasedOnOmahaAttributes(
   error_controller_->ShowErrorIfNeeded();
 }
 
+void ExtensionService::PerformActionBasedOnExtensionTelemetryServiceVerdicts(
+    const Blocklist::BlocklistStateMap& blocklist_state_map) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  extension_telemetry_service_verdict_handler_.PerformActionBasedOnVerdicts(
+      blocklist_state_map);
+  error_controller_->ShowErrorIfNeeded();
+}
+
 void ExtensionService::OnGreylistStateRemoved(const std::string& extension_id) {
   bool is_on_sb_list = (blocklist_prefs::GetSafeBrowsingExtensionBlocklistState(
                             extension_id, extension_prefs_) !=
@@ -1215,9 +1228,9 @@ void ExtensionService::PostDeactivateExtension(
   storage::FileSystemContext* filesystem_context =
       util::GetStoragePartitionForExtensionId(extension->id(), profile_)
           ->GetFileSystemContext();
-  if (filesystem_context && filesystem_context->external_backend()) {
-    filesystem_context->external_backend()->RevokeAccessForOrigin(
-        extension->origin());
+  if (filesystem_context && ash::FileSystemBackend::Get(*filesystem_context)) {
+    ash::FileSystemBackend::Get(*filesystem_context)
+        ->RevokeAccessForOrigin(extension->origin());
   }
 #endif
 
@@ -2018,11 +2031,9 @@ bool ExtensionService::OnExternalExtensionFileFound(
   }
 
 #if BUILDFLAG(IS_CHROMEOS)
-  if (chromeos::features::IsDemoModeSWAEnabled()) {
-    if (extension_misc::IsDemoModeChromeApp(info.extension_id)) {
-      pending_extension_manager()->Remove(info.extension_id);
-      return true;
-    }
+  if (extension_misc::IsDemoModeChromeApp(info.extension_id)) {
+    pending_extension_manager()->Remove(info.extension_id);
+    return true;
   }
 #endif  // BUILDFLAG(IS_CHROMEOS)
 

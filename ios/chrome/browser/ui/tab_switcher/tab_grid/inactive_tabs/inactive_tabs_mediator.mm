@@ -25,6 +25,7 @@
 #import "ios/chrome/browser/tabs/inactive_tabs/features.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_collection_consumer.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/inactive_tabs/inactive_tabs_info_consumer.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_grid/toolbars/tab_grid_toolbars_configuration.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_utils.h"
 #import "ios/chrome/browser/ui/tab_switcher/web_state_tab_switcher_item.h"
 #import "ios/web/public/web_state.h"
@@ -34,10 +35,6 @@
 // To get access to UseSessionSerializationOptimizations().
 // TODO(crbug.com/1383087): remove once the feature is fully launched.
 #import "ios/web/common/features.h"
-
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
 
 using ScopedWebStateListObservation =
     base::ScopedObservation<WebStateList, WebStateListObserver>;
@@ -301,14 +298,9 @@ void PopulateConsumerItems(id<TabCollectionConsumer> consumer,
   }
 
   switch (change.type()) {
-    case WebStateListChange::Type::kStatusOnly: {
-      CHECK(!status.pinned_state_change);
-      // TODO(crbug.com/1442546): Move the implementation from
-      // webStateList:didChangeActiveWebState:oldWebState:atIndex:reason to
-      // here. Note that here is reachable only when `reason` ==
-      // ActiveWebStateChangeReason::Activated for didChangeActiveWebState:.
+    case WebStateListChange::Type::kStatusOnly:
+      // Do nothing when the status in WebStateList is updated.
       break;
-    }
     case WebStateListChange::Type::kDetach:
       // Do nothing when a WebState is detached.
       break;
@@ -332,14 +324,6 @@ void PopulateConsumerItems(id<TabCollectionConsumer> consumer,
       break;
     }
   }
-}
-
-- (void)webStateList:(WebStateList*)webStateList
-    didChangeActiveWebState:(web::WebState*)newWebState
-                oldWebState:(web::WebState*)oldWebState
-                    atIndex:(int)atIndex
-                     reason:(ActiveWebStateChangeReason)reason {
-  // No-op.
 }
 
 - (void)webStateListWillBeginBatchOperation:(WebStateList*)webStateList {
@@ -497,6 +481,17 @@ void PopulateConsumerItems(id<TabCollectionConsumer> consumer,
   for (const SessionID sessionID : identifiers) {
     _tabRestoreService->RemoveTabEntryById(sessionID);
   }
+}
+
+#pragma mark - GridToolbarsConfigurationProvider
+
+- (TabGridToolbarsConfiguration*)toolbarsConfiguration {
+  TabGridToolbarsConfiguration* toolbarsConfiguration =
+      [[TabGridToolbarsConfiguration alloc] init];
+  toolbarsConfiguration.closeAllButton = !_webStateList->empty();
+  toolbarsConfiguration.searchButton = YES;
+  toolbarsConfiguration.undoButton = _closedSessionWindow;
+  return toolbarsConfiguration;
 }
 
 @end

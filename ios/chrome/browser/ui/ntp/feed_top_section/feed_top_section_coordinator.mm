@@ -4,7 +4,9 @@
 
 #import "ios/chrome/browser/ui/ntp/feed_top_section/feed_top_section_coordinator.h"
 
+#import "base/feature_list.h"
 #import "components/signin/public/base/signin_metrics.h"
+#import "components/sync/base/features.h"
 #import "ios/chrome/browser/shared/model/browser/browser.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/shared/public/commands/application_commands.h"
@@ -19,10 +21,6 @@
 #import "ios/chrome/browser/ui/authentication/signin_promo_view_mediator.h"
 #import "ios/chrome/browser/ui/ntp/feed_top_section/feed_top_section_mediator.h"
 #import "ios/chrome/browser/ui/ntp/feed_top_section/feed_top_section_view_controller.h"
-
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
 
 @interface FeedTopSectionCoordinator () <SigninPresenter>
 
@@ -62,17 +60,21 @@
            prefService:browserState->GetPrefs()];
 
   self.signinPromoMediator = [[SigninPromoViewMediator alloc]
-            initWithBrowser:self.browser
-      accountManagerService:ChromeAccountManagerServiceFactory::
-                                GetForBrowserState(browserState)
-                authService:AuthenticationServiceFactory::GetForBrowserState(
-                                browserState)
-                prefService:browserState->GetPrefs()
-                syncService:syncService
-                accessPoint:signin_metrics::AccessPoint::
-                                ACCESS_POINT_NTP_FEED_TOP_PROMO
-                  presenter:self
-         baseViewController:self.feedTopSectionViewController];
+      initWithAccountManagerService:ChromeAccountManagerServiceFactory::
+                                        GetForBrowserState(browserState)
+                        authService:AuthenticationServiceFactory::
+                                        GetForBrowserState(browserState)
+                        prefService:browserState->GetPrefs()
+                        syncService:syncService
+                        accessPoint:signin_metrics::AccessPoint::
+                                        ACCESS_POINT_NTP_FEED_TOP_PROMO
+                          presenter:self
+                 baseViewController:self.feedTopSectionViewController];
+  if (base::FeatureList::IsEnabled(
+          syncer::kReplaceSyncPromosWithSignInPromos)) {
+    self.signinPromoMediator.signinPromoAction =
+        SigninPromoAction::kSigninSheet;
+  }
   self.signinPromoMediator.consumer = self.feedTopSectionMediator;
   self.feedTopSectionMediator.signinPromoMediator = self.signinPromoMediator;
   self.feedTopSectionMediator.ntpDelegate = self.ntpDelegate;

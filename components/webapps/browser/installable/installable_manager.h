@@ -15,6 +15,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/task/cancelable_task_tracker.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -22,16 +23,27 @@
 #include "components/webapps/browser/installable/installable_logging.h"
 #include "components/webapps/browser/installable/installable_params.h"
 #include "components/webapps/browser/installable/installable_task_queue.h"
+#include "components/webapps/common/web_page_metadata.mojom.h"
+#include "components/webapps/common/web_page_metadata_agent.mojom.h"
 #include "content/public/browser/installability_error.h"
 #include "content/public/browser/service_worker_context.h"
 #include "content/public/browser/service_worker_context_observer.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "third_party/blink/public/mojom/manifest/manifest.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "url/gurl.h"
 
+namespace favicon_base {
+struct LargeIconImageResult;
+}
+
 namespace webapps {
+
+namespace test {
+extern int g_minimum_favicon_size_for_testing;
+}  // namespace test
 
 // This class is responsible for fetching the resources required to check and
 // install a site.
@@ -153,6 +165,15 @@ class InstallableManager
     bool fetched = false;
   };
 
+  struct WebPageMetadataProperty {
+    WebPageMetadataProperty();
+    ~WebPageMetadataProperty();
+
+    InstallableStatusCode error = NO_ERROR_DETECTED;
+    mojom::WebPageMetadataPtr metadata = mojom::WebPageMetadata::New();
+    bool fetched = false;
+  };
+
   struct ServiceWorkerProperty {
     InstallableStatusCode error = NO_ERROR_DETECTED;
     bool has_worker = false;
@@ -228,6 +249,13 @@ class InstallableManager
   void CheckManifestValid(bool check_webapp_manifest_display);
   bool IsManifestValidForWebApp(const blink::mojom::Manifest& manifest,
                                 bool check_webapp_manifest_display);
+
+  void FetchWebPageMetadata();
+  void OnDidGetWebPageMetadata(
+      mojo::AssociatedRemote<mojom::WebPageMetadataAgent> metadata_agent,
+      mojom::WebPageMetadataPtr web_page_metadata);
+  void OnMetadataAgentDisconnect();
+
   void CheckServiceWorker();
   void OnDidCheckHasServiceWorker(
       base::TimeTicks check_service_worker_start_time,
@@ -243,6 +271,10 @@ class InstallableManager
   void OnIconFetched(GURL icon_url,
                      const IconPurpose purpose,
                      const SkBitmap& bitmap);
+
+  void FetchFavicon();
+  void OnFaviconFetched(
+      const favicon_base::LargeIconImageResult& bitmap_result);
 
   void CheckAndFetchScreenshots();
 
@@ -271,6 +303,7 @@ class InstallableManager
   std::unique_ptr<EligiblityProperty> eligibility_;
   std::unique_ptr<ManifestProperty> manifest_;
   std::unique_ptr<ValidManifestProperty> valid_manifest_;
+  std::unique_ptr<WebPageMetadataProperty> web_page_metadata_;
   std::unique_ptr<ServiceWorkerProperty> worker_;
   std::unique_ptr<IconProperty> primary_icon_;
   std::vector<Screenshot> screenshots_;
@@ -286,6 +319,9 @@ class InstallableManager
 
   // Whether all screenshots have been fetched.
   bool is_screenshots_fetch_complete_ = false;
+
+  bool favicon_fetched_ = false;
+  base::CancelableTaskTracker favicon_task_tracker_;
 
   // Owned by the storage partition attached to the content::WebContents which
   // this object is scoped to.

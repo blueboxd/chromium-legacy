@@ -16,6 +16,12 @@ class COMPONENT_EXPORT(CHROMEOS_STARTUP) BrowserParamsProxy {
  public:
   static BrowserParamsProxy* Get();
 
+  // Wait for the user to login and post-login parameters to be available.
+  // NOTE: This needs to be called before post-login parameters are accessed.
+  // Please note that this method is not thread-safe and should be called
+  // before any threads are created in the browser process.
+  static void WaitForLogin();
+
   // Init and post-login parameters' accessors are listed starting from here.
   bool DisableCrosapiForTesting() const;
 
@@ -106,8 +112,6 @@ class COMPONENT_EXPORT(CHROMEOS_STARTUP) BrowserParamsProxy {
 
   bool IsCurrentUserEphemeral() const;
 
-  bool DoNotMuxExtensionAppIds() const;
-
   bool EnableLacrosTtsSupport() const;
 
   crosapi::mojom::BrowserInitParams::LacrosSelection LacrosSelection() const;
@@ -139,6 +143,10 @@ class COMPONENT_EXPORT(CHROMEOS_STARTUP) BrowserParamsProxy {
   bool IsPdfOcrEnabled() const;
 
   bool IsDriveFsBulkPinningEnabled() const;
+
+  bool IsSysUiDownloadsIntegrationV2Enabled() const;
+
+  bool IsCrosBatterySaverAvailable() const;
 
  private:
   friend base::NoDestructor<BrowserParamsProxy>;

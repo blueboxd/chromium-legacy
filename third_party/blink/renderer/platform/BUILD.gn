@@ -398,6 +398,7 @@ component("platform") {
     "bindings/active_script_wrappable_base.h",
     "bindings/active_script_wrappable_manager.cc",
     "bindings/active_script_wrappable_manager.h",
+    "bindings/bigint.cc",
     "bindings/bigint.h",
     "bindings/binding_security_for_platform.cc",
     "bindings/binding_security_for_platform.h",
@@ -462,8 +463,6 @@ component("platform") {
     "bindings/to_blink_string.h",
     "bindings/to_v8.h",
     "bindings/trace_wrapper_v8_reference.h",
-    "bindings/trace_wrapper_v8_string.cc",
-    "bindings/trace_wrapper_v8_string.h",
     "bindings/union_base.cc",
     "bindings/union_base.h",
     "bindings/v8_binding.cc",
@@ -1589,10 +1588,6 @@ component("platform") {
     ]
   }
 
-  if (is_apple) {
-    configs += [ "//build/config/compiler:enable_arc" ]
-  }
-
   if (is_mac) {
     sources += [
       "audio/mac/fft_frame_mac.cc",
@@ -2237,10 +2232,6 @@ source_set("blink_platform_unittests_sources") {
     "widget/input/prediction/filter_factory_unittests.cc",
     "widget/input/scroll_predictor_unittest.cc",
   ]
-
-  if (is_apple) {
-    configs += [ "//build/config/compiler:enable_arc" ]
-  }
 
   if (is_android) {
     sources += [ "fonts/android/font_cache_android_test.cc" ]

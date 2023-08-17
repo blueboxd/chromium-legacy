@@ -1087,13 +1087,13 @@ class WebContents : public PageNavigator,
   // Returns false if the request is no longer valid, otherwise true.
   virtual bool GotResponseToKeyboardLockRequest(bool allowed) = 0;
 
-#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_MAC)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_APPLE)
   // Called when the user has selected a color in the color chooser.
   virtual void DidChooseColorInColorChooser(SkColor color) = 0;
 
   // Called when the color chooser has ended.
   virtual void DidEndColorChooser() = 0;
-#endif  // BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_MAC)
+#endif
 
   // Returns true if the location bar should be focused by default rather than
   // the page contents. The view calls this function when the tab is focused
@@ -1425,6 +1425,9 @@ class WebContents : public PageNavigator,
   // for as long as any of the returned |ScopedClosureRunner| objects is alive.
   [[nodiscard]] virtual base::ScopedClosureRunner
   CreateDisallowCustomCursorScope() = 0;
+
+  // Enables overscroll history navigation.
+  virtual void SetOverscrollNavigationEnabled(bool enabled) = 0;
 
  private:
   // This interface should only be implemented inside content.

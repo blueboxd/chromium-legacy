@@ -1,6 +1,6 @@
 <style include="cr-icons cr-shared-style">
   :host {
-    background: var(--color-new-tab-page-module-background);
+    background: var(--color-new-tab-page-module-item-background);
     border-radius: var(--ntp-module-item-border-radius);
     display: flex;
     flex-direction: column;
@@ -29,26 +29,39 @@
     margin-inline-start: 0;
   }
 
-  #doneButton {
-    --cr-icon-image: url(chrome://resources/images/icon_checkmark.svg);
-  }
-
   #label-container {
-    -webkit-line-clamp: 2;
-    align-items: flex-end;
     color: var(--color-new-tab-page-primary-foreground);
     display: flex;
-    font-size: 24px;
+    font-size: 20px;
     height: 48px;
     line-height: 24px;
-    padding: 0 16px 8px;
+    padding: 0 16px;
   }
 
   :host([suggestion-chip-header-enabled_]) #label-container {
-    align-items: center;
-    background: var(--color-new-tab-page-module-background);
+    background: var(--color-new-tab-page-module-item-background);
     border-radius: var(--ntp-module-item-border-radius);
-    padding: 8px 16px;
+    height: 100%;
+  }
+
+  :host([suggestion-chip-header-enabled_][format='wide']:not([show-related-searches])) #label-container {
+    align-items: start;
+    padding: 16px;
+  }
+
+  h2 {
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    display: -webkit-box;
+    font-weight: inherit;
+    font-size: inherit;
+    margin: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  :host([suggestion-chip-header-enabled_]) h2 {
+    -webkit-line-clamp: 1;
   }
 
   #suggestion-chip {
@@ -57,7 +70,7 @@
   }
 
   #suggestion-chip-icon {
-    --cr-icon-ripple-size: 20px;
+    --cr-icon-ripple-size: 16px;
     --cr-icon-image: url(chrome://resources/images/icon_history.svg);
     background-color: var(--color-new-tab-page-primary-foreground);
     margin: auto;
@@ -66,22 +79,21 @@
   #suggestion-chip-label {
     align-self: center;
     margin-inline-start: 12px;
+    line-height: 20px;
   }
 </style>
 <ntp-module-header-v2
     header-text="[[i18n('modulesJourneysResumeJourney', '')]]"
     on-menu-button-click="onMenuButtonClick_"
     more-actions-text="[[i18n('modulesMoreActions', clusterLabel)]]">
-  <cr-icon-button id="doneButton" slot="title-actions">
-  </cr-icon-button>
 </ntp-module-header-v2>
 <div id="label-container">
-    <div id="label" hidden="[[suggestionChipHeaderEnabled_]]">
+    <h2 id="label" hidden="[[suggestionChipHeaderEnabled_]]">
       [[clusterLabel]]
-    </div>
+    </h2>
     <div id="suggestion-chip" hidden="[[!suggestionChipHeaderEnabled_]]">
       <div id="suggestion-chip-icon" class="cr-icon"></div>
-      <span id="suggestion-chip-label">[[clusterLabel]]</span>
+      <h2 id="suggestion-chip-label">[[clusterLabel]]</h2>
     </div>
 </div>
 

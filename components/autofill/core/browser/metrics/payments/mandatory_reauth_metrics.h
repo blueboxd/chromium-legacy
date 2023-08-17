@@ -6,9 +6,39 @@
 #define COMPONENTS_AUTOFILL_CORE_BROWSER_METRICS_PAYMENTS_MANDATORY_REAUTH_METRICS_H_
 
 #include "components/autofill/core/browser/autofill_client.h"
+#include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/metrics/autofill_metrics.h"
 
-namespace autofill::autofill_metrics {
+namespace autofill {
+
+namespace payments {
+enum class MandatoryReauthAuthenticationMethod;
+}
+
+namespace autofill_metrics {
+
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class MandatoryReauthOfferOptInDecision {
+  kOffered = 0,
+  // Opt-in is not offered for the detailed reason below:
+  kIncognitoMode = 1,
+  kNoSupportedReauthMethod = 2,
+  kNoCardExtractedFromForm = 3,
+  // We only offer opt-in after user experienced non-interactive authentication.
+  kWentThroughInteractiveAuthentication = 4,
+  // For corner cases when a user goes through a non-interactive authentication
+  // flow with a card that is not a local/server/virtual card, then types in a
+  // local/server/virtual card manually into the form.
+  kManuallyFilledLocalCard = 5,
+  kManuallyFilledServerCard = 6,
+  kManuallyFilledVirtualCard = 7,
+  // For corner cases when there is no stored card for the extracted card.
+  kNoStoredCardForExtractedCard = 8,
+  // Currently reauth opt-in is only supported for local and virtual cards.
+  kUnsupportedCardType = 9,
+  kMaxValue = kUnsupportedCardType,
+};
 
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
@@ -45,6 +75,38 @@ enum class MandatoryReauthOptInConfirmationBubbleMetric {
   kMaxValue = kSettingsLinkClicked,
 };
 
+// Enum class to include all the possible auth flows that can occur for
+// mandatory reauth. These values are persisted to logs.
+// Entries should not be renumbered and numeric values should never be reused.
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.components.autofill
+enum class MandatoryReauthAuthenticationFlowEvent {
+  kUnknown = 0,
+  // User authentication flow started.
+  kFlowStarted = 1,
+  // User authentication flow succeeded.
+  kFlowSucceeded = 2,
+  // User authentication flow failed.
+  kFlowFailed = 3,
+  kMaxValue = kFlowFailed,
+};
+
+// All the sources that can trigger the OptIn or OptOut flow for mandatory
+// reauth.
+enum class MandatoryReauthOptInOrOutSource {
+  kUnknown = 0,
+  // The OptIn or OptOut process is triggered from the settings page.
+  kSettingsPage = 1,
+  // The OptIn is triggered after using local card during checkout.
+  kCheckoutLocalCard = 2,
+  // The OptIn is triggered after using green pathed virtual card during
+  // checkout.
+  kCheckoutVirtualCard = 3,
+  kMaxValue = kCheckoutVirtualCard,
+};
+
+void LogMandatoryReauthOfferOptInDecision(
+    MandatoryReauthOfferOptInDecision opt_in_decision);
+
 // Logs when the user is offered mandatory reauth.
 void LogMandatoryReauthOptInBubbleOffer(MandatoryReauthOptInBubbleOffer metric,
                                         bool is_reshow);
@@ -58,6 +120,35 @@ void LogMandatoryReauthOptInBubbleResult(
 void LogMandatoryReauthOptInConfirmationBubbleMetric(
     MandatoryReauthOptInConfirmationBubbleMetric metric);
 
-}  // namespace autofill::autofill_metrics
+// Logs all the possible flows for mandatory reauth during OptIn or OptOut
+// process.
+// We check the status of the mandatory reauth feature to determine if the
+// user is trying to opt in or out.
+// If mandatory reauth is currently on, and the user is trying to turn it off
+// then the bool `opt_in` will be false.
+// If mandatory reauth is currently off, and the user is trying to turn it on
+// then the bool `opt_in` will be true.
+void LogMandatoryReauthOptInOrOutUpdateEvent(
+    MandatoryReauthOptInOrOutSource source,
+    bool opt_in,
+    MandatoryReauthAuthenticationFlowEvent event);
+
+// Logs the status of a mandatory reauth occurrence, such as flow
+// started/succeeded/failed, when the user tries to edit a local card in
+// Settings page.
+void LogMandatoryReauthSettingsPageEditCardEvent(
+    MandatoryReauthAuthenticationFlowEvent event);
+
+// Logs the status of a mandatory reauth occurrence during checkout flow, such
+// as flow started/succeeded/failed, break down by `card_type` and
+// `authentication_method`.
+void LogMandatoryReauthCheckoutFlowUsageEvent(
+    CreditCard::RecordType card_type,
+    payments::MandatoryReauthAuthenticationMethod authentication_method,
+    MandatoryReauthAuthenticationFlowEvent event);
+
+}  // namespace autofill_metrics
+
+}  // namespace autofill
 
 #endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_METRICS_PAYMENTS_MANDATORY_REAUTH_METRICS_H_

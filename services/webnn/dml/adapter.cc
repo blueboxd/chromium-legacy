@@ -4,18 +4,55 @@
 
 #include "services/webnn/dml/adapter.h"
 
+#include <d3d11.h>
+
+#include "base/check_is_test.h"
 #include "base/logging.h"
 #include "services/webnn/dml/command_queue.h"
 #include "services/webnn/dml/error.h"
 #include "services/webnn/dml/platform_functions.h"
+#include "ui/gl/gl_angle_util_win.h"
 
 namespace webnn::dml {
+
+// static
+scoped_refptr<Adapter> Adapter::GetInstance() {
+  // If the `Adapter` instance is created, add a reference and return it.
+  if (instance_) {
+    return base::WrapRefCounted(instance_);
+  }
+
+  // Otherwise, create a new one with the adapter queried from ANGLE.
+  ComPtr<ID3D11Device> d3d11_device = gl::QueryD3D11DeviceObjectFromANGLE();
+  if (!d3d11_device) {
+    DLOG(ERROR) << "Failed to query ID3D11Device from ANGLE.";
+    return nullptr;
+  }
+  // A ID3D11Device is always QueryInteface-able to a IDXGIDevice.
+  ComPtr<IDXGIDevice> dxgi_device;
+  CHECK_EQ(d3d11_device.As(&dxgi_device), S_OK);
+  // All DXGI devices should have adapters.
+  ComPtr<IDXGIAdapter> dxgi_adapter;
+  CHECK_EQ(dxgi_device->GetAdapter(&dxgi_adapter), S_OK);
+  return Adapter::Create(std::move(dxgi_adapter));
+}
 
 // static
 scoped_refptr<Adapter> Adapter::Create(ComPtr<IDXGIAdapter> dxgi_adapter) {
   PlatformFunctions* platformFunctions = PlatformFunctions::GetInstance();
   if (!platformFunctions) {
     return nullptr;
+  }
+
+  if (is_debug_layer_enabled_) {
+    // Enable the D3D12 debug layer.
+    // Must be called before the D3D12 device is created.
+    auto d3d12_get_debug_interface_proc =
+        platformFunctions->d3d12_get_debug_interface_proc();
+    ComPtr<ID3D12Debug> d3d12_debug;
+    if (SUCCEEDED(d3d12_get_debug_interface_proc(IID_PPV_ARGS(&d3d12_debug)))) {
+      d3d12_debug->EnableDebugLayer();
+    }
   }
 
   // Create d3d12 device.
@@ -29,10 +66,20 @@ scoped_refptr<Adapter> Adapter::Create(ComPtr<IDXGIAdapter> dxgi_adapter) {
     return nullptr;
   };
 
+  DML_CREATE_DEVICE_FLAGS flags = DML_CREATE_DEVICE_FLAG_NONE;
+
+  // Enable the DML debug layer if the D3D12 debug layer was enabled.
+  if (is_debug_layer_enabled_) {
+    ComPtr<ID3D12DebugDevice> debug_device;
+    if (SUCCEEDED(d3d12_device->QueryInterface(IID_PPV_ARGS(&debug_device)))) {
+      flags |= DML_CREATE_DEVICE_FLAG_DEBUG;
+    }
+  }
+
   // Create dml device.
   ComPtr<IDMLDevice> dml_device;
   auto dml_create_device_proc = platformFunctions->dml_create_device_proc();
-  hr = dml_create_device_proc(d3d12_device.Get(), DML_CREATE_DEVICE_FLAG_NONE,
+  hr = dml_create_device_proc(d3d12_device.Get(), flags,
                               IID_PPV_ARGS(&dml_device));
   if (FAILED(hr)) {
     DLOG(ERROR) << "Failed to create dml device : "
@@ -53,6 +100,12 @@ scoped_refptr<Adapter> Adapter::Create(ComPtr<IDXGIAdapter> dxgi_adapter) {
                   std::move(dml_device), std::move(command_queue)));
 }
 
+// static
+void Adapter::EnableDebugLayerForTesting() {
+  CHECK_IS_TEST();
+  is_debug_layer_enabled_ = true;
+}
+
 Adapter::Adapter(ComPtr<IDXGIAdapter> dxgi_adapter,
                  ComPtr<ID3D12Device> d3d12_device,
                  ComPtr<IDMLDevice> dml_device,
@@ -60,8 +113,18 @@ Adapter::Adapter(ComPtr<IDXGIAdapter> dxgi_adapter,
     : dxgi_adapter_(std::move(dxgi_adapter)),
       d3d12_device_(std::move(d3d12_device)),
       dml_device_(std::move(dml_device)),
-      command_queue_(std::move(command_queue)) {}
+      command_queue_(std::move(command_queue)) {
+  CHECK_EQ(instance_, nullptr);
+  instance_ = this;
+}
 
-Adapter::~Adapter() = default;
+Adapter::~Adapter() {
+  CHECK_EQ(instance_, this);
+  instance_ = nullptr;
+}
+
+Adapter* Adapter::instance_ = nullptr;
+
+bool Adapter::is_debug_layer_enabled_ = false;
 
 }  // namespace webnn::dml

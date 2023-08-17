@@ -43,10 +43,6 @@
 #include "ui/gfx/mac/coordinate_conversion.h"
 #include "ui/strings/grit/ax_strings.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 using AXPosition = ui::AXPlatformNodeDelegate::AXPosition;
 using AXRange = ui::AXPlatformNodeDelegate::AXRange;
 using StringAttribute = ax::mojom::StringAttribute;
@@ -1047,7 +1043,8 @@ bool content::IsNSRange(id value) {
   // dispatch the actual text that changed on the value changed notification.
   // We run this code on all macOS versions to get the highest test coverage.
   std::u16string oldValue = _oldValue;
-  std::u16string newValue = _owner->GetValueForControl();
+  std::u16string newValue = _owner->CreateTextPositionAt(0)->GetText(
+      ui::AXEmbeddedObjectBehavior::kSuppressCharacter);
   _oldValue = newValue;
   if (oldValue.empty() && newValue.empty())
     return content::AXTextEdit();

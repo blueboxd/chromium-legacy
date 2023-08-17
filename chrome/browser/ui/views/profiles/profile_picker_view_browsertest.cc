@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/run_loop.h"
 #include "chrome/browser/ui/views/profiles/profile_picker_view.h"
 
 #include <set>
@@ -12,6 +11,7 @@
 #include "base/files/file_path.h"
 #include "base/json/values_util.h"
 #include "base/memory/raw_ptr.h"
+#include "base/run_loop.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/metrics/user_action_tester.h"
@@ -31,6 +31,7 @@
 #include "chrome/browser/metrics/first_web_contents_profiler_base.h"
 #include "chrome/browser/policy/cloud/user_policy_signin_service.h"
 #include "chrome/browser/policy/cloud/user_policy_signin_service_factory.h"
+#include "chrome/browser/policy/cloud/user_policy_signin_service_test_util.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector_builder.h"
 #include "chrome/browser/profiles/keep_alive/profile_keep_alive_types.h"
@@ -41,7 +42,6 @@
 #include "chrome/browser/profiles/profile_test_util.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/chrome_signin_client_test_util.h"
-#include "chrome/browser/signin/dice_tab_helper.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/signin_features.h"
 #include "chrome/browser/signin/signin_promo.h"
@@ -86,6 +86,8 @@
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
 #include "components/policy/policy_constants.h"
 #include "components/prefs/pref_service.h"
+#include "components/signin/public/base/signin_buildflags.h"
+#include "components/signin/public/base/signin_metrics.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/identity_test_utils.h"
@@ -102,10 +104,12 @@
 #include "content/public/test/test_navigation_observer.h"
 #include "extensions/common/extension_id.h"
 #include "google_apis/gaia/gaia_urls.h"
+#include "google_apis/gaia/google_service_auth_error.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/accelerators/accelerator.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/events/event_constants.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "url/gurl.h"
@@ -120,6 +124,11 @@
 #include "components/account_manager_core/chromeos/account_manager_facade_factory.h"
 #include "components/account_manager_core/chromeos/account_manager_mojo_service.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
+
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+#include "chrome/browser/signin/dice_tab_helper.h"
+#include "chrome/browser/signin/process_dice_header_delegate_impl.h"
+#endif
 
 namespace {
 const SkColor kProfileColor = SK_ColorRED;
@@ -188,60 +197,6 @@ class BrowserAddedWaiter : public BrowserListObserver {
   const size_t total_count_;
   raw_ptr<Browser, AcrossTasksDanglingUntriaged> browser_ = nullptr;
   base::RunLoop run_loop_;
-};
-
-// Fake user policy signin service immediately invoking the callbacks.
-class FakeUserPolicySigninService : public policy::UserPolicySigninService {
- public:
-  static std::unique_ptr<KeyedService> Build(content::BrowserContext* context) {
-    Profile* profile = Profile::FromBrowserContext(context);
-    return std::make_unique<FakeUserPolicySigninService>(
-        profile, IdentityManagerFactory::GetForProfile(profile), std::string(),
-        std::string());
-  }
-
-  static std::unique_ptr<KeyedService> BuildForEnterprise(
-      content::BrowserContext* context) {
-    Profile* profile = Profile::FromBrowserContext(context);
-    // Non-empty dm token & client id means enterprise account.
-    return std::make_unique<FakeUserPolicySigninService>(
-        profile, IdentityManagerFactory::GetForProfile(profile), "foo", "bar");
-  }
-
-  FakeUserPolicySigninService(Profile* profile,
-                              signin::IdentityManager* identity_manager,
-                              const std::string& dm_token,
-                              const std::string& client_id)
-      : UserPolicySigninService(profile,
-                                nullptr,
-                                nullptr,
-                                nullptr,
-                                identity_manager,
-                                nullptr),
-        dm_token_(dm_token),
-        client_id_(client_id) {}
-
-  // policy::UserPolicySigninService:
-  void RegisterForPolicyWithAccountId(
-      const std::string& username,
-      const CoreAccountId& account_id,
-      PolicyRegistrationCallback callback) override {
-    std::move(callback).Run(dm_token_, client_id_);
-  }
-
-  // policy::UserPolicySigninServiceBase:
-  void FetchPolicyForSignedInUser(
-      const AccountId& account_id,
-      const std::string& dm_token,
-      const std::string& client_id,
-      scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory,
-      PolicyFetchCallback callback) override {
-    std::move(callback).Run(true);
-  }
-
- private:
-  std::string dm_token_;
-  std::string client_id_;
 };
 
 class TestTabDialogs : public TabDialogs {
@@ -434,7 +389,8 @@ class ProfilePickerCreationFlowBrowserTest : public ProfilePickerTestBase {
   virtual void OnWillCreateBrowserContextServices(
       content::BrowserContext* context) {
     policy::UserPolicySigninServiceFactory::GetInstance()->SetTestingFactory(
-        context, base::BindRepeating(&FakeUserPolicySigninService::Build));
+        context,
+        base::BindRepeating(&policy::FakeUserPolicySigninService::Build));
     feature_engagement::TrackerFactory::GetInstance()->SetTestingFactory(
         context, base::BindRepeating(&CreateTestTracker));
 
@@ -557,7 +513,22 @@ class ProfilePickerCreationFlowBrowserTest : public ProfilePickerTestBase {
     // The DICE navigation happens in a new web contents (for the profile being
     // created), wait for it.
     WaitForLoadStop(GetSigninChromeSyncDiceUrl());
+
+    // Check that the `DiceTabHelper` was created.
+    DiceTabHelper* tab_helper = DiceTabHelper::FromWebContents(web_contents());
+    CHECK(tab_helper);
+    EXPECT_EQ(tab_helper->signin_access_point(),
+              signin_metrics::AccessPoint::ACCESS_POINT_USER_MANAGER);
+
     return static_cast<Profile*>(web_contents()->GetBrowserContext());
+  }
+
+  void SimulateEnableSyncDiceHeader(content::WebContents* contents,
+                                    const CoreAccountId& account_id) {
+    // Simulate the Dice "ENABLE_SYNC" header parameter.
+    auto process_dice_header_delegate_impl =
+        ProcessDiceHeaderDelegateImpl::Create(contents);
+    process_dice_header_delegate_impl->EnableSync(account_id);
   }
 
   AccountInfo FinishDiceSignIn(
@@ -571,7 +542,8 @@ class ProfilePickerCreationFlowBrowserTest : public ProfilePickerTestBase {
     CoreAccountInfo core_account_info = signin::MakeAccountAvailable(
         identity_manager,
         signin::AccountAvailabilityOptionsBuilder(test_url_loader_factory())
-            .WithCookie()
+            .WithAccessPoint(
+                signin_metrics::AccessPoint::ACCESS_POINT_USER_MANAGER)
             .Build(email));
     EXPECT_TRUE(identity_manager->HasAccountWithRefreshToken(
         core_account_info.account_id));
@@ -579,6 +551,18 @@ class ProfilePickerCreationFlowBrowserTest : public ProfilePickerTestBase {
     AccountInfo account_info =
         FillAccountInfo(core_account_info, given_name, hosted_domain);
     signin::UpdateAccountInfoForAccount(identity_manager, account_info);
+
+    if (web_contents()) {
+      SimulateEnableSyncDiceHeader(web_contents(),
+                                   core_account_info.account_id);
+    }
+
+    // The flow should work even if the primary account is not set at this
+    // point,for example because the /ListAccounts call did not complete yet.
+    // Regression test for https://crbug.com/1469586
+    EXPECT_FALSE(
+        identity_manager->HasPrimaryAccount(signin::ConsentLevel::kSignin));
+
     return account_info;
   }
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -713,11 +697,23 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerCreationFlowBrowserTest, ShowChoice) {
 
 IN_PROC_BROWSER_TEST_F(ProfilePickerCreationFlowBrowserTest,
                        CreateSignedInProfile) {
+  base::HistogramTester histogram_tester;
+
   ASSERT_EQ(1u, BrowserList::GetInstance()->size());
   // Simulate a successful sign-in and wait for the sign-in to propagate to the
   // flow, resulting in sync confirmation screen getting displayed.
   Profile* profile_being_created = SignInForNewProfile(
       GetSyncConfirmationURL(), "joe.consumer@gmail.com", "Joe");
+
+  signin_metrics::AccessPoint expected_access_point =
+      signin_metrics::AccessPoint::ACCESS_POINT_USER_MANAGER;
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  // TODO(https://crbug.com/1261772): Record signin access point on Lacros.
+  expected_access_point =
+      signin_metrics::AccessPoint::ACCESS_POINT_DESKTOP_SIGNIN_MANAGER;
+#endif
+  histogram_tester.ExpectUniqueSample("Signin.SignIn.Completed",
+                                      expected_access_point, 1);
 
   // Simulate closing the UI with "No, thanks".
   LoginUIServiceFactory::GetForProfile(profile_being_created)
@@ -741,9 +737,15 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerCreationFlowBrowserTest,
       SyncServiceFactory::GetForProfile(profile_being_created);
   EXPECT_FALSE(entry->IsAuthenticated());
   EXPECT_FALSE(sync_service->HasSyncConsent());
-  EXPECT_EQ(ThemeServiceFactory::GetForProfile(profile_being_created)
-                ->GetAutogeneratedThemeColor(),
-            kProfileColor);
+  if (features::IsChromeWebuiRefresh2023()) {
+    EXPECT_EQ(ThemeServiceFactory::GetForProfile(profile_being_created)
+                  ->GetUserColor(),
+              kProfileColor);
+  } else {
+    EXPECT_EQ(ThemeServiceFactory::GetForProfile(profile_being_created)
+                  ->GetAutogeneratedThemeColor(),
+              kProfileColor);
+  }
 }
 
 // Regression test for https://crbug.com/1431342
@@ -915,9 +917,15 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerCreationFlowBrowserTest,
       SyncServiceFactory::GetForProfile(profile_being_created);
   EXPECT_FALSE(entry->IsAuthenticated());
   EXPECT_FALSE(sync_service->HasSyncConsent());
-  EXPECT_EQ(ThemeServiceFactory::GetForProfile(profile_being_created)
-                ->GetAutogeneratedThemeColor(),
-            kProfileColor);
+  if (features::IsChromeWebuiRefresh2023()) {
+    EXPECT_EQ(ThemeServiceFactory::GetForProfile(profile_being_created)
+                  ->GetUserColor(),
+              kProfileColor);
+  } else {
+    EXPECT_EQ(ThemeServiceFactory::GetForProfile(profile_being_created)
+                  ->GetAutogeneratedThemeColor(),
+              kProfileColor);
+  }
 }
 
 IN_PROC_BROWSER_TEST_F(ProfilePickerCreationFlowBrowserTest,
@@ -1054,9 +1062,15 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerCreationFlowBrowserTest,
       SyncServiceFactory::GetForProfile(profile_being_created);
   EXPECT_FALSE(entry->IsAuthenticated());
   EXPECT_FALSE(sync_service->HasSyncConsent());
-  EXPECT_EQ(ThemeServiceFactory::GetForProfile(profile_being_created)
-                ->GetAutogeneratedThemeColor(),
-            kDifferentProfileColor);
+  if (features::IsChromeWebuiRefresh2023()) {
+    EXPECT_EQ(ThemeServiceFactory::GetForProfile(profile_being_created)
+                  ->GetUserColor(),
+              kDifferentProfileColor);
+  } else {
+    EXPECT_EQ(ThemeServiceFactory::GetForProfile(profile_being_created)
+                  ->GetAutogeneratedThemeColor(),
+              kDifferentProfileColor);
+  }
 }
 #endif  // !BUILDFLAG(IS_CHROMEOS_LACROS)
 
@@ -1104,8 +1118,14 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerCreationFlowBrowserTest,
       sync_service->GetUserSettings()->IsInitialSyncFeatureSetupComplete());
 
   // The color is not applied if the user enters settings.
-  EXPECT_FALSE(ThemeServiceFactory::GetForProfile(profile_being_created)
-                   ->UsingAutogeneratedTheme());
+  if (features::IsChromeWebuiRefresh2023()) {
+    EXPECT_FALSE(ThemeServiceFactory::GetForProfile(profile_being_created)
+                     ->GetUserColor()
+                     .has_value());
+  } else {
+    EXPECT_FALSE(ThemeServiceFactory::GetForProfile(profile_being_created)
+                     ->UsingAutogeneratedTheme());
+  }
 }
 
 // The following tests rely on dice specific logic. Some of them could be
@@ -1171,11 +1191,12 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerCreationFlowBrowserTest,
   ASSERT_TRUE(identity_manager->HasAccountWithRefreshToken(
       core_account_info.account_id));
 
-  // Wait for the sign-in to propagate to the flow, resulting in sync
+  // Simulate the Dice "ENABLE_SYNC" header parameter, resulting in sync
   // confirmation screen getting displayed.
+  SimulateEnableSyncDiceHeader(web_contents(), core_account_info.account_id);
   WaitForLoadStop(GetSyncConfirmationURL());
 
-  // Simulate closing the UI with "Yes, I'm in".
+  // Simulate closing the UI with "No, Thanks".
   LoginUIServiceFactory::GetForProfile(profile_being_created)
       ->SyncConfirmationUIClosed(LoginUIService::ABORT_SYNC);
   Browser* new_browser = BrowserAddedWaiter(2u).Wait();
@@ -1199,9 +1220,15 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerCreationFlowBrowserTest,
       SyncServiceFactory::GetForProfile(profile_being_created);
   EXPECT_FALSE(entry->IsAuthenticated());
   EXPECT_FALSE(sync_service->HasSyncConsent());
-  EXPECT_EQ(ThemeServiceFactory::GetForProfile(profile_being_created)
-                ->GetAutogeneratedThemeColor(),
-            kProfileColor);
+  if (features::IsChromeWebuiRefresh2023()) {
+    EXPECT_EQ(ThemeServiceFactory::GetForProfile(profile_being_created)
+                  ->GetUserColor(),
+              kProfileColor);
+  } else {
+    EXPECT_EQ(ThemeServiceFactory::GetForProfile(profile_being_created)
+                  ->GetAutogeneratedThemeColor(),
+              kProfileColor);
+  }
 }
 
 // TODO(crbug.com/1248040): Extend this test to support lacros.
@@ -1222,8 +1249,9 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerCreationFlowBrowserTest,
   ASSERT_TRUE(identity_manager->HasAccountWithRefreshToken(
       core_account_info.account_id));
 
-  // Wait for the sign-in to propagate to the flow, resulting in sync
+  // Simulate the Dice "ENABLE_SYNC" header parameter, resulting in sync
   // confirmation screen getting displayed.
+  SimulateEnableSyncDiceHeader(web_contents(), core_account_info.account_id);
   WaitForLoadStop(GetSyncConfirmationURL());
 
   // Simulate closing the UI with "No, thanks".
@@ -1256,9 +1284,15 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerCreationFlowBrowserTest,
       SyncServiceFactory::GetForProfile(profile_being_created);
   EXPECT_FALSE(entry->IsAuthenticated());
   EXPECT_FALSE(sync_service->HasSyncConsent());
-  EXPECT_EQ(ThemeServiceFactory::GetForProfile(profile_being_created)
-                ->GetAutogeneratedThemeColor(),
-            kProfileColor);
+  if (features::IsChromeWebuiRefresh2023()) {
+    EXPECT_EQ(ThemeServiceFactory::GetForProfile(profile_being_created)
+                  ->GetUserColor(),
+              kProfileColor);
+  } else {
+    EXPECT_EQ(ThemeServiceFactory::GetForProfile(profile_being_created)
+                  ->GetAutogeneratedThemeColor(),
+              kProfileColor);
+  }
 }
 
 IN_PROC_BROWSER_TEST_F(ProfilePickerCreationFlowBrowserTest,
@@ -1289,8 +1323,14 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerCreationFlowBrowserTest,
   EXPECT_FALSE(entry->IsAuthenticated());
   EXPECT_EQ(entry->GetLocalProfileName(), kWork);
   // The color is not applied if the user enters the SAML flow.
-  EXPECT_FALSE(ThemeServiceFactory::GetForProfile(profile_being_created)
-                   ->UsingAutogeneratedTheme());
+  if (features::IsChromeWebuiRefresh2023()) {
+    EXPECT_FALSE(ThemeServiceFactory::GetForProfile(profile_being_created)
+                     ->GetUserColor()
+                     .has_value());
+  } else {
+    EXPECT_FALSE(ThemeServiceFactory::GetForProfile(profile_being_created)
+                     ->UsingAutogeneratedTheme());
+  }
 }
 
 // TODO(crbug.com/1248040): Extend this test to support lacros.
@@ -1353,6 +1393,20 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerCreationFlowBrowserTest,
 
   // This should not crash.
   StartDiceSignIn();
+}
+
+// Regression test for https://crbug.com/1467483
+IN_PROC_BROWSER_TEST_F(ProfilePickerCreationFlowBrowserTest,
+                       DiceSigninFailure) {
+  ASSERT_EQ(1u, BrowserList::GetInstance()->size());
+  StartDiceSignIn();
+
+  // Simulate Dice token exchange failure. This should not crash.
+  auto process_dice_header_delegate_impl =
+      ProcessDiceHeaderDelegateImpl::Create(web_contents());
+  process_dice_header_delegate_impl->HandleTokenExchangeFailure(
+      "example@gmail.com",
+      GoogleServiceAuthError::FromServiceError("SomeError"));
 }
 #endif  // !BUILDFLAG(IS_CHROMEOS_LACROS)
 
@@ -1710,8 +1764,8 @@ class ProfilePickerEnterpriseCreationFlowBrowserTest
     ProfilePickerCreationFlowBrowserTest::OnWillCreateBrowserContextServices(
         context);
     policy::UserPolicySigninServiceFactory::GetInstance()->SetTestingFactory(
-        context,
-        base::BindRepeating(&FakeUserPolicySigninService::BuildForEnterprise));
+        context, base::BindRepeating(
+                     &policy::FakeUserPolicySigninService::BuildForEnterprise));
   }
 };
 
@@ -1756,9 +1810,15 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerEnterpriseCreationFlowBrowserTest,
       SyncServiceFactory::GetForProfile(profile_being_created);
   EXPECT_FALSE(entry->IsAuthenticated());
   EXPECT_FALSE(sync_service->HasSyncConsent());
-  EXPECT_EQ(ThemeServiceFactory::GetForProfile(profile_being_created)
-                ->GetAutogeneratedThemeColor(),
-            kProfileColor);
+  if (features::IsChromeWebuiRefresh2023()) {
+    EXPECT_EQ(ThemeServiceFactory::GetForProfile(profile_being_created)
+                  ->GetUserColor(),
+              kProfileColor);
+  } else {
+    EXPECT_EQ(ThemeServiceFactory::GetForProfile(profile_being_created)
+                  ->GetAutogeneratedThemeColor(),
+              kProfileColor);
+  }
 }
 
 #if !BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -1786,7 +1846,7 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerEnterpriseCreationFlowBrowserTest,
 
   profiles::testing::ExpectPickerWelcomeScreenTypeAndProceed(
       /*expected_type=*/
-      EnterpriseProfileWelcomeUI::ScreenType::kConsumerAccountSyncDisabled,
+      EnterpriseProfileWelcomeUI::ScreenType::kEntepriseAccountSyncDisabled,
       /*choice=*/signin::SIGNIN_CHOICE_NEW_PROFILE);
 
   Browser* new_browser = BrowserAddedWaiter(2u).Wait();
@@ -1806,9 +1866,15 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerEnterpriseCreationFlowBrowserTest,
   // Sync is disabled.
   EXPECT_NE(entry->GetGAIAId(), std::string());
   EXPECT_FALSE(sync_service->IsSyncFeatureEnabled());
-  EXPECT_EQ(ThemeServiceFactory::GetForProfile(profile_being_created)
-                ->GetAutogeneratedThemeColor(),
-            kProfileColor);
+  if (features::IsChromeWebuiRefresh2023()) {
+    EXPECT_EQ(ThemeServiceFactory::GetForProfile(profile_being_created)
+                  ->GetUserColor(),
+              kProfileColor);
+  } else {
+    EXPECT_EQ(ThemeServiceFactory::GetForProfile(profile_being_created)
+                  ->GetAutogeneratedThemeColor(),
+              kProfileColor);
+  }
 }
 #endif  // !BUILDFLAG(IS_CHROMEOS_LACROS)
 
@@ -1871,8 +1937,14 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerEnterpriseCreationFlowBrowserTest,
       sync_service->GetUserSettings()->IsInitialSyncFeatureSetupComplete());
 
   // The color is not applied if the user enters settings.
-  EXPECT_FALSE(ThemeServiceFactory::GetForProfile(profile_being_created)
-                   ->UsingAutogeneratedTheme());
+  if (features::IsChromeWebuiRefresh2023()) {
+    EXPECT_FALSE(ThemeServiceFactory::GetForProfile(profile_being_created)
+                     ->GetUserColor()
+                     .has_value());
+  } else {
+    EXPECT_FALSE(ThemeServiceFactory::GetForProfile(profile_being_created)
+                     ->UsingAutogeneratedTheme());
+  }
 }
 
 IN_PROC_BROWSER_TEST_F(ProfilePickerEnterpriseCreationFlowBrowserTest, Cancel) {

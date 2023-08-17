@@ -22,8 +22,13 @@
 
 #include "build/build_config.h"
 
-#if BUILDFLAG(IS_CHROMEOS) && defined(ARCH_CPU_ARM_FAMILY) && \
-    (defined(COMPILER_GCC) || defined(__clang__))
+#if !defined(ARCH_CPU_ARM_FAMILY)
+#error "MT21Decompressor is only intended to run on MT8173 (ARM)"
+#endif
+
+#if !(defined(COMPILER_GCC) || defined(__clang__))
+#error "MT21Decompressor is only intended to be built with GCC or Clang"
+#endif
 
 #include <stdint.h>
 
@@ -54,12 +59,16 @@ struct MT21DecompressionJob : public base::RefCounted<MT21DecompressionJob> {
   const uint8_t* src;
   const uint8_t* footer;
   size_t offset;
-  uint8_t* dest;
+  RAW_PTR_EXCLUSION uint8_t* dest;
   size_t width;
   size_t height;
   bool is_chroma;
   base::WaitableEvent wakeup_event;
   base::WaitableEvent done_event;
+
+ private:
+  friend class base::RefCounted<MT21DecompressionJob>;
+  ~MT21DecompressionJob() = default;
 };
 
 // We considered making this an ImageProcessorBackend, but it turns out we need
@@ -101,18 +110,16 @@ class MT21Decompressor {
   std::atomic_bool should_shutdown_ = false;
   std::vector<std::thread> big_core_threads_;
   std::vector<scoped_refptr<MT21DecompressionJob>> big_core_jobs_;
-  uint8_t* big_core_pivot_;
+  raw_ptr<uint8_t> big_core_pivot_;
   std::vector<std::thread> little_core_threads_;
   std::vector<scoped_refptr<MT21DecompressionJob>> little_core_jobs_;
-  uint8_t* little_core_pivot_;
+  raw_ptr<uint8_t> little_core_pivot_;
 
   gfx::Size aligned_resolution_;
 
-  GolombRiceTableEntry* symbol_cache_;
+  raw_ptr<GolombRiceTableEntry> symbol_cache_;
 };
 
 }  // namespace media
-
-#endif
 
 #endif  // MEDIA_GPU_V4L2_MT21_MT21_DECOMPRESSOR_H_

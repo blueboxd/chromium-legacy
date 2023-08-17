@@ -52,7 +52,6 @@
 #include "chrome/common/pref_names.h"
 #include "components/infobars/content/content_infobar_manager.h"
 #include "components/prefs/pref_service.h"
-#include "components/search/ntp_features.h"
 #include "content/public/browser/notification_service.h"
 #include "extensions/browser/extension_file_task_runner.h"
 #include "extensions/browser/extension_prefs.h"
@@ -63,6 +62,7 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_set.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "ui/base/mojom/themes.mojom.h"
 #include "ui/base/resource/resource_scale_factor.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/color/color_id.h"
@@ -304,6 +304,21 @@ void ThemeService::Init() {
       prefs::kPolicyThemeColor,
       base::BindRepeating(&ThemeService::HandlePolicyColorUpdate,
                           base::Unretained(this)));
+  pref_change_registrar_.Add(
+      prefs::kBrowserColorScheme,
+      base::BindRepeating(&ThemeService::NotifyThemeChanged,
+                          base::Unretained(this)));
+  pref_change_registrar_.Add(
+      prefs::kBrowserColorVariant,
+      base::BindRepeating(&ThemeService::NotifyThemeChanged,
+                          base::Unretained(this)));
+  pref_change_registrar_.Add(
+      prefs::kGrayscaleThemeEnabled,
+      base::BindRepeating(&ThemeService::NotifyThemeChanged,
+                          base::Unretained(this)));
+  pref_change_registrar_.Add(
+      prefs::kUserColor, base::BindRepeating(&ThemeService::NotifyThemeChanged,
+                                             base::Unretained(this)));
 }
 
 void ThemeService::Shutdown() {
@@ -369,6 +384,33 @@ void ThemeService::UseDefaultTheme() {
 
 void ThemeService::UseSystemTheme() {
   UseDefaultTheme();
+}
+
+void ThemeService::UseDeviceTheme(bool follow) {
+#if BUILDFLAG(IS_CHROMEOS)
+  // This toggle is currently only on ChromeOS and we only want platforms to set
+  // the value if they have a visible toggle.
+  profile_->GetPrefs()->SetBoolean(prefs::kBrowserFollowsSystemThemeColors,
+                                   follow);
+  NotifyThemeChanged();
+#endif
+}
+
+bool ThemeService::UsingDeviceTheme() const {
+#if BUILDFLAG(IS_CHROMEOS)
+  const PrefService::Preference* pref = profile_->GetPrefs()->FindPreference(
+      prefs::kBrowserFollowsSystemThemeColors);
+  // Ensure we respect previous theme settings for an unset follow theme
+  // value.
+  if (pref->IsDefaultValue() && (!GetIsBaseline() || UsingExtensionTheme())) {
+    return false;
+  }
+
+  return pref->GetValue()->GetBool();
+#else
+  // Only ChromeOS has this toggle.
+  return false;
+#endif
 }
 
 bool ThemeService::IsSystemThemeDistinctFromDefaultTheme() const {
@@ -528,9 +570,12 @@ ThemeService::BrowserColorScheme ThemeService::GetBrowserColorScheme() const {
 }
 
 void ThemeService::SetUserColor(absl::optional<SkColor> user_color) {
-  ClearThemeData(/*clear_ntp_background=*/false);
-  profile_->GetPrefs()->SetInteger(prefs::kUserColor,
-                                   user_color.value_or(SK_ColorTRANSPARENT));
+  {
+    base::AutoReset<bool> resetter(&should_suppress_theme_updates_, true);
+    ClearThemeData(/*clear_ntp_background=*/false);
+    profile_->GetPrefs()->SetInteger(prefs::kUserColor,
+                                     user_color.value_or(SK_ColorTRANSPARENT));
+  }
   NotifyThemeChanged();
 }
 
@@ -541,35 +586,48 @@ absl::optional<SkColor> ThemeService::GetUserColor() const {
              : absl::optional<SkColor>(user_color);
 }
 
-void ThemeService::SetBrowserColorVariant(BrowserColorVariant color_variant) {
+void ThemeService::SetBrowserColorVariant(
+    ui::mojom::BrowserColorVariant color_variant) {
   profile_->GetPrefs()->SetInteger(prefs::kBrowserColorVariant,
                                    static_cast<int>(color_variant));
   NotifyThemeChanged();
 }
 
-ThemeService::BrowserColorVariant ThemeService::GetBrowserColorVariant() const {
-  return static_cast<BrowserColorVariant>(
+ui::mojom::BrowserColorVariant ThemeService::GetBrowserColorVariant() const {
+  return static_cast<ui::mojom::BrowserColorVariant>(
       profile_->GetPrefs()->GetInteger(prefs::kBrowserColorVariant));
 }
 
 void ThemeService::SetUserColorAndBrowserColorVariant(
     SkColor user_color,
-    BrowserColorVariant color_variant) {
-  ClearThemeData(/*clear_ntp_background=*/false);
-  profile_->GetPrefs()->SetInteger(prefs::kUserColor, user_color);
-  profile_->GetPrefs()->SetInteger(prefs::kBrowserColorVariant,
-                                   static_cast<int>(color_variant));
+    ui::mojom::BrowserColorVariant color_variant) {
+  {
+    base::AutoReset<bool> resetter(&should_suppress_theme_updates_, true);
+    ClearThemeData(/*clear_ntp_background=*/false);
+    profile_->GetPrefs()->SetInteger(prefs::kUserColor, user_color);
+    profile_->GetPrefs()->SetInteger(prefs::kBrowserColorVariant,
+                                     static_cast<int>(color_variant));
+  }
   NotifyThemeChanged();
 }
 
 void ThemeService::SetIsGrayscale(bool is_grayscale) {
-  ClearThemeData(/*clear_ntp_background=*/false);
-  profile_->GetPrefs()->SetBoolean(prefs::kGrayscaleThemeEnabled, is_grayscale);
+  {
+    base::AutoReset<bool> resetter(&should_suppress_theme_updates_, true);
+    ClearThemeData(/*clear_ntp_background=*/false);
+    profile_->GetPrefs()->SetBoolean(prefs::kGrayscaleThemeEnabled,
+                                     is_grayscale);
+  }
   NotifyThemeChanged();
 }
 
 bool ThemeService::GetIsGrayscale() const {
   return profile_->GetPrefs()->GetBoolean(prefs::kGrayscaleThemeEnabled);
+}
+
+bool ThemeService::GetIsBaseline() const {
+  // Baseline is represented as a missing user_color in prefs.
+  return !GetUserColor().has_value();
 }
 
 // static
@@ -638,7 +696,7 @@ void ThemeService::ClearThemeData(bool clear_ntp_background) {
 
   SwapThemeSupplier(nullptr);
   ClearThemePrefs();
-  if (base::FeatureList::IsEnabled(ntp_features::kCustomizeChromeSidePanel) &&
+  if (base::FeatureList::IsEnabled(features::kCustomizeChromeSidePanel) &&
       clear_ntp_background) {
     NtpCustomBackgroundService::ResetProfilePrefs(profile_);
   }
@@ -661,6 +719,13 @@ void ThemeService::InitFromPrefs() {
 
   std::string current_id = GetThemeID();
   if (current_id == ThemeHelper::kDefaultThemeID) {
+    if (const auto user_color = GetUserColor(); user_color.has_value()) {
+      chrome_colors::ChromeColorsService::RecordDynamicColorOnLoadHistogram(
+          *user_color, GetBrowserColorVariant());
+    } else if (GetIsGrayscale()) {
+      chrome_colors::ChromeColorsService::
+          RecordDynamicColorOnLoadHistogramForGrayscale();
+    }
     UseTheme(GetDefaultSystemTheme());
     set_ready();
     return;
@@ -690,8 +755,9 @@ void ThemeService::InitFromPrefs() {
 }
 
 void ThemeService::NotifyThemeChanged() {
-  if (!ready_)
+  if (!ready_ || should_suppress_theme_updates_) {
     return;
+  }
 
   // Redraw and notify sync that theme has changed.
   for (auto& observer : observers_)
@@ -880,7 +946,7 @@ void ThemeService::ClearThemePrefs() {
 void ThemeService::SetThemePrefsForExtension(
     const extensions::Extension* extension) {
   ClearThemePrefs();
-  if (base::FeatureList::IsEnabled(ntp_features::kCustomizeChromeSidePanel)) {
+  if (base::FeatureList::IsEnabled(features::kCustomizeChromeSidePanel)) {
     NtpCustomBackgroundService::ResetProfilePrefs(profile_);
   }
 

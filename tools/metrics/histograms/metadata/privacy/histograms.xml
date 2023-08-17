@@ -94,7 +94,7 @@ reviewer.
 <histogram name="Privacy.ClearOnExitSyncEvent" enum="ClearOnExitSyncEvent"
     expires_after="M103">
   <owner>sauski@google.com</owner>
-  <owner>chrome-friendly-settings@google.com</owner>
+  <owner>chrome-privacy-controls@google.com</owner>
   <summary>
     Interactions between sync and the cookies clear on exit setting. Only
     recorded when the user has cookies clear on exit enabled.
@@ -122,6 +122,51 @@ reviewer.
   <summary>
     Logged each time the user denies or revokes a consent for a feature
     integrated with the consent auditor. The value indicates which feature.
+  </summary>
+</histogram>
+
+<histogram name="Privacy.CookieControlsActivated.PageRefreshCount"
+    units="count" expires_after="M120">
+  <owner>olesiamarukhno@google.com</owner>
+  <owner>sauski@google.com</owner>
+  <owner>kmg@google.com</owner>
+  <summary>
+    How many times the page was refreshed in the last 30 seconds, recorded when
+    third-party party cookies are allowed using cookie controls UI.
+  </summary>
+</histogram>
+
+<histogram name="Privacy.CookieControlsActivated.SaaRequested"
+    enum="BooleanEnabled" expires_after="M120">
+  <owner>olesiamarukhno@google.com</owner>
+  <owner>sauski@google.com</owner>
+  <owner>kmg@google.com</owner>
+  <summary>
+    Whether storage access API was granted or blocked for the site, recorded
+    when third-party party cookies are allowed using cookie controls UI.
+  </summary>
+</histogram>
+
+<histogram name="Privacy.CookieControlsActivated.SiteDataAccessType"
+    enum="ThirdPartySiteDataAccessType" expires_after="M120">
+  <owner>olesiamarukhno@google.com</owner>
+  <owner>sauski@google.com</owner>
+  <owner>kmg@google.com</owner>
+  <summary>
+    Represents if site data was accessed by any third-party sites and if any of
+    those accesses were blocked, recorded when third-party party cookies are
+    allowed using cookie controls UI.
+  </summary>
+</histogram>
+
+<histogram name="Privacy.CookieControlsActivated.SiteEngagementScore"
+    units="units" expires_after="M120">
+  <owner>olesiamarukhno@google.com</owner>
+  <owner>sauski@google.com</owner>
+  <owner>kmg@google.com</owner>
+  <summary>
+    The site engagement score, recorded when third-party party cookies are
+    allowed using cookie controls UI.
   </summary>
 </histogram>
 
@@ -221,21 +266,21 @@ reviewer.
 </histogram>
 
 <histogram name="Privacy.DIPS.DatabaseEntryCount" units="entries"
-    expires_after="2023-12-04">
+    expires_after="2024-02-04">
   <owner>wanderview@chromium.org</owner>
   <owner>src/chrome/browser/dips/OWNERS</owner>
   <summary>
-    Number of entries present in the user's DIPS database (where there is 1
-    entry per eTLD+1). For each user profile, reported at profile open (which
-    usually happens at startup). Also reported approximately once every 24 hours
-    thereafter, while the profile remains open and active. If the database is
-    new and therefore empty at startup, such as when a Guest or other OTR
-    profile is opened, a count of 0 will be reported.
+    Number of entries present in the `bounces` table of the user's DIPS database
+    (where there is 1 entry per eTLD+1). For each user profile, reported at
+    profile open (which usually happens at startup). Also reported approximately
+    once every 24 hours thereafter, while the profile remains open and active.
+    If the database is new and therefore empty at startup, such as when a Guest
+    or other OTR profile is opened, a count of 0 will be reported.
   </summary>
 </histogram>
 
 <histogram name="Privacy.DIPS.DatabaseErrors" enum="SqliteLoggedResultCode"
-    expires_after="2023-12-04">
+    expires_after="2024-02-04">
   <owner>wanderview@chromium.org</owner>
   <owner>src/chrome/browser/dips/OWNERS</owner>
   <summary>
@@ -244,7 +289,7 @@ reviewer.
 </histogram>
 
 <histogram name="Privacy.DIPS.DatabaseHealthMetricsTime" units="ms"
-    expires_after="2023-12-04">
+    expires_after="2024-02-04">
   <owner>wanderview@chromium.org</owner>
   <owner>src/chrome/browser/dips/OWNERS</owner>
   <summary>
@@ -259,7 +304,7 @@ reviewer.
 </histogram>
 
 <histogram name="Privacy.DIPS.DatabaseInit" units="attempts"
-    expires_after="2023-12-04">
+    expires_after="2024-02-04">
   <owner>wanderview@chromium.org</owner>
   <owner>src/chrome/browser/dips/OWNERS</owner>
   <summary>
@@ -269,7 +314,7 @@ reviewer.
 </histogram>
 
 <histogram name="Privacy.DIPS.DatabaseSize" units="KB"
-    expires_after="2023-12-04">
+    expires_after="2024-02-04">
   <owner>wanderview@chromium.org</owner>
   <owner>src/chrome/browser/dips/OWNERS</owner>
   <summary>
@@ -494,7 +539,7 @@ reviewer.
 
 <histogram name="PrivacySandbox.AggregationService.KeyFetcher.Status2"
     enum="PrivacySandboxAggregationServiceKeyFetcherStatus"
-    expires_after="2023-12-10">
+    expires_after="2024-02-11">
   <owner>alexmt@chromium.org</owner>
   <owner>linnan@chromium.org</owner>
   <summary>
@@ -504,7 +549,7 @@ reviewer.
 
 <histogram name="PrivacySandbox.AggregationService.ReportAssembler.Status"
     enum="PrivacySandboxAggregationServiceReportAssemblerStatus"
-    expires_after="2023-12-10">
+    expires_after="2024-02-11">
   <owner>alexmt@chromium.org</owner>
   <owner>linnan@chromium.org</owner>
   <summary>
@@ -516,7 +561,7 @@ reviewer.
 
 <histogram
     name="PrivacySandbox.AggregationService.ReportSender.HttpResponseOrNetErrorCode"
-    enum="CombinedHttpResponseAndNetErrorCode" expires_after="2023-12-10">
+    enum="CombinedHttpResponseAndNetErrorCode" expires_after="2024-02-11">
   <owner>alexmt@chromium.org</owner>
   <owner>linnan@chromium.org</owner>
   <summary>
@@ -528,7 +573,7 @@ reviewer.
 
 <histogram name="PrivacySandbox.AggregationService.ReportSender.Status"
     enum="PrivacySandboxAggregationServiceReportSenderStatus"
-    expires_after="2023-12-10">
+    expires_after="2024-02-11">
   <owner>alexmt@chromium.org</owner>
   <owner>linnan@chromium.org</owner>
   <summary>
@@ -599,7 +644,7 @@ reviewer.
 </histogram>
 
 <histogram name="PrivacySandbox.AggregationService.Storage.Sql.CreationTime2"
-    units="ms" expires_after="2023-12-10">
+    units="ms" expires_after="2024-02-11">
   <owner>alexmt@chromium.org</owner>
   <owner>linnan@chromium.org</owner>
   <summary>
@@ -612,7 +657,7 @@ reviewer.
 
 <histogram name="PrivacySandbox.AggregationService.Storage.Sql.InitStatus"
     enum="PrivacySandboxAggregationServiceStorageSqlInitStatus"
-    expires_after="2023-12-10">
+    expires_after="2024-02-11">
   <owner>alexmt@chromium.org</owner>
   <owner>linnan@chromium.org</owner>
   <summary>
@@ -724,7 +769,7 @@ reviewer.
 
 <histogram name="PrivacySandbox.PrivateAggregation.BudgetStorage.InitStatus"
     enum="PrivacySandboxPrivateAggregationBudgetStorageInitStatus"
-    expires_after="2023-12-10">
+    expires_after="2024-02-11">
   <owner>alexmt@chromium.org</owner>
   <owner>linnan@chromium.org</owner>
   <summary>
@@ -749,7 +794,7 @@ reviewer.
 <histogram
     name="PrivacySandbox.PrivateAggregation.Host.SendHistogramReportResult"
     enum="PrivacySandboxPrivateAggregationHostSendHistogramReportResult"
-    expires_after="2023-12-10">
+    expires_after="2024-02-11">
   <owner>alexmt@chromium.org</owner>
   <owner>linnan@chromium.org</owner>
   <summary>

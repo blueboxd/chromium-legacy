@@ -63,7 +63,7 @@ bool ShouldPrepareForRecovery(const AccountId& account_id) {
 }
 
 bool ShouldUseReauthEndpoint(const AccountId& account_id) {
-  if (!account_id.is_valid()) {
+  if (account_id.empty()) {
     return false;
   }
   auto* user = user_manager::UserManager::Get()->FindUser(account_id);
@@ -72,7 +72,13 @@ bool ShouldUseReauthEndpoint(const AccountId& account_id) {
   if (user && user->IsChild()) {
     return true;
   }
-  return features::IsGaiaReauthEndpointEnabled();
+  // Use reauth endpoint for potential recovery use cases (exclude cases where
+  // reauth enforced by policy).
+  if (features::IsGaiaReauthEndpointEnabled() &&
+      ShouldPrepareForRecovery(account_id)) {
+    return true;
+  }
+  return false;
 }
 
 }  // namespace
@@ -98,6 +104,7 @@ std::string GaiaScreen::GetResultString(Result result) {
 GaiaScreen::GaiaScreen(base::WeakPtr<TView> view,
                        const ScreenExitCallback& exit_callback)
     : BaseScreen(GaiaView::kScreenId, OobeScreenPriority::DEFAULT),
+      auth_factor_editor_(UserDataAuthClient::Get()),
       view_(std::move(view)),
       exit_callback_(exit_callback) {}
 
@@ -170,6 +177,10 @@ void GaiaScreen::ReloadGaiaAuthenticator() {
   view_->ReloadGaiaAuthenticator();
 }
 
+const std::string& GaiaScreen::EnrollmentNudgeEmail() {
+  return enrollment_nudge_email_;
+}
+
 void GaiaScreen::ShowImpl() {
   if (!view_)
     return;
@@ -194,6 +205,11 @@ void GaiaScreen::ShowImpl() {
 }
 
 void GaiaScreen::HideImpl() {
+  // In the enrollment nudge flow it is assumed that `enrollment_nudge_email_`
+  // was passed to enrollment screen before the execution of
+  // `GaiaScreen::HideImpl()`. Here we are resetting it to make sure that we
+  // don't accidentally reuse it in the future.
+  enrollment_nudge_email_.clear();
   if (!view_)
     return;
   view_->SetGaiaPath(GaiaView::GaiaPath::kDefault);
@@ -328,6 +344,8 @@ void GaiaScreen::OnAccountStatusFetched(const std::string& user_email,
   if (status.enrollment_required) {
     const std::string email_domain =
         chrome::enterprise_util::GetDomainFromEmail(user_email);
+    // Cache email in case we will need to pass it to the enrollment screen.
+    enrollment_nudge_email_ = user_email;
     view_->ShowEnrollmentNudge(email_domain);
   }
 }

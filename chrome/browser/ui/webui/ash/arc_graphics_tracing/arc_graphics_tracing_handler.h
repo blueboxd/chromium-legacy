@@ -16,12 +16,11 @@
 #include "base/timer/timer.h"
 #include "base/values.h"
 #include "components/exo/surface_observer.h"
+#include "content/public/browser/tracing_controller.h"
 #include "content/public/browser/web_ui_message_handler.h"
 #include "ui/aura/window_observer.h"
 #include "ui/events/event_handler.h"
 #include "ui/wm/public/activation_change_observer.h"
-
-class Profile;
 
 namespace arc {
 class ArcGraphicsJankDetector;
@@ -45,8 +44,7 @@ class ArcGraphicsTracingHandler : public content::WebUIMessageHandler,
                                   public ui::EventHandler,
                                   public exo::SurfaceObserver {
  public:
-  static base::FilePath GetModelPathFromTitle(Profile* profile,
-                                              const std::string& title);
+  base::FilePath GetModelPathFromTitle(std::string_view title);
 
   ArcGraphicsTracingHandler();
 
@@ -77,8 +75,32 @@ class ArcGraphicsTracingHandler : public content::WebUIMessageHandler,
   void OnSurfaceDestroying(exo::Surface* surface) override;
   void OnCommit(exo::Surface* surface) override;
 
+  // Visible for testing.
+  base::TimeDelta max_tracing_time() const { return max_tracing_time_; }
+
  private:
-  void Activate();
+  virtual void StartTracingOnController(
+      const base::trace_event::TraceConfig& trace_config,
+      content::TracingController::StartTracingDoneCallback after_start);
+  virtual void StopTracingOnController(
+      content::TracingController::CompletionCallback after_stop);
+
+  // For testing. This lets tests avoid casting from BrowserContext to Profile.
+  virtual base::FilePath GetDownloadsFolder();
+
+  // There is a ScopedTimeClockOverrides for tests that makes this seem
+  // redundant, but it is rather awkward to have a single test base which
+  // utilizes either system time or mock time, as this must be specified in
+  // the constructor, and the childmost test class constructor must be
+  // parameterless.
+  virtual base::Time Now();
+
+  // Exposed for testing. This implementation uses TRACE_TIME_TICKS_NOW.
+  // Returns the timestamp using clock_gettime(CLOCK_MONOTONIC), which is
+  // needed for comparison with trace timestamps.
+  virtual base::TimeTicks SystemTicksNow();
+
+  virtual void ActivateWebUIWindow();
   void StartTracing();
   void StopTracing();
   void StopTracingAndActivate();

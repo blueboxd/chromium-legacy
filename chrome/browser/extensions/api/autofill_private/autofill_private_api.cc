@@ -22,12 +22,13 @@
 #include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/autofill/core/browser/autofill_address_util.h"
+#include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/browser_autofill_manager.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/data_model/iban.h"
 #include "components/autofill/core/browser/form_data_importer.h"
-#include "components/autofill/core/browser/geo/address_i18n.h"
+#include "components/autofill/core/browser/metrics/payments/mandatory_reauth_metrics.h"
 #include "components/autofill/core/browser/payments/local_card_migration_manager.h"
 #include "components/autofill/core/browser/payments/mandatory_reauth_manager.h"
 #include "components/autofill/core/browser/payments/virtual_card_enrollment_flow.h"
@@ -51,6 +52,11 @@
 
 namespace autofill_private = extensions::api::autofill_private;
 namespace addressinput = i18n::addressinput;
+
+using autofill::autofill_metrics::LogMandatoryReauthOptInOrOutUpdateEvent;
+using autofill::autofill_metrics::LogMandatoryReauthSettingsPageEditCardEvent;
+using autofill::autofill_metrics::MandatoryReauthAuthenticationFlowEvent;
+using autofill::autofill_metrics::MandatoryReauthOptInOrOutSource;
 
 namespace {
 
@@ -432,7 +438,7 @@ ExtensionFunction::ResponseAction AutofillPrivateRemoveEntryFunction::Run() {
   if (!personal_data || !personal_data->IsDataLoaded())
     return RespondNow(Error(kErrorDataUnavailable));
 
-  if (personal_data->GetIBANByGUID(parameters->guid)) {
+  if (personal_data->GetIbanByGUID(parameters->guid)) {
     base::RecordAction(base::UserMetricsAction("AutofillIbanDeleted"));
   }
 
@@ -494,13 +500,14 @@ AutofillPrivateMigrateCreditCardsFunction::Run() {
   // FormDataImporter.
   autofill::AutofillManager* autofill_manager =
       GetAutofillManager(GetSenderWebContents());
-  if (!autofill_manager || !autofill_manager->client())
+  if (!autofill_manager) {
     return RespondNow(Error(kErrorDataUnavailable));
+  }
 
   // Get the FormDataImporter from AutofillClient. FormDataImporter owns
   // LocalCardMigrationManager.
   autofill::FormDataImporter* form_data_importer =
-      autofill_manager->client()->GetFormDataImporter();
+      autofill_manager->client().GetFormDataImporter();
   if (!form_data_importer)
     return RespondNow(Error(kErrorDataUnavailable));
 
@@ -581,16 +588,16 @@ ExtensionFunction::ResponseAction AutofillPrivateSaveIbanFunction::Run() {
   // the Chrome payment settings page. Otherwise, leaving it blank creates a new
   // IBAN.
   std::string guid = iban_entry->guid ? *iban_entry->guid : "";
-  const autofill::IBAN* existing_iban = nullptr;
+  const autofill::Iban* existing_iban = nullptr;
   if (!guid.empty()) {
-    existing_iban = personal_data->GetIBANByGUID(guid);
+    existing_iban = personal_data->GetIbanByGUID(guid);
     if (!existing_iban)
       return RespondNow(Error(kErrorDataUnavailable));
   }
-  autofill::IBAN iban =
+  autofill::Iban iban =
       existing_iban
           ? *existing_iban
-          : autofill::IBAN(base::Uuid::GenerateRandomV4().AsLowercaseString());
+          : autofill::Iban(base::Uuid::GenerateRandomV4().AsLowercaseString());
 
   iban.SetRawInfo(autofill::IBAN_VALUE, base::UTF8ToUTF16(*iban_entry->value));
 
@@ -598,7 +605,7 @@ ExtensionFunction::ResponseAction AutofillPrivateSaveIbanFunction::Run() {
     iban.set_nickname(base::UTF8ToUTF16(*iban_entry->nickname));
 
   if (guid.empty()) {
-    personal_data->AddIBAN(iban);
+    personal_data->AddIban(iban);
     base::RecordAction(base::UserMetricsAction("AutofillIbanAdded"));
     if (!iban.nickname().empty()) {
       base::RecordAction(
@@ -608,7 +615,7 @@ ExtensionFunction::ResponseAction AutofillPrivateSaveIbanFunction::Run() {
   }
 
   if (existing_iban->Compare(iban) != 0) {
-    personal_data->UpdateIBAN(iban);
+    personal_data->UpdateIban(iban);
     base::RecordAction(base::UserMetricsAction("AutofillIbanEdited"));
     // Record when nickname is updated.
     if (existing_iban->nickname() != iban.nickname()) {
@@ -644,7 +651,7 @@ ExtensionFunction::ResponseAction AutofillPrivateIsValidIbanFunction::Run() {
       api::autofill_private::IsValidIban::Params::Create(args());
   EXTENSION_FUNCTION_VALIDATE(parameters);
   return RespondNow(WithArguments(
-      autofill::IBAN::IsValid(base::UTF8ToUTF16(parameters->iban_value))));
+      autofill::Iban::IsValid(base::UTF8ToUTF16(parameters->iban_value))));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -683,17 +690,16 @@ ExtensionFunction::ResponseAction AutofillPrivateAddVirtualCardFunction::Run() {
 
   autofill::AutofillManager* autofill_manager =
       GetAutofillManager(GetSenderWebContents());
-  if (!autofill_manager || !autofill_manager->client() ||
-      !autofill_manager->client()->GetFormDataImporter() ||
+  if (!autofill_manager || !autofill_manager->client().GetFormDataImporter() ||
       !autofill_manager->client()
-           ->GetFormDataImporter()
+           .GetFormDataImporter()
            ->GetVirtualCardEnrollmentManager()) {
     return RespondNow(Error(kErrorDataUnavailable));
   }
 
   autofill::VirtualCardEnrollmentManager* virtual_card_enrollment_manager =
       autofill_manager->client()
-          ->GetFormDataImporter()
+          .GetFormDataImporter()
           ->GetVirtualCardEnrollmentManager();
 
   virtual_card_enrollment_manager->InitVirtualCardEnroll(
@@ -724,17 +730,16 @@ AutofillPrivateRemoveVirtualCardFunction::Run() {
 
   autofill::AutofillManager* autofill_manager =
       GetAutofillManager(GetSenderWebContents());
-  if (!autofill_manager || !autofill_manager->client() ||
-      !autofill_manager->client()->GetFormDataImporter() ||
+  if (!autofill_manager || !autofill_manager->client().GetFormDataImporter() ||
       !autofill_manager->client()
-           ->GetFormDataImporter()
+           .GetFormDataImporter()
            ->GetVirtualCardEnrollmentManager()) {
     return RespondNow(Error(kErrorDataUnavailable));
   }
 
   autofill::VirtualCardEnrollmentManager* virtual_card_enrollment_manager =
       autofill_manager->client()
-          ->GetFormDataImporter()
+          .GetFormDataImporter()
           ->GetVirtualCardEnrollmentManager();
 
   virtual_card_enrollment_manager->Unenroll(
@@ -759,8 +764,27 @@ AutofillPrivateAuthenticateUserAndFlipMandatoryAuthToggleFunction::Run() {
   const std::u16string message =
       l10n_util::GetStringUTF16(IDS_PAYMENTS_AUTOFILL_MANDATORY_REAUTH_PROMPT);
 
+  // If `personal_data_manager` is not available or `IsDataLoaded` is false,
+  // then don't do anything.
+  autofill::PersonalDataManager* personal_data_manager =
+      client->GetPersonalDataManager();
+  if (!personal_data_manager || !personal_data_manager->IsDataLoaded()) {
+    return RespondNow(Error(kErrorDataUnavailable));
+  }
+
+  // We will be modifying the pref `kAutofillPaymentMethodsMandatoryReauth`
+  // asynchronously. The pref value directly correlates to the mandatory auth
+  // toggle.
+  // We are also logging the start of the auth flow and
+  // `!personal_data_manager->IsPaymentMethodsMandatoryReauthEnabled()` denotes
+  // if the user is either opting in or out.
   base::RecordAction(base::UserMetricsAction(
       "PaymentsUserAuthTriggeredForMandatoryAuthToggle"));
+  LogMandatoryReauthOptInOrOutUpdateEvent(
+      MandatoryReauthOptInOrOutSource::kSettingsPage,
+      /*opt_in=*/
+      !personal_data_manager->IsPaymentMethodsMandatoryReauthEnabled(),
+      MandatoryReauthAuthenticationFlowEvent::kFlowStarted);
   client->GetOrCreatePaymentsMandatoryReauthManager()->AuthenticateWithMessage(
       message,
       base::BindOnce(
@@ -774,24 +798,38 @@ AutofillPrivateAuthenticateUserAndFlipMandatoryAuthToggleFunction::Run() {
 #endif  // BUILDFLAG (IS_MAC) || BUILDFLAG(IS_WIN)
 }
 
-// Update the Mandatory auth toggle pref after a successful user auth.
+// Update the Mandatory auth toggle pref and log whether the auth was successful
+// or not.
 void AutofillPrivateAuthenticateUserAndFlipMandatoryAuthToggleFunction::
     UpdateMandatoryAuthTogglePref(bool reauth_succeeded) {
 #if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
   content::WebContents* sender_web_contents = GetSenderWebContents();
-  if (sender_web_contents && reauth_succeeded) {
-    autofill::ContentAutofillClient* client =
-        autofill::ContentAutofillClient::FromWebContents(sender_web_contents);
-    CHECK(client);
-    autofill::PersonalDataManager* personal_data_manager =
-        client->GetPersonalDataManager();
-    // This function is not called in incognito mode and therefore a
-    // PersonalDataManager should always exist.
-    CHECK(personal_data_manager);
-    personal_data_manager->SetPaymentMethodsMandatoryReauthEnabled(
-        !personal_data_manager->IsPaymentMethodsMandatoryReauthEnabled());
+  if (!sender_web_contents) {
+    return;
+  }
+  autofill::ContentAutofillClient* client =
+      autofill::ContentAutofillClient::FromWebContents(sender_web_contents);
+  CHECK(client);
+  autofill::PersonalDataManager* personal_data_manager =
+      client->GetPersonalDataManager();
+  // This function is not called in incognito mode and therefore a
+  // PersonalDataManager should always exist.
+  CHECK(personal_data_manager);
+
+  // `opt_in` bool denotes whether the user is trying to opt in or out of the
+  // mandatory reauth feature. If the mandatory reauth toggle on the settings is
+  // currently enabled, then the `opt_in` bool will be false because the user is
+  // opting-out, otherwise the `opt_in` bool will be true.
+  const bool opt_in =
+      !personal_data_manager->IsPaymentMethodsMandatoryReauthEnabled();
+  LogMandatoryReauthOptInOrOutUpdateEvent(
+      MandatoryReauthOptInOrOutSource::kSettingsPage, opt_in,
+      reauth_succeeded ? MandatoryReauthAuthenticationFlowEvent::kFlowSucceeded
+                       : MandatoryReauthAuthenticationFlowEvent::kFlowFailed);
+  if (reauth_succeeded) {
     base::RecordAction(base::UserMetricsAction(
         "PaymentsUserAuthSuccessfulForMandatoryAuthToggle"));
+    personal_data_manager->SetPaymentMethodsMandatoryReauthEnabled(opt_in);
   }
 #endif
 }
@@ -821,7 +859,8 @@ AutofillPrivateAuthenticateUserToEditLocalCardFunction::Run() {
 
     base::RecordAction(base::UserMetricsAction(
         "PaymentsUserAuthTriggeredToShowEditLocalCardDialog"));
-
+    LogMandatoryReauthSettingsPageEditCardEvent(
+        MandatoryReauthAuthenticationFlowEvent::kFlowStarted);
     // Based on the result of the auth, we will be asynchronously returning if
     // the user can edit the local card.
     client->GetOrCreatePaymentsMandatoryReauthManager()
@@ -842,14 +881,34 @@ AutofillPrivateAuthenticateUserToEditLocalCardFunction::Run() {
   return RespondNow(WithArguments(true));
 }
 
-// Return the auth result for showing the edit card for local card.
+// Return the auth result for showing the edit card dialog for local card. We
+// also log whether the auth was successful or not.
 void AutofillPrivateAuthenticateUserToEditLocalCardFunction::
     CanShowEditDialogForLocalCard(bool can_show) {
+  LogMandatoryReauthSettingsPageEditCardEvent(
+      can_show ? MandatoryReauthAuthenticationFlowEvent::kFlowSucceeded
+               : MandatoryReauthAuthenticationFlowEvent::kFlowFailed);
   if (can_show) {
     base::RecordAction(base::UserMetricsAction(
         "PaymentsUserAuthSuccessfulToShowEditLocalCardDialog"));
   }
   Respond(WithArguments(can_show));
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// AutofillPrivateCheckIfDeviceAuthAvailableFunction
+
+ExtensionFunction::ResponseAction
+AutofillPrivateCheckIfDeviceAuthAvailableFunction::Run() {
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
+  autofill::ContentAutofillClient* client =
+      autofill::ContentAutofillClient::FromWebContents(GetSenderWebContents());
+  if (client) {
+    return RespondNow(WithArguments(
+        autofill::IsDeviceAuthAvailable(client->GetDeviceAuthenticator())));
+  }
+#endif  // BUILDFLAG (IS_MAC) || BUILDFLAG(IS_WIN)
+  return RespondNow(Error(kErrorDeviceAuthUnavailable));
 }
 
 }  // namespace extensions

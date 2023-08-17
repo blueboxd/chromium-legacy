@@ -13,7 +13,6 @@
 #include "components/segmentation_platform/internal/database/mock_signal_database.h"
 #include "components/segmentation_platform/internal/database/mock_signal_storage_config.h"
 #include "components/segmentation_platform/internal/database/test_segment_info_database.h"
-#include "components/segmentation_platform/internal/execution/default_model_manager.h"
 #include "components/segmentation_platform/internal/execution/mock_model_provider.h"
 #include "components/segmentation_platform/internal/execution/model_executor_impl.h"
 #include "components/segmentation_platform/internal/execution/processing/mock_feature_list_query_processor.h"
@@ -74,6 +73,11 @@ class MockModelManager : public ModelManager {
   MOCK_METHOD(ModelProvider*,
               GetModelProvider,
               (proto::SegmentId segment_id, proto::ModelSource model_source));
+  MOCK_METHOD(void, Initialize, ());
+  MOCK_METHOD(
+      void,
+      SetSegmentationModelUpdatedCallbackForTesting,
+      (ModelManager::SegmentationModelUpdatedCallback model_updated_callback));
 };
 
 }  // namespace
@@ -84,23 +88,19 @@ class SegmentResultProviderTest : public testing::Test {
   ~SegmentResultProviderTest() override = default;
 
   void SetUp() override {
-    default_manager_ = std::make_unique<DefaultModelManager>(
-        &provider_factory_,
-        std::vector<SegmentId>({kTestSegment, kTestSegment2}));
     segment_database_ = std::make_unique<test::TestSegmentInfoDatabase>();
     execution_service_ = std::make_unique<ExecutionService>();
     auto query_processor =
         std::make_unique<processing::MockFeatureListQueryProcessor>();
     mock_query_processor_ = query_processor.get();
-    auto moved_model_manager = std::make_unique<MockModelManager>();
-    mock_execution_manager_ = moved_model_manager.get();
+    mock_model_manager_ = std::make_unique<MockModelManager>();
     execution_service_->InitForTesting(
         std::move(query_processor),
         std::make_unique<ModelExecutorImpl>(&clock_, mock_query_processor_),
-        nullptr, std::move(moved_model_manager));
+        nullptr, mock_model_manager_.get());
     score_provider_ = SegmentResultProvider::Create(
         segment_database_.get(), &signal_storage_config_,
-        default_manager_.get(), execution_service_.get(), &clock_,
+        execution_service_.get(), &clock_,
         /*force_refresh_results=*/false);
     SegmentationPlatformService::RegisterLocalStatePrefs(prefs_.registry());
     LocalStateHelper::GetInstance().Initialize(&prefs_);
@@ -109,7 +109,6 @@ class SegmentResultProviderTest : public testing::Test {
   void TearDown() override {
     score_provider_.reset();
     segment_database_.reset();
-    default_manager_.reset();
   }
 
   void ExpectSegmentResultOnGet(
@@ -139,33 +138,40 @@ class SegmentResultProviderTest : public testing::Test {
     wait_for_result.Run();
   }
 
-  void SetSegmentResult(SegmentId segment, absl::optional<float> score) {
+  void SetSegmentResult(SegmentId segment,
+                        proto::ModelSource model_source,
+                        absl::optional<float> score) {
     absl::optional<proto::PredictionResult> result;
     if (score) {
       result = proto::PredictionResult();
       result->add_result(*score);
     }
     base::RunLoop wait_for_save;
-    segment_database_->SetBucketDuration(segment, 1, proto::TimeUnit::DAY);
+    segment_database_->SetBucketDuration(segment, 1, proto::TimeUnit::DAY,
+                                         model_source);
     segment_database_->SaveSegmentResult(
-        segment, proto::ModelSource::SERVER_MODEL_SOURCE, std::move(result),
+        segment, model_source, std::move(result),
         base::BindOnce(
             [](base::OnceClosure quit, bool success) { std::move(quit).Run(); },
             wait_for_save.QuitClosure()));
     wait_for_save.Run();
   }
 
-  void InitializeMetadata(SegmentId segment_id) {
-    segment_database_->FindOrCreateSegment(segment_id)
+  void InitializeMetadata(
+      SegmentId segment_id,
+      ModelSource model_source = ModelSource::SERVER_MODEL_SOURCE) {
+    segment_database_->FindOrCreateSegment(segment_id, model_source)
         ->mutable_model_metadata()
         ->set_result_time_to_live(7);
-    segment_database_->SetBucketDuration(segment_id, 1, proto::TimeUnit::DAY);
+    segment_database_->SetBucketDuration(segment_id, 1, proto::TimeUnit::DAY,
+                                         model_source);
 
     // Initialize metadata so that score from default model returns default rank
     // and score from model score returns model rank.
     float mapping[][2] = {{kTestScore + 0.1, kTestRank},
                           {kDatabaseScore - 0.1, kDatabaseRank}};
-    segment_database_->AddDiscreteMapping(segment_id, mapping, 2, "test_key");
+    segment_database_->AddDiscreteMapping(segment_id, mapping, 2, "test_key",
+                                          model_source);
   }
 
  protected:
@@ -176,9 +182,8 @@ class SegmentResultProviderTest : public testing::Test {
   MockSignalDatabase signal_database_;
   raw_ptr<processing::MockFeatureListQueryProcessor, DanglingUntriaged>
       mock_query_processor_ = nullptr;
-  raw_ptr<MockModelManager, DanglingUntriaged> mock_execution_manager_;
+  std::unique_ptr<MockModelManager> mock_model_manager_;
   SignalHandler signal_handler_;
-  std::unique_ptr<DefaultModelManager> default_manager_;
   std::unique_ptr<ExecutionService> execution_service_;
   base::SimpleTestClock clock_;
   std::unique_ptr<test::TestSegmentInfoDatabase> segment_database_;
@@ -194,7 +199,8 @@ TEST_F(SegmentResultProviderTest, GetScoreWithoutInfo) {
 }
 
 TEST_F(SegmentResultProviderTest, GetScoreFromDbWithoutResult) {
-  SetSegmentResult(kTestSegment, absl::nullopt);
+  SetSegmentResult(kTestSegment, proto::ModelSource::SERVER_MODEL_SOURCE,
+                   absl::nullopt);
   EXPECT_CALL(signal_storage_config_, MeetsSignalCollectionRequirement(_, _))
       .WillOnce(Return(false));
   ExpectSegmentResultOnGet(
@@ -204,7 +210,8 @@ TEST_F(SegmentResultProviderTest, GetScoreFromDbWithoutResult) {
 
 TEST_F(SegmentResultProviderTest, GetScoreFromDb) {
   InitializeMetadata(kTestSegment);
-  SetSegmentResult(kTestSegment, kDatabaseScore);
+  SetSegmentResult(kTestSegment, proto::ModelSource::SERVER_MODEL_SOURCE,
+                   kDatabaseScore);
 
   ExpectSegmentResultOnGet(
       kTestSegment, /*ignore_db_scores=*/false,
@@ -212,7 +219,8 @@ TEST_F(SegmentResultProviderTest, GetScoreFromDb) {
 }
 
 TEST_F(SegmentResultProviderTest, GetFromModelNotEnoughSignals) {
-  SetSegmentResult(kTestSegment, absl::nullopt);
+  SetSegmentResult(kTestSegment, proto::ModelSource::SERVER_MODEL_SOURCE,
+                   absl::nullopt);
   EXPECT_CALL(signal_storage_config_, MeetsSignalCollectionRequirement(_, _))
       .WillOnce(Return(false));
   ExpectSegmentResultOnGet(
@@ -222,15 +230,16 @@ TEST_F(SegmentResultProviderTest, GetFromModelNotEnoughSignals) {
 
 TEST_F(SegmentResultProviderTest, GetFromModelExecutionFailed) {
   InitializeMetadata(kTestSegment);
-  SetSegmentResult(kTestSegment, kDatabaseScore);
+  SetSegmentResult(kTestSegment, proto::ModelSource::SERVER_MODEL_SOURCE,
+                   kDatabaseScore);
 
   EXPECT_CALL(signal_storage_config_, MeetsSignalCollectionRequirement(_, _))
       .WillRepeatedly(Return(true));
 
-  // No model available to execute.
-  EXPECT_CALL(
-      *mock_execution_manager_,
-      GetModelProvider(kTestSegment, proto::ModelSource::SERVER_MODEL_SOURCE))
+  // No model available to execute. Setting model providers as null for both
+  // models.
+  EXPECT_CALL(*mock_model_manager_, GetModelProvider(kTestSegment, _))
+      .WillOnce(Return(nullptr))
       .WillOnce(Return(nullptr));
   ExpectSegmentResultOnGet(
       kTestSegment, /*ignore_db_scores=*/true,
@@ -239,10 +248,9 @@ TEST_F(SegmentResultProviderTest, GetFromModelExecutionFailed) {
 
   // Feature processing failed.
   TestModelProvider provider(kTestSegment);
-  EXPECT_CALL(
-      *mock_execution_manager_,
-      GetModelProvider(kTestSegment, proto::ModelSource::SERVER_MODEL_SOURCE))
-      .WillOnce(Return(&provider));
+  EXPECT_CALL(*mock_model_manager_, GetModelProvider(kTestSegment, _))
+      .WillOnce(Return(&provider))
+      .WillOnce(Return(nullptr));
   EXPECT_CALL(*mock_query_processor_, ProcessFeatureList(_, _, _, _, _, _, _))
       .WillOnce(RunOnceCallback<6>(/*error=*/true,
                                    ModelProvider::Request{{1, 2}},
@@ -255,16 +263,18 @@ TEST_F(SegmentResultProviderTest, GetFromModelExecutionFailed) {
 
 TEST_F(SegmentResultProviderTest, GetFromModel) {
   InitializeMetadata(kTestSegment);
-  SetSegmentResult(kTestSegment, kDatabaseScore);
+  SetSegmentResult(kTestSegment, proto::ModelSource::SERVER_MODEL_SOURCE,
+                   kDatabaseScore);
 
+  // Both models available for execution. Setting model providers for both
+  // models.
+  TestModelProvider provider(kTestSegment);
+  EXPECT_CALL(*mock_model_manager_, GetModelProvider(kTestSegment, _))
+      .WillOnce(Return(&provider))
+      .WillOnce(Return(&provider));
   EXPECT_CALL(signal_storage_config_, MeetsSignalCollectionRequirement(_, _))
       .WillOnce(Return(true));
 
-  TestModelProvider provider(kTestSegment);
-  EXPECT_CALL(
-      *mock_execution_manager_,
-      GetModelProvider(kTestSegment, proto::ModelSource::SERVER_MODEL_SOURCE))
-      .WillOnce(Return(&provider));
   EXPECT_CALL(*mock_query_processor_, ProcessFeatureList(_, _, _, _, _, _, _))
       .WillOnce(RunOnceCallback<6>(/*error=*/false,
                                    ModelProvider::Request{{1, 2}},
@@ -277,10 +287,16 @@ TEST_F(SegmentResultProviderTest, GetFromModel) {
 }
 
 TEST_F(SegmentResultProviderTest, DefaultNeedsSignalIgnoringDbScore) {
-  SetSegmentResult(kTestSegment, absl::nullopt);
-  std::map<SegmentId, std::unique_ptr<DefaultModelProvider>> p;
-  p.emplace(kTestSegment, std::make_unique<TestModelProvider>(kTestSegment));
-  default_manager_->SetDefaultProvidersForTesting(std::move(p));
+  SetSegmentResult(kTestSegment, proto::ModelSource::SERVER_MODEL_SOURCE,
+                   absl::nullopt);
+  InitializeMetadata(kTestSegment, proto::ModelSource::DEFAULT_MODEL_SOURCE);
+
+  // Only default model available for execution. Setting server model provider
+  // as null.
+  TestModelProvider provider(kTestSegment);
+  EXPECT_CALL(*mock_model_manager_, GetModelProvider(kTestSegment, _))
+      .WillOnce(Return(nullptr))
+      .WillOnce(Return(&provider));
 
   // First call is to check opt guide model, and second is to check default
   // model signals.
@@ -295,10 +311,16 @@ TEST_F(SegmentResultProviderTest, DefaultNeedsSignalIgnoringDbScore) {
 }
 
 TEST_F(SegmentResultProviderTest, DefaultModelFailedExecution) {
-  SetSegmentResult(kTestSegment, absl::nullopt);
-  std::map<SegmentId, std::unique_ptr<DefaultModelProvider>> p;
-  p.emplace(kTestSegment, std::make_unique<TestModelProvider>(kTestSegment));
-  default_manager_->SetDefaultProvidersForTesting(std::move(p));
+  SetSegmentResult(kTestSegment, proto::ModelSource::SERVER_MODEL_SOURCE,
+                   absl::nullopt);
+  InitializeMetadata(kTestSegment, proto::ModelSource::DEFAULT_MODEL_SOURCE);
+
+  // Only default model available for execution. Setting server model provider
+  // as null.
+  TestModelProvider provider(kTestSegment);
+  EXPECT_CALL(*mock_model_manager_, GetModelProvider(kTestSegment, _))
+      .WillOnce(Return(nullptr))
+      .WillOnce(Return(&provider));
 
   EXPECT_CALL(signal_storage_config_, MeetsSignalCollectionRequirement(_, _))
       .WillOnce(Return(true))
@@ -317,10 +339,16 @@ TEST_F(SegmentResultProviderTest, DefaultModelFailedExecution) {
 }
 
 TEST_F(SegmentResultProviderTest, GetFromDefault) {
-  SetSegmentResult(kTestSegment, absl::nullopt);
-  std::map<SegmentId, std::unique_ptr<DefaultModelProvider>> p;
-  p.emplace(kTestSegment, std::make_unique<TestModelProvider>(kTestSegment));
-  default_manager_->SetDefaultProvidersForTesting(std::move(p));
+  SetSegmentResult(kTestSegment, proto::ModelSource::SERVER_MODEL_SOURCE,
+                   absl::nullopt);
+  InitializeMetadata(kTestSegment, proto::ModelSource::DEFAULT_MODEL_SOURCE);
+
+  // Only default model available for execution. Setting server model provider
+  // as null.
+  TestModelProvider provider(kTestSegment);
+  EXPECT_CALL(*mock_model_manager_, GetModelProvider(kTestSegment, _))
+      .WillOnce(Return(nullptr))
+      .WillOnce(Return(&provider));
 
   EXPECT_CALL(signal_storage_config_, MeetsSignalCollectionRequirement(_, _))
       .WillOnce(Return(true))
@@ -335,10 +363,16 @@ TEST_F(SegmentResultProviderTest, GetFromDefault) {
 }
 
 TEST_F(SegmentResultProviderTest, GetFromDefaultIgnoringDb) {
-  SetSegmentResult(kTestSegment, absl::nullopt);
-  std::map<SegmentId, std::unique_ptr<DefaultModelProvider>> p;
-  p.emplace(kTestSegment, std::make_unique<TestModelProvider>(kTestSegment));
-  default_manager_->SetDefaultProvidersForTesting(std::move(p));
+  SetSegmentResult(kTestSegment, proto::ModelSource::SERVER_MODEL_SOURCE,
+                   absl::nullopt);
+  InitializeMetadata(kTestSegment, proto::ModelSource::DEFAULT_MODEL_SOURCE);
+
+  // Only default model available for execution. Setting server model provider
+  // as null.
+  TestModelProvider provider(kTestSegment);
+  EXPECT_CALL(*mock_model_manager_, GetModelProvider(kTestSegment, _))
+      .WillOnce(Return(nullptr))
+      .WillOnce(Return(&provider));
 
   EXPECT_CALL(signal_storage_config_, MeetsSignalCollectionRequirement(_, _))
       .WillOnce(Return(true))
@@ -353,15 +387,25 @@ TEST_F(SegmentResultProviderTest, GetFromDefaultIgnoringDb) {
 }
 
 TEST_F(SegmentResultProviderTest, MultipleRequests) {
-  InitializeMetadata(kTestSegment);
-  SetSegmentResult(kTestSegment, absl::nullopt);
+  InitializeMetadata(kTestSegment, proto::ModelSource::DEFAULT_MODEL_SOURCE);
+  SetSegmentResult(kTestSegment, proto::ModelSource::SERVER_MODEL_SOURCE,
+                   absl::nullopt);
   InitializeMetadata(kTestSegment2);
-  SetSegmentResult(kTestSegment2, kDatabaseScore);
+  SetSegmentResult(kTestSegment2, proto::ModelSource::SERVER_MODEL_SOURCE,
+                   kDatabaseScore);
 
-  std::map<SegmentId, std::unique_ptr<DefaultModelProvider>> p;
-  p.emplace(kTestSegment, std::make_unique<TestModelProvider>(kTestSegment));
-  p.emplace(kTestSegment2, std::make_unique<TestModelProvider>(kTestSegment2));
-  default_manager_->SetDefaultProvidersForTesting(std::move(p));
+  // Only default model available for execution. Setting server model provider
+  // as null.
+  TestModelProvider provider(kTestSegment);
+  EXPECT_CALL(*mock_model_manager_, GetModelProvider(kTestSegment, _))
+      .WillOnce(Return(nullptr))
+      .WillOnce(Return(&provider));
+  // Both models available for execution. Setting model providers for both
+  // models.
+  TestModelProvider provider2(kTestSegment2);
+  EXPECT_CALL(*mock_model_manager_, GetModelProvider(kTestSegment2, _))
+      .WillOnce(Return(&provider2))
+      .WillOnce(Return(&provider2));
 
   // For the first request, the database does not have valid result, and default
   // provider fails execution.

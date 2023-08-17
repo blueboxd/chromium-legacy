@@ -516,4 +516,94 @@ uint32_t VkImageLayoutToGLImageLayout(VkImageLayout layout) {
   }
 }
 
+bool IsVkExternalSemaphoreHandleTypeSupported(
+    VulkanDeviceQueue* device_queue,
+    VkExternalSemaphoreHandleTypeFlagBits handle_type) {
+  if (!gfx::HasExtension(device_queue->enabled_extensions(),
+#if BUILDFLAG(IS_WIN)
+                         VK_KHR_EXTERNAL_SEMAPHORE_WIN32_EXTENSION_NAME
+#elif BUILDFLAG(IS_POSIX)
+                         VK_KHR_EXTERNAL_SEMAPHORE_FD_EXTENSION_NAME
+#elif BUILDFLAG(IS_FUCHSIA)
+                         VK_FUCHSIA_EXTERNAL_SEMAPHORE_EXTENSION_NAME
+#endif
+                         )) {
+    return false;
+  }
+
+  VkPhysicalDevice physical_device = device_queue->GetVulkanPhysicalDevice();
+
+  VkPhysicalDeviceExternalSemaphoreInfo semaphore_info = {
+      .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_SEMAPHORE_INFO,
+      .handleType = handle_type,
+  };
+
+  VkExternalSemaphoreProperties semaphore_properties = {
+      .sType = VK_STRUCTURE_TYPE_EXTERNAL_SEMAPHORE_PROPERTIES,
+  };
+
+  vkGetPhysicalDeviceExternalSemaphoreProperties(
+      physical_device, &semaphore_info, &semaphore_properties);
+
+  return (semaphore_properties.externalSemaphoreFeatures &
+          VK_EXTERNAL_SEMAPHORE_FEATURE_EXPORTABLE_BIT) &&
+         (semaphore_properties.externalSemaphoreFeatures &
+          VK_EXTERNAL_SEMAPHORE_FEATURE_IMPORTABLE_BIT);
+}
+
+VkResult QueryVkExternalMemoryProperties(
+    VkPhysicalDevice physical_device,
+    VkFormat format,
+    VkImageType type,
+    VkImageTiling tiling,
+    VkImageUsageFlags usage,
+    VkImageCreateFlags flags,
+    VkExternalMemoryHandleTypeFlagBits handle_type,
+    VkExternalMemoryProperties* external_memory_properties) {
+  VkPhysicalDeviceImageFormatInfo2 format_info_2 = {
+      .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_FORMAT_INFO_2,
+      .format = format,
+      .type = type,
+      .tiling = tiling,
+      .usage = usage,
+      .flags = flags,
+  };
+
+  VkPhysicalDeviceExternalImageFormatInfo external_info = {
+      .sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_EXTERNAL_IMAGE_FORMAT_INFO,
+      .handleType = handle_type,
+  };
+  format_info_2.pNext = &external_info;
+
+  // From the Vulkan spec:
+  //   tiling must be VK_IMAGE_TILING_DRM_FORMAT_MODIFIER_EXT if and only if
+  //   the pNext chain includes VkPhysicalDeviceImageDrmFormatModifierInfoEXT
+  VkPhysicalDeviceImageDrmFormatModifierInfoEXT modifier_info = {
+      .sType =
+          VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_IMAGE_DRM_FORMAT_MODIFIER_INFO_EXT,
+      .sharingMode = VK_SHARING_MODE_EXCLUSIVE,
+  };
+  if (tiling == VK_IMAGE_TILING_DRM_FORMAT_MODIFIER_EXT) {
+    external_info.pNext = &modifier_info;
+  }
+
+  VkImageFormatProperties2 image_format_properties_2 = {
+      .sType = VK_STRUCTURE_TYPE_IMAGE_FORMAT_PROPERTIES_2,
+  };
+  VkExternalImageFormatProperties external_image_format_properties = {
+      .sType = VK_STRUCTURE_TYPE_EXTERNAL_IMAGE_FORMAT_PROPERTIES,
+  };
+  image_format_properties_2.pNext = &external_image_format_properties;
+
+  VkResult result = vkGetPhysicalDeviceImageFormatProperties2(
+      physical_device, &format_info_2, &image_format_properties_2);
+  if (result != VK_SUCCESS) {
+    return result;
+  }
+
+  *external_memory_properties =
+      external_image_format_properties.externalMemoryProperties;
+  return VK_SUCCESS;
+}
+
 }  // namespace gpu

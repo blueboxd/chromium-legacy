@@ -120,11 +120,18 @@ const CSSValuePair* ParseInsetPair(Document& document, const String str_value) {
 }
 
 bool IsStyleDependent(const CSSValue* value) {
-  if (!value)
+  if (!value) {
     return false;
+  }
 
   if (const CSSPrimitiveValue* css_primitive_value =
           DynamicTo<CSSPrimitiveValue>(value)) {
+    if (!value->IsNumericLiteralValue()) {
+      // Err on the side of caution with a math expression. No strict guarantee
+      // that we can extract a style-invariant length.
+      return true;
+    }
+
     return !css_primitive_value->IsPx() && !css_primitive_value->IsPercentage();
   }
 
@@ -143,6 +150,23 @@ Length InsetValueToLength(const CSSValue* inset_value,
   if (inset_value->IsIdentifierValue()) {
     DCHECK_EQ(To<CSSIdentifierValue>(inset_value)->GetValueID(),
               CSSValueID::kAuto);
+    return Length(Length::Type::kAuto);
+  }
+
+  // If the subject is detached from the document, we cannot resolve the style,
+  // and thus cannot construct length conversion data. Nonetheless, we can
+  // evaluate the length in trivial cases and rely on the inset value being
+  // marked as style dependent otherwise.
+  if (!subject->GetComputedStyle()) {
+    if (const CSSNumericLiteralValue* literal_value =
+            DynamicTo<CSSNumericLiteralValue>(inset_value)) {
+      if (literal_value->IsPx()) {
+        return Length(literal_value->DoubleValue(), Length::Type::kFixed);
+      } else if (literal_value->IsPercentage()) {
+        return Length(literal_value->DoubleValue(), Length::Type::kPercent);
+      }
+    }
+    DCHECK(IsStyleDependent(inset_value));
     return Length(Length::Type::kAuto);
   }
 
@@ -288,11 +312,15 @@ void ViewTimeline::CalculateOffsets(PaintLayerScrollableArea* scrollable_area,
   DCHECK(ComputeIsResolved(state->resolved_source));
   DCHECK(subject());
 
-  absl::optional<gfx::Size> subject_size = SubjectSize();
+  absl::optional<gfx::SizeF> subject_size = SubjectSize();
+  if (!subject_size) {
+    // Subject size may be null if the type of subject element is not supported.
+    return;
+  }
+
   absl::optional<gfx::PointF> subject_position =
       SubjectPosition(state->resolved_source);
   DCHECK(subject_position);
-  DCHECK(subject_size);
 
   // TODO(crbug.com/1448801): Handle nested sticky elements.
   double target_offset = physical_orientation == kHorizontalScroll
@@ -468,7 +496,7 @@ void ViewTimeline::ApplyStickyAdjustments(ScrollOffsets& scroll_offsets,
   }
 }
 
-absl::optional<gfx::Size> ViewTimeline::SubjectSize() const {
+absl::optional<gfx::SizeF> ViewTimeline::SubjectSize() const {
   if (!subject()) {
     return absl::nullopt;
   }
@@ -478,25 +506,23 @@ absl::optional<gfx::Size> ViewTimeline::SubjectSize() const {
   }
 
   if (subject_layout_object->IsBox()) {
-    return To<LayoutBox>(subject_layout_object)
-        ->BorderBoxRect()
-        .PixelSnappedSize();
+    LayoutRect rect = To<LayoutBox>(subject_layout_object)->BorderBoxRect();
+    return gfx::SizeF(rect.Width().ToDouble(), rect.Height().ToDouble());
   }
 
   if (subject_layout_object->IsLayoutInline()) {
-    return PhysicalRect::EnclosingRect(
-               To<LayoutInline>(subject_layout_object)->LocalBoundingBoxRectF())
-        .PixelSnappedSize();
+    gfx::RectF rect =
+        To<LayoutInline>(subject_layout_object)->LocalBoundingBoxRectF();
+    return gfx::SizeF(rect.width(), rect.height());
   }
 
   if (subject_layout_object->IsSVGChild()) {
-    return SVGLayoutSupport::VisualRectInAncestorSpace(
-               *subject_layout_object,
-               *To<SVGElement>(subject())->ownerSVGElement()->GetLayoutBox())
-        .PixelSnappedSize();
+    PhysicalRect rect = SVGLayoutSupport::VisualRectInAncestorSpace(
+        *subject_layout_object,
+        *To<SVGElement>(subject())->ownerSVGElement()->GetLayoutBox());
+    return gfx::SizeF(rect.Width().ToDouble(), rect.Height().ToDouble());
   }
 
-  NOTREACHED();
   return absl::nullopt;
 }
 
@@ -523,8 +549,10 @@ absl::optional<gfx::PointF> ViewTimeline::SubjectPosition(
   //   and clientLeft/Top also attempt to update style/layout.
   // - Those functions return the unzoomed values, and we require the zoomed
   //   values.
-  return gfx::PointF(subject_pos.x() - source_layout_box->ClientLeft().Round(),
-                     subject_pos.y() - source_layout_box->ClientTop().Round());
+
+  return gfx::PointF(
+      subject_pos.x() - source_layout_box->ClientLeft().ToDouble(),
+      subject_pos.y() - source_layout_box->ClientTop().ToDouble());
 }
 
 // https://www.w3.org/TR/scroll-animations-1/#named-range-getTime

@@ -76,9 +76,32 @@ class FakeWebAppUiManager : public WebAppUiManager {
   void MigrateLauncherState(const AppId& from_app_id,
                             const AppId& to_app_id,
                             base::OnceClosure callback) override;
+
+  void DisplayRunOnOsLoginNotification(
+      const std::vector<std::string>& app_names,
+      base::WeakPtr<Profile> profile) override;
 #endif
   content::WebContents* CreateNewTab() override;
   void TriggerInstallDialog(content::WebContents* web_contents) override;
+
+  void PresentUserUninstallDialog(
+      const AppId& app_id,
+      webapps::WebappUninstallSource uninstall_source,
+      BrowserWindow* parent_window,
+      UninstallCompleteCallback callback) override;
+
+  void PresentUserUninstallDialog(
+      const AppId& app_id,
+      webapps::WebappUninstallSource uninstall_source,
+      gfx::NativeWindow parent_window,
+      UninstallCompleteCallback callback) override;
+
+  void PresentUserUninstallDialog(
+      const AppId& app_id,
+      webapps::WebappUninstallSource uninstall_source,
+      gfx::NativeWindow parent_window,
+      UninstallCompleteCallback callback,
+      UninstallScheduledCallback scheduled_callback) override;
 
  private:
   base::flat_map<AppId, size_t> app_id_to_num_windows_map_;

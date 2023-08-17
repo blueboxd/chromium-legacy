@@ -10,8 +10,10 @@
 #include <memory>
 
 #include "base/memory/scoped_refptr.h"
+#include "base/uuid.h"
 #include "mojo/public/cpp/base/big_buffer.h"
 #include "third_party/blink/public/common/fenced_frame/redacted_fenced_frame_config.h"
+#include "third_party/blink/public/common/interest_group/auction_config.h"
 #include "third_party/blink/public/mojom/interest_group/ad_auction_service.mojom-blink.h"
 #include "third_party/blink/public/mojom/interest_group/interest_group_types.mojom-blink.h"
 #include "third_party/blink/renderer/core/frame/navigator.h"
@@ -85,6 +87,11 @@ class MODULES_EXPORT NavigatorAuction final
                                     Navigator&,
                                     AuctionAdConfig*,
                                     ExceptionState&);
+
+  ScriptPromise createAuctionNonce(ScriptState*, ExceptionState&);
+  static ScriptPromise createAuctionNonce(ScriptState*,
+                                          Navigator&,
+                                          ExceptionState&);
 
   // If called from a FencedFrame that was navigated to the URN resulting from
   // an interest group ad auction, returns a Vector of ad component URNs
@@ -167,6 +174,10 @@ class MODULES_EXPORT NavigatorAuction final
   bool canLoadAdAuctionFencedFrame(ScriptState*);
   static bool canLoadAdAuctionFencedFrame(ScriptState*, Navigator&);
 
+  // Expose whether kFledgeEnforceKAnonymity feature is enabled or not.
+  static bool deprecatedRunAdAuctionEnforcesKAnonymity(ScriptState*,
+                                                       Navigator&);
+
   void Trace(Visitor* visitor) const override {
     visitor->Trace(ad_auction_service_);
     Supplement<Navigator>::Trace(visitor);
@@ -204,7 +215,9 @@ class MODULES_EXPORT NavigatorAuction final
   void LeaveComplete(bool is_cross_origin,
                      ScriptPromiseResolver* resolver,
                      bool failed_well_known_check);
-
+  // Completion callback for createAuctionNonce() Mojo call.
+  void CreateAuctionNonceComplete(ScriptPromiseResolver* resolver,
+                                  const base::Uuid& nonce);
   // Completion callback for createAdRequest() Mojo call.
   void AdsRequested(ScriptPromiseResolver* resolver,
                     const WTF::String& ads_guid);

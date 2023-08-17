@@ -57,7 +57,6 @@ PRUNE_PATHS = set([
     # Used for development and test, not in the shipping product.
     os.path.join('build', 'secondary'),
     os.path.join('third_party', 'bison'),
-    os.path.join('third_party', 'blanketjs'),
     os.path.join('third_party', 'chromite'),
     os.path.join('third_party', 'cygwin'),
     os.path.join('third_party', 'gles2_conform'),
@@ -181,7 +180,7 @@ SPECIAL_CASES = {
         "Shipped": "yes",
         "License": "BSD",
         # Absolute path here is resolved as relative to the source root.
-        "License File": ["/LICENSE.chromium_os"],
+        "License File": ["//LICENSE.chromium_os"],
     },
     os.path.join('third_party', 'ipcz'): {
         "Name": "ipcz",
@@ -189,21 +188,21 @@ SPECIAL_CASES = {
         "https://chromium.googlesource.com/chromium/src/third_party/ipcz",
         "Shipped": "yes",
         "License": "BSD",
-        "License File": ["/third_party/ipcz/LICENSE"],
+        "License File": ["//third_party/ipcz/LICENSE"],
     },
     os.path.join('third_party', 'lss'): {
         "Name": "linux-syscall-support",
         "URL": "http://code.google.com/p/linux-syscall-support/",
         "Shipped": "yes",
         "License": "BSD",
-        "License File": ["/LICENSE"],
+        "License File": ["//third_party/lss/LICENSE"],
     },
     os.path.join('third_party', 'openscreen', 'src', 'third_party', 'abseil'): {
         "Name": "abseil",
         "URL": "https://github.com/abseil/abseil-cpp/",
         "Shipped": "yes",
         "License": "Apache 2.0",
-        "License File": ["/third_party/abseil-cpp/LICENSE"],
+        "License File": ["//third_party/abseil-cpp/LICENSE"],
     },
     os.path.join('third_party', 'openscreen', 'src', 'third_party',
                  'boringssl'): {
@@ -211,7 +210,7 @@ SPECIAL_CASES = {
         "URL": "https://boringssl.googlesource.com/boringssl/",
         "Shipped": "yes",
         "License": "BSDish",
-        "License File": ["/third_party/boringssl/src/LICENSE"],
+        "License File": ["//third_party/boringssl/src/LICENSE"],
     },
     os.path.join('third_party', 'openscreen', 'src', 'third_party',
                  'jsoncpp'): {
@@ -219,7 +218,7 @@ SPECIAL_CASES = {
         "URL": "https://github.com/open-source-parsers/jsoncpp",
         "Shipped": "yes",
         "License": "MIT",
-        "License File": ["/third_party/jsoncpp/LICENSE"],
+        "License File": ["//third_party/jsoncpp/LICENSE"],
     },
     os.path.join('third_party', 'openscreen', 'src', 'third_party', 'mozilla'):
     {
@@ -263,7 +262,7 @@ SPECIAL_CASES = {
         "License":
         "Public domain",
         "License File": [
-            "/third_party/crashpad/crashpad/third_party/getopt/LICENSE",
+            "//third_party/crashpad/crashpad/third_party/getopt/LICENSE",
         ],
     },
     os.path.join('third_party', 'crashpad', 'crashpad', 'third_party', 'lss'): {
@@ -309,7 +308,7 @@ SPECIAL_CASES = {
         "Shipped": "yes",
         "License": "BSD and LGPL v2 and LGPL v2.1",
         # Absolute path here is resolved as relative to the source root.
-        "License File": ["/third_party/blink/LICENSE_FOR_ABOUT_CREDITS"],
+        "License File": ["//third_party/blink/LICENSE_FOR_ABOUT_CREDITS"],
     },
     os.path.join('third_party', 'webpagereplay'): {
         "Name": "webpagereplay",
@@ -335,7 +334,7 @@ SPECIAL_CASES = {
         "Shipped": "yes",
         "License": "BSD",
         # Absolute path here is resolved as relative to the source root.
-        "License File": ["/v8/LICENSE.strongtalk"],
+        "License File": ["//v8/LICENSE.strongtalk"],
     },
     os.path.join('v8', 'fdlibm'): {
         "Name": "fdlibm",
@@ -343,7 +342,7 @@ SPECIAL_CASES = {
         "Shipped": "yes",
         "License": "Freely Distributable",
         # Absolute path here is resolved as relative to the source root.
-        "License File": ["/v8/LICENSE.fdlibm"],
+        "License File": ["//v8/LICENSE.fdlibm"],
         "License Android Compatible": "yes",
     },
     os.path.join('third_party', 'khronos_glcts'): {
@@ -366,7 +365,7 @@ SPECIAL_CASES = {
         "Shipped": "yes",
         "License": "Apache 2.0 and compatible licenses",
         "License Android Compatible": "yes",
-        "License File": ["/third_party/swiftshader/LICENSE.txt"],
+        "License File": ["//third_party/swiftshader/LICENSE.txt"],
     },
     os.path.join('third_party', 'swiftshader', 'third_party', 'SPIRV-Tools'): {
         "Name":
@@ -378,7 +377,7 @@ SPECIAL_CASES = {
         "License":
         "Apache 2.0",
         "License File": [
-            "/third_party/swiftshader/third_party/SPIRV-Tools/LICENSE",
+            "//third_party/swiftshader/third_party/SPIRV-Tools/LICENSE",
         ],
     },
     os.path.join('third_party', 'swiftshader', 'third_party',
@@ -392,7 +391,7 @@ SPECIAL_CASES = {
         "License":
         "Apache 2.0",
         "License File": [
-            "/third_party/swiftshader/third_party/SPIRV-Headers/LICENSE",
+            "//third_party/swiftshader/third_party/SPIRV-Headers/LICENSE",
         ],
     },
     os.path.join('third_party', 'dawn', 'third_party', 'khronos'): {
@@ -400,7 +399,7 @@ SPECIAL_CASES = {
         "URL": "http://www.khronos.org/registry/egl",
         "Shipped": "yes",
         "License": "Apache 2.0",
-        "License File": ["/third_party/dawn/third_party/khronos/LICENSE"],
+        "License File": ["//third_party/dawn/third_party/khronos/LICENSE"],
     },
     # Dependencies of Selenium Atoms
     os.path.join('third_party', 'selenium-atoms', 'sizzle'): {
@@ -408,22 +407,33 @@ SPECIAL_CASES = {
         "URL": "http://sizzlejs.com/",
         "Shipped": "yes",
         "License": "MIT, BSD and GPL v2",
-        "License File": ["/third_party/selenium-atoms/LICENSE.sizzle"],
+        "License File": ["//third_party/selenium-atoms/LICENSE.sizzle"],
     },
     os.path.join('third_party', 'selenium-atoms', 'wgxpath'): {
         "Name": "Wicked Good XPath",
         "URL": "https://github.com/google/wicked-good-xpath",
         "Shipped": "yes",
         "License": "MIT",
-        "License File": ["/third_party/selenium-atoms/LICENSE.wgxpath"],
+        "License File": ["//third_party/selenium-atoms/LICENSE.wgxpath"],
     },
     os.path.join('third_party', 'selenium-atoms', 'closure-lib'): {
         "Name": "Closure Library",
         "URL": "https://developers.google.com/closure/library",
         "Shipped": "yes",
         "License": "Apache 2.0",
-        "License File": ["/third_party/selenium-atoms/LICENSE.closure"],
+        "License File": ["//third_party/selenium-atoms/LICENSE.closure"],
     },
+}
+
+# These buildtools/third_party directories only contain
+# chromium build files. The actual third_party source files and their
+# README.chromium files are under third_party/libc*/.
+# So we do not include licensing metadata for these directories.
+# See crbug.com/1458042 for more details.
+THIRD_PARTY_FOR_BUILD_FILES_ONLY = {
+    os.path.join('buildtools', 'third_party', 'libc++'),
+    os.path.join('buildtools', 'third_party', 'libc++abi'),
+    os.path.join('buildtools', 'third_party', 'libunwind'),
 }
 
 # The delimiter used to separate license files specified in the 'License File'
@@ -452,8 +462,6 @@ KNOWN_NON_IOS_LIBRARIES = set([
     os.path.join('base', 'third_party', 'symbolize'),
     os.path.join('base', 'third_party', 'xdg_mime'),
     os.path.join('base', 'third_party', 'xdg_user_dirs'),
-    os.path.join('buildtools', 'third_party', 'libc++'),
-    os.path.join('buildtools', 'third_party', 'libc++abi'),
     os.path.join('chrome', 'installer', 'mac', 'third_party', 'bsdiff'),
     os.path.join('chrome', 'installer', 'mac', 'third_party', 'xz'),
     os.path.join('chrome', 'test', 'data', 'third_party', 'kraken'),
@@ -473,6 +481,8 @@ KNOWN_NON_IOS_LIBRARIES = set([
     os.path.join('third_party', 'isimpledom'),
     os.path.join('third_party', 'jsoncpp'),
     os.path.join('third_party', 'khronos'),
+    os.path.join('third_party', 'libcxx', 'libc++'),
+    os.path.join('third_party', 'libcxx', 'libc++abi'),
     os.path.join('third_party', 'libevent'),
     os.path.join('third_party', 'libjpeg'),
     os.path.join('third_party', 'libusb'),
@@ -515,9 +525,9 @@ def AbsolutePath(path, filename, root):
   if filename.startswith('/'):
     # Absolute-looking paths are relative to the source root
     # (which is the directory we're run from).
-    absolute_path = os.path.join(root, filename[1:])
+    absolute_path = os.path.join(root, os.path.normpath(filename.lstrip('/')))
   else:
-    absolute_path = os.path.join(root, path, filename)
+    absolute_path = os.path.join(root, path, os.path.normpath(filename))
   if os.path.exists(absolute_path):
     return absolute_path
   return None
@@ -529,6 +539,8 @@ def ParseDir(path,
              optional_keys=None,
              enable_warnings=False):
   """Examine a third_party/foo component and extract its metadata."""
+  if path in THIRD_PARTY_FOR_BUILD_FILES_ONLY:
+    return {}
   # Parse metadata fields out of README.chromium.
   # We examine "LICENSE" for the license file by default.
   metadata = {
@@ -941,6 +953,8 @@ def GenerateCredits(file_template_file,
       metadata = ParseDir(path,
                           _REPOSITORY_ROOT,
                           enable_warnings=enable_warnings)
+      if not metadata:
+        continue
     except LicenseError:
       # TODO(phajdan.jr): Convert to fatal error (http://crbug.com/39240).
       continue
@@ -1027,13 +1041,15 @@ def GenerateLicenseFile(args: argparse.Namespace):
                                         args.target_os, extra_third_party_dirs,
                                         args.extra_allowed_dirs)
 
-  metadatas = {
-      d: ParseDir(d,
-                  _REPOSITORY_ROOT,
-                  require_license_file=True,
-                  enable_warnings=args.enable_warnings)
-      for d in third_party_dirs
-  }
+  metadatas = {}
+  for d in third_party_dirs:
+    md = ParseDir(
+        d,
+        _REPOSITORY_ROOT,
+        require_license_file=True,
+        enable_warnings=args.enable_warnings)
+    if md:
+      metadatas[d] = md
 
   if args.format == 'spdx':
     license_txt = GenerateLicenseFileSpdx(metadatas, args.spdx_link,

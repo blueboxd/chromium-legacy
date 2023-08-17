@@ -47,6 +47,10 @@ BASE_FEATURE(kChipLocationBarIconOverride,
              "ChipLocationIconOverride",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+BASE_FEATURE(kPermissionElement,
+             "PermissionElement",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kNotificationInteractionHistory,
              "NotificationInteractionHistory",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -98,6 +102,10 @@ BASE_FEATURE(kPermissionOnDeviceNotificationPredictions,
 BASE_FEATURE(kPermissionOnDeviceGeolocationPredictions,
              "PermissionOnDeviceGeolocationPredictions",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kPermissionDedicatedCpssSetting,
+             "PermissionDedicatedCpssSettings",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 #if BUILDFLAG(IS_ANDROID)
 
@@ -151,10 +159,6 @@ BASE_FEATURE(kWindowManagementPermissionAlias,
 // Enables disallowing MIDI permission by default.
 BASE_FEATURE(kBlockMidiByDefault,
              "BlockMidiByDefault",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-BASE_FEATURE(kImprovedSemanticsActivityIndicators,
-             "ImprovedSemanticsActivityIndicators",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 }  // namespace features

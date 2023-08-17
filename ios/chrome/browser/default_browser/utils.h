@@ -92,6 +92,27 @@ extern NSString* const kLastSignificantUserEventStaySafe;
 // a omnibox copy-paste event up to allowed maximum number of past events.
 extern NSString* const kOmniboxUseCount;
 
+// Key in storage containing an array of dates. Each date correspond to
+// a bookmark or bookmark manager use event up to allowed maximum number of past
+// events.
+extern NSString* const kBookmarkUseCount;
+
+// Key in storage containing an array of dates. Each date correspond to
+// a autofill suggestion use event up to allowed maximum number of past
+// events.
+extern NSString* const kAutofillUseCount;
+
+// Key in storage containing an array of dates where each date correspond to
+// a pinned tab or remote tab use event.
+extern NSString* const kSpecialTabsUseCount;
+
+// Param names used for the default browser video promo.
+extern const char kVideoConditionsFullscreenPromo[];
+extern const char kVideoConditionsHalfscreenPromo[];
+extern const char kGenericConditionsFullscreenPromo[];
+extern const char kGenericConditionsHalfscreenPromo[];
+extern const char kDefaultBrowserVideoPromoVariant[];
+
 // Helper function to set `data` for `key` into the storage object.
 void SetObjectIntoStorageForKey(NSString* key, NSObject* data);
 
@@ -135,7 +156,18 @@ bool IsDefaultBrowserInPromoManagerEnabled();
 bool IsDefaultBrowserVideoPromoEnabled();
 
 // Returns true if the default browser video promo half screen enabled.
-bool IsDefaultBrowserVideoPromoHalfscreenEnabled();
+bool IsDBVideoPromoHalfscreenEnabled();
+
+// Returns true if the default browser video promo full screen enabled.
+bool IsDBVideoPromoFullscreenEnabled();
+
+// Returns true if the default browser video promo full screen with generic
+// triggering conditions enabled.
+bool IsDBVideoPromoWithGenericFullscreenEnabled();
+
+// Returns true if the default browser video promo half screen with generic
+// triggering conditions enabled.
+bool IsDBVideoPromoWithGenericHalfscreenEnabled();
 
 // Returns true if the non-modal default browser promo cooldown refactor is
 // enabled.
@@ -161,9 +193,9 @@ bool IsDefaultBrowserPromoGenericTailoredTrainEnabled();
 // tailored experiment is enabled.
 bool IsDefaultBrowserPromoOnlyGenericArmTrain();
 
-// Returns true if Default Browser promo should be triggered on omnibox
-// copy-paste.
-bool ShouldTriggerDefaultBrowserPromoOnOmniboxCopyPaste();
+// Returns true if default Browser full-screen promo should be shown on omnibox
+// copy-paste instead of non-modal promo.
+bool IsFullScreenPromoOnOmniboxCopyPasteEnabled();
 
 // Returns true if the user has interacted with the Fullscreen Promo previously.
 // Returns false otherwise.
@@ -194,6 +226,18 @@ void LogUserInteractionWithFirstRunPromo(BOOL openedSettings);
 
 // Logs in NSUserDefaults that user copy-pasted in the omnibox.
 void LogCopyPasteInOmniboxForDefaultBrowserPromo();
+
+// Logs in NSUserDefaults that user used bookmarks or bookmark manager.
+void LogBookmarkUseForDefaultBrowserPromo();
+
+// Logs in NSUserDefaults that user used autofill suggestions
+void LogAutofillUseForDefaultBrowserPromo();
+
+// Logs that the user has used remote tabs.
+void LogRemoteTabsUsedForDefaultBrowserPromo();
+
+// Logs that the user has used pinned tabs.
+void LogPinnedTabsUsedForDefaultBrowserPromo();
 
 // Returns YES if the user has opened the app through first-party intent 2
 // times in the last 7 days, but across 2 user sessions (default 6 hours). Also

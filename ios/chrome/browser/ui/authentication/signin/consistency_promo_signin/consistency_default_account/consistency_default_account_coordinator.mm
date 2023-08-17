@@ -15,10 +15,6 @@
 #import "ios/chrome/browser/ui/authentication/signin/consistency_promo_signin/consistency_default_account/consistency_default_account_mediator.h"
 #import "ios/chrome/browser/ui/authentication/signin/consistency_promo_signin/consistency_default_account/consistency_default_account_view_controller.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 @interface ConsistencyDefaultAccountCoordinator () <
     ConsistencyDefaultAccountActionDelegate,
     ConsistencyDefaultAccountMediatorDelegate>
@@ -50,11 +46,13 @@
   ChromeBrowserState* browserState = self.browser->GetBrowserState();
   self.mediator = [[ConsistencyDefaultAccountMediator alloc]
       initWithAccountManagerService:ChromeAccountManagerServiceFactory::
-                                        GetForBrowserState(browserState)];
+                                        GetForBrowserState(browserState)
+                        syncService:SyncServiceFactory::GetForBrowserState(
+                                        browserState)
+                        accessPoint:self.accessPoint];
   self.mediator.delegate = self;
   self.defaultAccountViewController =
-      [[ConsistencyDefaultAccountViewController alloc]
-          initWithAccessPoint:self.accessPoint];
+      [[ConsistencyDefaultAccountViewController alloc] init];
   self.mediator.consumer = self.defaultAccountViewController;
   self.defaultAccountViewController.actionDelegate = self;
   self.defaultAccountViewController.layoutDelegate = self.layoutDelegate;
@@ -74,11 +72,6 @@
   self.mediator = nil;
   self.defaultAccountViewController = nil;
   [super stop];
-}
-
-- (void)dealloc {
-  // TODO(crbug.com/1454777)
-  DUMP_WILL_BE_CHECK(!self.mediator);
 }
 
 #pragma mark - Properties

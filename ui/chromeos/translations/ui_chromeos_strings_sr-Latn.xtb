@@ -114,7 +114,6 @@
 <translation id="1920798810075583923">Lubenica</translation>
 <translation id="1924372192547904021">Formatiranje memorijskog uređaja <ph name="DRIVE_NAME" /> je uspelo</translation>
 <translation id="1931134289871235022">slovački</translation>
-<translation id="1933345018156373194">Premeštanje nije uspelo, neočekivana greška: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="1936717151811561466">finski</translation>
 <translation id="1942765061641586207">Rezolucija slike</translation>
 <translation id="1972984168337863910">Proširi okna za povratne informacije o datotekama</translation>
@@ -166,7 +165,6 @@
 <translation id="2312704192806647271">{COUNT,plural, =1{Nismo uspeli da pronađemo dodatak sa ID-om <ph name="BEGIN_LIST" /><ph name="END_LIST" />. Obratite se administratoru.}one{Nismo uspeli da pronađemo dodatke sa ID-ovima <ph name="BEGIN_LIST" /><ph name="END_LIST" />. Obratite se administratoru.}few{Nismo uspeli da pronađemo dodatke sa ID-ovima <ph name="BEGIN_LIST" /><ph name="END_LIST" />. Obratite se administratoru.}other{Nismo uspeli da pronađemo dodatke sa ID-ovima <ph name="BEGIN_LIST" /><ph name="END_LIST" />. Obratite se administratoru.}}</translation>
 <translation id="2325650632570794183">Ovaj tip datoteke nije podržan. Posetite Chrome veb-prodavnicu i pronađite aplikaciju koja može da otvara ovaj tip datoteke.</translation>
 <translation id="2326539130272988168">bugarski</translation>
-<translation id="2337715497728194187">Delite sa virtuelnom mašinom Bruschetta</translation>
 <translation id="233822363739146957">Nema dovoljno memorijskog prostora da biste sinhronizovali sve fajlove</translation>
 <translation id="23721837607121582">Preuzmite profil za mobilne uređaje, <ph name="NETWORK_INDEX" />. mreža od <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" /></translation>
 <translation id="2377319039870049694">Pređi na prikaz liste</translation>
@@ -197,7 +195,6 @@
 <translation id="2544853746127077729">Mreža je odbila sertifikat za potvrdu autentičnosti</translation>
 <translation id="255937426064304553">međunarodna američka</translation>
 <translation id="2563185590376525700">Žaba</translation>
-<translation id="2574327434504608656">1 folder se deli sa virtuelnom mašinom Bruschetta</translation>
 <translation id="2578394532502990878">fonetski tamilski</translation>
 <translation id="2579959351793446050">orija</translation>
 <translation id="2587195714949534472">Priprema se sinhronizacija <ph name="FILE_NAME" />…</translation>
@@ -297,7 +294,6 @@
 <translation id="3408072735282270043">Aktivirajte mrežu <ph name="NETWORK_NAME" /></translation>
 <translation id="3408236822532681288">nemački (Nemačka) sa Neo 2 tastaturom</translation>
 <translation id="3414856743105198592">Formatiranjem uklonjivih medija brišete sve podatke. Da li želite da nastavite?</translation>
-<translation id="3435143625481187092">Dozvolite da Bruschetta pristupa fajlovima u folderu <ph name="FOLDER_NAME" /></translation>
 <translation id="3437801641691368414">Vreme pravljenja</translation>
 <translation id="343907260260897561">Instant foto-aparat</translation>
 <translation id="3455931012307786678">estonski</translation>
@@ -385,7 +381,6 @@
 <translation id="4159731583141908892">Premeštenih stavki: <ph name="FILE_NAME" />.</translation>
 <translation id="4176286497474237543">Odmah isprazni otpad</translation>
 <translation id="4179621117429069925">Ova stavka je u otpadu</translation>
-<translation id="4181839429935094755"><ph name="NUMBER_OF_ITEMS" /> foldera se deli sa virtuelnom mašinom Bruschetta</translation>
 <translation id="4186579485882418952">Omogući oflajn</translation>
 <translation id="4193154014135846272">Google dokument</translation>
 <translation id="4197674956721858839">Izbor za dodavanje u zip datoteku</translation>
@@ -452,7 +447,6 @@
 <translation id="4646813851450205600">češki sa Qwerty tastaturom</translation>
 <translation id="4656777537938206294">Učinite fajlove dostupnim oflajn</translation>
 <translation id="4658782175094886150">Osoba na snegu</translation>
-<translation id="466782788172479199">Dozvolite da Bruschetta pristupa fajlovima na Google disku. Promene će se sinhronizovati sa drugim uređajima.</translation>
 <translation id="4669606053856530811">Članovi iz „<ph name="SOURCE_NAME" />“ će izgubiti pristup ako se ove stavke ne dele sa njima.</translation>
 <translation id="467809019005607715">Google prezentacije</translation>
 <translation id="4690246192099372265">švedski</translation>
@@ -503,7 +497,6 @@
 <translation id="4969785127455456148">Album</translation>
 <translation id="4972330214479971536">Završavanje podešavanja sinhronizacije fajlova nije uspelo</translation>
 <translation id="4973523518332075481">Koristite naziv čiji je maksimalni broj znakova <ph name="MAX_LENGTH" /></translation>
-<translation id="4973970068702235170">Dodavanje u zip datoteku nije uspelo, neočekivana greška: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4984616446166309645">japanski</translation>
 <translation id="4987699874727873250">engleski (Indija)</translation>
 <translation id="4988205478593450158">Želite li stvarno da izbrišete „<ph name="FILE_NAME" />“?</translation>
@@ -564,7 +557,6 @@
 <translation id="5323213332664049067">Latinska Amerika</translation>
 <translation id="5330145655348521461">Ove datoteke su otvorene na drugom profilu. Pređite na <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />) da biste ih pogledali.</translation>
 <translation id="5330512191124428349">Preuzmi podatke</translation>
-<translation id="5344246330454251646">Upravljajte deljenjem sa virtuelnom mašinom Bruschetta</translation>
 <translation id="535792325654997756">Osoba sa mačkama</translation>
 <translation id="5358764674931277">Brzina kadrova</translation>
 <translation id="5363339716524495120">Jezik unosa je kineski</translation>
@@ -640,7 +632,6 @@
 <translation id="5896749729057314184">Mreža <ph name="NETWORK_INDEX" /> od <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, nije aktivirana, jačina signala <ph name="SIGNAL_STRENGTH" />%, detalji</translation>
 <translation id="5911887972742538906">Došlo je do greške tokom instaliranja Linux aplikacije.</translation>
 <translation id="5912396950572065471">Format</translation>
-<translation id="5913638992615760742">Operacija kopiranja nije uspela, neočekivana greška: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="5918480239180455431">Dostupne su nove funkcije pretrage</translation>
 <translation id="5926082595146149752">holandski (Holandija) sa američkom internacionalnom tastaturom za računar</translation>
 <translation id="5932901536148835538">Chromebit</translation>
@@ -648,7 +639,6 @@
 <translation id="5955954492236143329">Stavki: <ph name="NUMBER_OF_ITEMS" /></translation>
 <translation id="5957366693331451795">Chromebox-ovi</translation>
 <translation id="5982621672636444458">Opcije sortiranja</translation>
-<translation id="6007237601604674381">Premeštanje nije uspelo. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="6011074160056912900">Eternet mreža</translation>
 <translation id="60357267506638014">češka QWERTY</translation>
 <translation id="603895874132768835">Nećete moći da koristite ovu mrežu dok ne podesite novi PIN</translation>
@@ -732,7 +722,6 @@
 <translation id="6710213216561001401">Prethodno</translation>
 <translation id="6732801395666424405">Sertifikati nisu otpremljeni</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />]</translation>
-<translation id="6740270213273127264">Delite folder sa virtuelnom mašinom Bruschetta</translation>
 <translation id="6750737795876287924">Aktuelni direktorijum</translation>
 <translation id="6751256176799620176">Izabran je 1 folder</translation>
 <translation id="6755827872271341378">Chrome OS Flex uređaj</translation>

@@ -32,11 +32,12 @@
 #include "chrome/browser/ash/file_manager/volume_manager.h"
 #include "chrome/browser/ash/file_system_provider/icon_set.h"
 #include "chrome/browser/ash/file_system_provider/provided_file_system_info.h"
+#include "chrome/browser/ash/fileapi/file_system_backend.h"
 #include "chrome/browser/ash/policy/dlp/dlp_files_controller_ash.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager_factory.h"
-#include "chrome/browser/chromeos/policy/dlp/mock_dlp_rules_manager.h"
+#include "chrome/browser/chromeos/policy/dlp/test/mock_dlp_rules_manager.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -58,7 +59,6 @@
 #include "extensions/common/install_warning.h"
 #include "google_apis/common/test_util.h"
 #include "storage/browser/file_system/external_mount_points.h"
-#include "storage/browser/file_system/file_system_backend.h"
 
 using ::testing::_;
 using ::testing::ReturnRef;
@@ -756,11 +756,6 @@ class FileManagerPrivateApiDlpTest : public FileManagerPrivateApiTest {
     ASSERT_TRUE(drive_path_.CreateUniqueTempDir());
   }
 
-  void TearDownOnMainThread() override {
-    files_controller_ = nullptr;
-    FileManagerPrivateApiTest::TearDownOnMainThread();
-  }
-
   std::unique_ptr<KeyedService> SetDlpRulesManager(
       content::BrowserContext* context) {
     auto dlp_rules_manager = std::make_unique<policy::MockDlpRulesManager>();
@@ -814,12 +809,14 @@ IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiDlpTest, DlpBlockCopy) {
 
   auto* file_system_context =
       file_manager::util::GetFileManagerFileSystemContext(browser()->profile());
-  file_system_context->external_backend()->GrantFileAccessToOrigin(
-      url::Origin::Create(
-          GURL("chrome-extension://"
-               "pkplfbidichfdicaijlchgnapepdginl/")),  // Testing
-                                                       // extension
-      base::FilePath(base::StrCat({kLocalMountPointName, "/", kTestFileName})));
+  ash::FileSystemBackend::Get(*file_system_context)
+      ->GrantFileAccessToOrigin(
+          url::Origin::Create(
+              GURL("chrome-extension://"
+                   "pkplfbidichfdicaijlchgnapepdginl/")),  // Testing
+                                                           // extension
+          base::FilePath(
+              base::StrCat({kLocalMountPointName, "/", kTestFileName})));
 
   storage::ExternalMountPoints::GetSystemInstance()->RegisterFileSystem(
       "drivefs-delayed_mount_2", storage::kFileSystemTypeDriveFs,

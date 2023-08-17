@@ -172,15 +172,16 @@ class InputMethodManagerImplTest :  public BrowserWithTestWindowTest {
     mock_delegate->set_ime_list(ime_list);
     mock_delegate->set_login_layout_set(login_layout_set);
 
-    manager_ =
-        new InputMethodManagerImpl(std::make_unique<FakeInputMethodDelegate>(),
-                                   std::move(mock_delegate), false);
+    auto fake_keyboard = std::make_unique<FakeImeKeyboard>();
+    keyboard_ = fake_keyboard.get();
+
+    manager_ = new InputMethodManagerImpl(
+        std::make_unique<FakeInputMethodDelegate>(), std::move(mock_delegate),
+        false, std::move(fake_keyboard));
     manager_->GetInputMethodUtil()->UpdateHardwareLayoutCache();
     candidate_window_controller_ = new MockCandidateWindowController;
     manager_->SetCandidateWindowControllerForTesting(
         candidate_window_controller_);
-    keyboard_ = new FakeImeKeyboard;
-    manager_->SetImeKeyboardForTesting(keyboard_);
     mock_engine_handler_ = std::make_unique<MockInputMethodEngine>();
     IMEBridge::Get()->SetCurrentEngineHandler(mock_engine_handler_.get());
 
@@ -1146,7 +1147,7 @@ TEST_F(InputMethodManagerImplTest, TestAddRemoveExtensionInputMethods) {
 
   std::vector<std::string> extension_ime_ids;
   extension_ime_ids.push_back(ext1_id);
-  manager_->GetActiveIMEState()->SetEnabledExtensionImes(&extension_ime_ids);
+  manager_->GetActiveIMEState()->SetEnabledExtensionImes(extension_ime_ids);
   EXPECT_EQ(2U, manager_->GetActiveIMEState()->GetNumEnabledInputMethods());
 
   {
@@ -1173,7 +1174,7 @@ TEST_F(InputMethodManagerImplTest, TestAddRemoveExtensionInputMethods) {
   EXPECT_EQ(2U, manager_->GetActiveIMEState()->GetNumEnabledInputMethods());
 
   extension_ime_ids.push_back(ext2_id);
-  manager_->GetActiveIMEState()->SetEnabledExtensionImes(&extension_ime_ids);
+  manager_->GetActiveIMEState()->SetEnabledExtensionImes(extension_ime_ids);
   EXPECT_EQ(3U, manager_->GetActiveIMEState()->GetNumEnabledInputMethods());
   {
     InputMethodDescriptors methods(
@@ -1226,7 +1227,7 @@ TEST_F(InputMethodManagerImplTest, TestAddExtensionInputThenLockScreen) {
 
   std::vector<std::string> extension_ime_ids;
   extension_ime_ids.push_back(ext_id);
-  manager_->GetActiveIMEState()->SetEnabledExtensionImes(&extension_ime_ids);
+  manager_->GetActiveIMEState()->SetEnabledExtensionImes(extension_ime_ids);
   EXPECT_EQ(2U, manager_->GetActiveIMEState()->GetNumEnabledInputMethods());
 
   // Switch to the IME.
@@ -1333,7 +1334,7 @@ TEST_F(InputMethodManagerImplTest, OverrideKeyboardUrlRefWithKeyset) {
 
   MockInputMethodEngine engine;
   std::vector<std::string> enabled_imes = {ime_id};
-  manager_->GetActiveIMEState()->SetEnabledExtensionImes(&enabled_imes);
+  manager_->GetActiveIMEState()->SetEnabledExtensionImes(enabled_imes);
   manager_->GetActiveIMEState()->AddInputMethodExtension(kExtensionId1,
                                                          descriptors, &engine);
   manager_->GetActiveIMEState()->ChangeInputMethod(ime_id, false);
@@ -1382,7 +1383,7 @@ TEST_F(InputMethodManagerImplTest, OverrideDefaultKeyboardUrlRef) {
 
   MockInputMethodEngine engine;
   std::vector<std::string> enabled_imes = {ime_id};
-  manager_->GetActiveIMEState()->SetEnabledExtensionImes(&enabled_imes);
+  manager_->GetActiveIMEState()->SetEnabledExtensionImes(enabled_imes);
   manager_->GetActiveIMEState()->AddInputMethodExtension(kExtensionId1,
                                                          descriptors, &engine);
   manager_->GetActiveIMEState()->ChangeInputMethod(ime_id, false);
@@ -1408,7 +1409,7 @@ TEST_F(InputMethodManagerImplTest, DoesNotResetInputViewUrlWhenOverridden) {
 
   MockInputMethodEngine engine;
   std::vector<std::string> enabled_imes = {ime_id};
-  manager_->GetActiveIMEState()->SetEnabledExtensionImes(&enabled_imes);
+  manager_->GetActiveIMEState()->SetEnabledExtensionImes(enabled_imes);
   manager_->GetActiveIMEState()->AddInputMethodExtension(kExtensionId1,
                                                          descriptors, &engine);
   manager_->GetActiveIMEState()->ChangeInputMethod(ime_id, false);
@@ -1680,7 +1681,7 @@ TEST_F(InputMethodManagerImplTest, TestAddRemoveArcInputMethods) {
 
   // Enable it.
   std::vector<std::string> extension_ime_ids({ime_id});
-  manager_->GetActiveIMEState()->SetEnabledExtensionImes(&extension_ime_ids);
+  manager_->GetActiveIMEState()->SetEnabledExtensionImes(extension_ime_ids);
   EXPECT_EQ(2u, manager_->GetActiveIMEState()->GetNumEnabledInputMethods());
   {
     InputMethodDescriptors methods =

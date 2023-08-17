@@ -172,6 +172,15 @@ const size_t kGLSwitchesCopiedFromGpuProcessHostNumSwitches =
 
 namespace features {
 
+// Enable DComp debug visualizations. This can be useful to determine how much
+// work DWM is doing when we update our tree.
+//
+// Please be aware that some of these visualizations result in quickly flashing
+// colors.
+BASE_FEATURE(kDCompDebugVisualization,
+             "DCompDebugVisualization",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Use BufferCount of 3 for the direct composition root swap chain.
 BASE_FEATURE(kDCompTripleBufferRootSwapChain,
              "DCompTripleBufferRootSwapChain",
@@ -180,6 +189,11 @@ BASE_FEATURE(kDCompTripleBufferRootSwapChain,
 // Use BufferCount of 3 for direct composition video swap chains.
 BASE_FEATURE(kDCompTripleBufferVideoSwapChain,
              "DCompTripleBufferVideoSwapChain",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enables incremental update of dcomp visual tree.
+BASE_FEATURE(kDCompVisualTreeOptimization,
+             "DCompVisualTreeOptimization",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Use presentation feedback event queries (must be enabled) to limit latency.

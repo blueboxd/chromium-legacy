@@ -45,6 +45,7 @@ Ahmet Emir Ercin <ahmetemiremir@gmail.com>
 Aiden Grossman <aidengrossmanpso@gmail.com>
 Ajay Berwal <a.berwal@samsung.com>
 Ajay Berwal <ajay.berwal@samsung.com>
+Ajay Sharma <ajay.sh@samsung.com>
 Ajith Kumar V <ajith.v@samsung.com>
 Akos Kiss <akiss@inf.u-szeged.hu>
 Aku Kotkavuo <a.kotkavuo@partner.samsung.com>
@@ -246,6 +247,7 @@ Chaobin Zhang <zhchbin@gmail.com>
 Charles Vaughn <cvaughn@gmail.com>
 Cheng Zhao <zcbenz@gmail.com>
 Cheng Yu <yuzichengcode@gmail.com>
+Chenguang Shao <chenguangshao1@gmail.com>
 Choongwoo Han <cwhan.tunz@gmail.com>
 Choudhury M. Shamsujjoha <choudhury.s@samsung.com>
 Chris Dalton <chris@rive.app>
@@ -326,8 +328,10 @@ Deepak Sharma <deepak.sharma@amd.com>
 Deepak Singla <deepak.s@samsung.com>
 Deniz Eren Evrendilek <devrendilek@gmail.com>
 Deokjin Kim <deokjin81.kim@samsung.com>
+Deomid rojer Ryabkov <rojer9@gmail.com>
 Derek Halman <d.halman@gmail.com>
 Devlin Cronin <rdevlin.cronin@gmail.com>
+Dheeraj Kumar <dh.kumar@samsung.com>
 Dhi Aurrahman <dio@rockybars.com>
 Di Wu <meetwudi@gmail.com>
 Diana Suvorova <diana.suvorova@gmail.com>
@@ -565,6 +569,7 @@ Jared Sohn <jared.sohn@gmail.com>
 Jared Wein <weinjared@gmail.com>
 Jari Karppanen <jkarp@amazon.com>
 Jason Gronn <jasontopia03@gmail.com>
+Javayhu <javayhu@gmail.com>
 Jay Oster <jay@kodewerx.org>
 Jay Soffian <jaysoffian@gmail.com>
 Jeado Ko <haibane84@gmail.com>
@@ -843,6 +848,7 @@ Martin Bednorz <m.s.bednorz@gmail.com>
 Martin Persson <mnpn03@gmail.com>
 Martin Rogalla <martin@martinrogalla.com>
 Martina Kollarova <martina.kollarova@intel.com>
+Martino Fontana <tinozzo123@gmail.com>
 Masahiro Yado <yado.masa@gmail.com>
 Masaru Nishida <msr.i386@gmail.com>
 Masayuki Wakizaka <mwakizaka0108@gmail.com>
@@ -854,6 +860,7 @@ Matt Arpidone <mma.public@gmail.com>
 Matt Fysh <mattfysh@gmail.com>
 Matt Strum <mstrum@amazon.com>
 Matt Zeunert <matt@mostlystatic.com>
+Matthew "strager" Glazar <strager.nds@gmail.com>
 Matthew Bauer <mjbauer95@gmail.com>
 Matthew Demarest <demarem@amazon.com>
 Matthew Robertson <matthewrobertson03@gmail.com>
@@ -933,6 +940,7 @@ Myunghoon Kim <asdvfrqwe@gmail.com>
 Nagarajan Narayanan <nagarajan.n@samsung.com>
 Nagarjuna Atluri <nagarjuna.a@samsung.com>
 Naiem Shaik <naiem.shaik@gmail.com>
+Naman Kumar Narula <namankumarnarula@gmail.com>
 Naoki Takano <takano.naoki@gmail.com>
 Naoto Ono <onoto1998@gmail.com>
 Nathan Mitchell <nathaniel.v.mitchell@gmail.com>
@@ -968,6 +976,7 @@ Oliver Dunk <oliver@oliverdunk.com>
 Olivier Tilloy <olivier+chromium@tilloy.net>
 Olli Raula (Old name Olli Syrjälä) <olli.raula@intel.com>
 Omar Sandoval <osandov@osandov.com>
+Owen Shaw <owenpshaw@gmail.com>
 Owen Yuwono <owenyuwono@gmail.com>
 Palash Verma <palashverma47@gmail.com>
 Pan Deng <pan.deng@intel.com>
@@ -1088,6 +1097,8 @@ Robert O'Callahan <rocallahan@gmail.com>
 Robert Nagy <robert.nagy@gmail.com>
 Robert Sesek <rsesek@bluestatic.org>
 Roee Kasher <roee91@gmail.com>
+Roger Sanders <sanders_roger@hotmail.com>
+Roger Sanders <sanders.rogerj@gmail.com>
 Roger Zanoni <rogerzanoni@gmail.com>
 Roland Takacs <rtakacs.u-szeged@partner.samsung.com>
 Romain Pokrzywka <romain.pokrzywka@gmail.com>
@@ -1413,6 +1424,7 @@ Yi Zhang <yi.y.zhang@intel.com>
 Yizhou Jiang <yizhou.jiang@intel.com>
 Yoav Weiss <yoav@yoav.ws>
 Yoav Zilberberg <yoav.zilberberg@gmail.com>
+Yogesh <yogesh.dabas@samsung.com>
 Yoichiro Hibara <hibarayoichiro871@gmail.com>
 Yong Ling <yongling@tencent.com>
 Yong Shin <sy3620@gmail.com>
@@ -1423,6 +1435,7 @@ Yongseok Choi <yongseok.choi@navercorp.com>
 Yongsheng Zhu <yongsheng.zhu@intel.com>
 Yoonjae Cho <yoonjae.cho92@gmail.com>
 Yoshinori Sano <yoshinori.sano@gmail.com>
+Yoshiya Hinosawa <stibium121@gmail.com>
 Young Min Kim <y@ylem.kim>
 Youngho Seo <hazivoo@gmail.com>
 Youngjin Choi <cyjin9.yc@gmail.com>
@@ -1475,6 +1488,7 @@ Zuckjet <zuckjet@gmail.com>
 Zsolt Borbely <zsborbely.u-szeged@partner.samsung.com>
 方觉 (Fang Jue) <fangjue23303@gmail.com>
 迷渡 <justjavac@gmail.com>
+郑苏波 (Super Zheng) <superzheng@tencent.com>
 # Please DO NOT APPEND here. See comments at the top of the file.
 # END individuals section.
 
@@ -1552,6 +1566,7 @@ THEO Technologies <*@theoplayer.com>
 Torchmobile Inc. Upwork <*@cloud.upwork.com>
 Venture 3 Systems LLC <*@venture3systems.com>
 Vewd Software AS <*@vewd.com>
+Vikas Mundra <vikas.mundra@samsung.com>
 Vivaldi Technologies AS <*@vivaldi.com>
 Wacom <*@wacom.com>
 Whist Technologies <*@whist.com>

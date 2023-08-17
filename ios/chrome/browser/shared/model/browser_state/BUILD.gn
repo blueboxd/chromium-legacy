@@ -36,8 +36,6 @@ source_set("browser_state") {
     "//ios/components/webui:url_constants",
     "//ios/web/public/webui",
   ]
-
-  configs += [ "//build/config/compiler:enable_arc" ]
 }
 
 source_set("unit_tests") {
@@ -54,7 +52,6 @@ source_set("unit_tests") {
     "//ios/web/public/test",
     "//testing/gtest",
   ]
-  configs += [ "//build/config/compiler:enable_arc" ]
 }
 
 source_set("test_support") {
@@ -66,13 +63,18 @@ source_set("test_support") {
     "test_chrome_browser_state_manager.h",
   ]
 
-  public_deps = [ ":browser_state" ]
+  public_deps = [
+    ":browser_state",
+    "//base",
+  ]
 
   deps = [
     "//base",
     "//components/keyed_service/core",
     "//components/keyed_service/ios",
     "//components/profile_metrics",
+    "//components/supervised_user/core/browser",
+    "//components/supervised_user/core/common:buildflags",
     "//components/sync_preferences",
     "//components/sync_preferences:test_support",
     "//components/undo",
@@ -84,12 +86,11 @@ source_set("test_support") {
     "//ios/chrome/browser/policy:policy",
     "//ios/chrome/browser/prefs",
     "//ios/chrome/browser/shared/model/prefs:browser_prefs",
+    "//ios/chrome/browser/supervised_user:sync_settings_factory",
     "//ios/chrome/browser/ui/ntp:logo",
     "//ios/chrome/browser/webdata_services",
     "//ios/chrome/test:test_support",
     "//ios/web",
     "//net:test_support",
   ]
-
-  configs += [ "//build/config/compiler:enable_arc" ]
 }

@@ -5,15 +5,14 @@
 import 'chrome://os-settings/lazy_load.js';
 
 import {CrCheckboxWithPolicyElement, InputsShortcutReminderState, LanguageHelper, LanguagesBrowserProxyImpl, LanguagesMetricsProxyImpl, LanguagesPageInteraction, OsSettingsAddItemsDialogElement, OsSettingsInputPageElement, SettingsLanguagesElement} from 'chrome://os-settings/lazy_load.js';
-import {CrCheckboxElement, CrSettingsPrefs, Router, routes, settingMojom, SettingsPrefsElement, SettingsToggleButtonElement} from 'chrome://os-settings/os_settings.js';
+import {CrCheckboxElement, CrSettingsPrefs, IronListElement, Router, routes, settingMojom, SettingsPrefsElement, SettingsToggleButtonElement} from 'chrome://os-settings/os_settings.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {getDeepActiveElement} from 'chrome://resources/js/util_ts.js';
-import {IronListElement} from 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
 import {keyDownOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {assertDeepEquals, assertEquals, assertFalse, assertGE, assertGT, assertNotEquals, assertNull, assertStringContains, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {fakeDataBind, waitAfterNextRender} from 'chrome://webui-test/polymer_test_util.js';
-import {isVisible} from 'chrome://webui-test/test_util.js';
+import {eventToPromise, isVisible} from 'chrome://webui-test/test_util.js';
 
 import {FakeLanguageSettingsPrivate, getFakeLanguagePrefs} from '../fake_language_settings_private.js';
 import {FakeSettingsPrivate} from '../fake_settings_private.js';
@@ -32,7 +31,7 @@ suite('<os-settings-input-page>', () => {
   });
 
   setup(async () => {
-    document.body.innerHTML = '';
+    document.body.innerHTML = window.trustedTypes!.emptyHTML;
     const prefElement: SettingsPrefsElement =
         document.createElement('settings-prefs');
     const settingsPrivate = new FakeSettingsPrivate(getFakeLanguagePrefs());
@@ -266,6 +265,31 @@ suite('<os-settings-input-page>', () => {
       assertEquals(
           deepLinkElement, getDeepActiveElement(),
           'Spell check toggle should be focused for settingId=1207.');
+    });
+
+    test('Spellcheck row is focused after returning from subpage', async () => {
+      Router.getInstance().navigateTo(routes.OS_LANGUAGES_INPUT);
+
+      const triggerSelector = '#editDictionarySubpageTrigger';
+      const subpageTrigger =
+          inputPage.shadowRoot!.querySelector<HTMLElement>(triggerSelector);
+      assertTrue(!!subpageTrigger);
+
+      // Sub-page trigger navigates to spellcheck subpage
+      subpageTrigger.click();
+      assertEquals(
+          routes.OS_LANGUAGES_EDIT_DICTIONARY,
+          Router.getInstance().currentRoute);
+
+      // Navigate back
+      const popStateEventPromise = eventToPromise('popstate', window);
+      Router.getInstance().navigateToPreviousRoute();
+      await popStateEventPromise;
+      await waitAfterNextRender(inputPage);
+
+      assertEquals(
+          subpageTrigger, inputPage.shadowRoot!.activeElement,
+          `${triggerSelector} should be focused.`);
     });
   });
 

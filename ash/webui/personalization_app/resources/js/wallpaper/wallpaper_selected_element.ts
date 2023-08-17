@@ -16,8 +16,8 @@ import '../../css/cros_button_style.css.js';
 import './info_svg_element.js';
 import './google_photos_shared_album_dialog_element.js';
 
-import {loadTimeData} from 'chrome://resources/ash/common/load_time_data.m.js';
 import {assert} from 'chrome://resources/js/assert_ts.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 
 import {CurrentAttribution, CurrentWallpaper, GooglePhotosPhoto, WallpaperCollection, WallpaperImage, WallpaperLayout, WallpaperType} from '../../personalization_app.mojom-webui.js';
 import {isGooglePhotosSharedAlbumsEnabled, isPersonalizationJellyEnabled} from '../load_time_booleans.js';
@@ -25,7 +25,7 @@ import {Paths} from '../personalization_router_element.js';
 import {WithPersonalizationStore} from '../personalization_store.js';
 import {getCheckmarkIcon, isNonEmptyArray} from '../utils.js';
 
-import {getLocalStorageAttribution, getWallpaperLayoutEnum, getWallpaperSrc} from './utils.js';
+import {getLocalStorageAttribution, getWallpaperAriaLabel, getWallpaperLayoutEnum, getWallpaperSrc} from './utils.js';
 import {getDailyRefreshState, selectGooglePhotosAlbum, setCurrentWallpaperLayout, setDailyRefreshCollectionId, updateDailyRefreshWallpaper} from './wallpaper_controller.js';
 import {getWallpaperProvider} from './wallpaper_interface_provider.js';
 import {WallpaperObserver} from './wallpaper_observer.js';
@@ -300,6 +300,9 @@ export class WallpaperSelected extends WithPersonalizationStore {
       // Hide button when viewing Google Photos.
       case Paths.GOOGLE_PHOTOS_COLLECTION:
         return false;
+      // Hide button when viewing local images.
+      case Paths.LOCAL_COLLECTION:
+        return false;
       default:
         return true;
     }
@@ -487,39 +490,7 @@ export class WallpaperSelected extends WithPersonalizationStore {
   private getAriaLabel_(
       image: CurrentWallpaper|null, attribution: CurrentAttribution|null,
       dailyRefreshState: DailyRefreshState|null): string {
-    if (!image) {
-      return this.i18n('currentlySet') + ' ' +
-          this.i18n('unknownImageAttribution');
-    }
-    if (image.type === WallpaperType.kDefault) {
-      return `${this.i18n('currentlySet')} ${this.i18n('defaultWallpaper')}`;
-    }
-    const isDailyRefreshActive = !!dailyRefreshState;
-    if (!!attribution && attribution.key === image.key &&
-        isNonEmptyArray(attribution.attribution)) {
-      return isDailyRefreshActive ?
-          [
-            this.i18n('currentlySet'),
-            this.i18n('dailyRefresh'),
-            ...attribution.attribution,
-          ].join(' ') :
-          [this.i18n('currentlySet'), ...attribution.attribution].join(' ');
-    }
-    // Fallback to cached attribution.
-    const cachedAttribution = getLocalStorageAttribution(image.key);
-    if (isNonEmptyArray(cachedAttribution)) {
-      if (isDailyRefreshActive && !!attribution &&
-          attribution.key === image.key) {
-        return [
-          this.i18n('currentlySet'),
-          this.i18n('dailyRefresh'),
-          ...attribution.attribution,
-        ].join(' ');
-      }
-      return [this.i18n('currentlySet'), ...cachedAttribution].join(' ');
-    }
-    return this.i18n('currentlySet') + ' ' +
-        this.i18n('unknownImageAttribution');
+    return getWallpaperAriaLabel(image, attribution, dailyRefreshState);
   }
 
   /**

@@ -30,6 +30,7 @@
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
+#include "base/test/test_future.h"
 #include "base/time/default_clock.h"
 #include "base/uuid.h"
 #include "components/services/storage/indexed_db/locks/partitioned_lock_manager.h"
@@ -44,7 +45,6 @@
 #include "content/browser/indexed_db/indexed_db_factory.h"
 #include "content/browser/indexed_db/indexed_db_leveldb_coding.h"
 #include "content/browser/indexed_db/indexed_db_leveldb_operations.h"
-#include "content/browser/indexed_db/indexed_db_metadata_coding.h"
 #include "content/browser/indexed_db/indexed_db_value.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "net/base/features.h"
@@ -55,7 +55,6 @@
 #include "storage/browser/test/mock_quota_manager_proxy.h"
 #include "storage/browser/test/mock_special_storage_policy.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/common/indexeddb/web_idb_types.h"
 #include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
 
@@ -422,10 +421,10 @@ class IndexedDBBackingStoreTest : public testing::Test {
       }
       // All leveldb databases are closed, and they can be deleted.
       for (auto bucket_locator : idb_context_->GetAllBuckets()) {
-        bool success = false;
-        storage::mojom::IndexedDBControlAsyncWaiter waiter(idb_context_.get());
-        waiter.DeleteForStorageKey(bucket_locator.storage_key, &success);
-        EXPECT_TRUE(success);
+        base::test::TestFuture<bool> success;
+        idb_context_->DeleteForStorageKey(bucket_locator.storage_key,
+                                          success.GetCallback());
+        EXPECT_TRUE(success.Get());
       }
     }
     if (temp_dir_.IsValid())
@@ -1548,8 +1547,6 @@ TEST_F(IndexedDBBackingStoreTest, CreateDatabase) {
         const bool multi_entry = true;
         const IndexedDBKeyPath index_key_path(u"index_key");
 
-        IndexedDBMetadataCoding metadata_coding;
-
         {
           IndexedDBDatabaseMetadata database;
           database.name = database_name;
@@ -1572,9 +1569,9 @@ TEST_F(IndexedDBBackingStoreTest, CreateDatabase) {
           EXPECT_TRUE(s.ok());
 
           IndexedDBIndexMetadata index;
-          s = metadata_coding.CreateIndex(
-              transaction.transaction(), database.id, object_store.id, index_id,
-              index_name, index_key_path, unique, multi_entry, &index);
+          s = backing_store()->CreateIndex(
+              &transaction, database.id, object_store.id, index_id, index_name,
+              index_key_path, unique, multi_entry, &index);
           EXPECT_TRUE(s.ok());
 
           bool succeeded = false;
@@ -1861,8 +1858,6 @@ TEST_F(IndexedDBBackingStoreTest, SchemaUpgradeWithoutBlobsSurvives) {
   const bool auto_increment = true;
   const IndexedDBKeyPath object_store_key_path(u"object_store_key");
 
-  IndexedDBMetadataCoding metadata_coding;
-
   {
     IndexedDBDatabaseMetadata database;
     database.name = database_name;
@@ -1965,8 +1960,6 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, SchemaUpgradeWithBlobsCorrupt) {
   const std::u16string object_store_name(u"object_store1");
   const bool auto_increment = true;
   const IndexedDBKeyPath object_store_key_path(u"object_store_key");
-
-  IndexedDBMetadataCoding metadata_coding;
 
   {
     IndexedDBDatabaseMetadata database;
@@ -2081,8 +2074,6 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, SchemaUpgradeV3ToV4) {
   const std::u16string object_store_name(u"object_store1");
   const bool auto_increment = true;
   const IndexedDBKeyPath object_store_key_path(u"object_store_key");
-
-  IndexedDBMetadataCoding metadata_coding;
 
   {
     IndexedDBDatabaseMetadata database;
@@ -2234,8 +2225,6 @@ TEST_F(IndexedDBBackingStoreTestWithBlobs, SchemaUpgradeV4ToV5) {
   // The V5 migration checks files on disk, so make sure our fake blob
   // context writes something there to check.
   blob_context_->SetWriteFilesToDisk(true);
-
-  IndexedDBMetadataCoding metadata_coding;
 
   {
     IndexedDBDatabaseMetadata database;

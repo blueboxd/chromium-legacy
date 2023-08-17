@@ -150,7 +150,7 @@
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_options_collection.h"
 #include "third_party/blink/renderer/core/html/forms/html_select_element.h"
-#include "third_party/blink/renderer/core/html/forms/html_select_menu_element.h"
+#include "third_party/blink/renderer/core/html/forms/html_select_list_element.h"
 #include "third_party/blink/renderer/core/html/html_anchor_element.h"
 #include "third_party/blink/renderer/core/html/html_area_element.h"
 #include "third_party/blink/renderer/core/html/html_body_element.h"
@@ -506,7 +506,7 @@ bool WillUpdateSizeContainerDuringLayout(const LayoutObject& layout_object) {
   // When a size-container LayoutObject is marked as needs layout,
   // NGBlockNode::Layout() will resume style recalc with an up-to-date size in
   // StyleEngine::UpdateStyleAndLayoutTreeForContainer().
-  return layout_object.SelfNeedsLayout() &&
+  return layout_object.NeedsLayout() &&
          layout_object.IsEligibleForSizeContainment();
 }
 
@@ -631,12 +631,20 @@ bool Element::IsBaseElementFocusableStyle() const {
   return false;
 }
 
-Node* Element::Clone(Document& factory, NodeCloningData& data) const {
+Node* Element::Clone(Document& factory,
+                     NodeCloningData& data,
+                     ContainerNode* append_to,
+                     ExceptionState& append_exception_state) const {
   if (!data.Has(CloneOption::kIncludeDescendants)) {
     CHECK(!data.Has(CloneOption::kIncludeShadowRoots));
-    return &CloneWithoutChildren(data, &factory);
+    Element* copy = &CloneWithoutChildren(data, &factory);
+    if (append_to) {
+      append_to->AppendChild(copy, append_exception_state);
+    }
+    return copy;
   }
-  Element* copy = &CloneWithChildren(data, &factory);
+  Element* copy =
+      &CloneWithChildren(data, &factory, append_to, append_exception_state);
   // 7. If node is a shadow host and the clone shadows flag is set, run these
   // steps:
   if (data.Has(CloneOption::kIncludeShadowRoots)) {
@@ -672,8 +680,11 @@ Node* Element::Clone(Document& factory, NodeCloningData& data) const {
   return copy;
 }
 
-Element& Element::CloneWithChildren(NodeCloningData& data,
-                                    Document* nullable_factory) const {
+Element& Element::CloneWithChildren(
+    NodeCloningData& data,
+    Document* nullable_factory,
+    ContainerNode* append_to,
+    ExceptionState& append_exception_state) const {
   Element& clone = CloneWithoutAttributesAndChildren(
       nullable_factory ? *nullable_factory : GetDocument());
   // This will catch HTML elements in the wrong namespace that are not correctly
@@ -683,7 +694,21 @@ Element& Element::CloneWithChildren(NodeCloningData& data,
   clone.CloneAttributesFrom(*this);
   clone.CloneNonAttributePropertiesFrom(*this, data);
   clone.ClonePartsFrom(*this, data);
-  clone.CloneChildNodesFrom(*this, data);
+
+  // - (With OptimizedNodeCloneOrder enabled) Append the clone to its parent
+  //   first, before cloning children. If this is done in the reverse order,
+  //   each new child will receive treeDepth calls to Node::InsertedInto().
+  // - (With OptimizedNodeCloneOrder DISABLED) Clone children first, then append
+  //   them.
+  if (!RuntimeEnabledFeatures::OptimizedNodeCloneOrderEnabled()) {
+    clone.CloneChildNodesFrom(*this, data);
+  }
+  if (append_to) {
+    append_to->AppendChild(&clone, append_exception_state);
+  }
+  if (RuntimeEnabledFeatures::OptimizedNodeCloneOrderEnabled()) {
+    clone.CloneChildNodesFrom(*this, data);
+  }
   return clone;
 }
 
@@ -4339,17 +4364,28 @@ void Element::SetNeedsCompositingUpdate() {
 void Element::SetRegionCaptureCropId(
     std::unique_ptr<RegionCaptureCropId> crop_id) {
   ElementRareDataVector& rare_data = EnsureElementRareData();
-
   CHECK(!rare_data.GetRegionCaptureCropId());
+
+  LayoutObject* layout_object = GetLayoutObject();
+  const bool should_force_stacking_context =
+      layout_object && !layout_object->IsStackingContext();
 
   // Propagate efficient form through the rendering pipeline.
   rare_data.SetRegionCaptureCropId(std::move(crop_id));
 
-  // The crop ID needs to be propagated to the paint system by the time that
-  // capture begins. The API requires the implementation to propagate the
-  // token right away, so we force invalidate here.
-  if (GetLayoutObject()) {
-    GetLayoutObject()->SetShouldDoFullPaintInvalidation();
+  if (layout_object) {
+    // If we forced a stacking context, we need to reattach to the layout tree.
+    // There is no corresponding style change.
+    if (RuntimeEnabledFeatures::ElementCaptureEnabled()) {
+      if (should_force_stacking_context) {
+        SetForceReattachLayoutTree();
+      }
+    }
+
+    // The crop ID needs to be propagated to the paint system by the time that
+    // capture begins. The API requires the implementation to propagate the
+    // token right away, so we force invalidate here.
+    layout_object->SetShouldDoFullPaintInvalidation();
   }
 }
 
@@ -4407,7 +4443,7 @@ bool Element::CanAttachShadowRoot() const {
   return (IsCustomElement() &&
           CustomElement::IsValidName(tag_name.LocalName())) ||
          IsValidShadowHostName(tag_name) ||
-         tag_name == html_names::kSelectmenuTag;
+         tag_name == html_names::kSelectlistTag;
 }
 
 const char* Element::ErrorMessageForAttachShadow() const {
@@ -4532,6 +4568,8 @@ bool Element::AttachDeprecatedNonStreamingDeclarativeShadowRoot(
     SlotAssignmentMode slot_assignment) {
   CHECK(type == ShadowRootType::kOpen || type == ShadowRootType::kClosed);
   CHECK(template_element.IsNonStreamingDeclarativeShadowRoot());
+  CHECK(RuntimeEnabledFeatures::
+            DeprecatedNonStreamingDeclarativeShadowDOMEnabled());
 
   Deprecation::CountDeprecation(
       GetDocument().GetExecutionContext(),
@@ -7977,8 +8015,7 @@ void Element::AddPropertyToPresentationAttributeStyle(
     CSSPropertyID property_id,
     CSSValueID identifier) {
   DCHECK(IsStyledElement());
-  DCHECK(!RuntimeEnabledFeatures::CSSWhiteSpaceShorthandEnabled() ||
-         property_id != CSSPropertyID::kWhiteSpace);
+  DCHECK_NE(property_id, CSSPropertyID::kWhiteSpace);
   style->SetLonghandProperty(property_id,
                              *CSSIdentifierValue::Create(identifier));
 }
@@ -8861,8 +8898,8 @@ Element* Element::ImplicitAnchorElement() {
     if (Element* anchor = html_element->anchorElement()) {
       return anchor;
     }
-    if (Element* select_menu = html_element->popoverOwnerSelectMenuElement()) {
-      return select_menu;
+    if (Element* select_list = html_element->popoverOwnerSelectListElement()) {
+      return select_list;
     }
   } else if (PseudoElement* pseudo_element = DynamicTo<PseudoElement>(this)) {
     switch (pseudo_element->GetPseudoId()) {

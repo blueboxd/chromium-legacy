@@ -37,10 +37,6 @@
 // TODO(crbug.com/1383087): remove once the feature is fully launched.
 #import "ios/web/common/features.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 namespace {
 // Suffix to append to the session ID when creating an inactive browser.
 NSString* kInactiveSessionIDSuffix = @"-Inactive";
@@ -125,9 +121,7 @@ NSString* kInactiveSessionIDSuffix = @"-Inactive";
   [_mainBrowserCoordinator start];
 
   // Restore the session after creating the coordinator.
-  if (!web::features::UseSessionSerializationOptimizations()) {
-    SessionRestorationBrowserAgent::FromBrowser(mainBrowser)->RestoreSession();
-  }
+  [self loadSessionForBrowser:mainBrowser];
 
   DCHECK(_mainBrowserCoordinator.viewController);
   _mainInterface =
@@ -143,11 +137,7 @@ NSString* kInactiveSessionIDSuffix = @"-Inactive";
   // Create and restore the inactive browser.
   Browser* inactiveBrowser = self.mainBrowser->CreateInactiveBrowser();
   [self setupBrowser:inactiveBrowser];
-
-  if (!web::features::UseSessionSerializationOptimizations()) {
-    SessionRestorationBrowserAgent::FromBrowser(inactiveBrowser)
-        ->RestoreSession();
-  }
+  [self loadSessionForBrowser:inactiveBrowser];
 
   if (IsInactiveTabsEnabled()) {
     // Ensure there is no active element in the restored inactive browser. It
@@ -236,9 +226,7 @@ NSString* kInactiveSessionIDSuffix = @"-Inactive";
   if (!allTabsClosed) {
     // Restore the session after creating the coordinator, but only if not
     // recreating the Off-The-Record UI after closing all the tabs.
-    if (!web::features::UseSessionSerializationOptimizations()) {
-      SessionRestorationBrowserAgent::FromBrowser(otrBrowser)->RestoreSession();
-    }
+    [self loadSessionForBrowser:otrBrowser];
   }
 
   DCHECK(_incognitoBrowserCoordinator.viewController);
@@ -499,6 +487,7 @@ NSString* kInactiveSessionIDSuffix = @"-Inactive";
   return [sessionID stringByAppendingString:kInactiveSessionIDSuffix];
 }
 
+// Configures the BrowserAgent with the session identifier for `browser`.
 - (void)setSessionIDForBrowser:(Browser*)browser {
   NSString* sceneSessionID = [self sceneSessionIDForBrowser:browser];
 
@@ -507,6 +496,13 @@ NSString* kInactiveSessionIDSuffix = @"-Inactive";
   if (!web::features::UseSessionSerializationOptimizations()) {
     SessionRestorationBrowserAgent::FromBrowser(browser)->SetSessionID(
         sceneSessionID);
+  }
+}
+
+// Load session for `browser`.
+- (void)loadSessionForBrowser:(Browser*)browser {
+  if (!web::features::UseSessionSerializationOptimizations()) {
+    SessionRestorationBrowserAgent::FromBrowser(browser)->RestoreSession();
   }
 }
 

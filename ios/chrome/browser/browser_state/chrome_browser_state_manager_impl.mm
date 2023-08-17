@@ -39,10 +39,6 @@
 #import "ios/chrome/browser/supervised_user/supervised_user_service_factory.h"
 #import "ios/chrome/browser/unified_consent/unified_consent_service_factory.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 namespace {
 
 int64_t ComputeFilesSize(const base::FilePath& directory,
@@ -150,7 +146,7 @@ ChromeBrowserState* ChromeBrowserStateManagerImpl::GetBrowserState(
           {base::TaskShutdownBehavior::BLOCK_SHUTDOWN, base::MayBlock()});
 
   std::unique_ptr<ChromeBrowserStateImpl> browser_state_impl(
-      new ChromeBrowserStateImpl(io_task_runner, path));
+      new ChromeBrowserStateImpl(path, io_task_runner));
   DCHECK(!browser_state_impl->IsOffTheRecord());
 
   std::pair<ChromeBrowserStateImplPathMap::iterator, bool> insert_result =

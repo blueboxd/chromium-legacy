@@ -278,6 +278,11 @@
   *;
 }
 
+# Remove kotlin assertions since they add a lot of string and rarely fail.
+-assumenosideeffects class kotlin.jvm.internal.Intrinsics {
+  public static void check*(...);
+}
+
 # File: ../../chrome/android/proguard/main.flags
 # Copyright 2016 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
@@ -388,6 +393,20 @@
 -keep class com.google.cardboard.sdk.UsedByNative
 -keepclasseswithmembers,includedescriptorclasses class ** {
   @com.google.cardboard.sdk.UsedByNative *;
+}
+# Keep proto methods that are directly queried over JNI since proguard cannot
+# determine which methods those are.
+-keep,includedescriptorclasses class com.google.cardboard.proto.CardboardDevice$DeviceParams$VerticalAlignmentType {
+  ordinal();
+}
+-keep,includedescriptorclasses class com.google.cardboard.proto.CardboardDevice$DeviceParams {
+  getScreenToLensDistance();
+  getInterLensDistance();
+  getTrayToLensDistance();
+  getVerticalAlignment();
+  getDistortionCoefficients(int);
+  getDistortionCoefficientsCount();
+  getLeftEyeFieldOfViewAngles(int);
 }
 
 # File: ../../content/public/android/proguard.flags

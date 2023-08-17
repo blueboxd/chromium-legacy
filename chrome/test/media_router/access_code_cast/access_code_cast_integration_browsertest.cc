@@ -42,13 +42,14 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_status_code.h"
 #include "net/http/http_util.h"
+#include "third_party/abseil-cpp/absl/strings/ascii.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
 #include "base/barrier_closure.h"
 #include "base/json/values_util.h"
+#include "base/test/test_future.h"
 #include "chrome/browser/media/router/discovery/access_code/access_code_cast_pref_updater_lacros.h"
-#include "chromeos/crosapi/mojom/prefs.mojom-test-utils.h"
 #include "chromeos/crosapi/mojom/prefs.mojom.h"
 #include "chromeos/lacros/lacros_service.h"
 #else
@@ -336,13 +337,9 @@ void AccessCodeCastIntegrationBrowserTest::CloseDialogUsingKeyPress() {
 
 void AccessCodeCastIntegrationBrowserTest::SetAccessCodeUsingKeyPress(
     const std::string& access_code) {
-  for (const char& letter : access_code) {
-#if BUILDFLAG(IS_WIN)
-    ui::KeyboardCode keyboard_code = ui::KeyboardCode(toupper(letter));
-#else
-    ui::KeyboardCode keyboard_code =
-        static_cast<ui::KeyboardCode>(toupper(letter));
-#endif
+  for (char letter : access_code) {
+    const auto keyboard_code = static_cast<ui::KeyboardCode>(
+        absl::ascii_toupper(static_cast<unsigned char>(letter)));
     EXPECT_TRUE(ui_test_utils::SendKeyPressSync(browser(), keyboard_code, false,
                                                 false, false, false));
   }
@@ -660,12 +657,10 @@ void AccessCodeCastIntegrationBrowserTest::
 
 bool AccessCodeCastIntegrationBrowserTest::IsAccessCodeCastLacrosSyncEnabled() {
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
-  crosapi::mojom::PrefsAsyncWaiter async_waiter(
-      chromeos::LacrosService::Get()->GetRemote<crosapi::mojom::Prefs>().get());
-  absl::optional<base::Value> pref_value;
-  async_waiter.GetPref(crosapi::mojom::PrefPath::kAccessCodeCastDevices,
-                       &pref_value);
-  return pref_value.has_value();
+  base::test::TestFuture<absl::optional<base::Value>> future;
+  chromeos::LacrosService::Get()->GetRemote<crosapi::mojom::Prefs>()->GetPref(
+      crosapi::mojom::PrefPath::kAccessCodeCastDevices, future.GetCallback());
+  return future.Take().has_value();
 #else
   return false;
 #endif

@@ -17,9 +17,9 @@
 #include "base/allocator/partition_allocator/page_allocator.h"
 #include "base/allocator/partition_allocator/page_allocator_constants.h"
 #include "base/allocator/partition_allocator/partition_alloc_base/debug/debugging_buildflags.h"
+#include "base/allocator/partition_allocator/partition_alloc_base/notreached.h"
 #include "base/allocator/partition_allocator/partition_alloc_base/posix/eintr_wrapper.h"
 #include "base/allocator/partition_allocator/partition_alloc_check.h"
-#include "base/allocator/partition_allocator/partition_alloc_notreached.h"
 #include "base/allocator/partition_allocator/thread_isolation/thread_isolation.h"
 #include "build/build_config.h"
 
@@ -75,7 +75,7 @@ namespace {
 
 void NameRegion(void* start, size_t length, PageTag page_tag) {
   // Important: All the names should be string literals. As per prctl.h in
-  // //third_party/android_toolchain the kernel keeps a pointer to the name
+  // //third_party/android_toolchain/ndk the kernel keeps a pointer to the name
   // instead of copying it.
   //
   // Having the name in .rodata ensures that the pointer remains valid as

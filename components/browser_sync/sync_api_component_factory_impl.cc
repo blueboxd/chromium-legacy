@@ -40,6 +40,7 @@
 #include "components/reading_list/core/reading_list_model.h"
 #include "components/send_tab_to_self/send_tab_to_self_model_type_controller.h"
 #include "components/send_tab_to_self/send_tab_to_self_sync_service.h"
+#include "components/supervised_user/core/common/buildflags.h"
 #include "components/sync/base/features.h"
 #include "components/sync/base/legacy_directory_deletion.h"
 #include "components/sync/base/model_type.h"
@@ -63,9 +64,14 @@
 #include "components/sync_sessions/session_sync_service.h"
 #include "components/sync_user_events/user_event_model_type_controller.h"
 
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+#include "components/supervised_user/core/browser/supervised_user_settings_service.h"
+#include "components/supervised_user/core/browser/supervised_user_sync_model_type_controller.h"
+#endif  // BUILDFLAG(ENABLE_SUPERVISED_USER)
+
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/constants/ash_features.h"
-#endif
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 using syncer::DataTypeController;
 using syncer::DataTypeManager;
@@ -172,7 +178,9 @@ SyncApiComponentFactoryImpl::SyncApiComponentFactoryImpl(
     sync_bookmarks::BookmarkSyncService*
         local_or_syncable_bookmark_sync_service,
     sync_bookmarks::BookmarkSyncService* account_bookmark_sync_service,
-    power_bookmarks::PowerBookmarkService* power_bookmark_service)
+    power_bookmarks::PowerBookmarkService* power_bookmark_service,
+    supervised_user::SupervisedUserSettingsService*
+        supervised_user_settings_service)
     : sync_client_(sync_client),
       channel_(channel),
       ui_thread_(ui_thread),
@@ -188,7 +196,8 @@ SyncApiComponentFactoryImpl::SyncApiComponentFactoryImpl(
       local_or_syncable_bookmark_sync_service_(
           local_or_syncable_bookmark_sync_service),
       account_bookmark_sync_service_(account_bookmark_sync_service),
-      power_bookmark_service_(power_bookmark_service) {
+      power_bookmark_service_(power_bookmark_service),
+      supervised_user_settings_service_(supervised_user_settings_service) {
   DCHECK(sync_client_);
 }
 
@@ -242,8 +251,7 @@ SyncApiComponentFactoryImpl::CreateCommonDataTypeControllers(
           /*delegate_for_transport_mode=*/nullptr));
     }
 
-    if (base::FeatureList::IsEnabled(syncer::kSyncEnableContactInfoDataType) &&
-        !disabled_types.Has(syncer::CONTACT_INFO)) {
+    if (!disabled_types.Has(syncer::CONTACT_INFO)) {
       // The same delegate is used for full sync and transport mode.
       controllers.push_back(
           std::make_unique<autofill::ContactInfoModelTypeController>(
@@ -303,8 +311,6 @@ SyncApiComponentFactoryImpl::CreateCommonDataTypeControllers(
 
     // Wallet credential data sync depends on Wallet data sync.
     if (base::FeatureList::IsEnabled(
-            autofill::features::kAutofillEnableCvcStorageAndFilling) &&
-        base::FeatureList::IsEnabled(
             syncer::kSyncAutofillWalletCredentialData) &&
         !disabled_types.Has(syncer::AUTOFILL_WALLET_DATA) &&
         !disabled_types.Has(syncer::AUTOFILL_WALLET_CREDENTIAL)) {
@@ -557,6 +563,17 @@ SyncApiComponentFactoryImpl::CreateCommonDataTypeControllers(
   }
 #endif
 
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+  if (supervised_user_settings_service_) {
+    controllers.push_back(
+        std::make_unique<SupervisedUserSyncModelTypeController>(
+            syncer::SUPERVISED_USER_SETTINGS, dump_stack,
+            sync_client_->GetModelTypeStoreService()->GetStoreFactory(),
+            supervised_user_settings_service_->AsWeakPtr(),
+            sync_client_->GetPrefService()));
+  }
+#endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
+
   return controllers;
 }
 
@@ -573,10 +590,9 @@ SyncApiComponentFactoryImpl::CreateDataTypeManager(
 std::unique_ptr<syncer::SyncEngine>
 SyncApiComponentFactoryImpl::CreateSyncEngine(
     const std::string& name,
-    invalidation::InvalidationService* invalidator,
     syncer::SyncInvalidationsService* sync_invalidation_service) {
   return std::make_unique<syncer::SyncEngineImpl>(
-      name, invalidator, sync_invalidation_service,
+      name, sync_invalidation_service,
       std::make_unique<browser_sync::ActiveDevicesProviderImpl>(
           sync_client_->GetDeviceInfoSyncService()->GetDeviceInfoTracker(),
           base::DefaultClock::GetInstance()),

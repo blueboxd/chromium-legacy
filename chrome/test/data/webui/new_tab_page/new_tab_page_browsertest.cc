@@ -79,6 +79,14 @@ IN_PROC_BROWSER_TEST_F(NewTabPageTest, MiddleSlotPromo) {
   RunTest("new_tab_page/middle_slot_promo_test.js", "mocha.run()");
 }
 
+IN_PROC_BROWSER_TEST_F(NewTabPageTest, ImageProcessor) {
+  RunTest("new_tab_page/image_processor_test.js", "mocha.run()");
+}
+
+IN_PROC_BROWSER_TEST_F(NewTabPageTest, Transparency) {
+  RunTest("new_tab_page/transparency_test.js", "mocha.run()");
+}
+
 using NewTabPageModulesTest = NewTabPageBrowserTest;
 
 IN_PROC_BROWSER_TEST_F(NewTabPageModulesTest, ModuleWrapper) {
@@ -232,6 +240,11 @@ IN_PROC_BROWSER_TEST_F(NewTabPageModulesHistoryClustersModuleTest, Core) {
 IN_PROC_BROWSER_TEST_F(NewTabPageModulesHistoryClustersModuleTest, CoreV2) {
   RunTest("new_tab_page/modules/v2/history_clusters/module_test.js",
           "runMochaSuite('NewTabPageModulesHistoryClustersV2ModuleTest Core')");
+}
+
+IN_PROC_BROWSER_TEST_F(NewTabPageModulesHistoryClustersModuleTest, CartTileV2) {
+  RunTest("new_tab_page/modules/v2/history_clusters/cart/cart_tile_test.js",
+          "mocha.run()");
 }
 
 IN_PROC_BROWSER_TEST_F(NewTabPageModulesHistoryClustersModuleTest, Layouts) {

@@ -14,6 +14,8 @@ export {LifetimeBrowserProxy, LifetimeBrowserProxyImpl} from '/shared/settings/l
 export {ProfileInfo, ProfileInfoBrowserProxy, ProfileInfoBrowserProxyImpl} from '/shared/settings/people_page/profile_info_browser_proxy.js';
 export {PageStatus, StatusAction, StoredAccount, SyncBrowserProxy, SyncBrowserProxyImpl, SyncPrefs, syncPrefsIndividualDataTypes, SyncStatus, TrustedVaultBannerState} from '/shared/settings/people_page/sync_browser_proxy.js';
 export {MetricsReporting, PrivacyPageBrowserProxy, PrivacyPageBrowserProxyImpl, ResolverOption, SecureDnsMode, SecureDnsSetting, SecureDnsUiManagementMode} from '/shared/settings/privacy_page/privacy_page_browser_proxy.js';
+export {CustomizeColorSchemeModeBrowserProxy} from 'chrome://resources/cr_components/customize_color_scheme_mode/browser_proxy.js';
+export {ColorSchemeMode, CustomizeColorSchemeModeClientCallbackRouter, CustomizeColorSchemeModeClientRemote, CustomizeColorSchemeModeHandlerRemote} from 'chrome://resources/cr_components/customize_color_scheme_mode/customize_color_scheme_mode.mojom-webui.js';
 export {prefToString, stringToPrefValue} from 'chrome://resources/cr_components/settings_prefs/pref_util.js';
 export {SettingsPrefsElement} from 'chrome://resources/cr_components/settings_prefs/prefs.js';
 export {PrefsMixin, PrefsMixinInterface} from 'chrome://resources/cr_components/settings_prefs/prefs_mixin.js';
@@ -32,6 +34,9 @@ export {PluralStringProxyImpl as SettingsPluralStringProxyImpl} from 'chrome://r
 export {getTrustedHTML} from 'chrome://resources/js/static_types.js';
 export {SettingsAboutPageElement} from './about_page/about_page.js';
 // clang-format off
+// <if expr="_google_chrome">
+export {ABOUT_PAGE_PRIVACY_POLICY_URL} from './about_page/about_page.js';
+// </if>
 export {AboutPageBrowserProxy, AboutPageBrowserProxyImpl, UpdateStatus} from './about_page/about_page_browser_proxy.js';
 // <if expr="_google_chrome and is_macosx">
 export {PromoteUpdaterStatus} from './about_page/about_page_browser_proxy.js';

@@ -24,10 +24,6 @@
 #import "ios/chrome/browser/sync/sync_service_factory.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_mediator.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 class SpotlightTopSitesBridge;
 class SpotlightTopSitesCallbackBridge;
 
@@ -130,7 +126,8 @@ class SpotlightTopSitesBridge : public history::TopSitesObserver {
          searchableItemFactory:
              [[SearchableItemFactory alloc]
                  initWithLargeIconService:largeIconService
-                                   domain:spotlight::DOMAIN_TOPSITES]];
+                                   domain:spotlight::DOMAIN_TOPSITES
+                    useTitleInIdentifiers:YES]];
 }
 
 - (instancetype)
@@ -183,26 +180,12 @@ class SpotlightTopSitesBridge : public history::TopSitesObserver {
       _topSitesCallbackBridge->AsWeakPtr()));
 }
 
-- (BOOL)isURLBookmarked:(const GURL&)URL {
-  if (!_bookmarkModel->loaded())
-    return NO;
-
-  std::vector<const bookmarks::BookmarkNode*> nodes;
-  _bookmarkModel->GetNodesByURL(URL, &nodes);
-  return nodes.size() > 0;
-}
-
 - (void)onMostVisitedURLsAvailable:
     (const history::MostVisitedURLList&)top_sites {
   NSUInteger sitesToIndex =
       MIN(top_sites.size(), [ContentSuggestionsMediator maxSitesShown]);
   for (size_t i = 0; i < sitesToIndex; i++) {
     const GURL& URL = top_sites[i].url;
-
-    // Check if the item is bookmarked, in which case it is already indexed.
-    if ([self isURLBookmarked:URL]) {
-      continue;
-    }
 
     __weak TopSitesSpotlightManager* weakSelf = self;
     [self.searchableItemFactory

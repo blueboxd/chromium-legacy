@@ -27,6 +27,7 @@
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gfx/native_pixmap.h"
 
 #if BUILDFLAG(IS_WIN)
@@ -102,15 +103,17 @@ using VideoDecodeDevice = void*;
 // SharedImageRepresentation.
 class GPU_GLES2_EXPORT SharedImageBacking {
  public:
-  SharedImageBacking(const Mailbox& mailbox,
-                     viz::SharedImageFormat format,
-                     const gfx::Size& size,
-                     const gfx::ColorSpace& color_space,
-                     GrSurfaceOrigin surface_origin,
-                     SkAlphaType alpha_type,
-                     uint32_t usage,
-                     size_t estimated_size,
-                     bool is_thread_safe);
+  SharedImageBacking(
+      const Mailbox& mailbox,
+      viz::SharedImageFormat format,
+      const gfx::Size& size,
+      const gfx::ColorSpace& color_space,
+      GrSurfaceOrigin surface_origin,
+      SkAlphaType alpha_type,
+      uint32_t usage,
+      size_t estimated_size,
+      bool is_thread_safe,
+      absl::optional<gfx::BufferUsage> buffer_usage = absl::nullopt);
 
   virtual ~SharedImageBacking();
 
@@ -123,6 +126,7 @@ class GPU_GLES2_EXPORT SharedImageBacking {
   const Mailbox& mailbox() const { return mailbox_; }
   bool is_thread_safe() const { return !!lock_; }
   bool is_ref_counted() const { return is_ref_counted_; }
+  gfx::BufferUsage buffer_usage() const { return buffer_usage_.value(); }
 
   void OnContextLost();
 
@@ -167,7 +171,7 @@ class GPU_GLES2_EXPORT SharedImageBacking {
   // Marks the provided rect as cleared.
   virtual void SetClearedRect(const gfx::Rect& cleared_rect) = 0;
 
-  // Indicate that the image is purgable. When an image is purgeable, its
+  // Indicate that the image is purgeable. When an image is purgeable, its
   // contents may be discarded at any time. Before the image can be used again,
   // it must be set to be not-purgeable. This is intended to be lighter-weight
   // than allocating and freeing the image. See investigation in
@@ -228,6 +232,9 @@ class GPU_GLES2_EXPORT SharedImageBacking {
   // Returns the NativePixmap backing the SharedImageBacking. Returns null if
   // the SharedImage is not backed by a NativePixmap.
   virtual scoped_refptr<gfx::NativePixmap> GetNativePixmap();
+
+  // Returns the GpuMemoryBufferHandle if present.
+  virtual gfx::GpuMemoryBufferHandle GetGpuMemoryBufferHandle();
 
   // Helper to determine if the entire SharedImage is cleared.
   bool IsCleared() const { return ClearedRect() == gfx::Rect(size()); }
@@ -357,6 +364,9 @@ class GPU_GLES2_EXPORT SharedImageBacking {
   const uint32_t usage_;
   size_t estimated_size_ GUARDED_BY(lock_);
 
+  // Note that this will be eventually removed and merged into SharedImageUsage.
+  const absl::optional<gfx::BufferUsage> buffer_usage_;
+
   bool is_ref_counted_ = true;
 
   raw_ptr<SharedImageFactory> factory_ = nullptr;
@@ -382,15 +392,17 @@ class GPU_GLES2_EXPORT SharedImageBacking {
 class GPU_GLES2_EXPORT ClearTrackingSharedImageBacking
     : public SharedImageBacking {
  public:
-  ClearTrackingSharedImageBacking(const Mailbox& mailbox,
-                                  viz::SharedImageFormat format,
-                                  const gfx::Size& size,
-                                  const gfx::ColorSpace& color_space,
-                                  GrSurfaceOrigin surface_origin,
-                                  SkAlphaType alpha_type,
-                                  uint32_t usage,
-                                  size_t estimated_size,
-                                  bool is_thread_safe);
+  ClearTrackingSharedImageBacking(
+      const Mailbox& mailbox,
+      viz::SharedImageFormat format,
+      const gfx::Size& size,
+      const gfx::ColorSpace& color_space,
+      GrSurfaceOrigin surface_origin,
+      SkAlphaType alpha_type,
+      uint32_t usage,
+      size_t estimated_size,
+      bool is_thread_safe,
+      absl::optional<gfx::BufferUsage> buffer_usage = absl::nullopt);
 
   gfx::Rect ClearedRect() const override;
   void SetClearedRect(const gfx::Rect& cleared_rect) override;

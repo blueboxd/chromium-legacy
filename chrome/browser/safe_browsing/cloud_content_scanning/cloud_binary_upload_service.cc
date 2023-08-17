@@ -8,12 +8,13 @@
 #include "base/command_line.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/ranges/algorithm.h"
+#include "chrome/browser/enterprise/browser_management/management_service_factory.h"
 #include "chrome/browser/enterprise/util/affiliation.h"
-#include "chrome/browser/policy/management_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager.h"
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager_factory.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
+#include "components/policy/core/common/management/management_service.h"
 #include "components/safe_browsing/content/browser/web_ui/safe_browsing_ui.h"
 #include "components/safe_browsing/core/common/features.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -70,8 +71,18 @@ net::NetworkTrafficAnnotationTag GetTrafficAnnotationTag(bool is_app) {
             "downloads a file, and the browser is enrolled into the "
             "Advanced Protection Program."
           data:
-            "The downloaded file."
+            "The downloaded file. Also an access token (enterprise only)."
           destination: GOOGLE_OWNED_SERVICE
+          internal {
+            contacts {
+              owners: "//chrome/browser/safe_browsing/cloud_content_scanning/OWNERS"
+            }
+          }
+          user_data {
+            type: ACCESS_TOKEN
+            type: FILE_DATA
+          }
+          last_reviewed: "2023-07-28"
         }
         policy {
           cookies_allowed: YES
@@ -105,8 +116,20 @@ net::NetworkTrafficAnnotationTag GetTrafficAnnotationTag(bool is_app) {
             "Chrome or data printed from Chrome respectively."
           data:
             "The uploaded/downloaded/transfered file, pasted data or printed "
-            "data."
+            "data. Also includes an access token (enterprise only)."
           destination: GOOGLE_OWNED_SERVICE
+          internal {
+            contacts {
+              owners: "//chrome/browser/safe_browsing/cloud_content_scanning/OWNERS"
+            }
+          }
+          user_data {
+            type: ACCESS_TOKEN
+            type: FILE_DATA
+            type: USER_CONTENT
+            type: WEB_CONTENT
+          }
+          last_reviewed: "2023-07-28"
         }
         policy {
           cookies_allowed: YES
@@ -144,8 +167,11 @@ bool CanUseAccessToken(const BinaryUploadService::Request& request,
 
   // Allow the access token to be used on unmanaged devices, but not on
   // managed devices that aren't affiliated.
-  if (!policy::IsDeviceCloudManaged())
+  if (!policy::ManagementServiceFactory::GetForProfile(profile)
+           ->HasManagementAuthority(
+               policy::EnterpriseManagementAuthority::CLOUD_DOMAIN)) {
     return true;
+  }
 
   return chrome::enterprise_util::IsProfileAffiliated(profile);
 }
@@ -836,6 +862,11 @@ void CloudBinaryUploadService::SetAuthForTesting(const std::string& dm_token,
     TokenAndConnector token_and_connector = {dm_token, connector};
     can_upload_enterprise_data_[token_and_connector] = authorized;
   }
+}
+
+void CloudBinaryUploadService::SetTokenFetcherForTesting(
+    std::unique_ptr<SafeBrowsingTokenFetcher> token_fetcher) {
+  token_fetcher_ = std::move(token_fetcher);
 }
 
 // static

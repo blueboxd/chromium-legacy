@@ -11,6 +11,7 @@
 #include "chrome/browser/printing/browser_printing_context_factory_for_test.h"
 #include "chrome/browser/printing/print_error_dialog.h"
 #include "chrome/browser/printing/print_view_manager_base.h"
+#include "chrome/browser/printing/test_print_preview_observer.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_browsertest_util.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/common/chrome_switches.h"
@@ -55,42 +56,19 @@ class PrintObserver : public printing::PrintViewManagerBase::TestObserver {
   ~PrintObserver() override { print_view_manager_->RemoveTestObserver(*this); }
 
   // printing::PrintViewManagerBase::TestObserver:
-  void OnPrintNow(const content::RenderFrameHost* rfh) override {
-    EXPECT_FALSE(print_now_called_);
-    EXPECT_FALSE(print_preview_called_);
-    EXPECT_EQ(rfh, rfh_);
+  void OnReleasePrintJob() override {
+    EXPECT_FALSE(print_job_released_);
     run_loop_.Quit();
-    print_now_called_ = true;
-  }
-  void OnPrintPreview(const content::RenderFrameHost* rfh) override {
-    EXPECT_FALSE(print_preview_called_);
-    EXPECT_FALSE(print_now_called_);
-    EXPECT_EQ(rfh, rfh_);
-    run_loop_.Quit();
-    print_preview_called_ = true;
+    print_job_released_ = true;
   }
 
-  void WaitForPrintNow() {
-    WaitIfNotAlreadyPrinted();
-    EXPECT_TRUE(print_now_called_);
-    EXPECT_FALSE(print_preview_called_);
-  }
-
-  void WaitForPrintPreview() {
-    WaitIfNotAlreadyPrinted();
-    EXPECT_TRUE(print_preview_called_);
-    EXPECT_FALSE(print_now_called_);
+  void WaitForPrintJobRelease() {
+    run_loop_.Run();
+    EXPECT_TRUE(print_job_released_);
   }
 
  private:
-  void WaitIfNotAlreadyPrinted() {
-    if (!print_now_called_ && !print_preview_called_) {
-      run_loop_.Run();
-    }
-  }
-
-  bool print_now_called_ = false;
-  bool print_preview_called_ = false;
+  bool print_job_released_ = false;
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
   using PrintViewManagerImpl = printing::PrintViewManager;
@@ -168,7 +146,7 @@ IN_PROC_BROWSER_TEST_P(PDFExtensionPrintingTest, BasicPrintCommand) {
 
   PrintObserver print_observer(frame);
   chrome::BasicPrint(browser());
-  print_observer.WaitForPrintNow();
+  print_observer.WaitForPrintJobRelease();
 }
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
@@ -178,9 +156,9 @@ IN_PROC_BROWSER_TEST_P(PDFExtensionPrintingTest, PrintCommand) {
   content::RenderFrameHost* frame = GetPluginFrame(guest);
   ASSERT_TRUE(frame);
 
-  PrintObserver print_observer(frame);
+  printing::TestPrintPreviewObserver print_observer(/*wait_for_loaded=*/false);
   chrome::Print(browser());
-  print_observer.WaitForPrintPreview();
+  print_observer.WaitUntilPreviewIsReady();
 }
 
 IN_PROC_BROWSER_TEST_P(PDFExtensionPrintingTest,
@@ -197,10 +175,10 @@ IN_PROC_BROWSER_TEST_P(PDFExtensionPrintingTest,
   // Executes the print command as soon as the context menu is shown.
   ContextMenuNotificationObserver context_menu_observer(IDC_PRINT);
 
-  PrintObserver print_observer(plugin_frame);
+  printing::TestPrintPreviewObserver print_observer(/*wait_for_loaded=*/false);
   guest_main_frame->GetRenderWidgetHost()->ShowContextMenuAtPoint(
       {1, 1}, ui::MENU_SOURCE_MOUSE);
-  print_observer.WaitForPrintPreview();
+  print_observer.WaitUntilPreviewIsReady();
   menu_interceptor.Wait();
 }
 
@@ -220,12 +198,12 @@ IN_PROC_BROWSER_TEST_P(
   // Executes the print command as soon as the context menu is shown.
   ContextMenuNotificationObserver context_menu_observer(IDC_PRINT);
 
-  PrintObserver print_observer(plugin_frame);
+  printing::TestPrintPreviewObserver print_observer(/*wait_for_loaded=*/false);
   SimulateMouseClickAt(guest, blink::WebInputEvent::kNoModifiers,
                        blink::WebMouseEvent::Button::kLeft, {1, 1});
   guest_main_frame->GetRenderWidgetHost()->ShowContextMenuAtPoint(
       {1, 1}, ui::MENU_SOURCE_MOUSE);
-  print_observer.WaitForPrintPreview();
+  print_observer.WaitUntilPreviewIsReady();
   menu_interceptor.Wait();
 }
 
@@ -242,11 +220,11 @@ IN_PROC_BROWSER_TEST_P(PDFExtensionPrintingTest,
   // Executes the print command as soon as the context menu is shown.
   ContextMenuNotificationObserver context_menu_observer(IDC_PRINT);
 
-  PrintObserver print_observer(plugin_frame);
+  printing::TestPrintPreviewObserver print_observer(/*wait_for_loaded=*/false);
   SetInputFocusOnPlugin(guest);
   plugin_frame->GetRenderWidgetHost()->ShowContextMenuAtPoint(
       {1, 1}, ui::MENU_SOURCE_MOUSE);
-  print_observer.WaitForPrintPreview();
+  print_observer.WaitUntilPreviewIsReady();
   menu_interceptor.Wait();
 }
 
@@ -264,11 +242,11 @@ IN_PROC_BROWSER_TEST_P(PDFExtensionPrintingTest,
   // Executes the print command as soon as the context menu is shown.
   ContextMenuNotificationObserver context_menu_observer(IDC_PRINT);
 
-  PrintObserver print_observer(plugin_frame);
+  printing::TestPrintPreviewObserver print_observer(/*wait_for_loaded=*/false);
   SetInputFocusOnPlugin(guest);
   plugin_frame->GetRenderWidgetHost()->ShowContextMenuAtPoint(
       {1, 1}, ui::MENU_SOURCE_MOUSE);
-  print_observer.WaitForPrintPreview();
+  print_observer.WaitUntilPreviewIsReady();
   menu_interceptor.Wait();
 }
 
@@ -278,14 +256,14 @@ IN_PROC_BROWSER_TEST_P(PDFExtensionPrintingTest, PrintButton) {
   content::RenderFrameHost* frame = GetPluginFrame(guest);
   ASSERT_TRUE(frame);
 
-  PrintObserver print_observer(frame);
+  printing::TestPrintPreviewObserver print_observer(/*wait_for_loaded=*/false);
   constexpr char kClickPrintButtonScript[] = R"(
     viewer.shadowRoot.querySelector('#toolbar')
         .shadowRoot.querySelector('#print')
         .click();
   )";
   EXPECT_TRUE(ExecJs(guest->GetGuestMainFrame(), kClickPrintButtonScript));
-  print_observer.WaitForPrintPreview();
+  print_observer.WaitUntilPreviewIsReady();
 }
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 
@@ -299,6 +277,7 @@ class PDFExtensionBasicPrintingTest : public PDFExtensionPrintingTest {
   // PDFExtensionPrintingTest:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kDisablePrintPreview);
+    PDFExtensionPrintingTest::SetUpCommandLine(command_line);
   }
 };
 
@@ -319,8 +298,8 @@ IN_PROC_BROWSER_TEST_P(PDFExtensionBasicPrintingTest,
   SetInputFocusOnPlugin(guest);
   plugin_frame->GetRenderWidgetHost()->ShowContextMenuAtPoint(
       {1, 1}, ui::MENU_SOURCE_MOUSE);
-  print_observer.WaitForPrintNow();
   menu_interceptor.Wait();
+  print_observer.WaitForPrintJobRelease();
 }
 
 INSTANTIATE_TEST_SUITE_P(All, PDFExtensionBasicPrintingTest, testing::Bool());

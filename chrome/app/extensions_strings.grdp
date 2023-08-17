@@ -569,13 +569,19 @@
     Keep this extension
   </message>
   <message name="IDS_EXTENSIONS_SC_REMOVE_ALL" desc="The generic label for a button to remove all extensions.">
-    Remove All
+    Remove all
   </message>
   <message name="IDS_EXTENSIONS_SC_ALL_DONE_FOR_NOW" desc="The text of the safety check completion state.">
     All done for now
   </message>
   <message name="IDS_EXTENSIONS_SC_ALL_EXTENSIONS" desc="The label for extensions cards below the safety check panel.">
     All Extensions
+  </message>
+  <message name="IDS_EXTENSIONS_SC_REMOVE_BUTTON_A11Y_LABEL" desc="The (accessibility) label for remove extension button.">
+    Remove <ph name="EXTENSION_NAME">$1<ex>Voice Over</ex></ph> extension
+  </message>
+  <message name="IDS_EXTENSIONS_SC_OPTION_MENU_A11Y_LABEL" desc="The (accessibility) label for the three dots option menu.">
+    More actions for <ph name="EXTENSION_NAME">$1<ex>Voice Over</ex></ph> extension
   </message>
 <if expr="is_macosx">
   <message name="IDS_EXTENSIONS_INCLUDE_START_MODIFIER" desc="Error message explaining that shortcuts must start with either the Control, Alt, or Command key.">
@@ -585,6 +591,12 @@
 <if expr="chromeos_ash">
   <message name="IDS_EXTENSIONS_INCLUDE_START_MODIFIER" desc="Error message explaining that shortcuts must start with either the Control, Alt, or Search key.">
     Include Ctrl, Alt, or Search
+  </message>
+  <message name="IDS_EXTENSIONS_WFH_PERMISSION_HANDLER_FILES" desc="Label showing file names in singular or plural form.">
+    {FILE_COUNT, plural,
+      =1 {Open and edit <ph name="FILE1">{FILE1}<ex>1.txt</ex></ph> in this extension}
+      other {Open and edit <ph name="FILE1">{FILE1}<ex>1.txt</ex></ph>, ... in this app}
+    }
   </message>
 </if>
 <if expr="is_macosx or chromeos_ash">

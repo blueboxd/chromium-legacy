@@ -6,7 +6,6 @@
 
 #include <cstdint>
 #include <memory>
-#include <set>
 #include <string>
 #include <utility>
 #include <vector>
@@ -71,19 +70,15 @@
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/user_manager/user.h"
-#include "components/version_info/version_info.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/network_service_instance.h"
-#include "content/public/common/user_agent.h"
 #include "google_apis/common/auth_service.h"
 #include "google_apis/gaia/core_account_id.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "net/traffic_annotation/network_traffic_annotation.h"
-#include "services/device/public/mojom/wake_lock_provider.mojom.h"
 #include "services/network/public/cpp/network_connection_tracker.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "storage/browser/file_system/external_mount_points.h"
@@ -369,6 +364,26 @@ bool ClearCache(base::FilePath cache_path, base::FilePath logs_path) {
   return success;
 }
 
+// These values are logged to UMA. Entries should not be renumbered and
+// numeric values should never be reused. Please keep in sync with
+// "GoogleDrive.BulkPinning.MountFailureReason" in
+// src/tools/metrics/histograms/enums.xml.
+enum class BulkPinningMountFailureReason {
+  kSuccess = 0,
+  kThreeConsecutiveFailures = 1,
+  kMoreThanTenTotalFailures = 2,
+  kMaxValue = kMoreThanTenTotalFailures,
+};
+
+void RecordBulkPinningMountFailureReason(const Profile* profile,
+                                         BulkPinningMountFailureReason reason) {
+  if (!drive::util::IsDriveFsBulkPinningEnabled(profile)) {
+    return;
+  }
+  base::UmaHistogramEnumeration(
+      "FileBrowser.GoogleDrive.BulkPinning.MultipleMountFailures", reason);
+}
+
 }  // namespace
 
 // Observes drive disable Preference's change.
@@ -600,10 +615,6 @@ class DriveIntegrationService::DriveFsHolder
         metrics::prefs::kMetricsReportingEnabled);
   }
 
-  DriveNotificationManager& GetDriveNotificationManager() override {
-    return *DriveNotificationManagerFactory::GetForBrowserContext(profile_);
-  }
-
   void OnMountFailed(MountFailure failure,
                      absl::optional<TimeDelta> remount_delay) override {
     mount_observer_->OnMountFailed(failure, std::move(remount_delay));
@@ -658,7 +669,7 @@ class DriveIntegrationService::DriveFsHolder
       mojo::PendingRemote<drivefs::mojom::NativeMessagingHost> host,
       drivefs::mojom::DriveFsDelegate::ConnectToExtensionCallback callback)
       override {
-    if (crosapi::browser_util::IsLacrosPrimaryBrowser()) {
+    if (crosapi::browser_util::IsLacrosEnabled()) {
       if (!native_message_host_bridge_) {
         auto* browser_manager = crosapi::BrowserManager::Get();
         if (!native_message_keep_alive_ && browser_manager) {
@@ -879,6 +890,10 @@ base::FilePath DriveIntegrationService::GetDriveFsLogPath() const {
   return GetDriveFsHost()->GetDataPath().Append("Logs/drivefs.txt");
 }
 
+base::FilePath DriveIntegrationService::GetDriveFsContentCachePath() const {
+  return GetDriveFsHost()->GetDataPath().Append("content_cache");
+}
+
 bool DriveIntegrationService::GetRelativeDrivePath(
     const base::FilePath& local_path,
     base::FilePath* drive_path) const {
@@ -1055,6 +1070,9 @@ void DriveIntegrationService::MaybeMountDrive(const base::FilePath& data_dir,
           NotificationHandler::Type::TRANSIENT, *notification, nullptr);
 
       // Disable bulk-pinning.
+      base::UmaHistogramBoolean(
+          "FileBrowser.GoogleDrive.BulkPinning.StateWhenCacheVolumeRemoved",
+          GetPrefs()->GetBoolean(kDriveFsBulkPinningEnabled));
       GetPrefs()->SetBoolean(kDriveFsBulkPinningEnabled, false);
     }
   }
@@ -1077,7 +1095,7 @@ bool DriveIntegrationService::AddDriveMountPointAfterMounted() {
       storage::FileSystemMountOption(), drive_mount_point);
 
   if (success) {
-    logger_->Log(logging::LOG_INFO, "Drive mount point is added");
+    logger_->Log(logging::LOGGING_INFO, "Drive mount point is added");
     for (auto& observer : observers_) {
       observer.OnFileSystemMounted();
     }
@@ -1106,7 +1124,7 @@ void DriveIntegrationService::RemoveDriveMountPoint() {
       for (auto& observer : observers_) {
         observer.OnFileSystemBeingUnmounted();
       }
-      logger_->Log(logging::LOG_INFO, "Drive mount point is removed");
+      logger_->Log(logging::LOGGING_INFO, "Drive mount point is removed");
     }
   }
   GetDriveFsHost()->Unmount();
@@ -1133,7 +1151,7 @@ void DriveIntegrationService::MaybeRemountFileSystem(
   if (!remount_delay) {
     if (failed_to_mount && preference_watcher_ &&
         !preference_watcher_->IsOnline()) {
-      logger_->Log(logging::LOG_WARNING,
+      logger_->Log(logging::LOGGING_WARNING,
                    "DriveFs failed to start; will retry when online");
       remount_when_online_ = true;
       return;
@@ -1144,8 +1162,10 @@ void DriveIntegrationService::MaybeRemountFileSystem(
     ++drivefs_total_failures_count_;
     if (drivefs_total_failures_count_ > 10) {
       mount_failed_ = true;
-      logger_->Log(logging::LOG_ERROR,
+      logger_->Log(logging::LOGGING_ERROR,
                    "DriveFs is too crashy. Leaving it alone.");
+      RecordBulkPinningMountFailureReason(
+          profile_, BulkPinningMountFailureReason::kMoreThanTenTotalFailures);
       for (auto& observer : observers_) {
         observer.OnFileSystemMountFailed();
       }
@@ -1153,8 +1173,10 @@ void DriveIntegrationService::MaybeRemountFileSystem(
     }
     if (drivefs_consecutive_failures_count_ > 3) {
       mount_failed_ = true;
-      logger_->Log(logging::LOG_ERROR,
+      logger_->Log(logging::LOGGING_ERROR,
                    "DriveFs keeps failing at start. Giving up.");
+      RecordBulkPinningMountFailureReason(
+          profile_, BulkPinningMountFailureReason::kThreeConsecutiveFailures);
       for (auto& observer : observers_) {
         observer.OnFileSystemMountFailed();
       }
@@ -1162,7 +1184,7 @@ void DriveIntegrationService::MaybeRemountFileSystem(
     }
     remount_delay =
         Seconds(5 * (1 << (drivefs_consecutive_failures_count_ - 1)));
-    logger_->Log(logging::LOG_WARNING, "DriveFs died, retry in %d seconds",
+    logger_->Log(logging::LOGGING_WARNING, "DriveFs died, retry in %d seconds",
                  static_cast<int>(remount_delay.value().InSeconds()));
   }
 
@@ -1203,8 +1225,10 @@ void DriveIntegrationService::OnMounted(const base::FilePath& mount_path) {
 
     // Instantiate a PinManager.
     DCHECK(!pin_manager_);
-    pin_manager_ = std::make_unique<PinManager>(profile_->GetPath(), mount_path,
-                                                GetDriveFsInterface());
+    const int queue_size = ash::features::GetDriveFsBulkPinningQueueSize();
+    VLOG(1) << "Bulk-pinning queue size: " << queue_size;
+    pin_manager_ = std::make_unique<PinManager>(
+        profile_->GetPath(), mount_path, GetDriveFsInterface(), queue_size);
 
     // Listen to progress events from this PinManager.
     pin_manager_->AddObserver(this);
@@ -1228,6 +1252,9 @@ void DriveIntegrationService::OnMounted(const base::FilePath& mount_path) {
       bulk_pinning_pref_sampling_ = true;
       SampleBulkPinningPref();
     }
+
+    RecordBulkPinningMountFailureReason(
+        profile_, BulkPinningMountFailureReason::kSuccess);
   }
 }
 
@@ -1857,7 +1884,6 @@ DriveIntegrationServiceFactory::DriveIntegrationServiceFactory()
               .WithGuest(ProfileSelection::kRedirectedToOriginal)
               .Build()) {
   DependsOn(IdentityManagerFactory::GetInstance());
-  DependsOn(DriveNotificationManagerFactory::GetInstance());
   DependsOn(DownloadCoreServiceFactory::GetInstance());
 }
 

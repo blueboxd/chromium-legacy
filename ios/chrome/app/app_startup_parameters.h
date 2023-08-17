@@ -29,6 +29,7 @@ enum TabOpeningPostOpeningAction {
   START_LENS_FROM_SPOTLIGHT,
   FOCUS_OMNIBOX,
   SHOW_DEFAULT_BROWSER_SETTINGS,
+  SEARCH_PASSWORDS,
   TAB_OPENING_POST_OPENING_ACTION_COUNT,
 };
 
@@ -66,6 +67,8 @@ class GURL;
     TabOpeningPostOpeningAction postOpeningAction;
 // Boolean to track if a Payment Request response is requested at startup.
 @property(nonatomic, readwrite, assign) BOOL completePaymentRequest;
+// When this flag is set, attempt to open `externalURL` in an existing tab.
+@property(nonatomic, readwrite, assign) BOOL openExistingTab;
 // Text query that should be executed on startup.
 @property(nonatomic, readwrite, copy) NSString* textQuery;
 // Data for UIImage for image query that should be executed on startup.

@@ -22,6 +22,16 @@ chromium-metrics-reviews@google.com.
 
 <histograms>
 
+<histogram name="Cookie.AvgCookieJarSizePerKey" units="kibibytes"
+    expires_after="2023-12-22">
+  <owner>dylancutler@google.com</owner>
+  <owner>src/net/cookies/OWNERS</owner>
+  <summary>
+    This histogram records the average sum of the sizes of the name and value of
+    all cookies per domain. This metric is recorded every 10 minutes.
+  </summary>
+</histogram>
+
 <histogram name="Cookie.ClockSkew.ExpiredWithoutSkew" enum="Boolean"
     expires_after="2024-04-01">
   <owner>kyraseevers@chromium.org</owner>
@@ -72,7 +82,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cookie.CommitProblem" enum="CookieCommitProblem"
-    expires_after="2023-11-19">
+    expires_after="2024-01-21">
   <owner>morlovich@chromium.org</owner>
   <summary>
     Recorded when a problem occurs trying to commit changes to the cookie store
@@ -80,8 +90,18 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Cookie.CookieJarSize" units="kibibytes"
+    expires_after="2023-12-22">
+  <owner>dylancutler@google.com</owner>
+  <owner>src/net/cookies/OWNERS</owner>
+  <summary>
+    This histogram records the sum of the sizes of the name and value of all
+    cookies in the cookie jar. This metric is recorded every 10 minutes.
+  </summary>
+</histogram>
+
 <histogram name="Cookie.CookiePrefix" enum="CookiePrefix"
-    expires_after="2023-12-04">
+    expires_after="2024-02-05">
   <owner>estark@chromium.org</owner>
   <summary>
     Number of times a cookie was set with a name prefixed by
@@ -142,7 +162,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cookie.CookieSchemeRequestScheme" enum="CookieRequestScheme"
-    expires_after="2023-12-10">
+    expires_after="2024-02-11">
   <owner>bingler@chromium.org</owner>
   <owner>miketaylr@chromium.org</owner>
   <summary>
@@ -153,7 +173,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cookie.CookieSourceScheme" enum="CookieSourceScheme"
-    expires_after="2023-12-04">
+    expires_after="2024-02-04">
   <owner>estark@chromium.org</owner>
   <summary>
     For each cookie added to the store, record whether its source URL has a
@@ -203,7 +223,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cookie.CrossSiteRedirectDowngradeChangesInclusionAge"
-    units="minutes" expires_after="2023-11-19">
+    units="minutes" expires_after="2024-01-21">
   <owner>bingler@chromium.org</owner>
   <owner>miketaylr@chromium.org</owner>
   <summary>
@@ -277,7 +297,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Cookie.DomainSet" enum="Boolean" expires_after="2023-11-19">
+<histogram name="Cookie.DomainSet" enum="Boolean" expires_after="2024-01-21">
   <owner>bingler@chromium.org</owner>
   <owner>miketaylr@chromium.org</owner>
   <summary>
@@ -545,7 +565,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cookie.FromStorageWithValidLength" enum="BooleanValid"
-    expires_after="2023-12-10">
+    expires_after="2024-02-11">
   <owner>bingler@chromium.org</owner>
   <owner>awillia@chromium.org</owner>
   <summary>
@@ -581,7 +601,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cookie.IncludedResponseEffectiveSameSite"
-    enum="CookieEffectiveSameSite" expires_after="2023-11-20">
+    enum="CookieEffectiveSameSite" expires_after="2024-02-11">
   <owner>bingler@chromium.org</owner>
   <owner>miketaylr@chromium.org</owner>
   <summary>
@@ -611,6 +631,17 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Cookie.MaxCookieJarSizePerKey" units="kibibytes"
+    expires_after="2023-12-22">
+  <owner>dylancutler@google.com</owner>
+  <owner>src/net/cookies/OWNERS</owner>
+  <summary>
+    This histogram records the maximum sum of the sizes of the name and value of
+    all cookies that a single domain is using. This metric is recorded every 10
+    minutes.
+  </summary>
+</histogram>
+
 <histogram name="Cookie.MaxSameSiteNoneCookiesPerKey" units="units"
     expires_after="2023-12-24">
   <owner>dylancutler@google.com</owner>
@@ -636,7 +667,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Cookie.NumKeys" units="keys" expires_after="2023-11-12">
+<histogram name="Cookie.NumKeys" units="keys" expires_after="2024-01-28">
   <owner>cfredric@chromium.org</owner>
   <owner>kaustubhag@chromium.org</owner>
   <summary>
@@ -872,7 +903,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cookie.SameSiteNoneSizeBytes" units="bytes"
-    expires_after="2024-01-14">
+    expires_after="2024-02-04">
   <owner>dylancutler@google.com</owner>
   <owner>src/net/cookies/OWNERS</owner>
   <summary>
@@ -918,6 +949,16 @@ chromium-metrics-reviews@google.com.
   <owner>bingler@chromium.org</owner>
   <owner>src/net/cookies/OWNERS</owner>
   <summary>The amount of time (ms) to initialize the cookies database.</summary>
+</histogram>
+
+<histogram name="Cookie.TimeToRecordPeriodicStats" units="ms"
+    expires_after="2023-12-22">
+  <owner>bingler@chromium.org</owner>
+  <owner>src/net/cookies/OWNERS</owner>
+  <summary>
+    The amount of time (ms) to record periodic statistics for logging. This
+    metric is recorded every 10 minutes.
+  </summary>
 </histogram>
 
 <histogram name="Cookie.TruncatingCharacterInCookieString"

@@ -53,18 +53,18 @@ struct AllowlistedComponentExtensionIME {
 } allowlisted_component_extensions[] = {
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
     {
-        // Official Google XKB Input.
+        // Official Google ChromeOS 1P Input.
         extension_ime_util::kXkbExtensionId,
         IDR_GOOGLE_XKB_MANIFEST,
     },
 #else
     {
-        // Open-sourced ChromeOS xkb extension.
+        // Open-sourced ChromiumOS xkb extension.
         extension_ime_util::kXkbExtensionId,
         IDR_XKB_MANIFEST,
     },
     {
-        // Open-sourced ChromeOS Keyboards extension.
+        // Open-sourced ChromiumOS Keyboards extension.
         extension_ime_util::kM17nExtensionId,
         IDR_M17N_MANIFEST,
     },

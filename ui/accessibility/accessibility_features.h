@@ -138,6 +138,13 @@ AX_BASE_EXPORT BASE_DECLARE_FEATURE(kAccessibilityChromeVoxPageMigration);
 // Returns true if ChromeVox settings page migration is enabled.
 AX_BASE_EXPORT bool IsAccessibilityChromeVoxPageMigrationEnabled();
 
+// Enables Dictation keyboard improvements.
+AX_BASE_EXPORT BASE_DECLARE_FEATURE(
+    kAccessibilityDictationKeyboardImprovements);
+
+// Returns true if Dictation keyboard improvements are enabled.
+AX_BASE_EXPORT bool IsAccessibilityDictationKeyboardImprovementsEnabled();
+
 // Enables AccessibilitySelectToSpeakPrefsMigration.
 AX_BASE_EXPORT BASE_DECLARE_FEATURE(kAccessibilitySelectToSpeakPrefsMigration);
 
@@ -157,6 +164,12 @@ AX_BASE_EXPORT BASE_DECLARE_FEATURE(
 
 // Returns true if kAccessibilityAcceleratorNotificationsTimeout is enabled.
 AX_BASE_EXPORT bool IsAccessibilityAcceleratorNotificationsTimeoutEnabled();
+
+// Enables the experimental GameFace integration.
+AX_BASE_EXPORT BASE_DECLARE_FEATURE(kAccessibilityGameFaceIntegration);
+
+// Returns true if the GameFace integration is enabled.
+AX_BASE_EXPORT bool IsAccessibilityGameFaceIntegrationEnabled();
 
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 

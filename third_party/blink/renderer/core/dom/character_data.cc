@@ -254,9 +254,14 @@ void CharacterData::DidModifyData(const String& old_data, UpdateSource source) {
 }
 
 Node* CharacterData::Clone(Document& factory,
-                           NodeCloningData& cloning_data) const {
+                           NodeCloningData& cloning_data,
+                           ContainerNode* append_to,
+                           ExceptionState& append_exception_state) const {
   CharacterData* clone = CloneWithData(factory, data());
   clone->ClonePartsFrom(*this, cloning_data);
+  if (append_to) {
+    append_to->AppendChild(clone, append_exception_state);
+  }
   return clone;
 }
 
@@ -265,11 +270,13 @@ void CharacterData::ClonePartsFrom(const CharacterData& node,
   if (!data.Has(CloneOption::kPreserveDOMParts)) {
     return;
   }
-  CHECK(RuntimeEnabledFeatures::DOMPartsAPIEnabled());
-  if (node.HasDOMParts()) {
+  DCHECK(RuntimeEnabledFeatures::DOMPartsAPIEnabled());
+  if (auto* parts = node.GetDOMParts()) {
     data.ConnectNodeToClone(node, *this);
-    for (Part* part : node.GetDOMParts()) {
-      data.QueueForCloning(*part);
+    for (Part* part : *parts) {
+      if (part->NodeToSortBy() == node) {
+        data.QueueForCloning(*part);
+      }
     }
   }
 }

@@ -8,6 +8,7 @@
 #include "base/logging.h"
 #include "base/no_destructor.h"
 #include "chrome/browser/ash/policy/core/browser_policy_connector_ash.h"
+#include "chrome/browser/ash/printing/synced_printers_manager_factory.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/scalable_iph/scalable_iph_delegate_impl.h"
 #include "chrome/browser/browser_process.h"
@@ -25,10 +26,26 @@
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_context.h"
+#include "google_apis/gaia/gaia_auth_util.h"
 
 namespace {
+
 constexpr char kScalableIphServiceName[] = "ScalableIphKeyedService";
+
+const user_manager::User* GetUser(content::BrowserContext* browser_context) {
+  return ash::BrowserContextHelper::Get()->GetUserByBrowserContext(
+      browser_context);
 }
+
+bool IsSupportedEmailDomain(content::BrowserContext* browser_context) {
+  const std::string email =
+      GetUser(browser_context)->GetAccountId().GetUserEmail();
+  DCHECK(!email.empty());
+
+  return gaia::IsGoogleInternalAccountEmail(email);
+}
+
+}  // namespace
 
 ScalableIphFactory::ScalableIphFactory()
     : BrowserContextKeyedServiceFactory(
@@ -38,6 +55,7 @@ ScalableIphFactory::ScalableIphFactory()
       << "Testing factory must be null at initialization.";
 
   DependsOn(feature_engagement::TrackerFactory::GetInstance());
+  DependsOn(ash::SyncedPrintersManagerFactory::GetInstance());
 }
 
 ScalableIphFactory::~ScalableIphFactory() = default;
@@ -82,12 +100,6 @@ content::BrowserContext* ScalableIphFactory::GetBrowserContextToUse(
     return nullptr;
   }
 
-  if (g_browser_process->platform_part()
-          ->browser_policy_connector_ash()
-          ->IsDeviceEnterpriseManaged()) {
-    return nullptr;
-  }
-
   Profile* profile = Profile::FromBrowserContext(browser_context);
   if (!profile) {
     return nullptr;
@@ -98,6 +110,16 @@ content::BrowserContext* ScalableIphFactory::GetBrowserContextToUse(
   }
 
   if (profile->IsChild()) {
+    return nullptr;
+  }
+
+  if (IsSupportedEmailDomain(browser_context)) {
+    return browser_context;
+  }
+
+  if (g_browser_process->platform_part()
+          ->browser_policy_connector_ash()
+          ->IsDeviceEnterpriseManaged()) {
     return nullptr;
   }
 
@@ -112,8 +134,7 @@ content::BrowserContext* ScalableIphFactory::GetBrowserContextToUse(
   if (user_manager::UserManager::Get()->GetOwnerAccountId() !=
           EmptyAccountId() &&
       !user_manager::UserManager::Get()->IsOwnerUser(
-          ash::BrowserContextHelper::Get()->GetUserByBrowserContext(
-              browser_context))) {
+          GetUser(browser_context))) {
     return nullptr;
   }
 

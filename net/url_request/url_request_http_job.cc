@@ -15,7 +15,6 @@
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/containers/adapters.h"
-#include "base/feature_list.h"
 #include "base/file_version_info.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
@@ -33,7 +32,6 @@
 #include "base/types/optional_util.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "net/base/features.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/http_user_agent_settings.h"
 #include "net/base/load_flags.h"
@@ -274,9 +272,6 @@ void URLRequestHttpJob::Start() {
       net::MutableNetworkTrafficAnnotationTag(request_->traffic_annotation());
   request_info_.socket_tag = request_->socket_tag();
   request_info_.idempotency = request_->GetIdempotency();
-  request_info_.pervasive_payloads_index_for_logging =
-      request_->pervasive_payloads_index_for_logging();
-  request_info_.checksum = request_->expected_response_checksum();
 #if BUILDFLAG(ENABLE_REPORTING)
   request_info_.reporting_upload_depth = request_->reporting_upload_depth();
 #endif
@@ -704,14 +699,23 @@ void URLRequestHttpJob::SetCookieHeaderAndStart(
           CookieInclusionStatus::EXCLUDE_USER_PREFERENCES);
     }
   }
+  // TODO(https://crbug.com/1469135): Consolidate the following `if` blocks so
+  // that all the cookies should be passed into
+  // `AnnotateAndMoveUserBlockedCookies` to be associated with the correct
+  // inclusion status.
   if (ShouldBlockUnpartitionedCookiesOnly(request_info_.privacy_mode)) {
     auto partition_it = base::ranges::stable_partition(
         maybe_included_cookies, [](const CookieWithAccessResult& el) {
           return el.cookie.IsPartitioned();
         });
     for (auto it = partition_it; it < maybe_included_cookies.end(); ++it) {
-      it->access_result.status.AddExclusionReason(
-          CookieInclusionStatus::EXCLUDE_USER_PREFERENCES);
+      if (!cookie_util::IsForceThirdPartyCookieBlockingEnabled()) {
+        it->access_result.status.AddExclusionReason(
+            CookieInclusionStatus::EXCLUDE_USER_PREFERENCES);
+      } else {
+        it->access_result.status.AddExclusionReason(
+            CookieInclusionStatus::EXCLUDE_THIRD_PARTY_PHASEOUT);
+      }
       if (first_party_set_metadata_.AreSitesInSameFirstPartySet()) {
         it->access_result.status.AddExclusionReason(
             CookieInclusionStatus::
@@ -862,9 +866,8 @@ void URLRequestHttpJob::SaveCookiesAndNotifyHeadersComplete(int result) {
   std::set<std::string> clear_site_data_set(clear_site_data_types.begin(),
                                             clear_site_data_types.end());
   if (clear_site_data_set.find(kDatatypeCookies) != clear_site_data_set.end() ||
-      (base::FeatureList::IsEnabled(features::kClearSiteDataWildcardSupport) &&
-       clear_site_data_set.find(kDatatypeWildcard) !=
-           clear_site_data_set.end())) {
+      clear_site_data_set.find(kDatatypeWildcard) !=
+          clear_site_data_set.end()) {
     clear_site_data_prevents_cookies_from_being_stored = true;
   }
 
@@ -912,9 +915,18 @@ void URLRequestHttpJob::SaveCookiesAndNotifyHeadersComplete(int result) {
 
     num_cookie_lines_left_++;
 
+    // For the block_truncated parameter, the value shouldn't matter here
+    // because HTTP requests containing NULLs causes an error before this code
+    // can be reached and unpaired carriage returns and line feed characters
+    // cause truncation during HTTP header processing before reaching this
+    // point, so DCHECK this assumption and just pass true for this parameter.
+    DCHECK(cookie_string.find('\0') == std::string::npos);
+    DCHECK(cookie_string.find('\r') == std::string::npos);
+    DCHECK(cookie_string.find('\n') == std::string::npos);
     std::unique_ptr<CanonicalCookie> cookie = net::CanonicalCookie::Create(
         request_->url(), cookie_string, base::Time::Now(), server_time,
-        cookie_partition_key_.value(), &returned_status);
+        cookie_partition_key_.value(), /*block_truncated=*/true,
+        &returned_status);
 
     absl::optional<CanonicalCookie> cookie_to_return = absl::nullopt;
     if (returned_status.IsInclude()) {
@@ -922,9 +934,16 @@ void URLRequestHttpJob::SaveCookiesAndNotifyHeadersComplete(int result) {
       // Make a copy of the cookie if we successfully made one.
       cookie_to_return = *cookie;
     }
+
+    // Check cookie accessibility with cookie_settings.
     if (cookie && !CanSetCookie(*cookie, &options, &returned_status)) {
-      returned_status.AddExclusionReason(
-          CookieInclusionStatus::EXCLUDE_USER_PREFERENCES);
+      // Cookie allowed by cookie_settings checks could be blocked explicitly,
+      // e.g. via Android Webview APIs, we need to manually add exclusion reason
+      // in this case.
+      if (returned_status.IsInclude()) {
+        returned_status.AddExclusionReason(
+            net::CookieInclusionStatus::EXCLUDE_USER_PREFERENCES);
+      }
     }
     if (clear_site_data_prevents_cookies_from_being_stored) {
       returned_status.AddExclusionReason(
@@ -1690,6 +1709,13 @@ void URLRequestHttpJob::RecordCompletionHistograms(CompletionCause reason) {
       if (response_info_->was_ip_protected) {
         UMA_HISTOGRAM_TIMES("Net.HttpJob.IpProtection.TotalTimeNotCached",
                             total_time);
+
+        UMA_HISTOGRAM_CUSTOM_COUNTS("Net.HttpJob.IpProtection.BytesSent",
+                                    GetTotalSentBytes(), 1, 50000000, 50);
+
+        UMA_HISTOGRAM_CUSTOM_COUNTS(
+            "Net.HttpJob.IpProtection.PrefilterBytesRead.Net",
+            prefilter_bytes_read(), 1, 50000000, 50);
       }
       UMA_HISTOGRAM_CUSTOM_COUNTS("Net.HttpJob.PrefilterBytesRead.Net",
                                   prefilter_bytes_read(), 1, 50000000, 50);

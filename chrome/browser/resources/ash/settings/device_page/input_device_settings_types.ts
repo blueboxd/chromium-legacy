@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import * as AcceleratorActionTypes from '../mojom-webui/accelerator_actions.mojom-webui.js';
+import * as AcceleratorKeysTypes from '../mojom-webui/accelerator_keys.mojom-webui.js';
 import * as InputDeviceSettingsTypes from '../mojom-webui/input_device_settings.mojom-webui.js';
 import * as InputDeviceSettingsProviderTypes from '../mojom-webui/input_device_settings_provider.mojom-webui.js';
 import * as ModifierKeyTypes from '../mojom-webui/modifier_key.mojom-webui.js';
@@ -63,8 +65,12 @@ export interface GraphicsTablet {
   deviceKey: string;
   id: number;
   name: string;
-  // TODO(yyhyyh@): Add GraphicsTablet settings with
-  // buttonRemapping: ButtonRemapping[] setting.
+  settings: GraphicsTabletSettings;
+}
+
+export interface GraphicsTabletSettings {
+  tabletButtonRemappings: ButtonRemapping[];
+  penButtonRemappings: ButtonRemapping[];
 }
 
 export type KeyboardSettings = InputDeviceSettingsTypes.KeyboardSettings;
@@ -79,6 +85,25 @@ export type InputDeviceSettingsPolicy =
     InputDeviceSettingsTypes.InputDeviceSettingsPolicy;
 export type KeyboardPolicies = InputDeviceSettingsTypes.KeyboardPolicies;
 export type MousePolicies = InputDeviceSettingsTypes.MousePolicies;
+export interface ActionChoice {
+  actionId: AcceleratorAction;
+  name: string;
+}
+
+/** Enumeration of accelerator types. */
+export type Vkey = AcceleratorKeysTypes.VKey;
+export const Vkey = AcceleratorKeysTypes.VKey;
+
+/** Enumeration of accelerator actions. */
+export type AcceleratorAction = AcceleratorActionTypes.AcceleratorAction;
+export const AcceleratorAction = AcceleratorActionTypes.AcceleratorAction;
+
+export type ButtonRemapping = InputDeviceSettingsTypes.ButtonRemapping;
+export type RemappingAction = InputDeviceSettingsTypes.RemappingAction;
+export type KeyEvent = InputDeviceSettingsTypes.KeyEvent;
+
+export type CustomizableButton = InputDeviceSettingsTypes.CustomizableButton;
+export const CustomizableButton = InputDeviceSettingsTypes.CustomizableButton;
 
 export interface KeyboardObserverInterface {
   // Fired when the keyboard list is updated.
@@ -117,6 +142,8 @@ interface FakeInputDeviceSettingsProviderInterface extends
   setMouseSettings(id: number, settings: MouseSettings): void;
   setTouchpadSettings(id: number, settings: TouchpadSettings): void;
   setPointingStickSettings(id: number, settings: PointingStickSettings): void;
+  getActionsForMouseButtonCustomization(): Promise<ActionChoice[]>;
+  getActionsForGraphicsTabletButtonCustomization(): Promise<ActionChoice[]>;
 }
 
 // Type alias to enable use of in-progress InputDeviceSettingsProvider api.

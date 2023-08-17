@@ -49,12 +49,21 @@ CONTENT_EXPORT BASE_DECLARE_FEATURE(kGpuInfoCollectionSeparatePrefetch);
 // https://crbug.com/1286501.
 BASE_DECLARE_FEATURE(kRestrictCanAccessDataForOriginToUIThread);
 
+// (crbug.com/1371756): When enabled, the static routing API starts
+// ServiceWorker when the routing result of a main resource request was network
+// fallback.
+CONTENT_EXPORT BASE_DECLARE_FEATURE(
+    kServiceWorkerStaticRouterStartServiceWorker);
+
 // When enabled, ensures that an unlocked process cannot access data for
 // sites that require a dedicated process.
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kSiteIsolationCitadelEnforcement);
 
 // (crbug/1377753): Speculatively start service worker before BeforeUnload runs.
 CONTENT_EXPORT BASE_DECLARE_FEATURE(kSpeculativeServiceWorkerStartup);
+
+// Flag guard for fix for crbug.com/1414936.
+CONTENT_EXPORT BASE_DECLARE_FEATURE(kWindowOpenFileSelectFix);
 
 // Please keep features in alphabetical order.
 

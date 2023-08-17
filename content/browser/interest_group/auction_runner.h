@@ -93,6 +93,9 @@ class CONTENT_EXPORT AuctionRunner : public blink::mojom::AbortableAdAuction {
   using GetAdAuctionPageDataCallback =
       base::RepeatingCallback<AdAuctionPageData*()>;
 
+  using AreReportingOriginsAttestedCallback =
+      base::RepeatingCallback<bool(const std::vector<url::Origin>&)>;
+
   // Creates an entire FLEDGE auction. Single-use object.
   //
   // Arguments: `auction_worklet_manager`, `interest_group_manager`,
@@ -121,6 +124,10 @@ class CONTENT_EXPORT AuctionRunner : public blink::mojom::AbortableAdAuction {
   //   seller origins, and those for which it returns false will not be allowed
   //   to participate in the auction.
   //
+  //  `attestation_callback` will be called on all interest group
+  //   updates' ad allowed reporting origins, and those updates which the
+  //   callback returns false will not update the interest group.
+  //
   //  `callback` is invoked on auction completion. It should synchronously
   //   destroy this AuctionRunner object. `callback` won't be invoked until
   //   after CreateAndStart() returns.
@@ -139,6 +146,7 @@ class CONTENT_EXPORT AuctionRunner : public blink::mojom::AbortableAdAuction {
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       IsInterestGroupApiAllowedCallback is_interest_group_api_allowed_callback,
       GetAdAuctionPageDataCallback get_page_data_callback,
+      AreReportingOriginsAttestedCallback attestation_callback,
       mojo::PendingReceiver<AbortableAdAuction> abort_receiver,
       RunAuctionCallback callback);
 
@@ -167,9 +175,17 @@ class CONTENT_EXPORT AuctionRunner : public blink::mojom::AbortableAdAuction {
       blink::mojom::AuctionAdConfigAuctionIdPtr auction_id,
       const absl::optional<blink::DirectFromSellerSignals>&
           direct_from_seller_signals) override;
+  void ResolvedDirectFromSellerSignalsHeaderAdSlotPromise(
+      blink::mojom::AuctionAdConfigAuctionIdPtr auction_id,
+      const absl::optional<std::string>&
+          direct_from_seller_signals_header_ad_slot) override;
   void ResolvedAuctionAdResponsePromise(
       blink::mojom::AuctionAdConfigAuctionIdPtr auction_id,
       mojo_base::BigBuffer response) override;
+  void ResolvedAdditionalBids(
+      blink::mojom::AuctionAdConfigAuctionIdPtr auction,
+      std::vector<blink::mojom::AuctionAdConfigAdditionalBidPtr>
+          additional_bids) override;
   void Abort() override;
 
   // Fails the auction, invoking `callback_` and prevents any future calls into
@@ -207,6 +223,7 @@ class CONTENT_EXPORT AuctionRunner : public blink::mojom::AbortableAdAuction {
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       IsInterestGroupApiAllowedCallback is_interest_group_api_allowed_callback,
       GetAdAuctionPageDataCallback get_page_data_callback,
+      AreReportingOriginsAttestedCallback attestation_callback,
       mojo::PendingReceiver<AbortableAdAuction> abort_receiver,
       RunAuctionCallback callback);
 
@@ -273,6 +290,8 @@ class CONTENT_EXPORT AuctionRunner : public blink::mojom::AbortableAdAuction {
   IsInterestGroupApiAllowedCallback is_interest_group_api_allowed_callback_;
 
   GetAdAuctionPageDataCallback get_page_data_callback_;
+
+  AreReportingOriginsAttestedCallback attestation_callback_;
 
   mojo::Receiver<blink::mojom::AbortableAdAuction> abort_receiver_;
 

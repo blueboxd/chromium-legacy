@@ -18,6 +18,7 @@
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
+#include "base/test/to_vector.h"
 #include "base/time/time.h"
 #include "base/types/strong_alias.h"
 #include "build/build_config.h"
@@ -28,12 +29,14 @@
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "components/prefs/pref_service.h"
 #include "components/vector_icons/vector_icons.h"
+#include "device/fido/cable/cable_discovery_data.h"
 #include "device/fido/discoverable_credential_metadata.h"
 #include "device/fido/features.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/fido_request_handler_base.h"
 #include "device/fido/fido_transport_protocol.h"
 #include "device/fido/fido_types.h"
+#include "device/fido/public_key_credential_descriptor.h"
 #include "device/fido/public_key_credential_user_entity.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -122,6 +125,7 @@ enum class TransportAvailabilityParam {
   kOneRecognizedCred,
   kTwoRecognizedCreds,
   kOnePhoneRecognizedCred,
+  kTwoPhoneRecognizedCred,
   kEmptyAllowList,
   kOnlyInternal,
   kOnlyHybridOrInternal,
@@ -132,6 +136,8 @@ enum class TransportAvailabilityParam {
   kIsConditionalUI,
   kAttachmentAny,
   kAttachmentCrossPlatform,
+  kBleDisabled,
+  kBleAccessDenied,
 };
 
 base::StringPiece TransportAvailabilityParamToString(
@@ -147,6 +153,8 @@ base::StringPiece TransportAvailabilityParamToString(
       return "kTwoRecognizedCreds";
     case TransportAvailabilityParam::kOnePhoneRecognizedCred:
       return "kOnePhoneRecognizedCred";
+    case TransportAvailabilityParam::kTwoPhoneRecognizedCred:
+      return "kTwoPhoneRecognizedCred";
     case TransportAvailabilityParam::kEmptyAllowList:
       return "kEmptyAllowList";
     case TransportAvailabilityParam::kOnlyInternal:
@@ -167,14 +175,30 @@ base::StringPiece TransportAvailabilityParamToString(
       return "kAttachmentAny";
     case TransportAvailabilityParam::kAttachmentCrossPlatform:
       return "kAttachmentCrossPlatform";
+    case TransportAvailabilityParam::kBleDisabled:
+      return "kBleDisabled";
+    case TransportAvailabilityParam::kBleAccessDenied:
+      return "kBleAccessDenied";
   }
 }
 
 template <typename T, base::StringPiece (*F)(T)>
 std::string SetToString(base::flat_set<T> s) {
-  std::vector<base::StringPiece> names;
-  base::ranges::transform(s, std::back_inserter(names), F);
-  return base::JoinString(names, ", ");
+  return base::JoinString(base::test::ToVector(s, F), ", ");
+}
+
+std::unique_ptr<device::cablev2::Pairing> GetPairingFromSync() {
+  auto pairing = std::make_unique<device::cablev2::Pairing>();
+  pairing->name = "Phone from sync";
+  pairing->from_sync_deviceinfo = true;
+  return pairing;
+}
+
+std::unique_ptr<device::cablev2::Pairing> GetPairingFromQR() {
+  auto pairing = std::make_unique<device::cablev2::Pairing>();
+  pairing->name = "Phone from QR";
+  pairing->from_sync_deviceinfo = false;
+  return pairing;
 }
 
 const device::PublicKeyCredentialUserEntity kUser1({1, 2, 3, 4},
@@ -186,6 +210,9 @@ const device::PublicKeyCredentialUserEntity kUser2({5, 6, 7, 8},
 const device::PublicKeyCredentialUserEntity kPhoneUser1({9, 0, 1, 2},
                                                         "purah",
                                                         absl::nullopt);
+const device::PublicKeyCredentialUserEntity kPhoneUser2({3, 4, 5, 6},
+                                                        "impa",
+                                                        absl::nullopt);
 
 const device::DiscoverableCredentialMetadata
     kCred1(device::AuthenticatorType::kOther, "rp.com", {0}, kUser1);
@@ -193,6 +220,8 @@ const device::DiscoverableCredentialMetadata
     kCred2(device::AuthenticatorType::kOther, "rp.com", {1}, kUser2);
 const device::DiscoverableCredentialMetadata
     kPhoneCred1(device::AuthenticatorType::kPhone, "rp.com", {2}, kPhoneUser1);
+const device::DiscoverableCredentialMetadata
+    kPhoneCred2(device::AuthenticatorType::kPhone, "rp.com", {3}, kPhoneUser2);
 
 }  // namespace
 
@@ -231,6 +260,8 @@ TEST_F(AuthenticatorRequestDialogModelTest, Mechanisms) {
   const auto two_cred = TransportAvailabilityParam::kTwoRecognizedCreds;
   const auto one_phone_cred =
       TransportAvailabilityParam::kOnePhoneRecognizedCred;
+  const auto two_phone_cred =
+      TransportAvailabilityParam::kTwoPhoneRecognizedCred;
   const auto empty_al = TransportAvailabilityParam::kEmptyAllowList;
   const auto only_internal = TransportAvailabilityParam::kOnlyInternal;
   const auto only_hybrid_or_internal =
@@ -239,6 +270,8 @@ TEST_F(AuthenticatorRequestDialogModelTest, Mechanisms) {
   const auto c_ui = TransportAvailabilityParam::kIsConditionalUI;
   const auto att_any = TransportAvailabilityParam::kAttachmentAny;
   const auto att_xplat = TransportAvailabilityParam::kAttachmentCrossPlatform;
+  const auto ble_off = TransportAvailabilityParam::kBleDisabled;
+  const auto ble_denied = TransportAvailabilityParam::kBleAccessDenied;
   using c = AuthenticatorRequestDialogModel::Mechanism::Credential;
   using t = AuthenticatorRequestDialogModel::Mechanism::Transport;
   using p = AuthenticatorRequestDialogModel::Mechanism::Phone;
@@ -253,6 +286,7 @@ TEST_F(AuthenticatorRequestDialogModelTest, Mechanisms) {
   const auto use_pk_multi = Step::kPreSelectAccount;
   const auto qr = Step::kCableV2QRCode;
   const auto pconf = Step::kPhoneConfirmationSheet;
+  const auto hero = Step::kSelectPriorityMechanism;
 
   using psync = base::StrongAlias<class PhoneFromSyncTag, std::string>;
   using pqr = base::StrongAlias<class PhoneFromQrTag, std::string>;
@@ -558,8 +592,6 @@ TEST_F(AuthenticatorRequestDialogModelTest, Mechanisms) {
 
   // Tests for the new UI that lists synced passkeys mixed with local
   // credentials.
-  // TODO(crbug.com/1459273): when a single passkey is available, we should jump
-  // directly to a "hero" screen instead of the selector.
   Test kListSyncedPasskeysTests[]{
       // Mac & Linux:
       // Mix of phone and internal credentials.
@@ -568,7 +600,7 @@ TEST_F(AuthenticatorRequestDialogModelTest, Mechanisms) {
        {usb, cable, internal},
        {one_phone_cred, two_cred},
        {psync("a")},
-       {c(other), c(other), c(phone), add, t(usb)},
+       {c(other), c(other), c(phone), add},
        mss},
       // Internal credentials + qr code.
       {L,
@@ -576,16 +608,44 @@ TEST_F(AuthenticatorRequestDialogModelTest, Mechanisms) {
        {usb, cable, internal},
        {two_cred},
        {psync("a")},
-       {c(other), c(other), add, t(usb)},
+       {c(other), c(other), add},
+       mss},
+      // qr code with ble disabled shows usb option.
+      {L, ga, {usb, cable}, {ble_off}, {}, {add, t(usb)}, mss},
+      // qr code with ble access denied shows usb option.
+      {L, ga, {usb, cable}, {ble_denied}, {}, {add, t(usb)}, mss},
+      // Internal credentials, no qr code.
+      {L,
+       ga,
+       {usb, internal},
+       {two_cred},
+       {psync("a")},
+       {c(other), c(other), t(usb)},
        mss},
       // Phone credentials only.
       {L,
        ga,
        {usb, cable, internal},
+       {two_phone_cred},
+       {psync("a")},
+       {c(phone), c(phone), add},
+       mss},
+      // Single internal credential.
+      {L,
+       ga,
+       {usb, cable, internal},
+       {one_cred},
+       {psync("a")},
+       {c(other), add},
+       hero},
+      // Single phone credential.
+      {L,
+       ga,
+       {usb, cable, internal},
        {one_phone_cred},
        {psync("a")},
-       {c(phone), add, t(usb)},
-       mss},
+       {c(phone), add},
+       hero},
   };
 
   Test kListSyncedPasskeysTests_Windows_NoWinHybrid[]{
@@ -612,9 +672,9 @@ TEST_F(AuthenticatorRequestDialogModelTest, Mechanisms) {
       {L,
        ga,
        {cable},
-       {one_phone_cred, has_winapi, maybe_plat, only_hybrid_or_internal},
+       {two_phone_cred, has_winapi, maybe_plat, only_hybrid_or_internal},
        {psync("a")},
-       {c(phone), winapi, add},
+       {c(phone), c(phone), winapi, add},
        mss},
   };
 
@@ -662,7 +722,10 @@ TEST_F(AuthenticatorRequestDialogModelTest, Mechanisms) {
 #endif
 
     TransportAvailabilityInfo transports_info;
-    transports_info.is_ble_powered = true;
+    transports_info.is_ble_powered =
+        !base::Contains(test.params, TransportAvailabilityParam::kBleDisabled);
+    transports_info.ble_access_denied = base::Contains(
+        test.params, TransportAvailabilityParam::kBleAccessDenied);
     transports_info.request_type = test.request_type;
     transports_info.available_transports = test.transports;
 
@@ -692,6 +755,11 @@ TEST_F(AuthenticatorRequestDialogModelTest, Mechanisms) {
     if (base::Contains(test.params,
                        TransportAvailabilityParam::kOnePhoneRecognizedCred)) {
       transports_info.recognized_credentials.emplace_back(kPhoneCred1);
+    }
+    if (base::Contains(test.params,
+                       TransportAvailabilityParam::kTwoPhoneRecognizedCred)) {
+      transports_info.recognized_credentials.emplace_back(kPhoneCred1);
+      transports_info.recognized_credentials.emplace_back(kPhoneCred2);
     }
     transports_info.has_empty_allow_list = base::Contains(
         test.params, TransportAvailabilityParam::kEmptyAllowList);
@@ -748,23 +816,20 @@ TEST_F(AuthenticatorRequestDialogModelTest, Mechanisms) {
     if (has_v2_cable_extension.has_value() || !test.phones.empty() ||
         base::Contains(test.transports,
                        device::FidoTransportProtocol::kHybrid)) {
-      std::vector<AuthenticatorRequestDialogModel::PairedPhone> phones;
+      std::vector<std::unique_ptr<device::cablev2::Pairing>> phones;
       for (const auto& phone : test.phones) {
-        std::string name;
-        AuthenticatorRequestDialogModel::PairedPhone::PairingSource source;
+        auto pairing = std::make_unique<device::cablev2::Pairing>();
         if (absl::holds_alternative<pqr>(phone)) {
-          name = absl::get<pqr>(phone).value();
-          source =
-              AuthenticatorRequestDialogModel::PairedPhone::PairingSource::kQR;
+          pairing->name = absl::get<pqr>(phone).value();
+          pairing->from_sync_deviceinfo = false;
         } else {
-          name = absl::get<psync>(phone).value();
-          source = AuthenticatorRequestDialogModel::PairedPhone::PairingSource::
-              kSyncDeviceInfo;
+          pairing->name = absl::get<psync>(phone).value();
+          pairing->from_sync_deviceinfo = true;
         }
-        std::array<uint8_t, device::kP256X962Length> public_key = {0};
-        public_key[0] = base::checked_cast<uint8_t>(phones.size());
-        phones.emplace_back(source, name,
-                            /*contact_id=*/0, public_key, base::Time());
+        pairing->peer_public_key_x962 = {0};
+        pairing->peer_public_key_x962[0] =
+            base::checked_cast<uint8_t>(phones.size());
+        phones.emplace_back(std::move(pairing));
       }
       model.set_cable_transport_info(has_v2_cable_extension, std::move(phones),
                                      base::DoNothing(), absl::nullopt);
@@ -779,7 +844,7 @@ TEST_F(AuthenticatorRequestDialogModelTest, Mechanisms) {
     }
 
     if (windows_has_hybrid &&
-        !base::FeatureList::IsEnabled(device::kWebAuthnListSyncedPasskeys)) {
+        !base::FeatureList::IsEnabled(device::kWebAuthnNewPasskeyUI)) {
       // Before the new synced passkeys UI, caBLEv1 and server-link are the only
       // cases that Windows _doesn't_ handle when it has hybrid support because
       // those are legacy protocol variants.
@@ -821,7 +886,7 @@ TEST_F(AuthenticatorRequestDialogModelTest, Mechanisms) {
     }
   }
   base::test::ScopedFeatureList scoped_feature_list{
-      device::kWebAuthnListSyncedPasskeys};
+      device::kWebAuthnNewPasskeyUI};
   for (const auto& test : kListSyncedPasskeysTests) {
     RunTest(test, /*windows_has_hybrid=*/false);
   }
@@ -986,16 +1051,11 @@ TEST_F(AuthenticatorRequestDialogModelTest, Cable2ndFactorFlows) {
 
     AuthenticatorRequestDialogModel model(main_rfh());
 
-    std::array<uint8_t, device::kP256X962Length> public_key = {0};
-    std::vector<AuthenticatorRequestDialogModel::PairedPhone> phones(
-        {{AuthenticatorRequestDialogModel::PairedPhone::PairingSource::kQR,
-          "phone",
-          /*contact_id=*/0,
-          public_key,
-          {}}});
-    model.set_cable_transport_info(/*extension_is_v2=*/absl::nullopt,
-                                   std::move(phones), base::DoNothing(),
-                                   absl::nullopt);
+    std::vector<std::unique_ptr<device::cablev2::Pairing>> pairings;
+    pairings.emplace_back(GetPairingFromQR());
+    model.set_cable_transport_info(
+        /*extension_is_v2=*/absl::nullopt, std::move(pairings),
+        base::DoNothing(), absl::nullopt);
 
     model.StartFlow(std::move(transports_info),
                     /*is_conditional_mediation=*/false);
@@ -1219,8 +1279,8 @@ TEST_F(AuthenticatorRequestDialogModelTest,
 
   int preselect_num_called = 0;
   model.SetAccountPreselectedCallback(base::BindRepeating(
-      [](int* i, std::vector<uint8_t> credential_id) {
-        EXPECT_EQ(credential_id, std::vector<uint8_t>({1, 2, 3, 4}));
+      [](int* i, device::PublicKeyCredentialDescriptor cred) {
+        EXPECT_EQ(cred.id, std::vector<uint8_t>({1, 2, 3, 4}));
         ++(*i);
       },
       &preselect_num_called));
@@ -1253,8 +1313,8 @@ TEST_F(AuthenticatorRequestDialogModelTest, ConditionalUIRecognizedCredential) {
   AuthenticatorRequestDialogModel model(main_rfh());
   int preselect_num_called = 0;
   model.SetAccountPreselectedCallback(base::BindRepeating(
-      [](int* i, std::vector<uint8_t> credential_id) {
-        EXPECT_EQ(credential_id, std::vector<uint8_t>({0}));
+      [](int* i, device::PublicKeyCredentialDescriptor cred) {
+        EXPECT_EQ(cred.id, std::vector<uint8_t>({0}));
         ++(*i);
       },
       &preselect_num_called));
@@ -1321,21 +1381,46 @@ TEST_F(AuthenticatorRequestDialogModelTest, ConditionalUICancelRequest) {
 // Tests that selecting a phone passkey on Conditional UI contacts the priority
 // phone from sync.
 TEST_F(AuthenticatorRequestDialogModelTest, ConditionalUIPhonePasskey) {
-  absl::optional<size_t> phone_id;
+  constexpr char kLinkedPhoneName[] = "Phone from QR";
+  constexpr char kOldSyncedPhoneName[] = "Old synced phone";
+  constexpr char kNewSyncedPhoneName[] = "New synced phone";
+
+  absl::optional<std::string> phone_name;
   // Creates a new dialog model for the given list of |phones|.
-  auto MakeModel =
-      [&](std::vector<AuthenticatorRequestDialogModel::PairedPhone> phones)
+  auto MakeModel = [&](bool include_old_phone)
       -> std::unique_ptr<AuthenticatorRequestDialogModel> {
     auto model = std::make_unique<AuthenticatorRequestDialogModel>(main_rfh());
     model->SetAccountPreselectedCallback(base::DoNothing());
 
-    // Store the contacted phone id.
-    base::RepeatingCallback<void(size_t)> callback =
-        base::BindLambdaForTesting([&phone_id](size_t value) {
-          ASSERT_FALSE(phone_id);
-          phone_id = value;
-        });
-    phone_id.reset();
+    // Store the contacted phone.
+    base::RepeatingCallback<void(std::unique_ptr<device::cablev2::Pairing>)>
+        callback = base::BindLambdaForTesting(
+            [&](std::unique_ptr<device::cablev2::Pairing> value) {
+              ASSERT_FALSE(phone_name);
+              phone_name = value->name;
+            });
+    phone_name.reset();
+
+    // Set up a linked phone and two phones from sync: an "old" one that last
+    // contacted sync yesterday, and a "new" one that last contacted sync today.
+    base::Time today = base::Time::Now();
+    base::Time yesterday = today - base::Days(1);
+    std::vector<std::unique_ptr<device::cablev2::Pairing>> phones;
+    std::unique_ptr<device::cablev2::Pairing> qr_phone = GetPairingFromQR();
+    qr_phone->name = kLinkedPhoneName;
+    phones.emplace_back(std::move(qr_phone));
+    if (include_old_phone) {
+      std::unique_ptr<device::cablev2::Pairing> old_synced_phone =
+          GetPairingFromSync();
+      old_synced_phone->last_updated = yesterday;
+      old_synced_phone->name = kOldSyncedPhoneName;
+      phones.emplace_back(std::move(old_synced_phone));
+    }
+    std::unique_ptr<device::cablev2::Pairing> recently_synced_phone =
+        GetPairingFromSync();
+    recently_synced_phone->last_updated = today;
+    recently_synced_phone->name = kNewSyncedPhoneName;
+    phones.emplace_back(std::move(recently_synced_phone));
     model->set_cable_transport_info(/*extension_is_v2=*/absl::nullopt,
                                     std::move(phones), std::move(callback),
                                     absl::nullopt);
@@ -1353,58 +1438,33 @@ TEST_F(AuthenticatorRequestDialogModelTest, ConditionalUIPhonePasskey) {
     return model;
   };
 
-  const size_t kLinkedPhoneId = 0;
-  const size_t kOldSyncedPhoneId = 1;
-  const size_t kNewSyncedPhoneId = 2;
-  // Set up a linked phone and two phones from sync: an "old" one that last
-  // contacted sync yesterday, and a "new" one that last contacted sync today.
-  base::Time today = base::Time::Now();
-  base::Time yesterday = today - base::Days(1);
-  std::vector<AuthenticatorRequestDialogModel::PairedPhone> phones({
-      {AuthenticatorRequestDialogModel::PairedPhone::PairingSource::kQR,
-       "Linked phone",
-       kLinkedPhoneId,
-       /*public_key_x962=*/{{kLinkedPhoneId}},
-       {}},
-      {AuthenticatorRequestDialogModel::PairedPhone::PairingSource::
-           kSyncDeviceInfo,
-       "Old synced phone", kOldSyncedPhoneId,
-       /*public_key_x962=*/{{kOldSyncedPhoneId}}, yesterday},
-      {AuthenticatorRequestDialogModel::PairedPhone::PairingSource::
-           kSyncDeviceInfo,
-       "Recently synced phone", kNewSyncedPhoneId,
-       /*public_key_x962=*/{{kNewSyncedPhoneId}}, today},
-  });
-
   // Preselect the credential. This should select the phone that last contacted
   // sync.
-  std::unique_ptr<AuthenticatorRequestDialogModel> model = MakeModel(phones);
+  std::unique_ptr<AuthenticatorRequestDialogModel> model =
+      MakeModel(/*include_old_phone=*/true);
   model->OnAccountPreselected(kCred1.cred_id);
   EXPECT_EQ(model->current_step(), Step::kCableActivate);
-  EXPECT_EQ(phone_id, kNewSyncedPhoneId);
+  EXPECT_EQ(phone_name, kNewSyncedPhoneName);
 
   // Manually contact the "old" phone from sync. This should give it priority as
   // the most recently used.
-  model = MakeModel(phones);
-  model->ContactPhoneForTesting("Old synced phone");
-  ASSERT_EQ(phone_id, kOldSyncedPhoneId);
+  model = MakeModel(/*include_old_phone=*/true);
+  model->ContactPhoneForTesting(kOldSyncedPhoneName);
+  ASSERT_EQ(phone_name, kOldSyncedPhoneName);
 
   // Preselect the credential. This should contact the priority phone, which is
   // the "old" phone now.
-  model = MakeModel(phones);
+  model = MakeModel(/*include_old_phone=*/true);
   model->OnAccountPreselected(kCred1.cred_id);
   EXPECT_EQ(model->current_step(), Step::kCableActivate);
-  EXPECT_EQ(phone_id, kOldSyncedPhoneId);
+  EXPECT_EQ(phone_name, kOldSyncedPhoneName);
 
   // Remove the "old" phone so that preselecting the credential again picks the
   // "new" one.
-  phones.erase(base::ranges::find_if(phones, [](const auto& phone) {
-    return phone.contact_id == kOldSyncedPhoneId;
-  }));
-  model = MakeModel(phones);
+  model = MakeModel(/*include_old_phone=*/false);
   model->OnAccountPreselected(kCred1.cred_id);
   EXPECT_EQ(model->current_step(), Step::kCableActivate);
-  EXPECT_EQ(phone_id, kNewSyncedPhoneId);
+  EXPECT_EQ(phone_name, kNewSyncedPhoneName);
 }
 
 // Tests that if the stored preference for the most recently used phone is not
@@ -1413,21 +1473,17 @@ TEST_F(AuthenticatorRequestDialogModelTest, InvalidPriorityPhonePref) {
   auto model = std::make_unique<AuthenticatorRequestDialogModel>(main_rfh());
   model->SetAccountPreselectedCallback(base::DoNothing());
 
-  // Store the contacted phone id.
-  absl::optional<size_t> phone_id;
-  base::RepeatingCallback<void(size_t)> callback =
-      base::BindLambdaForTesting([&phone_id](size_t value) {
-        ASSERT_FALSE(phone_id);
-        phone_id = value;
-      });
+  // Store the contacted phone.
+  std::unique_ptr<device::cablev2::Pairing> contacted_phone;
+  base::RepeatingCallback<void(std::unique_ptr<device::cablev2::Pairing>)>
+      callback = base::BindLambdaForTesting(
+          [&](std::unique_ptr<device::cablev2::Pairing> value) {
+            ASSERT_FALSE(contacted_phone);
+            contacted_phone = std::move(value);
+          });
 
-  const size_t kPhoneContactId = 0;
-  std::vector<AuthenticatorRequestDialogModel::PairedPhone> phones({
-      {AuthenticatorRequestDialogModel::PairedPhone::PairingSource::
-           kSyncDeviceInfo,
-       "Synced phone", kPhoneContactId,
-       /*public_key_x962=*/{{0}}, base::Time::Now()},
-  });
+  std::vector<std::unique_ptr<device::cablev2::Pairing>> phones;
+  phones.emplace_back(GetPairingFromSync());
   model->set_cable_transport_info(/*extension_is_v2=*/absl::nullopt,
                                   std::move(phones), std::move(callback),
                                   absl::nullopt);
@@ -1448,7 +1504,7 @@ TEST_F(AuthenticatorRequestDialogModelTest, InvalidPriorityPhonePref) {
       webauthn::pref_names::kLastUsedPairingFromSyncPublicKey, "oops!");
   model->OnAccountPreselected(credential.cred_id);
   EXPECT_EQ(model->current_step(), Step::kCableActivate);
-  EXPECT_EQ(phone_id, kPhoneContactId);
+  EXPECT_TRUE(contacted_phone);
 }
 
 #if BUILDFLAG(IS_WIN)
@@ -1482,8 +1538,8 @@ TEST_F(AuthenticatorRequestDialogModelTest, PreSelectWithEmptyAllowList) {
   AuthenticatorRequestDialogModel model(main_rfh());
   int preselect_num_called = 0;
   model.SetAccountPreselectedCallback(base::BindLambdaForTesting(
-      [&preselect_num_called](std::vector<uint8_t> credential_id) {
-        EXPECT_EQ(credential_id, std::vector<uint8_t>({0}));
+      [&preselect_num_called](device::PublicKeyCredentialDescriptor cred) {
+        EXPECT_EQ(cred.id, std::vector<uint8_t>({0}));
         ++preselect_num_called;
       }));
   int request_num_called = 0;
@@ -1523,10 +1579,8 @@ TEST_F(AuthenticatorRequestDialogModelTest, PreSelectWithEmptyAllowList) {
 
 TEST_F(AuthenticatorRequestDialogModelTest, ContactPriorityPhone) {
   AuthenticatorRequestDialogModel model(main_rfh());
-  std::vector<AuthenticatorRequestDialogModel::PairedPhone> phones(
-      {{AuthenticatorRequestDialogModel::PairedPhone::PairingSource::kQR,
-        "phone", /*contact_id=*/0,
-        /*public_key_x962=*/{{0}}, base::Time()}});
+  std::vector<std::unique_ptr<device::cablev2::Pairing>> phones;
+  phones.emplace_back(GetPairingFromQR());
   model.set_cable_transport_info(/*extension_is_v2=*/absl::nullopt,
                                  std::move(phones), base::DoNothing(),
                                  absl::nullopt);
@@ -1538,7 +1592,7 @@ TEST_F(AuthenticatorRequestDialogModelTest, ContactPriorityPhone) {
                   /*is_conditional_mediation=*/false);
   model.ContactPriorityPhone();
   EXPECT_EQ(model.current_step(), Step::kCableActivate);
-  EXPECT_EQ(model.selected_phone_name(), "phone");
+  EXPECT_EQ(model.selected_phone_name(), "Phone from QR");
 }
 
 #if BUILDFLAG(IS_MAC)
@@ -1554,12 +1608,8 @@ TEST_F(AuthenticatorRequestDialogModelTest, BluetoothPermissionPrompt) {
                    << "click_specific_phone=" << click_specific_phone);
 
       AuthenticatorRequestDialogModel model(main_rfh());
-      std::vector<AuthenticatorRequestDialogModel::PairedPhone> phones(
-          {{AuthenticatorRequestDialogModel::PairedPhone::PairingSource::kQR,
-            "phone",
-            /*contact_id=*/0,
-            /*public_key_x962=*/{{0}},
-            {}}});
+      std::vector<std::unique_ptr<device::cablev2::Pairing>> phones;
+      phones.emplace_back(GetPairingFromQR());
       model.set_cable_transport_info(/*extension_is_v2=*/absl::nullopt,
                                      std::move(phones), base::DoNothing(),
                                      absl::nullopt);
@@ -1652,7 +1702,7 @@ TEST_F(AuthenticatorRequestDialogModelTest,
 class ListPasskeysFromSyncTest : public AuthenticatorRequestDialogModelTest {
  private:
   base::test::ScopedFeatureList scoped_feature_list_{
-      device::kWebAuthnListSyncedPasskeys};
+      device::kWebAuthnNewPasskeyUI};
 };
 
 template <class Value>
@@ -1674,7 +1724,7 @@ class RepeatingValueCallbackReceiver {
 
  private:
   void OnCallback(Value value) {
-    value_ = value;
+    value_ = std::move(value);
     run_loop_->Quit();
   }
   absl::optional<Value> value_;
@@ -1717,19 +1767,14 @@ TEST_F(ListPasskeysFromSyncTest, MechanismsFromUserAccounts) {
   transports_info.ble_access_denied = false;
   transports_info.is_ble_powered = true;
 
-  const size_t kPhoneContactId = 1234;
-  std::vector<AuthenticatorRequestDialogModel::PairedPhone> phones(
-      {{AuthenticatorRequestDialogModel::PairedPhone::PairingSource::
-            kSyncDeviceInfo,
-        "Phone from sync",
-        kPhoneContactId,
-        /*public_key_x962=*/{0},
-        {}}});
-  RepeatingValueCallbackReceiver<size_t> contact_phone_callback;
+  std::vector<std::unique_ptr<device::cablev2::Pairing>> phones;
+  phones.emplace_back(GetPairingFromSync());
+  RepeatingValueCallbackReceiver<std::unique_ptr<device::cablev2::Pairing>>
+      contact_phone_callback;
   model.set_cable_transport_info(
       /*extension_is_v2=*/absl::nullopt, std::move(phones),
       contact_phone_callback.Callback(), absl::nullopt);
-  RepeatingValueCallbackReceiver<std::vector<uint8_t>>
+  RepeatingValueCallbackReceiver<device::PublicKeyCredentialDescriptor>
       account_preselected_callback;
   model.SetAccountPreselectedCallback(account_preselected_callback.Callback());
 
@@ -1752,7 +1797,11 @@ TEST_F(ListPasskeysFromSyncTest, MechanismsFromUserAccounts) {
   EXPECT_EQ(mech1.description, u"Use device sign-in");
   EXPECT_EQ(mech1.icon, vector_icons::kPasskeyIcon);
   mech1.callback.Run();
-  EXPECT_EQ(account_preselected_callback.WaitForResult(), kCred1.cred_id);
+  device::PublicKeyCredentialDescriptor result =
+      account_preselected_callback.WaitForResult();
+  EXPECT_EQ(result.id, kCred1.cred_id);
+  EXPECT_THAT(result.transports,
+              testing::ElementsAre(device::FidoTransportProtocol::kInternal));
   EXPECT_EQ(request_callback.WaitForResult(), kLocalAuthenticatorId);
 
   // Reset the model as if the user had cancelled out of the operation.
@@ -1769,7 +1818,10 @@ TEST_F(ListPasskeysFromSyncTest, MechanismsFromUserAccounts) {
   EXPECT_EQ(mech2.description, u"Use device sign-in");
   EXPECT_EQ(mech2.icon, vector_icons::kPasskeyIcon);
   mech2.callback.Run();
-  EXPECT_EQ(account_preselected_callback.WaitForResult(), kCred2.cred_id);
+  result = account_preselected_callback.WaitForResult();
+  EXPECT_EQ(result.id, kCred2.cred_id);
+  EXPECT_THAT(result.transports,
+              testing::ElementsAre(device::FidoTransportProtocol::kInternal));
   EXPECT_EQ(request_callback.WaitForResult(), kLocalAuthenticatorId);
 
   // Reset the model as if the user had cancelled out of the operation.
@@ -1786,6 +1838,9 @@ TEST_F(ListPasskeysFromSyncTest, MechanismsFromUserAccounts) {
   EXPECT_EQ(mech3.description, u"Use \"Phone from sync\" (UNTRANSLATED)");
   EXPECT_EQ(mech3.icon, kSmartphoneIcon);
   mech3.callback.Run();
-  EXPECT_EQ(account_preselected_callback.WaitForResult(), kPhoneCred1.cred_id);
-  EXPECT_EQ(contact_phone_callback.WaitForResult(), kPhoneContactId);
+  result = account_preselected_callback.WaitForResult();
+  EXPECT_EQ(result.id, kPhoneCred1.cred_id);
+  EXPECT_THAT(result.transports,
+              testing::ElementsAre(device::FidoTransportProtocol::kHybrid));
+  EXPECT_TRUE(contact_phone_callback.WaitForResult());
 }

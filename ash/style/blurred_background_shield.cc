@@ -4,6 +4,7 @@
 
 #include "ash/style/blurred_background_shield.h"
 
+#include "ash/public/cpp/style/color_provider.h"
 #include "ui/color/color_provider.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/views/view.h"
@@ -83,8 +84,7 @@ void BlurredBackgroundShield::OnViewVisibilityChanged(
   background_layer_.SetVisible(host_->GetVisible());
 }
 
-void BlurredBackgroundShield::OnLayerTargetBoundsChanged(
-    views::View* observed_view) {
+void BlurredBackgroundShield::OnViewLayerBoundsSet(views::View* observed_view) {
   if (auto* host_layer = host_->layer()) {
     background_layer_.SetBounds(host_layer->bounds());
   }
@@ -106,6 +106,8 @@ void BlurredBackgroundShield::UpdateBackgroundColor() {
   background_layer_.SetColor(background_color);
   if (SkColorGetA(background_color) != SK_AlphaOPAQUE && blur_sigma_) {
     background_layer_.SetBackgroundBlur(blur_sigma_);
+    background_layer_.SetBackdropFilterQuality(
+        ColorProvider::kBackgroundBlurQuality);
   } else {
     background_layer_.SetBackgroundBlur(0.0f);
   }

@@ -85,11 +85,11 @@ class ASH_EXPORT AshMessagePopupCollection
   void NotifyPopupAdded(message_center::MessagePopupView* popup) override;
   void NotifyPopupClosed(message_center::MessagePopupView* popup) override;
   void NotifyPopupCollectionHeightChanged() override;
-  bool AdjustAndEvaluateShouldDisplayPopupItem(const PopupItem& item) override;
   void AnimationStarted() override;
   void AnimationFinished() override;
   message_center::MessagePopupView* CreatePopup(
       const message_center::Notification& notification) override;
+  void ClosePopupItem(const PopupItem& item) override;
 
   // TabletModeObserver:
   void OnTabletModeStarted() override;
@@ -134,12 +134,16 @@ class ASH_EXPORT AshMessagePopupCollection
   void UpdateWorkArea();
 
   // Makes changes to the baseline based on the visibility/bounds change of
-  // the current open bubble.
-  void AdjustBaselineBasedOnBubble(TrayBubbleView* tray_bubble, bool visible);
+  // the current open bubble. Note that this function is only called by a change
+  // in the bubble (bubble size or visibility changed).
+  void AdjustBaselineBasedOnBubbleChange(TrayBubbleView* tray_bubble,
+                                         bool bubble_visible);
 
-  // Helper functions for `AdjustBaselineBaseOnBubble()`. Applied to shelf pod
-  // bubble.
-  void AdjustBaselineBasedOnShelfPodBubble();
+  // Makes changes to the baseline based on the visibility/bounds change of
+  // the current open shelf pod bubble. `triggered_by_bubble_change` is true if
+  // this function is triggered by a change in the bubble (bubble size or
+  // visibility changed).
+  void AdjustBaselineBasedOnShelfPodBubble(bool triggered_by_bubble_change);
 
   // Helper functions for `AdjustBaselineBaseOnBubble()`. Applied to secondary
   // bubble.
@@ -158,6 +162,13 @@ class ASH_EXPORT AshMessagePopupCollection
   // views::WidgetObserver:
   void OnWidgetClosing(views::Widget* widget) override;
   void OnWidgetActivationChanged(views::Widget* widget, bool active) override;
+
+  // Update the state of enabling expand/collapse behavior for each popup. We
+  // use `available_space_above_popups`, which is the space left on the screen
+  // above the popups, to make this decision. `available_space_above_popups`
+  // will only be meaningful if `shelf_bubble_open` is true.
+  void UpdateExpandCollapseEnabledForPopups(bool shelf_bubble_open,
+                                            int available_space_above_popups);
 
   absl::optional<display::ScopedDisplayObserver> display_observer_;
 

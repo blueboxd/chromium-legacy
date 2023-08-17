@@ -533,7 +533,7 @@ public class WebsitePermissionsFetcherTest {
         // If the ContentSettingsType.NUM_TYPES value changes *and* a new value has been exposed on
         // Android, then please update this code block to include a test for your new type.
         // Otherwise, just update count in the assert.
-        Assert.assertEquals(88, ContentSettingsType.NUM_TYPES);
+        Assert.assertEquals(90, ContentSettingsType.NUM_TYPES);
         websitePreferenceBridge.addContentSettingException(
                 new ContentSettingException(ContentSettingsType.COOKIES, googleOrigin,
                         ContentSettingValues.DEFAULT, preferenceSource, /*isEmbargoed=*/false));
@@ -770,6 +770,8 @@ public class WebsitePermissionsFetcherTest {
         Assert.assertEquals(expected.getPrimaryPattern(), actual.getPrimaryPattern());
         Assert.assertEquals(expected.getSecondaryPattern(), actual.getSecondaryPattern());
         Assert.assertEquals(expected.getContentSetting(), actual.getContentSetting());
+        Assert.assertEquals(expected.getExpirationInDays(), actual.getExpirationInDays());
+        Assert.assertEquals(expected.hasExpiration(), actual.hasExpiration());
     }
 
     @Test
@@ -875,6 +877,7 @@ public class WebsitePermissionsFetcherTest {
         String mainSite = "https://a.com";
         String thirdPartySite = "https://b.com";
         String preferenceSource = "preference";
+        Integer expirationInDays = 30;
         boolean isEmbargoed = false;
         @ContentSettingsType
         int contentSettingsType = ContentSettingsType.COOKIES;
@@ -890,9 +893,9 @@ public class WebsitePermissionsFetcherTest {
         for (Pair<String, String> pair : exceptions) {
             websitePreferenceBridge.resetContentSettingExceptions();
             {
-                ContentSettingException fakeContentSettingException =
-                        new ContentSettingException(contentSettingsType, pair.first, pair.second,
-                                ContentSettingValues.DEFAULT, preferenceSource, isEmbargoed);
+                ContentSettingException fakeContentSettingException = new ContentSettingException(
+                        contentSettingsType, pair.first, pair.second, ContentSettingValues.DEFAULT,
+                        preferenceSource, expirationInDays, isEmbargoed);
                 websitePreferenceBridge.addContentSettingException(fakeContentSettingException);
 
                 fetcher.fetchPreferencesForCategory(
@@ -909,9 +912,9 @@ public class WebsitePermissionsFetcherTest {
 
             // Make sure that the content setting value is updated.
             {
-                ContentSettingException fakeContentSettingException =
-                        new ContentSettingException(contentSettingsType, pair.first, pair.second,
-                                ContentSettingValues.BLOCK, preferenceSource, isEmbargoed);
+                ContentSettingException fakeContentSettingException = new ContentSettingException(
+                        contentSettingsType, pair.first, pair.second, ContentSettingValues.BLOCK,
+                        preferenceSource, expirationInDays, isEmbargoed);
                 websitePreferenceBridge.addContentSettingException(fakeContentSettingException);
 
                 fetcher.fetchPreferencesForCategory(

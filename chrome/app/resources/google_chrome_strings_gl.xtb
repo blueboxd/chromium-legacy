@@ -13,7 +13,7 @@
 <translation id="1125124144982679672">Quen está utilizando Chrome?</translation>
 <translation id="1142745911746664600">Non se puido actualizar Chrome</translation>
 <translation id="1149651794389918149">Inicia sesión en Chrome. Se queres iniciar sesión nunha conta só unha vez, podes <ph name="GUEST_LINK_BEGIN" />usar este dispositivo como convidado<ph name="GUEST_LINK_END" />.</translation>
-<translation id="1152920704813762236">Acerca de Chrome OS</translation>
+<translation id="1152920704813762236">Acerca de ChromeOS</translation>
 <translation id="1154147086299354128">&amp;Abrir en Chrome</translation>
 <translation id="1203500561924088507">Grazas por levar a cabo a instalación. Para utilizar <ph name="BUNDLE_NAME" />, debes reiniciar o navegador.</translation>
 <translation id="1278833599417554002">Reiniciar para actualizar &amp;Chrome</translation>
@@ -35,7 +35,6 @@
 <translation id="1587223624401073077">Google Chrome utiliza a túa cámara.</translation>
 <translation id="1587325591171447154"><ph name="FILE_NAME" /> é perigoso, así que Chrome bloqueouno.</translation>
 <translation id="1597911401261118146">Para comprobar se os teus contrasinais están protexidos fronte a violacións da seguranza dos datos e outros problemas de seguranza, debes <ph name="BEGIN_LINK" />iniciar sesión en Chrome<ph name="END_LINK" />.</translation>
-<translation id="1599904803480101533">Chrome bloqueou este ficheiro de arquivo porque é posible que conteña software malicioso</translation>
 <translation id="1619887657840448962">Para conseguir que Chrome resulte máis seguro, desactivamos a seguinte extensión que non aparece en <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> e que quizais se engadise sen o teu coñecemento.</translation>
 <translation id="1627304841979541023"><ph name="BEGIN_BOLD" />Como podes xestionar os teus datos?<ph name="END_BOLD" /> Para protexer a túa privacidade, eliminamos automaticamente os teus intereses cuxa antigüidade sexa superior a 4 semanas. Algúns poderían volver incluírse na lista ao seguires navegando. Se o prefires, podes quitar os intereses que non queiras que teña en conta Chrome.</translation>
 <translation id="1628000112320670027">Obter axuda sobre Chrome</translation>
@@ -133,6 +132,7 @@
 <translation id="3140883423282498090">Os cambios terán efecto a próxima vez que reinicies Google Chrome.</translation>
 <translation id="3149510190863420837">Aplicacións de Chrome</translation>
 <translation id="3169523567916669830">Durante as probas, podes ver e eliminar temas de interese que usan os sitios para mostrarche anuncios. Chrome estima os teus intereses en función do teu historial de navegación recente.</translation>
+<translation id="3226612997184048185">Se tamén gardas os marcadores na túa Conta de Google, poderás facer un seguimento dos prezos dos produtos en Chrome e recibir notificacións cando baixen</translation>
 <translation id="3245429137663807393">Se, ademais, compartes os informes de uso de Chrome, neles inclúense os URL que visitas</translation>
 <translation id="3282568296779691940">Iniciar sesión en Chrome</translation>
 <translation id="3286538390144397061">Reiniciar agora</translation>
@@ -151,7 +151,6 @@
 <translation id="3533694711092285624">Non hai contrasinais gardados. Chrome pode comprobar os teus contrasinais cando os gardes.</translation>
 <translation id="3541482654983822893">Chrome non puido comprobar os teus contrasinais. Téntao de novo dentro de 24 horas.</translation>
 <translation id="3576528680708590453">A persoa que administra o teu sistema configurou Google Chrome para abrir outro navegador co obxectivo de acceder a <ph name="TARGET_URL_HOSTNAME" />.</translation>
-<translation id="3579965087968408543">Borrar sempre do dispositivo os datos dos sitios cando peches Chrome</translation>
 <translation id="3582972582564653026">Sincroniza e personaliza Chrome nos teus dispositivos</translation>
 <translation id="3596080736082218006">{COUNT,plural, =0{O teu administrador require que reinicies Chrome para aplicar unha actualización}=1{O teu administrador require que reinicies Chrome para aplicar unha actualización. A ventá do modo de incógnito non se volverá abrir.}other{O teu administrador require que reinicies Chrome para aplicar unha actualización. As # ventás do modo de incógnito non se volverán abrir.}}</translation>
 <translation id="3622797965165704966">Agora é máis fácil utilizar Chrome coa túa conta de Google e en ordenadores compartidos.</translation>
@@ -219,6 +218,7 @@
 <translation id="4873783916118289636">Revisa os controis clave de privacidade e seguranza en Chrome</translation>
 <translation id="4891791193823137474">Permitir que Google Chrome se execute en segundo plano</translation>
 <translation id="4895437082222824641">Abrir ligazón nunha nova &amp;pestana de Chrome</translation>
+<translation id="492720062778050435">Chrome recoméndache revisar esta extensión</translation>
 <translation id="4953650215774548573">Establecer Google Chrome como navegador predeterminado</translation>
 <translation id="495931528404527476">En Chrome</translation>
 <translation id="4969674060580488087">Chrome OS Flex non puido sincronizar os teus datos porque a información de inicio de sesión da túa conta está desactualizada.</translation>
@@ -246,7 +246,6 @@
 <translation id="5430073640787465221">O teu ficheiro de preferencias está danado ou non é válido.
 
 Google Chrome non pode recuperar a túa configuración.</translation>
-<translation id="5521146392841465297">Chrome recoméndache revisar esta extensión.</translation>
 <translation id="5524761631371622910">Cando as probas están activas e Chrome te inclúe de forma aleatoria nunha delas, o teu historial de navegación aféctalles aos anuncios que se che mostran e aos intereses estimados que se indican abaixo. Para protexer a túa privacidade, Chrome elimina os teus intereses cada mes.</translation>
 <translation id="5530733413481476019">Fai que Chrome sexa máis rápido</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
@@ -255,6 +254,7 @@ Google Chrome non pode recuperar a túa configuración.</translation>
 <translation id="5686916850681061684">Personaliza e controla Google Chrome. Algo precisa a túa atención. Fai clic para obter información.</translation>
 <translation id="5690427481109656848">Google LLC</translation>
 <translation id="570005089986962444">Cando esta opción está activada, Chrome libera memoria das pestanas inactivas. Desta forma, as pestanas activas e outras aplicacións dispoñen de máis recursos informáticos e Chrome segue funcionando rápido. As pestanas inactivas volven activarse automaticamente cando regresas a elas.</translation>
+<translation id="5709557627224531708">Define Chrome como navegador predeterminado</translation>
 <translation id="5727531838415286053">Se Chrome te inclúe automaticamente nunha proba activa, o teu historial de navegación aféctalles aos anuncios que se che mostran e aos intereses estimados que se indican abaixo. Para protexer a túa privacidade, Chrome elimina os teus intereses cada mes. A menos que os quites, os intereses actualízanse.</translation>
 <translation id="5736850870166430177">Se un sitio tenta roubarche o contrasinal ou se descargas un ficheiro daniño, Chrome tamén pode comprobar os enderezos URL, así como fragmentos de contido das páxinas, a través da función Navegación segura</translation>
 <translation id="5756509061973259733">Neste dispositivo xa existe un perfil de Chrome con esta conta</translation>

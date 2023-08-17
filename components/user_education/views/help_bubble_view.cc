@@ -10,6 +10,7 @@
 #include <string>
 #include <utility>
 
+#include "base/callback_list.h"
 #include "base/functional/bind.h"
 #include "base/memory/raw_ptr.h"
 #include "base/metrics/user_metrics.h"
@@ -319,7 +320,7 @@ class MenuEventMonitor {
  public:
   MenuEventMonitor(HelpBubbleView* help_bubble, views::MenuItemView* menu_item)
       : help_bubble_(help_bubble),
-        callback_handle_(menu_item->GetMenuController()->SetAnnotationCallback(
+        callback_handle_(menu_item->GetMenuController()->AddAnnotationCallback(
             base::BindRepeating(&MenuEventMonitor::OnEvent,
                                 base::Unretained(this)))) {}
 
@@ -454,7 +455,7 @@ class MenuEventMonitor {
   const raw_ptr<HelpBubbleView> help_bubble_;
   raw_ptr<views::Button> hovered_button_ = nullptr;
   // std::unique_ptr<views::EventMonitor> event_monitor_;
-  views::MenuController::AnnotationCallbackHandle callback_handle_;
+  base::CallbackListSubscription callback_handle_;
 };
 
 }  // namespace internal
@@ -492,7 +493,7 @@ class HelpBubbleView::AnchorViewObserver : public views::ViewObserver {
     }
   }
 
-  const base::raw_ptr<HelpBubbleView> help_bubble_;
+  const raw_ptr<HelpBubbleView> help_bubble_;
   base::ScopedObservation<View, ViewObserver> observation_{this};
 };
 
@@ -867,13 +868,23 @@ HelpBubbleView::HelpBubbleView(const HelpBubbleDelegate* delegate,
 
   SizeToContents();
 
-  widget->ShowInactive();
+  // Most help bubbles with buttons take focus when they show.
+  bool show_active = !params.buttons.empty();
   if (auto* const anchor_bubble =
           anchor_widget()->widget_delegate()->AsBubbleDialogDelegate()) {
+    // Make sure that if the help bubble is attaching to a dialog, the dialog
+    // does not immediately dismiss when the help bubble is shown or focused.
     anchor_pin_ = anchor_bubble->PreventCloseOnDeactivate();
   } else if (auto* const menu_item = GetAnchorAsMenuItem(this)) {
+    // Should not steal focus when attaching to a menu.
+    show_active = false;
     menu_event_monitor_ =
         std::make_unique<internal::MenuEventMonitor>(this, menu_item);
+  }
+  if (show_active) {
+    widget->Show();
+  } else {
+    widget->ShowInactive();
   }
   MaybeStartAutoCloseTimer();
 }

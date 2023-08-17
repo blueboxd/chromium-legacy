@@ -12,6 +12,7 @@
 #include "base/test/simple_test_tick_clock.h"
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
+#include "media/base/mock_filters.h"
 #include "media/base/video_frame.h"
 #include "media/cast/cast_config.h"
 #include "media/cast/cast_environment.h"
@@ -149,8 +150,9 @@ class RtpStreamTest : public ::testing::Test {
 TEST_F(RtpStreamTest, VideoStreaming) {
   auto video_sender = std::make_unique<media::cast::VideoSender>(
       cast_environment_, media::cast::GetDefaultVideoSenderConfig(),
-      base::DoNothing(), base::DoNothing(), &transport_, base::DoNothing(),
-      base::DoNothing());
+      base::DoNothing(), base::DoNothing(), &transport_,
+      std::make_unique<media::MockVideoEncoderMetricsProvider>(),
+      base::DoNothing(), base::DoNothing());
   VideoRtpStream video_stream(std::move(video_sender), client_.GetWeakPtr(),
                               base::Milliseconds(1));
   client_.SetVideoRtpStream(&video_stream);
@@ -162,8 +164,9 @@ TEST_F(RtpStreamTest, VideoStreaming) {
 TEST_F(RtpStreamTest, VideoStreamEmitsFramesWhenNoUpdates) {
   auto video_sender = std::make_unique<media::cast::VideoSender>(
       cast_environment_, media::cast::GetDefaultVideoSenderConfig(),
-      base::DoNothing(), base::DoNothing(), &transport_, base::DoNothing(),
-      base::DoNothing());
+      base::DoNothing(), base::DoNothing(), &transport_,
+      std::make_unique<media::MockVideoEncoderMetricsProvider>(),
+      base::DoNothing(), base::DoNothing());
   VideoRtpStream video_stream(std::move(video_sender), client_.GetWeakPtr(),
                               base::Milliseconds(1));
   client_.SetVideoRtpStream(&video_stream);
@@ -175,8 +178,9 @@ TEST_F(RtpStreamTest, VideoStreamEmitsFramesWhenNoUpdates) {
 TEST_F(RtpStreamTest, VideoStreamDoesNotRefreshWithZeroInterval) {
   auto video_sender = std::make_unique<media::cast::VideoSender>(
       cast_environment_, media::cast::GetDefaultVideoSenderConfig(),
-      base::DoNothing(), base::DoNothing(), &transport_, base::DoNothing(),
-      base::DoNothing());
+      base::DoNothing(), base::DoNothing(), &transport_,
+      std::make_unique<media::MockVideoEncoderMetricsProvider>(),
+      base::DoNothing(), base::DoNothing());
   VideoRtpStream video_stream(std::move(video_sender), client_.GetWeakPtr(),
                               base::TimeDelta());
   client_.SetVideoRtpStream(&video_stream);
@@ -188,8 +192,9 @@ TEST_F(RtpStreamTest, VideoStreamDoesNotRefreshWithZeroInterval) {
 TEST_F(RtpStreamTest, VideoStreamTimerNotRunningWhenNoFramesDelivered) {
   auto video_sender = std::make_unique<media::cast::VideoSender>(
       cast_environment_, media::cast::GetDefaultVideoSenderConfig(),
-      base::DoNothing(), base::DoNothing(), &transport_, base::DoNothing(),
-      base::DoNothing());
+      base::DoNothing(), base::DoNothing(), &transport_,
+      std::make_unique<media::MockVideoEncoderMetricsProvider>(),
+      base::DoNothing(), base::DoNothing());
   VideoRtpStream video_stream(std::move(video_sender), client_.GetWeakPtr(),
                               base::Milliseconds(1));
   client_.SetVideoRtpStream(&video_stream);
@@ -205,8 +210,9 @@ TEST_F(RtpStreamTest, VideoStreamTimerNotRunningWhenNoFramesDelivered) {
 TEST_F(RtpStreamTest, VideoStreamTimerRestartsWhenFramesDeliveredAgain) {
   auto video_sender = std::make_unique<media::cast::VideoSender>(
       cast_environment_, media::cast::GetDefaultVideoSenderConfig(),
-      base::DoNothing(), base::DoNothing(), &transport_, base::DoNothing(),
-      base::DoNothing());
+      base::DoNothing(), base::DoNothing(), &transport_,
+      std::make_unique<media::MockVideoEncoderMetricsProvider>(),
+      base::DoNothing(), base::DoNothing());
   VideoRtpStream video_stream(std::move(video_sender), client_.GetWeakPtr(),
                               base::Milliseconds(1));
   client_.SetVideoRtpStream(&video_stream);

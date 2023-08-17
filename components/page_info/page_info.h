@@ -20,6 +20,7 @@
 #include "components/safe_browsing/buildflags.h"
 #include "components/security_state/core/security_state.h"
 #include "content/public/browser/web_contents.h"
+#include "net/base/schemeful_site.h"
 
 namespace content_settings {
 class PageSpecificContentSettings;
@@ -201,6 +202,10 @@ class PageInfo : private content_settings::CookieControlsObserver,
     // Only set for settings that can have multiple permissions for different
     // embedded origins.
     absl::optional<url::Origin> requesting_origin;
+    // When the permission was used.
+    base::Time last_used;
+    // Whether the permission is in use.
+    bool is_in_use = false;
   };
 
   // Creates a PageInfo for the passed |url| using the given |ssl| status
@@ -339,12 +344,9 @@ class PageInfo : private content_settings::CookieControlsObserver,
     is_subscribed_to_permission_change_for_testing = true;
   }
 
+  void PresentSitePermissionsForTesting() { PresentSitePermissions(); }
+
  private:
-  FRIEND_TEST_ALL_PREFIXES(PageInfoTest,
-                           NonFactoryDefaultAndRecentlyChangedPermissionsShown);
-  FRIEND_TEST_ALL_PREFIXES(PageInfoTest, StorageAccessGrantsAreFiltered);
-  FRIEND_TEST_ALL_PREFIXES(PageInfoTest, IncognitoPermissionsEmptyByDefault);
-  FRIEND_TEST_ALL_PREFIXES(PageInfoTest, IncognitoPermissionsDontShowAsk);
   FRIEND_TEST_ALL_PREFIXES(PageInfoTest,
                            ShowInfoBarWhenAllowingThirdPartyCookies);
   FRIEND_TEST_ALL_PREFIXES(PageInfoTest,
@@ -445,11 +447,14 @@ class PageInfo : private content_settings::CookieControlsObserver,
 
   bool IsIsolatedWebApp() const;
 
+  std::set<net::SchemefulSite> GetTwoSitePermissionRequesters(
+      ContentSettingsType type);
+
   // The page info UI displays information and controls for site-
   // specific data (local stored objects like cookies), site-specific
   // permissions (location, pop-up, plugin, etc. permissions) and site-specific
   // information (identity, connection status, etc.).
-  raw_ptr<PageInfoUI, DanglingUntriaged> ui_;
+  raw_ptr<PageInfoUI, DanglingUntriaged> ui_ = nullptr;
 
   // A web contents getter used to retrieve the associated WebContents object.
   base::WeakPtr<content::WebContents> web_contents_;

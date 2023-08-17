@@ -3,13 +3,14 @@
 // found in the LICENSE file.
 
 #include "ash/wm/desks/desk_bar_controller.h"
-#include <algorithm>
 #include <memory>
 
 #include "ash/public/cpp/shelf_types.h"
+#include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shelf/desk_button_widget.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
+#include "ash/wm/container_finder.h"
 #include "ash/wm/desks/desk_bar_view.h"
 #include "ash/wm/desks/desk_bar_view_base.h"
 #include "ash/wm/desks/desk_button/desk_button.h"
@@ -35,6 +36,26 @@
 #include "ui/wm/public/activation_client.h"
 
 namespace ash {
+
+namespace {
+bool ShouldProcessLocatedEvent(const ui::LocatedEvent& event) {
+  if (event.type() != ui::ET_MOUSE_PRESSED &&
+      event.type() != ui::ET_TOUCH_PRESSED) {
+    return false;
+  }
+
+  if (aura::Window* target = static_cast<aura::Window*>(event.target())) {
+    if (aura::Window* container = GetContainerForWindow(target)) {
+      if (container->GetId() == kShellWindowId_VirtualKeyboardContainer ||
+          container->GetId() == kShellWindowId_MenuContainer) {
+        return false;
+      }
+    }
+  }
+
+  return true;
+}
+}  // namespace
 
 DeskBarController::BarWidgetAndView::BarWidgetAndView(
     DeskBarViewBase* view,
@@ -74,13 +95,13 @@ void DeskBarController::OnDeskSwitchAnimationLaunching() {
 }
 
 void DeskBarController::OnMouseEvent(ui::MouseEvent* event) {
-  if (event->type() == ui::ET_MOUSE_PRESSED) {
+  if (ShouldProcessLocatedEvent(*event)) {
     OnMaybePressOffBar(*event);
   }
 }
 
 void DeskBarController::OnTouchEvent(ui::TouchEvent* event) {
-  if (event->type() == ui::ET_TOUCH_PRESSED) {
+  if (ShouldProcessLocatedEvent(*event)) {
     OnMaybePressOffBar(*event);
   }
 }
@@ -119,6 +140,11 @@ void DeskBarController::OnKeyEvent(ui::KeyEvent* event) {
                                     ui::VKEY_UP);
         break;
       case ui::VKEY_TAB:
+        // For alt+tab/alt+shift+tab, like other UIs on the shelf, it should
+        // hide the desk bars then show the window cycle list.
+        if (event->IsAltDown()) {
+          return;
+        }
         focus_manager->AdvanceFocus(/*reverse=*/event->IsShiftDown());
         break;
       case ui::VKEY_LEFT:
@@ -363,7 +389,7 @@ gfx::Rect DeskBarController::GetDeskBarWidgetBounds(aura::Window* root) const {
   return {bar_origin, bar_size};
 }
 
-void DeskBarController::OnMaybePressOffBar(const ui::LocatedEvent& event) {
+void DeskBarController::OnMaybePressOffBar(ui::LocatedEvent& event) {
   if (desk_bars_.empty()) {
     return;
   }
@@ -392,6 +418,8 @@ void DeskBarController::OnMaybePressOffBar(const ui::LocatedEvent& event) {
     } else if (desk_bar.bar_view->IsDeskNameBeingModified()) {
       desk_name_being_modified = true;
       DeskNameView::CommitChanges(desk_bar.bar_widget.get());
+      event.SetHandled();
+      event.StopPropagation();
     }
 
     if (desk_button_bounds.Contains(screen_location)) {

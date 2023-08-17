@@ -671,7 +671,7 @@ TEST_F(NavigationRequestTest, StorageKeyToCommit) {
   EXPECT_EQ(blink::StorageKey::CreateWithNonce(
                 url::Origin::Create(kUrl),
                 child_document->GetMainFrame()->credentialless_iframes_nonce()),
-            child_document->storage_key());
+            child_document->GetStorageKey());
 }
 
 // Test that the StorageKey's value is correctly affected by the
@@ -872,7 +872,7 @@ TEST_F(NavigationRequestTest, IsolatedAppPolicyInjection) {
   // Validate CSP.
   EXPECT_EQ(1UL, policies.content_security_policies.size());
   const auto& csp = policies.content_security_policies[0];
-  EXPECT_EQ(10UL, csp->raw_directives.size());
+  EXPECT_EQ(11UL, csp->raw_directives.size());
   using Directive = network::mojom::CSPDirectiveName;
   EXPECT_EQ("'none'", csp->raw_directives[Directive::BaseURI]);
   EXPECT_EQ("'none'", csp->raw_directives[Directive::ObjectSrc]);
@@ -887,53 +887,8 @@ TEST_F(NavigationRequestTest, IsolatedAppPolicyInjection) {
   EXPECT_EQ("'self' https: blob: data:",
             csp->raw_directives[Directive::MediaSrc]);
   EXPECT_EQ("'self' blob: data:", csp->raw_directives[Directive::FontSrc]);
+  EXPECT_EQ("'self' 'unsafe-inline'", csp->raw_directives[Directive::StyleSrc]);
   EXPECT_EQ("'script'", csp->raw_directives[Directive::RequireTrustedTypesFor]);
-}
-
-TEST_F(NavigationRequestTest, GetIsThirdPartyCookiesUserBypassEnabled) {
-  GURL url = GURL("https://example.test/");
-  GURL child_url = GURL("https://example.test/child");
-
-  std::unique_ptr<NavigationSimulator> simulator =
-      NavigationSimulator::CreateRendererInitiated(url, main_rfh());
-  simulator->Start();
-
-  // Set user bypass BREF and prepare a committing navigation.
-  // Verify that GetIsThirdPartyCookiesUserBypassEnabled returns true.
-  {
-    blink::RuntimeFeatureStateContext& context =
-        NavigationRequest::From(simulator->GetNavigationHandle())
-            ->GetMutableRuntimeFeatureStateContext();
-    context.SetThirdPartyCookiesUserBypassEnabled(true);
-  }
-  simulator->ReadyToCommit();
-  {
-    auto* navigation_request =
-        NavigationRequest::From(simulator->GetNavigationHandle());
-    EXPECT_TRUE(navigation_request->GetIsThirdPartyCookiesUserBypassEnabled());
-  }
-  simulator->Commit();
-
-  // Start a different navigation on a new child frame and verify that the
-  // the value still comes from the committed main frame.
-  {
-    auto* main_rfh =
-        static_cast<TestRenderFrameHost*>(simulator->GetFinalRenderFrameHost());
-    TestRenderFrameHost* child_rfh = main_rfh->AppendChild("child");
-    std::unique_ptr<NavigationSimulator> child_simulator =
-        NavigationSimulator::CreateRendererInitiated(child_url, child_rfh);
-    child_simulator->Start();
-    blink::RuntimeFeatureStateContext& context =
-        NavigationRequest::From(child_simulator->GetNavigationHandle())
-            ->GetMutableRuntimeFeatureStateContext();
-    context.SetThirdPartyCookiesUserBypassEnabled(false);
-    child_simulator->ReadyToCommit();
-    auto* child_navigation_request =
-        NavigationRequest::From(child_simulator->GetNavigationHandle());
-    EXPECT_TRUE(
-        child_navigation_request->GetIsThirdPartyCookiesUserBypassEnabled());
-    child_simulator->Commit();
-  }
 }
 
 // Test that the required CSP of every frame is computed/inherited correctly and

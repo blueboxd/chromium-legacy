@@ -158,7 +158,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Windows.MakeChromeDefaultDirectly.Result"
-    enum="DefaultDirectAttemptResult" expires_after="M118">
+    enum="DefaultDirectAttemptResult" expires_after="2024-01-28">
   <owner>robliao@chromium.org</owner>
   <owner>davidbienvenu@chromium.org</owner>
   <summary>
@@ -279,22 +279,6 @@ chromium-metrics-reviews@google.com.
     Records whether or not Renderer code integrity is enabled. This is enabled
     by default but can be overridden by policy. This is recorded each time a new
     renderer process starts.
-  </summary>
-</histogram>
-
-<histogram name="Windows.TouchDrag.Success" enum="BooleanSuccess"
-    expires_after="2021-12-01">
-  <owner>davidbienvenu@chromium.org</owner>
-  <owner>dfried@chromium.org</owner>
-  <summary>
-    Recorded each time the user starts a Windows touch drag drop of web
-    contents. This is currently only used by the WebUI tab strip, where touch
-    drag drop is enabled, to count the number of touch drags attempted.
-    ::DoDragDrop occasionally blocks waiting for a right mouse button down
-    followed by a move, which is detected by ::DoDragDrop not calling
-    QueryContinueDrag for more than a second. This will be recorded as false.
-    This stat will be used to determine how much of a real world problem this
-    is.
   </summary>
 </histogram>
 

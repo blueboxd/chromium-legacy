@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <memory>
+#include <string>
 
 #include "ash/glanceables/common/glanceables_view_id.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -15,6 +16,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/types/cxx23_to_underlying.h"
 #include "components/vector_icons/vector_icons.h"
+#include "ui/accessibility/ax_enums.mojom-shared.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/models/image_model.h"
@@ -33,14 +35,37 @@ namespace ash {
 namespace {
 
 constexpr int kSeeAllIconSize = 24;
-
 constexpr int kFooterVerticalSpacing = 7;
-
 constexpr int kFooterStartSpacing = 6;
+
+class SeeAllButton : public views::LabelButton {
+ public:
+  SeeAllButton(const std::u16string& see_all_accessible_name,
+               base::RepeatingClosure on_see_all_pressed) {
+    SetText(l10n_util::GetStringUTF16(
+        IDS_GLANCEABLES_LIST_FOOTER_ACTION_BUTTON_LABEL));
+    SetCallback(std::move(on_see_all_pressed));
+    SetID(base::to_underlying(GlanceablesViewId::kListFooterSeeAllButton));
+    SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_RIGHT);
+    SetImageModel(views::Button::STATE_NORMAL,
+                  ui::ImageModel::FromVectorIcon(vector_icons::kLaunchIcon,
+                                                 cros_tokens::kCrosSysOnSurface,
+                                                 kSeeAllIconSize));
+    SetTextColorId(views::Button::STATE_NORMAL, cros_tokens::kCrosSysOnSurface);
+    TypographyProvider::Get()->StyleLabel(TypographyToken::kCrosButton2,
+                                          *label());
+    SetAccessibilityProperties(ax::mojom::Role::kLink, see_all_accessible_name);
+  }
+
+  SeeAllButton(const SeeAllButton&) = delete;
+  SeeAllButton& operator=(const SeeAllButton&) = delete;
+  ~SeeAllButton() override = default;
+};
 
 }  // namespace
 
 GlanceablesListFooterView::GlanceablesListFooterView(
+    const std::u16string& see_all_accessible_name,
     base::RepeatingClosure on_see_all_pressed) {
   SetCrossAxisAlignment(views::LayoutAlignment::kCenter);
 
@@ -62,23 +87,8 @@ GlanceablesListFooterView::GlanceablesListFooterView(
                                        views::MaximumFlexSizeRule::kUnbounded))
           .Build());
 
-  see_all_button_ =
-      AddChildView(views::Builder<views::LabelButton>()
-                       .SetText(l10n_util::GetStringUTF16(
-                           IDS_GLANCEABLES_LIST_FOOTER_ACTION_BUTTON_LABEL))
-                       .SetCallback(std::move(on_see_all_pressed))
-                       .SetID(base::to_underlying(
-                           GlanceablesViewId::kListFooterSeeAllButton))
-                       .Build());
-  see_all_button_->SetHorizontalAlignment(
-      gfx::HorizontalAlignment::ALIGN_RIGHT);
-  see_all_button_->SetImageModel(
-      views::Button::STATE_NORMAL,
-      ui::ImageModel::FromVectorIcon(vector_icons::kLaunchIcon,
-                                     cros_tokens::kCrosSysOnSurface,
-                                     kSeeAllIconSize));
-  see_all_button_->SetTextColorId(views::Button::STATE_NORMAL,
-                                  cros_tokens::kCrosSysOnSurface);
+  see_all_button_ = AddChildView(std::make_unique<SeeAllButton>(
+      see_all_accessible_name, on_see_all_pressed));
 
   SetProperty(views::kMarginsKey,
               gfx::Insets::TLBR(kFooterVerticalSpacing, kFooterStartSpacing,

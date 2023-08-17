@@ -19,6 +19,7 @@
 #include "content/browser/renderer_host/render_widget_host_view_aura.h"
 #include "content/browser/renderer_host/render_widget_host_view_child_frame.h"
 #include "content/browser/renderer_host/render_widget_host_view_event_handler.h"
+#include "content/browser/renderer_host/text_input_manager.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test.h"
@@ -40,12 +41,19 @@
 #include "ui/display/display_switches.h"
 #include "ui/events/event_sink.h"
 #include "ui/events/event_utils.h"
+#include "ui/events/gesture_detection/gesture_configuration.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/events/test/motion_event_test_utils.h"
 #include "ui/touch_selection/touch_selection_controller_test_api.h"
 
 namespace content {
 namespace {
+
+#if BUILDFLAG(IS_CHROMEOS)
+// Character dimensions in px, from the font size in `touch_selection.html`.
+constexpr int kCharacterWidth = 15;
+constexpr int kCharacterHeight = 15;
+#endif
 
 bool JSONToPoint(const std::string& str, gfx::PointF* point) {
   absl::optional<base::Value> value = base::JSONReader::Read(str);
@@ -61,6 +69,14 @@ bool JSONToPoint(const std::string& str, gfx::PointF* point) {
   point->set_x(*x);
   point->set_y(*y);
   return true;
+}
+
+gfx::RectF ConvertRectFToChildCoords(RenderWidgetHostViewAura* parent,
+                                     RenderWidgetHostViewChildFrame* child,
+                                     const gfx::RectF rect) {
+  return gfx::BoundingRect(
+      child->TransformRootPointToViewCoordSpace(rect.origin()),
+      child->TransformRootPointToViewCoordSpace(rect.bottom_right()));
 }
 
 // A mock touch selection menu runner to use whenever a default one is not
@@ -98,7 +114,8 @@ class TestTouchSelectionMenuRunner : public ui::TouchSelectionMenuRunner {
 }  // namespace
 
 class TestTouchSelectionControllerClientAura
-    : public TouchSelectionControllerClientAura {
+    : public TouchSelectionControllerClientAura,
+      public TextInputManager::Observer {
  public:
   TestTouchSelectionControllerClientAura(RenderWidgetHostViewAura* rwhva,
                                          bool enable_all_menu_commands)
@@ -122,25 +139,67 @@ class TestTouchSelectionControllerClientAura
   }
 
   void InitWaitForHandleContextMenu() {
-    DCHECK(!run_loop_);
+    DCHECK(!menu_run_loop_);
     waiting_for_handle_context_menu_ = true;
-    run_loop_ = std::make_unique<base::RunLoop>();
+    menu_run_loop_ = std::make_unique<base::RunLoop>();
   }
 
   bool HandleContextMenu(const ContextMenuParams& params) override {
     bool handled =
         TouchSelectionControllerClientAura::HandleContextMenu(params);
-    if (run_loop_ && waiting_for_handle_context_menu_) {
+    if (menu_run_loop_ && waiting_for_handle_context_menu_) {
       waiting_for_handle_context_menu_ = false;
-      run_loop_->Quit();
+      menu_run_loop_->Quit();
     }
     return handled;
+  }
+
+  void InitWaitForSelectionUpdate() {
+    DCHECK(!run_loop_);
+    // Wait for selection change to ensure that the selected text is updated.
+    waiting_for_selection_change_ = true;
+    // Wait for bounds update to ensure that the TouchSelectionController has
+    // processed the selection update (since it uses these bounds e.g. for
+    // handle placement and to initiate long press drag selection).
+    waiting_for_selection_bounds_update_ = true;
+    rwhva_->GetTextInputManager()->AddObserver(this);
+    run_loop_ = std::make_unique<base::RunLoop>();
+  }
+
+  void UpdateClientSelectionBounds(const gfx::SelectionBound& start,
+                                   const gfx::SelectionBound& end) override {
+    TouchSelectionControllerClientAura::UpdateClientSelectionBounds(start, end);
+    if (run_loop_ && waiting_for_selection_bounds_update_) {
+      waiting_for_selection_bounds_update_ = false;
+      // Only quit the run loop once the selection and bounds have both updated.
+      if (!waiting_for_selection_change_) {
+        run_loop_->Quit();
+      }
+    }
+  }
+
+  void OnTextSelectionChanged(TextInputManager* text_input_manager,
+                              RenderWidgetHostViewBase* updated_view) override {
+    if (run_loop_ && waiting_for_selection_change_) {
+      text_input_manager->RemoveObserver(this);
+      waiting_for_selection_change_ = false;
+      // Only quit the run loop once the selection and bounds have both updated.
+      if (!waiting_for_selection_bounds_update_) {
+        run_loop_->Quit();
+      }
+    }
   }
 
   void Wait() {
     DCHECK(run_loop_);
     run_loop_->Run();
     run_loop_.reset();
+  }
+
+  void WaitForHandleContextMenu() {
+    DCHECK(menu_run_loop_);
+    menu_run_loop_->Run();
+    menu_run_loop_.reset();
   }
 
   ui::TouchSelectionMenuClient* GetActiveMenuClient() {
@@ -150,6 +209,8 @@ class TestTouchSelectionControllerClientAura
   bool IsMagnifierVisible() const {
     return touch_selection_magnifier_ != nullptr;
   }
+
+  bool IsHandlingSelectionDrag() const { return handle_drag_in_progress_; }
 
  private:
   // TouchSelectionControllerClientAura:
@@ -167,8 +228,11 @@ class TestTouchSelectionControllerClientAura
   }
 
   bool waiting_for_handle_context_menu_ = false;
+  bool waiting_for_selection_change_ = false;
+  bool waiting_for_selection_bounds_update_ = false;
   ui::SelectionEventType expected_event_;
   std::unique_ptr<base::RunLoop> run_loop_;
+  std::unique_ptr<base::RunLoop> menu_run_loop_;
 
   // When set to true, the TouchSelectionControllerClientAura criteria for
   // enabling menu commands is overridden and we instead enable all menu
@@ -234,6 +298,57 @@ class TouchSelectionControllerClientAuraTest : public ContentBrowserTest {
     return selection_controller_client_;
   }
 
+  // Performs a long press to select the word at `point`.
+  void SelectWithLongPress(ui::test::EventGenerator& generator,
+                           const gfx::Point& point) {
+    selection_controller_client()->InitWaitForSelectionUpdate();
+    generator.PressTouch(point);
+    selection_controller_client()->Wait();
+  }
+
+  // Performs a double press to select the word at `point`.
+  void SelectWithDoublePress(ui::test::EventGenerator& generator,
+                             const gfx::Point& point) {
+    // Perform the first press and release, then wait for a selection update
+    // before pressing again. This is to ensure that the next selection update
+    // corresponds to the second press (otherwise, we might return too early if
+    // the first selection update only happens after the second press). Note
+    // that the event generator uses its own mock clock to set the touch event
+    // times, so there shouldn't be an issue with double press timing even if
+    // the first selection update is delayed.
+    selection_controller_client()->InitWaitForSelectionUpdate();
+    generator.PressTouch(point);
+    generator.ReleaseTouch();
+    selection_controller_client()->Wait();
+
+    // Perform a second press to select the word at `point`.
+    selection_controller_client()->InitWaitForSelectionUpdate();
+    generator.PressTouch(point);
+    selection_controller_client()->Wait();
+  }
+
+  // Performs touch moves to initiate selection dragging after a long press or
+  // double press gesture. Note that the first two touch moves after the
+  // initiating long press or double press don't produce selection updates,
+  // since they are instead used to set up the selection drag (e.g. set the
+  // selection base and extent).
+  void InitiateTouchSelectionDragging(ui::test::EventGenerator& generator) {
+    generator.MoveTouchBy(10, 0);
+    generator.MoveTouchBy(10, 0);
+  }
+
+  // Performs a touch move to adjust the selection and waits for the
+  // corresponding selection update. This assumes that there is currently a
+  // selection drag in progress.
+  void DragAndWaitForSelectionUpdate(ui::test::EventGenerator& generator,
+                                     int x,
+                                     int y) {
+    CHECK(selection_controller_client()->IsHandlingSelectionDrag());
+    selection_controller_client()->InitWaitForSelectionUpdate();
+    generator.MoveTouchBy(x, y);
+    selection_controller_client()->Wait();
+  }
+
   void InitSelectionController(bool enable_all_menu_commands) {
     RenderWidgetHostViewAura* rwhva = GetRenderWidgetHostViewAura();
     selection_controller_client_ = new TestTouchSelectionControllerClientAura(
@@ -249,6 +364,9 @@ class TouchSelectionControllerClientAuraTest : public ContentBrowserTest {
     ContentBrowserTest::SetUpOnMainThread();
     if (!ui::TouchSelectionMenuRunner::GetInstance())
       menu_runner_ = std::make_unique<TestTouchSelectionMenuRunner>();
+    // Set a small tap slop.
+    ui::GestureConfiguration::GetInstance()
+        ->set_max_touch_move_in_pixels_for_click(5);
   }
 
  private:
@@ -392,8 +510,8 @@ class TouchSelectionControllerClientAuraSiteIsolationTest
     ASSERT_TRUE(embedded_test_server()->Start());
   }
 
-  void SelectWithLongPress(gfx::Point point,
-                           RenderWidgetHostViewBase* expected_target) {
+  void SelectWithLongTap(gfx::Point point,
+                         RenderWidgetHostViewBase* expected_target) {
     // Get main frame view for event insertion.
     RenderWidgetHostViewAura* main_view = GetRenderWidgetHostViewAura();
 
@@ -520,7 +638,7 @@ IN_PROC_BROWSER_TEST_P(TouchSelectionControllerClientAuraSiteIsolationTest,
   parent_selection_controller_client->InitWaitForSelectionEvent(
       ui::SELECTION_HANDLES_SHOWN);
 
-  SelectWithLongPress(gfx::Point(point_f.x(), point_f.y()), child_view);
+  SelectWithLongTap(gfx::Point(point_f.x(), point_f.y()), child_view);
 
   parent_selection_controller_client->Wait();
 
@@ -648,7 +766,7 @@ IN_PROC_BROWSER_TEST_P(TouchSelectionControllerClientAuraSiteIsolationTest,
   parent_selection_controller_client->InitWaitForSelectionEvent(
       ui::SELECTION_HANDLES_SHOWN);
 
-  SelectWithLongPress(gfx::Point(point_f.x(), point_f.y()), child_view);
+  SelectWithLongTap(gfx::Point(point_f.x(), point_f.y()), child_view);
 
   parent_selection_controller_client->Wait();
 
@@ -757,6 +875,110 @@ IN_PROC_BROWSER_TEST_P(TouchSelectionControllerClientAuraSiteIsolationTest,
             final_start_handle_position - initial_start_handle_position);
 }
 
+// Tests that the selection handles in a child view have their bounds updated
+// when the main view is resized.
+IN_PROC_BROWSER_TEST_P(TouchSelectionControllerClientAuraSiteIsolationTest,
+                       SelectionHandlesIsolatedIframeMainViewResized) {
+  // Set the test page up.
+  const GURL test_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(a)"));
+  EXPECT_TRUE(NavigateToURL(shell(), test_url));
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetPrimaryFrameTree()
+                            .root();
+  EXPECT_EQ(DepictFrameTree(*root),
+            " Site A\n"
+            "   +--Site A\n"
+            "Where A = http://a.com/");
+  TestNavigationObserver observer(shell()->web_contents());
+  EXPECT_EQ(root->child_count(), 1u);
+  FrameTreeNode* child = root->child_at(0);
+
+  RenderWidgetHostViewAura* parent_view =
+      static_cast<RenderWidgetHostViewAura*>(
+          root->current_frame_host()->GetRenderWidgetHost()->GetView());
+  TestTouchSelectionControllerClientAura* parent_selection_controller_client =
+      new TestTouchSelectionControllerClientAura(parent_view, true);
+  parent_view->SetSelectionControllerClientForTest(
+      base::WrapUnique(parent_selection_controller_client));
+  parent_view->SetSize(gfx::Size(600, 500));
+  WaitForHitTestData(root->current_frame_host());
+
+  const GURL child_url(
+      embedded_test_server()->GetURL("b.com", "/touch_selection.html"));
+  EXPECT_TRUE(NavigateToURLFromRenderer(child, child_url));
+  EXPECT_EQ(DepictFrameTree(*root),
+            " Site A ------------ proxies for B\n"
+            "   +--Site B ------- proxies for A\n"
+            "Where A = http://a.com/\n"
+            "      B = http://b.com/");
+
+  // The child will change with the cross-site navigation. It shouldn't change
+  // after this.
+  child = root->child_at(0);
+  WaitForHitTestData(child->current_frame_host());
+
+  RenderWidgetHostViewChildFrame* child_view =
+      static_cast<RenderWidgetHostViewChildFrame*>(
+          child->current_frame_host()->GetRenderWidgetHost()->GetView());
+
+  EXPECT_EQ(child_url, observer.last_navigation_url());
+  EXPECT_TRUE(observer.last_navigation_succeeded());
+
+  EXPECT_EQ(ui::TouchSelectionController::INACTIVE,
+            parent_view->selection_controller()->active_status());
+  EXPECT_EQ(gfx::RectF(),
+            parent_view->selection_controller()->GetVisibleRectBetweenBounds());
+
+  // Find the location of some text in the child view to select.
+  gfx::PointF point_in_text;
+  JSONToPoint(EvalJs(child->current_frame_host(), "get_point_inside_text()")
+                  .ExtractString(),
+              &point_in_text);
+  point_in_text = child_view->TransformPointToRootCoordSpaceF(point_in_text);
+
+  // Long press to show selection handles.
+  parent_selection_controller_client->InitWaitForSelectionEvent(
+      ui::SELECTION_HANDLES_SHOWN);
+  SelectWithLongTap(gfx::Point(point_in_text.x(), point_in_text.y()),
+                    child_view);
+  parent_selection_controller_client->Wait();
+
+  // Selection handles should be shown.
+  EXPECT_EQ(ui::TouchSelectionController::SELECTION_ACTIVE,
+            parent_view->selection_controller()->active_status());
+  const gfx::RectF initial_selection_bounds_in_parent_coords =
+      parent_view->selection_controller()->GetRectBetweenBounds();
+  EXPECT_NE(initial_selection_bounds_in_parent_coords, gfx::RectF());
+
+  // Compute selection bounds in child view coordinates, to help determine the
+  // expected selection bounds after resizing the parent view.
+  const gfx::RectF initial_selection_bounds_in_child_coords =
+      ConvertRectFToChildCoords(parent_view, child_view,
+                                initial_selection_bounds_in_parent_coords);
+
+  // Resize the parent view.
+  parent_selection_controller_client->InitWaitForSelectionEvent(
+      ui::SELECTION_HANDLES_MOVED);
+  parent_view->SetSize(gfx::Size(200, 200));
+  parent_selection_controller_client->Wait();
+
+  // Resizing the parent view changes the position of the child view within this
+  // parent, so we expect the selection handles to have moved and the selection
+  // bounds in the parent view to have changed.
+  EXPECT_EQ(ui::TouchSelectionController::SELECTION_ACTIVE,
+            parent_view->selection_controller()->active_status());
+  const gfx::RectF new_selection_bounds_in_parent_coords =
+      parent_view->selection_controller()->GetRectBetweenBounds();
+  EXPECT_NE(new_selection_bounds_in_parent_coords, gfx::RectF());
+  EXPECT_NE(new_selection_bounds_in_parent_coords,
+            initial_selection_bounds_in_parent_coords);
+  // The selection bounds should remain the same in child view coordinates.
+  EXPECT_EQ(ConvertRectFToChildCoords(parent_view, child_view,
+                                      new_selection_bounds_in_parent_coords),
+            initial_selection_bounds_in_child_coords);
+}
+
 // Tests that tapping in a textfield brings up the insertion handle, but not the
 // quick menu, initially. Then, successive taps on the insertion handle toggle
 // the quick menu visibility.
@@ -806,6 +1028,211 @@ IN_PROC_BROWSER_TEST_P(TouchSelectionControllerClientAuraCAPFeatureTest,
 }
 
 #if BUILDFLAG(IS_CHROMEOS)
+// Tests that the text selection can be adjusted by touch dragging after a long
+// press gesture on readable text.
+IN_PROC_BROWSER_TEST_P(TouchSelectionControllerClientAuraCAPFeatureTest,
+                       LongPressDragSelectionReadableText) {
+  // Set the test page up.
+  ASSERT_NO_FATAL_FAILURE(StartTestWithPage("/touch_selection.html"));
+
+  InitSelectionController(false);
+  RenderWidgetHostViewAura* rwhva = GetRenderWidgetHostViewAura();
+  gfx::NativeView native_view = rwhva->GetNativeView();
+  ui::test::EventGenerator generator(native_view->GetRootWindow());
+
+  // Long pressing on readable text should select the closest word.
+  gfx::Point point_in_readable_text = gfx::ToRoundedPoint(GetPointInsideText());
+  generator.delegate()->ConvertPointFromTarget(native_view,
+                                               &point_in_readable_text);
+  SelectWithLongPress(generator, point_in_readable_text);
+  EXPECT_EQ(rwhva->GetSelectedText(), u"Some");
+  EXPECT_EQ(rwhva->selection_controller()->GetRectBetweenBounds().size(),
+            gfx::SizeF(4 * kCharacterWidth, kCharacterHeight));
+
+  // Drag after the long press to adjust the selection.
+  InitiateTouchSelectionDragging(generator);
+
+  // Move the end of the selection from "Some|" to "Some text|".
+  DragAndWaitForSelectionUpdate(generator, 5 * kCharacterWidth, 0);
+  EXPECT_EQ(rwhva->GetSelectedText(), u"Some text");
+  EXPECT_EQ(rwhva->selection_controller()->GetRectBetweenBounds().size(),
+            gfx::SizeF(9 * kCharacterWidth, kCharacterHeight));
+
+  // Move the end of the selection from "Some text|" to "Some t|".
+  DragAndWaitForSelectionUpdate(generator, -3 * kCharacterWidth, 0);
+  EXPECT_EQ(rwhva->GetSelectedText(), u"Some t");
+  EXPECT_EQ(rwhva->selection_controller()->GetRectBetweenBounds().size(),
+            gfx::SizeF(6 * kCharacterWidth, kCharacterHeight));
+}
+
+// Tests that the text selection can be adjusted by touch dragging after a long
+// press gesture on editable text.
+IN_PROC_BROWSER_TEST_P(TouchSelectionControllerClientAuraCAPFeatureTest,
+                       LongPressDragSelectionEditableText) {
+  // Set the test page up.
+  ASSERT_NO_FATAL_FAILURE(StartTestWithPage("/touch_selection.html"));
+
+  InitSelectionController(false);
+  RenderWidgetHostViewAura* rwhva = GetRenderWidgetHostViewAura();
+  gfx::NativeView native_view = rwhva->GetNativeView();
+  ui::test::EventGenerator generator(native_view->GetRootWindow());
+
+  // Long pressing on editable text should select the closest word.
+  gfx::Point point_in_textfield =
+      gfx::ToRoundedPoint(GetPointInsideTextfield());
+  generator.delegate()->ConvertPointFromTarget(native_view,
+                                               &point_in_textfield);
+  SelectWithLongPress(generator, point_in_textfield);
+  EXPECT_EQ(rwhva->GetSelectedText(), u"Some");
+  EXPECT_EQ(rwhva->selection_controller()->GetRectBetweenBounds().size(),
+            gfx::SizeF(4 * kCharacterWidth, kCharacterHeight));
+
+  // Drag after the long press to adjust the selection.
+  InitiateTouchSelectionDragging(generator);
+
+  // Move the end of the selection from "Some|" to "Some editable|".
+  DragAndWaitForSelectionUpdate(generator, 9 * kCharacterWidth, 0);
+  EXPECT_EQ(rwhva->GetSelectedText(), u"Some editable");
+  EXPECT_EQ(rwhva->selection_controller()->GetRectBetweenBounds().size(),
+            gfx::SizeF(13 * kCharacterWidth, kCharacterHeight));
+
+  // Drag the end of the selection from "Some editable|" to "Some editabl|".
+  DragAndWaitForSelectionUpdate(generator, -kCharacterWidth, 0);
+  EXPECT_EQ(rwhva->GetSelectedText(), u"Some editabl");
+  EXPECT_EQ(rwhva->selection_controller()->GetRectBetweenBounds().size(),
+            gfx::SizeF(12 * kCharacterWidth, kCharacterHeight));
+}
+
+// Tests that the text selection can be adjusted by touch dragging after a
+// double press gesture on editable text.
+IN_PROC_BROWSER_TEST_P(TouchSelectionControllerClientAuraCAPFeatureTest,
+                       DoublePressDragSelection) {
+  // Set the test page up.
+  ASSERT_NO_FATAL_FAILURE(StartTestWithPage("/touch_selection.html"));
+
+  InitSelectionController(false);
+  RenderWidgetHostViewAura* rwhva = GetRenderWidgetHostViewAura();
+  gfx::NativeView native_view = rwhva->GetNativeView();
+  ui::test::EventGenerator generator(native_view->GetRootWindow());
+
+  // Double pressing on editable text should select the closest word.
+  gfx::Point point_in_textfield =
+      gfx::ToRoundedPoint(GetPointInsideTextfield());
+  generator.delegate()->ConvertPointFromTarget(native_view,
+                                               &point_in_textfield);
+  SelectWithDoublePress(generator, point_in_textfield);
+  EXPECT_EQ(rwhva->GetSelectedText(), u"Some");
+  EXPECT_EQ(rwhva->selection_controller()->GetRectBetweenBounds().size(),
+            gfx::SizeF(4 * kCharacterWidth, kCharacterHeight));
+
+  // Drag after the double press to adjust the selection.
+  InitiateTouchSelectionDragging(generator);
+
+  // Move the end of the selection from "Some|" to "Some editable|".
+  DragAndWaitForSelectionUpdate(generator, 9 * kCharacterWidth, 0);
+  EXPECT_EQ(rwhva->GetSelectedText(), u"Some editable");
+  EXPECT_EQ(rwhva->selection_controller()->GetRectBetweenBounds().size(),
+            gfx::SizeF(13 * kCharacterWidth, kCharacterHeight));
+
+  // Drag the end of the selection from "Some editable|" to "Some editabl|".
+  DragAndWaitForSelectionUpdate(generator, -kCharacterWidth, 0);
+  EXPECT_EQ(rwhva->GetSelectedText(), u"Some editabl");
+  EXPECT_EQ(rwhva->selection_controller()->GetRectBetweenBounds().size(),
+            gfx::SizeF(12 * kCharacterWidth, kCharacterHeight));
+}
+
+// Tests that touch selection dragging adjusts the selection using a direction
+// strategy (roughly, expands by word and shrinks by character).
+IN_PROC_BROWSER_TEST_P(TouchSelectionControllerClientAuraCAPFeatureTest,
+                       SelectionDraggingDirectionStrategy) {
+  // Set the test page up.
+  ASSERT_NO_FATAL_FAILURE(StartTestWithPage("/touch_selection.html"));
+
+  InitSelectionController(false);
+  RenderWidgetHostViewAura* rwhva = GetRenderWidgetHostViewAura();
+  gfx::NativeView native_view = rwhva->GetNativeView();
+  ui::test::EventGenerator generator(native_view->GetRootWindow());
+
+  // Double press in editable text to select the closest word.
+  gfx::Point point_in_textfield =
+      gfx::ToRoundedPoint(GetPointInsideTextfield());
+  generator.delegate()->ConvertPointFromTarget(native_view,
+                                               &point_in_textfield);
+  SelectWithDoublePress(generator, point_in_textfield);
+  EXPECT_EQ(rwhva->GetSelectedText(), u"Some");
+  EXPECT_EQ(rwhva->selection_controller()->GetRectBetweenBounds().size(),
+            gfx::SizeF(4 * kCharacterWidth, kCharacterHeight));
+
+  // Drag the end of the selection from "Some|" to "Some edita|". The selection
+  // should expand to the closest word boundary. Note that this creates an
+  // offset of 3 characters between the drag position and end of the selection.
+  InitiateTouchSelectionDragging(generator);
+  DragAndWaitForSelectionUpdate(generator, 6 * kCharacterWidth, 0);
+  EXPECT_EQ(rwhva->GetSelectedText(), u"Some editable");
+  EXPECT_EQ(rwhva->selection_controller()->GetRectBetweenBounds().size(),
+            gfx::SizeF(13 * kCharacterWidth, kCharacterHeight));
+
+  // Drag the end of the selection from "Some editable|" to "Some ed|". The
+  // selection should shrink to the nearest character boundary, preserving the
+  // offset between the drag position and end of the selection.
+  DragAndWaitForSelectionUpdate(generator, -6 * kCharacterWidth, 0);
+  EXPECT_EQ(rwhva->GetSelectedText(), u"Some ed");
+  EXPECT_EQ(rwhva->selection_controller()->GetRectBetweenBounds().size(),
+            gfx::SizeF(7 * kCharacterWidth, kCharacterHeight));
+
+  // Drag to remove the 3 character offset and move the end of the selection
+  // from "Some ed|" to "Some edit|". Since we are adjusting within a word, the
+  // selection expands with character granularity.
+  DragAndWaitForSelectionUpdate(generator, 5 * kCharacterWidth, 0);
+  EXPECT_EQ(rwhva->GetSelectedText(), u"Some edit");
+  EXPECT_EQ(rwhva->selection_controller()->GetRectBetweenBounds().size(),
+            gfx::SizeF(9 * kCharacterWidth, kCharacterHeight));
+
+  // Drag the end of the selection from "Some edit|" to "Some editable tex|".
+  // Since we have expanded past a word boundary, the selection should expand
+  // with word granularity again.
+  DragAndWaitForSelectionUpdate(generator, 8 * kCharacterWidth, 0);
+  EXPECT_EQ(rwhva->GetSelectedText(), u"Some editable text");
+  EXPECT_EQ(rwhva->selection_controller()->GetRectBetweenBounds().size(),
+            gfx::SizeF(18 * kCharacterWidth, kCharacterHeight));
+}
+
+// Tests that a magnifier is shown when touch selection dragging.
+IN_PROC_BROWSER_TEST_P(TouchSelectionControllerClientAuraCAPFeatureTest,
+                       SelectionDraggingShowsMagnifier) {
+  // Set the test page up.
+  ASSERT_NO_FATAL_FAILURE(StartTestWithPage("/touch_selection.html"));
+
+  InitSelectionController(false);
+  RenderWidgetHostViewAura* rwhva = GetRenderWidgetHostViewAura();
+  gfx::NativeView native_view = rwhva->GetNativeView();
+  ui::test::EventGenerator generator(native_view->GetRootWindow());
+
+  // Double press in textfield then start touch selection dragging.
+  gfx::Point point_in_textfield =
+      gfx::ToRoundedPoint(GetPointInsideTextfield());
+  generator.delegate()->ConvertPointFromTarget(native_view,
+                                               &point_in_textfield);
+  SelectWithDoublePress(generator, point_in_textfield);
+  InitiateTouchSelectionDragging(generator);
+
+  // Drag to move the selection.
+  selection_controller_client()->InitWaitForSelectionEvent(
+      ui::SELECTION_HANDLES_MOVED);
+  generator.MoveTouchBy(8 * kCharacterWidth, 0);
+  selection_controller_client()->Wait();
+  // Magnifier should be shown while dragging.
+  EXPECT_TRUE(selection_controller_client()->IsMagnifierVisible());
+
+  // Release touch to end the drag.
+  selection_controller_client()->InitWaitForSelectionEvent(
+      ui::SELECTION_HANDLE_DRAG_STOPPED);
+  generator.ReleaseTouch();
+  selection_controller_client()->Wait();
+  // Magnifier should be hidden after dragging stops.
+  EXPECT_FALSE(selection_controller_client()->IsMagnifierVisible());
+}
+
 // Tests that tapping the caret toggles showing and hiding the quick menu.
 IN_PROC_BROWSER_TEST_P(TouchSelectionControllerClientAuraCAPFeatureTest,
                        TapOnCaret) {
@@ -818,16 +1245,27 @@ IN_PROC_BROWSER_TEST_P(TouchSelectionControllerClientAuraCAPFeatureTest,
   ui::test::EventGenerator generator(native_view->GetRootWindow());
 
   // Mouse click inside the textfield to make a caret appear.
+  selection_controller_client()->InitWaitForSelectionUpdate();
   gfx::Point point = gfx::ToRoundedPoint(GetPointInsideTextfield());
   generator.delegate()->ConvertPointFromTarget(native_view, &point);
   generator.MoveMouseTo(point);
   generator.PressLeftButton();
+  selection_controller_client()->Wait();
+  EXPECT_EQ(rwhva->selection_controller()->active_status(),
+            ui::TouchSelectionController::INACTIVE);
   EXPECT_FALSE(ui::TouchSelectionMenuRunner::GetInstance()->IsRunning());
 
-  // Tap the caret to show the quick menu.
+  // Tap the caret to show an insertion handle and quick menu.
+  selection_controller_client()->InitWaitForSelectionEvent(
+      ui::INSERTION_HANDLE_SHOWN);
   selection_controller_client()->InitWaitForHandleContextMenu();
   generator.GestureTapAt(point);
+  // Wait for both the insertion handle to be shown and for the context menu
+  // event to be handled, since these might not occur in a fixed order.
   selection_controller_client()->Wait();
+  selection_controller_client()->WaitForHandleContextMenu();
+  EXPECT_EQ(rwhva->selection_controller()->active_status(),
+            ui::TouchSelectionController::INSERTION_ACTIVE);
   EXPECT_TRUE(ui::TouchSelectionMenuRunner::GetInstance()->IsRunning());
 
   // Tap the caret again to hide the quick menu. We advance the clock before
@@ -835,8 +1273,66 @@ IN_PROC_BROWSER_TEST_P(TouchSelectionControllerClientAuraCAPFeatureTest,
   generator.AdvanceClock(base::Milliseconds(1000));
   selection_controller_client()->InitWaitForHandleContextMenu();
   generator.GestureTapAt(point);
-  selection_controller_client()->Wait();
+  selection_controller_client()->WaitForHandleContextMenu();
+  // The insertion handle should still be shown but menu should be hidden.
+  EXPECT_EQ(rwhva->selection_controller()->active_status(),
+            ui::TouchSelectionController::INSERTION_ACTIVE);
   EXPECT_FALSE(ui::TouchSelectionMenuRunner::GetInstance()->IsRunning());
+}
+
+// Tests that the insertion handle and menu are hidden when a mouse event
+// occurs, then can be shown again by tapping on the caret.
+IN_PROC_BROWSER_TEST_P(TouchSelectionControllerClientAuraCAPFeatureTest,
+                       HandleVisibilityAfterMouseEvent) {
+  // Set the test page up.
+  ASSERT_NO_FATAL_FAILURE(StartTestWithPage("/touch_selection.html"));
+  InitSelectionController(true);
+
+  RenderWidgetHostViewAura* rwhva = GetRenderWidgetHostViewAura();
+  const gfx::NativeView native_view = rwhva->GetNativeView();
+  ui::test::EventGenerator generator(native_view->GetRootWindow());
+
+  // Tap inside the textfield to place a caret and show an insertion handle.
+  selection_controller_client()->InitWaitForSelectionEvent(
+      ui::INSERTION_HANDLE_SHOWN);
+  gfx::Point caret_location = gfx::ToRoundedPoint(GetPointInsideTextfield());
+  generator.delegate()->ConvertPointFromTarget(native_view, &caret_location);
+  generator.GestureTapAt(caret_location);
+  selection_controller_client()->Wait();
+
+  const gfx::RectF caret_bounds =
+      rwhva->selection_controller()->GetVisibleRectBetweenBounds();
+  EXPECT_NE(caret_bounds, gfx::RectF());
+  EXPECT_EQ(rwhva->selection_controller()->active_status(),
+            ui::TouchSelectionController::INSERTION_ACTIVE);
+  EXPECT_FALSE(ui::TouchSelectionMenuRunner::GetInstance()->IsRunning());
+
+  // Move the mouse to hide the insertion handle.
+  selection_controller_client()->InitWaitForSelectionEvent(
+      ui::INSERTION_HANDLE_CLEARED);
+  generator.SendMouseEnter();
+  generator.MoveMouseBy(100, 100);
+  selection_controller_client()->Wait();
+
+  EXPECT_EQ(rwhva->selection_controller()->GetVisibleRectBetweenBounds(),
+            gfx::RectF());
+  EXPECT_EQ(rwhva->selection_controller()->active_status(),
+            ui::TouchSelectionController::INACTIVE);
+  EXPECT_FALSE(ui::TouchSelectionMenuRunner::GetInstance()->IsRunning());
+
+  // Tap the caret to show the menu and make the insertion handle reappear. We
+  // advance the clock before tapping to avoid it being treated as a double tap.
+  generator.AdvanceClock(base::Milliseconds(1000));
+  selection_controller_client()->InitWaitForSelectionEvent(
+      ui::INSERTION_HANDLE_SHOWN);
+  generator.GestureTapAt(caret_location);
+  selection_controller_client()->Wait();
+
+  EXPECT_EQ(rwhva->selection_controller()->GetVisibleRectBetweenBounds(),
+            caret_bounds);
+  EXPECT_EQ(rwhva->selection_controller()->active_status(),
+            ui::TouchSelectionController::INSERTION_ACTIVE);
+  EXPECT_TRUE(ui::TouchSelectionMenuRunner::GetInstance()->IsRunning());
 }
 #endif
 
@@ -1081,7 +1577,7 @@ IN_PROC_BROWSER_TEST_P(TouchSelectionControllerClientAuraCAPFeatureTest,
   EXPECT_TRUE(selection_controller_test_api.GetEndVisible());
   EXPECT_EQ(
       selection_controller_client()->GetActiveMenuClient()->GetSelectedText(),
-      u"Text in a textfield");
+      u"Some editable text");
   EXPECT_FALSE(
       selection_controller_client()->GetActiveMenuClient()->IsCommandIdEnabled(
           ui::TouchEditable::kSelectAll));
@@ -1137,7 +1633,7 @@ IN_PROC_BROWSER_TEST_P(TouchSelectionControllerClientAuraCAPFeatureTest,
   EXPECT_TRUE(selection_controller_test_api.GetEndVisible());
   EXPECT_EQ(
       selection_controller_client()->GetActiveMenuClient()->GetSelectedText(),
-      u"Text");
+      u"Some");
   EXPECT_FALSE(
       selection_controller_client()->GetActiveMenuClient()->IsCommandIdEnabled(
           ui::TouchEditable::kSelectWord));

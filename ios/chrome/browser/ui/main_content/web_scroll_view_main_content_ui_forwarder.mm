@@ -16,10 +16,6 @@
 #import "ios/web/public/web_state.h"
 #import "ios/web/public/web_state_observer_bridge.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 namespace {
 // Uses the current values of `proxy`'s properties to update the
 // MainContentUIState via `updater`.
@@ -182,40 +178,9 @@ void UpdateStateWithProxy(MainContentUIStateUpdater* updater,
 - (void)didChangeWebStateList:(WebStateList*)webStateList
                        change:(const WebStateListChange&)change
                        status:(const WebStateListStatus&)status {
-  switch (change.type()) {
-    case WebStateListChange::Type::kStatusOnly:
-      // TODO(crbug.com/1442546): Move the implementation from
-      // webStateList:didChangeActiveWebState:oldWebState:atIndex:reason to
-      // here. Note that here is reachable only when `reason` ==
-      // ActiveWebStateChangeReason::Activated.
-      break;
-    case WebStateListChange::Type::kDetach:
-      // Do nothing when a WebState is detached.
-      break;
-    case WebStateListChange::Type::kMove:
-      // Do nothing when a WebState is moved.
-      break;
-    case WebStateListChange::Type::kReplace: {
-      const WebStateListChangeReplace& replaceChange =
-          change.As<WebStateListChangeReplace>();
-      web::WebState* insertedWebState = replaceChange.inserted_web_state();
-      if (insertedWebState == webStateList->GetActiveWebState()) {
-        self.webState = insertedWebState;
-      }
-      break;
-    }
-    case WebStateListChange::Type::kInsert:
-      // Do nothing when a new WebState is inserted.
-      break;
+  if (status.active_web_state_change()) {
+    self.webState = status.new_active_web_state;
   }
-}
-
-- (void)webStateList:(WebStateList*)webStateList
-    didChangeActiveWebState:(web::WebState*)newWebState
-                oldWebState:(web::WebState*)oldWebState
-                    atIndex:(int)atIndex
-                     reason:(ActiveWebStateChangeReason)reason {
-  self.webState = newWebState;
 }
 
 #pragma mark - Private

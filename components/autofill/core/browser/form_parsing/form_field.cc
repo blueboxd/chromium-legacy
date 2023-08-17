@@ -221,7 +221,7 @@ void FormField::ParseSingleFieldForms(
 
   // IBAN pass.
   if (base::FeatureList::IsEnabled(features::kAutofillParseIBANFields)) {
-    ParseFormFieldsPass(IBANField::Parse, processed_fields, field_candidates,
+    ParseFormFieldsPass(IbanField::Parse, processed_fields, field_candidates,
                         page_language, pattern_source, log_manager);
   }
 }
@@ -531,7 +531,7 @@ bool FormField::MatchesFormControlType(base::StringPiece type,
     return true;
 
   if (match_type.contains(MatchFieldType::kSelect) &&
-      (type == "select-one" || type == "selectmenu")) {
+      (type == "select-one" || type == "selectlist")) {
     return true;
   }
 

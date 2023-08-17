@@ -44,10 +44,6 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/ipcz/include/ipcz/ipcz.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 // A test version of the AppShimController mojo client in chrome_main_app_mode.
 class TestShimClient : public chrome::mojom::AppShim {
  public:
@@ -88,6 +84,9 @@ class TestShimClient : public chrome::mojom::AppShim {
   void UpdateApplicationDockMenu(
       std::vector<chrome::mojom::ApplicationDockMenuItemPtr> dock_menu_items)
       override {}
+  void BindNotificationProvider(
+      mojo::PendingReceiver<mac_notifications::mojom::MacNotificationProvider>
+          provider) override {}
 
  private:
   void OnShimConnectedDone(
@@ -210,6 +209,7 @@ class AppShimListenerBrowserTest : public InProcessBrowserTest,
   void ReopenApp() override {}
   void FilesOpened(const std::vector<base::FilePath>& files) override {}
   void ProfileSelectedFromMenu(const base::FilePath& profile_path) override {}
+  void OpenAppSettings() override{};
   void UrlsOpened(const std::vector<GURL>& urls) override {}
   void OpenAppWithOverrideUrl(const GURL& override_url) override {}
   void ApplicationWillTerminate() override {}

@@ -108,6 +108,9 @@ class ReadAnythingAppController
   SkColor ForegroundColor() const;
   float LetterSpacing() const;
   float LineSpacing() const;
+  int StandardLineSpacing();
+  int LooseLineSpacing();
+  int VeryLooseLineSpacing();
   std::vector<ui::AXNodeID> GetChildren(ui::AXNodeID ax_node_id) const;
   std::string GetHtmlTag(ui::AXNodeID ax_node_id) const;
   std::string GetLanguage(ui::AXNodeID ax_node_id) const;
@@ -124,8 +127,12 @@ class ReadAnythingAppController
                          int anchor_offset,
                          ui::AXNodeID focus_node_id,
                          int focus_offset) const;
-  bool isSelectable() const;
-  bool isWebUIToolbarEnabled() const;
+  bool IsSelectable() const;
+  bool IsWebUIToolbarEnabled() const;
+  void OnStandardLineSpacing();
+  void OnLooseLineSpacing();
+  void OnVeryLooseLineSpacing();
+  double GetLineSpacingValue(int line_spacing) const;
 
   void Distill();
   void Draw();

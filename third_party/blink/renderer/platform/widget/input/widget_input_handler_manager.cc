@@ -90,6 +90,9 @@ mojom::blink::InputEventResultState InputEventDispositionToAck(
     case InputHandlerProxy::DID_HANDLE:
       return mojom::blink::InputEventResultState::kConsumed;
     case InputHandlerProxy::DID_NOT_HANDLE:
+      if (base::FeatureList::IsEnabled(features::kFixGestureScrollQueuingBug)) {
+        return mojom::blink::InputEventResultState::kNotConsumedBlocking;
+      }
       return mojom::blink::InputEventResultState::kNotConsumed;
     case InputHandlerProxy::DID_NOT_HANDLE_NON_BLOCKING_DUE_TO_FLING:
       return mojom::blink::InputEventResultState::kSetNonBlockingDueToFling;
@@ -655,7 +658,9 @@ void WidgetInputHandlerManager::DispatchEvent(
           gesture_event.GetTypeAsUiEventType(),
           gesture_event.GetScrollInputType(), is_inertial,
           event->Event().TimeStamp(), arrived_in_browser_main_timestamp,
-          blocking_touch_dispatched_to_renderer_timestamp);
+          blocking_touch_dispatched_to_renderer_timestamp,
+          base::IdType64<class ui::LatencyInfo>(
+              event->latency_info().trace_id()));
       has_seen_first_gesture_scroll_update_after_begin_ = false;
     }
   } else if (WebInputEvent::IsPinchGestureEventType(event_type)) {
@@ -663,11 +668,15 @@ void WidgetInputHandlerManager::DispatchEvent(
         static_cast<const WebGestureEvent&>(event->Event());
     metrics = cc::PinchEventMetrics::Create(
         gesture_event.GetTypeAsUiEventType(),
-        gesture_event.GetScrollInputType(), event->Event().TimeStamp());
+        gesture_event.GetScrollInputType(), event->Event().TimeStamp(),
+        base::IdType64<class ui::LatencyInfo>(
+            event->latency_info().trace_id()));
   } else {
     metrics = cc::EventMetrics::Create(event->Event().GetTypeAsUiEventType(),
                                        event->Event().TimeStamp(),
-                                       arrived_in_browser_main_timestamp);
+                                       arrived_in_browser_main_timestamp,
+                                       base::IdType64<class ui::LatencyInfo>(
+                                           event->latency_info().trace_id()));
   }
 
   if (uses_input_handler_) {
@@ -762,11 +771,21 @@ void WidgetInputHandlerManager::WaitForInputProcessed(
   DCHECK(!input_processed_callback_);
   input_processed_callback_ = std::move(callback);
 
-  // We mustn't touch widget_ from the impl thread so post all the setup
-  // to the main thread. Make sure the callback runs after all the queued events
-  // are dispatched.
-  input_event_queue_->QueueClosure(
-      base::BindOnce(&WaitForInputProcessedFromMain, widget_));
+  // We mustn't touch widget_ from the impl thread so post all the setup to the
+  // main thread. Make sure the callback runs after all the queued events are
+  // dispatched.
+  base::OnceClosure closure =
+      base::BindOnce(&MainThreadEventQueue::QueueClosure, input_event_queue_,
+                     base::BindOnce(&WaitForInputProcessedFromMain, widget_));
+
+  // If there are frame-aligned input events waiting to be dispatched, wait for
+  // that to happen before posting to the main thread input queue.
+  if (input_handler_proxy_) {
+    input_handler_proxy_->RequestCallbackAfterEventQueueFlushed(
+        std::move(closure));
+  } else {
+    std::move(closure).Run();
+  }
 }
 
 void WidgetInputHandlerManager::DidNavigate() {
@@ -1009,7 +1028,8 @@ void WidgetInputHandlerManager::DidHandleInputEventSentToCompositor(
   if (ack_state == mojom::blink::InputEventResultState::kSetNonBlocking ||
       ack_state ==
           mojom::blink::InputEventResultState::kSetNonBlockingDueToFling ||
-      ack_state == mojom::blink::InputEventResultState::kNotConsumed) {
+      ack_state == mojom::blink::InputEventResultState::kNotConsumed ||
+      ack_state == mojom::blink::InputEventResultState::kNotConsumedBlocking) {
     DCHECK(!overscroll_params);
     DCHECK(!event->latency_info().coalesced());
     MainThreadEventQueue::DispatchType dispatch_type =

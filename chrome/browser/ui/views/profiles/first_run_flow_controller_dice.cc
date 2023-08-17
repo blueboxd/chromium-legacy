@@ -7,11 +7,19 @@
 #include <memory>
 #include <utility>
 
-#include "base/functional/bind.h"
 #include "base/functional/callback.h"
+#include "base/functional/callback_forward.h"
+#include "base/functional/callback_helpers.h"
 #include "base/memory/weak_ptr.h"
+#include "base/metrics/histogram_functions.h"
+#include "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/enterprise/util/managed_browser_utils.h"
+#include "chrome/browser/policy/cloud/user_policy_signin_service.h"
+#include "chrome/browser/policy/cloud/user_policy_signin_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/signin_features.h"
 #include "chrome/browser/ui/views/profiles/profile_management_flow_controller_impl.h"
 #include "chrome/browser/ui/views/profiles/profile_management_step_controller.h"
@@ -19,17 +27,31 @@
 #include "chrome/browser/ui/views/profiles/profile_picker_signed_in_flow_controller.h"
 #include "chrome/browser/ui/views/profiles/profile_picker_web_contents_host.h"
 #include "chrome/browser/ui/webui/intro/intro_ui.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/webui_url_constants.h"
+#include "components/prefs/pref_service.h"
+#include "components/signin/public/base/consent_level.h"
 #include "components/signin/public/base/signin_metrics.h"
-#include "content/public/browser/browser_thread.h"
-#include "content/public/browser/web_contents.h"
+#include "components/signin/public/identity_manager/primary_account_mutator.h"
 #include "content/public/browser/web_ui.h"
+#include "google_apis/gaia/core_account_id.h"
 #include "url/gurl.h"
 
 namespace {
 
+constexpr base::TimeDelta kDefaultBrowserCheckTimeout = base::Seconds(2);
+
 const signin_metrics::AccessPoint kAccessPoint =
     signin_metrics::AccessPoint::ACCESS_POINT_FOR_YOU_FRE;
+
+bool IsDefaultBrowserDisabledByPolicy() {
+  const PrefService::Preference* pref =
+      g_browser_process->local_state()->FindPreference(
+          prefs::kDefaultBrowserSettingEnabled);
+  CHECK(pref);
+  DCHECK(pref->GetValue()->is_bool());
+  return pref->IsManaged() && !pref->GetValue()->GetBool();
+}
 
 class IntroStepController : public ProfileManagementStepController {
  public:
@@ -108,7 +130,12 @@ class DefaultBrowserStepController : public ProfileManagementStepController {
       : ProfileManagementStepController(host),
         step_completed_callback_(std::move(step_completed_callback)) {}
 
-  ~DefaultBrowserStepController() override = default;
+  ~DefaultBrowserStepController() override {
+    if (step_completed_callback_) {
+      base::UmaHistogramEnumeration("ProfilePicker.FirstRun.DefaultBrowser",
+                                    DefaultBrowserChoice::kQuit);
+    }
+  }
 
   void Show(base::OnceCallback<void(bool success)> step_shown_callback,
             bool reset_state) override {
@@ -124,8 +151,9 @@ class DefaultBrowserStepController : public ProfileManagementStepController {
     }
 
     host()->ShowScreenInPickerContents(
-        // TODO(crbug.com/1465822): Implement the WebUI page.
-        GURL(chrome::kChromeUIVersionURL),
+        // TODO(crbug.com/1465822): Implement the WebUI page and wait for user
+        // response.
+        GURL(chrome::kChromeUIIntroDefaultBrowserURL),
         std::move(navigation_finished_closure));
   }
 
@@ -135,17 +163,31 @@ class DefaultBrowserStepController : public ProfileManagementStepController {
 
  private:
   void OnLoadFinished() {
-    // TODO(crbug.com/1465822): Configure WebUI controller and wait for a user
-    // choice to advance. For now we auto-advance as a placeholder.
-    content::GetUIThreadTaskRunner({})->PostDelayedTask(
-        FROM_HERE,
+    auto* intro_ui = host()
+                         ->GetPickerContents()
+                         ->GetWebUI()
+                         ->GetController()
+                         ->GetAs<IntroUI>();
+    CHECK(intro_ui);
+    intro_ui->SetDefaultBrowserCallback(DefaultBrowserCallback(
         base::BindOnce(&DefaultBrowserStepController::OnStepCompleted,
-                       // WeakPtr: Because of the delayed task.
-                       weak_ptr_factory_.GetWeakPtr()),
-        base::Seconds(2));
+                       // WeakPtr: The callback is given to the WebUIController,
+                       // owned by the webcontents, which lifecycle is not
+                       // bounded by a single step.
+                       weak_ptr_factory_.GetWeakPtr())));
   }
 
-  void OnStepCompleted() {
+  void OnStepCompleted(DefaultBrowserChoice choice) {
+    if (choice == DefaultBrowserChoice::kSetAsDefault) {
+      CHECK(!IsDefaultBrowserDisabledByPolicy());
+      // The worker pointer is reference counted. While it is running, sequence
+      // it runs on will hold references to it and it will be automatically
+      // freed once all its tasks have finished.
+      base::MakeRefCounted<shell_integration::DefaultBrowserWorker>()
+          ->StartSetAsDefault(base::NullCallback());
+    }
+    base::UmaHistogramEnumeration("ProfilePicker.FirstRun.DefaultBrowser",
+                                  choice);
     CHECK(step_completed_callback_);
     std::move(step_completed_callback_).Run();
   }
@@ -171,10 +213,12 @@ class FirstRunPostSignInAdapter : public ProfilePickerSignedInFlowController {
   FirstRunPostSignInAdapter(
       ProfilePickerWebContentsHost* host,
       Profile* profile,
+      const CoreAccountId& account_id,
       std::unique_ptr<content::WebContents> contents,
       IdentityStepsCompletedCallback step_completed_callback)
       : ProfilePickerSignedInFlowController(host,
                                             profile,
+                                            account_id,
                                             std::move(contents),
                                             kAccessPoint,
                                             /*profile_color=*/absl::nullopt),
@@ -272,12 +316,27 @@ void FirstRunFlowControllerDice::Init(
 }
 
 void FirstRunFlowControllerDice::CancelPostSignInFlow() {
-  // TODO(crbug.com/1465779): If on enterprise profile welcome, sign the user
-  // out and continue with a local profile. Probably would just consist in
-  // aborting the TSOH's flow, which should remove the account. Maybe we'd need
-  // to advance to a separate step to allow deleting all the objects and getting
-  // the account fully removed before opening the browser?
-  NOTIMPLEMENTED();
+  // Called when the user declines enterprise management. Unfortunately, for
+  // some technical and historical reasons, management is already marked as
+  // accepted before we show the prompt. So here we need to revert it.
+  // Currently we remove the account to match the behaviour from the profile
+  // creation flow.
+  // TODO(crbug.com/1465779): Refactor ProfilePickerSignedInFlowController
+  // to split the lacros and dice behaviours more and remove the need for such
+  // hacky workarounds. Look into letting the user keep their account.
+
+  auto* identity_manager = IdentityManagerFactory::GetForProfile(profile_);
+  CoreAccountId primary_account_id =
+      identity_manager->GetPrimaryAccountId(signin::ConsentLevel::kSignin);
+  DCHECK(!primary_account_id.empty());  // Cancelling the post-sign in flow
+                                        // implies we must already be signed in.
+
+  policy::UserPolicySigninServiceFactory::GetForProfile(profile_)
+      ->ShutdownCloudPolicyManager();
+  chrome::enterprise_util::SetUserAcceptedAccountManagement(profile_, false);
+  identity_manager->GetPrimaryAccountMutator()->ClearPrimaryAccount(
+      signin_metrics::ProfileSignout::kAbortSignin,
+      signin_metrics::SignoutDelete::kIgnoreMetric);
 
   HandleIdentityStepsCompleted(PostHostClearedCallback());
 }
@@ -304,6 +363,34 @@ void FirstRunFlowControllerDice::HandleIntroSigninChoice(IntroChoice choice) {
       /*step_switch_finished_callback=*/base::DoNothing());
 }
 
+void FirstRunFlowControllerDice::OnDefaultBrowserCheckFinished(
+    shell_integration::DefaultWebClientState state) {
+  if (!maybe_show_default_browser_callback_) {
+    return;
+  }
+
+  // Cancel timeout.
+  default_browser_check_timeout_closure_.Cancel();
+
+  bool should_show_default_browser_step =
+      state == shell_integration::NOT_DEFAULT ||
+      state == shell_integration::OTHER_MODE_IS_DEFAULT;
+
+  std::move(maybe_show_default_browser_callback_)
+      .Run(should_show_default_browser_step);
+}
+
+void FirstRunFlowControllerDice::OnDefaultBrowserCheckTimeout() {
+  if (!maybe_show_default_browser_callback_) {
+    return;
+  }
+
+  base::UmaHistogramEnumeration("ProfilePicker.FirstRun.DefaultBrowser",
+                                DefaultBrowserChoice::kNotShownOnTimeout);
+  std::move(maybe_show_default_browser_callback_)
+      .Run(/*should_show_default_browser_step=*/false);
+}
+
 void FirstRunFlowControllerDice::HandleIdentityStepsCompleted(
     PostHostClearedCallback post_host_cleared_callback,
     bool is_continue_callback) {
@@ -311,14 +398,66 @@ void FirstRunFlowControllerDice::HandleIdentityStepsCompleted(
 
   post_host_cleared_callback_ = std::move(post_host_cleared_callback);
 
-  // TODO(crbug.com/1465822): Also check policy and the current default state.
   bool should_show_default_browser_step =
       // Proceed with the callback  directly instead of showing the default
       // browser prompt.
       !is_continue_callback &&
-      // The feature configuration ultimately gates the step.
-      kForYouFreWithDefaultBrowserStep.Get() != WithDefaultBrowserStep::kNo;
+      // Check for policies.
+      !IsDefaultBrowserDisabledByPolicy() &&
+      // Some releases cannot be set as default browser.
+      shell_integration::CanSetAsDefaultBrowser();
 
+  bool force_default_browser_step =
+      kForYouFreWithDefaultBrowserStep.Get() == WithDefaultBrowserStep::kForced;
+
+  // If the feature is enabled, the default browser step should be shown only on
+  // Windows. If it's forced, it should be shown on the other platforms for
+  // testing.
+  should_show_default_browser_step =
+      should_show_default_browser_step &&
+#if BUILDFLAG(IS_WIN)
+      kForYouFreWithDefaultBrowserStep.Get() != WithDefaultBrowserStep::kNo;
+#else
+      // Non-Windows platforms should not show this unless forced (e.g. command
+      // line)
+      force_default_browser_step;
+#endif  // BUILDFLAG(IS_WIN)
+
+  if (!should_show_default_browser_step) {
+    MaybeShowDefaultBrowserStep(/*should_show_default_browser_step=*/false);
+    return;
+  }
+
+  // If the feature is set to forced, show the step even if it's already the
+  // default browser.
+  if (force_default_browser_step) {
+    MaybeShowDefaultBrowserStep(/*should_show_default_browser_step=*/true);
+    return;
+  }
+
+  maybe_show_default_browser_callback_ =
+      base::BindOnce(&FirstRunFlowControllerDice::MaybeShowDefaultBrowserStep,
+                     weak_ptr_factory_.GetWeakPtr());
+
+  // Set up the timeout closure, in clase checking if the browser is already set
+  // as default isn't completed before the timeout.
+  default_browser_check_timeout_closure_.Reset(
+      base::BindOnce(&FirstRunFlowControllerDice::OnDefaultBrowserCheckTimeout,
+                     weak_ptr_factory_.GetWeakPtr()));
+  base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
+      FROM_HERE, default_browser_check_timeout_closure_.callback(),
+      kDefaultBrowserCheckTimeout);
+
+  // Check if browser is already set as default. If it isn't, show default
+  // browser step.
+  base::MakeRefCounted<shell_integration::DefaultBrowserWorker>()
+      ->StartCheckIsDefault(base::BindOnce(
+          &FirstRunFlowControllerDice::OnDefaultBrowserCheckFinished,
+          weak_ptr_factory_.GetWeakPtr()));
+}
+
+void FirstRunFlowControllerDice::MaybeShowDefaultBrowserStep(
+    bool should_show_default_browser_step) {
   if (!should_show_default_browser_step) {
     FinishFlowAndRunInBrowser(profile_, std::move(post_host_cleared_callback_));
     return;
@@ -344,10 +483,11 @@ FirstRunFlowControllerDice::CreateDiceSignInProvider() {
 std::unique_ptr<ProfilePickerSignedInFlowController>
 FirstRunFlowControllerDice::CreateSignedInFlowController(
     Profile* signed_in_profile,
+    const CoreAccountId& account_id,
     std::unique_ptr<content::WebContents> contents) {
   DCHECK_EQ(profile_, signed_in_profile);
   return std::make_unique<FirstRunPostSignInAdapter>(
-      host(), signed_in_profile, std::move(contents),
+      host(), signed_in_profile, account_id, std::move(contents),
       base::BindOnce(&FirstRunFlowControllerDice::HandleIdentityStepsCompleted,
                      // Unretained ok: the callback is passed to a step that
                      // the `this` will own and outlive.

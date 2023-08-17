@@ -1074,8 +1074,15 @@ Style notes:
       <message name="IDS_ASH_STATUS_TRAY_ACCESSIBILITY" desc="The label used in the tray menu to show the accessibility option menu. [CHAR_LIMIT=14]">
         Accessibility
       </message>
+      <message name="IDS_ASH_STATUS_TRAY_ACCESSIBILITY_ENABLED_FEATURES_SEPARATOR" desc="The characters used to separate the first feature's 
+      name from the counter in the label displayed when accessibility features are enabled in the quicksettings menu. Example: Select to Speak, +2">
+        , +
+      </message>
       <message name="IDS_ASH_STATUS_TRAY_ACCESSIBILITY_TOOLTIP" desc="The tooltip text in the tray menu to show the accessibility option menu.">
         Show accessibility settings
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_ACCESSIBILITY_TOGGLED_TOOLTIP" desc="The tooltip text in the tray menu to show the accessibility option menu.">
+        Show accessibility settings, "<ph name="ENABLED_FEATURES">$1<ex>Dictation</ex></ph>" enabled.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_ACCESSIBILITY_TITLE" desc="The label used in the title of the accessibility option menu. [CHAR_LIMIT=18]">
         Accessibility
@@ -1312,6 +1319,17 @@ Style notes:
         "Copy"
       </message>
 
+      <!-- Dictation keyboard dialog strings -->
+      <message name="IDS_ASH_DICTATION_KEYBOARD_DIALOG_TITLE" desc="The title of a dialog that is shown when Dictation is enabled from the keyboard.">
+        Turn on Dictation?
+      </message>
+      <message name="IDS_ASH_DICTATION_KEYBOARD_DIALOG_DESCRIPTION_SODA_AVAILABLE" desc="The description of a dialog that is shown when Dictation is enabled from the keyboard. This description is only shown if SODA (speech-on-device-API) is available.">
+        With dictation, you can type using your voice. Press the dictation key or select the microphone icon at the bottom of the screen when you’re on a text field. Your dictation language is set to <ph name="language">$1<ex>English (United States)</ex></ph>. Speech files will be downloaded so you can use dictation offline. You can change the dictation language anytime in Settings > Accessibility.
+      </message>
+      <message name="IDS_ASH_DICTATION_KEYBOARD_DIALOG_DESCRIPTION_SODA_NOT_AVAILABLE" desc="The description of a dialog that is shown when Dictation is enabled from the keyboard. This description is only shown if SODA (speech-on-device-API) is unavailable.">
+        With dictation, you can type using your voice. Press the dictation key or select the microphone icon at the bottom of the screen when you’re on a text field. Your dictation language is set to <ph name="language">$1<ex>English (United States)</ex></ph>. Speech is sent to Google for processing. You can change the dictation language anytime in Settings > Accessibility.
+      </message>
+
       <message name="IDS_ASH_STATUS_TRAY_ACCESSIBILITY_VIRTUAL_KEYBOARD" desc="The label used in the accessibility menu of the system tray to toggle on/off the onscreen keyboard.">
         On-screen keyboard
       </message>
@@ -1369,17 +1387,17 @@ Style notes:
       <message name="IDS_ASH_STATUS_TRAY_NOTIFICATIONS_LABEL" desc="The label text shown under do not disturb button in system tray bubble. [CHAR_LIMIT=14]">
         Notifications
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_DO_NOT_DISTURB" desc="The label text shown in the Do not disturb feature tile in quick settings bubble. [CHAR_LIMIT=14]">
-        Do not disturb
+      <message name="IDS_ASH_STATUS_TRAY_DO_NOT_DISTURB" desc="The label text shown in the Do Not Disturb feature tile in quick settings bubble. [CHAR_LIMIT=14]">
+        Do Not Disturb
       </message>
       <message name="IDS_ASH_STATUS_TRAY_NOTIFICATIONS_TOGGLE_TOOLTIP" desc="The tooltip text of the button that toggles Do-not-disturb state for notifications">
-        Toggle Do not disturb. <ph name="STATE_TEXT">$1<ex>Do not disturb is on.</ex></ph>
+        Toggle Do Not Disturb. <ph name="STATE_TEXT">$1<ex>Do Not Disturb is on.</ex></ph>
       </message>
       <message name="IDS_ASH_STATUS_TRAY_NOTIFICATIONS_DO_NOT_DISTURB_ON_STATE" desc="The tooltip text indicating that Do-not-disturb mode is on.">
-        Do not disturb is on.
+        Do Not Disturb is on.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_NOTIFICATIONS_DO_NOT_DISTURB_OFF_STATE" desc="The tooltip text indicating that Do-not-disturb mode is off.">
-        Do not disturb is off.
+        Do Not Disturb is off.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_NOTIFICATIONS_SETTINGS_ON_TOOLTIP" desc="The tooltip text of the button that shows notification settings. Used when all notifications are enabled.">
         Show notification settings. Notifications are on
@@ -1629,7 +1647,7 @@ Style notes:
       <message name="IDS_ASH_VIDEO_CONFERENCE_TOAST_SPEAK_ON_MUTE_DETECTED" desc="A toast message that we show when user tries to speak while muted on system-level.">
         Are you talking? Your mic is off. Select the mic to turn it on.
       </message>
-      <message name="IDS_ASH_VIDEO_CONFERENCE_TOAST_USE_WHILE_SOFTWARE_DISABLED" desc="A toast message that we show when an app tries to access camera or microphone while it is disabled by software.">
+      <message name="IDS_ASH_VIDEO_CONFERENCE_TOAST_USE_WHILE_DISABLED" desc="A toast message that we show when an app tries to access camera or microphone while it is disabled by software.">
         <ph name="APP_NAME">$1<ex>Meet</ex></ph> wants to use your <ph name="DEVICE_NAME">$2<ex>camera</ex></ph>
       </message>
       <message name="IDS_ASH_VIDEO_CONFERENCE_TOAST_USE_WHILE_HARDWARE_DISABLED" desc="A toast message that we show when an app tries to access camera or microphone while it is disabled by hardware.">
@@ -1662,11 +1680,11 @@ Style notes:
       <message name="IDS_ASH_VIDEO_CONFERENCE_MICROPHONE_NAME" desc="Text display for the microphone.">
         microphone
       </message>
+      <message name="IDS_ASH_VIDEO_CONFERENCE_CAMERA_MICROPHONE_NAME" desc="Text display for both the camera and microphone.">
+        camera and microphone
+      </message>
       <message name="VIDEO_CONFERENCE_RETURN_TO_APP_PERIPHERALS_ACCESSIBLE_NAME" desc="Tooltip shown for the return to app button regarding peripherals in the video conference panel.">
         <ph name="CAPTURE_MEDIUM">$1<ex>Camera</ex></ph> in use.
-      </message>
-      <message name="VIDEO_CONFERENCE_RETURN_TO_APP_ACCESSIBLE_NAME" desc="Tooltip shown for the return to app button in the video conference panel.">
-        Return to <ph name="APP_TITLE">$1<ex>Meet</ex></ph>.
       </message>
 
       <!-- Phone Hub tray-->
@@ -1841,16 +1859,46 @@ Style notes:
       <message name="IDS_ASH_PHONE_HUB_ALL_FEATURES_OPT_IN_DESCRIPTION" desc="Description for the notification and apps opt in view.">
         View your phone's recent photos, media, notifications, and apps on your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
       </message>
+      <message name="IDS_ASH_PHONE_HUB_ALL_FEATURES_OPT_IN_SET_UP_BUTTON_ACCESSIBLE_NAME" desc="Accessible name of the set up button in the notification and apps opt in view">
+        Set up your phone's recent photos, media, notifications, and apps on your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
+      </message>
+      <message name="IDS_ASH_PHONE_HUB_ALL_FEATURES_OPT_IN_DISMISS_BUTTON_ACCESSIBLE_NAME" desc="Accessible name of the dismiss button in the notification and apps opt in view">
+        Dismiss setting up your phone's recent photos, media, notifications, and apps on your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
+      </message>
       <message name="IDS_ASH_PHONE_HUB_NOTIFICATION_AND_APPS_OPT_IN_DESCRIPTION" desc="Description for the notification and apps opt in view.">
         View your phone's notifications and apps on your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
+      </message>
+      <message name="IDS_ASH_PHONE_HUB_NOTIFICATION_AND_APPS_OPT_IN_SET_UP_BUTTON_ACCESSIBLE_NAME" desc="Accessible name of the set up button for the notification and apps opt in view.">
+        Set up your phone's notifications and apps on your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
+      </message>
+      <message name="IDS_ASH_PHONE_HUB_NOTIFICATION_AND_APPS_OPT_IN_DISMISS_BUTTON_ACCESSIBLE_NAME" desc="Accessible name the dismiss button for the notification and apps opt in view.">
+        Dismiss setting up your phone's notifications and apps on your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
       </message>
       <message name="IDS_ASH_PHONE_HUB_NOTIFICATION_OPT_IN_DESCRIPTION" desc="Description for the notification opt in view.">
         View your phone's notifications on your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
       </message>
+      <message name="IDS_ASH_PHONE_HUB_NOTIFICATION_OPT_IN_SET_UP_BUTTON_ACCESSIBLE_NAME" desc="Accessible name of the set up button for the notification opt in view.">
+        Set up viewing your phone's notifications on your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
+      </message>
+      <message name="IDS_ASH_PHONE_HUB_NOTIFICATION_OPT_IN_DISMISS_BUTTON_ACCESSIBLE_NAME" desc="Accessible name the dismiss button for the notification opt in view.">
+        Dismiss setting up viewing your phone's notifications on your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
+      </message>
       <message name="IDS_ASH_PHONE_HUB_NOTIFICATION_AND_CAMERA_ROLL_OPT_IN_DESCRIPTION" desc="Description for the notification opt in view.">
         View your phone's recent photos, media, and notifications on your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
       </message>
+      <message name="IDS_ASH_PHONE_HUB_NOTIFICATION_AND_CAMERA_ROLL_OPT_IN_SET_UP_BUTTON_ACCESSIBLE_NAME" desc="Accessible name of the set up button for the notification opt in view.">
+        Set up viewing your phone's recent photos, media, and notifications on your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
+      </message>
+      <message name="IDS_ASH_PHONE_HUB_NOTIFICATION_AND_CAMERA_ROLL_OPT_IN_DISMISS_BUTTON_ACCESSIBLE_NAME" desc="Accessible name of the dismiss button for the notification opt in view.">
+        Dismiss setting up viewing your phone's recent photos, media, and notifications on your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
+      </message>
       <message name="IDS_ASH_PHONE_HUB_CAMERA_ROLL_AND_APPS_OPT_IN_DESCRIPTION" desc="Description for the notification opt in view.">
+        View your phone's recent photos, media, and apps on your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
+      </message>
+      <message name="IDS_ASH_PHONE_HUB_CAMERA_ROLL_AND_APPS_OPT_IN_SET_UP_BUTTON_ACCESSIBLE_NAME" desc="Accessible name of the set up button for the notification opt in view.">
+        View your phone's recent photos, media, and apps on your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
+      </message>
+      <message name="IDS_ASH_PHONE_HUB_CAMERA_ROLL_AND_APPS_OPT_IN_DISMISS_BUTTON_ACCESSIBLE_NAME" desc="Accessible name of the dismiss button for the notification opt in view.">
         View your phone's recent photos, media, and apps on your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
       </message>
       <message name="IDS_ASH_PHONE_HUB_APP_STREAM_LAUNCHER_TITLE" desc="Title for the launcher that displays apps from your phone.">
@@ -1865,8 +1913,20 @@ Style notes:
       <message name="IDS_ASH_PHONE_HUB_APPS_OPT_IN_DESCRIPTION" desc="Description for the apps opt in view.">
         View your phone's apps on your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
       </message>
+      <message name="IDS_ASH_PHONE_HUB_APPS_OPT_IN_SET_UP_BUTTON_ACCESSIBLE_NAME" desc="Accessible name the set up button for the apps opt in view.">
+        Set up viewing your phone's apps on your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
+      </message>
+      <message name="IDS_ASH_PHONE_HUB_APPS_OPT_IN_DISMISS_BUTTON_ACCESSIBLE_NAME" desc="Accessible name of the dismiss button for the apps opt in view.">
+        Dismiss setting up viewing your phone's apps on your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
+      </message>
       <message name="IDS_ASH_PHONE_HUB_CAMERA_ROLL_OPT_IN_DESCRIPTION" desc="Description for the camera roll opt in view.">
         View your phone's recent photos and media on your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
+      </message>
+      <message name="IDS_ASH_PHONE_HUB_CAMERA_ROLL_OPT_IN_SET_UP_BUTTON_ACCESSIBLE_NAME" desc="Description for the camera roll opt in view.">
+        Set up viewing your phone's recent photos and media on your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
+      </message>
+      <message name="IDS_ASH_PHONE_HUB_CAMERA_ROLL_OPT_IN_DISMISS_BUTTON_ACCESSIBLE_NAME" desc="Description for the camera roll opt in view.">
+        Dismiss setting up viewing your phone's recent photos and media on your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
       </message>
       <message name="IDS_ASH_PHONE_HUB_NOTIFICATION_HOTSPOT_FAILED_TITLE" desc="Title inside a PhoneHub notification when enable hotspot failed to find a connection.">
         Hotspot connection failed
@@ -2015,14 +2075,26 @@ Style notes:
       <message name="IDS_ASH_VERSION_IN_LAUNCHER_MESSAGE" desc="Message content for the title of the answer card with the current version in the launcher.">
         Version <ph name="VERSION_NAME">$1<ex>109.0.5414.125</ex></ph> (<ph name="OFFICIAL_STATUS">$2<ex>Official Build</ex></ph>) <ph name="CHANNEL_NAME">$3<ex>Beta</ex></ph> <ph name="PROCESSOR_VARIATION">$4<ex>(64-bit)</ex></ph>
       </message>
+      <message name="IDS_ASH_VERSION_IN_LAUNCHER_DESCRIPTION" desc="Message content for the description of the answer card with the current version in the launcher.">
+        Click to check for details
+      </message>
+      <message name="IDS_ASH_VERSION_IN_LAUNCHER_ACCESSIBILITY_LABEL" desc="Message content for the accessibility label of the answer card with the current version in the launcher.">
+        Current version <ph name="VERSION_NAME">$1<ex>109.0.5414.125</ex></ph> (<ph name="OFFICIAL_STATUS">$2<ex>Official Build</ex></ph>) <ph name="CHANNEL_NAME">$3<ex>Beta</ex></ph> <ph name="PROCESSOR_VARIATION">$4<ex>(64-bit)</ex></ph>
+      </message>
       <message name="IDS_ASH_CPU_IN_LAUNCHER_TITLE" desc="Message content for the title of the answer card with the current CPU system information in the launcher.">
         CPU usage snapshot: <ph name="CPU_USEAGE">$1<ex>89</ex></ph>%
       </message>
       <message name="IDS_ASH_CPU_IN_LAUNCHER_DESCRIPTION" desc="Message content for the description of the answer card with the current CPU system information in the launcher.">
         Temperature: <ph name="TEMPERATURE">$1<ex>34</ex></ph>°C - Current speed: <ph name="CPU_AVERAGE_CURRENT_FREQUENCY_GHZ">$2<ex>1.52</ex></ph>GHz
       </message>
+      <message name="IDS_ASH_CPU_IN_LAUNCHER_ACCESSIBILITY_LABEL" desc="Message content for the accessibility label of the answer card with the current CPU system information in the launcher.">
+        CPU usage snapshot, <ph name="CPU_USEAGE">$1<ex>89</ex></ph>%. Temperature <ph name="TEMPERATURE">$2<ex>34</ex></ph> degrees celsius, current speed: <ph name="CPU_AVERAGE_CURRENT_FREQUENCY_GHZ">$3<ex>1.52</ex></ph>GHz
+      </message>
       <message name="IDS_ASH_MEMORY_USAGE_IN_LAUNCHER_DESCRIPTION" desc="Message content for the description of the answer card with the current memory usage information in the launcher.">
         Memory <ph name="USED_MEMORY">$1<ex>2.4 GB</ex></ph> | <ph name="TOTAL_MEMORY">$2<ex>7.6 GB</ex></ph> total
+      </message>
+      <message name="IDS_ASH_MEMORY_USAGE_IN_LAUNCHER_ACCESSIBILITY_LABEL" desc="Message content for the accessibility label of the answer card with the current memory usage information in the launcher.">
+        Memory <ph name="USED_MEMORY">$1<ex>2.4 GB</ex></ph> available out of <ph name="TOTAL_MEMORY">$2<ex>7.6 GB</ex></ph> total
       </message>
       <message name="IDS_ASH_BATTERY_STATUS_IN_LAUNCHER_DESCRIPTION_LEFT_SHORT" desc="Message content for the short description on the left of the battery answer card.">
         Battery <ph name="BATTERY_PERCENTAGE">$1<ex>56</ex></ph>%
@@ -2036,8 +2108,50 @@ Style notes:
       <message name="IDS_ASH_BATTERY_STATUS_IN_LAUNCHER_DESCRIPTION_RIGHT" desc="Message content for the description on the right of the battery answer card, showing the battery health percentage and the cycle count.">
         Battery health <ph name="BATTERY_HEALTH_PERCENTAGE">$1<ex>97</ex></ph>% | Cycle count <ph name="CYCLE_COUNT">$2<ex>15</ex></ph>
       </message>
+      <message name="IDS_ASH_BATTERY_STATUS_IN_LAUNCHER_ACCESSIBILITY_LABEL_SHORT" desc="Message content for the accessbility label of the battery answer card while the battery is discharging, showing the battery power as a percentage and the time left until the battery is empty.">
+        Current battery level <ph name="BATTERY_PERCENTAGE">$1<ex>56</ex></ph>%
+      </message>
+      <message name="IDS_ASH_BATTERY_STATUS_IN_LAUNCHER_ACCESSIBILITY_LABEL" desc="Message content for the accessbility label of the battery answer card while the battery is discharging, showing the battery power as a percentage and the time left until the battery is empty.">
+        Current battery level <ph name="BATTERY_PERCENTAGE">$1<ex>56</ex></ph>%, <ph name="TIME">$2<ex>2 hours and 20 minutes</ex></ph> left
+      </message>
+      <message name="IDS_ASH_BATTERY_STATUS_CHARGING_IN_LAUNCHER_ACCESSIBILITY_LABEL" desc="Message content for the accessbility label of the battery answer card while the battery is discharging, showing the battery power as a percentage and the time left until the battery is empty.">
+        Current battery level <ph name="BATTERY_PERCENTAGE">$1<ex>56</ex></ph>%, <ph name="TIME">$2<ex>2 hours and 20 minutes</ex></ph> until full
+      </message>
+      <message name="IDS_ASH_BATTERY_STATUS_IN_LAUNCHER_EXTRA_DETAILS_ACCESSIBILITY_LABEL" desc="Message content for the accessbility label of the battery answer card while the battery is discharging, showing the battery power as a percentage and the time left until the battery is empty.">
+        Battery health <ph name="BATTERY_HEALTH_PERCENTAGE">$1<ex>97</ex></ph>%, cycle count <ph name="CYCLE_COUNT">$2<ex>15</ex></ph>
+      </message>
       <message name="IDS_ASH_STORAGE_STATUS_IN_LAUNCHER_DESCRIPTION" desc="Message content for the description of the storage answer card, showing the amount of storage currently in use and the total storage size.">
         Storage <ph name="STORAGE_IN_USE_SIZE">$1<ex>65 GB</ex></ph> in use | <ph name="STORAGE_TOTAL_SIZE">$2<ex>124 GB</ex></ph> total
+      </message>
+      <message name="IDS_ASH_STORAGE_STATUS_IN_LAUNCHER_ACCESSIBILITY_LABEL" desc="Message content for the accessibility label of the storage answer card, showing the amount of storage currently in use and the total storage size.">
+        Storage <ph name="STORAGE_IN_USE_SIZE">$1<ex>65 GB</ex></ph> in use out of <ph name="STORAGE_TOTAL_SIZE">$2<ex>124 GB</ex></ph> total
+      </message>
+      <message name="IDS_ASH_ACCESSIBILITY_ANSWER_TYPE_IN_LAUNCHER" desc="Beginning of accessibility label for System Info Answer cards.">
+        Showing <ph name="ANSWER_TYPE">$1<ex>Battery</ex></ph> information
+      </message>
+      <message name="IDS_ASH_ACCESSIBILITY_OPEN_LABEL_IN_LAUNCHER" desc="Section to specify which app opens in the accessibility label for System Info Answer cards.">
+        Select to open <ph name="APP_TO_OPEN">$1<ex>Settings page</ex></ph>.
+      </message>
+      <message name="IDS_ASH_ACCESSIBILITY_OS_VERSION_LABEL_IN_LAUNCHER" desc="Accessibility string for OS version in System Info Answer cards.">
+        OS version
+      </message>
+      <message name="IDS_ASH_ACCESSIBILITY_BATTERY_LABEL_IN_LAUNCHER" desc="Accessibility string for battery in System Info Answer cards.">
+        battery
+      </message>
+      <message name="IDS_ASH_ACCESSIBILITY_MEMORY_LABEL_IN_LAUNCHER" desc="Accessibility string for memory in System Info Answer cards.">
+        memory
+      </message>
+      <message name="IDS_ASH_ACCESSIBILITY_STORAGE_LABEL_IN_LAUNCHER" desc="Accessibility string for storage in System Info Answer cards.">
+        storage space
+      </message>
+      <message name="IDS_ASH_ACCESSIBILITY_CPU_LABEL_IN_LAUNCHER" desc="Accessibility string for CPU in System Info Answer cards.">
+        CPU
+      </message>
+      <message name="IDS_ASH_ACCESSIBILITY_LABEL_DIAGNOSTICS_APP_IN_LAUNCHER" desc="Accessibility string for diagnostics app in System Info Answer cards.">
+        Diagnostics app
+      </message>
+      <message name="IDS_ASH_ACCESSIBILITY_LABEL_SETTINGS_PAGE_IN_LAUNCHER" desc="Accessibility string for settings page in System Info Answer cards.">
+        Settings page
       </message>
       <message name="IDS_ASH_STORAGE_MANAGEMENT_KEYWORD_FOR_LAUNCHER" desc="Keyword of storage management in launcher search that should trigger a storage answer card result.">
         storage management
@@ -2045,53 +2159,29 @@ Style notes:
       <message name="IDS_ASH_STORAGE_KEYWORD_FOR_LAUNCHER" desc="Keyword of storage in launcher search that should trigger a storage answer card result.">
         storage
       </message>
-      <message name="IDS_ASH_STORAGE_USE_KEYWORD_FOR_LAUNCHER" desc="Keyword of storage use in launcher search that should trigger a storage answer card result.">
-        storage use
-      </message>
       <message name="IDS_ASH_CPU_KEYWORD_FOR_LAUNCHER" desc="Keyword of cpu in launcher search that should trigger a CPU answer card result.">
         cpu
-      </message>
-      <message name="IDS_ASH_CPU_USAGE_KEYWORD_FOR_LAUNCHER" desc="Keyword of cpu usage in launcher search that should trigger a CPU answer card result.">
-        cpu usage
       </message>
       <message name="IDS_ASH_DEVICE_SLOW_KEYWORD_FOR_LAUNCHER" desc="Keyword of device slow in launcher search that should trigger a CPU answer card result.">
         device slow
       </message>
-      <message name="IDS_ASH_WHY_IS_MY_DEVICE_SLOW_KEYWORD_FOR_LAUNCHER" desc="Keyword of why is my device slow in launcher search that should trigger a CPU answer card result.">
-        why is my device slow
-      </message>
       <message name="IDS_ASH_MEMORY_KEYWORD_FOR_LAUNCHER" desc="Keyword of memory in launcher search that should trigger a memory answer card result.">
         memory
-      </message>
-      <message name="IDS_ASH_MEMORY_USAGE_KEYWORD_FOR_LAUNCHER" desc="Keyword of memory usage in launcher search that should trigger a memory answer card result.">
-        memory usage
       </message>
       <message name="IDS_ASH_RAM_KEYWORD_FOR_LAUNCHER" desc="Keyword of ram (random access memory) in launcher search that should trigger a memory answer card result.">
         ram
       </message>
-      <message name="IDS_ASH_RANDOM_ACCESS_MEMORY_KEYWORD_FOR_LAUNCHER" desc="Keyword of random access memory in launcher search that should trigger a memory answer card result.">
-        random access memory
-      </message>
-      <message name="IDS_ASH_RAM_USAGE_KEYWORD_FOR_LAUNCHER" desc="Keyword of ram usage in launcher search that should trigger a memory answer card result.">
-        ram usage
-      </message>
-      <message name="IDS_ASH_ACTIVITY_MONITOR_KEYWORD_FOR_LAUNCHER" desc="Keyword of activity monitor in launcher search that should trigger a memory answer card result.">
+      <message name="IDS_ASH_ACTIVITY_MONITOR_KEYWORD_FOR_LAUNCHER" desc="Keyword of activity monitor in launcher search that should trigger a CPU answer card result.">
         actvity monitor
       </message>
       <message name="IDS_ASH_BATTERY_KEYWORD_FOR_LAUNCHER" desc="Keyword of battery in launcher search that should trigger a battery answer card result.">
         battery
       </message>
-      <message name="IDS_ASH_BATTERY_LIFE_KEYWORD_FOR_LAUNCHER" desc="Keyword of battery life in launcher search that should trigger a battery answer card result.">
-        battery life
-      </message>
-      <message name="IDS_ASH_BATTERY_HEALTH_KEYWORD_FOR_LAUNCHER" desc="Keyword of battery health in launcher search that should trigger a battery answer card result.">
-        battery health
-      </message>
       <message name="IDS_ASH_VERSION_KEYWORD_FOR_LAUNCHER" desc="Keyword of version in launcher search that should trigger a version answer card result.">
         version
       </message>
-      <message name="IDS_ASH_MY_DEVICE_KEYWORD_FOR_LAUNCHER" desc="Keyword of my device in launcher search that should trigger a version answer card result.">
-        my device
+      <message name="IDS_ASH_DEVICE_KEYWORD_FOR_LAUNCHER" desc="Keyword of device in launcher search that should trigger a version answer card result.">
+        device
       </message>
       <message name="IDS_ASH_ABOUT_KEYWORD_FOR_LAUNCHER" desc="Keyword of about in launcher search that should trigger a version answer card result.">
         about
@@ -2154,6 +2244,12 @@ Style notes:
       </message>
       <message name="IDS_ASH_SEARCH_RESULT_IMAGE_DATE_MODIFIED" desc="The title for the last modified date of the image file search result, where the information is listed beside the launcher image result.">
         Date modified
+      </message>
+      <message name="IDS_ASH_SEARCH_RESULT_IMAGE_LAST_MODIFIED_DATE_AND_TIME" desc="The last modified date and time of the image file displayed in launcher search results. Depending on launguage, please choose the best separator(eg ',') between abbreviated date and time">
+        <ph name="date">$1<ex>May 23, 2023</ex></ph>, <ph name="time">$2<ex>11:28 AM</ex></ph>
+      </message>
+      <message name="IDS_ASH_SEARCH_RESULT_IMAGE_LAST_MODIFIED_RELATIVE_DATE_AND_TIME" desc="The last modified date and time of the image file displayed in launcher search results, where the relative date (today, yesterday) is used and the date string is already translated. Depending on launguage, please choose the best separator(eg ',') between abbreviated date and time">
+        <ph name="relative_date">$1<ex>Today</ex></ph> <ph name="time">$2<ex>4:00 PM</ex></ph>
       </message>
       <message name="IDS_ASH_SEARCH_RESULT_IMAGE_FILE_TYPE" desc="The title for the file type of the image file search result, where the information is listed beside the launcher image result.">
         Type
@@ -2523,8 +2619,11 @@ Connect your device to power.
         About <ph name="time_left">$1<ex>40 minutes</ex></ph> left (<ph name="percentage">$2<ex>56%</ex></ph>%).
 Turning on battery saver to increase your battery life.
       </message>
-      <message name="IDS_ASH_STATUS_TRAY_LOW_BATTERY_BSM_BUTTON" translateable="false" desc="The button text on the low power notification to disable battery saver.">
+      <message name="IDS_ASH_STATUS_TRAY_LOW_BATTERY_BSM_BUTTON_OPT_OUT" translateable="false" desc="The button text on the low power notification to disable battery saver.">
         Turn off Battery Saver
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_LOW_BATTERY_BSM_BUTTON_OPT_IN" translateable="false" desc="The button text on the low power notification to enable battery saver.">
+        Turn on Battery Saver
       </message>
       <message name="IDS_ASH_STATUS_TRAY_BATTERY_PERCENT_TITLE" desc="The title displayed in a battery status notification.">Battery status</message>
       <message name="IDS_ASH_STATUS_TRAY_BATTERY_PERCENT" desc="The label in the tray dialog to show the remaining battery power as a percent.">
@@ -2598,6 +2697,9 @@ Turning on battery saver to increase your battery life.
       <message name="IDS_ASH_STATUS_TRAY_NETWORK" desc="The label used in the network dialog header. [CHAR_LIMIT=18]">
         Network
       </message>
+      <message name="IDS_ASH_STATUS_TRAY_INTERNET" desc="The label used in the network dialog header. [CHAR_LIMIT=18]">
+        Internet
+      </message>
       <message name="IDS_ASH_QUICK_SETTINGS_KNOWN_NETWORKS" desc="The label used in the network detailed page for the known networks group">
         Known networks
       </message>
@@ -2606,6 +2708,9 @@ Turning on battery saver to increase your battery life.
       </message>
       <message name="IDS_ASH_QUICK_SETTINGS_JOIN_WIFI_NETWORK" desc="The label used in the network detailed page for the Join Wi-Fi network entry">
         Join Wi-Fi network
+      </message>
+      <message name="IDS_ASH_QUICK_SETTINGS_ADD_ESIM" desc="The label used in the network detailed page for the Add eSIM network entry">
+        Add eSIM
       </message>
       <message name="IDS_ASH_QUICK_SETTINGS_NETWORK_DISABLED" desc="Network disabled label in the quick settings bubble network subpage." meaning="Network is disabled.">
         Off
@@ -4760,7 +4865,10 @@ Turning on battery saver to increase your battery life.
         Your devices work even better together
       </message>
       <message name="IDS_ASH_MULTI_DEVICE_SETUP_NOTIFIER_TEXT_WITH_PHONE_HUB" desc="The text mentions Phone Hub that shows in the notifier of multidevice setup.">
-        Quickly send or reply to your phone's messages using Phone Hub.
+        Quickly send or reply to your phone's messages using Phone Hub
+      </message>
+      <message name="IDS_ASH_MULTI_DEVICE_SETUP_NOTIFIER_TEXT_WITHOUT_PHONE_HUB" desc="The text does not mention Phone Hub that shows in the notifier of multidevice setup.">
+        Save time by quickly replying to your phone's texts from your Chromebook
       </message>
       <message name="IDS_ASH_MULTI_DEVICE_SETUP_NEW_USER_POTENTIAL_HOST_EXISTS_MESSAGE" desc="Message shown as part of the notification shown to a user that has not completed the MultiDevice setup when their Chrome device recognizes that they have a phone on their account that the Chrome device can connect to. Clicking it opens a prompt to guide them through setting up.">
         Connect your <ph name="DEVICE_NAME">$1<ex>Chromebook</ex></ph> with your phone
@@ -4892,6 +5000,9 @@ Turning on battery saver to increase your battery life.
       </message>
       <message name="IDS_ASH_NOTIFICATION_COLLAPSE_TOOLTIP" desc="The tooltip for the expand button, indicating action to collapse the notification.">
         Collapse notification
+      </message>
+      <message name="IDS_ASH_NOTIFICATION_EXPAND_DISABLED_TOOLTIP" desc="The tooltip for the expand button when it is disabled, indicating that user cannot expand the notification in this situation.">
+        You can't expand the notification while a panel is open. Close the panel below first.
       </message>
       <message name="IDS_ASH_NOTIFICATION_INLINE_REPLY_PLACEHOLDER" desc="The placeholder string for the textfield of an in-line reply notification.">
         Reply
@@ -5960,8 +6071,16 @@ Here are some things you can try to get started.
       <message name="IDS_ASH_CLIPBOARD_HISTORY_CONTROL_V_LONGPRESS_FOOTER" desc="The message used to educate users about the clipboard history menu that shows when they hold down Ctrl+V.">
         You’ll see the clipboard when you press and hold Ctrl + V. You can turn off this shortcut by disabling the #clipboard-history-longpress flag in chrome://flags (os://flags if using Lacros).
       </message>
+      <message name="IDS_ASH_CLIPBOARD_HISTORY_FOOTER" desc="The message used to educate users about the clipboard history menu that shows when they use the feature for the first time (or for the first time in a long time).">
+        Select an item to paste it. You can see the clipboard by pressing <ph name="SHORTCUT_KEY_NAME">$1<ex>Launcher</ex></ph> + v.
+      </message>
       <message name="IDS_ASH_CLIPBOARD_HISTORY_HEADER_TITLE" desc="The title of the ChromeOS clipboard history menu, which shows the user's most recently copied items.">
         Clipboard
+      </message>
+      <message name="IDS_ASH_CLIPBOARD_HISTORY_FILE_COUNT" desc="The number of files copied in a single copy action, as presented in a menu item summarizing the copied data. [ICU Syntax]">
+        {NUM_FILES, plural,
+         =1 {1 file}
+         other {# files}}
       </message>
       <message name="IDS_ASH_MULTIPASTE_CONTEXTUAL_NUDGE" desc="The label used for the multipaste nudge, to be seen once the user copies and pastes multiple times in a short time span.">
         Press <ph name="SHORTCUT_KEY_NAME">$1<ex>Launcher</ex></ph> + V to view your clipboard. The last 5 items you've copied are saved to your clipboard.
@@ -6738,21 +6857,78 @@ New install
       <message name="IDS_GLANCEABLES_ITEMS_TURNED_IN_AND_GRADED" desc="The teacher classroom glanceable shows upcoming/missed/completed assignments from Google Classroom. For each assignment item, this text displays the number of submissions turned in along side the total number of sumbissions. Then this text also displays the number of submissions currently graded.">
         <ph name="NUM_TURNED_IN">$1<ex>8</ex></ph>/<ph name="TOTAL_NUM_OF_SUBMISSIONS">$2<ex>22</ex></ph> turned in • <ph name="NUM_GRADED">$3<ex>5</ex></ph> graded
       </message>
+      <message name="IDS_GLANCEABLES_CLASSROOM_STUDENT_EMPTY_ITEM_DUE_LIST" desc="The student classroom glanceable shows this label when there are no assignments to show for the 'Due Soon' or 'No Due Date' list.">
+        Nothing on this to-do list.
+      </message>
+      <message name="IDS_GLANCEABLES_CLASSROOM_STUDENT_EMPTY_ITEM_MISSING_LIST" desc="The student classroom glanceable shows this label when there are no assignments to show for the 'Missing' list.">
+        Looks like nothing is missing. Nice work!
+      </message>
+      <message name="IDS_GLANCEABLES_CLASSROOM_STUDENT_EMPTY_ITEM_DONE_LIST" desc="The student classroom glanceable shows this label when there are no assignments to show for the 'Done' list.">
+        No assignments completed yet.
+      </message>
       <message name="IDS_GLANCEABLES_LIST_FOOTER_ITEMS_COUNT_LABEL" desc="The glanceable displays classroom or tasks items fetched from Google Classroom or Google Tasks API. The first placeholder value is the number of items visible in the UI. The second placeholder value is the total number of items returned from API.">
         Showing <ph name="NUM_SHOWN_ITEMS">$1<ex>5</ex></ph> out of <ph name="NUM_TOTAL_ITEMS">$2<ex>10</ex></ph>
       </message>
       <message name="IDS_GLANCEABLES_LIST_FOOTER_ACTION_BUTTON_LABEL" desc="The glanceable displays classroom or tasks items fetched from Google Classroom or Google Tasks API. Glanceables UI renders only limited number of items, the rest of them can be seen by clicking this button, which will open a corresponding website.">
         See all
       </message>
+      <message name="IDS_GLANCEABLES_TASKS_ADD_NEW_TASK_BUTTON_LABEL" desc="Tasks glanceable displays non-completed tasks fetched from Google Tasks API. This text in displayed on the button, which allows creating new tasks (currently it redirects to Tasks Web UI).">
+        Add new task
+      </message>
+      <message name="IDS_GLANCEABLES_ERROR_DISMISS" desc="A glanceables bubble (classroom or tasks) displays a notification with an error message when an error occurs during any action within said glaceables bubble. This is the text that is displayed on the button within said notification in order to dismiss it.">
+        Dismiss
+      </message>
+      <message name="IDS_GLANCEABLES_CLASSROOM_SEE_ALL_BUTTON_ACCESSIBLE_NAME" desc="The glanceable displays classroom items fetched from Google Classroom API. Glanceables UI renders only limited number of items, the rest of them can be seen by clicking this button, which will open a corresponding website. This is the text announced by ChromeVox for this button.">
+        See all classwork on Google Classroom website
+      </message>
+      <message name="IDS_GLANCEABLES_TASKS_SEE_ALL_BUTTON_ACCESSIBLE_NAME" desc="The glanceable displays tasks items fetched from Google Tasks API. Glanceables UI renders only limited number of items, the rest of them can be seen by clicking this button, which will open a corresponding website. This is the text announced by ChromeVox for this button.">
+        See all tasks on Google tasks on web
+      </message>
+      <message name="IDS_GLANCEABLES_TASKS_TASK_ITEM_HAS_DUE_DATE_ACCESSIBLE_DESCRIPTION" desc="The glanceable displays tasks items fetched from Google Tasks API. This text is the part of a11y description to announce that a task has attached due date as part of its metadata.">
+        due date <ph name="DUE_DATE">$1<ex>Wed, Aug 23</ex></ph>
+      </message>
+      <message name="IDS_GLANCEABLES_TASKS_TASK_ITEM_HAS_SUBTASK_ACCESSIBLE_DESCRIPTION" desc="The glanceable displays tasks items fetched from Google Tasks API. This text is the part of a11y description to announce that a task contains any number of subtasks.">
+        subtask
+      </message>
+      <message name="IDS_GLANCEABLES_TASKS_TASK_ITEM_HAS_DETAILS_ACCESSIBLE_DESCRIPTION" desc="The glanceable displays tasks items fetched from Google Tasks API. This text is the part of a11y description to announce that a task contains additional details.">
+        details
+      </message>
+      <message name="IDS_GLANCEABLES_TASKS_TASK_ITEM_METADATA_WRAPPER_ACCESSIBLE_DESCRIPTION" desc="The glanceable displays tasks items fetched from Google Tasks API. This is the wrapper text for the a11y description to announce that a task has additional metadata (due date, subtasks, details, etc.).">
+        This item has: <ph name="GLANCEABLES_TASK_ITEM_METADATA">$1<ex>due date Wed, Aug 23, subtask, details</ex></ph>.
+      </message>
+      <message name="IDS_GLANCEABLES_TASKS_TASK_ITEM_MARK_COMPLETED_ACCESSIBLE_NAME" desc="The glanceable displays tasks items fetched from Google Tasks API. This is the a11y name announced by ChromeVox for the checkbox button to mark a task as completed.">
+        Mark completed
+      </message>
+      <message name="IDS_GLANCEABLES_TASKS_TASK_ITEM_MARK_NOT_COMPLETED_ACCESSIBLE_NAME" desc="The glanceable displays tasks items fetched from Google Tasks API. This is the a11y name announced by ChromeVox for the checkbox button to mark a task as not completed.">
+        Mark as not completed
+      </message>
+      <message name="IDS_GLANCEABLES_CLASSROOM_STUDENT_DUE_SOON_LIST_NAME" desc="The glanceable displays classroom items fetched from Google Classroom API. This is the name of the list that contains assigned (pending / not completed) student assignments w/ due date in the future.">
+        Due soon
+      </message>
+      <message name="IDS_GLANCEABLES_CLASSROOM_STUDENT_NO_DUE_DATE_LIST_NAME" desc="The glanceable displays classroom items fetched from Google Classroom API. This is the name of the list that contains assigned (pending / not completed) student assignments w/o specified due date.">
+        No due date
+      </message>
+      <message name="IDS_GLANCEABLES_CLASSROOM_STUDENT_MISSING_LIST_NAME" desc="The glanceable displays classroom items fetched from Google Classroom API. This is the name of the list that contains assigned (pending / not completed) student assignments with missed due date.">
+        Missing
+      </message>
+      <message name="IDS_GLANCEABLES_CLASSROOM_STUDENT_DONE_LIST_NAME" desc="The glanceable displays classroom items fetched from Google Classroom API. This is the name of the list that contains completed student assignments.">
+        Done
+      </message>
+      <message name="IDS_GLANCEABLES_CLASSROOM_ASSIGNMENT_DUE_ACCESSIBLE_DESCRIPTION" desc="The classroom glanceable displays classroom items for student and/or teachers fetched from Google Classroom API. This text is the part of a11y description to announce that an assignment has a due date and/or time.">
+        due <ph name="DUE_DATE_AND_TIME">$1<ex>Wed, Aug 23</ex></ph>
+      </message>
+      <message name="IDS_GLANCEABLES_CLASSROOM_ASSIGNMENT_SUBMISSIONS_STATE_ACCESSIBLE_DESCRIPTION" desc="The teacher classroom glanceable shows upcoming/missed/completed assignments from Google Classroom. For each assignment item, this text displays the number of submissions turned in along side the total number of sumbissions. Then this text also displays the number of submissions currently graded.">
+        <ph name="NUM_TURNED_IN">$1<ex>8</ex></ph> of <ph name="TOTAL_NUM_OF_SUBMISSIONS">$2<ex>22</ex></ph> turned in, <ph name="NUM_GRADED">$3<ex>5</ex></ph> graded
+      </message>
 
-      <!-- Do not disturb notification -->
-      <message name="IDS_ASH_DO_NOT_DISTURB_NOTIFICATION_TITLE" desc="Label used for the notification that shows up when the 'Do not disturb' feature is enabled.">
-        Do not disturb is on
+      <!-- Do Not Disturb notification -->
+      <message name="IDS_ASH_DO_NOT_DISTURB_NOTIFICATION_TITLE" desc="Label used for the notification that shows up when the 'Do Not Disturb' feature is enabled.">
+        Do Not Disturb is on
       </message>
-      <message name="IDS_ASH_DO_NOT_DISTURB_NOTIFICATION_DESCRIPTION" desc="Text description used for the notification that shows up when the 'Do not disturb' feature is enabled.">
-        Notifications are muted when Do not disturb is on
+      <message name="IDS_ASH_DO_NOT_DISTURB_NOTIFICATION_DESCRIPTION" desc="Text description used for the notification that shows up when the 'Do Not Disturb' feature is enabled.">
+        Notifications are muted when Do Not Disturb is on
       </message>
-      <message name="IDS_ASH_DO_NOT_DISTURB_NOTIFICATION_TURN_OFF" desc="Label for a button on the 'Do not disturb' notification that turns off 'Do not disturb' mode.">
+      <message name="IDS_ASH_DO_NOT_DISTURB_NOTIFICATION_TURN_OFF" desc="Label for a button on the 'Do Not Disturb' notification that turns off 'Do Not Disturb' mode.">
         Turn off
       </message>
 
@@ -6804,7 +6980,7 @@ To shut down the device, press and hold the power button on the device again.
         Those were the basics! Continue in Explore, our built-in app for tips and help. You’ll find tips for getting started, recommended apps, special offers, and the newest Chromebook features.
       </message>
       <message name="IDS_ASH_WELCOME_TOUR_HOME_BUTTON_BUBBLE_BODY_TEXT" desc="Text shown in the body of a help bubble anchored to the home button as part of the System UI Welcome Tour.">
-        Use apps to do everything you need on your Chromebook. You can find your apps in the Launcher. You can also press the Launcher key on the keyboard.
+        Your Chromebook comes with built-in apps to help you get stuff done. Find your apps in the Launcher.
       </message>
       <message name="IDS_ASH_WELCOME_TOUR_SEARCH_BOX_BUBBLE_BODY_TEXT" desc="Text shown in the body of a help bubble anchored to the search box as part of the System UI Welcome Tour.">
         Search for your files, apps, and more in the Launcher. You can also get answers to questions about your Chromebook.
@@ -6849,37 +7025,91 @@ To shut down the device, press and hold the power button on the device again.
         Toolbar
       </message>
 
-      <!-- TODO(b/286937607): Finalize and translate these strings -->
       <!-- Input device settings notifications -->
-      <message name="IDS_ASH_DEVICE_SETTINGS_NOTIFICATIONS_ALT_RIGHT_CLICK" translateable="false" desc="">
-        The Alt + click keyboard shortcut has changed. To use your keyboard to right-click, press the Launcher key + click.
+      <message name="IDS_ASH_DEVICE_SETTINGS_NOTIFICATIONS_ALT_RIGHT_CLICK" desc="The message shown to notify a user that the shortcut used to simulate a right-click using touchpad and keyboard has changed.">
+        The right-click shortcut is updated to <ph name="LAUNCHER_KEY_NAME">$1<ex>launcher</ex></ph> key + click from alt + click
       </message>
-      <message name="IDS_ASH_DEVICE_SETTINGS_NOTIFICATIONS_LAUNCHER_RIGHT_CLICK" translateable="false" desc="">
-        The Launcher + click keyboard shortcut has changed. To use your keyboard to right-click, press the Alt key + click.
+      <message name="IDS_ASH_DEVICE_SETTINGS_NOTIFICATIONS_LAUNCHER_RIGHT_CLICK" desc="The message shown to notify a user that the shortcut used to simulate a right-click using touchpad and keyboard has changed.">
+        The right-click shortcut is updated to alt + click from <ph name="LAUNCHER_KEY_NAME">$1<ex>launcher</ex></ph> key + click
       </message>
-      <message name="IDS_ASH_DEVICE_SETTINGS_NOTIFICATIONS_RIGHT_CLICK_DISABLED" translateable="false" desc="">
-        Simulating a right-click using touchpad and keyboard is disabled, visit device settings to configure.
+      <message name="IDS_ASH_DEVICE_SETTINGS_NOTIFICATIONS_RIGHT_CLICK_DISABLED" desc="The message shown to notify a user that the shortcut used to simulate a right-click using touchpad and keyboard is disabled.">
+        The right-click shortcut is currently off
       </message>
-      <message name="IDS_ASH_DEVICE_SETTINGS_SIX_PACK_KEY_INSERT" translateable="false" desc="Label for the Insert 6-pack key.">
+      <message name="IDS_ASH_DEVICE_SETTINGS_SIX_PACK_KEY_INSERT" desc="Label for the Insert 6-pack key.">
         insert
       </message>
-      <message name="IDS_ASH_DEVICE_SETTINGS_SIX_PACK_KEY_HOME" translateable="false" desc="Label for the Home 6-pack key.">
+      <message name="IDS_ASH_DEVICE_SETTINGS_SIX_PACK_KEY_HOME" desc="Label for the Home 6-pack key.">
         home
       </message>
-      <message name="IDS_ASH_DEVICE_SETTINGS_SIX_PACK_KEY_END" translateable="false" desc="Label for the End 6-pack key.">
+      <message name="IDS_ASH_DEVICE_SETTINGS_SIX_PACK_KEY_END" desc="Label for the End 6-pack key.">
         end
       </message>
-      <message name="IDS_ASH_DEVICE_SETTINGS_SIX_PACK_KEY_PAGE_UP" translateable="false" desc="Label for the PageUp 6-pack key.">
+      <message name="IDS_ASH_DEVICE_SETTINGS_SIX_PACK_KEY_PAGE_UP" desc="Label for the PageUp 6-pack key.">
         page up
       </message>
-      <message name="IDS_ASH_DEVICE_SETTINGS_SIX_PACK_KEY_PAGE_DOWN" translateable="false" desc="Label for the PageDown 6-pack key.">
+      <message name="IDS_ASH_DEVICE_SETTINGS_SIX_PACK_KEY_PAGE_DOWN" desc="Label for the PageDown 6-pack key.">
         page down
       </message>
-      <message name="IDS_ASH_DEVICE_SETTINGS_SIX_PACK_KEY_DELETE" translateable="false" desc="Label for the Delete 6-pack key.">
+      <message name="IDS_ASH_DEVICE_SETTINGS_SIX_PACK_KEY_DELETE" desc="Label for the Delete 6-pack key.">
         delete
       </message>
-      <message name="IDS_ASH_DEVICE_SETTINGS_NOTIFICATIONS_SIX_PACK_KEY" translateable="false" desc="">
-        The keyboard shortcut to use the <ph name="SIX_PACK_KEY_NAME">$1<ex>Delete</ex></ph> key has changed, visit device settings to configure the shortcut.
+      <message name="IDS_ASH_DEVICE_SETTINGS_NOTIFICATIONS_SIX_PACK_SHORTCUT_DISABLED" desc="">
+        The <ph name="SIX_PACK_KEY_NAME">$1<ex>delete</ex></ph> shortcut is currently off
+      </message>
+      <message name="IDS_ASH_DEVICE_SETTINGS_NOTIFICATIONS_SIX_PACK_KEY" desc="">
+        The <ph name="SIX_PACK_KEY_NAME">$1<ex>delete</ex></ph> shortcut is updated to <ph name="NEW_SHORTCUT">$2<ex>search + backspace</ex></ph> from <ph name="OLD_SHORTCUT">$3<ex>alt + backspace</ex></ph>
+      </message>
+      <message name="IDS_ASH_SETTINGS_SIX_PACK_KEY_DELETE_ALT" desc="In the keyboard settings subpage, the dropdown list item for the alt + backspace option.">
+        alt + backspace
+      </message>
+      <message name="IDS_ASH_SETTINGS_SIX_PACK_KEY_DELETE_SEARCH" desc="In the keyboard settings subpage, the dropdown list item for the search + backspace option.">
+        <ph name="LAUNCHER_KEY_NAME">$1<ex>launcher</ex></ph> + backspace
+      </message>
+      <message name="IDS_ASH_SETTINGS_SIX_PACK_KEY_HOME_ALT" desc="In the keyboard settings subpage, the dropdown list item for the alt + backspace option.">
+        ctrl + alt + up arrow
+      </message>
+      <message name="IDS_ASH_SETTINGS_SIX_PACK_KEY_HOME_SEARCH" desc="In the keyboard settings subpage, the dropdown list item for the alt + backspace option.">
+        <ph name="LAUNCHER_KEY_NAME">$1<ex>launcher</ex></ph> + left arrow
+      </message>
+      <message name="IDS_ASH_SETTINGS_SIX_PACK_KEY_END_ALT" desc="In the keyboard settings subpage, the dropdown list item for the alt + backspace option.">
+        ctrl + alt + down arrow
+      </message>
+      <message name="IDS_ASH_SETTINGS_SIX_PACK_KEY_END_SEARCH" desc="In the keyboard settings subpage, the dropdown list item for the alt + backspace option.">
+        <ph name="LAUNCHER_KEY_NAME">$1<ex>launcher</ex></ph> + right arrow
+      </message>
+      <message name="IDS_ASH_SETTINGS_SIX_PACK_KEY_PAGE_DOWN_ALT" desc="In the keyboard settings subpage, the dropdown list item for the alt + backspace option.">
+        alt + down arrow
+      </message>
+      <message name="IDS_ASH_SETTINGS_SIX_PACK_KEY_PAGE_DOWN_SEARCH" desc="In the keyboard settings subpage, the dropdown list item for the alt + backspace option.">
+        <ph name="LAUNCHER_KEY_NAME">$1<ex>launcher</ex></ph> + down arrow
+      </message>
+      <message name="IDS_ASH_SETTINGS_SIX_PACK_KEY_PAGE_UP_ALT" desc="In the keyboard settings subpage, the dropdown list item for the alt + backspace option.">
+        alt + up arrow
+      </message>
+      <message name="IDS_ASH_SETTINGS_SIX_PACK_KEY_PAGE_UP_SEARCH" desc="In the keyboard settings subpage, the dropdown list item for the alt + backspace option.">
+        <ph name="LAUNCHER_KEY_NAME">$1<ex>launcher</ex></ph> + up arrow
+      </message>
+      <!-- Modifier key names -->
+      <message name="IDS_ASH_SETTINGS_SHORTCUT_MODIFIER_LAUNCHER" desc="Name of the [Launcher] key. This key has a different name and keyboard glyph/icon depending on the device. This is the string for when it is called Launcher and has a circle/launcher icon.">
+        launcher
+      </message>
+      <message name="IDS_ASH_SETTINGS_SHORTCUT_MODIFIER_SEARCH" desc="Name of the [Search] key. This key has a different name and keyboard glyph/icon depending on the device. This is the string for when it is called Search and has a magnifier icon.">
+        search
+      </message>
+      <message name="IDS_ASH_SETTINGS_SHORTCUT_NOTIFICATION_TITLE" desc="Title for shortcut notifications.">
+        Keyboard shortcut has changed
+      </message>
+      <message name="IDS_ASH_DEVICE_SETTINGS_NOTIFICATIONS_RIGHT_CLICK_TITLE" desc="Title for the right-click shortcut changed notification.">
+        Keyboard shortcut has changed
+      </message>
+      <message name="IDS_ASH_DEVICE_SETTINGS_NOTIFICATIONS_RIGHT_CLICK_DISABLED_TITLE" desc="Title for the notification shown when the right-click shortcut is disabled.">
+        Keyboard shortcut is off
+      </message>
+      <message name="IDS_ASH_DEVICE_SETTINGS_EDIT_SHORTCUT_BUTTON" desc="Button shown for device settings notifications which links to the settings app.">
+        Edit shortcut
+      </message>
+      <message name="IDS_ASH_DEVICE_SETTINGS_LEARN_MORE_BUTTON" desc="Button shown for device settings notifications which opens an article with helpful information related to the notification.">
+        Learn more
       </message>
      </messages>
     </release>

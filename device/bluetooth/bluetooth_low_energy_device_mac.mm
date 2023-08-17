@@ -34,10 +34,6 @@
 
 #endif  // MAC_OS_X_VERSION_10_13
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 namespace device {
 
 BluetoothLowEnergyDeviceMac::BluetoothLowEnergyDeviceMac(
@@ -107,8 +103,9 @@ uint16_t BluetoothLowEnergyDeviceMac::GetAppearance() const {
 }
 
 absl::optional<std::string> BluetoothLowEnergyDeviceMac::GetName() const {
-  if ([peripheral_ name])
+  if ([peripheral_ name]) {
     return base::SysNSStringToUTF8([peripheral_ name]);
+  }
   return absl::nullopt;
 }
 
@@ -492,8 +489,9 @@ BluetoothLowEnergyDeviceMac::GetBluetoothRemoteGattServiceMac(
     BluetoothRemoteGattService* gatt_service = it.second.get();
     BluetoothRemoteGattServiceMac* gatt_service_mac =
         static_cast<BluetoothRemoteGattServiceMac*>(gatt_service);
-    if (gatt_service_mac->GetService() == cb_service)
+    if (gatt_service_mac->GetService() == cb_service) {
       return gatt_service_mac;
+    }
   }
   return nullptr;
 }

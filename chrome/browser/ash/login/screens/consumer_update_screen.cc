@@ -20,14 +20,17 @@
 #include "chrome/browser/ash/login/login_pref_names.h"
 #include "chrome/browser/ash/login/screens/network_error.h"
 #include "chrome/browser/ash/login/wizard_context.h"
+#include "chrome/browser/ash/policy/core/browser_policy_connector_ash.h"
 #include "chrome/browser/ash/system/timezone_util.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/ui/webui/ash/login/consumer_update_screen_handler.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/ash/components/network/network_state.h"
 #include "components/prefs/pref_service.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/strings/grit/ui_strings.h"
 
@@ -43,16 +46,41 @@ constexpr const char kUserActionAcceptUpdateOverCellular[] =
 constexpr const char kUserActionRejectUpdateOverCellular[] =
     "consumer-update-reject-cellular";
 constexpr const char kUserActionSkipUpdate[] = "skip-consumer-update";
+constexpr const char kUserActionBackButton[] = "back";
 
 // Time in seconds after which we initiate reboot.
 constexpr const base::TimeDelta kWaitBeforeRebootTime = base::Seconds(2);
 // When battery percent is lower and DISCHARGING warn user about it.
 const double kInsufficientBatteryPercent = 50;
+
+constexpr base::TimeDelta kUmaMinUpdateTime = base::Milliseconds(1);
+constexpr base::TimeDelta kUmaMaxUpdateTime = base::Hours(2);
+constexpr int kUmaUpdateTimeBuckets = 50;
+
+void RecordUpdateTime(base::TimeDelta update_time, bool is_mandatory) {
+  if (is_mandatory) {
+    base::UmaHistogramCustomTimes(
+        "OOBE.ConsumerUpdateScreen.UpdateTime.Mandatory", update_time,
+        kUmaMinUpdateTime, kUmaMaxUpdateTime, kUmaUpdateTimeBuckets);
+  } else {
+    base::UmaHistogramCustomTimes(
+        "OOBE.ConsumerUpdateScreen.UpdateTime.Optional", update_time,
+        kUmaMinUpdateTime, kUmaMaxUpdateTime, kUmaUpdateTimeBuckets);
+  }
+}
+
+void RecordIsOptionalUpdateSkipped(bool skipped) {
+  base::UmaHistogramBoolean("OOBE.ConsumerUpdateScreen.IsOptionalUpdateSkipped",
+                            skipped);
+}
+
 }  // namespace
 
 // static
 std::string ConsumerUpdateScreen::GetResultString(Result result) {
   switch (result) {
+    case Result::BACK:
+      return "Back";
     case Result::UPDATED:
       return "Updated";
     case Result::UPDATE_NOT_REQUIRED:
@@ -85,17 +113,29 @@ ConsumerUpdateScreen::ConsumerUpdateScreen(
 ConsumerUpdateScreen::~ConsumerUpdateScreen() = default;
 
 bool ConsumerUpdateScreen::MaybeSkip(WizardContext& context) {
-  if (context.skip_post_login_screens_for_tests) {
+  CHECK(!g_browser_process->platform_part()
+             ->browser_policy_connector_ash()
+             ->IsDeviceEnterpriseManaged());
+  if (context.skip_to_login_for_tests || context.is_add_person_flow) {
     exit_callback_.Run(Result::NOT_APPLICABLE);
     return true;
   }
 
-  // get if critical update applied in OOBE.
+  // skip if consumer update applied in OOBE before restarting.
   if (g_browser_process->local_state()->GetBoolean(
-          prefs::kOobeCriticalUpdate)) {
+          prefs::kOobeConsumerUpdateCompleted)) {
+    exit_callback_.Run(Result::NOT_APPLICABLE);
+    return true;
+  }
+
+  // skip if critical update applied in OOBE.
+  if (g_browser_process->local_state()->GetBoolean(
+          prefs::kOobeCriticalUpdateCompleted)) {
     LOG(WARNING) << "Skip OOBE Consumer Update because a critical update was "
                     "applied during OOBE.";
-    exit_callback_.Run(Result::NOT_APPLICABLE);
+    RecordOobeConsumerUpdateScreenSkippedReasonHistogram(
+        OobeConsumerUpdateScreenSkippedReason::kCriticalUpdateCompleted);
+    exit_callback_.Run(Result::UPDATED);
     return true;
   }
 
@@ -129,6 +169,7 @@ void ConsumerUpdateScreen::ShowImpl() {
         ConsumerUpdateScreenView::UIState::kCellularPermission);
   }
 
+  screen_shown_time_ = base::TimeTicks::Now();
   view_->Show();
   version_updater_->StartNetworkCheck();
 }
@@ -148,10 +189,12 @@ void ConsumerUpdateScreen::DelaySkipButton() {
 }
 
 void ConsumerUpdateScreen::SetSkipButton() {
-  if (view_ && !checked_update_mandatory) {
-    checked_update_mandatory = true;
+  if (view_ && !is_mandatory_update_.has_value()) {
     base::TimeDelta time_left = version_updater_->update_info().total_time_left;
-    view_->SetIsUpdateMandatory(time_left > maximum_time_force_update_);
+    is_mandatory_update_ = time_left < maximum_time_force_update_;
+    base::UmaHistogramBoolean("OOBE.ConsumerUpdateScreen.IsMandatory",
+                              is_mandatory_update_.value());
+    view_->SetIsUpdateMandatory(is_mandatory_update_.value());
   }
 }
 
@@ -161,9 +204,15 @@ void ConsumerUpdateScreen::OnUserAction(const base::Value::List& args) {
     version_updater_->SetUpdateOverCellularOneTimePermission();
   } else if (action_id == kUserActionRejectUpdateOverCellular) {
     version_updater_->RejectUpdateOverCellular();
+    RecordOobeConsumerUpdateScreenSkippedReasonHistogram(
+        OobeConsumerUpdateScreenSkippedReason::kDeclineCellular);
     exit_callback_.Run(Result::DECLINE_CELLULAR);
   } else if (action_id == kUserActionSkipUpdate) {
+    RecordIsOptionalUpdateSkipped(/*skipped=*/true);
     exit_callback_.Run(Result::SKIPPED);
+  } else if (action_id == kUserActionBackButton) {
+    version_updater_->RejectUpdateOverCellular();
+    exit_callback_.Run(Result::BACK);
   } else {
     BaseScreen::OnUserAction(args);
   }
@@ -172,9 +221,13 @@ void ConsumerUpdateScreen::OnUserAction(const base::Value::List& args) {
 void ConsumerUpdateScreen::FinishExitUpdate(VersionUpdater::Result result) {
   switch (result) {
     case VersionUpdater::Result::UPDATE_NOT_REQUIRED:
+      RecordOobeConsumerUpdateScreenSkippedReasonHistogram(
+          OobeConsumerUpdateScreenSkippedReason::kUpdateNotRequired);
       exit_callback_.Run(Result::UPDATE_NOT_REQUIRED);
       break;
     case VersionUpdater::Result::UPDATE_ERROR:
+      RecordOobeConsumerUpdateScreenSkippedReasonHistogram(
+          OobeConsumerUpdateScreenSkippedReason::kUpdateError);
       exit_callback_.Run(Result::UPDATE_ERROR);
       break;
     case VersionUpdater::Result::UPDATE_SKIPPED:
@@ -359,11 +412,22 @@ void ConsumerUpdateScreen::UpdateInfoChanged(
       break;
     case update_engine::Operation::NEED_PERMISSION_TO_UPDATE:
       break;
-    case update_engine::Operation::UPDATED_NEED_REBOOT:
+    case update_engine::Operation::UPDATED_NEED_REBOOT: {
+      g_browser_process->local_state()->SetBoolean(
+          prefs::kOobeConsumerUpdateCompleted, true);
+
+      base::TimeDelta update_time = base::TimeTicks::Now() - screen_shown_time_;
+      RecordUpdateTime(update_time, is_mandatory_update_.value_or(true));
+      if (!is_mandatory_update_.value_or(true)) {
+        RecordIsOptionalUpdateSkipped(/*skipped=*/false);
+      }
+
+      ShowRebootInProgress();
       wait_reboot_timer_.Start(FROM_HERE, wait_before_reboot_time_,
                                version_updater_.get(),
                                &VersionUpdater::RebootAfterUpdate);
       break;
+    }
     case update_engine::Operation::ERROR:
     case update_engine::Operation::REPORTING_ERROR_EVENT:
       if (!update_available) {
@@ -376,6 +440,11 @@ void ConsumerUpdateScreen::UpdateInfoChanged(
       NOTREACHED();
   }
   UpdateBatteryWarningVisibility();
+}
+
+void ConsumerUpdateScreen::RecordOobeConsumerUpdateScreenSkippedReasonHistogram(
+    OobeConsumerUpdateScreenSkippedReason reason) {
+  base::UmaHistogramEnumeration("OOBE.ConsumerUpdateScreen.SkipReason", reason);
 }
 
 }  // namespace ash

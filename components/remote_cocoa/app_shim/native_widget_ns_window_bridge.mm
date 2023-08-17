@@ -51,10 +51,6 @@
 #import "ui/gfx/mac/coordinate_conversion.h"
 #import "ui/gfx/mac/nswindow_frame_controls.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 using remote_cocoa::mojom::VisibilityTransition;
 using remote_cocoa::mojom::WindowVisibilityState;
 
@@ -231,9 +227,21 @@ NSComparisonResult SubviewSorter(__kindof NSView* lhs,
 // |child_windows| array ignoring the windows added by AppKit.
 NSUInteger CountBridgedWindows(NSArray* child_windows) {
   NSUInteger count = 0;
-  for (NSWindow* child in child_windows)
-    if ([[child delegate] isKindOfClass:[ViewsNSWindowDelegate class]])
+
+  for (NSWindow* child in child_windows) {
+    NativeWidgetMacNSWindow* parentWindow =
+        base::mac::ObjCCast<NativeWidgetMacNSWindow>([child parentWindow]);
+
+    // The child may be in an intermediary state where it's been removed from
+    // Views but not from the childWindow list (see the description of
+    // -willCloseLater in ViewsNSWindowDelegate). Child windows in this state
+    // essentially do not exist, so we should not count them.
+    if ([parentWindow willRemoveChildWindowOnActivation:child]) {
+      continue;
+    } else if ([[child delegate] isKindOfClass:[ViewsNSWindowDelegate class]]) {
       ++count;
+    }
+  }
 
   return count;
 }
@@ -471,8 +479,8 @@ void NativeWidgetNSWindowBridge::InitWindow(
 
   [[NSNotificationCenter defaultCenter]
       addObserver:window_delegate_
-         selector:@selector(onSystemControlTintChanged:)
-             name:NSControlTintDidChangeNotification
+         selector:@selector(onSystemColorsChanged:)
+             name:NSSystemColorsDidChangeNotification
            object:nil];
 
   // Validate the window's initial state, otherwise the bridge's initial
@@ -763,7 +771,11 @@ void NativeWidgetNSWindowBridge::SetVisibilityState(
     // DCHECK(![window_ attachedSheet]);
 
     [window_ orderOut:nil];
-    DCHECK(!window_visible_);
+
+    NativeWidgetMacNSWindow* parentWindow =
+        base::mac::ObjCCast<NativeWidgetMacNSWindow>([window_ parentWindow]);
+    DCHECK(!window_visible_ ||
+           [parentWindow willRemoveChildWindowOnActivation:window_]);
     return;
   } else if (new_state == WindowVisibilityState::kMiniaturizeWindow) {
     [window_ miniaturize:nil];
@@ -1097,7 +1109,12 @@ void NativeWidgetNSWindowBridge::OnPositionChanged() {
 }
 
 void NativeWidgetNSWindowBridge::OnVisibilityChanged() {
-  const bool window_visible = [window_ isVisible];
+  NativeWidgetMacNSWindow* parentWindow =
+      base::mac::ObjCCast<NativeWidgetMacNSWindow>([window_ parentWindow]);
+  const bool window_visible =
+      [window_ isVisible] &&
+      ![parentWindow willRemoveChildWindowOnActivation:window_];
+
   if (window_visible_ == window_visible)
     return;
 
@@ -1130,7 +1147,7 @@ void NativeWidgetNSWindowBridge::OnVisibilityChanged() {
   host_->OnVisibilityChanged(window_visible_);
 }
 
-void NativeWidgetNSWindowBridge::OnSystemControlTintChanged() {
+void NativeWidgetNSWindowBridge::OnSystemColorsChanged() {
   host_->OnWindowNativeThemeChanged();
 }
 
@@ -1696,10 +1713,17 @@ void NativeWidgetNSWindowBridge::NotifyVisibilityChangeDown() {
   const size_t child_count = child_windows_.size();
   if (!window_visible_) {
     for (NativeWidgetNSWindowBridge* child : child_windows_) {
-      if (child->window_visible_)
-        [child->ns_window() orderOut:nil];
+      NSWindow* childWindow = child->ns_window();
 
-      DCHECK(!child->window_visible_);
+      if (child->window_visible_) {
+        [childWindow orderOut:nil];
+      }
+      NativeWidgetMacNSWindow* parentWindow =
+          base::mac::ObjCCast<NativeWidgetMacNSWindow>(
+              [childWindow parentWindow]);
+
+      DCHECK(!child->window_visible_ ||
+             [parentWindow willRemoveChildWindowOnActivation:childWindow]);
       CHECK_EQ(child_count, child_windows_.size());
     }
     // The orderOut calls above should result in a call to OnVisibilityChanged()

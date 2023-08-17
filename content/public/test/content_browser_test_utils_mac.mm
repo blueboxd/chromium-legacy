@@ -9,9 +9,9 @@
 
 #include <memory>
 
+#include "base/apple/scoped_objc_class_swizzler.h"
 #include "base/functional/bind.h"
 #include "base/lazy_instance.h"
-#include "base/mac/scoped_objc_class_swizzler.h"
 #include "base/strings/sys_string_conversions.h"
 #import "content/app_shim_remote_cocoa/render_widget_host_view_cocoa.h"
 #include "content/browser/renderer_host/render_widget_host_view_mac.h"
@@ -25,10 +25,6 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/range/range.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 // The interface class used to override the implementation of some of
 // RenderWidgetHostViewCocoa methods for tests.
 @interface RenderWidgetHostViewCocoaSwizzler : NSObject
@@ -39,7 +35,7 @@
 
 namespace content {
 
-using base::mac::ScopedObjCClassSwizzler;
+using base::apple::ScopedObjCClassSwizzler;
 
 // static
 constexpr char RenderWidgetHostViewCocoaObserver::kDidAddSubview[];
@@ -47,7 +43,7 @@ constexpr char
     RenderWidgetHostViewCocoaObserver::kShowDefinitionForAttributedString[];
 
 // static
-std::map<std::string, std::unique_ptr<base::mac::ScopedObjCClassSwizzler>>
+std::map<std::string, std::unique_ptr<base::apple::ScopedObjCClassSwizzler>>
     RenderWidgetHostViewCocoaObserver::rwhvcocoa_swizzlers_;
 
 // static
@@ -72,7 +68,7 @@ content::RenderWidgetHostViewMac* GetRenderWidgetHostViewMac(NSObject* object) {
 
 }  // namespace
 
-base::mac::ScopedObjCClassSwizzler*
+base::apple::ScopedObjCClassSwizzler*
 RenderWidgetHostViewCocoaObserver::GetSwizzler(const std::string& method_name) {
   return rwhvcocoa_swizzlers_.count(method_name)
              ? rwhvcocoa_swizzlers_.at(method_name).get()

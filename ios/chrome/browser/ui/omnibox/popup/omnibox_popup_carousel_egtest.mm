@@ -24,10 +24,6 @@
 #import "net/test/embedded_test_server/http_response.h"
 #import "ui/strings/grit/ui_strings.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 namespace {
 
 /// Number of time URL is reloaded to add it to most visited sites.
@@ -342,9 +338,9 @@ id<GREYMatcher> CarouselMatcher() {
 - (void)deleteMostVisitedTile:(id<GREYMatcher>)tile {
   [self longPressMostVisitedTile:tile];
   // Tap on remove.
-  [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
-                                   IDS_IOS_CONTENT_SUGGESTIONS_REMOVE)]
+  [[EarlGrey selectElementWithMatcher:
+                 chrome_test_util::ContextMenuItemWithAccessibilityLabelId(
+                     IDS_IOS_CONTENT_SUGGESTIONS_REMOVE)]
       performAction:grey_tap()];
   // Check tile is removed.
   [[EarlGrey selectElementWithMatcher:tile] assertWithMatcher:grey_nil()];

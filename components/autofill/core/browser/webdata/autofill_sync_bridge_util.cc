@@ -9,6 +9,7 @@
 #include "base/ranges/algorithm.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/data_model/autofill_offer_data.h"
@@ -77,7 +78,7 @@ const char* CardNetworkFromWalletCardType(
 
 // Creates a CreditCard from the specified `card` specifics.
 CreditCard CardFromSpecifics(const sync_pb::WalletMaskedCreditCard& card) {
-  CreditCard result(CreditCard::MASKED_SERVER_CARD, card.id());
+  CreditCard result(CreditCard::RecordType::kMaskedServerCard, card.id());
   result.SetNumber(base::UTF8ToUTF16(card.last_four()));
   result.SetNetworkForMaskedCard(CardNetworkFromWalletCardType(card.type()));
   result.SetRawInfo(CREDIT_CARD_NAME_FULL,
@@ -526,6 +527,19 @@ AutofillOfferData AutofillOfferDataFromOfferSpecifics(
         offer_specifics.promo_code_offer_data().promo_code());
     return offer_data;
   }
+}
+
+sync_pb::AutofillWalletCredentialSpecifics
+AutofillWalletCredentialSpecificsFromStructData(const ServerCvc& server_cvc) {
+  sync_pb::AutofillWalletCredentialSpecifics wallet_credential_specifics;
+  CHECK(!server_cvc.cvc.empty());
+  wallet_credential_specifics.set_instrument_id(
+      base::NumberToString(server_cvc.instrument_id));
+  wallet_credential_specifics.set_cvc(base::UTF16ToUTF8(server_cvc.cvc));
+  wallet_credential_specifics.set_last_updated_time_unix_epoch_millis(
+      (server_cvc.last_updated_timestamp - base::Time::UnixEpoch())
+          .InMilliseconds());
+  return wallet_credential_specifics;
 }
 
 VirtualCardUsageData VirtualCardUsageDataFromUsageSpecifics(

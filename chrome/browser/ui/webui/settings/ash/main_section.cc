@@ -185,7 +185,7 @@ void MainSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
   html_source->AddBoolean(
       "isKioskModeActive",
       user_manager::UserManager::Get()->IsLoggedInAsAnyKioskApp());
-  html_source->AddBoolean("isChildAccount", profile()->IsChild());
+  html_source->AddBoolean("isChild", IsChildUser());
 
   // Add the System Web App resources for Settings.
   html_source->AddResourcePath("icon-192.png", IDR_SETTINGS_LOGO_192);
@@ -239,9 +239,9 @@ mojom::SearchResultIcon MainSection::GetSectionIcon() const {
   return mojom::SearchResultIcon::kMinValue;
 }
 
-std::string MainSection::GetSectionPath() const {
+const char* MainSection::GetSectionPath() const {
   NOTIMPLEMENTED();
-  return std::string();
+  return "";
 }
 
 bool MainSection::LogMetric(mojom::Setting setting, base::Value& value) const {

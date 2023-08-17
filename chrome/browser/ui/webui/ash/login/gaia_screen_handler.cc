@@ -188,9 +188,23 @@ GaiaScreenHandler::GaiaScreenMode GetGaiaScreenMode(const std::string& email) {
   CrosSettings::Get()->GetInteger(kLoginAuthenticationBehavior,
                                   &authentication_behavior);
   if (authentication_behavior ==
-          em::LoginAuthenticationBehaviorProto::SAML_INTERSTITIAL &&
-      email.empty()) {
-    return GaiaScreenHandler::GAIA_SCREEN_MODE_SAML_REDIRECT;
+      em::LoginAuthenticationBehaviorProto::SAML_INTERSTITIAL) {
+    if (email.empty())
+      return GaiaScreenHandler::GAIA_SCREEN_MODE_SAML_REDIRECT;
+
+    user_manager::KnownUser known_user(g_browser_process->local_state());
+    // If there's a populated email, we must check first that this user is using
+    // SAML in order to decide whether to show the interstitial page.
+    const user_manager::User* user =
+        user_manager::UserManager::Get()->FindUser(known_user.GetAccountId(
+            email, std::string() /* id */, AccountType::UNKNOWN));
+
+    // TODO(b/259675128): we shouldn't rely on `user->using_saml()` when
+    // deciding which IdP page to show because this flag can be outdated. Admin
+    // could have changed the IdP to GAIA since last authentication and we
+    // wouldn't know about it.
+    if (user && user->using_saml())
+      return GaiaScreenHandler::GAIA_SCREEN_MODE_SAML_REDIRECT;
   }
 
   return GaiaScreenHandler::GAIA_SCREEN_MODE_DEFAULT;
@@ -673,6 +687,15 @@ void GaiaScreenHandler::HandleAuthExtensionLoaded() {
 }
 
 void GaiaScreenHandler::HandleWebviewLoadAborted(int error_code) {
+  if (error_code == net::ERR_BLOCKED_BY_ADMINISTRATOR) {
+    // Navigating to a blocked site displays a network error screen, but it
+    // doesn't indicate that the network is malfunctioning or that we need to
+    // reload the screen after regaining network connectivity, and it doesn't
+    // alter the network state, so we handle this network error with a frame
+    // state of its own.
+    frame_state_ = FRAME_STATE_BLOCKED;
+    return;
+  }
   if (error_code == net::ERR_INVALID_AUTH_CREDENTIALS) {
     // Silently ignore this error - it is used as an intermediate state for
     // committed interstitials (see https://crbug.com/1049349 for details).
@@ -798,7 +821,13 @@ void GaiaScreenHandler::HandleCompleteAuthentication(
         LoginDisplayHost::default_host()->CompleteLogin(*user_context);
       });
 
-  if (password.empty() && !IsSamlUserPasswordless()) {
+  const bool confirm_saml_password =
+      using_saml && password.empty() && !IsSamlUserPasswordless();
+  const bool need_password_gaia =
+      !using_saml && password.empty() &&
+      !ash::features::AreLocalPasswordsEnabledForConsumers();
+
+  if (confirm_saml_password || need_password_gaia) {
     CHECK_NE(scraped_saml_passwords.size(), 1u);
     complete_login_callback = base::BindOnce(
         &GaiaScreenHandler::SAMLConfirmPassword, weak_factory_.GetWeakPtr(),
@@ -830,6 +859,8 @@ void GaiaScreenHandler::HandleCompleteAuthentication(
 
   online_login_helper_->SetUserContext(std::move(user_context));
   online_login_helper_->RequestCookiesAndCompleteAuthentication();
+
+  populated_account_id_.clear();
 
   if (test_expects_complete_login_) {
     VLOG(2) << "Complete test login for " << sanitized_email
@@ -1365,7 +1396,6 @@ void GaiaScreenHandler::LoadAuthExtension(bool force) {
         AccountId::FromUserEmail(gaia::CanonicalizeEmail(context.email)));
   }
 
-  populated_account_id_.clear();
   LoadGaia(context);
 }
 
@@ -1503,6 +1533,14 @@ void GaiaScreenHandler::UpdateStateInternal(NetworkError::ErrorReason reason,
   if (reload_gaia) {
     ReloadGaia(/*force_reload=*/true);
   }
+}
+
+bool GaiaScreenHandler::IsLoadedForTesting() const {
+  return frame_state_ == FRAME_STATE_LOADED;
+}
+
+bool GaiaScreenHandler::IsNavigationBlockedForTesting() const {
+  return frame_state_ == FRAME_STATE_BLOCKED;
 }
 
 void GaiaScreenHandler::HideOfflineMessage(NetworkStateInformer::State state,

@@ -914,6 +914,19 @@ bool V4L2ReadableBuffer::IsKeyframe() const {
   return buffer_data_->v4l2_buffer_.flags & V4L2_BUF_FLAG_KEYFRAME;
 }
 
+bool V4L2ReadableBuffer::IsError() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(buffer_data_);
+  // "The driver may also set V4L2_BUF_FLAG_ERROR in the flags field. It
+  //  indicates a non-critical (recoverable) streaming error. In such case the
+  //  application may continue as normal, but should be aware that data in the
+  //  dequeued buffer might be corrupted." IOW it is more a discard-this-buffer
+  //  marker than a fatal error indication, so it's down to the caller to take
+  //  action if needed/desired.
+  // https://www.kernel.org/doc/html/v5.15/userspace-api/media/v4l/vidioc-qbuf.html#description
+  return buffer_data_->v4l2_buffer_.flags & V4L2_BUF_FLAG_ERROR;
+}
+
 struct timeval V4L2ReadableBuffer::GetTimeStamp() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(buffer_data_);
@@ -987,18 +1000,15 @@ V4L2Queue::V4L2Queue(const IoctlAsCallback& ioctl_cb,
       weak_this_factory_(this) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  // Check if this queue support requests.
   struct v4l2_requestbuffers reqbufs = {
       .count = 0, .type = type_, .memory = V4L2_MEMORY_MMAP};
-  if (ioctl_cb_.Run(VIDIOC_REQBUFS, &reqbufs) != 0) {
-    VPLOGF(1) << "Request support checks's VIDIOC_REQBUFS ioctl failed.";
-    return;
-  }
+  supports_requests_ = (ioctl_cb_.Run(VIDIOC_REQBUFS, &reqbufs) == kIoctlOk) &&
+                       (reqbufs.capabilities & V4L2_BUF_CAP_SUPPORTS_REQUESTS);
 
-  if (reqbufs.capabilities & V4L2_BUF_CAP_SUPPORTS_REQUESTS) {
-    supports_requests_ = true;
-    DVLOGF(4) << "Queue supports request API.";
-  }
+  // Stateful backends for example do not support requests.
+  VPLOG_IF(4, supports_requests_)
+      << "This queue does " << (supports_requests_ ? "" : "not")
+      << " support requests.";
 }
 
 V4L2Queue::~V4L2Queue() {
@@ -1061,45 +1071,14 @@ std::pair<absl::optional<struct v4l2_format>, int> V4L2Queue::GetFormat() {
 
 absl::optional<gfx::Rect> V4L2Queue::GetVisibleRect() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // Some drivers prior to 4.13 only accept the non-MPLANE variant when using
-  // VIDIOC_G_SELECTION. This block can be removed once we stop supporting
-  // kernels < 4.13.
-  // For details, see the note at
-  // https://www.kernel.org/doc/html/latest/media/uapi/v4l/vidioc-g-selection.html
-  enum v4l2_buf_type compose_type;
-  switch (type_) {
-    case V4L2_BUF_TYPE_VIDEO_CAPTURE_MPLANE:
-      compose_type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-      break;
-    case V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE:
-      compose_type = V4L2_BUF_TYPE_VIDEO_OUTPUT;
-      break;
-    default:
-      compose_type = type_;
-      break;
-  }
 
-  struct v4l2_selection selection;
-  memset(&selection, 0, sizeof(selection));
-  selection.type = compose_type;
-  selection.target = V4L2_SEL_TGT_COMPOSE;
-  if (ioctl_cb_.Run(VIDIOC_G_SELECTION, &selection) == 0) {
-    DVQLOGF(3) << "VIDIOC_G_SELECTION is supported";
-    return V4L2RectToGfxRect(selection.r);
+  struct v4l2_selection selection = {.type = type_,
+                                     .target = V4L2_SEL_TGT_COMPOSE};
+  if (ioctl_cb_.Run(VIDIOC_G_SELECTION, &selection) != 0) {
+    VQLOGF(1) << "Failed to get visible rect";
+    return absl::nullopt;
   }
-
-  // TODO(acourbot) using VIDIOC_G_CROP is considered legacy and can be
-  // removed once no active devices use it anymore.
-  DVQLOGF(3) << "Fallback to VIDIOC_G_CROP";
-  struct v4l2_crop crop;
-  memset(&crop, 0, sizeof(crop));
-  crop.type = type_;
-  if (ioctl_cb_.Run(VIDIOC_G_CROP, &crop) == 0) {
-    return V4L2RectToGfxRect(crop.c);
-  }
-
-  VQLOGF(1) << "Failed to get visible rect";
-  return absl::nullopt;
+  return V4L2RectToGfxRect(selection.r);
 }
 
 size_t V4L2Queue::AllocateBuffers(size_t count,
@@ -1494,6 +1473,32 @@ absl::optional<struct v4l2_format> V4L2Queue::SetModifierFormat(
     return format;
   }
   return absl::nullopt;
+}
+
+bool V4L2Queue::SendStopCommand() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return SendCommand(V4L2_DEC_CMD_STOP);
+}
+
+bool V4L2Queue::SendStartCommand() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return SendCommand(V4L2_DEC_CMD_START);
+}
+
+bool V4L2Queue::SendCommand(__u32 command) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // TODO(mcasas): Restrict this to V4L2_BUF_TYPE_VIDEO_OUTPUT_MPLANE, after
+  // deprecating V4L2StatefulVideoDecoderBackend.
+
+  struct v4l2_decoder_cmd cmd;
+  memset(&cmd, 0, sizeof(cmd));  // Must use memset() due to unions.
+  cmd.cmd = command;
+  const bool success = ioctl_cb_.Run(VIDIOC_DECODER_CMD, &cmd) == kIoctlOk;
+  PLOG_IF(ERROR, !success) << "Failed to issue command " << command
+                           << " (V4L2_DEC_CMD_START: " << V4L2_DEC_CMD_START
+                           << ", V4L2_DEC_CMD_STOP: " << V4L2_DEC_CMD_STOP
+                           << ")";
+  return success;
 }
 
 class V4L2Request {

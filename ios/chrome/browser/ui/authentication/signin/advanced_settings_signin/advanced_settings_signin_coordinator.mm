@@ -25,10 +25,6 @@
 #import "ios/chrome/grit/ios_strings.h"
 #import "ui/base/l10n/l10n_util_mac.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 using base::UserMetricsAction;
 using l10n_util::GetNSString;
 
@@ -207,9 +203,6 @@ using l10n_util::GetNSString;
 
 - (void)navigationDoneButtonWasTapped:
     (AdvancedSettingsSigninNavigationController*)controller {
-  // TODO(crbug.com/1454777)
-  DUMP_WILL_BE_CHECK_EQ(self.advancedSettingsSigninNavigationController,
-                        controller);
   [self dismissViewControllerAndFinishWithResult:SigninCoordinatorResultSuccess
                                         animated:YES
                                       completion:nil];

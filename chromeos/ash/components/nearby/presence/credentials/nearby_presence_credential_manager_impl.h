@@ -212,7 +212,7 @@ class NearbyPresenceCredentialManagerImpl
       base::RepeatingCallback<void(bool)> upload_credentials_result_callback);
   void HandleUploadCredentialsResult(
       base::RepeatingCallback<void(bool)> upload_credentials_callback,
-      bool success);
+      ash::nearby::NearbyHttpResult result);
   void OnUploadCredentialsTimeout(
       base::RepeatingCallback<void(bool)> upload_credentials_callback);
   void OnUploadCredentialsSuccess(
@@ -229,7 +229,7 @@ class NearbyPresenceCredentialManagerImpl
       base::RepeatingCallback<
           void(std::vector<::nearby::internal::SharedCredential>, bool)>
           download_credentials_result_callback,
-      bool success,
+      ash::nearby::NearbyHttpResult result,
       std::vector<::nearby::internal::SharedCredential> credentials);
   void OnDownloadCredentialsTimeout(
       base::RepeatingCallback<
@@ -266,6 +266,18 @@ class NearbyPresenceCredentialManagerImpl
   std::unique_ptr<ash::nearby::NearbyScheduler> upload_on_demand_scheduler_;
   std::unique_ptr<ash::nearby::NearbyScheduler> download_on_demand_scheduler_;
 
+  // Stores the number of current attempts for uploading credentials to the
+  // server. Increments on each attempt to upload credentials, and is reset to 0
+  // once the upload request is completed (either resulting in final
+  // success or failure).
+  int upload_credentials_attempts_needed_count_ = 0;
+
+  // Stores the number of current attempts for downloading credentials from the
+  // server. Increments on each attempt to download credentials, and is reset to
+  // 0 once the download request is completed (either resulting in final
+  // success or failure).
+  int download_credentials_attempts_needed_count_ = 0;
+
   // Initialized during the first time registration flow kicked off in
   // `RegisterPresence()`. Not expected to be a valid pointer unless used during
   // the first time registration flow.
@@ -277,6 +289,17 @@ class NearbyPresenceCredentialManagerImpl
   // remote devices' credentials.
   std::unique_ptr<ash::nearby::NearbyScheduler>
       daily_credential_sync_scheduler_;
+
+  bool is_daily_sync_in_progress_ = false;
+
+  // Stores the last success time of a daily sync to prevent slamming the
+  // server with requests to `UpdateCredentials()`.
+  absl::optional<base::Time> last_daily_sync_success_time_;
+
+  // Stores a count of the number of requests to `UpdateCredentials()` made
+  // to match with a corresponding cool off period in between requests to
+  // prevent overwhelming the server.
+  int update_credential_request_count_ = 0;
 
   // Callback to return the result of the first time registration. Not
   // guaranteed to be a valid callback, as this is set only during first time

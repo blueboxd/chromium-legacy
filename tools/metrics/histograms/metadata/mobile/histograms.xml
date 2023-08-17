@@ -93,7 +93,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Mobile.ContextMenu.EntryPoints" enum="IOSMenuScenario"
-    expires_after="2023-12-10">
+    expires_after="2024-02-11">
   <owner>gambard@chromium.org</owner>
   <owner>bling-team@chromium.org</owner>
   <summary>
@@ -104,7 +104,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Mobile.ContextMenu.GetImageDataByJsResult"
-    enum="ContextMenuIOSGetImageDataByJsResult" expires_after="2023-10-16">
+    enum="ContextMenuIOSGetImageDataByJsResult" expires_after="2024-02-11">
   <owner>djean@chromium.org</owner>
   <owner>gambard@chromium.org</owner>
   <summary>
@@ -126,7 +126,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Mobile.ContextMenu.LensWebImageProcessTime" units="ms"
-    expires_after="2023-10-31">
+    expires_after="2024-01-28">
   <owner>hujasonx@google.com</owner>
   <owner>lens-in-bling-team@google.com</owner>
   <summary>
@@ -339,7 +339,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="Mobile.Messages.Passwords.Modal.Event"
-    enum="MobileMessagesPasswordsModalEvent" expires_after="2023-10-16">
+    enum="MobileMessagesPasswordsModalEvent" expires_after="2024-01-28">
 <!-- Name completed by histogram_suffixes name="Mobile.Messages.Password.Type" -->
 
   <owner>sczs@chromium.org</owner>
@@ -374,7 +374,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Mobile.Messages.Translate.Modal.Event"
-    enum="MobileMessagesTranslateModalEvent" expires_after="2023-10-16">
+    enum="MobileMessagesTranslateModalEvent" expires_after="2024-01-28">
   <owner>sczs@chromium.org</owner>
   <owner>thegreenfrog@chromium.org</owner>
   <summary>
@@ -761,18 +761,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram base="true" name="MobileDownload.ResumptionsCount" units="units"
-    expires_after="2020-04-05">
-  <owner>qinmin@chromium.org</owner>
-  <summary>
-    Android: Records the number of resumptions for a download by resumption
-    type. For all resumption types, this is recorded when a download is
-    finished, completed or cancelled. For automatic resumptions, it is also
-    recorded when user manually resumes the download to clear the auto retry
-    count.
-  </summary>
-</histogram>
-
 <histogram name="MobileDownload.StoragePermission"
     enum="MobileDownloadStoragePermission" expires_after="M82">
   <owner>qinmin@chromium.org</owner>
@@ -888,7 +876,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="MobileFre.Progress" enum="MobileFreProgress"
-    expires_after="2023-12-04">
+    expires_after="2024-02-04">
   <owner>bsazonov@chromium.org</owner>
   <owner>msarda@chromium.org</owner>
   <owner>droger@chromium.org</owner>
@@ -1129,7 +1117,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="MobileSignInPromo.NTPFeedTop.ImpressionsTilXButton"
-    units="impressions" expires_after="2023-09-24">
+    units="impressions" expires_after="2024-01-28">
   <owner>mrefaat@chromium.org</owner>
   <owner>jlebel@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
@@ -1242,7 +1230,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="MobileStartup.IntentToCreationTime" units="ms"
-    expires_after="2023-12-10">
+    expires_after="2024-02-11">
   <owner>tedchoc@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <owner>yfriedman@chromium.org</owner>

@@ -6,13 +6,17 @@
 #include <utility>
 
 #include "base/functional/callback.h"
+#include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/test_future.h"
+#include "chrome/browser/browsing_data/counters/site_data_counting_helper.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/browsing_data/core/counters/browsing_data_counter.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -33,19 +37,39 @@ constexpr base::StringPiece kTestDictionaryString = "A dictionary";
 constexpr base::StringPiece kCompressedDataOriginalString =
     "This is compressed test data using a test dictionary";
 
-// kCompressedData is generated using the following commands:
+// kBrotliCompressedData is generated using the following commands:
 //  $ echo -n "A dictionary" > /tmp/dict
 //  $ echo -n "This is compressed test data using a test dictionary" > /tmp/data
 //  $ ./brotli -o /tmp/out.sbr -D /tmp/dict /tmp/data
 //  $ xxd -i  /tmp/out.sbr
-constexpr uint8_t kCompressedData[] = {
+constexpr uint8_t kBrotliCompressedData[] = {
     0xa1, 0x98, 0x01, 0x80, 0x22, 0xe0, 0x26, 0x4b, 0x95, 0x5c, 0x19,
     0x18, 0x9d, 0xc1, 0xc3, 0x44, 0x0e, 0x5c, 0x6a, 0x09, 0x9d, 0xf0,
     0xb0, 0x01, 0x47, 0x14, 0x87, 0x14, 0x6d, 0xfb, 0x60, 0x96, 0xdb,
     0xae, 0x9e, 0x79, 0x54, 0xe3, 0x69, 0x03, 0x29};
-const std::string kCompressedDataString =
-    std::string(reinterpret_cast<const char*>(kCompressedData),
-                sizeof(kCompressedData));
+
+// NOLINTNEXTLINE(runtime/string)
+const std::string kBrotliCompressedDataString =
+    std::string(reinterpret_cast<const char*>(kBrotliCompressedData),
+                sizeof(kBrotliCompressedData));
+
+// kZstdCompressedData is generated using the following commands:
+//  $ echo -n "A dictionary" > /tmp/dict
+//  $ echo -n "This is compressed test data using a test dictionary" > /tmp/data
+//  $ zstd -o /tmp/out.szstd -D /tmp/dict /tmp/data
+//  $ xxd -i  /tmp/out.szstd
+constexpr uint8_t kZstdCompressedData[] = {
+    0x28, 0xb5, 0x2f, 0xfd, 0x24, 0x34, 0xa1, 0x01, 0x00, 0x54, 0x68,
+    0x69, 0x73, 0x20, 0x69, 0x73, 0x20, 0x63, 0x6f, 0x6d, 0x70, 0x72,
+    0x65, 0x73, 0x73, 0x65, 0x64, 0x20, 0x74, 0x65, 0x73, 0x74, 0x20,
+    0x64, 0x61, 0x74, 0x61, 0x20, 0x75, 0x73, 0x69, 0x6e, 0x67, 0x20,
+    0x61, 0x20, 0x74, 0x65, 0x73, 0x74, 0x20, 0x64, 0x69, 0x63, 0x74,
+    0x69, 0x6f, 0x6e, 0x61, 0x72, 0x79, 0x9e, 0x99, 0xf2, 0xbc};
+
+// NOLINTNEXTLINE(runtime/string)
+const std::string kZstdCompressedDataString =
+    std::string(reinterpret_cast<const char*>(kZstdCompressedData),
+                sizeof(kZstdCompressedData));
 
 class SharedDictionaryAccessObserver : public content::WebContentsObserver {
  public:
@@ -88,14 +112,16 @@ absl::optional<std::string> GetSecAvailableDictionary(
 
 void CheckSharedDictionaryUseCounter(
     base::HistogramTester& histograms,
-    int expected_used_count,
+    int expected_used_count_with_sbr,
+    int expected_used_count_with_zstd_d,
     int expected_used_for_navigation_count,
     int expected_used_for_main_frame_navigation_count,
     int expected_used_for_sub_frame_navigation_count,
     int expected_used_for_subresource_count) {
-  histograms.ExpectBucketCount("Blink.UseCounter.Features",
-                               blink::mojom::WebFeature::kSharedDictionaryUsed,
-                               expected_used_count);
+  histograms.ExpectBucketCount(
+      "Blink.UseCounter.Features",
+      blink::mojom::WebFeature::kSharedDictionaryUsed,
+      expected_used_count_with_sbr + expected_used_count_with_zstd_d);
   histograms.ExpectBucketCount(
       "Blink.UseCounter.Features",
       blink::mojom::WebFeature::kSharedDictionaryUsedForNavigation,
@@ -112,6 +138,14 @@ void CheckSharedDictionaryUseCounter(
       "Blink.UseCounter.Features",
       blink::mojom::WebFeature::kSharedDictionaryUsedForSubresource,
       expected_used_for_subresource_count);
+  histograms.ExpectBucketCount(
+      "Blink.UseCounter.Features",
+      blink::mojom::WebFeature::kSharedDictionaryUsedWithSharedBrotli,
+      expected_used_count_with_sbr);
+  histograms.ExpectBucketCount(
+      "Blink.UseCounter.Features",
+      blink::mojom::WebFeature::kSharedDictionaryUsedWithSharedZstd,
+      expected_used_count_with_zstd_d);
 }
 
 }  // namespace
@@ -125,7 +159,8 @@ class ChromeSharedDictionaryBrowserTest : public InProcessBrowserTest {
     scoped_feature_list_.InitWithFeatures(
         /*enabled_features=*/
         {network::features::kCompressionDictionaryTransportBackend,
-         network::features::kCompressionDictionaryTransport},
+         network::features::kCompressionDictionaryTransport,
+         network::features::kSharedZstd},
         /*disabled_features=*/{});
 
     embedded_test_server()->RegisterRequestHandler(
@@ -259,6 +294,15 @@ class ChromeSharedDictionaryBrowserTest : public InProcessBrowserTest {
     }
   }
 
+  int GetSiteDataCount(base::Time begin_time, base::Time end_time) {
+    base::test::TestFuture<int> result;
+    auto* helper = new SiteDataCountingHelper(browser()->profile(), begin_time,
+                                              end_time, result.GetCallback());
+    helper->CountAndDestroySelfWhenFinished();
+    return result.Get();
+    ;
+  }
+
  private:
   std::unique_ptr<net::test_server::HttpResponse> RequestHandler(
       const net::test_server::HttpRequest& request) {
@@ -285,11 +329,17 @@ class ChromeSharedDictionaryBrowserTest : public InProcessBrowserTest {
       response->set_content(dict_hash ? "Dictionary header available"
                                       : "Dictionary header not available");
       return response;
-    } else if (request.relative_url == "/path/compressed") {
+    } else if (request.relative_url == "/path/brotli_compressed") {
       CHECK(GetSecAvailableDictionary(request.headers));
       response->set_content_type("text/html");
       response->AddCustomHeader("content-encoding", "sbr");
-      response->set_content(kCompressedDataString);
+      response->set_content(kBrotliCompressedDataString);
+      return response;
+    } else if (request.relative_url == "/path/zstd_compressed") {
+      CHECK(GetSecAvailableDictionary(request.headers));
+      response->set_content_type("text/html");
+      response->AddCustomHeader("content-encoding", "zstd-d");
+      response->set_content(kZstdCompressedDataString);
       return response;
     }
     return nullptr;
@@ -412,7 +462,7 @@ IN_PROC_BROWSER_TEST_F(ChromeSharedDictionaryBrowserTest,
   base::HistogramTester histograms;
 
   EXPECT_TRUE(ui_test_utils::NavigateToURL(
-      browser(), embedded_test_server()->GetURL("/path/compressed")));
+      browser(), embedded_test_server()->GetURL("/path/brotli_compressed")));
   EXPECT_EQ(kCompressedDataOriginalString,
             EvalJs(browser()->tab_strip_model()->GetActiveWebContents(),
                    "document.body.innerText")
@@ -424,7 +474,8 @@ IN_PROC_BROWSER_TEST_F(ChromeSharedDictionaryBrowserTest,
 
   CheckSharedDictionaryUseCounter(
       histograms,
-      /*expected_used_count=*/1,
+      /*expected_used_count_with_sbr=*/1,
+      /*expected_used_count_with_zstd_d=*/0,
       /*expected_used_for_navigation_count=*/1,
       /*expected_used_for_main_frame_navigation_count=*/1,
       /*expected_used_for_sub_frame_navigation_count=*/0,
@@ -452,7 +503,7 @@ IN_PROC_BROWSER_TEST_F(ChromeSharedDictionaryBrowserTest,
                    R"(
   (async () => {
     const iframe = document.createElement('iframe');
-    iframe.src = '/path/compressed';
+    iframe.src = '/path/brotli_compressed';
     const promise =
         new Promise(resolve => { iframe.addEventListener('load', resolve); });
     document.body.appendChild(iframe);
@@ -468,7 +519,8 @@ IN_PROC_BROWSER_TEST_F(ChromeSharedDictionaryBrowserTest,
 
   CheckSharedDictionaryUseCounter(
       histograms,
-      /*expected_used_count=*/1,
+      /*expected_used_count_with_sbr=*/1,
+      /*expected_used_count_with_zstd_d=*/0,
       /*expected_used_for_navigation_count=*/1,
       /*expected_used_for_main_frame_navigation_count=*/0,
       /*expected_used_for_sub_frame_navigation_count=*/1,
@@ -495,7 +547,7 @@ IN_PROC_BROWSER_TEST_F(ChromeSharedDictionaryBrowserTest,
             EvalJs(browser()->tab_strip_model()->GetActiveWebContents(),
                    R"(
   (async () => {
-    return await (await fetch('path/compressed')).text();
+    return await (await fetch('path/brotli_compressed')).text();
   })()
                    )")
                 .ExtractString());
@@ -506,9 +558,102 @@ IN_PROC_BROWSER_TEST_F(ChromeSharedDictionaryBrowserTest,
 
   CheckSharedDictionaryUseCounter(
       histograms,
-      /*expected_used_count=*/1,
+      /*expected_used_count_with_sbr=*/1,
+      /*expected_used_count_with_zstd_d=*/0,
       /*expected_used_for_navigation_count=*/0,
       /*expected_used_for_main_frame_navigation_count=*/0,
       /*expected_used_for_sub_frame_navigation_count=*/0,
       /*expected_used_for_subresource_count=*/1);
+}
+
+IN_PROC_BROWSER_TEST_F(ChromeSharedDictionaryBrowserTest,
+                       UseCounterZstdMainFrameNavigation) {
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL("/title1.html")));
+  EXPECT_TRUE(TryRegisterDictionary(*embedded_test_server()));
+  WaitForDictionaryReady(*embedded_test_server());
+
+  // Navigate away in order to flush use counters.
+  EXPECT_TRUE(
+      ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL)));
+
+  base::HistogramTester histograms;
+
+  EXPECT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL("/path/zstd_compressed")));
+  EXPECT_EQ(kCompressedDataOriginalString,
+            EvalJs(browser()->tab_strip_model()->GetActiveWebContents(),
+                   "document.body.innerText")
+                .ExtractString());
+
+  // Navigate away in order to flush use counters.
+  EXPECT_TRUE(
+      ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL)));
+
+  CheckSharedDictionaryUseCounter(
+      histograms,
+      /*expected_used_count_with_sbr=*/0,
+      /*expected_used_count_with_zstd_d=*/1,
+      /*expected_used_for_navigation_count=*/1,
+      /*expected_used_for_main_frame_navigation_count=*/1,
+      /*expected_used_for_sub_frame_navigation_count=*/0,
+      /*expected_used_for_subresource_count=*/0);
+}
+
+IN_PROC_BROWSER_TEST_F(ChromeSharedDictionaryBrowserTest,
+                       UseCounterZstdSubresource) {
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL("/title1.html")));
+  EXPECT_TRUE(TryRegisterDictionary(*embedded_test_server()));
+  WaitForDictionaryReady(*embedded_test_server());
+
+  // Navigate away in order to flush use counters.
+  EXPECT_TRUE(
+      ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL)));
+
+  base::HistogramTester histograms;
+
+  EXPECT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL("/title1.html")));
+
+  EXPECT_EQ(kCompressedDataOriginalString,
+            EvalJs(browser()->tab_strip_model()->GetActiveWebContents(),
+                   R"(
+  (async () => {
+    return await (await fetch('path/zstd_compressed')).text();
+  })()
+                   )")
+                .ExtractString());
+
+  // Navigate away in order to flush use counters.
+  EXPECT_TRUE(
+      ui_test_utils::NavigateToURL(browser(), GURL(url::kAboutBlankURL)));
+
+  CheckSharedDictionaryUseCounter(
+      histograms,
+      /*expected_used_count_with_sbr=*/0,
+      /*expected_used_count_with_zstd_d=*/1,
+      /*expected_used_for_navigation_count=*/0,
+      /*expected_used_for_main_frame_navigation_count=*/0,
+      /*expected_used_for_sub_frame_navigation_count=*/0,
+      /*expected_used_for_subresource_count=*/1);
+}
+
+// TODO(crbug.com/1472445): Fix flakiness in test and enable.
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
+#define MAYBE_SiteDataCount DISABLED_SiteDataCount
+#else
+#define MAYBE_SiteDataCount SiteDataCount
+#endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
+IN_PROC_BROWSER_TEST_F(ChromeSharedDictionaryBrowserTest, MAYBE_SiteDataCount) {
+  base::Time time1 = base::Time::Now();
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL("/title1.html")));
+  base::Time time2 = base::Time::Now();
+  EXPECT_TRUE(TryRegisterDictionary(*embedded_test_server()));
+  WaitForDictionaryReady(*embedded_test_server());
+  base::Time time3 = base::Time::Now();
+
+  EXPECT_EQ(0, GetSiteDataCount(time1, time2));
+  EXPECT_EQ(1, GetSiteDataCount(time2, time3));
 }

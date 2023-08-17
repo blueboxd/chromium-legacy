@@ -10,10 +10,6 @@
 #import "ios/web/public/init/web_main_parts.h"
 #import "url/gurl.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 namespace web {
 
 static WebClient* g_client;
@@ -92,6 +88,10 @@ void WebClient::PrepareErrorPage(WebState* web_state,
 
 UIView* WebClient::GetWindowedContainer() {
   return nullptr;
+}
+
+bool WebClient::EnableFullscreenAPI() const {
+  return false;
 }
 
 bool WebClient::EnableLongPressUIContextMenu() const {

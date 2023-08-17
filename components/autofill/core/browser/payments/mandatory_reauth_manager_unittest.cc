@@ -6,6 +6,7 @@
 #include "base/strings/utf_string_conversions.h"
 
 #include "base/memory/scoped_refptr.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/task_environment.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/test_autofill_client.h"
@@ -17,6 +18,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace autofill::payments {
+
+using autofill_metrics::MandatoryReauthOfferOptInDecision;
 
 class MandatoryReauthManagerTest : public testing::Test {
  public:
@@ -50,13 +53,94 @@ class MandatoryReauthManagerTest : public testing::Test {
         .WillByDefault(testing::Return(value));
   }
 
+  void ExpectUniqueOfferOptInDecision(
+      MandatoryReauthOfferOptInDecision opt_in_decision) {
+    histogram_tester_.ExpectUniqueSample(
+        "Autofill.PaymentMethods.MandatoryReauth.CheckoutFlow."
+        "ReauthOfferOptInDecision",
+        opt_in_decision, 1);
+  }
+
   base::test::TaskEnvironment task_environment_;
   std::unique_ptr<TestAutofillClient> autofill_client_;
   raw_ptr<device_reauth::MockDeviceAuthenticator> mock_device_authenticator_;
   std::unique_ptr<MandatoryReauthManager> mandatory_reauth_manager_;
+  base::HistogramTester histogram_tester_;
   CreditCard local_card_ = test::GetCreditCard();
   CreditCard server_card_ = test::GetMaskedServerCard();
   CreditCard virtual_card_ = test::GetVirtualCard();
+};
+
+// Params of the MandatoryReauthManagerOptInFlowTest:
+// -- autofill::FormDataImporter::CreditCardImportType CreditCardImportType
+class MandatoryReauthManagerOptInFlowTest
+    : public MandatoryReauthManagerTest,
+      public testing::WithParamInterface<
+          FormDataImporter::CreditCardImportType> {
+ public:
+  MandatoryReauthManagerOptInFlowTest() = default;
+  ~MandatoryReauthManagerOptInFlowTest() override = default;
+
+  CreditCard GetCreditCardBasedOnParam() {
+    switch (GetParam()) {
+      case FormDataImporter::kLocalCard:
+        autofill_client_->GetPersonalDataManager()->AddCreditCard(local_card_);
+        return local_card_;
+      case FormDataImporter::kServerCard:
+        return server_card_;
+      case FormDataImporter::kVirtualCard:
+        return virtual_card_;
+      default:
+        NOTREACHED();
+        return local_card_;
+    }
+  }
+
+  absl::variant<FormDataImporter::CardGuid,
+                FormDataImporter::CardLastFourDigits>
+  GetCardIdentifierBasedOnParam() {
+    switch (GetParam()) {
+      case FormDataImporter::kLocalCard:
+        return FormDataImporter::CardGuid(local_card_.guid());
+      case FormDataImporter::kServerCard:
+        // For Server card, the only opt in case is if it had a matching local
+        // card.
+        autofill_client_->GetPersonalDataManager()->AddCreditCard(local_card_);
+        return FormDataImporter::CardGuid(local_card_.guid());
+      case FormDataImporter::kVirtualCard:
+        return FormDataImporter::CardLastFourDigits(
+            base::UTF16ToUTF8(virtual_card_.LastFourDigits()));
+      default:
+        NOTREACHED();
+        return FormDataImporter::CardGuid(local_card_.guid());
+    }
+  }
+
+  std::string GetOtpInSource() {
+    switch (GetParam()) {
+      case FormDataImporter::kLocalCard:
+        return "CheckoutLocalCard";
+      case FormDataImporter::kServerCard:
+        return "CheckoutLocalCard";
+      case FormDataImporter::kVirtualCard:
+        return "CheckoutVirtualCard";
+      default:
+        NOTREACHED();
+        return "Unknown";
+    }
+  }
+
+  void SetUpDeviceAuthenticator(bool success) {
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
+    ON_CALL(*mock_device_authenticator_, AuthenticateWithMessage)
+#elif BUILDFLAG(IS_ANDROID)
+    ON_CALL(*mock_device_authenticator_, Authenticate)
+#endif  // BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
+        .WillByDefault(testing::WithArg<1>(
+            [success](base::OnceCallback<void(bool)> callback) {
+              std::move(callback).Run(success);
+            }));
+  }
 };
 
 // Test that `MandatoryReauthManager::Authenticate()` triggers
@@ -92,6 +176,34 @@ TEST_F(MandatoryReauthManagerTest, AuthenticateWithMessage) {
   EXPECT_FALSE(mandatory_reauth_manager_->GetDeviceAuthenticatorForTesting());
 }
 
+TEST_F(MandatoryReauthManagerTest, GetAuthenticationMethod_Biometric) {
+  ON_CALL(*mock_device_authenticator_, CanAuthenticateWithBiometrics)
+      .WillByDefault(testing::Return(true));
+
+  EXPECT_EQ(mandatory_reauth_manager_->GetAuthenticationMethod(),
+            MandatoryReauthAuthenticationMethod::kBiometric);
+}
+
+TEST_F(MandatoryReauthManagerTest, GetAuthenticationMethod_ScreenLock) {
+  ON_CALL(*mock_device_authenticator_, CanAuthenticateWithBiometrics)
+      .WillByDefault(testing::Return(false));
+  ON_CALL(*mock_device_authenticator_, CanAuthenticateWithBiometricOrScreenLock)
+      .WillByDefault(testing::Return(true));
+
+  EXPECT_EQ(mandatory_reauth_manager_->GetAuthenticationMethod(),
+            MandatoryReauthAuthenticationMethod::kScreenLock);
+}
+
+TEST_F(MandatoryReauthManagerTest, GetAuthenticationMethod_UnsupportedMethod) {
+  ON_CALL(*mock_device_authenticator_, CanAuthenticateWithBiometrics)
+      .WillByDefault(testing::Return(false));
+  ON_CALL(*mock_device_authenticator_, CanAuthenticateWithBiometricOrScreenLock)
+      .WillByDefault(testing::Return(false));
+
+  EXPECT_EQ(mandatory_reauth_manager_->GetAuthenticationMethod(),
+            MandatoryReauthAuthenticationMethod::kUnsupportedMethod);
+}
+
 // Test that the MandatoryReauthManager returns that we should offer re-auth
 // opt-in if the conditions for offering it are all met for local cards.
 TEST_F(MandatoryReauthManagerTest, ShouldOfferOptin_LocalCard) {
@@ -104,6 +216,7 @@ TEST_F(MandatoryReauthManagerTest, ShouldOfferOptin_LocalCard) {
   EXPECT_TRUE(mandatory_reauth_manager_->ShouldOfferOptin(
       local_card_, FormDataImporter::CardGuid(local_card_.guid()),
       FormDataImporter::kLocalCard));
+  ExpectUniqueOfferOptInDecision(MandatoryReauthOfferOptInDecision::kOffered);
 }
 
 // Test that the MandatoryReauthManager returns that we should not offer re-auth
@@ -125,6 +238,8 @@ TEST_F(MandatoryReauthManagerTest,
       FormDataImporter::CardLastFourDigits(
           base::UTF16ToUTF8(local_card_.LastFourDigits())),
       FormDataImporter::kLocalCard));
+  ExpectUniqueOfferOptInDecision(
+      MandatoryReauthOfferOptInDecision::kManuallyFilledLocalCard);
 }
 
 // Test that the MandatoryReauthManager returns that we should not offer re-auth
@@ -145,7 +260,7 @@ TEST_F(MandatoryReauthManagerTest, ShouldOfferOptin_LocalCard_FlagOff) {
 // Test that the MandatoryReauthManager returns that we should not offer re-auth
 // opt-in if the conditions for offering it are all met but we are in off the
 // record mode.
-TEST_F(MandatoryReauthManagerTest, ShouldOfferOptin_OffTheRecord) {
+TEST_F(MandatoryReauthManagerTest, ShouldOfferOptin_Incognito) {
   base::test::ScopedFeatureList feature_list(
       features::kAutofillEnablePaymentsMandatoryReauth);
 
@@ -156,6 +271,8 @@ TEST_F(MandatoryReauthManagerTest, ShouldOfferOptin_OffTheRecord) {
   EXPECT_FALSE(mandatory_reauth_manager_->ShouldOfferOptin(
       local_card_, FormDataImporter::CardGuid(local_card_.guid()),
       FormDataImporter::kLocalCard));
+  ExpectUniqueOfferOptInDecision(
+      MandatoryReauthOfferOptInDecision::kIncognitoMode);
 }
 
 // Test that the MandatoryReauthManager returns that we should offer re-auth
@@ -169,6 +286,7 @@ TEST_F(MandatoryReauthManagerTest, ShouldOfferOptin_VirtualCard) {
       FormDataImporter::CardLastFourDigits(
           base::UTF16ToUTF8(virtual_card_.LastFourDigits())),
       FormDataImporter::kVirtualCard));
+  ExpectUniqueOfferOptInDecision(MandatoryReauthOfferOptInDecision::kOffered);
 }
 
 // Test that the MandatoryReauthManager returns that we should not offer re-auth
@@ -179,16 +297,23 @@ TEST_F(MandatoryReauthManagerTest,
   base::test::ScopedFeatureList feature_list(
       features::kAutofillEnablePaymentsMandatoryReauth);
 
+  // `card_identifier_if_non_interactive_authentication_flow_completed` holds no
+  // card last four digits, which means that the card that was most recently
+  // filled with non-interactive authentication was not a virtual card. This is
+  // possible when a user goes through a non-interactive authentication flow
+  // with a card that is not a virtual card, then types in a virtual card
+  // manually into the form.
   EXPECT_FALSE(mandatory_reauth_manager_->ShouldOfferOptin(
       virtual_card_, FormDataImporter::CardGuid(virtual_card_.guid()),
       FormDataImporter::kVirtualCard));
+  ExpectUniqueOfferOptInDecision(
+      MandatoryReauthOfferOptInDecision::kManuallyFilledVirtualCard);
 }
 
 // Test that the MandatoryReauthManager returns that we should not offer re-auth
 // opt-in if the conditions if the last four digits in the virtual card case do
 // not match.
 TEST_F(MandatoryReauthManagerTest,
-
        ShouldOfferOptin_LastFourDigitsDontMatch_VirtualCard) {
   base::test::ScopedFeatureList feature_list(
       features::kAutofillEnablePaymentsMandatoryReauth);
@@ -196,6 +321,8 @@ TEST_F(MandatoryReauthManagerTest,
   EXPECT_FALSE(mandatory_reauth_manager_->ShouldOfferOptin(
       virtual_card_, FormDataImporter::CardLastFourDigits("1234"),
       FormDataImporter::kVirtualCard));
+  ExpectUniqueOfferOptInDecision(
+      MandatoryReauthOfferOptInDecision::kNoStoredCardForExtractedCard);
 }
 
 // Test that the MandatoryReauthManager returns that we should not offer re-auth
@@ -210,6 +337,8 @@ TEST_F(MandatoryReauthManagerTest, ShouldOfferOptin_NoCardExtractedFromForm) {
   EXPECT_FALSE(mandatory_reauth_manager_->ShouldOfferOptin(
       absl::nullopt, FormDataImporter::CardGuid(local_card_.guid()),
       FormDataImporter::kLocalCard));
+  ExpectUniqueOfferOptInDecision(
+      MandatoryReauthOfferOptInDecision::kNoCardExtractedFromForm);
 }
 
 // Test that the MandatoryReauthManager returns that we should not offer re-auth
@@ -244,20 +373,26 @@ TEST_F(MandatoryReauthManagerTest,
   EXPECT_FALSE(mandatory_reauth_manager_->ShouldOfferOptin(
       local_card_, FormDataImporter::CardGuid(local_card_.guid()),
       FormDataImporter::kLocalCard));
+  ExpectUniqueOfferOptInDecision(
+      MandatoryReauthOfferOptInDecision::kNoSupportedReauthMethod);
 }
 
 // Test that the MandatoryReauthManager returns that we should not offer re-auth
-// opt-in if the conditions for offering re-auth are met, but any card autofills
-// that occurred required interactive authentication.
+// opt-in if the conditions for offering re-auth are met, but any filled card
+// went through interactive authentication.
 TEST_F(MandatoryReauthManagerTest,
-       ShouldOfferOptin_AllCardAutofillsRequiredInteractiveAuthentication) {
+       ShouldOfferOptin_FilledCardWentThroughInteractiveAuthentication) {
   base::test::ScopedFeatureList feature_list(
       features::kAutofillEnablePaymentsMandatoryReauth);
 
   autofill_client_->GetPersonalDataManager()->AddCreditCard(local_card_);
 
+  // 'card_identifier_if_non_interactive_authentication_flow_completed' is not
+  // present, implying interactive authentication happened.
   EXPECT_FALSE(mandatory_reauth_manager_->ShouldOfferOptin(
       local_card_, absl::nullopt, FormDataImporter::kLocalCard));
+  ExpectUniqueOfferOptInDecision(
+      MandatoryReauthOfferOptInDecision::kWentThroughInteractiveAuthentication);
 }
 
 // Test that the MandatoryReauthManager returns that we should offer re-auth
@@ -273,6 +408,7 @@ TEST_F(MandatoryReauthManagerTest,
   EXPECT_TRUE(mandatory_reauth_manager_->ShouldOfferOptin(
       server_card_, FormDataImporter::CardGuid(local_card_.guid()),
       FormDataImporter::kServerCard));
+  ExpectUniqueOfferOptInDecision(MandatoryReauthOfferOptInDecision::kOffered);
 }
 
 // Test that the MandatoryReauthManager returns that we should not offer re-auth
@@ -288,6 +424,29 @@ TEST_F(MandatoryReauthManagerTest,
   EXPECT_FALSE(mandatory_reauth_manager_->ShouldOfferOptin(
       server_card_, FormDataImporter::CardGuid(server_card_.guid()),
       FormDataImporter::kServerCard));
+  ExpectUniqueOfferOptInDecision(
+      MandatoryReauthOfferOptInDecision::kUnsupportedCardType);
+}
+
+// Test that the MandatoryReauthManager returns that we should not offer re-auth
+// opt-in if the card identifier stored has the last four digits instead of a
+// GUID. This can occur if a user encounters non-interactive authentication with
+// a server card autofill, but then deletes the card in the form and manually
+// types in a server card.
+TEST_F(MandatoryReauthManagerTest,
+       ShouldOfferOptin_ServerCard_InvalidCardIdentifier) {
+  base::test::ScopedFeatureList feature_list(
+      features::kAutofillEnablePaymentsMandatoryReauth);
+
+  autofill_client_->GetPersonalDataManager()->AddCreditCard(server_card_);
+
+  EXPECT_FALSE(mandatory_reauth_manager_->ShouldOfferOptin(
+      server_card_,
+      FormDataImporter::CardLastFourDigits(
+          base::UTF16ToUTF8(server_card_.LastFourDigits())),
+      FormDataImporter::kServerCard));
+  ExpectUniqueOfferOptInDecision(
+      MandatoryReauthOfferOptInDecision::kManuallyFilledServerCard);
 }
 
 // Test that the MandatoryReauthManager returns that we should not offer re-auth
@@ -299,8 +458,10 @@ TEST_F(MandatoryReauthManagerTest,
       features::kAutofillEnablePaymentsMandatoryReauth);
 
   EXPECT_FALSE(mandatory_reauth_manager_->ShouldOfferOptin(
-      server_card_, FormDataImporter::CardGuid(server_card_.guid()),
-      FormDataImporter::kServerCard));
+      local_card_, FormDataImporter::CardGuid(test::GetCreditCard2().guid()),
+      FormDataImporter::kLocalCard));
+  ExpectUniqueOfferOptInDecision(
+      MandatoryReauthOfferOptInDecision::kNoStoredCardForExtractedCard);
 }
 
 // Test that starting the re-auth opt-in flow will trigger the re-auth opt-in
@@ -332,6 +493,10 @@ TEST_F(MandatoryReauthManagerTest, OnUserAcceptedOptInPrompt) {
   EXPECT_FALSE(autofill_client_->GetPrefs()->GetBoolean(
       prefs::kAutofillPaymentMethodsMandatoryReauth));
   EXPECT_FALSE(autofill_client_->GetMandatoryReauthOptInPromptWasReshown());
+  // Counter is increased by 1 since device authentication fails during opt in.
+  EXPECT_EQ(autofill_client_->GetPrefs()->GetInteger(
+                prefs::kAutofillPaymentMethodsMandatoryReauthPromoShownCounter),
+            1);
 
 #if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
   ON_CALL(*mock_device_authenticator_, AuthenticateWithMessage)
@@ -352,9 +517,6 @@ TEST_F(MandatoryReauthManagerTest, OnUserAcceptedOptInPrompt) {
   EXPECT_TRUE(autofill_client_->GetPrefs()->GetBoolean(
       prefs::kAutofillPaymentMethodsMandatoryReauth));
   EXPECT_TRUE(autofill_client_->GetMandatoryReauthOptInPromptWasReshown());
-  EXPECT_EQ(autofill_client_->GetPrefs()->GetInteger(
-                prefs::kAutofillPaymentMethodsMandatoryReauthPromoShownCounter),
-            1);
   EXPECT_TRUE(autofill_client_->GetPrefs()->GetUserPrefValue(
       prefs::kAutofillPaymentMethodsMandatoryReauth));
 }
@@ -386,5 +548,93 @@ TEST_F(MandatoryReauthManagerTest, OnUserClosedOptInPrompt) {
                 prefs::kAutofillPaymentMethodsMandatoryReauthPromoShownCounter),
             1);
 }
+
+TEST_P(MandatoryReauthManagerOptInFlowTest, OptInSuccess) {
+  base::test::ScopedFeatureList feature_list(
+      features::kAutofillEnablePaymentsMandatoryReauth);
+  base::HistogramTester histogram_tester;
+
+  // Verify that we shall offer opt in.
+  EXPECT_TRUE(mandatory_reauth_manager_->ShouldOfferOptin(
+      GetCreditCardBasedOnParam(), GetCardIdentifierBasedOnParam(),
+      GetParam()));
+
+  SetUpDeviceAuthenticator(/*success=*/true);
+
+  // Start OptIn flow.
+  static_cast<MandatoryReauthManager*>(mandatory_reauth_manager_.get())
+      ->StartOptInFlow();
+  // Simulate user accepts the opt in prompt.
+  mandatory_reauth_manager_->OnUserAcceptedOptInPrompt();
+
+  EXPECT_TRUE(autofill_client_->GetPrefs()->GetBoolean(
+      prefs::kAutofillPaymentMethodsMandatoryReauth));
+  EXPECT_TRUE(autofill_client_->GetMandatoryReauthOptInPromptWasShown());
+  // Counter is not changed since it's a successful opt in.
+  EXPECT_EQ(autofill_client_->GetPrefs()->GetInteger(
+                prefs::kAutofillPaymentMethodsMandatoryReauthPromoShownCounter),
+            0);
+  EXPECT_TRUE(autofill_client_->GetPrefs()->GetUserPrefValue(
+      prefs::kAutofillPaymentMethodsMandatoryReauth));
+
+  // Ensures the metrics have been logged correctly.
+  histogram_tester.ExpectBucketCount(
+      "Autofill.PaymentMethods.MandatoryReauth.OptChangeEvent." +
+          GetOtpInSource() + ".OptIn",
+      autofill_metrics::MandatoryReauthAuthenticationFlowEvent::kFlowStarted,
+      1);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.PaymentMethods.MandatoryReauth.OptChangeEvent." +
+          GetOtpInSource() + ".OptIn",
+      autofill_metrics::MandatoryReauthAuthenticationFlowEvent::kFlowSucceeded,
+      1);
+}
+
+TEST_P(MandatoryReauthManagerOptInFlowTest, OptInShownButAuthFailure) {
+  base::test::ScopedFeatureList feature_list(
+      features::kAutofillEnablePaymentsMandatoryReauth);
+  base::HistogramTester histogram_tester;
+
+  // Verify that we shall offer opt in.
+  EXPECT_TRUE(mandatory_reauth_manager_->ShouldOfferOptin(
+      GetCreditCardBasedOnParam(), GetCardIdentifierBasedOnParam(),
+      GetParam()));
+
+  // Simulate authentication failure.
+  SetUpDeviceAuthenticator(/*success=*/false);
+
+  // Start OptIn flow.
+  static_cast<MandatoryReauthManager*>(mandatory_reauth_manager_.get())
+      ->StartOptInFlow();
+  // Simulate user accepts the opt in prompt. But the device authentication
+  // fails.
+  mandatory_reauth_manager_->OnUserAcceptedOptInPrompt();
+
+  EXPECT_TRUE(autofill_client_->GetMandatoryReauthOptInPromptWasShown());
+  // Counter is increased by 1 since device authentication fails during opt in.
+  EXPECT_EQ(autofill_client_->GetPrefs()->GetInteger(
+                prefs::kAutofillPaymentMethodsMandatoryReauthPromoShownCounter),
+            1);
+  // The reauth pref is still off since authentication fails.
+  EXPECT_FALSE(autofill_client_->GetPrefs()->GetBoolean(
+      prefs::kAutofillPaymentMethodsMandatoryReauth));
+
+  // Ensures the metrics have been logged correctly.
+  histogram_tester.ExpectBucketCount(
+      "Autofill.PaymentMethods.MandatoryReauth.OptChangeEvent." +
+          GetOtpInSource() + ".OptIn",
+      autofill_metrics::MandatoryReauthAuthenticationFlowEvent::kFlowStarted,
+      1);
+  histogram_tester.ExpectBucketCount(
+      "Autofill.PaymentMethods.MandatoryReauth.OptChangeEvent." +
+          GetOtpInSource() + ".OptIn",
+      autofill_metrics::MandatoryReauthAuthenticationFlowEvent::kFlowFailed, 1);
+}
+
+INSTANTIATE_TEST_SUITE_P(,
+                         MandatoryReauthManagerOptInFlowTest,
+                         testing::Values(FormDataImporter::kLocalCard,
+                                         FormDataImporter::kServerCard,
+                                         FormDataImporter::kVirtualCard));
 
 }  // namespace autofill::payments

@@ -202,8 +202,6 @@ class CORE_EXPORT LayoutMultiColumnSet final : public LayoutBlockFlow {
   void StyleDidChange(StyleDifference, const ComputedStyle* old_style) override;
   void UpdateLayout() override;
 
-  MinMaxSizes ComputeIntrinsicLogicalWidths() const final;
-
   void AttachToFlowThread();
   void DetachFromFlowThread();
 
@@ -243,10 +241,6 @@ class CORE_EXPORT LayoutMultiColumnSet final : public LayoutBlockFlow {
   void InsertedIntoTree() final;
   void WillBeRemovedFromTree() final;
   PhysicalSize Size() const override;
-
-  void ComputeLogicalHeight(LayoutUnit logical_height,
-                            LayoutUnit logical_top,
-                            LogicalExtentComputedValues&) const override;
 
   // This function updates frame_location_, frame_size_, and build
   // fragmentainer_groups_.

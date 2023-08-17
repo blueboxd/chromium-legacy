@@ -656,6 +656,7 @@ void StartupBrowserCreator::LaunchBrowser(
     chrome::startup::IsProcessStartup process_startup,
     chrome::startup::IsFirstRun is_first_run,
     std::unique_ptr<OldLaunchModeRecorder> launch_mode_recorder) {
+  TRACE_EVENT0("ui", "StartupBrowserCreator::LaunchBrowser");
   DCHECK(profile);
 #if BUILDFLAG(IS_WIN)
   DCHECK(!command_line.HasSwitch(credential_provider::kGcpwSigninSwitch));
@@ -701,6 +702,7 @@ void StartupBrowserCreator::LaunchBrowserForLastProfiles(
     chrome::startup::IsFirstRun is_first_run,
     StartupProfileInfo profile_info,
     const Profiles& last_opened_profiles) {
+  TRACE_EVENT0("ui", "StartupBrowserCreator::LaunchBrowserForLastProfiles");
   DCHECK_NE(profile_info.mode, StartupProfileMode::kError);
 
   Profile* profile = profile_info.profile;
@@ -898,9 +900,10 @@ bool StartupBrowserCreator::ShouldLoadProfileWithoutWindow(
     return true;
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  // If Lacros is the primary web browser, do not open a browser window.
-  if (crosapi::browser_util::IsLacrosPrimaryBrowser())
+  // If Lacros is enabled, do not open an Ash browser window.
+  if (crosapi::browser_util::IsLacrosEnabled()) {
     return true;
+  }
 #endif
 
   return false;

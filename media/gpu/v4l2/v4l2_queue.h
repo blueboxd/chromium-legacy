@@ -198,6 +198,8 @@ class MEDIA_GPU_EXPORT V4L2ReadableBuffer
   bool IsLast() const;
   // Returns whether the V4L2_BUF_FLAG_KEYFRAME flag is set for this buffer.
   bool IsKeyframe() const;
+  // Returns whether the V4L2_BUF_FLAG_ERROR flag is set for this buffer.
+  bool IsError() const;
   // Return the timestamp set by the driver on this buffer.
   struct timeval GetTimeStamp() const;
   // Returns the number of planes in this buffer.
@@ -534,12 +536,19 @@ class MEDIA_GPU_EXPORT V4L2Queue
       uint64_t modifier,
       const gfx::Size& size);
 
+  // Sends a V4L2_DEC_CMD_STOP/V4L2_DEC_CMD_START to this queue.
+  [[nodiscard]] bool SendStopCommand();
+  [[nodiscard]] bool SendStartCommand();
+
  private:
   ~V4L2Queue();
 
   // Called when clients request a buffer to be queued.
   [[nodiscard]] bool QueueBuffer(struct v4l2_buffer* v4l2_buffer,
                                  scoped_refptr<VideoFrame> video_frame);
+
+  // Sends a V4L2_DEC_CMD_* to this queue.
+  [[nodiscard]] bool SendCommand(__u32 command);
 
   const enum v4l2_buf_type type_;
   enum v4l2_memory memory_ = V4L2_MEMORY_MMAP;

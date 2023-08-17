@@ -19,14 +19,13 @@
 #import "components/bookmarks/browser/bookmark_model.h"
 #import "components/bookmarks/common/bookmark_pref_names.h"
 #import "components/prefs/pref_service.h"
-#import "components/sessions/core/tab_restore_service.h"
 #import "ios/chrome/browser/bookmarks/local_or_syncable_bookmark_model_factory.h"
 #import "ios/chrome/browser/commerce/shopping_persisted_data_tab_helper.h"
 #import "ios/chrome/browser/default_browser/utils.h"
 #import "ios/chrome/browser/drag_and_drop/drag_item_util.h"
 #import "ios/chrome/browser/main/browser_util.h"
+#import "ios/chrome/browser/policy/policy_util.h"
 #import "ios/chrome/browser/reading_list/reading_list_browser_agent.h"
-#import "ios/chrome/browser/sessions/session_restoration_browser_agent.h"
 #import "ios/chrome/browser/shared/coordinator/scene/scene_state.h"
 #import "ios/chrome/browser/shared/coordinator/scene/scene_state_browser_agent.h"
 #import "ios/chrome/browser/shared/model/browser/browser.h"
@@ -54,12 +53,12 @@
 #import "ios/chrome/browser/ui/menu/action_factory.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_collection_consumer.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_collection_drag_drop_metrics.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_consumer.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_mediator_delegate.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_context_menu/tab_item.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_grid_metrics.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_utils.h"
 #import "ios/chrome/browser/ui/tab_switcher/web_state_tab_switcher_item.h"
-#import "ios/chrome/browser/web_state_list/web_state_list_serialization.h"
 #import "ios/web/public/navigation/navigation_manager.h"
 #import "ios/web/public/web_state.h"
 #import "ios/web/public/web_state_observer_bridge.h"
@@ -70,46 +69,12 @@
 // TODO(crbug.com/1383087): remove once the feature is fully launched.
 #import "ios/web/common/features.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 using PinnedState = WebStateSearchCriteria::PinnedState;
 
 namespace {
 
-// Constructs an array of TabSwitcherItems from a `web_state_list` sorted by
-// last active time.
-NSArray<TabSwitcherItem*>* CreateItemsOrderedByLastActiveTime(
-    WebStateList* web_state_list) {
-  DCHECK(IsTabGridSortedByRecency());
-  NSMutableArray<TabSwitcherItem*>* items = [[NSMutableArray alloc] init];
-  std::vector<web::WebState*> web_states;
-
-  int first_index = web_state_list->GetIndexOfFirstNonPinnedWebState();
-  DCHECK(first_index == 0 || IsPinnedTabsEnabled());
-
-  for (int i = first_index; i < web_state_list->count(); i++) {
-    DCHECK(!web_state_list->IsWebStatePinnedAt(i));
-    web_states.push_back(web_state_list->GetWebStateAt(i));
-  }
-  std::sort(web_states.begin(), web_states.end(),
-            [](web::WebState* a, web::WebState* b) -> bool {
-              return a->GetLastActiveTime() < b->GetLastActiveTime();
-            });
-
-  for (web::WebState* web_state : web_states) {
-    [items
-        addObject:[[WebStateTabSwitcherItem alloc] initWithWebState:web_state]];
-  }
-  return items;
-}
-
-// Constructs an array of TabSwitcherItems from a `web_state_list` sorted by
-// index.
-NSArray<TabSwitcherItem*>* CreateItemsOrderedByIndex(
-    WebStateList* web_state_list) {
-  DCHECK(!IsTabGridSortedByRecency());
+// Constructs an array of TabSwitcherItems from a `web_state_list`.
+NSArray<TabSwitcherItem*>* CreateItems(WebStateList* web_state_list) {
   NSMutableArray<TabSwitcherItem*>* items = [[NSMutableArray alloc] init];
 
   int first_index = web_state_list->GetIndexOfFirstNonPinnedWebState();
@@ -122,14 +87,6 @@ NSArray<TabSwitcherItem*>* CreateItemsOrderedByIndex(
         addObject:[[WebStateTabSwitcherItem alloc] initWithWebState:web_state]];
   }
   return items;
-}
-
-// Constructs an array of TabSwitcherItems from a `web_state_list`.
-NSArray<TabSwitcherItem*>* CreateItems(WebStateList* web_state_list) {
-  if (IsTabGridSortedByRecency()) {
-    return CreateItemsOrderedByLastActiveTime(web_state_list);
-  }
-  return CreateItemsOrderedByIndex(web_state_list);
 }
 
 void LogPriceDropMetrics(web::WebState* web_state) {
@@ -175,17 +132,9 @@ Browser* GetBrowserForTabWithId(BrowserList* browser_list,
 @interface BaseGridMediator () <CRWWebStateObserver,
                                 SnapshotCacheObserver,
                                 WebStateListObserving>
-// The list from the browser.
-@property(nonatomic, assign) WebStateList* webStateList;
 // The browser state from the browser.
 @property(nonatomic, readonly) ChromeBrowserState* browserState;
-// The UI consumer to which updates are made.
-@property(nonatomic, weak) id<TabCollectionConsumer> consumer;
-// The saved session window just before close all tabs is called.
-@property(nonatomic, strong) SessionWindowIOS* closedSessionWindow;
-// The number of tabs in `closedSessionWindow` that are synced by
-// TabRestoreService.
-@property(nonatomic, assign) int syncedClosedTabsCount;
+
 @end
 
 @implementation BaseGridMediator {
@@ -223,11 +172,6 @@ Browser* GetBrowserForTabWithId(BrowserList* browser_list,
   return self;
 }
 
-- (void)prepareToShowTabGrid {
-  DCHECK(IsTabGridSortedByRecency());
-  [self resetToAllItems];
-}
-
 #pragma mark - Public properties
 
 - (void)setBrowser:(Browser*)browser {
@@ -250,6 +194,11 @@ Browser* GetBrowserForTabWithId(BrowserList* browser_list,
       [self populateConsumerItems];
     }
   }
+}
+
+- (void)setConsumer:(id<TabCollectionConsumer>)consumer {
+  _consumer = consumer;
+  [self resetToAllItems];
 }
 
 #pragma mark - WebStateListObserving
@@ -298,13 +247,9 @@ Browser* GetBrowserForTabWithId(BrowserList* browser_list,
         [self changePinnedStateForWebState:selectionOnlyChange
                                                .selected_web_state()
                                    atIndex:status.index];
-        return;
+        break;
       }
-
-      // TODO(crbug.com/1442546): Move the implementation from
-      // webStateList:didChangeActiveWebState:oldWebState:atIndex:reason to
-      // here. Note that here is reachable only when `reason` ==
-      // ActiveWebStateChangeReason::Activated in didChangeActiveWebState:.
+      // The activation is handled after this switch statement.
       break;
     }
     case WebStateListChange::Type::kDetach:
@@ -332,7 +277,7 @@ Browser* GetBrowserForTabWithId(BrowserList* browser_list,
     }
     case WebStateListChange::Type::kReplace: {
       if ([self isPinnedWebState:status.index]) {
-        return;
+        break;
       }
 
       const WebStateListChangeReplace& replaceChange =
@@ -356,7 +301,7 @@ Browser* GetBrowserForTabWithId(BrowserList* browser_list,
                                  WebStateSearchCriteria{
                                      .pinned_state = PinnedState::kNonPinned,
                                  })];
-        return;
+        break;
       }
 
       const WebStateListChangeInsert& insertChange =
@@ -377,26 +322,22 @@ Browser* GetBrowserForTabWithId(BrowserList* browser_list,
       break;
     }
   }
-}
 
-- (void)webStateList:(WebStateList*)webStateList
-    didChangeActiveWebState:(web::WebState*)newWebState
-                oldWebState:(web::WebState*)oldWebState
-                    atIndex:(int)atIndex
-                     reason:(ActiveWebStateChangeReason)reason {
-  DCHECK_EQ(_webStateList, webStateList);
-  if (webStateList->IsBatchInProgress()) {
-    return;
+  if (status.active_web_state_change()) {
+    // If the selected index changes as a result of the last webstate being
+    // detached, the active index will be kInvalidIndex.
+    if (webStateList->active_index() == WebStateList::kInvalidIndex) {
+      [self.consumer selectItemWithID:nil];
+      return;
+    }
+
+    [self.consumer
+        selectItemWithID:status.new_active_web_state->GetStableIdentifier()];
   }
-
-  // If the selected index changes as a result of the last webstate being
-  // detached, atIndex will be kInvalidIndex.
-  if (atIndex == WebStateList::kInvalidIndex) {
-    [self.consumer selectItemWithID:nil];
-    return;
-  }
-
-  [self.consumer selectItemWithID:newWebState->GetStableIdentifier()];
+  // Update toolbar's buttons as the number of tabs changed so the options
+  // changed (ex: No tabs selection when the grid is empty).
+  [self configureToolbarsButtons];
+  [self notifyConsumerAboutChanges];
 }
 
 - (void)webStateListWillBeginBatchOperation:(WebStateList*)webStateList {
@@ -409,6 +350,10 @@ Browser* GetBrowserForTabWithId(BrowserList* browser_list,
 
   [self addWebStateObservations];
   [self populateConsumerItems];
+  // Update toolbar's buttons as the number of tabs have probably changed so the
+  // options changed (ex: "Undo" may be available now).
+  [self configureToolbarsButtons];
+  [self notifyConsumerAboutChanges];
 }
 
 #pragma mark - CRWWebStateObserver
@@ -460,6 +405,12 @@ Browser* GetBrowserForTabWithId(BrowserList* browser_list,
 #pragma mark - GridCommands
 
 - (void)addNewItem {
+  if (self.browserState) {
+    // Make sure that adding a new item is allowed by policy.
+    CHECK(IsAddNewTabAllowedByPolicy(self.browserState->GetPrefs(),
+                                     self.browserState->IsOffTheRecord()));
+  }
+
   NSUInteger itemIndex =
       [self itemIndexFromWebStateListIndex:self.webStateList->count()];
   [self insertNewItemAtIndex:itemIndex];
@@ -653,81 +604,19 @@ Browser* GetBrowserForTabWithId(BrowserList* browser_list,
 }
 
 - (void)closeAllItems {
-  RecordTabGridCloseTabsCount(self.webStateList->count());
-  if (!self.browserState->IsOffTheRecord()) {
-    base::RecordAction(
-        base::UserMetricsAction("MobileTabGridCloseAllRegularTabs"));
-  } else {
-    base::RecordAction(
-        base::UserMetricsAction("MobileTabGridCloseAllIncognitoTabs"));
-  }
-  // This is a no-op if `webStateList` is already empty.
-  self.webStateList->CloseAllWebStates(WebStateList::CLOSE_USER_ACTION);
-  SnapshotBrowserAgent::FromBrowser(self.browser)->RemoveAllSnapshots();
+  NOTREACHED_NORETURN() << "Should be implemented in a subclass.";
 }
 
 - (void)saveAndCloseAllItems {
-  RecordTabGridCloseTabsCount(self.webStateList->count());
-  base::RecordAction(
-      base::UserMetricsAction("MobileTabGridCloseAllRegularTabs"));
-
-  if (self.webStateList->empty()) {
-    return;
-  }
-
-  int old_size =
-      self.tabRestoreService ? self.tabRestoreService->entries().size() : 0;
-
-  if (IsPinnedTabsEnabled()) {
-    BOOL hasPinnedWebStatesOnly =
-        self.webStateList->GetIndexOfFirstNonPinnedWebState() ==
-        self.webStateList->count();
-
-    if (hasPinnedWebStatesOnly) {
-      return;
-    }
-
-    if (!web::features::UseSessionSerializationOptimizations()) {
-      self.closedSessionWindow = SerializeWebStateList(self.webStateList);
-    }
-    self.webStateList->CloseAllNonPinnedWebStates(
-        WebStateList::CLOSE_USER_ACTION);
-  } else {
-    if (!web::features::UseSessionSerializationOptimizations()) {
-      self.closedSessionWindow = SerializeWebStateList(self.webStateList);
-    }
-    self.webStateList->CloseAllWebStates(WebStateList::CLOSE_USER_ACTION);
-  }
-
-  self.syncedClosedTabsCount =
-      self.tabRestoreService
-          ? self.tabRestoreService->entries().size() - old_size
-          : 0;
+  NOTREACHED_NORETURN() << "Should be implemented in a subclass.";
 }
 
 - (void)undoCloseAllItems {
-  base::RecordAction(
-      base::UserMetricsAction("MobileTabGridUndoCloseAllRegularTabs"));
-  if (!self.closedSessionWindow) {
-    return;
-  }
-  if (!web::features::UseSessionSerializationOptimizations()) {
-    SessionRestorationBrowserAgent::FromBrowser(self.browser)
-        ->RestoreSessionWindow(self.closedSessionWindow,
-                               SessionRestorationScope::kRegularOnly);
-    self.closedSessionWindow = nil;
-  }
-  [self removeEntriesFromTabRestoreService];
-  self.syncedClosedTabsCount = 0;
+  NOTREACHED_NORETURN() << "Should be implemented in a subclass.";
 }
 
 - (void)discardSavedClosedItems {
-  if (!self.closedSessionWindow) {
-    return;
-  }
-  self.syncedClosedTabsCount = 0;
-  self.closedSessionWindow = nil;
-  SnapshotBrowserAgent::FromBrowser(self.browser)->RemoveAllSnapshots();
+  NOTREACHED_NORETURN() << "Should be implemented in a subclass.";
 }
 
 - (void)
@@ -1045,24 +934,6 @@ Browser* GetBrowserForTabWithId(BrowserList* browser_list,
   }
 }
 
-// Removes `self.syncedClosedTabsCount` most recent entries from the
-// TabRestoreService.
-- (void)removeEntriesFromTabRestoreService {
-  if (!self.tabRestoreService) {
-    return;
-  }
-  std::vector<SessionID> identifiers;
-  auto iter = self.tabRestoreService->entries().begin();
-  auto end = self.tabRestoreService->entries().end();
-  for (int i = 0; i < self.syncedClosedTabsCount && iter != end; i++) {
-    identifiers.push_back(iter->get()->id);
-    iter++;
-  }
-  for (const SessionID sessionID : identifiers) {
-    self.tabRestoreService->RemoveTabEntryById(sessionID);
-  }
-}
-
 // Returns a SnapshotCache for the current browser.
 - (SnapshotCache*)snapshotCache {
   if (!self.browser) {
@@ -1184,6 +1055,14 @@ Browser* GetBrowserForTabWithId(BrowserList* browser_list,
     return YES;
   }
   return NO;
+}
+
+- (void)configureToolbarsButtons {
+  NOTREACHED_NORETURN() << "Should be implemented in a subclass.";
+}
+
+- (void)notifyConsumerAboutChanges {
+  NOTREACHED_NORETURN() << "Should be implemented in a subclass.";
 }
 
 #pragma mark - TabGridPageMutator

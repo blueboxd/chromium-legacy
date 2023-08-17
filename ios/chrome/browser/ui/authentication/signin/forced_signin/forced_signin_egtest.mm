@@ -45,10 +45,6 @@
 #import "net/test/embedded_test_server/http_response.h"
 #import "ui/base/l10n/l10n_util.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 using base::test::ios::kWaitForPageLoadTimeout;
 using chrome_test_util::ButtonWithAccessibilityLabelId;
 using chrome_test_util::GoogleSyncSettingsButton;
@@ -68,19 +64,9 @@ id<GREYMatcher> GetContinueButtonWithIdentityMatcher(
   NSString* buttonTitle = l10n_util::GetNSStringF(
       IDS_IOS_FIRST_RUN_SIGNIN_CONTINUE_AS,
       base::SysNSStringToUTF16(fakeIdentity.userGivenName));
+  id<GREYMatcher> matcher = grey_allOf(grey_accessibilityLabel(buttonTitle),
+                                       grey_sufficientlyVisible(), nil);
 
-  // TODO(crbug.com/1418068): Simplify after minimum version required is >=
-  // iOS 15.
-  id<GREYMatcher> matcher = nil;
-  if (base::ios::IsRunningOnIOS15OrLater() &&
-      [ChromeEarlGrey isUIButtonConfigurationEnabled]) {
-    matcher = grey_allOf(grey_kindOfClassName(@"UILabel"),
-                         grey_accessibilityLabel(buttonTitle),
-                         grey_sufficientlyVisible(), nil);
-  } else {
-    matcher = grey_allOf(grey_accessibilityLabel(buttonTitle),
-                         grey_sufficientlyVisible(), nil);
-  }
   return matcher;
 }
 
@@ -1269,6 +1255,20 @@ void OpenGoogleServicesSettings() {
   [[EarlGrey selectElementWithMatcher:grey_text(l10n_util::GetNSString(
                                           IDS_IOS_SETTING_ON))]
       assertWithMatcher:grey_sufficientlyVisible()];
+}
+
+// Tests that the Forced SignIn screen cannot be dismissed by the user swiping
+// down on the view, as some other signin screens can be dismissed.
+- (void)testSignInScreenCannotBeDismissedBySwipe {
+  // Verify the signin screen appears.
+  [[EarlGrey selectElementWithMatcher:GetForcedSigninScreenMatcher()]
+      assertWithMatcher:grey_notNil()];
+  // Swipe to dismiss the signin screen.
+  [[EarlGrey selectElementWithMatcher:GetForcedSigninScreenMatcher()]
+      performAction:grey_swipeFastInDirection(kGREYDirectionDown)];
+  // Verify that the signin screen is still there.
+  [[EarlGrey selectElementWithMatcher:GetForcedSigninScreenMatcher()]
+      assertWithMatcher:grey_notNil()];
 }
 
 @end

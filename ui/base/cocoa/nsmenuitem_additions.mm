@@ -12,10 +12,6 @@
 #include "base/mac/scoped_cftyperef.h"
 #include "ui/events/keycodes/keyboard_code_conversion_mac.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 namespace ui::cocoa {
 
 namespace {
@@ -280,6 +276,18 @@ NSUInteger ModifierMaskForKeyEvent(NSEvent* event) {
 
   return [eventString isEqualToString:self.keyEquivalent] &&
          eventModifiers == self.keyEquivalentModifierMask;
+}
+
+- (void)cr_setKeyEquivalent:(NSString*)aString
+               modifierMask:(NSEventModifierFlags)mask {
+  DCHECK(aString);
+  self.keyEquivalent = aString;
+  self.keyEquivalentModifierMask = mask;
+}
+
+- (void)cr_clearKeyEquivalent {
+  self.keyEquivalent = @"";
+  self.keyEquivalentModifierMask = 0;
 }
 
 @end

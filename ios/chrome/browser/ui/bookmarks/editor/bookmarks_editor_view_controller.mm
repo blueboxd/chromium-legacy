@@ -16,7 +16,6 @@
 #import "base/metrics/user_metrics_action.h"
 #import "base/strings/sys_string_conversions.h"
 #import "components/bookmarks/browser/bookmark_model.h"
-#import "ios/chrome/browser/shared/model/browser/browser.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/shared/public/features/system_flags.h"
 #import "ios/chrome/browser/shared/ui/symbols/chrome_icon.h"
@@ -39,10 +38,6 @@
 #import "ui/base/l10n/l10n_util_mac.h"
 #import "ui/gfx/image/image.h"
 #import "url/gurl.h"
-
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
 
 using bookmarks::BookmarkModel;
 using bookmarks::BookmarkNode;
@@ -75,8 +70,6 @@ const CGFloat kEstimatedTableSectionFooterHeight = 40;
   NSString* _folderName;
 }
 
-@property(nonatomic, assign) Browser* browser;
-
 // Done button item in navigation bar.
 @property(nonatomic, strong) UIBarButtonItem* doneItem;
 
@@ -106,7 +99,6 @@ const CGFloat kEstimatedTableSectionFooterHeight = 40;
 
 @synthesize delegate = _delegate;
 @synthesize displayingValidURL = _displayingValidURL;
-@synthesize browser = _browser;
 @synthesize cancelItem = _cancelItem;
 @synthesize doneItem = _doneItem;
 @synthesize nameItem = _nameItem;

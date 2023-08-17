@@ -36,6 +36,7 @@ import './screens/common/oobe_reset.js';
 import './screens/common/os_install.js';
 import './screens/common/os_trial.js';
 import './screens/common/parental_handoff.js';
+import './screens/common/password_selection.js';
 import './screens/common/pin_setup.js';
 import './screens/common/recommend_apps.js';
 import './screens/common/saml_confirm_password.js';
@@ -45,7 +46,6 @@ import './screens/common/sync_consent.js';
 import './screens/common/theme_selection.js';
 import './screens/common/touchpad_scroll.js';
 import './screens/common/tpm_error.js';
-import './screens/common/user_creation.js';
 import './screens/common/wrong_hwid.js';
 // SCREENS USED DURING THE LOGIN FLOW
 import './screens/login/arc_vm_data_migration.js';
@@ -129,6 +129,11 @@ export const commonScreensList = [
   },
   {tag: 'os-trial-element', id: 'os-trial', condition: 'isOsInstallAllowed'},
   {tag: 'parental-handoff-element', id: 'parental-handoff'},
+  {
+    tag: 'password-selection-element',
+    id: 'password-selection',
+    condition: 'isPasswordSelectionEnabledInOobe',
+  },
   {tag: 'pin-setup-element', id: 'pin-setup'},
   {tag: 'recommend-apps-element', id: 'recommend-apps'},
   {tag: 'saml-confirm-password-element', id: 'saml-confirm-password'},
@@ -142,7 +147,6 @@ export const commonScreensList = [
     condition: 'isTouchpadScrollEnabled',
   },
   {tag: 'tpm-error-message-element', id: 'tpm-error-message'},
-  {tag: 'user-creation-element', id: 'user-creation'},
   {tag: 'wrong-hwid-element', id: 'wrong-hwid'},
 ];
 

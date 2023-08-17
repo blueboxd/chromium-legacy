@@ -7,47 +7,24 @@
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
-#include "base/task/thread_pool.h"
 #include "chrome/browser/ash/app_list/search/files/file_result.h"
 #include "chrome/browser/ash/app_list/search/local_image_search/annotation_storage.h"
-#include "chrome/browser/ash/app_list/search/local_image_search/image_annotation_worker.h"
-#include "chrome/browser/ash/app_list/search/search_features.h"
-#include "chrome/browser/ash/file_manager/path_util.h"
+#include "chrome/browser/ash/app_list/search/local_image_search/local_image_search_service.h"
+#include "chrome/browser/ash/app_list/search/local_image_search/local_image_search_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 
 namespace app_list {
 namespace {
 
 constexpr char kFileSearchSchema[] = "file_search://";
-constexpr char kHistogramTag[] = "AnnotationStorage";
-constexpr size_t kMinQueryLength = 3u;
-
-base::FilePath ConstructPathToAnnotationDb(const Profile* const profile) {
-  return profile->GetPath()
-      .AppendASCII("annotation_storage")
-      .AppendASCII("annotation.db");
-}
+constexpr size_t kMaxNumResults = 3;
 
 }  // namespace
 
 LocalImageSearchProvider::LocalImageSearchProvider(Profile* profile)
-    : profile_(profile),
-      thumbnail_loader_(profile),
-      root_path_(file_manager::util::GetMyFilesFolderForProfile(profile)),
-      annotation_storage_(
-          base::ThreadPool::CreateSequencedTaskRunner(
-              {base::MayBlock(), base::TaskPriority::USER_BLOCKING,
-               base::TaskShutdownBehavior::BLOCK_SHUTDOWN}),
-          ConstructPathToAnnotationDb(profile_),
-          kHistogramTag,
-          std::make_unique<ImageAnnotationWorker>(
-              root_path_,
-              search_features::IsLauncherImageSearchOcrEnabled(),
-              search_features::IsLauncherImageSearchIcaEnabled())) {
+    : profile_(profile), thumbnail_loader_(profile) {
   DCHECK(profile_);
-  DCHECK(!root_path_.empty());
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  annotation_storage_.AsyncCall(&AnnotationStorage::Initialize);
 }
 
 LocalImageSearchProvider::~LocalImageSearchProvider() = default;
@@ -58,18 +35,18 @@ ash::AppListSearchResultType LocalImageSearchProvider::ResultType() const {
 
 void LocalImageSearchProvider::Start(const std::u16string& query) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (query.size() < kMinQueryLength) {
-    // Ignore short queries, which too noisy to be meaningful.
+  if (IsQueryTooShort(query)) {
+    // Ignore short queries, which are too noisy to be meaningful.
     return;
   }
 
   query_start_time_ = base::TimeTicks::Now();
   last_query_ = query;
 
-  annotation_storage_.AsyncCall(&AnnotationStorage::Search)
-      .WithArgs(query)
-      .Then(base::BindOnce(&LocalImageSearchProvider::OnSearchComplete,
-                           weak_factory_.GetWeakPtr()));
+  LocalImageSearchServiceFactory::GetForBrowserContext(profile_)->Search(
+      query, kMaxNumResults,
+      base::BindOnce(&LocalImageSearchProvider::OnSearchComplete,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void LocalImageSearchProvider::StopQuery() {

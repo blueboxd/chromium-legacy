@@ -36,7 +36,7 @@ namespace ash {
 
 namespace {
 
-using TestVariantsParam = std::tuple<bool, bool, bool>;
+using TestVariantsParam = std::tuple<bool, bool, bool, bool>;
 
 bool IsRtl(TestVariantsParam param) {
   return std::get<0>(param);
@@ -50,6 +50,10 @@ bool IsTabletMode(TestVariantsParam param) {
   return std::get<2>(param);
 }
 
+bool JellyEnabled(TestVariantsParam param) {
+  return std::get<3>(param);
+}
+
 std::string GenerateTestSuffix(
     const testing::TestParamInfo<TestVariantsParam>& info) {
   std::string suffix;
@@ -58,6 +62,10 @@ std::string GenerateTestSuffix(
   suffix.append(IsDarkMode(info.param) ? "dark" : "light");
   suffix.append("_");
   suffix.append(IsTabletMode(info.param) ? "tablet" : "clamshell");
+  // Only add a suffix is Jelly is disabled so this is easier to delete.
+  if (!JellyEnabled(info.param)) {
+    suffix.append("PreJelly");
+  }
   return suffix;
 }
 
@@ -180,7 +188,7 @@ TEST_P(AppListViewPixelRTLTest, AnswerCardSearchResult) {
   UseFixedPlaceholderTextAndHideCursor(test_helper->GetSearchBoxView());
   EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentsOnPrimaryScreen(
       "bubble_launcher_answer_card_search_results",
-      /*revision_number=*/JellyEnabled() ? 3 : 2,
+      /*revision_number=*/JellyEnabled() ? 6 : 4,
       GetAppListTestHelper()->GetBubbleView(),
       GetPrimaryShelf()->navigation_widget()));
 }
@@ -203,7 +211,7 @@ TEST_P(AppListViewPixelRTLTest, URLSearchResult) {
   UseFixedPlaceholderTextAndHideCursor(test_helper->GetSearchBoxView());
   EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentsOnPrimaryScreen(
       "bubble_launcher_url_search_results",
-      /*revision_number=*/JellyEnabled() ? 3 : 2,
+      /*revision_number=*/JellyEnabled() ? 6 : 4,
       GetAppListTestHelper()->GetBubbleView(),
       GetPrimaryShelf()->navigation_widget()));
 }
@@ -218,7 +226,7 @@ TEST_P(AppListViewPixelRTLTest, Basics) {
       GetAppListTestHelper()->GetSearchBoxView());
   EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentsOnPrimaryScreen(
       "bubble_launcher_basics",
-      /*revision_number=*/JellyEnabled() ? 3 : 2,
+      /*revision_number=*/JellyEnabled() ? 6 : 4,
       GetAppListTestHelper()->GetBubbleView(),
       GetPrimaryShelf()->navigation_widget()));
 }
@@ -241,7 +249,7 @@ TEST_P(AppListViewPixelRTLTest, GradientZone) {
 
   EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentsOnPrimaryScreen(
       "bubble_launcher_gradient_zone",
-      /*revision_number=*/JellyEnabled() ? 3 : 2,
+      /*revision_number=*/JellyEnabled() ? 6 : 4,
       GetAppListTestHelper()->GetBubbleView(),
       GetPrimaryShelf()->navigation_widget()));
 }
@@ -258,6 +266,9 @@ class AppListViewLauncherSearchIphTest
   }
 
   void SetUp() override {
+    scoped_features_.InitWithFeatureState(chromeos::features::kJelly,
+                                          JellyEnabled(GetParam()));
+
     AssistantAshTestBase::SetUp();
 
     DarkLightModeController::Get()->SetDarkModeEnabledForTest(
@@ -272,11 +283,15 @@ class AppListViewLauncherSearchIphTest
         true);
     GetAppListTestHelper()->GetSearchBoxView()->SetIsIphAllowed(true);
   }
+
+ private:
+  base::test::ScopedFeatureList scoped_features_;
 };
 
 INSTANTIATE_TEST_SUITE_P(RTL,
                          AppListViewLauncherSearchIphTest,
                          testing::Combine(testing::Bool(),
+                                          testing::Bool(),
                                           testing::Bool(),
                                           testing::Bool()),
                          &GenerateTestSuffix);
@@ -305,17 +320,20 @@ TEST_P(AppListViewLauncherSearchIphTest, DISABLED_Basic) {
 
 class AppListViewTabletPixelTest
     : public AshTestBase,
-      public testing::WithParamInterface</*tablet_mode=*/bool> {
+      public testing::WithParamInterface<
+          std::tuple</*jelly_enabled=*/bool, /*rtl=*/bool>> {
  public:
   // AshTestBase:
   absl::optional<pixel_test::InitParams> CreatePixelTestInitParams()
       const override {
     pixel_test::InitParams init_params;
-    init_params.under_rtl = GetParam();
+    init_params.under_rtl = IsRtl();
     return init_params;
   }
 
   void SetUp() override {
+    scoped_features_.InitWithFeatureState(chromeos::features::kJelly,
+                                          IsJellyEnabled());
     AshTestBase::SetUp();
 
     Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
@@ -326,15 +344,26 @@ class AppListViewTabletPixelTest
         /*num_apps=*/32, AppListTestHelper::IconColorType::kAlternativeColor,
         /*set_name=*/true);
   }
+
+ protected:
+  bool IsJellyEnabled() const { return std::get<0>(GetParam()); }
+
+  bool IsRtl() const { return std::get<1>(GetParam()); }
+
+ private:
+  base::test::ScopedFeatureList scoped_features_;
 };
 
-INSTANTIATE_TEST_SUITE_P(RTL, AppListViewTabletPixelTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(RTL,
+                         AppListViewTabletPixelTest,
+                         testing::Combine(testing::Bool(), testing::Bool()));
 
 // Verifies the default layout for tablet mode launcher.
 TEST_P(AppListViewTabletPixelTest, Basic) {
   EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentsOnPrimaryScreen(
       "tablet_launcher_basics",
-      /*revision_number=*/1, GetAppListTestHelper()->GetAppsContainerView()));
+      /*revision_number=*/IsJellyEnabled() ? 3 : 2,
+      GetAppListTestHelper()->GetAppsContainerView()));
 }
 
 // Verifies that the top gradient zone of the tablet mode launcher works
@@ -355,7 +384,8 @@ TEST_P(AppListViewTabletPixelTest, TopGradientZone) {
 
   EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentsOnPrimaryScreen(
       "tablet_launcher_top_gradient_zone",
-      /*revision_number=*/1, GetAppListTestHelper()->GetAppsContainerView()));
+      /*revision_number=*/IsJellyEnabled() ? 3 : 2,
+      GetAppListTestHelper()->GetAppsContainerView()));
 }
 
 // Verifies that the bottom gradient zone of the tablet mode launcher works
@@ -376,7 +406,8 @@ TEST_P(AppListViewTabletPixelTest, BottomGradientZone) {
 
   EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentsOnPrimaryScreen(
       "tablet_launcher_bottom_gradient_zone",
-      /*revision_number=*/1, GetAppListTestHelper()->GetAppsContainerView()));
+      /*revision_number=*/IsJellyEnabled() ? 3 : 2,
+      GetAppListTestHelper()->GetAppsContainerView()));
 }
 
 TEST_P(AppListViewTabletPixelTest, SearchBoxViewActive) {
@@ -385,7 +416,8 @@ TEST_P(AppListViewTabletPixelTest, SearchBoxViewActive) {
   search_box_view->SetSearchBoxActive(true, ui::EventType::ET_UNKNOWN);
 
   EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentsOnPrimaryScreen(
-      "search_box_view_active", /*revision_number=*/0, search_box_view));
+      "search_box_view_active",
+      /*revision_number=*/IsJellyEnabled() ? 2 : 1, search_box_view));
 }
 
 class AppListViewAssistantZeroStateTest
@@ -400,8 +432,9 @@ class AppListViewAssistantZeroStateTest
   }
 
   void SetUp() override {
-    base::test::ScopedFeatureList scoped_feature_list(
-        assistant::features::kEnableAssistantLearnMore);
+    scoped_features_.InitWithFeatureStates(
+        {{assistant::features::kEnableAssistantLearnMore, true},
+         {chromeos::features::kJelly, JellyEnabled(GetParam())}});
 
     AssistantAshTestBase::SetUp();
     SetNumberOfSessionsWhereOnboardingShown(
@@ -412,13 +445,17 @@ class AppListViewAssistantZeroStateTest
         IsTabletMode(GetParam()));
     ShowAssistantUi();
   }
+
+ private:
+  base::test::ScopedFeatureList scoped_features_;
 };
 
 INSTANTIATE_TEST_SUITE_P(RTL,
                          AppListViewAssistantZeroStateTest,
                          testing::Combine(/*IsRtl=*/testing::Bool(),
                                           /*IsDarkMode=*/testing::Bool(),
-                                          /*IsTabletMode=*/testing::Bool()),
+                                          /*IsTabletMode=*/testing::Bool(),
+                                          /*JellyEnabled=*/testing::Bool()),
                          &GenerateTestSuffix);
 
 TEST_P(AppListViewAssistantZeroStateTest, Basic) {
@@ -426,7 +463,8 @@ TEST_P(AppListViewAssistantZeroStateTest, Basic) {
   base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentsOnPrimaryScreen(
-      "app_list_view_assistant_zero_state", /*revision_number=*/1,
+      "app_list_view_assistant_zero_state",
+      /*revision_number=*/JellyEnabled(GetParam()) ? 3 : 2,
       page_view()->GetViewByID(AssistantViewID::kZeroStateView)));
 }
 

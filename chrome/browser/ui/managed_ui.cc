@@ -60,6 +60,19 @@ namespace chrome {
 
 namespace {
 
+enum ManagementStringType : size_t {
+  BROWSER_MANAGED = 0,
+  BROWSER_MANAGED_BY = 1,
+  BROWSER_PROFILE_SAME_MANAGED_BY = 2,
+  BROWSER_PROFILE_DIFFERENT_MANAGED_BY = 3,
+  BROWSER_MANAGED_PROFILE_MANAGED_BY = 4,
+  PROFILE_MANAGED_BY = 5,
+  SUPERVISED = 6,
+  NOT_MANAGED = 7
+};
+
+const char* g_device_manager_for_testing = nullptr;
+
 const policy::CloudPolicyManager* GetUserCloudPolicyManager(Profile* profile) {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   return profile->GetUserCloudPolicyManagerAsh();
@@ -95,15 +108,6 @@ bool ShouldDisplayManagedByParentUi(Profile* profile) {
   return false;
 #else
 
-#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
-  // The EnableManagedByParentUiOnDesktop flag depends on
-  // EnableSupervisionOnDesktopAndIOS.
-  CHECK(
-      base::FeatureList::IsEnabled(
-          supervised_user::kEnableSupervisionOnDesktopAndIOS) ||
-      !base::FeatureList::IsEnabled(supervised_user::kEnableManagedByParentUi));
-#endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
-
   const auto* const supervised_user_service =
       SupervisedUserServiceFactory::GetForProfile(profile);
   return supervised_user_service &&
@@ -113,7 +117,65 @@ bool ShouldDisplayManagedByParentUi(Profile* profile) {
 #endif  // !BUILDFLAG(ENABLE_SUPERVISED_USERS) || BUILDFLAG(IS_CHROMEOS)
 }
 
+ManagementStringType GetManagementStringType(Profile* profile) {
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+  if (!enterprise_util::IsBrowserManaged(profile) &&
+      ShouldDisplayManagedByParentUi(profile)) {
+    return SUPERVISED;
+  }
+#endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
+
+  absl::optional<std::string> account_manager =
+      GetAccountManagerIdentity(profile);
+  absl::optional<std::string> device_manager = GetDeviceManagerIdentity();
+  auto* management_service =
+      policy::ManagementServiceFactory::GetForProfile(profile);
+  bool account_managed = management_service->IsAccountManaged();
+  bool device_managed = management_service->IsBrowserManaged();
+  bool known_device_manager = device_manager && !device_manager->empty();
+  bool known_account_manager = account_manager && !account_manager->empty();
+
+  // TODO (crbug://1227786) Add a PROFILE_MANAGED case, and ensure the following
+  // tests are setup so that we do not have a managed account without an account
+  // manager:  WebKioskTest.CloseSettingWindowIfOnlyOpen,
+  // WebKioskTest.NotExitIfCloseSettingsWindow, WebKioskTest.OpenA11ySettings.
+  if (account_managed && !known_account_manager) {
+    account_managed = false;
+  }
+
+  if (!account_managed && !device_managed) {
+    return NOT_MANAGED;
+  }
+
+  if (!device_managed) {
+    return known_account_manager ? PROFILE_MANAGED_BY : BROWSER_MANAGED;
+  }
+
+  if (!account_managed) {
+    return known_device_manager ? BROWSER_MANAGED_BY : BROWSER_MANAGED;
+  }
+
+  CHECK(known_account_manager);
+  if (known_device_manager) {
+    return *account_manager == *device_manager
+               ? BROWSER_PROFILE_SAME_MANAGED_BY
+               : BROWSER_PROFILE_DIFFERENT_MANAGED_BY;
+  }
+
+  return BROWSER_MANAGED_PROFILE_MANAGED_BY;
+}
+
 }  // namespace
+
+ScopedDeviceManagerForTesting::ScopedDeviceManagerForTesting(
+    const char* manager) {
+  previous_manager_ = g_device_manager_for_testing;
+  g_device_manager_for_testing = manager;
+}
+
+ScopedDeviceManagerForTesting::~ScopedDeviceManagerForTesting() {
+  g_device_manager_for_testing = previous_manager_;
+}
 
 bool ShouldDisplayManagedUi(Profile* profile) {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -163,26 +225,33 @@ const gfx::VectorIcon& GetManagedUiIcon(Profile* profile) {
 
 std::u16string GetManagedUiMenuItemLabel(Profile* profile) {
   CHECK(ShouldDisplayManagedUi(profile));
-  absl::optional<std::string> manager = GetAccountManagerIdentity(profile);
-  if (!manager &&
-      base::FeatureList::IsEnabled(features::kFlexOrgManagementDisclosure)) {
-    manager = GetDeviceManagerIdentity();
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+  if (!enterprise_util::IsBrowserManaged(profile)) {
+    CHECK(ShouldDisplayManagedByParentUi(profile));
   }
-
-  if (enterprise_util::IsBrowserManaged(profile)) {
-    int string_id = IDS_MANAGED;
-    std::vector<std::u16string> replacements;
-
-    if (manager && !manager->empty()) {
-      string_id = IDS_MANAGED_BY;
-      replacements.push_back(base::UTF8ToUTF16(*manager));
-    }
-
-    return l10n_util::GetStringFUTF16(string_id, replacements, nullptr);
+#endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
+  absl::optional<std::string> account_manager =
+      GetAccountManagerIdentity(profile);
+  absl::optional<std::string> device_manager = GetDeviceManagerIdentity();
+  switch (GetManagementStringType(profile)) {
+    case BROWSER_MANAGED:
+      return l10n_util::GetStringUTF16(IDS_MANAGED);
+    case BROWSER_MANAGED_BY:
+    case BROWSER_PROFILE_SAME_MANAGED_BY:
+      return l10n_util::GetStringFUTF16(IDS_MANAGED_BY,
+                                        base::UTF8ToUTF16(*device_manager));
+    case BROWSER_PROFILE_DIFFERENT_MANAGED_BY:
+    case BROWSER_MANAGED_PROFILE_MANAGED_BY:
+      return l10n_util::GetStringUTF16(IDS_BROWSER_PROFILE_MANAGED);
+    case PROFILE_MANAGED_BY:
+      return l10n_util::GetStringFUTF16(IDS_PROFILE_MANAGED_BY,
+                                        base::UTF8ToUTF16(*account_manager));
+    case SUPERVISED:
+      return l10n_util::GetStringUTF16(IDS_MANAGED_BY_PARENT);
+    case NOT_MANAGED:
+      return std::u16string();
   }
-
-  CHECK(ShouldDisplayManagedByParentUi(profile));
-  return l10n_util::GetStringUTF16(IDS_MANAGED_BY_PARENT);
+  return std::u16string();
 }
 
 std::string GetManagedUiWebUIIcon(Profile* profile) {
@@ -202,34 +271,53 @@ std::string GetManagedUiWebUIIcon(Profile* profile) {
 }
 
 std::u16string GetManagedUiWebUILabel(Profile* profile) {
-  absl::optional<std::string> manager = GetAccountManagerIdentity(profile);
-  if (!manager &&
-      base::FeatureList::IsEnabled(features::kFlexOrgManagementDisclosure)) {
-    manager = GetDeviceManagerIdentity();
-  }
+  absl::optional<std::string> account_manager =
+      GetAccountManagerIdentity(profile);
+  absl::optional<std::string> device_manager = GetDeviceManagerIdentity();
 
-  if (enterprise_util::IsBrowserManaged(profile)) {
-    int string_id = IDS_MANAGED_WITH_HYPERLINK;
-    std::vector<std::u16string> replacements = {
-        base::UTF8ToUTF16(chrome::kChromeUIManagementURL)};
-    if (manager && !manager->empty()) {
-      string_id = IDS_MANAGED_BY_WITH_HYPERLINK;
-      replacements.push_back(base::UTF8ToUTF16(*manager));
-    }
-
-    return l10n_util::GetStringFUTF16(string_id, replacements, nullptr);
-  }
-
+  switch (GetManagementStringType(profile)) {
+    case BROWSER_MANAGED:
+      return l10n_util::GetStringFUTF16(
+          IDS_MANAGED_WITH_HYPERLINK,
+          base::UTF8ToUTF16(chrome::kChromeUIManagementURL));
+    case BROWSER_MANAGED_BY:
+      return l10n_util::GetStringFUTF16(
+          IDS_MANAGED_BY_WITH_HYPERLINK,
+          base::UTF8ToUTF16(chrome::kChromeUIManagementURL),
+          base::UTF8ToUTF16(*device_manager));
+    case BROWSER_PROFILE_SAME_MANAGED_BY:
+      return l10n_util::GetStringFUTF16(
+          IDS_BROWSER_AND_PROFILE_SAME_MANAGED_BY_WITH_HYPERLINK,
+          base::UTF8ToUTF16(chrome::kChromeUIManagementURL),
+          base::UTF8ToUTF16(*device_manager));
+    case BROWSER_PROFILE_DIFFERENT_MANAGED_BY:
+      return l10n_util::GetStringFUTF16(
+          IDS_BROWSER_AND_PROFILE_DIFFERENT_MANAGED_BY_WITH_HYPERLINK,
+          base::UTF8ToUTF16(chrome::kChromeUIManagementURL),
+          base::UTF8ToUTF16(*device_manager),
+          base::UTF8ToUTF16(*account_manager));
+    case BROWSER_MANAGED_PROFILE_MANAGED_BY:
+      return l10n_util::GetStringFUTF16(
+          IDS_BROWSER_MANAGED_AND_PROFILE_MANAGED_BY_WITH_HYPERLINK,
+          base::UTF8ToUTF16(chrome::kChromeUIManagementURL),
+          base::UTF8ToUTF16(*account_manager));
+    case PROFILE_MANAGED_BY:
+      return l10n_util::GetStringFUTF16(
+          IDS_PROFILE_MANAGED_BY_WITH_HYPERLINK,
+          base::UTF8ToUTF16(chrome::kChromeUIManagementURL),
+          base::UTF8ToUTF16(*account_manager));
+    case SUPERVISED:
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
-  if (ShouldDisplayManagedByParentUi(profile)) {
-    std::vector<std::u16string> replacements = {base::UTF8ToUTF16(
-        supervised_user::kManagedByParentUiMoreInfoUrl.Get())};
-    return l10n_util::GetStringFUTF16(IDS_MANAGED_BY_PARENT_WITH_HYPERLINK,
-                                      replacements, nullptr);
-  }
+      return l10n_util::GetStringFUTF16(
+          IDS_MANAGED_BY_PARENT_WITH_HYPERLINK,
+          base::UTF8ToUTF16(
+              supervised_user::kManagedByParentUiMoreInfoUrl.Get()));
+#else
+      break;
 #endif
-
-  // This method can be called even if we shouldn't display the managed UI.
+    case NOT_MANAGED:
+      return std::u16string();
+  }
   return std::u16string();
 }
 
@@ -275,9 +363,49 @@ std::u16string GetDeviceManagedUiWebUILabel() {
 
   return l10n_util::GetStringFUTF16(string_id, replacements, nullptr);
 }
+#else
+std::u16string GetManagementPageSubtitle(Profile* profile) {
+  absl::optional<std::string> account_manager =
+      GetAccountManagerIdentity(profile);
+  absl::optional<std::string> device_manager = GetDeviceManagerIdentity();
+
+  switch (GetManagementStringType(profile)) {
+    case BROWSER_MANAGED:
+      return l10n_util::GetStringUTF16(IDS_MANAGEMENT_SUBTITLE);
+    case BROWSER_MANAGED_BY:
+      return l10n_util::GetStringFUTF16(IDS_MANAGEMENT_SUBTITLE_MANAGED_BY,
+                                        base::UTF8ToUTF16(*device_manager));
+    case BROWSER_PROFILE_SAME_MANAGED_BY:
+      return l10n_util::GetStringFUTF16(
+          IDS_MANAGEMENT_SUBTITLE_BROWSER_AND_PROFILE_SAME_MANAGED_BY,
+          base::UTF8ToUTF16(*device_manager));
+    case BROWSER_PROFILE_DIFFERENT_MANAGED_BY:
+      return l10n_util::GetStringFUTF16(
+          IDS_MANAGEMENT_SUBTITLE_BROWSER_AND_PROFILE_DIFFERENT_MANAGED_BY,
+          base::UTF8ToUTF16(*device_manager),
+          base::UTF8ToUTF16(*account_manager));
+    case BROWSER_MANAGED_PROFILE_MANAGED_BY:
+      return l10n_util::GetStringFUTF16(
+          IDS_MANAGEMENT_SUBTITLE_BROWSER_MANAGED_AND_PROFILE_MANAGED_BY,
+          base::UTF8ToUTF16(*account_manager));
+    case PROFILE_MANAGED_BY:
+      return l10n_util::GetStringFUTF16(
+          IDS_MANAGEMENT_SUBTITLE_PROFILE_MANAGED_BY,
+          base::UTF8ToUTF16(*account_manager));
+    case SUPERVISED:
+      return l10n_util::GetStringUTF16(IDS_MANAGED_BY_PARENT);
+    case NOT_MANAGED:
+      return l10n_util::GetStringUTF16(IDS_MANAGEMENT_NOT_MANAGED_SUBTITLE);
+  }
+  return std::u16string();
+}
 #endif
 
 absl::optional<std::string> GetDeviceManagerIdentity() {
+  if (g_device_manager_for_testing) {
+    return g_device_manager_for_testing;
+  }
+
   if (!policy::ManagementServiceFactory::GetForPlatform()->IsManaged()) {
     return absl::nullopt;
   }

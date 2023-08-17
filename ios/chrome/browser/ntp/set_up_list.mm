@@ -7,6 +7,9 @@
 #import "components/password_manager/core/browser/password_manager_util.h"
 #import "components/prefs/ios/pref_observer_bridge.h"
 #import "components/prefs/pref_service.h"
+#import "components/sync/base/user_selectable_type.h"
+#import "components/sync/service/sync_service.h"
+#import "components/sync/service/sync_user_settings.h"
 #import "ios/chrome/browser/default_browser/utils.h"
 #import "ios/chrome/browser/ntp/set_up_list_delegate.h"
 #import "ios/chrome/browser/ntp/set_up_list_item.h"
@@ -14,10 +17,6 @@
 #import "ios/chrome/browser/ntp/set_up_list_metrics.h"
 #import "ios/chrome/browser/ntp/set_up_list_prefs.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
-
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
 
 using set_up_list_prefs::SetUpListItemState;
 
@@ -91,6 +90,15 @@ bool IsSigninEnabled(AuthenticationService* auth_service) {
 
 }  // namespace
 
+bool HasManagedSyncType(syncer::SyncService* sync_service) {
+  for (syncer::UserSelectableType type : syncer::UserSelectableTypeSet::All()) {
+    if (sync_service->GetUserSettings()->IsTypeManagedByPolicy(type)) {
+      return true;
+    }
+  }
+  return false;
+}
+
 @interface SetUpList () <PrefObserverDelegate>
 @end
 
@@ -105,13 +113,17 @@ bool IsSigninEnabled(AuthenticationService* auth_service) {
 
 + (instancetype)buildFromPrefs:(PrefService*)prefs
                     localState:(PrefService*)localState
+                   syncService:(syncer::SyncService*)syncService
          authenticationService:(AuthenticationService*)authService {
   if (set_up_list_prefs::IsSetUpListDisabled(localState)) {
     return nil;
   }
   NSMutableArray<SetUpListItem*>* items =
       [[NSMutableArray<SetUpListItem*> alloc] init];
-  if (IsSigninEnabled(authService)) {
+  if (IsSigninEnabled(authService) &&
+      !syncService->HasDisableReason(
+          syncer::SyncService::DISABLE_REASON_ENTERPRISE_POLICY) &&
+      !HasManagedSyncType(syncService)) {
     AddItemIfNotNil(items, BuildItem(SetUpListItemType::kSignInSync, prefs,
                                      localState, authService));
   }

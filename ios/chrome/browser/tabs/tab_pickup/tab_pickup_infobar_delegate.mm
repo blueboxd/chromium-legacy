@@ -16,6 +16,8 @@
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_opener.h"
+#import "ios/chrome/browser/shared/public/commands/application_commands.h"
+#import "ios/chrome/browser/shared/public/commands/command_dispatcher.h"
 #import "ios/chrome/browser/sync/session_sync_service_factory.h"
 #import "ios/chrome/browser/synced_sessions/distant_session.h"
 #import "ios/chrome/browser/synced_sessions/distant_tab.h"
@@ -25,15 +27,12 @@
 #import "ios/chrome/common/ui/favicon/favicon_constants.h"
 #import "ios/web/public/web_state.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 TabPickupInfobarDelegate::TabPickupInfobarDelegate(
     Browser* browser,
     const synced_sessions::DistantSession* session)
     : browser_(browser) {
-  DCHECK(IsTabPickupEnabled());
+  CHECK(IsTabPickupEnabled());
+  CHECK(!IsTabPickupDisabledByUser());
 
   favicon_loader_ = IOSChromeFaviconLoaderFactory::GetForBrowserState(
       browser_->GetBrowserState());
@@ -94,6 +93,12 @@ void TabPickupInfobarDelegate::OpenDistantTab() {
         (WebStateList::INSERT_FORCE_INDEX | WebStateList::INSERT_ACTIVATE),
         WebStateOpener());
   }
+}
+
+void TabPickupInfobarDelegate::OpenTabPickupSettings() {
+  id<ApplicationCommands> application_handler =
+      HandlerForProtocol(browser_->GetCommandDispatcher(), ApplicationCommands);
+  [application_handler showTabPickupSettings];
 }
 
 #pragma mark - ConfirmInfoBarDelegate methods

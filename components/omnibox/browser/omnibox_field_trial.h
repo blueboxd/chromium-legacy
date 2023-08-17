@@ -570,6 +570,7 @@ extern const base::FeatureParam<bool> kDomainSuggestionsAlternativeScoring;
 // on the main thread. After that, it can be called from any thread.
 struct MLConfig {
   MLConfig();
+  MLConfig(const MLConfig&);
 
   // If true, logs Omnibox URL scoring signals to OmniboxEventProto.
   // Equivalent to omnibox::kLogUrlScoringSignals.
@@ -587,6 +588,9 @@ struct MLConfig {
   // If true, runs batch ML scoring of URL candidates.
   bool ml_batch_url_scoring{false};
 
+  // If true, runs sync batch ML scoring of URL candidates.
+  bool ml_sync_batch_url_scoring{false};
+
   // If true, runs the ML scoring model but does not assign new relevance scores
   // to the URL suggestions and does not rerank them.
   // Equivalent to OmniboxFieldTrial::kMlUrlScoringCounterfactual.
@@ -594,8 +598,9 @@ struct MLConfig {
 
   // If true, increases the number of candidates the URL autocomplete providers
   // pass to the controller beyond `provider_max_matches`.
-  // Equivalent to OmniboxFieldTrial::kMlUrlScoringIncreaseNumCandidates.
-  bool ml_url_scoring_increase_num_candidates{false};
+  // `ml_url_scoring_max_matches_by_provider` does nothing if this is true.
+  // Equivalent to OmniboxFieldTrial::kMlUrlScoringUnlimitedNumCandidates.
+  bool ml_url_scoring_unlimited_num_candidates{false};
 
   // If true, the ML model only re-scores and re-ranks the final set of matches
   // that would be shown in the legacy scoring system. The full legacy system
@@ -612,6 +617,13 @@ struct MLConfig {
   // If true, creates Omnibox autocompete URL scoring model.
   // Equivalent to omnibox::kUrlScoringModel.
   bool url_scoring_model{false};
+
+  // Sets the maximum matches provided by each provider.  See
+  // `OmniboxFieldTrial::GetProviderMaxMatches()` for more info. When ML Scoring
+  // is enabled, this param takes precedence over
+  // `OmniboxFieldTrial::kUIMaxAutocompleteMatchesByProviderParam`. This param
+  // has no effect if `ml_url_scoring_unlimited_num_candidates` is true.
+  std::string ml_url_scoring_max_matches_by_provider;
 };
 
 // A testing utility class for overriding the current configuration returned
@@ -649,8 +661,10 @@ bool AreScoringSignalsAnnotatorsEnabled();
 // URL suggestions and reranks them.
 bool IsMlUrlScoringEnabled();
 
-// Whether batch ML url scoring is enabled.
-bool IsMlBatchUrlScoringEnabled();
+// If enabled, runs synchronous batch ML scoring to assign new relevance scores
+// to the URL suggestions received in the sync pass of autocomplete and reranks
+// them.
+bool IsMlSyncBatchUrlScoringEnabled();
 
 // If true, runs the ML scoring model but does not assign new relevance scores
 // to URL suggestions.
@@ -658,7 +672,7 @@ bool IsMlUrlScoringCounterfactual();
 
 // If true, increases the number of candidates the url autocomplete providers
 // pass to the controller.
-bool IsMlUrlScoringIncreaseNumCandidatesEnabled();
+bool IsMlUrlScoringUnlimitedNumCandidatesEnabled();
 
 // Whether the URL scoring model is enabled.
 bool IsUrlScoringModelEnabled();

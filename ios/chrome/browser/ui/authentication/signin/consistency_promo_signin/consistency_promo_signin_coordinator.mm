@@ -31,10 +31,6 @@
 #import "ios/chrome/grit/ios_strings.h"
 #import "ui/base/l10n/l10n_util.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 @interface ConsistencyPromoSigninCoordinator () <
     ConsistencyAccountChooserCoordinatorDelegate,
     ConsistencyDefaultAccountCoordinatorDelegate,
@@ -262,6 +258,7 @@
       base::RecordAction(
           base::UserMetricsAction("Signin_BottomSheet_ClosedBySignIn"));
       break;
+    case SigninCoordinatorResultDisabled:
     case SigninCoordinatorResultInterrupted:
       base::RecordAction(
           base::UserMetricsAction("Signin_BottomSheet_ClosedByInterrupt"));
@@ -489,6 +486,7 @@
   [self.alertCoordinator
       addItemWithTitle:l10n_util::GetNSString(IDS_IOS_SIGN_IN_DISMISS)
                 action:^() {
+                  [weakSelf.alertCoordinator stop];
                   weakSelf.alertCoordinator = nil;
                 }
                  style:UIAlertActionStyleCancel];

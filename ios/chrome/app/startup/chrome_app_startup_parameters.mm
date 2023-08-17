@@ -12,6 +12,7 @@
 #import "base/metrics/user_metrics_action.h"
 #import "base/strings/stringprintf.h"
 #import "base/strings/sys_string_conversions.h"
+#import "ios/chrome/app/startup/app_launch_metrics.h"
 #import "ios/chrome/browser/default_browser/utils.h"
 #import "ios/chrome/browser/shared/model/url/chrome_url_constants.h"
 #import "ios/chrome/common/app_group/app_group_constants.h"
@@ -19,10 +20,6 @@
 #import "ios/components/webui/web_ui_url_constants.h"
 #import "net/base/mac/url_conversions.h"
 #import "url/gurl.h"
-
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
 
 using base::UmaHistogramEnumeration;
 
@@ -58,6 +55,9 @@ NSString* const kWidgetKitHostLockscreenLauncherWidget =
     @"lockscreen-launcher-widget";
 // Host used to identify the Chrome Shortcuts widget.
 NSString* const kWidgetKitHostShortcutsWidget = @"shortcuts-widget";
+// Host used to identify the Search Passwords widget.
+NSString* const kWidgetKitHostSearchPasswordsWidget =
+    @"search-passwords-widget";
 // Path for search action.
 NSString* const kWidgetKitActionSearch = @"/search";
 // Path for incognito action.
@@ -72,6 +72,8 @@ NSString* const kWidgetKitActionLens = @"/lens";
 NSString* const kWidgetKitActionGame = @"/game";
 // Path for open URL action.
 NSString* const kWidgetKitActionOpenURL = @"/open";
+// Path for search passwords action.
+NSString* const kWidgetKitActionSearchPasswords = @"/search-passwords";
 
 const CGFloat kAppGroupTriggersVoiceSearchTimeout = 15.0;
 
@@ -135,7 +137,8 @@ enum class WidgetKitExtensionAction {
   ACTION_QUICK_ACTIONS_LENS = 10,
   ACTION_SHORTCUTS_SEARCH = 11,
   ACTION_SHORTCUTS_OPEN = 12,
-  kMaxValue = ACTION_SHORTCUTS_OPEN,
+  ACTION_SEARCH_PASSWORDS_WIDGET_SEARCH_PASSWORDS = 13,
+  kMaxValue = ACTION_SEARCH_PASSWORDS_WIDGET_SEARCH_PASSWORDS,
 };
 
 // Histogram helper to log the UMA IOS.WidgetKit.Action histogram.
@@ -215,6 +218,8 @@ TabOpeningPostOpeningAction XCallbackPoaToPostOpeningAction(
                               START_ACTION_WIDGET_KIT_COMMAND,
                               MOBILE_SESSION_START_ACTION_COUNT);
 
+    base::UmaHistogramEnumeration(kAppLaunchSource, AppLaunchSource::WIDGET);
+
     const char* command = "";
     NSString* sourceWidget = completeURL.host;
 
@@ -230,6 +235,8 @@ TabOpeningPostOpeningAction XCallbackPoaToPostOpeningAction(
       command = app_group::kChromeAppGroupLensCommand;
     } else if ([completeURL.path isEqual:kWidgetKitActionOpenURL]) {
       command = app_group::kChromeAppGroupOpenURLCommand;
+    } else if ([completeURL.path isEqual:kWidgetKitActionSearchPasswords]) {
+      command = app_group::kChromeAppGroupSearchPasswordsCommand;
     } else if ([completeURL.path isEqualToString:kWidgetKitActionGame]) {
       if ([sourceWidget isEqualToString:kWidgetKitHostDinoGameWidget]) {
         LogWidgetKitAction(WidgetKitExtensionAction::ACTION_DINO_WIDGET_GAME);
@@ -263,6 +270,8 @@ TabOpeningPostOpeningAction XCallbackPoaToPostOpeningAction(
                        fromSecureSourceApplication:sourceWidget];
 
   } else if (IsXCallbackURL(gurl)) {
+    base::UmaHistogramEnumeration(kAppLaunchSource,
+                                  AppLaunchSource::X_CALLBACK);
     // TODO(crbug.com/228098): Temporary fix.
     NSString* action = [completeURL path];
     // Currently only "open" and "extension-command" are supported.
@@ -350,6 +359,8 @@ TabOpeningPostOpeningAction XCallbackPoaToPostOpeningAction(
       // `url` scheme ends with an 's'.
       BOOL useHttps = gurl.scheme()[gurl.scheme().length() - 1] == 's';
       action = useHttps ? START_ACTION_OPEN_HTTPS : START_ACTION_OPEN_HTTP;
+      base::UmaHistogramEnumeration(kAppLaunchSource,
+                                    AppLaunchSource::LINK_OPENED_FROM_APP);
       base::RecordAction(base::UserMetricsAction("MobileFirstPartyViewIntent"));
 
       GURL::Replacements replace_scheme;
@@ -370,6 +381,8 @@ TabOpeningPostOpeningAction XCallbackPoaToPostOpeningAction(
 
     if (action == START_ACTION_OPEN_HTTP_FROM_OS ||
         action == START_ACTION_OPEN_HTTPS_FROM_OS) {
+      base::UmaHistogramEnumeration(kAppLaunchSource,
+                                    AppLaunchSource::LINK_OPENED_FROM_OS);
       LogOpenHTTPURLFromExternalURL();
     }
 
@@ -597,6 +610,19 @@ TabOpeningPostOpeningAction XCallbackPoaToPostOpeningAction(
     action = ACTION_NEW_INCOGNITO_SEARCH;
   }
 
+  if ([command isEqualToString:
+                   base::SysUTF8ToNSString(
+                       app_group::kChromeAppGroupSearchPasswordsCommand)]) {
+    params = [[ChromeAppStartupParameters alloc]
+        initWithExternalURL:GURL()
+          declaredSourceApp:appId
+            secureSourceApp:secureSourceApp
+                completeURL:url
+            applicationMode:ApplicationModeForTabOpening::NORMAL];
+    [params setPostOpeningAction:SEARCH_PASSWORDS];
+    action = ACTION_NO_ACTION;
+  }
+
   if (action != ACTION_NO_ACTION) {
     // An external action that opened Chrome (i.e. GrowthKit link open, open
     // Search, search clipboard content) is activity that should indicate a user
@@ -688,6 +714,10 @@ TabOpeningPostOpeningAction XCallbackPoaToPostOpeningAction(
         NOTREACHED();
         break;
     }
+  }
+  if ([secureSourceApp isEqualToString:kWidgetKitHostSearchPasswordsWidget]) {
+    LogWidgetKitAction(WidgetKitExtensionAction::
+                           ACTION_SEARCH_PASSWORDS_WIDGET_SEARCH_PASSWORDS);
   }
   return params;
 }

@@ -74,6 +74,7 @@
 #include "third_party/skia/include/gpu/GpuTypes.h"
 #include "third_party/skia/include/gpu/GrTypes.h"
 #include "third_party/skia/include/gpu/ganesh/SkSurfaceGanesh.h"
+#include "third_party/skia/include/gpu/ganesh/gl/GrGLBackendSurface.h"
 #include "third_party/skia/include/gpu/graphite/Context.h"
 #include "third_party/skia/include/private/chromium/GrDeferredDisplayList.h"
 #include "third_party/skia/include/private/chromium/GrPromiseImageTexture.h"
@@ -1772,7 +1773,7 @@ void SkiaOutputSurfaceImplOnGpu::BeginAccessImages(
       for (GrPromiseImageTexture* promise_texture :
            context->promise_image_textures()) {
         GrBackendTexture backend_texture = promise_texture->backendTexture();
-        backend_texture.glTextureParametersModified();
+        GrBackendTextures::GLTextureParametersModified(&backend_texture);
       }
     }
   }
@@ -2094,12 +2095,21 @@ bool SkiaOutputSurfaceImplOnGpu::InitializeForDawn() {
           GetDidSwapBuffersCompleteCallback());
     }
 #elif BUILDFLAG(IS_WIN)
-    auto output_device = std::make_unique<SkiaOutputDeviceDawn>(
-        context_state_, gfx::SurfaceOrigin::kTopLeft,
-        shared_gpu_deps_->memory_tracker(),
-        GetDidSwapBuffersCompleteCallback());
-    AddChildWindowToBrowser(output_device->GetChildSurfaceHandle());
-    output_device_ = std::move(output_device);
+    presenter_ = dependency_->CreatePresenter(weak_ptr_factory_.GetWeakPtr(),
+                                              gl::GLSurfaceFormat());
+    if (presenter_) {
+      output_device_ = std::make_unique<SkiaOutputDeviceDCompPresenter>(
+          shared_image_representation_factory_.get(), context_state_.get(),
+          presenter_, feature_info_, shared_gpu_deps_->memory_tracker(),
+          GetDidSwapBuffersCompleteCallback());
+    } else {
+      auto output_device = std::make_unique<SkiaOutputDeviceDawn>(
+          context_state_, gfx::SurfaceOrigin::kTopLeft,
+          shared_gpu_deps_->memory_tracker(),
+          GetDidSwapBuffersCompleteCallback());
+      AddChildWindowToBrowser(output_device->GetChildSurfaceHandle());
+      output_device_ = std::move(output_device);
+    }
 #elif BUILDFLAG(IS_APPLE)
     presenter_ = dependency_->CreatePresenter(weak_ptr_factory_.GetWeakPtr(),
                                               gl::GLSurfaceFormat());
@@ -2561,7 +2571,7 @@ void SkiaOutputSurfaceImplOnGpu::CreateSolidColorSharedImage(
                                           ->GetPreferredFormatForSolidColor();
   if (preferred_solid_color_format)
     solid_color_image_format_ =
-        GetSharedImageFormat(preferred_solid_color_format.value());
+        GetSinglePlaneSharedImageFormat(preferred_solid_color_format.value());
 #endif
   DCHECK(solid_color_image_format_ == SinglePlaneFormat::kRGBA_8888 ||
          solid_color_image_format_ == SinglePlaneFormat::kBGRA_8888);

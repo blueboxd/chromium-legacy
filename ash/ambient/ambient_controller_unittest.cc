@@ -164,6 +164,17 @@ class AmbientControllerTest : public AmbientAshTestBase {
     return pref_change_registrar->IsObserved(pref_name);
   }
 
+  bool CurrentThemeUsesPhotos() {
+    switch (GetCurrentUiSettings().theme()) {
+      case AmbientTheme::kSlideshow:
+      case AmbientTheme::kFeelTheBreeze:
+      case AmbientTheme::kFloatOnBy:
+        return true;
+      case AmbientTheme::kVideo:
+        return false;
+    }
+  }
+
   bool AreSessionSpecificObserversBound() {
     auto* ctrl = ambient_controller();
 
@@ -173,8 +184,11 @@ class AmbientControllerTest : public AmbientAshTestBase {
     bool power_manager_bound =
         ctrl->power_manager_client_observer_.IsObserving();
     bool fingerprint_bound = ctrl->fingerprint_observer_receiver_.is_bound();
-    EXPECT_EQ(ui_model_bound, backend_model_bound)
-        << "observers should all have the same state";
+    // The backend model is only necessary for themes that use photos from it.
+    if (CurrentThemeUsesPhotos()) {
+      EXPECT_EQ(ui_model_bound, backend_model_bound)
+          << "observers should all have the same state";
+    }
     EXPECT_EQ(ui_model_bound, power_manager_bound)
         << "observers should all have the same state";
     EXPECT_EQ(ui_model_bound, fingerprint_bound)
@@ -310,11 +324,6 @@ TEST_P(AmbientControllerTestForAnyUiSettings, CloseAmbientScreenUponUnlock) {
 
 TEST_P(AmbientControllerTestForAnyUiSettings,
        CloseAmbientScreenUponUnlockSecondaryUser) {
-  // Simulate the login screen.
-  ClearLogin();
-  SimulateUserLogin(kUser1);
-  SetAmbientModeEnabled(true);
-
   LockScreen();
   FastForwardByLockScreenInactivityTimeout();
   FastForwardTiny();
@@ -808,6 +817,7 @@ TEST_F(AmbientControllerTest, ShouldResetLockScreenInactivityTimerOnEvent) {
   // `AmbientUiVisibility::kShouldShow` but widget does not exist to receive
   // events yet.
   SetPhotoDownloadDelay(base::Seconds(1));
+  SetAmbientTheme(AmbientTheme::kSlideshow);
   LockScreen();
   FastForwardByLockScreenInactivityTimeout();
   FastForwardTiny();
@@ -860,7 +870,7 @@ TEST_P(AmbientControllerTestForAnyUiSettings,
   CloseAmbientScreen();
 
   // When ambient is shown, OnUserActivity() should ignore key event.
-  ambient_controller()->SetUiVisibilityShown();
+  ambient_controller()->SetUiVisibilityShouldShow();
   EXPECT_TRUE(ambient_controller()->ShouldShowAmbientUi());
 
   // General key press will exit ambient mode.
@@ -988,6 +998,7 @@ TEST_F(AmbientControllerTest, ShouldShowAmbientScreenWhenScreenIsDimmed) {
 }
 
 TEST_F(AmbientControllerTest, HandlesPreviousImageFailuresWithLockScreen) {
+  SetAmbientTheme(AmbientTheme::kSlideshow);
   // Simulate failures to download FIFE urls. Ambient mode should close and
   // remember the old failure.
   SetDownloadPhotoData("");
@@ -1011,6 +1022,7 @@ TEST_F(AmbientControllerTest, HandlesPreviousImageFailuresWithLockScreen) {
 }
 
 TEST_F(AmbientControllerTest, HandlesPreviousImageFailuresWithDimmedScreen) {
+  SetAmbientTheme(AmbientTheme::kSlideshow);
   GetSessionControllerClient()->SetShouldLockScreenAutomatically(false);
   SetPowerStateCharging();
 
@@ -1146,6 +1158,7 @@ TEST_F(AmbientControllerTest,
 }
 
 TEST_F(AmbientControllerTest, HandlesPhotoDownloadOutage) {
+  SetAmbientTheme(AmbientTheme::kSlideshow);
   SetDownloadPhotoData("");
 
   LockScreen();
@@ -1286,7 +1299,7 @@ TEST_F(AmbientControllerTest, RestartsAmbientAfterSuspend) {
   EXPECT_FALSE(ambient_controller()->ShouldShowAmbientUi());
 
   // This call should be blocked by prior |SuspendImminent| until |SuspendDone|.
-  ambient_controller()->SetUiVisibilityShown();
+  ambient_controller()->SetUiVisibilityShouldShow();
   EXPECT_FALSE(ambient_controller()->ShouldShowAmbientUi());
 
   SimulateSystemResumeAndWait();
@@ -1589,15 +1602,26 @@ TEST_F(AmbientControllerTest, MaybeDismissUIOnMouseMove) {
 }
 
 TEST_F(AmbientControllerTest, ShouldDismissScreenSaverPreviewOnTouch) {
+  SetAmbientTheme(AmbientTheme::kSlideshow);
+
+  // Case 1: Launch slide show, but it hasn't started rendering yet because it's
+  // downloading photos. User hits touchpad, and that should close the ambient
+  // session even though it never started rendering.
   ambient_controller()->SetUiVisibilityPreview();
-  EXPECT_TRUE(ambient_controller()->ShouldShowAmbientUi());
+  ASSERT_TRUE(ambient_controller()->ShouldShowAmbientUi());
+  ASSERT_FALSE(GetContainerView());
 
   GetEventGenerator()->PressTouch();
+  GetEventGenerator()->ReleaseTouch();
   EXPECT_FALSE(ambient_controller()->ShouldShowAmbientUi());
 
-  ambient_controller()->SetUiVisibilityPreview();
-  EXPECT_TRUE(ambient_controller()->ShouldShowAmbientUi());
+  // Case 2: Launch slide show and wait for it to starts rendering. User hits
+  // touchpad, and that should close the ambient session.
+  SetAmbientPreviewAndWaitForWidgets();
+  ASSERT_TRUE(ambient_controller()->ShouldShowAmbientUi());
+  ASSERT_TRUE(GetContainerView());
 
+  GetEventGenerator()->PressTouch();
   GetEventGenerator()->ReleaseTouch();
   EXPECT_FALSE(ambient_controller()->ShouldShowAmbientUi());
 }
@@ -1719,6 +1743,7 @@ TEST_F(AmbientControllerForManagedScreensaverTest,
 
 TEST_F(AmbientControllerForManagedScreensaverTest,
        DisablingManagedAmbientModeFallsbackToUserAmbientModeIfEnabled) {
+  SetAmbientTheme(AmbientTheme::kSlideshow);
   SetAmbientModeEnabled(true);
   SetAmbientModeManagedScreensaverEnabled(true);
   managed_policy_handler()->SetImagesForTesting(image_file_paths_);
@@ -1744,9 +1769,7 @@ TEST_F(AmbientControllerForManagedScreensaverTest,
 TEST_F(AmbientControllerForManagedScreensaverTest,
        LaunchingManagedAmbientModeAfterAmbientModeWorksAsExpected) {
   SetAmbientModeEnabled(/*enabled=*/true);
-  ASSERT_FALSE(ambient_controller()->ambient_ui_launcher());
   SetAmbientModeManagedScreensaverEnabled(/*enabled=*/true);
-  ASSERT_TRUE(ambient_controller()->ambient_ui_launcher());
 
   managed_policy_handler()->SetImagesForTesting(image_file_paths_);
 

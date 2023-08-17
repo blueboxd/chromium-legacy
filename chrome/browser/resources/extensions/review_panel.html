@@ -19,6 +19,7 @@
    * in https://crrev.com/c/4579629 once its in. */
   .header-with-icon iron-icon {
     border-radius: 50%;
+    flex-shrink: 0;
     height: var(--cr-icon-size);
     padding: 6px;
     width: var(--cr-icon-size);
@@ -41,6 +42,7 @@
   }
 
   .header-icon {
+    align-items: center;
     background-color: var(--google-blue-50);
     fill: var(--google-blue-600);
   }
@@ -48,6 +50,7 @@
   @media (prefers-color-scheme: dark) {
     .header-icon {
       background-color: var(--google-blue-300);
+      fill: var(--review-panel-icon-color);
     }
   }
 
@@ -89,6 +92,7 @@
   }
 
   .cr-row.first {
+    padding-top: 5px;
     padding-left: 0px;
   }
 </style>
@@ -124,11 +128,13 @@
         </div>
       </div>
       <cr-icon-button iron-icon="cr:delete"
-          actionable on-click="onRemoveExtensionClick_">
+          actionable on-click="onRemoveExtensionClick_"
+          aria-label="[[getRemoveButtonA11yLabel_(item.name)]]">
       </cr-icon-button>
       <cr-icon-button class="icon-more-vert header-aligned-button"
         id="makeExceptionMenuButton"
         on-click="onMakeExceptionMenuClick_"
+        aria-label="[[getOptionMenuA11yLabel_(item.name)]]"
         focus-type="makeExceptionMenuButton"></cr-icon-button>
     </div>
   </template>

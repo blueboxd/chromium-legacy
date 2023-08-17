@@ -8,13 +8,13 @@
 #include <memory>
 #include <vector>
 
+#include "base/functional/callback.h"
 #include "third_party/blink/renderer/platform/allow_discouraged_type.h"
 #include "third_party/blink/renderer/platform/image-decoders/image_decoder.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "third_party/libavif/src/include/avif/avif.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
 #include "ui/gfx/color_space.h"
-#include "ui/gfx/color_transform.h"
 #include "ui/gfx/geometry/point.h"
 
 namespace blink {
@@ -58,7 +58,7 @@ class PLATFORM_EXPORT AVIFImageDecoder final : public ImageDecoder {
   // (ftyp) that supports the brand 'avif' or 'avis'.
   static bool MatchesAVIFSignature(const FastSharedBufferReader& fast_reader);
 
-  gfx::ColorTransform* GetColorTransformForTesting();
+  gfx::ColorSpace GetColorSpaceForTesting() const;
 
  private:
   // If the AVIF image has a clean aperture ('clap') property, what kind of
@@ -104,9 +104,6 @@ class PLATFORM_EXPORT AVIFImageDecoder final : public ImageDecoder {
   // frame is available in decoded_image_.
   avifResult DecodeImage(wtf_size_t index);
 
-  // Updates or creates |color_transform_| for YUV-to-RGB conversion.
-  void UpdateColorTransform(const gfx::ColorSpace& frame_cs, int bit_depth);
-
   // Crops |decoded_image_|.
   void CropDecodedImage();
 
@@ -144,6 +141,9 @@ class PLATFORM_EXPORT AVIFImageDecoder final : public ImageDecoder {
   avifPixelFormat avif_yuv_format_ = AVIF_PIXEL_FORMAT_NONE;
   wtf_size_t decoded_frame_count_ = 0;
   SkYUVColorSpace yuv_color_space_ = SkYUVColorSpace::kIdentity_SkYUVColorSpace;
+  // Used to call UpdateBppHistogram() at most once to record the
+  // bits-per-pixel value of the image when the image is successfully decoded.
+  base::OnceCallback<void(gfx::Size, size_t)> update_bpp_histogram_callback_;
   absl::optional<AVIFCleanApertureType> clap_type_;
   // Whether the 'clap' (clean aperture) property should be ignored, e.g.
   // because the 'clap' property is invalid or unsupported.
@@ -165,12 +165,11 @@ class PLATFORM_EXPORT AVIFImageDecoder final : public ImageDecoder {
   avifIO avif_io_ = {};
   AvifIOData avif_io_data_;
 
-  std::unique_ptr<gfx::ColorTransform> color_transform_;
-
   const AnimationOption animation_option_;
 
-  // Used temporarily during incremental decoding.
-  Vector<uint32_t> previous_last_decoded_row_;
+  // Used temporarily for incremental decoding and for some YUV to RGB color
+  // conversions.
+  Vector<uint8_t> previous_last_decoded_row_;
 };
 
 }  // namespace blink

@@ -58,16 +58,14 @@ void OpenUrlInternalContinue(Profile* profile,
   DCHECK(ash::SystemWebAppManager::Get(profile)->IsAppEnabled(
       ash::SystemWebAppType::OS_URL_HANDLER));
 
-  absl::optional<ash::SystemWebAppType> swa_type =
-      GetSystemAppForURL(profile, target_url);
-  if (!swa_type.has_value()) {
-    swa_type = ash::SystemWebAppType::OS_URL_HANDLER;
-  }
+  ash::SystemWebAppType swa_type =
+      GetSystemAppForURL(profile, target_url)
+          .value_or(ash::SystemWebAppType::OS_URL_HANDLER);
 
   // This is a hack for chrome://camera-app URLs with queries, as sent by
   // assistant.
   // TODO(crbug.com/1445145): Figure out how to get rid of this.
-  if (*swa_type == ash::SystemWebAppType::CAMERA &&
+  if (swa_type == ash::SystemWebAppType::CAMERA &&
       !gurl_os_handler_utils::IsAshOsUrl(original_url)) {
     target_url = original_url;
   }
@@ -76,7 +74,7 @@ void OpenUrlInternalContinue(Profile* profile,
   launch_params.url = target_url;
   int64_t display_id =
       display::Screen::GetScreen()->GetDisplayForNewWindows().id();
-  ash::LaunchSystemWebAppAsync(profile, *swa_type, launch_params,
+  ash::LaunchSystemWebAppAsync(profile, swa_type, launch_params,
                                std::make_unique<apps::WindowInfo>(display_id));
 }
 

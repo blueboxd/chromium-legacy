@@ -15,9 +15,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
-#include "content/public/common/content_features.h"
 #include "content/public/test/browser_task_environment.h"
-#include "net/base/features.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_util.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
@@ -149,9 +147,8 @@ class StringConsoleMessagesDelegate : public ConsoleMessagesDelegate {
 
 }  // namespace
 
-class ClearSiteDataHandlerTest
-    : public testing::Test,
-      public testing::WithParamInterface<std::tuple<bool, bool, bool>> {
+class ClearSiteDataHandlerTest : public testing::Test,
+                                 public testing::WithParamInterface<bool> {
  public:
   ClearSiteDataHandlerTest()
       : task_environment_(BrowserTaskEnvironment::IO_MAINLOOP) {}
@@ -159,11 +156,7 @@ class ClearSiteDataHandlerTest
   ClearSiteDataHandlerTest(const ClearSiteDataHandlerTest&) = delete;
   ClearSiteDataHandlerTest& operator=(const ClearSiteDataHandlerTest&) = delete;
 
-  bool IsClientHintsSupportEnabled() { return std::get<0>(GetParam()); }
-
-  bool IsWildcardSupportEnabled() { return std::get<1>(GetParam()); }
-
-  bool IsStorageBucketSupportEnabled() { return std::get<2>(GetParam()); }
+  bool IsStorageBucketSupportEnabled() { return GetParam(); }
 
  private:
   BrowserTaskEnvironment task_environment_;
@@ -172,21 +165,11 @@ class ClearSiteDataHandlerTest
 INSTANTIATE_TEST_SUITE_P(
     ParseHeaderAndExecuteClearingTaskWithFeaturesEnabledTestSuite,
     ClearSiteDataHandlerTest,
-    testing::Combine(testing::Bool(), testing::Bool(), testing::Bool()));
+    testing::Bool());
 
 TEST_P(ClearSiteDataHandlerTest, ParseHeaderAndExecuteClearingTask) {
   std::vector<base::test::FeatureRef> features_to_enable;
   std::vector<base::test::FeatureRef> features_to_disable;
-  if (IsClientHintsSupportEnabled()) {
-    features_to_enable.push_back(features::kClearSiteDataClientHintsSupport);
-  } else {
-    features_to_disable.push_back(features::kClearSiteDataClientHintsSupport);
-  }
-  if (IsWildcardSupportEnabled()) {
-    features_to_enable.push_back(net::features::kClearSiteDataWildcardSupport);
-  } else {
-    features_to_disable.push_back(net::features::kClearSiteDataWildcardSupport);
-  }
   if (IsStorageBucketSupportEnabled()) {
     features_to_enable.push_back(blink::features::kStorageBuckets);
   } else {
@@ -212,48 +195,32 @@ TEST_P(ClearSiteDataHandlerTest, ParseHeaderAndExecuteClearingTask) {
       {"\"cookies\"", true, false, false, false},
       {"\"storage\"", false, true, false, false},
       {"\"cache\"", false, false, true, false},
-      {"\"clientHints\"", false, false, false, IsClientHintsSupportEnabled()},
+      {"\"clientHints\"", false, false, false, true},
 
       // Two data types.
       {"\"cookies\", \"storage\"", true, true, false, false},
       {"\"cookies\", \"cache\"", true, false, true, false},
       {"\"storage\", \"cache\"", false, true, true, false},
-      {"\"cookies\", \"clientHints\"", true, false, false,
-       IsClientHintsSupportEnabled()},
-      {"\"storage\", \"clientHints\"", false, true, false,
-       IsClientHintsSupportEnabled()},
-      {"\"cache\", \"clientHints\"", false, false, true,
-       IsClientHintsSupportEnabled()},
+      {"\"cookies\", \"clientHints\"", true, false, false, true},
+      {"\"storage\", \"clientHints\"", false, true, false, true},
+      {"\"cache\", \"clientHints\"", false, false, true, true},
 
       // Three data types.
       {"\"cookies\", \"storage\", \"cache\"", true, true, true, false},
-      {"\"clientHints\", \"storage\", \"cache\"", false, true, true,
-       IsClientHintsSupportEnabled()},
-      {"\"cookies\", \"clientHints\", \"cache\"", true, false, true,
-       IsClientHintsSupportEnabled()},
-      {"\"cookies\", \"storage\", \"clientHints\"", true, true, false,
-       IsClientHintsSupportEnabled()},
+      {"\"clientHints\", \"storage\", \"cache\"", false, true, true, true},
+      {"\"cookies\", \"clientHints\", \"cache\"", true, false, true, true},
+      {"\"cookies\", \"storage\", \"clientHints\"", true, true, false, true},
 
       // Four data types.
       {"\"cookies\", \"storage\", \"cache\", \"clientHints\"", true, true, true,
-       IsClientHintsSupportEnabled()},
+       true},
 
       // Wildcard.
-      {"\"*\"", IsWildcardSupportEnabled(), IsWildcardSupportEnabled(),
-       IsWildcardSupportEnabled(),
-       IsWildcardSupportEnabled() && IsClientHintsSupportEnabled()},
-      {"\"*\", \"storage\"", IsWildcardSupportEnabled(), true,
-       IsWildcardSupportEnabled(),
-       IsWildcardSupportEnabled() && IsClientHintsSupportEnabled()},
-      {"\"cookies\", \"*\", \"storage\"", true, true,
-       IsWildcardSupportEnabled(),
-       IsWildcardSupportEnabled() && IsClientHintsSupportEnabled()},
-      {"\"*\", \"cookies\", \"*\"", true, IsWildcardSupportEnabled(),
-       IsWildcardSupportEnabled(),
-       IsWildcardSupportEnabled() && IsClientHintsSupportEnabled()},
-      {"\"*\", \"clientHints\"", IsWildcardSupportEnabled(),
-       IsWildcardSupportEnabled(), IsWildcardSupportEnabled(),
-       IsClientHintsSupportEnabled()},
+      {"\"*\"", true, true, true, true},
+      {"\"*\", \"storage\"", true, true, true, true},
+      {"\"cookies\", \"*\", \"storage\"", true, true, true, true},
+      {"\"*\", \"cookies\", \"*\"", true, true, true, true},
+      {"\"*\", \"clientHints\"", true, true, true, true},
 
       // Different formatting.
       {"\"cookies\"", true, false, false, false},
@@ -270,13 +237,8 @@ TEST_P(ClearSiteDataHandlerTest, ParseHeaderAndExecuteClearingTask) {
 
       // Storage Buckets
       {"\"storage\", \"storage:drafts\"", false, true, false, false},
-      {"\"*\", \"storage:drafts\", \"storage:inbox\"",
-       IsWildcardSupportEnabled(), IsWildcardSupportEnabled(),
-       IsWildcardSupportEnabled(),
-       IsWildcardSupportEnabled() && IsClientHintsSupportEnabled(),
-       (!IsWildcardSupportEnabled() && IsStorageBucketSupportEnabled())
-           ? storage_buckets_test_case_expectation
-           : std::set<std::string>()},
+      {"\"*\", \"storage:drafts\", \"storage:inbox\"", true, true, true, true,
+       std::set<std::string>()},
       {"\"cookies\", \"storage:drafts", true, false, false,
        false},  // Invalid header, should end with '"'
       {"\"cookies\", \"storage:invalid_name$#$\"", true, false, false,
@@ -532,8 +494,6 @@ TEST_F(ClearSiteDataHandlerTest, FormattedConsoleOutput) {
     const char* header;
     const char* url;
     const char* output;
-    bool wildcard;
-    bool client_hints;
   } kTestCases[] = {
       // Successful deletion outputs one line, and in case of cookies, also
       // a disclaimer about omitted data (https://crbug.com/798760).
@@ -541,92 +501,56 @@ TEST_F(ClearSiteDataHandlerTest, FormattedConsoleOutput) {
        "Clear-Site-Data header on 'https://origin1.com/foo': "
        "Cleared data types: \"cookies\". "
        "Clearing channel IDs and HTTP authentication cache is currently "
-       "not supported, as it breaks active network connections.\n",
-       false, false},
+       "not supported, as it breaks active network connections.\n"},
 
       // Another successful deletion.
       {"\"storage\"", "https://origin2.com/foo",
        "Clear-Site-Data header on 'https://origin2.com/foo': "
-       "Cleared data types: \"storage\".\n",
-       false, false},
+       "Cleared data types: \"storage\".\n"},
 
       // Redirect to the same URL. Unsuccessful deletion outputs two lines.
       {"\"foo\"", "https://origin2.com/foo",
        "Clear-Site-Data header on 'https://origin2.com/foo': "
        "Unrecognized type: \"foo\".\n"
        "Clear-Site-Data header on 'https://origin2.com/foo': "
-       "No recognized types specified.\n",
-       false, false},
+       "No recognized types specified.\n"},
 
       // Redirect to another URL. Another unsuccessful deletion.
       {"\"some text\"", "https://origin3.com/bar",
        "Clear-Site-Data header on 'https://origin3.com/bar': "
        "Unrecognized type: \"some text\".\n"
        "Clear-Site-Data header on 'https://origin3.com/bar': "
-       "No recognized types specified.\n",
-       false, false},
+       "No recognized types specified.\n"},
 
       // Yet another on the same URL.
       {"\"passwords\"", "https://origin3.com/bar",
        "Clear-Site-Data header on 'https://origin3.com/bar': "
        "Unrecognized type: \"passwords\".\n"
        "Clear-Site-Data header on 'https://origin3.com/bar': "
-       "No recognized types specified.\n",
-       false, false},
+       "No recognized types specified.\n"},
 
       // Successful deletion on the same URL.
       {"\"cache\"", "https://origin3.com/bar",
        "Clear-Site-Data header on 'https://origin3.com/bar': "
-       "Cleared data types: \"cache\".\n",
-       false, false},
+       "Cleared data types: \"cache\".\n"},
 
-      // Failed deletion as client hint support is off.
-      {"\"clientHints\"", "https://origin3.com/bar",
-       "Clear-Site-Data header on 'https://origin3.com/bar': Unrecognized "
-       "type: \"clientHints\".\nClear-Site-Data header on "
-       "'https://origin3.com/bar': No recognized types specified.\n",
-       false, false},
-
-      // Successful deletion as client hint support is on.
+      // Successful deletion for client hints.
       {"\"clientHints\"", "https://origin3.com/bar",
        "Clear-Site-Data header on 'https://origin3.com/bar': "
-       "Cleared data types: \"clientHints\".\n",
-       false, true},
+       "Cleared data types: \"clientHints\".\n"},
 
-      // Failed deletion as experimental types are disabled here.
-      {"\"*\"", "https://origin3.com/bar",
-       "Clear-Site-Data header on 'https://origin3.com/bar': Unrecognized "
-       "type: \"*\".\nClear-Site-Data header on 'https://origin3.com/bar': No "
-       "recognized types specified.\n",
-       false, false},
-      {"\"*\"", "https://origin3.com/bar",
-       "Clear-Site-Data header on 'https://origin3.com/bar': Unrecognized "
-       "type: \"*\".\nClear-Site-Data header on 'https://origin3.com/bar': No "
-       "recognized types specified.\n",
-       false, true},
-
-      // Successful deletion with experimental types on.
-      {"\"*\"", "https://origin3.com/bar",
-       "Clear-Site-Data header on 'https://origin3.com/bar': Cleared data "
-       "types: \"cookies\", \"storage\", \"cache\". Clearing channel IDs and "
-       "HTTP authentication cache is currently not supported, as it breaks "
-       "active network connections.\n",
-       true, false},
-
-      // Successful deletion with experimental types and client hint support on.
+      // Successful deletion for *.
       {"\"*\"", "https://origin3.com/bar",
        "Clear-Site-Data header on 'https://origin3.com/bar': Cleared data "
        "types: \"cookies\", \"storage\", \"cache\", \"clientHints\". Clearing "
        "channel IDs and HTTP authentication cache is currently not supported, "
-       "as it breaks active network connections.\n",
-       true, true},
+       "as it breaks active network connections.\n"},
 
       // Redirect to the original URL.
       // Successful deletion outputs one line.
       {"", "https://origin1.com/foo",
        "Clear-Site-Data header on 'https://origin1.com/foo': "
-       "No recognized types specified.\n",
-       false, false},
+       "No recognized types specified.\n"},
   };
 
   // TODO(crbug.com/876931): Delay output until next frame for navigations.
@@ -646,15 +570,6 @@ TEST_F(ClearSiteDataHandlerTest, FormattedConsoleOutput) {
     // |NetworkServiceClient| creates a new |ClearSiteDataHandler| for each
     // navigation, redirect, or subresource header responses.
     for (const auto& test : kTestCases) {
-      std::vector<base::test::FeatureRef> features;
-      if (test.wildcard) {
-        features.push_back(net::features::kClearSiteDataWildcardSupport);
-      }
-      if (test.client_hints) {
-        features.push_back(features::kClearSiteDataClientHintsSupport);
-      }
-      base::test::ScopedFeatureList scoped_feature_list;
-      scoped_feature_list.InitWithFeatures(features, {});
       TestHandler handler(
           base::BindRepeating(&FakeBrowserContextGetter),
           base::BindRepeating(&FakeWebContentsGetter), GURL(test.url),

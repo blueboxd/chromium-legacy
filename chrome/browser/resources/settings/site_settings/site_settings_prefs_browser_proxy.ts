@@ -83,6 +83,7 @@ export interface RawSiteException {
   origin: string;
   displayName: string;
   type: string;
+  description?: string;
   setting: ContentSetting;
   source: SiteSettingSource;
 }
@@ -99,11 +100,43 @@ export interface SiteException {
   origin: string;
   displayName: string;
   setting: ContentSetting;
+  description?: string;
   enforcement: chrome.settingsPrivate.Enforcement|null;
   controlledBy: chrome.settingsPrivate.ControlledBy;
   // <if expr="chromeos_ash">
   showAndroidSmsNote?: boolean;
   // </if>
+}
+
+/**
+ * A group of storage access site exceptions with the same origin for UI use.
+ * See also: StorageAccessEmbeddingException.
+ */
+export interface StorageAccessSiteException {
+  origin: string;
+  displayName: string;
+  setting: ContentSetting;
+
+  // Information needed for a static row.
+  description?: string;
+  incognito?: boolean;
+
+  // Information needed for a grouped row.
+  closeDescription?: string;
+  openDescription?: string;
+
+  exceptions: StorageAccessEmbeddingException[];
+}
+
+/**
+ * A storage access site exception for UI use. To be always used within
+ * StorageAccessSiteException.
+ */
+export interface StorageAccessEmbeddingException {
+  embeddingOrigin: string;
+  embeddingDisplayName: string;
+  description?: string;  // includes case for embargoed exception.
+  incognito: boolean;
 }
 
 /**
@@ -249,6 +282,9 @@ export interface SiteSettingsPrefsBrowserProxy {
    */
   getExceptionList(contentType: ContentSettingsTypes):
       Promise<RawSiteException[]>;
+
+  getStorageAccessExceptionList(categorySubtype: ContentSetting):
+      Promise<StorageAccessSiteException[]>;
 
   /**
    * Gets the File System Access permission grants, grouped by origin.
@@ -518,6 +554,10 @@ export class SiteSettingsPrefsBrowserProxyImpl implements
 
   getExceptionList(contentType: ContentSettingsTypes) {
     return sendWithPromise('getExceptionList', contentType);
+  }
+
+  getStorageAccessExceptionList(categorySubtype: ContentSetting) {
+    return sendWithPromise('getStorageAccessExceptionList', categorySubtype);
   }
 
   getFileSystemGrants() {

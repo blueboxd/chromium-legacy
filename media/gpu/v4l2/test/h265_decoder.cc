@@ -4,10 +4,11 @@
 
 #include "media/gpu/v4l2/test/h265_decoder.h"
 
+#include <linux/videodev2.h>
+
 #include "base/memory/ptr_util.h"
 #include "base/notreached.h"
 #include "media/gpu/macros.h"
-#include "media/gpu/v4l2/test/upstream_pix_fmt.h"
 #include "media/video/h265_parser.h"
 
 namespace media {
@@ -15,6 +16,13 @@ namespace v4l2_test {
 
 namespace {
 constexpr uint32_t kDriverCodecFourcc = V4L2_PIX_FMT_HEVC_SLICE;
+
+struct POCAscCompare {
+  bool operator()(const scoped_refptr<media::v4l2_test::H265Picture>& a,
+                  const scoped_refptr<media::v4l2_test::H265Picture>& b) const {
+    return a->pic_order_cnt_val_ < b->pic_order_cnt_val_;
+  }
+};
 
 // Gets bit depth info from SPS
 bool ParseBitDepth(const H265SPS& sps, uint8_t& bit_depth) {
@@ -71,6 +79,223 @@ bool IsValidBitDepth(uint8_t bit_depth, VideoCodecProfile profile) {
       return false;
   }
 }
+
+// Translates decoder SPS structure into |v4l2_ctrl_hevc_sps| structure.
+v4l2_ctrl_hevc_sps SetupSPSCtrl(const H265SPS* sps) {
+  struct v4l2_ctrl_hevc_sps v4l2_sps;
+  memset(&v4l2_sps, 0, sizeof(v4l2_sps));
+
+  int highest_tid = sps->sps_max_sub_layers_minus1;
+
+  // Translates values using the |v4l2_ctrl_hevc_sps| struct order
+  v4l2_sps.video_parameter_set_id = sps->sps_video_parameter_set_id;
+  v4l2_sps.seq_parameter_set_id = sps->sps_seq_parameter_set_id;
+
+#define SPS_TO_V4L2SPS(a) v4l2_sps.a = sps->a
+  SPS_TO_V4L2SPS(pic_width_in_luma_samples);
+  SPS_TO_V4L2SPS(pic_height_in_luma_samples);
+  SPS_TO_V4L2SPS(bit_depth_luma_minus8);
+  SPS_TO_V4L2SPS(bit_depth_chroma_minus8);
+  SPS_TO_V4L2SPS(log2_max_pic_order_cnt_lsb_minus4);
+
+#define SPS_TO_V4L2SPS_FROM_ARRAY(a) v4l2_sps.a = sps->a[highest_tid];
+  SPS_TO_V4L2SPS_FROM_ARRAY(sps_max_dec_pic_buffering_minus1);
+  SPS_TO_V4L2SPS_FROM_ARRAY(sps_max_num_reorder_pics);
+  SPS_TO_V4L2SPS_FROM_ARRAY(sps_max_latency_increase_plus1);
+#undef SPS_TO_V4L2SPS_FROM_ARRAY
+
+  SPS_TO_V4L2SPS(log2_min_luma_coding_block_size_minus3);
+  SPS_TO_V4L2SPS(log2_diff_max_min_luma_coding_block_size);
+  SPS_TO_V4L2SPS(log2_min_luma_transform_block_size_minus2);
+  SPS_TO_V4L2SPS(log2_diff_max_min_luma_transform_block_size);
+  SPS_TO_V4L2SPS(max_transform_hierarchy_depth_inter);
+  SPS_TO_V4L2SPS(max_transform_hierarchy_depth_intra);
+  SPS_TO_V4L2SPS(pcm_sample_bit_depth_luma_minus1);
+  SPS_TO_V4L2SPS(pcm_sample_bit_depth_chroma_minus1);
+  SPS_TO_V4L2SPS(log2_min_pcm_luma_coding_block_size_minus3);
+  SPS_TO_V4L2SPS(log2_diff_max_min_pcm_luma_coding_block_size);
+  SPS_TO_V4L2SPS(num_short_term_ref_pic_sets);
+  SPS_TO_V4L2SPS(num_long_term_ref_pics_sps);
+  SPS_TO_V4L2SPS(chroma_format_idc);
+  SPS_TO_V4L2SPS(sps_max_sub_layers_minus1);
+#undef SPS_TO_V4L2SPS
+
+#define SET_V4L2_SPS_FLAG_IF(cond, flag) \
+  v4l2_sps.flags |= ((sps->cond) ? (flag) : 0)
+  SET_V4L2_SPS_FLAG_IF(separate_colour_plane_flag,
+                       V4L2_HEVC_SPS_FLAG_SEPARATE_COLOUR_PLANE);
+  SET_V4L2_SPS_FLAG_IF(scaling_list_enabled_flag,
+                       V4L2_HEVC_SPS_FLAG_SCALING_LIST_ENABLED);
+  SET_V4L2_SPS_FLAG_IF(amp_enabled_flag, V4L2_HEVC_SPS_FLAG_AMP_ENABLED);
+  SET_V4L2_SPS_FLAG_IF(sample_adaptive_offset_enabled_flag,
+                       V4L2_HEVC_SPS_FLAG_SAMPLE_ADAPTIVE_OFFSET);
+  SET_V4L2_SPS_FLAG_IF(pcm_enabled_flag, V4L2_HEVC_SPS_FLAG_PCM_ENABLED);
+  SET_V4L2_SPS_FLAG_IF(pcm_loop_filter_disabled_flag,
+                       V4L2_HEVC_SPS_FLAG_PCM_LOOP_FILTER_DISABLED);
+  SET_V4L2_SPS_FLAG_IF(long_term_ref_pics_present_flag,
+                       V4L2_HEVC_SPS_FLAG_LONG_TERM_REF_PICS_PRESENT);
+  SET_V4L2_SPS_FLAG_IF(sps_temporal_mvp_enabled_flag,
+                       V4L2_HEVC_SPS_FLAG_SPS_TEMPORAL_MVP_ENABLED);
+  SET_V4L2_SPS_FLAG_IF(strong_intra_smoothing_enabled_flag,
+                       V4L2_HEVC_SPS_FLAG_STRONG_INTRA_SMOOTHING_ENABLED);
+#undef SET_V4L2_SPS_FLAG_IF
+
+  return v4l2_sps;
+}
+
+// Translates decoder PPS structure into |v4l2_ctrl_hevc_pps| structure.
+v4l2_ctrl_hevc_pps SetupPPSCtrl(const H265PPS* pps) {
+  struct v4l2_ctrl_hevc_pps v4l2_pps;
+  memset(&v4l2_pps, 0, sizeof(v4l2_pps));
+
+  // Translates values using the |v4l2_ctrl_hevc_pps| struct order
+#define PPS_TO_V4L2PPS(a) v4l2_pps.a = pps->a
+  v4l2_pps.pic_parameter_set_id = pps->pps_pic_parameter_set_id;
+  PPS_TO_V4L2PPS(num_extra_slice_header_bits);
+  PPS_TO_V4L2PPS(num_ref_idx_l0_default_active_minus1);
+  PPS_TO_V4L2PPS(num_ref_idx_l1_default_active_minus1);
+  PPS_TO_V4L2PPS(init_qp_minus26);
+  PPS_TO_V4L2PPS(diff_cu_qp_delta_depth);
+  PPS_TO_V4L2PPS(pps_cb_qp_offset);
+  PPS_TO_V4L2PPS(pps_cr_qp_offset);
+
+  if (pps->tiles_enabled_flag) {
+    PPS_TO_V4L2PPS(num_tile_columns_minus1);
+    PPS_TO_V4L2PPS(num_tile_rows_minus1);
+
+    if (!pps->uniform_spacing_flag) {
+      static_assert(std::size(v4l2_pps.column_width_minus1) >=
+                        std::extent<decltype(pps->column_width_minus1)>(),
+                    "column_width_minus1 arrays must be same size");
+      for (int i = 0; i <= pps->num_tile_columns_minus1; ++i) {
+        v4l2_pps.column_width_minus1[i] = pps->column_width_minus1[i];
+      }
+
+      static_assert(std::size(v4l2_pps.row_height_minus1) >=
+                        std::extent<decltype(pps->row_height_minus1)>(),
+                    "row_height_minus1 arrays must be same size");
+      for (int i = 0; i <= pps->num_tile_rows_minus1; ++i) {
+        v4l2_pps.row_height_minus1[i] = pps->row_height_minus1[i];
+      }
+    }
+  }
+
+  PPS_TO_V4L2PPS(pps_beta_offset_div2);
+  PPS_TO_V4L2PPS(pps_tc_offset_div2);
+  PPS_TO_V4L2PPS(log2_parallel_merge_level_minus2);
+#undef PPS_TO_V4L2PPS
+
+#define SET_V4L2_PPS_FLAG_IF(cond, flag) \
+  v4l2_pps.flags |= ((pps->cond) ? (flag) : 0)
+  SET_V4L2_PPS_FLAG_IF(dependent_slice_segments_enabled_flag,
+                       V4L2_HEVC_PPS_FLAG_DEPENDENT_SLICE_SEGMENT_ENABLED);
+  SET_V4L2_PPS_FLAG_IF(output_flag_present_flag,
+                       V4L2_HEVC_PPS_FLAG_OUTPUT_FLAG_PRESENT);
+  SET_V4L2_PPS_FLAG_IF(sign_data_hiding_enabled_flag,
+                       V4L2_HEVC_PPS_FLAG_SIGN_DATA_HIDING_ENABLED);
+  SET_V4L2_PPS_FLAG_IF(cabac_init_present_flag,
+                       V4L2_HEVC_PPS_FLAG_CABAC_INIT_PRESENT);
+  SET_V4L2_PPS_FLAG_IF(constrained_intra_pred_flag,
+                       V4L2_HEVC_PPS_FLAG_CONSTRAINED_INTRA_PRED);
+  SET_V4L2_PPS_FLAG_IF(transform_skip_enabled_flag,
+                       V4L2_HEVC_PPS_FLAG_TRANSFORM_SKIP_ENABLED);
+  SET_V4L2_PPS_FLAG_IF(cu_qp_delta_enabled_flag,
+                       V4L2_HEVC_PPS_FLAG_CU_QP_DELTA_ENABLED);
+  SET_V4L2_PPS_FLAG_IF(pps_slice_chroma_qp_offsets_present_flag,
+                       V4L2_HEVC_PPS_FLAG_PPS_SLICE_CHROMA_QP_OFFSETS_PRESENT);
+  SET_V4L2_PPS_FLAG_IF(weighted_pred_flag, V4L2_HEVC_PPS_FLAG_WEIGHTED_PRED);
+  SET_V4L2_PPS_FLAG_IF(weighted_bipred_flag,
+                       V4L2_HEVC_PPS_FLAG_WEIGHTED_BIPRED);
+  SET_V4L2_PPS_FLAG_IF(transquant_bypass_enabled_flag,
+                       V4L2_HEVC_PPS_FLAG_TRANSQUANT_BYPASS_ENABLED);
+  SET_V4L2_PPS_FLAG_IF(tiles_enabled_flag, V4L2_HEVC_PPS_FLAG_TILES_ENABLED);
+  SET_V4L2_PPS_FLAG_IF(entropy_coding_sync_enabled_flag,
+                       V4L2_HEVC_PPS_FLAG_ENTROPY_CODING_SYNC_ENABLED);
+  SET_V4L2_PPS_FLAG_IF(loop_filter_across_tiles_enabled_flag,
+                       V4L2_HEVC_PPS_FLAG_LOOP_FILTER_ACROSS_TILES_ENABLED);
+  SET_V4L2_PPS_FLAG_IF(
+      pps_loop_filter_across_slices_enabled_flag,
+      V4L2_HEVC_PPS_FLAG_PPS_LOOP_FILTER_ACROSS_SLICES_ENABLED);
+  SET_V4L2_PPS_FLAG_IF(deblocking_filter_override_enabled_flag,
+                       V4L2_HEVC_PPS_FLAG_DEBLOCKING_FILTER_OVERRIDE_ENABLED);
+  SET_V4L2_PPS_FLAG_IF(pps_deblocking_filter_disabled_flag,
+                       V4L2_HEVC_PPS_FLAG_PPS_DISABLE_DEBLOCKING_FILTER);
+  SET_V4L2_PPS_FLAG_IF(lists_modification_present_flag,
+                       V4L2_HEVC_PPS_FLAG_LISTS_MODIFICATION_PRESENT);
+  SET_V4L2_PPS_FLAG_IF(
+      slice_segment_header_extension_present_flag,
+      V4L2_HEVC_PPS_FLAG_SLICE_SEGMENT_HEADER_EXTENSION_PRESENT);
+  SET_V4L2_PPS_FLAG_IF(deblocking_filter_control_present_flag,
+                       V4L2_HEVC_PPS_FLAG_DEBLOCKING_FILTER_CONTROL_PRESENT);
+  SET_V4L2_PPS_FLAG_IF(uniform_spacing_flag,
+                       V4L2_HEVC_PPS_FLAG_UNIFORM_SPACING);
+#undef SET_V4L2_PPS_FLAG_IF
+
+  return v4l2_pps;
+}
+
+// Builds the |v4l2_ctrl_hevc_scaling_matrix| structure and checks against SPS
+// and PPS scaling matrix sizes.
+v4l2_ctrl_hevc_scaling_matrix SetupScalingMatrix(const H265SPS* sps,
+                                                 const H265PPS* pps) {
+  struct v4l2_ctrl_hevc_scaling_matrix v4l2_scaling_matrix;
+  memset(&v4l2_scaling_matrix, 0, sizeof(v4l2_scaling_matrix));
+  struct H265ScalingListData checker;
+
+  static_assert(
+      std::size(checker.scaling_list_dc_coef_16x16) ==
+              std::size(v4l2_scaling_matrix.scaling_list_dc_coef_16x16) &&
+          std::size(checker.scaling_list_dc_coef_32x32) / 3 ==
+              std::size(v4l2_scaling_matrix.scaling_list_dc_coef_32x32) &&
+          std::size(checker.scaling_list_4x4) ==
+              std::size(v4l2_scaling_matrix.scaling_list_4x4) &&
+          std::size(checker.scaling_list_4x4[0]) ==
+              std::size(v4l2_scaling_matrix.scaling_list_4x4[0]) &&
+          std::size(checker.scaling_list_8x8) ==
+              std::size(v4l2_scaling_matrix.scaling_list_8x8) &&
+          std::size(checker.scaling_list_8x8[0]) ==
+              std::size(v4l2_scaling_matrix.scaling_list_8x8[0]) &&
+          std::size(checker.scaling_list_16x16) ==
+              std::size(v4l2_scaling_matrix.scaling_list_16x16) &&
+          std::size(checker.scaling_list_16x16[0]) ==
+              std::size(v4l2_scaling_matrix.scaling_list_16x16[0]) &&
+          std::size(checker.scaling_list_32x32) / 3 ==
+              std::size(v4l2_scaling_matrix.scaling_list_32x32) &&
+          std::size(checker.scaling_list_32x32[0]) ==
+              std::size(v4l2_scaling_matrix.scaling_list_32x32[0]),
+      "scaling_list_data must be of correct size");
+
+  if (sps->scaling_list_enabled_flag) {
+    // We already populated the scaling list data with default values in the
+    // parser if they are not present in the stream, so just fill them all in.
+    const auto& scaling_list = pps->pps_scaling_list_data_present_flag
+                                   ? pps->scaling_list_data
+                                   : sps->scaling_list_data;
+
+    memcpy(v4l2_scaling_matrix.scaling_list_4x4, scaling_list.scaling_list_4x4,
+           sizeof(v4l2_scaling_matrix.scaling_list_4x4));
+    memcpy(v4l2_scaling_matrix.scaling_list_8x8, scaling_list.scaling_list_8x8,
+           sizeof(v4l2_scaling_matrix.scaling_list_8x8));
+    memcpy(v4l2_scaling_matrix.scaling_list_16x16,
+           scaling_list.scaling_list_16x16,
+           sizeof(v4l2_scaling_matrix.scaling_list_16x16));
+    memcpy(v4l2_scaling_matrix.scaling_list_32x32[0],
+           scaling_list.scaling_list_32x32[0],
+           sizeof(v4l2_scaling_matrix.scaling_list_32x32[0]));
+    memcpy(v4l2_scaling_matrix.scaling_list_32x32[1],
+           scaling_list.scaling_list_32x32[3],
+           sizeof(v4l2_scaling_matrix.scaling_list_32x32[1]));
+    memcpy(v4l2_scaling_matrix.scaling_list_dc_coef_16x16,
+           scaling_list.scaling_list_dc_coef_16x16,
+           sizeof(v4l2_scaling_matrix.scaling_list_dc_coef_16x16));
+    v4l2_scaling_matrix.scaling_list_dc_coef_32x32[0] =
+        scaling_list.scaling_list_dc_coef_32x32[0];
+    v4l2_scaling_matrix.scaling_list_dc_coef_32x32[1] =
+        scaling_list.scaling_list_dc_coef_32x32[3];
+  }
+
+  return v4l2_scaling_matrix;
+}
 }
 
 H265Decoder::H265Decoder(std::unique_ptr<V4L2IoctlShim> v4l2_ioctl,
@@ -126,8 +351,19 @@ std::unique_ptr<H265Decoder> H265Decoder::Create(
 }
 
 bool H265Decoder::OutputAllRemainingPics() {
-  NOTIMPLEMENTED();
-  return false;
+  // Output all pictures that are waiting to be outputted.
+  H265Picture::Vector to_output;
+  dpb_.AppendPendingOutputPics(&to_output);
+  // Sort them by ascending POC to output in order.
+  std::sort(to_output.begin(), to_output.end(), POCAscCompare());
+
+  for (auto& pic : to_output) {
+    if (!OutputPic(std::move(pic))) {
+      return false;
+    }
+  }
+
+  return true;
 }
 
 bool H265Decoder::Flush() {
@@ -213,41 +449,431 @@ bool H265Decoder::ProcessPPS(int pps_id, bool* need_new_buffers) {
 }
 
 bool H265Decoder::PreprocessCurrentSlice() {
-  NOTIMPLEMENTED();
-  return false;
+  const H265SliceHeader* slice_hdr = curr_slice_hdr_.get();
+  CHECK(slice_hdr);
+
+  if (slice_hdr->first_slice_segment_in_pic_flag) {
+    // New picture, so first finish the previous one before processing it.
+    FinishPrevFrameIfPresent();
+    CHECK(!curr_pic_);
+  }
+
+  return true;
 }
 
 bool H265Decoder::ProcessCurrentSlice() {
+  CHECK(curr_pic_);
+
+  const H265SliceHeader* slice_hdr = curr_slice_hdr_.get();
+  CHECK(slice_hdr);
+
+  const H265SPS* sps = parser_->GetSPS(curr_sps_id_);
+  CHECK(sps);
+
+  const H265PPS* pps = parser_->GetPPS(curr_pps_id_);
+  CHECK(pps);
+
+  // TODO(b/261127809): Implement to process the current slice
   NOTIMPLEMENTED();
   return false;
 }
 
 void H265Decoder::CalcPicOutputFlags(const H265SliceHeader* slice_hdr) {
-  NOTIMPLEMENTED();
+  if (slice_hdr->irap_pic) {
+    // 8.1.3
+    curr_pic_->no_rasl_output_flag_ =
+        (curr_nalu_->nal_unit_type >= H265NALU::BLA_W_LP &&
+         curr_nalu_->nal_unit_type <= H265NALU::IDR_N_LP) ||
+        curr_pic_->first_picture_;
+  } else {
+    curr_pic_->no_rasl_output_flag_ = false;
+  }
+
+  // C.5.2.2
+  if (slice_hdr->irap_pic && curr_pic_->no_rasl_output_flag_ &&
+      !curr_pic_->first_picture_) {
+    curr_pic_->no_output_of_prior_pics_flag_ =
+        (slice_hdr->nal_unit_type == H265NALU::CRA_NUT) ||
+        slice_hdr->no_output_of_prior_pics_flag;
+  } else {
+    curr_pic_->no_output_of_prior_pics_flag_ = false;
+  }
+
+  if ((slice_hdr->nal_unit_type == H265NALU::RASL_N ||
+       slice_hdr->nal_unit_type == H265NALU::RASL_R) &&
+      curr_pic_->no_rasl_output_flag_) {
+    curr_pic_->pic_output_flag_ = false;
+  } else {
+    curr_pic_->pic_output_flag_ = slice_hdr->pic_output_flag;
+  }
 }
 
 void H265Decoder::CalcPictureOrderCount(const H265PPS* pps,
                                         const H265SliceHeader* slice_hdr) {
-  NOTIMPLEMENTED();
+  // 8.3.1 Decoding process for picture order count.
+  curr_pic_->valid_for_prev_tid0_pic_ =
+      !pps->temporal_id && (slice_hdr->nal_unit_type < H265NALU::RADL_N ||
+                            slice_hdr->nal_unit_type > H265NALU::RSV_VCL_N14);
+  curr_pic_->slice_pic_order_cnt_lsb_ = slice_hdr->slice_pic_order_cnt_lsb;
+
+  // Calculate POC for current picture.
+  if ((!slice_hdr->irap_pic || !curr_pic_->no_rasl_output_flag_) &&
+      prev_tid0_pic_) {
+    const int prev_pic_order_cnt_lsb = prev_tid0_pic_->slice_pic_order_cnt_lsb_;
+    const int prev_pic_order_cnt_msb = prev_tid0_pic_->pic_order_cnt_msb_;
+    if ((slice_hdr->slice_pic_order_cnt_lsb < prev_pic_order_cnt_lsb) &&
+        ((prev_pic_order_cnt_lsb - slice_hdr->slice_pic_order_cnt_lsb) >=
+         (max_pic_order_cnt_lsb_ / 2))) {
+      curr_pic_->pic_order_cnt_msb_ =
+          prev_pic_order_cnt_msb + max_pic_order_cnt_lsb_;
+    } else if ((slice_hdr->slice_pic_order_cnt_lsb > prev_pic_order_cnt_lsb) &&
+               ((slice_hdr->slice_pic_order_cnt_lsb - prev_pic_order_cnt_lsb) >
+                (max_pic_order_cnt_lsb_ / 2))) {
+      curr_pic_->pic_order_cnt_msb_ =
+          prev_pic_order_cnt_msb - max_pic_order_cnt_lsb_;
+    } else {
+      curr_pic_->pic_order_cnt_msb_ = prev_pic_order_cnt_msb;
+    }
+  } else {
+    curr_pic_->pic_order_cnt_msb_ = 0;
+  }
+  curr_pic_->pic_order_cnt_val_ =
+      curr_pic_->pic_order_cnt_msb_ + slice_hdr->slice_pic_order_cnt_lsb;
 }
 
 bool H265Decoder::CalcRefPicPocs(const H265SPS* sps,
                                  const H265PPS* pps,
                                  const H265SliceHeader* slice_hdr) {
-  NOTIMPLEMENTED();
-  return false;
+  if (slice_hdr->nal_unit_type == H265NALU::IDR_W_RADL ||
+      slice_hdr->nal_unit_type == H265NALU::IDR_N_LP) {
+    num_poc_st_curr_before_ = num_poc_st_curr_after_ = num_poc_st_foll_ =
+        num_poc_lt_curr_ = num_poc_lt_foll_ = 0;
+    return true;
+  }
+
+  // 8.3.2 - NOTE 2
+  const H265StRefPicSet& curr_st_ref_pic_set = slice_hdr->GetStRefPicSet(sps);
+
+  // Equation 8-5.
+  int i, j, k;
+  for (i = 0, j = 0, k = 0; i < curr_st_ref_pic_set.num_negative_pics; ++i) {
+    base::CheckedNumeric<int> poc = curr_pic_->pic_order_cnt_val_;
+    poc += curr_st_ref_pic_set.delta_poc_s0[i];
+    if (!poc.IsValid()) {
+      LOG(ERROR) << "Invalid POC";
+      return false;
+    }
+    if (curr_st_ref_pic_set.used_by_curr_pic_s0[i]) {
+      poc_st_curr_before_[j++] = poc.ValueOrDefault(0);
+    } else {
+      poc_st_foll_[k++] = poc.ValueOrDefault(0);
+    }
+  }
+  num_poc_st_curr_before_ = j;
+  for (i = 0, j = 0; i < curr_st_ref_pic_set.num_positive_pics; ++i) {
+    base::CheckedNumeric<int> poc = curr_pic_->pic_order_cnt_val_;
+    poc += curr_st_ref_pic_set.delta_poc_s1[i];
+    if (!poc.IsValid()) {
+      LOG(ERROR) << "Invalid POC";
+      return false;
+    }
+    if (curr_st_ref_pic_set.used_by_curr_pic_s1[i]) {
+      poc_st_curr_after_[j++] = poc.ValueOrDefault(0);
+    } else {
+      poc_st_foll_[k++] = poc.ValueOrDefault(0);
+    }
+  }
+  num_poc_st_curr_after_ = j;
+  num_poc_st_foll_ = k;
+  for (i = 0, j = 0, k = 0;
+       i < slice_hdr->num_long_term_sps + slice_hdr->num_long_term_pics; ++i) {
+    base::CheckedNumeric<int> poc_lt = slice_hdr->poc_lsb_lt[i];
+    if (slice_hdr->delta_poc_msb_present_flag[i]) {
+      poc_lt += curr_pic_->pic_order_cnt_val_;
+      base::CheckedNumeric<int> poc_delta =
+          slice_hdr->delta_poc_msb_cycle_lt[i];
+      poc_delta *= max_pic_order_cnt_lsb_;
+      if (!poc_delta.IsValid()) {
+        LOG(ERROR) << "Invalid POC";
+        return false;
+      }
+      poc_lt -= poc_delta.ValueOrDefault(0);
+      poc_lt -= curr_pic_->pic_order_cnt_val_ & (max_pic_order_cnt_lsb_ - 1);
+    }
+    if (!poc_lt.IsValid()) {
+      LOG(ERROR) << "Invalid POC";
+      return false;
+    }
+    if (slice_hdr->used_by_curr_pic_lt[i]) {
+      poc_lt_curr_[j] = poc_lt.ValueOrDefault(0);
+      curr_delta_poc_msb_present_flag_[j++] =
+          slice_hdr->delta_poc_msb_present_flag[i];
+    } else {
+      poc_lt_foll_[k] = poc_lt.ValueOrDefault(0);
+      foll_delta_poc_msb_present_flag_[k++] =
+          slice_hdr->delta_poc_msb_present_flag[i];
+    }
+  }
+  num_poc_lt_curr_ = j;
+  num_poc_lt_foll_ = k;
+
+  // Check conformance for |num_pic_total_curr|.
+  if (slice_hdr->nal_unit_type == H265NALU::CRA_NUT ||
+      (slice_hdr->nal_unit_type >= H265NALU::BLA_W_LP &&
+       slice_hdr->nal_unit_type <= H265NALU::BLA_N_LP)) {
+    if (slice_hdr->num_pic_total_curr) {
+      LOG(ERROR) << "Invalid value for num_pic_total_curr";
+      return false;
+    }
+  } else if ((slice_hdr->IsBSlice() || slice_hdr->IsPSlice()) &&
+             !slice_hdr->num_pic_total_curr) {
+    LOG(ERROR) << "Invalid value for num_pic_total_curr";
+    return false;
+  }
+
+  return true;
 }
 
 bool H265Decoder::BuildRefPicLists(const H265SPS* sps,
                                    const H265PPS* pps,
                                    const H265SliceHeader* slice_hdr) {
+  ref_pic_set_lt_curr_.clear();
+  ref_pic_set_lt_curr_.resize(kMaxDpbSize);
+  ref_pic_set_st_curr_after_.clear();
+  ref_pic_set_st_curr_after_.resize(kMaxDpbSize);
+  ref_pic_set_st_curr_before_.clear();
+  ref_pic_set_st_curr_before_.resize(kMaxDpbSize);
+  scoped_refptr<H265Picture> ref_pic_set_lt_foll[kMaxDpbSize];
+  scoped_refptr<H265Picture> ref_pic_set_st_foll[kMaxDpbSize];
+
+  // Mark everything in the DPB as unused for reference now. When we determine
+  // the pics in the ref list, then we will mark them appropriately.
+  dpb_.MarkAllUnusedForReference();
+
+  // Equation 8-6.
+  // We may be missing reference pictures, if so then we just don't specify
+  // them and let the accelerator deal with the missing reference pictures
+  // which is covered in the spec.
+  int total_ref_pics = 0;
+  for (int i = 0; i < num_poc_lt_curr_; ++i) {
+    if (!curr_delta_poc_msb_present_flag_[i]) {
+      ref_pic_set_lt_curr_[i] = dpb_.GetPicByPocMaskedAndMark(
+          poc_lt_curr_[i], sps->max_pic_order_cnt_lsb - 1,
+          H265Picture::kLongTermCurr);
+    } else {
+      ref_pic_set_lt_curr_[i] =
+          dpb_.GetPicByPocAndMark(poc_lt_curr_[i], H265Picture::kLongTermCurr);
+    }
+
+    if (ref_pic_set_lt_curr_[i]) {
+      total_ref_pics++;
+    }
+  }
+  for (int i = 0; i < num_poc_lt_foll_; ++i) {
+    if (!foll_delta_poc_msb_present_flag_[i]) {
+      ref_pic_set_lt_foll[i] = dpb_.GetPicByPocMaskedAndMark(
+          poc_lt_foll_[i], sps->max_pic_order_cnt_lsb - 1,
+          H265Picture::kLongTermFoll);
+    } else {
+      ref_pic_set_lt_foll[i] =
+          dpb_.GetPicByPocAndMark(poc_lt_foll_[i], H265Picture::kLongTermFoll);
+    }
+
+    if (ref_pic_set_lt_foll[i]) {
+      total_ref_pics++;
+    }
+  }
+
+  // Equation 8-7.
+  for (int i = 0; i < num_poc_st_curr_before_; ++i) {
+    ref_pic_set_st_curr_before_[i] = dpb_.GetPicByPocAndMark(
+        poc_st_curr_before_[i], H265Picture::kShortTermCurrBefore);
+
+    if (ref_pic_set_st_curr_before_[i]) {
+      total_ref_pics++;
+    }
+  }
+  for (int i = 0; i < num_poc_st_curr_after_; ++i) {
+    ref_pic_set_st_curr_after_[i] = dpb_.GetPicByPocAndMark(
+        poc_st_curr_after_[i], H265Picture::kShortTermCurrAfter);
+    if (ref_pic_set_st_curr_after_[i]) {
+      total_ref_pics++;
+    }
+  }
+  for (int i = 0; i < num_poc_st_foll_; ++i) {
+    ref_pic_set_st_foll[i] =
+        dpb_.GetPicByPocAndMark(poc_st_foll_[i], H265Picture::kShortTermFoll);
+    if (ref_pic_set_st_foll[i]) {
+      total_ref_pics++;
+    }
+  }
+
+  // Verify that the total number of reference pictures in the DPB matches the
+  // total count of reference pics. This ensures that a picture is not in more
+  // than one list, per the spec.
+  if (dpb_.GetReferencePicCount() != total_ref_pics) {
+    LOG(ERROR) << "Conformance problem, reference pic is in more than one list";
+    return false;
+  }
+
+  ref_pic_list_.clear();
+  dpb_.AppendReferencePics(&ref_pic_list_);
+  ref_pic_list0_.clear();
+  ref_pic_list1_.clear();
+
+  // 8.3.3 Generation of unavailable reference pictures is something we do not
+  // need to handle here. It's handled by the accelerator itself when we do not
+  // specify a reference picture that it needs.
+
+  if (slice_hdr->IsPSlice() || slice_hdr->IsBSlice()) {
+    // 8.3.4 Decoding process for reference picture lists construction
+    int num_rps_curr_temp_list0 =
+        std::max(slice_hdr->num_ref_idx_l0_active_minus1 + 1,
+                 slice_hdr->num_pic_total_curr);
+    scoped_refptr<H265Picture> ref_pic_list_temp0[kMaxDpbSize];
+
+    // Equation 8-8.
+    int r_idx = 0;
+    while (r_idx < num_rps_curr_temp_list0) {
+      for (int i = 0;
+           i < num_poc_st_curr_before_ && r_idx < num_rps_curr_temp_list0;
+           ++i, ++r_idx) {
+        ref_pic_list_temp0[r_idx] = ref_pic_set_st_curr_before_[i];
+      }
+      for (int i = 0;
+           i < num_poc_st_curr_after_ && r_idx < num_rps_curr_temp_list0;
+           ++i, ++r_idx) {
+        ref_pic_list_temp0[r_idx] = ref_pic_set_st_curr_after_[i];
+      }
+      for (int i = 0; i < num_poc_lt_curr_ && r_idx < num_rps_curr_temp_list0;
+           ++i, ++r_idx) {
+        ref_pic_list_temp0[r_idx] = ref_pic_set_lt_curr_[i];
+      }
+    }
+
+    // Equation 8-9.
+    for (r_idx = 0; r_idx <= slice_hdr->num_ref_idx_l0_active_minus1; ++r_idx) {
+      ref_pic_list0_.push_back(
+          slice_hdr->ref_pic_lists_modification
+                  .ref_pic_list_modification_flag_l0
+              ? ref_pic_list_temp0[slice_hdr->ref_pic_lists_modification
+                                       .list_entry_l0[r_idx]]
+              : ref_pic_list_temp0[r_idx]);
+    }
+
+    if (slice_hdr->IsBSlice()) {
+      int num_rps_curr_temp_list1 =
+          std::max(slice_hdr->num_ref_idx_l1_active_minus1 + 1,
+                   slice_hdr->num_pic_total_curr);
+      scoped_refptr<H265Picture> ref_pic_list_temp1[kMaxDpbSize];
+
+      // Equation 8-10.
+      r_idx = 0;
+      while (r_idx < num_rps_curr_temp_list1) {
+        for (int i = 0;
+             i < num_poc_st_curr_after_ && r_idx < num_rps_curr_temp_list1;
+             ++i, r_idx++) {
+          ref_pic_list_temp1[r_idx] = ref_pic_set_st_curr_after_[i];
+        }
+        for (int i = 0;
+             i < num_poc_st_curr_before_ && r_idx < num_rps_curr_temp_list1;
+             ++i, r_idx++) {
+          ref_pic_list_temp1[r_idx] = ref_pic_set_st_curr_before_[i];
+        }
+        for (int i = 0; i < num_poc_lt_curr_ && r_idx < num_rps_curr_temp_list1;
+             ++i, r_idx++) {
+          ref_pic_list_temp1[r_idx] = ref_pic_set_lt_curr_[i];
+        }
+      }
+
+      // Equation 8-11.
+      for (r_idx = 0; r_idx <= slice_hdr->num_ref_idx_l1_active_minus1;
+           ++r_idx) {
+        ref_pic_list1_.push_back(
+            slice_hdr->ref_pic_lists_modification
+                    .ref_pic_list_modification_flag_l1
+                ? ref_pic_list_temp1[slice_hdr->ref_pic_lists_modification
+                                         .list_entry_l1[r_idx]]
+                : ref_pic_list_temp1[r_idx]);
+      }
+    }
+  }
+
+  return true;
+}
+
+bool H265Decoder::OutputPic(scoped_refptr<H265Picture> pic) {
+  CHECK(!pic->outputted_);
+  pic->outputted_ = true;
+  VLOGF(4) << "Posting output task for POC: " << pic->pic_order_cnt_val_;
+
+  // TODO(b/261127809): Add this |pic|, ready to be outputted, to a queue.
   NOTIMPLEMENTED();
   return false;
 }
 
 bool H265Decoder::PerformDpbOperations(const H265SPS* sps) {
-  NOTIMPLEMENTED();
-  return false;
+  // C.5.2.2
+  if (curr_pic_->irap_pic_ && curr_pic_->no_rasl_output_flag_ &&
+      !curr_pic_->first_picture_) {
+    if (!curr_pic_->no_output_of_prior_pics_flag_) {
+      OutputAllRemainingPics();
+    }
+    dpb_.Clear();
+  } else {
+    int num_to_output;
+    do {
+      dpb_.DeleteUnused();
+      // Get all pictures that haven't been outputted yet.
+      H265Picture::Vector not_outputted;
+      dpb_.AppendPendingOutputPics(&not_outputted);
+      // Sort in output order.
+      std::sort(not_outputted.begin(), not_outputted.end(), POCAscCompare());
+
+      // Calculate how many pictures we need to output.
+      num_to_output = 0;
+      int highest_tid = sps->sps_max_sub_layers_minus1;
+      num_to_output = std::max(num_to_output,
+                               static_cast<int>(not_outputted.size()) -
+                                   sps->sps_max_num_reorder_pics[highest_tid]);
+      num_to_output =
+          std::max(num_to_output,
+                   static_cast<int>(dpb_.Size()) -
+                       sps->sps_max_dec_pic_buffering_minus1[highest_tid]);
+
+      num_to_output =
+          std::min(num_to_output, static_cast<int>(not_outputted.size()));
+      if (!num_to_output && dpb_.IsFull()) {
+        // This is wrong, we should try to output pictures until we can clear
+        // one from the DPB. This is better than failing, but we then may end up
+        // with something out of order.
+        LOG(ERROR) << "Forcibly outputting pictures to make room in DPB.";
+        for (const auto& pic : not_outputted) {
+          num_to_output++;
+          if (pic->reference_type_ == H265Picture::kUnused) {
+            break;
+          }
+        }
+      }
+
+      not_outputted.resize(num_to_output);
+      for (auto& pic : not_outputted) {
+        OutputPic(pic);
+      }
+
+      dpb_.DeleteUnused();
+    } while (dpb_.IsFull() && num_to_output);
+  }
+
+  if (dpb_.IsFull()) {
+    LOG(ERROR) << "Could not free up space in DPB for current picture";
+    return false;
+  }
+
+  // Put the current pic in the DPB.
+  curr_pic_->reference_type_ = H265Picture::kShortTermFoll;
+  dpb_.StorePicture(curr_pic_);
+  return true;
 }
 
 bool H265Decoder::StartNewFrame(const H265SliceHeader* slice_hdr) {
@@ -288,14 +914,64 @@ bool H265Decoder::StartNewFrame(const H265SliceHeader* slice_hdr) {
     curr_pic_->processed_ = true;
   }
 
+  struct v4l2_ctrl_hevc_sps v4l2_sps = SetupSPSCtrl(sps);
+  struct v4l2_ctrl_hevc_pps v4l2_pps = SetupPPSCtrl(pps);
+  struct v4l2_ctrl_hevc_scaling_matrix v4l2_matrix =
+      SetupScalingMatrix(sps, pps);
+
+  struct v4l2_ext_control ctrls[] = {
+      {.id = V4L2_CID_STATELESS_HEVC_SPS,
+       .size = sizeof(v4l2_sps),
+       .ptr = &v4l2_sps},
+      {.id = V4L2_CID_STATELESS_HEVC_PPS,
+       .size = sizeof(v4l2_pps),
+       .ptr = &v4l2_pps},
+      {.id = V4L2_CID_STATELESS_HEVC_SCALING_MATRIX,
+       .size = sizeof(v4l2_matrix),
+       .ptr = &v4l2_matrix}};
+  struct v4l2_ext_controls ext_ctrls = {
+      .count = (sizeof(ctrls) / sizeof(ctrls[0])), .controls = ctrls};
+
+  v4l2_ioctl_->SetExtCtrls(OUTPUT_queue_, &ext_ctrls, is_OUTPUT_queue_new_);
+
   // TODO(b/261127809): Implement submit frame meta data
+  NOTIMPLEMENTED();
+
+  return false;
+}
+
+bool H265Decoder::DecodePicture() {
+  CHECK(curr_pic_.get());
+
+  // TODO(b/261127809): Implement to submit a task to decode current picture
   NOTIMPLEMENTED();
   return false;
 }
 
-bool H265Decoder::FinishPrevFrameIfPresent() {
-  NOTIMPLEMENTED();
-  return false;
+void H265Decoder::FinishPicture(scoped_refptr<H265Picture> pic) {
+  // 8.3.1
+  if (pic->valid_for_prev_tid0_pic_) {
+    prev_tid0_pic_ = pic;
+  }
+
+  ref_pic_list_.clear();
+  ref_pic_list0_.clear();
+  ref_pic_list1_.clear();
+  ref_pic_set_lt_curr_.clear();
+  ref_pic_set_st_curr_after_.clear();
+  ref_pic_set_st_curr_before_.clear();
+
+  last_slice_hdr_.reset();
+}
+
+void H265Decoder::FinishPrevFrameIfPresent() {
+  // If we already have a frame waiting to be decoded, decode it and finish.
+  if (curr_pic_) {
+    const bool success = DecodePicture();
+    CHECK(success) << "Failed to decode the current picture.";
+
+    FinishPicture(std::move(curr_pic_));
+  }
 }
 
 H265Decoder::DecodeResult H265Decoder::Decode() {
@@ -310,8 +986,7 @@ H265Decoder::DecodeResult H265Decoder::Decode() {
       if (parse_result == H265Parser::kEOStream) {
         curr_nalu_.reset();
 
-        const bool success = FinishPrevFrameIfPresent();
-        CHECK(success) << "Failed to finish processing the previous frame.";
+        FinishPrevFrameIfPresent();
 
         is_stream_over_ = true;
         return kRanOutOfStreamData;
@@ -420,8 +1095,7 @@ H265Decoder::DecodeResult H265Decoder::Decode() {
         break;
       }
       case H265NALU::SPS_NUT: {
-        const bool success = FinishPrevFrameIfPresent();
-        CHECK(success) << "Failed to finish processing the previous frame.";
+        FinishPrevFrameIfPresent();
 
         int sps_id;
 
@@ -432,8 +1106,7 @@ H265Decoder::DecodeResult H265Decoder::Decode() {
         break;
       }
       case H265NALU::PPS_NUT: {
-        const bool success = FinishPrevFrameIfPresent();
-        CHECK(success) << "Failed to finish processing the previous frame.";
+        FinishPrevFrameIfPresent();
 
         int pps_id;
 
@@ -474,8 +1147,7 @@ H265Decoder::DecodeResult H265Decoder::Decode() {
       case H265NALU::UNSPEC53:
       case H265NALU::UNSPEC54:
       case H265NALU::UNSPEC55: {
-        const bool success = FinishPrevFrameIfPresent();
-        CHECK(success) << "Failed to finish processing the previous frame.";
+        FinishPrevFrameIfPresent();
         break;
       }
       default:
@@ -496,7 +1168,12 @@ VideoDecoder::Result H265Decoder::DecodeNextFrame(const int frame_number,
                                                   gfx::Size& size) {
   if (!parser_) {
     parser_ = std::make_unique<H265Parser>();
-    parser_->SetStream(data_stream_.data(), data_stream_.length());
+    parser_->SetStream(data_stream_->data(), data_stream_->length());
+  }
+
+  is_OUTPUT_queue_new_ = !OUTPUT_queue_;
+  if (!OUTPUT_queue_) {
+    CreateOUTPUTQueue(kDriverCodecFourcc);
   }
 
   // TODO(b/261127809): add a condition to check frames are ready for processing

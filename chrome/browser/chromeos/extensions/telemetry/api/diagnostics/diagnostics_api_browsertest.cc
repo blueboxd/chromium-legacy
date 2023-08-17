@@ -119,6 +119,7 @@ IN_PROC_BROWSER_TEST_F(TelemetryExtensionDiagnosticsApiBrowserTest,
         crosapi::DiagnosticsRoutineEnum::kUfsLifetime,
         crosapi::DiagnosticsRoutineEnum::kPowerButton,
         crosapi::DiagnosticsRoutineEnum::kAudioDriver,
+        crosapi::DiagnosticsRoutineEnum::kBluetoothDiscovery,
     });
 
     SetServiceForTesting(std::move(fake_service_impl));
@@ -158,7 +159,8 @@ IN_PROC_BROWSER_TEST_F(TelemetryExtensionDiagnosticsApiBrowserTest,
               "bluetooth_power",
               "ufs_lifetime",
               "power_button",
-              "audio_driver"
+              "audio_driver",
+              "bluetooth_discovery"
             ]
           }, response);
         chrome.test.succeed();
@@ -190,15 +192,13 @@ IN_PROC_BROWSER_TEST_F(TelemetryExtensionDiagnosticsApiBrowserTest,
     fake_service_impl->SetRoutineUpdateResponse(std::move(response));
 
     // Set the expected passed parameters.
-    base::Value::Dict expected_result;
-
-    expected_result.Set("id", 123456);
-    expected_result.Set(
-        "command", static_cast<int32_t>(
-                       crosapi::DiagnosticsRoutineCommandEnum::kGetStatus));
-    expected_result.Set("include_output", true);
     fake_service_impl->SetExpectedLastPassedParameters(
-        std::move(expected_result));
+        base::Value::Dict()
+            .Set("id", 123456)
+            .Set("command",
+                 static_cast<int32_t>(
+                     crosapi::DiagnosticsRoutineCommandEnum::kGetStatus))
+            .Set("include_output", true));
 
     SetServiceForTesting(std::move(fake_service_impl));
   }
@@ -249,14 +249,13 @@ IN_PROC_BROWSER_TEST_F(TelemetryExtensionDiagnosticsApiBrowserTest,
     fake_service_impl->SetRoutineUpdateResponse(std::move(response));
 
     // Set the expected passed parameters.
-    base::Value::Dict expected_result;
-    expected_result.Set("id", 654321);
-    expected_result.Set(
-        "command",
-        static_cast<int32_t>(crosapi::DiagnosticsRoutineCommandEnum::kRemove));
-    expected_result.Set("include_output", true);
     fake_service_impl->SetExpectedLastPassedParameters(
-        std::move(expected_result));
+        base::Value::Dict()
+            .Set("id", 654321)
+            .Set("command",
+                 static_cast<int32_t>(
+                     crosapi::DiagnosticsRoutineCommandEnum::kRemove))
+            .Set("include_output", true));
 
     SetServiceForTesting(std::move(fake_service_impl));
   }
@@ -298,15 +297,13 @@ IN_PROC_BROWSER_TEST_F(TelemetryExtensionDiagnosticsApiBrowserTest,
     auto fake_service_impl = std::make_unique<FakeDiagnosticsService>();
     fake_service_impl->SetRunRoutineResponse(std::move(expected_response));
 
-    base::Value::Dict expected_result;
-    expected_result.Set("expected_status",
-                        static_cast<int32_t>(
-                            crosapi::DiagnosticsAcPowerStatusEnum::kConnected));
-    expected_result.Set("expected_power_type", "ac_power");
-
     // Set the expected runtime actions.
     fake_service_impl->SetExpectedLastPassedParameters(
-        std::move(expected_result));
+        base::Value::Dict()
+            .Set("expected_status",
+                 static_cast<int32_t>(
+                     crosapi::DiagnosticsAcPowerStatusEnum::kConnected))
+            .Set("expected_power_type", "ac_power"));
     fake_service_impl->SetExpectedLastCalledRoutine(
         crosapi::DiagnosticsRoutineEnum::kAcPower);
 
@@ -373,13 +370,11 @@ IN_PROC_BROWSER_TEST_F(TelemetryExtensionDiagnosticsApiBrowserTest,
     auto fake_service_impl = std::make_unique<FakeDiagnosticsService>();
     fake_service_impl->SetRunRoutineResponse(std::move(expected_response));
 
-    base::Value::Dict expected_result;
-    expected_result.Set("length_seconds", 1000);
-    expected_result.Set("minimum_charge_percent_required", 1);
-
     // Set the expected runtime actions.
     fake_service_impl->SetExpectedLastPassedParameters(
-        std::move(expected_result));
+        base::Value::Dict()
+            .Set("length_seconds", 1000)
+            .Set("minimum_charge_percent_required", 1));
     fake_service_impl->SetExpectedLastCalledRoutine(
         crosapi::DiagnosticsRoutineEnum::kBatteryCharge);
 
@@ -415,13 +410,11 @@ IN_PROC_BROWSER_TEST_F(TelemetryExtensionDiagnosticsApiBrowserTest,
     auto fake_service_impl = std::make_unique<FakeDiagnosticsService>();
     fake_service_impl->SetRunRoutineResponse(std::move(expected_response));
 
-    base::Value::Dict expected_result;
-    expected_result.Set("length_seconds", 10);
-    expected_result.Set("maximum_discharge_percent_allowed", 15);
-
     // Set the expected runtime actions.
     fake_service_impl->SetExpectedLastPassedParameters(
-        std::move(expected_result));
+        base::Value::Dict()
+            .Set("length_seconds", 10)
+            .Set("maximum_discharge_percent_allowed", 15));
     fake_service_impl->SetExpectedLastCalledRoutine(
         crosapi::DiagnosticsRoutineEnum::kBatteryDischarge);
 
@@ -477,15 +470,46 @@ IN_PROC_BROWSER_TEST_F(TelemetryExtensionDiagnosticsApiBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(TelemetryExtensionDiagnosticsApiBrowserTest,
-                       RunBluetoothPowerRoutineWithoutFeatureFlagFail) {
+                       RunBluetoothDiscoveryRoutineWithoutFeatureFlagFail) {
   CreateExtensionAndRunServiceWorker(R"(
     chrome.test.runTests([
-      function runBluetoothPowerRoutineNotWorking() {
+      function runBluetoothDiscoveryRoutineNotWorking() {
         chrome.test.assertThrows(() => {
-          chrome.os.diagnostics.runBluetoothPowerRoutine();
+          chrome.os.diagnostics.runBluetoothDiscoveryRoutine();
         }, [],
-          'chrome.os.diagnostics.runBluetoothPowerRoutine is not a function'
+          'chrome.os.diagnostics.runBluetoothDiscoveryRoutine is not a function'
         );
+        chrome.test.succeed();
+      }
+    ]);
+  )");
+}
+
+IN_PROC_BROWSER_TEST_F(TelemetryExtensionDiagnosticsApiBrowserTest,
+                       RunBluetoothPowerRoutineSuccess) {
+  // Configure FakeDiagnosticsService.
+  {
+    auto expected_response = crosapi::DiagnosticsRunRoutineResponse::New();
+    expected_response->id = 0;
+    expected_response->status = crosapi::DiagnosticsRoutineStatusEnum::kReady;
+
+    // Set the return value for a call to RunBluetoothPowerRoutine.
+    auto fake_service_impl = std::make_unique<FakeDiagnosticsService>();
+    fake_service_impl->SetRunRoutineResponse(std::move(expected_response));
+
+    // Set the expected called routine.
+    fake_service_impl->SetExpectedLastCalledRoutine(
+        crosapi::DiagnosticsRoutineEnum::kBluetoothPower);
+
+    SetServiceForTesting(std::move(fake_service_impl));
+  }
+
+  CreateExtensionAndRunServiceWorker(R"(
+    chrome.test.runTests([
+      async function runBluetoothPowerRoutine() {
+        const response =
+          await chrome.os.diagnostics.runBluetoothPowerRoutine();
+        chrome.test.assertEq({id: 0, status: "ready"}, response);
         chrome.test.succeed();
       }
     ]);
@@ -504,12 +528,9 @@ IN_PROC_BROWSER_TEST_F(TelemetryExtensionDiagnosticsApiBrowserTest,
     auto fake_service_impl = std::make_unique<FakeDiagnosticsService>();
     fake_service_impl->SetRunRoutineResponse(std::move(expected_response));
 
-    base::Value::Dict expected_result;
-    expected_result.Set("length_seconds", 120);
-
     // Set the expected runtime actions.
     fake_service_impl->SetExpectedLastPassedParameters(
-        std::move(expected_result));
+        base::Value::Dict().Set("length_seconds", 120));
     fake_service_impl->SetExpectedLastCalledRoutine(
         crosapi::DiagnosticsRoutineEnum::kCpuCache);
 
@@ -544,12 +565,9 @@ IN_PROC_BROWSER_TEST_F(TelemetryExtensionDiagnosticsApiBrowserTest,
     auto fake_service_impl = std::make_unique<FakeDiagnosticsService>();
     fake_service_impl->SetRunRoutineResponse(std::move(expected_response));
 
-    base::Value::Dict expected_result;
-    expected_result.Set("length_seconds", 120);
-
     // Set the expected runtime actions.
     fake_service_impl->SetExpectedLastPassedParameters(
-        std::move(expected_result));
+        base::Value::Dict().Set("length_seconds", 120));
     fake_service_impl->SetExpectedLastCalledRoutine(
         crosapi::DiagnosticsRoutineEnum::kFloatingPointAccuracy);
 
@@ -584,12 +602,9 @@ IN_PROC_BROWSER_TEST_F(TelemetryExtensionDiagnosticsApiBrowserTest,
     auto fake_service_impl = std::make_unique<FakeDiagnosticsService>();
     fake_service_impl->SetRunRoutineResponse(std::move(expected_response));
 
-    base::Value::Dict expected_result;
-    expected_result.Set("length_seconds", 120);
-
     // Set the expected runtime actions.
     fake_service_impl->SetExpectedLastPassedParameters(
-        std::move(expected_result));
+        base::Value::Dict().Set("length_seconds", 120));
     fake_service_impl->SetExpectedLastCalledRoutine(
         crosapi::DiagnosticsRoutineEnum::kPrimeSearch);
 
@@ -624,12 +639,9 @@ IN_PROC_BROWSER_TEST_F(TelemetryExtensionDiagnosticsApiBrowserTest,
     auto fake_service_impl = std::make_unique<FakeDiagnosticsService>();
     fake_service_impl->SetRunRoutineResponse(std::move(expected_response));
 
-    base::Value::Dict expected_result;
-    expected_result.Set("length_seconds", 120);
-
     // Set the expected runtime actions.
     fake_service_impl->SetExpectedLastPassedParameters(
-        std::move(expected_result));
+        base::Value::Dict().Set("length_seconds", 120));
     fake_service_impl->SetExpectedLastCalledRoutine(
         crosapi::DiagnosticsRoutineEnum::kCpuStress);
 
@@ -664,16 +676,14 @@ IN_PROC_BROWSER_TEST_F(TelemetryExtensionDiagnosticsApiBrowserTest,
     auto fake_service_impl = std::make_unique<FakeDiagnosticsService>();
     fake_service_impl->SetRunRoutineResponse(std::move(expected_response));
 
-    base::Value::Dict expected_result;
-    expected_result.Set(
-        "type", static_cast<int32_t>(
-                    crosapi::DiagnosticsDiskReadRoutineTypeEnum::kLinearRead));
-    expected_result.Set("length_seconds", 20);
-    expected_result.Set("file_size_mb", 1000);
-
     // Set the expected runtime actions.
     fake_service_impl->SetExpectedLastPassedParameters(
-        std::move(expected_result));
+        base::Value::Dict()
+            .Set("type",
+                 static_cast<int32_t>(
+                     crosapi::DiagnosticsDiskReadRoutineTypeEnum::kLinearRead))
+            .Set("length_seconds", 20)
+            .Set("file_size_mb", 1000));
     fake_service_impl->SetExpectedLastCalledRoutine(
         crosapi::DiagnosticsRoutineEnum::kDiskRead);
 
@@ -921,15 +931,11 @@ IN_PROC_BROWSER_TEST_F(TelemetryExtensionDiagnosticsApiBrowserTest,
     auto fake_service_impl = std::make_unique<FakeDiagnosticsService>();
     fake_service_impl->SetRunRoutineResponse(std::move(expected_response));
 
-    base::Value::Dict expected_result;
-    expected_result.Set(
+    // Set the expected runtime actions.
+    fake_service_impl->SetExpectedLastPassedParameters(base::Value::Dict().Set(
         "test_type",
         static_cast<int32_t>(
-            crosapi::DiagnosticsNvmeSelfTestTypeEnum::kShortSelfTest));
-
-    // Set the expected runtime actions.
-    fake_service_impl->SetExpectedLastPassedParameters(
-        std::move(expected_result));
+            crosapi::DiagnosticsNvmeSelfTestTypeEnum::kShortSelfTest)));
     fake_service_impl->SetExpectedLastCalledRoutine(
         crosapi::DiagnosticsRoutineEnum::kNvmeSelfTest);
 
@@ -964,12 +970,9 @@ IN_PROC_BROWSER_TEST_F(TelemetryExtensionDiagnosticsApiBrowserTest,
     auto fake_service_impl = std::make_unique<FakeDiagnosticsService>();
     fake_service_impl->SetRunRoutineResponse(std::move(expected_response));
 
-    base::Value::Dict expected_result;
-    expected_result.Set("wear_level_threshold", 80);
-
     // Set the expected runtime actions.
     fake_service_impl->SetExpectedLastPassedParameters(
-        std::move(expected_result));
+        base::Value::Dict().Set("wear_level_threshold", 80));
     fake_service_impl->SetExpectedLastCalledRoutine(
         crosapi::DiagnosticsRoutineEnum::kNvmeWearLevel);
 
@@ -1105,11 +1108,8 @@ IN_PROC_BROWSER_TEST_F(TelemetryExtensionDiagnosticsApiBrowserTest,
     auto fake_service_impl = std::make_unique<FakeDiagnosticsService>();
     fake_service_impl->SetRunRoutineResponse(std::move(expected_response));
 
-    base::Value::Dict expected_result;
-    expected_result.Set("percentage_used_threshold", 42);
-
     fake_service_impl->SetExpectedLastPassedParameters(
-        std::move(expected_result));
+        base::Value::Dict().Set("percentage_used_threshold", 42));
 
     // Set the expected called routine.
     fake_service_impl->SetExpectedLastCalledRoutine(
@@ -1177,11 +1177,8 @@ IN_PROC_BROWSER_TEST_F(TelemetryExtensionDiagnosticsApiBrowserTest,
     auto fake_service_impl = std::make_unique<FakeDiagnosticsService>();
     fake_service_impl->SetRunRoutineResponse(std::move(expected_response));
 
-    base::Value::Dict expected_result;
-    expected_result.Set("timeout_seconds", 10);
-
     fake_service_impl->SetExpectedLastPassedParameters(
-        std::move(expected_result));
+        base::Value::Dict().Set("timeout_seconds", 10));
 
     // Set the expected called routine.
     fake_service_impl->SetExpectedLastCalledRoutine(
@@ -1251,30 +1248,81 @@ class PendingApprovalTelemetryExtensionDiagnosticsApiBrowserTest
 
 IN_PROC_BROWSER_TEST_F(
     PendingApprovalTelemetryExtensionDiagnosticsApiBrowserTest,
-    RunBluetoothPowerRoutineWithFeatureFlagWork) {
+    RunBluetoothDiscoveryRoutineWithFeatureFlagSuccess) {
   // Configure FakeDiagnosticsService.
   {
     auto expected_response = crosapi::DiagnosticsRunRoutineResponse::New();
     expected_response->id = 0;
     expected_response->status = crosapi::DiagnosticsRoutineStatusEnum::kReady;
 
-    // Set the return value for a call to RunBluetoothPowerRoutine.
+    // Set the return value for a call to RunBluetoothDiscoveryRoutine.
     auto fake_service_impl = std::make_unique<FakeDiagnosticsService>();
     fake_service_impl->SetRunRoutineResponse(std::move(expected_response));
 
     // Set the expected called routine.
     fake_service_impl->SetExpectedLastCalledRoutine(
-        crosapi::DiagnosticsRoutineEnum::kBluetoothPower);
+        crosapi::DiagnosticsRoutineEnum::kBluetoothDiscovery);
 
     SetServiceForTesting(std::move(fake_service_impl));
   }
 
   CreateExtensionAndRunServiceWorker(R"(
     chrome.test.runTests([
-      async function runBluetoothPowerRoutine() {
+      async function runBluetoothDiscoveryRoutine() {
         const response =
-          await chrome.os.diagnostics.runBluetoothPowerRoutine();
+          await chrome.os.diagnostics.runBluetoothDiscoveryRoutine();
         chrome.test.assertEq({id: 0, status: "ready"}, response);
+        chrome.test.succeed();
+      }
+    ]);
+  )");
+}
+
+class BlockedTelemetryExtensionDiagnosticsApiBrowserTest
+    : public PendingApprovalTelemetryExtensionDiagnosticsApiBrowserTest {
+ public:
+  BlockedTelemetryExtensionDiagnosticsApiBrowserTest() = default;
+
+  std::string public_key() const override {
+    return "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAm6NnMxmC5iaSFAILkuIkGXl"
+           "lW1Tie3AW+7Ty3R3sbQ7EVNG3HtFIG7jbJIvSko+lrTa1U1VveOXZw1u3y1T49ihR2X"
+           "FU0w6+3OAXzjuUimKUviGao6EN4KfCegtKyDQnMw0zATBisqBxrPLzGBXxP/AhxH2OG"
+           "gyyioVOzoCF+rnBY7ed+Wh+mPI7s9lrECeisUHHM5xbHXXgr8bnvt3U27jnsctwJWKH"
+           "fcbd3rpMJwBfOmPfuQ0MZvySVkTr/WYeemkwR8/4mek9/UIGMB8X+mXdU9OV/qhylqy"
+           "6FzRw/FdV+RcmzAwEgNmhgXP7TwtFBsUdtTIe2Kio26ciK7PSKwIDAQAB";
+  }
+
+  std::string matches_origin() const override {
+    return "https://hpcs-appschr.hpcloud.hp.com/*";
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(BlockedTelemetryExtensionDiagnosticsApiBrowserTest,
+                       RunBluetoothPowerRoutineFromBlockedExtensionFail) {
+  CreateExtensionAndRunServiceWorker(R"(
+    chrome.test.runTests([
+      function runBluetoothPowerRoutineNotWorking() {
+        chrome.test.assertThrows(() => {
+          chrome.os.diagnostics.runBluetoothPowerRoutine();
+        }, [],
+          'chrome.os.diagnostics.runBluetoothPowerRoutine is not a function'
+        );
+        chrome.test.succeed();
+      }
+    ]);
+  )");
+}
+
+IN_PROC_BROWSER_TEST_F(BlockedTelemetryExtensionDiagnosticsApiBrowserTest,
+                       RunBluetoothDiscoveryRoutineFromBlockedExtensionFail) {
+  CreateExtensionAndRunServiceWorker(R"(
+    chrome.test.runTests([
+      function runBluetoothDiscoveryRoutineNotWorking() {
+        chrome.test.assertThrows(() => {
+          chrome.os.diagnostics.runBluetoothDiscoveryRoutine();
+        }, [],
+          'chrome.os.diagnostics.runBluetoothDiscoveryRoutine is not a function'
+        );
         chrome.test.succeed();
       }
     ]);

@@ -18,6 +18,7 @@
 #include "chrome/test/base/testing_profile_manager.h"
 #include "chrome/test/views/chrome_views_test_base.h"
 #include "components/download/public/common/mock_download_item.h"
+#include "content/public/browser/download_item_utils.h"
 #include "content/public/test/mock_download_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -25,6 +26,7 @@
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/vector_icons.h"
 #include "ui/views/view.h"
+#include "ui/views/window/dialog_client_view.h"
 
 namespace {
 
@@ -92,6 +94,9 @@ class DownloadBubbleSecurityViewTest : public ChromeViewsTestBase {
         std::make_unique<DownloadBubbleSecurityView>(
             bubble_controller_->GetWeakPtr(), bubble_navigator_->GetWeakPtr(),
             bubble_delegate_));
+
+    content::DownloadItemUtils::AttachInfoForTesting(&download_item_, profile_,
+                                                     nullptr);
 
     row_list_view_ = std::make_unique<DownloadBubbleRowListView>();
     const int bubble_width = ChromeLayoutProvider::Get()->GetDistanceMetric(
@@ -270,4 +275,34 @@ TEST_F(DownloadBubbleSecurityViewTest, VerifyLogWarningActions) {
     EXPECT_EQ(events[3].action, WarningAction::BACK);
     EXPECT_EQ(events[4].action, WarningAction::DISMISS);
   }
+}
+
+TEST_F(DownloadBubbleSecurityViewTest, ResizesOnUpdate) {
+  // This test simulates the deep scanning flow. The prompt for scanning is
+  // wider than the scan in progress view. The bubble should be able to scale up
+  // and down in these transitions.
+  row_view_->SetUIInfoForTesting(
+      DownloadUIModel::BubbleUIInfo().AddPrimarySubpageButton(
+          std::u16string(u""), DownloadCommands::Command::DISCARD));
+  security_view_->UpdateSecurityView(row_view_.get());
+  int short_width =
+      bubble_delegate_->GetDialogClientView()->GetMinimumSize().width();
+
+  row_view_->SetUIInfoForTesting(
+      DownloadUIModel::BubbleUIInfo().AddPrimarySubpageButton(
+          std::u16string(
+              u"really really really really really really long button text"),
+          DownloadCommands::Command::DISCARD));
+  security_view_->UpdateSecurityView(row_view_.get());
+  int medium_width =
+      bubble_delegate_->GetDialogClientView()->GetMinimumSize().width();
+
+  ASSERT_LT(short_width, medium_width);
+
+  row_view_->SetUIInfoForTesting(
+      DownloadUIModel::BubbleUIInfo().AddPrimarySubpageButton(
+          std::u16string(u""), DownloadCommands::Command::DISCARD));
+  security_view_->UpdateSecurityView(row_view_.get());
+  EXPECT_EQ(short_width,
+            bubble_delegate_->GetDialogClientView()->GetMinimumSize().width());
 }

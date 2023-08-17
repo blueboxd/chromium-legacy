@@ -33,6 +33,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/custom_handlers/protocol_handler.h"
 #include "components/custom_handlers/protocol_handler_registry.h"
+#include "components/enterprise/buildflags/buildflags.h"
 #include "components/network_session_configurator/common/network_switches.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/prefs/pref_service.h"
@@ -73,10 +74,7 @@
 #include "chrome/test/base/launchservices_utils_mac.h"
 #endif
 
-// TODO(b/283093731): Replace this macro with cloud content analysis equivalent
-// buildflag condition.
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
-    BUILDFLAG(IS_CHROMEOS)
+#if BUILDFLAG(ENTERPRISE_CONTENT_ANALYSIS)
 #include "base/files/scoped_temp_dir.h"
 #include "base/test/bind.h"
 #include "base/threading/scoped_blocking_call.h"
@@ -85,14 +83,11 @@
 #include "chrome/browser/enterprise/connectors/test/fake_content_analysis_delegate.h"  // nogncheck
 #include "ui/base/clipboard/clipboard_format_type.h"
 
-// TODO(b/283093731): Replace this macro with local content analysis equivalent
-// buildflag condition.
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
+#if BUILDFLAG(ENTERPRISE_LOCAL_CONTENT_ANALYSIS)
 #include "chrome/browser/enterprise/connectors/analysis/fake_content_analysis_sdk_manager.h"  // nogncheck
-#endif
+#endif  // BUILDFLAG(ENTERPRISE_LOCAL_CONTENT_ANALYSIS)
 
-#endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) ||
-        // BUILDFLAG(IS_CHROMEOS)
+#endif  // BUILDFLAG(ENTERPRISE_CONTENT_ANALYSIS)
 
 namespace {
 
@@ -693,8 +688,7 @@ IN_PROC_BROWSER_TEST_F(KeepaliveDurationOnShutdownTest, DynamicUpdate) {
 
 #endif  // !BUILDFLAG(IS_ANDROID)
 
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
-    BUILDFLAG(IS_CHROMEOS)
+#if BUILDFLAG(ENTERPRISE_CONTENT_ANALYSIS)
 
 class IsClipboardPasteContentAllowedTest : public InProcessBrowserTest {
  public:
@@ -791,7 +785,7 @@ class IsClipboardPasteContentAllowedTest : public InProcessBrowserTest {
 
   base::ScopedTempDir temp_dir_;
   raw_ptr<ChromeContentBrowserClient> client_ = nullptr;
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
+#if BUILDFLAG(ENTERPRISE_LOCAL_CONTENT_ANALYSIS)
   // This installs a fake SDK manager that creates fake SDK clients when
   // its GetClient() method is called. This is needed so that calls to
   // ContentAnalysisSdkManager::Get()->GetClient() do not fail.
@@ -829,7 +823,14 @@ IN_PROC_BROWSER_TEST_F(IsClipboardPasteContentAllowedTest, TextBlocked) {
       base::BindOnce(
           [](absl::optional<ChromeContentBrowserClient::ClipboardPasteData>
                  clipboard_paste_data) {
+#if BUILDFLAG(ENTERPRISE_LOCAL_CONTENT_ANALYSIS)
             EXPECT_FALSE(clipboard_paste_data.has_value());
+#else
+            // Platforms that don't support local content analysis shouldn't
+            // block anything, even when the policy is set to a local service
+            // provider value.
+            EXPECT_TRUE(clipboard_paste_data.has_value());
+#endif
           }));
 }
 
@@ -870,9 +871,18 @@ IN_PROC_BROWSER_TEST_F(IsClipboardPasteContentAllowedTest, AllFilesBlocked) {
       contents, GURL("google.com"), ui::ClipboardFormatType::FilenamesType(),
       clipboard_paste_data,
       base::BindLambdaForTesting(
-          [](absl::optional<ChromeContentBrowserClient::ClipboardPasteData>
-                 clipboard_paste_data) {
+          [paths](absl::optional<ChromeContentBrowserClient::ClipboardPasteData>
+                      clipboard_paste_data) {
+#if BUILDFLAG(ENTERPRISE_LOCAL_CONTENT_ANALYSIS)
             EXPECT_FALSE(clipboard_paste_data.has_value());
+#else
+            // Platforms that don't support local content analysis shouldn't
+            // block anything, even when the policy is set to a local service
+            // provider value.
+            EXPECT_TRUE(clipboard_paste_data.has_value());
+            EXPECT_EQ(clipboard_paste_data->file_paths[0], paths[0]);
+            EXPECT_EQ(clipboard_paste_data->file_paths[1], paths[1]);
+#endif
           }));
 }
 
@@ -896,7 +906,6 @@ IN_PROC_BROWSER_TEST_F(IsClipboardPasteContentAllowedTest, SomeFilesBlocked) {
             EXPECT_EQ(clipboard_paste_data->file_paths[0], paths[0]);
           }));
 }
-#endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) ||
-        // BUILDFLAG(IS_CHROMEOS)
+#endif  // BUILDFLAG(ENTERPRISE_CONTENT_ANALYSIS)
 
 }  // namespace

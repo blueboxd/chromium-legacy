@@ -17,12 +17,8 @@
 #import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/shared/public/features/system_flags.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 // Called from the BrowserBookmarkModelBridge from C++ -> ObjC.
-@interface SpotlightManager ()<BookmarkUpdatedDelegate> {
+@interface SpotlightManager () {
   BookmarksSpotlightManager* _bookmarkManager;
   TopSitesSpotlightManager* _topSitesManager;
   ActionsSpotlightManager* _actionsManager;
@@ -58,7 +54,6 @@
         topSitesSpotlightManagerWithBrowserState:browserState];
     _bookmarkManager = [BookmarksSpotlightManager
         bookmarksSpotlightManagerWithBrowserState:browserState];
-    [_bookmarkManager setDelegate:self];
     _actionsManager = [ActionsSpotlightManager actionsSpotlightManager];
     if (base::FeatureList::IsEnabled(kSpotlightReadingListSource)) {
       _readingListManager = [ReadingListSpotlightManager
@@ -84,12 +79,9 @@
   [_bookmarkManager reindexBookmarksIfNeeded];
   [_actionsManager indexActionsWithIsGoogleDefaultSearchEngine:
                        [self isGoogleDefaultSearchEngine]];
+  [_topSitesManager reindexTopSites];
   [self.readingListManager clearAndReindexReadingList];
   [self.openTabsManager clearAndReindexOpenTabs];
-}
-
-- (void)bookmarkUpdated {
-  [_topSitesManager reindexTopSites];
 }
 
 - (void)shutdown {

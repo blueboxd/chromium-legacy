@@ -7,7 +7,7 @@
 <translation id="1462727070346936664">Logg på for å få mest mulig ut av Chrome.</translation>
 <translation id="1479202195792305274">Chrome kan sjekke passordene dine når du logger på med Google-kontoen din.</translation>
 <translation id="1491435845014430217">Slå på «Lås inkognitofaner når du lukker Chrome».</translation>
-<translation id="1493827051843127077">Angi Chrome som standard for å synkronisere fanene, passordene og betalingsopplysningene dine på alle enhetene dine</translation>
+<translation id="1493827051843127077">Angi Chrome som standard for å synkronisere faner, passord og betalingsopplysninger på alle enhetene dine</translation>
 <translation id="1504372625950710826">Chrome kunne ikke se etter oppdateringer. Se om du er koblet til internett.</translation>
 <translation id="1511320244449497906">Du er pålogget og synkroniserer dataene dine med en konto som er administrert av <ph name="DOMAIN" />, hvor administratoren nå kan angi brukerinnstillinger spesifikt for denne kontoen for å endre virkemåten til Chrome.</translation>
 <translation id="1554731936187952550">Du har den sterkeste sikkerheten i Chrome mot skadelige nettsteder</translation>
@@ -39,6 +39,7 @@
 <translation id="2767464022270041271">Ingen lagrede passord. Google Passordlagring kan sjekke passordene dine når du lagrer dem.</translation>
 <translation id="2840432500933227975">Åpne Chrome-innstillingene i iOS, trykk på «Standard nettleserapp», og velg Chrome.</translation>
 <translation id="2869959624320573933">Logg på Chrome</translation>
+<translation id="2876628302275096482">Finn ut mer om <ph name="BEGIN_LINK" />hvordan Chrome holder dataene dine private<ph name="END_LINK" /></translation>
 <translation id="2957447865124070833">Velg <ph name="BEGIN_BOLD" />Chrome<ph name="END_BOLD" /></translation>
 <translation id="3030414234702425231">Fordi du logger av en konto som er administrert av <ph name="SIGNOUT_MANAGED_DOMAIN" />, blir Chrome-dataene dine slettet fra denne enheten, men de blir værende i Google-kontoen din.</translation>
 <translation id="3167189358072330585">Kontoen din fungerer ikke i Google Chrome. Kontakt domeneadministratoren din, eller logg på med en vanlig Google-konto.</translation>
@@ -79,10 +80,12 @@
 <translation id="5162467219239570114">Chrome er utdatert. Hvis ingen oppdatering er tilgjengelig i <ph name="BEGIN_LINK" />App Store<ph name="END_LINK" />, kan det hende at enheten din ikke støtter nye versjoner av Chrome lenger.</translation>
 <translation id="5389212809648216794">Google Chrome kan ikke bruke kameraet fordi det brukes av en annen app</translation>
 <translation id="5395376160638294582">Sørg for at du alltid kan bruke Chrome-dataene i Google-kontoen din</translation>
+<translation id="5439191312780166229">Advarer deg om farlige nettsteder, også nettsteder som Google ikke kjenner til fra før, ved å analysere mer data fra nettsteder enn ved standardbeskyttelse. Du kan velge å hoppe over Chrome-advarsler.</translation>
 <translation id="5460571915754665838">4. Velg Chrome</translation>
 <translation id="5492504007368565877">Google Passordlagring kan ikke sjekke passordene dine.</translation>
 <translation id="5527026824954593399">Trykk på «Se med Google Maps i Chrome».</translation>
 <translation id="5552137475244467770">Chrome sjekker passordene dine regelmessig mot lister som er lagt ut på nett. Når dette gjøres, er passordene og brukernavnene dine kryptert. Det betyr at ingen kan lese dem, ikke engang Google.</translation>
+<translation id="5554520618550346933">Når du bruker et passord, advarer Chrome deg hvis passordet er publisert på nettet. Denne funksjonen holder passordene og brukernavnene dine kryptert. Det betyr at ingen kan lese dem, ikke engang Google.</translation>
 <translation id="5639704535586432836">Åpne Innstillinger &gt; Personvern &gt; Kamera &gt; Google Chrome, og slå på kameraet.</translation>
 <translation id="5642200033778930880">Google Chrome kan ikke bruke kameraet i modus for delt visning</translation>
 <translation id="5661521615548540542">Google Passordlagring kunne ikke sjekke alle passordene. Prøv igjen senere.</translation>
@@ -148,6 +151,7 @@
 <translation id="8765470054473112089">Når du skriver i adressefeltet eller søkefeltet, sender Chrome det du skriver til standardsøkemotoren din, for å gi deg bedre forslag. Dette er av i Inkognito.</translation>
 <translation id="8772179140489533211">Viser vinduer som ber deg logge på Chrome.</translation>
 <translation id="8788269841521769222">Du trenger ikke å huske dette passordet. Det blir lagret i Google Passordlagring for <ph name="EMAIL" /></translation>
+<translation id="8808828119384186784">Chrome-innstillinger</translation>
 <translation id="8857676124663337448">Google Passordlagring kunne ikke sjekke alle passordene. Prøv på nytt i morgen.</translation>
 <translation id="8897749957032330183">Passord lagres i Google Passordlagring på denne enheten.</translation>
 <translation id="8969290730818637510">Når du gir samtykke

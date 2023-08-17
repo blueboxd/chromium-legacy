@@ -11,8 +11,10 @@ import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
+import org.chromium.components.autofill.AutofillProfile;
 import org.chromium.components.autofill.VirtualCardEnrollmentState;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.url.GURL;
 
 import java.util.Calendar;
 import java.util.List;
@@ -272,6 +274,7 @@ public class AutofillTestHelper {
      */
     public void clearAllDataForTesting() throws TimeoutException {
         runOnUiThreadBlocking(() -> PersonalDataManager.getInstance().clearServerDataForTesting());
+        runOnUiThreadBlocking(() -> PersonalDataManager.getInstance().clearImageDataForTesting());
         // Clear remaining local profiles and cards.
         for (AutofillProfile profile : getProfilesForSettings()) {
             if (profile.getIsLocal()) {
@@ -321,7 +324,7 @@ public class AutofillTestHelper {
                 /* basicCardIssuerNetwork =*/network, /* issuerIconDrawableId= */ iconId,
                 /* billingAddressId= */ "",
                 /* serverId= */ "", /* instrumentId= */ 0, /* cardLabel= */ "", /* nickname= */ "",
-                /* cardArtUrl= */ null,
+                /* cardArtUrl= */ new GURL(""),
                 /* virtualCardEnrollmentState= */ VirtualCardEnrollmentState.ENROLLED,
                 /* productDescription= */ "",
                 /* cardNameForAutofillDisplay= */ cardNameForAutofillDisplay,

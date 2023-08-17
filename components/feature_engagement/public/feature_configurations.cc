@@ -148,6 +148,21 @@ absl::optional<FeatureConfig> GetClientSideFeatureConfig(
     return config;
   }
 
+  if (kIPHCookieControlsFeature.name == feature->name) {
+    absl::optional<FeatureConfig> config = FeatureConfig();
+    config->valid = true;
+    config->availability = Comparator(ANY, 0);
+    config->session_rate = Comparator(EQUAL, 0);
+    // Show promo up to 3 times per year and only if user hasn't interacted with
+    // the cookie controls bubble in the last week.
+    config->trigger = EventConfig("iph_cookie_controls_triggered",
+                                  Comparator(LESS_THAN, 3), 360, 360);
+    config->used =
+        EventConfig(feature_engagement::events::kCookieControlsBubbleShown,
+                    Comparator(EQUAL, 0), 7, 7);
+    return config;
+  }
+
   if (kIPHBatterySaverModeFeature.name == feature->name) {
     // Show promo once a year when the battery saver toolbar icon is visible.
     absl::optional<FeatureConfig> config = FeatureConfig();
@@ -329,10 +344,10 @@ absl::optional<FeatureConfig> GetClientSideFeatureConfig(
     config->valid = true;
     config->availability = Comparator(ANY, 0);
     config->session_rate = Comparator(EQUAL, 0);
-    // Show the promo up to 1 times a year.
+    // Show the promo up to 3 times a year.
     config->trigger =
         EventConfig("iph_companion_side_panel_region_search_trigger",
-                    Comparator(LESS_THAN, 1), 360, 360);
+                    Comparator(LESS_THAN, 3), 360, 360);
     config->used =
         EventConfig("companion_side_panel_region_search_button_clicked",
                     Comparator(EQUAL, 0), 360, 360);
@@ -344,6 +359,23 @@ absl::optional<FeatureConfig> GetClientSideFeatureConfig(
     config->valid = true;
     config->availability = Comparator(ANY, 0);
     config->session_rate = Comparator(ANY, 0);
+    // Used to increase the usage of Customize Chrome for users who have opened
+    // it 0 times in the last 360 days.
+    config->used =
+        EventConfig("customize_chrome_opened", Comparator(EQUAL, 0), 360, 360);
+    // Triggered when IPH hasn't been shown in the past day.
+    config->trigger = EventConfig("iph_customize_chrome_triggered",
+                                  Comparator(EQUAL, 0), 1, 360);
+    config->snooze_params.max_limit = 4;
+    return config;
+  }
+
+  if (kIPHDesktopCustomizeChromeRefreshFeature.name == feature->name) {
+    absl::optional<FeatureConfig> config = FeatureConfig();
+    config->valid = true;
+    config->availability = Comparator(ANY, 0);
+    config->session_rate = Comparator(ANY, 0);
+    config->session_rate_impact.type = SessionRateImpact::Type::NONE;
     // Used to increase the usage of Customize Chrome for users who have opened
     // it 0 times in the last 360 days.
     config->used =
@@ -1346,6 +1378,36 @@ absl::optional<FeatureConfig> GetClientSideFeatureConfig(
 
     return config;
   }
+
+  if (kIPHAutofillVirtualCardCVCSuggestionFeature.name == feature->name) {
+    // A config that allows the virtual card CVC suggestion IPH to be
+    // shown when:
+    // * it has been shown less than three times in last 90 days;
+    // * the virtual card CVC suggestion has been selected less than twice in
+    // last 90 days.
+
+    absl::optional<FeatureConfig> config = FeatureConfig();
+    config->valid = true;
+    config->availability = Comparator(ANY, 0);
+    config->session_rate = Comparator(EQUAL, 0);
+    config->session_rate_impact.type = SessionRateImpact::Type::EXPLICIT;
+    config->trigger = EventConfig("autofill_virtual_card_cvc_iph_trigger",
+                                  Comparator(LESS_THAN, 3), 90, 360);
+    config->used = EventConfig("autofill_virtual_card_cvc_suggestion_accepted",
+                               Comparator(LESS_THAN, 2), 90, 360);
+    SessionRateImpact session_rate_impact;
+    session_rate_impact.type = SessionRateImpact::Type::EXPLICIT;
+    std::vector<std::string> affected_features;
+    affected_features.push_back("IPH_AutofillVirtualCardSuggestion");
+
+#if BUILDFLAG(IS_ANDROID)
+    affected_features.push_back("IPH_KeyboardAccessoryBarSwiping");
+#endif  // BUILDFLAG(IS_ANDROID)
+
+    session_rate_impact.affected_features = affected_features;
+    config->session_rate_impact = session_rate_impact;
+    return config;
+  }
 #endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_LINUX) ||
         // BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_ANDROID) ||
         // BUILDFLAG(IS_FUCHSIA)
@@ -1374,16 +1436,16 @@ absl::optional<FeatureConfig> GetClientSideFeatureConfig(
     // A config that allows a user education bubble to be shown for the bottom
     // toolbar. After the promo manager dismisses What's New promo, the user
     // education bubble will be shown once. This can only occur once every a
-    // year.
+    // month.
 
     absl::optional<FeatureConfig> config = FeatureConfig();
     config->valid = true;
     config->availability = Comparator(ANY, 0);
-    config->session_rate = Comparator(EQUAL, 0);
+    config->session_rate = Comparator(ANY, 0);
     config->trigger =
-        EventConfig("whats_new_trigger", Comparator(EQUAL, 0), 360, 360);
+        EventConfig("whats_new_trigger", Comparator(LESS_THAN, 1), 30, 360);
     config->used =
-        EventConfig("whats_new_used", Comparator(EQUAL, 0), 360, 360);
+        EventConfig("whats_new_used", Comparator(LESS_THAN, 1), 30, 360);
     return config;
   }
 

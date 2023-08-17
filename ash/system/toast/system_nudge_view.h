@@ -19,6 +19,7 @@ class LabelButton;
 namespace ash {
 
 struct AnchoredNudgeData;
+class SystemShadow;
 
 // The System Nudge view. (go/cros-educationalnudge-spec)
 // This view supports different configurations depending on the provided
@@ -40,6 +41,9 @@ class ASH_EXPORT SystemNudgeView : public views::FlexLayoutView {
   views::LabelButton* first_button() const { return first_button_; }
   views::LabelButton* second_button() const { return second_button_; }
 
+  // Called when the device zoom scale changes, observed from the widget.
+  void UpdateShadowBounds();
+
  private:
   // Owned by the views hierarchy.
   raw_ptr<views::ImageView> image_view_ = nullptr;
@@ -47,6 +51,11 @@ class ASH_EXPORT SystemNudgeView : public views::FlexLayoutView {
   raw_ptr<views::Label> title_label_ = nullptr;
   raw_ptr<views::LabelButton> first_button_ = nullptr;
   raw_ptr<views::LabelButton> second_button_ = nullptr;
+
+  std::unique_ptr<SystemShadow> shadow_;
+
+  // views::View:
+  void AddedToWidget() override;
 
   // Sets the maximum width for `title_label_` and `body_label_`.
   void SetLabelsMaxWidth(int max_width);

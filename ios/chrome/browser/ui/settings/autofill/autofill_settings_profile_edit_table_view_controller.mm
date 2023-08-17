@@ -18,10 +18,6 @@
 #import "ios/chrome/grit/ios_strings.h"
 #import "ui/base/l10n/l10n_util.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 namespace {
 
 const CGFloat kSymbolSize = 22;
@@ -36,6 +32,10 @@ const CGFloat kSymbolSize = 22;
 
 // If YES, a section is shown in the view to migrate the profile to account.
 @property(nonatomic, assign) BOOL showMigrateToAccountSection;
+
+// If YES, denotes that the view shown is to edit the incomplete profiles so
+// that it can migrated to account.
+@property(nonatomic, assign) BOOL editIncompleteProfileForAccountView;
 
 // Stores the signed in user email, or the empty string if the user is not
 // signed-in.
@@ -58,6 +58,7 @@ const CGFloat kSymbolSize = 22;
     _delegate = delegate;
     _showMigrateToAccountSection = showMigrateToAccount;
     _userEmail = userEmail;
+    _editIncompleteProfileForAccountView = NO;
   }
 
   return self;
@@ -116,11 +117,13 @@ const CGFloat kSymbolSize = 22;
 
   if (!self.tableView.editing) {
     [self.handler updateProfileData];
-    [self.delegate didEditAutofillProfileFromSettings];
-    // It can happen that the profile does not satisfy minimum requirements for
-    // the migration so we don't show the migration button.
-    if (self.showMigrateToAccountSection && ![self.delegate isMinimumAddress]) {
-      [self removeMigrateButtonSection:nil];
+    if (self.editIncompleteProfileForAccountView) {
+      [self.delegate didTapMigrateToAccountButton];
+      [self showPostMigrationToast];
+      [self.handler setMoveToAccountFromSettings:NO];
+      self.editIncompleteProfileForAccountView = NO;
+    } else {
+      [self.delegate didEditAutofillProfileFromSettings];
     }
   }
 
@@ -162,13 +165,21 @@ const CGFloat kSymbolSize = 22;
     return;
   }
   if (itemType == AutofillProfileDetailsItemTypeMigrateToAccountButton) {
-    [self.delegate didTapMigrateToAccountButton];
     [self.tableView deselectRowAtIndexPath:indexPath animated:YES];
-    __weak __typeof(self) weakSelf = self;
-    void (^completion)(BOOL) = ^(BOOL) {
-      [weakSelf showPostMigrationToast];
-    };
-    [self removeMigrateButtonSection:completion];
+    if ([self.delegate isMinimumAddress]) {
+      [self.delegate didTapMigrateToAccountButton];
+      __weak __typeof(self) weakSelf = self;
+      void (^completion)(BOOL) = ^(BOOL) {
+        [weakSelf showPostMigrationToast];
+      };
+      [self removeMigrateButtonSection:completion];
+    } else {
+      // Show the profile in the edit mode.
+      self.editIncompleteProfileForAccountView = YES;
+      [self removeMigrateButtonSection:nil];
+      [self editButtonPressed];
+      [self.handler setMoveToAccountFromSettings:YES];
+    }
     return;
   }
   [self.handler didSelectRowAtIndexPath:indexPath];

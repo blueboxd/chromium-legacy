@@ -6,16 +6,12 @@
 
 #import <objc/objc-class.h>
 
-#import "base/mac/scoped_objc_class_swizzler.h"
+#import "base/apple/scoped_objc_class_swizzler.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 #import "ui/base/test/cocoa_helper.h"
 #include "ui/events/event_constants.h"
 #import "ui/events/test/cocoa_test_event_utils.h"
-
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
 
 // We provide a donor class with a specially modified |modifierFlags|
 // implementation that we swap with NSEvent's. This is because we can't create a
@@ -49,7 +45,7 @@ TEST_F(CocoaBaseUtilsTest, WindowOpenDispositionFromNSEvent) {
 
   // Shift+Middle Click = new foreground tab.
   {
-    base::mac::ScopedObjCClassSwizzler swizzler(
+    base::apple::ScopedObjCClassSwizzler swizzler(
         [NSEvent class], [TestEvent class], @selector(modifierFlags));
     me = cocoa_test_event_utils::MouseEventWithType(NSEventTypeOtherMouseUp,
                                                     NSEventModifierFlagShift);

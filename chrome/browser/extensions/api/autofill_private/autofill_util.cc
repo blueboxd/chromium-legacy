@@ -202,9 +202,10 @@ autofill_private::CreditCardEntry CreditCardToCreditCardEntry(
   autofill_private::CreditCardEntry card;
 
   // Add all credit card fields to the entry.
-  card.guid = credit_card.record_type() == autofill::CreditCard::LOCAL_CARD
-                  ? credit_card.guid()
-                  : credit_card.server_id();
+  card.guid =
+      credit_card.record_type() == autofill::CreditCard::RecordType::kLocalCard
+          ? credit_card.guid()
+          : credit_card.server_id();
   card.name = base::UTF16ToUTF8(
       credit_card.GetRawInfo(autofill::CREDIT_CARD_NAME_FULL));
   card.card_number =
@@ -234,9 +235,9 @@ autofill_private::CreditCardEntry CreditCardToCreditCardEntry(
   card.metadata->summary_label = base::UTF16ToUTF8(label_pieces.first);
   card.metadata->summary_sublabel = base::UTF16ToUTF8(label_pieces.second);
   card.metadata->is_local =
-      credit_card.record_type() == autofill::CreditCard::LOCAL_CARD;
-  card.metadata->is_cached =
-      credit_card.record_type() == autofill::CreditCard::FULL_SERVER_CARD;
+      credit_card.record_type() == autofill::CreditCard::RecordType::kLocalCard;
+  card.metadata->is_cached = credit_card.record_type() ==
+                             autofill::CreditCard::RecordType::kFullServerCard;
   // IsValid() checks if both card number and expiration date are valid.
   // IsServerCard() checks whether there is a duplicated server card in
   // |personal_data|.
@@ -256,7 +257,7 @@ autofill_private::CreditCardEntry CreditCardToCreditCardEntry(
 }
 
 autofill_private::IbanEntry IbanToIbanEntry(
-    const autofill::IBAN& iban,
+    const autofill::Iban& iban,
     const autofill::PersonalDataManager& personal_data) {
   autofill_private::IbanEntry iban_entry;
 
@@ -328,8 +329,9 @@ CreditCardEntryList GenerateCreditCardList(
 IbanEntryList GenerateIbanList(
     const autofill::PersonalDataManager& personal_data) {
   IbanEntryList list;
-  for (const autofill::IBAN* iban : personal_data.GetLocalIBANs())
+  for (const autofill::Iban* iban : personal_data.GetLocalIbans()) {
     list.push_back(IbanToIbanEntry(*iban, personal_data));
+  }
 
   return list;
 }

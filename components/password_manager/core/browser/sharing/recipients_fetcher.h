@@ -9,30 +9,21 @@
 
 #include "base/functional/callback.h"
 
+#include "components/password_manager/core/browser/sharing/recipient_info.h"
+
+namespace password_manager {
+
 // An Enum that contains possible request status values for a Fetch Recipients
 // request.
 enum class FetchFamilyMembersRequestStatus {
   kUnknown = 0,
   kSuccess = 1,
   kNetworkError = 2,
+  // The user (sending the request) is not part of a family circle.
   kNoFamily = 3,
-}
-
-// The RecipientInfo struct represents a recipient with whom the user can share
-// a password.
-struct RecipientInfo {
-  // Recipient's user identifier (obfuscated Gaia ID).
-  std::string user_id;
-  // Recipients's user name for display in the UI.
-  std::string user_name;
-  // The email address of the recipients account for display in the UI.
-  std::string email;
-  // URL to the profile picture of the recipient for display in the UI.
-  std::string profile_image_url;
-
-  // TODO(crbug.com/1456309): Add a field for the public certificate after the
-  // decision was made which type to use.
-}
+  // A pending requests already exists. No new request was created.
+  kPendingRequest = 4,
+};
 
 // The RecipientsFetcher class defines the interface for fetching a list of
 // potential recipients with whom the user is able to share passwords.
@@ -45,11 +36,13 @@ class RecipientsFetcher {
   RecipientsFetcher() = default;
   RecipientsFetcher(const RecipientsFetcher&) = delete;
   RecipientsFetcher& operator=(const RecipientsFetcher&) = delete;
-  ~RecipientsFetcher() override = default;
+  virtual ~RecipientsFetcher() = default;
 
   // Fetches the list of family members from the server. The success status of
   // the request will be passed to the callback.
   virtual void FetchFamilyMembers(FetchFamilyMembersCallback callback) = 0;
 };
+
+}  // namespace password_manager
 
 #endif  // COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_SHARING_RECIPIENTS_FETCHER_H_

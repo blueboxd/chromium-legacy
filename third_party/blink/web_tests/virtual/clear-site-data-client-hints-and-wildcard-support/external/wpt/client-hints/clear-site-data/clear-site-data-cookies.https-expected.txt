@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-PASS Clear-Site-Data for cookies should remove all client hints.
-Harness: the test ran to completion.
-

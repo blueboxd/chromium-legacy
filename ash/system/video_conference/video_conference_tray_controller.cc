@@ -9,6 +9,7 @@
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
 #include "ash/constants/notifier_catalogs.h"
+#include "ash/public/cpp/resources/grit/ash_public_unscaled_resources.h"
 #include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/system/anchored_nudge_data.h"
 #include "ash/public/cpp/system/anchored_nudge_manager.h"
@@ -66,6 +67,8 @@ constexpr char kVideoConferenceTrayCameraUseWhileHWDisabledNudgeId[] =
     "video_conference_tray_nudge_ids.camera_use_while_hw_disabled";
 constexpr char kVideoConferenceTrayCameraUseWhileSWDisabledNudgeId[] =
     "video_conference_tray_nudge_ids.camera_use_while_sw_disabled";
+constexpr char kVideoConferenceTrayBothUseWhileDisabledNudgeId[] =
+    "video_conference_tray_nudge_ids.camera_microphone_use_while_disabled";
 
 // VC nudge ids vector that is iterated whenever `CloseAllVcNudges()` is
 // called. Please keep in sync whenever adding/removing/updating a nudge id.
@@ -82,6 +85,7 @@ const char* const kNudgeIds[] = {
 constexpr int KSpeakOnMuteNotificationCoolDownDuration = 60;
 
 constexpr auto kRepeatedShowTimerInterval = base::Milliseconds(100);
+constexpr auto kHandleDeviceUsedWhileDisabledWaitTime = base::Milliseconds(200);
 
 // The max amount of times the "Speak-on-mute opt-in" nudge can show.
 constexpr int kSpeakOnMuteOptInNudgeMaxShownCount = 3;
@@ -231,6 +235,10 @@ void VideoConferenceTrayController::MaybeShowSpeakOnMuteOptInNudge(
       l10n_util::GetStringUTF16(
           IDS_ASH_VIDEO_CONFERENCE_NUDGE_SPEAK_ON_MUTE_OPT_IN_BODY),
       anchor_view);
+
+  nudge_data.image_model =
+      ui::ResourceBundle::GetSharedInstance().GetThemedLottieImageNamed(
+          IDR_SPEAK_ON_MUTE_OPT_IN_NUDGE_IMAGE);
 
   nudge_data.title_text = l10n_util::GetStringUTF16(
       IDS_ASH_VIDEO_CONFERENCE_NUDGE_SPEAK_ON_MUTE_OPT_IN_TITLE);
@@ -430,10 +438,15 @@ void VideoConferenceTrayController::OnCameraHWPrivacySwitchStateChanged(
 
   // Attempt recording "Use while disabled" nudge action when camera is unmuted.
   if (!camera_muted_by_hardware_switch_) {
-    AnchoredNudgeManager::Get()->MaybeRecordNudgeAction(
+    auto* nudge_manager = AnchoredNudgeManager::Get();
+
+    nudge_manager->MaybeRecordNudgeAction(
         NudgeCatalogName::kVideoConferenceTrayCameraUseWhileHWDisabled);
-    AnchoredNudgeManager::Get()->Cancel(
-        kVideoConferenceTrayCameraUseWhileHWDisabledNudgeId);
+    nudge_manager->Cancel(kVideoConferenceTrayCameraUseWhileHWDisabledNudgeId);
+
+    nudge_manager->MaybeRecordNudgeAction(
+        NudgeCatalogName::kVideoConferenceTrayCameraMicrophoneUseWhileDisabled);
+    nudge_manager->Cancel(kVideoConferenceTrayBothUseWhileDisabledNudgeId);
   }
 }
 
@@ -452,10 +465,15 @@ void VideoConferenceTrayController::OnCameraSWPrivacySwitchStateChanged(
 
   // Attempt recording "Use while disabled" nudge action when camera is unmuted.
   if (!camera_muted_by_software_switch_) {
-    AnchoredNudgeManager::Get()->MaybeRecordNudgeAction(
+    auto* nudge_manager = AnchoredNudgeManager::Get();
+
+    nudge_manager->MaybeRecordNudgeAction(
         NudgeCatalogName::kVideoConferenceTrayCameraUseWhileSWDisabled);
-    AnchoredNudgeManager::Get()->Cancel(
-        kVideoConferenceTrayCameraUseWhileSWDisabledNudgeId);
+    nudge_manager->Cancel(kVideoConferenceTrayCameraUseWhileSWDisabledNudgeId);
+
+    nudge_manager->MaybeRecordNudgeAction(
+        NudgeCatalogName::kVideoConferenceTrayCameraMicrophoneUseWhileDisabled);
+    nudge_manager->Cancel(kVideoConferenceTrayBothUseWhileDisabledNudgeId);
   }
 }
 
@@ -494,26 +512,30 @@ void VideoConferenceTrayController::OnInputMuteChanged(
     // Attempt showing the speak-on-mute opt-in nudge when input is muted.
     MaybeShowSpeakOnMuteOptInNudge(GetVcTrayInActiveWindow());
   } else {
+    auto* nudge_manager = AnchoredNudgeManager::Get();
+
     // Cancel speak-on-mute opt-in nudge if one was being shown.
-    AnchoredNudgeManager::Get()->Cancel(
-        kVideoConferenceTraySpeakOnMuteOptInNudgeId);
+    nudge_manager->Cancel(kVideoConferenceTraySpeakOnMuteOptInNudgeId);
 
     // Attempt recording "Speak-on-mute" nudge action when mic is unmuted.
-    AnchoredNudgeManager::Get()->MaybeRecordNudgeAction(
+    nudge_manager->MaybeRecordNudgeAction(
         NudgeCatalogName::kVideoConferenceTraySpeakOnMuteDetected);
-    AnchoredNudgeManager::Get()->Cancel(
-        kVideoConferenceTraySpeakOnMuteDetectedNudgeId);
+    nudge_manager->Cancel(kVideoConferenceTraySpeakOnMuteDetectedNudgeId);
 
     // Attempt recording "Use while disabled" nudge action when mic is unmuted.
-    AnchoredNudgeManager::Get()->MaybeRecordNudgeAction(
+    nudge_manager->MaybeRecordNudgeAction(
         microphone_muted_by_hardware_switch_
             ? NudgeCatalogName::kVideoConferenceTrayMicrophoneUseWhileHWDisabled
             : NudgeCatalogName::
                   kVideoConferenceTrayMicrophoneUseWhileSWDisabled);
-    AnchoredNudgeManager::Get()->Cancel(
+    nudge_manager->Cancel(
         microphone_muted_by_hardware_switch_
             ? kVideoConferenceTrayMicrophoneUseWhileHWDisabledNudgeId
             : kVideoConferenceTrayMicrophoneUseWhileSWDisabledNudgeId);
+
+    nudge_manager->MaybeRecordNudgeAction(
+        NudgeCatalogName::kVideoConferenceTrayCameraMicrophoneUseWhileDisabled);
+    nudge_manager->Cancel(kVideoConferenceTrayBothUseWhileDisabledNudgeId);
   }
 }
 
@@ -575,7 +597,46 @@ void VideoConferenceTrayController::OnShellDestroying() {
 
 void VideoConferenceTrayController::HandleClientUpdate(
     crosapi::mojom::VideoConferenceClientUpdatePtr update) {
-  // TODO(b/285795457): Implement logic to handle client updates.
+  // Use `HandleClientUpdate()` to detect apps being
+  // added because this function is guaranteed to be called when an app is
+  // added, even if the `VideoConferecenMediaState` does not change.
+
+  if (update->added_or_removed_app ==
+      crosapi::mojom::VideoConferenceAppUpdate::kAppAdded) {
+    OnAppAdded();
+  }
+}
+
+void VideoConferenceTrayController::OnAppAdded() {
+  // If any `Shelf` is auto hidden, the `Shelf` needs to be forced shown, or
+  // allowed to hide, depending on the current number of capturing applications.
+  if (!IsAnyShelfAutoHidden()) {
+    return;
+  }
+
+  // If a new app has begun capturing, lock all shelfs to force them to show.
+  // This lock will apply until whichever comes first:
+  // `disable_shelf_autohide_timer_` fires, or the number of capturing apps
+  // drops to 0 (handled at `UpdateWithMediaState()`).
+  if (disable_shelf_autohide_locks_.empty()) {
+    for (auto* root_window_controller :
+         Shell::Get()->GetAllRootWindowControllers()) {
+      CHECK(root_window_controller);
+      CHECK(root_window_controller->shelf());
+
+      disable_shelf_autohide_locks_.emplace_back(
+          root_window_controller->shelf());
+    }
+  }
+
+  disable_shelf_autohide_timer_.Start(
+      FROM_HERE, base::Seconds(6),
+      base::BindOnce(
+          [](std::list<Shelf::ScopedDisableAutoHide>&
+                 disable_shelf_autohide_locks) {
+            disable_shelf_autohide_locks.clear();
+          },
+          std::ref(disable_shelf_autohide_locks_)));
 }
 
 base::OneShotTimer&
@@ -640,30 +701,17 @@ void VideoConferenceTrayController::UpdateWithMediaState(
     }
   }
 
-  // If any `Shelf` is auto hidden, request a new list of `MediaApps` because
-  // the `Shelf` needs to be forced shown, or allowed to hide, depending on the
-  // current number of capturing applications.
-  if (!IsAnyShelfAutoHidden()) {
+  if (state_.has_media_app) {
     return;
   }
 
-  weak_ptr_factory_.InvalidateWeakPtrs();
-
-  if (!state_.has_media_app) {
-    if (disable_shelf_autohide_timer_.IsRunning()) {
-      disable_shelf_autohide_timer_.Stop();
-    }
-    disable_shelf_autohide_locks_.clear();
-    return;
+  // If no more apps are capturing, release all shelf autohide locks. These
+  // locks are created when a new app begins capturing at
+  // `VideoConferenceTrayController::HandleClientUpdate()`.
+  if (disable_shelf_autohide_timer_.IsRunning()) {
+    disable_shelf_autohide_timer_.Stop();
   }
-
-  // The `Shelf` may need to be forced shown if a new app has started accessing
-  // the sensors, also `UpdateWithMediaState()` may be called with no change to
-  // `state_.has_media_app`, and if a new app is capturing the shelf needs to be
-  // re-shown.
-  GetMediaApps(
-      base::BindOnce(&VideoConferenceTrayController::UpdateShelfAutoHide,
-                     weak_ptr_factory_.GetWeakPtr()));
+  disable_shelf_autohide_locks_.clear();
 }
 
 bool VideoConferenceTrayController::HasCameraPermission() const {
@@ -677,62 +725,34 @@ bool VideoConferenceTrayController::HasMicrophonePermission() const {
 void VideoConferenceTrayController::HandleDeviceUsedWhileDisabled(
     crosapi::mojom::VideoConferenceMediaDevice device,
     const std::u16string& app_name) {
-  // Do not show "Use while disabled" nudge if another nudge is showing.
-  if (IsAnyVcNudgeShown()) {
+  if (device == crosapi::mojom::VideoConferenceMediaDevice::kUnusedDefault) {
     return;
   }
 
-  // TODO(b/273570886): Handle the case when both camera and microphone are
-  // being used while disabled.
-  std::u16string device_name;
-  int text_id;
-  NudgeCatalogName catalog_name;
-  std::string nudge_id;
-  views::View* anchor_view = nullptr;
-  switch (device) {
-    case crosapi::mojom::VideoConferenceMediaDevice::kMicrophone:
-      device_name =
-          l10n_util::GetStringUTF16(IDS_ASH_VIDEO_CONFERENCE_MICROPHONE_NAME);
-      if (microphone_muted_by_hardware_switch_) {
-        text_id = IDS_ASH_VIDEO_CONFERENCE_TOAST_USE_WHILE_HARDWARE_DISABLED;
-        nudge_id = kVideoConferenceTrayMicrophoneUseWhileHWDisabledNudgeId;
-        catalog_name =
-            NudgeCatalogName::kVideoConferenceTrayMicrophoneUseWhileHWDisabled;
-      } else {
-        text_id = IDS_ASH_VIDEO_CONFERENCE_TOAST_USE_WHILE_SOFTWARE_DISABLED;
-        nudge_id = kVideoConferenceTrayMicrophoneUseWhileSWDisabledNudgeId;
-        catalog_name =
-            NudgeCatalogName::kVideoConferenceTrayMicrophoneUseWhileSWDisabled;
-      }
-      anchor_view = GetVcTrayInActiveWindow()->audio_icon();
-      break;
-    case crosapi::mojom::VideoConferenceMediaDevice::kCamera:
-      device_name =
-          l10n_util::GetStringUTF16(IDS_ASH_VIDEO_CONFERENCE_CAMERA_NAME);
-      if (camera_muted_by_hardware_switch_) {
-        text_id = IDS_ASH_VIDEO_CONFERENCE_TOAST_USE_WHILE_HARDWARE_DISABLED;
-        nudge_id = kVideoConferenceTrayCameraUseWhileHWDisabledNudgeId;
-        catalog_name =
-            NudgeCatalogName::kVideoConferenceTrayCameraUseWhileHWDisabled;
-      } else {
-        text_id = IDS_ASH_VIDEO_CONFERENCE_TOAST_USE_WHILE_SOFTWARE_DISABLED;
-        nudge_id = kVideoConferenceTrayCameraUseWhileSWDisabledNudgeId;
-        catalog_name =
-            NudgeCatalogName::kVideoConferenceTrayCameraUseWhileSWDisabled;
-      }
-      anchor_view = GetVcTrayInActiveWindow()->camera_icon();
-      break;
-    default:
-      NOTREACHED();
-      return;
+  UsedWhileDisabledNudgeType type = GetUsedWhileDisabledNudgeType(device);
+
+  if (!use_while_disabled_signal_waiter_.IsRunning()) {
+    // Cache the type and starts the timer to wait for the signal of the other
+    // device.
+    use_while_disabled_nudge_on_wait_ = type;
+
+    use_while_disabled_signal_waiter_.Start(
+        FROM_HERE, kHandleDeviceUsedWhileDisabledWaitTime,
+        base::BindOnce(
+            &VideoConferenceTrayController::DisplayUsedWhileDisabledNudge,
+            weak_ptr_factory_.GetWeakPtr(), type, app_name));
+    return;
   }
 
-  AnchoredNudgeData nudge_data(
-      nudge_id, catalog_name,
-      l10n_util::GetStringFUTF16(text_id, app_name, device_name), anchor_view);
-  nudge_data.anchored_to_shelf = true;
-  CreateNudgeRequest(
-      std::make_unique<AnchoredNudgeData>(std::move(nudge_data)));
+  if (type == use_while_disabled_nudge_on_wait_) {
+    return;
+  }
+
+  use_while_disabled_signal_waiter_.Stop();
+
+  // If we receive the signal for both camera and microphone, display the nudge
+  // for both.
+  DisplayUsedWhileDisabledNudge(UsedWhileDisabledNudgeType::kBoth, app_name);
 }
 
 void VideoConferenceTrayController::UpdateCameraIcons() {
@@ -751,39 +771,6 @@ void VideoConferenceTrayController::UpdateCameraIcons() {
   }
 }
 
-void VideoConferenceTrayController::UpdateShelfAutoHide(MediaApps media_apps) {
-  const int old_capturing_apps = capturing_apps_;
-  capturing_apps_ = media_apps.size();
-
-  // Don't force show the `Shelf` if the number of apps accessing the sensors
-  // has decreased. Also do not force hide the shelf when the number of
-  // capturing apps decreases, that will be done only if the number of capturing
-  // apps drops to zero and is handled elsewhere.
-  if (old_capturing_apps >= capturing_apps_) {
-    return;
-  }
-
-  if (disable_shelf_autohide_locks_.empty()) {
-    for (auto* root_window_controller :
-         Shell::Get()->GetAllRootWindowControllers()) {
-      CHECK(root_window_controller);
-      CHECK(root_window_controller->shelf());
-
-      disable_shelf_autohide_locks_.emplace_back(
-          root_window_controller->shelf());
-    }
-  }
-
-  disable_shelf_autohide_timer_.Start(
-      FROM_HERE, base::Seconds(6),
-      base::BindOnce(
-          [](std::list<Shelf::ScopedDisableAutoHide>&
-                 disable_shelf_autohide_locks) {
-            disable_shelf_autohide_locks.clear();
-          },
-          std::ref(disable_shelf_autohide_locks_)));
-}
-
 void VideoConferenceTrayController::RecordRepeatedShows() {
   // Note that we also record the metric when `count_repeated_shows_` is one
   // even though this is not a bad signal. This is because we want to record
@@ -795,6 +782,96 @@ void VideoConferenceTrayController::RecordRepeatedShows() {
   base::UmaHistogramCounts100("Ash.VideoConference.NumberOfRepeatedShows",
                               count_repeated_shows_);
   count_repeated_shows_ = 0;
+}
+
+void VideoConferenceTrayController::DisplayUsedWhileDisabledNudge(
+    VideoConferenceTrayController::UsedWhileDisabledNudgeType type,
+    const std::u16string& app_name) {
+  // Do not show "Use while disabled" nudge if another nudge is showing.
+  if (IsAnyVcNudgeShown()) {
+    return;
+  }
+
+  std::u16string device_name;
+  int text_id;
+  NudgeCatalogName catalog_name;
+  std::string nudge_id;
+  views::View* anchor_view = nullptr;
+  switch (type) {
+    case VideoConferenceTrayController::UsedWhileDisabledNudgeType::kMicrophone:
+      device_name =
+          l10n_util::GetStringUTF16(IDS_ASH_VIDEO_CONFERENCE_MICROPHONE_NAME);
+      if (microphone_muted_by_hardware_switch_) {
+        text_id = IDS_ASH_VIDEO_CONFERENCE_TOAST_USE_WHILE_HARDWARE_DISABLED;
+        nudge_id = kVideoConferenceTrayMicrophoneUseWhileHWDisabledNudgeId;
+        catalog_name =
+            NudgeCatalogName::kVideoConferenceTrayMicrophoneUseWhileHWDisabled;
+      } else {
+        text_id = IDS_ASH_VIDEO_CONFERENCE_TOAST_USE_WHILE_DISABLED;
+        nudge_id = kVideoConferenceTrayMicrophoneUseWhileSWDisabledNudgeId;
+        catalog_name =
+            NudgeCatalogName::kVideoConferenceTrayMicrophoneUseWhileSWDisabled;
+      }
+      anchor_view = GetVcTrayInActiveWindow()->audio_icon();
+      break;
+    case VideoConferenceTrayController::UsedWhileDisabledNudgeType::kCamera:
+      device_name =
+          l10n_util::GetStringUTF16(IDS_ASH_VIDEO_CONFERENCE_CAMERA_NAME);
+      if (camera_muted_by_hardware_switch_) {
+        text_id = IDS_ASH_VIDEO_CONFERENCE_TOAST_USE_WHILE_HARDWARE_DISABLED;
+        nudge_id = kVideoConferenceTrayCameraUseWhileHWDisabledNudgeId;
+        catalog_name =
+            NudgeCatalogName::kVideoConferenceTrayCameraUseWhileHWDisabled;
+      } else {
+        text_id = IDS_ASH_VIDEO_CONFERENCE_TOAST_USE_WHILE_DISABLED;
+        nudge_id = kVideoConferenceTrayCameraUseWhileSWDisabledNudgeId;
+        catalog_name =
+            NudgeCatalogName::kVideoConferenceTrayCameraUseWhileSWDisabled;
+      }
+      anchor_view = GetVcTrayInActiveWindow()->camera_icon();
+      break;
+    case VideoConferenceTrayController::UsedWhileDisabledNudgeType::kBoth:
+      device_name = l10n_util::GetStringUTF16(
+          IDS_ASH_VIDEO_CONFERENCE_CAMERA_MICROPHONE_NAME);
+      text_id = IDS_ASH_VIDEO_CONFERENCE_TOAST_USE_WHILE_DISABLED;
+      nudge_id = kVideoConferenceTrayBothUseWhileDisabledNudgeId;
+      catalog_name = NudgeCatalogName::
+          kVideoConferenceTrayCameraMicrophoneUseWhileDisabled;
+      anchor_view = GetVcTrayInActiveWindow()->audio_icon();
+      break;
+    default:
+      NOTREACHED();
+      return;
+  }
+
+  AnchoredNudgeData nudge_data(
+      nudge_id, catalog_name,
+      l10n_util::GetStringFUTF16(text_id, app_name, device_name), anchor_view);
+  nudge_data.anchored_to_shelf = true;
+  CreateNudgeRequest(
+      std::make_unique<AnchoredNudgeData>(std::move(nudge_data)));
+}
+
+VideoConferenceTrayController::UsedWhileDisabledNudgeType
+VideoConferenceTrayController::GetUsedWhileDisabledNudgeType(
+    crosapi::mojom::VideoConferenceMediaDevice device) {
+  DCHECK_NE(device, crosapi::mojom::VideoConferenceMediaDevice::kUnusedDefault);
+
+  VideoConferenceTrayController::UsedWhileDisabledNudgeType type;
+  switch (device) {
+    case crosapi::mojom::VideoConferenceMediaDevice::kCamera:
+      type = VideoConferenceTrayController::UsedWhileDisabledNudgeType::kCamera;
+      break;
+    case crosapi::mojom::VideoConferenceMediaDevice::kMicrophone:
+      type = VideoConferenceTrayController::UsedWhileDisabledNudgeType::
+          kMicrophone;
+      break;
+    default:
+      NOTREACHED();
+      type = VideoConferenceTrayController::UsedWhileDisabledNudgeType::kCamera;
+  }
+
+  return type;
 }
 
 }  // namespace ash

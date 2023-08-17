@@ -67,6 +67,14 @@ printer::TypedValueVendorCapability::ValueType ToCloudValueType(
 
 printer::Media ConvertPaperToMedia(
     const printing::PrinterSemanticCapsAndDefaults::Paper& paper) {
+  if (paper.SupportsCustomSize()) {
+    return printer::MediaBuilder()
+        .WithCustomName(paper.display_name(), paper.vendor_id())
+        .WithSizeAndDefaultPrintableArea(paper.size_um())
+        .WithMaxHeight(paper.max_height_um())
+        .Build();
+  }
+
   gfx::Size paper_size = paper.size_um();
   gfx::Rect paper_printable_area = paper.printable_area_um();
   // When converting to Media, the size and printable area should have a larger
@@ -125,6 +133,29 @@ printer::MediaCapability GetMediaCapabilities(
     media_capabilities.AddOption(new_media);
   }
   return media_capabilities;
+}
+
+printer::MediaTypeCapability GetMediaTypeCapabilities(
+    const printing::PrinterSemanticCapsAndDefaults& semantic_info) {
+  printer::MediaTypeCapability media_type_capabilities;
+
+  for (const auto& media_type : semantic_info.media_types) {
+    printer::MediaType new_media_type(media_type.vendor_id,
+                                      media_type.display_name);
+    if (!new_media_type.IsValid()) {
+      continue;
+    }
+
+    if (media_type_capabilities.Contains(new_media_type)) {
+      continue;
+    }
+
+    media_type_capabilities.AddDefaultOption(
+        new_media_type,
+        media_type.vendor_id == semantic_info.default_media_type.vendor_id);
+  }
+
+  return media_type_capabilities;
 }
 
 printer::DpiCapability GetDpiCapabilities(
@@ -252,6 +283,14 @@ base::Value PrinterSemanticCapsAndDefaultsToCdd(
     printer::MediaCapability media = GetMediaCapabilities(semantic_info);
     DCHECK(media.IsValid());
     media.SaveTo(&description);
+  }
+
+  // Only create this capability if more than one media type is supported.
+  if (semantic_info.media_types.size() > 1) {
+    printer::MediaTypeCapability media_type =
+        GetMediaTypeCapabilities(semantic_info);
+    DCHECK(media_type.IsValid());
+    media_type.SaveTo(&description);
   }
 
   if (!semantic_info.dpis.empty()) {

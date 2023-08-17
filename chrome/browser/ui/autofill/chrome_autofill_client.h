@@ -105,7 +105,8 @@ class ChromeAutofillClient : public ContentAutofillClient,
   AutofillOptimizationGuide* GetAutofillOptimizationGuide() const override;
   PersonalDataManager* GetPersonalDataManager() override;
   AutocompleteHistoryManager* GetAutocompleteHistoryManager() override;
-  IBANManager* GetIBANManager() override;
+  IbanManager* GetIbanManager() override;
+  plus_addresses::PlusAddressService* GetPlusAddressService() override;
   MerchantPromoCodeManager* GetMerchantPromoCodeManager() override;
   CreditCardCvcAuthenticator* GetCvcAuthenticator() override;
   CreditCardOtpAuthenticator* GetOtpAuthenticator() override;
@@ -177,9 +178,9 @@ class ChromeAutofillClient : public ContentAutofillClient,
       const std::u16string& tip_message,
       const std::vector<MigratableCreditCard>& migratable_credit_cards,
       MigrationDeleteCardCallback delete_local_card_callback) override;
-  void ConfirmSaveIBANLocally(const IBAN& iban,
+  void ConfirmSaveIbanLocally(const Iban& iban,
                               bool should_show_prompt,
-                              LocalSaveIBANPromptCallback callback) override;
+                              LocalSaveIbanPromptCallback callback) override;
   void ShowWebauthnOfferDialog(
       WebauthnDialogCallback offer_dialog_callback) override;
   void ShowWebauthnVerifyPendingDialog(
@@ -254,10 +255,10 @@ class ChromeAutofillClient : public ContentAutofillClient,
       base::OnceClosure no_interactive_authentication_callback) override;
   bool IsAutocompleteEnabled() const override;
   bool IsPasswordManagerEnabled() override;
-  void PropagateAutofillPredictions(
+  void PropagateAutofillPredictionsDeprecated(
       AutofillDriver* driver,
       const std::vector<FormStructure*>& forms) override;
-  void DidFillOrPreviewForm(mojom::RendererFormDataAction action,
+  void DidFillOrPreviewForm(mojom::AutofillActionPersistence action_persistence,
                             AutofillTriggerSource trigger_source,
                             bool is_refill) override;
   void DidFillOrPreviewField(const std::u16string& autofilled_value,

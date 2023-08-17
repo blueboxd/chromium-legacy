@@ -269,48 +269,55 @@ void NativeThemeBase::Paint(cc::PaintCanvas* canvas,
   switch (part) {
     // Please keep these in the order of NativeTheme::Part.
     case kCheckbox:
-      PaintCheckbox(canvas, color_provider, state, rect, extra.button,
-                    color_scheme, accent_color_opaque);
+      PaintCheckbox(canvas, color_provider, state, rect,
+                    absl::get<ButtonExtraParams>(extra), color_scheme,
+                    accent_color_opaque);
       break;
 // TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
 // of lacros-chrome is complete.
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
     case kFrameTopArea:
-      PaintFrameTopArea(canvas, state, rect, extra.frame_top_area,
+      PaintFrameTopArea(canvas, state, rect,
+                        absl::get<FrameTopAreaExtraParams>(extra),
                         color_scheme);
       break;
 #endif
     case kInnerSpinButton:
       PaintInnerSpinButton(canvas, color_provider, state, rect,
-                           extra.inner_spin, color_scheme);
+                           absl::get<InnerSpinButtonExtraParams>(extra),
+                           color_scheme);
       break;
     case kMenuList:
-      PaintMenuList(canvas, color_provider, state, rect, extra.menu_list,
-                    color_scheme);
+      PaintMenuList(canvas, color_provider, state, rect,
+                    absl::get<MenuListExtraParams>(extra), color_scheme);
       break;
     case kMenuPopupBackground:
       PaintMenuPopupBackground(canvas, color_provider, rect.size(),
-                               extra.menu_background, color_scheme);
+                               absl::get<MenuBackgroundExtraParams>(extra),
+                               color_scheme);
       break;
     case kMenuPopupSeparator:
       PaintMenuSeparator(canvas, color_provider, state, rect,
-                         extra.menu_separator);
+                         absl::get<MenuSeparatorExtraParams>(extra));
       break;
     case kMenuItemBackground:
       PaintMenuItemBackground(canvas, color_provider, state, rect,
-                              extra.menu_item, color_scheme);
+                              absl::get<MenuItemExtraParams>(extra),
+                              color_scheme);
       break;
     case kProgressBar:
-      PaintProgressBar(canvas, color_provider, state, rect, extra.progress_bar,
-                       color_scheme, accent_color_opaque);
+      PaintProgressBar(canvas, color_provider, state, rect,
+                       absl::get<ProgressBarExtraParams>(extra), color_scheme,
+                       accent_color_opaque);
       break;
     case kPushButton:
-      PaintButton(canvas, color_provider, state, rect, extra.button,
-                  color_scheme);
+      PaintButton(canvas, color_provider, state, rect,
+                  absl::get<ButtonExtraParams>(extra), color_scheme);
       break;
     case kRadio:
-      PaintRadio(canvas, color_provider, state, rect, extra.button,
-                 color_scheme, accent_color_opaque);
+      PaintRadio(canvas, color_provider, state, rect,
+                 absl::get<ButtonExtraParams>(extra), color_scheme,
+                 accent_color_opaque);
       break;
     case kScrollbarDownArrow:
     case kScrollbarUpArrow:
@@ -318,17 +325,20 @@ void NativeThemeBase::Paint(cc::PaintCanvas* canvas,
     case kScrollbarRightArrow:
       if (scrollbar_button_length_ > 0)
         PaintArrowButton(canvas, color_provider, rect, part, state,
-                         color_scheme, extra.scrollbar_arrow);
+                         color_scheme,
+                         absl::get<ScrollbarArrowExtraParams>(extra));
       break;
     case kScrollbarHorizontalThumb:
     case kScrollbarVerticalThumb:
       PaintScrollbarThumb(canvas, color_provider, part, state, rect,
-                          extra.scrollbar_thumb.scrollbar_theme, color_scheme);
+                          absl::get<ScrollbarThumbExtraParams>(extra),
+                          color_scheme);
       break;
     case kScrollbarHorizontalTrack:
     case kScrollbarVerticalTrack:
       PaintScrollbarTrack(canvas, color_provider, part, state,
-                          extra.scrollbar_track, rect, color_scheme);
+                          absl::get<ScrollbarTrackExtraParams>(extra), rect,
+                          color_scheme);
       break;
     case kScrollbarHorizontalGripper:
     case kScrollbarVerticalGripper:
@@ -336,22 +346,26 @@ void NativeThemeBase::Paint(cc::PaintCanvas* canvas,
       // implementations, so no NOTIMPLEMENTED.
       break;
     case kScrollbarCorner:
-      PaintScrollbarCorner(canvas, color_provider, state, rect, color_scheme);
+      PaintScrollbarCorner(canvas, color_provider, state, rect,
+                           absl::get<ScrollbarTrackExtraParams>(extra),
+                           color_scheme);
       break;
     case kSliderTrack:
-      PaintSliderTrack(canvas, color_provider, state, rect, extra.slider,
-                       color_scheme, accent_color_opaque);
+      PaintSliderTrack(canvas, color_provider, state, rect,
+                       absl::get<SliderExtraParams>(extra), color_scheme,
+                       accent_color_opaque);
       break;
     case kSliderThumb:
-      PaintSliderThumb(canvas, color_provider, state, rect, extra.slider,
-                       color_scheme, accent_color_opaque);
+      PaintSliderThumb(canvas, color_provider, state, rect,
+                       absl::get<SliderExtraParams>(extra), color_scheme,
+                       accent_color_opaque);
       break;
     case kTabPanelBackground:
       NOTIMPLEMENTED();
       break;
     case kTextField:
-      PaintTextField(canvas, color_provider, state, rect, extra.text_field,
-                     color_scheme);
+      PaintTextField(canvas, color_provider, state, rect,
+                     absl::get<TextFieldExtraParams>(extra), color_scheme);
       break;
     case kTrackbarThumb:
     case kTrackbarTrack:
@@ -400,7 +414,8 @@ void NativeThemeBase::PaintArrowButton(
 
   // Calculate button color.
   SkScalar track_hsv[3];
-  SkColorToHSV(GetColor(kTrackColor, color_scheme), track_hsv);
+  SkColorToHSV(arrow.track_color.value_or(GetColor(kTrackColor, color_scheme)),
+               track_hsv);
   SkColor button_color = SaturateAndBrighten(track_hsv, 0, 0.2f);
   SkColor background_color = button_color;
   if (state == kPressed) {
@@ -470,8 +485,12 @@ void NativeThemeBase::PaintArrowButton(
   flags.setColor(OutlineColor(track_hsv, thumb_hsv));
   canvas->drawPath(outline, flags);
 
-  PaintArrow(canvas, rect, direction,
-             GetArrowColor(state, color_scheme, color_provider));
+  // TODO(crbug.com/891944): Adjust thumb_color based on `state`.
+  const SkColor arrow_color =
+      arrow.thumb_color.has_value()
+          ? arrow.thumb_color.value()
+          : GetArrowColor(state, color_scheme, color_provider);
+  PaintArrow(canvas, rect, direction, arrow_color);
 }
 
 void NativeThemeBase::PaintArrow(cc::PaintCanvas* gc,
@@ -554,13 +573,14 @@ void NativeThemeBase::PaintScrollbarTrack(
   DrawBox(canvas, rect, flags);
 }
 
-void NativeThemeBase::PaintScrollbarThumb(cc::PaintCanvas* canvas,
-                                          const ColorProvider* color_provider,
-                                          Part part,
-                                          State state,
-                                          const gfx::Rect& rect,
-                                          ScrollbarOverlayColorTheme,
-                                          ColorScheme color_scheme) const {
+void NativeThemeBase::PaintScrollbarThumb(
+    cc::PaintCanvas* canvas,
+    const ColorProvider* color_provider,
+    Part part,
+    State state,
+    const gfx::Rect& rect,
+    const ScrollbarThumbExtraParams& extra_params,
+    ColorScheme color_scheme) const {
   const bool hovered = state == kHovered;
   const int midx = rect.x() + rect.width() / 2;
   const int midy = rect.y() + rect.height() / 2;
@@ -620,11 +640,13 @@ void NativeThemeBase::PaintScrollbarThumb(cc::PaintCanvas* canvas,
   }
 }
 
-void NativeThemeBase::PaintScrollbarCorner(cc::PaintCanvas* canvas,
-                                           const ColorProvider* color_provider,
-                                           State state,
-                                           const gfx::Rect& rect,
-                                           ColorScheme color_scheme) const {}
+void NativeThemeBase::PaintScrollbarCorner(
+    cc::PaintCanvas* canvas,
+    const ColorProvider* color_provider,
+    State state,
+    const gfx::Rect& rect,
+    const ScrollbarTrackExtraParams& extra_params,
+    ColorScheme color_scheme) const {}
 
 void NativeThemeBase::PaintCheckbox(
     cc::PaintCanvas* canvas,
@@ -923,7 +945,7 @@ void NativeThemeBase::PaintMenuList(cc::PaintCanvas* canvas,
   // and the border of the control. The arrow (menulist button) is always
   // painted by the theming code.
   if (!menu_list.has_border_radius) {
-    TextFieldExtraParams text_field = {false};
+    TextFieldExtraParams text_field;
     text_field.background_color = menu_list.background_color;
     text_field.has_border = menu_list.has_border;
     text_field.zoom = menu_list.zoom;

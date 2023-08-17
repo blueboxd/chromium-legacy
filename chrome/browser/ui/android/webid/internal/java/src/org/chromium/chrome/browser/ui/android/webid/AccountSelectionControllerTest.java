@@ -98,15 +98,15 @@ public class AccountSelectionControllerTest {
             JUnitTestGURLs.getGURL(JUnitTestGURLs.RED_3);
     private static final GURL TEST_CONFIG_URL = JUnitTestGURLs.getGURL(JUnitTestGURLs.URL_2);
 
-    private static final Account ANA = new Account("Ana", "ana@one.test", "Ana Doe", "Ana",
-            TEST_PROFILE_PIC, /*loginHints=*/new String[0], /*isSignIn=*/true);
+    private static final Account ANA = new Account(
+            "Ana", "ana@one.test", "Ana Doe", "Ana", TEST_PROFILE_PIC, /*isSignIn=*/true);
     private static final Account BOB = new Account("Bob", "", "Bob", "", TEST_PROFILE_PIC,
-            /*loginHints=*/new String[0], /*isSignIn=*/true);
-    private static final Account CARL = new Account("Carl", "carl@three.test", "Carl Test", ":)",
-            TEST_PROFILE_PIC, /*loginHints=*/new String[0], /*isSignIn=*/true);
+            /*isSignIn=*/true);
+    private static final Account CARL = new Account(
+            "Carl", "carl@three.test", "Carl Test", ":)", TEST_PROFILE_PIC, /*isSignIn=*/true);
     private static final Account NEW_USER =
             new Account("602214076", "goto@email.example", "Sam E. Goto", "Sam", TEST_PROFILE_PIC,
-                    /*loginHints=*/new String[0], /*isSignIn=*/false);
+                    /*isSignIn=*/false);
     private static final String[] RP_CONTEXTS =
             new String[] {"signin", "signup", "use", "continue"};
     private static final ClientIdMetadata CLIENT_ID_METADATA =
@@ -545,6 +545,7 @@ public class AccountSelectionControllerTest {
         KeyboardVisibilityListener listener = mMediator.getKeyboardEventListener();
         listener.keyboardVisibilityChanged(true);
         verify(mMockBottomSheetController).hideContent(mBottomSheetContent, true);
+        when(mTab.isUserInteractable()).thenReturn(true);
         listener.keyboardVisibilityChanged(false);
         verify(mMockBottomSheetController, times(2)).requestShowContent(mBottomSheetContent, true);
         assertFalse(mMediator.wasDismissed());
@@ -573,6 +574,25 @@ public class AccountSelectionControllerTest {
         mMediator.getTabObserver().onDidStartNavigationInPrimaryMainFrame(mTab, null);
         assertTrue(mMediator.wasDismissed());
         verify(mMockDelegate).onDismissed(IdentityRequestDialogDismissReason.OTHER);
+    }
+
+    @Test
+    public void testShowKeyboardWhileNotInteractable() {
+        when(mMockBottomSheetController.requestShowContent(any(), anyBoolean())).thenReturn(true);
+        mMediator.showAccounts(TEST_ETLD_PLUS_ONE, TEST_ETLD_PLUS_ONE_1, TEST_ETLD_PLUS_ONE_2,
+                Arrays.asList(ANA), IDP_METADATA, CLIENT_ID_METADATA, false /* isAutoReauthn */,
+                "signin" /* rpContext */);
+        KeyboardVisibilityListener listener = mMediator.getKeyboardEventListener();
+        listener.keyboardVisibilityChanged(true);
+        verify(mMockBottomSheetController).hideContent(mBottomSheetContent, true);
+
+        when(mTab.isUserInteractable()).thenReturn(false);
+
+        // Showing the keyboard again should do nothing since the tab is not interactable!
+        listener.keyboardVisibilityChanged(false);
+        // The requestShowContent method should have been called only once.
+        verify(mMockBottomSheetController, times(1)).requestShowContent(mBottomSheetContent, true);
+        assertFalse(mMediator.wasDismissed());
     }
 
     private void pressBack() {

@@ -28,10 +28,6 @@
 #import "testing/gtest_mac.h"
 #import "ui/base/l10n/l10n_util.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 @interface BookmarkMediator ()
 - (NSString*)messageForAddingBookmarksInFolder:(BOOL)addFolder
                              folderStorageType:
@@ -80,12 +76,14 @@ class BookmarkMediatorUnitTest
     sync_setup_service_ = std::make_unique<FakeSyncSetupService>(sync_service_);
 
     mediator_ = [[BookmarkMediator alloc]
-        initWithWithProfileBookmarkModel:local_or_syncable_bookmark_model_
-                    accountBookmarkModel:nullptr
-                                   prefs:chrome_browser_state_->GetPrefs()
-                   authenticationService:authentication_service_
-                             syncService:sync_service_
-                        syncSetupService:sync_setup_service_.get()];
+        initWithWithLocalOrSyncableBookmarkModel:
+            local_or_syncable_bookmark_model_
+                            accountBookmarkModel:nullptr
+                                           prefs:chrome_browser_state_
+                                                     ->GetPrefs()
+                           authenticationService:authentication_service_
+                                     syncService:sync_service_
+                                syncSetupService:sync_setup_service_.get()];
   }
 
   // Number of bookmark saved.

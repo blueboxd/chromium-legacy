@@ -18,10 +18,6 @@
 #include "base/task/bind_post_task.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/time/time.h"
-#include "components/invalidation/public/invalidation_handler.h"
-#include "components/invalidation/public/invalidation_service.h"
-#include "components/invalidation/public/invalidator_state.h"
-#include "components/invalidation/public/topic_invalidation_map.h"
 #include "components/sync/engine/data_type_activation_response.h"
 #include "components/sync/engine/events/protocol_event.h"
 #include "components/sync/engine/nigori/nigori.h"
@@ -106,7 +102,6 @@ SyncTransportDataStartupState ValidateSyncTransportData(
 
 SyncEngineImpl::SyncEngineImpl(
     const std::string& name,
-    invalidation::InvalidationService* invalidator,
     SyncInvalidationsService* sync_invalidations_service,
     std::unique_ptr<ActiveDevicesProvider> active_devices_provider,
     std::unique_ptr<SyncTransportDataPrefs> prefs,
@@ -223,9 +218,16 @@ void SyncEngineImpl::StartHandlingInvalidations() {
   // Without that, incoming invalidations would be filtered out.
   DCHECK(sync_invalidations_service_->GetInterestedDataTypes().has_value());
 
-  // Adding a listener several times is safe. Only first adding replays last
-  // incoming messages.
+  // Adding a listener several times is safe. Replays the last incoming messages
+  // received so far.
   sync_invalidations_service_->AddListener(this);
+
+  // UpdateStandaloneInvalidationsState() must be called after AddListener(),
+  // the invalidations should not be considered as initialized until any
+  // outstanding FCM messages are handled.
+  // TODO(crbug.com/1425026): this logic is quite fragile and should be
+  // revisited.
+  UpdateStandaloneInvalidationsState();
 }
 
 void SyncEngineImpl::SetEncryptionPassphrase(
@@ -400,8 +402,6 @@ void SyncEngineImpl::HandleInitializationSuccessOnFrontendLoop(
 
   initialized_ = true;
 
-  UpdateStandaloneInvalidationsState();
-
   active_devices_provider_->SetActiveDevicesChangedCallback(base::BindRepeating(
       &SyncEngineImpl::OnActiveDevicesChanged, weak_ptr_factory_.GetWeakPtr()));
 
@@ -465,22 +465,12 @@ void SyncEngineImpl::HandleMigrationRequestedOnFrontendLoop(
   host_->OnMigrationNeededForTypes(types);
 }
 
+// TODO(crbugg.com/1404927): replace InvalidatorState with a boolean.
 void SyncEngineImpl::OnInvalidatorStateChange(
     invalidation::InvalidatorState state) {
   sync_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&SyncEngineBackend::DoOnInvalidatorStateChange,
                                 backend_, state));
-}
-
-void SyncEngineImpl::OnIncomingInvalidation(
-    const invalidation::TopicInvalidationMap& invalidation_map) {
-  sync_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&SyncEngineBackend::DoOnIncomingInvalidation,
-                                backend_, invalidation_map));
-}
-
-std::string SyncEngineImpl::GetOwnerName() const {
-  return "SyncEngineImpl";
 }
 
 void SyncEngineImpl::HandleConnectionStatusChangeOnFrontendLoop(
@@ -563,14 +553,6 @@ void SyncEngineImpl::GetNigoriNodeForDebugging(AllNodesCallback callback) {
                      base::BindPostTaskToCurrentDefault(std::move(callback))));
 }
 
-void SyncEngineImpl::OnInvalidatorClientIdChange(const std::string& client_id) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  sync_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&SyncEngineBackend::DoOnInvalidatorClientIdChange,
-                     backend_, client_id));
-}
-
 void SyncEngineImpl::OnInvalidationReceived(const std::string& payload) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -623,16 +605,19 @@ void SyncEngineImpl::ClearLocalTransportDataAndNotify() {
 
 void SyncEngineImpl::UpdateStandaloneInvalidationsState() {
   DCHECK(sync_invalidations_service_);
-  if (!sync_invalidations_service_->GetFCMRegistrationToken().has_value()) {
+
+  // Wait for FCM registration token and until the engine actually starts
+  // listening for invalidations (and processed the incoming messages if there
+  // are any).
+  if (!sync_invalidations_service_->GetFCMRegistrationToken().has_value() ||
+      !sync_invalidations_service_->HasListener(this)) {
     OnInvalidatorStateChange(invalidation::TRANSIENT_INVALIDATION_ERROR);
     return;
   }
 
   // This code should not be called when the token is empty (which means that
-  // sync standalone invalidations are disabled). DCHECK_NE does not support
-  // comparison between an optional and a string, so use has_value() directly.
-  DCHECK(!sync_invalidations_service_->GetFCMRegistrationToken().has_value() ||
-         sync_invalidations_service_->GetFCMRegistrationToken().value() != "");
+  // sync standalone invalidations are disabled).
+  DCHECK_NE(sync_invalidations_service_->GetFCMRegistrationToken().value(), "");
 
   // TODO(crbug.com/1442156): wait for FCM token to be committed before change
   // the state to enabled.

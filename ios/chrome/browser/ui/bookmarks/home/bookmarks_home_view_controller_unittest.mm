@@ -20,10 +20,6 @@
 #import "third_party/ocmock/OCMock/OCMock.h"
 #import "third_party/ocmock/gtest_support.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 namespace {
 
 class BookmarksHomeViewControllerTest
@@ -78,11 +74,12 @@ TEST_P(BookmarksHomeViewControllerTest,
                          [controller.tableViewModel
                              sectionForSectionIdentifier:
                                  BookmarksHomeSectionIdentifierBookmarks]]);
-    EXPECT_EQ(0, [controller tableView:controller.tableView
-                     numberOfRowsInSection:
-                         [controller.tableViewModel
-                             sectionForSectionIdentifier:
-                                 BookmarksHomeSectionIdentifierRootProfile]]);
+    EXPECT_EQ(
+        0, [controller tableView:controller.tableView
+               numberOfRowsInSection:
+                   [controller.tableViewModel
+                       sectionForSectionIdentifier:
+                           BookmarksHomeSectionIdentifierRootLocalOrSyncable]]);
     EXPECT_EQ(0, [controller tableView:controller.tableView
                      numberOfRowsInSection:
                          [controller.tableViewModel
@@ -143,11 +140,12 @@ TEST_P(BookmarksHomeViewControllerTest,
                          [controller.tableViewModel
                              sectionForSectionIdentifier:
                                  BookmarksHomeSectionIdentifierBookmarks]]);
-    EXPECT_EQ(1, [controller tableView:controller.tableView
-                     numberOfRowsInSection:
-                         [controller.tableViewModel
-                             sectionForSectionIdentifier:
-                                 BookmarksHomeSectionIdentifierRootProfile]]);
+    EXPECT_EQ(
+        1, [controller tableView:controller.tableView
+               numberOfRowsInSection:
+                   [controller.tableViewModel
+                       sectionForSectionIdentifier:
+                           BookmarksHomeSectionIdentifierRootLocalOrSyncable]]);
     EXPECT_EQ(0, [controller tableView:controller.tableView
                      numberOfRowsInSection:
                          [controller.tableViewModel

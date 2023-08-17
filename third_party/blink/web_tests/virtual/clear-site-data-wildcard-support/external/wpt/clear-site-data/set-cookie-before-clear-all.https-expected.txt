@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-PASS Setting a cookie before Clear-Site-Data for all shouldn't allow the cookie to take.
-Harness: the test ran to completion.
-

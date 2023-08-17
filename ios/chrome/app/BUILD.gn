@@ -40,11 +40,13 @@ buildflag_header("fast_app_terminate_buildflags") {
 
 buildflag_header("chrome_main_module_buildflags") {
   header = "chrome_main_module_buildflags.h"
-  flags = [ "USE_CHROME_MAIN_MODULE=$ios_use_chrome_main_module" ]
+  flags = [
+    "USE_CHROME_MAIN_MODULE=$ios_use_chrome_main_module",
+    "USE_CHROME_BLINK_MAIN_MODULE=$ios_use_chrome_blink_main_module",
+  ]
 }
 
 source_set("app") {
-  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "app_startup_parameters.h",
     "app_startup_parameters.mm",
@@ -64,7 +66,6 @@ source_set("app") {
 }
 
 source_set("unit_tests") {
-  configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
     "app_metrics_app_state_agent_unittest.mm",
@@ -136,8 +137,6 @@ source_set("tests_hook") {
 }
 
 source_set("tests_fake_hook") {
-  configs += [ "//build/config/compiler:enable_arc" ]
-
   # This target is intentionally not test-only, as the main app depends on it.
   sources = [ "tests_fake_hook.mm" ]
   deps = [
@@ -147,7 +146,6 @@ source_set("tests_fake_hook") {
 }
 
 source_set("perf_tests_hook") {
-  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [ "perf_tests_hook.mm" ]
   deps = [
     ":tests_hook",
@@ -200,7 +198,6 @@ compile_entitlements("entitlements") {
 
 if (ios_enable_credential_provider_extension) {
   source_set("credential_provider_migrator_app_agent") {
-    configs += [ "//build/config/compiler:enable_arc" ]
     sources = [
       "credential_provider_migrator_app_agent.h",
       "credential_provider_migrator_app_agent.mm",
@@ -221,7 +218,6 @@ if (ios_enable_credential_provider_extension) {
 }
 
 source_set("app_metrics_app_state_agent") {
-  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "app_metrics_app_state_agent.h",
     "app_metrics_app_state_agent.mm",
@@ -237,7 +233,6 @@ source_set("app_metrics_app_state_agent") {
 }
 
 source_set("safe_mode_app_state_agent") {
-  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "safe_mode_app_state_agent+private.h",
     "safe_mode_app_state_agent.h",
@@ -252,7 +247,6 @@ source_set("safe_mode_app_state_agent") {
 }
 
 source_set("variations_app_state_agent") {
-  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "variations_app_state_agent+testing.h",
     "variations_app_state_agent.h",
@@ -276,7 +270,6 @@ source_set("variations_app_state_agent") {
 }
 
 source_set("enterprise_app_agent") {
-  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "enterprise_app_agent.h",
     "enterprise_app_agent.mm",
@@ -298,7 +291,6 @@ source_set("enterprise_app_agent") {
 }
 
 source_set("launch_screen_ui") {
-  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "launch_screen_view_controller.h",
     "launch_screen_view_controller.mm",
@@ -311,7 +303,6 @@ source_set("launch_screen_ui") {
 }
 
 source_set("enterprise_app_agent_ui") {
-  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "enterprise_loading_screen_view_controller.h",
     "enterprise_loading_screen_view_controller.mm",
@@ -328,7 +319,6 @@ source_set("enterprise_app_agent_ui") {
 }
 
 source_set("first_run_app_state_agent") {
-  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "first_run_app_state_agent.h",
     "first_run_app_state_agent.mm",
@@ -355,7 +345,6 @@ source_set("first_run_app_state_agent") {
 }
 
 source_set("post_restore_app_agent") {
-  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "post_restore_app_agent.h",
     "post_restore_app_agent.mm",
@@ -373,7 +362,6 @@ source_set("post_restore_app_agent") {
 }
 
 source_set("feed_app_agent") {
-  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "feed_app_agent.h",
     "feed_app_agent.mm",
@@ -398,7 +386,6 @@ source_set("feed_app_agent") {
 }
 
 source_set("app_internal") {
-  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "application_storage_metrics.h",
     "application_storage_metrics.mm",
@@ -510,7 +497,6 @@ source_set("app_internal") {
     "//ios/chrome/browser/search_engines",
     "//ios/chrome/browser/search_engines:extension_search_engine_data_updater",
     "//ios/chrome/browser/search_engines:search_engines_util",
-    "//ios/chrome/browser/sessions:scene_util",
     "//ios/chrome/browser/sessions:session_service",
     "//ios/chrome/browser/share_extension",
     "//ios/chrome/browser/shared/coordinator/scene",
@@ -587,27 +573,25 @@ source_set("app_internal") {
 }
 
 source_set("blocking_scene_commands") {
-  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [ "blocking_scene_commands.h" ]
 
   deps = [ "//base" ]
 }
 
 source_set("mode") {
-  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [ "application_mode.h" ]
 
   deps = [ "//base" ]
 }
 
 source_set("main") {
-  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [ "chrome_exe_main.mm" ]
 
   deps = [
     ":app_internal",
     ":chrome_main_module_buildflags",
     "//base",
+    "//build:blink_buildflags",
     "//components/component_updater",
     "//components/crash/core/common",
     "//ios/chrome/app/startup:ios_enable_sandbox_dump_buildflags",
@@ -637,7 +621,6 @@ source_set("main") {
 }
 
 source_set("multitasking_test_app_delegate") {
-  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "multitasking_test_application_delegate.h",
     "multitasking_test_application_delegate.mm",

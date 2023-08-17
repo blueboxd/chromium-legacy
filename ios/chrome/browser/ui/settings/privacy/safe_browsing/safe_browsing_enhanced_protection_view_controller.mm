@@ -27,10 +27,6 @@
 #import "net/base/mac/url_conversions.h"
 #import "ui/base/l10n/l10n_util_mac.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 using ItemArray = NSArray<TableViewItem*>*;
 
 namespace {
@@ -128,6 +124,10 @@ const CGFloat kSymbolSize = 20;
   SettingsImageDetailTextItem* detailItem =
       [[SettingsImageDetailTextItem alloc] initWithType:type];
   detailItem.detailText = l10n_util::GetNSString(detailText);
+  if (base::FeatureList::IsEnabled(
+          safe_browsing::kFriendlierSafeBrowsingSettingsEnhancedProtection)) {
+    detailItem.alignImageWithFirstLineOfText = YES;
+  }
   detailItem.image = image;
   detailItem.imageViewTintColor = [UIColor colorNamed:kGrey600Color];
   detailItem.accessibilityIdentifier = accessibilityIdentifier;
@@ -135,12 +135,12 @@ const CGFloat kSymbolSize = 20;
   return detailItem;
 }
 
-// Decides on the string ouput based off of if kFriendlierSafeBrowsingSettings
-// is enabled.
+// Decides on the string ouput based off of if
+// kFriendlierSafeBrowsingSettingsEnhancedProtection is enabled.
 - (NSInteger)chooseLegacyString:(NSInteger)legacyString
-                OrUpdatedString:(NSInteger)updatedString {
+                orUpdatedString:(NSInteger)updatedString {
   if (base::FeatureList::IsEnabled(
-          safe_browsing::kFriendlierSafeBrowsingSettings)) {
+          safe_browsing::kFriendlierSafeBrowsingSettingsEnhancedProtection)) {
     return updatedString;
   }
 
@@ -165,7 +165,7 @@ const CGFloat kSymbolSize = 20;
   [super loadModel];
   TableViewModel* model = self.tableViewModel;
   if (base::FeatureList::IsEnabled(
-          safe_browsing::kFriendlierSafeBrowsingSettings)) {
+          safe_browsing::kFriendlierSafeBrowsingSettingsEnhancedProtection)) {
     [model addSectionWithIdentifier:SectionIdentifierWhenOn];
     [model setHeader:[self showFirstHeader]
         forSectionWithIdentifier:SectionIdentifierWhenOn];
@@ -263,7 +263,7 @@ const CGFloat kSymbolSize = 20;
 
     NSInteger gIconDetailText = [self
         chooseLegacyString:IDS_IOS_SAFE_BROWSING_ENHANCED_PROTECTION_BULLET_TWO
-           OrUpdatedString:
+           orUpdatedString:
                IDS_IOS_SAFE_BROWSING_ENHANCED_PROTECTION_G_ICON_DESCRIPTION];
     SettingsImageDetailTextItem* gIconItem =
         [self detailItemWithType:ItemTypeGIcon
@@ -282,7 +282,7 @@ const CGFloat kSymbolSize = 20;
 
     NSInteger keyIconDetailText = [self
         chooseLegacyString:IDS_IOS_SAFE_BROWSING_ENHANCED_PROTECTION_BULLET_FOUR
-           OrUpdatedString:
+           orUpdatedString:
                IDS_IOS_SAFE_BROWSING_ENHANCED_PROTECTION_KEY_ICON_DESCRIPTION];
     UIImage* keyIcon = CustomSymbolWithPointSize(kPasswordSymbol, kSymbolSize);
     SettingsImageDetailTextItem* keyIconItem =
@@ -292,7 +292,7 @@ const CGFloat kSymbolSize = 20;
             accessibilityIdentifier:kSafeBrowsingEnhancedProtectionKeyCellId];
 
     if (base::FeatureList::IsEnabled(
-            safe_browsing::kFriendlierSafeBrowsingSettings)) {
+            safe_browsing::kFriendlierSafeBrowsingSettingsEnhancedProtection)) {
       UIImage* dataIcon =
           DefaultSymbolWithPointSize(kChartBarXAxisSymbol, kSymbolSize);
       SettingsImageDetailTextItem* dataIconItem = [self
@@ -314,9 +314,10 @@ const CGFloat kSymbolSize = 20;
 
       [items addObject:dataIconItem];
       [items addObject:downloadIconItem];
-      [items addObject:keyIconItem];
       [items addObject:gIconItem];
       [items addObject:globeIconItem];
+      [items addObject:keyIconItem];
+
     } else {
       UIImage* shieldIcon =
           CustomSymbolWithPointSize(kPrivacySymbol, kSymbolSize);
@@ -405,6 +406,7 @@ const CGFloat kSymbolSize = 20;
     enhancedProtectionFooterItem.urls = urls;
     enhancedProtectionFooterItem.accessibilityIdentifier =
         kSafeBrowsingEnhancedProtectionTableViewFooterId;
+    enhancedProtectionFooterItem.forceIndents = YES;
     _safeBrowsingEnhancedProtectionFooterItem = enhancedProtectionFooterItem;
   }
 
@@ -417,6 +419,7 @@ const CGFloat kSymbolSize = 20;
           initWithType:ItemTypeEnhancedProtectionFirstHeader];
   firstHeaderItem.text = l10n_util::GetNSString(
       IDS_IOS_SAFE_BROWSING_ENHANCED_PROTECTION_WHEN_ON_HEADER);
+  firstHeaderItem.forceIndents = YES;
   firstHeaderItem.accessibilityIdentifier =
       kSafeBrowsingEnhancedProtectionTableViewFirstHeaderId;
 
@@ -429,6 +432,7 @@ const CGFloat kSymbolSize = 20;
           initWithType:ItemTypeEnhancedProtectionSecondHeader];
   secondHeaderItem.text = l10n_util::GetNSString(
       IDS_IOS_SAFE_BROWSING_ENHANCED_PROTECTION_THINGS_TO_CONSIDER_HEADER);
+  secondHeaderItem.forceIndents = YES;
   secondHeaderItem.accessibilityIdentifier =
       kSafeBrowsingEnhancedProtectionTableViewSecondHeaderId;
 

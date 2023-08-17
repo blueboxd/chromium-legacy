@@ -42,6 +42,9 @@ group("all") {
       ":updater_tests",
       ":updater_tests_system",
     ]
+    if (is_win) {
+      deps += [ "win/installer:msi_custom_action" ]
+    }
   }
 }
 
@@ -98,6 +101,8 @@ if (is_win || is_mac || is_linux) {
       "device_management/dm_storage.h",
       "installer.cc",
       "installer.h",
+      "ipc/update_service_internal_proxy.cc",
+      "ipc/update_service_internal_proxy.h",
       "lock.h",
       "net/network.h",
       "persisted_data.cc",
@@ -141,6 +146,7 @@ if (is_win || is_mac || is_linux) {
     deps = [
       ":branding_header",
       ":constants_header",
+      ":tagging",
       ":version_header",
       "//base",
       "//base:i18n",
@@ -207,8 +213,6 @@ if (is_win || is_mac || is_linux) {
         "//mojo/public/cpp/platform",
         "//net",
       ]
-
-      configs += [ "//build/config/compiler:enable_arc" ]
 
       frameworks = [
         "AppKit.framework",
@@ -371,8 +375,6 @@ if (is_win || is_mac || is_linux) {
         "mac/setup/ks_tickets.mm",
       ]
 
-      configs += [ "//build/config/compiler:enable_arc" ]
-
       deps = [ "//base" ]
     }
   }
@@ -531,6 +533,17 @@ if (is_win || is_mac || is_linux) {
     ]
   }
 
+  source_set("tagging") {
+    sources = [
+      "certificate_tag.cc",
+      "certificate_tag.h",
+      "tag.cc",
+      "tag.h",
+    ]
+
+    deps = [ "//base" ]
+  }
+
   source_set("public_sources") {
     sources = [
       "constants.cc",
@@ -538,11 +551,11 @@ if (is_win || is_mac || is_linux) {
       "enum_traits.h",
       "ipc/ipc_support.cc",
       "ipc/ipc_support.h",
+      "ipc/update_service_proxy.cc",
+      "ipc/update_service_proxy.h",
       "registration_data.cc",
       "registration_data.h",
       "service_proxy_factory.h",
-      "tag.cc",
-      "tag.h",
       "update_service.cc",
       "update_service.h",
       "updater_scope.cc",
@@ -553,6 +566,7 @@ if (is_win || is_mac || is_linux) {
 
     deps = [
       ":branding_header",
+      ":tagging",
       ":version_header",
       "//base",
       "//components/update_client",
@@ -602,8 +616,6 @@ if (is_win || is_mac || is_linux) {
         "util/mac_util.h",
         "util/mac_util.mm",
       ]
-
-      configs += [ "//build/config/compiler:enable_arc" ]
 
       frameworks = [ "Foundation.framework" ]
     }
@@ -701,10 +713,11 @@ if (is_win || is_mac || is_linux) {
       ]
     }
     deps = [
+      ":base",
+      ":public_sources",
+      ":tagging",
       "//base",
       "//base/test:test_support",
-      "//chrome/updater:base",
-      "//chrome/updater:public_sources",
       "//testing/gtest",
       "//third_party/abseil-cpp:absl",
     ]
@@ -718,6 +731,7 @@ if (is_win || is_mac || is_linux) {
     sources = [
       "app/app_server_unittest.cc",
       "app/app_uninstall_unittest.cc",
+      "certificate_tag_unittest.cc",
       "cleanup_task_unittest.cc",
       "constants_unittest.cc",
       "device_management/dm_client_unittest.cc",
@@ -753,6 +767,7 @@ if (is_win || is_mac || is_linux) {
       "test/server.cc",
       "test/server.h",
       "update_service_impl_inactive_unittest.cc",
+      "update_service_impl_unittest.cc",
       "update_service_unittest.cc",
       "update_usage_stats_task_unittest.cc",
       "updater_scope_unittest.cc",
@@ -765,13 +780,13 @@ if (is_win || is_mac || is_linux) {
       ":base",
       ":branding_header",
       ":constants_test",
+      ":tagging",
       ":unit_test_util_sources",
       ":version_header",
       "//base",
       "//base/test:test_support",
       "//chrome/common:constants",
       "//chrome/updater/protos:omaha_proto",
-      "//chrome/updater/tools:unittest",
       "//components/crx_file",
       "//components/policy/proto",
       "//components/prefs:test_support",
@@ -788,6 +803,22 @@ if (is_win || is_mac || is_linux) {
 
     data = [
       "test/data/signed.exe",  # Payload used by network tests.
+      "test/data/signed.exe.gz",
+      "test/data/tagged_encode_utf8.exe",
+      "test/data/tagged_msi/GUH-ampersand-ending.msi",
+      "test/data/tagged_msi/GUH-bad-format.msi",
+      "test/data/tagged_msi/GUH-bad-format2.msi",
+      "test/data/tagged_msi/GUH-brand-only.msi",
+      "test/data/tagged_msi/GUH-empty-key.msi",
+      "test/data/tagged_msi/GUH-empty-tag.msi",
+      "test/data/tagged_msi/GUH-empty-value.msi",
+      "test/data/tagged_msi/GUH-invalid-key.msi",
+      "test/data/tagged_msi/GUH-invalid-length.msi",
+      "test/data/tagged_msi/GUH-invalid-marker.msi",
+      "test/data/tagged_msi/GUH-multiple.msi",
+      "test/data/tagged_msi/GUH-size-greater-than-max.msi",
+      "test/data/tagged_msi/GUH-special-value.msi",
+      "test/data/tagged_msi/GUH-untagged.msi",
     ]
 
     if (is_win) {
@@ -802,54 +833,41 @@ if (is_win || is_mac || is_linux) {
         "util/util_win_unittest.cc",
         "util/win_util_unittest.cc",
         "win/app_command_runner_unittest.cc",
+        "win/installer/configuration_unittest.cc",
+        "win/installer/installer_unittest.cc",
+        "win/installer/msi_custom_action_unittest.cc",
+        "win/installer/string_unittest.cc",
         "win/installer_api_unittest.cc",
         "win/manifest_util_unittest.cc",
-        "win/msi_tag_unittest.cc",
         "win/protocol_parser_xml_unittest.cc",
         "win/setup/setup_util_unittest.cc",
-        "win/tag_extractor_unittest.cc",
         "win/task_scheduler_unittest.cc",
         "win/ui/l10n_util_unittest.cc",
       ]
 
       deps += [
-        "//chrome/updater/app/server/win:updater_idl_idl",
-        "//chrome/updater/app/server/win:updater_internal_idl_idl",
-        "//chrome/updater/app/server/win:updater_legacy_idl_idl",
-        "//chrome/updater/win:msi_tag",
-        "//chrome/updater/win:tag_extractor",
-        "//chrome/updater/win/test:test_executables",
-        "//chrome/updater/win/test:test_strings",
-        "//chrome/updater/win/ui/resources:strings",
+        "app/server/win:updater_idl_idl",
+        "app/server/win:updater_internal_idl_idl",
+        "app/server/win:updater_legacy_idl_idl",
+        "win/installer:lib",
+        "win/installer:msi_custom_action_sources",
+        "win/test:test_executables",
+        "win/test:test_strings",
+        "win/ui/resources:strings",
       ]
 
       data_deps = [
         ":updater_selfupdate_test_crx",
+        "//chrome/updater/test/test_installer:test_app2_installer",
+        "//chrome/updater/test/test_installer:test_app2_installer_crx",
         "//chrome/updater/win:updater",
         "//chrome/updater/win:updater_test",
         "//chrome/updater/win/installer:installer_test",
-        "//chrome/updater/win/installer:installer_unittest",
         "//chrome/updater/win/test:updater_test_process",
       ]
 
       data += [
         "test/data/ProcmonConfiguration.pmc",
-        "test/data/signed.exe.gz",
-        "test/data/tagged_encode_utf8.exe",
-        "test/data/tagged_magic_utf16.exe",
-        "test/data/tagged_msi/GUH-ampersand-ending.msi",
-        "test/data/tagged_msi/GUH-bad-format.msi",
-        "test/data/tagged_msi/GUH-bad-format2.msi",
-        "test/data/tagged_msi/GUH-brand-only.msi",
-        "test/data/tagged_msi/GUH-empty-key.msi",
-        "test/data/tagged_msi/GUH-empty-tag.msi",
-        "test/data/tagged_msi/GUH-empty-value.msi",
-        "test/data/tagged_msi/GUH-invalid-key.msi",
-        "test/data/tagged_msi/GUH-invalid-length.msi",
-        "test/data/tagged_msi/GUH-invalid-marker.msi",
-        "test/data/tagged_msi/GUH-special-value.msi",
-        "test/data/tagged_msi/GUH-multiple.msi",
-        "test/data/tagged_msi/GUH-untagged.msi",
         "//chrome/test/data/updater/OfflineManifest.gup",
         "//chrome/test/data/updater/updater_qualification_app_exe.crx",
       ]
@@ -897,8 +915,6 @@ if (is_win || is_mac || is_linux) {
         "//chrome/updater/mac:privileged_helper_sources",
         "//third_party/ocmock",
       ]
-
-      configs += [ "//build/config/compiler:enable_arc" ]
 
       data += [
         "//chrome/test/data/updater/CountingMetrics.plist",
@@ -1045,12 +1061,10 @@ if (is_win || is_mac || is_linux) {
       ]
     }
     if (is_win) {
-      deps += [
-        "//chrome/installer/util:with_no_strings",
-        "//chrome/updater/test/test_installer:test_app1_installer",
-      ]
+      deps += [ "//chrome/installer/util:with_no_strings" ]
       data_deps = [
         ":test_service_files",
+        "//chrome/updater/test/test_installer:test_installer",
         "//chrome/updater/win:updater_test",
         "//third_party/updater:old_updater",
       ]
@@ -1090,6 +1104,7 @@ if (is_win || is_mac || is_linux) {
       deps += [ "//chrome/installer/util:with_no_strings" ]
       data_deps += [
         ":test_service_files",
+        "//chrome/updater/test/test_installer:test_installer",
         "//chrome/updater/win:updater_test",
         "//third_party/updater:old_updater",
       ]

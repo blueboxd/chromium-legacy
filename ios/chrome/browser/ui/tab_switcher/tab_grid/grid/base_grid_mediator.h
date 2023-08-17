@@ -13,12 +13,12 @@
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_grid_page_mutator.h"
 
 class Browser;
+@protocol GridConsumer;
 @protocol GridMediatorDelegate;
+@protocol GridToolbarsConfigurationProvider;
+@protocol GridToolbarsMutator;
 @protocol TabCollectionConsumer;
-
-namespace sessions {
-class TabRestoreService;
-}  // namespace sessions
+class WebStateList;
 
 // Mediates between model layer and tab grid UI layer.
 @interface BaseGridMediator : NSObject <GridCommands,
@@ -28,18 +28,35 @@ class TabRestoreService;
 
 // The source browser.
 @property(nonatomic, assign) Browser* browser;
-// TabRestoreService holds the recently closed tabs.
-@property(nonatomic, assign) sessions::TabRestoreService* tabRestoreService;
 // Delegate to handle presenting the action sheet.
 @property(nonatomic, weak) id<GridMediatorDelegate> delegate;
+// Mutator to handle toolbars modification.
+@property(nonatomic, weak) id<GridToolbarsMutator> toolbarsMutator;
+// Consumer to reflect model modification to UI layer.
+@property(nonatomic, weak) id<GridConsumer> gridConsumer;
+// The list from the browser.
+@property(nonatomic, assign) WebStateList* webStateList;
+// Contained grid which provides tab grid toolbar configuration.
+@property(nonatomic, weak) id<GridToolbarsConfigurationProvider>
+    containedGridToolbarsProvider;
+// The UI consumer to which updates are made.
+@property(nonatomic, weak) id<TabCollectionConsumer> consumer;
 
 // Initializer with `consumer` as the receiver of model layer updates.
 - (instancetype)initWithConsumer:(id<TabCollectionConsumer>)consumer
     NS_DESIGNATED_INITIALIZER;
 - (instancetype)init NS_UNAVAILABLE;
 
-// Called when then tab grid is about to be shown.
-- (void)prepareToShowTabGrid;
+@end
+
+@interface BaseGridMediator (Subclassing)
+
+// Called when toolbars should be updated. This function should be implemented
+// in a subclass.
+- (void)configureToolbarsButtons;
+// Called when the consumer should be updated. This function should be
+// implemented in a subclass.
+- (void)notifyConsumerAboutChanges;
 
 @end
 

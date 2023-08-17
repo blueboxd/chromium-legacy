@@ -6,6 +6,7 @@
 #import "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
 #import "base/time/time.h"
+#import "components/bookmarks/common/storage_type.h"
 #import "components/sync/base/command_line_switches.h"
 #import "components/sync/base/features.h"
 #import "ios/chrome/browser/signin/fake_system_identity.h"
@@ -21,10 +22,6 @@
 #import "ios/web/public/test/http_server/http_server_util.h"
 #import "net/base/mac/url_conversions.h"
 #import "net/test/embedded_test_server/embedded_test_server.h"
-
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
 
 namespace {
 
@@ -66,8 +63,8 @@ void WaitForAutofillProfileLocallyPresent(const std::string& guid,
 @implementation SyncFakeServerTestCase
 
 - (void)tearDown {
-  [ChromeEarlGrey waitForBookmarksToFinishLoading];
-  [ChromeEarlGrey clearBookmarks];
+  [BookmarkEarlGrey waitForBookmarkModelsLoaded];
+  [BookmarkEarlGrey clearBookmarks];
 
   [ChromeEarlGrey clearSyncServerData];
 
@@ -113,7 +110,10 @@ void WaitForAutofillProfileLocallyPresent(const std::string& guid,
 // Tests that a bookmark added on the client (before Sync is enabled) is
 // uploaded to the Sync server once Sync is turned on.
 - (void)testSyncUploadBookmarkOnFirstSync {
-  [BookmarkEarlGrey addBookmarkWithTitle:@"foo" URL:@"https://www.foo.com"];
+  [BookmarkEarlGrey
+      addBookmarkWithTitle:@"foo"
+                       URL:@"https://www.foo.com"
+                 inStorage:bookmarks::StorageType::kLocalOrSyncable];
 
   // Sign in to sync, after a bookmark has been added.
   FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
@@ -135,14 +135,20 @@ void WaitForAutofillProfileLocallyPresent(const std::string& guid,
   // Add a bookmark after sync is initialized.
   [ChromeEarlGrey waitForSyncEngineInitialized:YES
                                    syncTimeout:kSyncOperationTimeout];
-  [BookmarkEarlGrey addBookmarkWithTitle:@"goo" URL:@"https://www.goo.com"];
+  [BookmarkEarlGrey
+      addBookmarkWithTitle:@"goo"
+                       URL:@"https://www.goo.com"
+                 inStorage:bookmarks::StorageType::kLocalOrSyncable];
   WaitForEntitiesOnFakeServer(1, syncer::BOOKMARKS);
 }
 
 // Tests that a bookmark injected in the FakeServer is synced down to the
 // client.
 - (void)testSyncDownloadBookmark {
-  [BookmarkEarlGrey verifyBookmarksWithTitle:@"hoo" expectedCount:0];
+  [BookmarkEarlGrey
+      verifyBookmarksWithTitle:@"hoo"
+                 expectedCount:0
+                     inStorage:bookmarks::StorageType::kLocalOrSyncable];
   const GURL URL = web::test::HttpServer::MakeUrl("http://www.hoo.com");
   [ChromeEarlGrey addFakeSyncServerBookmarkWithURL:URL title:"hoo"];
 
@@ -153,7 +159,10 @@ void WaitForAutofillProfileLocallyPresent(const std::string& guid,
 
   [ChromeEarlGrey
       waitForSyncTransportStateActiveWithTimeout:kSyncOperationTimeout];
-  [BookmarkEarlGrey verifyBookmarksWithTitle:@"hoo" expectedCount:1];
+  [BookmarkEarlGrey
+      verifyBookmarksWithTitle:@"hoo"
+                 expectedCount:1
+                     inStorage:bookmarks::StorageType::kLocalOrSyncable];
 }
 
 // Tests that the local cache guid changes when the user signs out and then
@@ -505,8 +514,14 @@ void WaitForAutofillProfileLocallyPresent(const std::string& guid,
   NSString* title1 = @"title1";
   NSString* title2 = @"title2";
 
-  [BookmarkEarlGrey verifyBookmarksWithTitle:title1 expectedCount:0];
-  [BookmarkEarlGrey verifyBookmarksWithTitle:title2 expectedCount:0];
+  [BookmarkEarlGrey
+      verifyBookmarksWithTitle:title1
+                 expectedCount:0
+                     inStorage:bookmarks::StorageType::kLocalOrSyncable];
+  [BookmarkEarlGrey
+      verifyBookmarksWithTitle:title2
+                 expectedCount:0
+                     inStorage:bookmarks::StorageType::kLocalOrSyncable];
 
   // Mimic the creation of two bookmarks from two different devices, with the
   // same client item ID.
@@ -527,8 +542,14 @@ void WaitForAutofillProfileLocallyPresent(const std::string& guid,
   [ChromeEarlGrey
       waitForSyncTransportStateActiveWithTimeout:kSyncOperationTimeout];
 
-  [BookmarkEarlGrey verifyBookmarksWithTitle:title1 expectedCount:1];
-  [BookmarkEarlGrey verifyBookmarksWithTitle:title2 expectedCount:1];
+  [BookmarkEarlGrey
+      verifyBookmarksWithTitle:title1
+                 expectedCount:1
+                     inStorage:bookmarks::StorageType::kLocalOrSyncable];
+  [BookmarkEarlGrey
+      verifyBookmarksWithTitle:title2
+                 expectedCount:1
+                     inStorage:bookmarks::StorageType::kLocalOrSyncable];
 }
 
 - (void)testSyncInvalidationsEnabled {

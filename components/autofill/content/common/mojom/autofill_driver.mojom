@@ -47,8 +47,8 @@ interface AutofillDriver {
                          FormFieldData field,
                          gfx.mojom.RectF bounding_box);
 
-  // Notification that a select or selectmenu element's options were modified.
-  SelectOrSelectMenuFieldOptionsDidChange(FormData form);
+  // Notification that a select or selectlist element's options were modified.
+  SelectOrSelectListFieldOptionsDidChange(FormData form);
 
   // Queries the browser for Autofill suggestions for a form input field.
   // For autofill this means asking the user which values to fill.
@@ -134,9 +134,9 @@ interface PasswordManagerDriver {
   // non-password field with |renderer_id|, and |value| is the current value.
   UserModifiedNonPasswordField(
     FieldRendererId renderer_id,
-    mojo_base.mojom.String16 field_name,
     mojo_base.mojom.String16 value,
-    bool autocomplete_attribute_has_username);
+    bool autocomplete_attribute_has_username,
+    bool is_likely_otp);
 
   // Instructs the browser to show a popup or accessory with password
   // suggestions. The popup will use |text_direction| for displaying text.

@@ -491,6 +491,7 @@ ResourceLoadPriority ResourceFetcher::ComputeLoadPriority(
   // Note: The `priority` set here may be overridden by the logic below,
   //       while that is not the case as of July 2023.
   if (is_potentially_lcp_element) {
+    ++potentially_lcp_resource_priority_boosts_;
     priority = ResourceLoadPriority::kVeryHigh;
   }
 
@@ -1368,19 +1369,13 @@ Resource* ResourceFetcher::RequestResource(FetchParameters& params,
   if (client)
     client->SetResource(resource, freezable_task_runner_.get());
 
-  // TODO(yoav): It is not clear why preloads are exempt from this check. Can we
-  // remove the exemption?
-  if (!params.IsSpeculativePreload() || policy != RevalidationPolicy::kUse) {
-    // When issuing another request for a resource that is already in-flight
-    // make sure to not demote the priority of the in-flight request. If the new
-    // request isn't at the same priority as the in-flight request, only allow
-    // promotions. This can happen when a visible image's priority is increased
-    // and then another reference to the image is parsed (which would be at a
-    // lower priority).
-    if (resource_request.Priority() > resource->GetResourceRequest().Priority())
-      resource->DidChangePriority(resource_request.Priority(), 0);
-    // TODO(yoav): I'd expect the stated scenario to not go here, as its policy
-    // would be Use.
+  // Increase the priority of an existing request if the new request is
+  // of a higher priority.
+  // This can happen in a lot of cases but a common one is if a resource is
+  // preloaded at a low priority but then the resource itself requires a
+  // high-priority load.
+  if (resource_request.Priority() > resource->GetResourceRequest().Priority()) {
+    resource->DidChangePriority(resource_request.Priority(), 0);
   }
 
   // If only the fragment identifiers differ, it is the same resource.
@@ -1435,7 +1430,8 @@ Resource* ResourceFetcher::RequestResource(FetchParameters& params,
     }
     if (!StartLoad(resource,
                    std::move(params.MutableResourceRequest().MutableBody()),
-                   load_blocking_policy, params.GetRenderBlockingBehavior())) {
+                   load_blocking_policy, params.GetRenderBlockingBehavior(),
+                   params.CountORBBlockAs())) {
       resource->FinishAsError(ResourceError::CancelledError(params.Url()),
                               freezable_task_runner_.get());
     }
@@ -1518,8 +1514,7 @@ std::unique_ptr<URLLoader> ResourceFetcher::CreateURLLoader(
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
       unfreezable_task_runner_;
-  if (!base::FeatureList::IsEnabled(
-          blink::features::kKeepAliveInBrowserMigration) &&
+  if (!blink::features::IsKeepAliveInBrowserMigrationEnabled() &&
       request.GetKeepalive()) {
     base::UmaHistogramBoolean("Blink.Fetch.KeepAlive.Total", true);
     // Set the `task_runner` to the `AgentGroupScheduler`'s task-runner for
@@ -2073,8 +2068,7 @@ void ResourceFetcher::ClearContext() {
   StopFetching();
 
   if ((!loaders_.empty() || !non_blocking_loaders_.empty()) &&
-      !base::FeatureList::IsEnabled(
-          blink::features::kKeepAliveInBrowserMigration)) {
+      !blink::features::IsKeepAliveInBrowserMigrationEnabled()) {
     // There are some keepalive requests.
 
     // Records the current time to estimate how long the remaining requests will
@@ -2196,9 +2190,7 @@ void ResourceFetcher::WarnUnusedPreloads() {
 void ResourceFetcher::HandleLoaderFinish(Resource* resource,
                                          base::TimeTicks response_end,
                                          LoaderFinishType type,
-                                         uint32_t inflight_keepalive_bytes,
-                                         bool pervasive_payload_requested,
-                                         int64_t bytes_fetched) {
+                                         uint32_t inflight_keepalive_bytes) {
   DCHECK(resource);
 
   // kRaw might not be subresource, and we do not need them.
@@ -2222,15 +2214,6 @@ void ResourceFetcher::HandleLoaderFinish(Resource* resource,
     UpdateServiceWorkerSubresourceMetrics(
         resource->GetType(),
         resource->GetResponse().WasFetchedViaServiceWorker());
-  }
-
-  subresource_load_metrics_.pervasive_payload_requested |=
-      pervasive_payload_requested;
-  if (bytes_fetched > 0) {
-    subresource_load_metrics_.total_bytes_fetched += bytes_fetched;
-    if (pervasive_payload_requested) {
-      subresource_load_metrics_.pervasive_bytes_fetched += bytes_fetched;
-    }
   }
 
   context_->UpdateSubresourceLoadMetrics(subresource_load_metrics_);
@@ -2374,14 +2357,15 @@ bool ResourceFetcher::StartLoad(Resource* resource) {
   }
   return StartLoad(resource, ResourceRequestBody(),
                    ImageLoadBlockingPolicy::kDefault,
-                   RenderBlockingBehavior::kNonBlocking);
+                   RenderBlockingBehavior::kNonBlocking, absl::nullopt);
 }
 
 bool ResourceFetcher::StartLoad(
     Resource* resource,
     ResourceRequestBody request_body,
     ImageLoadBlockingPolicy policy,
-    RenderBlockingBehavior render_blocking_behavior) {
+    RenderBlockingBehavior render_blocking_behavior,
+    absl::optional<mojom::blink::WebFeature> count_orb_block_as_) {
   DCHECK(resource);
   DCHECK(resource->StillNeedsLoad());
 
@@ -2427,7 +2411,7 @@ bool ResourceFetcher::StartLoad(
 
     loader = MakeGarbageCollected<ResourceLoader>(
         this, scheduler_, resource, context_lifecycle_notifier_,
-        std::move(request_body), size);
+        std::move(request_body), size, count_orb_block_as_);
     // Preload requests should not block the load event. IsLinkPreload()
     // actually continues to return true for Resources matched from the preload
     // cache that must block the load event, but that is OK because this method
@@ -2485,8 +2469,7 @@ void ResourceFetcher::RemoveResourceLoader(ResourceLoader* loader) {
 }
 
 void ResourceFetcher::StopFetching() {
-  if (base::FeatureList::IsEnabled(
-          blink::features::kKeepAliveInBrowserMigration)) {
+  if (blink::features::IsKeepAliveInBrowserMigrationEnabled()) {
     StopFetchingInternal(StopFetchingTarget::kIncludingKeepaliveLoaders);
   } else {
     StopFetchingInternal(StopFetchingTarget::kExcludingKeepaliveLoaders);
@@ -2872,6 +2855,15 @@ void ResourceFetcher::OnResourceCacheContainsFinished(
       base::StrCat({"Blink.MemoryCache.Remote.", visibility, lifecycle,
                     ".IPCRecvDelay"}),
       recv_delay);
+}
+
+void ResourceFetcher::RecordLCPPSubresourceMetrics() {
+  if (!context_->DoesLCPPHaveAnyHintData()) {
+    return;
+  }
+
+  base::UmaHistogramCounts100("Blink.LCPP.PotentiallyLCPResourcePriorityBoosts",
+                              potentially_lcp_resource_priority_boosts_);
 }
 
 void ResourceFetcher::Trace(Visitor* visitor) const {

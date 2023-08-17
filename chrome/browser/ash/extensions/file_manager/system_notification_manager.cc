@@ -9,6 +9,7 @@
 #include "ash/components/arc/arc_prefs.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/webui/file_manager/file_manager_ui.h"
+#include "ash/webui/settings/public/constants/routes.mojom.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_forward.h"
 #include "base/functional/callback_helpers.h"
@@ -30,7 +31,6 @@
 #include "chrome/browser/ash/policy/dlp/files_policy_notification_manager_factory.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
-#include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
 #include "chrome/common/extensions/api/file_manager_private.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/prefs/pref_service.h"
@@ -193,6 +193,10 @@ std::u16string GetIOTaskMessage(Profile* profile,
                       .value()));
 }
 }  // namespace
+
+std::string GetNotificationId(io_task::IOTaskId task_id) {
+  return base::StrCat({kSwaFileOperationPrefix, base::NumberToString(task_id)});
+}
 
 NotificationPtr CreateSystemNotification(
     const std::string& notification_id,
@@ -772,8 +776,7 @@ void SystemNotificationManager::HandleEvent(const Event& event) {
 
 void SystemNotificationManager::HandleIOTaskProgress(
     const ProgressStatus& status) {
-  std::string id = base::StrCat(
-      {kSwaFileOperationPrefix, base::NumberToString(status.task_id)});
+  std::string id = GetNotificationId(status.task_id);
 
   // If there are any SWA windows open, remove the IOTask progress from system
   // notifications.

@@ -53,10 +53,6 @@
 #import "third_party/abseil-cpp/absl/types/optional.h"
 #import "ui/base/l10n/l10n_util_mac.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 @interface PromosManagerCoordinator () <
     ConfirmationAlertActionHandler,
     UIAdaptivePresentationControllerDelegate,
@@ -176,6 +172,11 @@
 }
 
 - (void)displayPromoCallback:(BOOL)isFirstShownPromo {
+  // If there's already a displayed promo, skip.
+  if (_currentPromoData.has_value()) {
+    return;
+  }
+
   absl::optional<PromoDisplayData> nextPromoForDisplay =
       [self.mediator nextPromoForDisplay:isFirstShownPromo];
 
@@ -225,17 +226,6 @@
   }
 
   promos_manager::Promo promo = promoData.promo;
-
-  // Trying to display a promo while the previous dismissal was not communicated
-  // back to the promos manager.
-  // TODO(crbug.com/1452233): Remove once all promos dismiss themselves.
-  if (_currentPromoData.has_value()) {
-    static crash_reporter::CrashKeyString<40> key("current-promo");
-    crash_reporter::ScopedCrashKeyString crashKey(
-        &key, ShortNameForPromo(_currentPromoData.value().promo));
-    base::debug::DumpWithoutCrashing();
-  }
-
   _currentPromoData = promoData;
 
   auto handler_it = _displayHandlerPromos.find(promo);

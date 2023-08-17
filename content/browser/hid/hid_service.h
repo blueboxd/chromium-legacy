@@ -48,6 +48,12 @@ class CONTENT_EXPORT HidService : public blink::mojom::HidService,
                      const url::Origin&,
                      mojo::PendingReceiver<blink::mojom::HidService>);
 
+  // Removes reports from `device` if the report IDs match the IDs in the
+  // protected report ID lists. If all of the reports are removed from a
+  // collection, the collection is also removed.
+  static void RemoveProtectedReports(device::mojom::HidDeviceInfo& device,
+                                     bool is_fido_allowed);
+
   // blink::mojom::HidService:
   void RegisterClient(
       mojo::PendingAssociatedRemote<device::mojom::HidManagerClient> client)
@@ -71,6 +77,20 @@ class CONTENT_EXPORT HidService : public blink::mojom::HidService,
       const device::mojom::HidDeviceInfo& device_info) override;
   void OnHidManagerConnectionError() override;
   void OnPermissionRevoked(const url::Origin& origin) override;
+
+  const mojo::AssociatedRemoteSet<device::mojom::HidManagerClient>& clients()
+      const {
+    return clients_;
+  }
+
+  base::WeakPtr<content::ServiceWorkerVersion> service_worker_version() {
+    return service_worker_version_;
+  }
+
+  const mojo::ReceiverSet<device::mojom::HidConnectionWatcher>&
+  GetWatchersForTesting() {
+    return watchers_;
+  }
 
  private:
   HidService(RenderFrameHostImpl* render_frame_host,

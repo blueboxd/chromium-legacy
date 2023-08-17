@@ -20,10 +20,6 @@
 #import "ios/chrome/common/ui/util/button_util.h"
 #import "url/gurl.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 typedef NS_ENUM(NSUInteger, Sections) {
   StatusSection = 0,
   DebugCommandsSection,
@@ -63,6 +59,11 @@ typedef NS_ENUM(NSUInteger, DebugCommandsRows) {
     _spotlightInterface = [SpotlightInterface defaultInterface];
   }
   return self;
+}
+
+- (void)dealloc {
+  [self.bookmarksManager shutdown];
+  [self.readingListSpotlightManager shutdown];
 }
 
 #pragma mark - Public

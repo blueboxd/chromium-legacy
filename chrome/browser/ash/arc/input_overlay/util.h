@@ -8,7 +8,6 @@
 #include <memory>
 #include <string>
 
-#include "ash/public/cpp/arc_game_controls_flag.h"
 #include "chrome/browser/ash/arc/input_overlay/constants.h"
 #include "chrome/browser/ash/arc/input_overlay/db/proto/app_data.pb.h"
 #include "ui/events/keycodes/dom/dom_code.h"
@@ -25,13 +24,13 @@ class InputElement;
 constexpr int kArrowKeyMoveDistance = 2;
 
 // Gets the event flags for the modifier domcode. Return ui::DomCode::NONE if
-// |code| is not modifier DomCode.
+// `code` is not modifier DomCode.
 int ModifierDomCodeToEventFlag(ui::DomCode code);
 bool IsSameDomCode(ui::DomCode a, ui::DomCode b);
 // Convert mouse action strings to enum values.
 MouseAction ConvertToMouseActionEnum(const std::string& mouse_action);
 
-// Return the input binding filtered by |binding_option| in |action|.
+// Return the input binding filtered by `binding_option` in `action`.
 InputElement* GetInputBindingByBindingOption(Action* action,
                                              BindingOption binding_option);
 
@@ -39,17 +38,11 @@ InputElement* GetInputBindingByBindingOption(Action* action,
 // Alpha version. Otherwise, it is AlphaV2+ version.
 std::string GetCurrentSystemVersion();
 
-// Reset the focus to |view|.
+// Reset the focus to `view`.
 void ResetFocusTo(views::View* view);
 
-// Return true if |code| is not allowed to bind.
+// Return true if `code` is not allowed to bind.
 bool IsReservedDomCode(ui::DomCode code);
-
-// Compares `new_flags` and `old_flags` and returns true if the `flag` bit has
-// changed. Otherwise, returns false.
-bool IsFlagChanged(ash::ArcGameControlsFlag new_flags,
-                   ash::ArcGameControlsFlag old_flags,
-                   ash::ArcGameControlsFlag flag);
 
 // TODO(b/253646354): This will be removed when removing the flag.
 bool IsBeta();

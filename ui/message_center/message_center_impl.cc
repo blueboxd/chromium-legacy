@@ -154,6 +154,15 @@ void MessageCenterImpl::SetNotificationExpandState(
   notification_list_->SetNotificationExpandState(id, expand_state);
 }
 
+void MessageCenterImpl::OnSetExpanded(const std::string& id, bool expanded) {
+  scoped_refptr<NotificationDelegate> delegate =
+      notification_list_->GetNotificationDelegate(id);
+
+  if (delegate) {
+    delegate->ExpandStateChanged(expanded);
+  }
+}
+
 void MessageCenterImpl::SetHasMessageCenterView(bool has_message_center_view) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   has_message_center_view_ = has_message_center_view;

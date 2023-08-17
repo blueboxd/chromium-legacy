@@ -14,6 +14,7 @@
 #include "components/content_settings/browser/test_page_specific_content_settings_delegate.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
+#include "components/content_settings/core/common/features.h"
 #include "components/security_state/core/security_state.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/browser/cookie_access_details.h"
@@ -70,7 +71,7 @@ class MockPageSpecificContentSettingsDelegate
   MOCK_METHOD(void, OnContentBlocked, (ContentSettingsType type));
 };
 
-blink::StorageKey CreateFirstPartyStorageKey(const GURL& url) {
+blink::StorageKey CreateUnpartitionedStorageKey(const GURL& url) {
   return blink::StorageKey::CreateFirstParty(url::Origin::Create(url));
 }
 
@@ -256,7 +257,7 @@ TEST_F(PageSpecificContentSettingsTest, BlockedFileSystems) {
   auto* rfh = web_contents()->GetPrimaryMainFrame();
   PageSpecificContentSettings* content_settings =
       PageSpecificContentSettings::GetForFrame(rfh);
-  auto google_storage_key = rfh->storage_key();
+  auto google_storage_key = rfh->GetStorageKey();
   // Access a file system.
   content_settings->OnStorageAccessed(StorageType::FILE_SYSTEM,
                                       google_storage_key, false);
@@ -441,7 +442,7 @@ TEST_F(PageSpecificContentSettingsTest, SiteDataObserver) {
       {content::CookieAccessDetails::Type::kRead, GURL("http://google.com"),
        GURL("http://google.com"), cookie_list, blocked_by_policy});
 
-  auto google_storage_key = rfh->storage_key();
+  auto google_storage_key = rfh->GetStorageKey();
   content_settings->OnStorageAccessed(StorageType::FILE_SYSTEM,
                                       google_storage_key, blocked_by_policy);
   content_settings->OnStorageAccessed(StorageType::INDEXED_DB,
@@ -470,22 +471,23 @@ TEST_F(PageSpecificContentSettingsTest, LocalSharedObjectsContainer) {
                                   blocked_by_policy});
   content_settings->OnStorageAccessed(
       StorageType::FILE_SYSTEM,
-      CreateFirstPartyStorageKey(GURL("https://www.google.com")),
+      CreateUnpartitionedStorageKey(GURL("https://www.google.com")),
       blocked_by_policy);
   content_settings->OnStorageAccessed(
       StorageType::INDEXED_DB,
-      CreateFirstPartyStorageKey(GURL("https://localhost")), blocked_by_policy);
-  content_settings->OnStorageAccessed(
-      StorageType::LOCAL_STORAGE,
-      CreateFirstPartyStorageKey(GURL("http://maps.google.com:8080")),
+      CreateUnpartitionedStorageKey(GURL("https://localhost")),
       blocked_by_policy);
   content_settings->OnStorageAccessed(
       StorageType::LOCAL_STORAGE,
-      CreateFirstPartyStorageKey(GURL("http://example.com")),
+      CreateUnpartitionedStorageKey(GURL("http://maps.google.com:8080")),
+      blocked_by_policy);
+  content_settings->OnStorageAccessed(
+      StorageType::LOCAL_STORAGE,
+      CreateUnpartitionedStorageKey(GURL("http://example.com")),
       blocked_by_policy);
   content_settings->OnStorageAccessed(
       StorageType::DATABASE,
-      CreateFirstPartyStorageKey(GURL("http://192.168.0.1")),
+      CreateUnpartitionedStorageKey(GURL("http://192.168.0.1")),
       blocked_by_policy);
   content_settings->OnSharedWorkerAccessed(
       GURL("http://youtube.com/worker.js"), "worker",
@@ -824,22 +826,23 @@ TEST_F(PageSpecificContentSettingsTest, LocalSharedObjectsContainerHostsCount) {
                                   blocked_by_policy});
   content_settings->OnStorageAccessed(
       StorageType::FILE_SYSTEM,
-      CreateFirstPartyStorageKey(GURL("https://www.google.com")),
+      CreateUnpartitionedStorageKey(GURL("https://www.google.com")),
       blocked_by_policy);
   content_settings->OnStorageAccessed(
       StorageType::INDEXED_DB,
-      CreateFirstPartyStorageKey(GURL("https://localhost")), blocked_by_policy);
-  content_settings->OnStorageAccessed(
-      StorageType::LOCAL_STORAGE,
-      CreateFirstPartyStorageKey(GURL("http://maps.google.com:8080")),
+      CreateUnpartitionedStorageKey(GURL("https://localhost")),
       blocked_by_policy);
   content_settings->OnStorageAccessed(
       StorageType::LOCAL_STORAGE,
-      CreateFirstPartyStorageKey(GURL("http://example.com")),
+      CreateUnpartitionedStorageKey(GURL("http://maps.google.com:8080")),
+      blocked_by_policy);
+  content_settings->OnStorageAccessed(
+      StorageType::LOCAL_STORAGE,
+      CreateUnpartitionedStorageKey(GURL("http://example.com")),
       blocked_by_policy);
   content_settings->OnStorageAccessed(
       StorageType::DATABASE,
-      CreateFirstPartyStorageKey(GURL("http://192.168.0.1")),
+      CreateUnpartitionedStorageKey(GURL("http://192.168.0.1")),
       blocked_by_policy);
   content_settings->OnSharedWorkerAccessed(
       GURL("http://youtube.com/worker.js"), "worker",
@@ -959,13 +962,13 @@ TEST_F(PageSpecificContentSettingsWithBDMTest, BrowsingDataModelStorageAccess) {
   bool blocked_by_policy = false;
 
   content_settings->OnBrowsingDataAccessed(
-      CreateFirstPartyStorageKey(GURL("https://www.google.com")),
+      CreateUnpartitionedStorageKey(GURL("https://www.google.com")),
       BrowsingDataModel::StorageType::kQuotaStorage, blocked_by_policy);
   content_settings->OnBrowsingDataAccessed(
-      CreateFirstPartyStorageKey(GURL("http://example.com")),
+      CreateUnpartitionedStorageKey(GURL("http://example.com")),
       BrowsingDataModel::StorageType::kLocalStorage, blocked_by_policy);
   content_settings->OnBrowsingDataAccessed(
-      CreateFirstPartyStorageKey(GURL("https://www.youtube.com")),
+      CreateUnpartitionedStorageKey(GURL("https://www.youtube.com")),
       BrowsingDataModel::StorageType::kSessionStorage, blocked_by_policy);
 
   const auto* allowed_browsing_data_model =
@@ -1068,7 +1071,7 @@ TEST_F(PageSpecificContentSettingsWithPrerenderTest,
                            {*cookie},
                            /*blocked_by_policy=*/false});
   pscs->OnStorageAccessed(StorageType::INDEXED_DB,
-                          prerender_frame->storage_key(),
+                          prerender_frame->GetStorageKey(),
                           /*blocked_by_policy=*/true);
 
   EXPECT_CALL(*mock_delegate, OnContentAllowed(ContentSettingsType::COOKIES))
@@ -1242,7 +1245,7 @@ TEST_F(PageSpecificContentSettingsWithFencedFrameTest, DelegateUpdatesSent) {
                               {*cookie},
                               /*blocked_by_policy=*/false});
   ff_pscs->OnStorageAccessed(StorageType::INDEXED_DB,
-                             fenced_frame_root->storage_key(),
+                             fenced_frame_root->GetStorageKey(),
                              /*blocked_by_policy=*/true);
 }
 
@@ -1274,6 +1277,9 @@ TEST_F(PageSpecificContentSettingsTest, MediaIndicatorsMinHoldDurationDelay) {
       web_contents()->GetPrimaryMainFrame());
   ASSERT_NE(pscs, nullptr);
 
+  pscs->set_media_stream_access_origin_for_testing(
+      web_contents()->GetLastCommittedURL());
+
   EXPECT_FALSE(pscs->GetMicrophoneCameraState().Has(
       PageSpecificContentSettings::kCameraAccessed));
   pscs->OnCapturingStateChanged(ContentSettingsType::MEDIASTREAM_CAMERA, true);
@@ -1302,6 +1308,46 @@ TEST_F(PageSpecificContentSettingsTest, MediaIndicatorsMinHoldDurationDelay) {
       PageSpecificContentSettings::kCameraAccessed));
 }
 
+// Tests that if media indicator display time almost equals to the min hold
+// duration, a delay should be not less than 1 second.
+TEST_F(PageSpecificContentSettingsTest, AlmostExpiredMinHoldDurationDelay) {
+  NavigateAndCommit(GURL("http://google.com"));
+
+  PageSpecificContentSettings* pscs = PageSpecificContentSettings::GetForFrame(
+      web_contents()->GetPrimaryMainFrame());
+  ASSERT_NE(pscs, nullptr);
+
+  pscs->set_media_stream_access_origin_for_testing(
+      web_contents()->GetLastCommittedURL());
+
+  pscs->OnCapturingStateChanged(ContentSettingsType::MEDIASTREAM_CAMERA, true);
+
+  task_environment()->AdvanceClock(base::Milliseconds(4800));
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(pscs->GetMicrophoneCameraState().Has(
+      PageSpecificContentSettings::kCameraAccessed));
+
+  pscs->OnCapturingStateChanged(ContentSettingsType::MEDIASTREAM_CAMERA, false);
+
+  //  `kCameraAccessed` is true because of 1 second delay.
+  EXPECT_TRUE(pscs->GetMicrophoneCameraState().Has(
+      PageSpecificContentSettings::kCameraAccessed));
+
+  task_environment()->AdvanceClock(base::Milliseconds(800));
+  base::RunLoop().RunUntilIdle();
+
+  //  `kCameraAccessed` is true because waited only 800 ms.
+  EXPECT_TRUE(pscs->GetMicrophoneCameraState().Has(
+      PageSpecificContentSettings::kCameraAccessed));
+
+  task_environment()->AdvanceClock(base::Milliseconds(300));
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_FALSE(pscs->GetMicrophoneCameraState().Has(
+      PageSpecificContentSettings::kCameraAccessed));
+}
+
 TEST_F(PageSpecificContentSettingsTest,
        MediaIndicatorsHoldAfterUseDurationDelay) {
   NavigateAndCommit(GURL("http://google.com"));
@@ -1309,6 +1355,9 @@ TEST_F(PageSpecificContentSettingsTest,
   PageSpecificContentSettings* pscs = PageSpecificContentSettings::GetForFrame(
       web_contents()->GetPrimaryMainFrame());
   ASSERT_NE(pscs, nullptr);
+
+  pscs->set_media_stream_access_origin_for_testing(
+      web_contents()->GetLastCommittedURL());
 
   EXPECT_FALSE(pscs->GetMicrophoneCameraState().Has(
       PageSpecificContentSettings::kCameraAccessed));
@@ -1343,6 +1392,9 @@ TEST_F(PageSpecificContentSettingsTest,
       web_contents()->GetPrimaryMainFrame());
   ASSERT_NE(pscs, nullptr);
 
+  pscs->set_media_stream_access_origin_for_testing(
+      web_contents()->GetLastCommittedURL());
+
   EXPECT_FALSE(pscs->GetMicrophoneCameraState().Has(
       PageSpecificContentSettings::kCameraAccessed));
   pscs->OnCapturingStateChanged(ContentSettingsType::MEDIASTREAM_CAMERA, true);
@@ -1367,6 +1419,171 @@ TEST_F(PageSpecificContentSettingsTest,
 
   EXPECT_TRUE(pscs->GetMicrophoneCameraState().Has(
       PageSpecificContentSettings::kCameraAccessed));
+}
+
+// Tests that `PageSpecificContentSettings` will return locally saved last used
+// time if it exists.
+TEST_F(PageSpecificContentSettingsTest, GetLastUsedTimeLocalTimeTest) {
+  NavigateAndCommit(GURL("http://google.com"));
+
+  PageSpecificContentSettings* pscs = PageSpecificContentSettings::GetForFrame(
+      web_contents()->GetPrimaryMainFrame());
+  ASSERT_NE(pscs, nullptr);
+
+  base::Time time = base::Time::Now() - base::Seconds(30);
+
+  pscs->set_last_used_time_for_testing(ContentSettingsType::MEDIASTREAM_CAMERA,
+                                       time);
+
+  EXPECT_EQ(time,
+            pscs->GetLastUsedTime(ContentSettingsType::MEDIASTREAM_CAMERA));
+}
+
+TEST_F(PageSpecificContentSettingsTest, GetLastUsedReturnsDefaultTimeTest) {
+  NavigateAndCommit(GURL("http://google.com"));
+
+  HostContentSettingsMap* map = settings_map();
+
+  const GURL& url = web_contents()->GetLastCommittedURL();
+  map->SetContentSettingDefaultScope(
+      url, url, ContentSettingsType::MEDIASTREAM_CAMERA, CONTENT_SETTING_ALLOW);
+
+  PageSpecificContentSettings* pscs = PageSpecificContentSettings::GetForFrame(
+      web_contents()->GetPrimaryMainFrame());
+  ASSERT_NE(pscs, nullptr);
+
+  EXPECT_EQ(base::Time(),
+            pscs->GetLastUsedTime(ContentSettingsType::MEDIASTREAM_CAMERA));
+}
+
+TEST_F(PageSpecificContentSettingsTest, GetLastUsedReturnCorrectTimeTest) {
+  NavigateAndCommit(GURL("http://google.com"));
+
+  HostContentSettingsMap* map = settings_map();
+
+  const GURL& url = web_contents()->GetLastCommittedURL();
+  map->SetContentSettingDefaultScope(
+      url, url, ContentSettingsType::MEDIASTREAM_CAMERA, CONTENT_SETTING_ALLOW);
+
+  base::Time time = base::Time::Now() - base::Hours(20);
+  map->UpdateLastUsedTime(url, url, ContentSettingsType::MEDIASTREAM_CAMERA,
+                          time);
+
+  PageSpecificContentSettings* pscs = PageSpecificContentSettings::GetForFrame(
+      web_contents()->GetPrimaryMainFrame());
+  ASSERT_NE(pscs, nullptr);
+
+  EXPECT_EQ(time,
+            pscs->GetLastUsedTime(ContentSettingsType::MEDIASTREAM_CAMERA));
+}
+
+// Tests that a permission blocked indicator is visible only for 60 seconds.
+TEST_F(PageSpecificContentSettingsTest, MediaBlockedIndicatorsDismissDelay) {
+  base::test::ScopedFeatureList scoped_feature_list_;
+  scoped_feature_list_.InitAndEnableFeature(
+      content_settings::features::kImprovedSemanticsActivityIndicators);
+
+  NavigateAndCommit(GURL("http://google.com"));
+
+  PageSpecificContentSettings* pscs = PageSpecificContentSettings::GetForFrame(
+      web_contents()->GetPrimaryMainFrame());
+  ASSERT_NE(pscs, nullptr);
+
+  EXPECT_FALSE(pscs->get_media_blocked_indicator_timer_for_testing().contains(
+      ContentSettingsType::MEDIASTREAM_MIC));
+
+  PageSpecificContentSettings::MicrophoneCameraState
+      blocked_microphone_camera_state = {
+          PageSpecificContentSettings::kMicrophoneAccessed,
+          PageSpecificContentSettings::kMicrophoneBlocked};
+  pscs->OnMediaStreamPermissionSet(
+      GURL("http://google.com"), blocked_microphone_camera_state, std::string(),
+      std::string(), std::string(), std::string());
+
+  EXPECT_TRUE(pscs->get_media_blocked_indicator_timer_for_testing().contains(
+      ContentSettingsType::MEDIASTREAM_MIC));
+
+  task_environment()->AdvanceClock(base::Seconds(57));
+  base::RunLoop().RunUntilIdle();
+
+  // The timer is still there because a delay is 60 seconds.
+  EXPECT_TRUE(pscs->get_media_blocked_indicator_timer_for_testing().contains(
+      ContentSettingsType::MEDIASTREAM_MIC));
+
+  task_environment()->AdvanceClock(base::Seconds(4));
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_FALSE(pscs->get_media_blocked_indicator_timer_for_testing().contains(
+      ContentSettingsType::MEDIASTREAM_MIC));
+}
+
+// Tests that a permission indicator will not be dismissed by a timer if was
+// opened.
+TEST_F(PageSpecificContentSettingsTest,
+       MediaIndicatorsDoNotDismissIfOpenedDelay) {
+  base::test::ScopedFeatureList scoped_feature_list_;
+  scoped_feature_list_.InitAndEnableFeature(
+      content_settings::features::kImprovedSemanticsActivityIndicators);
+
+  NavigateAndCommit(GURL("http://google.com"));
+
+  PageSpecificContentSettings* pscs = PageSpecificContentSettings::GetForFrame(
+      web_contents()->GetPrimaryMainFrame());
+  ASSERT_NE(pscs, nullptr);
+
+  PageSpecificContentSettings::MicrophoneCameraState
+      blocked_microphone_camera_state = {
+          PageSpecificContentSettings::kMicrophoneAccessed,
+          PageSpecificContentSettings::kMicrophoneBlocked};
+  pscs->OnMediaStreamPermissionSet(
+      GURL("http://google.com"), blocked_microphone_camera_state, std::string(),
+      std::string(), std::string(), std::string());
+
+  EXPECT_TRUE(pscs->get_media_blocked_indicator_timer_for_testing().contains(
+      ContentSettingsType::MEDIASTREAM_MIC));
+  // 60 secodns timer is on.
+  EXPECT_TRUE(pscs->get_media_blocked_indicator_timer_for_testing()
+                  [ContentSettingsType::MEDIASTREAM_MIC]
+                      .IsRunning());
+
+  pscs->OnActivityIndicatorBubbleOpened(ContentSettingsType::MEDIASTREAM_MIC);
+
+  EXPECT_TRUE(pscs->get_media_blocked_indicator_timer_for_testing().contains(
+      ContentSettingsType::MEDIASTREAM_MIC));
+  // A mic timer was stopped.
+  EXPECT_FALSE(pscs->get_media_blocked_indicator_timer_for_testing()
+                   [ContentSettingsType::MEDIASTREAM_MIC]
+                       .IsRunning());
+
+  // A blockage indicator timer was stopped because an activity indicator popup
+  // bubble was opened.
+  task_environment()->AdvanceClock(base::Seconds(65));
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(pscs->get_media_blocked_indicator_timer_for_testing().contains(
+      ContentSettingsType::MEDIASTREAM_MIC));
+  EXPECT_TRUE(pscs->GetMicrophoneCameraState().Has(
+      PageSpecificContentSettings::kMicrophoneAccessed));
+  EXPECT_TRUE(pscs->GetMicrophoneCameraState().Has(
+      PageSpecificContentSettings::kMicrophoneBlocked));
+
+  // An indicator popup bubble is closed.
+  pscs->OnActivityIndicatorBubbleClosed(ContentSettingsType::MEDIASTREAM_MIC);
+
+  // A mic timer was restarted.
+  EXPECT_TRUE(pscs->get_media_blocked_indicator_timer_for_testing()
+                  [ContentSettingsType::MEDIASTREAM_MIC]
+                      .IsRunning());
+
+  task_environment()->AdvanceClock(base::Seconds(61));
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_FALSE(pscs->get_media_blocked_indicator_timer_for_testing().contains(
+      ContentSettingsType::MEDIASTREAM_MIC));
+  EXPECT_FALSE(pscs->GetMicrophoneCameraState().Has(
+      PageSpecificContentSettings::kMicrophoneAccessed));
+  EXPECT_FALSE(pscs->GetMicrophoneCameraState().Has(
+      PageSpecificContentSettings::kMicrophoneBlocked));
 }
 
 }  // namespace content_settings

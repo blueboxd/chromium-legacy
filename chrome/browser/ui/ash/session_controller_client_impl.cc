@@ -16,6 +16,7 @@
 #include "base/ranges/algorithm.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "base/trace_event/trace_event.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/ash/crosapi/browser_manager.h"
 #include "chrome/browser/ash/crosapi/browser_util.h"
@@ -29,6 +30,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/lifetime/termination_notification.h"
+#include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profiles_state.h"
@@ -105,6 +107,8 @@ std::unique_ptr<ash::UserSession> UserToUserSession(const User& user) {
   session->user_info.should_display_managed_ui =
       profile && chrome::ShouldDisplayManagedUi(profile);
   session->user_info.is_new_profile = profile->IsNewProfile();
+  session->user_info.is_managed =
+      profile->GetProfilePolicyConnector()->IsManaged();
 
   session->user_info.avatar.image = user.GetImage();
   if (session->user_info.avatar.image.isNull()) {
@@ -500,6 +504,7 @@ void SessionControllerClientImpl::DoCycleActiveUser(
 }
 
 void SessionControllerClientImpl::OnSessionStateChanged() {
+  TRACE_EVENT0("ui", "SessionControllerClientImpl::OnSessionStateChanged");
   if (SessionManager::Get()->session_state() == SessionState::ACTIVE) {
     // The active user should not be pending when the session becomes active.
     DCHECK(pending_users_.find(

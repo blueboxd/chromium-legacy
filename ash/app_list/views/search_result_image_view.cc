@@ -13,9 +13,11 @@
 #include "ash/app_list/views/search_result_image_list_view.h"
 #include "ash/app_list/views/search_result_image_view_delegate.h"
 #include "ash/style/ash_color_id.h"
+#include "cc/paint/display_item_list.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/compositor/compositor.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/skia_conversions.h"
 #include "ui/gfx/image/image_skia_operations.h"
@@ -25,6 +27,7 @@
 #include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/view_utils.h"
+#include "ui/views/widget/widget.h"
 
 namespace ash {
 
@@ -40,6 +43,9 @@ constexpr int kFocusRingCornerRadius =
 constexpr gfx::Insets kFocusRingInsets =
     gfx::Insets(-kSpaceBetweenFocusRingAndImage -
                 views::FocusRing::kDefaultHaloThickness / 2);
+
+// Dragged image constants
+constexpr double kDraggedImageOpacity = 0.6;
 
 class ImagePreviewView : public views::ImageButton {
  public:
@@ -77,6 +83,7 @@ SearchResultImageView::SearchResultImageView(
 
   views::FocusRing::Install(this);
   views::FocusRing* const focus_ring = views::FocusRing::Get(this);
+  focus_ring->SetOutsetFocusRingDisabled(true);
   const bool is_jelly_enabled = chromeos::features::IsJellyEnabled();
   focus_ring->SetColorId(is_jelly_enabled ? static_cast<ui::ColorId>(
                                                 cros_tokens::kCrosSysFocusRing)
@@ -138,7 +145,37 @@ void SearchResultImageView::CreatePulsingBlockView() {
   pulsing_block_view_->GetViewAccessibility().OverrideIsIgnored(true);
 }
 
+gfx::ImageSkia SearchResultImageView::CreateDragImage() {
+  const ui::Compositor* compositor = GetWidget()->GetCompositor();
+  const float scale = compositor->device_scale_factor();
+  const gfx::Rect paint_bounds(gfx::ScaleToCeiledSize(size(), scale));
+  const bool is_pixel_canvas = compositor->is_pixel_canvas();
+  SkBitmap bitmap;
+  bitmap.allocN32Pixels(paint_bounds.width(), paint_bounds.height());
+  bitmap.eraseColor(SK_ColorTRANSPARENT);
+
+  SkCanvas canvas(bitmap);
+  auto list = base::MakeRefCounted<cc::DisplayItemList>();
+  ui::PaintContext context(list.get(), scale, paint_bounds, is_pixel_canvas);
+
+  result_image_->Paint(
+      views::PaintInfo::CreateRootPaintInfo(context, paint_bounds.size()));
+  list->Finalize();
+  list->Raster(&canvas, nullptr);
+
+  gfx::ImageSkia dragged_image =
+      gfx::ImageSkia::CreateFromBitmap(bitmap, scale);
+  return gfx::ImageSkiaOperations::CreateTransparentImage(dragged_image,
+                                                          kDraggedImageOpacity);
+}
+
 void SearchResultImageView::OnMetadataChanged() {
+  UpdateAccessibleName();
+  // By default, the description will be set to the tooltip text, but the title
+  // is already announced in the accessible name.
+  SetAccessibleDescription(
+      u"", ax::mojom::DescriptionFrom::kAttributeExplicitlyEmpty);
+
   if (!result() || result()->icon().icon.IsEmpty()) {
     result_image_->SetVisible(false);
     if (result() && !pulsing_block_view_) {
@@ -162,11 +199,6 @@ void SearchResultImageView::OnMetadataChanged() {
 
   result_image_->SetImage(views::Button::STATE_NORMAL, image);
   SetTooltipText(result()->title());
-  UpdateAccessibleName();
-  // By default, the description will be set to the tooltip text, but the title
-  // is already announced in the accessible name.
-  SetAccessibleDescription(
-      u"", ax::mojom::DescriptionFrom::kAttributeExplicitlyEmpty);
 }
 
 SearchResultImageView::~SearchResultImageView() = default;

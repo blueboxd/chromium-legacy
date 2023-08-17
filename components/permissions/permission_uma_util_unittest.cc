@@ -12,6 +12,7 @@
 #include "base/time/clock.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "components/content_settings/core/browser/content_settings_uma_util.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/content_settings/core/common/content_settings_types.h"
@@ -20,6 +21,8 @@
 #include "components/permissions/permission_request_manager.h"
 #include "components/permissions/permission_util.h"
 #include "components/permissions/test/test_permissions_client.h"
+#include "components/ukm/content/source_url_recorder.h"
+#include "components/ukm/test_ukm_recorder.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_task_environment.h"
@@ -462,11 +465,9 @@ TEST_F(PermissionUmaUtilTest, RecordPermissionRegrantForUnusedSites) {
   histograms.ExpectTotalCount(prefix + "Prompt.All", 0);
 
   // Create a revoked permission.
-  base::Value::Dict dict = base::Value::Dict();
-  base::Value::List permission_type_list = base::Value::List();
-  permission_type_list.Append(static_cast<int32_t>(content_type));
-  dict.Set(permissions::kRevokedKey,
-           base::Value::List(std::move(permission_type_list)));
+  auto dict = base::Value::Dict().Set(
+      permissions::kRevokedKey,
+      base::Value::List().Append(static_cast<int32_t>(content_type)));
   // Set expiration to five days before the clean-up threshold to mimic that the
   // permission was revoked five days ago.
   base::Time past(now - base::Days(5));
@@ -539,10 +540,9 @@ TEST_F(PermissionUmaUtilTest, GetDaysSinceUnusedSitePermissionRevocation) {
   content_settings::ContentSettingConstraints expiration_constraint(
       clock.Now());
   expiration_constraint.set_lifetime(base::Days(30));
-  base::Value::Dict dict = base::Value::Dict();
-  base::Value::List permissions = base::Value::List();
-  permissions.Append(static_cast<int32_t>(ContentSettingsType::GEOLOCATION));
-  dict.Set(permissions::kRevokedKey, std::move(permissions));
+  auto dict = base::Value::Dict().Set(
+      permissions::kRevokedKey, base::Value::List().Append(static_cast<int32_t>(
+                                    ContentSettingsType::GEOLOCATION)));
   hcsm->SetWebsiteSettingCustomScope(
       ContentSettingsPattern::FromURLNoWildcard(url),
       ContentSettingsPattern::Wildcard(),
@@ -839,5 +839,130 @@ INSTANTIATE_TEST_SUITE_P(
             /*matches_all_origins*/ true,
             /*origins*/ {},
             /*expected_configuration*/ absl::nullopt}));
+
+class UkmRecorderPermissionUmaUtilTest
+    : public content::RenderViewHostTestHarness {
+ public:
+  void SetUp() override { content::RenderViewHostTestHarness::SetUp(); }
+
+  class UkmRecorderTestPermissionsClient : public TestPermissionsClient {
+   public:
+    UkmRecorderTestPermissionsClient() = default;
+
+    void SetSimulatedHasSourceId(bool source_id) {
+      simulated_has_source_id_ = source_id;
+    }
+
+    void GetUkmSourceId(content::BrowserContext* browser_context,
+                        content::WebContents* web_contents,
+                        const GURL& requesting_origin,
+                        GetUkmSourceIdCallback callback) override {
+      // Short circuit and return a null SourceId.
+      if (!simulated_has_source_id_) {
+        std::move(callback).Run(absl::nullopt);
+      } else {
+        ukm::SourceId fake_source_id =
+            ukm::ConvertToSourceId(1, ukm::SourceIdType::NAVIGATION_ID);
+        std::move(callback).Run(fake_source_id);
+      }
+    }
+
+   private:
+    bool simulated_has_source_id_ = false;
+  };
+
+  UkmRecorderTestPermissionsClient permissions_client_;
+};
+
+TEST_F(UkmRecorderPermissionUmaUtilTest,
+       NotificationRevocationHistogramDidRecordUkmTest) {
+  base::HistogramTester histograms;
+  content::TestBrowserContext browser_context;
+  ukm::InitializeSourceUrlRecorderForWebContents(web_contents());
+  ukm::TestAutoSetUkmRecorder ukm_recorder;
+
+  permissions_client_.SetSimulatedHasSourceId(true);
+  const GURL origin(kTopLevelUrl);
+  PermissionUmaUtil::PermissionRevoked(
+      ContentSettingsType::NOTIFICATIONS,
+      permissions::PermissionSourceUI::ANDROID_SETTINGS, origin,
+      &browser_context);
+
+  histograms.ExpectBucketCount("Permissions.Action.Notifications",
+                               static_cast<int64_t>(PermissionAction::REVOKED),
+                               1);
+  histograms.ExpectBucketCount(
+      "Permissions.Revocation.Notifications.DidRecordUkm", 1, 1);
+  const auto entries = ukm_recorder.GetEntriesByName("Permission");
+  ASSERT_EQ(1u, entries.size());
+  const auto* entry = entries.back();
+  EXPECT_EQ(*ukm_recorder.GetEntryMetric(entry, "Action"),
+            static_cast<int64_t>(PermissionAction::REVOKED));
+}
+
+TEST_F(UkmRecorderPermissionUmaUtilTest,
+       NotificationRevocationHistogramDroppedUkmTest) {
+  base::HistogramTester histograms;
+  content::TestBrowserContext browser_context;
+  ukm::InitializeSourceUrlRecorderForWebContents(web_contents());
+  ukm::TestAutoSetUkmRecorder ukm_recorder;
+
+  permissions_client_.SetSimulatedHasSourceId(false);
+  const GURL origin(kTopLevelUrl);
+  PermissionUmaUtil::PermissionRevoked(
+      ContentSettingsType::NOTIFICATIONS,
+      permissions::PermissionSourceUI::ANDROID_SETTINGS, origin,
+      &browser_context);
+
+  histograms.ExpectBucketCount("Permissions.Action.Notifications",
+                               static_cast<int64_t>(PermissionAction::REVOKED),
+                               1);
+
+  histograms.ExpectBucketCount(
+      "Permissions.Revocation.Notifications.DidRecordUkm", 0, 1);
+  const auto entries = ukm_recorder.GetEntriesByName("Permission");
+  EXPECT_EQ(0u, entries.size());
+}
+
+TEST_F(UkmRecorderPermissionUmaUtilTest,
+       NotificationUsageHistogramDidRecordUkmTest) {
+  base::HistogramTester histograms;
+  content::TestBrowserContext browser_context;
+  ukm::InitializeSourceUrlRecorderForWebContents(web_contents());
+  ukm::TestAutoSetUkmRecorder ukm_recorder;
+
+  permissions_client_.SetSimulatedHasSourceId(true);
+  PermissionUmaUtil::RecordPermissionUsage(ContentSettingsType::NOTIFICATIONS,
+                                           &browser_context, web_contents(),
+                                           GURL(kTopLevelUrl));
+
+  histograms.ExpectBucketCount("Permissions.Usage.Notifications.DidRecordUkm",
+                               1, 1);
+  const auto entries = ukm_recorder.GetEntriesByName("PermissionUsage");
+  ASSERT_EQ(1u, entries.size());
+  const auto* entry = entries.back();
+  EXPECT_EQ(*ukm_recorder.GetEntryMetric(entry, "PermissionType"),
+            content_settings_uma_util::ContentSettingTypeToHistogramValue(
+                ContentSettingsType::NOTIFICATIONS));
+}
+
+TEST_F(UkmRecorderPermissionUmaUtilTest,
+       NotificationUsageHistogramDroppedUkmTest) {
+  base::HistogramTester histograms;
+  content::TestBrowserContext browser_context;
+
+  ukm::InitializeSourceUrlRecorderForWebContents(web_contents());
+  ukm::TestAutoSetUkmRecorder ukm_recorder;
+
+  permissions_client_.SetSimulatedHasSourceId(false);
+  PermissionUmaUtil::RecordPermissionUsage(ContentSettingsType::NOTIFICATIONS,
+                                           &browser_context, web_contents(),
+                                           GURL(kTopLevelUrl));
+
+  histograms.ExpectBucketCount("Permissions.Usage.Notifications.DidRecordUkm",
+                               0, 1);
+  const auto entries = ukm_recorder.GetEntriesByName("PermissionUsage");
+  ASSERT_EQ(0u, entries.size());
+}
 
 }  // namespace permissions

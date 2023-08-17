@@ -5,16 +5,32 @@
 #include "content/services/auction_worklet/webidl_compat.h"
 
 #include <cmath>
+#include <initializer_list>
 
 #include "base/check.h"
 #include "base/functional/callback.h"
 #include "base/strings/strcat.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
+#include "base/strings/utf_string_conversions.h"
 #include "content/services/auction_worklet/auction_v8_helper.h"
 #include "gin/converter.h"
 #include "v8/include/v8-exception.h"
 #include "v8/include/v8-primitive.h"
 
 namespace auction_worklet {
+
+namespace {
+
+IdlConvert::Status MakeRecordConversionFailure(
+    const v8::TryCatch& try_catch,
+    std::string_view error_prefix,
+    std::initializer_list<std::string_view> error_subject) {
+  return IdlConvert::MakeConversionFailure(
+      try_catch, error_prefix, error_subject, "record<DOMString, USVString>");
+}
+
+}  // namespace
 
 IdlConvert::Status::Status() : value_(Success::kSuccessTag) {}
 IdlConvert::Status::Status(Status&& other) = default;
@@ -34,6 +50,32 @@ std::string IdlConvert::Status::ConvertToErrorString(
     case Type::kException:
       return AuctionV8Helper::FormatExceptionMessage(
           isolate->GetCurrentContext(), absl::get<Exception>(value_).message);
+  }
+}
+
+void IdlConvert::Status::PropagateErrorsToV8(AuctionV8Helper* v8_helper) {
+  switch (type()) {
+    case Type::kSuccess:
+      break;
+    case Type::kTimeout:
+      // We don't want to set an exception in case of timeout since it would
+      // override the timeout.
+      break;
+    case Type::kErrorMessage: {
+      std::string message = absl::get<std::string>(value_);
+      // Remove any trailing period since v8 will add one.
+      if (base::EndsWith(message, ".")) {
+        message.pop_back();
+      }
+      v8_helper->isolate()->ThrowException(v8::Exception::TypeError(
+          v8_helper->CreateUtf8String(message).ToLocalChecked()));
+      break;
+    }
+    case Type::kException: {
+      v8_helper->isolate()->ThrowException(
+          absl::get<Exception>(value_).exception);
+      break;
+    }
   }
 }
 
@@ -119,12 +161,101 @@ IdlConvert::Status IdlConvert::Convert(
                                  "String");
   }
 
-  if (!gin::Converter<std::string>::FromV8(isolate, v8_string, &out)) {
-    return Status::MakeErrorMessage(
-        base::StrCat({error_prefix, "Converting ", base::StrCat(error_subject),
-                      " to a String did not produce a useful result."}));
+  bool gin_ok = gin::Converter<std::string>::FromV8(isolate, v8_string, &out);
+  DCHECK(gin_ok);  // Should never fail on a v8::String
+  return Status::MakeSuccess();
+}
+
+IdlConvert::Status IdlConvert::Convert(
+    v8::Isolate* isolate,
+    std::string_view error_prefix,
+    std::initializer_list<std::string_view> error_subject,
+    v8::Local<v8::Value> value,
+    std::u16string& out) {
+  v8::TryCatch try_catch(isolate);
+  v8::Local<v8::String> v8_string;
+  if (value->IsString()) {
+    v8_string = value.As<v8::String>();
+  } else if (!value->ToString(isolate->GetCurrentContext())
+                  .ToLocal(&v8_string)) {
+    return MakeConversionFailure(try_catch, error_prefix, error_subject,
+                                 "String");
+  }
+
+  bool gin_ok =
+      gin::Converter<std::u16string>::FromV8(isolate, v8_string, &out);
+  DCHECK(gin_ok);  // Should never fail on a v8::String
+  return Status::MakeSuccess();
+}
+
+// static
+IdlConvert::Status IdlConvert::Convert(
+    v8::Isolate* isolate,
+    std::string_view error_prefix,
+    std::initializer_list<std::string_view> error_subject,
+    v8::Local<v8::Value> value,
+    v8::Local<v8::BigInt>& out) {
+  v8::TryCatch try_catch(isolate);
+  if (!value->ToBigInt(isolate->GetCurrentContext()).ToLocal(&out)) {
+    return MakeConversionFailure(try_catch, error_prefix, error_subject,
+                                 "BigInt");
   }
   return Status::MakeSuccess();
+}
+
+// static
+IdlConvert::Status IdlConvert::Convert(
+    v8::Isolate* isolate,
+    std::string_view error_prefix,
+    std::initializer_list<std::string_view> error_subject,
+    v8::Local<v8::Value> value,
+    int32_t& out) {
+  v8::TryCatch try_catch(isolate);
+  v8::Local<v8::Int32> int32_value;
+  if (!value->ToInt32(isolate->GetCurrentContext()).ToLocal(&int32_value)) {
+    return MakeConversionFailure(try_catch, error_prefix, error_subject,
+                                 "ToInt32");
+  }
+
+  out = int32_value->Value();
+  return Status::MakeSuccess();
+}
+
+// static
+IdlConvert::Status IdlConvert::Convert(
+    v8::Isolate* isolate,
+    std::string_view error_prefix,
+    std::initializer_list<std::string_view> error_subject,
+    v8::Local<v8::Value> value,
+    absl::variant<int32_t, v8::Local<v8::BigInt>>& out) {
+  // A union that has both a BigInt and a normal number follows special rules
+  // to disambiguate.
+  //
+  // https://webidl.spec.whatwg.org/#converted-to-a-numeric-type-or-bigint
+  if (value->IsBigInt()) {
+    out.emplace<v8::Local<v8::BigInt>>();
+    return IdlConvert::Convert(isolate, error_prefix, error_subject, value,
+                               absl::get<v8::Local<v8::BigInt>>(out));
+  } else if (value->IsNumber()) {
+    out.emplace<int32_t>();
+    return IdlConvert::Convert(isolate, error_prefix, error_subject, value,
+                               absl::get<int32_t>(out));
+  } else {
+    v8::TryCatch try_catch(isolate);
+    v8::Local<v8::Numeric> num_value;
+    if (!value->ToNumeric(isolate->GetCurrentContext()).ToLocal(&num_value)) {
+      return MakeConversionFailure(try_catch, error_prefix, error_subject,
+                                   "(bigint or long)");
+    }
+    if (num_value->IsBigInt()) {
+      out = num_value.As<v8::BigInt>();
+      return Status::MakeSuccess();
+    } else {
+      out.emplace<int32_t>();
+      return IdlConvert::Convert(isolate, error_prefix, error_subject,
+                                 num_value, absl::get<int32_t>(out));
+    }
+  }
 }
 
 // static
@@ -156,6 +287,104 @@ IdlConvert::Status IdlConvert::MakeConversionFailure(
                       base::StrCat(error_subject), " to a ", type_name, "."});
     return Status::MakeErrorMessage(std::move(fail_message));
   }
+}
+
+IdlConvert::Status ConvertRecord(
+    AuctionV8Helper* v8_helper,
+    AuctionV8Helper::TimeLimitScope& time_limit_scope,
+    std::string_view error_prefix,
+    std::initializer_list<std::string_view> error_subject,
+    v8::Local<v8::Value> in_val,
+    std::vector<std::pair<std::string, std::string>>& out) {
+  DCHECK(time_limit_scope.has_time_limit());
+  v8::Isolate* isolate = v8_helper->isolate();
+  v8::Local<v8::Context> context = isolate->GetCurrentContext();
+
+  // This follows https://webidl.spec.whatwg.org/#es-record, and is heavily
+  // based on NativeValueTraits<IDLRecord<K, V>>::NativeValue in
+  // third_party/blink/renderer/bindings/core/v8/native_value_traits_impl.h
+  if (!in_val->IsObject()) {
+    return IdlConvert::Status::MakeErrorMessage(base::StrCat(
+        {error_prefix, "Cannot convert ", base::StrCat(error_subject),
+         " to a record since it's not an Object."}));
+  }
+
+  v8::Local<v8::Object> in = in_val.As<v8::Object>();
+
+  v8::TryCatch try_catch(isolate);
+  v8::Local<v8::String> enumerable_name =
+      v8_helper->CreateStringFromLiteral("enumerable");
+
+  v8::Local<v8::Array> keys;
+  if (!in->GetOwnPropertyNames(context, v8::PropertyFilter::ALL_PROPERTIES,
+                               v8::KeyConversionMode::kConvertToString)
+           .ToLocal(&keys)) {
+    return MakeRecordConversionFailure(try_catch, error_prefix, error_subject);
+  }
+
+  out.clear();
+  for (size_t i = 0; i < keys->Length(); i++) {
+    v8::Local<v8::Value> key;
+    if (!keys->Get(context, i).ToLocal(&key)) {
+      return MakeRecordConversionFailure(try_catch, error_prefix,
+                                         error_subject);
+    }
+
+    v8::Local<v8::Value> desc;
+    if (!in->GetOwnPropertyDescriptor(context, key.As<v8::Name>())
+             .ToLocal(&desc)) {
+      return MakeRecordConversionFailure(try_catch, error_prefix,
+                                         error_subject);
+    }
+
+    // Undefined `desc` gets skipped.
+    if (desc->IsUndefined()) {
+      continue;
+    }
+
+    v8::Local<v8::Value> enumerable;
+    if (!desc->IsObject() || !desc.As<v8::Object>()
+                                  ->Get(context, enumerable_name)
+                                  .ToLocal(&enumerable)) {
+      return MakeRecordConversionFailure(try_catch, error_prefix,
+                                         error_subject);
+    }
+
+    // As do things which are not actually enumerable.
+    if (!enumerable->BooleanValue(isolate)) {
+      continue;
+    }
+
+    std::string typed_key;
+    IdlConvert::Status key_status = IdlConvert::Convert(
+        isolate, error_prefix, error_subject, key, typed_key);
+    if (!key_status.is_success()) {
+      return key_status;
+    }
+
+    v8::Local<v8::Value> value;
+    if (!in->Get(context, key).ToLocal(&value)) {
+      return MakeRecordConversionFailure(try_catch, error_prefix,
+                                         error_subject);
+    }
+
+    // For USVString, we are supposed to replace mismatched surrogates with
+    // U+FFFD. Luckily, UTF16ToUTF8 does it, so we just get a 16-bit value
+    // from v8 and feed it to that.
+    std::u16string typed_value16;
+    IdlConvert::Status value_status = IdlConvert::Convert(
+        isolate, error_prefix, error_subject, value, typed_value16);
+    if (!value_status.is_success()) {
+      return value_status;
+    }
+    std::string typed_value = base::UTF16ToUTF8(typed_value16);
+
+    // Since our keys are DOMString, and not USVString, we don't actually have
+    // to worry about duplicates.
+    out.emplace_back(std::move(typed_key), std::move(typed_value));
+  }
+
+  return IdlConvert::Status::MakeSuccess();
 }
 
 const size_t DictConverter::kSequenceLengthLimit;
@@ -218,10 +447,9 @@ bool DictConverter::FailureIsTimeout() const {
   return status_.type() == IdlConvert::Status::Type::kTimeout;
 }
 
-void DictConverter::PropagateErrorsFrom(DictConverter& other_converter) {
+void DictConverter::SetStatus(IdlConvert::Status status) {
   DCHECK(!is_failed());
-  DCHECK(other_converter.is_failed());
-  status_ = std::move(other_converter.status_);
+  status_ = std::move(status);
 }
 
 v8::Local<v8::Value> DictConverter::GetMember(std::string_view field) {
@@ -274,13 +502,10 @@ bool DictConverter::ConvertSequence(
   }
   v8::Local<v8::Object> iterable = value.As<v8::Object>();
 
-  v8::Local<v8::String> next_name, done_name, value_name;
-  if (!v8_helper_->CreateUtf8String("next").ToLocal(&next_name) ||
-      !v8_helper_->CreateUtf8String("done").ToLocal(&done_name) ||
-      !v8_helper_->CreateUtf8String("value").ToLocal(&value_name)) {
-    MarkFailedIter(field, try_catch);
-    return false;
-  }
+  v8::Local<v8::String> next_name = v8_helper_->CreateStringFromLiteral("next");
+  v8::Local<v8::String> done_name = v8_helper_->CreateStringFromLiteral("done");
+  v8::Local<v8::String> value_name =
+      v8_helper_->CreateStringFromLiteral("value");
 
   // Let method be ? GetMethod(V, @@iterator).
   // If method is undefined, throw a TypeError.
@@ -408,6 +633,27 @@ void DictConverter::MarkFailedIter(std::string_view field,
   } else {
     MarkFailed(base::StrCat({"Trouble iterating over '", field, "'."}));
   }
+}
+
+ArgsConverter::ArgsConverter(AuctionV8Helper* v8_helper,
+                             AuctionV8Helper::TimeLimitScope& time_limit_scope,
+                             std::string error_prefix,
+                             const v8::FunctionCallbackInfo<v8::Value>* args,
+                             int min_required_args)
+    : v8_helper_(v8_helper), error_prefix_(error_prefix), args_(*args) {
+  DCHECK(time_limit_scope.has_time_limit());
+  if (args->Length() < min_required_args) {
+    status_ = IdlConvert::Status::MakeErrorMessage(base::StrCat(
+        {error_prefix_, "at least ", base::NumberToString(min_required_args),
+         " argument(s) are required."}));
+  }
+}
+
+ArgsConverter::~ArgsConverter() = default;
+
+void ArgsConverter::SetStatus(IdlConvert::Status status) {
+  DCHECK(!is_failed());
+  status_ = std::move(status);
 }
 
 }  // namespace auction_worklet

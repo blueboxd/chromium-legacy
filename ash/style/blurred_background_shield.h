@@ -49,14 +49,14 @@ class ASH_EXPORT BlurredBackgroundShield : public views::ViewObserver {
   void OnViewAddedToWidget(views::View* observed_view) override;
   void OnViewVisibilityChanged(views::View* observed_view,
                                views::View* starting_view) override;
-  void OnLayerTargetBoundsChanged(views::View* observed_view) override;
+  void OnViewLayerBoundsSet(views::View* observed_view) override;
   void OnViewThemeChanged(views::View* observed_view) override;
 
  private:
   void UpdateBackgroundColor();
 
   ui::Layer background_layer_ = ui::Layer(ui::LAYER_SOLID_COLOR);
-  const base::raw_ptr<views::View> host_;
+  const raw_ptr<views::View> host_;
   absl::variant<SkColor, ui::ColorId> color_;
   const float blur_sigma_;
   // If the background layer should be added to the view's region below.

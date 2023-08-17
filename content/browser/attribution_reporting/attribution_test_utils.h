@@ -19,6 +19,7 @@
 #include "components/attribution_reporting/aggregatable_values.h"
 #include "components/attribution_reporting/aggregation_keys.h"
 #include "components/attribution_reporting/destination_set.h"
+#include "components/attribution_reporting/event_report_windows.h"
 #include "components/attribution_reporting/filters.h"
 #include "components/attribution_reporting/source_registration_time_config.mojom.h"
 #include "components/attribution_reporting/source_type.mojom.h"
@@ -138,6 +139,11 @@ class SourceBuilder {
 
   SourceBuilder& SetDebugReporting(bool debug_reporting);
 
+  SourceBuilder& SetEventReportWindows(
+      attribution_reporting::EventReportWindows);
+
+  SourceBuilder& SetMaxEventLevelReports(int max_event_level_reports);
+
   StorableSource Build() const;
 
   StoredSource BuildStored() const;
@@ -168,6 +174,9 @@ class SourceBuilder {
   attribution_reporting::AggregationKeys aggregation_keys_;
   int64_t aggregatable_budget_consumed_ = 0;
   std::vector<uint64_t> aggregatable_dedup_keys_;
+  absl::optional<attribution_reporting::EventReportWindows>
+      event_report_windows_ = absl::nullopt;
+  absl::optional<int> max_event_level_reports_ = absl::nullopt;
   bool is_within_fenced_frame_ = false;
   bool debug_reporting_ = false;
 };
@@ -479,6 +488,11 @@ MATCHER_P(AggregatableBudgetConsumedIs, matcher, "") {
 
 MATCHER_P(SourceActiveStateIs, matcher, "") {
   return ExplainMatchResult(matcher, arg.active_state(), result_listener);
+}
+
+MATCHER_P(EventReportWindowsIs, matcher, "") {
+  return ExplainMatchResult(matcher, arg.event_report_windows(),
+                            result_listener);
 }
 
 // Trigger matchers.

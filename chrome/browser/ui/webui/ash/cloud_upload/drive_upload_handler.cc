@@ -8,6 +8,7 @@
 #include "base/files/file_path.h"
 #include "base/functional/callback_forward.h"
 #include "base/i18n/message_formatter.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
 #include "base/strings/string_util.h"
@@ -41,9 +42,6 @@ const int kAlternateUrlTimeout = 15;
 // The polling interval, in milliseconds, for querying the uploaded file's
 // alternate URL.
 const int kAlternateUrlPollInterval = 200;
-
-constexpr char kUploadResultMetricName[] =
-    "FileBrowser.OfficeFiles.Open.UploadResult.GoogleDrive";
 
 // Runs the callback provided to `DriveUploadHandler::Upload`.
 void OnUploadDone(scoped_refptr<DriveUploadHandler> drive_upload_handler,
@@ -214,13 +212,12 @@ void DriveUploadHandler::OnEndCopy(GURL hosted_url,
     return;
   }
   copy_ended_ = true;
-  UMA_HISTOGRAM_ENUMERATION(kUploadResultMetricName, result);
 
   // If copy to Drive was successful and intended operation is a copy, no delete
   // is required.
   if (result == OfficeFilesUploadResult::kSuccess &&
       upload_type_ == UploadType::kCopy) {
-    OnEndUpload(hosted_url, error_message);
+    OnEndUpload(hosted_url, result, error_message);
     return;
   }
 
@@ -231,13 +228,13 @@ void DriveUploadHandler::OnEndCopy(GURL hosted_url,
       drive_integration_service_->GetRelativeDrivePath(
           observed_absolute_dest_path_, &rel_path);
   if (!destination_file_exists) {
-    OnEndUpload(hosted_url, error_message);
+    OnEndUpload(hosted_url, result, error_message);
     return;
   }
 
-  end_upload_callback_ =
-      base::BindOnce(&DriveUploadHandler::OnEndUpload,
-                     weak_ptr_factory_.GetWeakPtr(), hosted_url, error_message);
+  end_upload_callback_ = base::BindOnce(&DriveUploadHandler::OnEndUpload,
+                                        weak_ptr_factory_.GetWeakPtr(),
+                                        hosted_url, result, error_message);
 
   ConvertToMoveOrUndoUpload(result);
 }
@@ -266,7 +263,13 @@ void DriveUploadHandler::ConvertToMoveOrUndoUpload(
 }
 
 void DriveUploadHandler::OnEndUpload(GURL hosted_url,
+                                     OfficeFilesUploadResult result,
                                      std::string error_message) {
+  UMA_HISTOGRAM_ENUMERATION(kGoogleDriveUploadResultMetricName, result);
+  if (result != OfficeFilesUploadResult::kSuccess) {
+    UMA_HISTOGRAM_ENUMERATION(kGoogleDriveTaskResultMetricName,
+                              OfficeTaskResult::kFailedToUpload);
+  }
   // TODO (b/243095484) Define error behavior on invalid hosted URL.
   observed_relative_drive_path_.clear();
   // Stop suppressing Drive events for the observed file.
@@ -384,16 +387,10 @@ void DriveUploadHandler::ShowIOTaskError(
   std::string error_message;
   bool copy = upload_type_ == UploadType::kCopy;
 
-  base::File::Error file_error = base::File::FILE_ERROR_FAILED;
   // TODO(b/242685536) Find most relevant error in a multi-file upload when
   // support for multi-files is added.
-  // Find the first not base::File::Error::FILE_OK.
-  if (status.sources.size() > 0 && status.sources[0].error.has_value() &&
-      status.sources[0].error.value() != base::File::Error::FILE_OK) {
-    file_error = status.sources[0].error.value();
-  } else if (status.outputs.size() > 0 && status.outputs[0].error.has_value()) {
-    file_error = status.outputs[0].error.value();
-  }
+  base::File::Error file_error =
+      GetFirstTaskError(status).value_or(base::File::FILE_ERROR_FAILED);
 
   switch (file_error) {
     case base::File::FILE_ERROR_NO_SPACE:
@@ -426,9 +423,13 @@ void DriveUploadHandler::ShowIOTaskError(
       } else {
         upload_result = OfficeFilesUploadResult::kMoveOperationError;
       }
+      LOG(ERROR) << "IO Task error";
       error_message = GetGenericErrorMessage();
   }
 
+  base::UmaHistogramExactLinear(
+      copy ? kGoogleDriveCopyErrorMetricName : kGoogleDriveMoveErrorMetricName,
+      -file_error, -base::File::FILE_ERROR_MAX);
   OnEndCopy(GURL(), upload_result, error_message);
 }
 
@@ -511,10 +512,12 @@ void DriveUploadHandler::OnError(const drivefs::mojom::DriveError& error) {
                       IDS_OFFICE_CLOUD_PROVIDER_GOOGLE_DRIVE_SHORT))));
       break;
     case drivefs::mojom::DriveError::Type::kPinningFailedDiskFull:
+      LOG(ERROR) << "Pinning failed, disk full";
       OnEndCopy(GURL(), OfficeFilesUploadResult::kPinningFailedDiskFull,
                 GetGenericErrorMessage());
       break;
     default:
+      LOG(ERROR) << "Cloud error";
       OnEndCopy(GURL(), OfficeFilesUploadResult::kCloudError,
                 GetGenericErrorMessage());
   }
@@ -523,6 +526,7 @@ void DriveUploadHandler::OnError(const drivefs::mojom::DriveError& error) {
 void DriveUploadHandler::OnDriveConnectionStatusChanged(
     drive::util::ConnectionStatusType status) {
   if (status != drive::util::DRIVE_CONNECTED) {
+    LOG(ERROR) << "Lost connection to Drive during upload";
     OnEndCopy(GURL(), OfficeFilesUploadResult::kNoConnection,
               GetGenericErrorMessage());
   }

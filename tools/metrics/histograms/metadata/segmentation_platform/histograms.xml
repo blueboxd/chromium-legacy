@@ -82,12 +82,14 @@ chromium-metrics-reviews@google.com.
   <variant name="ChromeStartAndroidV2"/>
   <variant name="ContextualPageActions"/>
   <variant name="CrossDeviceUser"/>
+  <variant name="DesktopNtpModule"/>
   <variant name="DeviceSwitcher"/>
   <variant name="DeviceTier"/>
   <variant name="DummyFeature"/>
   <variant name="FeedUserSegment"/>
   <variant name="FrequentFeatureUser"/>
   <variant name="IntentionalUser"/>
+  <variant name="IosModuleRanker"/>
   <variant name="PasswordManagerUser"/>
   <variant name="PowerUser"/>
   <variant name="QueryTiles"/>
@@ -111,6 +113,7 @@ chromium-metrics-reviews@google.com.
     </obsolete>
   </variant>
   <variant name="CrossDeviceUserSegment"/>
+  <variant name="DesktopNtpModule"/>
   <variant name="DeviceSwitcher"/>
   <variant name="DeviceTier">
     <obsolete>
@@ -132,6 +135,7 @@ chromium-metrics-reviews@google.com.
     </obsolete>
   </variant>
   <variant name="IntentionalUserSegment"/>
+  <variant name="IosModuleRanker"/>
   <variant name="NewTab"/>
   <variant name="PasswordManagerUser"/>
   <variant name="PowerUserSegment"/>
@@ -180,7 +184,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SegmentationPlatform.AdaptiveToolbar.SegmentSelected.Startup"
-    enum="AdaptiveToolbarButtonVariant" expires_after="2023-12-04">
+    enum="AdaptiveToolbarButtonVariant" expires_after="2024-02-04">
   <owner>shaktisahu@chromium.org</owner>
   <owner>chrome-segmentation-platform@google.com</owner>
   <summary>
@@ -191,7 +195,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="SegmentationPlatform.AdaptiveToolbar.SegmentSelection.Computed"
-    enum="AdaptiveToolbarButtonVariant" expires_after="2024-01-14">
+    enum="AdaptiveToolbarButtonVariant" expires_after="2024-02-05">
   <owner>shaktisahu@chromium.org</owner>
   <owner>chrome-segmentation-platform@google.com</owner>
   <summary>
@@ -201,7 +205,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SegmentationPlatform.AdaptiveToolbar.SegmentSwitched"
-    enum="AdaptiveToolbarSegmentSwitch" expires_after="2023-12-04">
+    enum="AdaptiveToolbarSegmentSwitch" expires_after="2024-02-04">
   <owner>shaktisahu@chromium.org</owner>
   <owner>chrome-segmentation-platform@google.com</owner>
   <summary>
@@ -294,7 +298,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SegmentationPlatform.Init.CreationToInitializationLatency"
-    units="ms" expires_after="2023-10-01">
+    units="ms" expires_after="2024-01-28">
   <owner>ssid@chromium.org</owner>
   <owner>chrome-segmentation-platform@google.com</owner>
   <summary>
@@ -319,7 +323,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="SegmentationPlatform.Init.ProcessCreationToServiceCreationLatency"
-    units="ms" expires_after="2023-12-04">
+    units="ms" expires_after="2024-02-04">
   <owner>ssid@chromium.org</owner>
   <owner>chrome-segmentation-platform@google.com</owner>
   <summary>
@@ -432,7 +436,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SegmentationPlatform.ModelDelivery.Received"
-    enum="SegmentationPlatformSegmentationModel" expires_after="2023-12-04">
+    enum="SegmentationPlatformSegmentationModel" expires_after="2024-02-04">
   <owner>nyquist@chromium.org</owner>
   <owner>shaktisahu@chromium.org</owner>
   <owner>chrome-segmentation-platform@google.com</owner>
@@ -670,7 +674,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SegmentationPlatform.SelectionFailedReason"
-    enum="SegmentationSelectionFailureReason" expires_after="2024-01-14">
+    enum="SegmentationSelectionFailureReason" expires_after="2024-02-05">
   <owner>ssid@chromium.org</owner>
   <owner>chrome-segmentation-platform@google.com</owner>
   <summary>
@@ -714,7 +718,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SegmentationPlatform.SignalDatabase.GetSamples.Result"
-    enum="BooleanSuccess" expires_after="2023-10-01">
+    enum="BooleanSuccess" expires_after="2024-01-21">
   <owner>nyquist@chromium.org</owner>
   <owner>shaktisahu@chromium.org</owner>
   <owner>chrome-segmentation-platform@google.com</owner>
@@ -766,7 +770,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SegmentationPlatform.SyncSessions.RecordTabCountAtSyncUpdate"
-    units="tabs" expires_after="2023-12-04">
+    units="tabs" expires_after="2024-02-04">
   <owner>ritikagup@google.com</owner>
   <owner>chrome-segmentation-platform@google.com</owner>
   <summary>
@@ -776,7 +780,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SegmentationPlatform.SyncSessions.TabsCountAtStartup"
-    units="tabs" expires_after="2023-12-04">
+    units="tabs" expires_after="2024-02-04">
   <owner>ritikagup@google.com</owner>
   <owner>chrome-segmentation-platform@google.com</owner>
   <summary>
@@ -787,7 +791,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="SegmentationPlatform.SyncSessions.TimeFromStartupToFirstSyncUpdate"
-    units="ms" expires_after="2023-12-04">
+    units="ms" expires_after="2024-02-04">
   <owner>ritikagup@google.com</owner>
   <owner>chrome-segmentation-platform@google.com</owner>
   <summary>
@@ -813,7 +817,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="SegmentationPlatform.SyncSessions.TimeFromTabLoadedToSyncUpdate"
-    units="ms" expires_after="2023-12-04">
+    units="ms" expires_after="2024-02-04">
   <owner>ritikagup@google.com</owner>
   <owner>chrome-segmentation-platform@google.com</owner>
   <summary>

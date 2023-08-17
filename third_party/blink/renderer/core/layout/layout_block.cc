@@ -329,7 +329,7 @@ void LayoutBlock::AddVisualOverflowFromChildren() {
 
 void LayoutBlock::ComputeVisualOverflow() {
   NOT_DESTROYED();
-  DCHECK(!SelfNeedsLayout());
+  DCHECK(!SelfNeedsFullLayout());
 
   LayoutRect previous_visual_overflow_rect = VisualOverflowRect();
   ClearVisualOverflow();
@@ -562,56 +562,6 @@ PositionWithAffinity LayoutBlock::PositionForPoint(
   }
 
   return LayoutBox::PositionForPoint(point);
-}
-
-DISABLE_CFI_PERF
-MinMaxSizes LayoutBlock::PreferredLogicalWidths() const {
-  NOT_DESTROYED();
-  MinMaxSizes sizes;
-
-  // FIXME: The isFixed() calls here should probably be checking for isSpecified
-  // since you should be able to use percentage, calc or viewport relative
-  // values for width.
-  const ComputedStyle& style_to_use = StyleRef();
-  if (!IsTableCell() && style_to_use.LogicalWidth().IsFixed() &&
-      style_to_use.LogicalWidth().Value() >= 0) {
-    sizes = AdjustBorderBoxLogicalWidthForBoxSizing(
-        LayoutUnit(style_to_use.LogicalWidth().Value()));
-  } else {
-    sizes = IntrinsicLogicalWidths();
-  }
-
-  // This implements the transferred min/max sizes per
-  // https://drafts.csswg.org/css-sizing-4/#aspect-ratio
-  if (ShouldComputeLogicalHeightFromAspectRatio()) {
-    MinMaxSizes transferred_min_max =
-        ComputeMinMaxLogicalWidthFromAspectRatio();
-    sizes.Encompass(transferred_min_max.min_size);
-    sizes.Constrain(transferred_min_max.max_size);
-  }
-  if (style_to_use.LogicalMaxWidth().IsFixed()) {
-    sizes.Constrain(AdjustBorderBoxLogicalWidthForBoxSizing(
-        LayoutUnit(style_to_use.LogicalMaxWidth().Value())));
-  }
-
-  if (style_to_use.LogicalMinWidth().IsFixed() &&
-      style_to_use.LogicalMinWidth().Value() > 0) {
-    sizes.Encompass(AdjustBorderBoxLogicalWidthForBoxSizing(
-        LayoutUnit(style_to_use.LogicalMinWidth().Value())));
-  }
-
-  // Table layout uses integers, ceil the preferred widths to ensure that they
-  // can contain the contents.
-  if (IsTableCell()) {
-    sizes.min_size = LayoutUnit(sizes.min_size.Ceil());
-    sizes.max_size = LayoutUnit(sizes.max_size.Ceil());
-  }
-
-  if (IsLayoutNGObject() && IsTable()) {
-    sizes.Encompass(IntrinsicLogicalWidths().min_size);
-  }
-
-  return sizes;
 }
 
 bool LayoutBlock::HasLineIfEmpty() const {
@@ -861,77 +811,6 @@ void LayoutBlock::RecalcVisualOverflow() {
   DCHECK(!IsLayoutMultiColumnSet());
   RecalcChildVisualOverflow();
   ComputeVisualOverflow();
-}
-
-LayoutUnit LayoutBlock::AvailableLogicalHeightForPercentageComputation() const {
-  NOT_DESTROYED();
-  LayoutUnit available_height(-1);
-
-  // For anonymous blocks that are skipped during percentage height calculation,
-  // we consider them to have an indefinite height.
-  if (SkipContainingBlockForPercentHeightCalculation(this))
-    return available_height;
-
-  const ComputedStyle& style = StyleRef();
-
-  // A positioned element that specified both top/bottom or that specifies
-  // height should be treated as though it has a height explicitly specified
-  // that can be used for any percentage computations.
-  bool is_out_of_flow_positioned_with_specified_height =
-      IsOutOfFlowPositioned() &&
-      (!style.LogicalHeight().IsAuto() ||
-       (!style.LogicalTop().IsAuto() && !style.LogicalBottom().IsAuto()));
-
-  if (style.LogicalHeight().IsFixed()) {
-    LayoutUnit content_box_height = AdjustContentBoxLogicalHeightForBoxSizing(
-        style.LogicalHeight().Value());
-    available_height =
-        std::max(LayoutUnit(),
-                 ConstrainContentBoxLogicalHeightByMinMax(
-                     content_box_height - ComputeLogicalScrollbars().BlockSum(),
-                     LayoutUnit(-1)));
-  } else if (ShouldComputeLogicalHeightFromAspectRatio()) {
-    NGBoxStrut border_padding(BorderStart() + ComputedCSSPaddingStart(),
-                              BorderEnd() + ComputedCSSPaddingEnd(),
-                              BorderBefore() + ComputedCSSPaddingBefore(),
-                              BorderAfter() + ComputedCSSPaddingAfter());
-    available_height = BlockSizeFromAspectRatio(
-        border_padding, StyleRef().LogicalAspectRatio(),
-        StyleRef().BoxSizingForAspectRatio(), LogicalWidth());
-  } else if (is_out_of_flow_positioned_with_specified_height) {
-    // Don't allow this to affect the block' size() member variable, since this
-    // can get called while the block is still laying out its kids.
-    LogicalExtentComputedValues computed_values;
-    ComputeLogicalHeight(LogicalHeight(), LayoutUnit(), computed_values);
-    available_height = computed_values.extent_ -
-                       BorderAndPaddingLogicalHeight() -
-                       ComputeLogicalScrollbars().BlockSum();
-  } else if (style.LogicalHeight().IsPercentOrCalc()) {
-    LayoutUnit height_with_scrollbar =
-        ComputePercentageLogicalHeight(style.LogicalHeight());
-    if (height_with_scrollbar != -1) {
-      LayoutUnit content_box_height_with_scrollbar =
-          AdjustContentBoxLogicalHeightForBoxSizing(height_with_scrollbar);
-      // We need to adjust for min/max height because this method does not
-      // handle the min/max of the current block, its caller does. So the
-      // return value from the recursive call will not have been adjusted
-      // yet.
-      LayoutUnit content_box_height = ConstrainContentBoxLogicalHeightByMinMax(
-          content_box_height_with_scrollbar -
-              ComputeLogicalScrollbars().BlockSum(),
-          LayoutUnit(-1));
-      available_height = std::max(LayoutUnit(), content_box_height);
-    }
-  } else if (IsA<LayoutView>(this)) {
-    available_height = View()->ViewLogicalHeightForPercentages();
-  }
-
-  return available_height;
-}
-
-bool LayoutBlock::HasDefiniteLogicalHeight() const {
-  NOT_DESTROYED();
-  return AvailableLogicalHeightForPercentageComputation() != LayoutUnit(-1);
 }
 
 }  // namespace blink

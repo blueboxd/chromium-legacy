@@ -11,6 +11,11 @@
 #include "base/types/expected.h"
 #include "components/ml/webnn/graph_validation_utils.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
+
+#if BUILDFLAG(IS_WIN)
+#include "services/webnn/dml/graph_impl.h"
+#endif
 
 namespace webnn {
 
@@ -59,6 +64,95 @@ webnn::Operand::DataType MojoOperandTypeToComponent(
 webnn::Operand ConvertToComponentOperand(const mojom::Operand* mojo_operand) {
   return webnn::Operand(MojoOperandTypeToComponent(mojo_operand->data_type),
                         mojo_operand->dimensions);
+}
+
+webnn::InputOperandLayout MojoInputOperandLayoutToComponent(
+    webnn::mojom::InputOperandLayout layout) {
+  switch (layout) {
+    case webnn::mojom::InputOperandLayout::kChannelsFirst:
+      return webnn::InputOperandLayout::kNchw;
+    case webnn::mojom::InputOperandLayout::kChannelsLast:
+      return webnn::InputOperandLayout::kNhwc;
+  }
+  NOTREACHED_NORETURN();
+}
+
+absl::optional<webnn::Pool2dAttributes> ConvertToPool2dAttributes(
+    const webnn::mojom::OperatorAttributesPtr& attributes,
+    const mojom::Operand* output) {
+  if (!attributes->is_pool2d()) {
+    // The type of attribute is not pool2d.
+    return absl::nullopt;
+  }
+  auto& mojo_attributes = attributes->get_pool2d();
+  if (!mojo_attributes) {
+    // The attributes of pool2d were not configured.
+    return absl::nullopt;
+  }
+  if (output->dimensions.size() != 4) {
+    // The element of output dimensions should be 4.
+    return absl::nullopt;
+  }
+
+  webnn::Pool2dAttributes component_attributes;
+  auto& window_dimensions = mojo_attributes->window_dimensions;
+  component_attributes.window_dimensions = webnn::Size2d{
+      .height = window_dimensions->height, .width = window_dimensions->width};
+  auto& mojo_padding = mojo_attributes->padding;
+  component_attributes.padding = webnn::Padding2d{
+      .beginning = webnn::Size2d{.height = mojo_padding->beginning->height,
+                                 .width = mojo_padding->beginning->width},
+      .ending = webnn::Size2d{.height = mojo_padding->ending->height,
+                              .width = mojo_padding->ending->width}};
+  component_attributes.strides =
+      webnn::Size2d{.height = mojo_attributes->strides->height,
+                    .width = mojo_attributes->strides->width};
+  component_attributes.dilations =
+      webnn::Size2d{.height = mojo_attributes->dilations->height,
+                    .width = mojo_attributes->dilations->width};
+  component_attributes.layout =
+      MojoInputOperandLayoutToComponent(mojo_attributes->layout);
+  switch (component_attributes.layout) {
+    case webnn::InputOperandLayout::kNchw:
+      component_attributes.output_sizes = webnn::Size2d{
+          .height = output->dimensions[2], .width = output->dimensions[3]};
+      break;
+    case webnn::InputOperandLayout::kNhwc:
+      component_attributes.output_sizes = webnn::Size2d{
+          .height = output->dimensions[1], .width = output->dimensions[2]};
+      break;
+  }
+  return component_attributes;
+}
+
+absl::optional<webnn::GemmAttributes> ConvertToGemmAttributes(
+    const IdToOperandMap& id_to_operand_map,
+    const webnn::mojom::OperatorAttributesPtr& attributes) {
+  if (!attributes->is_gemm()) {
+    // The type of attribute is not gemm.
+    return absl::nullopt;
+  }
+  auto& mojo_attributes = attributes->get_gemm();
+  if (!mojo_attributes) {
+    // The attributes of gemm were not configured.
+    return absl::nullopt;
+  }
+  webnn::GemmAttributes component_attributes;
+  auto& c_operand_id = mojo_attributes->c_operand_id;
+  if (c_operand_id) {
+    if (!id_to_operand_map.contains(c_operand_id.value())) {
+      // The third operand is invalid.
+      return absl::nullopt;
+    }
+    const mojom::OperandPtr& c_operand =
+        id_to_operand_map.at(c_operand_id.value());
+    component_attributes.c_operand = ConvertToComponentOperand(c_operand.get());
+  }
+  component_attributes.alpha = mojo_attributes->alpha;
+  component_attributes.beta = mojo_attributes->beta;
+  component_attributes.a_transpose = mojo_attributes->a_transpose;
+  component_attributes.b_transpose = mojo_attributes->b_transpose;
+  return component_attributes;
 }
 
 bool ValidateInputOperand(const IdToOperandMap& id_to_operand_map,
@@ -126,6 +220,10 @@ bool ValidateClamp(const IdToOperandMap& id_to_operand_map,
     // The clamp operator is invalid.
     return false;
   }
+  if (!operation->attributes->is_clamp()) {
+    // The type of attribute is not clamp.
+    return false;
+  }
   auto& clamp_attributes = operation->attributes->get_clamp();
   if (!clamp_attributes) {
     // The attributes of clamp were not configured.
@@ -176,6 +274,59 @@ bool ValidateElementWiseBinary(const IdToOperandMap& id_to_operand_map,
     // The output shape is not expected.
     return false;
   }
+  return true;
+}
+
+bool ValidateGemm(const IdToOperandMap& id_to_operand_map,
+                  const mojom::OperatorPtr& operation) {
+  auto* a = GetMojoOperand(id_to_operand_map, operation->input_operands, 0);
+  auto* b = GetMojoOperand(id_to_operand_map, operation->input_operands, 1);
+  auto* output = GetMojoOperand(id_to_operand_map, operation->output_operands);
+  if (!a || !b || !output || !operation->attributes) {
+    // The gemm operator is invalid.
+    return false;
+  }
+  auto component_attributes =
+      ConvertToGemmAttributes(id_to_operand_map, operation->attributes);
+  if (!component_attributes) {
+    return false;
+  }
+  auto validated_output = ValidateGemmAndInferOutput(
+      ConvertToComponentOperand(a), ConvertToComponentOperand(b),
+      component_attributes.value());
+  if (!validated_output.has_value()) {
+    return false;
+  }
+  if (validated_output != ConvertToComponentOperand(output)) {
+    return false;
+  }
+
+  return true;
+}
+
+bool ValidatePool2d(const IdToOperandMap& id_to_operand_map,
+                    const mojom::OperatorPtr& operation) {
+  auto* input = GetMojoOperand(id_to_operand_map, operation->input_operands);
+  auto* output = GetMojoOperand(id_to_operand_map, operation->output_operands);
+  if (!input || !output || !operation->attributes) {
+    // The pool2d operator is invalid.
+    return false;
+  }
+  auto component_attributes =
+      ConvertToPool2dAttributes(operation->attributes, output);
+  if (!component_attributes) {
+    // Failed to convert the attributes of pool2d.
+    return false;
+  }
+  auto validated_output = ValidatePool2dAndInferOutput(
+      ConvertToComponentOperand(input), component_attributes.value());
+  if (!validated_output.has_value()) {
+    return false;
+  }
+  if (validated_output != ConvertToComponentOperand(output)) {
+    return false;
+  }
+
   return true;
 }
 
@@ -259,6 +410,11 @@ bool ValidateOperator(const IdToOperandMap& id_to_operand_map,
     case mojom::Operator::Kind::kMax:
     case mojom::Operator::Kind::kMin:
       return ValidateElementWiseBinary(id_to_operand_map, operation);
+    case mojom::Operator::Kind::kGemm:
+      return ValidateGemm(id_to_operand_map, operation);
+    case mojom::Operator::Kind::kAveragePool2d:
+    case mojom::Operator::Kind::kMaxPool2d:
+      return ValidatePool2d(id_to_operand_map, operation);
     case mojom::Operator::Kind::kRelu:
       return ValidateRelu(id_to_operand_map, operation);
     case mojom::Operator::Kind::kReshape:
@@ -269,7 +425,13 @@ bool ValidateOperator(const IdToOperandMap& id_to_operand_map,
   NOTREACHED_NORETURN();
 }
 
-bool ValidateGraphInfo(const mojom::GraphInfoPtr& graph_info) {
+}  // namespace
+
+WebNNGraphImpl::WebNNGraphImpl() = default;
+
+WebNNGraphImpl::~WebNNGraphImpl() = default;
+
+bool WebNNGraphImpl::ValidateGraph(const mojom::GraphInfoPtr& graph_info) {
   // The input operands of graph can be empty.
   if (graph_info->id_to_operand_map.empty() || graph_info->operators.empty() ||
       graph_info->output_operands.empty()) {
@@ -310,32 +472,6 @@ bool ValidateGraphInfo(const mojom::GraphInfoPtr& graph_info) {
     }
   }
 
-  return true;
-}
-
-}  // namespace
-
-WebNNGraphImpl::WebNNGraphImpl() = default;
-
-WebNNGraphImpl::~WebNNGraphImpl() = default;
-
-// static
-bool WebNNGraphImpl::ValidateAndBuildGraph(
-    mojom::WebNNContext::CreateGraphCallback callback,
-    const mojom::GraphInfoPtr& graph_info) {
-  if (!ValidateGraphInfo(graph_info)) {
-    return false;
-  }
-
-  // The remote sent to the renderer.
-  mojo::PendingRemote<mojom::WebNNGraph> blink_remote;
-  // The receiver bound to WebNNGraphImpl.
-  mojo::MakeSelfOwnedReceiver<mojom::WebNNGraph>(
-      std::make_unique<WebNNGraphImpl>(),
-      blink_remote.InitWithNewPipeAndPassReceiver());
-  // TODO(crbug.com/1273291): Build graph with OS machine learning APIs.
-  // webnn_graph_impl->BuildGraph(std::move(callback), std::move(blink_remote));
-  std::move(callback).Run(std::move(blink_remote));
   return true;
 }
 

@@ -182,8 +182,8 @@ public final class ProductionSupportedFlagList {
                     "Enables parsing dependent locality fields (e.g. Bairros in Brazil)."),
             Flag.baseFeature(AutofillFeatures.AUTOFILL_ENABLE_EXPIRATION_DATE_IMPROVEMENTS,
                     "Enables various improvements to handling expiration dates."),
-            Flag.baseFeature(AutofillFeatures.AUTOFILL_ENABLE_SELECT_MENU,
-                    "Enables autofill of <selectmenu> elements."),
+            Flag.baseFeature(AutofillFeatures.AUTOFILL_ENABLE_SELECT_LIST,
+                    "Enables autofill of <selectlist> elements."),
             Flag.baseFeature(AutofillFeatures.AUTOFILL_ENABLE_SUPPORT_FOR_PHONE_NUMBER_TRUNK_TYPES,
                     "Rationalizes city-and-number and city-code fields to the "
                             + "correct trunk-prefix types."),
@@ -277,6 +277,8 @@ public final class ProductionSupportedFlagList {
                             + " scanner."),
             Flag.baseFeature(BaseFeatures.RUN_TASKS_BY_BATCHES,
                     "Run tasks in queue for 8ms before before sending a system message."),
+            Flag.baseFeature(BlinkFeatures.DEPRECATE_UNLOAD,
+                    "If false prevents the gradual deprecation of the unload event."),
             Flag.baseFeature(BlinkFeatures.OFFSET_PARENT_NEW_SPEC_BEHAVIOR,
                     "Enables new HTMLElement.offsetParent behavior to match other browsers."),
             Flag.baseFeature(AwFeatures.WEBVIEW_RECORD_APP_DATA_DIRECTORY_SIZE,
@@ -334,10 +336,12 @@ public final class ProductionSupportedFlagList {
                             + " including synchronized decoding."),
             Flag.baseFeature(BlinkFeatures.THREADED_BODY_LOADER,
                     "If enabled, reads and decodes navigation body data off the main thread."),
+            Flag.baseFeature(BlinkFeatures.SPARSE_OBJECT_PAINT_PROPERTIES),
             Flag.baseFeature(BlinkFeatures.SVG_RASTER_OPTIMIZATIONS),
             Flag.baseFeature(BlinkFeatures.COMPOSITE_BACKGROUND_ATTACHMENT_FIXED),
             Flag.baseFeature(BlinkFeatures.COMPOSITE_SCROLL_AFTER_PAINT),
             Flag.baseFeature(BlinkFeatures.INTERSECTION_OPTIMIZATION),
+            Flag.baseFeature(BlinkFeatures.SOLID_COLOR_LAYERS),
             Flag.baseFeature(BlinkFeatures.DELAY_OUT_OF_VIEWPORT_LAZY_IMAGES,
                     "Delays out-of-viewport lazy loaded images."),
             Flag.baseFeature(BlinkFeatures.SEND_MOUSE_EVENTS_DISABLED_FORM_CONTROLS,
@@ -377,6 +381,9 @@ public final class ProductionSupportedFlagList {
             Flag.baseFeature(MetricsFeatures.RESTORE_UMA_CLIENT_ID_INDEPENDENT_LOGS,
                     "Controls whether independent logs from PMA files will use the embedded "
                             + "client uuid as the log's client ID."),
+            Flag.baseFeature(MetricsFeatures.FLUSH_PERSISTENT_SYSTEM_PROFILE_ON_WRITE,
+                    "Controls whether to schedule a flush of persistent histogram memory "
+                            + "immediately after writing a system profile to it."),
             Flag.baseFeature(ContentFeatures.MAIN_THREAD_COMPOSITING_PRIORITY,
                     "When enabled runs the main thread at compositing priority."),
             Flag.baseFeature(ContentFeatures.REDUCE_SUBRESOURCE_RESPONSE_STARTED_IPC,
@@ -392,6 +399,10 @@ public final class ProductionSupportedFlagList {
                     "Enables downloading TrustTokenKeyCommitmentsComponent by the component"
                             + " updater downloading service in nonembedded WebView."
                             + " See https://crbug.com/1170468."),
+            Flag.baseFeature(BlinkFeatures.REPORT_VISIBLE_LINE_BOUNDS,
+                    "When enabled, WebView reports rectangles which surround each line of"
+                            + " text in the currently focused element to Android. These rectangles "
+                            + "are sent for <input> and <textarea> elements."),
             Flag.baseFeature(BlinkFeatures.STYLUS_POINTER_ADJUSTMENT,
                     "When enabled, a hover icon is shown over editable HTML elements when"
                             + " using a stylus and the rectangle to trigger stylus writing on"
@@ -407,8 +418,8 @@ public final class ProductionSupportedFlagList {
             Flag.baseFeature(BlinkFeatures.RENDER_BLOCKING_FONTS,
                     "When enabled, blocks rendering on font preloads to reduce CLS. "
                             + "See go/critical-font-analysis"),
-            Flag.baseFeature(AwFeatures.WEBVIEW_SERVER_SIDE_SAMPLING,
-                    "If enabled, the client side sampling for user metrics will be turned off."
+            Flag.baseFeature(AwFeatures.WEBVIEW_METRICS_FILTERING,
+                    "If enabled, clients used to be out-sampled will report filtered metrics."
                             + " This has no effect if metrics reporting is disabled"),
             Flag.baseFeature("SafeBrowsingOnUIThread"),
             Flag.baseFeature(BlinkFeatures.ANDROID_EXTENDED_KEYBOARD_SHORTCUTS,
@@ -427,6 +438,9 @@ public final class ProductionSupportedFlagList {
                             + "entry?labels=StoragePartitioning-trial-bugs&components=Blink%3EStorage."),
             Flag.baseFeature(
                     NetFeatures.ASYNC_QUIC_SESSION, "Enables asynchronous QUIC session creation"),
+            Flag.baseFeature(NetFeatures.BLOCK_TRUNCATED_COOKIES,
+                    "When enabled, cookies containing '\\0', '\\r', and '\\n' characters will be "
+                            + "deemed invalid and the cookie won't be set."),
             Flag.baseFeature(BaseFeatures.CRASH_BROWSER_ON_CHILD_MISMATCH_IF_BROWSER_CHANGED,
                     "Causes the browser process to crash if child processes are failing to launch"
                             + " due to a browser version change."),
@@ -475,6 +489,10 @@ public final class ProductionSupportedFlagList {
             Flag.baseFeature(BlinkFeatures.WEB_ENVIRONMENT_INTEGRITY,
                     "Enables Web Environment Integrity APIs. "
                             + "See https://chromestatus.com/feature/5796524191121408."),
+            Flag.baseFeature(ContentFeatures.PREFETCH_NEW_LIMITS,
+                    "Enables new limits policy for SpeculationRules Prefetch."),
+            Flag.baseFeature(BlinkFeatures.FORM_CONTROLS_VERTICAL_WRITING_MODE_SUPPORT,
+                    "Enables support for CSS vertical writing mode on form controls"),
             // Add new commandline switches and features above. The final entry should have a
             // trailing comma for cleaner diffs.
     };

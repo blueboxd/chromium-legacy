@@ -6,10 +6,8 @@
 
 #import "ios/chrome/browser/shared/ui/symbols/symbols.h"
 #import "ios/chrome/browser/ui/authentication/signin/signin_constants.h"
-
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
+#import "ios/chrome/grit/ios_strings.h"
+#import "ui/base/l10n/l10n_util.h"
 
 @implementation HistorySyncViewController
 
@@ -18,28 +16,31 @@
 - (void)viewDidLoad {
   self.view.accessibilityIdentifier = kHistorySyncViewAccessibilityIdentifier;
   self.shouldHideBanner = YES;
-  self.hasAvatarImage = YES;
-  self.avatarBackgroundImage =
+  self.headerImageType = PromoStyleImageType::kAvatar;
+  self.headerBackgroundImage =
       [UIImage imageNamed:@"history_sync_opt_in_background"];
-  // TODO(crbug.com/1442218): Replace these temporary strings with the
-  // definitive ones.
-  self.titleText = @"** Save Time, Type Less **";
-  self.subtitleText = @"** To quickly get back to sites you've visited, sync "
-                      @"your tabs and history **";
-  self.primaryActionString = @"** Yes, I'm in **";
-  self.secondaryActionString = @"** No, thanks **";
+  self.titleText = l10n_util::GetNSString(IDS_IOS_HISTORY_SYNC_TITLE);
+  self.subtitleText = l10n_util::GetNSString(IDS_IOS_HISTORY_SYNC_SUBTITLE);
+  self.primaryActionString =
+      l10n_util::GetNSString(IDS_IOS_HISTORY_SYNC_PRIMARY_ACTION);
+  self.secondaryActionString =
+      l10n_util::GetNSString(IDS_IOS_HISTORY_SYNC_SECONDARY_ACTION);
   [super viewDidLoad];
 }
 
 #pragma mark - HistorySyncConsumer
 
 - (void)setPrimaryIdentityAvatarImage:(UIImage*)primaryIdentityAvatarImage {
-  self.avatarImage = primaryIdentityAvatarImage;
+  self.headerImage = primaryIdentityAvatarImage;
 }
 
 - (void)setPrimaryIdentityAvatarAccessibilityLabel:
     (NSString*)primaryIdentityAvatarAccessibilityLabel {
-  self.avatarAccessibilityLabel = primaryIdentityAvatarAccessibilityLabel;
+  self.headerAccessibilityLabel = primaryIdentityAvatarAccessibilityLabel;
+}
+
+- (void)setFooterText:(NSString*)text {
+  self.disclaimerText = text;
 }
 
 @end

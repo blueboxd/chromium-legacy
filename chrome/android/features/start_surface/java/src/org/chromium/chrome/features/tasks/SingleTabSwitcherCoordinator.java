@@ -20,7 +20,6 @@ import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
-import org.chromium.chrome.browser.feed.FeedFeatures;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
@@ -31,7 +30,6 @@ import org.chromium.chrome.browser.tasks.pseudotab.TabAttributeCache;
 import org.chromium.chrome.browser.tasks.tab_management.TabListFaviconProvider;
 import org.chromium.chrome.browser.tasks.tab_management.TabSwitcher;
 import org.chromium.chrome.browser.tasks.tab_management.TabSwitcherCustomViewManager;
-import org.chromium.chrome.features.start_surface.StartSurfaceConfiguration;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 
@@ -82,11 +80,11 @@ public class SingleTabSwitcherCoordinator implements TabSwitcher {
                     isSurfacePolishEnabled ? tabContentManager : null, isSurfacePolishEnabled);
             mMediatorOnTablet = null;
         } else {
-            mMediatorOnTablet =
-                    new SingleTabSwitcherOnTabletMediator(propertyModel, activity.getResources(),
-                            activityLifecycleDispatcher, tabModelSelector, mTabListFaviconProvider,
-                            mostRecentTab, FeedFeatures.isMultiColumnFeedEnabled(activity),
-                            isScrollableMvtEnabled, singleTabCardClickedCallback);
+            mMediatorOnTablet = new SingleTabSwitcherOnTabletMediator(activity,
+                    browserControlsStateProvider, propertyModel, activityLifecycleDispatcher,
+                    tabModelSelector, mTabListFaviconProvider, mostRecentTab,
+                    isScrollableMvtEnabled, singleTabCardClickedCallback,
+                    isSurfacePolishEnabled ? tabContentManager : null);
             mMediator = null;
         }
         if (ChromeFeatureList.sInstantStart.isEnabled()) {
@@ -229,13 +227,56 @@ public class SingleTabSwitcherCoordinator implements TabSwitcher {
     }
 
     /** @see SingleTabSwitcherOnTabletMediator#setVisibility. */
-    public void setVisibility(boolean isVisible) {
+    void setVisibility(boolean isVisible) {
         if (!mIsTablet) return;
 
         mMediatorOnTablet.setVisibility(isVisible);
         mContainer.setVisibility(isVisible ? View.VISIBLE : View.GONE);
     }
 
+    /**
+     * Shows the single tab module and updates the Tab to track. It is possible to hide the single
+     * Tab module if the new tracking Tab is invalid: e.g., a NTP.
+     * @param mostRecentTab The most recent Tab to track.
+     */
+    public void showModule(Tab mostRecentTab) {
+        if (!mIsTablet) return;
+
+        showModule(true, mostRecentTab);
+    }
+
+    /**
+     * Shows the single tab module.
+     */
+    public void showModule() {
+        if (!mIsTablet) return;
+
+        showModule(false, null);
+    }
+
+    /**
+     * Hides the single tab module.
+     */
+    public void hide() {
+        if (!mIsTablet) return;
+
+        setVisibility(false);
+    }
+
+    /**
+     * Shows the single tab module.
+     * @param shouldUpdateTab Whether to update the tracking Tab of the single Tab module.
+     * @param mostRecentTab The most recent Tab to track.
+     */
+    private void showModule(boolean shouldUpdateTab, Tab mostRecentTab) {
+        if (!mIsTablet) return;
+
+        boolean hasTabToTrack = true;
+        if (shouldUpdateTab) {
+            hasTabToTrack = updateTrackingTab(mostRecentTab);
+        }
+        setVisibility(hasTabToTrack);
+    }
     /**
      * Update the most recent tab to track in the single tab card.
      * @param tabToTrack The tab to track as the most recent tab.
@@ -270,7 +311,6 @@ public class SingleTabSwitcherCoordinator implements TabSwitcher {
     }
 
     private boolean isSurfacePolishEnabled() {
-        return !mIsTablet && ChromeFeatureList.sSurfacePolish.isEnabled()
-                && StartSurfaceConfiguration.SURFACE_POLISH_SINGLE_TAB_CARD.getValue();
+        return ChromeFeatureList.sSurfacePolish.isEnabled();
     }
 }

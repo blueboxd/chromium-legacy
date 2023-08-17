@@ -400,7 +400,7 @@ void OnPrivateAggregationLoaded(
   std::move(loaded_callback).Run();
 }
 
-void OnQuotaManagedDataLoaded(
+void OnQuotaStorageLoaded(
     BrowsingDataModel* model,
     base::OnceClosure loaded_callback,
     const std::list<BrowsingDataQuotaHelper::QuotaInfo>& quota_info) {
@@ -466,6 +466,15 @@ BrowsingDataModel::BrowsingDataEntryView::BrowsingDataEntryView(
     const DataDetails& data_details)
     : data_owner(data_owner), data_key(data_key), data_details(data_details) {}
 BrowsingDataModel::BrowsingDataEntryView::~BrowsingDataEntryView() = default;
+
+// static
+const std::string BrowsingDataModel::GetHost(const DataOwner& data_owner) {
+  return absl::visit(
+      base::Overloaded{
+          [&](const std::string& host) { return host; },
+          [&](const url::Origin& origin) { return origin.host(); }},
+      data_owner);
+}
 
 bool BrowsingDataModel::BrowsingDataEntryView::Matches(
     const url::Origin& origin) const {
@@ -720,7 +729,7 @@ void BrowsingDataModel::PopulateFromDisk(base::OnceClosure finished_callback) {
 
   if (is_migrate_storage_to_bdm_enabled) {
     quota_helper_->StartFetching(
-        base::BindOnce(&OnQuotaManagedDataLoaded, this, completion));
+        base::BindOnce(&OnQuotaStorageLoaded, this, completion));
     storage_partition_->GetDOMStorageContext()->GetLocalStorageUsage(
         base::BindOnce(&OnLocalStorageLoaded, this, completion));
   }

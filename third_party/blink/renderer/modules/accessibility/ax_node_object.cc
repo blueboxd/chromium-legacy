@@ -79,7 +79,7 @@
 #include "third_party/blink/renderer/core/html/forms/html_opt_group_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_option_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_select_element.h"
-#include "third_party/blink/renderer/core/html/forms/html_select_menu_element.h"
+#include "third_party/blink/renderer/core/html/forms/html_select_list_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_text_area_element.h"
 #include "third_party/blink/renderer/core/html/forms/labels_node_list.h"
 #include "third_party/blink/renderer/core/html/forms/radio_input_type.h"
@@ -325,6 +325,21 @@ String GetTitle(blink::Element* element) {
   }
 
   return element->title();
+}
+
+bool CanHaveInlineTextBoxChildren(blink::AXObject* obj) {
+  if (!ui::CanHaveInlineTextBoxChildren(obj->RoleValue())) {
+    return false;
+  }
+
+  // Inline textboxes are included if and only if the parent is unignored.
+  // If the parent is ignored but included in tree, the inline textbox is
+  // still withheld.
+  if (obj->LastKnownIsIgnoredValue()) {
+    return false;
+  }
+
+  return obj->GetLayoutObject() && obj->GetLayoutObject()->IsText();
 }
 
 }  // namespace
@@ -1244,16 +1259,16 @@ ax::mojom::blink::Role AXNodeObject::NativeRoleIgnoringAria() const {
   if (GetNode()->IsTextNode())
     return ax::mojom::blink::Role::kStaticText;
 
-  const HTMLSelectMenuElement* owner_select_menu =
-      HTMLSelectMenuElement::OwnerSelectMenu(GetNode());
-  if (owner_select_menu) {
-    HTMLSelectMenuElement::PartType part_type =
-        owner_select_menu->AssignedPartType(GetNode());
-    if (part_type == HTMLSelectMenuElement::PartType::kButton) {
+  const HTMLSelectListElement* owner_select_list =
+      HTMLSelectListElement::OwnerSelectList(GetNode());
+  if (owner_select_list) {
+    HTMLSelectListElement::PartType part_type =
+        owner_select_list->AssignedPartType(GetNode());
+    if (part_type == HTMLSelectListElement::PartType::kButton) {
       return ax::mojom::blink::Role::kComboBoxMenuButton;
-    } else if (part_type == HTMLSelectMenuElement::PartType::kListBox) {
+    } else if (part_type == HTMLSelectListElement::PartType::kListBox) {
       return ax::mojom::blink::Role::kListBox;
-    } else if (part_type == HTMLSelectMenuElement::PartType::kOption) {
+    } else if (part_type == HTMLSelectListElement::PartType::kOption) {
       return ax::mojom::blink::Role::kListBoxOption;
     }
   }
@@ -1674,7 +1689,8 @@ ax::mojom::blink::Role AXNodeObject::DetermineAccessibilityRole() {
 #endif
 
   if (IsDetached()) {
-    NOTREACHED();
+    NOTREACHED() << "Do not compute role on detached object: "
+                 << ToString(true, true);
     return ax::mojom::blink::Role::kUnknown;
   }
 
@@ -2222,10 +2238,10 @@ AccessibilityExpanded AXNodeObject::IsExpanded() const {
   if (!element)
     return kExpandedUndefined;
 
-  if (HTMLSelectMenuElement* select_menu =
-          HTMLSelectMenuElement::OwnerSelectMenu(element)) {
-    if (select_menu->ButtonPart() == element) {
-      return select_menu->open() ? kExpandedExpanded : kExpandedCollapsed;
+  if (HTMLSelectListElement* select_list =
+          HTMLSelectListElement::OwnerSelectList(element)) {
+    if (select_list->ButtonPart() == element) {
+      return select_list->open() ? kExpandedExpanded : kExpandedCollapsed;
     }
   }
 
@@ -3138,6 +3154,23 @@ int AXNodeObject::SetSize() const {
 bool AXNodeObject::ValueForRange(float* out_value) const {
   float value_now;
   if (HasAOMPropertyOrARIAAttribute(AOMFloatProperty::kValueNow, value_now)) {
+    // Adjustment when the aria-valuenow is less than aria-valuemin or greater
+    // than the aria-valuemax value.
+    // See https://w3c.github.io/aria/#authorErrorDefaultValuesTable.
+    float min_value, max_value;
+    if (MinValueForRange(&min_value)) {
+      if (value_now < min_value) {
+        *out_value = min_value;
+        return true;
+      }
+    }
+    if (MaxValueForRange(&max_value)) {
+      if (value_now > max_value) {
+        *out_value = max_value;
+        return true;
+      }
+    }
+
     *out_value = value_now;
     return true;
   }
@@ -3153,6 +3186,7 @@ bool AXNodeObject::ValueForRange(float* out_value) const {
   }
 
   // In ARIA 1.1, default values for aria-valuenow were changed as below.
+  // - meter: A value matching the implicit or explicitly set aria-valuemin.
   // - scrollbar, slider : half way between aria-valuemin and aria-valuemax
   // - separator : 50
   // - spinbutton : 0
@@ -3169,6 +3203,14 @@ bool AXNodeObject::ValueForRange(float* out_value) const {
     case ax::mojom::blink::Role::kSplitter: {
       *out_value = 50.0f;
       return true;
+    }
+    case ax::mojom::blink::Role::kMeter: {
+      float min_value;
+      if (MinValueForRange(&min_value)) {
+        *out_value = min_value;
+        return true;
+      }
+      [[fallthrough]];
     }
     case ax::mojom::blink::Role::kSpinButton: {
       *out_value = 0.0f;
@@ -3202,6 +3244,7 @@ bool AXNodeObject::MaxValueForRange(float* out_value) const {
   // for aria-valuemax were changed to 100. This change was made for
   // progressbar in ARIA 1.2.
   switch (AriaRoleAttribute()) {
+    case ax::mojom::blink::Role::kMeter:
     case ax::mojom::blink::Role::kProgressIndicator:
     case ax::mojom::blink::Role::kScrollBar:
     case ax::mojom::blink::Role::kSplitter:
@@ -3237,6 +3280,7 @@ bool AXNodeObject::MinValueForRange(float* out_value) const {
   // for aria-valuemin were changed to 0. This change was made for
   // progressbar in ARIA 1.2.
   switch (AriaRoleAttribute()) {
+    case ax::mojom::blink::Role::kMeter:
     case ax::mojom::blink::Role::kProgressIndicator:
     case ax::mojom::blink::Role::kScrollBar:
     case ax::mojom::blink::Role::kSplitter:
@@ -3450,10 +3494,10 @@ String AXNodeObject::GetValueForControl() const {
   }
 
   if (RoleValue() == ax::mojom::blink::Role::kComboBoxMenuButton) {
-    // An HTML <selectmenu> gets its value from the selected option.
-    if (auto* select_menu = HTMLSelectMenuElement::OwnerSelectMenu(node)) {
-      DCHECK(RuntimeEnabledFeatures::HTMLSelectMenuElementEnabled());
-      if (HTMLOptionElement* selected = select_menu->selectedOption()) {
+    // An HTML <selectlist> gets its value from the selected option.
+    if (auto* select_list = HTMLSelectListElement::OwnerSelectList(node)) {
+      DCHECK(RuntimeEnabledFeatures::HTMLSelectListElementEnabled());
+      if (HTMLOptionElement* selected = select_list->selectedOption()) {
         // TODO(accessibility) Because these <option> elements can contain
         // anything, we need to create an AXObject for the selected option, and
         // use ax_selected_option->ComputedName(). However, for now, the
@@ -3461,7 +3505,7 @@ String AXNodeObject::GetValueForControl() const {
         // returns false for the invisible slot parent. Also, strangely,
         // selected->innerText()/GetInnerTextWithoutUpdate() are returning "".
         // See the following content_browsertest:
-        // All/DumpAccessibilityTreeTest.AccessibilitySelectMenu/blink.
+        // All/DumpAccessibilityTreeTest.AccessibilitySelectList/blink.
         // TODO(crbug.com/1401767): DCHECK fails with synchronous serialization.
         DCHECK(selected->firstChild())
             << "There is a selected option but it has no DOM children.";
@@ -4329,7 +4373,7 @@ void AXNodeObject::LoadInlineTextBoxes() {
     if (!work_obj || !work_obj->AccessibilityIsIncludedInTree())
       continue;
 
-    if (ui::CanHaveInlineTextBoxChildren(work_obj->RoleValue())) {
+    if (CanHaveInlineTextBoxChildren(work_obj)) {
       if (work_obj->CachedChildrenIncludingIgnored().empty()) {
         // We only need to add inline textbox children if they aren't present.
         // Although some platforms (e.g. Android), load inline text boxes
@@ -4346,30 +4390,35 @@ void AXNodeObject::LoadInlineTextBoxes() {
 }
 
 void AXNodeObject::ForceAddInlineTextBoxChildren() {
-  AddInlineTextBoxChildren(true /*force*/);
-  children_dirty_ = false;  // Avoid adding these children twice.
+  // The inline textbox children start empty.
+  DCHECK(CachedChildrenIncludingIgnored().empty());
+  AddInlineTextBoxChildren();
+  // Avoid adding these children twice.
+  children_dirty_ = false;
+#if BUILDFLAG(IS_ANDROID)
+  // Keep inline text box children up-to-date for this object in the future.
+  // This is only necessary on Android, which tries to skip inline text boxes
+  // for most objects.
+  always_load_inline_text_boxes_ = true;
+#endif
+
+  // If inline text box children were added, mark the node dirty so that the
+  // results are serialized.
+  if (!CachedChildrenIncludingIgnored().empty()) {
+    AXObjectCache().MarkAXObjectDirtyWithDetails(
+        this, /*subtree*/ false, ax::mojom::blink::EventFrom::kNone,
+        ax::mojom::blink::Action::kNone, {});
+  }
 }
 
-void AXNodeObject::AddInlineTextBoxChildren(bool force) {
+void AXNodeObject::AddInlineTextBoxChildren() {
   DCHECK(GetDocument());
-
-  Settings* settings = GetDocument()->GetSettings();
-  if (!force &&
-      (!settings || !settings->GetInlineTextBoxAccessibilityEnabled())) {
-    return;
-  }
-
-  if (!GetLayoutObject() || !GetLayoutObject()->IsText())
-    return;
-
+  DCHECK(CanHaveInlineTextBoxChildren(this));
   DCHECK(!GetLayoutObject()->NeedsLayout());
-
-  if (LastKnownIsIgnoredValue()) {
-    // Inline textboxes are included if and only if the parent is unignored.
-    // If the parent is ignored but included in tree, the inline textbox is
-    // still withheld.
-    return;
-  }
+  DCHECK(AXObjectCache().GetAXMode().has_mode(ui::AXMode::kInlineTextBoxes));
+  DCHECK(!AXObjectCache().GetAXMode().HasExperimentalFlags(
+      ui::AXMode::kExperimentalFormControls))
+      << "Form controls mode should not have inline text boxes turned on.";
 
   auto* layout_text = To<LayoutText>(GetLayoutObject());
   for (auto* box = layout_text->FirstAbstractInlineTextBox(); box;
@@ -4531,10 +4580,22 @@ void AXNodeObject::AddChildrenImpl() {
     return;
   }
 
-  if (ui::CanHaveInlineTextBoxChildren(RoleValue())) {
-    AddInlineTextBoxChildren();
-    CHECK_ATTACHED();
-    return;
+  if (CanHaveInlineTextBoxChildren(this)) {
+#if BUILDFLAG(IS_ANDROID)
+    // On Android, once an object has loaded inline text boxes, it will keep
+    // them refreshed.
+    bool load_inline_text_box_children = always_load_inline_text_boxes_;
+#else
+    // Other platforms keep all inline text boxes in the tree and refreshed.
+    bool load_inline_text_box_children =
+        GetDocument()->GetSettings() &&
+        GetDocument()->GetSettings()->GetInlineTextBoxAccessibilityEnabled();
+#endif
+    if (load_inline_text_box_children) {
+      AddInlineTextBoxChildren();
+      CHECK_ATTACHED();
+      return;
+    }
   }
 
   if (IsA<HTMLImageElement>(GetNode())) {
@@ -5465,7 +5526,7 @@ String AXNodeObject::NativeTextAlternative(
       name_sources->push_back(NameSource(*found_text_alternative, kAltAttr));
       name_sources->back().type = name_from;
     }
-    if (!alt.IsNull()) {
+    if (!alt.empty() && !alt.IsNull()) {
       text_alternative = alt;
       if (name_sources) {
         NameSource& source = name_sources->back();

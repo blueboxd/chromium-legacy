@@ -26,15 +26,14 @@
 #include "components/services/storage/public/cpp/buckets/bucket_locator.h"
 #include "content/browser/indexed_db/indexed_db.h"
 #include "content/browser/indexed_db/indexed_db_backing_store.h"
-#include "content/browser/indexed_db/indexed_db_callbacks.h"
 #include "content/browser/indexed_db/indexed_db_connection_coordinator.h"
+#include "content/browser/indexed_db/indexed_db_factory_client.h"
 #include "content/browser/indexed_db/indexed_db_pending_connection.h"
 #include "content/browser/indexed_db/indexed_db_task_helper.h"
 #include "content/browser/indexed_db/indexed_db_value.h"
 #include "content/browser/indexed_db/list_set.h"
 #include "content/common/content_export.h"
 #include "third_party/blink/public/common/indexeddb/indexeddb_key.h"
-#include "third_party/blink/public/common/indexeddb/web_idb_types.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-forward.h"
 
 namespace blink {
@@ -51,7 +50,6 @@ class IndexedDBClassFactory;
 class IndexedDBConnection;
 class IndexedDBDatabaseCallbacks;
 class IndexedDBFactory;
-class IndexedDBMetadataCoding;
 class IndexedDBTransaction;
 struct IndexedDBValue;
 
@@ -117,9 +115,10 @@ class CONTENT_EXPORT IndexedDBDatabase {
       std::unique_ptr<IndexedDBPendingConnection> connection,
       scoped_refptr<IndexedDBClientStateCheckerWrapper> client_state_checker);
 
-  void ScheduleDeleteDatabase(IndexedDBBucketStateHandle bucket_state_handle,
-                              std::unique_ptr<IndexedDBCallbacks> callbacks,
-                              base::OnceClosure on_deletion_complete);
+  void ScheduleDeleteDatabase(
+      IndexedDBBucketStateHandle bucket_state_handle,
+      std::unique_ptr<IndexedDBFactoryClient> factory_client,
+      base::OnceClosure on_deletion_complete);
 
   void AddObjectStoreToMetadata(blink::IndexedDBObjectStoreMetadata metadata,
                                 int64_t new_max_object_store_id);
@@ -214,15 +213,6 @@ class CONTENT_EXPORT IndexedDBDatabase {
       indexed_db::CursorType cursor_type,
       int64_t max_count,
       blink::mojom::IDBDatabase::GetAllCallback callback,
-      IndexedDBTransaction* transaction);
-
-  leveldb::Status BatchGetAllOperation(
-      base::WeakPtr<IndexedDBDispatcherHost> dispatcher_host,
-      int64_t object_store_id,
-      int64_t index_id,
-      const std::vector<blink::IndexedDBKeyRange>& key_ranges,
-      uint64_t max_count,
-      blink::mojom::IDBDatabase::BatchGetAllCallback callback,
       IndexedDBTransaction* transaction);
 
   struct CONTENT_EXPORT PutOperationParams {
@@ -326,7 +316,6 @@ class CONTENT_EXPORT IndexedDBDatabase {
                     IndexedDBFactory* factory,
                     IndexedDBClassFactory* class_factory,
                     TasksAvailableCallback tasks_available_callback,
-                    std::unique_ptr<IndexedDBMetadataCoding> metadata_coding,
                     const Identifier& unique_identifier,
                     PartitionedLockManager* transaction_lock_manager);
 
@@ -390,13 +379,15 @@ class CONTENT_EXPORT IndexedDBDatabase {
   // Safe because the IndexedDBBackingStore is owned by the same object which
   // owns us, the IndexedDBPerBucketFactory.
   raw_ptr<IndexedDBBackingStore> backing_store_;
+
+  // `metadata_` may not be fully initialized, but its `name` will always be
+  // valid.
   blink::IndexedDBDatabaseMetadata metadata_;
 
   const Identifier identifier_;
   // TODO(dmurph): Remove the need for this to be here (and then remove it).
   raw_ptr<IndexedDBFactory, DanglingUntriaged> factory_;
   const raw_ptr<IndexedDBClassFactory> class_factory_;
-  std::unique_ptr<IndexedDBMetadataCoding> metadata_coding_;
 
   raw_ptr<PartitionedLockManager> lock_manager_;
   int64_t transaction_count_ = 0;

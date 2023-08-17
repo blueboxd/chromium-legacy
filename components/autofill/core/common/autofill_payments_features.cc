@@ -23,6 +23,11 @@ namespace autofill::features {
 
 // Features
 
+// When enabled, Android N+ devices will be supported for FIDO authentication.
+BASE_FEATURE(kAutofillEnableAndroidNKeyForFidoAuthentication,
+             "AutofillEnableAndroidNKeyForFidoAuthentication",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // When enabled, card art images (instead of network icons) will be shown in
 // Payments Autofill UI.
 BASE_FEATURE(kAutofillEnableCardArtImage,
@@ -69,11 +74,17 @@ BASE_FEATURE(kAutofillEnableFIDOProgressDialog,
              "AutofillEnableFIDOProgressDialog",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// When enabled, server card retrieval will begin with a risk-based check
+// instead of jumping straight to CVC or biometric auth.
+BASE_FEATURE(kAutofillEnableFpanRiskBasedAuthentication,
+             "AutofillEnableFpanRiskBasedAuthentication",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // When enabled, client side URL filtering will be triggered for the IBAN
 // use-case, so that IBAN autofill is not offered on websites that are blocked.
 BASE_FEATURE(kAutofillEnableIbanClientSideUrlFiltering,
              "AutofillEnableIbanClientSideUrlFiltering",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // When enabled, enable manual falling component for virtual cards on Android.
 BASE_FEATURE(kAutofillEnableManualFallbackForVirtualCards,
@@ -85,13 +96,19 @@ BASE_FEATURE(kAutofillEnableManualFallbackForVirtualCards,
 // that are opted-out of virtual cards.
 BASE_FEATURE(kAutofillEnableMerchantOptOutClientSideUrlFiltering,
              "AutofillEnableMerchantOptOutClientSideUrlFiltering",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // When enabled, the GPay logo will be moved to the right side in payments
 // autofill dialogs and bubbles on desktop.
 BASE_FEATURE(kAutofillEnableMovingGPayLogoToTheRightOnDesktop,
              "AutofillEnableMovingGPayLogoToTheRightOnDesktop",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+// When enabled, the GPay logo will be moved to the right side in payments
+// autofill dialogs and bubbles on clank.
+BASE_FEATURE(kAutofillEnableMovingGPayLogoToTheRightOnClank,
+             "AutofillEnableMovingGPayLogoToTheRightOnClank",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // When enabled, the user will see a new banner logo and text in the bubble
 // offering to Upstream their cards onto Google Pay.
@@ -187,7 +204,7 @@ BASE_FEATURE(kAutofillEnforceDelaysInStrikeDatabase,
 // Number) fields when data is available.
 BASE_FEATURE(kAutofillFillIbanFields,
              "AutofillFillIbanFields",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // When enabled, Autofill will attempt to fill merchant promo/coupon/gift code
 // fields when data is available.
@@ -213,23 +230,12 @@ BASE_FEATURE(kAutofillOfferToSaveCardWithSameLastFour,
 // (IBAN) fields when parsing forms.
 BASE_FEATURE(kAutofillParseIBANFields,
              "AutofillParseIBANFields",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // When enabled, Autofill will attempt to find standalone CVC fields for VCN
 // card on file when parsing forms.
 BASE_FEATURE(kAutofillParseVcnCardOnFileStandaloneCvcFields,
              "AutofillParseVcnCardOnFileStandaloneCvcFields",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-// When enabled, the Save Card infobar supports editing before submitting.
-BASE_FEATURE(kAutofillSaveCardInfobarEditSupport,
-             "AutofillSaveCardInfobarEditSupport_LAUNCHED",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-// When enabled, the entire PAN and the CVC details of the unmasked cached card
-// will be shown in the manual filling view.
-BASE_FEATURE(kAutofillShowUnmaskedCachedCardInManualFillingView,
-             "AutofillShowUnmaskedCachedCardInManualFillingView",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // When enabled, Autofill suggestions that consist of a local and server

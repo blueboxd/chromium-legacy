@@ -13,12 +13,9 @@
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
 #import "ios/chrome/browser/signin/identity_manager_factory.h"
+#import "ios/chrome/browser/sync/sync_service_factory.h"
 #import "ios/chrome/browser/ui/ntp/metrics/feed_metrics_recorder.h"
 #import "ios/public/provider/chrome/browser/discover_feed/discover_feed_api.h"
-
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
 
 // static
 DiscoverFeedService* DiscoverFeedServiceFactory::GetForBrowserState(
@@ -40,6 +37,8 @@ DiscoverFeedServiceFactory::DiscoverFeedServiceFactory()
           BrowserStateDependencyManager::GetInstance()) {
   DependsOn(AuthenticationServiceFactory::GetInstance());
   DependsOn(IdentityManagerFactory::GetInstance());
+  DependsOn(ios::TemplateURLServiceFactory::GetInstance());
+  DependsOn(SyncServiceFactory::GetInstance());
 }
 
 DiscoverFeedServiceFactory::~DiscoverFeedServiceFactory() = default;
@@ -52,7 +51,9 @@ DiscoverFeedServiceFactory::BuildServiceInstanceFor(
 
   DiscoverFeedConfiguration* configuration =
       [[DiscoverFeedConfiguration alloc] init];
-  configuration.prefService = browser_state->GetPrefs();
+  configuration.browserStatePrefService = browser_state->GetPrefs();
+  configuration.localStatePrefService =
+      GetApplicationContext()->GetLocalState();
   configuration.authService =
       AuthenticationServiceFactory::GetForBrowserState(browser_state);
   configuration.identityManager =
@@ -61,6 +62,8 @@ DiscoverFeedServiceFactory::BuildServiceInstanceFor(
   configuration.ssoService = GetApplicationContext()->GetSSOService();
   configuration.templateURLService =
       ios::TemplateURLServiceFactory::GetForBrowserState(browser_state);
+  configuration.syncService =
+      SyncServiceFactory::GetForBrowserState(browser_state);
 
   return ios::provider::CreateDiscoverFeedService(configuration);
 }

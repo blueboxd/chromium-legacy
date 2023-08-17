@@ -11,10 +11,6 @@
 #include "chrome/updater/constants.h"
 #include "chrome/updater/policy/manager.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 // Constants for managed preference policy keys.
 static NSString* kGlobalPolicyKey = @"global";
 static NSString* kUpdateDefaultKey = @"UpdateDefault";
@@ -209,11 +205,11 @@ int TranslateUpdatePolicyValue(int update_policy_from_managed_preferences) {
       __strong _appPolicies;
 }
 
-@synthesize managed = _managed;
+@synthesize hasActivePolicy = _hasActivePolicy;
 
 - (instancetype)initWithDictionary:(CRUUpdatePolicyDictionary*)policies {
   if (([super init])) {
-    _managed = policies.count > 0 && base::IsManagedOrEnterpriseDevice();
+    _hasActivePolicy = policies.count > 0;
 
     // Always create a global policy instance for default values.
     _globalPolicy = [[CRUManagedPreferenceGlobalPolicySettings alloc]

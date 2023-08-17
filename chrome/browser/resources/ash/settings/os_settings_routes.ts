@@ -13,7 +13,7 @@
 import {assert} from 'chrome://resources/js/assert_ts.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 
-import {androidAppsVisible, isArcVmEnabled, isCrostiniSupported, isGuest, isKerberosEnabled, isPluginVmAvailable, isPowerwashAllowed} from './common/load_time_booleans.js';
+import {androidAppsVisible, isArcVmEnabled, isCrostiniSupported, isGuest, isKerberosEnabled, isPluginVmAvailable, isPowerwashAllowed, isRevampWayfindingEnabled} from './common/load_time_booleans.js';
 import * as routesMojom from './mojom-webui/routes.mojom-webui.js';
 
 /**
@@ -213,6 +213,7 @@ export interface OsSettingsRoutes extends MinimumRoutes {
   STYLUS: Route;
   SYNC: Route;
   SYNC_ADVANCED: Route;
+  SYSTEM_PREFERENCES: Route;
 }
 
 function createSection(
@@ -460,9 +461,8 @@ export function createRoutes(): OsSettingsRoutes {
       r.A11Y_TEXT_TO_SPEECH, routesMojom.SELECT_TO_SPEAK_SUBPAGE_PATH,
       Subpage.kSelectToSpeak);
   r.MANAGE_TTS_SETTINGS = createSubpage(
-      loadTimeData.getBoolean('isKioskModeActive') ? r.MANAGE_ACCESSIBILITY :
-                                                     r.A11Y_TEXT_TO_SPEECH,
-      routesMojom.TEXT_TO_SPEECH_SUBPAGE_PATH, Subpage.kTextToSpeech);
+      r.A11Y_TEXT_TO_SPEECH, routesMojom.TEXT_TO_SPEECH_SUBPAGE_PATH,
+      Subpage.kTextToSpeech);
   r.MANAGE_SWITCH_ACCESS_SETTINGS = createSubpage(
       r.A11Y_KEYBOARD_AND_TEXT_INPUT,
       routesMojom.SWITCH_ACCESS_OPTIONS_SUBPAGE_PATH,
@@ -570,7 +570,8 @@ export function createRoutes(): OsSettingsRoutes {
   if (!isGuest()) {
     r.FILES = createSection(
         r.ADVANCED, routesMojom.FILES_SECTION_PATH, Section.kFiles);
-    if (loadTimeData.getBoolean('enableDriveFsBulkPinning')) {
+    if (loadTimeData.getBoolean('showGoogleDriveSettingsPage') ||
+        loadTimeData.getBoolean('enableDriveFsBulkPinning')) {
       r.GOOGLE_DRIVE = createSubpage(
           r.FILES, routesMojom.GOOGLE_DRIVE_SUBPAGE_PATH, Subpage.kGoogleDrive);
     }
@@ -592,12 +593,6 @@ export function createRoutes(): OsSettingsRoutes {
       r.OS_PRINTING, routesMojom.PRINTING_DETAILS_SUBPAGE_PATH,
       Subpage.kPrintingDetails);
 
-  // Reset section.
-  if (isPowerwashAllowed()) {
-    r.OS_RESET = createSection(
-        r.ADVANCED, routesMojom.RESET_SECTION_PATH, Section.kReset);
-  }
-
   // About section.
   r.ABOUT = createSection(
       /*parent=*/ null, routesMojom.ABOUT_CHROME_OS_SECTION_PATH,
@@ -605,6 +600,19 @@ export function createRoutes(): OsSettingsRoutes {
   r.ABOUT_DETAILED_BUILD_INFO = createSubpage(
       r.ABOUT, routesMojom.DETAILED_BUILD_INFO_SUBPAGE_PATH,
       Subpage.kDetailedBuildInfo);
+
+  if (isRevampWayfindingEnabled()) {
+    // System Preferences section.
+    r.SYSTEM_PREFERENCES = createSection(
+        r.BASIC, routesMojom.SYSTEM_PREFERENCES_SECTION_PATH,
+        Section.kSystemPreferences);
+  } else {
+    // Reset section.
+    if (isPowerwashAllowed()) {
+      r.OS_RESET = createSection(
+          r.ADVANCED, routesMojom.RESET_SECTION_PATH, Section.kReset);
+    }
+  }
 
   return r as OsSettingsRoutes;
 }

@@ -104,10 +104,10 @@ void DumpAccessibilityTreeTest::SetUpCommandLine(
   // Enable accessibility object model, used in other tests.
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kEnableBlinkFeatures, "AccessibilityObjectModel");
-  // Enable HTMLSelectMenuElement, used by AccessibilitySelectMenu and
-  // AccessibilitySelectMenuOpen.
+  // Enable HTMLSelectListElement, used by AccessibilitySelectList and
+  // AccessibilitySelectListOpen.
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-      switches::kEnableBlinkFeatures, "HTMLSelectMenuElement");
+      switches::kEnableBlinkFeatures, "HTMLSelectListElement");
   // kDisableAXMenuList is true on Chrome OS by default. Make it consistent
   // for these cross-platform tests.
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
@@ -156,7 +156,9 @@ struct DumpAccessibilityTreeTestPassToString {
   }
 };
 
-// UIA is excluded due to flakiness. See https://crbug.com/1459215
+// UIA is excluded due to flakiness. See https://crbug.com/1459215.
+// TODO(https://crbug.com/1470120): We need to create a way to incrementally
+// enable and create UIA tests.
 INSTANTIATE_TEST_SUITE_P(
     All,
     DumpAccessibilityTreeTest,
@@ -442,6 +444,10 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
                        AccessibilityAreaWithAriaOwns) {
   RunHtmlTest(FILE_PATH_LITERAL("area-with-aria-owns.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityAHrefUpdate) {
+  RunHtmlTest(FILE_PATH_LITERAL("a-href-update.html"));
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityAName) {
@@ -1570,6 +1576,11 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityBdo) {
   RunHtmlTest(FILE_PATH_LITERAL("bdo.html"));
 }
 
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       AccessibilityBdoTableCellFormControls) {
+  RunFormControlsTest(FILE_PATH_LITERAL("bdo-table-cell.html"));
+}
+
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityBlockquote) {
   RunHtmlTest(FILE_PATH_LITERAL("blockquote.html"));
 }
@@ -2523,6 +2534,11 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
   RunFormControlsTest(FILE_PATH_LITERAL("img-form.html"));
 }
 
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       AccessibilityImgMapPseudoFormControls) {
+  RunFormControlsTest(FILE_PATH_LITERAL("img-map-pseudo.html"));
+}
+
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityIns) {
   RunHtmlTest(FILE_PATH_LITERAL("ins.html"));
 }
@@ -2658,6 +2674,11 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityMapAnyContents) {
   RunHtmlTest(FILE_PATH_LITERAL("map-any-contents.html"));
 }
 
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       AccessibilityMapInsideMapFormControls) {
+  RunFormControlsTest(FILE_PATH_LITERAL("map-inside-map.html"));
+}
+
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityMapUnused) {
   RunHtmlTest(FILE_PATH_LITERAL("map-unused.html"));
 }
@@ -2694,6 +2715,11 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityMeter) {
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
                        AccessibilityMicroClearfixHack) {
   RunHtmlTest(FILE_PATH_LITERAL("micro-clearfix-hack.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       AccessibilityMissingRelationTargetsAddedLater) {
+  RunAriaTest(FILE_PATH_LITERAL("missing-relation-targets-added-later.html"));
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
@@ -2984,29 +3010,29 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
 
 // Flaky on Android - crbug.com/1286650
 #if BUILDFLAG(IS_ANDROID)
-#define MAYBE_AccessibilitySelectMenu DISABLED_AccessibilitySelectMenu
+#define MAYBE_AccessibilitySelectList DISABLED_AccessibilitySelectList
 #else
-#define MAYBE_AccessibilitySelectMenu AccessibilitySelectMenu
+#define MAYBE_AccessibilitySelectList AccessibilitySelectList
 #endif
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
-                       MAYBE_AccessibilitySelectMenu) {
+                       MAYBE_AccessibilitySelectList) {
   // Fails when synchronous a11y serialization is enabled - crbug.com/1401767
   if (base::FeatureList::IsEnabled(
           blink::features::kSerializeAccessibilityPostLifecycle)) {
     return;
   }
-  RunHtmlTest(FILE_PATH_LITERAL("selectmenu.html"));
+  RunHtmlTest(FILE_PATH_LITERAL("selectlist.html"));
 }
 
 // Flaky on Android - crbug.com/1286663
 #if BUILDFLAG(IS_ANDROID)
-#define MAYBE_AccessibilitySelectMenuOpen DISABLED_AccessibilitySelectMenuOpen
+#define MAYBE_AccessibilitySelectListOpen DISABLED_AccessibilitySelectListOpen
 #else
-#define MAYBE_AccessibilitySelectMenuOpen AccessibilitySelectMenuOpen
+#define MAYBE_AccessibilitySelectListOpen AccessibilitySelectListOpen
 #endif
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
-                       MAYBE_AccessibilitySelectMenuOpen) {
-  RunHtmlTest(FILE_PATH_LITERAL("selectmenu-open.html"));
+                       MAYBE_AccessibilitySelectListOpen) {
+  RunHtmlTest(FILE_PATH_LITERAL("selectlist-open.html"));
 }
 
 // TODO(https://crbug.com/1309941): Flaky on Fuchsia
@@ -3444,6 +3470,11 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, DisplayLockingAllCommitted) {
   RunDisplayLockingTest(FILE_PATH_LITERAL("all-committed.html"));
 }
 
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       AccessibilityDisplayLockedSelectMenu) {
+  RunDisplayLockingTest(FILE_PATH_LITERAL("selectmenu.html"));
+}
+
 //
 // Regression tests. These don't test a specific web platform feature,
 // they test a specific web page that crashed or had some bad behavior
@@ -3654,6 +3685,19 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, WhitespaceDynamic) {
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, TableWithPseudoElements) {
   RunHtmlTest(FILE_PATH_LITERAL("table-with-pseudo-elements.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, IgnoreDuplicateRelationIds) {
+  RunRelationsTest(FILE_PATH_LITERAL("ignore-duplicate-relation-ids.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, IgnoreReflexiveRelations) {
+  RunRelationsTest(FILE_PATH_LITERAL("ignore-reflexive-relations.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       RelationsPreserveAuthorOrder) {
+  RunRelationsTest(FILE_PATH_LITERAL("relations-preserve-author-order.html"));
 }
 
 //

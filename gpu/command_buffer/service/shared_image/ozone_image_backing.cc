@@ -9,6 +9,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/containers/contains.h"
 #include "base/logging.h"
 #include "base/memory/scoped_refptr.h"
 #include "build/build_config.h"
@@ -123,6 +124,13 @@ void OzoneImageBacking::Update(std::unique_ptr<gfx::GpuFence> in_fence) {
 
 scoped_refptr<gfx::NativePixmap> OzoneImageBacking::GetNativePixmap() {
   return pixmap_;
+}
+
+gfx::GpuMemoryBufferHandle OzoneImageBacking::GetGpuMemoryBufferHandle() {
+  gfx::GpuMemoryBufferHandle handle;
+  handle.type = gfx::GpuMemoryBufferType::NATIVE_PIXMAP;
+  handle.native_pixmap_handle = pixmap_->ExportHandle();
+  return handle;
 }
 
 std::unique_ptr<DawnImageRepresentation> OzoneImageBacking::ProduceDawn(
@@ -500,7 +508,7 @@ void OzoneImageBacking::EndAccess(bool readonly,
       read_fences_[access_stream] = std::move(fence);
     }
   } else {
-    DCHECK(read_fences_.find(access_stream) == read_fences_.end());
+    DCHECK(!base::Contains(read_fences_, access_stream));
     write_fence_ = std::move(fence);
     last_write_stream_ = access_stream;
   }

@@ -150,6 +150,7 @@ class FirmwareUpdateManager;
 class FirmwareUpdateNotificationController;
 class FloatController;
 class FocusCycler;
+class FocusModeController;
 class FrameThrottlingController;
 class FullscreenMagnifierController;
 class GeolocationController;
@@ -183,7 +184,6 @@ class TabletModeController;
 class MediaControllerImpl;
 class MessageCenterAshImpl;
 class MessageCenterController;
-class MicrophonePrivacySwitchController;
 class MouseCursorEventFilter;
 class MruWindowTracker;
 class MultiDeviceNotificationPresenter;
@@ -544,6 +544,9 @@ class ASH_EXPORT Shell : public SessionObserver,
   ::wm::FocusController* focus_controller() { return focus_controller_.get(); }
   AshFocusRules* focus_rules() { return focus_rules_; }
   FocusCycler* focus_cycler() { return focus_cycler_.get(); }
+  FocusModeController* focus_mode_controller() {
+    return focus_mode_controller_.get();
+  }
   FullscreenMagnifierController* fullscreen_magnifier_controller() {
     return fullscreen_magnifier_controller_.get();
   }
@@ -623,6 +626,9 @@ class ASH_EXPORT Shell : public SessionObserver,
     return mouse_cursor_filter_.get();
   }
   MruWindowTracker* mru_window_tracker() { return mru_window_tracker_.get(); }
+  MultiDeviceNotificationPresenter* multidevice_notification_presenter() {
+    return multidevice_notification_presenter_.get();
+  }
   MultiDisplayMetricsController* multi_display_metrics_controller() {
     return multi_display_metrics_controller_.get();
   }
@@ -970,6 +976,7 @@ class ASH_EXPORT Shell : public SessionObserver,
       firmware_update_notification_controller_;
   std::unique_ptr<FocusCycler> focus_cycler_;
   std::unique_ptr<FloatController> float_controller_;
+  std::unique_ptr<FocusModeController> focus_mode_controller_;
   std::unique_ptr<GameDashboardController> game_dashboard_controller_;
   std::unique_ptr<GeolocationController> geolocation_controller_;
   std::unique_ptr<BootingAnimationController> booting_animation_controller_;
@@ -998,8 +1005,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<MessageCenterAshImpl> message_center_ash_impl_;
   std::unique_ptr<MediaControllerImpl> media_controller_;
   std::unique_ptr<MediaNotificationProvider> media_notification_provider_;
-  std::unique_ptr<MicrophonePrivacySwitchController>
-      microphone_privacy_switch_controller_;
   std::unique_ptr<MruWindowTracker> mru_window_tracker_;
   std::unique_ptr<MultiDisplayMetricsController>
       multi_display_metrics_controller_;

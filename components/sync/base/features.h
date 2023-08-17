@@ -70,10 +70,6 @@ BASE_DECLARE_FEATURE(kSyncAutofillWalletCredentialData);
 BASE_DECLARE_FEATURE(kSyncSegmentationDataType);
 
 #if BUILDFLAG(IS_CHROMEOS)
-// Whether warning should be shown in sync settings page when lacros
-// side-by-side mode is enabled.
-BASE_DECLARE_FEATURE(kSyncSettingsShowLacrosSideBySideWarning);
-
 // Whether explicit passphrase sharing between Ash and Lacros is enabled.
 BASE_DECLARE_FEATURE(kSyncChromeOSExplicitPassphraseSharing);
 
@@ -101,8 +97,6 @@ inline constexpr base::FeatureParam<int>
     kSyncHistoryForeignVisitsToDeletePerBatch{
         &kSyncEnableHistoryDataType, "foreign_visit_deletions_per_batch", 100};
 
-BASE_DECLARE_FEATURE(kSyncEnableContactInfoDataType);
-BASE_DECLARE_FEATURE(kSyncEnableContactInfoDataTypeEarlyReturnNoDatabase);
 BASE_DECLARE_FEATURE(kSyncEnableContactInfoDataTypeInTransportMode);
 BASE_DECLARE_FEATURE(kSyncEnableContactInfoDataTypeForCustomPassphraseUsers);
 BASE_DECLARE_FEATURE(kSyncEnableContactInfoDataTypeForDasherUsers);
@@ -203,6 +197,24 @@ BASE_DECLARE_FEATURE(kReadingListEnableSyncTransportModeUponSignIn);
 // respectively, to run in transport mode.
 BASE_DECLARE_FEATURE(kSyncEnableWalletMetadataInTransportMode);
 BASE_DECLARE_FEATURE(kSyncEnableWalletOfferInTransportMode);
+
+// Flag to enable setting `deleted_by_version` on a `EntityMetadata`.
+BASE_DECLARE_FEATURE(kSyncEntityMetadataRecordDeletedByVersionOnLocalDeletion);
+
+// Flag to enable clean up of password deletions that may be unintentional.
+BASE_DECLARE_FEATURE(kSyncPasswordCleanUpAccidentalBatchDeletions);
+// The minimum number of deletions that can be considered a batch deletion.
+inline constexpr base::FeatureParam<int>
+    kSyncPasswordCleanUpAccidentalBatchDeletionsCountThreshold{
+        &kSyncPasswordCleanUpAccidentalBatchDeletions,
+        "SyncPasswordCleanUpAccidentalBatchDeletionsCountThreshold", 3};
+// The maximum time between earliest and latest deletion to be considered an
+// accidental batch deletion.
+inline constexpr base::FeatureParam<base::TimeDelta>
+    kSyncPasswordCleanUpAccidentalBatchDeletionsTimeThreshold{
+        &kSyncPasswordCleanUpAccidentalBatchDeletions,
+        "SyncPasswordCleanUpAccidentalBatchDeletionsTimeThreshold",
+        base::Milliseconds(100)};
 
 }  // namespace syncer
 

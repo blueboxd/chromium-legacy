@@ -35,6 +35,10 @@ export class PowerBookmarkRowElement extends PolymerElement {
   static get properties() {
     return {
       bookmark: Object,
+      checkboxChecked: {
+        type: Boolean,
+        value: false,
+      },
       checkboxDisabled: {
         type: Boolean,
         value: false,
@@ -44,6 +48,10 @@ export class PowerBookmarkRowElement extends PolymerElement {
         value: false,
       },
       description: {
+        type: String,
+        value: '',
+      },
+      descriptionMeta: {
         type: String,
         value: '',
       },
@@ -89,9 +97,11 @@ export class PowerBookmarkRowElement extends PolymerElement {
   }
 
   bookmark: chrome.bookmarks.BookmarkTreeNode;
+  checkboxChecked: boolean;
   checkboxDisabled: boolean;
   compact: boolean;
   description: string;
+  descriptionMeta: string;
   forceHover: boolean;
   hasCheckbox: boolean;
   hasInput: boolean;
@@ -166,8 +176,9 @@ export class PowerBookmarkRowElement extends PolymerElement {
    */
   private onRowClicked_(event: MouseEvent) {
     // Ignore clicks on the row when it has an input, to ensure the row doesn't
-    // eat input clicks.
-    if (this.hasInput) {
+    // eat input clicks. Also ignore clicks if the row has no associated
+    // bookmark, or if the event is a right-click.
+    if (this.hasInput || !this.bookmark || event.button === 2) {
       return;
     }
     event.preventDefault();
@@ -251,6 +262,17 @@ export class PowerBookmarkRowElement extends PolymerElement {
     }
   }
 
+  private createInputChangeEvent_(value: string|null) {
+    return new CustomEvent('input-change', {
+      bubbles: true,
+      composed: true,
+      detail: {
+        bookmark: this.bookmark,
+        value: value,
+      },
+    });
+  }
+
   /**
    * Triggers a custom input change event when the user hits enter or the input
    * loses focus.
@@ -258,16 +280,15 @@ export class PowerBookmarkRowElement extends PolymerElement {
   private onInputChange_(event: Event) {
     event.preventDefault();
     event.stopPropagation();
-    const inputElement: CrInputElement =
-        this.shadowRoot!.querySelector('#input')!;
-    this.dispatchEvent(new CustomEvent('input-change', {
-      bubbles: true,
-      composed: true,
-      detail: {
-        bookmark: this.bookmark,
-        value: inputElement.value,
-      },
-    }));
+    const inputElement =
+        this.shadowRoot!.querySelector<CrInputElement>('#input')!;
+    this.dispatchEvent(this.createInputChangeEvent_(inputElement.value));
+  }
+
+  private onInputBlur_(event: Event) {
+    event.preventDefault();
+    event.stopPropagation();
+    this.dispatchEvent(this.createInputChangeEvent_(null));
   }
 }
 

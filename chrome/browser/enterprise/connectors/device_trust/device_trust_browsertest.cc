@@ -37,6 +37,7 @@
 #endif  // #if BUILDFLAG(IS_WIN)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/constants/ash_features.h"
 #include "chrome/browser/ash/attestation/mock_tpm_challenge_key.h"
 #include "chrome/browser/ash/attestation/tpm_challenge_key.h"
 #include "chrome/browser/ash/attestation/tpm_challenge_key_result.h"
@@ -89,11 +90,11 @@ DeviceTrustConnectorState CreateManagedDeviceState() {
 
   return state;
 }
-#else
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
 DeviceTrustConnectorState CreateUnmanagedState() {
   return DeviceTrustConnectorState();
 }
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 }  // namespace
 
@@ -231,7 +232,16 @@ class DeviceTrustDelayedManagementBrowserTest
  protected:
   DeviceTrustDelayedManagementBrowserTest()
       : DeviceTrustBrowserTest(GetParam()) {
-    scoped_feature_list_.InitWithFeatureState(kUserDTCInlineFlowEnabled, true);
+    scoped_feature_list_.InitWithFeatures(
+        /*enabled_features=*/
+        {
+          kUserDTCInlineFlowEnabled
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+              ,
+              ash::features::kUnmanagedDeviceDeviceTrustConnectorEnabled
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+        },
+        /*disabled_features=*/{});
   }
 };
 
@@ -269,15 +279,16 @@ IN_PROC_BROWSER_TEST_P(DeviceTrustDelayedManagementBrowserTest,
   VerifyAttestationFlowSuccessful(success_result);
 }
 
-INSTANTIATE_TEST_SUITE_P(,
+INSTANTIATE_TEST_SUITE_P(UnmanagedState,
                          DeviceTrustDelayedManagementBrowserTest,
-                         testing::Values(
+                         testing::Values(CreateUnmanagedState()));
+
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-                             CreateManagedDeviceState()
-#else
-                             CreateUnmanagedState()
+INSTANTIATE_TEST_SUITE_P(ManagedState,
+                         DeviceTrustDelayedManagementBrowserTest,
+                         testing::Values(CreateManagedDeviceState()));
+
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-                                 ));
 
 // Tests that signal values respect the expected format and is filled-out as
 // expect per platform.
@@ -695,5 +706,120 @@ INSTANTIATE_TEST_SUITE_P(
                      /*will_trigger_user_inline_flow=*/testing::Bool()));
 
 #endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+
+class DeviceTrustBrowserTestForUnmanagedDevices
+    : public DeviceTrustBrowserTest,
+      public testing::WithParamInterface<
+          /* 3 boolean variables that define the flow on unmanaged devices
+          (crOS):
+          - if the user is managed
+          - if user-level inline flow is enabled
+          - if UnmanagedDeviceDeviceTrustConnectorEnabled feature is enabled*/
+          testing::tuple<bool, bool, bool>> {
+ protected:
+  DeviceTrustBrowserTestForUnmanagedDevices()
+      : DeviceTrustBrowserTest(DeviceTrustConnectorState({
+            .affiliated = false,
+            .cloud_user_management_level = DeviceTrustManagementLevel({
+                .is_managed = testing::get<0>(GetParam()),
+                .is_inline_policy_enabled = testing::get<1>(GetParam()),
+            }),
+        })) {
+    scoped_feature_list_.InitWithFeatureState(
+        ash::features::kUnmanagedDeviceDeviceTrustConnectorEnabled,
+        is_unmanaged_device_feature_enabled());
+  }
+
+  bool is_user_managed() { return testing::get<0>(GetParam()); }
+  bool is_user_inline_flow_enabled() { return testing::get<1>(GetParam()); }
+  bool is_unmanaged_device_feature_enabled() {
+    return testing::get<2>(GetParam());
+  }
+};
+
+IN_PROC_BROWSER_TEST_P(DeviceTrustBrowserTestForUnmanagedDevices,
+                       AttestationFullFlow) {
+  TriggerUrlNavigation();
+
+  if (!is_unmanaged_device_feature_enabled() || !is_user_managed() ||
+      !is_user_inline_flow_enabled()) {
+    VerifyNoInlineFlowOccurred();
+    return;
+  }
+
+  VerifyAttestationFlowSuccessful();
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    ManagedUser,
+    DeviceTrustBrowserTestForUnmanagedDevices,
+    testing::Combine(
+        /*is_user_managed=*/testing::Values(true),
+        /*is_user_inline_flow_enabled=*/testing::Bool(),
+        /*is_unmanaged_device_feature_enabled=*/testing::Values(true)));
+INSTANTIATE_TEST_SUITE_P(
+    UnmanagedUser,
+    DeviceTrustBrowserTestForUnmanagedDevices,
+    testing::Combine(
+        /*is_user_managed=*/testing::Values(false),
+        /*is_user_inline_flow_enabled=*/testing::Values(false),
+        /*is_unmanaged_device_feature_enabled=*/testing::Values(true)));
+
+INSTANTIATE_TEST_SUITE_P(
+    FeatureFlag,
+    DeviceTrustBrowserTestForUnmanagedDevices,
+    testing::Combine(
+        /*is_user_managed=*/testing::Values(true),
+        /*is_user_inline_flow_enabled=*/testing::Values(true),
+        /*is_unmanaged_device_feature_enabled=*/testing::Values(true)));
+
+class DeviceTrustBrowserTestSignalsContractForUnmanagedDevices
+    : public DeviceTrustBrowserTest {
+ protected:
+  DeviceTrustBrowserTestSignalsContractForUnmanagedDevices()
+      : DeviceTrustBrowserTest(DeviceTrustConnectorState({
+            .affiliated = false,
+            .cloud_user_management_level = DeviceTrustManagementLevel({
+                .is_managed = true,
+                .is_inline_policy_enabled = true,
+            }),
+        })) {
+    scoped_feature_list_.InitWithFeatureState(
+        ash::features::kUnmanagedDeviceDeviceTrustConnectorEnabled, true);
+  }
+};
+
+// Tests that signal values respect the expected format and is filled-out
+// as expect, especially respective filtered stable device identifiers.
+IN_PROC_BROWSER_TEST_F(DeviceTrustBrowserTestSignalsContractForUnmanagedDevices,
+                       SignalsContract) {
+  auto* device_trust_service =
+      DeviceTrustServiceFactory::GetForProfile(browser()->profile());
+  ASSERT_TRUE(device_trust_service);
+
+  base::test::TestFuture<base::Value::Dict> future;
+  device_trust_service->GetSignals(future.GetCallback());
+
+  // This error most likely indicates that one of the signals decorators did
+  // not invoke its done_closure in time.
+  ASSERT_TRUE(future.Wait()) << "Timed out while collecting signals.";
+
+  const base::Value::Dict& signals_dict = future.Get();
+
+  const auto signals_contract_map =
+      device_signals::test::GetSignalsContractForUnmanagedDevices();
+  ASSERT_FALSE(signals_contract_map.empty());
+  for (const auto& signals_contract_entry : signals_contract_map) {
+    // First is the signal name.
+    // Second is the contract evaluation predicate.
+    EXPECT_TRUE(signals_contract_entry.second.Run(signals_dict))
+        << "Signals contract validation failed for: "
+        << signals_contract_entry.first;
+  }
+}
+
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 }  // namespace enterprise_connectors::test

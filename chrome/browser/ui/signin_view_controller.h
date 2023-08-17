@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/profile_chooser_constants.h"
 #include "chrome/browser/ui/signin_modal_dialog.h"
 #include "chrome/browser/ui/webui/signin/signin_utils.h"
+#include "chrome/common/url_constants.h"
 #include "components/signin/public/base/signin_buildflags.h"
 #include "url/gurl.h"
 
@@ -78,7 +79,7 @@ class SigninViewController {
   // DEPRECATED: Use ShowDiceEnableSyncTab instead.
   void ShowSignin(profiles::BubbleViewMode mode,
                   signin_metrics::AccessPoint access_point,
-                  const GURL& redirect_url = GURL::EmptyGURL());
+                  const GURL& redirect_url = GURL(chrome::kChromeUINewTabURL));
 
   // Shows a Chrome Sync signin tab. |email_hint| may be empty.
   // Note: If the user has already set a primary account, then this is
@@ -101,21 +102,6 @@ class SigninViewController {
   // out SAML accounts completely (see https://crbug.com/1069421).
   void ShowGaiaLogoutTab(signin_metrics::SourceForRefreshTokenOperation source);
 
-  // Shows the reauth prompt for |account_id| as either:
-  // - a tab-modal dialog on top of the currently active tab, or
-  // - a new tab
-  // |account_id| should be signed into the content area. Otherwise, the method
-  // fails with |kAccountNotSignedIn| error.
-  // |access_point| indicates a call site of this method.
-  // Calls |reauth_callback| on completion of the reauth flow, or on error. The
-  // callback may be called synchronously. The user may also ignore the reauth
-  // indefinitely.
-  // Returns a handle that aborts the ongoing reauth on destruction.
-  virtual std::unique_ptr<ReauthAbortHandle> ShowReauthPrompt(
-      const CoreAccountId& account_id,
-      signin_metrics::ReauthAccessPoint access_point,
-      base::OnceCallback<void(signin::ReauthResult)> reauth_callback);
-
   // Shows the modal signin intercept first run experience dialog as a
   // browser-modal dialog on top of the `browser_`'s window. `account_id`
   // corresponds to the intercepted account.
@@ -136,6 +122,21 @@ class SigninViewController {
       const std::string& last_email,
       const std::string& email,
       SigninEmailConfirmationDialog::Callback callback);
+
+  // Shows the reauth prompt for |account_id| as either:
+  // - a tab-modal dialog on top of the currently active tab, or
+  // - a new tab
+  // |account_id| should be signed into the content area. Otherwise, the method
+  // fails with |kAccountNotSignedIn| error.
+  // |access_point| indicates a call site of this method.
+  // Calls |reauth_callback| on completion of the reauth flow, or on error. The
+  // callback may be called synchronously. The user may also ignore the reauth
+  // indefinitely.
+  // Returns a handle that aborts the ongoing reauth on destruction.
+  virtual std::unique_ptr<ReauthAbortHandle> ShowReauthPrompt(
+      const CoreAccountId& account_id,
+      signin_metrics::ReauthAccessPoint access_point,
+      base::OnceCallback<void(signin::ReauthResult)> reauth_callback);
 #endif  // BUILDFLAG(ENABLE_DICE_SUPPORT) || BUILDFLAG(IS_CHROMEOS_LACROS)
 
   // Shows the modal sync confirmation dialog as a browser-modal dialog on top
@@ -193,11 +194,14 @@ class SigninViewController {
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
   // Shows the DICE-specific sign-in flow: opens a Gaia sign-in webpage in a new
   // tab attached to |browser_|. |email_hint| may be empty.
+  // If `redirect_url` is empty, the Google search URL is used as continue_url.
+  // Internal URLs such as the NTP are only supported when `signin_reason` is
+  // `signin_metrics::Reason::kSigninPrimaryAccount`.
   void ShowDiceSigninTab(signin_metrics::Reason signin_reason,
                          signin_metrics::AccessPoint access_point,
                          signin_metrics::PromoAction promo_action,
                          const std::string& email_hint,
-                         const GURL& redirect_url = GURL::EmptyGURL());
+                         const GURL& redirect_url);
 #endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
 
   // Returns the web contents of the modal dialog.

@@ -361,7 +361,7 @@ void AmbientController::OnAutoShowTimeOut() {
   DCHECK(IsUiHidden(ambient_ui_model_.ui_visibility()));
 
   // Show ambient screen after time out.
-  SetUiVisibilityShown();
+  SetUiVisibilityShouldShow();
 }
 
 void AmbientController::OnLoginOrLockScreenCreated() {
@@ -548,7 +548,7 @@ void AmbientController::ScreenIdleStateChanged(
       return;
     }
 
-    SetUiVisibilityShown();
+    SetUiVisibilityShouldShow();
     return;
   }
 
@@ -658,7 +658,7 @@ void AmbientController::OnInteractionStateChanged(
   }
 }
 
-void AmbientController::SetUiVisibilityShown() {
+void AmbientController::SetUiVisibilityShouldShow() {
   DVLOG(1) << __func__;
 
   // TODO(meilinw): move the eligibility check to the idle entry point once
@@ -717,6 +717,11 @@ void AmbientController::SetUiVisibilityHidden() {
 
 void AmbientController::SetUiVisibilityClosed(bool immediately) {
   DVLOG(1) << __func__;
+  // Early return if the UI is already closed to make sure we do not change the
+  // cursor visibility when it is not required.
+  if (ambient_ui_model_.ui_visibility() == AmbientUiVisibility::kClosed) {
+    return;
+  }
 
   close_widgets_immediately_ = immediately;
   ambient_ui_model_.SetUiVisibility(AmbientUiVisibility::kClosed);

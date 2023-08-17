@@ -82,6 +82,165 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="QuickStart.GaiaTransferAttempted" enum="BooleanAttempted"
+    expires_after="2023-12-01">
+  <owner>bhartmire@google.com</owner>
+  <owner>joeantonetti@google.com</owner>
+  <owner>chromeos-cross-device-eng@google.com</owner>
+  <summary>
+    Whether account transfer is being attempted. Recorded when there is an error
+    with the challenge bytes received or before requesting assertion.
+  </summary>
+</histogram>
+
+<histogram name="QuickStart.GaiaTransferResult" enum="BooleanSuccess"
+    expires_after="2023-12-01">
+  <owner>bhartmire@google.com</owner>
+  <owner>joeantonetti@google.com</owner>
+  <owner>chromeos-cross-device-eng@google.com</owner>
+  <summary>
+    Whether Gaia transfer was successful. Recorded after succesfully generating
+    FIDO assertion information or when an error occurs when receiving an
+    assertion response.
+  </summary>
+</histogram>
+
+<histogram name="QuickStart.GaiaTransferResult.FailureReason"
+    enum="QuickStartGaiaTransferResultFailureReason" expires_after="2023-12-01">
+  <owner>bhartmire@google.com</owner>
+  <owner>joeantonetti@google.com</owner>
+  <owner>chromeos-cross-device-eng@google.com</owner>
+  <summary>
+    The reason Gaia account transfer attempt failed. Recorded when an error
+    occurs receiving an assertion response.
+  </summary>
+</histogram>
+
+<histogram name="QuickStart.HandshakeResult.Duration" units="ms"
+    expires_after="2023-12-01">
+  <owner>bhartmire@google.com</owner>
+  <owner>joeantonetti@google.com</owner>
+  <owner>chromeos-cross-device-eng@google.com</owner>
+  <summary>
+    Duration of handshake message sent till a response being verified. Recorded
+    when a response is received.
+  </summary>
+</histogram>
+
+<histogram name="QuickStart.HandshakeResult.ErrorCode"
+    enum="QuickStartHandshakeResultErrorCode" expires_after="2023-12-01">
+  <owner>bhartmire@google.com</owner>
+  <owner>joeantonetti@google.com</owner>
+  <owner>chromeos-cross-device-eng@google.com</owner>
+  <summary>
+    The error code associated with failing to successfully verify the handshake
+    response. Recorded when a response is received.
+  </summary>
+</histogram>
+
+<histogram name="QuickStart.HandshakeResult.Succeeded" enum="BooleanSuccess"
+    expires_after="2023-12-01">
+  <owner>bhartmire@google.com</owner>
+  <owner>joeantonetti@google.com</owner>
+  <owner>chromeos-cross-device-eng@google.com</owner>
+  <summary>
+    Whether handshake response was parsed and verified. Recorded when receiving
+    a handshake response.
+  </summary>
+</histogram>
+
+<histogram name="QuickStart.HandshakeStarted" enum="BooleanAttempted"
+    expires_after="2023-12-01">
+  <owner>bhartmire@google.com</owner>
+  <owner>joeantonetti@google.com</owner>
+  <owner>chromeos-cross-device-eng@google.com</owner>
+  <summary>
+    Whether handshake was attempted to authenticate connection. Handshake is
+    attempted when an incoming connection is accepted and using QR code
+    authentication. Recorded when an incoming connection is accepted.
+  </summary>
+</histogram>
+
+<histogram name="QuickStart.MessageReceived.DesiredMessageType"
+    enum="QuickStartMessageType" expires_after="2023-12-01">
+  <owner>bhartmire@google.com</owner>
+  <owner>joeantonetti@google.com</owner>
+  <owner>chromeos-cross-device-eng@google.com</owner>
+  <summary>
+    The message type that should be received from the remote device. Recorded
+    when the response is received or a timeout occurs waiting for it.
+  </summary>
+</histogram>
+
+<histogram name="QuickStart.MessageReceived.{MessageType}.ErrorCode"
+    enum="QuickStartMessageReceivedErrorCode" expires_after="2023-12-01">
+  <owner>bhartmire@google.com</owner>
+  <owner>joeantonetti@google.com</owner>
+  <owner>chromeos-cross-device-eng@google.com</owner>
+  <summary>
+    The type of error that occured when receiving a message. Recorded when the
+    response is received or a timeout occurs waiting.
+  </summary>
+  <token key="MessageType">
+    <variant name="Assertion"/>
+    <variant name="BootstrapConfigurations"/>
+    <variant name="GetInfo"/>
+    <variant name="Handshake"/>
+    <variant name="NotifySourceOfUpdate"/>
+    <variant name="WifiCredentials"/>
+  </token>
+</histogram>
+
+<histogram name="QuickStart.MessageReceived.{MessageType}.ListenDuration"
+    units="ms" expires_after="2023-12-01">
+  <owner>bhartmire@google.com</owner>
+  <owner>joeantonetti@google.com</owner>
+  <owner>chromeos-cross-device-eng@google.com</owner>
+  <summary>
+    The listen duration waiting for a response from the remote device. Recorded
+    when succesfully receiving a response or when a timeout occurs waiting for a
+    response.
+  </summary>
+  <token key="MessageType">
+    <variant name="Assertion"/>
+    <variant name="BootstrapConfigurations"/>
+    <variant name="GetInfo"/>
+    <variant name="Handshake"/>
+    <variant name="NotifySourceOfUpdate"/>
+    <variant name="WifiCredentials"/>
+  </token>
+</histogram>
+
+<histogram name="QuickStart.MessageReceived.{MessageType}.Succeeded"
+    enum="BooleanSuccess" expires_after="2023-12-01">
+  <owner>bhartmire@google.com</owner>
+  <owner>joeantonetti@google.com</owner>
+  <owner>chromeos-cross-device-eng@google.com</owner>
+  <summary>
+    Whether the target device received message from the remote device. Recorded
+    when a response is received or when a timeout occurs waiting for a response.
+  </summary>
+  <token key="MessageType">
+    <variant name="Assertion"/>
+    <variant name="BootstrapConfigurations"/>
+    <variant name="GetInfo"/>
+    <variant name="Handshake"/>
+    <variant name="NotifySourceOfUpdate"/>
+    <variant name="WifiCredentials"/>
+  </token>
+</histogram>
+
+<histogram name="QuickStart.MessageSent.MessageType"
+    enum="QuickStartMessageType" expires_after="2023-12-01">
+  <owner>bhartmire@google.com</owner>
+  <owner>joeantonetti@google.com</owner>
+  <owner>chromeos-cross-device-eng@google.com</owner>
+  <summary>
+    The message type sent to the remote device. Recorded before writing stream
+    of bytes.
+  </summary>
+</histogram>
+
 <histogram name="QuickStart.WifiTransferResult" enum="BooleanSuccess"
     expires_after="2023-12-01">
   <owner>bhartmire@google.com</owner>

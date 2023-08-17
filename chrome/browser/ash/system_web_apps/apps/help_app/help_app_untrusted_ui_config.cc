@@ -86,9 +86,6 @@ void PopulateLoadTimeData(content::WebUI* web_ui,
       base::FeatureList::IsEnabled(features::kHelpAppLauncherSearch) &&
           base::FeatureList::IsEnabled(features::kEnableLocalSearchService));
   source->AddBoolean(
-      "HelpAppAppsDiscovery",
-      base::FeatureList::IsEnabled(features::kHelpAppAppsDiscovery));
-  source->AddBoolean(
       "HelpAppAutoTriggerInstallDialog",
       base::FeatureList::IsEnabled(features::kHelpAppAutoTriggerInstallDialog));
   source->AddBoolean(
@@ -106,8 +103,10 @@ void PopulateLoadTimeData(content::WebUI* web_ui,
   if (scalable_iph) {
     source->AddBoolean("HelpAppWelcomeTips",
                        ash::features::AreHelpAppWelcomeTipsEnabled());
+    bool first_week_of_profile =
+        ((base::Time::Now() - profile->GetCreationTime()).InDaysFloored() <= 7);
+    source->AddBoolean("shouldShowWelcomeTipsAtLaunch", first_week_of_profile);
   }
-
   // Add state from the OOBE flow.
   source->AddBoolean(
       "shouldShowGetStarted",

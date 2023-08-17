@@ -37,6 +37,7 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/interest_group/ad_auction_currencies.h"
+#include "third_party/blink/public/common/interest_group/ad_display_size.h"
 #include "third_party/blink/public/common/interest_group/auction_config.h"
 #include "third_party/blink/public/mojom/interest_group/interest_group_types.mojom.h"
 #include "url/gurl.h"
@@ -2519,7 +2520,7 @@ TEST_F(SellerWorkletTest, ReportResultSendReportTo) {
       /*expected_ad_beacon_map=*/{},
       /*expected_pa_requests=*/{},
       {"https://url.test/:10 Uncaught TypeError: "
-       "sendReportTo requires 1 string parameter."});
+       "sendReportTo must be passed a valid HTTPS url."});
   RunReportResultCreatedScriptExpectingResult(
       "1", R"(sendReportTo([5]))",
       /*expected_signals_for_winner=*/absl::nullopt,
@@ -2527,7 +2528,7 @@ TEST_F(SellerWorkletTest, ReportResultSendReportTo) {
       /*expected_ad_beacon_map=*/{},
       /*expected_pa_requests=*/{},
       {"https://url.test/:10 Uncaught TypeError: "
-       "sendReportTo requires 1 string parameter."});
+       "sendReportTo must be passed a valid HTTPS url."});
 }
 
 TEST_F(SellerWorkletTest, ReportResultDateNotAvailable) {
@@ -2812,8 +2813,8 @@ TEST_F(SellerWorkletTest, ReportResultRegisterAdBeacon) {
       /*expected_report_url =*/absl::nullopt,
       /*expected_ad_beacon_map=*/{},
       /*expected_pa_requests=*/{},
-      {"https://url.test/:10 Uncaught TypeError: registerAdBeacon requires 1 "
-       "object parameter."});
+      {"https://url.test/:10 Uncaught TypeError: registerAdBeacon(): at least "
+       "1 argument(s) are required."});
 
   // Error if parameter is not an object
   RunReportResultCreatedScriptExpectingResult(
@@ -2822,32 +2823,39 @@ TEST_F(SellerWorkletTest, ReportResultRegisterAdBeacon) {
       /*expected_report_url =*/absl::nullopt,
       /*expected_ad_beacon_map=*/{},
       /*expected_pa_requests=*/{},
-      {"https://url.test/:10 Uncaught TypeError: registerAdBeacon requires 1 "
-       "object parameter."});
+      {"https://url.test/:10 Uncaught TypeError: registerAdBeacon(): Cannot "
+       "convert argument 'map' to a record since it's not an Object."});
 
-  // Error if parameter is not an object
-  RunReportResultCreatedScriptExpectingResult(
-      R"(5)", R"(registerAdBeacon("foo"))",
-      /*expected_signals_for_winner=*/{},
-      /*expected_report_url =*/absl::nullopt,
-      /*expected_ad_beacon_map=*/{},
-      /*expected_pa_requests=*/{},
-      {"https://url.test/:10 Uncaught TypeError: registerAdBeacon requires 1 "
-       "object parameter."});
-
-  // Error if parameter attributes are not strings
+  // Generally OK if parameter attributes are not strings
   RunReportResultCreatedScriptExpectingResult(
       R"(5)",
       R"(registerAdBeacon({
         'click': "https://click.example.com/",
         1: "https://view.example.com/",
       }))",
+      /*expected_signals_for_winner=*/"5",
+      /*expected_report_url =*/absl::nullopt,
+      /*expected_ad_beacon_map=*/
+      {
+          {"click", GURL("https://click.example.com/")},
+          {"1", GURL("https://view.example.com/")},
+      },
+      /*expected_pa_requests=*/{}, {});
+
+  // ... but keys must be convertible to strings
+  RunReportResultCreatedScriptExpectingResult(
+      R"(5)",
+      R"(let map = {
+           'click': "https://click.example.com/"
+         }
+         map[Symbol('a')] = "https://view.example.com/";
+         registerAdBeacon(map))",
       /*expected_signals_for_winner=*/{},
       /*expected_report_url =*/absl::nullopt,
       /*expected_ad_beacon_map=*/{},
       /*expected_pa_requests=*/{},
-      {"https://url.test/:10 Uncaught TypeError: registerAdBeacon object "
-       "attributes must be strings."});
+      {"https://url.test/:14 Uncaught TypeError: Cannot convert a Symbol value "
+       "to a string."});
 
   // Error if invalid reporting URL
   RunReportResultCreatedScriptExpectingResult(
@@ -2860,7 +2868,7 @@ TEST_F(SellerWorkletTest, ReportResultRegisterAdBeacon) {
       /*expected_report_url =*/absl::nullopt,
       /*expected_ad_beacon_map=*/{},
       /*expected_pa_requests=*/{},
-      {"https://url.test/:10 Uncaught TypeError: registerAdBeacon invalid "
+      {"https://url.test/:10 Uncaught TypeError: registerAdBeacon(): invalid "
        "reporting url for key 'view': 'gopher://view.example.com/'."});
 
   // Error if not trustworthy reporting URL
@@ -2874,8 +2882,21 @@ TEST_F(SellerWorkletTest, ReportResultRegisterAdBeacon) {
       /*expected_report_url =*/absl::nullopt,
       /*expected_ad_beacon_map=*/{},
       /*expected_pa_requests=*/{},
-      {"https://url.test/:10 Uncaught TypeError: registerAdBeacon invalid "
+      {"https://url.test/:10 Uncaught TypeError: registerAdBeacon(): invalid "
        "reporting url for key 'view': 'http://view.example.com/'."});
+
+  // Special case for error message if the key has mismatched surrogates.
+  RunReportResultCreatedScriptExpectingResult(
+      R"(5)",
+      R"(registerAdBeacon({
+         '\ud835': "http://127.0.0.1/",
+      }))",
+      /*expected_signals_for_winner=*/{},
+      /*expected_report_url =*/absl::nullopt,
+      /*expected_ad_beacon_map=*/{},
+      /*expected_pa_requests=*/{},
+      {"https://url.test/:10 Uncaught TypeError: registerAdBeacon(): invalid "
+       "reporting url."});
 }
 
 TEST_F(SellerWorkletTest, ReportResultBid) {
@@ -4062,6 +4083,78 @@ TEST_F(SellerWorkletTest, ForDebuggingOnlyReportsDisabled) {
       /*expected_debug_win_report_url=*/absl::nullopt);
 }
 
+TEST_F(SellerWorkletTest, AuctionRequestedSizeIsPresentInScoreAdJavascript) {
+  auction_ad_config_non_shared_params_.requested_size = blink::AdSize(
+      /*width=*/1920,
+      /*width_units=*/blink::mojom::AdSize_LengthUnit::kPixels,
+      /*height=*/100,
+      /*height_units*/ blink::mojom::AdSize_LengthUnit::kScreenHeight);
+
+  std::string requested_size_validator =
+      R"(if (!(auctionConfig.requestedSize.width === '1920px' &&
+               auctionConfig.requestedSize.height === '100sh')) {
+          throw new Error('Requested size is incorrect or missing.');
+        })";
+
+  RunScoreAdWithJavascriptExpectingResult(
+      CreateScoreAdScript("1", requested_size_validator), 1,
+      /*expected_errors=*/{}, mojom::ComponentAuctionModifiedBidParamsPtr(),
+      /*expected_data_version=*/absl::nullopt,
+      /*expected_debug_loss_report_url=*/absl::nullopt,
+      /*expected_debug_win_report_url=*/absl::nullopt);
+}
+
+TEST_F(SellerWorkletTest,
+       AuctionRequestedSizeIsMissingFromScoreAdJavascriptWhenNotProvided) {
+  // Because we didn't modify auction_ad_config_non_shared_params_,
+  // requestedSize should be empty.
+  std::string requested_size_validator =
+      R"(if (auctionConfig.hasOwnProperty('requestedSize')) {
+          throw new Error('Requested size is present but should be missing.');
+        })";
+
+  RunScoreAdWithJavascriptExpectingResult(
+      CreateScoreAdScript("1", requested_size_validator), 1,
+      /*expected_errors=*/{}, mojom::ComponentAuctionModifiedBidParamsPtr(),
+      /*expected_data_version=*/absl::nullopt,
+      /*expected_debug_loss_report_url=*/absl::nullopt,
+      /*expected_debug_win_report_url=*/absl::nullopt);
+}
+
+TEST_F(SellerWorkletTest, AuctionRequestedSizeIsPresentReportResultJavascript) {
+  auction_ad_config_non_shared_params_.requested_size = blink::AdSize(
+      /*width=*/1920,
+      /*width_units=*/blink::mojom::AdSize_LengthUnit::kPixels,
+      /*height=*/100,
+      /*height_units*/ blink::mojom::AdSize_LengthUnit::kScreenHeight);
+
+  std::string requested_size_validator =
+      R"(if (!(auctionConfig.requestedSize.width === '1920px' &&
+               auctionConfig.requestedSize.height === '100sh')) {
+          throw new Error('Requested size is incorrect or missing.');
+        })";
+
+  RunReportResultCreatedScriptExpectingResult(
+      "1", requested_size_validator,
+      /*expected_signals_for_winner=*/"1",
+      /*expected_report_url=*/absl::nullopt);
+}
+
+TEST_F(SellerWorkletTest,
+       AuctionRequestedSizeIsMissingFromReportResultJavascriptWhenNotProvided) {
+  // Because we didn't modify auction_ad_config_non_shared_params_,
+  // requestedSize should be empty.
+  std::string requested_size_validator =
+      R"(if (auctionConfig.hasOwnProperty('requestedSize')) {
+          throw new Error('Requested size is present but should be missing.');
+        })";
+
+  RunReportResultCreatedScriptExpectingResult(
+      "1", requested_size_validator,
+      /*expected_signals_for_winner=*/"1",
+      /*expected_report_url=*/absl::nullopt);
+}
+
 class SellerWorkletSharedStorageAPIDisabledTest : public SellerWorkletTest {
  public:
   SellerWorkletSharedStorageAPIDisabledTest() {
@@ -4473,13 +4566,13 @@ TEST_F(SellerWorkletBiddingAndScoringDebugReportingAPIEnabledTest,
       CreateScoreAdScript("1", R"(forDebuggingOnly.reportAdAuctionLoss(null))"),
       0,
       {"https://url.test/:4 Uncaught TypeError: "
-       "reportAdAuctionLoss requires 1 string parameter."});
+       "reportAdAuctionLoss must be passed a valid HTTPS url."});
 
   RunScoreAdWithJavascriptExpectingResult(
       CreateScoreAdScript("1", R"(forDebuggingOnly.reportAdAuctionWin([5]))"),
       0,
       {"https://url.test/:4 Uncaught TypeError: "
-       "reportAdAuctionWin requires 1 string parameter."});
+       "reportAdAuctionWin must be passed a valid HTTPS url."});
 
   std::vector<std::string> non_https_urls = {"http://report.url",
                                              "file:///foo/", "Not a URL"};

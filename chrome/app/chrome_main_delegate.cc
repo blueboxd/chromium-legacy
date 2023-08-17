@@ -159,7 +159,6 @@
 #include "chrome/browser/ash/startup_settings_cache.h"
 #include "chromeos/ash/components/memory/memory.h"
 #include "chromeos/ash/components/memory/mglru.h"
-#include "chromeos/ash/components/memory/swap_configuration.h"
 #include "ui/lottie/resource.h"  // nogncheck
 #endif
 
@@ -777,23 +776,8 @@ absl::optional<int> ChromeMainDelegate::PostEarlyInitialization(
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   // Set Lacros's default paths.
-  //
-  // NOTE: When launching Lacros at login screen, this is the first access
-  // to post-login parameters. In other words, this is as far as Lacros
-  // initialization will go at login screen. The browser process will block
-  // here.
-  //
-  // IMPORTANT NOTE: If your code requires access to post-login parameters
-  // (which are only known after login), please place them *after* this call.
   const auto& init_params = *chromeos::BrowserParamsProxy::Get();
   chrome::SetLacrosDefaultPathsFromInitParams(init_params.DefaultPaths().get());
-
-  // NOTE: When launching Lacros at login screen, after this point,
-  // the user should have logged in. The cryptohome is now accessible.
-
-  // Redirect logs from system directory to cryptohome.
-  if (chromeos::IsLaunchedWithPostLoginParams())
-    RedirectLacrosLogging();
 
   // Must be added before feature list is created otherwise the added flag won't
   // be picked up.
@@ -946,7 +930,6 @@ void ChromeMainDelegate::CommonEarlyInitialization() {
 
   if (is_browser_process) {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-    ash::ConfigureSwap(arc::IsArcAvailable());
     ash::InitializeMGLRU();
 #endif
   }
@@ -1324,6 +1307,23 @@ void ChromeMainDelegate::PreSandboxStartup() {
       command_line.GetSwitchValueASCII(switches::kProcessType);
 
   crash_reporter::InitializeCrashKeys();
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  if (process_type.empty() && chromeos::IsLaunchedWithPostLoginParams()) {
+    // NOTE: When prelaunching Lacros, this is as far as Lacros's initialization
+    // will go at the login screen. The browser process will block here.
+    //
+    // IMPORTANT NOTE: If your code requires access to post-login parameters
+    // (which are only known after login), please place them *after* this call.
+    chromeos::BrowserParamsProxy::WaitForLogin();
+
+    // NOTE: When launching Lacros at login screen, after this point,
+    // the user should have logged in. The cryptohome is now accessible.
+
+    // Redirect logs from system directory to cryptohome.
+    RedirectLacrosLogging();
+  }
+#endif
 
 #if BUILDFLAG(IS_POSIX)
   ChromeCrashReporterClient::Create();

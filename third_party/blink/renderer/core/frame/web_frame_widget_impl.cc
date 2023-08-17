@@ -107,6 +107,7 @@
 #include "third_party/blink/renderer/core/layout/layout_embedded_content.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/layout_shift_tracker.h"
+#include "third_party/blink/renderer/core/layout/layout_text.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/loader/interactive_detector.h"
 #include "third_party/blink/renderer/core/page/context_menu_controller.h"
@@ -422,7 +423,7 @@ gfx::Rect WebFrameWidgetImpl::ComputeBlockBound(
   HitTestResult result =
       local_root_->GetFrame()->GetEventHandler().HitTestResultAtLocation(
           location, hit_type);
-  result.SetToShadowHostIfInRestrictedShadowRoot();
+  result.SetToShadowHostIfInUAShadowRoot();
 
   Node* node = result.InnerNodeOrImageMapImage();
   if (!node)
@@ -452,7 +453,13 @@ void WebFrameWidgetImpl::DragTargetDragEnter(
     DragOperationsMask operations_allowed,
     uint32_t key_modifiers,
     DragTargetDragEnterCallback callback) {
-  current_drag_data_ = DataObject::Create(web_drag_data);
+  auto* target = local_root_->GetFrame()->DocumentAtPoint(
+      PhysicalOffset::FromPointFRound(ViewportToRootFrame(point_in_viewport)));
+
+  // Any execution context should do the work since no file should ever be
+  // created during drag events.
+  current_drag_data_ = DataObject::Create(
+      target ? target->GetExecutionContext() : nullptr, web_drag_data);
   operations_allowed_ = operations_allowed;
 
   DragTargetDragEnterOrOver(point_in_viewport, screen_point, kDragEnter,
@@ -508,7 +515,11 @@ void WebFrameWidgetImpl::DragTargetDrop(const WebDragData& web_drag_data,
     return;
   }
 
-  current_drag_data_ = DataObject::Create(web_drag_data);
+  auto* target = local_root_->GetFrame()->DocumentAtPoint(
+      PhysicalOffset::FromPointFRound(ViewportToRootFrame(point_in_viewport)));
+
+  current_drag_data_ = DataObject::Create(
+      target ? target->GetExecutionContext() : nullptr, web_drag_data);
 
   // If this webview transitions from the "drop accepting" state to the "not
   // accepting" state, then our IPC message reply indicating that may be in-
@@ -875,7 +886,7 @@ void WebFrameWidgetImpl::HandleMouseDown(LocalFrame& local_root,
     HitTestResult result(
         LocalRootImpl()->GetFrame()->GetEventHandler().HitTestResultAtLocation(
             location));
-    result.SetToShadowHostIfInRestrictedShadowRoot();
+    result.SetToShadowHostIfInUAShadowRoot();
     Node* hit_node = result.InnerNode();
     auto* html_element = DynamicTo<HTMLElement>(hit_node);
     if (!result.GetScrollbar() && hit_node && hit_node->GetLayoutObject() &&
@@ -1704,6 +1715,24 @@ void WebFrameWidgetImpl::UpdateVisualProperties(
     widget_base_->LayerTreeHost()->SetExternalPageScaleFactor(
         1.f,
         /*is_pinch_gesture_active=*/false);
+  }
+
+  EventHandler& event_handler = local_root_->GetFrame()->GetEventHandler();
+  if (event_handler.cursor_accessibility_scale_factor() !=
+      visual_properties.cursor_accessibility_scale_factor) {
+    ForEachLocalFrameControlledByWidget(
+        local_root_->GetFrame(), [&](WebLocalFrameImpl* local_frame) {
+          local_frame->GetFrame()
+              ->GetEventHandler()
+              .set_cursor_accessibility_scale_factor(
+                  visual_properties.cursor_accessibility_scale_factor);
+        });
+    // Propagate changes down to any child RemoteFrames.
+    ForEachRemoteFrameControlledByWidget(
+        [scale_factor = visual_properties.cursor_accessibility_scale_factor](
+            RemoteFrame* remote_frame) {
+          remote_frame->CursorAccessibilityScaleFactorChanged(scale_factor);
+        });
   }
 
   // TODO(crbug.com/939118): This code path where scroll_focused_node_into_view
@@ -3758,6 +3787,69 @@ void WebFrameWidgetImpl::GetCompositionCharacterBoundsInWindow(
 
   for (auto& rect : bounds_from_blink) {
     bounds_in_dips->push_back(widget_base_->BlinkSpaceToEnclosedDIPs(rect));
+  }
+}
+
+namespace {
+
+void GetLineBounds(Vector<gfx::QuadF>& line_quads,
+                   TextControlInnerEditorElement* inner_editor) {
+  for (const Node& node : NodeTraversal::DescendantsOf(*inner_editor)) {
+    if (!node.GetLayoutObject() || !node.GetLayoutObject()->IsText()) {
+      continue;
+    }
+    node.GetLayoutObject()->AbsoluteQuads(line_quads,
+                                          kApplyRemoteMainFrameTransform);
+  }
+}
+
+}  // namespace
+
+Vector<gfx::Rect> WebFrameWidgetImpl::CalculateVisibleLineBoundsOnScreen() {
+  Vector<gfx::Rect> bounds_in_dips;
+  Element* focused_element = FocusedElement();
+  if (!focused_element) {
+    return bounds_in_dips;
+  }
+  TextControlElement* text_control = ToTextControlOrNull(focused_element);
+  if (!text_control || text_control->IsDisabledOrReadOnly() ||
+      text_control->Value().empty() || !text_control->GetLayoutObject()) {
+    return bounds_in_dips;
+  }
+
+  Vector<gfx::QuadF> bounds_from_blink;
+  GetLineBounds(bounds_from_blink, text_control->InnerEditorElement());
+
+  gfx::Rect screen = GetPage()->GetVisualViewport().VisibleContentRect();
+  for (auto& quad : bounds_from_blink) {
+    gfx::Rect bounding_box = gfx::ToRoundedRect(quad.BoundingBox());
+    bounding_box.Intersect(screen);
+    if (bounding_box.IsEmpty()) {
+      continue;
+    }
+
+    bounds_in_dips.push_back(
+        focused_element->GetLayoutObject()->GetFrameView()->FrameToScreen(
+            bounding_box));
+  }
+  return bounds_in_dips;
+}
+
+Vector<gfx::Rect>& WebFrameWidgetImpl::GetVisibleLineBoundsOnScreen() {
+  return input_visible_line_bounds_;
+}
+
+void WebFrameWidgetImpl::UpdateLineBounds() {
+  Vector<gfx::Rect> line_bounds = CalculateVisibleLineBoundsOnScreen();
+  if (line_bounds == input_visible_line_bounds_) {
+    return;
+  }
+  input_visible_line_bounds_.swap(line_bounds);
+  if (mojom::blink::WidgetInputHandlerHost* host =
+          widget_base_->widget_input_handler_manager()
+              ->GetWidgetInputHandlerHost()) {
+    host->ImeCompositionRangeChanged(gfx::Range::InvalidRange(), absl::nullopt,
+                                     input_visible_line_bounds_);
   }
 }
 

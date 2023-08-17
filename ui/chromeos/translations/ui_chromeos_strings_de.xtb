@@ -114,7 +114,6 @@
 <translation id="1920798810075583923">Wassermelone</translation>
 <translation id="1924372192547904021">"<ph name="DRIVE_NAME" />" wurde formatiert</translation>
 <translation id="1931134289871235022">Slowakisch</translation>
-<translation id="1933345018156373194">Unerwarteter Fehler beim Verschieben: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="1936717151811561466">Finnisch</translation>
 <translation id="1942765061641586207">Bildauflösung</translation>
 <translation id="1972984168337863910">Erweiterte Dateiinformationen maximieren</translation>
@@ -166,7 +165,6 @@
 <translation id="2312704192806647271">{COUNT,plural, =1{Es konnte keine Erweiterung mit der ID <ph name="BEGIN_LIST" /><ph name="END_LIST" /> gefunden werden. Wende dich an deinen Administrator.}other{Es konnten keine Erweiterungen mit den IDs <ph name="BEGIN_LIST" /><ph name="END_LIST" /> gefunden werden. Wende dich an deinen Administrator.}}</translation>
 <translation id="2325650632570794183">Dieser Dateityp wird nicht unterstützt. Finde im Chrome Web Store eine App, mit der du diesen Dateityp öffnen kannst.</translation>
 <translation id="2326539130272988168">Bulgarisch</translation>
-<translation id="2337715497728194187">Für Bruschetta freigeben</translation>
 <translation id="233822363739146957">Es ist nicht genügend Speicherplatz vorhanden, um alle deine Dateien zu synchronisieren</translation>
 <translation id="23721837607121582">Mobiles Profil herunterladen, Netzwerk <ph name="NETWORK_INDEX" /> von <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" /></translation>
 <translation id="2377319039870049694">Zur Listenansicht wechseln</translation>
@@ -197,7 +195,6 @@
 <translation id="2544853746127077729">Ablehnung des Authentifizierungszertifikats durch das Netzwerk</translation>
 <translation id="255937426064304553">USA – international</translation>
 <translation id="2563185590376525700">Frosch</translation>
-<translation id="2574327434504608656">1 Ordner für Bruschetta freigegeben</translation>
 <translation id="2578394532502990878">Tamil (phonetisch)</translation>
 <translation id="2579959351793446050">Oriya</translation>
 <translation id="2587195714949534472">Synchronisierung von „<ph name="FILE_NAME" />“ wird vorbereitet…</translation>
@@ -297,7 +294,6 @@
 <translation id="3408072735282270043">Aktivieren, <ph name="NETWORK_NAME" /></translation>
 <translation id="3408236822532681288">Deutsch (Deutschland) mit Neo 2-Tastatur</translation>
 <translation id="3414856743105198592">Durch die Formatierung der Wechselmedien werden alle Daten gelöscht. Möchtest du fortfahren?</translation>
-<translation id="3435143625481187092">Du gibst Bruschetta die Berechtigung, auf Dateien im Ordner „<ph name="FOLDER_NAME" />“ zuzugreifen</translation>
 <translation id="3437801641691368414">Erstellungszeit</translation>
 <translation id="343907260260897561">Sofortbildkamera</translation>
 <translation id="3455931012307786678">Estnisch</translation>
@@ -385,7 +381,6 @@
 <translation id="4159731583141908892"><ph name="FILE_NAME" /> verschoben.</translation>
 <translation id="4176286497474237543">Papierkorb jetzt leeren</translation>
 <translation id="4179621117429069925">Element im Papierkorb</translation>
-<translation id="4181839429935094755"><ph name="NUMBER_OF_ITEMS" /> Ordner für Bruschetta freigegeben</translation>
 <translation id="4186579485882418952">Offline-Modus aktivieren</translation>
 <translation id="4193154014135846272">Google-Dokument</translation>
 <translation id="4197674956721858839">Auswahl zippen</translation>
@@ -452,7 +447,6 @@
 <translation id="4646813851450205600">Tschechisch mit Qwerty-Tastatur</translation>
 <translation id="4656777537938206294">Dateien offline verfügbar machen</translation>
 <translation id="4658782175094886150">Person im Schnee</translation>
-<translation id="466782788172479199">Du gibst Bruschetta die Berechtigung, auf Dateien in Google Drive zuzugreifen. Änderungen werden mit deinen anderen Geräten synchronisiert.</translation>
 <translation id="4669606053856530811">Mitglieder von "<ph name="SOURCE_NAME" />" verlieren den Zugriff, sofern du diese Dateien nicht mit ihnen teilst.</translation>
 <translation id="467809019005607715">Google Präsentationen</translation>
 <translation id="4690246192099372265">Schwedisch</translation>
@@ -503,7 +497,6 @@
 <translation id="4969785127455456148">Album</translation>
 <translation id="4972330214479971536">Die Einrichtung der Dateisynchronisierung konnte nicht abgeschlossen werden</translation>
 <translation id="4973523518332075481">Der Name darf höchstens <ph name="MAX_LENGTH" /> Zeichen lang sein</translation>
-<translation id="4973970068702235170">Fehler beim Zippen, unerwarteter Fehler: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4984616446166309645">Japanisch</translation>
 <translation id="4987699874727873250">Englisch (Indien)</translation>
 <translation id="4988205478593450158">Soll "<ph name="FILE_NAME" />" wirklich gelöscht werden?</translation>
@@ -564,7 +557,6 @@
 <translation id="5323213332664049067">Lateinamerikanisch</translation>
 <translation id="5330145655348521461">Diese Dateien wurden auf einem anderen Desktop geöffnet. Wechsle zu <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />), um sie anzusehen.</translation>
 <translation id="5330512191124428349">Informationen ansehen</translation>
-<translation id="5344246330454251646">Bruschetta-Freigabe verwalten</translation>
 <translation id="535792325654997756">Person mit Katzen</translation>
 <translation id="5358764674931277">Framerate</translation>
 <translation id="5363339716524495120">Eingabesprache ist Chinesisch</translation>
@@ -640,7 +632,6 @@
 <translation id="5896749729057314184">Netzwerk <ph name="NETWORK_INDEX" /> von <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, nicht aktiviert, Signalstärke <ph name="SIGNAL_STRENGTH" /> %, Details</translation>
 <translation id="5911887972742538906">Bei der Installation deiner Linux-Anwendung ist ein Fehler aufgetreten.</translation>
 <translation id="5912396950572065471">Format</translation>
-<translation id="5913638992615760742">Unerwarteter Fehler beim Kopieren: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="5918480239180455431">Es sind neue Suchfunktionen verfügbar</translation>
 <translation id="5926082595146149752">Niederländisch (Niederlande) mit internationaler US-amerikanischer PC-Tastatur</translation>
 <translation id="5932901536148835538">Chromebit</translation>
@@ -648,7 +639,6 @@
 <translation id="5955954492236143329"><ph name="NUMBER_OF_ITEMS" /> Elemente</translation>
 <translation id="5957366693331451795">Chromeboxes</translation>
 <translation id="5982621672636444458">Sortieroptionen</translation>
-<translation id="6007237601604674381">Fehler beim Verschieben. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="6011074160056912900">Ethernet-Netzwerk</translation>
 <translation id="60357267506638014">Tschechisch – QWERTY</translation>
 <translation id="603895874132768835">Du kannst dieses Mobilfunknetz erst verwenden, wenn du eine neue PIN festlegst</translation>
@@ -732,7 +722,6 @@
 <translation id="6710213216561001401">Zurück</translation>
 <translation id="6732801395666424405">Zertifikate nicht geladen</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />]</translation>
-<translation id="6740270213273127264">Ordner für Bruschetta freigeben</translation>
 <translation id="6750737795876287924">Aktuelles Verzeichnis</translation>
 <translation id="6751256176799620176">1 Ordner ausgewählt</translation>
 <translation id="6755827872271341378">Chrome OS Flex-Gerät</translation>

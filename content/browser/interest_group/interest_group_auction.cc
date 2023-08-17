@@ -37,6 +37,8 @@
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_id_helper.h"
+#include "base/types/optional_ref.h"
+#include "base/uuid.h"
 #include "content/browser/interest_group/ad_auction_page_data.h"
 #include "content/browser/interest_group/auction_metrics_recorder.h"
 #include "content/browser/interest_group/auction_process_manager.h"
@@ -44,6 +46,7 @@
 #include "content/browser/interest_group/auction_url_loader_factory_proxy.h"
 #include "content/browser/interest_group/auction_worklet_manager.h"
 #include "content/browser/interest_group/debuggable_auction_worklet.h"
+#include "content/browser/interest_group/header_direct_from_seller_signals.h"
 #include "content/browser/interest_group/interest_group_auction_reporter.h"
 #include "content/browser/interest_group/interest_group_k_anonymity_manager.h"
 #include "content/browser/interest_group/interest_group_manager_impl.h"
@@ -74,6 +77,21 @@
 #include "url/origin.h"
 
 namespace content {
+
+CONTENT_EXPORT BASE_FEATURE(kBiddingAndAuctionEncryptionMediaType,
+                            "BiddingAndAuctionEncryptionMediaType",
+                            base::FEATURE_ENABLED_BY_DEFAULT);
+
+const base::FeatureParam<std::string>
+    kBiddingAndAuctionEncryptionRequestMediaType{
+        &kBiddingAndAuctionEncryptionMediaType,
+        "BiddingAndAuctionEncryptionRequestMediaType",
+        quiche::ObliviousHttpHeaderKeyConfig::kOhttpRequestLabel.data()};
+const base::FeatureParam<std::string>
+    kBiddingAndAuctionEncryptionResponseMediaType{
+        &kBiddingAndAuctionEncryptionMediaType,
+        "BiddingAndAuctionEncryptionResponseMediaType",
+        quiche::ObliviousHttpHeaderKeyConfig::kOhttpResponseLabel.data()};
 
 namespace {
 
@@ -955,6 +973,12 @@ class InterestGroupAuction::BuyerHelper
   void NotifyConfigPromisesResolved() {
     DCHECK(auction_->config_promises_resolved_);
 
+    NotifyConfigDependencyResolved();
+  }
+
+  // Called when promises resolve, or directFromSellerSignalsHeaderAdSlot
+  // finishes parsing and finding a matching ad slot response.
+  void NotifyConfigDependencyResolved() {
     // If there are no outstanding bids, just do nothing. It's safest to exit
     // early in the case that bidder worklet process crashed or failed to fetch
     // the necessary script(s) before all config promises were resolved, rather
@@ -1009,7 +1033,7 @@ class InterestGroupAuction::BuyerHelper
     // TODO(1457931): Implement reporting
 
     return std::make_unique<Bid>(
-        bid_role, matching_ad->metadata.value_or(""), bid,
+        bid_role, matching_ad->metadata.value_or("null"), bid,
         /*bid_currency=*/absl::nullopt,
         /*ad_cost=*/absl::nullopt, std::move(ad_descriptor),
         std::move(ad_component_descriptors),
@@ -1201,8 +1225,8 @@ class InterestGroupAuction::BuyerHelper
         (base::Time::Now() - bid_state->bidder->join_time)
             .RoundToMultiple(base::Milliseconds(100)),
         bid_state->bidder->bidding_browser_signals.Clone(),
-        auction_->auction_start_time_, *bid_state->trace_id,
-        std::move(pending_remote),
+        auction_->auction_start_time_, auction_->RequestedAdSize(),
+        *bid_state->trace_id, std::move(pending_remote),
         bid_state->bid_finalizer.BindNewEndpointAndPassReceiver());
 
     // TODO(morlovich): This should arguably be merged into BeginGenerateBid
@@ -1216,7 +1240,8 @@ class InterestGroupAuction::BuyerHelper
   }
 
   void FinishGenerateBidIfReady(BidState* bid_state) {
-    if (!auction_->config_promises_resolved_) {
+    if (!auction_->config_promises_resolved_ ||
+        auction_->direct_from_seller_signals_header_ad_slot_pending_) {
       return;
     }
 
@@ -1571,7 +1596,7 @@ class InterestGroupAuction::BuyerHelper
       // doing in one place.
       ClosePipes();
 
-      auction_->OnBidSourceDone();
+      auction_->OnScoringDependencyDone();
     }
   }
 
@@ -1580,9 +1605,13 @@ class InterestGroupAuction::BuyerHelper
     DCHECK_GT(num_outstanding_bids_, 0);
 
     // Do nothing if still waiting on the seller to provide more of the
-    // AuctionConfig, or waiting on a process to be assigned (which would mean
-    // that this may be waiting behind other buyers).
-    if (!auction_->config_promises_resolved_ || !bidder_process_received_) {
+    // AuctionConfig, or directFromSellerSignalsHeaderAdSlot is still
+    // parsing and finding a matching ad slot response, or waiting on a process
+    // to be assigned (which would mean that this may be waiting behind other
+    // buyers).
+    if (!auction_->config_promises_resolved_ ||
+        auction_->direct_from_seller_signals_header_ad_slot_pending_ ||
+        !bidder_process_received_) {
       return;
     }
 
@@ -1788,9 +1817,10 @@ class InterestGroupAuction::BuyerHelper
   bool bidder_process_received_ = false;
 
   // Timer for applying the perBidderCumulativeTimeout, if one is applicable.
-  // Starts once `bidder_process_received_` and
-  // `auction_->config_promises_resolved_` are true, if
-  // `cumulative_buyer_timeout_` is not nullopt.
+  // Starts once `bidder_process_received_`,
+  // `auction_->config_promises_resolved_` are true, and
+  // `auction_->direct_from_seller_signals_header_ad_slot_pending_` is false,
+  // if `cumulative_buyer_timeout_` is not nullopt.
   base::OneShotTimer cumulative_buyer_timeout_timer_;
 
   int num_outstanding_bidding_signals_received_calls_ = 0;
@@ -1822,6 +1852,7 @@ InterestGroupAuction::InterestGroupAuction(
     InterestGroupManagerImpl* interest_group_manager,
     AuctionMetricsRecorder* auction_metrics_recorder,
     base::Time auction_start_time,
+    base::optional_ref<base::Uuid> auction_nonce,
     base::RepeatingCallback<
         void(const PrivateAggregationRequests& private_aggregation_requests)>
         maybe_log_private_aggregation_web_features_callback)
@@ -1835,6 +1866,7 @@ InterestGroupAuction::InterestGroupAuction(
       parent_(parent),
       auction_start_time_(auction_start_time),
       creation_time_(base::TimeTicks::Now()),
+      auction_nonce_(auction_nonce.CopyAsOptional()),
       maybe_log_private_aggregation_web_features_callback_(
           std::move(maybe_log_private_aggregation_web_features_callback)) {
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN1("fledge", "auction", *trace_id_,
@@ -1847,11 +1879,12 @@ InterestGroupAuction::InterestGroupAuction(
     // Nested component auctions are not supported.
     DCHECK(!parent_);
     component_auctions_.emplace(
-        child_pos, std::make_unique<InterestGroupAuction>(
-                       kanon_mode_, &component_auction_config, /*parent=*/this,
-                       auction_worklet_manager, interest_group_manager,
-                       auction_metrics_recorder_, auction_start_time,
-                       maybe_log_private_aggregation_web_features_callback_));
+        child_pos,
+        std::make_unique<InterestGroupAuction>(
+            kanon_mode_, &component_auction_config, /*parent=*/this,
+            auction_worklet_manager, interest_group_manager,
+            auction_metrics_recorder_, auction_start_time, auction_nonce,
+            maybe_log_private_aggregation_web_features_callback_));
     ++child_pos;
   }
 
@@ -1959,13 +1992,15 @@ void InterestGroupAuction::StartLoadInterestGroupsPhase(
     }
   }
 
-  // Fail if there are no pending loads.
   if (num_pending_loads_ == 0) {
+    // There is nothing to load.  We move on to the bidding and scoring phase
+    // anyway, since it may need to wait for config promises to be resolved
+    // (and checked) and also potentially deal with additional_bids.
     base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE,
         base::BindOnce(
             &InterestGroupAuction::OnStartLoadInterestGroupsPhaseComplete,
-            weak_ptr_factory_.GetWeakPtr(), AuctionResult::kNoInterestGroups));
+            weak_ptr_factory_.GetWeakPtr(), AuctionResult::kSuccess));
   }
 }
 
@@ -1973,7 +2008,6 @@ void InterestGroupAuction::StartBiddingAndScoringPhase(
     base::OnceClosure on_seller_receiver_callback,
     AuctionPhaseCompletionCallback bidding_and_scoring_phase_callback) {
   DCHECK(bidding_and_scoring_phase_callback);
-  DCHECK(!buyer_helpers_.empty() || !component_auctions_.empty());
   DCHECK(!on_seller_receiver_callback_);
   DCHECK(!load_interest_groups_phase_callback_);
   DCHECK(!bidding_and_scoring_phase_callback_);
@@ -1991,15 +2025,28 @@ void InterestGroupAuction::StartBiddingAndScoringPhase(
 
   bidding_and_scoring_phase_start_time_ = base::TimeTicks::Now();
 
-  outstanding_bid_sources_ = buyer_helpers_.size() + component_auctions_.size();
+  num_scoring_dependencies_ =
+      buyer_helpers_.size() + component_auctions_.size();
+
+  // Also wait for config to resolve.
+  if (!config_promises_resolved_) {
+    ++num_scoring_dependencies_;
+  }
+
+  // TODO(morlovich): If the config already resolved additional_bids here,
+  // may start work on it.
 
   // Need to start loading worklets before any bids can be generated or scored.
-
   if (component_auctions_.empty()) {
-    // If there are no component auctions, request the seller worklet.
-    // Otherwise, the seller worklet will be requested once all component
-    // auctions have received their own seller worklets.
-    RequestSellerWorklet();
+    // If there are no component auctions, request the seller worklet if we may
+    // need it. (The case for component auctions is handled below, there the
+    // seller worklet will be requested once all component auctions have
+    // received their own seller worklets).
+    //
+    // TODO(morlovich): We may need it based on additional_bids, too.
+    if (!buyer_helpers_.empty()) {
+      RequestSellerWorklet();
+    }
   } else {
     // Since component auctions may invoke OnComponentSellerWorkletReceived()
     // synchronously, it's important to set this to the total number of
@@ -2021,6 +2068,10 @@ void InterestGroupAuction::StartBiddingAndScoringPhase(
   for (const auto& buyer_helper : buyer_helpers_) {
     buyer_helper->StartGeneratingBids();
   }
+
+  // It's possible that we actually have nothing to do here at this point ---
+  // neither bids from interest groups, nor configuration promises to wait for.
+  MaybeCompleteBiddingAndScoringPhase();
 }
 
 void InterestGroupAuction::StartFromServerResponse(
@@ -2070,7 +2121,8 @@ void InterestGroupAuction::StartFromServerResponse(
       quiche::ObliviousHttpResponse::CreateClientObliviousResponse(
           std::string(reinterpret_cast<char*>(response.data()),
                       response.size()),
-          request_context->context);
+          request_context->context,
+          kBiddingAndAuctionEncryptionResponseMediaType.Get());
   if (!maybe_response.ok()) {
     // We couldn't decrypt the response.
     OnBiddingAndScoringComplete(
@@ -2130,6 +2182,8 @@ InterestGroupAuction::CreateReporter(
       std::move(winner->bid->bid_state->bidder);
   winning_bid_info.render_url = winner->bid->ad_descriptor.url;
   winning_bid_info.ad_components = winner->bid->GetAdComponentUrls();
+  winning_bid_info.allowed_reporting_origins =
+      winner->bid->bid_ad->allowed_reporting_origins;
   // Need the bid from the bidder itself. If the bid was from a component
   // auction, then `top_bid_->bid` will be the bid from the component auction,
   // which the component seller worklet may have modified, and thus the wrong
@@ -2305,6 +2359,12 @@ void InterestGroupAuction::NotifyConfigPromisesResolved() {
     }
   }
 
+  // TODO(morlovich): If additional_bids show up, we may need to set up
+  // an additional scoring dependency here.
+
+  // Config resolution is done.
+  OnScoringDependencyDone();
+
   ScoreQueuedBidsIfReady();
 }
 
@@ -2319,6 +2379,68 @@ void InterestGroupAuction::NotifyComponentConfigPromisesResolved(uint32_t pos) {
   }
 
   it->second->NotifyConfigPromisesResolved();
+}
+
+void InterestGroupAuction::NotifyAdditionalBidsConfig(
+    std::vector<blink::mojom::AuctionAdConfigAdditionalBidPtr>
+        additional_bids) {
+  encoded_additional_bids_ = std::move(additional_bids);
+
+  // Note that there is no need to do anything to advance the auction, since
+  // that should happen in NotifyConfigPromisesResolved() once everything is
+  // ready.
+}
+
+void InterestGroupAuction::NotifyComponentAdditionalBidsConfig(
+    uint32_t pos,
+    std::vector<blink::mojom::AuctionAdConfigAdditionalBidPtr>
+        additional_bids) {
+  DCHECK(!parent_);  // Should not be called on a component.
+  auto it = component_auctions_.find(pos);
+
+  if (it == component_auctions_.end()) {
+    // Empty component auctions shouldn't be dropped, but component
+    // auctions may still be dropped if they fail permissions checks.
+    return;
+  }
+
+  it->second->NotifyAdditionalBidsConfig(std::move(additional_bids));
+}
+
+void InterestGroupAuction::NotifyDirectFromSellerSignalsHeaderAdSlotConfig(
+    AdAuctionPageData* auction_page_data,
+    const absl::optional<std::string>&
+        direct_from_seller_signals_header_ad_slot) {
+  if (!direct_from_seller_signals_header_ad_slot) {
+    return;
+  }
+
+  direct_from_seller_signals_header_ad_slot_pending_ = true;
+  HeaderDirectFromSellerSignals::ParseAndFind(
+      auction_page_data->GetAuctionSignalsForOrigin(config_->seller),
+      *direct_from_seller_signals_header_ad_slot,
+      base::BindOnce(
+          &InterestGroupAuction::OnDirectFromSellerSignalHeaderAdSlotResolved,
+          weak_ptr_factory_.GetWeakPtr()));
+}
+
+void InterestGroupAuction::
+    NotifyComponentDirectFromSellerSignalsHeaderAdSlotConfig(
+        uint32_t pos,
+        AdAuctionPageData* auction_page_data,
+        const absl::optional<std::string>&
+            direct_from_seller_signals_header_ad_slot) {
+  CHECK(!parent_);  // Should not be called on a component.
+  auto it = component_auctions_.find(pos);
+
+  if (it == component_auctions_.end()) {
+    // Empty component auctions shouldn't be dropped, but component
+    // auctions may still be dropped if they fail permissions checks.
+    return;
+  }
+
+  it->second->NotifyDirectFromSellerSignalsHeaderAdSlotConfig(
+      auction_page_data, std::move(direct_from_seller_signals_header_ad_slot));
 }
 
 void InterestGroupAuction::ClosePipes() {
@@ -2548,6 +2670,18 @@ bool InterestGroupAuction::NonKAnonWinnerIsKAnon() const {
          top_non_kanon_enforced_bid()
                  ->bid->auction->top_non_kanon_enforced_bid()
                  ->bid->bid_role == Bid::BidRole::kBothKAnonModes;
+}
+
+bool InterestGroupAuction::HasInterestGroups() const {
+  if (!buyer_helpers_.empty()) {
+    return true;
+  }
+  for (const auto& kv : component_auctions_) {
+    if (!kv.second->buyer_helpers_.empty()) {
+      return true;
+    }
+  }
+  return false;
 }
 
 SubresourceUrlBuilder* InterestGroupAuction::SubresourceUrlBuilderIfReady() {
@@ -2983,9 +3117,10 @@ void InterestGroupAuction::OnComponentInterestGroupsRead(
   num_owners_with_interest_groups_ +=
       component_auction->second->num_owners_with_interest_groups_;
 
-  // Erase component auctions that failed to load anything, so they won't be
-  // invoked in the generate bid phase. This is not a problem in the reporting
-  // phase, as the top-level auction knows which component auction, if any, won.
+  // Erase component auctions that failed their interest group loading phase,
+  // so they won't be invoked in the generate bid phase. This is not a problem
+  // in the reporting phase, as the top-level auction knows which component
+  // auction, if any, won.
   if (!success) {
     component_auctions_.erase(component_auction);
   }
@@ -3008,7 +3143,12 @@ void InterestGroupAuction::OnOneLoadCompleted() {
     // theoretically participate in the auction.
     if (num_owners_loaded_ > 0) {
       size_t num_interest_groups = NumPotentialBidders();
-      size_t num_sellers_with_bidders = component_auctions_.size();
+      size_t num_sellers_with_bidders = 0;
+      for (const auto& [unused, component] : component_auctions_) {
+        if (!component->buyer_helpers_.empty()) {
+          ++num_sellers_with_bidders;
+        }
+      }
 
       // If the top-level seller either has interest groups itself, or any of
       // the component auctions do, then the top-level seller also has bidders.
@@ -3034,17 +3174,20 @@ void InterestGroupAuction::OnOneLoadCompleted() {
     }
   }
 
-  // If there are no potential bidders in this auction and no component auctions
-  // with bidders, either, fail the auction.
-  if (buyer_helpers_.empty() && component_auctions_.empty()) {
-    OnStartLoadInterestGroupsPhaseComplete(AuctionResult::kNoInterestGroups);
-    return;
+  // We generally proceed even if there is seemingly nothing to do since we
+  // still may need to wait for promises to resolve and deal with
+  // `additional_bids`.
+  AuctionResult result = AuctionResult::kSuccess;
+
+  // If the config had components, but none survived the loading phase,
+  // they must all have failed permissions checks, so there is no reason
+  // to proceed.
+  if (!config_->non_shared_params.component_auctions.empty() &&
+      component_auctions_.empty()) {
+    result = AuctionResult::kNoInterestGroups;
   }
 
-  // There are bidders that can generate bids, so complete without a final
-  // result.
-  OnStartLoadInterestGroupsPhaseComplete(
-      /*auction_result=*/AuctionResult::kSuccess);
+  OnStartLoadInterestGroupsPhaseComplete(result);
 }
 
 void InterestGroupAuction::OnStartLoadInterestGroupsPhaseComplete(
@@ -3056,7 +3199,8 @@ void InterestGroupAuction::OnStartLoadInterestGroupsPhaseComplete(
     auction_metrics_recorder_->OnLoadInterestGroupPhaseComplete();
   }
   TRACE_EVENT_NESTABLE_ASYNC_END0("fledge", "load_groups_phase", *trace_id_);
-  if (auction_result == AuctionResult::kNoInterestGroups) {
+
+  if (!HasInterestGroups()) {
     UMA_HISTOGRAM_TIMES("Ads.InterestGroup.Auction.LoadNoGroupsTime",
                         base::TimeTicks::Now() - creation_time_);
   } else {
@@ -3155,8 +3299,8 @@ void InterestGroupAuction::ScoreQueuedBidsIfReady() {
 
   // If no further bids are outstanding, now is the time to send a coalesced
   // request for all the trusted seller signals (if some still are pending,
-  // OnBidSourceDone() will take care of it).
-  if (outstanding_bid_sources_ == 0) {
+  // OnScoringDependencyDone() will take care of it).
+  if (num_scoring_dependencies_ == 0) {
     seller_worklet_handle_->GetSellerWorklet()->SendPendingSignalsRequests();
   }
 
@@ -3184,8 +3328,11 @@ void InterestGroupAuction::OnSellerWorkletFatalError(
 void InterestGroupAuction::OnComponentAuctionComplete(
     InterestGroupAuction* component_auction,
     bool success) {
-  auction_metrics_recorder_->RecordComponentAuctionLatency(
-      base::TimeTicks::Now() - bidding_and_scoring_phase_start_time_);
+  // TODO(morlovich): Also record if it has additional_bids?
+  if (!component_auction->buyer_helpers_.empty()) {
+    auction_metrics_recorder_->RecordComponentAuctionLatency(
+        base::TimeTicks::Now() - bidding_and_scoring_phase_start_time_);
+  }
 
   // TODO(morlovich): Can try to consolidate these as kBothKAnonModes when
   // possible.
@@ -3204,7 +3351,7 @@ void InterestGroupAuction::OnComponentAuctionComplete(
         kanon_bid, Bid::BidRole::kEnforcedKAnon));
   }
 
-  OnBidSourceDone();
+  OnScoringDependencyDone();
 }
 
 // static
@@ -3242,12 +3389,12 @@ InterestGroupAuction::CreateBidFromComponentAuctionWinner(
       component_bid->bid_ad, component_bid->bid_state, component_bid->auction);
 }
 
-void InterestGroupAuction::OnBidSourceDone() {
-  --outstanding_bid_sources_;
+void InterestGroupAuction::OnScoringDependencyDone() {
+  --num_scoring_dependencies_;
 
   // If we issued the final set of bids to a seller worklet, tell it to send any
   // pending scoring signals request to complete the auction more quickly.
-  if (outstanding_bid_sources_ == 0 && ReadyToScoreBids()) {
+  if (num_scoring_dependencies_ == 0 && ReadyToScoreBids()) {
     seller_worklet_handle_->GetSellerWorklet()->SendPendingSignalsRequests();
   }
 
@@ -3616,24 +3763,33 @@ absl::optional<base::TimeDelta> InterestGroupAuction::SellerTimeout() {
 }
 
 void InterestGroupAuction::MaybeCompleteBiddingAndScoringPhase() {
-  if (!AllBidsScored()) {
+  if (!IsBiddingAndScoringPhaseComplete()) {
     return;
   }
 
   all_bids_scored_ = true;
 
+  AuctionResult result = AuctionResult::kSuccess;
+
   // If there's no winning bid, fail with kAllBidsRejected if there were any
-  // bids. Otherwise, fail with kNoBids.
+  // bids. Otherwise, fail with kNoBids or kNoInterestGroups.
   if (!top_bid()) {
     if (any_bid_made_) {
-      OnBiddingAndScoringComplete(AuctionResult::kAllBidsRejected);
+      result = AuctionResult::kAllBidsRejected;
     } else {
-      OnBiddingAndScoringComplete(AuctionResult::kNoBids);
+      result = HasInterestGroups() ? AuctionResult::kNoBids
+                                   : AuctionResult::kNoInterestGroups;
     }
-    return;
   }
 
-  OnBiddingAndScoringComplete(AuctionResult::kSuccess);
+  // This needs to be asynchronous since it can happens inside
+  // StartBiddingAndScoringPhase if there is actually nothing to do, and we
+  // don't want to delete the auction while we're in process of starting it.
+  base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&InterestGroupAuction::OnBiddingAndScoringComplete,
+                     weak_ptr_factory_.GetWeakPtr(), result,
+                     std::vector<std::string>()));
 }
 
 void InterestGroupAuction::OnBiddingAndScoringComplete(
@@ -3675,7 +3831,7 @@ void InterestGroupAuction::OnBiddingAndScoringComplete(
     // If this is the top-level auction, mark it as a success (and the winning
     // component auction as well, if there is one). Component auction status
     // depend on whether or not they won the top-level auction, so if this is a
-    // component auciton, leave status as-is.
+    // component auction, leave status as-is.
     if (!parent_) {
       final_auction_result_ = AuctionResult::kSuccess;
       // If there's a winning bid, set its auction result as well. If the
@@ -3882,6 +4038,18 @@ void InterestGroupAuction::OnLoadedWinningGroup(
   saved_response_ = std::move(response);
 
   OnBiddingAndScoringComplete(AuctionResult::kSuccess);
+}
+
+void InterestGroupAuction::OnDirectFromSellerSignalHeaderAdSlotResolved(
+    std::unique_ptr<HeaderDirectFromSellerSignals> signals,
+    std::vector<std::string> errors) {
+  direct_from_seller_signals_header_ad_slot_ = std::move(signals);
+  errors_.insert(errors_.end(), errors.begin(), errors.end());
+
+  direct_from_seller_signals_header_ad_slot_pending_ = false;
+  for (const auto& buyer_helper : buyer_helpers_) {
+    buyer_helper->NotifyConfigDependencyResolved();
+  }
 }
 
 }  // namespace content

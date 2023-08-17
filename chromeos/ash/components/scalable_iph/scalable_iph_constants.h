@@ -7,9 +7,17 @@
 
 namespace scalable_iph {
 
+// Those ids are from //chrome/browser/web_applications/web_app_id_constants.h.
+// We cannot include the file from this component as //chromeos should not
+// depend on //chrome/browser. Those values are tested against values in
+// web_app_id_constants.h in `AppListItemActivationWebApp` test. Remember to add
+// one if you add new one.
+constexpr char kWebAppYouTubeAppId[] = "agimnkijcaahngcdmfeangaknmldooml";
+constexpr char kWebAppGoogleDocsAppId[] = "mpnpojknpmmopombnjdcgaaiekajbnjb";
+
 enum class ActionType {
-  // `kInvalid` is reserved to be used as an initial value. This must not be
-  // used in prod.
+  // `kInvalid` is reserved to be used as an initial value or when the server
+  // side config cannot be parsed.
   kInvalid = 0,
   kOpenChrome = 1,
   kOpenLauncher = 2,  // Not implemented for V1 of Scalable IPH
@@ -24,13 +32,69 @@ enum class ActionType {
   kLastAction = kOpenFileManager,
 };
 
+// Constants for action types, has 1 to 1 mapping with the ActionType.
+// Used in server side config.
+constexpr char kActionTypeOpenChrome[] = "OpenChrome";
+constexpr char kActionTypeOpenLauncher[] = "OpenLauncher";
+constexpr char kActionTypeOpenPersonalizationApp[] = "OpenPersonalizationApp";
+constexpr char kActionTypeOpenPlayStore[] = "OpenPlayStore";
+constexpr char kActionTypeOpenGoogleDocs[] = "OpenGoogleDocs";
+constexpr char kActionTypeOpenGooglePhotos[] = "OpenGooglePhotos";
+constexpr char kActionTypeOpenSettingsPrinter[] = "OpenSettingsPrinter";
+constexpr char kActionTypeOpenPhoneHub[] = "OpenPhoneHub";
+constexpr char kActionTypeOpenYouTube[] = "OpenYouTube";
+constexpr char kActionTypeOpenFileManager[] = "OpenFileManager";
+
 // Constants for events.
 // Naming convention: Camel case starting with a capital letter. Note that
 // Scalable Iph event names must start with `ScalableIph` as Iph event names
 // live in a global namespace.
 
+// Constants for help app events, has 1 to 1 mapping with the ActionType.
+constexpr char kEventNameHelpAppActionTypeOpenChrome[] =
+    "ScalableIphHelpAppActionOpenChrome";
+constexpr char kEventNameHelpAppActionTypeOpenLauncher[] =
+    "ScalableIphHelpAppActionOpenLauncher";
+constexpr char kEventNameHelpAppActionTypeOpenPersonalizationApp[] =
+    "ScalableIphHelpAppActionOpenPersonalizationApp";
+constexpr char kEventNameHelpAppActionTypeOpenPlayStore[] =
+    "ScalableIphHelpAppActionOpenPlayStore";
+constexpr char kEventNameHelpAppActionTypeOpenGoogleDocs[] =
+    "ScalableIphHelpAppActionOpenGoogleDocs";
+constexpr char kEventNameHelpAppActionTypeOpenGooglePhotos[] =
+    "ScalableIphHelpAppActionOpenGooglePhotos";
+constexpr char kEventNameHelpAppActionTypeOpenSettingsPrinter[] =
+    "ScalableIphHelpAppActionOpenSettingsPrinter";
+constexpr char kEventNameHelpAppActionTypeOpenPhoneHub[] =
+    "ScalableIphHelpAppActionOpenPhoneHub";
+constexpr char kEventNameHelpAppActionTypeOpenYouTube[] =
+    "ScalableIphHelpAppActionOpenYouTube";
+constexpr char kEventNameHelpAppActionTypeOpenFileManager[] =
+    "ScalableIphHelpAppActionOpenFileManager";
+
+// Constants for app list item activation in the launcher.
+constexpr char kEventNameAppListItemActivationYouTube[] =
+    "ScalableIphAppListItemActivationYouTube";
+constexpr char kEventNameAppListItemActivationGoogleDocs[] =
+    "ScalableIphAppListItemActivationGoogleDocs";
+
 // `FiveMinTick` event is recorded every five minutes after OOBE completion.
 constexpr char kEventNameFiveMinTick[] = "ScalableIphFiveMinTick";
+
+// `Unlocked` event is recorded every unlock of the lock screen or
+// `SuspendDone` if the lock screen is not enabled.
+constexpr char kEventNameUnlocked[] = "ScalableIphUnlocked";
+
+// `AppListShown` event is recorded every time an app list (launcher) becomes
+// visible. An expected usage of this event is for `event_used` of an app list
+// IPH.
+constexpr char kEventNameAppListShown[] = "ScalableIphAppListShown";
+
+// All Scalable Iph configs must have version number fields. Scalable Iph
+// ignores a config if it does not have a field with a supported version number.
+// For now, we guarantee nothing about forward or backward compatibility.
+constexpr char kCustomParamsVersionNumberParamName[] = "x_CustomVersionNumber";
+constexpr int kCurrentVersionNumber = 1;
 
 // Constants for custom conditions.
 // Naming convention:
@@ -48,7 +112,7 @@ constexpr char kEventNameFiveMinTick[] = "ScalableIphFiveMinTick";
 //
 // Example:
 // "x_CustomConditionsNetworkConnection": "Online"
-
+//
 // `NetworkConnection` condition is satisfied if a device is online. For now, we
 // only support `Online` as the expected condition.
 constexpr char kCustomConditionNetworkConnectionParamName[] =
@@ -65,16 +129,23 @@ constexpr char kCustomConditionNetworkConnectionOnline[] = "Online";
 constexpr char kCustomConditionClientAgeInDaysParamName[] =
     "x_CustomConditionClientAgeInDays";
 
+// `HasSavedPrinters` condition is true if there is at least a saved printer.
+// Valid values are either `True` or `False`.
+constexpr char kCustomConditionHasSavedPrintersParamName[] =
+    "x_CustomConditionHasSavedPrinter";
+constexpr char kCustomConditionHasSavedPrintersValueTrue[] = "True";
+constexpr char kCustomConditionHasSavedPrintersValueFalse[] = "False";
+
 // `UiType` param indicates which IPH UI is used for an event config.
-// Notification is the only value supported now.
 constexpr char kCustomUiTypeParamName[] = "x_CustomUiType";
 constexpr char kCustomUiTypeValueNotification[] = "Notification";
 constexpr char kCustomUiTypeValueBubble[] = "Bubble";
+constexpr char kCustomUiTypeValueNone[] = "None";
 
 enum class UiType {
   kNotification,
   kBubble,
-  kHelpApp,
+  kNone,
 };
 
 // Parameters for a notification UI. All fields are required field.
@@ -98,9 +169,27 @@ constexpr char kCustomNotificationImageTypeValueWallpaper[] = "Wallpaper";
 // - Bubble ID: the id used to add and remove a bubble.
 // - Text: a text of a bubble.
 // - Button text: a text of a button in a bubble.
+// Currently only used for the help app nudge:
+// - Anchor view app ID: app id of the view to which a bubble is anchored.
 constexpr char kCustomBubbleIdParamName[] = "x_CustomBubbleId";
 constexpr char kCustomBubbleTextParamName[] = "x_CustomBubbleText";
 constexpr char kCustomBubbleButtonTextParamName[] = "x_CustomBubbleButtonText";
+constexpr char kCustomBubbleIconParamName[] = "x_CustomBubbleIcon";
+constexpr char kCustomBubbleAnchorViewAppIdParamName[] =
+    "x_CustomBubbleAnchorViewAppId";
+
+// Constants for bubble icons, has 1 to 1 mapping with the BubbleIcon.
+// Used in server side config.
+constexpr char kBubbleIconChromeIcon[] = "ChromeIcon";
+constexpr char kBubbleIconPlayStoreIcon[] = "PlayStoreIcon";
+constexpr char kBubbleIconGoogleDocsIcon[] = "GoogleDocsIcon";
+constexpr char kBubbleIconGooglePhotosIcon[] = "GooglePhotosIcon";
+constexpr char kBubbleIconPrintJobsIcon[] = "PrintJobsIcon";
+constexpr char kBubbleIconYouTubeIcon[] = "YouTubeIcon";
+
+// Parameters for action.
+constexpr char kCustomButtonActionTypeParamName[] = "x_CustomButtonActionType";
+constexpr char kCustomButtonActionEventParamName[] = "event_used";
 
 }  // namespace scalable_iph
 

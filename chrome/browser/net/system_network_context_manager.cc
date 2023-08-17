@@ -212,6 +212,9 @@ NetworkSandboxState IsNetworkSandboxEnabledInternal() {
 #if BUILDFLAG(IS_WIN)
   if (!sandbox::features::IsAppContainerSandboxSupported())
     return NetworkSandboxState::kDisabledByPlatform;
+#endif  // BUILDFLAG(IS_WIN)
+
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX)
   auto* local_state = g_browser_process->local_state();
   if (local_state &&
       local_state->HasPrefPath(prefs::kNetworkServiceSandboxEnabled)) {
@@ -219,7 +222,8 @@ NetworkSandboxState IsNetworkSandboxEnabledInternal() {
                ? NetworkSandboxState::kEnabledByPolicy
                : NetworkSandboxState::kDisabledByPolicy;
   }
-#endif  // BUILDFLAG(IS_WIN)
+#endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX)
+
   // If no policy is specified, then delegate to global sandbox configuration.
   return sandbox::policy::features::IsNetworkSandboxEnabled()
              ? NetworkSandboxState::kEnabledByPlatform
@@ -576,9 +580,9 @@ void SystemNetworkContextManager::RegisterPrefs(PrefRegistrySimple* registry) {
 
   registry->RegisterListPref(prefs::kExplicitlyAllowedNetworkPorts);
 
-#if BUILDFLAG(IS_WIN)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX)
   registry->RegisterBooleanPref(prefs::kNetworkServiceSandboxEnabled, true);
-#endif  // BUILDFLAG(IS_WIN)
+#endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX)
 }
 
 // static
@@ -673,7 +677,7 @@ void SystemNetworkContextManager::OnNetworkServiceCreated(
     network_service->SetMaxConnectionsPerProxy(max_connections_per_proxy);
 
   network_service_network_context_.reset();
-  network_service->CreateNetworkContext(
+  content::CreateNetworkContextInNetworkService(
       network_service_network_context_.BindNewPipeAndPassReceiver(),
       CreateNetworkContextParams());
 
@@ -734,11 +738,6 @@ void SystemNetworkContextManager::ConfigureDefaultNetworkContextParams(
 
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
-
-  // TODO(crbug.com/1448657) Chrome no longer supports versions of QUIC which
-  // send the quic_user_agent_id. We should remove quic_user_agent_id from
-  // Chrome completely.
-  network_context_params->quic_user_agent_id = "";
 
   // TODO(eroman): Figure out why this doesn't work in single-process mode,
   // or if it does work, now.
@@ -865,13 +864,8 @@ bool SystemNetworkContextManager::IsCertificateTransparencyEnabled() {
 //   - by default for Chrome-branded builds
 //   - on an opt-in basis for other builds and embedders, controlled with the
 //     kCertificateTransparencyAskBeforeEnabling flag
-#if BUILDFLAG(IS_ANDROID)
-  return base::FeatureList::IsEnabled(
-      features::kCertificateTransparencyAndroid);
-#else
   return base::FeatureList::IsEnabled(
       features::kCertificateTransparencyAskBeforeEnabling);
-#endif  // BUILDFLAG(IS_ANDROID)
 #else
   return false;
 #endif  // defined(OFFICIAL_BUILD)

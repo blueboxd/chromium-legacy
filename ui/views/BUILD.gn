@@ -153,7 +153,6 @@ component("views") {
     "controls/menu/menu_delegate.h",
     "controls/menu/menu_host.h",
     "controls/menu/menu_host_root_view.h",
-    "controls/menu/menu_image_util.h",
     "controls/menu/menu_insertion_delegate_win.h",
     "controls/menu/menu_item_view.h",
     "controls/menu/menu_model_adapter.h",
@@ -387,7 +386,6 @@ component("views") {
     "controls/menu/menu_delegate.cc",
     "controls/menu/menu_host.cc",
     "controls/menu/menu_host_root_view.cc",
-    "controls/menu/menu_image_util.cc",
     "controls/menu/menu_item_view.cc",
     "controls/menu/menu_model_adapter.cc",
     "controls/menu/menu_runner.cc",
@@ -671,7 +669,6 @@ component("views") {
       "windows_stationarity_monitor_mac.mm",
     ]
     public_deps += [ "//components/remote_cocoa/common:mojo" ]
-    configs += [ "//build/config/compiler:enable_arc" ]
     deps += [
       "//components/crash/core/common",
       "//components/remote_cocoa/app_shim",
@@ -1005,6 +1002,8 @@ source_set("test_support") {
     "interaction/interactive_views_test.h",
     "interaction/interactive_views_test_internal.cc",
     "interaction/interactive_views_test_internal.h",
+    "interaction/widget_focus_observer.cc",
+    "interaction/widget_focus_observer.h",
     "layout/animating_layout_manager_test_util.cc",
     "layout/animating_layout_manager_test_util.h",
     "test/ax_event_counter.cc",
@@ -1132,8 +1131,6 @@ source_set("test_support") {
       "test/views_test_helper_mac.mm",
       "test/widget_test_mac.mm",
     ]
-
-    configs += [ "//build/config/compiler:enable_arc" ]
 
     deps += [
       "//components/remote_cocoa/app_shim",
@@ -1423,8 +1420,6 @@ test("views_unittests") {
     # views_unittests not yet compiling on Mac. http://crbug.com/378134
     sources -= [ "controls/native/native_view_host_unittest.cc" ]
 
-    configs += [ "//build/config/compiler:enable_arc" ]
-
     public_deps = [
       "//components/remote_cocoa/app_shim",
       "//ui/accelerated_widget_mac",
@@ -1562,7 +1557,6 @@ source_set("views_interactive_ui_tests") {
       "widget/native_widget_mac_interactive_uitest.mm",
     ]
     deps += [ "//components/remote_cocoa/app_shim" ]
-    configs += [ "//build/config/compiler:enable_arc" ]
   }
 
   if (use_aura) {

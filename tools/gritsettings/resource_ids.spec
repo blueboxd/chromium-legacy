@@ -215,6 +215,10 @@
     "META": {"sizes": {"includes": [30]}},
     "includes": [2860],
   },
+  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/chromeos/status_area_tester/resources.grd": {
+    "META": {"sizes": {"includes": [5]}},
+    "includes": [2870],
+  },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/chromeos/vc_tray_tester/resources.grd": {
     "META": {"sizes": {"includes": [5]}},
     "includes": [2880],
@@ -378,6 +382,10 @@
     "META": {"sizes": {"includes": [1000],}},
     "includes": [3700],
   },
+  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/search_engine_choice/resources.grd": {
+    "META": {"sizes": {"includes": [20]}},
+    "includes": [3710],
+  },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/settings/resources.grd": {
     "META": {"sizes": {"includes": [500],}},
     "includes": [3720],
@@ -405,10 +413,6 @@
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/tab_strip/resources.grd": {
     "META": {"sizes": {"includes": [30]}},
     "includes": [3840],
-  },
-  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/waffle/resources.grd": {
-    "META": {"sizes": {"includes": [20]}},
-    "includes": [3860],
   },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/welcome/resources.grd": {
     "META": {"sizes": {"includes": [60]}},
@@ -447,6 +451,10 @@
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/chromeos/bluetooth_pairing_dialog/bluetooth_pairing_dialog_resources.grd": {
     "META": {"sizes": {"includes": [10],}},
     "includes": [4040],
+  },
+  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/chromeos/borealis_installer/resources.grd": {
+    "META": {"sizes": {"includes": [10],}},
+    "includes": [4050],
   },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/chromeos/chromebox_for_meetings/resources.grd": {
     "META": {"sizes": {"includes": [5]}},
@@ -1037,7 +1045,7 @@
     "messages": [6500],
   },
   "<(SHARED_INTERMEDIATE_DIR)/ash/webui/shimless_rma/resources/ash_shimless_rma_resources.grd": {
-    "META": {"sizes": {"includes": [50],}},
+    "META": {"sizes": {"includes": [54],}},
     "includes": [6520],
   },
   "ash/keyboard/ui/keyboard_resources.grd": {
@@ -1168,7 +1176,11 @@
     "structures": [7340],
   },
   "ui/webui/examples/resources/webui_examples_resources.grd": {
-    "messages": [7360],
+    "messages": [7350],
+  },
+  "<(SHARED_INTERMEDIATE_DIR)/ui/webui/examples/resources/browser/resources.grd": {
+    "META": {"sizes": {"includes": [10]}},
+    "includes": [7360],
   },
   "<(SHARED_INTERMEDIATE_DIR)/ui/webui/resources/webui_resources.grd": {
     "META": {"sizes": {"includes": [1100]}},

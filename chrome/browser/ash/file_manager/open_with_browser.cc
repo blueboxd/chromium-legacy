@@ -18,6 +18,7 @@
 #include "chrome/browser/ash/file_manager/filesystem_api_util.h"
 #include "chrome/browser/ash/fileapi/external_file_url_util.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/ui/webui/ash/cloud_upload/cloud_upload_util.h"
 #include "chrome/common/chrome_content_client.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -203,24 +204,35 @@ bool OpenNewTabForHostedOfficeFile(const GURL& url) {
   if (!url_with_query_param.is_valid()) {
     UMA_HISTOGRAM_ENUMERATION(
         file_tasks::kDriveErrorMetricName,
-        file_tasks::OfficeDriveErrors::INVALID_ALTERNATE_URL);
+        file_tasks::OfficeDriveOpenErrors::kInvalidAlternateUrl);
+    UMA_HISTOGRAM_ENUMERATION(
+        ash::cloud_upload::kGoogleDriveTaskResultMetricName,
+        ash::cloud_upload::OfficeTaskResult::kFailedToOpen);
     LOG(ERROR) << "Invalid URL";
     return false;
   }
   if (url_with_query_param.host() == "drive.google.com") {
     UMA_HISTOGRAM_ENUMERATION(
         file_tasks::kDriveErrorMetricName,
-        file_tasks::OfficeDriveErrors::DRIVE_ALTERNATE_URL);
+        file_tasks::OfficeDriveOpenErrors::kDriveAlternateUrl);
+    UMA_HISTOGRAM_ENUMERATION(
+        ash::cloud_upload::kGoogleDriveTaskResultMetricName,
+        ash::cloud_upload::OfficeTaskResult::kFailedToOpen);
     LOG(ERROR) << "URL was from drive.google.com";
     return false;
   }
   if (url_with_query_param.host() != "docs.google.com") {
     UMA_HISTOGRAM_ENUMERATION(
         file_tasks::kDriveErrorMetricName,
-        file_tasks::OfficeDriveErrors::UNEXPECTED_ALTERNATE_URL);
+        file_tasks::OfficeDriveOpenErrors::kUnexpectedAlternateUrl);
+    UMA_HISTOGRAM_ENUMERATION(
+        ash::cloud_upload::kGoogleDriveTaskResultMetricName,
+        ash::cloud_upload::OfficeTaskResult::kFailedToOpen);
     LOG(ERROR) << "URL was not from docs.google.com";
     return false;
   }
+  UMA_HISTOGRAM_ENUMERATION(file_tasks::kDriveErrorMetricName,
+                            file_tasks::OfficeDriveOpenErrors::kSuccess);
 
   return OpenNewTab(url_with_query_param);
 }

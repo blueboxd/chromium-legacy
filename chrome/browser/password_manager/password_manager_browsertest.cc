@@ -47,6 +47,7 @@
 #include "components/autofill/content/common/mojom/autofill_driver.mojom-test-utils.h"
 #include "components/autofill/content/common/mojom/autofill_driver.mojom.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
+#include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/proto/api_v1.pb.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_switches.h"
@@ -108,13 +109,12 @@
 #endif  // BUIDLFLAG(ENABLE_DICE_SUPPORT)
 
 using autofill::ParsingResult;
+using autofill::test::CreateFieldPrediction;
 using base::ASCIIToUTF16;
 using base::Feature;
 using testing::_;
 using testing::ElementsAre;
 using testing::Field;
-using FieldPrediction = autofill::AutofillQueryResponse::FormSuggestion::
-    FieldSuggestion::FieldPrediction;
 
 namespace password_manager {
 namespace {
@@ -1204,33 +1204,30 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
   // Get form data
   autofill::FormData form_data = GetPlaceholderUsernameFormData(signin_form);
 
-  // Username
-  bool is_placeholder = false;
-  autofill::FormStructure form_structure(form_data);
-  std::vector<FieldPrediction> username_predictions;
-  FieldPrediction username_prediction;
-  username_prediction.set_type(autofill::USERNAME);
-  username_predictions.push_back(username_prediction);
-  form_structure.field(0)->set_server_predictions(username_predictions);
-  form_structure.field(0)->set_may_use_prefilled_placeholder(is_placeholder);
-
-  // Password
-  std::vector<FieldPrediction> password_predictions;
-  FieldPrediction password_prediction;
-  password_prediction.set_type(autofill::PASSWORD);
-  password_predictions.push_back(password_prediction);
-  form_structure.field(1)->set_server_predictions(password_predictions);
+  // Create server predictions.
+  autofill::AutofillType::ServerPrediction username_prediction;
+  username_prediction.server_predictions = {
+      CreateFieldPrediction(autofill::ServerFieldType::USERNAME)};
+  autofill::AutofillType::ServerPrediction password_prediction;
+  password_prediction.server_predictions = {
+      CreateFieldPrediction(autofill::ServerFieldType::PASSWORD)};
 
   // Navigate to the page
   NavigateToFile("/password/nonplaceholder_username.html");
 
-  // Use autofill predictions
-  autofill::ContentAutofillClient* autofill_client =
-      autofill::ContentAutofillClient::FromWebContents(WebContents());
-  autofill_client->PropagateAutofillPredictions(
-      autofill::ContentAutofillDriver::GetForRenderFrameHost(
-          WebContents()->GetPrimaryMainFrame()),
-      {&form_structure});
+  // Use server predictions.
+  password_manager::ContentPasswordManagerDriver* driver =
+      password_manager::ContentPasswordManagerDriverFactory::FromWebContents(
+          WebContents())
+          ->GetDriverForFrame(WebContents()->GetPrimaryMainFrame());
+  const std::vector<const autofill::FormData*> forms = {&form_data};
+  const base::flat_map<autofill::FieldGlobalId,
+                       autofill::AutofillType::ServerPrediction>
+      field_predictions = {
+          {form_data.fields[0].global_id(), std::move(username_prediction)},
+          {form_data.fields[1].global_id(), std::move(password_prediction)}};
+  driver->GetPasswordManager()->ProcessAutofillPredictions(driver, forms,
+                                                           field_predictions);
 
   // Check original values before interaction
   CheckElementValue("username_field", "example@example.com");
@@ -1268,33 +1265,33 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
   // Get form data
   autofill::FormData form_data = GetPlaceholderUsernameFormData(signin_form);
 
-  // Username
-  bool is_placeholder = true;
-  autofill::FormStructure form_structure(form_data);
-  std::vector<FieldPrediction> username_predictions;
-  FieldPrediction username_prediction;
-  username_prediction.set_type(autofill::USERNAME);
-  username_predictions.push_back(username_prediction);
-  form_structure.field(0)->set_server_predictions(username_predictions);
-  form_structure.field(0)->set_may_use_prefilled_placeholder(is_placeholder);
-
-  // Password
-  std::vector<FieldPrediction> password_predictions;
-  FieldPrediction password_prediction;
-  password_prediction.set_type(autofill::PASSWORD);
-  password_predictions.push_back(password_prediction);
-  form_structure.field(1)->set_server_predictions(password_predictions);
+  // Create server predictions.
+  autofill::AutofillType::ServerPrediction username_prediction;
+  username_prediction.server_predictions = {
+      autofill::test::CreateFieldPrediction(
+          autofill::ServerFieldType::USERNAME)};
+  username_prediction.may_use_prefilled_placeholder = true;
+  autofill::AutofillType::ServerPrediction password_prediction;
+  password_prediction.server_predictions = {
+      autofill::test::CreateFieldPrediction(
+          autofill::ServerFieldType::PASSWORD)};
 
   // Navigate to the page
   NavigateToFile("/password/nonplaceholder_username.html");
 
-  // Use autofill predictions
-  autofill::AutofillClient* autofill_client =
-      autofill::ContentAutofillClient::FromWebContents(WebContents());
-  autofill_client->PropagateAutofillPredictions(
-      autofill::ContentAutofillDriver::GetForRenderFrameHost(
-          WebContents()->GetPrimaryMainFrame()),
-      {&form_structure});
+  // Use server predictions.
+  password_manager::ContentPasswordManagerDriver* driver =
+      password_manager::ContentPasswordManagerDriverFactory::FromWebContents(
+          WebContents())
+          ->GetDriverForFrame(WebContents()->GetPrimaryMainFrame());
+  const std::vector<const autofill::FormData*> forms = {&form_data};
+  const base::flat_map<autofill::FieldGlobalId,
+                       autofill::AutofillType::ServerPrediction>
+      field_predictions = {
+          {form_data.fields[0].global_id(), std::move(username_prediction)},
+          {form_data.fields[1].global_id(), std::move(password_prediction)}};
+  driver->GetPasswordManager()->ProcessAutofillPredictions(driver, forms,
+                                                           field_predictions);
 
   // Check original values before interaction
   CheckElementValue("username_field", "example@example.com");
@@ -4218,9 +4215,9 @@ class MockPrerenderPasswordManagerDriver
   MOCK_METHOD(void,
               UserModifiedNonPasswordField,
               (autofill::FieldRendererId renderer_id,
-               const std::u16string& field_name,
                const std::u16string& value,
-               bool autocomplete_attribute_has_username),
+               bool autocomplete_attribute_has_username,
+               bool is_likely_otp),
               (override));
   MOCK_METHOD(void,
               ShowPasswordSuggestions,
@@ -4292,12 +4289,12 @@ class MockPrerenderPasswordManagerDriver
     });
     ON_CALL(*this, UserModifiedNonPasswordField)
         .WillByDefault([this](autofill::FieldRendererId renderer_id,
-                              const std::u16string& field_name,
                               const std::u16string& value,
-                              bool autocomplete_attribute_has_username) {
+                              bool autocomplete_attribute_has_username,
+                              bool is_likely_otp) {
           impl_->UserModifiedNonPasswordField(
-              renderer_id, field_name, value,
-              autocomplete_attribute_has_username);
+              renderer_id, value, autocomplete_attribute_has_username,
+              is_likely_otp);
         });
     ON_CALL(*this, ShowPasswordSuggestions)
         .WillByDefault([this](autofill::FieldRendererId element_id,

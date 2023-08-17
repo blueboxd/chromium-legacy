@@ -171,6 +171,8 @@ OverviewSession::~OverviewSession() {
 // constructed object.
 void OverviewSession::Init(const WindowList& windows,
                            const WindowList& hide_windows) {
+  TRACE_EVENT0("ui", "OverviewSession::Init");
+
   Shell::Get()->AddShellObserver(this);
 
   if (saved_desk_util::IsSavedDesksEnabled()) {
@@ -284,6 +286,8 @@ void OverviewSession::Init(const WindowList& windows,
 // may cause other, unrelated classes, to make indirect calls to
 // `restoring_minimized_windows()` on a partially destructed object.
 void OverviewSession::Shutdown() {
+  TRACE_EVENT0("ui", "OverviewSession::Shutdown");
+
   bool was_saved_desk_library_showing = false;
   for (auto& grid : grid_list_) {
     if (grid->IsShowingSavedDeskLibrary()) {
@@ -1052,8 +1056,9 @@ bool OverviewSession::IsWindowActiveWindowBeforeOverview(
 bool OverviewSession::HandleContinuousScrollIntoOverview(float y_offset) {
   // If a scroll has ended, reset the opacity of minimized windows before
   // animating all windows into their final positions.
-  if (enter_exit_overview_type_ ==
-      OverviewEnterExitType::kContinuousAnimationEnterOnScrollEnd) {
+  if (!Shell::Get()
+           ->overview_controller()
+           ->is_continuous_scroll_in_progress()) {
     for (std::unique_ptr<OverviewGrid>& overview_grid : grid_list_) {
       for (size_t i = 0; i < overview_grid->window_list().size(); ++i) {
         OverviewItem* window_item = overview_grid->window_list()[i].get();
@@ -1080,8 +1085,9 @@ bool OverviewSession::HandleContinuousScrollIntoOverview(float y_offset) {
   // If a scroll is in progress, position the windows continuously.
   CHECK_EQ(enter_exit_overview_type_,
            OverviewEnterExitType::kContinuousAnimationEnterOnScrollUpdate);
-  // TODO(pvanderlaat): For grid in grids:
-  // grid.PositionWindowsContinuousAnimation()
+  for (std::unique_ptr<OverviewGrid>& overview_grid : grid_list_) {
+    overview_grid->PositionWindowsContinuously(y_offset);
+  }
   return true;
 }
 

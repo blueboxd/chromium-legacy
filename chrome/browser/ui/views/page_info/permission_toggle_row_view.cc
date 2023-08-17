@@ -123,9 +123,8 @@ void PermissionToggleRowView::InitForUserSource(bool should_show_spacer_view) {
                 row_view_->GetFirstLineHeight()));
   toggle_button->SetProperty(views::kMarginsKey,
                              gfx::Insets::VH(0, icon_label_spacing));
-  toggle_button->SetAccessibleName(l10n_util::GetStringFUTF16(
-      IDS_PAGE_INFO_SELECTOR_TOOLTIP,
-      PageInfoUI::PermissionTypeToUIString(permission_.type)));
+  toggle_button->SetTooltipText(PageInfoUI::PermissionTooltipUiString(
+      permission_.type, permission_.requesting_origin));
 
   toggle_button_ = row_view_->AddControl(std::move(toggle_button));
 
@@ -168,7 +167,7 @@ void PermissionToggleRowView::InitForManagedSource(
       PageInfoUI::PermissionStateToUIString(delegate, permission_),
       views::style::CONTEXT_LABEL, views::style::STYLE_SECONDARY);
   if (features::IsChromeRefresh2023()) {
-    state_label->SetTextStyle(views::style::STYLE_BODY_1);
+    state_label->SetTextStyle(views::style::STYLE_BODY_5);
   }
   state_label->SetProperty(views::kMarginsKey,
                            gfx::Insets::VH(0, icon_label_spacing));
@@ -189,7 +188,7 @@ void PermissionToggleRowView::UpdateUiOnPermissionChanged() {
 
   // Update toggle state if it is used.
   if (toggle_button_) {
-    toggle_button_->SetIsOn(PageInfoUI::IsToggleOn(permission_));
+    toggle_button_->AnimateIsOn(PageInfoUI::IsToggleOn(permission_));
   }
 
   // Reset |state_label_|, readd it after if needed.

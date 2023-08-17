@@ -22,16 +22,6 @@ chromium-metrics-reviews@google.com.
 
 <histograms>
 
-<variants name="StandbyBucket">
-  <variant name="Active"/>
-  <variant name="Frequent"/>
-  <variant name="Rare"/>
-  <variant name="Restricted"/>
-  <variant name="Unknown"/>
-  <variant name="Unsupported"/>
-  <variant name="WorkingSet"/>
-</variants>
-
 <histogram name="Stability.Android.MinidumpUploadingTime" units="ms"
     expires_after="2023-12-24">
   <owner>shaktisahu@chromium.org</owner>
@@ -40,20 +30,6 @@ chromium-metrics-reviews@google.com.
     Records the time (uptimeMillis) taken by a minidump uploading task to
     complete. Recorded when the task finished callback is invoked.
   </summary>
-</histogram>
-
-<histogram name="Stability.Android.MinidumpUploadingTime.{StandbyBucket}"
-    units="ms" expires_after="2022-11-30">
-  <owner>shaktisahu@chromium.org</owner>
-  <owner>src/components/minidump_uploader/OWNERS</owner>
-  <summary>
-    Records the time (uptimeMillis) taken by a minidump uploading task to
-    complete grouped by {StandbyBucket} state. Recorded when the task finished
-    callback is invoked. The {StandbyBucket} corresponds to the standby bucket
-    (UsageStatsManager.getAppStandbyBucket) chrome was placed into when metrics
-    was uploaded.
-  </summary>
-  <token key="StandbyBucket" variants="StandbyBucket"/>
 </histogram>
 
 <histogram name="Stability.Android.OomKillReverseRank" units="rank"
@@ -92,7 +68,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Stability.Android.ProcessedRealMinidumps"
-    enum="AndroidProcessedMinidumps" expires_after="2023-12-04">
+    enum="AndroidProcessedMinidumps" expires_after="2024-02-04">
   <owner>wnwen@chromium.org</owner>
   <owner>src/components/minidump_uploader/OWNERS</owner>
   <summary>
@@ -113,7 +89,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="Stability.Android.SystemExitReason"
-    enum="AndroidProcessExitReason" expires_after="2023-12-10">
+    enum="AndroidProcessExitReason" expires_after="2024-02-11">
   <owner>boliu@chromium.org</owner>
   <owner>ssid@chromium.org</owner>
   <owner>wnwen@chromium.org</owner>
@@ -321,7 +297,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Stability.Experimental.PageLoads" enum="StabilityPageLoadType"
-    expires_after="2023-12-04">
+    expires_after="2024-02-04">
   <owner>fdoray@chromium.org</owner>
   <owner>catan-team@chromium.org</owner>
   <summary>
@@ -397,7 +373,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Stability.IOS.PostCrashAction" enum="IOSPostCrashAction"
-    expires_after="2023-12-04">
+    expires_after="2024-02-04">
   <owner>justincohen@chromium.org</owner>
   <owner>ajuma@chromium.org</owner>
   <summary>
@@ -476,7 +452,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Stability.iOS.UTE.HasPossibleExplanation"
-    enum="BooleanHasPossibleExplanation" expires_after="2023-09-24">
+    enum="BooleanHasPossibleExplanation" expires_after="2024-01-28">
   <owner>michaeldo@chromium.org</owner>
   <owner>olivierrobin@chromium.org</owner>
   <summary>
@@ -523,7 +499,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Stability.iOS.UTE.OSRestartedAfterPreviousSession"
-    enum="BooleanRebooted" expires_after="2023-10-04">
+    enum="BooleanRebooted" expires_after="2024-01-28">
   <owner>olivierrobin@chromium.org</owner>
   <owner>michaeldo@chromium.org</owner>
   <summary>
@@ -557,7 +533,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Stability.MobileSessionShutdownType"
-    enum="MobileSessionShutdownType" expires_after="2023-11-19">
+    enum="MobileSessionShutdownType" expires_after="2024-01-28">
   <owner>michaeldo@chromium.org</owner>
   <owner>olivierrobin@chromium.org</owner>
   <summary>
@@ -574,7 +550,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Stability.MobileSessionShutdownType2"
-    enum="MobileSessionShutdownType" expires_after="2023-11-19">
+    enum="MobileSessionShutdownType" expires_after="2024-01-28">
   <owner>justincohen@chromium.org</owner>
   <owner>ajuma@chromium.org</owner>
   <summary>

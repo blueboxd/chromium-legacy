@@ -50,7 +50,7 @@ import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.ConfigurationChangedObserver;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.util.ChromeAccessibilityUtil;
+import org.chromium.ui.accessibility.AccessibilityState;
 import org.chromium.ui.util.ColorUtils;
 
 import java.lang.annotation.Retention;
@@ -207,7 +207,7 @@ public class PartialCustomTabBottomSheetStrategy extends PartialCustomTabBaseStr
                 end = initialY();
                 break;
             case HeightStatus.CLOSE:
-                end = mDisplayHeight - mNavbarHeight;
+                end = mDisplayHeight;
                 if (isFullHeight()) {
                     attrs.y = getFullyExpandedY();
                     window.setAttributes(attrs);
@@ -534,8 +534,7 @@ public class PartialCustomTabBottomSheetStrategy extends PartialCustomTabBaseStr
     @Override
     protected boolean isFullHeight() {
         if (ChromeFeatureList.sCctResizableSideSheet.isEnabled()) {
-            return MultiWindowUtils.getInstance().isInMultiWindowMode(mActivity)
-                    && !ChromeFeatureList.sCctResizableMultiWindowMode.isEnabled();
+            return MultiWindowUtils.getInstance().isInMultiWindowMode(mActivity);
         } else {
             return isLandscape() || MultiWindowUtils.getInstance().isInMultiWindowMode(mActivity);
         }
@@ -645,7 +644,7 @@ public class PartialCustomTabBottomSheetStrategy extends PartialCustomTabBaseStr
             mVersionCompat.setImeStateCallback(this::onImeStateChanged);
         }
 
-        if (ChromeAccessibilityUtil.get().isTouchExplorationEnabled()) {
+        if (AccessibilityState.isScreenReaderEnabled()) {
             int textId = mStatus == HeightStatus.TOP ? R.string.accessibility_custom_tab_expanded
                                                      : R.string.accessibility_custom_tab_collapsed;
             getCoordinatorLayout().announceForAccessibility(

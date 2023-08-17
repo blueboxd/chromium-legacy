@@ -9,15 +9,17 @@
 #import "base/ios/ios_util.h"
 #import "base/path_service.h"
 #import "base/strings/sys_string_conversions.h"
-#import "ios/chrome/browser/sessions/scene_util.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache.h"
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
+namespace {
+
+// Name of the directory containing the tab snapshots.
+const base::FilePath::CharType kSnapshots[] = FILE_PATH_LITERAL("Snapshots");
+
+}  // anonymous namespace
 
 BROWSER_USER_DATA_KEY_IMPL(SnapshotBrowserAgent)
 
@@ -90,10 +92,26 @@ void SnapshotBrowserAgent::BatchOperationEnded(WebStateList* web_state_list) {
 void SnapshotBrowserAgent::SetSessionID(NSString* session_identifier) {
   // It is incorrect to call this method twice.
   DCHECK(!snapshot_cache_);
+  DCHECK(session_identifier.length != 0);
+
+  const std::string identifier = base::SysNSStringToUTF8(session_identifier);
+
+  const base::FilePath& browser_state_path =
+      browser_->GetBrowserState()->GetStatePath();
+
+  // The snapshots are stored in a sub-directory of the session storage.
+  // TODO(crbug.com/1383087): change this before launching the optimised
+  // session storage as the session directory will be renamed.
+  const base::FilePath legacy_path =
+      browser_state_path.Append(FILE_PATH_LITERAL("Sessions"))
+          .Append(identifier)
+          .Append(kSnapshots);
+
   const base::FilePath storage_path =
-      SessionPathForDirectory(browser_->GetBrowserState()->GetStatePath(),
-                              session_identifier, kSnapshotsDirectoryName);
-  snapshot_cache_ = [[SnapshotCache alloc] initWithStoragePath:storage_path];
+      browser_state_path.Append(kSnapshots).Append(identifier);
+
+  snapshot_cache_ = [[SnapshotCache alloc] initWithStoragePath:storage_path
+                                                    legacyPath:legacy_path];
 }
 
 void SnapshotBrowserAgent::PerformStorageMaintenance() {

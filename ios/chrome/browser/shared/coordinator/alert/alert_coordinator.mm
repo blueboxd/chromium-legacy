@@ -8,10 +8,6 @@
 #import "ui/base/l10n/l10n_util.h"
 #import "ui/strings/grit/ui_strings.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 @interface AlertCoordinator () {
   // Variable backing a property from Subclassing category.
   UIAlertController* _alertController;
@@ -67,12 +63,10 @@
                    style:(UIAlertActionStyle)style
                preferred:(BOOL)preferred
                  enabled:(BOOL)enabled {
-  if (self.visible ||
-      (style == UIAlertActionStyleCancel && self.cancelButtonAdded)) {
-    return;
-  }
+  CHECK(!self.visible);
 
   if (style == UIAlertActionStyleCancel) {
+    CHECK(!self.cancelButtonAdded);
     _cancelButtonAdded = YES;
   }
 
@@ -112,11 +106,6 @@
     [self addItemWithTitle:l10n_util::GetNSString(IDS_APP_OK)
                     action:nil
                      style:UIAlertActionStyleDefault];
-  }
-
-  // Call the start action before presenting the alert.
-  if (self.startAction) {
-    self.startAction();
   }
 
   [self.baseViewController presentViewController:self.alertController

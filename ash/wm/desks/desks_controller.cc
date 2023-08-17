@@ -621,7 +621,7 @@ void DesksController::NewDesk(DesksCreationRemovalSource source) {
   }
 
   for (auto& observer : observers_)
-    observer.OnDeskAdded(new_desk);
+    observer.OnDeskAdded(new_desk, /*from_undo=*/false);
 
   if (!is_first_ever_desk) {
     if (features::IsDeskButtonEnabled()) {
@@ -989,12 +989,34 @@ void DesksController::AddVisibleOnAllDesksWindow(aura::Window* window) {
   if (!visible_on_all_desks_windows_.emplace(window).second)
     return;
 
-  if (features::IsPerDeskZOrderEnabled()) {
-    for (auto& desk : desks_)
-      desk->AddAllDeskWindow(window);
+  // A window is made visible on all desks by always keeping it on the active
+  // desk. If `window` isn't already on the active desk, then we need to move it
+  // there. We will also skip the bounce animation.
+  bool do_window_bound_animation = true;
+  if (const Desk* window_desk = desks_util::GetDeskForContext(window);
+      window_desk != active_desk_) {
+    do_window_bound_animation = false;
+
+    // TODO(b/295371112): It is unexpected that we get here. Dump a call stack
+    // to help figure out why it happens.
+    base::debug::DumpWithoutCrashing();
+
+    CHECK(window_desk);
+    const_cast<Desk*>(window_desk)
+        ->MoveWindowToDesk(window, active_desk_, window->GetRootWindow(),
+                           /*unminimize=*/false);
   }
 
-  wm::AnimateWindow(window, wm::WINDOW_ANIMATION_TYPE_BOUNCE);
+  if (features::IsPerDeskZOrderEnabled()) {
+    for (auto& desk : desks_) {
+      desk->TrackAllDeskWindow(window);
+    }
+  }
+
+  if (do_window_bound_animation) {
+    wm::AnimateWindow(window, wm::WINDOW_ANIMATION_TYPE_BOUNCE);
+  }
+
   NotifyAllDesksForContentChanged();
   Shell::Get()
       ->accessibility_controller()
@@ -1005,8 +1027,10 @@ void DesksController::AddVisibleOnAllDesksWindow(aura::Window* window) {
 void DesksController::MaybeRemoveVisibleOnAllDesksWindow(aura::Window* window) {
   if (visible_on_all_desks_windows_.erase(window)) {
     if (features::IsPerDeskZOrderEnabled()) {
-      for (auto& desk : desks_)
-        desk->RemoveAllDeskWindow(window);
+      for (auto& desk : desks_) {
+        desk->UntrackAllDeskWindow(window,
+                                   /*recent_root=*/window->GetRootWindow());
+      }
     }
 
     wm::AnimateWindow(window, wm::WINDOW_ANIMATION_TYPE_BOUNCE);
@@ -1016,6 +1040,13 @@ void DesksController::MaybeRemoveVisibleOnAllDesksWindow(aura::Window* window) {
         ->TriggerAccessibilityAlertWithMessage(l10n_util::GetStringFUTF8(
             IDS_ASH_VIRTUAL_DESKS_UNASSIGNED_FROM_ALL_DESKS, window->GetTitle(),
             active_desk_->name()));
+  }
+}
+
+void DesksController::NotifyAllDeskWindowMovedToNewRoot(aura::Window* window) {
+  CHECK(features::IsPerDeskZOrderEnabled());
+  for (auto& desk : desks_) {
+    desk->AllDeskWindowMovedToNewRoot(window);
   }
 }
 
@@ -1400,7 +1431,8 @@ bool DesksController::OnSingleInstanceAppLaunchingFromSavedDesk(
             }
             break;
           case chromeos::WindowStateType::kFloated: {
-            const WMEvent event(WM_EVENT_FLOAT);
+            const WindowFloatWMEvent event(
+                chromeos::FloatStartLocation::kBottomRight);
             window_state->OnWMEvent(&event);
             break;
           }
@@ -1777,8 +1809,9 @@ void DesksController::RemoveDeskInternal(const Desk* desk,
   auto* shell = Shell::Get();
   auto* overview_controller = shell->overview_controller();
   const bool in_overview = overview_controller->InOverviewSession();
-  const std::vector<aura::Window*> removed_desk_windows =
-      removed_desk->GetAllAssociatedWindows();
+
+  // Windows that are associated with the desk that is being removed.
+  std::vector<aura::Window*> removed_desk_windows;
 
   // No need to spend time refreshing the mini_views of the removed desk.
   auto removed_desk_mini_views_pauser =
@@ -1828,6 +1861,11 @@ void DesksController::RemoveDeskInternal(const Desk* desk,
     if (in_overview)
       RemoveAllWindowsFromOverview();
 
+    // Get the windows that are on the desk that is being removed. This must be
+    // done *after* `RemoveAllWindowsFromOverview` since that function may
+    // affect the windows on the desk.
+    removed_desk_windows = removed_desk->GetAllAssociatedWindows();
+
     // If overview mode is active, change desk activation without changing
     // window activation. Activation should remain on the dummy
     // "OverviewModeFocusedWidget" while overview mode is active.
@@ -1866,25 +1904,30 @@ void DesksController::RemoveDeskInternal(const Desk* desk,
     if (in_overview)
       AppendWindowsToOverview(target_desk->GetAllAssociatedWindows());
 
-  } else if (close_type == DeskCloseType::kCombineDesks) {
-    // We will refresh the mini_views of the active desk only once at the end.
-    auto active_desk_mini_view_pauser =
-        Desk::ScopedContentUpdateNotificationDisabler(
-            /*desks=*/{active_desk_},
-            /*notify_when_destroyed=*/false);
+  } else {
+    removed_desk_windows = removed_desk->GetAllAssociatedWindows();
 
-    removed_desk->MoveWindowsToDesk(active_desk_);
+    if (close_type == DeskCloseType::kCombineDesks) {
+      // We will refresh the mini_views of the active desk only once at the end.
+      auto active_desk_mini_view_pauser =
+          Desk::ScopedContentUpdateNotificationDisabler(
+              /*desks=*/{active_desk_},
+              /*notify_when_destroyed=*/false);
 
-    MaybeUpdateShelfItems({}, removed_desk_windows);
+      removed_desk->MoveWindowsToDesk(active_desk_);
+      MaybeUpdateShelfItems({}, removed_desk_windows);
 
-    // If overview mode is active, we add the windows of the removed desk to the
-    // overview grid in the order of the new MRU (which changes after removing a
-    // desk by making the windows of the removed desk as the least recently used
-    // across all desks). Note that this can only be done after the windows have
-    // moved to the active desk in `MoveWindowsToDesk()` above, so that building
-    // the window MRU list should contain those windows.
-    if (in_overview)
-      AppendWindowsToOverview(removed_desk_windows);
+      // If overview mode is active, we add the windows of the removed desk to
+      // the overview grid in the order of the new MRU (which changes after
+      // removing a desk by making the windows of the removed desk as the least
+      // recently used across all desks). Note that this can only be done after
+      // the windows have moved to the active desk in `MoveWindowsToDesk()`
+      // above, so that building the window MRU list should contain those
+      // windows.
+      if (in_overview) {
+        AppendWindowsToOverview(removed_desk_windows);
+      }
+    }
   }
 
   // It's OK now to refresh the mini_views of *only* the active desk, and only
@@ -1965,8 +2008,9 @@ void DesksController::UndoDeskRemoval() {
   desks_restore_util::UpdatePrimaryUserActiveDeskPrefs(
       user_to_active_desk_index_[GetPrimaryUserAccountId()]);
 
-  for (auto& observer : observers_)
-    observer.OnDeskAdded(readded_desk_ptr);
+  for (auto& observer : observers_) {
+    observer.OnDeskAdded(readded_desk_ptr, /*from_undo=*/true);
+  }
 
   // If the desk was active, we reactivate it.
   if (readded_desk_data->was_active()) {
@@ -2206,12 +2250,10 @@ void DesksController::RestackVisibleOnAllDesksWindowsOnActiveDesk() {
         visible_on_all_desks_window->GetRootWindow()->GetChildById(
             active_desk_->container_id());
     if (desk_container != visible_on_all_desks_window->parent()) {
-      // TODO(b/252556509): Clean this up when the root cause has been resolved.
+      // TODO(b/295371112): Clean this up when the root cause has been resolved.
       // This can sometimes happen and we're still trying to nail down the root
       // cause. Rather than proceeding to stack the window (which will crash),
       // we'll log some info and skip the window.
-      SCOPED_CRASH_KEY_NUMBER("Restack", "adw_type",
-                              visible_on_all_desks_window->GetType());
       SCOPED_CRASH_KEY_NUMBER(
           "Restack", "adw_app_type",
           visible_on_all_desks_window->GetProperty(aura::client::kAppType));

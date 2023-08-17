@@ -354,7 +354,7 @@ void OnUpdateLegacyTraceEventDuration(
 
 }  // namespace
 
-#if BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY) && !BUILDFLAG(IS_NACL)
+#if BUILDFLAG(USE_PERFETTO_TRACE_PROCESSOR)
 namespace {
 // Perfetto provides us with a fully formed JSON trace file, while
 // TraceResultBuffer wants individual JSON fragments without a containing
@@ -425,7 +425,7 @@ class JsonStringOutputWriter
   scoped_refptr<RefCountedString> buffer_ = new RefCountedString();
   bool did_strip_prefix_ = false;
 };
-#endif  // BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY) && !BUILDFLAG(IS_NACL)
+#endif  // BUILDFLAG(USE_PERFETTO_TRACE_PROCESSOR)
 
 // A helper class that allows the lock to be acquired in the middle of the scope
 // and unlocks at the end of scope if locked.
@@ -969,10 +969,8 @@ void TraceLog::InitializePerfettoIfNeeded() {
   if (perfetto::Tracing::IsInitialized())
     return;
   g_perfetto_initialized_by_tracelog = true;
-  auto* perfetto_platform = GetOrCreatePerfettoPlatform();
   perfetto::TracingInitArgs init_args;
   init_args.backends = perfetto::BackendType::kInProcessBackend;
-  init_args.platform = perfetto_platform;
   init_args.disallow_merging_with_system_tracks = true;
   perfetto::Tracing::Initialize(init_args);
   TrackEvent::Register();
@@ -1278,7 +1276,7 @@ void TraceLog::FlushInternal(const TraceLog::OutputCallback& cb,
                              bool discard_events) {
   use_worker_thread_ = use_worker_thread;
 
-#if BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY) && !BUILDFLAG(IS_NACL)
+#if BUILDFLAG(USE_PERFETTO_TRACE_PROCESSOR)
   TrackEvent::Flush();
 
   if (!tracing_session_ || discard_events) {
@@ -1320,10 +1318,10 @@ void TraceLog::FlushInternal(const TraceLog::OutputCallback& cb,
     auto data = tracing_session_->ReadTraceBlocking();
     OnTraceData(data.data(), data.size(), /*has_more=*/false);
   }
-#elif BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY) && BUILDFLAG(IS_NACL)
-  // Trace processor isn't built on NaCL, so we can't convert the resulting
-  // trace into JSON.
-  CHECK(false) << "JSON tracing isn't supported on NaCL";
+#elif BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
+  // Trace processor isn't enabled so we can't convert the resulting trace into
+  // JSON.
+  CHECK(false) << "JSON tracing isn't supported";
 #else
   if (IsEnabled()) {
     // Can't flush when tracing is enabled because otherwise PostTask would
@@ -1373,10 +1371,10 @@ void TraceLog::FlushInternal(const TraceLog::OutputCallback& cb,
   }
 
   FinishFlush(gen, discard_events);
-#endif  // BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY) && !BUILDFLAG(IS_NACL)
+#endif  // BUILDFLAG(USE_PERFETTO_TRACE_PROCESSOR)
 }
 
-#if BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY) && !BUILDFLAG(IS_NACL)
+#if BUILDFLAG(USE_PERFETTO_TRACE_PROCESSOR)
 void TraceLog::OnTraceData(const char* data, size_t size, bool has_more) {
   if (proto_output_callback_) {
     scoped_refptr<RefCountedString> chunk = new RefCountedString();
@@ -1406,7 +1404,7 @@ void TraceLog::OnTraceData(const char* data, size_t size, bool has_more) {
   tracing_session_.reset();
   json_output_writer_.reset();
 }
-#endif  // BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY) && !BUILDFLAG(IS_NACL)
+#endif  // BUILDFLAG(USE_PERFETTO_TRACE_PROCESSOR)
 
 // Usually it runs on a different thread.
 void TraceLog::ConvertTraceEventsToTraceFormat(
@@ -2187,14 +2185,6 @@ void TraceLog::SetTraceBufferForTesting(
 }
 
 #if BUILDFLAG(USE_PERFETTO_CLIENT_LIBRARY)
-tracing::PerfettoPlatform* TraceLog::GetOrCreatePerfettoPlatform() {
-  if (!perfetto_platform_) {
-    perfetto_platform_.reset(new tracing::PerfettoPlatform(
-        tracing::PerfettoPlatform::TaskRunnerType::kBuiltin));
-  }
-  return perfetto_platform_.get();
-}
-
 void TraceLog::OnSetup(const perfetto::DataSourceBase::SetupArgs& args) {
   AutoLock lock(track_event_lock_);
   track_event_sessions_.emplace_back(args.internal_instance_index, *args.config,

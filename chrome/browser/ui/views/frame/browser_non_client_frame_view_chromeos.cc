@@ -6,6 +6,8 @@
 
 #include <algorithm>
 
+#include "base/check.h"
+#include "base/check_op.h"
 #include "base/metrics/user_metrics.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -21,6 +23,7 @@
 #include "chrome/browser/ui/views/frame/tab_strip_region_view.h"
 #include "chrome/browser/ui/views/frame/top_container_view.h"
 #include "chrome/browser/ui/views/profiles/profile_indicator_icon.h"
+#include "chrome/browser/ui/views/side_panel/side_panel.h"
 #include "chrome/browser/ui/views/tab_icon_view.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
@@ -48,11 +51,14 @@
 #include "ui/chromeos/styles/cros_styles.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/rounded_corners_f.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/animation/animation_builder.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/controls/webview/webview.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/rect_based_targeting_utils.h"
+#include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/views/window/caption_button_layout_constants.h"
@@ -254,8 +260,12 @@ int BrowserNonClientFrameViewChromeOS::GetTopInset(bool restored) const {
   if (!toolbar_size.IsEmpty()) {
     header_height = std::max(header_height, toolbar_size.height());
   }
-  if (browser_view()->GetTabStripVisible())
+  if (browser_view()->GetTabStripVisible()) {
+    if (features::IsChromeRefresh2023()) {
+      return 0;
+    }
     return header_height - browser_view()->GetTabStripHeight();
+  }
 
   return UsePackagedAppHeaderStyle(browser)
              ? header_height
@@ -333,7 +343,7 @@ void BrowserNonClientFrameViewChromeOS::OnBrowserViewInitViewsComplete() {
   // We need to wait till browser views are fully initialized to apply rounded
   // corners on the frame. This ensure that NativeViewHosts hosting browser's
   // web contents are initialized.
-  UpdateFrameRoundedCorners();
+  UpdateWindowRoundedCorners();
 }
 
 gfx::Rect BrowserNonClientFrameViewChromeOS::GetBoundsForClientView() const {
@@ -518,6 +528,12 @@ gfx::Size BrowserNonClientFrameViewChromeOS::GetMinimumSize() const {
     min_height = 2 * border_size.height();
   }
 
+  if (chromeos::features::IsRoundedWindowsEnabled()) {
+    // Include bottom rounded corners region.
+    min_height =
+        min_height + chromeos::GetFrameCornerRadius(frame()->GetNativeWindow());
+  }
+
   return gfx::Size(min_width, min_height);
 }
 
@@ -676,8 +692,8 @@ void BrowserNonClientFrameViewChromeOS::OnWindowPropertyChanged(
   // Frames in chromeOS have rounded frames for certain window states. If these
   // states changes, we need to update the rounded corners accordingly. See
   // `chromeos::GetFrameCornerRadius()` for more details.
-  if (chromeos::CanPropertyEffectFrameRadius(key) && frame_header_) {
-    UpdateFrameRoundedCorners();
+  if (chromeos::CanPropertyEffectFrameRadius(key)) {
+    UpdateWindowRoundedCorners();
   }
 
   if (key == aura::client::kShowStateKey) {
@@ -973,7 +989,8 @@ void BrowserNonClientFrameViewChromeOS::UpdateProfileIcons() {
 #endif
 }
 
-void BrowserNonClientFrameViewChromeOS::UpdateFrameRoundedCorners() {
+void BrowserNonClientFrameViewChromeOS::UpdateWindowRoundedCorners() {
+  using DevToolsDockedPlacement = BrowserView::DevToolsDockedPlacement;
   const int corner_radius =
       chromeos::GetFrameCornerRadius(frame()->GetNativeWindow());
 
@@ -985,14 +1002,60 @@ void BrowserNonClientFrameViewChromeOS::UpdateFrameRoundedCorners() {
     return;
   }
 
-  // TODO(zoraiznaeem): Apply rounded corners to the web_view of dev_tools.
-  ContentsWebView* web_view = browser_view()->contents_web_view();
-  if (web_view && web_view->holder()) {
-    web_view->SetBackgroundRadii(
-        gfx::RoundedCornersF(0, 0, corner_radius, corner_radius));
-    web_view->holder()->SetCornerRadii(
-        gfx::RoundedCornersF(0, 0, corner_radius, corner_radius));
-  }
+  SidePanel* side_panel = browser_view()->unified_side_panel();
+  const bool right_aligned_side_panel_showing =
+      side_panel->GetVisible() && side_panel->IsRightAligned();
+  const bool left_aligned_side_panel_showing =
+      side_panel->GetVisible() && !side_panel->IsRightAligned();
+
+  // If side panel is visible, round one of the bottom two corners of the side
+  // panel based on its alignment w.r.t to web contents.
+  side_panel->SetBackgroundRadii(gfx::RoundedCornersF(
+      0, 0, right_aligned_side_panel_showing ? corner_radius : 0,
+      left_aligned_side_panel_showing ? corner_radius : 0));
+
+  views::WebView* devtools_webview = browser_view()->devtools_web_view();
+  CHECK(devtools_webview);
+  CHECK(devtools_webview->holder());
+
+  // If devtools are visible, round one of the bottom two corners of the
+  // the devtools context based on the alignment of the side panel. Since
+  // devtools cover the full bounds of the web contents container, if the side
+  // panel is not visible, we have to round the bottom two corners of side panel
+  // irrespective of its docked placement.
+  devtools_webview->holder()->SetCornerRadii(gfx::RoundedCornersF(
+      0, 0, right_aligned_side_panel_showing ? 0 : corner_radius,
+      left_aligned_side_panel_showing ? 0 : corner_radius));
+
+  const DevToolsDockedPlacement devtools_placement =
+      browser_view()->devtools_docked_placement();
+  CHECK_NE(devtools_placement, DevToolsDockedPlacement::kUnknown);
+
+  // Rounded the contents webview.
+  ContentsWebView* contents_webview = browser_view()->contents_web_view();
+  const views::View* contents_container = browser_view()->contents_container();
+
+  const bool devtools_showing =
+      contents_webview->bounds() != contents_container->GetLocalBounds();
+
+  const gfx::RoundedCornersF contents_webview_radii(
+      0, 0,
+      right_aligned_side_panel_showing ||
+              (devtools_showing &&
+               devtools_placement != DevToolsDockedPlacement::kLeft)
+          ? 0
+          : corner_radius,
+      left_aligned_side_panel_showing ||
+              (devtools_showing &&
+               devtools_placement != DevToolsDockedPlacement::kRight)
+          ? 0
+          : corner_radius);
+
+  CHECK(contents_webview);
+  CHECK(contents_webview->holder());
+
+  contents_webview->SetBackgroundRadii(contents_webview_radii);
+  contents_webview->holder()->SetCornerRadii(contents_webview_radii);
 }
 
 void BrowserNonClientFrameViewChromeOS::LayoutProfileIndicator() {

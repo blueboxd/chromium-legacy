@@ -218,8 +218,7 @@ bool ServiceWorkerSubresourceLoader::StartRaceNetworkRequest() {
   // Create URLLoader related assets to handle the request triggered by
   // RaceNetworkRequset.
   mojo::PendingRemote<network::mojom::URLLoaderClient> forwarding_client;
-  forwarded_race_network_request_url_loader_factory_ = std::make_unique<
-      ServiceWorkerForwardedRaceNetworkRequestURLLoaderFactory>(
+  forwarded_race_network_request_url_loader_factory_.emplace(
       forwarding_client.InitWithNewPipeAndPassReceiver(),
       resource_request_.url);
 
@@ -344,6 +343,37 @@ void ServiceWorkerSubresourceLoader::StartRequest(
 }
 
 void ServiceWorkerSubresourceLoader::DispatchFetchEvent() {
+  // Evaluate the registered routing info first, because this result may bypass
+  // ServiceWorker start process.
+  const std::vector<blink::ServiceWorkerRouterSource> sources =
+      MaybeEvaluateRouterConditions();
+  enum RaceNetworkRequestMode {
+    kDefault,
+    kForced,
+    kSkipped
+  } race_network_request_mode = kDefault;
+  if (!sources.empty()) {  // matched the rule.
+    // TODO(crbug.com/1371756): support other sources in the full form.
+    // https://github.com/yoshisatoyanagisawa/service-worker-static-routing-api/blob/main/final-form.md
+    switch (sources[0].type) {
+      case blink::ServiceWorkerRouterSource::SourceType::kNetwork:
+        // Network fallback is requested.
+        fallback_factory_->CreateLoaderAndStart(
+            url_loader_receiver_.Unbind(), request_id_, options_,
+            resource_request_, url_loader_client_.Unbind(),
+            traffic_annotation_);
+        delete this;
+        return;
+      case blink::ServiceWorkerRouterSource::SourceType::kRace:
+        race_network_request_mode = kForced;
+        break;
+      case blink::ServiceWorkerRouterSource::SourceType::kFetchEvent:
+        race_network_request_mode = kSkipped;
+        break;
+    }
+  }
+
+  // This may start the ServiceWorker if it's not started yet.
   blink::mojom::ControllerServiceWorker* controller =
       controller_connector_->GetControllerServiceWorker(
           blink::mojom::ControllerServiceWorkerPurpose::FETCH_SUB_RESOURCE);
@@ -390,48 +420,6 @@ void ServiceWorkerSubresourceLoader::DispatchFetchEvent() {
     }
   }
 
-  enum RaceNetworkRequestMode {
-    kDefault,
-    kForced,
-    kSkipped
-  } race_network_request_mode = kDefault;
-  auto* router_evaluator = controller_connector_->router_evaluator();
-  if (router_evaluator) {
-    CHECK(router_evaluator->IsValid());
-    std::vector<blink::ServiceWorkerRouterSource> sources;
-    // Avoid calling GetRecentRunningStatus() if there is no rules that
-    // need running status.
-    // Getting recent running status sends IPC to the browser process,
-    // and affection to performance is concerned.
-    if (router_evaluator->need_running_status()) {
-      sources = router_evaluator->Evaluate(
-          resource_request_, controller_connector_->GetRecentRunningStatus());
-    } else {
-      sources =
-          router_evaluator->EvaluateWithoutRunningStatus(resource_request_);
-    }
-    if (!sources.empty()) {  // matched the rule.
-      // TODO(crbug.com/1371756): support other sources in the full form.
-      // https://github.com/yoshisatoyanagisawa/service-worker-static-routing-api/blob/main/final-form.md
-      switch (sources[0].type) {
-        case blink::ServiceWorkerRouterSource::SourceType::kNetwork:
-          // Network fallback is requested.
-          fallback_factory_->CreateLoaderAndStart(
-              url_loader_receiver_.Unbind(), request_id_, options_,
-              resource_request_, url_loader_client_.Unbind(),
-              traffic_annotation_);
-          delete this;
-          return;
-        case blink::ServiceWorkerRouterSource::SourceType::kRace:
-          race_network_request_mode = kForced;
-          break;
-        case blink::ServiceWorkerRouterSource::SourceType::kFetchEvent:
-          race_network_request_mode = kSkipped;
-          break;
-      }
-    }
-  }
-
   switch (race_network_request_mode) {
     case kForced:
       did_start_race_network_request_ = StartRaceNetworkRequest();
@@ -466,8 +454,7 @@ void ServiceWorkerSubresourceLoader::DispatchFetchEventForSubresource() {
   auto params = blink::mojom::DispatchFetchEventParams::New();
   params->request = blink::mojom::FetchAPIRequest::From(resource_request_);
   params->client_id = controller_connector_->client_id();
-  params->did_start_race_network_request = did_start_race_network_request_;
-  if (params->did_start_race_network_request) {
+  if (remote_forwarded_race_network_request_url_loader_factory_) {
     params->race_network_request_loader_factory =
         std::move(remote_forwarded_race_network_request_url_loader_factory_);
     params->request->service_worker_race_network_request_token =
@@ -691,7 +678,14 @@ void ServiceWorkerSubresourceLoader::StartResponse(
     case FetchResponseFrom::kServiceWorker:
       break;
     case FetchResponseFrom::kWithoutServiceWorker:
-      // If the response already came from RaceNetworkRequest, do nothing.
+      // If the response of RaceNetworkRequest is already handled, discard the
+      // fetch handler result but consume data pipes here not to make data for
+      // the fetch handler being stuck.
+      if (!body_as_stream.is_null() && body_as_stream->stream.is_valid() &&
+          race_network_request_loader_client_) {
+        race_network_request_loader_client_->DrainData(
+            std::move(body_as_stream->stream));
+      }
       return;
   }
 
@@ -1168,6 +1162,26 @@ void ServiceWorkerSubresourceLoader::OnBodyReadingComplete(int net_error) {
 
 bool ServiceWorkerSubresourceLoader::IsMainResourceLoader() {
   return false;
+}
+
+std::vector<blink::ServiceWorkerRouterSource>
+ServiceWorkerSubresourceLoader::MaybeEvaluateRouterConditions() const {
+  auto* router_evaluator = controller_connector_->router_evaluator();
+  if (!router_evaluator) {
+    std::vector<blink::ServiceWorkerRouterSource> sources;
+    return sources;
+  }
+  CHECK(router_evaluator->IsValid());
+  // Avoid calling GetRecentRunningStatus() if there is no rules that
+  // need running status.
+  // Getting recent running status sends IPC to the browser process,
+  // and affection to performance is concerned.
+  if (router_evaluator->need_running_status()) {
+    return router_evaluator->Evaluate(
+        resource_request_, controller_connector_->GetRecentRunningStatus());
+  } else {
+    return router_evaluator->EvaluateWithoutRunningStatus(resource_request_);
+  }
 }
 
 // ServiceWorkerSubresourceLoaderFactory ------------------------------------

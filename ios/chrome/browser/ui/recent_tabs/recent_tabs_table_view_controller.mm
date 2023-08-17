@@ -7,6 +7,7 @@
 #import <objc/runtime.h>
 
 #import "base/check_op.h"
+#import "base/feature_list.h"
 #import "base/mac/foundation_util.h"
 #import "base/metrics/histogram_functions.h"
 #import "base/metrics/histogram_macros.h"
@@ -21,6 +22,7 @@
 #import "components/sessions/core/session_id.h"
 #import "components/sessions/core/tab_restore_service.h"
 #import "components/strings/grit/components_strings.h"
+#import "components/sync/base/features.h"
 #import "components/sync/base/user_selectable_type.h"
 #import "components/sync_sessions/open_tabs_ui_delegate.h"
 #import "components/sync_sessions/session_sync_service.h"
@@ -93,10 +95,6 @@
 #import "ios/web/public/web_state.h"
 #import "ui/base/l10n/l10n_util.h"
 #import "ui/base/l10n/time_format.h"
-
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
 
 namespace {
 
@@ -200,11 +198,6 @@ typedef std::pair<SessionID, TableViewURLItem*> RecentlyClosedTableViewItemPair;
     _preventUpdates = YES;
   }
   return self;
-}
-
-- (void)dealloc {
-  // TODO(crbug.com/1454777)
-  DUMP_WILL_BE_CHECK(!self.signinPromoViewMediator);
 }
 
 - (void)viewDidLoad {
@@ -658,10 +651,17 @@ typedef std::pair<SessionID, TableViewURLItem*> RecentlyClosedTableViewItemPair;
 
       case SessionsSyncUserState::USER_SIGNED_IN_SYNC_OFF:
         itemType = ItemTypeOtherDevicesSyncOff;
-        itemSubtitle = l10n_util::GetNSString(
-            IDS_IOS_RECENT_TABS_OTHER_DEVICES_SYNC_IS_OFF_MESSAGE);
+        itemSubtitle =
+            l10n_util::GetNSString(IDS_IOS_RECENT_TABS_OTHER_DEVICES_LABEL);
         itemButtonText = l10n_util::GetNSString(
-            IDS_IOS_RECENT_TABS_OTHER_DEVICES_TURN_ON_SYNC);
+            IDS_IOS_RECENT_TABS_OTHER_DEVICES_TURN_ON_TABS);
+        if (!base::FeatureList::IsEnabled(
+                syncer::kReplaceSyncPromosWithSignInPromos)) {
+          itemSubtitle = l10n_util::GetNSString(
+              IDS_IOS_RECENT_TABS_OTHER_DEVICES_SYNC_IS_OFF_MESSAGE);
+          itemButtonText = l10n_util::GetNSString(
+              IDS_IOS_RECENT_TABS_OTHER_DEVICES_TURN_ON_SYNC);
+        }
         break;
 
       case SessionsSyncUserState::USER_SIGNED_IN_SYNC_ON_NO_SESSIONS:
@@ -673,8 +673,13 @@ typedef std::pair<SessionID, TableViewURLItem*> RecentlyClosedTableViewItemPair;
       case SessionsSyncUserState::USER_SIGNED_OUT:
         [self addSigninPromoViewItem];
         itemType = ItemTypeOtherDevicesSignedOut;
-        itemSubtitle = l10n_util::GetNSString(
-            IDS_IOS_RECENT_TABS_OTHER_DEVICES_SIGNED_OUT_MESSAGE);
+        itemSubtitle =
+            base::FeatureList::IsEnabled(
+                syncer::kReplaceSyncPromosWithSignInPromos)
+                ? l10n_util::GetNSString(
+                      IDS_IOS_RECENT_TABS_OTHER_DEVICES_LABEL)
+                : l10n_util::GetNSString(
+                      IDS_IOS_RECENT_TABS_OTHER_DEVICES_SIGNED_OUT_MESSAGE);
         break;
     }
     NSString* title =
@@ -716,17 +721,26 @@ typedef std::pair<SessionID, TableViewURLItem*> RecentlyClosedTableViewItemPair;
   // Init|_signinPromoViewMediator` if nil.
   if (!self.signinPromoViewMediator && self.browserState) {
     self.signinPromoViewMediator = [[SigninPromoViewMediator alloc]
-              initWithBrowser:self.browser
-        accountManagerService:ChromeAccountManagerServiceFactory::
-                                  GetForBrowserState(self.browserState)
-                  authService:AuthenticationServiceFactory::GetForBrowserState(
-                                  self.browserState)
-                  prefService:self.browserState->GetPrefs()
-                  syncService:self.syncService
-                  accessPoint:signin_metrics::AccessPoint::
-                                  ACCESS_POINT_RECENT_TABS
-                    presenter:self
-           baseViewController:self];
+        initWithAccountManagerService:ChromeAccountManagerServiceFactory::
+                                          GetForBrowserState(self.browserState)
+                          authService:AuthenticationServiceFactory::
+                                          GetForBrowserState(self.browserState)
+                          prefService:self.browserState->GetPrefs()
+                          syncService:self.syncService
+                          accessPoint:signin_metrics::AccessPoint::
+                                          ACCESS_POINT_RECENT_TABS
+                            presenter:self
+                   baseViewController:self];
+    if (base::FeatureList::IsEnabled(
+            syncer::kReplaceSyncPromosWithSignInPromos)) {
+      ChromeAccountManagerService* accountManagerService =
+          ChromeAccountManagerServiceFactory::GetForBrowserState(
+              self.browserState);
+      self.signinPromoViewMediator.signinPromoAction =
+          accountManagerService->HasIdentities()
+              ? SigninPromoAction::kSigninSheet
+              : SigninPromoAction::kInstantSignin;
+    }
     self.signinPromoViewMediator.consumer = self;
   }
 
@@ -992,7 +1006,7 @@ typedef std::pair<SessionID, TableViewURLItem*> RecentlyClosedTableViewItemPair;
   if ((newSessionState == self.sessionState &&
        self.sessionState !=
            SessionsSyncUserState::USER_SIGNED_IN_SYNC_ON_WITH_SESSIONS) ||
-      self.signinPromoViewMediator.signinInProgress) {
+      self.signinPromoViewMediator.showSpinner) {
     // No need to refresh the sections since all states other than
     // USER_SIGNED_IN_SYNC_ON_WITH_SESSIONS only have static content. This means
     // that if the previous State is the same as the new one the static content
@@ -1183,8 +1197,18 @@ typedef std::pair<SessionID, TableViewURLItem*> RecentlyClosedTableViewItemPair;
     [self.signinPromoViewMediator signinPromoViewIsVisible];
     TableViewSigninPromoCell* signinPromoCell =
         base::mac::ObjCCastStrict<TableViewSigninPromoCell>(cell);
-    signinPromoCell.signinPromoView.imageView.hidden = YES;
-    signinPromoCell.signinPromoView.textLabel.hidden = YES;
+    if (base::FeatureList::IsEnabled(
+            syncer::kReplaceSyncPromosWithSignInPromos)) {
+      TableViewSigninPromoItem* signinPromoItem =
+          base::mac::ObjCCastStrict<TableViewSigninPromoItem>(
+              [self.tableViewModel itemAtIndexPath:indexPath]);
+      [signinPromoItem.configurator
+          configureSigninPromoView:signinPromoCell.signinPromoView
+                         withStyle:SigninPromoViewStyleOnlyButton];
+    } else {
+      signinPromoCell.signinPromoView.imageView.hidden = YES;
+      signinPromoCell.signinPromoView.textLabel.hidden = YES;
+    }
     // Disable animations when setting the background color to prevent flash on
     // rotation.
     [UIView setAnimationsEnabled:NO];
@@ -1746,15 +1770,20 @@ typedef std::pair<SessionID, TableViewURLItem*> RecentlyClosedTableViewItemPair;
 }
 
 - (void)signinDidFinish {
-  [self.delegate refreshSessionsView];
+  if (base::FeatureList::IsEnabled(
+          syncer::kReplaceSyncPromosWithSignInPromos)) {
+    [self.presentationDelegate showHistorySyncOptInAfterDedicatedSignIn:YES];
+  } else {
+    [self.delegate refreshSessionsView];
+  }
 }
 
 #pragma mark - SyncPresenter
 
 - (void)showPrimaryAccountReauth {
   [self.handler showSignin:[[ShowSigninCommand alloc]
-                               initWithOperation:
-                                   AuthenticationOperationPrimaryAccountReauth
+                               initWithOperation:AuthenticationOperation::
+                                                     kPrimaryAccountReauth
                                      accessPoint:signin_metrics::AccessPoint::
                                                      ACCESS_POINT_RECENT_TABS]
         baseViewController:self];
@@ -1766,10 +1795,6 @@ typedef std::pair<SessionID, TableViewURLItem*> RecentlyClosedTableViewItemPair;
 
 - (void)showGoogleServicesSettings {
   [self.handler showGoogleServicesSettingsFromViewController:self];
-}
-
-- (void)showSyncManagerSettings {
-  [self.handler showSyncSettingsFromViewController:self];
 }
 
 - (void)showAccountSettings {
@@ -1847,10 +1872,31 @@ typedef std::pair<SessionID, TableViewURLItem*> RecentlyClosedTableViewItemPair;
   if (error == syncer::SyncService::UserActionableError::kSignInNeedsUpdate) {
     [self showPrimaryAccountReauth];
   } else if (ShouldShowSyncSettings(error)) {
-    [self showSyncManagerSettings];
+    [self showSyncSettingsOrHistoryOptIn];
   } else if (error ==
              syncer::SyncService::UserActionableError::kNeedsPassphrase) {
     [self showSyncPassphraseSettings];
+  }
+}
+
+// Show the History Sync Opt-In screen if the sync-related UI is disabled, and
+// the account is not syncing. Otherwise, show the sync settings screen.
+- (void)showSyncSettingsOrHistoryOptIn {
+  // TODO(crbug.com/1462326): This logic should be moved outside of the
+  // ViewController.
+  BOOL isSyncUIDisabled =
+      base::FeatureList::IsEnabled(syncer::kReplaceSyncPromosWithSignInPromos);
+  AuthenticationService* authenticationService =
+      AuthenticationServiceFactory::GetForBrowserState(_browserState);
+  // TODO(crbug.com/1466884): Delete the usage of ConsentLevel::kSync after
+  // Phase 2 on iOS is launched. See ConsentLevel::kSync documentation for
+  // details.
+  BOOL hasSyncingAccount =
+      authenticationService->HasPrimaryIdentity(signin::ConsentLevel::kSync);
+  if (!isSyncUIDisabled || hasSyncingAccount) {
+    [self.handler showSyncSettingsFromViewController:self];
+  } else {
+    [self.presentationDelegate showHistorySyncOptInAfterDedicatedSignIn:NO];
   }
 }
 

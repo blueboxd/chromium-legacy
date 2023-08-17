@@ -8,10 +8,10 @@
 
 #include <vector>
 
+#import "base/apple/scoped_objc_class_swizzler.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
 #import "base/mac/foundation_util.h"
-#import "base/mac/scoped_objc_class_swizzler.h"
 #include "base/task/current_thread.h"
 #import "base/task/single_thread_task_runner.h"
 #include "base/task/single_thread_task_runner.h"
@@ -20,10 +20,6 @@
 #import "ui/events/test/cocoa_test_event_utils.h"
 #include "ui/gfx/geometry/point.h"
 #import "ui/gfx/mac/coordinate_conversion.h"
-
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
 
 // Implementation details: We use [NSApplication sendEvent:] instead
 // of [NSApplication postEvent:atStart:] so that the event gets sent
@@ -238,8 +234,8 @@ class MockNSEventClassMethods {
                                         [FakeNSEventTestingDonor class],
                                         @selector(pressedMouseButtons)) {}
 
-  base::mac::ScopedObjCClassSwizzler mouse_location_swizzler_;
-  base::mac::ScopedObjCClassSwizzler pressed_mouse_buttons_swizzler_;
+  base::apple::ScopedObjCClassSwizzler mouse_location_swizzler_;
+  base::apple::ScopedObjCClassSwizzler pressed_mouse_buttons_swizzler_;
 };
 
 }  // namespace

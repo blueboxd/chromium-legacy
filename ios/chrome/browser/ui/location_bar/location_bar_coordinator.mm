@@ -30,7 +30,7 @@
 #import "ios/chrome/browser/ntp/new_tab_page_util.h"
 #import "ios/chrome/browser/overlays/public/overlay_presenter.h"
 #import "ios/chrome/browser/search_engines/template_url_service_factory.h"
-#import "ios/chrome/browser/shared/coordinator/default_browser_promo/non_modal_default_browser_promo_scheduler_scene_agent.h"
+#import "ios/chrome/browser/shared/coordinator/default_browser_promo/default_browser_promo_scene_agent_utils.h"
 #import "ios/chrome/browser/shared/coordinator/layout_guide/layout_guide_util.h"
 #import "ios/chrome/browser/shared/coordinator/scene/scene_state_browser_agent.h"
 #import "ios/chrome/browser/shared/model/browser/browser.h"
@@ -76,10 +76,6 @@
 #import "services/network/public/cpp/resource_request.h"
 #import "ui/base/device_form_factor.h"
 #import "url/gurl.h"
-
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
 
 BASE_FEATURE(kEnableFocusOmniboxWorkaround,
              "EnableFocusOmniboxWorkaround",
@@ -272,8 +268,13 @@ const size_t kMaxURLDisplayChars = 32 * 1024;
 
   self.viewController = nil;
   [self.mediator disconnect];
+  self.mediator.templateURLService = nil;
+  self.mediator.consumer = nil;
   self.mediator = nil;
   [self.steadyViewMediator disconnect];
+  self.steadyViewMediator.webStateList = nullptr;
+  self.steadyViewMediator.webContentAreaOverlayPresenter = nil;
+  self.steadyViewMediator.consumer = nil;
   self.steadyViewMediator = nil;
 
   _locationBarModel = nullptr;
@@ -442,8 +443,7 @@ const size_t kMaxURLDisplayChars = 32 * 1024;
 
   SceneState* sceneState =
       SceneStateBrowserAgent::FromBrowser(self.browser)->GetSceneState();
-  [[NonModalDefaultBrowserPromoSchedulerSceneAgent agentFromScene:sceneState]
-      logUserPastedInOmnibox];
+  NotifyDefaultBrowserPromoUserPastedInOmnibox(sceneState);
   LogToFETUserPastedURLIntoOmnibox(
       feature_engagement::TrackerFactory::GetForBrowserState(
           self.browser->GetBrowserState()));

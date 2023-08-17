@@ -13,6 +13,7 @@
 
 namespace blink {
 
+class NGBoxFragmentBuilder;
 class NGTableBorders;
 struct FrameSetLayoutData;
 struct NGMathMLPaintInfo;
@@ -34,7 +35,11 @@ class PhysicalFragmentRareData
     : public GarbageCollected<PhysicalFragmentRareData> {
  public:
   explicit PhysicalFragmentRareData(wtf_size_t num_fields);
-  PhysicalFragmentRareData(NGBoxFragmentBuilder& builder,
+  PhysicalFragmentRareData(const PhysicalRect* layout_overflow,
+                           const NGPhysicalBoxStrut* borders,
+                           const NGPhysicalBoxStrut* padding,
+                           absl::optional<PhysicalRect> inflow_bounds,
+                           NGBoxFragmentBuilder& builder,
                            wtf_size_t num_fields);
   PhysicalFragmentRareData(const PhysicalFragmentRareData& other);
   ~PhysicalFragmentRareData();
@@ -51,7 +56,11 @@ class PhysicalFragmentRareData
   // In ARM, the size of a shift amount operand of shift instructions is same
   // as the size of shifted data. So FieldId should be RareBitFieldType.
   enum class FieldId : RareBitFieldType {
-    kFrameSetLayoutData = 0,
+    kLayoutOverflow = 0,
+    kBorders,
+    kPadding,
+    kInflowBounds,
+    kFrameSetLayoutData,
     kMathMLPaintInfo,
     kTableGridRect,
     kTableCollapsedBorders,
@@ -70,6 +79,10 @@ class PhysicalFragmentRareData
 
   struct RareField {
     union {
+      PhysicalRect layout_overflow;
+      NGPhysicalBoxStrut borders;
+      NGPhysicalBoxStrut padding;
+      PhysicalRect inflow_bounds;
       std::unique_ptr<const FrameSetLayoutData> frame_set_layout_data;
       std::unique_ptr<const NGMathMLPaintInfo> mathml_paint_info;
       LogicalRect table_grid_rect;
@@ -132,6 +145,12 @@ class PhysicalFragmentRareData
   // We may call this for a unique `field_id` multiple times.
   RareField& EnsureField(FieldId field_id) {
     return EnsureField<true>(field_id);
+  }
+
+  // This should be called only if this has an element for `field_id`.
+  void RemoveField(FieldId field_id) {
+    field_list_.EraseAt(GetFieldIndex(field_id));
+    bit_field_ = bit_field_ & ~FieldIdBit(field_id);
   }
 
   Vector<RareField> field_list_;

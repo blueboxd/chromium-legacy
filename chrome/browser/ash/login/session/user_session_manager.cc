@@ -131,6 +131,7 @@
 #include "chromeos/ash/components/login/auth/auth_session_authenticator.h"
 #include "chromeos/ash/components/login/auth/challenge_response/known_user_pref_utils.h"
 #include "chromeos/ash/components/login/auth/stub_authenticator_builder.h"
+#include "chromeos/ash/components/login/hibernate/hibernate_manager.h"
 #include "chromeos/ash/components/login/session/session_termination_manager.h"
 #include "chromeos/ash/components/network/portal_detector/network_portal_detector.h"
 #include "chromeos/ash/components/settings/cros_settings_names.h"
@@ -1011,10 +1012,18 @@ bool UserSessionManager::RespectLocalePreference(
 bool UserSessionManager::RestartToApplyPerSessionFlagsIfNeed(
     Profile* profile,
     bool early_restart) {
-  if (!SessionManagerClient::Get()->SupportsBrowserRestart())
-    return false;
-
   if (!ProfileHelper::IsUserProfile(profile)) {
+    return false;
+  }
+
+  if (ash::HibernateManager::IsHibernateSupported()) {
+    // No need to do anything if Hibernate isn't even supported on this
+    // device.
+    flags_ui::PrefServiceFlagsStorage flags_storage(profile->GetPrefs());
+    ash::HibernateManager::Get()->MaybeResume(flags_storage.GetFlags());
+  }
+
+  if (!SessionManagerClient::Get()->SupportsBrowserRestart()) {
     return false;
   }
 
@@ -1605,6 +1614,7 @@ void UserSessionManager::InitProfilePreferences(
 
 void UserSessionManager::UserProfileInitialized(Profile* profile,
                                                 const AccountId& account_id) {
+  TRACE_EVENT0("login", "UserSessionManager::UserProfileInitialized");
   // Check whether this `profile` was already initialized.
   if (user_profile_initialized_called_.contains(profile))
     return;
@@ -1693,6 +1703,8 @@ void UserSessionManager::UserProfileInitialized(Profile* profile,
 
 void UserSessionManager::CompleteProfileCreateAfterAuthTransfer(
     Profile* profile) {
+  TRACE_EVENT0("login",
+               "UserSessionManager::CompleteProfileCreateAfterAuthTransfer");
   RestoreAuthSessionImpl(profile, has_auth_cookies_);
   BootTimesRecorder::Get()->AddLoginTimeMarker("TPMOwn-Start", false);
   PrepareTpm(base::BindOnce(OnPrepareTpmDeviceFinished));
@@ -1700,6 +1712,7 @@ void UserSessionManager::CompleteProfileCreateAfterAuthTransfer(
 }
 
 void UserSessionManager::FinalizePrepareProfile(Profile* profile) {
+  TRACE_EVENT0("login", "UserSessionManager::FinalizePrepareProfile");
   user_manager::UserManager* user_manager = user_manager::UserManager::Get();
   user_manager::User* user = ProfileHelper::Get()->GetUserByProfile(profile);
   user_manager::KnownUser known_user(g_browser_process->local_state());
@@ -2298,6 +2311,7 @@ void UserSessionManager::CheckEolInfo(Profile* profile) {
 
 void UserSessionManager::DoBrowserLaunchInternal(Profile* profile,
                                                  bool locale_pref_checked) {
+  TRACE_EVENT0("login", "UserSessionManager::DoBrowserLaunchInternal");
   if (browser_shutdown::IsTryingToQuit() ||
       chrome::IsSendingStopRequestToSessionManager())
     return;

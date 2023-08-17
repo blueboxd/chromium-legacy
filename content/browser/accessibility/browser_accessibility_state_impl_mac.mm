@@ -25,10 +25,6 @@
 @property(readonly) BOOL accessibilityDisplayShouldReduceMotion;
 @end
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 namespace content {
 
 namespace {
@@ -38,23 +34,23 @@ void SetupAccessibilityDisplayOptionsNotifier() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   if (@available(macOS 10.10, *)) {
-  // Listen to accessibility display options changing, so that we can update
-  // the renderer for the prefers reduced motion settings.
-  //
-  // BrowserAccessibilityStateImpl is a deliberately leaked singleton, so we
-  // don't need to record the notification token for later cleanup.
-  [NSWorkspace.sharedWorkspace.notificationCenter
-      addObserverForName:
-          NSWorkspaceAccessibilityDisplayOptionsDidChangeNotification
-                  object:nil
-                   queue:nil
-              usingBlock:^(NSNotification* notification) {
-                gfx::Animation::UpdatePrefersReducedMotion();
-                for (WebContentsImpl* wc :
-                     WebContentsImpl::GetAllWebContents()) {
-                  wc->OnWebPreferencesChanged();
-                }
-              }];
+    // Listen to accessibility display options changing, so that we can update
+    // the renderer for the prefers reduced motion settings.
+    //
+    // BrowserAccessibilityStateImpl is a deliberately leaked singleton, so we
+    // don't need to record the notification token for later cleanup.
+    [NSWorkspace.sharedWorkspace.notificationCenter
+        addObserverForName:
+            NSWorkspaceAccessibilityDisplayOptionsDidChangeNotification
+                    object:nil
+                     queue:nil
+                usingBlock:^(NSNotification* notification) {
+                  gfx::Animation::UpdatePrefersReducedMotion();
+                  for (WebContentsImpl* wc :
+                       WebContentsImpl::GetAllWebContents()) {
+                    wc->OnWebPreferencesChanged();
+                  }
+                }];
   }
 }
 }  // namespace

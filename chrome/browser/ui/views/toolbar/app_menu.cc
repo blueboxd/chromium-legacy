@@ -59,6 +59,7 @@
 #include "content/public/browser/web_contents.h"
 #include "extensions/common/feature_switch.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/abseil-cpp/absl/types/variant.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -173,37 +174,34 @@ class InMenuButtonBackground : public views::Background {
       : type_(type), shape_(shape) {}
   InMenuButtonBackground(const InMenuButtonBackground&) = delete;
   InMenuButtonBackground& operator=(const InMenuButtonBackground&) = delete;
+  ~InMenuButtonBackground() override = default;
 
   // Overridden from views::Background.
   void Paint(gfx::Canvas* canvas, View* view) const override {
-    Button* button = views::AsViewClass<views::Button>(view);
-    int h = view->height();
-
     // Draw leading border if desired.
-    gfx::Rect bounds(view->GetLocalBounds());
+    gfx::Rect bounds = view->GetLocalBounds();
     if (type_ == ButtonType::kLeadingBorder) {
       // We need to flip the canvas for RTL iff the button is not auto-flipping
       // already, so we end up flipping exactly once.
       gfx::ScopedCanvas scoped_canvas(canvas);
       if (!view->GetFlipCanvasOnPaintForRTLUI())
         scoped_canvas.FlipIfRTL(view->width());
-      ui::NativeTheme::ExtraParams params;
-      gfx::Rect separator_bounds =
-          gfx::Rect(0, 0, MenuConfig::instance().separator_thickness, h);
-      params.menu_separator.paint_rect = &separator_bounds;
-      params.menu_separator.type = ui::VERTICAL_SEPARATOR;
+      ui::NativeTheme::MenuSeparatorExtraParams menu_separator;
+      const gfx::Rect separator_bounds(gfx::Size(
+          MenuConfig::instance().separator_thickness, view->height()));
+      menu_separator.paint_rect = &separator_bounds;
+      menu_separator.type = ui::VERTICAL_SEPARATOR;
       view->GetNativeTheme()->Paint(
           canvas->sk_canvas(), view->GetColorProvider(),
           ui::NativeTheme::kMenuPopupSeparator, ui::NativeTheme::kNormal,
-          separator_bounds, params);
+          separator_bounds, ui::NativeTheme::ExtraParams(menu_separator));
       bounds.Inset(gfx::Insets::TLBR(
           0, MenuConfig::instance().separator_thickness, 0, 0));
     }
 
     // Fill in background for state.
-    views::Button::ButtonState state =
-        button ? button->GetState() : views::Button::STATE_NORMAL;
-    DrawBackground(canvas, view, view->GetMirroredRect(bounds), state);
+    DrawBackground(canvas, view, view->GetMirroredRect(bounds),
+                   views::AsViewClass<views::Button>(view)->GetState());
   }
 
  private:
@@ -211,38 +209,38 @@ class InMenuButtonBackground : public views::Background {
                       const views::View* view,
                       const gfx::Rect& bounds,
                       views::Button::ButtonState state) const {
-    if (state == views::Button::STATE_HOVERED ||
-        state == views::Button::STATE_PRESSED ||
-        state == views::Button::STATE_NORMAL) {
-      gfx::Rect bounds_rect = bounds;
-      ui::NativeTheme::ExtraParams params;
-      if (type_ == ButtonType::kRoundedButton) {
-        // Consistent with a hover corner radius (kInkDropSmallCornerRadius).
-        const int kBackgroundCornerRadius = 2;
-        params.menu_item.corner_radius = kBackgroundCornerRadius;
-      } else if (shape_ == ButtonShape::kCircular) {
-        constexpr int kCircularButtonSize = 28;
-        bounds_rect.ClampToCenteredSize(
-            gfx::Size(kCircularButtonSize, kCircularButtonSize));
-        params.menu_item.corner_radius = kCircularButtonSize / 2;
-      }
-      auto* provider = view->GetColorProvider();
-      if (features::IsChromeRefresh2023() &&
-          views::IsViewClass<views::Button>(view)) {
-        cc::PaintFlags flags;
-        flags.setColor(
-            provider->GetColor(state != views::Button::STATE_NORMAL
-                                   ? ui::kColorMenuButtonBackgroundSelected
-                                   : ui::kColorMenuButtonBackground));
-        canvas->DrawRoundRect(gfx::RectF(bounds_rect),
-                              params.menu_item.corner_radius, flags);
-        return;
-      }
-      if (state != views::Button::STATE_NORMAL) {
-        view->GetNativeTheme()->Paint(
-            canvas->sk_canvas(), provider, ui::NativeTheme::kMenuItemBackground,
-            ui::NativeTheme::kHovered, bounds_rect, params);
-      }
+    if (state == views::Button::STATE_DISABLED) {
+      return;
+    }
+
+    gfx::Rect bounds_rect = bounds;
+    ui::NativeTheme::MenuItemExtraParams menu_item;
+    if (type_ == ButtonType::kRoundedButton) {
+      // Consistent with a hover corner radius (kInkDropSmallCornerRadius).
+      const int kBackgroundCornerRadius = 2;
+      menu_item.corner_radius = kBackgroundCornerRadius;
+    } else if (shape_ == ButtonShape::kCircular) {
+      constexpr int kCircularButtonSize = 28;
+      bounds_rect.ClampToCenteredSize(
+          gfx::Size(kCircularButtonSize, kCircularButtonSize));
+      menu_item.corner_radius = kCircularButtonSize / 2;
+    }
+    const auto* const color_provider = view->GetColorProvider();
+    if (features::IsChromeRefresh2023()) {
+      cc::PaintFlags flags;
+      flags.setColor(color_provider->GetColor(
+          state == views::Button::STATE_NORMAL
+              ? ui::kColorMenuButtonBackground
+              : ui::kColorMenuButtonBackgroundSelected));
+      canvas->DrawRoundRect(gfx::RectF(bounds_rect), menu_item.corner_radius,
+                            flags);
+      return;
+    }
+    if (state != views::Button::STATE_NORMAL) {
+      view->GetNativeTheme()->Paint(canvas->sk_canvas(), color_provider,
+                                    ui::NativeTheme::kMenuItemBackground,
+                                    ui::NativeTheme::kHovered, bounds_rect,
+                                    ui::NativeTheme::ExtraParams(menu_item));
     }
   }
 
@@ -274,8 +272,7 @@ std::u16string GetAccessibleNameForAppMenuItem(ButtonMenuItemModel* model,
 class InMenuButton : public LabelButton {
  public:
   METADATA_HEADER(InMenuButton);
-  InMenuButton(PressedCallback callback, const std::u16string& text)
-      : LabelButton(std::move(callback), text) {}
+  using LabelButton::LabelButton;
   InMenuButton(const InMenuButton&) = delete;
   InMenuButton& operator=(const InMenuButton&) = delete;
   ~InMenuButton() override = default;
@@ -296,10 +293,10 @@ class InMenuButton : public LabelButton {
     node_data->role = ax::mojom::Role::kMenuItem;
   }
 
-  // views::LabelButton
+  // views::LabelButton:
   void OnThemeChanged() override {
     LabelButton::OnThemeChanged();
-    const ui::ColorProvider* color_provider = GetColorProvider();
+    const auto* const color_provider = GetColorProvider();
     SetTextColor(
         views::Button::STATE_DISABLED,
         color_provider->GetColor(ui::kColorMenuItemForegroundDisabled));
@@ -321,8 +318,7 @@ END_METADATA
 class InMenuImageButton : public ImageButton {
  public:
   METADATA_HEADER(InMenuImageButton);
-  explicit InMenuImageButton(PressedCallback callback)
-      : ImageButton(callback) {}
+  using ImageButton::ImageButton;
 
   void Init(InMenuButtonBackground::ButtonType type,
             InMenuButtonBackground::ButtonShape shape,
@@ -666,8 +662,6 @@ class AppMenu::ZoomView : public AppMenuView {
     zoom_label->SetHorizontalAlignment(gfx::ALIGN_RIGHT);
     zoom_label->SetBorder(views::CreateEmptyBorder(gfx::Insets::TLBR(
         0, kZoomLabelHorizontalPadding, 0, kZoomLabelHorizontalPadding)));
-    zoom_label->SetBackground(std::make_unique<InMenuButtonBackground>(
-        InMenuButtonBackground::ButtonType::kNoBorder));
 
     // Need to set a font list for the zoom label width calculations.
     zoom_label->SetFontList(MenuConfig::instance().font_list);
@@ -965,8 +959,6 @@ AppMenu::AppMenu(Browser* browser, ui::MenuModel* model, int run_types)
 
   DCHECK(!root_);
   root_ = new MenuItemView(this);
-  root_->set_has_icons(true);  // We have checks, radios and icons, set this
-                               // so we get the taller menu style.
   PopulateMenu(root_, model);
 
   int32_t types = views::MenuRunner::HAS_MNEMONICS;
@@ -1317,8 +1309,9 @@ void AppMenu::PopulateMenu(MenuItemView* parent, MenuModel* model) {
         AddMenuItem(parent, menu_index, model, i, model->GetTypeAt(i));
 
 #if BUILDFLAG(IS_CHROMEOS)
-    if (model->GetCommandIdAt(i) == IDC_EDIT_MENU ||
-        model->GetCommandIdAt(i) == IDC_ZOOM_MENU) {
+    if (!features::IsChromeRefresh2023() &&
+        (model->GetCommandIdAt(i) == IDC_EDIT_MENU ||
+         model->GetCommandIdAt(i) == IDC_ZOOM_MENU)) {
       // ChromeOS adds extra vertical space for the menu buttons.
       const MenuConfig& config = views::MenuConfig::instance();
       item->set_vertical_margin(config.item_vertical_margin * 2 +
@@ -1461,7 +1454,7 @@ MenuItemView* AppMenu::AddMenuItem(MenuItemView* parent,
   if (menu_item) {
     menu_item->SetVisible(model->IsVisibleAt(model_index));
 
-    if (menu_type == MenuModel::TYPE_COMMAND && model->HasIcons()) {
+    if (menu_type == MenuModel::TYPE_COMMAND) {
       menu_item->SetIcon(model->GetIconAt(model_index));
     }
   }

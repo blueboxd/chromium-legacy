@@ -10,6 +10,8 @@ import './shared_style.css.js';
 import {CrActionMenuElement} from 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.js';
 import {CrButtonElement} from 'chrome://resources/cr_elements/cr_button/cr_button.js';
 import {CrExpandButtonElement} from 'chrome://resources/cr_elements/cr_expand_button/cr_expand_button.js';
+import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {PluralStringProxyImpl} from 'chrome://resources/js/plural_string_proxy.js';
 import {DomRepeatEvent, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
@@ -18,6 +20,7 @@ import {getTemplate} from './review_panel.html.js';
 
 export interface ReviewItemDelegate {
   setItemSafetyCheckWarningAcknowledged(id: string): void;
+  uninstallItem(id: string): Promise<void>;
 }
 
 export interface ExtensionsReviewPanelElement {
@@ -31,7 +34,10 @@ export interface ExtensionsReviewPanelElement {
   };
 }
 
-export class ExtensionsReviewPanelElement extends PolymerElement {
+const ExtensionsReviewPanelElementBase = I18nMixin(PolymerElement);
+
+export class ExtensionsReviewPanelElement extends
+    ExtensionsReviewPanelElementBase {
   static get is() {
     return 'extensions-review-panel';
   }
@@ -80,8 +86,7 @@ export class ExtensionsReviewPanelElement extends PolymerElement {
        */
       shouldShowUnsafeExtensions_: {
         type: Boolean,
-        computed:
-            'computeShouldShowUnsafeExtensions_(extensions.*, hasChangeBeenMade_)',
+        computed: 'computeShouldShowUnsafeExtensions_(extensions.*)',
       },
 
       /**
@@ -115,6 +120,7 @@ export class ExtensionsReviewPanelElement extends PolymerElement {
   delegate: ItemDelegate&ReviewItemDelegate;
   extensions: chrome.developerPrivate.ExtensionInfo[];
   private hasChangeBeenMade_: boolean;
+  private completionMetricLogged_: boolean;
   private unsafeExtensions_: chrome.developerPrivate.ExtensionInfo[];
   private headerString_: string;
   private subtitleString_: string;
@@ -152,7 +158,10 @@ export class ExtensionsReviewPanelElement extends PolymerElement {
     const updatedUnsafeExtensions =
         this.getUnsafeExtensions_(this.extensions) || [];
     if (this.hasChangeBeenMade_ && updatedUnsafeExtensions.length === 0) {
-      chrome.metricsPrivate.recordUserAction('SafetyCheck.ReviewCompletion');
+      if (!this.completionMetricLogged_) {
+        this.completionMetricLogged_ = true;
+        chrome.metricsPrivate.recordUserAction('SafetyCheck.ReviewCompletion');
+      }
       return true;
     } else {
       return false;
@@ -162,10 +171,11 @@ export class ExtensionsReviewPanelElement extends PolymerElement {
   private computeShouldShowUnsafeExtensions_(): boolean {
     const updatedUnsafeExtensions =
         this.getUnsafeExtensions_(this.extensions) || [];
-    if (!this.hasChangeBeenMade_ && updatedUnsafeExtensions.length !== 0) {
+    if (updatedUnsafeExtensions.length !== 0) {
       if (!this.shouldShowUnsafeExtensions_) {
         chrome.metricsPrivate.recordUserAction('SafetyCheck.ReviewPanelShown');
       }
+      this.completionMetricLogged_ = false;
       return true;
     } else {
       return false;
@@ -193,22 +203,44 @@ export class ExtensionsReviewPanelElement extends PolymerElement {
           this.lastClickedExtensionId_);
       this.hasChangeBeenMade_ = true;
     }
-    this.hasChangeBeenMade_ = true;
   }
 
-  private onRemoveExtensionClick_(
-      e: DomRepeatEvent<chrome.developerPrivate.ExtensionInfo>): void {
+  private getRemoveButtonA11yLabel_(extensionName: string): string {
+    return loadTimeData.substituteString(
+        this.i18n('safetyCheckRemoveButtonA11yLabel'), extensionName);
+  }
+
+  private getOptionMenuA11yLabel_(extensionName: string) {
+    return loadTimeData.substituteString(
+        this.i18n('safetyCheckOptionMenuA11yLabel'), extensionName);
+  }
+
+  private async onRemoveExtensionClick_(
+      e: DomRepeatEvent<chrome.developerPrivate.ExtensionInfo>): Promise<void> {
     chrome.metricsPrivate.recordUserAction(
         'SafetyCheck.ReviewPanelRemoveClicked');
-    this.delegate.deleteItem(e.model.item.id);
-    this.hasChangeBeenMade_ = true;
+    try {
+      await this.delegate.uninstallItem(e.model.item.id);
+      this.hasChangeBeenMade_ = true;
+    } catch (_) {
+      // The error was almost certainly the user canceling the dialog.
+      // Do nothing.
+    }
   }
 
-  private onRemoveAllExtensions_(): void {
+  private async onRemoveAllClick_(): Promise<void> {
     chrome.metricsPrivate.recordUserAction(
         'SafetyCheck.ReviewPanelRemoveAllClicked');
-    // TODO(crbug.com/1432194): Call the private API to remove all extensions.
-    this.hasChangeBeenMade_ = true;
+    try {
+      await this.delegate.deleteItems(
+          this.unsafeExtensions_.map(extension => extension.id));
+      // If the Remove button was clicked and no errors were thrown, change
+      // the flag.
+      this.hasChangeBeenMade_ = true;
+    } catch (_) {
+      // The error was almost certainly the user canceling the dialog.
+      // Do nothing.
+    }
   }
 }
 

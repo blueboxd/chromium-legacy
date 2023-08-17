@@ -74,7 +74,6 @@ Behörigheter som du redan har gett webbplatser och appar kan gälla för det h�
 <translation id="2592940277904433508">Fortsätt att använda Chromium</translation>
 <translation id="2648074677641340862">Ett operativsystemsfel inträffade under installationen. Ladda ned Chromium igen.</translation>
 <translation id="2661879430930417727">Om du delar en enhet med vänner och familj kan de konfigurera Chromium precis som de vill och surfa separat.</translation>
-<translation id="2669853942967761236">Den här arkivfilen blockerades av Chromium eftersom den kan dölja skadlig programvara</translation>
 <translation id="268602741124540128">Välkommen till Chromium, <ph name="ACCOUNT_FIRST_NAME" /></translation>
 <translation id="2711502716910134313">Chromium-flik</translation>
 <translation id="2718390899429598676">Din data krypteras i Chromium för att öka säkerheten.</translation>
@@ -272,6 +271,7 @@ Behörigheter som du redan har gett webbplatser och appar kan gälla för det h�
 <translation id="6613594504749178791">Ändringarna tillämpas nästa gång du startar om Chromium.</translation>
 <translation id="665732753414869868">Du behöver ge Chromium kamerabehörighet om du vill skapa en 3D-karta över dina omgivningar</translation>
 <translation id="6663852025006259149">Webbplatser fortsätter förmodligen att fungera som förväntat men de kommer inte ihåg dig efter att du stänger alla Chromium-fönster</translation>
+<translation id="6669284030132180248">Om du även sparar bokmärken i Google-kontot kan du bevaka produktpriser i Chromium och få en avisering när priset sänks.</translation>
 <translation id="6676384891291319759">Gå ut på Internet</translation>
 <translation id="668175097507315160">Det gick inte att synkronisera data med Chromium OS på grund av ett inloggningsfel.</translation>
 <translation id="6709350901466051922">Du behöver ge Chromium mikrofonbehörighet för den här webbplatsen</translation>
@@ -408,6 +408,5 @@ Chromium kan inte återställa dina inställningar.</translation>
 <translation id="942598560705308788">Certifikat som hanteras av Chromium</translation>
 <translation id="965162752251293939">Vem ska använda Chromium?</translation>
 <translation id="967427899662692980">Få det bästa skyddet i Chromium</translation>
-<translation id="9792300276217204">Rensa alltid webbplatsdata från enheten när du stänger Chromium</translation>
 <translation id="985602178874221306">The Chromium Authors</translation>
 </translationbundle>

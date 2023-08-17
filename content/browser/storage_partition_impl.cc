@@ -1469,8 +1469,7 @@ void StoragePartitionImpl::Initialize(
   subresource_proxying_url_loader_service_ =
       std::make_unique<SubresourceProxyingURLLoaderService>(browser_context_);
 
-  if (base::FeatureList::IsEnabled(
-          blink::features::kKeepAliveInBrowserMigration)) {
+  if (blink::features::IsKeepAliveInBrowserMigrationEnabled()) {
     keep_alive_url_loader_service_ =
         std::make_unique<KeepAliveURLLoaderService>(browser_context_);
   }
@@ -1558,7 +1557,7 @@ void StoragePartitionImpl::Initialize(
                        : path.Append(storage::kSharedStoragePath);
     shared_storage_manager_ = std::make_unique<storage::SharedStorageManager>(
         shared_storage_path, special_storage_policy_);
-    if (base::FeatureList::IsEnabled(blink::features::kSharedStorageAPIM117)) {
+    if (base::FeatureList::IsEnabled(blink::features::kSharedStorageAPIM118)) {
       shared_storage_header_observer_ =
           std::make_unique<SharedStorageHeaderObserver>(this);
     }
@@ -3279,7 +3278,9 @@ void StoragePartitionImpl::InitNetworkContext() {
   cors_exempt_header_list_ = context_params->cors_exempt_header_list;
 
   if (base::FeatureList::IsEnabled(
-          network::features::kCompressionDictionaryTransportBackend)) {
+          network::features::kCompressionDictionaryTransportBackend) &&
+      GetContentClient()->browser()->AllowCompressionDictionaryTransport(
+          browser_context_)) {
     context_params->shared_dictionary_enabled = true;
     if (!is_in_memory()) {
       // Some callers may already initialize NetworkContextFilePaths, and we

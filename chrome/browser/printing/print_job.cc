@@ -271,6 +271,13 @@ void PrintJob::Cancel() {
   is_canceling_ = false;
 }
 
+#if BUILDFLAG(ENABLE_PRINT_CONTENT_ANALYSIS)
+void PrintJob::CleanupAfterContentAnalysisDenial() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  worker_->CleanupAfterContentAnalysisDenial();
+}
+#endif
+
 bool PrintJob::FlushJob(base::TimeDelta timeout) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
@@ -616,7 +623,7 @@ bool PrintJob::PostTask(const base::Location& from_here,
 void PrintJob::HoldUntilStopIsCalled() {
 }
 
-void PrintJob::set_job_pending(bool pending) {
+void PrintJob::set_job_pending_for_testing(bool pending) {
   is_job_pending_ = pending;
 }
 

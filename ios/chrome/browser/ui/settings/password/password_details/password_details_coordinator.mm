@@ -38,16 +38,12 @@
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_mediator.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_mediator_delegate.h"
 #import "ios/chrome/browser/ui/settings/password/password_details/password_details_table_view_controller.h"
-#import "ios/chrome/browser/ui/settings/password/password_sharing/family_picker_coordinator.h"
+#import "ios/chrome/browser/ui/settings/password/password_sharing/password_sharing_coordinator.h"
 #import "ios/chrome/browser/ui/settings/utils/password_utils.h"
 #import "ios/chrome/common/ui/reauthentication/reauthentication_module.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ios/web/public/web_state.h"
 #import "ui/base/l10n/l10n_util.h"
-
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
 
 @interface PasswordDetailsCoordinator () <PasswordDetailsHandler,
                                           PasswordDetailsMediatorDelegate> {
@@ -75,8 +71,9 @@
 // The action sheet coordinator, if one is currently being shown.
 @property(nonatomic, strong) ActionSheetCoordinator* actionSheetCoordinator;
 
-// Coordinator for family picker for password sharing.
-@property(nonatomic, strong) FamilyPickerCoordinator* familyPickerCoordinator;
+// Coordinator for the password sharing flow.
+@property(nonatomic, strong)
+    PasswordSharingCoordinator* passwordSharingCoordinator;
 
 @end
 
@@ -187,13 +184,11 @@
   [self.delegate passwordDetailsCoordinatorDidRemove:self];
 }
 
-- (void)showPasscodeDialogForReason:(PasscodeDialogReason)reason {
+- (void)showPasscodeDialog {
   NSString* title =
       l10n_util::GetNSString(IDS_IOS_SETTINGS_SET_UP_SCREENLOCK_TITLE);
-  NSString* message = l10n_util::GetNSString(
-      reason == PasscodeDialogReasonShowPassword
-          ? IDS_IOS_SETTINGS_SET_UP_SCREENLOCK_CONTENT
-          : IDS_IOS_SETTINGS_SET_UP_SCREENLOCK_CONTENT_FOR_MOVE_TO_ACCOUNT);
+  NSString* message =
+      l10n_util::GetNSString(IDS_IOS_SETTINGS_SET_UP_SCREENLOCK_CONTENT);
   self.alertCoordinator =
       [[AlertCoordinator alloc] initWithBaseViewController:self.viewController
                                                    browser:self.browser
@@ -371,13 +366,11 @@
 }
 
 - (void)onShareButtonPressed {
-  // TODO(crbug.com/1463882): Implement displaying appropriate view based on the
-  // family query and amount of credential groups.
-  DCHECK(!self.familyPickerCoordinator);
-  self.familyPickerCoordinator = [[FamilyPickerCoordinator alloc]
+  [self.passwordSharingCoordinator stop];
+  self.passwordSharingCoordinator = [[PasswordSharingCoordinator alloc]
       initWithBaseViewController:self.viewController
                          browser:self.browser];
-  [self.familyPickerCoordinator start];
+  [self.passwordSharingCoordinator start];
 }
 
 #pragma mark - PasswordDetailsMediatorDelegate
@@ -419,7 +412,13 @@
 - (void)updateFormManagers {
   web::WebState* activeWebState =
       self.browser->GetWebStateList()->GetActiveWebState();
-  DCHECK(activeWebState);
+  if (!activeWebState) {
+    // PasswordDetailsCoordinator and other settings coordinators always receive
+    // a normal Browser, even if they are started from incognito. So if only
+    // incognito tabs are open, `activeWebState` is null, causing a crash
+    // (crbug.com/1468506).
+    return;
+  }
   password_manager::PasswordManagerClient* passwordManagerClient =
       PasswordTabHelper::FromWebState(activeWebState)
           ->GetPasswordManagerClient();

@@ -7,9 +7,9 @@
 
 #include <utility>
 
+#import "base/apple/scoped_objc_class_swizzler.h"
 #include "base/compiler_specific.h"
 #include "base/mac/mac_util.h"
-#import "base/mac/scoped_objc_class_swizzler.h"
 #import "base/mac/scoped_sending_event.h"
 #import "base/message_loop/message_pump_mac.h"
 #include "base/no_destructor.h"
@@ -24,13 +24,9 @@
 #include "ui/views/interaction/element_tracker_views.h"
 #include "ui/views/widget/widget.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 namespace {
 
-base::mac::ScopedObjCClassSwizzler* g_populatemenu_swizzler = nullptr;
+base::apple::ScopedObjCClassSwizzler* g_populatemenu_swizzler = nullptr;
 
 // |g_filtered_entries_array| is only set during testing (see
 // +[ChromeSwizzleServicesMenuUpdater storeFilteredEntriesForTestingInArray:]).
@@ -152,7 +148,7 @@ NSMenuItem* GetMenuItemByID(ui::MenuModel* model,
     // a static so that it never goes out of scope, because the scoper's
     // destructor undoes the swizzling.
     Class swizzleClass = [ChromeSwizzleServicesMenuUpdater class];
-    static base::NoDestructor<base::mac::ScopedObjCClassSwizzler>
+    static base::NoDestructor<base::apple::ScopedObjCClassSwizzler>
         servicesMenuFilter(targetClass, swizzleClass, targetSelector);
     g_populatemenu_swizzler = servicesMenuFilter.get();
   });

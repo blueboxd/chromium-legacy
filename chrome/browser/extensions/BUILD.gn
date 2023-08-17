@@ -292,6 +292,10 @@ static_library("extensions") {
     "api/reading_list/reading_list_api.h",
     "api/reading_list/reading_list_api_constants.cc",
     "api/reading_list/reading_list_api_constants.h",
+    "api/reading_list/reading_list_event_router.cc",
+    "api/reading_list/reading_list_event_router.h",
+    "api/reading_list/reading_list_util.cc",
+    "api/reading_list/reading_list_util.h",
     "api/resources_private/resources_private_api.cc",
     "api/resources_private/resources_private_api.h",
     "api/runtime/chrome_runtime_api_delegate.cc",
@@ -568,6 +572,8 @@ static_library("extensions") {
     "extension_system_impl.h",
     "extension_tab_util.cc",
     "extension_tab_util.h",
+    "extension_telemetry_service_verdict_handler.cc",
+    "extension_telemetry_service_verdict_handler.h",
     "extension_ui_util.cc",
     "extension_ui_util.h",
     "extension_uninstall_dialog.cc",
@@ -734,6 +740,13 @@ static_library("extensions") {
     sources += [
       "api/messaging/native_messaging_policy_handler.cc",
       "api/messaging/native_messaging_policy_handler.h",
+    ]
+  }
+
+  if (is_chromeos_ash) {
+    sources += [
+      "file_handlers/web_file_handlers_permission_handler.cc",
+      "file_handlers/web_file_handlers_permission_handler.h",
     ]
   }
 
@@ -1175,11 +1188,11 @@ static_library("extensions") {
       "//ash/webui/camera_app_ui:mojo_bindings",
       "//ash/webui/file_manager/untrusted_resources:file_manager_untrusted_resources",
       "//ash/webui/resources:media_app_bundle_resources_grit",
+      "//ash/webui/settings/public/constants:mojom",
       "//chrome/browser/ash/crosapi",
       "//chrome/browser/ash/crostini:crostini_installer_types_mojom",
       "//chrome/browser/devtools",
       "//chrome/browser/nearby_sharing/common",
-      "//chrome/browser/ui/webui/settings/chromeos/constants:mojom",
       "//chromeos/ash/components/attestation",
       "//chromeos/ash/components/cryptohome",
       "//chromeos/ash/components/dbus",
@@ -1198,6 +1211,7 @@ static_library("extensions") {
       "//chromeos/ash/components/login/auth",
       "//chromeos/ash/components/login/login_state",
       "//chromeos/ash/components/network",
+      "//chromeos/ash/components/osauth/public",
       "//chromeos/ash/components/proximity_auth",
       "//chromeos/ash/components/settings",
       "//chromeos/ash/components/system",
@@ -1291,7 +1305,6 @@ static_library("extensions") {
       "system_display/display_info_provider_mac.cc",
       "system_display/display_info_provider_mac.h",
     ]
-    configs += [ "//build/config/compiler:enable_arc" ]
   }
 
   if (is_linux || is_chromeos_lacros) {

@@ -43,6 +43,7 @@
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/interest_group/ad_auction_constants.h"
 #include "third_party/blink/public/common/interest_group/ad_auction_currencies.h"
+#include "third_party/blink/public/common/interest_group/ad_display_size.h"
 #include "third_party/blink/public/common/interest_group/interest_group.h"
 #include "third_party/blink/public/mojom/interest_group/interest_group_types.mojom.h"
 #include "url/gurl.h"
@@ -488,13 +489,15 @@ class BidderWorkletTest : public testing::Test {
       const absl::optional<GURL>& expected_report_url,
       const base::flat_map<std::string, GURL>& expected_ad_beacon_map =
           base::flat_map<std::string, GURL>(),
+      const base::flat_map<std::string, std::string>& expected_ad_macro_map =
+          base::flat_map<std::string, std::string>(),
       PrivateAggregationRequests expected_pa_requests = {},
       const std::vector<std::string>& expected_errors =
           std::vector<std::string>()) {
     RunReportWinWithJavascriptExpectingResult(
         CreateReportWinScript(function_body), expected_report_url,
-        expected_ad_beacon_map, std::move(expected_pa_requests),
-        expected_errors);
+        expected_ad_beacon_map, std::move(expected_ad_macro_map),
+        std::move(expected_pa_requests), expected_errors);
   }
 
   // Configures `url_loader_factory_` to return a reportWin() script with the
@@ -504,6 +507,8 @@ class BidderWorkletTest : public testing::Test {
       const absl::optional<GURL>& expected_report_url,
       const base::flat_map<std::string, GURL>& expected_ad_beacon_map =
           base::flat_map<std::string, GURL>(),
+      const base::flat_map<std::string, std::string>& expected_ad_macro_map =
+          {},
       PrivateAggregationRequests expected_pa_requests = {},
       const std::vector<std::string>& expected_errors =
           std::vector<std::string>()) {
@@ -511,6 +516,7 @@ class BidderWorkletTest : public testing::Test {
     AddJavascriptResponse(&url_loader_factory_, interest_group_bidding_url_,
                           javascript);
     RunReportWinExpectingResult(expected_report_url, expected_ad_beacon_map,
+                                std::move(expected_ad_macro_map),
                                 std::move(expected_pa_requests),
                                 expected_errors);
   }
@@ -524,6 +530,7 @@ class BidderWorkletTest : public testing::Test {
       mojom::BidderWorklet* bidder_worklet,
       const absl::optional<GURL>& expected_report_url,
       const base::flat_map<std::string, GURL>& expected_ad_beacon_map,
+      const base::flat_map<std::string, std::string>& expected_ad_macro_map,
       PrivateAggregationRequests expected_pa_requests,
       bool expected_reporting_latency_timeout,
       const std::vector<std::string>& expected_errors,
@@ -544,18 +551,22 @@ class BidderWorkletTest : public testing::Test {
         base::BindOnce(
             [](const absl::optional<GURL>& expected_report_url,
                const base::flat_map<std::string, GURL>& expected_ad_beacon_map,
+               const base::flat_map<std::string, std::string>&
+                   expected_ad_macro_map,
                PrivateAggregationRequests expected_pa_requests,
                bool expected_reporting_latency_timeout,
                const std::vector<std::string>& expected_errors,
                base::OnceClosure done_closure,
                const absl::optional<GURL>& report_url,
                const base::flat_map<std::string, GURL>& ad_beacon_map,
+               const base::flat_map<std::string, std::string>& ad_macro_map,
                PrivateAggregationRequests pa_requests,
                base::TimeDelta reporting_latency,
                const std::vector<std::string>& errors) {
               EXPECT_EQ(expected_report_url, report_url);
               EXPECT_EQ(expected_errors, errors);
               EXPECT_EQ(expected_ad_beacon_map, ad_beacon_map);
+              EXPECT_EQ(expected_ad_macro_map, ad_macro_map);
               EXPECT_EQ(expected_pa_requests, pa_requests);
               if (expected_reporting_latency_timeout) {
                 // We only know that about the time of the timeout should have
@@ -566,8 +577,9 @@ class BidderWorkletTest : public testing::Test {
               std::move(done_closure).Run();
             },
             expected_report_url, expected_ad_beacon_map,
-            std::move(expected_pa_requests), expected_reporting_latency_timeout,
-            expected_errors, std::move(done_closure)));
+            std::move(expected_ad_macro_map), std::move(expected_pa_requests),
+            expected_reporting_latency_timeout, expected_errors,
+            std::move(done_closure)));
   }
 
   // Loads and runs a reportWin() with the provided return line, expecting the
@@ -576,6 +588,8 @@ class BidderWorkletTest : public testing::Test {
       const absl::optional<GURL>& expected_report_url,
       const base::flat_map<std::string, GURL>& expected_ad_beacon_map =
           base::flat_map<std::string, GURL>(),
+      const base::flat_map<std::string, std::string>& expected_ad_macro_map =
+          base::flat_map<std::string, std::string>(),
       PrivateAggregationRequests expected_pa_requests = {},
       const std::vector<std::string>& expected_errors =
           std::vector<std::string>()) {
@@ -585,7 +599,7 @@ class BidderWorkletTest : public testing::Test {
     base::RunLoop run_loop;
     RunReportWinExpectingResultAsync(
         bidder_worklet.get(), expected_report_url, expected_ad_beacon_map,
-        std::move(expected_pa_requests),
+        std::move(expected_ad_macro_map), std::move(expected_pa_requests),
         /*expected_reporting_latency_timeout=*/false, expected_errors,
         run_loop.QuitClosure());
     run_loop.Run();
@@ -680,7 +694,7 @@ class BidderWorkletTest : public testing::Test {
             : direct_from_seller_auction_signals_,
         browser_signal_seller_origin_, browser_signal_top_level_seller_origin_,
         browser_signal_recency_generate_bid_, CreateBiddingBrowserSignals(),
-        auction_start_time_,
+        auction_start_time_, requested_ad_size_,
         /*trace_id=*/1, std::move(generate_bid_client), std::move(finalizer));
     bidder_worklet->SendPendingSignalsRequests();
   }
@@ -717,7 +731,7 @@ class BidderWorkletTest : public testing::Test {
         direct_from_seller_auction_signals_, browser_signal_seller_origin_,
         browser_signal_top_level_seller_origin_,
         browser_signal_recency_generate_bid_, CreateBiddingBrowserSignals(),
-        auction_start_time_,
+        auction_start_time_, requested_ad_size_,
         /*trace_id=*/1, GenerateBidClientWithCallbacks::CreateNeverCompletes(),
         bid_finalizer.BindNewEndpointAndPassReceiver());
     bidder_worklet->SendPendingSignalsRequests();
@@ -912,7 +926,12 @@ class BidderWorkletTest : public testing::Test {
   // relative to the time of the auction, so no need to vary the auction time.
   const base::Time auction_start_time_ = base::Time::Now();
 
-  // Reuseable run loop for loading the script. It's always populated after
+  // This is the requested ad size provided to BeginGenerateBid() by the auction
+  // logic. It's piped through to the browserSignals JS object in the
+  // buyer's generateBid() function if it is present.
+  absl::optional<blink::AdSize> requested_ad_size_;
+
+  // Reusable run loop for loading the script. It's always populated after
   // creating the worklet, to cause a crash if the callback is invoked
   // synchronously.
   std::unique_ptr<base::RunLoop> load_script_run_loop_;
@@ -2553,7 +2572,7 @@ TEST_F(BidderWorkletTest, GenerateBidParallel) {
           direct_from_seller_auction_signals_, browser_signal_seller_origin_,
           browser_signal_top_level_seller_origin_,
           browser_signal_recency_generate_bid_, CreateBiddingBrowserSignals(),
-          auction_start_time_,
+          auction_start_time_, requested_ad_size_,
           /*trace_id=*/1,
           GenerateBidClientWithCallbacks::Create(base::BindLambdaForTesting(
               [&run_loop, &num_generate_bid_calls, bid_value](
@@ -2670,7 +2689,7 @@ TEST_F(BidderWorkletTest, GenerateBidTrustedBiddingSignalsParallelBatched1) {
         direct_from_seller_auction_signals_, browser_signal_seller_origin_,
         browser_signal_top_level_seller_origin_,
         browser_signal_recency_generate_bid_, CreateBiddingBrowserSignals(),
-        auction_start_time_,
+        auction_start_time_, requested_ad_size_,
         /*trace_id=*/1,
         GenerateBidClientWithCallbacks::Create(base::BindLambdaForTesting(
             [&run_loop, &num_generate_bid_calls, i](
@@ -2795,7 +2814,7 @@ TEST_F(BidderWorkletTest, GenerateBidTrustedBiddingSignalsParallelBatched2) {
         direct_from_seller_auction_signals_, browser_signal_seller_origin_,
         browser_signal_top_level_seller_origin_,
         browser_signal_recency_generate_bid_, CreateBiddingBrowserSignals(),
-        auction_start_time_,
+        auction_start_time_, requested_ad_size_,
         /*trace_id=*/1,
         GenerateBidClientWithCallbacks::Create(base::BindLambdaForTesting(
             [&run_loop, &num_generate_bid_calls, i](
@@ -2926,7 +2945,7 @@ TEST_F(BidderWorkletTest, GenerateBidTrustedBiddingSignalsParallelBatched3) {
         direct_from_seller_auction_signals_, browser_signal_seller_origin_,
         browser_signal_top_level_seller_origin_,
         browser_signal_recency_generate_bid_, CreateBiddingBrowserSignals(),
-        auction_start_time_,
+        auction_start_time_, requested_ad_size_,
         /*trace_id=*/1,
         GenerateBidClientWithCallbacks::Create(base::BindLambdaForTesting(
             [&run_loop, &num_generate_bid_calls, i](
@@ -3036,7 +3055,7 @@ TEST_F(BidderWorkletTest, GenerateBidTrustedBiddingSignalsParallelNotBatched) {
         direct_from_seller_auction_signals_, browser_signal_seller_origin_,
         browser_signal_top_level_seller_origin_,
         browser_signal_recency_generate_bid_, CreateBiddingBrowserSignals(),
-        auction_start_time_,
+        auction_start_time_, requested_ad_size_,
         /*trace_id=*/1,
         GenerateBidClientWithCallbacks::Create(base::BindLambdaForTesting(
             [&run_loop, &num_generate_bid_calls, i](
@@ -3688,13 +3707,13 @@ TEST_F(BidderWorkletTest, WasmReportWin) {
       data_version_.has_value(),
       /*trace_id=*/1,
       base::BindLambdaForTesting(
-          [&run_loop](const absl::optional<GURL>& report_url,
-                      const base::flat_map<std::string, GURL>& ad_beacon_map,
-                      PrivateAggregationRequests pa_requests,
-                      base::TimeDelta reporting_latency,
-                      const std::vector<std::string>& errors) {
-            run_loop.Quit();
-          }));
+          [&run_loop](
+              const absl::optional<GURL>& report_url,
+              const base::flat_map<std::string, GURL>& ad_beacon_map,
+              const base::flat_map<std::string, std::string>& ad_macro_map,
+              PrivateAggregationRequests pa_requests,
+              base::TimeDelta reporting_latency,
+              const std::vector<std::string>& errors) { run_loop.Quit(); }));
   base::RunLoop().RunUntilIdle();
   AddResponse(&url_loader_factory_, GURL(kWasmUrl), kWasmMimeType,
               /*charset=*/absl::nullopt, ToyWasm());
@@ -3723,6 +3742,7 @@ TEST_F(BidderWorkletTest, WasmReportWin2) {
   RunReportWinExpectingResultAsync(
       bidder_worklet.get(), GURL("https://foo.test"),
       /*expected_ad_beacon_map=*/{},
+      /*expected_ad_macro_map=*/{},
       /*expected_pa_requests=*/{},
       /*expected_reporting_latency_timeout=*/false,
       /*expected_errors=*/{},
@@ -4651,8 +4671,8 @@ TEST_F(BidderWorkletTest, GenerateBidSetPriority) {
           )"),
       /*expected_bid=*/mojom::BidderWorkletBidPtr(),
       /*expected_data_version=*/absl::nullopt,
-      {"https://url.test/:6 Uncaught TypeError: setPriority requires 1 double "
-       "parameter."});
+      {"https://url.test/:6 Uncaught TypeError: setPriority(): at least 1 "
+       "argument(s) are required."});
   // priority not a double
   RunGenerateBidWithJavascriptExpectingResult(
       CreateGenerateBidScript(
@@ -4662,8 +4682,8 @@ TEST_F(BidderWorkletTest, GenerateBidSetPriority) {
           )"),
       /*expected_bid=*/mojom::BidderWorkletBidPtr(),
       /*expected_data_version=*/absl::nullopt,
-      {"https://url.test/:6 Uncaught TypeError: setPriority requires 1 double "
-       "parameter."});
+      {"https://url.test/:6 Uncaught TypeError: setPriority(): Converting "
+       "argument 'priority' to a Number did not produce a finite double."});
   // priority not finite
   RunGenerateBidWithJavascriptExpectingResult(
       CreateGenerateBidScript(
@@ -4673,8 +4693,8 @@ TEST_F(BidderWorkletTest, GenerateBidSetPriority) {
           )"),
       /*expected_bid=*/mojom::BidderWorkletBidPtr(),
       /*expected_data_version=*/absl::nullopt,
-      {"https://url.test/:6 Uncaught TypeError: setPriority requires 1 finite "
-       "double parameter."});
+      {"https://url.test/:6 Uncaught TypeError: setPriority(): Converting "
+       "argument 'priority' to a Number did not produce a finite double."});
   // priority called twice
   RunGenerateBidWithJavascriptExpectingResult(
       CreateGenerateBidScript(
@@ -4734,6 +4754,19 @@ TEST_F(BidderWorkletTest, GenerateBidSetPriority) {
       /*expected_debug_loss_report_url=*/absl::nullopt,
       /*expected_debug_win_report_url=*/absl::nullopt,
       /*expected_set_priority=*/9.0);
+
+  // priority argument doesn't terminate
+  RunGenerateBidWithJavascriptExpectingResult(
+      CreateGenerateBidScript(
+          R"({ad: "ad", bid:1, render:"https://response.test/" })",
+          /*extra_code=*/R"(
+            setPriority({
+              valueOf:() => {while(true) {}}
+            });
+          )"),
+      /*expected_bid=*/mojom::BidderWorkletBidPtr(),
+      /*expected_data_version=*/absl::nullopt,
+      {"https://url.test/ execution of `generateBid` timed out."});
 }
 
 TEST_F(BidderWorkletTest, GenerateBidSetPrioritySignalsOverrides) {
@@ -4745,19 +4778,40 @@ TEST_F(BidderWorkletTest, GenerateBidSetPrioritySignalsOverrides) {
           )"),
       /*expected_bid=*/mojom::BidderWorkletBidPtr(),
       /*expected_data_version=*/absl::nullopt,
-      {"https://url.test/:6 Uncaught TypeError: setPrioritySignalsOverride "
-       "requires at least 1 parameter."});
+      {"https://url.test/:6 Uncaught TypeError: setPrioritySignalsOverride(): "
+       "at least 1 argument(s) are required."});
 
-  // Key not a string.
+  // Key not a string, so it gets turned into one.
   RunGenerateBidWithJavascriptExpectingResult(
       CreateGenerateBidScript(R"({bid:1, render:"https://response.test/" })",
                               /*extra_code=*/R"(
             setPrioritySignalsOverride(15, 15);
           )"),
+      /*expected_bid=*/
+      mojom::BidderWorkletBid::New(
+          "null", 1, /*bid_currency=*/absl::nullopt, /*ad_cost=*/absl::nullopt,
+          blink::AdDescriptor(GURL("https://response.test/")),
+          /*ad_component_descriptors=*/absl::nullopt,
+          /*modeling_signals=*/absl::nullopt, base::TimeDelta()),
+      /*expected_data_version=*/absl::nullopt,
+      /*expected_errors=*/{},
+      /*expected_debug_loss_report_url=*/absl::nullopt,
+      /*expected_debug_win_report_url=*/absl::nullopt,
+      /*expected_set_priority=*/absl::nullopt,
+      /*expected_update_priority_signals_overrides=*/{{"15", 15}});
+
+  // Key can't be turned into a string.
+  RunGenerateBidWithJavascriptExpectingResult(
+      CreateGenerateBidScript(R"({bid:1, render:"https://response.test/" })",
+                              /*extra_code=*/R"(
+            setPrioritySignalsOverride({
+              toString: () => { return {} }
+            }, 15);
+          )"),
       /*expected_bid=*/mojom::BidderWorkletBidPtr(),
       /*expected_data_version=*/absl::nullopt,
-      {"https://url.test/:6 Uncaught TypeError: First argument to "
-       "setPrioritySignalsOverride must be a String."});
+      {"https://url.test/:6 Uncaught TypeError: Cannot convert object to "
+       "primitive value."});
 
   // Value not a double.
   RunGenerateBidWithJavascriptExpectingResult(
@@ -4767,8 +4821,9 @@ TEST_F(BidderWorkletTest, GenerateBidSetPrioritySignalsOverrides) {
           )"),
       /*expected_bid=*/mojom::BidderWorkletBidPtr(),
       /*expected_data_version=*/absl::nullopt,
-      {"https://url.test/:6 Uncaught TypeError: Second argument to "
-       "setPrioritySignalsOverride must be a finite Number or null."});
+      {"https://url.test/:6 Uncaught TypeError: setPrioritySignalsOverride(): "
+       "Converting argument 'priority' to a Number did not produce a finite "
+       "double."});
 
   // Value not finite.
   RunGenerateBidWithJavascriptExpectingResult(
@@ -4778,8 +4833,21 @@ TEST_F(BidderWorkletTest, GenerateBidSetPrioritySignalsOverrides) {
           )"),
       /*expected_bid=*/mojom::BidderWorkletBidPtr(),
       /*expected_data_version=*/absl::nullopt,
-      {"https://url.test/:6 Uncaught TypeError: Second argument to "
-       "setPrioritySignalsOverride must be a finite Number or null."});
+      {"https://url.test/:6 Uncaught TypeError: setPrioritySignalsOverride(): "
+       "Converting argument 'priority' to a Number did not produce a finite "
+       "double."});
+
+  // Value conversion doesn't terminate.
+  RunGenerateBidWithJavascriptExpectingResult(
+      CreateGenerateBidScript(R"({bid:1, render:"https://response.test/" })",
+                              /*extra_code=*/R"(
+            setPrioritySignalsOverride("key", {
+              valueOf:() => {while(true) {}}
+            });
+          )"),
+      /*expected_bid=*/mojom::BidderWorkletBidPtr(),
+      /*expected_data_version=*/absl::nullopt,
+      {"https://url.test/ execution of `generateBid` timed out."});
 
   // A key with no value means the value should be removed.
   RunGenerateBidWithJavascriptExpectingResult(
@@ -4948,6 +5016,7 @@ TEST_F(BidderWorkletTest, ReportWin) {
       R"(sendReportTo("http://http.not.allowed.test"))",
       /*expected_report_url =*/absl::nullopt,
       /*expected_ad_beacon_map=*/{},
+      /*expected_ad_macro_map=*/{},
       /*expected_pa_requests=*/{},
       {"https://url.test/:11 Uncaught TypeError: sendReportTo must be passed a "
        "valid HTTPS url."});
@@ -4955,6 +5024,7 @@ TEST_F(BidderWorkletTest, ReportWin) {
       R"(sendReportTo("file:///file.not.allowed.test"))",
       /*expected_report_url =*/absl::nullopt,
       /*expected_ad_beacon_map=*/{},
+      /*expected_ad_macro_map=*/{},
       /*expected_pa_requests=*/{},
       {"https://url.test/:11 Uncaught TypeError: sendReportTo must be passed a "
        "valid HTTPS url."});
@@ -4962,6 +5032,7 @@ TEST_F(BidderWorkletTest, ReportWin) {
   RunReportWinWithFunctionBodyExpectingResult(
       R"(sendReportTo(""))", /*expected_report_url =*/absl::nullopt,
       /*expected_ad_beacon_map=*/{},
+      /*expected_ad_macro_map=*/{},
       /*expected_pa_requests=*/{},
       {"https://url.test/:11 Uncaught TypeError: sendReportTo must be passed a "
        "valid HTTPS url."});
@@ -4969,9 +5040,19 @@ TEST_F(BidderWorkletTest, ReportWin) {
   RunReportWinWithFunctionBodyExpectingResult(
       R"(sendReportTo("https://foo.test");sendReportTo("https://foo.test"))",
       /*expected_report_url =*/absl::nullopt, /*expected_ad_beacon_map=*/{},
+      /*expected_ad_macro_map=*/{},
       /*expected_pa_requests=*/{},
       {"https://url.test/:11 Uncaught TypeError: sendReportTo may be called at "
        "most once."});
+
+  RunReportWinWithFunctionBodyExpectingResult(
+      R"(sendReportTo({
+              toString:() => {while(true) {}}
+         }))",
+      /*expected_report_url =*/absl::nullopt, /*expected_ad_beacon_map=*/{},
+      /*expected_ad_macro_map=*/{},
+      /*expected_pa_requests=*/{},
+      {"https://url.test/ execution of `reportWin` timed out."});
 }
 
 // Debug win/loss reporting APIs should do nothing when feature
@@ -5020,13 +5101,16 @@ TEST_F(BidderWorkletTest, DeleteBeforeReportWinCallback) {
       browser_signal_top_level_seller_origin_, data_version_.value_or(0),
       data_version_.has_value(),
       /*trace_id=*/1,
-      base::BindOnce([](const absl::optional<GURL>& report_url,
-                        const base::flat_map<std::string, GURL>& ad_beacon_map,
-                        PrivateAggregationRequests pa_requests,
-                        base::TimeDelta reporting_latency,
-                        const std::vector<std::string>& errors) {
-        ADD_FAILURE() << "Callback should not be invoked since worklet deleted";
-      }));
+      base::BindOnce(
+          [](const absl::optional<GURL>& report_url,
+             const base::flat_map<std::string, GURL>& ad_beacon_map,
+             const base::flat_map<std::string, std::string>& ad_macro_map,
+             PrivateAggregationRequests pa_requests,
+             base::TimeDelta reporting_latency,
+             const std::vector<std::string>& errors) {
+            ADD_FAILURE()
+                << "Callback should not be invoked since worklet deleted";
+          }));
   base::RunLoop().RunUntilIdle();
   bidder_worklet.reset();
   event_handle->Signal();
@@ -5075,6 +5159,7 @@ TEST_F(BidderWorkletTest, ReportWinParallel) {
               [&run_loop, &num_report_win_calls, i](
                   const absl::optional<GURL>& report_url,
                   const base::flat_map<std::string, GURL>& ad_beacon_map,
+                  const base::flat_map<std::string, std::string>& ad_macro_map,
                   PrivateAggregationRequests pa_requests,
                   base::TimeDelta reporting_latency,
                   const std::vector<std::string>& errors) {
@@ -5125,6 +5210,7 @@ TEST_F(BidderWorkletTest, ReportWinParallelLoadFails) {
         base::BindOnce(
             [](const absl::optional<GURL>& report_url,
                const base::flat_map<std::string, GURL>& ad_beacon_map,
+               const base::flat_map<std::string, std::string>& ad_macro_map,
                PrivateAggregationRequests pa_requests,
                base::TimeDelta reporting_latency,
                const std::vector<std::string>& errors) {
@@ -5146,6 +5232,7 @@ TEST_F(BidderWorkletTest, ReportWinDateNotAvailable) {
       R"(sendReportTo("https://foo.test/" + Date().toString()))",
       /*expected_report_url =*/absl::nullopt,
       /*expected_ad_beacon_map=*/{},
+      /*expected_ad_macro_map=*/{},
       /*expected_pa_requests=*/{},
       {"https://url.test/:11 Uncaught ReferenceError: Date is not defined."});
 }
@@ -5220,7 +5307,7 @@ TEST_F(BidderWorkletTest, ReportWinLoadCompletionOrder) {
     url_loader_factory_.ClearResponses();
     auto run_loop = std::make_unique<base::RunLoop>();
     RunReportWinExpectingResultAsync(
-        bidder_worklet.get(), GURL("https://foo.test/"), {}, {},
+        bidder_worklet.get(), GURL("https://foo.test/"), {}, {}, {},
         /*expected_reporting_latency_timeout=*/false, {},
         run_loop->QuitClosure());
     for (size_t i = 0; i < std::size(kResponses); ++i) {
@@ -5427,7 +5514,27 @@ TEST_F(BidderWorkletTest, ReportWinBrowserSignalRecency) {
       GURL("https://jumboshrimp.test"));
 }
 
-TEST_F(BidderWorkletTest, ReportWinBrowserSignalKAnonStatus) {
+TEST_F(BidderWorkletTest, ReportWinSignalKAnonStatusNotExposedByDefault) {
+  RunReportWinWithFunctionBodyExpectingResult(
+      R"(if (!("kAnonStatus" in browserSignals))
+            sendReportTo('https://pass.test');)",
+      GURL("https://pass.test"));
+}
+
+class BidderWorkletReportWinSignalKAnonStatusEnableTest
+    : public BidderWorkletTest {
+ public:
+  BidderWorkletReportWinSignalKAnonStatusEnableTest() {
+    feature_list_.InitAndEnableFeature(
+        blink::features::kFledgePassKAnonStatusToReportWin);
+  }
+
+ protected:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+TEST_F(BidderWorkletReportWinSignalKAnonStatusEnableTest,
+       KAnonStatusSignalExposed) {
   kanon_mode_ = auction_worklet::mojom::KAnonymityBidMode::kEnforce;
   bid_is_kanon_ = true;
   RunReportWinWithFunctionBodyExpectingResult(
@@ -5526,11 +5633,13 @@ TEST_F(BidderWorkletTest, ScriptIsolation) {
         data_version_.has_value(),
         /*trace_id=*/1,
         base::BindLambdaForTesting(
-            [&run_loop](const absl::optional<GURL>& report_url,
-                        const base::flat_map<std::string, GURL>& ad_beacon_map,
-                        PrivateAggregationRequests pa_requests,
-                        base::TimeDelta reporting_latency,
-                        const std::vector<std::string>& errors) {
+            [&run_loop](
+                const absl::optional<GURL>& report_url,
+                const base::flat_map<std::string, GURL>& ad_beacon_map,
+                const base::flat_map<std::string, std::string>& ad_macro_map,
+                PrivateAggregationRequests pa_requests,
+                base::TimeDelta reporting_latency,
+                const std::vector<std::string>& errors) {
               EXPECT_EQ(GURL("https://23.test/"), report_url);
               EXPECT_TRUE(errors.empty());
               run_loop.Quit();
@@ -5963,7 +6072,7 @@ TEST_F(BidderWorkletTest, InstrumentationBreakpoints) {
   // Now ask for reporting. This should hit the other breakpoint.
   base::RunLoop run_loop;
   RunReportWinExpectingResultAsync(
-      worklet.get(), GURL("https://foo.test/"), {}, {},
+      worklet.get(), GURL("https://foo.test/"), {}, {}, {},
       /*expected_reporting_latency_timeout=*/false, {}, run_loop.QuitClosure());
 
   TestDevToolsAgentClient::Event breakpoint_hit2 =
@@ -6287,13 +6396,15 @@ TEST_F(BidderWorkletTest, CancelationDtor) {
       browser_signal_top_level_seller_origin_, data_version_.value_or(0),
       data_version_.has_value(),
       /*trace_id=*/1,
-      base::BindOnce([](const absl::optional<GURL>& report_url,
-                        const base::flat_map<std::string, GURL>& ad_beacon_map,
-                        PrivateAggregationRequests pa_requests,
-                        base::TimeDelta reporting_latency,
-                        const std::vector<std::string>& errors) {
-        ADD_FAILURE() << "Callback should not be invoked.";
-      }));
+      base::BindOnce(
+          [](const absl::optional<GURL>& report_url,
+             const base::flat_map<std::string, GURL>& ad_beacon_map,
+             const base::flat_map<std::string, std::string>& ad_macro_map,
+             PrivateAggregationRequests pa_requests,
+             base::TimeDelta reporting_latency,
+             const std::vector<std::string>& errors) {
+            ADD_FAILURE() << "Callback should not be invoked.";
+          }));
 
   // Spin the event loop to let the signals negotiation go through. This is
   // for this thread only since the V8 thread is wedged, but it's enough since
@@ -6391,11 +6502,43 @@ TEST_F(BidderWorkletBiddingAndScoringDebugReportingAPIEnabledTest,
        ForDebuggingOnlyReportsInvalidParameter) {
   RunGenerateBidWithJavascriptExpectingResult(
       CreateBasicGenerateBidScriptWithDebuggingReport(
+          R"(forDebuggingOnly.reportAdAuctionLoss())"),
+      /*expected_bid=*/mojom::BidderWorkletBidPtr(),
+      /*expected_data_version=*/absl::nullopt,
+      {"https://url.test/:5 Uncaught TypeError: "
+       "reportAdAuctionLoss(): at least 1 argument(s) are required."});
+
+  RunGenerateBidWithJavascriptExpectingResult(
+      CreateBasicGenerateBidScriptWithDebuggingReport(
+          R"(forDebuggingOnly.reportAdAuctionWin())"),
+      /*expected_bid=*/mojom::BidderWorkletBidPtr(),
+      /*expected_data_version=*/absl::nullopt,
+      {"https://url.test/:5 Uncaught TypeError: "
+       "reportAdAuctionWin(): at least 1 argument(s) are required."});
+
+  RunGenerateBidWithJavascriptExpectingResult(
+      CreateBasicGenerateBidScriptWithDebuggingReport(
+          R"(forDebuggingOnly.reportAdAuctionLoss({toString:42}))"),
+      /*expected_bid=*/mojom::BidderWorkletBidPtr(),
+      /*expected_data_version=*/absl::nullopt,
+      {"https://url.test/:5 Uncaught TypeError: Cannot convert object to "
+       "primitive value."});
+
+  RunGenerateBidWithJavascriptExpectingResult(
+      CreateBasicGenerateBidScriptWithDebuggingReport(
+          R"(forDebuggingOnly.reportAdAuctionWin({toString:42}))"),
+      /*expected_bid=*/mojom::BidderWorkletBidPtr(),
+      /*expected_data_version=*/absl::nullopt,
+      {"https://url.test/:5 Uncaught TypeError: Cannot convert object to "
+       "primitive value."});
+
+  RunGenerateBidWithJavascriptExpectingResult(
+      CreateBasicGenerateBidScriptWithDebuggingReport(
           R"(forDebuggingOnly.reportAdAuctionLoss(null))"),
       /*expected_bid=*/mojom::BidderWorkletBidPtr(),
       /*expected_data_version=*/absl::nullopt,
       {"https://url.test/:5 Uncaught TypeError: "
-       "reportAdAuctionLoss requires 1 string parameter."});
+       "reportAdAuctionLoss must be passed a valid HTTPS url."});
 
   RunGenerateBidWithJavascriptExpectingResult(
       CreateBasicGenerateBidScriptWithDebuggingReport(
@@ -6403,7 +6546,7 @@ TEST_F(BidderWorkletBiddingAndScoringDebugReportingAPIEnabledTest,
       /*expected_bid=*/mojom::BidderWorkletBidPtr(),
       /*expected_data_version=*/absl::nullopt,
       {"https://url.test/:5 Uncaught TypeError: "
-       "reportAdAuctionWin requires 1 string parameter."});
+       "reportAdAuctionWin must be passed a valid HTTPS url."});
 
   std::vector<std::string> non_https_urls = {"http://report.url",
                                              "file:///foo/", "Not a URL"};
@@ -6471,6 +6614,27 @@ TEST_F(BidderWorkletBiddingAndScoringDebugReportingAPIEnabledTest,
       /*expected_errors=*/{},
       /*expected_debug_loss_report_url=*/absl::nullopt,
       GURL("https://win.url2"));
+}
+
+TEST_F(BidderWorkletBiddingAndScoringDebugReportingAPIEnabledTest,
+       ForDebuggingOnlyArgumentTimeout) {
+  RunGenerateBidWithJavascriptExpectingResult(
+      CreateBasicGenerateBidScriptWithDebuggingReport(
+          R"(forDebuggingOnly.reportAdAuctionLoss({
+              toString:() => {while(true) {}}
+          }))"),
+      /*expected_bid=*/mojom::BidderWorkletBidPtr(),
+      /*expected_data_version=*/absl::nullopt,
+      {"https://url.test/ execution of `generateBid` timed out."});
+
+  RunGenerateBidWithJavascriptExpectingResult(
+      CreateBasicGenerateBidScriptWithDebuggingReport(
+          R"(forDebuggingOnly.reportAdAuctionWin({
+              toString:() => {while(true) {}}
+          }))"),
+      /*expected_bid=*/mojom::BidderWorkletBidPtr(),
+      /*expected_data_version=*/absl::nullopt,
+      {"https://url.test/ execution of `generateBid` timed out."});
 }
 
 TEST_F(BidderWorkletBiddingAndScoringDebugReportingAPIEnabledTest,
@@ -6544,6 +6708,7 @@ TEST_F(BidderWorkletTest, ReportWinRegisterAdBeacon) {
       registerAdBeacon())",
       /*expected_report_url =*/absl::nullopt,
       /*expected_ad_beacon_map=*/{},
+      /*expected_ad_macro_map=*/{},
       /*expected_pa_requests=*/{},
       {"https://url.test/:15 Uncaught TypeError: registerAdBeacon may be "
        "called at most once."});
@@ -6573,39 +6738,47 @@ TEST_F(BidderWorkletTest, ReportWinRegisterAdBeacon) {
       R"(registerAdBeacon())",
       /*expected_report_url =*/absl::nullopt,
       /*expected_ad_beacon_map=*/{},
+      /*expected_ad_macro_map=*/{},
       /*expected_pa_requests=*/{},
-      {"https://url.test/:11 Uncaught TypeError: registerAdBeacon requires 1 "
-       "object parameter."});
+      {"https://url.test/:11 Uncaught TypeError: registerAdBeacon(): at least "
+       "1 argument(s) are required."});
 
   // Error if parameter is not an object
   RunReportWinWithFunctionBodyExpectingResult(
       R"(registerAdBeacon("foo"))",
       /*expected_report_url =*/absl::nullopt,
       /*expected_ad_beacon_map=*/{},
+      /*expected_ad_macro_map=*/{},
       /*expected_pa_requests=*/{},
-      {"https://url.test/:11 Uncaught TypeError: registerAdBeacon requires 1 "
-       "object parameter."});
+      {"https://url.test/:11 Uncaught TypeError: registerAdBeacon(): Cannot "
+       "convert argument 'map' to a record since it's not an Object."});
 
-  // Error if parameter is not an object
-  RunReportWinWithFunctionBodyExpectingResult(
-      R"(registerAdBeacon("foo"))",
-      /*expected_report_url =*/absl::nullopt,
-      /*expected_ad_beacon_map=*/{},
-      /*expected_pa_requests=*/{},
-      {"https://url.test/:11 Uncaught TypeError: registerAdBeacon requires 1 "
-       "object parameter."});
-
-  // Error if parameter attributes are not strings
+  // OK if parameter attributes are not strings
   RunReportWinWithFunctionBodyExpectingResult(
       R"(registerAdBeacon({
         'click': "https://click.example.com/",
         1: "https://view.example.com/",
       }))",
       /*expected_report_url =*/absl::nullopt,
+      /*expected_ad_beacon_map=*/
+      {{"click", GURL("https://click.example.com/")},
+       {"1", GURL("https://view.example.com/")}},
+      /*expected_ad_macro_map=*/{},
+      /*expected_pa_requests=*/{}, {});
+
+  // ... but keys must be convertible to strings
+  RunReportWinWithFunctionBodyExpectingResult(
+      R"(let map = {
+           'click': "https://click.example.com/"
+         }
+         map[Symbol('a')] = "https://view.example.com/";
+         registerAdBeacon(map))",
+      /*expected_report_url =*/absl::nullopt,
       /*expected_ad_beacon_map=*/{},
+      /*expected_ad_macro_map=*/{},
       /*expected_pa_requests=*/{},
-      {"https://url.test/:11 Uncaught TypeError: registerAdBeacon object "
-       "attributes must be strings."});
+      {"https://url.test/:15 Uncaught TypeError: Cannot convert a Symbol value "
+       "to a string."});
 
   // Error if invalid reporting URL
   RunReportWinWithFunctionBodyExpectingResult(
@@ -6615,8 +6788,9 @@ TEST_F(BidderWorkletTest, ReportWinRegisterAdBeacon) {
       }))",
       /*expected_report_url =*/absl::nullopt,
       /*expected_ad_beacon_map=*/{},
+      /*expected_ad_macro_map=*/{},
       /*expected_pa_requests=*/{},
-      {"https://url.test/:11 Uncaught TypeError: registerAdBeacon invalid "
+      {"https://url.test/:11 Uncaught TypeError: registerAdBeacon(): invalid "
        "reporting url for key 'view': 'gopher://view.example.com/'."});
 
   // Error if not trustworthy reporting URL
@@ -6627,9 +6801,22 @@ TEST_F(BidderWorkletTest, ReportWinRegisterAdBeacon) {
       }))",
       /*expected_report_url =*/absl::nullopt,
       /*expected_ad_beacon_map=*/{},
+      /*expected_ad_macro_map=*/{},
       /*expected_pa_requests=*/{},
-      {"https://url.test/:11 Uncaught TypeError: registerAdBeacon invalid "
+      {"https://url.test/:11 Uncaught TypeError: registerAdBeacon(): invalid "
        "reporting url for key 'view': 'http://view.example.com/'."});
+
+  // Special case for error message if the key has mismatched surrogates.
+  RunReportWinWithFunctionBodyExpectingResult(
+      R"(registerAdBeacon({
+        '\ud835': "http://127.0.0.1/",
+      }))",
+      /*expected_report_url =*/absl::nullopt,
+      /*expected_ad_beacon_map=*/{},
+      /*expected_ad_macro_map=*/{},
+      /*expected_pa_requests=*/{},
+      {"https://url.test/:11 Uncaught TypeError: registerAdBeacon(): invalid "
+       "reporting url."});
 }
 
 class BidderWorkletSharedStorageAPIDisabledTest : public BidderWorkletTest {
@@ -6665,7 +6852,8 @@ TEST_F(BidderWorkletSharedStorageAPIDisabledTest, SharedStorageNotExposed) {
         sharedStorage.clear();
       )",
       /*expected_report_url =*/absl::nullopt,
-      /*expected_ad_beacon_map=*/{}, /*expected_pa_requests=*/{},
+      /*expected_ad_beacon_map=*/{}, /*expected_ad_macro_map=*/{},
+      /*expected_pa_requests=*/{},
       /*expected_errors=*/
       {"https://url.test/:12 Uncaught ReferenceError: sharedStorage is not "
        "defined."});
@@ -6798,7 +6986,8 @@ TEST_F(BidderWorkletSharedStorageAPIEnabledTest,
           sharedStorage.clear();
         )",
         /*expected_report_url =*/absl::nullopt,
-        /*expected_ad_beacon_map=*/{}, /*expected_pa_requests=*/{},
+        /*expected_ad_beacon_map=*/{}, /*expected_ad_macro_map=*/{},
+        /*expected_pa_requests=*/{},
         /*expected_errors=*/{});
 
     // Make sure the shared storage mojom methods are invoked as they use a
@@ -6847,7 +7036,8 @@ TEST_F(BidderWorkletSharedStorageAPIEnabledTest,
           sharedStorage.clear();
         )",
         /*expected_report_url =*/absl::nullopt,
-        /*expected_ad_beacon_map=*/{}, /*expected_pa_requests=*/{},
+        /*expected_ad_beacon_map=*/{}, /*expected_ad_macro_map=*/{},
+        /*expected_pa_requests=*/{},
         /*expected_errors=*/
         {"https://url.test/:12 Uncaught TypeError: The \"shared-storage\" "
          "Permissions Policy denied the method on sharedStorage."});
@@ -6856,6 +7046,25 @@ TEST_F(BidderWorkletSharedStorageAPIEnabledTest,
         mojom::AuctionWorkletPermissionsPolicyState::New(
             /*private_aggregation_allowed=*/true,
             /*shared_storage_allowed=*/true);
+  }
+
+  {
+    mojo::Receiver<auction_worklet::mojom::AuctionSharedStorageHost> receiver(
+        &test_shared_storage_host);
+    shared_storage_host_remote_ = receiver.BindNewPipeAndPassRemote();
+
+    RunReportWinWithFunctionBodyExpectingResult(
+        R"(
+          sharedStorage.delete({toString: () => {
+              while(true) {}
+            }
+          });
+        )",
+        /*expected_report_url =*/absl::nullopt,
+        /*expected_ad_beacon_map=*/{}, /*expected_ad_macro_map=*/{},
+        /*expected_pa_requests=*/{},
+        /*expected_errors=*/
+        {"https://url.test/ execution of `reportWin` timed out."});
   }
 }
 
@@ -7326,7 +7535,8 @@ TEST_F(BidderWorkletPrivateAggregationEnabledTest, ReportWin) {
           privateAggregation.contributeToHistogram({bucket: 123n, value: 45});
         )",
         /*expected_report_url =*/absl::nullopt,
-        /*expected_ad_beacon_map=*/{}, std::move(expected_pa_requests),
+        /*expected_ad_beacon_map=*/{}, /*expected_ad_macro_map=*/{},
+        std::move(expected_pa_requests),
         /*expected_errors=*/{});
   }
 
@@ -7342,7 +7552,8 @@ TEST_F(BidderWorkletPrivateAggregationEnabledTest, ReportWin) {
           privateAggregation.contributeToHistogram({bucket: 123n, value: 45});
         )",
         /*expected_report_url =*/absl::nullopt,
-        /*expected_ad_beacon_map=*/{}, /*expected_pa_requests=*/{},
+        /*expected_ad_beacon_map=*/{}, /*expected_ad_macro_map=*/{},
+        /*expected_pa_requests=*/{},
         /*expected_errors=*/
         {"https://url.test/:12 Uncaught TypeError: The \"private-aggregation\" "
          "Permissions Policy denied the method on privateAggregation."});
@@ -7364,7 +7575,8 @@ TEST_F(BidderWorkletPrivateAggregationEnabledTest, ReportWin) {
               {bucket: 18446744073709551616n, value: 1});
         )",
         /*expected_report_url =*/absl::nullopt,
-        /*expected_ad_beacon_map=*/{}, std::move(expected_pa_requests),
+        /*expected_ad_beacon_map=*/{}, /*expected_ad_macro_map=*/{},
+        std::move(expected_pa_requests),
         /*expected_errors=*/{});
   }
 
@@ -7387,7 +7599,8 @@ TEST_F(BidderWorkletPrivateAggregationEnabledTest, ReportWin) {
               "reserved.win", {bucket: 18446744073709551616n, value: 2});
         )",
         /*expected_report_url =*/absl::nullopt,
-        /*expected_ad_beacon_map=*/{}, std::move(expected_pa_requests),
+        /*expected_ad_beacon_map=*/{}, /*expected_ad_macro_map=*/{},
+        std::move(expected_pa_requests),
         /*expected_errors=*/{});
   }
 
@@ -7403,7 +7616,8 @@ TEST_F(BidderWorkletPrivateAggregationEnabledTest, ReportWin) {
           error;
         )",
         /*expected_report_url =*/absl::nullopt,
-        /*expected_ad_beacon_map=*/{}, std::move(expected_pa_requests),
+        /*expected_ad_beacon_map=*/{}, /*expected_ad_macro_map=*/{},
+        std::move(expected_pa_requests),
         /*expected_errors=*/
         {"https://url.test/:13 Uncaught ReferenceError: error is not "
          "defined."});
@@ -7433,7 +7647,8 @@ TEST_F(BidderWorkletPrivateAggregationEnabledTest, ReportWin) {
                 "reserved.win", {bucket: 234n, value: 56});
         )",
         /*expected_report_url=*/absl::nullopt,
-        /*expected_ad_beacon_map=*/{}, std::move(expected_pa_requests),
+        /*expected_ad_beacon_map=*/{}, /*expected_ad_macro_map=*/{},
+        std::move(expected_pa_requests),
         /*expected_errors=*/{});
   }
 
@@ -7461,7 +7676,8 @@ TEST_F(BidderWorkletPrivateAggregationEnabledTest, ReportWin) {
                 {bucket: 18446744073709551616n, value: 1});
         )",
         /*expected_report_url=*/absl::nullopt,
-        /*expected_ad_beacon_map=*/{}, std::move(expected_pa_requests),
+        /*expected_ad_beacon_map=*/{}, /*expected_ad_macro_map=*/{},
+        std::move(expected_pa_requests),
         /*expected_errors=*/{});
   }
 
@@ -7478,7 +7694,8 @@ TEST_F(BidderWorkletPrivateAggregationEnabledTest, ReportWin) {
               "reserved.win", {bucket: 234n, value: 56});
         )",
         /*expected_report_url =*/absl::nullopt,
-        /*expected_ad_beacon_map=*/{}, std::move(expected_pa_requests),
+        /*expected_ad_beacon_map=*/{}, /*expected_ad_macro_map=*/{},
+        std::move(expected_pa_requests),
         /*expected_errors=*/{});
   }
 }
@@ -7518,7 +7735,8 @@ TEST_F(BidderWorkletPrivateAggregationDisabledTest, ReportWin) {
           privateAggregation.contributeToHistogram({bucket: 123n, value: 45});
         )",
       /*expected_report_url =*/absl::nullopt,
-      /*expected_ad_beacon_map=*/{}, /*expected_pa_requests=*/{},
+      /*expected_ad_beacon_map=*/{}, /*expected_ad_macro_map=*/{},
+      /*expected_pa_requests=*/{},
       /*expected_errors=*/
       {"https://url.test/:12 Uncaught ReferenceError: privateAggregation is "
        "not defined."});
@@ -8049,6 +8267,7 @@ TEST_F(BidderWorkletTest, ReportWinLatency) {
       bidder_worklet.get(),
       /*expected_report_url=*/absl::nullopt,
       /*expected_ad_beacon_map=*/{},
+      /*expected_ad_macro_map=*/{},
       /*expected_pa_requests=*/{},
       /*expected_reporting_latency_timeout=*/true,
       /*expected_errors=*/
@@ -8684,6 +8903,138 @@ TEST_F(BidderWorkletTest, GenerateBidAdComponentsWithSize) {
       /*expected_data_version=*/absl::nullopt, /*expected_errors=*/
       {"https://url.test/ generateBid() bid adComponents have invalid size for "
        "ad component."});
+}
+
+// The requested_ad_size argument to BeginGeneratingBid, which originates from
+// the auction config, should be propagated into the bidding logic JS via the
+// browserSignals property.
+TEST_F(BidderWorkletTest, AuctionRequestedSizeIsPresentInBiddingLogic) {
+  requested_ad_size_ = blink::AdSize(
+      /*width=*/1920,
+      /*width_units=*/blink::mojom::AdSize_LengthUnit::kPixels,
+      /*height=*/100,
+      /*height_units*/ blink::mojom::AdSize_LengthUnit::kScreenHeight);
+
+  RunGenerateBidExpectingExpressionIsTrue(R"(
+   (browserSignals.requestedSize.width === "1920px" &&
+      browserSignals.requestedSize.height === "100sh");
+  )");
+}
+
+TEST_F(BidderWorkletTest,
+       AuctionRequestedSizeIsAbsentFromInBiddingLogicWhenNotProvided) {
+  RunGenerateBidExpectingExpressionIsTrue(R"(
+    !browserSignals.hasOwnProperty('requestedSize');
+  )");
+}
+
+class BidderWorkletAdMacroReportingEnabledTest : public BidderWorkletTest {
+ public:
+  BidderWorkletAdMacroReportingEnabledTest() {
+    scoped_feature_list_.InitAndEnableFeature(
+        blink::features::kAdAuctionReportingWithMacroApi);
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+TEST_F(BidderWorkletAdMacroReportingEnabledTest, ReportWinRegisterAdMacro) {
+  RunReportWinWithFunctionBodyExpectingResult(
+      R"(registerAdMacro('campaign', '111');
+        registerAdMacro('', '111');
+        registerAdMacro('empty_value', '');
+        )",
+      /*expected_report_url =*/absl::nullopt, /*expected_ad_beacon_map=*/{},
+      {{"campaign", "111"}, {"", "111"}, {"empty_value", ""}});
+
+  // Any additional arguments after the first 2 are ignored.
+  RunReportWinWithFunctionBodyExpectingResult(
+      R"(registerAdMacro('campaign', '111', ['https://test.example'], 'a');)",
+      /*expected_report_url =*/absl::nullopt, /*expected_ad_beacon_map=*/{},
+      {{"campaign", "111"}});
+
+  // Type conversions happen.
+  RunReportWinWithFunctionBodyExpectingResult(
+      R"(registerAdMacro('campaign', 111);)",
+      /*expected_report_url =*/absl::nullopt, /*expected_ad_beacon_map=*/{},
+      {{"campaign", "111"}});
+
+  RunReportWinWithFunctionBodyExpectingResult(
+      R"(registerAdMacro(null, 234);)",
+      /*expected_report_url =*/absl::nullopt, /*expected_ad_beacon_map=*/{},
+      {{"null", "234"}});
+
+  // Key is case sensitive.
+  RunReportWinWithFunctionBodyExpectingResult(
+      R"(registerAdMacro('campaign', '111');
+        registerAdMacro('CAMPAIGN', '111');
+        )",
+      /*expected_report_url =*/absl::nullopt,
+      /*expected_ad_beacon_map=*/{},
+      {{"campaign", "111"}, {"CAMPAIGN", "111"}});
+
+  // Value is case sensitive.
+  RunReportWinWithFunctionBodyExpectingResult(
+      R"(registerAdMacro('uppercase', 'ABC');
+        registerAdMacro('lowercase', 'abc');
+      )",
+      /*expected_report_url =*/absl::nullopt,
+      /*expected_ad_beacon_map=*/{},
+      {{"uppercase", "ABC"}, {"lowercase", "abc"}});
+
+  // When called multiple times for a macro name, use the last valid call's
+  // value.
+  RunReportWinWithFunctionBodyExpectingResult(
+      R"(registerAdMacro('campaign', '123');
+        registerAdMacro('campaign', '111');
+        registerAdMacro('publisher', 'abc');
+        )",
+      /*expected_report_url =*/absl::nullopt,
+      /*expected_ad_beacon_map=*/{},
+      {{"campaign", "111"}, {"publisher", "abc"}});
+
+  // If the error is caught, do not clear other successful calls data.
+  RunReportWinWithFunctionBodyExpectingResult(
+      R"(registerAdMacro('campaign', '111');
+        try { registerAdMacro('campaign', {toString: {}}) }
+        catch (e) {}
+        registerAdMacro('publisher', 'abc');)",
+      /*expected_report_url=*/absl::nullopt,
+      /*expected_ad_beacon_map=*/{},
+      {{"campaign", "111"}, {"publisher", "abc"}});
+}
+
+TEST_F(BidderWorkletAdMacroReportingEnabledTest,
+       ReportWinRegisterAdMacroInvalidArgs) {
+  struct TestCase {
+    const char* call;
+    const char* expected_error;
+  } kTestCases[] = {
+      // Less than 2 parameters.
+      {R"(registerAdMacro();)",
+       "https://url.test/:11 Uncaught TypeError: registerAdMacro(): at least 2 "
+       "argument(s) are required."},
+      {R"(registerAdMacro('123');)",
+       "https://url.test/:11 Uncaught TypeError: registerAdMacro(): at least 2 "
+       "argument(s) are required."},
+      // Invalid first argument.
+      {R"(registerAdMacro({toString:{}}, '456');)",
+       "https://url.test/:11 Uncaught TypeError: Cannot convert object to "
+       "primitive value."},
+      // Invalid second argument.
+      {R"(registerAdMacro('123', {toString:{}});)",
+       "https://url.test/:11 Uncaught TypeError: Cannot convert object to "
+       "primitive value."},
+  };
+  for (const auto& test_case : kTestCases) {
+    RunReportWinWithFunctionBodyExpectingResult(
+        test_case.call,
+        /*expected_report_url=*/absl::nullopt,
+        /*expected_ad_beacon_map=*/{},
+        /*expected_ad_macro_map=*/{},
+        /*expected_pa_requests=*/{}, {test_case.expected_error});
+  }
 }
 
 }  // namespace

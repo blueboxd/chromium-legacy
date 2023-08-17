@@ -7,6 +7,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/functional/bind.h"
 #include "base/metrics/histogram_functions.h"
@@ -162,7 +163,6 @@ const char RealtimeReportingClient::kKeyProfileUserName[] = "profileUserName";
 RealtimeReportingClient::RealtimeReportingClient(
     content::BrowserContext* context)
     : context_(context) {
-  event_router_ = extensions::EventRouter::Get(context_);
   identity_manager_ = IdentityManagerFactory::GetForProfile(
       Profile::FromBrowserContext(context_));
 }
@@ -187,7 +187,7 @@ std::string RealtimeReportingClient::GetBaseName(const std::string& filename) {
 
 // static
 bool RealtimeReportingClient::ShouldInitRealtimeReportingClient() {
-  if (profiles::IsPublicSession() &&
+  if (profiles::IsManagedGuestSession() &&
       !base::FeatureList::IsEnabled(kEnterpriseConnectorsEnabledOnMGS)) {
     DVLOG(2) << "Safe browsing real-time reporting is not enabled in Managed "
                 "Guest Sessions.";
@@ -236,12 +236,11 @@ void RealtimeReportingClient::InitRealtimeReportingClient(
   if (!ShouldInitRealtimeReportingClient())
     return;
 
-  // |identity_manager_| may be null in tests. If there is no identity
-  // manager don't enable the real-time reporting API since the router won't
-  // be able to fill in all the info needed for the reports.
+  // |identity_manager_| may be null in tests and in guest profiles. If there
+  // is no identity manager then the profile username will be empty.
   if (!identity_manager_) {
-    DVLOG(2) << "Safe browsing real-time event requires an identity manager.";
-    return;
+    DVLOG(2)
+        << "Safe browsing real-time event reporting empty profile username.";
   }
 
   policy::CloudPolicyClient* client = nullptr;
@@ -300,7 +299,7 @@ RealtimeReportingClient::InitBrowserReportingClient(
   }
   DCHECK(profile);
 
-  if (profiles::IsPublicSession()) {
+  if (profiles::IsManagedGuestSession()) {
     client_id = reporting::GetMGSUserClientId().value_or("");
   } else {
     client_id = reporting::GetUserClientId(profile).value_or("");
@@ -510,7 +509,8 @@ void RealtimeReportingClient::ReportEventWithTimestamp(
 }
 
 std::string RealtimeReportingClient::GetProfileUserName() const {
-  return safe_browsing::GetProfileEmail(identity_manager_);
+  return identity_manager_ ? safe_browsing::GetProfileEmail(identity_manager_)
+                           : std::string();
 }
 
 std::string RealtimeReportingClient::GetProfileIdentifier() const {

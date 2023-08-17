@@ -37,6 +37,7 @@
 #include "base/task/sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "base/trace_event/traced_value.h"
+#include "base/trace_event/typed_macros.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "cc/base/devtools_instrumentation.h"
@@ -1543,10 +1544,15 @@ void LayerTreeHostImpl::InvalidateLayerTreeFrameSink(bool needs_redraw) {
 DrawResult LayerTreeHostImpl::PrepareToDraw(FrameData* frame) {
   TRACE_EVENT1("cc", "LayerTreeHostImpl::PrepareToDraw", "SourceFrameNumber",
                active_tree_->source_frame_number());
-  TRACE_EVENT_WITH_FLOW1("viz,benchmark", "Graphics.Pipeline",
-                         TRACE_ID_GLOBAL(CurrentBeginFrameArgs().trace_id),
-                         TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
-                         "step", "GenerateRenderPass");
+  TRACE_EVENT(
+      "viz,benchmark,graphics.pipeline", "Graphics.Pipeline",
+      perfetto::Flow::Global(CurrentBeginFrameArgs().trace_id),
+      [&](perfetto::EventContext ctx) {
+        auto* event = ctx.event<perfetto::protos::pbzero::ChromeTrackEvent>();
+        auto* data = event->set_chrome_graphics_pipeline();
+        data->set_step(perfetto::protos::pbzero::ChromeGraphicsPipeline::
+                           StepName::STEP_GENERATE_RENDER_PASS);
+      });
   if (input_delegate_)
     input_delegate_->WillDraw();
 
@@ -2320,8 +2326,11 @@ viz::CompositorFrameMetadata LayerTreeHostImpl::MakeCompositorFrameMetadata() {
         actively_scrolling || mutator_host_->NeedsTickAnimations();
   }
 
-  metadata.is_actively_scrolling =
-      GetActivelyScrollingType() != ActivelyScrollingType::kNone;
+  if (input_delegate_) {
+    metadata.is_handling_interaction =
+        GetActivelyScrollingType() != ActivelyScrollingType::kNone ||
+        input_delegate_->IsHandlingTouchSequence();
+  }
 
   const base::flat_set<viz::SurfaceRange>& referenced_surfaces =
       active_tree_->SurfaceRanges();
@@ -2594,10 +2603,15 @@ absl::optional<LayerTreeHostImpl::SubmitInfo> LayerTreeHostImpl::DrawLayers(
 
 viz::CompositorFrame LayerTreeHostImpl::GenerateCompositorFrame(
     FrameData* frame) {
-  TRACE_EVENT_WITH_FLOW1("viz,benchmark", "Graphics.Pipeline",
-                         TRACE_ID_GLOBAL(CurrentBeginFrameArgs().trace_id),
-                         TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
-                         "step", "GenerateCompositorFrame");
+  TRACE_EVENT(
+      "viz,benchmark,graphics.pipeline", "Graphics.Pipeline",
+      perfetto::Flow::Global(CurrentBeginFrameArgs().trace_id),
+      [&](perfetto::EventContext ctx) {
+        auto* event = ctx.event<perfetto::protos::pbzero::ChromeTrackEvent>();
+        auto* data = event->set_chrome_graphics_pipeline();
+        data->set_step(perfetto::protos::pbzero::ChromeGraphicsPipeline::
+                           StepName::STEP_GENERATE_COMPOSITOR_FRAME);
+      });
 
   rendering_stats_instrumentation_->IncrementFrameCount(1);
 
@@ -4170,6 +4184,7 @@ LayerTreeHostImpl::ProcessCompositorDeltas(
 
   commit_data->ongoing_scroll_animation =
       !!mutator_host_->ImplOnlyScrollAnimatingElement();
+  commit_data->is_auto_scrolling = mutator_host_->IsAutoScrolling();
 
   if (browser_controls_manager()) {
     commit_data->browser_controls_constraint =

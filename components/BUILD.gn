@@ -202,6 +202,7 @@ test("components_unittests") {
     "//components/password_manager/core/browser:unit_tests",
     "//components/password_manager/core/common:unit_tests",
     "//components/payments/core:unit_tests",
+    "//components/plus_addresses:unit_tests",
     "//components/policy/core/browser:unit_tests",
     "//components/policy/core/common:unit_tests",
     "//components/power_bookmarks/core:unit_tests",
@@ -361,7 +362,6 @@ test("components_unittests") {
       "//components/endpoint_fetcher:unit_tests",
       "//components/enterprise/content:unit_tests",
       "//components/favicon/content:unit_tests",
-      "//components/feed:unit_tests",
       "//components/file_access:unit_tests",
       "//components/gcm_driver/instance_id:unit_tests",
       "//components/heavy_ad_intervention:unit_tests",
@@ -447,6 +447,8 @@ test("components_unittests") {
       "//components/browsing_topics/common:unit_tests",
       "//components/certificate_transparency:unit_tests",
       "//components/content_settings/browser:unit_tests",
+      "//components/content_settings/browser/ui:unit_tests",
+      "//components/feed/core/v2:core_unit_tests",
       "//components/media_router/browser:unit_tests",
       "//components/media_router/common:unit_tests",
       "//components/media_router/common/providers/cast/channel:unit_tests",
@@ -656,7 +658,10 @@ test("components_unittests") {
   }
 
   if (safe_browsing_mode != 0) {
-    deps += [ "//components/safe_browsing/content/common:unit_tests" ]
+    deps += [
+      "//components/safe_browsing/content/common:unit_tests",
+      "//components/safe_browsing/core/browser:safe_browsing_url_checker_unittest",
+    ]
   }
 
   # TODO(crbug / 1056278): Enable this on Fuchsia and merge with the above
@@ -677,7 +682,6 @@ test("components_unittests") {
       "//components/safe_browsing/content/renderer:throttles_unittest",
       "//components/safe_browsing/core/browser:ping_manager_unittest",
       "//components/safe_browsing/core/browser:safe_browsing_lookup_mechanism_experimenter_unittest",
-      "//components/safe_browsing/core/browser:safe_browsing_url_checker_unittest",
       "//components/safe_browsing/core/browser:user_population_unittest",
       "//components/safe_browsing/core/browser:verdict_cache_manager_unittest",
       "//components/safe_browsing/core/browser/db:unit_tests_local_db",

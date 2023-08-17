@@ -60,8 +60,9 @@
 // The image. May be updated after the view is loaded.
 @property(nonatomic, strong) UIImage* image;
 
-// Sets the custom spacing between the top and the image, if there is no
-// navigation bar. Must be set before the view is loaded.
+// Sets the custom spacing at the top if there is no navigation bar. If image is
+// set, the spacing is before the image. Otherwise, the spacing is before the
+// title label. Must be set before the view is loaded.
 @property(nonatomic, assign) CGFloat customSpacingBeforeImageIfNoNavigationBar;
 
 // Sets the custom spacing between the image and the title / subtitle. Must be
@@ -76,6 +77,9 @@
 // honored around the image, so this applies to all the other items of the
 // stackview. Must be set before the view is loaded.
 @property(nonatomic, assign) CGFloat customSpacing;
+
+// Sets the custom height for the gradient view above the action buttons.
+@property(nonatomic, assign) CGFloat customGradientViewHeight;
 
 // When YES, the content is attached to the top of the view instead of being
 // centered.
@@ -121,15 +125,15 @@
 // The action handler for interactions in this View Controller.
 @property(nonatomic, weak) id<ConfirmationAlertActionHandler> actionHandler;
 
+// Sets the custom scroll view bottom insets.
+@property(nonatomic, assign) CGFloat customScrollViewBottomInsets;
+
 // Designated initializer.
 - (instancetype)init NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)initWithCoder:(NSCoder*)coder NS_UNAVAILABLE;
 - (instancetype)initWithNibName:(NSString*)name
                          bundle:(NSBundle*)bundle NS_UNAVAILABLE;
-
-// Sets the custom scroll view bottom insets.
-@property(nonatomic, assign) CGFloat customScrollViewBottomInsets;
 
 // Can be overridden by subclasses to customize the secondary title, e.g. set a
 // different style, or a UITextViewDelegate. The default implementation does
@@ -141,21 +145,25 @@
 // nothing.
 - (void)customizeSubtitle:(UITextView*)subtitle;
 
-// Sets the custom height for the gradient view.
-- (void)updateCustomGradientViewHeight:(CGFloat)height;
+// Show or hide the gradient view depending on the state of the bottom sheet.
+- (void)displayGradientView:(BOOL)shouldShow;
 
-// Sets the new constant value for the scroll view bottom anchor constraint.
-- (void)changeScrollViewBottomAnchorConstant:(CGFloat)constant;
-
-// Reset the constant value for the scroll view bottom anchor constraint to the
-// default one.
-- (void)resetScrollViewBottomAnchorConstant;
+// Returns YES if the scroll view is scrolled to the bottom.
+- (BOOL)isScrolledToBottom;
 
 // Detent that attempts to fit the preferred height of the content. Detent may
 // be inactive in some size classes, so it should be used together with at
 // least one other detent.
 - (UISheetPresentationControllerDetent*)
     preferredHeightDetent API_AVAILABLE(ios(16));
+
+// Calculates the preferred height of the content.
+// If the value of `contained` is set to YES: the preferred height would be
+// between mediumDetent and 0.75% of the maximumDetent.
+- (CGFloat)detentForPreferredHeightInContext:
+               (id<UISheetPresentationControllerDetentResolutionContext>)context
+                              andIsContained:(BOOL)contained
+    API_AVAILABLE(ios(16));
 
 @end
 

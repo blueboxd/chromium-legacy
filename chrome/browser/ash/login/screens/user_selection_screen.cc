@@ -21,6 +21,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "base/trace_event/trace_event.h"
 #include "base/values.h"
 #include "chrome/browser/ash/login/demo_mode/demo_session.h"
 #include "chrome/browser/ash/login/easy_unlock/easy_unlock_service.h"
@@ -195,9 +196,7 @@ void GetMultiUserSignInPolicy(const user_manager::User* user,
       ChromeUserManager::Get()->GetMultiProfileUserController();
   *out_is_allowed =
       multi_profile_user_controller->IsUserAllowedInSession(user_id, nullptr);
-
-  *out_policy = MultiProfileUserController::UserBehaviorStringToEnum(
-      multi_profile_user_controller->GetCachedValue(user_id));
+  *out_policy = multi_profile_user_controller->GetCachedValue(user_id);
 }
 
 // Determines if user auth status requires online sign in.
@@ -778,6 +777,7 @@ void UserSelectionScreen::Unlock(const AccountId& account_id) {
 }
 
 void UserSelectionScreen::OnSessionStateChanged() {
+  TRACE_EVENT0("login", "UserSelectionScreen::OnSessionStateChanged");
   if (!pending_focused_account_id_.has_value()) {
     return;
   }

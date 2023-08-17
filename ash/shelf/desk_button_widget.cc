@@ -16,9 +16,10 @@
 #include "ash/wm/desks/desk_button/desk_button.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "base/i18n/rtl.h"
-#include "ui/chromeos/styles/cros_tokens_color_mappings.h"
+#include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/geometry/point.h"
-#include "ui/gfx/geometry/rounded_corners_f.h"
+#include "ui/gfx/geometry/transform_util.h"
+#include "ui/views/animation/animation_builder.h"
 #include "ui/views/background.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -156,6 +157,13 @@ void DeskButtonWidget::MaybeFocusOut(bool reverse) {
   // desk button.
   views::View* views[] = {GetDeskButton()->prev_desk_button(), GetDeskButton(),
                           GetDeskButton()->next_desk_button()};
+
+  // The desk button will still be drawn in LTR, with the previous desk button
+  // on the left, when in RTL mode.
+  if (base::i18n::IsRTL()) {
+    std::swap(views[0], views[2]);
+  }
+
   views::View* focused_view = GetFocusManager()->GetFocusedView();
 
   const int count = std::size(views);
@@ -230,11 +238,42 @@ gfx::Rect DeskButtonWidget::GetTargetBounds() const {
 }
 
 void DeskButtonWidget::UpdateLayout(bool animate) {
-  if (ShouldBeVisible()) {
-    SetBounds(GetTargetBounds());
+  // Having a window which is visible but does not have an opacity is an
+  // illegal state.
+  if (shelf_->shelf_layout_manager()->GetOpacity() == 1.0f &&
+      ShouldBeVisible()) {
     ShowInactive();
   } else {
     Hide();
+  }
+
+  if (!animate) {
+    SetBounds(target_bounds_);
+    return;
+  }
+
+  const gfx::Rect initial_bounds = GetNativeView()->layer()->bounds();
+  const bool animate_transform = initial_bounds.size() == target_bounds_.size();
+
+  if (animate_transform) {
+    const gfx::Transform initial_transform = gfx::TransformBetweenRects(
+        gfx::RectF(target_bounds_), gfx::RectF(initial_bounds));
+    SetBounds(target_bounds_);
+    GetNativeView()->layer()->SetTransform(initial_transform);
+  }
+
+  ui::ScopedLayerAnimationSettings animation_setter(
+      GetNativeView()->layer()->GetAnimator());
+  animation_setter.SetTransitionDuration(
+      ShelfConfig::Get()->shelf_animation_duration());
+  animation_setter.SetTweenType(gfx::Tween::EASE_OUT);
+  animation_setter.SetPreemptionStrategy(
+      ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET);
+
+  if (animate_transform) {
+    GetNativeView()->layer()->SetTransform(gfx::Transform());
+  } else {
+    SetBounds(target_bounds_);
   }
 }
 
@@ -246,7 +285,13 @@ void DeskButtonWidget::UpdateTargetBoundsForGesture(int shelf_position) {
   }
 }
 
-void DeskButtonWidget::HandleLocaleChange() {}
+void DeskButtonWidget::HandleLocaleChange() {
+  // The desk button be laid out LTR even in RTL mode.
+  GetDeskButton()->ReorderChildView(GetDeskButton()->prev_desk_button(),
+                                    base::i18n::IsRTL() ? 3 : 1);
+  GetDeskButton()->ReorderChildView(GetDeskButton()->next_desk_button(),
+                                    base::i18n::IsRTL() ? 1 : 3);
+}
 
 void DeskButtonWidget::Initialize(aura::Window* container) {
   CHECK(container);
@@ -306,11 +351,19 @@ bool DeskButtonWidget::OnNativeWidgetActivationChanged(bool active) {
   if (!Widget::OnNativeWidgetActivationChanged(active)) {
     return false;
   }
+
+  // The next desk button will always be on the right, even in RTL, so it should
+  // default focus if `default_last_focusable_child_` is true (meaning we are
+  // reverse tab cycling) or we are in RTL. If both are true or neither are true
+  // then the previous desk button should default focus.
+  const bool default_focus_right =
+      default_last_focusable_child_ != base::i18n::IsRTL();
+
   if (active) {
-    if (default_last_focusable_child_ &&
+    if (default_focus_right &&
         GetDeskButton()->next_desk_button()->GetEnabled()) {
       GetDeskButton()->next_desk_button()->RequestFocus();
-    } else if (!default_last_focusable_child_ &&
+    } else if (!default_focus_right &&
                GetDeskButton()->prev_desk_button()->GetEnabled()) {
       GetDeskButton()->prev_desk_button()->RequestFocus();
     } else {

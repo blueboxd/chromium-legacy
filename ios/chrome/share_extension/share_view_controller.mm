@@ -16,10 +16,6 @@
 #import "ios/chrome/share_extension/share_extension_view.h"
 #import "ios/chrome/share_extension/ui_util.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 // Type for completion handler to fetch the components of the share items.
 // `idResponse` type depends on the element beeing fetched.
 using ItemBlock = void (^)(id idResponse, NSError* error);
@@ -221,9 +217,12 @@ const CGFloat kMediumAlpha = 0.5;
 
 - (void)loadElementsFromContext {
   NSString* typeURL = UTTypeURL.identifier;
+  // TODO(crbug.com/1472758): Reorganize sharing extension handler.
+  BOOL foundMatch = false;
   for (NSExtensionItem* item in self.extensionContext.inputItems) {
     for (NSItemProvider* itemProvider in item.attachments) {
       if ([itemProvider hasItemConformingToTypeIdentifier:typeURL]) {
+        foundMatch = true;
         ItemBlock URLCompletion = ^(id idURL, NSError* error) {
           NSURL* URL = base::mac::ObjCCast<NSURL>(idURL);
           if (!URL) {
@@ -264,6 +263,11 @@ const CGFloat kMediumAlpha = 0.5;
                                 completionHandler:imageCompletion];
       }
     }
+  }
+
+  // Display the error view when no match have been found.
+  if (!foundMatch) {
+    [self displayErrorView];
   }
 }
 

@@ -5,6 +5,7 @@
 #include "device/fido/mac/icloud_keychain.h"
 
 #import <AuthenticationServices/AuthenticationServices.h>
+#import <Foundation/Foundation.h>
 
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
@@ -30,10 +31,6 @@
 #include "device/fido/fido_transport_protocol.h"
 #include "device/fido/mac/icloud_keychain_sys.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
-
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
 
 namespace device::fido::icloud_keychain {
 
@@ -142,7 +139,7 @@ class API_AVAILABLE(macos(13.3)) Authenticator : public FidoAuthenticator {
             << "iCKC: cannot query credentials because of lack of permission";
         std::move(callback).Run(
             {}, FidoRequestHandlerBase::RecognizedCredential::kUnknown);
-        break;
+        return;
       case SystemInterface::kAuthAuthorized:
         break;
     }
@@ -370,6 +367,10 @@ bool IsSupported() {
     return GetSystemInterface()->IsAvailable();
   }
   return false;
+}
+
+bool IsICloudDriveEnabled() {
+  return [NSFileManager defaultManager].ubiquityIdentityToken != nil;
 }
 
 std::unique_ptr<FidoDiscoveryBase> NewDiscovery(uintptr_t ns_window) {

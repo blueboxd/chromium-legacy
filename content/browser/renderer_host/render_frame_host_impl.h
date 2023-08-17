@@ -92,7 +92,7 @@
 #include "media/mojo/mojom/media_player.mojom-forward.h"
 #include "media/mojo/mojom/video_encoder_metrics_provider.mojom-forward.h"
 #include "media/mojo/services/media_metrics_provider.h"
-#include "media/mojo/services/video_encoder_metrics_provider.h"
+#include "media/mojo/services/mojo_video_encoder_metrics_provider_service.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
@@ -389,7 +389,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   ~RenderFrameHostImpl() override;
 
   // RenderFrameHost
-  const blink::StorageKey& storage_key() const override;
+  const blink::StorageKey& GetStorageKey() const override;
   int GetRoutingID() const override;
   const blink::LocalFrameToken& GetFrameToken() const override;
   const base::UnguessableToken& GetReportingSource() override;
@@ -527,6 +527,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   WeakDocumentPtr GetWeakDocumentPtr() override;
   void EnableMojoJsBindings(
       content::mojom::ExtraMojoJsFeaturesPtr features) override;
+  bool ShouldChangeRenderFrameHostOnSameSiteNavigation() const override;
 
   // Additional non-override const version of GetMainFrame.
   const RenderFrameHostImpl* GetMainFrame() const;
@@ -1015,6 +1016,13 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // NOTE: RenderFrameHostManager surfaces a similar method that will check
   // all the RenderFrameHosts for that FrameTreeNode.
   bool HasPendingCommitForCrossDocumentNavigation() const;
+
+  // Helper for recording metrics when another NavigationRequest is blocked by
+  // navigation queueing, i.e. because this NavigationRequest is in the process
+  // of committing a navigation in a kPendingCommit RenderFrameHost.
+  // `commit_attempt` should be true if the other NavigationRequest was also
+  // trying to commit a navigation.
+  void RecordMetricsForBlockedGetFrameHostAttempt(bool commit_attempt);
 
   // Return true if Unload() was called on the frame or one of its ancestors.
   // If true, this corresponds either to unload handlers running for this
@@ -2439,6 +2447,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
       const std::vector<blink::FencedFrame::ReportingDestination>& destinations,
       network::AttributionReportingRuntimeFeatures
           attribution_reporting_runtime_features) override;
+  void SendFencedFrameReportingBeaconToCustomURL(
+      const GURL& destination_url,
+      network::AttributionReportingRuntimeFeatures
+          attribution_reporting_runtime_features) override;
   void SetFencedFrameAutomaticBeaconReportEventData(
       const std::string& event_data,
       const std::vector<blink::FencedFrame::ReportingDestination>& destinations,
@@ -2936,17 +2948,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // queried while attempting to close the current tab/window.  Should only be
   // used on primary main frames.
   bool IsPageReadyToBeClosed();
-
-  // When this returns true, the user has specified that third-party cookies
-  // should remain enabled for this frame.
-  // It does so by checking the Blink runtime-enabled feature (BREF) for
-  // third-party cookie deprecation user bypass. This pulls the BREF from the
-  // committed document context; for a committing navigation use
-  // NavigationRequest::GetIsThirdPartyCookiesUserBypassEnabled.
-  // For a subframe, the BREF is pulled from the main frame context. If the main
-  // frame has no committed navigation (eg. an empty initial document), then
-  // false is returned.
-  bool GetIsThirdPartyCookiesUserBypassEnabled();
 
   // Retrieves the information about the cookie changes that are observed on the
   // last committed document.
@@ -4016,8 +4017,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Reporting API related runtime features are enabled and is needed for
   // integration with Attribution Reporting API.
   void SendFencedFrameReportingBeaconInternal(
-      const std::string& event_data,
-      const std::string& event_type,
+      const absl::variant<DestinationEnumEvent, DestinationURLEvent>&
+          event_variant,
       blink::FencedFrame::ReportingDestination destination,
       bool from_renderer,
       network::AttributionReportingRuntimeFeatures
@@ -4039,6 +4040,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // passed into CalculateStorageKey.
   std::vector<RenderFrameHostImpl*> GetAncestorChainForStorageKeyCalculation(
       const url::Origin& new_rfh_origin);
+
+#if defined(USE_AURA)
+  bool CanUseWindowingControls();
+#endif
 
   // The RenderViewHost that this RenderFrameHost is associated with.
   //
@@ -4191,10 +4196,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // RenderFrameHostImpl.
   blink::StorageKey storage_key_;
 
-  // The policy to apply to private network requests issued by the last
-  // committed document. Set to a default value until a document commits for the
-  // first time. The default value depends on whether the
-  // |BlockInsecurePrivateNetworkRequests| feature is enabled, see constructor.
+  // The policy to apply to private network requests for subresources issued by
+  // the last committed document. Set to a default value until a document
+  // commits for the first time. The default value depends on whether certain
+  // feature flags are enabled, see |DerivePrivateNetworkRequestPolicy()|.
   //
   // This property normally depends on the last committed origin and the state
   // of |ContentBrowserClient| at the time the navigation committed. Due to the

@@ -6,6 +6,8 @@
 
 #include "base/files/file.h"
 #include "base/files/memory_mapped_file.h"
+#include "base/metrics/histogram_functions.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/metrics/histogram_macros_local.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/task_traits.h"
@@ -32,10 +34,12 @@ using optimization_guide::proto::ThresholdingRule;
 
 using DOMImageList = base::flat_map<ImageId, SingleImageFeaturesAndBytes>;
 
-// We concurrently on send back up to 2 results of visual classifications.
-// The results are not ordered in any way, we simply return the first 4
-// items that we get from the classifier.
-const int kMaxNumberResults = 2;
+// Only sending back 1 result to match our current UI behavior.
+const int kMaxNumberResults = 1;
+
+// The number of seconds that we need to wait before we retry to traverse the
+// DOM again and perform visual classification.
+const int kRetryDelay = 2;
 
 EligibilitySpec CreateEligibilitySpec(std::string config_proto) {
   EligibilitySpec eligibility_spec;
@@ -127,11 +131,12 @@ DOMImageList FindImagesOnPage(content::RenderFrame* render_frame) {
   return images;
 }
 
-std::vector<SkBitmap> ClassifyImagesOnBackground(DOMImageList images,
-                                                 std::string model_data,
-                                                 std::string config_proto,
-                                                 gfx::SizeF viewport_size) {
-  std::vector<SkBitmap> results;
+ClassificationResultsAndStats ClassifyImagesOnBackground(
+    DOMImageList images,
+    std::string model_data,
+    std::string config_proto,
+    gfx::SizeF viewport_size) {
+  ClassificationResultsAndStats results;
   const auto classifier = VisualClassificationAndEligibility::Create(
       model_data, CreateEligibilitySpec(config_proto));
 
@@ -144,9 +149,18 @@ std::vector<SkBitmap> ClassifyImagesOnBackground(DOMImageList images,
   auto classifier_results =
       classifier->RunClassificationAndEligibility(images, viewport_size);
 
+  const auto& metrics = classifier->classification_metrics();
+  results.second =
+      mojom::ClassificationStats::New(mojom::ClassificationStats());
+  results.second->eligible_count = metrics.eligible_count;
+  results.second->shoppy_count = metrics.shoppy_count;
+  results.second->sensitive_count = metrics.sensitive_count;
+  results.second->shoppy_nonsensitive_count = metrics.shoppy_nonsensitive_count;
+  results.second->results_count = metrics.result_count;
+
   int result_counter = 0;
   for (const auto& result : classifier_results) {
-    results.emplace_back(images[result].image_contents);
+    results.first.emplace_back(images[result].image_contents);
     if (++result_counter >= kMaxNumberResults) {
       break;
     }
@@ -181,24 +195,44 @@ void VisualSearchClassifierAgent::StartVisualClassification(
     base::File visual_model,
     const std::string& config_proto,
     mojo::PendingRemote<mojom::VisualSuggestionsResultHandler> result_handler) {
-  LOCAL_HISTOGRAM_BOOLEAN("Companion.VisualSearch.Agent.StartClassification",
-                          true);
+  DOMImageList dom_images = FindImagesOnPage(render_frame_);
+
+  // We check to see if we have found any images in the DOM, if there are no
+  // images, we use that as a strong signal that we traversed the DOM
+  // prematurely, so we try again after 2 seconds. We use the |is_retrying_|
+  // boolean to ensure that we only do this once.
+  // TODO(b/294900101) - Remove this first attempt for more robust heuristic.
+  if (dom_images.size() == 0 && !is_retrying_) {
+    base::UmaHistogramBoolean("Companion.VisualQuery.Agent.StartClassification",
+                              false);
+    is_retrying_ = true;
+    base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
+        FROM_HERE,
+        base::BindOnce(&VisualSearchClassifierAgent::StartVisualClassification,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(visual_model),
+                       std::move(config_proto), std::move(result_handler)),
+        base::Seconds(kRetryDelay));
+    return;
+  }
+  base::UmaHistogramBoolean("Companion.VisualQuery.Agent.StartClassification",
+                            true);
+
   result_handler_.reset();
   result_handler_.Bind(std::move(result_handler));
-  std::vector<SkBitmap> empty_results;
+  ClassificationResultsAndStats empty_results;
 
   if (is_classifying_) {
     LOCAL_HISTOGRAM_BOOLEAN(
         "Companion.VisualSearch.Agent.OngoingClassificationFailure",
         is_classifying_);
-    OnClassificationDone(empty_results);
+    OnClassificationDone(std::move(empty_results));
     return;
   }
 
   if (!visual_model.IsValid()) {
     LOCAL_HISTOGRAM_BOOLEAN("Companion.VisualSearch.Agent.InvalidModelFailure",
                             !visual_model.IsValid());
-    OnClassificationDone(empty_results);
+    OnClassificationDone(std::move(empty_results));
     return;
   }
 
@@ -206,7 +240,7 @@ void VisualSearchClassifierAgent::StartVisualClassification(
       !visual_model_.Initialize(std::move(visual_model))) {
     LOCAL_HISTOGRAM_BOOLEAN("Companion.VisualSearch.Agent.InitModelFailure",
                             true);
-    OnClassificationDone(empty_results);
+    OnClassificationDone(std::move(empty_results));
     return;
   }
 
@@ -214,9 +248,8 @@ void VisualSearchClassifierAgent::StartVisualClassification(
   std::string model_data =
       std::string(reinterpret_cast<const char*>(visual_model_.data()),
                   visual_model_.length());
-  DOMImageList dom_images = FindImagesOnPage(render_frame_);
-  LOCAL_HISTOGRAM_COUNTS_100("Companion.VisualSearch.Agent.DomImageCount",
-                             dom_images.size());
+  base::UmaHistogramCounts100("Companion.VisualQuery.Agent.DomImageCount",
+                              dom_images.size());
 
   blink::WebLocalFrame* frame = render_frame_->GetWebFrame();
   gfx::SizeF viewport_size = frame->View()->VisualViewportSize();
@@ -230,15 +263,25 @@ void VisualSearchClassifierAgent::StartVisualClassification(
 }
 
 void VisualSearchClassifierAgent::OnClassificationDone(
-    const std::vector<SkBitmap> results) {
+    ClassificationResultsAndStats results) {
   is_classifying_ = false;
+  is_retrying_ = false;
   std::vector<mojom::VisualSearchSuggestionPtr> final_results;
-  for (const auto& result : results) {
+  for (const auto& result : results.first) {
     final_results.emplace_back(mojom::VisualSearchSuggestion::New(result));
   }
-  result_handler_->HandleClassification(std::move(final_results));
+
+  mojom::ClassificationStatsPtr stats;
+  if (results.second.is_null()) {
+    stats = mojom::ClassificationStats::New(mojom::ClassificationStats());
+  } else {
+    stats = std::move(results.second);
+  }
+
+  result_handler_->HandleClassification(std::move(final_results),
+                                        std::move(stats));
   LOCAL_HISTOGRAM_COUNTS_100("Companion.VisualSearch.Agent.ClassificationDone",
-                             results.size());
+                             results.first.size());
 }
 
 void VisualSearchClassifierAgent::OnRendererAssociatedRequest(

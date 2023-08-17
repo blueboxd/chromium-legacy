@@ -7,9 +7,30 @@
 #import "base/memory/ptr_util.h"
 #import "ios/chrome/browser/web/repost_form_tab_helper_delegate.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
+namespace {
+
+// Helper that returns a callback calling `closure`, and then `callback` with
+// all parameters passed to the callback.
+//
+// This could look similar to base::OnceCallback<...>::Then(...) except that
+// the callback returned by `Then()` invokes the original callback with the
+// arguments, and then invoke a closure. Here, we call the closure first and
+// then invoke the wrapped callback with the arguments passed to the created
+// callback.
+template <typename R, typename... Args>
+base::OnceCallback<R(Args...)> ClosureBeforeCallback(
+    base::OnceClosure closure,
+    base::OnceCallback<R(Args...)> callback) {
+  return base::BindOnce(
+      [](base::OnceClosure inner_closure,
+         base::OnceCallback<R(Args...)> inner_callback, Args... args) -> R {
+        std::move(inner_closure).Run();
+        return std::move(inner_callback).Run(std::forward<Args>(args)...);
+      },
+      std::move(closure), std::move(callback));
+}
+
+}  // namespace
 
 RepostFormTabHelper::RepostFormTabHelper(web::WebState* web_state)
     : web_state_(web_state) {
@@ -46,13 +67,13 @@ void RepostFormTabHelper::PresentDialog(
   base::OnceClosure on_dialog_presented = base::BindOnce(
       &RepostFormTabHelper::OnDialogPresented, weak_factory_.GetWeakPtr());
 
-  callback = std::move(callback).Then(std::move(on_dialog_presented));
-
   [delegate_ repostFormTabHelper:this
       presentRepostFormDialogForWebState:web_state_
                            dialogAtPoint:location
                        completionHandler:base::CallbackToBlock(
-                                             std::move(callback))];
+                                             ClosureBeforeCallback(
+                                                 std::move(on_dialog_presented),
+                                                 std::move(callback)))];
 }
 
 void RepostFormTabHelper::SetDelegate(

@@ -23,17 +23,13 @@
 #import "testing/gtest_mac.h"
 #import "testing/platform_test.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 using bookmarks::BookmarkModel;
 using bookmarks::BookmarkNode;
 
 namespace {
 
 enum class TestParam {
-  kProfileModel,
+  kLocalOrSyncableModel,
   kAccountModel,
 };
 
@@ -302,4 +298,4 @@ TEST_P(BookmarksFolderChooserSubDataSourceImplTest, TestFolderMoved) {
 INSTANTIATE_TEST_SUITE_P(/* No InstantionName*/,
                          BookmarksFolderChooserSubDataSourceImplTest,
                          testing::Values(TestParam::kAccountModel,
-                                         TestParam::kProfileModel));
+                                         TestParam::kLocalOrSyncableModel));

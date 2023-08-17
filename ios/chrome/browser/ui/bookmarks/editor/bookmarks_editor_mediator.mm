@@ -22,10 +22,6 @@
 #import "ios/chrome/browser/ui/bookmarks/editor/bookmarks_editor_mediator_delegate.h"
 #import "url/gurl.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 @interface BookmarksEditorMediator () <BookmarkModelBridgeObserver,
                                        SyncObserverModelBridge> {
   PrefService* _prefs;
@@ -45,22 +41,25 @@
 @end
 
 @implementation BookmarksEditorMediator {
-  base::WeakPtr<bookmarks::BookmarkModel> _profileBookmarkModel;
+  base::WeakPtr<bookmarks::BookmarkModel> _localOrSyncableBookmarkModel;
   base::WeakPtr<bookmarks::BookmarkModel> _accountBookmarkModel;
   syncer::SyncService* _syncService;
 }
 
 - (instancetype)
-    initWithProfileBookmarkModel:(bookmarks::BookmarkModel*)profileBookmarkModel
-            accountBookmarkModel:(bookmarks::BookmarkModel*)accountBookmarkModel
-                    bookmarkNode:(const bookmarks::BookmarkNode*)bookmarkNode
-                           prefs:(PrefService*)prefs
-                     syncService:(syncer::SyncService*)syncService
-                    browserState:(ChromeBrowserState*)browserState {
+    initWithLocalOrSyncableBookmarkModel:
+        (bookmarks::BookmarkModel*)localOrSyncableBookmarkModel
+                    accountBookmarkModel:
+                        (bookmarks::BookmarkModel*)accountBookmarkModel
+                            bookmarkNode:
+                                (const bookmarks::BookmarkNode*)bookmarkNode
+                                   prefs:(PrefService*)prefs
+                             syncService:(syncer::SyncService*)syncService
+                            browserState:(ChromeBrowserState*)browserState {
   self = [super init];
   if (self) {
-    DCHECK(profileBookmarkModel);
-    DCHECK(profileBookmarkModel->loaded());
+    DCHECK(localOrSyncableBookmarkModel);
+    DCHECK(localOrSyncableBookmarkModel->loaded());
     if (base::FeatureList::IsEnabled(syncer::kEnableBookmarksAccountStorage)) {
       DCHECK(accountBookmarkModel);
       DCHECK(accountBookmarkModel->loaded());
@@ -69,7 +68,7 @@
     }
     DCHECK(bookmarkNode);
     DCHECK(bookmarkNode->is_url()) << "Type: " << bookmarkNode->type();
-    _profileBookmarkModel = profileBookmarkModel->AsWeakPtr();
+    _localOrSyncableBookmarkModel = localOrSyncableBookmarkModel->AsWeakPtr();
     if (accountBookmarkModel) {
       _accountBookmarkModel = accountBookmarkModel->AsWeakPtr();
     }
@@ -86,7 +85,7 @@
 }
 
 - (void)disconnect {
-  _profileBookmarkModel = nullptr;
+  _localOrSyncableBookmarkModel = nullptr;
   _accountBookmarkModel = nullptr;
   _bookmark = nullptr;
   _folder = nullptr;
@@ -98,7 +97,7 @@
 }
 
 - (void)dealloc {
-  DCHECK(!_profileBookmarkModel);
+  DCHECK(!_localOrSyncableBookmarkModel);
 }
 
 #pragma mark - Public
@@ -112,14 +111,16 @@
 
 - (bookmarks::BookmarkModel*)bookmarkModel {
   return bookmark_utils_ios::GetBookmarkModelForNode(
-      self.bookmark, _profileBookmarkModel.get(), _accountBookmarkModel.get());
+      self.bookmark, _localOrSyncableBookmarkModel.get(),
+      _accountBookmarkModel.get());
 }
 
 #pragma mark - BookmarksEditorMutator
 
 - (BOOL)shouldDisplayCloudSlashSymbolForParentFolder {
   bookmarks::StorageType type = bookmark_utils_ios::GetBookmarkModelType(
-      self.folder, _profileBookmarkModel.get(), _accountBookmarkModel.get());
+      self.folder, _localOrSyncableBookmarkModel.get(),
+      _accountBookmarkModel.get());
   switch (type) {
     case bookmarks::StorageType::kLocalOrSyncable:
       return bookmark_utils_ios::IsAccountBookmarkStorageOptedIn(_syncService);
@@ -236,11 +237,12 @@
   [self.delegate showSnackbarMessage:
                      bookmark_utils_ios::CreateOrUpdateBookmarkWithUndoToast(
                          [self bookmark], name, url, [self folder],
-                         _profileBookmarkModel.get(),
+                         _localOrSyncableBookmarkModel.get(),
                          _accountBookmarkModel.get(), _browserState)];
   if (_manuallyChangedTheFolder) {
     bookmarks::StorageType type = bookmark_utils_ios::GetBookmarkModelType(
-        _folder, _profileBookmarkModel.get(), _accountBookmarkModel.get());
+        _folder, _localOrSyncableBookmarkModel.get(),
+        _accountBookmarkModel.get());
     SetLastUsedBookmarkFolder(_prefs, _folder, type);
   }
 }

@@ -6,6 +6,7 @@
 
 #include "ash/constants/ash_features.h"
 #include "base/check_is_test.h"
+#include "base/metrics/histogram_functions.h"
 #include "chrome/browser/ash/drive/drive_integration_service.h"
 #include "chrome/browser/ash/login/login_pref_names.h"
 #include "chrome/browser/ash/login/screens/drive_pinning_screen.h"
@@ -48,6 +49,20 @@ PinManager* GetPinManager() {
   return service && service->IsMounted() ? service->GetPinManager() : nullptr;
 }
 
+void RecordOOBEScreenSkippedMetric(drivefs::pinning::Stage stage) {
+  base::UmaHistogramEnumeration(
+      "FileBrowser.GoogleDrive.BulkPinning.CHOOBEScreenStage", stage);
+}
+
+void RecordSettingChanged(bool initial, bool current) {
+  base::UmaHistogramBoolean("OOBE.CHOOBE.SettingChanged.Drive-pinning",
+                            initial != current);
+}
+
+void RecordUserSelection(bool option) {
+  base::UmaHistogramBoolean("OOBE.Drive-pinning.Enabled", option);
+}
+
 }  // namespace
 
 // static
@@ -71,6 +86,8 @@ void DrivePinningScreen::ApplyDrivePinningPref(Profile* profile) {
                                   drive_pinning);
   drivefs::pinning::RecordBulkPinningEnabledSource(
       drivefs::pinning::BulkPinningEnabledSource::kChoobe);
+
+  RecordUserSelection(drive_pinning);
   prefs->ClearPref(prefs::kOobeDrivePinningEnabledDeferred);
 }
 
@@ -93,16 +110,21 @@ bool DrivePinningScreen::ShouldBeSkipped(const WizardContext& context) const {
     return true;
   }
 
+  RecordOOBEScreenSkippedMetric(drive_pinning_stage_);
+  if (drive_pinning_stage_ != drivefs::pinning::Stage::kSuccess) {
+    return true;
+  }
+
   if (features::IsOobeChoobeEnabled()) {
     auto* choobe_controller =
         WizardController::default_controller()->choobe_flow_controller();
-    if (choobe_controller) {
-      return choobe_controller->ShouldScreenBeSkipped(
-          DrivePinningScreenView::kScreenId);
+    if (choobe_controller && choobe_controller->ShouldScreenBeSkipped(
+                                 DrivePinningScreenView::kScreenId)) {
+      return true;
     }
   }
 
-  return !drive_pinning_available_;
+  return false;
 }
 
 bool DrivePinningScreen::MaybeSkip(WizardContext& context) {
@@ -131,8 +153,8 @@ void DrivePinningScreen::OnProgressForTest(
 }
 
 void DrivePinningScreen::OnProgress(const Progress& progress) {
+  drive_pinning_stage_ = progress.stage;
   if (progress.stage == drivefs::pinning::Stage::kSuccess) {
-    drive_pinning_available_ = true;
     std::u16string free_space = ui::FormatBytes(progress.free_space);
     std::u16string required_space = ui::FormatBytes(progress.required_space);
     view_->SetRequiredSpaceInfo(required_space, free_space);
@@ -141,6 +163,9 @@ void DrivePinningScreen::OnProgress(const Progress& progress) {
 
 void DrivePinningScreen::OnNext(bool drive_pinning) {
   Profile* profile = ProfileManager::GetActiveUserProfile();
+  bool old_value =
+      profile->GetPrefs()->GetBoolean(prefs::kOobeDrivePinningEnabledDeferred);
+  RecordSettingChanged(old_value, drive_pinning);
   profile->GetPrefs()->SetBoolean(prefs::kOobeDrivePinningEnabledDeferred,
                                   drive_pinning);
   exit_callback_.Run(Result::NEXT);

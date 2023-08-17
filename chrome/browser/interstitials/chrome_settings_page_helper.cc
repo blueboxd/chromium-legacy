@@ -14,9 +14,10 @@
 #include "chrome/browser/ui/browser_element_identifiers.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/chrome_pages.h"
-#include "chrome/browser/ui/user_education/open_page_and_show_help_bubble.h"
+#include "chrome/browser/ui/user_education/show_promo_in_page.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/safe_browsing/core/common/safe_browsing_settings_metrics.h"
 #include "components/safe_browsing/core/common/safebrowsing_referral_methods.h"
 #include "ui/base/l10n/l10n_util.h"
 #endif
@@ -48,9 +49,10 @@ void ChromeSettingsPageHelper::OpenEnhancedProtectionSettings(
 }
 
 void ChromeSettingsPageHelper::OpenEnhancedProtectionSettingsWithIph(
-    content::WebContents* web_contents) const {
+    content::WebContents* web_contents,
+    SafeBrowsingSettingReferralMethod referral_method) const {
 #if BUILDFLAG(FULL_SAFE_BROWSING)
-  OpenPageAndShowHelpBubble::Params params;
+  ShowPromoInPage::Params params;
   params.target_url =
       chrome::GetSettingsUrl(chrome::kSafeBrowsingEnhancedProtectionSubPage);
   params.bubble_anchor_id = kEnhancedProtectionSettingElementId;
@@ -67,11 +69,11 @@ void ChromeSettingsPageHelper::OpenEnhancedProtectionSettingsWithIph(
   if (!chrome::FindBrowserWithWebContents(web_contents)) {
     return;
   }
-  base::UmaHistogramEnumeration(
-      "SafeBrowsing.EsbPromotionFlow.IphShown",
-      SafeBrowsingSettingReferralMethod::kSecurityInterstitial);
-  OpenPageAndShowHelpBubble::Start(
-      chrome::FindBrowserWithWebContents(web_contents), std::move(params));
+  base::UmaHistogramEnumeration("SafeBrowsing.EsbPromotionFlow.IphShown",
+                                referral_method);
+  safe_browsing::LogShowEnhancedProtectionAction();
+  ShowPromoInPage::Start(chrome::FindBrowserWithWebContents(web_contents),
+                         std::move(params));
 #endif
 }
 

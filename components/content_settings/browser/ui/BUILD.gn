@@ -22,7 +22,19 @@ source_set("ui") {
     "//components/vector_icons",
     "//content/public/browser",
     "//content/public/common",
+    "//services/metrics/public/cpp:ukm_builders",
     "//ui/base",
     "//ui/gfx",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [ "cookie_controls_util_unittest.cc" ]
+  deps = [
+    ":ui",
+    "//base/test:test_support",
+    "//testing/gmock",
+    "//testing/gtest",
   ]
 }

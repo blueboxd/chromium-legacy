@@ -49,12 +49,20 @@ AutofillDownloadManager* AutofillClient::GetDownloadManager() {
   return nullptr;
 }
 
+const PersonalDataManager* AutofillClient::GetPersonalDataManager() const {
+  return const_cast<AutofillClient*>(this)->GetPersonalDataManager();
+}
+
 AutofillOptimizationGuide* AutofillClient::GetAutofillOptimizationGuide()
     const {
   return nullptr;
 }
 
-IBANManager* AutofillClient::GetIBANManager() {
+IbanManager* AutofillClient::GetIbanManager() {
+  return nullptr;
+}
+
+plus_addresses::PlusAddressService* AutofillClient::GetPlusAddressService() {
   return nullptr;
 }
 
@@ -65,7 +73,7 @@ MerchantPromoCodeManager* AutofillClient::GetMerchantPromoCodeManager() {
 std::unique_ptr<SingleFieldFormFillRouter>
 AutofillClient::CreateSingleFieldFormFillRouter() {
   return std::make_unique<SingleFieldFormFillRouter>(
-      GetAutocompleteHistoryManager(), GetIBANManager(),
+      GetAutocompleteHistoryManager(), GetIbanManager(),
       GetMerchantPromoCodeManager());
 }
 
@@ -199,13 +207,6 @@ void AutofillClient::CloseAutofillProgressDialog(
     base::OnceClosure no_interactive_authentication_callback) {
   // This is overridden by platform subclasses. Currently only
   // ChromeAutofillClient (Chrome Desktop & Android) implements this.
-}
-
-void AutofillClient::HandleParsedForms(
-    AutofillDriver* driver,
-    const std::vector<autofill::FormStructure*>& forms) {
-  // This is overridden by platform subclasses. Currently only
-  // ChromeAutofillClientIOS implements this.
 }
 
 LogManager* AutofillClient::GetLogManager() const {

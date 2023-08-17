@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/authentication/signin/consistency_promo_signin/consistency_default_account/consistency_default_account_view_controller.h"
 
+#import "base/check.h"
 #import "base/notreached.h"
 #import "base/strings/sys_string_conversions.h"
 #import "components/signin/public/base/signin_metrics.h"
@@ -22,10 +23,6 @@
 #import "ios/chrome/grit/ios_strings.h"
 #import "ui/base/l10n/l10n_util.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 namespace {
 
 // Margins for `self.contentView` (top, bottom, leading and trailing).
@@ -38,35 +35,7 @@ constexpr CGFloat kExtraNavBarTopPadding = 3.;
 // Vertical insets of primary button.
 constexpr CGFloat kPrimaryButtonVerticalInsets = 15.5;
 
-// The label the bottom sheet should display, or null if there should be none.
-NSString* GetPromoLabelString(signin_metrics::AccessPoint accessPoint) {
-  switch (accessPoint) {
-    case signin_metrics::AccessPoint::ACCESS_POINT_SEND_TAB_TO_SELF_PROMO:
-      return l10n_util::GetNSString(IDS_SEND_TAB_TO_SELF_SIGN_IN_PROMO_LABEL);
-    case signin_metrics::AccessPoint::ACCESS_POINT_NTP_FEED_CARD_MENU_PROMO:
-      return l10n_util::GetNSString(IDS_IOS_FEED_CARD_SIGN_IN_ONLY_PROMO_LABEL);
-    case signin_metrics::AccessPoint::ACCESS_POINT_WEB_SIGNIN:
-      return l10n_util::GetNSString(
-          IDS_IOS_CONSISTENCY_PROMO_DEFAULT_ACCOUNT_LABEL);
-    case signin_metrics::AccessPoint::ACCESS_POINT_NTP_SIGNED_OUT_ICON:
-    case signin_metrics::AccessPoint::ACCESS_POINT_SET_UP_LIST:
-      return l10n_util::GetNSString(
-          IDS_IOS_IDENTITY_DISC_SIGNED_OUT_PROMO_LABEL);
-    case signin_metrics::AccessPoint::ACCESS_POINT_NTP_FEED_TOP_PROMO:
-    case signin_metrics::AccessPoint::ACCESS_POINT_NTP_FEED_BOTTOM_PROMO:
-      return l10n_util::GetNSString(IDS_IOS_SIGNIN_SHEET_LABEL_FOR_FEED_PROMO);
-    case signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS:
-      // No text.
-      return nil;
-    default:
-      // Nothing prevents instantiating ConsistencyDefaultAccountViewController
-      // with an arbitrary entry point, API-wise. In doubt, no label is a good,
-      // generic default that fits all entry points.
-      return nil;
-  }
-}
-
-}
+}  // namespace
 
 @interface ConsistencyDefaultAccountViewController ()
 
@@ -84,20 +53,14 @@ NSString* GetPromoLabelString(signin_metrics::AccessPoint accessPoint) {
 @property(nonatomic, strong) NSString* continueAsTitle;
 // Activity indicator on top of `self.primaryButton`.
 @property(nonatomic, strong) UIActivityIndicatorView* activityIndicatorView;
-// The access point that triggered sign-in.
-@property(nonatomic, assign, readonly) signin_metrics::AccessPoint accessPoint;
+// Label text, or nil if there's supposed to be none.
+@property(nonatomic, assign, readwrite) NSString* labelText;
+// Text in the button that aborts the flow. Must be set before displaying.
+@property(nonatomic, assign, readwrite) NSString* skipButtonText;
 
 @end
 
 @implementation ConsistencyDefaultAccountViewController
-
-- (instancetype)initWithAccessPoint:(signin_metrics::AccessPoint)accessPoint {
-  self = [super init];
-  if (self) {
-    _accessPoint = accessPoint;
-  }
-  return self;
-}
 
 - (void)startSpinner {
   // Add spinner.
@@ -148,9 +111,9 @@ NSString* GetPromoLabelString(signin_metrics::AccessPoint accessPoint) {
   titleLabel.adjustsFontSizeToFitWidth = YES;
   titleLabel.minimumScaleFactor = 0.1;
 
+  CHECK(self.skipButtonText);
   UIButton* skipButton = [UIButton buttonWithType:UIButtonTypeSystem];
-  [skipButton setTitle:l10n_util::GetNSString(IDS_CLOSE)
-              forState:UIControlStateNormal];
+  [skipButton setTitle:self.skipButtonText forState:UIControlStateNormal];
   skipButton.titleLabel.font =
       [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
   [skipButton addTarget:self
@@ -234,10 +197,9 @@ NSString* GetPromoLabelString(signin_metrics::AccessPoint accessPoint) {
   ]];
 
   // Add the label.
-  NSString* labelText = GetPromoLabelString(self.accessPoint);
-  if (labelText) {
+  if (self.labelText) {
     UILabel* label = [[UILabel alloc] init];
-    label.text = labelText;
+    label.text = self.labelText;
     label.textColor = [UIColor colorNamed:kGrey700Color];
     label.font = [UIFont preferredFontForTextStyle:UIFontTextStyleSubheadline];
     label.numberOfLines = 0;

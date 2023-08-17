@@ -48,10 +48,8 @@
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_animator.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_ui_element.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_ui_updater.h"
-#import "ios/chrome/browser/ui/fullscreen/scoped_fullscreen_disabler.h"
 #import "ios/chrome/browser/ui/incognito_reauth/incognito_reauth_scene_agent.h"
 #import "ios/chrome/browser/ui/incognito_reauth/incognito_reauth_view.h"
-#import "ios/chrome/browser/ui/lens/lens_coordinator.h"
 #import "ios/chrome/browser/ui/main_content/main_content_ui.h"
 #import "ios/chrome/browser/ui/main_content/main_content_ui_broadcasting_util.h"
 #import "ios/chrome/browser/ui/main_content/main_content_ui_state.h"
@@ -98,10 +96,6 @@
 #import "services/metrics/public/cpp/ukm_builders.h"
 #import "ui/base/device_form_factor.h"
 #import "ui/base/l10n/l10n_util.h"
-
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
 
 namespace {
 
@@ -159,8 +153,7 @@ enum HeaderBehaviour {
 #pragma mark - BVC
 
 // Note other delegates defined in the Delegates category header.
-@interface BrowserViewController () <LensPresentationDelegate,
-                                     FullscreenUIElement,
+@interface BrowserViewController () <FullscreenUIElement,
                                      MainContentUI,
                                      SideSwipeMediatorDelegate,
                                      TabStripPresentation,
@@ -384,8 +377,6 @@ enum HeaderBehaviour {
     self.safeAreaProvider = dependencies.safeAreaProvider;
     _pagePlaceholderBrowserAgent = dependencies.pagePlaceholderBrowserAgent;
     _webStateUpdateBrowserAgent = dependencies.webStateUpdateBrowserAgent;
-
-    dependencies.lensCoordinator.delegate = self;
 
     self.inNewTabAnimation = NO;
     self.fullscreenController = dependencies.fullscreenController;
@@ -1049,10 +1040,7 @@ enum HeaderBehaviour {
   // view controller).
   [self.presentedViewController
       traitCollectionDidChange:previousTraitCollection];
-  // Change the height of the secondary toolbar to show/hide it.
-  self.secondaryToolbarHeightConstraint.constant =
-      [self secondaryToolbarHeightWithInset];
-  [self updateFootersForFullscreenProgress:self.footerFullscreenProgress];
+
   if (self.currentWebState) {
     UIEdgeInsets contentPadding =
         self.currentWebState->GetWebViewProxy().contentInset;
@@ -1061,7 +1049,14 @@ enum HeaderBehaviour {
     self.currentWebState->GetWebViewProxy().contentInset = contentPadding;
   }
 
+  // Toolbar state must be updated before `updateFootersForFullscreenProgress`
+  // as the later uses the insets from fullscreen model.
   [self updateToolbarState];
+
+  // Change the height of the secondary toolbar to show/hide it.
+  self.secondaryToolbarHeightConstraint.constant =
+      [self secondaryToolbarHeightWithInset];
+  [self updateFootersForFullscreenProgress:self.footerFullscreenProgress];
 
   // If the device's size class has changed from RegularXRegular to another and
   // vice-versa, the find bar should switch between regular mode and compact
@@ -1685,11 +1680,6 @@ enum HeaderBehaviour {
   [self.helpHandler hideAllHelpBubbles];
 }
 
-// Returns the footer view if one exists (e.g. the voice search bar).
-- (UIView*)footerView {
-  return self.toolbarCoordinator.secondaryToolbarViewController.view;
-}
-
 // Returns the appropriate frame for the NTP.
 - (CGRect)ntpFrameForCurrentWebState {
   DCHECK(self.ntpCoordinator.isNTPActiveForCurrentWebState);
@@ -1989,10 +1979,11 @@ enum HeaderBehaviour {
 - (void)updateFootersForFullscreenProgress:(CGFloat)progress {
   self.footerFullscreenProgress = progress;
 
-  const CGFloat expandedToolbarHeight = [self secondaryToolbarHeightWithInset];
+  const CGFloat expandedToolbarHeight =
+      self.fullscreenController->GetMaxViewportInsets().bottom;
   if (!expandedToolbarHeight) {
-    // If `secondaryToolbarHeightWithInset` returns 0, secondary toolbar is
-    // hidden. In that case don't update it's height on fullscreen progress.
+    // If `expandedToolbarHeight` is 0, secondary toolbar is hidden. In that
+    // case don't update it's height on fullscreen progress.
     return;
   }
 

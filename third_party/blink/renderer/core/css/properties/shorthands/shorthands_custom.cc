@@ -3442,6 +3442,12 @@ CSSValue* ConsumeTransitionValue(CSSPropertyID property,
       return css_parsing_utils::ConsumeTransitionProperty(range, context);
     case CSSPropertyID::kTransitionTimingFunction:
       return css_parsing_utils::ConsumeAnimationTimingFunction(range, context);
+    case CSSPropertyID::kTransitionBehavior:
+      if (css_parsing_utils::IsValidTransitionBehavior(range.Peek().Id())) {
+        return CSSIdentifierValue::Create(
+            range.ConsumeIncludingWhitespace().Id());
+      }
+      return nullptr;
     default:
       NOTREACHED();
       return nullptr;
@@ -3508,6 +3514,11 @@ const CSSValue* Transition::CSSValueFromComputedStyleInternal(
                                      i)));
       list->Append(*ComputedStyleUtils::ValueForAnimationDelayStart(
           CSSTimingData::GetRepeated(transition_data->DelayStartList(), i)));
+      if (CSSTimingData::GetRepeated(transition_data->BehaviorList(), i) !=
+          CSSTransitionData::InitialBehavior()) {
+        list->Append(*ComputedStyleUtils::CreateTransitionBehaviorValue(
+            transition_data->BehaviorList()[i]));
+      }
       transitions_list->Append(*list);
     }
     return transitions_list;
@@ -3851,7 +3862,7 @@ const CSSValue* Toggle::CSSValueFromComputedStyleInternal(
   return toggle_root;
 }
 
-bool AlternativeWhiteSpace::ParseShorthand(
+bool WhiteSpace::ParseShorthand(
     bool important,
     CSSParserTokenRange& range,
     const CSSParserContext& context,
@@ -3890,10 +3901,10 @@ bool AlternativeWhiteSpace::ParseShorthand(
 
   // Consume multi-value syntax if the first identifier is not pre-defined.
   return css_parsing_utils::ConsumeShorthandGreedilyViaLonghands(
-      alternativeWhiteSpaceShorthand(), important, context, range, properties);
+      whiteSpaceShorthand(), important, context, range, properties);
 }
 
-const CSSValue* AlternativeWhiteSpace::CSSValueFromComputedStyleInternal(
+const CSSValue* WhiteSpace::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const LayoutObject* layout_object,
     bool allow_visited_style) const {

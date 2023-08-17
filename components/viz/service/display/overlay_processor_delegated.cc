@@ -96,16 +96,20 @@ OverlayProcessorDelegated::OverlayProcessorDelegated(
                             shared_image_interface) {
   // TODO(msisov, petermcneeley): remove this once Wayland uses only delegated
   // context. May be null in tests.
-  if (ui::OzonePlatform::GetInstance()->GetOverlayManager())
+  if (ui::OzonePlatform::GetInstance()->GetOverlayManager()) {
     ui::OzonePlatform::GetInstance()
         ->GetOverlayManager()
         ->SetContextDelegated();
-  supports_clip_rect_ = ui::OzonePlatform::GetInstance()
-                            ->GetPlatformRuntimeProperties()
-                            .supports_clip_rect;
-  needs_background_image_ = ui::OzonePlatform::GetInstance()
-                                ->GetPlatformRuntimeProperties()
-                                .needs_background_image;
+  }
+
+  const auto& runtime_props =
+      ui::OzonePlatform::GetInstance()->GetPlatformRuntimeProperties();
+  supports_clip_rect_ = runtime_props.supports_clip_rect;
+  supports_out_of_window_clip_rect_ =
+      runtime_props.supports_out_of_window_clip_rect;
+  needs_background_image_ = runtime_props.needs_background_image;
+  supports_affine_transform_ = features::ShouldDelegateTransforms() &&
+                               runtime_props.supports_affine_transform;
 }
 
 OverlayProcessorDelegated::~OverlayProcessorDelegated() = default;
@@ -166,6 +170,8 @@ bool OverlayProcessorDelegated::AttemptWithStrategies(
   const OverlayCandidateFactory::OverlayContext context = {
       .is_delegated_context = true,
       .supports_clip_rect = supports_clip_rect_,
+      .supports_out_of_window_clip_rect = supports_out_of_window_clip_rect_,
+      .supports_arbitrary_transform = supports_affine_transform_,
       .supports_mask_filter = true};
 
   OverlayCandidateFactory candidate_factory = OverlayCandidateFactory(
@@ -196,6 +202,21 @@ bool OverlayProcessorDelegated::AttemptWithStrategies(
         DBG_DRAW_RECT("delegated.overlay.aggregated", candidate.display_rect);
       } else {
         DBG_DRAW_RECT("delegated.overlay.candidate", candidate.display_rect);
+
+        if (!candidate.rounded_corners.IsEmpty()) {
+          DBG_DRAW_RECT_OPT("delegated.overlay.candidate_rounded_corners",
+                            DBG_OPT_BLUE, candidate.rounded_corners.rect());
+
+          using Corner = gfx::RRectF::Corner;
+          const Corner corners[] = {Corner::kUpperLeft, Corner::kUpperRight,
+                                    Corner::kLowerRight, Corner::kLowerLeft};
+          for (auto corner : corners) {
+            auto corner_rect =
+                candidate.rounded_corners.CornerBoundingRect(corner);
+            DBG_DRAW_RECT_OPT("delegated.overlay.candidate_rounded_corners",
+                              DBG_OPT_RED, corner_rect);
+          }
+        }
       }
       candidates->push_back(candidate);
     } else if (candidate_status ==

@@ -5,6 +5,7 @@
 #ifndef UI_MESSAGE_CENTER_VIEWS_MESSAGE_POPUP_COLLECTION_H_
 #define UI_MESSAGE_CENTER_VIEWS_MESSAGE_POPUP_COLLECTION_H_
 
+#include <cstddef>
 #include <memory>
 #include <vector>
 
@@ -100,6 +101,8 @@ class MESSAGE_CENTER_EXPORT MessagePopupCollection
       views::Widget* widget,
       views::Widget::InitParams* init_params) = 0;
 
+  size_t GetPopupItemsCount();
+
   gfx::Rect popup_collection_bounds() { return popup_collection_bounds_; }
 
  protected:
@@ -164,10 +167,6 @@ class MESSAGE_CENTER_EXPORT MessagePopupCollection
   // Called when the entire popup collection change its height.
   virtual void NotifyPopupCollectionHeightChanged() {}
 
-  // Evaluates if we should display `item` and make any adjustment necessary to
-  // display it. Returns true if `item` can be displayed, and false otherwise.
-  virtual bool AdjustAndEvaluateShouldDisplayPopupItem(const PopupItem& item);
-
   // Called when popup animation is started/finished.
   virtual void AnimationStarted() {}
   virtual void AnimationFinished() {}
@@ -179,6 +178,9 @@ class MESSAGE_CENTER_EXPORT MessagePopupCollection
   // Returns true if the edge is outside work area.
   bool IsNextEdgeOutsideWorkArea(const PopupItem& item) const;
 
+  // Called to close a particular popup item.
+  virtual void ClosePopupItem(const PopupItem& item);
+
   // Marks `is_animating` flag of all popups for `MOVE_DOWN` animation.
   void MoveDownPopups();
 
@@ -186,7 +188,12 @@ class MESSAGE_CENTER_EXPORT MessagePopupCollection
   virtual void RestartPopupTimers();
   virtual void PausePopupTimers();
 
+  // Stops all the animation and closes all the popups immediately.
+  void CloseAllPopupsNow();
+
   gfx::LinearAnimation* animation() { return animation_.get(); }
+
+  const std::vector<PopupItem>& popup_items() { return popup_items_; }
 
  private:
   // MessagePopupCollection always runs single animation at one time.
@@ -247,9 +254,6 @@ class MESSAGE_CENTER_EXPORT MessagePopupCollection
   bool CloseTransparentPopups();
   void ClosePopupsOutsideWorkArea();
   void RemoveClosedPopupItems();
-
-  // Stops all the animation and closes all the popups immediately.
-  void CloseAllPopupsNow();
 
   // Collapse all existing popups. Return true if size of any popup is actually
   // changed.

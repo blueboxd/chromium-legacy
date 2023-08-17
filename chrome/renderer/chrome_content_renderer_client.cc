@@ -98,6 +98,7 @@
 #include "components/page_load_metrics/renderer/metrics_render_frame_observer.h"
 #include "components/paint_preview/buildflags/buildflags.h"
 #include "components/password_manager/core/common/password_manager_features.h"
+#include "components/permissions/features.h"
 #include "components/safe_browsing/buildflags.h"
 #include "components/safe_browsing/content/renderer/threat_dom_details.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
@@ -249,6 +250,10 @@
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_ANDROID)
 #include "chrome/renderer/media/chrome_key_systems.h"
+#endif
+
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_CHROMEOS)
+#include "chrome/renderer/cco/multiline_detector.h"
 #endif
 
 using autofill::AutofillAgent;
@@ -550,6 +555,11 @@ void ChromeContentRendererClient::RenderThreadStarted() {
     blink::IdentifiabilityStudySettings::SetGlobalProvider(
         std::make_unique<PrivacyBudgetSettingsProvider>());
   }
+
+  if (base::FeatureList::IsEnabled(
+          permissions::features::kPermissionStorageAccessAPI)) {
+    blink::WebRuntimeFeatures::EnableStorageAccessAPI(true);
+  }
 }
 
 void ChromeContentRendererClient::ExposeInterfacesToBrowser(
@@ -749,6 +759,10 @@ void ChromeContentRendererClient::RenderFrameCreated(
             base::BindRepeating(&RenderFrameFontFamilyAccessor::Bind,
                                 render_frame));
   }
+#endif
+
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_CHROMEOS)
+  MultilineDetector::InstallIfNecessary(render_frame);
 #endif
 }
 
@@ -1620,6 +1634,11 @@ void ChromeContentRendererClient::
   blink::WebRuntimeFeatures::EnablePerformanceManagerInstrumentation(true);
 
   MaybeEnableWebShare();
+
+  if (base::FeatureList::IsEnabled(
+          autofill::features::kAutofillSharedAutofill)) {
+    blink::WebRuntimeFeatures::EnableSharedAutofill(true);
+  }
 
   if (base::FeatureList::IsEnabled(subresource_filter::kAdTagging))
     blink::WebRuntimeFeatures::EnableAdTagging(true);

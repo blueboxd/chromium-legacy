@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/views/extensions/extensions_menu_view_controller.h"
 
+#include <algorithm>
+
 #include "base/functional/bind.h"
 #include "base/i18n/case_conversion.h"
 #include "base/metrics/user_metrics.h"
@@ -502,6 +504,20 @@ void ExtensionsMenuViewController::OnShowRequestsTogglePressed(
 void ExtensionsMenuViewController::TabChangedAt(content::WebContents* contents,
                                                 int index,
                                                 TabChangeType change_type) {
+  bool should_update_page = false;
+  switch (change_type) {
+    case TabChangeType::kAll:
+      should_update_page = true;
+      break;
+    case TabChangeType::kLoadingOnly:
+      should_update_page = false;
+      break;
+  }
+
+  if (!should_update_page || GetActiveWebContents() != contents) {
+    return;
+  }
+
   UpdatePage(contents);
 }
 
@@ -509,12 +525,14 @@ void ExtensionsMenuViewController::OnTabStripModelChanged(
     TabStripModel* tab_strip_model,
     const TabStripModelChange& change,
     const TabStripSelectionChange& selection) {
-  content::WebContents* web_contents = tab_strip_model->GetActiveWebContents();
+  CHECK_EQ(tab_strip_model, browser_->tab_strip_model());
+  content::WebContents* web_contents = GetActiveWebContents();
+
   if (!selection.active_tab_changed() || !web_contents) {
     return;
   }
 
-  UpdatePage(GetActiveWebContents());
+  UpdatePage(web_contents);
 }
 
 void ExtensionsMenuViewController::UpdatePage(
@@ -563,7 +581,21 @@ void ExtensionsMenuViewController::UpdateMainPage(
   ExtensionsMenuMainPageView::MessageSectionState message_section_state =
       GetMessageSectionState(*browser_->profile(), *toolbar_model_,
                              *web_contents);
-  main_page->UpdateMessageSection(message_section_state);
+  bool has_enterprise_extensions = false;
+  // Only kUserBlockedAccess state cares whether there are any extensions
+  // installed by enterprise.
+  if (message_section_state ==
+      ExtensionsMenuMainPageView::MessageSectionState::kUserBlockedAccess) {
+    has_enterprise_extensions = std::any_of(
+        toolbar_model_->action_ids().begin(),
+        toolbar_model_->action_ids().end(),
+        [this](const ToolbarActionsModel::ActionId extension_id) {
+          auto* extension = GetExtension(browser_, extension_id);
+          return HasEnterpriseForcedAccess(*extension, *browser_->profile());
+        });
+  }
+  main_page->UpdateMessageSection(message_section_state,
+                                  has_enterprise_extensions);
 
   if (message_section_state ==
       ExtensionsMenuMainPageView::MessageSectionState::kUserCustomizedAccess) {

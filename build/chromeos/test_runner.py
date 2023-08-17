@@ -15,10 +15,9 @@ import signal
 import socket
 import sys
 import tempfile
-import six
 
 # The following non-std imports are fetched via vpython. See the list at
-# //.vpython
+# //.vpython3
 import dateutil.parser  # pylint: disable=import-error
 import jsonlines  # pylint: disable=import-error
 import psutil  # pylint: disable=import-error
@@ -35,8 +34,6 @@ from pylib.results import json_results  # pylint: disable=import-error
 sys.path.insert(0, os.path.join(CHROMIUM_SRC_PATH, 'build', 'util'))
 # TODO(crbug.com/1421441): Re-enable the 'no-name-in-module' check.
 from lib.results import result_sink  # pylint: disable=import-error,no-name-in-module
-
-assert not six.PY2, 'Py2 not supported for this file.'
 
 import subprocess  # pylint: disable=import-error,wrong-import-order
 
@@ -610,6 +607,14 @@ class GTestTest(RemoteTest):
 
     device_test_script_contents.append(test_invocation)
 
+    # (Re)start ui after all tests are done. This is for developer convenienve.
+    # Without this, the device would remain in a black screen which looks like
+    # powered off.
+    if self._stop_ui:
+      device_test_script_contents += [
+          'start ui',
+      ]
+
     self._on_device_script = self.write_test_script_to_disk(
         device_test_script_contents)
 
@@ -883,7 +888,8 @@ def main():
   gtest_parser.add_argument(
       '--stop-ui',
       action='store_true',
-      help='Will stop the UI service in the device before running the test.')
+      help='Will stop the UI service in the device before running the test. '
+      'Also start the UI service after all tests are done.')
   gtest_parser.add_argument(
       '--trace-dir',
       type=str,

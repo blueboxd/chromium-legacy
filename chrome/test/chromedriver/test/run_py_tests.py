@@ -89,14 +89,16 @@ _NEGATIVE_FILTER = [
     'ChromeDriverPageLoadTimeoutTest.testRefreshWithPageLoadTimeout',
     # Flaky https://bugs.chromium.org/p/chromium/issues/detail?id=1143940
     'ChromeDriverTest.testTakeLargeElementFullPageScreenshot',
-    # Flaky https://bugs.chromium.org/p/chromium/issues/detail?id=1306504
-    'ChromeSwitchesCapabilityTest.*',
-    'ChromeExtensionsCapabilityTest.*',
     # crbug.com/chromedriver/4379
     'ChromeDriverTest.testClickElementInAnotherFrame',
     # crbug.com/chromedriver/4362
     'BidiTest.testSwitchWindows',
     'BidiTest.testOpenMultipleTabsInJavaScript',
+    # crbug.com/chromedriver/4509
+    'ChromeDriverSiteIsolation.testScriptNavigateRemoteToLocal',
+    'ChromeDriverSiteIsolation.testClickNavigateRemoteToLocal',
+    # crbug.com/chromedriver/4513
+    'ChromeDriverSiteIsolation.testClickNavigateRemoteToSameRemote',
 ]
 
 
@@ -260,8 +262,6 @@ _ANDROID_NEGATIVE_FILTER['chrome'] = (
         # https://bugs.chromium.org/p/chromedriver/issues/detail?id=3560
         'ChromeDriverTest.testTakeLargeElementViewportScreenshot',
         'ChromeDriverTest.testTakeLargeElementFullPageScreenshot'
-        # Pipe are supported only on Posix platforms crbug.com/chromedriver/3480
-        'ChromeSwitchesCapabilityTest.testRemoteDebuggingPipe',
     ]
 )
 _ANDROID_NEGATIVE_FILTER['chrome_stable'] = (
@@ -275,7 +275,7 @@ _ANDROID_NEGATIVE_FILTER['chrome_stable'] = (
         'ChromeDriverTest.testSwitchToWindow',
         # Feature not yet supported in this version
         'ChromeDriverTest.testGenerateTestReport',
-        # Pipe are supported only on Posix platforms crbug.com/chromedriver/3480
+        # Pipe are supported only on Posix and Windows platforms
         'ChromeSwitchesCapabilityTest.testRemoteDebuggingPipe',
     ]
 )
@@ -288,7 +288,7 @@ _ANDROID_NEGATIVE_FILTER['chrome_beta'] = (
         'ChromeDriverTest.testSwitchToWindow',
         # Feature not yet supported in this version
         'ChromeDriverTest.testGenerateTestReport',
-        # Pipe are supported only on Posix platforms crbug.com/chromedriver/3480
+        # Pipe are supported only on Posix and Windows platforms
         'ChromeSwitchesCapabilityTest.testRemoteDebuggingPipe',
     ]
 )
@@ -329,7 +329,7 @@ _ANDROID_NEGATIVE_FILTER['chromedriver_webview_shell'] = (
         'ChromeDriverTest.testUnexpectedAlertOpenExceptionMessage',
         # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2332
         'ChromeDriverTestLegacy.testTouchScrollElement',
-        # Pipe are supported only on Posix platforms crbug.com/chromedriver/3480
+        # Pipe are supported only on Posix and Windows platforms
         'ChromeSwitchesCapabilityTest.testRemoteDebuggingPipe',
     ]
 )
@@ -4484,6 +4484,12 @@ class ChromeDriverSiteIsolation(ChromeDriverBaseTestWithWebServer):
   for fixable technical reasons related to subdomain matching.
   """
 
+  def ReplaceHostName(self, url, new_host_name):
+    url_components = urllib.parse.urlparse(url)
+    return urllib.parse.urlunparse(
+        url_components._replace(
+            netloc=('%s:%d' % (new_host_name, url_components.port))))
+
   def setUp(self):
     self._driver = self.CreateDriver(chrome_switches=['--site-per-process'])
 
@@ -4519,6 +4525,194 @@ class ChromeDriverSiteIsolation(ChromeDriverBaseTestWithWebServer):
     a_inner.Click()
     frame_url = self._driver.ExecuteScript('return window.location.href')
     self.assertTrue(frame_url.endswith('#two'))
+
+  def testScriptNavigateLocalToLocal(self):
+    """Test that user can switch into a local frame
+    and perform a same domain navigation.
+    """
+    local2_url = self.GetHttpUrlForFile('/local2.html')
+    self._http_server.SetDataForPath('/local2.html',
+      bytes('<p>DONE!</p>', 'utf-8'))
+    self._http_server.SetDataForPath('/local1.html',
+      bytes('<p>Ready, Steady, Go!</p>', 'utf-8'))
+    self._http_server.SetDataForPath('/main.html',
+      bytes('<iframe src="/local1.html">', 'utf-8'))
+    self._driver.Load(self.GetHttpUrlForFile('/main.html'))
+    frame = self._driver.FindElement('tag name', 'iframe')
+    self._driver.SwitchToFrame(frame)
+    self._driver.ExecuteScript('location.href=arguments[0]', local2_url)
+    paragraph = self._driver.FindElement('tag name', 'p')
+    self.assertEqual('DONE!', paragraph.GetText())
+
+  def testScriptNavigateLocalToRemote(self):
+    """Test that user can switch into a local frame
+    and perform a cross domain navigation.
+    """
+    remote_url = self.ReplaceHostName(self.GetHttpUrlForFile('/remote.html'),
+                                      'localhost')
+    self._http_server.SetDataForPath('/remote.html',
+      bytes('<p>DONE!</p>', 'utf-8'))
+    self._http_server.SetDataForPath('/local.html',
+      bytes('<p>Ready, Steady, Go!</p>', 'utf-8'))
+    self._http_server.SetDataForPath('/main.html',
+      bytes('<iframe src="/local.html">', 'utf-8'))
+    self._driver.Load(self.GetHttpUrlForFile('/main.html'))
+    frame = self._driver.FindElement('tag name', 'iframe')
+    self._driver.SwitchToFrame(frame)
+    self._driver.ExecuteScript('location.href=arguments[0]', remote_url)
+    paragraph = self._driver.FindElement('tag name', 'p')
+    self.assertEqual('DONE!', paragraph.GetText())
+
+  def testScriptNavigateRemoteToSameRemote(self):
+    """Test that user can switch into a remote frame,
+    belonging to a different domain than the main frame,
+    and perform a same domain navigation.
+    """
+    remote1_url = self.ReplaceHostName(self.GetHttpUrlForFile('/remote1.html'),
+                                      'localhost')
+    remote2_url = self.ReplaceHostName(self.GetHttpUrlForFile('/remote2.html'),
+                                      'localhost')
+    self._http_server.SetDataForPath('/remote2.html',
+      bytes('<p>DONE!</p>', 'utf-8'))
+    self._http_server.SetDataForPath('/remote1.html',
+      bytes('<p>Ready, Steady, Go!</p>', 'utf-8'))
+    self._http_server.SetDataForPath('/main.html',
+      bytes('<iframe src="%s">' % remote1_url, 'utf-8'))
+    self._driver.Load(self.GetHttpUrlForFile('/main.html'))
+    frame = self._driver.FindElement('tag name', 'iframe')
+    self._driver.SwitchToFrame(frame)
+    self._driver.ExecuteScript('location.href=arguments[0]', remote2_url)
+    paragraph = self._driver.FindElement('tag name', 'p')
+    self.assertEqual('DONE!', paragraph.GetText())
+
+  def testScriptNavigateRemoteToLocal(self):
+    """Test that user can switch into a remote frame,
+    belonging to a different domain than the main frame,
+    and perform a cross domain navigation to the main frame domain.
+
+    The test reproduces a real bug that has some degree of flakiness.
+    Therefore it has several iterations to increase the flakiness
+    to the observable level.
+    """
+    local_url = self.GetHttpUrlForFile('/local.html')
+    remote_url = self.ReplaceHostName(self.GetHttpUrlForFile('/remote.html'),
+                                      'localhost')
+    self._http_server.SetDataForPath('/local.html',
+      bytes('<p>DONE!</p>', 'utf-8'))
+    self._http_server.SetDataForPath('/remote.html',
+      bytes('<p>Ready, Steady, Go!</p>', 'utf-8'))
+    self._http_server.SetDataForPath('/main.html',
+      bytes('<iframe src="%s">' % remote_url, 'utf-8'))
+    # The first iteration after session creation frequently succeeds.
+    # Therefore we make two iterations.
+    for _ in range(0, 2):
+      self._driver.SwitchToMainFrame()
+      self._driver.Load(self.GetHttpUrlForFile('/main.html'))
+      frame = self._driver.FindElement('tag name', 'iframe')
+      self._driver.SwitchToFrame(frame)
+      self._driver.ExecuteScript('location.href=arguments[0]', local_url)
+      paragraph = self._driver.FindElement('tag name', 'p')
+      self.assertEqual('DONE!', paragraph.GetText())
+
+  def testClickNavigateLocalToLocal(self):
+    """Test that user can switch into a local frame
+    and perform a same domain navigation by mouse click.
+    """
+    self._http_server.SetDataForPath('/local2.html',
+      bytes('<p>DONE!</p>', 'utf-8'))
+    self._http_server.SetDataForPath('/local1.html',
+      bytes('<a href="local2.html">To Another Local</a>', 'utf-8'))
+    self._http_server.SetDataForPath('/main.html',
+      bytes('<iframe src="/local1.html">', 'utf-8'))
+    self._driver.Load(self.GetHttpUrlForFile('/main.html'))
+    frame = self._driver.FindElement('tag name', 'iframe')
+    self._driver.SwitchToFrame(frame)
+    anchor = self._driver.FindElement('tag name', 'a')
+    anchor.Click()
+    paragraph = self._driver.FindElement('tag name', 'p')
+    self.assertEqual('DONE!', paragraph.GetText())
+
+  def testClickNavigateLocalToRemote(self):
+    """Test that user can switch into a local frame
+    and perform a cross domain navigation by mouse click.
+    """
+    remote_url = self.ReplaceHostName(self.GetHttpUrlForFile('/remote.html'),
+                                      'localhost')
+    self._http_server.SetDataForPath('/remote.html',
+      bytes('<p>DONE!</p>', 'utf-8'))
+    self._http_server.SetDataForPath('/local.html',
+      bytes('<a href="%s">To Remote</a>' % remote_url, 'utf-8'))
+    self._http_server.SetDataForPath('/main.html',
+      bytes('<iframe src="/local.html">', 'utf-8'))
+    self._driver.Load(self.GetHttpUrlForFile('/main.html'))
+    frame = self._driver.FindElement('tag name', 'iframe')
+    self._driver.SwitchToFrame(frame)
+    anchor = self._driver.FindElement('tag name', 'a')
+    anchor.Click()
+    paragraph = self._driver.FindElement('tag name', 'p')
+    self.assertEqual('DONE!', paragraph.GetText())
+
+  def testClickNavigateRemoteToSameRemote(self):
+    """Test that user can switch into a remote frame,
+    belonging to a different domain than the main frame,
+    and perform a same domain navigation by mouse click.
+
+    The test reproduces a real bug that has some degree of flakiness.
+    Therefore it has several iterations to increase the flakiness
+    to the observable level.
+    """
+    remote1_url = self.ReplaceHostName(self.GetHttpUrlForFile('/remote1.html'),
+                                      'localhost')
+    remote2_url = self.ReplaceHostName(self.GetHttpUrlForFile('/remote2.html'),
+                                      'localhost')
+    self._http_server.SetDataForPath('/remote2.html',
+      bytes('<p>DONE!</p>', 'utf-8'))
+    self._http_server.SetDataForPath('/remote1.html',
+      bytes('<a href="%s">To Another Remote</a>' % remote2_url, 'utf-8'))
+    self._http_server.SetDataForPath('/main.html',
+      bytes('<iframe src="%s">' % remote1_url, 'utf-8'))
+    # The bug manifests itself in 40% failure rate.
+    # Three iterations bring it above 75%.
+    # An extra iteration to heat up after the session creation.
+    for _ in range(0, 4):
+      self._driver.SwitchToMainFrame()
+      self._driver.Load(self.GetHttpUrlForFile('/main.html'))
+      frame = self._driver.FindElement('tag name', 'iframe')
+      self._driver.SwitchToFrame(frame)
+      anchor = self._driver.FindElement('tag name', 'a')
+      anchor.Click()
+      paragraph = self._driver.FindElement('tag name', 'p')
+      self.assertEqual('DONE!', paragraph.GetText())
+
+  def testClickNavigateRemoteToLocal(self):
+    """Test that user can switch into a remote frame, belonging to a different
+    domain than the main frame, and perform a cross domain navigation
+    to the main frame domain by mouse click.
+
+    The test reproduces a real bug that has some degree of flakiness.
+    Therefore it has several iterations to increase the flakiness
+    to the observable level.
+    """
+    local_url = self.GetHttpUrlForFile('/local.html')
+    remote_url = self.ReplaceHostName(self.GetHttpUrlForFile('/remote.html'),
+                                      'localhost')
+    self._http_server.SetDataForPath('/local.html',
+      bytes('<p>DONE!</p>', 'utf-8'))
+    self._http_server.SetDataForPath('/remote.html',
+      bytes('<a href="%s">To Local</a>' % local_url, 'utf-8'))
+    self._http_server.SetDataForPath('/main.html',
+      bytes('<iframe src="%s">' % remote_url, 'utf-8'))
+    # The first iteration after session creation frequently succeeds.
+    # Therefore we make two iterations.
+    for _ in range(0, 2):
+      self._driver.SwitchToMainFrame()
+      self._driver.Load(self.GetHttpUrlForFile('/main.html'))
+      frame = self._driver.FindElement('tag name', 'iframe')
+      self._driver.SwitchToFrame(frame)
+      anchor = self._driver.FindElement('tag name', 'a')
+      anchor.Click()
+      paragraph = self._driver.FindElement('tag name', 'p')
+      self.assertEqual('DONE!', paragraph.GetText())
 
 
 class ChromeDriverPageLoadTimeoutTest(ChromeDriverBaseTestWithWebServer):
@@ -4784,20 +4978,23 @@ class ChromeSwitchesCapabilityTest(ChromeDriverBaseTest):
     # Must use retries since there is an inherent race condition in port
     # selection.
     ports_generator = util.FindProbableFreePorts()
+    exception = None
     for _ in range(3):
       port = next(ports_generator)
       port_flag = 'remote-debugging-port=%s' % port
       try:
         driver = self.CreateDriver(chrome_switches=[port_flag])
-      except:
+      except Exception as e:
+        exception = e
         continue
       driver.Load('chrome:version')
       command_line = driver.FindElement('css selector',
                                         '#command_line').GetText()
+      driver.Quit()
       self.assertIn(port_flag, command_line)
       break
-    else:  # Else clause gets invoked if "break" never happens.
-      raise  # This re-raises the most recent exception.
+    if exception is not None:
+      raise exception
 
   def testRemoteDebuggingPipe(self):
     """Tests that passing --remote-debugging-pipe through capabilities works.
@@ -5481,6 +5678,7 @@ class RemoteBrowserTest(ChromeDriverBaseTest):
     # Must use retries since there is an inherent race condition in port
     # selection.
     ports_generator = util.FindProbableFreePorts()
+    exception = None
     for _ in range(3):
       port = next(ports_generator)
       temp_dir = util.MakeTempDir()
@@ -5495,24 +5693,24 @@ class RemoteBrowserTest(ChromeDriverBaseTest):
         driver = self.CreateDriver(debugger_address='localhost:%d' % port)
         driver.ExecuteScript('console.info("%s")' % 'connecting at %d!' % port)
         driver.Quit()
-      except:
+      except Exception as e:
+        exception = e
         continue
-      finally:
-        if process.poll() is None:
-          process.terminate()
-          # Wait for Chrome to exit here to prevent a race with Chrome to
-          # delete/modify the temporary user-data-dir.
-          # Maximum wait ~1 second.
-          for _ in range(20):
-            if process.poll() is not None:
-              break
-            print('continuing to wait for Chrome to exit')
-            time.sleep(.05)
-          else:
-            process.kill()
+      if process.poll() is None:
+        process.terminate()
+        # Wait for Chrome to exit here to prevent a race with Chrome to
+        # delete/modify the temporary user-data-dir.
+        # Maximum wait ~1 second.
+        for _ in range(20):
+          if process.poll() is not None:
+            break
+          print('continuing to wait for Chrome to exit')
+          time.sleep(.05)
+        else:
+          process.kill()
       break
-    else:  # Else clause gets invoked if "break" never happens.
-      raise  # This re-raises the most recent exception.
+    if exception is not None:
+      raise exception
 
   def testConnectToRemoteBrowserLiteralAddressHeadless(self):
     debug_addrs = ['127.0.0.1', '::1']
@@ -5522,6 +5720,7 @@ class RemoteBrowserTest(ChromeDriverBaseTest):
       # Must use retries since there is an inherent race condition in port
       # selection.
       ports_generator = util.FindProbableFreePorts()
+      exception = None
       for _ in range(3):
         port = next(ports_generator)
         temp_dir = util.MakeTempDir()
@@ -5541,24 +5740,24 @@ class RemoteBrowserTest(ChromeDriverBaseTest):
           driver.ExecuteScript(
             'console.info("%s")' % 'connecting at %d!' % port)
           driver.Quit()
-        except:
+        except Exception as e:
+          exception = e
           continue
-        finally:
-          if process.poll() is None:
-            process.terminate()
-            # Wait for Chrome to exit here to prevent a race with Chrome to
-            # delete/modify the temporary user-data-dir.
-            # Maximum wait ~1 second.
-            for _ in range(20):
-              if process.poll() is not None:
-                break
-              print('continuing to wait for Chrome to exit')
-              time.sleep(.05)
-            else:
-              process.kill()
+        if process.poll() is None:
+          process.terminate()
+          # Wait for Chrome to exit here to prevent a race with Chrome to
+          # delete/modify the temporary user-data-dir.
+          # Maximum wait ~1 second.
+          for _ in range(20):
+            if process.poll() is not None:
+              break
+            print('continuing to wait for Chrome to exit')
+            time.sleep(.05)
+          else:
+            process.kill()
         break
-      else:  # Else clause gets invoked if "break" never happens.
-        raise  # This re-raises the most recent exception.
+      if exception is not None:
+        raise exception
 
 
 class LaunchDesktopTest(ChromeDriverBaseTest):
@@ -5590,33 +5789,63 @@ class LaunchDesktopTest(ChromeDriverBaseTest):
       # any arguments. Linux and Mac should be good enough coverage.
       return
 
-    file_descriptor, path = tempfile.mkstemp()
-    try:
-      os.write(file_descriptor, b'#!/bin/bash\nexit 0')
-      os.close(file_descriptor)
-      os.chmod(path, 0o777)
-      exception_raised = False
+    exception = None
+    with tempfile.NamedTemporaryFile() as f:
+      f.file.write(b'#!/bin/bash\nexit 0')
+      f.file.close()
+      os.chmod(f.name, 0o777)
       switches = ['--remote-debugging-port=0']
       try:
         driver = chromedriver.ChromeDriver(_CHROMEDRIVER_SERVER_URL,
                                            _CHROMEDRIVER_SERVER_PID,
-                                           chrome_binary=path,
+                                           chrome_binary=f.name,
                                            chrome_switches=switches,
                                            test_name=self.id())
-      except Exception as e:
-        self.assertIn('Chrome failed to start', str(e))
-        self.assertIn('exited normally', str(e))
-        self.assertIn('ChromeDriver is assuming that Chrome has crashed',
-                      str(e))
-        exception_raised = True
-      self.assertTrue(exception_raised)
-      try:
+        # The constructor above must throw an exception.
+        # Therefore normally this code should be unreachable.
         driver.Quit()
-      except:
-        pass
-    finally:
-      pass
-      os.remove(path)
+      except Exception as e:
+        exception = e
+    self.assertIsInstance(exception, chromedriver.SessionNotCreated)
+    # This test can flake rarely on a heavily loaded system.
+    # Scenario: the browser process starts, it looses its slice
+    # and does not resume until the ChromeDriver command times out.
+    # Setting "browserStartupTimeout" to some huge value will not help because
+    # the http client in the CommandExecutor has a relatively small timeout for
+    # HTTP requests.
+    # S/A: //chrome/teest/chromedriver/client/command_executor.py
+    self.assertIn('Chrome failed to start', str(exception))
+    self.assertIn('exited normally', str(exception))
+    self.assertIn('ChromeDriver is assuming that Chrome has crashed',
+                  str(exception))
+
+  def testHelpfulErrorMessage_NormalExitIfTimedOut(self):
+    """If Chrome times out to start, we should provide a useful error message.
+    This is a regression test for https://crbug.com/1467496
+    """
+    if util.IsWindows():
+      # Not implemented on Windows due to the same reasons as explained in
+      # testHelpfulErrorMessage_NormalExit
+      return
+
+    with tempfile.NamedTemporaryFile() as f:
+      f.file.write(b'#!/bin/bash\nsleep 1\nexit 0')
+      f.file.close()
+      os.chmod(f.name, 0o777)
+      switches = ['--remote-debugging-port=0']
+      experimental_options = {'browserStartupTimeout': 0}
+      driver = None
+      with self.assertRaises(chromedriver.SessionNotCreated):
+        driver = chromedriver.ChromeDriver(_CHROMEDRIVER_SERVER_URL,
+                                           _CHROMEDRIVER_SERVER_PID,
+                                           chrome_binary = f.name,
+                                           chrome_switches = switches,
+                                           experimental_options =
+                                              experimental_options,
+                                           test_name=self.id())
+        # The constructor above must throw an exception.
+        # Therefore normally this code should be unreachable.
+        driver.Quit()
 
   def testNoBinaryErrorMessage(self):
     temp_dir = tempfile.mkdtemp()
@@ -5627,6 +5856,9 @@ class LaunchDesktopTest(ChromeDriverBaseTest):
           _CHROMEDRIVER_SERVER_PID,
           chrome_binary=os.path.join(temp_dir, 'this_file_should_not_exist'),
           test_name=self.id())
+      # The constructor above must throw an exception.
+      # Therefore normally this code should be unreachable.
+      driver.Quit()
     except Exception as e:
       self.assertIn('no chrome binary', str(e))
       exception_raised = True

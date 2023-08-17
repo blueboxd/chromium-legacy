@@ -21,8 +21,15 @@
 #include "device/fido/features.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/fido_request_handler_base.h"
+#include "device/fido/fido_transport_protocol.h"
 #include "device/fido/pin.h"
 #include "device/fido/public_key_credential_user_entity.h"
+
+namespace {
+
+constexpr char kPhoneName[] = "Elisa's Pixel 6 Pro";
+
+}  // namespace
 
 // Run with:
 //
@@ -59,20 +66,14 @@ class AuthenticatorDialogTest : public DialogBrowserTest {
         AuthenticatorTransport::kAndroidAccessory,
     };
 
-    AuthenticatorRequestDialogModel::PairedPhone phone(
-        AuthenticatorRequestDialogModel::PairedPhone::PairingSource::kQR,
-        "Elisa's Pixel 6 Pro", 0,
-        std::array<uint8_t, device::kP256X962Length>{0}, {});
-
+    std::vector<std::unique_ptr<device::cablev2::Pairing>> phones;
+    auto phone = std::make_unique<device::cablev2::Pairing>();
+    phone->from_sync_deviceinfo = false;
+    phone->name = kPhoneName;
+    phones.emplace_back(std::move(phone));
     if (name == "cable_server_link_activate") {
       transport_availability.available_transports.insert(
           AuthenticatorTransport::kAndroidAccessory);
-    } else if (name == "mechanisms") {
-      // A phone is configured so that the "Manage devices" button is shown.
-      model_->set_cable_transport_info(
-          /*extension_is_v2=*/absl::nullopt,
-          /*paired_phones=*/{phone},
-          /*contact_phone_callback=*/base::DoNothing(), "fido://qrcode");
     }
     transport_availability.has_platform_authenticator_credential = device::
         FidoRequestHandlerBase::RecognizedCredential::kNoRecognizedCredential;
@@ -81,6 +82,10 @@ class AuthenticatorDialogTest : public DialogBrowserTest {
 
     // The dialog should immediately close as soon as it is displayed.
     if (name == "mechanisms") {
+      // A phone is configured so that the "Manage devices" button is shown.
+      model_->set_cable_transport_info(
+          /*extension_is_v2=*/absl::nullopt, std::move(phones),
+          /*contact_phone_callback=*/base::DoNothing(), "fido://qrcode");
       model_->SetCurrentStepForTesting(
           AuthenticatorRequestDialogModel::Step::kMechanismSelection);
     } else if (name == "activate_usb") {
@@ -113,16 +118,14 @@ class AuthenticatorDialogTest : public DialogBrowserTest {
     } else if (name == "cable_activate" ||
                name == "cable_server_link_activate") {
       model_->set_cable_transport_info(
-          /*extension_is_v2=*/false,
-          /*paired_phones=*/{phone},
+          /*extension_is_v2=*/false, std::move(phones),
           /*contact_phone_callback=*/base::DoNothing(), "fido://qrcode");
-      model_->ContactPhoneForTesting(phone.name);
+      model_->ContactPhoneForTesting(kPhoneName);
     } else if (name == "cable_v2_activate") {
       model_->set_cable_transport_info(
-          /*extension_is_v2=*/absl::nullopt,
-          /*paired_phones=*/{phone},
+          /*extension_is_v2=*/absl::nullopt, std::move(phones),
           /*contact_phone_callback=*/base::DoNothing(), "fido://qrcode");
-      model_->ContactPhoneForTesting(phone.name);
+      model_->ContactPhoneForTesting(kPhoneName);
     } else if (name == "cable_v2_pair") {
       model_->set_cable_transport_info(
           /*extension_is_v2=*/absl::nullopt,
@@ -318,7 +321,7 @@ class AuthenticatorDialogTest : public DialogBrowserTest {
           AuthenticatorRequestDialogModel::Step::kCreatePasskey);
     } else if (name == "phone_confirmation") {
       model_->set_cable_transport_info(
-          /*extension_is_v2=*/true, /*paired_phones=*/{phone},
+          /*extension_is_v2=*/true, std::move(phones),
           /*contact_phone_callback=*/base::DoNothing(), "fido://qrcode");
       model_->SetCurrentStepForTesting(
           AuthenticatorRequestDialogModel::Step::kPhoneConfirmationSheet);
@@ -553,6 +556,12 @@ IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest, InvokeUi_phone_confirmation) {
 // where test_name is the second arg to IN_PROC_BROWSER_TEST_F().
 class GPMPasskeysAuthenticatorDialogTest : public AuthenticatorDialogTest {
  public:
+  GPMPasskeysAuthenticatorDialogTest() {
+    scoped_feature_list_.InitWithFeatures(
+        {device::kWebAuthnListSyncedPasskeys, device::kWebAuthnNewPasskeyUI},
+        /*disabled_features=*/{});
+  }
+
   // AuthenticatorDialogTest:
   void ShowUi(const std::string& name) override {
     // Web modal dialogs' bounds may exceed the display's work area.
@@ -570,6 +579,7 @@ class GPMPasskeysAuthenticatorDialogTest : public AuthenticatorDialogTest {
         transport_availability = model_->transport_availability_for_testing();
     transport_availability.request_type =
         device::FidoRequestType::kGetAssertion;
+    transport_availability.ble_access_denied = false;
     transport_availability.available_transports = {
         AuthenticatorTransport::kUsbHumanInterfaceDevice,
         AuthenticatorTransport::kInternal,
@@ -595,14 +605,13 @@ class GPMPasskeysAuthenticatorDialogTest : public AuthenticatorDialogTest {
                                               "Elisa Beckett"));
 
     // Configure a phone from sync.
-    AuthenticatorRequestDialogModel::PairedPhone phone(
-        AuthenticatorRequestDialogModel::PairedPhone::PairingSource::
-            kSyncDeviceInfo,
-        "Elisa's Pixel 6 Pro", 0,
-        std::array<uint8_t, device::kP256X962Length>{0}, {});
+    std::vector<std::unique_ptr<device::cablev2::Pairing>> phones;
+    auto phone = std::make_unique<device::cablev2::Pairing>();
+    phone->from_sync_deviceinfo = true;
+    phone->name = kPhoneName;
+    phones.emplace_back(std::move(phone));
     model_->set_cable_transport_info(
-        /*extension_is_v2=*/absl::nullopt,
-        /*paired_phones=*/{phone},
+        /*extension_is_v2=*/absl::nullopt, std::move(phones),
         /*contact_phone_callback=*/base::DoNothing(), "fido://qrcode");
 
     if (name == "local_and_phone") {
@@ -622,6 +631,56 @@ class GPMPasskeysAuthenticatorDialogTest : public AuthenticatorDialogTest {
           std::move(phone_cred1),
           std::move(phone_cred2),
       };
+    } else if (name == "one_local_cred") {
+      transport_availability.recognized_credentials = {
+          std::move(local_cred1),
+      };
+    } else if (name == "one_phone_cred") {
+      transport_availability.recognized_credentials = {
+          std::move(phone_cred1),
+      };
+    } else if (name == "get_assertion_qr_with_usb") {
+      model_->set_cable_transport_info(
+          /*extension_is_v2=*/absl::nullopt,
+          /*paired_phones=*/{},
+          /*contact_phone_callback=*/base::DoNothing(), "fido://qrcode");
+      transport_availability.is_ble_powered = true;
+      transport_availability.available_transports = {
+          AuthenticatorTransport::kHybrid,
+          AuthenticatorTransport::kUsbHumanInterfaceDevice,
+      };
+    } else if (name == "get_assertion_qr_without_usb") {
+      model_->set_cable_transport_info(
+          /*extension_is_v2=*/absl::nullopt,
+          /*paired_phones=*/{},
+          /*contact_phone_callback=*/base::DoNothing(), "fido://qrcode");
+      transport_availability.is_ble_powered = true;
+      transport_availability.available_transports = {
+          AuthenticatorTransport::kHybrid,
+      };
+    } else if (name == "make_credential_qr_with_usb") {
+      model_->set_cable_transport_info(
+          /*extension_is_v2=*/absl::nullopt,
+          /*paired_phones=*/{},
+          /*contact_phone_callback=*/base::DoNothing(), "fido://qrcode");
+      transport_availability.request_type =
+          device::FidoRequestType::kMakeCredential;
+      transport_availability.is_ble_powered = true;
+      transport_availability.available_transports = {
+          AuthenticatorTransport::kHybrid,
+          AuthenticatorTransport::kUsbHumanInterfaceDevice,
+      };
+    } else if (name == "make_credential_qr_without_usb") {
+      model_->set_cable_transport_info(
+          /*extension_is_v2=*/absl::nullopt,
+          /*paired_phones=*/{},
+          /*contact_phone_callback=*/base::DoNothing(), "fido://qrcode");
+      transport_availability.request_type =
+          device::FidoRequestType::kMakeCredential;
+      transport_availability.is_ble_powered = true;
+      transport_availability.available_transports = {
+          AuthenticatorTransport::kHybrid,
+      };
     }
     model_->StartFlow(std::move(transport_availability),
                       /*is_conditional_mediation=*/false);
@@ -629,8 +688,7 @@ class GPMPasskeysAuthenticatorDialogTest : public AuthenticatorDialogTest {
 
  private:
   std::unique_ptr<AuthenticatorRequestDialogModel> model_;
-  base::test::ScopedFeatureList scoped_feature_list_{
-      device::kWebAuthnListSyncedPasskeys};
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 IN_PROC_BROWSER_TEST_F(GPMPasskeysAuthenticatorDialogTest,
@@ -645,5 +703,35 @@ IN_PROC_BROWSER_TEST_F(GPMPasskeysAuthenticatorDialogTest,
 
 IN_PROC_BROWSER_TEST_F(GPMPasskeysAuthenticatorDialogTest,
                        InvokeUi_phone_only) {
+  ShowAndVerifyUi();
+}
+
+IN_PROC_BROWSER_TEST_F(GPMPasskeysAuthenticatorDialogTest,
+                       InvokeUi_one_local_cred) {
+  ShowAndVerifyUi();
+}
+
+IN_PROC_BROWSER_TEST_F(GPMPasskeysAuthenticatorDialogTest,
+                       InvokeUi_one_phone_cred) {
+  ShowAndVerifyUi();
+}
+
+IN_PROC_BROWSER_TEST_F(GPMPasskeysAuthenticatorDialogTest,
+                       InvokeUi_get_assertion_qr_with_usb) {
+  ShowAndVerifyUi();
+}
+
+IN_PROC_BROWSER_TEST_F(GPMPasskeysAuthenticatorDialogTest,
+                       InvokeUi_get_assertion_qr_without_usb) {
+  ShowAndVerifyUi();
+}
+
+IN_PROC_BROWSER_TEST_F(GPMPasskeysAuthenticatorDialogTest,
+                       InvokeUi_make_credential_qr_with_usb) {
+  ShowAndVerifyUi();
+}
+
+IN_PROC_BROWSER_TEST_F(GPMPasskeysAuthenticatorDialogTest,
+                       InvokeUi_make_credential_qr_without_usb) {
   ShowAndVerifyUi();
 }

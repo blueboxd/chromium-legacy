@@ -41,12 +41,14 @@
 #include "third_party/blink/renderer/core/css/css_gradient_value.h"
 #include "third_party/blink/renderer/core/css/css_import_rule.h"
 #include "third_party/blink/renderer/core/css/css_keyframe_rule.h"
+#include "third_party/blink/renderer/core/css/css_keyframes_rule.h"
 #include "third_party/blink/renderer/core/css/css_layer_block_rule.h"
 #include "third_party/blink/renderer/core/css/css_layer_statement_rule.h"
 #include "third_party/blink/renderer/core/css/css_media_rule.h"
 #include "third_party/blink/renderer/core/css/css_position_fallback_rule.h"
 #include "third_party/blink/renderer/core/css/css_property_name.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
+#include "third_party/blink/renderer/core/css/css_property_rule.h"
 #include "third_party/blink/renderer/core/css/css_property_value_set.h"
 #include "third_party/blink/renderer/core/css/css_rule.h"
 #include "third_party/blink/renderer/core/css/css_rule_list.h"
@@ -112,6 +114,7 @@
 #include "third_party/blink/renderer/core/style/style_image.h"
 #include "third_party/blink/renderer/core/style_property_shorthand.h"
 #include "third_party/blink/renderer/core/svg/svg_element.h"
+#include "third_party/blink/renderer/core/view_transition/view_transition.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/fonts/font.h"
 #include "third_party/blink/renderer/platform/fonts/font_cache.h"
@@ -992,6 +995,9 @@ protocol::Response InspectorCSSAgent::getMatchedStylesForNode(
         css_keyframes_rules,
     Maybe<protocol::Array<protocol::CSS::CSSPositionFallbackRule>>*
         css_position_fallback_rules,
+    Maybe<protocol::Array<protocol::CSS::CSSPropertyRule>>* css_property_rules,
+    Maybe<protocol::Array<protocol::CSS::CSSPropertyRegistration>>*
+        css_property_registrations,
     Maybe<int>* parentLayoutNodeId) {
   protocol::Response response = AssertEnabled();
   if (!response.IsSuccess())
@@ -1112,6 +1118,8 @@ protocol::Response InspectorCSSAgent::getMatchedStylesForNode(
         std::move(inherited_pseudo_element_matches));
   }
 
+  std::tie(*css_property_rules, *css_property_registrations) =
+      CustomPropertiesForNode(element);
   *css_position_fallback_rules = PositionFallbackRulesForNode(element);
 
   auto* parentLayoutNode = LayoutTreeBuilderTraversal::LayoutParent(*element);
@@ -1200,8 +1208,13 @@ InspectorCSSAgent::PositionFallbackRulesForNode(Element* element) {
 
   // Find CSSOM wrapper from internal Style rule.
   CSSPositionFallbackRule* css_position_fallback_rule = nullptr;
-  for (CSSStyleSheet* style_sheet :
-       *document_to_css_style_sheets_.at(&document)) {
+  DocumentStyleSheets::iterator css_style_sheets_for_document_it =
+      document_to_css_style_sheets_.find(&document);
+  if (css_style_sheets_for_document_it == document_to_css_style_sheets_.end()) {
+    return css_position_fallback_rules;
+  }
+
+  for (CSSStyleSheet* style_sheet : *css_style_sheets_for_document_it->value) {
     css_position_fallback_rule =
         FindPositionFallbackRule(style_sheet, position_fallback_rule);
     if (css_position_fallback_rule) {
@@ -1244,6 +1257,167 @@ InspectorCSSAgent::PositionFallbackRulesForNode(Element* element) {
   return css_position_fallback_rules;
 }
 
+template <class CSSRuleCollection>
+static CSSPropertyRule* FindPropertyRule(CSSRuleCollection* css_rules,
+                                         StyleRuleProperty* property_rule) {
+  if (!css_rules) {
+    return nullptr;
+  }
+
+  CSSPropertyRule* result = nullptr;
+  for (unsigned j = 0; j < css_rules->length() && !result; ++j) {
+    CSSRule* css_rule = css_rules->item(j);
+    if (auto* css_style_rule = DynamicTo<CSSPropertyRule>(css_rule)) {
+      if (css_style_rule->Property() == property_rule)
+        result = css_style_rule;
+    } else if (auto* css_import_rule = DynamicTo<CSSImportRule>(css_rule)) {
+      result = FindPropertyRule(css_import_rule->styleSheet(), property_rule);
+    } else {
+      result = FindPropertyRule(css_rule->cssRules(), property_rule);
+    }
+  }
+  return result;
+}
+
+std::unique_ptr<protocol::CSS::CSSPropertyRegistration>
+BuildObjectForPropertyRegistration(const AtomicString& name,
+                                   const PropertyRegistration& registration) {
+  auto css_property_registration =
+      protocol::CSS::CSSPropertyRegistration::create()
+          .setPropertyName(name)
+          .setInherits(registration.Inherits())
+          .setSyntax(registration.Syntax().ToString())
+          .build();
+  if (registration.Initial()) {
+    css_property_registration->setInitialValue(
+        protocol::CSS::Value::create()
+            .setText(registration.Initial()->CssText())
+            .build());
+  }
+  return css_property_registration;
+}
+
+std::pair<
+    std::unique_ptr<protocol::Array<protocol::CSS::CSSPropertyRule>>,
+    std::unique_ptr<protocol::Array<protocol::CSS::CSSPropertyRegistration>>>
+InspectorCSSAgent::CustomPropertiesForNode(Element* element) {
+  auto result = std::make_pair(
+      std::make_unique<protocol::Array<protocol::CSS::CSSPropertyRule>>(),
+      std::make_unique<
+          protocol::Array<protocol::CSS::CSSPropertyRegistration>>());
+  Document& document = element->GetDocument();
+  DCHECK(!document.NeedsLayoutTreeUpdateForNode(*element));
+
+  const ComputedStyle* style = element->EnsureComputedStyle();
+  if (!style /*|| !style->HasVariableReference()*/)
+    return result;
+
+  for (const AtomicString& var_name : style->GetVariableNames()) {
+    const auto* registration =
+        PropertyRegistration::From(document.GetExecutionContext(), var_name);
+    if (!registration) {
+      continue;
+    }
+
+    if (StyleRuleProperty* rule = registration->PropertyRule()) {
+      // Find CSSOM wrapper.
+      CSSPropertyRule* property_rule = nullptr;
+      for (CSSStyleSheet* style_sheet :
+           *document_to_css_style_sheets_.at(&document)) {
+        property_rule = FindPropertyRule(style_sheet, rule);
+        if (property_rule)
+          break;
+      }
+      if (property_rule) {
+        // @property
+        InspectorStyleSheet* inspector_style_sheet =
+            BindStyleSheet(property_rule->parentStyleSheet());
+        result.first->push_back(
+            inspector_style_sheet->BuildObjectForPropertyRule(property_rule));
+      }
+      // If the property_rule wasn't found, just ignore ignore it.
+    } else {
+      // CSS.registerProperty
+      result.second->push_back(
+          BuildObjectForPropertyRegistration(var_name, *registration));
+    }
+  }
+
+  return result;
+}
+
+CSSKeyframesRule*
+InspectorCSSAgent::FindKeyframesRuleFromUAViewTransitionStylesheet(
+    Element* element,
+    StyleRuleKeyframes* keyframes_style_rule) {
+  // This function should only be called for transition pseudo elements.
+  CHECK(IsTransitionPseudoElement(element->GetPseudoId()));
+  auto* transition =
+      ViewTransitionUtils::GetActiveTransition(element->GetDocument());
+
+  // There must be a transition and an active UAStyleSheet for the
+  // transition when the queried element is a transition pseudo element.
+  CHECK(transition && transition->UAStyleSheet());
+
+  if (!user_agent_view_transition_style_sheet_) {
+    // Save the previous view transition style sheet.
+    user_agent_view_transition_style_sheet_ = transition->UAStyleSheet();
+  } else if (user_agent_view_transition_style_sheet_ !=
+             transition->UAStyleSheet()) {
+    // If the view transition stylesheet is invalidated
+    // unbind the previous inspector stylesheet.
+    user_agent_view_transition_style_sheet_ = transition->UAStyleSheet();
+    auto previous_css_style_sheet_it =
+        css_style_sheet_to_inspector_style_sheet_.find(
+            user_agent_view_transition_style_sheet_);
+    if (previous_css_style_sheet_it !=
+        css_style_sheet_to_inspector_style_sheet_.end()) {
+      UnbindStyleSheet(previous_css_style_sheet_it->value);
+    }
+  }
+
+  for (wtf_size_t i = 0; i < user_agent_view_transition_style_sheet_->length();
+       i++) {
+    CSSKeyframesRule* css_keyframes_rule_from_stylesheet =
+        DynamicTo<CSSKeyframesRule>(
+            user_agent_view_transition_style_sheet_->item(i));
+    if (css_keyframes_rule_from_stylesheet &&
+        css_keyframes_rule_from_stylesheet->name() ==
+            keyframes_style_rule->GetName()) {
+      return css_keyframes_rule_from_stylesheet;
+    }
+  }
+
+  return nullptr;
+}
+
+CSSKeyframesRule* InspectorCSSAgent::FindCSSOMWrapperForKeyframesRule(
+    Element* element,
+    StyleRuleKeyframes* keyframes_style_rule) {
+  Document& document = element->GetDocument();
+  // There might be that there aren't any active stylesheets for the document
+  // which mean the document_to_css_style_sheets_ map won't contain the
+  // entry for the document. So, we first check whether there are registered
+  // stylesheets for the document.
+  if (document_to_css_style_sheets_.Contains(&document)) {
+    for (CSSStyleSheet* style_sheet :
+         *document_to_css_style_sheets_.at(&document)) {
+      CSSKeyframesRule* css_keyframes_rule =
+          FindKeyframesRule(style_sheet, keyframes_style_rule);
+      if (css_keyframes_rule) {
+        return css_keyframes_rule;
+      }
+    }
+  }
+
+  if (IsTransitionPseudoElement(element->GetPseudoId())) {
+    return FindKeyframesRuleFromUAViewTransitionStylesheet(
+        element, keyframes_style_rule);
+  }
+
+  return nullptr;
+}
+
 std::unique_ptr<protocol::Array<protocol::CSS::CSSKeyframesRule>>
 InspectorCSSAgent::AnimationsForNode(Element* element,
                                      Element* animating_element) {
@@ -1264,23 +1438,20 @@ InspectorCSSAgent::AnimationsForNode(Element* element,
     AtomicString animation_name(animation_data->NameList()[i]);
     if (animation_name == CSSAnimationData::InitialName())
       continue;
+
     StyleRuleKeyframes* keyframes_rule =
         style_resolver
             .FindKeyframesRule(element, animating_element, animation_name)
             .rule;
-    if (!keyframes_rule)
+    if (!keyframes_rule) {
       continue;
-
-    // Find CSSOM wrapper.
-    CSSKeyframesRule* css_keyframes_rule = nullptr;
-    for (CSSStyleSheet* style_sheet :
-         *document_to_css_style_sheets_.at(&document)) {
-      css_keyframes_rule = FindKeyframesRule(style_sheet, keyframes_rule);
-      if (css_keyframes_rule)
-        break;
     }
-    if (!css_keyframes_rule)
+
+    CSSKeyframesRule* css_keyframes_rule =
+        FindCSSOMWrapperForKeyframesRule(animating_element, keyframes_rule);
+    if (!css_keyframes_rule) {
       continue;
+    }
 
     auto keyframes =
         std::make_unique<protocol::Array<protocol::CSS::CSSKeyframeRule>>();
@@ -3229,6 +3400,7 @@ void InspectorCSSAgent::Trace(Visitor* visitor) const {
   visitor->Trace(invalidated_documents_);
   visitor->Trace(node_to_inspector_style_sheet_);
   visitor->Trace(inspector_user_agent_style_sheet_);
+  visitor->Trace(user_agent_view_transition_style_sheet_);
   visitor->Trace(tracker_);
   InspectorBaseAgent::Trace(visitor);
 }

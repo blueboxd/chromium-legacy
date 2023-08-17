@@ -581,14 +581,21 @@ void RestrictedCookieManager::SetCanonicalCookie(
     return;
   }
 
+  // Check cookie accessibility with cookie_settings.
   // TODO(morlovich): Try to validate site_for_cookies as well.
   bool blocked = !cookie_settings_->IsCookieAccessible(
       cookie, url, site_for_cookies, top_frame_origin,
       GetCookieSettingOverrides(has_storage_access), &status);
 
-  if (blocked)
-    status.AddExclusionReason(
-        net::CookieInclusionStatus::EXCLUDE_USER_PREFERENCES);
+  if (blocked) {
+    // Cookie allowed by cookie_settings checks could be blocked explicitly,
+    // e.g. via Android Webview APIs, we need to manually add exclusion reason
+    // in this case.
+    if (status.IsInclude()) {
+      status.AddExclusionReason(
+          net::CookieInclusionStatus::EXCLUDE_USER_PREFERENCES);
+    }
+  }
 
   // Don't allow URLs with leading dots like https://.some-weird-domain.com
   // This probably never happens.
@@ -710,7 +717,9 @@ void RestrictedCookieManager::SetCanonicalCookieResult(
   // TODO(https://crbug.com/977040): Only report pure INCLUDE once samesite
   // tightening up is rolled out.
   DCHECK(!access_result.status.HasExclusionReason(
-      net::CookieInclusionStatus::EXCLUDE_USER_PREFERENCES));
+             net::CookieInclusionStatus::EXCLUDE_USER_PREFERENCES) &&
+         !access_result.status.HasExclusionReason(
+             net::CookieInclusionStatus::EXCLUDE_THIRD_PARTY_PHASEOUT));
 
   if (access_result.status.IsInclude() || access_result.status.ShouldWarn()) {
     if (cookie_observer_) {
@@ -776,9 +785,10 @@ void RestrictedCookieManager::SetCookieFromString(
 
   net::CookieInclusionStatus status;
   std::unique_ptr<net::CanonicalCookie> parsed_cookie =
-      net::CanonicalCookie::Create(url, cookie, base::Time::Now(),
-                                   absl::nullopt /* server_time */,
-                                   cookie_partition_key_, &status);
+      net::CanonicalCookie::Create(
+          url, cookie, base::Time::Now(), /*server_time=*/absl::nullopt,
+          cookie_partition_key_,
+          cookie_settings().are_truncated_cookies_blocked(), &status);
   if (!parsed_cookie) {
     if (cookie_observer_) {
       std::vector<network::mojom::CookieOrLineWithAccessResultPtr>

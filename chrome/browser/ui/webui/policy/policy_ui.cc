@@ -22,9 +22,12 @@
 #include "components/grit/policy_resources.h"
 #include "components/grit/policy_resources_map.h"
 #include "components/policy/core/common/features.h"
+#include "components/policy/core/common/management/management_service.h"
+#include "components/policy/core/common/policy_loader_common.h"
 #include "components/policy/core/common/policy_logger.h"
 #include "components/policy/core/common/policy_pref_names.h"
 #include "components/policy/core/common/policy_utils.h"
+#include "components/policy/policy_constants.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/version_info/version_info.h"
@@ -176,7 +179,7 @@ void CreateAndAddPolicyUIHtmlSource(Profile* profile) {
     // Localized strings for chrome://policy/test.
     static constexpr webui::LocalizedString kPolicyTestStrings[] = {
         {"testTitle", IDS_POLICY_TEST_TITLE},
-        {"testRestart", IDS_POLICY_REBOOT_BUTTON},
+        {"testRestart", IDS_POLICY_TEST_RESTART_AND_APPLY},
         {"testApply", IDS_POLICY_TEST_APPLY},
         {"testImport", IDS_POLICY_TEST_IMPORT},
         {"testDesc", IDS_POLICY_TEST_DESC},
@@ -184,53 +187,83 @@ void CreateAndAddPolicyUIHtmlSource(Profile* profile) {
         {"testClearPolicies", IDS_CLEAR},
         {"testTableName", IDS_POLICY_HEADER_NAME},
         {"testTableSource", IDS_POLICY_HEADER_SOURCE},
-        {"testTableTarget", IDS_POLICY_TEST_TABLE_TARGET},
+        {"testTableScope", IDS_POLICY_TEST_TABLE_SCOPE},
         {"testTableLevel", IDS_POLICY_HEADER_LEVEL},
         {"testTableValue", IDS_POLICY_LABEL_VALUE},
         {"testTableRemove", IDS_REMOVE},
         {"testAdd", IDS_POLICY_TEST_ADD},
         {"testNameSelect", IDS_POLICY_SELECT_NAME},
-        {"testSourceSelect", IDS_POLICY_SELECT_SOURCE},
-        {"testTargetSelect", IDS_POLICY_SELECT_TARGET},
-        {"testLevelSelect", IDS_POLICY_SELECT_LEVEL},
+        {"testTablePreset", IDS_POLICY_TEST_TABLE_PRESET},
+        {"testTablePresetCustom", IDS_POLICY_TEST_PRESET_CUSTOM},
+        {"testTablePresetLocalMachine", IDS_POLICY_TEST_PRESET_LOCAL_MACHINE},
+        {"testTablePresetCloudAccount", IDS_POLICY_TEST_PRESET_CLOUD_ACCOUNT},
+        {"testUserAffiliated", IDS_POLICY_TEST_USER_AFFILIATED},
     };
 
     source->AddLocalizedStrings(kPolicyTestStrings);
     source->AddResourcePath("test/", IDR_POLICY_TEST_POLICY_TEST_HTML);
     source->AddResourcePath("test", IDR_POLICY_TEST_POLICY_TEST_HTML);
 
-    // Create a string policy_name_str of comma-separated policy names
+    // Create a string policy_names_to_types_str mapping policy names to their
+    // input types.
+    policy::Schema chrome_schema =
+        policy::Schema::Wrap(policy::GetChromeSchemaData());
     ChromePoliciesValueProvider value_provider(profile);
     base::Value::List policy_names =
         (*value_provider.GetNames().FindDict("chrome"))
             .FindList("policyNames")
             ->Clone();
-    std::string policy_name_str = "";
-    for (auto& policy_name : policy_names) {
-      policy_name_str += policy_name.GetString() + ",";
-    }
-    policy_name_str.pop_back();  // remove last divider
-    source->AddString("policyNames", policy_name_str);
 
-    // Strings for policy levels, scopes and sources
+    policy_names.EraseIf([&](auto& policy) {
+      return policy::IsPolicyNameSensitive(policy.GetString());
+    });
+
+    std::string policy_names_to_types_str = "{";
+    for (auto& policy_name : policy_names) {
+      base::Value::Type policy_type =
+          chrome_schema.GetKnownProperty(policy_name.GetString()).type();
+      std::string policy_type_string;
+      switch (policy_type) {
+        case base::Value::Type::BOOLEAN:
+          policy_type_string = "boolean";
+          break;
+        case base::Value::Type::DICT:
+          policy_type_string = "dictionary";
+          break;
+        case base::Value::Type::INTEGER:
+          policy_type_string = "integer";
+          break;
+        case base::Value::Type::LIST:
+          policy_type_string = "list";
+          break;
+        case base::Value::Type::STRING:
+          policy_type_string = "string";
+          break;
+        default:
+          break;
+      }
+      policy_names_to_types_str +=
+          "\"" + policy_name.GetString() + "\":\"" + policy_type_string + "\",";
+    }
+    policy_names_to_types_str.pop_back();  // remove last divider
+    policy_names_to_types_str += "}";
+    source->AddString("policyNamesToTypes", policy_names_to_types_str);
+
+    // Strings for policy levels, scopes and sources.
     static constexpr webui::LocalizedString kPolicyTestTypes[] = {
         {"scopeUser", IDS_POLICY_SCOPE_USER},
-        {"scopeAllUsers", IDS_POLICY_SCOPE_ALL_USERS},
         {"scopeDevice", IDS_POLICY_SCOPE_DEVICE},
         {"levelRecommended", IDS_POLICY_LEVEL_RECOMMENDED},
         {"levelMandatory", IDS_POLICY_LEVEL_MANDATORY},
         {"sourceEnterpriseDefault", IDS_POLICY_SOURCE_ENTERPRISE_DEFAULT},
-        {"sourceDefault", IDS_POLICY_SOURCE_DEFAULT},
         {"sourceCommandLine", IDS_POLICY_SOURCE_COMMAND_LINE},
         {"sourceCloud", IDS_POLICY_SOURCE_CLOUD},
+        {"sourceActiveDirectory", IDS_POLICY_SOURCE_ACTIVE_DIRECTORY},
+        {"sourcePlatform", IDS_POLICY_SOURCE_PLATFORM},
         {"sourceMerged", IDS_POLICY_SOURCE_MERGED},
         {"sourceCloudFromAsh", IDS_POLICY_SOURCE_CLOUD_FROM_ASH},
         {"sourceRestrictedManagedGuestSessionOverride",
          IDS_POLICY_SOURCE_RESTRICTED_MANAGED_GUEST_SESSION_OVERRIDE},
-        {"sourceActiveDirectory", IDS_POLICY_SOURCE_ACTIVE_DIRECTORY},
-        {"sourcePlatform", IDS_POLICY_SOURCE_PLATFORM},
-        {"sourceDeviceLocalAccountOverride",
-         IDS_POLICY_SOURCE_DEVICE_LOCAL_ACCOUNT_OVERRIDE},
     };
 
     source->AddLocalizedStrings(kPolicyTestTypes);

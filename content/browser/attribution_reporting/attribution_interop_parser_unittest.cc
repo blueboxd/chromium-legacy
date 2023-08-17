@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/strings/strcat.h"
+#include "base/test/gmock_expected_support.h"
 #include "base/test/values_test_util.h"
 #include "base/time/time.h"
 #include "base/time/time_override.h"
@@ -61,16 +62,17 @@ bool operator==(const AttributionConfig::RateLimitConfig& a,
 bool operator==(const AttributionConfig::EventLevelLimit& a,
                 const AttributionConfig::EventLevelLimit& b) {
   const auto tie = [](const AttributionConfig::EventLevelLimit& config) {
-    return std::make_tuple(config.navigation_source_trigger_data_cardinality,
-                           config.event_source_trigger_data_cardinality,
-                           config.randomized_response_epsilon,
-                           config.max_reports_per_destination,
-                           config.max_attributions_per_navigation_source,
-                           config.max_attributions_per_event_source,
-                           config.first_navigation_report_window_deadline,
-                           config.second_navigation_report_window_deadline,
-                           config.first_event_report_window_deadline,
-                           config.second_event_report_window_deadline);
+    return std::make_tuple(
+        config.navigation_source_trigger_data_cardinality,
+        config.event_source_trigger_data_cardinality,
+        config.randomized_response_epsilon, config.max_reports_per_destination,
+        config.max_attributions_per_navigation_source,
+        config.max_attributions_per_event_source,
+        config.first_navigation_report_window_deadline,
+        config.second_navigation_report_window_deadline,
+        config.first_event_report_window_deadline,
+        config.second_event_report_window_deadline,
+        config.max_navigation_info_gain, config.max_event_info_gain);
   };
   return tie(a) == tie(b);
 }
@@ -125,9 +127,9 @@ TEST(AttributionInteropParserTest, EmptyInputParses) {
 
   for (const char* json : kTestCases) {
     base::Value::Dict value = base::test::ParseJsonDict(json);
-    auto result = ParseAttributionInteropInput(std::move(value), kOffsetTime);
-    ASSERT_TRUE(result.has_value()) << json;
-    EXPECT_THAT(*result, IsEmpty()) << json;
+    EXPECT_THAT(ParseAttributionInteropInput(std::move(value), kOffsetTime),
+                base::test::ValueIs(IsEmpty()))
+        << json;
   }
 }
 
@@ -170,17 +172,17 @@ TEST(AttributionInteropParserTest, ValidSourceParses) {
 
   base::Value::Dict value = base::test::ParseJsonDict(kJson);
 
-  auto result = ParseAttributionInteropInput(std::move(value), kOffsetTime);
-  ASSERT_TRUE(result.has_value()) << result.error();
-  ASSERT_EQ(result->size(), 2u);
+  ASSERT_OK_AND_ASSIGN(
+      auto result, ParseAttributionInteropInput(std::move(value), kOffsetTime));
+  ASSERT_EQ(result.size(), 2u);
 
-  const auto* source1 = absl::get_if<StorableSource>(&result->front().event);
+  const auto* source1 = absl::get_if<StorableSource>(&result.front().event);
   ASSERT_TRUE(source1);
 
-  const auto* source2 = absl::get_if<StorableSource>(&result->back().event);
+  const auto* source2 = absl::get_if<StorableSource>(&result.back().event);
   ASSERT_TRUE(source2);
 
-  EXPECT_EQ(result->front().time,
+  EXPECT_EQ(result.front().time,
             kOffsetTime + base::Milliseconds(1643235573123));
   EXPECT_EQ(source1->common_info().source_type(),
             attribution_reporting::mojom::SourceType::kNavigation);
@@ -191,9 +193,9 @@ TEST(AttributionInteropParserTest, ValidSourceParses) {
   EXPECT_THAT(source1->registration().destination_set.destinations(),
               ElementsAre(net::SchemefulSite::Deserialize("https://d.test")));
   EXPECT_FALSE(source1->is_within_fenced_frame());
-  EXPECT_TRUE(result->front().debug_permission);
+  EXPECT_TRUE(result.front().debug_permission);
 
-  EXPECT_EQ(result->back().time,
+  EXPECT_EQ(result.back().time,
             kOffsetTime + base::Milliseconds(1643235574123));
   EXPECT_EQ(source2->common_info().source_type(),
             attribution_reporting::mojom::SourceType::kEvent);
@@ -204,7 +206,7 @@ TEST(AttributionInteropParserTest, ValidSourceParses) {
   EXPECT_THAT(source2->registration().destination_set.destinations(),
               ElementsAre(net::SchemefulSite::Deserialize("https://d.test")));
   EXPECT_FALSE(source2->is_within_fenced_frame());
-  EXPECT_FALSE(result->back().debug_permission);
+  EXPECT_FALSE(result.back().debug_permission);
 }
 
 TEST(AttributionInteropParserTest, ValidTriggerParses) {
@@ -227,15 +229,14 @@ TEST(AttributionInteropParserTest, ValidTriggerParses) {
 
   base::Value::Dict value = base::test::ParseJsonDict(kJson);
 
-  auto result = ParseAttributionInteropInput(std::move(value), kOffsetTime);
-  ASSERT_TRUE(result.has_value());
-  ASSERT_EQ(result->size(), 1u);
+  ASSERT_OK_AND_ASSIGN(
+      auto result, ParseAttributionInteropInput(std::move(value), kOffsetTime));
+  ASSERT_EQ(result.size(), 1u);
 
-  const auto* trigger =
-      absl::get_if<AttributionTrigger>(&result->front().event);
+  const auto* trigger = absl::get_if<AttributionTrigger>(&result.front().event);
   ASSERT_TRUE(trigger);
 
-  EXPECT_EQ(result->front().time,
+  EXPECT_EQ(result.front().time,
             kOffsetTime + base::Milliseconds(1643235575123));
   EXPECT_EQ(trigger->reporting_origin(),
             *SuitableOrigin::Deserialize("https://a.r.test"));
@@ -243,7 +244,7 @@ TEST(AttributionInteropParserTest, ValidTriggerParses) {
             *SuitableOrigin::Deserialize("https://b.d.test"));
   EXPECT_THAT(trigger->verifications(), IsEmpty());
   EXPECT_FALSE(trigger->is_within_fenced_frame());
-  EXPECT_TRUE(result->front().debug_permission);
+  EXPECT_TRUE(result.front().debug_permission);
 }
 
 struct ParseErrorTestCase {
@@ -259,8 +260,8 @@ TEST_P(AttributionInteropParserInputErrorTest, InvalidInputFails) {
 
   base::Value::Dict value = base::test::ParseJsonDict(test_case.json);
   auto result = ParseAttributionInteropInput(std::move(value), kOffsetTime);
-  ASSERT_FALSE(result.has_value());
-  EXPECT_THAT(result.error(), HasSubstr(test_case.expected_failure_substr));
+  EXPECT_THAT(result, base::test::ErrorIs(
+                          HasSubstr(test_case.expected_failure_substr)));
 }
 
 const ParseErrorTestCase kParseErrorTestCases[] = {
@@ -685,6 +686,20 @@ TEST(AttributionInteropParserTest, ValidConfig) {
                e.max_attributions_per_event_source = 10;
              });
        })},
+      {R"json({"max_navigation_info_gain":"0.2"})json", false,
+       AttributionConfigWith([](AttributionConfig& c) {
+         c.event_level_limit =
+             EventLevelLimitWith([](AttributionConfig::EventLevelLimit& e) {
+               e.max_navigation_info_gain = 0.2;
+             });
+       })},
+      {R"json({"max_event_info_gain":"0.2"})json", false,
+       AttributionConfigWith([](AttributionConfig& c) {
+         c.event_level_limit =
+             EventLevelLimitWith([](AttributionConfig::EventLevelLimit& e) {
+               e.max_event_info_gain = 0.2;
+             });
+       })},
       {R"json({"max_aggregatable_reports_per_destination":"10"})json", false,
        AttributionConfigWith([](AttributionConfig& c) {
          c.aggregate_limit =
@@ -729,6 +744,8 @@ TEST(AttributionInteropParserTest, ValidConfig) {
         "max_event_level_reports_per_destination":"10",
         "max_attributions_per_navigation_source":"5",
         "max_attributions_per_event_source":"1",
+        "max_navigation_info_gain":"5.5",
+        "max_event_info_gain":"0.5",
         "max_aggregatable_reports_per_destination":"10",
         "aggregatable_budget_per_source":"1000",
         "aggregatable_report_min_delay":"10",
@@ -753,6 +770,8 @@ TEST(AttributionInteropParserTest, ValidConfig) {
                e.max_reports_per_destination = 10;
                e.max_attributions_per_navigation_source = 5;
                e.max_attributions_per_event_source = 1;
+               e.max_navigation_info_gain = 5.5;
+               e.max_event_info_gain = 0.5;
              });
          c.aggregate_limit =
              AggregateLimitWith([](AttributionConfig::AggregateLimit& a) {
@@ -768,9 +787,9 @@ TEST(AttributionInteropParserTest, ValidConfig) {
   for (const auto& test_case : kTestCases) {
     base::Value::Dict json = base::test::ParseJsonDict(test_case.json);
     if (test_case.required) {
-      auto result = ParseAttributionConfig(json);
-      ASSERT_TRUE(result.has_value()) << json;
-      EXPECT_EQ(result, test_case.expected) << json;
+      EXPECT_THAT(ParseAttributionConfig(json),
+                  base::test::ValueIs(test_case.expected))
+          << json;
     } else {
       AttributionConfig config;
       EXPECT_EQ("", MergeAttributionConfig(json, config)) << json;
@@ -801,14 +820,11 @@ TEST(AttributionInteropParserTest, InvalidConfigPositiveIntegers) {
 
   {
     auto result = ParseAttributionConfig(base::Value::Dict());
-    ASSERT_FALSE(result.has_value());
-
     for (const char* field : kFields) {
-      EXPECT_THAT(
-          result.error(),
-          HasSubstr(base::StrCat(
-              {"[\"", field,
-               "\"]: must be a positive integer formatted as base-10 string"})))
+      EXPECT_THAT(result, base::test::ErrorIs(HasSubstr(
+                              base::StrCat({"[\"", field,
+                                            "\"]: must be a positive integer "
+                                            "formatted as base-10 string"}))))
           << field;
     }
   }
@@ -841,13 +857,11 @@ TEST(AttributionInteropParserTest, InvalidConfigNonNegativeIntegers) {
 
   {
     auto result = ParseAttributionConfig(base::Value::Dict());
-    ASSERT_FALSE(result.has_value());
-
     for (const char* field : kFields) {
-      EXPECT_THAT(result.error(),
-                  HasSubstr(base::StrCat({"[\"", field,
-                                          "\"]: must be a non-negative integer "
-                                          "formatted as base-10 string"})))
+      EXPECT_THAT(result, base::test::ErrorIs(HasSubstr(base::StrCat(
+                              {"[\"", field,
+                               "\"]: must be a non-negative integer "
+                               "formatted as base-10 string"}))))
           << field;
     }
   }
@@ -874,11 +888,10 @@ TEST(AttributionInteropParserTest, InvalidConfigNonNegativeIntegers) {
 TEST(AttributionInteropParserTest, InvalidConfigRandomizedResponseEpsilon) {
   {
     auto result = ParseAttributionConfig(base::Value::Dict());
-    ASSERT_FALSE(result.has_value());
-    EXPECT_THAT(
-        result.error(),
-        HasSubstr("[\"randomized_response_epsilon\"]: must be \"inf\" or a "
-                  "non-negative double formated as a base-10 string"));
+    EXPECT_THAT(result,
+                base::test::ErrorIs(HasSubstr(
+                    "[\"randomized_response_epsilon\"]: must be \"inf\" or a "
+                    "non-negative double formated as a base-10 string")));
   }
   {
     AttributionConfig config;
@@ -889,6 +902,35 @@ TEST(AttributionInteropParserTest, InvalidConfigRandomizedResponseEpsilon) {
         error,
         HasSubstr("[\"randomized_response_epsilon\"]: must be \"inf\" or a "
                   "non-negative double formated as a base-10 string"));
+  }
+}
+
+TEST(AttributionInteropParserTest, InvalidConfigMaxInfGain) {
+  {
+    auto result = ParseAttributionConfig(base::Value::Dict());
+    ASSERT_FALSE(result.has_value());
+    EXPECT_THAT(
+        result.error(),
+        HasSubstr("[\"randomized_response_epsilon\"]: must be \"inf\" or a "
+                  "non-negative double formated as a base-10 string"));
+  }
+  {
+    AttributionConfig config;
+    base::Value::Dict dict;
+    dict.Set("max_navigation_info_gain", "-1.5");
+    std::string error = MergeAttributionConfig(dict, config);
+    EXPECT_THAT(
+        error, HasSubstr("[\"max_navigation_info_gain\"]: must be \"inf\" or a "
+                         "non-negative double formated as a base-10 string"));
+  }
+  {
+    AttributionConfig config;
+    base::Value::Dict dict;
+    dict.Set("max_event_info_gain", "-1.5");
+    std::string error = MergeAttributionConfig(dict, config);
+    EXPECT_THAT(error,
+                HasSubstr("[\"max_event_info_gain\"]: must be \"inf\" or a "
+                          "non-negative double formated as a base-10 string"));
   }
 }
 

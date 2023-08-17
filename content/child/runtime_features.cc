@@ -18,7 +18,6 @@
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "cc/base/features.h"
-#include "components/autofill/core/common/autofill_features.h"
 #include "content/common/content_navigation_policy.h"
 #include "content/common/content_switches_internal.h"
 #include "content/public/common/content_features.h"
@@ -223,6 +222,9 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
      raw_ref(features::kDocumentPolicyNegotiation)},
     {wf::EnableFedCm, raw_ref(features::kFedCm), kSetOnlyIfOverridden},
     {wf::EnableFedCmAuthz, raw_ref(features::kFedCmAuthz), kDefault},
+    {wf::EnableFedCmError, raw_ref(features::kFedCmError), kDefault},
+    {wf::EnableFedCmHostedDomain, raw_ref(features::kFedCmHostedDomain),
+     kSetOnlyIfOverridden},
     {wf::EnableFedCmIdPRegistration, raw_ref(features::kFedCmIdPRegistration),
      kDefault},
     {wf::EnableFedCmIdpSigninStatus,
@@ -232,6 +234,8 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
      raw_ref(features::kPrivacySandboxAdsAPIsOverride), kSetOnlyIfOverridden},
     {wf::EnableSharedStorageAPI,
      raw_ref(features::kPrivacySandboxAdsAPIsM1Override), kSetOnlyIfOverridden},
+    {wf::EnableSharedStorageAPIM118,
+     raw_ref(blink::features::kSharedStorageAPIM118), kSetOnlyIfOverridden},
     {wf::EnableFedCmMultipleIdentityProviders,
      raw_ref(features::kFedCmMultipleIdentityProviders), kDefault},
     {wf::EnableFedCmSelectiveDisclosure,
@@ -240,8 +244,6 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
      kSetOnlyIfOverridden},
     {wf::EnableFencedFrames,
      raw_ref(features::kPrivacySandboxAdsAPIsM1Override), kSetOnlyIfOverridden},
-    {wf::EnableSharedStorageAPI,
-     raw_ref(features::kPrivacySandboxAdsAPIsOverride), kSetOnlyIfOverridden},
     {wf::EnableForcedColors, raw_ref(features::kForcedColors)},
     {wf::EnableFractionalScrollOffsets,
      raw_ref(features::kFractionalScrollOffsets)},
@@ -280,8 +282,9 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
     {wf::EnableSharedArrayBuffer, raw_ref(features::kSharedArrayBuffer)},
     {wf::EnableSharedArrayBufferOnDesktop,
      raw_ref(features::kSharedArrayBufferOnDesktop)},
-    {wf::EnableSharedAutofill,
-     raw_ref(autofill::features::kAutofillSharedAutofill)},
+#if BUILDFLAG(IS_ANDROID)
+    {wf::EnableSmartZoom, raw_ref(features::kSmartZoom)},
+#endif
     {wf::EnableTouchDragAndContextMenu,
      raw_ref(features::kTouchDragAndContextMenu)},
     {wf::EnableUserActivationSameOriginVisibility,
@@ -394,8 +397,6 @@ void SetRuntimeFeaturesFromChromiumFeatures() {
      raw_ref(blink::features::kDesktopPWAsTabStripCustomizations)},
     {"WebSerialBluetooth",
      raw_ref(features::kEnableBluetoothSerialPortProfileInSerialApi)},
-    {"WGIGamepadTriggerRumble",
-     raw_ref(features::kEnableWindowsGamingInputDataFetcher)},
     {"MediaStreamTrackTransfer", raw_ref(features::kMediaStreamTrackTransfer)},
     {"PrivateNetworkAccessPermissionPrompt",
      raw_ref(network::features::kPrivateNetworkAccessPermissionPrompt)} };
@@ -691,6 +692,35 @@ void ResolveInvalidConfigurations() {
     }
   }
 
+  if (!base::FeatureList::IsEnabled(blink::features::kSharedStorageAPI)) {
+    LOG_IF(WARNING, WebRuntimeFeatures::IsSharedStorageAPIEnabled())
+        << "SharedStorage cannot be enabled in this "
+           "configuration. Use --"
+        << switches::kEnableFeatures << "="
+        << blink::features::kSharedStorageAPI.name << " in addition.";
+    WebRuntimeFeatures::EnableSharedStorageAPI(false);
+  }
+
+  if (!base::FeatureList::IsEnabled(blink::features::kSharedStorageAPIM118) ||
+      !base::FeatureList::IsEnabled(blink::features::kSharedStorageAPI)) {
+    LOG_IF(WARNING, WebRuntimeFeatures::IsSharedStorageAPIM118Enabled())
+        << "SharedStorage for M118+ cannot be enabled in this "
+           "configuration. Use --"
+        << switches::kEnableFeatures << "="
+        << blink::features::kSharedStorageAPI.name << ","
+        << blink::features::kSharedStorageAPIM118.name << " in addition.";
+    WebRuntimeFeatures::EnableSharedStorageAPIM118(false);
+  }
+
+  if (!base::FeatureList::IsEnabled(blink::features::kConversionMeasurement)) {
+    LOG_IF(WARNING, WebRuntimeFeatures::IsAttributionReportingEnabled())
+        << "AttributionReporting cannot be enabled in this "
+           "configuration. Use --"
+        << switches::kEnableFeatures << "="
+        << blink::features::kConversionMeasurement.name << " in addition.";
+    WebRuntimeFeatures::EnableAttributionReporting(false);
+  }
+
   if (!base::FeatureList::IsEnabled(blink::features::kInterestGroupStorage)) {
     LOG_IF(WARNING, WebRuntimeFeatures::IsAdInterestGroupAPIEnabled())
         << "AdInterestGroupAPI cannot be enabled in this "
@@ -698,6 +728,7 @@ void ResolveInvalidConfigurations() {
         << switches::kEnableFeatures << "="
         << blink::features::kInterestGroupStorage.name << " in addition.";
     WebRuntimeFeatures::EnableAdInterestGroupAPI(false);
+    WebRuntimeFeatures::EnableFledge(false);
   } else if (!base::FeatureList::IsEnabled(
                  blink::features::kFledgeBiddingAndAuctionServer)) {
     LOG_IF(WARNING,

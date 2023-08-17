@@ -1,8 +1,9 @@
 <style include="history-clusters-shared-style">
   :host {
-    background: var(--color-new-tab-page-module-background);
+    background: var(--color-new-tab-page-module-item-background);
     border-radius: var(--ntp-module-item-border-radius);
     display: inline-flex;
+    overflow: hidden;
     height: 100%;
     width: 100%;
   }
@@ -14,8 +15,18 @@
     text-decoration: none;
   }
 
-  :host-context(.focus-outline-visible) :focus,
-  :focus-visible {
+  a:hover {
+    background: var(--color-sys-state-hover-on-subtle);
+    border-radius: var(--ntp-module-item-border-radius);
+  }
+
+  a:active {
+    background-color: var(--color-new-tab-page-active-background);
+    border-radius: var(--ntp-module-item-border-radius);
+  }
+
+  :host-context(.focus-outline-visible) a:focus,
+  a:focus-visible {
     border-radius: var(--ntp-module-item-border-radius);
     box-shadow: var(--ntp-focus-shadow);
     outline: none;
@@ -23,6 +34,7 @@
 
   #content {
     flex: 1;
+    overflow: hidden;
     position: relative;
   }
 
@@ -35,9 +47,7 @@
     margin: 16px;
   }
 
-  :host([images-enabled_]) #label-container {
-    background: linear-gradient(0, rgba(0, 0, 0, 0) 0%,
-      rgba(0, 0, 0, 0.4) 69.79%);
+  :host([images-enabled]) #label-container {
     border-radius: var(--ntp-module-item-border-radius);
     color: var(--color-new-tab-page-primary-foreground);
     display: flex;
@@ -49,16 +59,21 @@
     z-index: 1;
   }
 
-  /*TODO: mfacey@: Fix label size */
-  #label {
-    max-width: 100px;
+  :host([images-enabled][image-url_]) #label-container {
+    background: linear-gradient(0, rgba(0, 0, 0, 0) 0%,
+      rgba(0, 0, 0, 0.4) 69.79%);
   }
 
-  :host([images-enabled_]) #label {
+  #label {
+    color: var(--color-new-tab-page-secondary-foreground);
+  }
+
+  :host([images-enabled]) #label {
+    color: white;
     margin-top: 12px;
   }
 
-  :host([images-enabled_]) #icon {
+  :host([images-enabled]) #icon {
     margin: 12px 8px 0 12px;
   }
 
@@ -68,7 +83,11 @@
     margin: 4px;
     overflow: hidden;
     position: relative;
-    height: 50%;
+    height: 122px;
+  }
+
+  :host([format='wide']:not([show-related-searches])) #image {
+    height: 68px;
   }
 
   #image img {
@@ -94,28 +113,27 @@
 
   #title {
     -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
     color: var(--color-new-tab-page-primary-foreground);
     display: -webkit-box;
     font-size: var(--ntp-module-text-size);
+    height: 60px;
+    line-height: 20px;
     margin: 16px;
     white-space: initial;
   }
 
   :host([format='wide']) #title {
-    margin: 24px 16px;
-  }
-
-  #title {
-    -webkit-line-clamp: 3;
-    height: 60px;
-    line-height: 20px;
+    margin: 12px 16px;
   }
 
   #date {
     color: var(--color-new-tab-page-secondary-foreground);
     min-width: max-content;
     bottom: 16px;
+    font-size: 11px;
     left: 16px;
+    line-height: 12px;
     position: absolute;
   }
 
@@ -145,7 +163,7 @@
     </page-favicon>
     <div id="label" class="truncate">[[label_]]</div>
   </div>
-  <div id="image" hidden="[[!imagesEnabled_]]">
+  <div id="image" hidden="[[!imagesEnabled]]">
     <template is="dom-if" if="[[imageUrl_]]" restamp>
       <img is="cr-auto-img" auto-src="[[imageUrl_.url]]"
           draggable="false" alt="">

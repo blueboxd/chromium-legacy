@@ -8,6 +8,7 @@
 
 #include <regstr.h>
 
+#include <functional>
 #include <iostream>
 #include <memory>
 #include <string>
@@ -147,30 +148,37 @@ HRESULT CreateLocalServer(GUID clsid,
               .HasValue(service_name.c_str());
 }
 
-// Apps like Chrome frequently write active bits to registry. These reg
-// values are allowed to be present after uninstall of updater. Everything else
-// should be deleted.
-void ExpectUpdateRegKeyCleanExcludeActivityRegValues(UpdaterScope scope) {
+// Checks that only `LastInstaller*` values and, if a user install, active bits
+// under `ClientState` are in the registry.
+void ExpectUpdateRegKeyClean(UpdaterScope scope) {
   const HKEY root = UpdaterScopeToHKeyRoot(scope);
-  if (IsSystemInstall(scope)) {
-    // App activity bits are written to HKCU only.
-    EXPECT_FALSE(RegKeyExists(root, UPDATER_KEY));
-    return;
-  }
 
   if (!RegKeyExists(root, UPDATER_KEY)) {
     return;
   }
 
-  // `ClientState` sub-key is the only possible child of `update` key.
-  EXPECT_EQ(
-      base::win::RegKey(root, UPDATER_KEY, Wow6432(KEY_READ)).GetValueCount(),
-      0u);
+  for (base::win::RegistryValueIterator updater_value_iter(root, UPDATER_KEY,
+                                                           KEY_WOW64_32KEY);
+       updater_value_iter.Valid(); ++updater_value_iter) {
+    EXPECT_TRUE(
+        base::Contains(kRegValuesLastInstaller, updater_value_iter.Name()))
+        << updater_value_iter.Name();
+  }
+
   base::win::RegistryKeyIterator updater_key_iter(root, UPDATER_KEY,
                                                   KEY_WOW64_32KEY);
+  if (IsSystemInstall(scope)) {
+    // App activity bits are written to HKCU only.
+    EXPECT_EQ(updater_key_iter.SubkeyCount(), 0u);
+    return;
+  }
+
   if (updater_key_iter.SubkeyCount() == 0) {
     return;
   }
+
+  // `ClientState` is the only allowed sub-key of `UPDATER_KEY` for user
+  // installs.
   EXPECT_EQ(updater_key_iter.SubkeyCount(), 1u);
   EXPECT_STREQ(updater_key_iter.Name(), L"ClientState");
 
@@ -255,7 +263,7 @@ void CheckInstallation(UpdaterScope scope,
         }
       }
       EXPECT_FALSE(RegKeyExists(root, CLIENTS_KEY));
-      ExpectUpdateRegKeyCleanExcludeActivityRegValues(scope);
+      ExpectUpdateRegKeyClean(scope);
 
       if (!IsSystemInstall(scope)) {
         ForEachRegistryRunValueWithPrefix(
@@ -584,6 +592,35 @@ std::wstring GetAppVersionWebString(
   return version.Get();
 }
 
+int RunVPythonCommand(const base::CommandLine& command_line) {
+  base::CommandLine python_command = command_line;
+  python_command.PrependWrapper(FILE_PATH_LITERAL("vpython3.bat"));
+
+  int exit_code = -1;
+  base::Process process = base::LaunchProcess(python_command, {});
+  EXPECT_TRUE(process.IsValid());
+  EXPECT_TRUE(process.WaitForExitWithTimeout(TestTimeouts::action_timeout(),
+                                             &exit_code));
+  return exit_code;
+}
+
+bool BuildTestAppInstaller(const base::FilePath& installer_script,
+                           const base::FilePath& output_installer) {
+  base::FilePath exe_path;
+  if (!base::PathService::Get(base::DIR_EXE, &exe_path)) {
+    return false;
+  }
+  const base::FilePath installer_dir = exe_path.AppendASCII("test_installer");
+
+  base::CommandLine command(
+      installer_dir.AppendASCII("embed_install_scripts.py"));
+  command.AppendSwitchPath(
+      "--installer", installer_dir.AppendASCII("test_meta_installer.exe"));
+  command.AppendSwitchPath("--output", output_installer);
+  command.AppendSwitchPath("--script", installer_script);
+  return RunVPythonCommand(command) == 0;
+}
+
 void RunOfflineInstallWithManifest(UpdaterScope scope,
                                    bool is_legacy_install,
                                    bool is_silent_install,
@@ -591,10 +628,9 @@ void RunOfflineInstallWithManifest(UpdaterScope scope,
                                    int string_resource_id_to_find,
                                    bool expect_success) {
   constexpr wchar_t kTestAppID[] = L"{CDABE316-39CD-43BA-8440-6D1E0547AEE6}";
+  constexpr char kAppInstallerName[] = "TestAppSetup.exe";
   const base::Version kTestPV("1.2.3.4");
   const std::wstring manifest_filename(L"OfflineManifest.gup");
-  const std::wstring cmd_exe_arbitrarily_named(L"arbitrarily_named_cmd.exe");
-  const std::string script_name("test_installer.bat");
   const std::wstring offline_dir_guid(
       L"{7B3A5597-DDEA-409B-B900-4C3D2A94A75C}");
   const HKEY root = UpdaterScopeToHKeyRoot(scope);
@@ -617,7 +653,7 @@ void RunOfflineInstallWithManifest(UpdaterScope scope,
   // Create a batch file as the installer script, which creates some registry
   // values as the installation artifacts.
   const base::FilePath batch_script_path(
-      offline_app_scripts_dir.AppendASCII(script_name));
+      offline_app_scripts_dir.AppendASCII("AppSetup.bat"));
 
   // Create a unique name for a shared event to be waited for in this process
   // and signaled in the offline installer process to confirm the installer
@@ -655,20 +691,15 @@ void RunOfflineInstallWithManifest(UpdaterScope scope,
         return base::JoinString(commands, "\n");
       }(scope, base::WideToASCII(app_client_state_key), event_holder.name)));
 
-  // The updater only allows `.exe` or `.msi` to run from the offline
-  // directory. Setup `cmd.exe` as the wrapper installer.
-  base::FilePath cmd_exe_path;
-  ASSERT_TRUE(base::PathService::Get(base::DIR_SYSTEM, &cmd_exe_path));
-  cmd_exe_path = cmd_exe_path.Append(L"cmd.exe");
-  ASSERT_TRUE(base::CopyFile(
-      cmd_exe_path, offline_app_dir.Append(cmd_exe_arbitrarily_named)));
-
+  const base::FilePath& app_installer =
+      offline_app_dir.AppendASCII(kAppInstallerName);
+  EXPECT_TRUE(BuildTestAppInstaller(batch_script_path, app_installer));
   base::FilePath manifest_path = offline_dir.Append(manifest_filename);
-  int64_t exe_size = 0;
-  EXPECT_TRUE(base::GetFileSize(cmd_exe_path, &exe_size));
+  int64_t app_installer_size = 0;
+  EXPECT_TRUE(base::GetFileSize(app_installer, &app_installer_size));
   const std::string manifest = base::StringPrintf(
       manifest_format.c_str(), kTestAppID, kTestPV.GetString().c_str(),
-      exe_size, batch_script_path.value().c_str());
+      kAppInstallerName, app_installer_size, kAppInstallerName);
   EXPECT_TRUE(base::WriteFile(manifest_path, manifest));
 
   // Trigger offline install.
@@ -732,16 +763,22 @@ void RunOfflineInstallWithManifest(UpdaterScope scope,
     return;
   }
 
+  EXPECT_EQ(registry_result, ERROR_SUCCESS);
+
   // Updater should have written "pv".
   ASSERT_TRUE(pv.IsValid());
   EXPECT_EQ(pv, kTestPV);
 
-  // App installer should have created the expected reg value.
-  std::wstring value;
-  EXPECT_EQ(registry_result, ERROR_SUCCESS);
-  EXPECT_EQ(key.ReadValue(kRegValueLastInstallerResultUIString, &value),
-            ERROR_SUCCESS);
-  EXPECT_EQ(value, L"CoolApp");
+  // Check for expected installer result API reg values.
+  base::win::RegKey updater_key(root, UPDATER_KEY, Wow6432(KEY_QUERY_VALUE));
+  ASSERT_TRUE(updater_key.Valid());
+  for (const base::win::RegKey& regkey :
+       {std::cref(key), std::cref(updater_key)}) {
+    std::wstring value;
+    EXPECT_EQ(regkey.ReadValue(kRegValueLastInstallerResultUIString, &value),
+              ERROR_SUCCESS);
+    EXPECT_EQ(value, L"CoolApp");
+  }
 
   if (!is_silent_install) {
     // Silent install does not run post-install command. For other cases the
@@ -1583,18 +1620,6 @@ void ExpectLegacyPolicyStatusSucceeds(UpdaterScope scope) {
   ASSERT_HRESULT_SUCCEEDED(policy_status2->refreshPolicies());
 }
 
-int RunVPythonCommand(const base::CommandLine& command_line) {
-  base::CommandLine python_command = command_line;
-  python_command.PrependWrapper(FILE_PATH_LITERAL("vpython3.bat"));
-
-  int exit_code = -1;
-  base::Process process = base::LaunchProcess(python_command, {});
-  EXPECT_TRUE(process.IsValid());
-  EXPECT_TRUE(process.WaitForExitWithTimeout(TestTimeouts::action_timeout(),
-                                             &exit_code));
-  return exit_code;
-}
-
 void InvokeTestServiceFunction(const std::string& function_name,
                                const base::Value::Dict& arguments) {
   std::string arguments_json_string;
@@ -1894,12 +1919,14 @@ void ExpectLegacyUpdaterMigrated(UpdaterScope scope) {
   ExpectOnlyMockUpdater(google_update_exe.value());
 }
 
-void InstallApp(UpdaterScope scope, const std::string& app_id) {
+void InstallApp(UpdaterScope scope,
+                const std::string& app_id,
+                const base::Version& version) {
   base::win::RegKey key;
   ASSERT_EQ(key.Create(UpdaterScopeToHKeyRoot(scope),
                        GetAppClientsKey(app_id).c_str(), Wow6432(KEY_WRITE)),
             ERROR_SUCCESS);
-  RegisterApp(scope, app_id);
+  RegisterApp(scope, app_id, version);
 }
 
 void UninstallApp(UpdaterScope scope, const std::string& app_id) {
@@ -1922,12 +1949,11 @@ void RunOfflineInstall(UpdaterScope scope,
       "      <manifest version=\"%s\">\n"
       "        <packages>\n"
       "          <package hash_sha256=\"sha256hash_foobar\"\n"
-      "            name=\"cmd.exe\" required=\"true\" size=\"%lld\"/>\n"
+      "            name=\"%s\" required=\"true\" size=\"%lld\"/>\n"
       "        </packages>\n"
       "        <actions>\n"
       "          <action event=\"install\"\n"
-      "            run=\"cmd.exe\"\n"
-      "            arguments=\"/c &quot;%ls&quot; \"/>\n"
+      "            run=\"%s\"/>\n"
       "        </actions>\n"
       "      </manifest>\n"
       "    </updatecheck>\n"
@@ -1953,12 +1979,11 @@ void RunOfflineInstallOsNotSupported(UpdaterScope scope,
       "      <manifest version=\"%s\">\n"
       "        <packages>\n"
       "          <package hash_sha256=\"sha256hash_foobar\"\n"
-      "            name=\"cmd.exe\" required=\"true\" size=\"%lld\"/>\n"
+      "            name=\"%s\" required=\"true\" size=\"%lld\"/>\n"
       "        </packages>\n"
       "        <actions>\n"
       "          <action event=\"install\"\n"
-      "            run=\"cmd.exe\"\n"
-      "            arguments=\"/c &quot;%ls&quot; \"/>\n"
+      "            run=\"%s\"/>\n"
       "        </actions>\n"
       "      </manifest>\n"
       "    </updatecheck>\n"

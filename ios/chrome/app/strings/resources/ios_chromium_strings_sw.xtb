@@ -51,6 +51,7 @@
 <translation id="3650632991272923014"><ph name="USER_EMAIL1" /> alikuwa akitumia Chromium na akaacha alamisho, manenosiri na mipangilio mingine kwenye kifaa hiki.</translation>
 <translation id="3661862315467204831">Fungua Mipangilio ya Chromium kwenye iOS, kisha uguse "PROGRAMU Chaguomsingi ya Kivinjari" na uchague Chromium.</translation>
 <translation id="372658070733623520">Ili utumie na uhifadhi data ya Chromium katika Akaunti yako ya Google, thibitisha kuwa ni wewe.</translation>
+<translation id="3780779443901618967">Hukutahadharisha kuhusu tovuti hatari, hata zile ambazo hazikutambuliwa na Google hapo awali, kwa kuchambua data zaidi kutoka kwenye tovuti kuliko ulinzi wa kawaida. Unaweza kuchagua kuruka tahadhari za Chromium.</translation>
 <translation id="3805899903892079518">Chromium haina uwezo wa kufikia picha au video zako. Washa uwezo wa kufikia katika Mipangilio ya iOS &gt; Faragha &gt; Picha.</translation>
 <translation id="3827545470516145620">Unapata ulinzi wa kawaida kwenye kifaa hiki</translation>
 <translation id="3955621079070267756">Fungua Chromium Kwenye Programu Yoyote</translation>
@@ -94,6 +95,7 @@
 <translation id="632825460376924298">Ruhusu vidokezo vya kuingia katika akaunti kwenye Chromium</translation>
 <translation id="6337530241089703714">Chagua iwapo ungependa kufuta data yako ya Chromium kwenye kifaa hiki au kuihifadhi</translation>
 <translation id="6424492062988593837">Chromium imekuwa bora! Toleo jipya linapatikana.</translation>
+<translation id="6563921047760808519">Pata maelezo zaidi kuhusu <ph name="BEGIN_LINK" />jinsi Chromium inavyoweka data yako kuwa ya faragha<ph name="END_LINK" /></translation>
 <translation id="6625409903340039086">Chromium sasa inatumia sera za mtumiaji za akaunti yako inayosimamiwa</translation>
 <translation id="6752854822223394465">Shirika lako linaweka mipangilio ya Chromium...</translation>
 <translation id="6820823224820483452">Chromium imeshindwa kukagua manenosiri yote. Jaribu tena kesho.</translation>
@@ -121,6 +123,7 @@
 <translation id="7859018312476869945">Unapoandika kwenye sehemu ya anwani au kisanduku cha kutafutia, Chromium hutuma unachokiandika kwenye mtambo wako chaguomsingi wa kutafuta ili upate mapendekezo bora. Kipengele hiki huwa kimezimwa katika Hali fiche.</translation>
 <translation id="786327964234957808">Unabadilisha akaunti za kusawazisha kutoka <ph name="USER_EMAIL1" /> kuwa <ph name="USER_EMAIL2" />. Data yako iliyopo ya Chromium inadhibitiwa na <ph name="DOMAIN" />. Hatua hii itafuta data yako kwenye kifaa hiki, lakini data yako itasalia katika <ph name="USER_EMAIL1" />.</translation>
 <translation id="7890287942691234100">Anza kutumia kichanganuzi cha Chromium</translation>
+<translation id="7905064834449738336">Unapotumia nenosiri, Chromium hukutahadharisha iwapo limechapishwa mtandaoni. Wakati inafanya hivyo, majina ya mtumiaji na manenosiri yako husimbwa kwa njia fiche, kwa hivyo hayawezi kusomwa na mtu mwingine, ikiwemo Google.</translation>
 <translation id="7928628054454574139">Tumia Chromium kufungua viungo vyovyote unavyogusa katika programu zingine</translation>
 <translation id="7931842119211730154">Funga Vichupo Fiche Unapofunga Chromium</translation>
 <translation id="7980860476903281594">Chromium hushiriki maelezo ya mahali ulipo na tovuti unazoruhusu.</translation>

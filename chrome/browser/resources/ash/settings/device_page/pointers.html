@@ -25,7 +25,7 @@
   <div class$="[[subsectionClass_]]">
     <div class="settings-box">
       <div class="start settings-box-text" id="mouseSwapButtonLabel">
-        $i18n{mouseSwapButtons}
+        $i18n{mouseSwapButtonsLabel}
       </div>
       <settings-dropdown-menu id="mouseSwapButtonDropdown"
           aria-labeledby="mouseSwapButtonLabel"
@@ -37,17 +37,17 @@
     <settings-toggle-button id="mouseAcceleration"
         class="hr"
         pref="{{prefs.settings.mouse.acceleration}}"
-        label="$i18n{mouseAccelerationLabel}"
+        label="[[getCursorAccelerationString()]]"
         deep-link-focus-id$="[[Setting.kMouseAcceleration]]">
     </settings-toggle-button>
     <div class="settings-box">
       <div class="start" id="mouseSpeedLabel" aria-hidden="true">
-        $i18n{mouseSpeed}
+        [[getCursorSpeedString()]]
       </div>
       <settings-slider id="mouseSpeedSlider"
           pref="{{prefs.settings.mouse.sensitivity2}}"
           ticks="[[sensitivityValues_]]"
-          label-aria="$i18n{mouseSpeed}"
+          label-aria="[[getCursorSpeedString()]]"
           label-min="$i18n{pointerSlow}"
           label-max="$i18n{pointerFast}"
           deep-link-focus-id$="[[Setting.kMouseSpeed]]">
@@ -78,7 +78,7 @@
         <localized-link
             on-click="onLearnMoreLinkClicked_"
             id="enableMouseReverseScrollingLabel"
-            localized-string="$i18n{mouseReverseScroll}"
+            localized-string="$i18n{mouseReverseScrollLabel}"
             link-url="$i18n{naturalScrollLearnMoreLink}">
         </localized-link>
       </div>
@@ -224,7 +224,7 @@
         <localized-link
             on-click="onLearnMoreLinkClicked_"
             id="enableReverseScrollingLabel"
-            localized-string="$i18n{touchPadScrollLabel}"
+            localized-string="$i18n{touchpadScrollLabel}"
             link-url="$i18n{naturalScrollLearnMoreLink}">
         </localized-link>
       </div>

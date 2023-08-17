@@ -43,10 +43,6 @@
 #import "ui/base/l10n/l10n_util.h"
 #import "ui/gfx/image/image.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 @interface AdaptiveToolbarMediator () <CRWWebStateObserver,
                                        OverlayPresenterObserving,
                                        WebStateListObserving>
@@ -85,6 +81,14 @@
 - (void)updateConsumerForWebState:(web::WebState*)webState {
   [self updateNavigationBackAndForwardStateForWebState:webState];
   [self updateShareMenuForWebState:webState];
+}
+
+- (void)updateConsumerWithTabGridButtonIPHHighlighted:(BOOL)iphHighlighted {
+  [self.consumer setTabGridButtonIPHHighlighted:iphHighlighted];
+}
+
+- (void)updateConsumerWithNewTabButtonIPHHighlighted:(BOOL)iphHighlighted {
+  [self.consumer setNewTabButtonIPHHighlighted:iphHighlighted];
 }
 
 - (void)disconnect {
@@ -163,10 +167,7 @@
   DCHECK_EQ(_webStateList, webStateList);
   switch (change.type()) {
     case WebStateListChange::Type::kStatusOnly:
-      // TODO(crbug.com/1442546): Move the implementation from
-      // webStateList:didChangeActiveWebState:oldWebState:atIndex:reason to
-      // here. Note that here is reachable only when `reason` ==
-      // ActiveWebStateChangeReason::Activated.
+      // The activation is handled after this switch statement.
       break;
     case WebStateListChange::Type::kDetach: {
       if (webStateList->IsBatchInProgress()) {
@@ -192,15 +193,10 @@
       break;
     }
   }
-}
 
-- (void)webStateList:(WebStateList*)webStateList
-    didChangeActiveWebState:(web::WebState*)newWebState
-                oldWebState:(web::WebState*)oldWebState
-                    atIndex:(int)atIndex
-                     reason:(ActiveWebStateChangeReason)reason {
-  DCHECK_EQ(_webStateList, webStateList);
-  self.webState = newWebState;
+  if (status.active_web_state_change()) {
+    self.webState = status.new_active_web_state;
+  }
 }
 
 - (void)webStateListBatchOperationEnded:(WebStateList*)webStateList {

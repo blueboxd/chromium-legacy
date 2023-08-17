@@ -35,11 +35,13 @@ component("app_types") {
 
   defines = [ "IS_APP_TYPES_IMPL" ]
 
-  public_deps = [ "//components/services/app_service/public/protos" ]
+  public_deps = [
+    "//base",
+    "//components/services/app_service/public/protos",
+  ]
 
   deps = [
     ":macros",
-    "//base",
     "//ui/gfx",
     "//url",
   ]
@@ -150,6 +152,7 @@ source_set("app_share_target") {
 
 source_set("macros") {
   sources = [ "macros.h" ]
+  public_deps = [ "//base" ]
 
   # Not exported through //components/services/app_service, and only exposed to
   # App Service code.

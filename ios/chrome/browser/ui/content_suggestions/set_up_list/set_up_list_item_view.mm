@@ -14,6 +14,7 @@
 #import "ios/chrome/browser/shared/ui/elements/crossfade_label.h"
 #import "ios/chrome/browser/shared/ui/symbols/symbols.h"
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_feature.h"
 #import "ios/chrome/browser/ui/content_suggestions/set_up_list/constants.h"
 #import "ios/chrome/browser/ui/content_suggestions/set_up_list/set_up_list_item_icon.h"
 #import "ios/chrome/browser/ui/content_suggestions/set_up_list/set_up_list_item_view+private.h"
@@ -24,10 +25,6 @@
 #import "ios/chrome/grit/ios_google_chrome_strings.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ui/base/l10n/l10n_util.h"
-
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
 
 namespace {
 
@@ -101,10 +98,15 @@ struct ViewConfig {
           kCompactTextSpacing,
       };
     } else if (data.heroCellMagicStackLayout) {
+      int syncString =
+          base::FeatureList::IsEnabled(
+              syncer::kReplaceSyncPromosWithSignInPromos)
+              ? IDS_IOS_IDENTITY_DISC_SIGN_IN_PROMO_LABEL
+              : IDS_IOS_SET_UP_LIST_SIGN_IN_SYNC_MAGIC_STACK_DESCRIPTION;
       _config = {
           NO,
           YES,
-          IDS_IOS_SET_UP_LIST_SIGN_IN_SYNC_MAGIC_STACK_DESCRIPTION,
+          syncString,
           IDS_IOS_SET_UP_LIST_DEFAULT_BROWSER_MAGIC_STACK_DESCRIPTION,
           IDS_IOS_SET_UP_LIST_AUTOFILL_MAGIC_STACK_DESCRIPTION,
           UIFontTextStyleSubheadline,
@@ -115,7 +117,7 @@ struct ViewConfig {
       // Normal ViewConfig.
       int syncString = base::FeatureList::IsEnabled(
                            syncer::kReplaceSyncPromosWithSignInPromos)
-                           ? IDS_IOS_IDENTITY_DISC_SIGNED_OUT_PROMO_LABEL
+                           ? IDS_IOS_IDENTITY_DISC_SIGN_IN_PROMO_LABEL
                            : IDS_IOS_SET_UP_LIST_SIGN_IN_SYNC_DESCRIPTION;
       _config = {
           NO,
@@ -301,7 +303,7 @@ struct ViewConfig {
   CrossfadeLabel* label = [[CrossfadeLabel alloc] init];
   label = [[CrossfadeLabel alloc] init];
   label.text = [self descriptionText];
-  label.numberOfLines = 4;
+  label.numberOfLines = IsMagicStackEnabled() ? 2 : 4;
   label.lineBreakMode = NSLineBreakByTruncatingTail;
   label.font = [UIFont preferredFontForTextStyle:_config.description_font];
   label.adjustsFontForContentSizeCategory = YES;

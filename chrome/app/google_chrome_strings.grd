@@ -687,12 +687,9 @@ Permissions you've already given to websites and apps may apply to this account.
                         desc="Subpage summary of warning for Deep Scanning.">
         Chrome recommends scanning this file because it may be dangerous
       </message>
-
-
-      <!-- Tailored Warning in Download Bubble Items -->
-      <message name="IDS_DOWNLOAD_BUBBLE_SUBPAGE_SUMMARY_SUSPICIOUS_ARCHIVE"
-               desc="Subpage summary for suspicious archive warning.">
-        Chrome blocked this archive file because it may hide malware
+      <message name="IDS_DOWNLOAD_BUBBLE_SUBPAGE_SUMMARY_WARNING_BLOCKED_LEARN_MORE_LINK"
+               desc="Text for the link to the help page about why Chrome blocks some downloaded files. This string will be embedded in a longer sentence that makes up the whole label.">
+        Chrome blocks some downloads
       </message>
 
       <!-- Download Shelf Items -->
@@ -783,7 +780,7 @@ Permissions you've already given to websites and apps may apply to this account.
         This extension was unpublished by its developer, and might be unsafe. Remove it from Chrome so it can no longer see and change your data on sites you visit, including your personal info.
       </message>
       <message name="IDS_EXTENSIONS_SAFETY_CHECK_PRIMARY_LABEL" desc="Alerts the user that the extension should be reviewed.">
-        Chrome recommends you review this extension.
+        Chrome recommends you review this extension
       </message>
 
       <!-- chrome://settings/extensions page -->
@@ -1500,8 +1497,8 @@ Permissions you've already given to websites and apps may apply to this account.
       <message name="IDS_DESKTOP_MEDIA_PICKER_TITLE_WEB_CONTENTS_ONLY" desc="Title for the window picker dialog shown when desktop capture of a tab is requested by an app.">
         Share a Chrome tab
       </message>
-      <!-- Idle timeout bubble. -->
-    <if expr="not is_android and not is_chromeos">
+    <!-- Idle timeout bubble. -->
+    <if expr="toolkit_views">
       <message name="IDS_IDLE_BUBBLE_TITLE_CLOSE" desc="Title of a bubble that informs the user that Chrome closed automatically, because they were away from the computer for X minutes.">
         Chrome was automatically closed
       </message>
@@ -1514,7 +1511,9 @@ Permissions you've already given to websites and apps may apply to this account.
       <message name="IDS_IDLE_BUBBLE_BODY_CLOSE" desc="Body of a bubble that informs the user that Chrome closed automatically, because they were away from the computer for X minutes.">
         Your organization closes Chrome when it isn't used for <ph name="TIMEOUT_DURATION">$1<ex>30 minutes</ex></ph>.
       </message>
+    </if>
     <!-- Idle timeout dialog. -->
+    <if expr="not is_android and not is_chromeos">
       <message name="IDS_IDLE_TIMEOUT_CLOSE_TITLE" desc="Title of the Idle Timeout dialog, warning the user that their windows are about to close.">
         Chrome will soon close
       </message>
@@ -1635,6 +1634,17 @@ Permissions you've already given to websites and apps may apply to this account.
             Do more with Chrome
           </message>
         </if>
+
+        <!-- Default Browser Promo -->
+        <message name="IDS_FRE_DEFAULT_BROWSER_TITLE" desc="Title for the page that prompts user to set Chrome as their default browser in the first run experience.">
+          Set Chrome as your default browser
+        </message>
+        <message name="IDS_FRE_DEFAULT_BROWSER_SUBTITLE_NEW" desc="Subtitle for the page that prompts user to set Chrome as their default browser in the first run experience.">
+          Use Chrome anytime you click links in messages, documents, and other apps
+        </message>
+        <message name="IDS_FRE_DEFAULT_BROWSER_ILLUSTRATION_ALT_TEXT" desc="Alt text for the illustration in the page that prompts user to set Chrome as their default browser.">
+          Chrome logo inside a computer screen.
+        </message>
 
         <!-- Profile switch IPH -->
         <message name="IDS_PROFILE_SWITCH_PROMO" desc="Text of the In-Product-Help bubble for profile switching.">

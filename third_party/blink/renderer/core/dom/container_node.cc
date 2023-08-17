@@ -41,6 +41,7 @@
 #include "third_party/blink/renderer/core/dom/node_cloning_data.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/dom/node_lists_node_data.h"
+#include "third_party/blink/renderer/core/dom/node_move_scope.h"
 #include "third_party/blink/renderer/core/dom/node_rare_data.h"
 #include "third_party/blink/renderer/core/dom/node_traversal.h"
 #include "third_party/blink/renderer/core/dom/part.h"
@@ -151,6 +152,7 @@ static inline bool CollectChildrenAndRemoveFromOldParent(
     Node& node,
     NodeVector& nodes,
     ExceptionState& exception_state) {
+  NodeMoveScope::SetCurrentNodeBeingRemoved(node);
   if (auto* fragment = DynamicTo<DocumentFragment>(node)) {
     GetChildNodes(*fragment, nodes);
     fragment->RemoveChildren();
@@ -413,6 +415,11 @@ Node* ContainerNode::InsertBefore(Node* new_child,
   // 4. Adopt node into parent’s node document.
   NodeVector targets;
   DOMTreeMutationDetector detector(*new_child, *this);
+  NodeMoveScope node_move_scope(
+      *this, ref_child->parentElement() &&
+                     ref_child->parentElement()->firstChild() == ref_child
+                 ? NodeMoveScopeType::kInsertBeforeAllChildren
+                 : NodeMoveScopeType::kOther);
   if (!CollectChildrenAndRemoveFromOldParent(*new_child, targets,
                                              exception_state))
     return new_child;
@@ -601,6 +608,12 @@ Node* ContainerNode::ReplaceChild(Node* new_child,
     // 13. Let nodes be node’s children if node is a DocumentFragment node, and
     // a list containing solely node otherwise.
     DOMTreeMutationDetector detector(*new_child, *this);
+    NodeMoveScope node_move_scope(
+        *this, !next ? NodeMoveScopeType::kAppendAfterAllChildren
+                     : (next->parentElement() &&
+                                next->parentElement()->firstChild() == next
+                            ? NodeMoveScopeType::kInsertBeforeAllChildren
+                            : NodeMoveScopeType::kOther));
     if (!CollectChildrenAndRemoveFromOldParent(*new_child, targets,
                                                exception_state))
       return old_child;
@@ -915,6 +928,8 @@ Node* ContainerNode::AppendChild(Node* new_child,
 
   NodeVector targets;
   DOMTreeMutationDetector detector(*new_child, *this);
+  NodeMoveScope node_move_scope(*this,
+                                NodeMoveScopeType::kAppendAfterAllChildren);
   if (!CollectChildrenAndRemoveFromOldParent(*new_child, targets,
                                              exception_state))
     return new_child;
@@ -1005,9 +1020,12 @@ void ContainerNode::NotifyNodeInsertedInternal(
 
   for (Node& node : NodeTraversal::InclusiveDescendantsOf(root)) {
     // As an optimization we don't notify leaf nodes when when inserting
-    // into detached subtrees that are not in a shadow tree.
-    if (!isConnected() && !IsInShadowTree() && !node.IsContainerNode())
+    // into detached subtrees that are not in a shadow tree, unless the
+    // node has DOM Parts attached.
+    if (!isConnected() && !IsInShadowTree() && !node.IsContainerNode() &&
+        !node.GetDOMParts()) {
       continue;
+    }
     if (Node::kInsertionShouldCallDidNotifySubtreeInsertions ==
         node.InsertedInto(*this))
       post_insertion_notification_targets.push_back(&node);
@@ -1023,10 +1041,13 @@ void ContainerNode::NotifyNodeRemoved(Node& root) {
 
   for (Node& node : NodeTraversal::InclusiveDescendantsOf(root)) {
     // As an optimization we skip notifying Text nodes and other leaf nodes
-    // of removal when they're not in the Document tree and not in a shadow root
-    // since the virtual call to removedFrom is not needed.
-    if (!node.IsContainerNode() && !node.IsInTreeScope())
+    // of removal when they're not in the Document tree, not in a shadow root,
+    // and don't have DOM Parts, since the virtual call to removedFrom is not
+    // needed.
+    if (!node.IsContainerNode() && !node.IsInTreeScope() &&
+        !node.GetDOMParts()) {
       continue;
+    }
     node.RemovedFrom(*this);
     if (ShadowRoot* shadow_root = node.GetShadowRoot())
       NotifyNodeRemoved(*shadow_root);
@@ -1098,7 +1119,7 @@ void ContainerNode::ClonePartsFrom(const ContainerNode& node,
   if (!data.Has(CloneOption::kPreserveDOMParts)) {
     return;
   }
-  CHECK(RuntimeEnabledFeatures::DOMPartsAPIEnabled());
+  DCHECK(RuntimeEnabledFeatures::DOMPartsAPIEnabled());
   if (auto* document = DynamicTo<Document>(const_cast<ContainerNode&>(node))) {
     data.ConnectPartRootToClone(document->getPartRoot(),
                                 To<Document>(this)->getPartRoot());
@@ -1107,10 +1128,12 @@ void ContainerNode::ClonePartsFrom(const ContainerNode& node,
     data.ConnectPartRootToClone(document_fragment->getPartRoot(),
                                 To<DocumentFragment>(this)->getPartRoot());
   }
-  if (node.HasDOMParts()) {
+  if (auto* parts = node.GetDOMParts()) {
     data.ConnectNodeToClone(node, *this);
-    for (Part* part : node.GetDOMParts()) {
-      data.QueueForCloning(*part);
+    for (Part* part : *parts) {
+      if (part->NodeToSortBy() == node) {
+        data.QueueForCloning(*part);
+      }
     }
   }
 }
@@ -1119,7 +1142,7 @@ void ContainerNode::CloneChildNodesFrom(const ContainerNode& node,
                                         NodeCloningData& data) {
   CHECK(data.Has(CloneOption::kIncludeDescendants));
   for (const Node& child : NodeTraversal::ChildrenOf(node)) {
-    AppendChild(child.Clone(GetDocument(), data));
+    child.Clone(GetDocument(), data, this);
   }
 }
 

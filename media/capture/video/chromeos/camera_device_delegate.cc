@@ -294,12 +294,29 @@ CameraDeviceDelegate::CameraDeviceDelegate(
       camera_hal_delegate_(camera_hal_delegate),
       ipc_task_runner_(std::move(ipc_task_runner)) {}
 
-CameraDeviceDelegate::~CameraDeviceDelegate() = default;
+CameraDeviceDelegate::~CameraDeviceDelegate() {
+  if (camera_effect_observer_added_) {
+    // TODO(1446850): CameraDeviceDelegate should be removed from the
+    // CameraEffectObserver list when CameraDeviceDelegate::StopAndDeAllocate
+    // was called. Check the cases where StopAndDeallocate is not called before
+    // destructor.
+    CameraHalDispatcherImpl::GetInstance()->RemoveCameraEffectObserver(this);
+    camera_effect_observer_added_ = false;
+  }
+}
 
 void CameraDeviceDelegate::AllocateAndStart(
     const base::flat_map<ClientType, VideoCaptureParams>& params,
     CameraDeviceContext* device_context) {
   DCHECK(ipc_task_runner_->BelongsToCurrentThread());
+
+  if (device_context->GetState() != CameraDeviceContext::State::kStopped) {
+    // kError indicates that the device is in use but with some errors, or the
+    // device failed to open, or the mojo channel terminated unexpectedly.
+    // Therefore, the device does not need to be opened again when the
+    // state == kError either.
+    return;
+  }
 
   result_metadata_frame_number_for_photo_state_ = 0;
   result_metadata_frame_number_ = 0;
@@ -327,6 +344,8 @@ void CameraDeviceDelegate::AllocateAndStart(
   if (camera_app_device) {
     camera_app_device->SetCameraDeviceContext(device_context_);
   }
+  CameraAppDeviceBridgeImpl::GetInstance()->SetDeviceInUse(
+      device_descriptor_.device_id, true);
 
   auto camera_info = camera_hal_delegate_->GetCameraInfoFromDeviceId(
       device_descriptor_.device_id);
@@ -361,7 +380,7 @@ void CameraDeviceDelegate::AllocateAndStart(
   camera_hal_delegate_->OpenDevice(
       camera_hal_delegate_->GetCameraIdFromDeviceId(
           device_descriptor_.device_id),
-      device_ops_.BindNewPipeAndPassReceiver(),
+      device_descriptor_.model_id, device_ops_.BindNewPipeAndPassReceiver(),
       base::BindPostTaskToCurrentDefault(
           base::BindOnce(&CameraDeviceDelegate::OnOpenedDevice, GetWeakPtr())));
   device_ops_.set_disconnect_handler(base::BindOnce(
@@ -371,6 +390,9 @@ void CameraDeviceDelegate::AllocateAndStart(
 void CameraDeviceDelegate::StopAndDeAllocate(
     base::OnceClosure device_close_callback) {
   DCHECK(ipc_task_runner_->BelongsToCurrentThread());
+
+  CameraAppDeviceBridgeImpl::GetInstance()->SetDeviceInUse(
+      device_descriptor_.device_id, false);
 
   if (!device_context_ ||
       device_context_->GetState() == CameraDeviceContext::State::kStopped ||
@@ -836,6 +858,19 @@ void CameraDeviceDelegate::Initialize() {
   DCHECK(ipc_task_runner_->BelongsToCurrentThread());
   DCHECK_EQ(device_context_->GetState(), CameraDeviceContext::State::kStarting);
 
+  bool use_buffer_management_apis = false;
+  if (device_api_version_ >= cros::mojom::CAMERA_DEVICE_API_VERSION_3_6) {
+    auto version = GetMetadataEntryAsSpan<uint8_t>(
+        static_metadata_, cros::mojom::CameraMetadataTag::
+                              ANDROID_INFO_SUPPORTED_BUFFER_MANAGEMENT_VERSION);
+    use_buffer_management_apis =
+        version.size() == 1 &&
+        version[0] ==
+            static_cast<uint8_t>(
+                cros::mojom::AndroidInfoSupportedBufferManagementVersion::
+                    ANDROID_INFO_SUPPORTED_BUFFER_MANAGEMENT_VERSION_HIDL_DEVICE_3_5);
+  }
+
   mojo::PendingRemote<cros::mojom::Camera3CallbackOps> callback_ops;
   // Assumes the buffer_type will be the same for all |chrome_capture_params|.
   request_manager_ = std::make_unique<RequestManager>(
@@ -846,7 +881,7 @@ void CameraDeviceDelegate::Initialize() {
       chrome_capture_params_[ClientType::kPreviewClient].buffer_type,
       std::make_unique<CameraBufferFactory>(),
       base::BindRepeating(&RotateAndBlobify), ipc_task_runner_,
-      device_api_version_);
+      device_api_version_, use_buffer_management_apis);
   camera_3a_controller_ = std::make_unique<Camera3AController>(
       static_metadata_, request_manager_.get(), ipc_task_runner_);
   device_ops_->Initialize(

@@ -26,7 +26,7 @@ import {FocusConfig} from '../focus_config.js';
 import {loadTimeData} from '../i18n_setup.js';
 import {routes} from '../route.js';
 import {Router} from '../router.js';
-import {SafetyHubBrowserProxy, SafetyHubBrowserProxyImpl, UnusedSitePermissions} from '../safety_hub/safety_hub_browser_proxy.js';
+import {SafetyHubBrowserProxy, SafetyHubBrowserProxyImpl, SafetyHubEvent, UnusedSitePermissions} from '../safety_hub/safety_hub_browser_proxy.js';
 import {ContentSettingsTypes} from '../site_settings/constants.js';
 
 import {CategoryListItem} from './site_settings_list.js';
@@ -395,33 +395,43 @@ export class SettingsSiteSettingsPageElement extends
       lists_: {
         type: Object,
         value: function() {
+          // Move `BACKGROUND_SYNC` to the sixth position under the fold if
+          // `STORAGE_ACCESS` is present.
+          const enablePermissionStorageAccessApi =
+              loadTimeData.getBoolean('enablePermissionStorageAccessApi');
+          const basic = enablePermissionStorageAccessApi ? Id.STORAGE_ACCESS :
+                                                           Id.BACKGROUND_SYNC;
+          const advanced: ContentSettingsTypes[] =
+              enablePermissionStorageAccessApi ? [Id.BACKGROUND_SYNC] : [];
+
           return {
             permissionsBasic: buildItemListFromIds([
               Id.GEOLOCATION,
               Id.CAMERA,
               Id.MIC,
               Id.NOTIFICATIONS,
-              Id.BACKGROUND_SYNC,
-              Id.STORAGE_ACCESS,
+              basic,
             ]),
             permissionsAdvanced: buildItemListFromIds([
-              Id.SENSORS,
-              Id.AUTOMATIC_DOWNLOADS,
-              Id.PROTOCOL_HANDLERS,
-              Id.MIDI_DEVICES,
-              Id.USB_DEVICES,
-              Id.SERIAL_PORTS,
-              Id.BLUETOOTH_DEVICES,
-              Id.FILE_SYSTEM_WRITE,
-              Id.HID_DEVICES,
-              Id.CLIPBOARD,
-              Id.PAYMENT_HANDLER,
-              Id.BLUETOOTH_SCANNING,
-              Id.AR,
-              Id.VR,
-              Id.IDLE_DETECTION,
-              Id.WINDOW_MANAGEMENT,
-              Id.LOCAL_FONTS,
+              ...advanced,
+              ...[Id.SENSORS,
+                  Id.AUTOMATIC_DOWNLOADS,
+                  Id.PROTOCOL_HANDLERS,
+                  Id.MIDI_DEVICES,
+                  Id.USB_DEVICES,
+                  Id.SERIAL_PORTS,
+                  Id.BLUETOOTH_DEVICES,
+                  Id.FILE_SYSTEM_WRITE,
+                  Id.HID_DEVICES,
+                  Id.CLIPBOARD,
+                  Id.PAYMENT_HANDLER,
+                  Id.BLUETOOTH_SCANNING,
+                  Id.AR,
+                  Id.VR,
+                  Id.IDLE_DETECTION,
+                  Id.WINDOW_MANAGEMENT,
+                  Id.LOCAL_FONTS,
+          ],
             ]),
             contentBasic: buildItemListFromIds([
               Id.COOKIES,
@@ -479,7 +489,7 @@ export class SettingsSiteSettingsPageElement extends
     super.connectedCallback();
 
     this.addWebUiListener(
-        'unused-permission-review-list-maybe-changed',
+        SafetyHubEvent.UNUSED_PERMISSIONS_MAYBE_CHANGED,
         (sites: UnusedSitePermissions[]) =>
             this.onUnusedSitePermissionListChanged_(sites));
 

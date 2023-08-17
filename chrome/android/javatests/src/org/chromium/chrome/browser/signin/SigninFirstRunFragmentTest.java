@@ -325,6 +325,7 @@ public class SigninFirstRunFragmentTest {
 
     @Test
     @MediumTest
+    @SuppressWarnings("CheckReturnValue")
     public void testFragmentWhenCannotUseGooglePlayService() {
         when(mExternalAuthUtilsMock.canUseGooglePlayServices()).thenReturn(false);
 
@@ -333,9 +334,11 @@ public class SigninFirstRunFragmentTest {
         CriteriaHelper.pollUiThread(() -> {
             return !mFragment.getView().findViewById(R.id.signin_fre_selected_account).isShown();
         });
-        ViewUtils.waitForView(withText(R.string.continue_button));
+        // TODO(crbug.com/1469988): This is a no-op, replace with ViewUtils.waitForVisibleView().
+        ViewUtils.isEventuallyVisible(withText(R.string.continue_button));
         onView(withId(R.id.signin_fre_dismiss_button)).check(matches(not(isDisplayed())));
-        ViewUtils.waitForView(withId(R.id.signin_fre_footer));
+        // TODO(crbug.com/1469988): This is a no-op, replace with ViewUtils.waitForVisibleView().
+        ViewUtils.isEventuallyVisible(withId(R.id.signin_fre_footer));
     }
 
     @Test
@@ -1288,17 +1291,20 @@ public class SigninFirstRunFragmentTest {
         verify(mSigninManagerMock, never()).signinAndEnableSync(any(), anyInt(), any());
     }
 
+    @SuppressWarnings("CheckReturnValue")
     private void checkFragmentWhenSigninIsDisabledByPolicy() {
         CriteriaHelper.pollUiThread(() -> {
             return !mFragment.getView().findViewById(R.id.signin_fre_selected_account).isShown();
         });
         verify(mFirstRunPageDelegateMock).recordNativePolicyAndChildStatusLoadedHistogram();
-        ViewUtils.waitForView(withId(R.id.fre_browser_managed_by));
-        ViewUtils.waitForView(withText(R.string.continue_button));
-        ViewUtils.waitForView(withId(R.id.signin_fre_footer));
+        // TODO(crbug.com/1469988): These are no-ops, replace with ViewUtils.waitForVisibleView().
+        ViewUtils.isEventuallyVisible(withId(R.id.fre_browser_managed_by));
+        ViewUtils.isEventuallyVisible(withText(R.string.continue_button));
+        ViewUtils.isEventuallyVisible(withId(R.id.signin_fre_footer));
         onView(withId(R.id.signin_fre_dismiss_button)).check(matches(not(isDisplayed())));
     }
 
+    @SuppressWarnings("CheckReturnValue")
     private void launchActivityWithFragment() {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             ((BlankUiTestActivity) mActivityTestRule.getActivity())
@@ -1323,7 +1329,9 @@ public class SigninFirstRunFragmentTest {
                     SemanticColorUtils.getDefaultBgColor(mFragment.getContext())));
         });
 
-        ViewUtils.waitForView(allOf(withId(R.id.signin_fre_continue_button), isDisplayed()));
+        // TODO(crbug.com/1469988): This is a no-op, replace with ViewUtils.waitForVisibleView().
+        ViewUtils.isEventuallyVisible(
+                allOf(withId(R.id.signin_fre_continue_button), isDisplayed()));
     }
 
     /**

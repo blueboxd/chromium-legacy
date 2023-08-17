@@ -17,10 +17,6 @@
 #import "ios/chrome/browser/ui/autofill/autofill_ui_type_util.h"
 #import "ios/chrome/browser/ui/autofill/cells/country_item.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 namespace {
 
 typedef NS_ENUM(NSInteger, ItemType) {
@@ -125,6 +121,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 - (void)didTapMigrateToAccountButton {
   _personalDataManager->MigrateProfileToAccount(*_autofillProfile);
+
+  // Push the saved profile data to the consumer.
+  [self sendAutofillProfileDataToConsumer];
 }
 
 #pragma mark - AutofillProfileEditTableViewControllerDelegate

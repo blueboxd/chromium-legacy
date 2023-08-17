@@ -34,7 +34,6 @@ import static org.chromium.chrome.features.start_surface.StartSurfaceTestUtils.g
 import static org.chromium.chrome.features.start_surface.StartSurfaceTestUtils.sClassParamsForStartSurfaceTest;
 import static org.chromium.ui.test.util.ViewUtils.onViewWaiting;
 import static org.chromium.ui.test.util.ViewUtils.waitForStableView;
-import static org.chromium.ui.test.util.ViewUtils.waitForView;
 
 import android.graphics.drawable.ColorDrawable;
 import android.os.Build;
@@ -105,6 +104,7 @@ import org.chromium.components.embedder_support.util.UrlUtilities;
 import org.chromium.content_public.browser.test.util.RenderProcessHostUtils;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.test.util.UiRestriction;
+import org.chromium.ui.test.util.ViewUtils;
 
 import java.io.IOException;
 import java.util.List;
@@ -215,23 +215,15 @@ public class StartSurfaceTest {
 
         StartSurfaceTestUtils.clickMoreTabs(cta);
         StartSurfaceTestUtils.waitForTabSwitcherVisible(cta);
-        waitForView(allOf(withParent(withId(TabUiTestHelper.getTabSwitcherParentId(cta))),
-                withId(R.id.tab_list_view)));
+        ViewUtils.waitForVisibleView(
+                allOf(withParent(withId(TabUiTestHelper.getTabSwitcherParentId(cta))),
+                        withId(R.id.tab_list_view)));
 
-        // When the start surface refactoring is enabled, tapping the back button on Tab switcher
-        // will show the last tab.
-        if (TabUiTestHelper.getIsStartSurfaceRefactorEnabledFromUIThread(
-                    mActivityTestRule.getActivity())) {
-            StartSurfaceTestUtils.pressBack(mActivityTestRule);
-            // Verifies that the last tab is opening.
-            LayoutTestUtils.waitForLayout(cta.getLayoutManager(), LayoutType.BROWSING);
-        } else {
-            StartSurfaceTestUtils.pressBack(mActivityTestRule);
-            onViewWaiting(allOf(withId(R.id.primary_tasks_surface_view), isDisplayed()));
+        StartSurfaceTestUtils.pressBack(mActivityTestRule);
+        onViewWaiting(allOf(withId(R.id.primary_tasks_surface_view), isDisplayed()));
 
-            StartSurfaceTestUtils.clickFirstTabInCarousel();
-            LayoutTestUtils.waitForLayout(cta.getLayoutManager(), LayoutType.BROWSING);
-        }
+        StartSurfaceTestUtils.clickFirstTabInCarousel();
+        LayoutTestUtils.waitForLayout(cta.getLayoutManager(), LayoutType.BROWSING);
     }
 
     @Test
@@ -287,31 +279,7 @@ public class StartSurfaceTest {
     Add({START_SURFACE_TEST_SINGLE_ENABLED_PARAMS + "/hide_switch_when_no_incognito_tabs/false"})
     @EnableFeatures(ChromeFeatureList.START_SURFACE_REFACTOR)
     public void testShow_SingleAsHomepage_NoIncognitoSwitch_RefactorEnabled() {
-        if (!mImmediateReturn) {
-            StartSurfaceTestUtils.pressHomePageButton(mActivityTestRule.getActivity());
-        }
-
-        ChromeTabbedActivity cta = mActivityTestRule.getActivity();
-        StartSurfaceTestUtils.waitForStartSurfaceVisible(
-                mLayoutChangedCallbackHelper, mCurrentlyActiveLayout, cta);
-
-        onViewWaiting(withId(R.id.primary_tasks_surface_view));
-        onViewWaiting(withId(R.id.search_box_text));
-        onViewWaiting(withId(R.id.mv_tiles_container)).check(matches(isDisplayed()));
-        onViewWaiting(withId(R.id.tab_switcher_title)).check(matches(isDisplayed()));
-        onViewWaiting(withId(R.id.tab_switcher_module_container)).check(matches(isDisplayed()));
-        onView(withId(R.id.tasks_surface_body)).check(matches(isDisplayed()));
-
-        // TODO(crbug.com/1076274): fix toolbar to make incognito switch part of the view.
-        onView(withId(R.id.incognito_toggle_tabs)).check(matches(withEffectiveVisibility(GONE)));
-
-        StartSurfaceTestUtils.clickMoreTabs(cta);
-        StartSurfaceTestUtils.waitForTabSwitcherVisible(cta);
-        onView(withId(R.id.incognito_toggle_tabs)).check(matches(withEffectiveVisibility(VISIBLE)));
-
-        // Verifies that the tab switcher is hidden.
-        StartSurfaceTestUtils.pressBack(mActivityTestRule);
-        LayoutTestUtils.waitForLayout(cta.getLayoutManager(), LayoutType.BROWSING);
+        testShow_SingleAsHomepage_NoIncognitoSwitch();
     }
 
     @Test
@@ -357,20 +325,11 @@ public class StartSurfaceTest {
             return;
         }
 
-        // When the start surface refactoring is enabled, tapping the back button on Tab switcher
-        // will show the last tab.
-        if (TabUiTestHelper.getIsStartSurfaceRefactorEnabledFromUIThread(
-                    mActivityTestRule.getActivity())) {
-            StartSurfaceTestUtils.pressBack(mActivityTestRule);
-            // Verifies that the last tab is opening.
-            LayoutTestUtils.waitForLayout(cta.getLayoutManager(), LayoutType.BROWSING);
-        } else {
-            StartSurfaceTestUtils.pressBack(mActivityTestRule);
-            onViewWaiting(withId(R.id.primary_tasks_surface_view));
+        StartSurfaceTestUtils.pressBack(mActivityTestRule);
+        onViewWaiting(withId(R.id.primary_tasks_surface_view));
 
-            onViewWaiting(withId(R.id.single_tab_view)).perform(click());
-            LayoutTestUtils.waitForLayout(cta.getLayoutManager(), LayoutType.BROWSING);
-        }
+        onViewWaiting(withId(R.id.single_tab_view)).perform(click());
+        LayoutTestUtils.waitForLayout(cta.getLayoutManager(), LayoutType.BROWSING);
     }
 
     @Test
@@ -534,7 +493,6 @@ public class StartSurfaceTest {
     @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE})
 
     @EnableFeatures({ChromeFeatureList.START_SURFACE_RETURN_TIME + "<Study",
-            ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID,
             ChromeFeatureList.START_SURFACE_ANDROID + "<Study"})
     @CommandLineFlags.Add({START_SURFACE_TEST_BASE_PARAMS
                     + "open_ntp_instead_of_start/false/open_start_as_homepage/true",
@@ -552,7 +510,6 @@ public class StartSurfaceTest {
     @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE})
     // clang-format off
     @EnableFeatures({ChromeFeatureList.START_SURFACE_RETURN_TIME + "<Study",
-        ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID,
         ChromeFeatureList.START_SURFACE_ANDROID + "<Study"})
     @CommandLineFlags.Add({START_SURFACE_TEST_SINGLE_ENABLED_PARAMS,
         // Disable feed placeholder animation because it causes waitForDeferredStartup() to time
@@ -671,6 +628,7 @@ public class StartSurfaceTest {
 
     @Test
     @MediumTest
+    @DisabledTest(message = "https://crbug.com/1471244")
     @Feature({"StartSurface"})
     @CommandLineFlags.Add({START_SURFACE_TEST_SINGLE_ENABLED_PARAMS})
     public void testShow_SingleAsHomepage_BottomSheet_WithBottomSheetGtsSupport() {
@@ -721,6 +679,7 @@ public class StartSurfaceTest {
     @MediumTest
     @Feature({"StartSurface"})
     @CommandLineFlags.Add({START_SURFACE_TEST_SINGLE_ENABLED_PARAMS})
+    @DisabledTest(message = "https://crbug.com/1470714")
     public void testShow_SingleAsHomepage_ResetScrollPosition() {
         if (!mImmediateReturn) {
             StartSurfaceTestUtils.pressHomePageButton(mActivityTestRule.getActivity());
@@ -754,6 +713,7 @@ public class StartSurfaceTest {
     @Feature({"StartSurface"})
     @EnableFeatures(ChromeFeatureList.START_SURFACE_REFACTOR)
     @CommandLineFlags.Add({START_SURFACE_TEST_SINGLE_ENABLED_PARAMS})
+    @DisabledTest(message = "https://crbug.com/1470714")
     public void testShow_SingleAsHomepage_DoNotResetScrollPositionFromBack() {
         assumeTrue(mImmediateReturn);
 
@@ -809,7 +769,7 @@ public class StartSurfaceTest {
         Tab tab = cta.getActivityTab();
         StartSurfaceTestUtils.pressHomePageButton(cta);
 
-        waitForView(withId(R.id.primary_tasks_surface_view));
+        ViewUtils.waitForVisibleView(withId(R.id.primary_tasks_surface_view));
         StartSurfaceTestUtils.waitForStartSurfaceVisible(cta);
         Assert.assertEquals(TabLaunchType.FROM_START_SURFACE, tab.getLaunchType());
         TestThreadUtils.runOnUiThreadBlocking(
@@ -986,6 +946,7 @@ public class StartSurfaceTest {
     @Feature({"StartSurface"})
     @EnableFeatures({ChromeFeatureList.SPARE_TAB, ChromeFeatureList.START_SURFACE_SPARE_TAB})
     @CommandLineFlags.Add({START_SURFACE_TEST_SINGLE_ENABLED_PARAMS})
+    @DisabledTest(message = "https://crbug.com/1470714")
     public void test_UsesSpareTabForNavigationFromSearchBox() {
         if (!mImmediateReturn) return;
 

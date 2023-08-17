@@ -16,6 +16,14 @@ GEN('#include "content/public/test/browser_test.h"');
 const ROOT_PAGE = 'chrome://personalization/';
 const DEFAULT_WALLPAPER_NAME = 'Default Wallpaper';
 
+// See ash/public/cpp/personalization_app/time_of_day_test_utils.h/cc.
+const TIME_OF_DAY_FEATURES = [
+  'ash::features::kTimeOfDayWallpaper',
+  'ash::features::kTimeOfDayScreenSaver',
+  'ash::features::kFeatureManagementTimeOfDayWallpaper',
+  'ash::features::kFeatureManagementTimeOfDayScreenSaver',
+];
+
 /**
  * Wait until `func` returns a truthy value.
  * If `timeoutMs` milliseconds elapse, will reject with `message`.
@@ -347,12 +355,7 @@ class PersonalizationAppWallpaperSubpageBrowserTest extends
   /** @override */
   get featureList() {
     return {
-      // The mock set of collections created for this test does not contain the
-      // time of day collection. If time of day wallpaper happens to be enabled,
-      // the test will fail because the time of day collection is missing, which
-      // is irrelevant for these test cases. It must explicitly be disabled
-      // here.
-      disabled: ['ash::features::kTimeOfDayWallpaper'],
+      enabled: TIME_OF_DAY_FEATURES,
     };
   }
 }
@@ -432,8 +435,7 @@ TEST_F(PersonalizationAppWallpaperSubpageBrowserTest.name, 'All', async () => {
     });
   });
 
-  // TODO(b/278166473) flaky.
-  suite.skip('backdrop', function() {
+  suite('backdrop', function() {
     test('selects wallpaper', async () => {
       const wallpaperSelected = getWallpaperSelected();
       const textContainer =
@@ -478,17 +480,20 @@ TEST_F(PersonalizationAppWallpaperSubpageBrowserTest.name, 'All', async () => {
       gridItem.click();
 
       const expectedImageTitle =
-          'fake_attribution_fake_collection_id_2_asset_id_31_line_0';
+          'fake_attribution_fake_collection_id_2_asset_id_41_line_0';
+
       await waitUntil(
           () =>
               textContainer.querySelector('#imageTitle').textContent.trim() ===
               expectedImageTitle,
           () => `failed waiting for expected image title ` +
               `${expectedImageTitle} after selecting wallpaper. ` +
-              `html:\n${textContainer.outerHTML}`);
+              `html:\n${textContainer.outerHTML}`,
+          /*intervalMs=*/ 500,
+          /*timeoutMs=*/ 3001);
 
       assertEquals(
-          'fake_attribution_fake_collection_id_2_asset_id_31_line_1',
+          'fake_attribution_fake_collection_id_2_asset_id_41_line_1',
           textContainer.querySelector('span:last-of-type').textContent.trim());
 
       assertTrue(gridItem.selected, 'wallpaper tile is selected after click');
@@ -567,8 +572,7 @@ TEST_F(PersonalizationAppWallpaperSubpageBrowserTest.name, 'All', async () => {
           'album id and is shared param should appear in location.search');
     });
 
-    // TODO(b/278166473) flaky.
-    test.skip('select shared album as daily refresh', async () => {
+    test('select shared album as daily refresh', async () => {
       const sharedAlbumId = 'fake_google_photos_shared_album_id_2';
       await openGooglePhotosSharedAlbumById(sharedAlbumId);
 
@@ -598,7 +602,9 @@ TEST_F(PersonalizationAppWallpaperSubpageBrowserTest.name, 'All', async () => {
           () => dailyRefreshRegex.test(imageTitle.textContent.trim()),
           () => `Expected Daily refresh text to match regex ` +
               `${dailyRefreshRegex.source} but received:\n` +
-              `${imageTitle.outerHTML}`);
+              `${imageTitle.outerHTML}`,
+          /*intervalMs=*/ 500,
+          /*timeoutMs=*/ 3001);
 
       assertEquals(
           null, getSharedAlbumDialog(),
@@ -614,7 +620,11 @@ class PersonalizationAppDynamicColorEnabledBrowserTest extends
   /** @override */
   get featureList() {
     return {
-      enabled: ['chromeos::features::kJelly'],
+      enabled: [
+        'chromeos::features::kJelly',
+      ],
+      // TODO(b/292651329) enable these.
+      disabled: TIME_OF_DAY_FEATURES,
     };
   }
 }
@@ -622,17 +632,12 @@ class PersonalizationAppDynamicColorEnabledBrowserTest extends
 this[PersonalizationAppDynamicColorEnabledBrowserTest.name] =
     PersonalizationAppDynamicColorEnabledBrowserTest;
 
-// TODO(b/292076437): Flaky on debug builds.
-GEN('#if !defined(NDEBUG)');
-GEN('#define MAYBE_All DISABLED_All');
-GEN('#else');
-GEN('#define MAYBE_All All');
-GEN('#endif');
-
 TEST_F(
-    PersonalizationAppDynamicColorEnabledBrowserTest.name, 'MAYBE_All',
-    async () => {
+    PersonalizationAppDynamicColorEnabledBrowserTest.name, 'All', async () => {
       await import('chrome://webui-test/mojo_webui_test_support.js');
+      const {getThemeProvider} =
+          await import('chrome://personalization/js/personalization_app.js');
+      const themeProvider = getThemeProvider();
 
       function getDynamicColorElement() {
         const dynamicColor =
@@ -665,26 +670,16 @@ TEST_F(
         return staticColor;
       }
 
-      async function setDynamicColorToggle(checkedState) {
+      function setDynamicColorToggle(checkedState) {
         const toggle = getDynamicColorToggle();
         if (checkedState !== toggle.checked) {
-          const toggleDescription =
-              getDynamicColorElement().shadowRoot.getElementById(
-                  'dynamicColorToggleDescription');
-          const originalColor = getComputedStyle(toggleDescription).color;
           toggle.click();
-          await waitUntil(
-              () => originalColor !== getComputedStyle(toggleDescription).color,
-              'toggle failed to update colors', 200, 5000);
         }
       }
 
       setup(async () => {
         // Reset to default state before each test to reduce dependencies.
-        await setDynamicColorToggle(/* checkedState= */ true);
-        const colorSchemeButtons =
-            Array.from(getColorSchemeSelector().querySelectorAll('cr-button'));
-        colorSchemeButtons[0].click();
+        await personalizationTestApi.reset();
       });
 
       suite('dynamic color', () => {
@@ -694,111 +689,154 @@ TEST_F(
           assertTrue(!!getStaticColorSelector());
         });
 
-        // TODO(b/277811561) flaky test
-        test.skip('clicks toggle', async () => {
-          const toggleDescription =
-              getDynamicColorElement().shadowRoot.getElementById(
-                  'dynamicColorToggleDescription');
+        test('clicks toggle', async () => {
           const toggle = getDynamicColorToggle();
-          const checkedState = toggle.checked;
-          const originalColor = getComputedStyle(toggleDescription).color;
+          assertTrue(!!toggle.checked, 'toggle starts checked');
 
-          await setDynamicColorToggle(!checkedState);
+          {
+            const {staticColor} = await themeProvider.getStaticColor();
+            assertEquals(
+                null, staticColor,
+                'static color is null when dynamic color on');
+          }
 
-          await waitUntil(
-              () => originalColor !== getComputedStyle(toggleDescription).color,
-              'failed to update colors', 200, 5000);
+          setDynamicColorToggle(false);
+
+          {
+            const {staticColor: {value}} = await themeProvider.getStaticColor();
+            assertGT(
+                value, 0,
+                'static color is positive number when dynamic color off');
+          }
+
+          setDynamicColorToggle(true);
+
+          {
+            const {staticColor} = await themeProvider.getStaticColor();
+            assertEquals(
+                null, staticColor,
+                'static color null when dynamic color toggle on');
+          }
         });
 
         test('shows color scheme options', async () => {
-          await setDynamicColorToggle(true);
+          setDynamicColorToggle(true);
 
           assertTrue(getDynamicColorToggle().checked);
           assertTrue(getStaticColorSelector().hidden);
           assertFalse(getColorSchemeSelector().hidden);
         });
 
-        // TODO(b/277811561): Fails with TimeOfDayWallpaper feature enabled.
-        test.skip('selects color scheme options', async () => {
+        test('selects color scheme options', async () => {
           const toggleDescription =
               getDynamicColorElement().shadowRoot.getElementById(
                   'dynamicColorToggleDescription');
-          await setDynamicColorToggle(true);
+          setDynamicColorToggle(true);
+          const {staticColor} = await themeProvider.getStaticColor();
+          assertEquals(
+              null, staticColor,
+              'setting dynamic color on forces null staticColor');
 
           // Click all of the color scheme buttons and save the text color of
           // the toggle description to a set.
-          const crosSysSecondarySet = new Set();
+          const seenTextColors = new Set();
+
           const colorSchemeButtons = Array.from(
               getColorSchemeSelector().querySelectorAll('cr-button'));
-          for (const button of colorSchemeButtons) {
-            if (button.ariaChecked === 'false') {
-              const originalColor = getComputedStyle(toggleDescription).color;
-              button.click();
-              await waitUntil(
-                  () => originalColor !==
-                      getComputedStyle(toggleDescription).color,
-                  'failed to update colors', /* intervalMs= */ 200,
-                  /* timeoutMs= */ 5000);
-            }
 
-            const newColor = getComputedStyle(toggleDescription).color;
-            crosSysSecondarySet.add(newColor);
+          assertDeepEquals(
+              ['true', 'false', 'false', 'false'],
+              colorSchemeButtons.map(button => button.ariaChecked),
+              '4 buttons and first is checked');
+
+          // Iterate in reverse order so that we always click a non-selected
+          // button.
+          for (const button of colorSchemeButtons.toReversed()) {
+            assertEquals(
+                'false', button.ariaChecked, 'button starts not checked');
+            button.click();
+            // Wait for the button click above to flush through mojom.
+            const {colorScheme} = await themeProvider.getColorScheme();
+            assertEquals(
+                button.dataset.colorSchemeId, `${colorScheme}`,
+                'correct color scheme now selected');
+            assertEquals(
+                'true', button.ariaChecked, 'button has aria checked true');
+
+            await waitUntil(
+                () => !seenTextColors.has(
+                    getComputedStyle(toggleDescription).color),
+                'failed waiting for text colors to change');
+            seenTextColors.add(getComputedStyle(toggleDescription).color);
           }
 
-          assertEquals(
-              colorSchemeButtons.length, crosSysSecondarySet.size,
-              'Each color should be unique');
+          assertEquals(4, seenTextColors.size, '4 unique colors seen');
         });
 
         test('shows static color options', async () => {
           const toggleButton = getDynamicColorToggle();
 
-          await setDynamicColorToggle(false);
+          setDynamicColorToggle(false);
 
           assertFalse(toggleButton.checked);
           assertFalse(getStaticColorSelector().hidden);
           assertTrue(getColorSchemeSelector().hidden);
         });
 
-        // TODO(b/277811561) flaky test
-        test.skip('selects static color options', async () => {
+        test('selects static color options', async () => {
           const theme = getRouter()
                             .shadowRoot.querySelector('personalization-main')
                             .shadowRoot.querySelector('personalization-theme');
           const lightButton = theme.shadowRoot.getElementById('lightMode');
           lightButton.click();
-          await waitUntil(
-              () => getBodyColorChannels().every(channel => channel > 200),
-              'failed to switch to light mode', /* intervalMs= */ 200,
-              /* timeoutMs= */ 3000);
+          const {darkModeEnabled} = await themeProvider.isDarkModeEnabled();
+          assertFalse(
+              darkModeEnabled,
+              'darkModeEnabled must be false after clicking light button');
           assertEquals('true', lightButton.getAttribute('aria-checked'));
-          await setDynamicColorToggle(false);
 
-          // Click all of the static color buttons and save the background color
-          // of the light mode button to a set.
-          const crosButtonBackgroundColorPrimarySet = new Set();
-          const staticColorButtons = Array.from(
-              getStaticColorSelector().querySelectorAll('cr-button'));
-          for (const button of staticColorButtons) {
-            if (button.ariaChecked === 'false') {
-              const originalColor =
-                  getComputedStyle(lightButton).backgroundColor;
-              button.click();
-              await waitUntil(
-                  () => originalColor !==
-                      getComputedStyle(lightButton).backgroundColor,
-                  'failed to update colors', /* intervalMs= */ 200,
-                  /* timeoutMs= */ 5000);
-            }
-
-            const newColor = getComputedStyle(lightButton).backgroundColor;
-            crosButtonBackgroundColorPrimarySet.add(newColor);
+          {
+            const {staticColor} = await themeProvider.getStaticColor();
+            assertEquals(null, staticColor, 'static color not set yet');
+          }
+          setDynamicColorToggle(false);
+          {
+            const {staticColor: {value}} = await themeProvider.getStaticColor();
+            assertGT(
+                value, 0,
+                'static color set to positive number when dynamic color off');
           }
 
-          assertEquals(
-              staticColorButtons.length,
-              crosButtonBackgroundColorPrimarySet.size,
-              'Each color should be unique');
+          // Click all of the static color buttons and save the observed color
+          // values to a set.
+          const seenButtonColors = new Set();
+          const staticColorButtons = Array.from(
+              getStaticColorSelector().querySelectorAll('cr-button'));
+          assertDeepEquals(
+              ['true', 'false', 'false', 'false'],
+              staticColorButtons.map(button => button.ariaChecked),
+              'should be 4 buttons and first is checked');
+          // Iterate backwards to always click a button that isn't checked yet.
+          for (const button of staticColorButtons.toReversed()) {
+            assertEquals(
+                'false', button.ariaChecked, 'button starts not checked');
+            button.click();
+            assertEquals(
+                'true', button.ariaChecked,
+                'button is set to checked when clicked');
+            // Wait for mojom to finish processing by requesting current static
+            // color.
+            const {staticColor: {value}} = await themeProvider.getStaticColor();
+            assertGT(value, 0, 'static color is positive numeric value');
+
+            await waitUntil(
+                () => !seenButtonColors.has(
+                    getComputedStyle(lightButton).backgroundColor),
+                'failed waiting for button background color to change');
+            seenButtonColors.add(getComputedStyle(lightButton).backgroundColor);
+          }
+
+          assertEquals(4, seenButtonColors.size, '4 unique static colors seen');
         });
       });
 

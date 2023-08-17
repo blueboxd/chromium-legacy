@@ -14,7 +14,8 @@
 #include "components/services/app_service/public/cpp/icon_types.h"
 
 // A promise app list item provided by the App Service.
-class AppServicePromiseAppItem : public ChromeAppListItem {
+class AppServicePromiseAppItem : public ChromeAppListItem,
+                                 public app_list::AppContextMenuDelegate {
  public:
   static const char kItemType[];
 
@@ -32,6 +33,9 @@ class AppServicePromiseAppItem : public ChromeAppListItem {
  private:
   void InitializeItem(const apps::PromiseAppUpdate& update);
 
+  // app_list::AppContextMenuDelegate overrides:
+  void ExecuteLaunchCommand(int event_flags) override;
+
   // ChromeAppListItem overrides:
   void LoadIcon() override;
   void Activate(int event_flags) override;
@@ -42,10 +46,11 @@ class AppServicePromiseAppItem : public ChromeAppListItem {
 
   void OnLoadIcon(apps::IconValuePtr icon_value);
 
-  // Used to indicate the installation progress in the promise icon progress
-  // bar.
-  absl::optional<float> progress_;
-  apps::PromiseStatus status_;
+  std::unique_ptr<app_list::AppContextMenu> context_menu_;
+
+  // TODO(261907495): Remove this field and replace it with one in the
+  // ChromeAppListItem metadata.
+  const apps::PackageId package_id_;
 
   base::WeakPtrFactory<AppServicePromiseAppItem> weak_ptr_factory_{this};
 };

@@ -7,8 +7,8 @@
 #include <EGL/egl.h>
 #import <Metal/Metal.h>
 
+#include "base/apple/scoped_nsobject.h"
 #include "base/mac/scoped_cftyperef.h"
-#include "base/mac/scoped_nsobject.h"
 #include "base/memory/scoped_policy.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "components/viz/common/gpu/metal_context_provider.h"
@@ -20,6 +20,7 @@
 #include "gpu/command_buffer/service/shared_context_state.h"
 #include "gpu/command_buffer/service/shared_image/iosurface_image_backing_factory.h"
 #include "gpu/command_buffer/service/shared_image/shared_image_format_service_utils.h"
+#include "gpu/command_buffer/service/shared_image/shared_image_gl_utils.h"
 #include "gpu/command_buffer/service/shared_image/skia_graphite_dawn_image_representation.h"
 #include "gpu/command_buffer/service/skia_utils.h"
 #include "third_party/skia/include/core/SkColorSpace.h"
@@ -46,8 +47,6 @@
 namespace gpu {
 
 namespace {
-
-using ScopedRestoreTexture = GLTextureImageBackingHelper::ScopedRestoreTexture;
 
 // Returns BufferFormat for given multiplanar `format`.
 gfx::BufferFormat GetBufferFormatForPlane(viz::SharedImageFormat format,
@@ -768,8 +767,8 @@ IOSurfaceImageBacking::RetainGLTexture() {
        plane_index++) {
     // Allocate the GL texture.
     scoped_refptr<gles2::TexturePassthrough> gl_texture;
-    GLTextureImageBackingHelper::MakeTextureAndSetParameters(
-        gl_target_, framebuffer_attachment_angle_, &gl_texture, nullptr);
+    MakeTextureAndSetParameters(gl_target_, framebuffer_attachment_angle_,
+                                &gl_texture, nullptr);
     // Set the IOSurface to be initially unbound from the GL texture.
     gl_texture->SetEstimatedSize(GetEstimatedSize());
     gl_texture->set_bind_pending();
@@ -954,14 +953,15 @@ IOSurfaceImageBacking::ProduceSkiaGanesh(
     bool angle_rgbx_internal_format = context_state->feature_info()
                                           ->feature_flags()
                                           .angle_rgbx_internal_format;
-    GLenum gl_texture_storage_format =
-        TextureStorageFormat(format(), angle_rgbx_internal_format, plane_index);
+    GLFormatDesc format_desc =
+        ToGLFormatDesc(format(), plane_index, angle_rgbx_internal_format);
     GrBackendTexture backend_texture;
     auto plane_size = format().GetPlaneSize(plane_index, size());
-    GetGrBackendTexture(
-        context_state->feature_info(), egl_state->GetGLTarget(), plane_size,
-        egl_state->GetGLServiceId(plane_index), gl_texture_storage_format,
-        context_state->gr_context()->threadSafeProxy(), &backend_texture);
+    GetGrBackendTexture(context_state->feature_info(), egl_state->GetGLTarget(),
+                        plane_size, egl_state->GetGLServiceId(plane_index),
+                        format_desc.storage_internal_format,
+                        context_state->gr_context()->threadSafeProxy(),
+                        &backend_texture);
     sk_sp<GrPromiseImageTexture> promise_texture =
         GrPromiseImageTexture::Make(backend_texture);
     if (!promise_texture) {
@@ -1065,6 +1065,13 @@ void IOSurfaceImageBacking::Update(std::unique_ptr<gfx::GpuFence> in_fence) {
       texture->set_bind_pending();
     }
   }
+}
+
+gfx::GpuMemoryBufferHandle IOSurfaceImageBacking::GetGpuMemoryBufferHandle() {
+  gfx::GpuMemoryBufferHandle handle;
+  handle.type = gfx::IO_SURFACE_BUFFER;
+  handle.io_surface = io_surface_;
+  return handle;
 }
 
 bool IOSurfaceImageBacking::HandleBeginAccessSync(bool readonly) {

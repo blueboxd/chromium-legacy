@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.bookmarks;
 import android.app.Activity;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.FrameLayout;
@@ -15,12 +16,18 @@ import android.widget.LinearLayout;
 import androidx.test.filters.MediumTest;
 import androidx.test.platform.app.InstrumentationRegistry;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.junit.MockitoJUnit;
+import org.mockito.junit.MockitoRule;
 
+import org.chromium.base.Callback;
 import org.chromium.base.test.BaseActivityTestRule;
 import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.Criteria;
@@ -32,6 +39,8 @@ import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.content_public.browser.test.util.KeyUtils;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.browser.test.util.TouchCommon;
+import org.chromium.ui.modelutil.PropertyModel;
+import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 import org.chromium.ui.test.util.BlankUiTestActivity;
 import org.chromium.ui.test.util.DisableAnimationsTestRule;
 
@@ -46,8 +55,18 @@ public class BookmarkSearchBoxRowTest {
             new BaseActivityTestRule<>(BlankUiTestActivity.class);
     @Rule
     public TestRule mProcessor = new Features.JUnitProcessor();
+    @Rule
+    public final MockitoRule mMockitoRule = MockitoJUnit.rule();
+
+    @Mock
+    private Callback<String> mQueryCallback;
+    @Mock
+    private Callback<Boolean> mToggleCallback;
 
     private BookmarkSearchBoxRow mBookmarkSearchBoxRow;
+    private EditText mEditText;
+    private View mShoppingFilterChip;
+    private PropertyModel mPropertyModel;
 
     @Before
     public void setUp() throws Exception {
@@ -69,23 +88,62 @@ public class BookmarkSearchBoxRowTest {
             mBookmarkSearchBoxRow =
                     layoutInflater.inflate(R.layout.bookmark_search_box_row, contentView)
                             .findViewById(R.id.bookmark_toolbar);
+            mEditText = mBookmarkSearchBoxRow.findViewById(R.id.search_text);
+            mShoppingFilterChip = mBookmarkSearchBoxRow.findViewById(R.id.shopping_filter_chip);
+
+            mPropertyModel =
+                    new PropertyModel.Builder(BookmarkSearchBoxRowProperties.ALL_KEYS)
+                            .with(BookmarkSearchBoxRowProperties.SHOPPING_CHIP_VISIBILITY, false)
+                            .with(BookmarkSearchBoxRowProperties.QUERY_CALLBACK, mQueryCallback)
+                            .with(BookmarkSearchBoxRowProperties.SHOPPING_CHIP_TOGGLE_CALLBACK,
+                                    mToggleCallback)
+                            .build();
+            PropertyModelChangeProcessor.create(
+                    mPropertyModel, mBookmarkSearchBoxRow, BookmarkSearchBoxRowViewBinder::bind);
         });
     }
 
     @Test
     @MediumTest
     public void testFocusAndEnter() {
-        EditText editText = mBookmarkSearchBoxRow.findViewById(R.id.search_text);
-
-        TestThreadUtils.runOnUiThreadBlocking(() -> TouchCommon.singleClickView(editText));
+        TestThreadUtils.runOnUiThreadBlocking(() -> TouchCommon.singleClickView(mEditText));
         CriteriaHelper.pollUiThread(
-                () -> Criteria.checkThat(editText.hasFocus(), Matchers.is(true)));
+                () -> Criteria.checkThat(mEditText.hasFocus(), Matchers.is(true)));
 
-        TestThreadUtils.runOnUiThreadBlocking(
-                ()
-                        -> KeyUtils.singleKeyEventView(InstrumentationRegistry.getInstrumentation(),
-                                editText, KeyEvent.KEYCODE_ENTER));
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            KeyUtils.singleKeyEventView(InstrumentationRegistry.getInstrumentation(), mEditText,
+                    KeyEvent.KEYCODE_ENTER);
+        });
         CriteriaHelper.pollUiThread(
-                () -> Criteria.checkThat(editText.hasFocus(), Matchers.is(false)));
+                () -> Criteria.checkThat(mEditText.hasFocus(), Matchers.is(false)));
+    }
+
+    @Test
+    @MediumTest
+    public void testQueryCallback() {
+        String query = "foo";
+        TestThreadUtils.runOnUiThreadBlocking(() -> mEditText.setText(query));
+        Mockito.verify(mQueryCallback).onResult(Mockito.eq(query));
+    }
+
+    @Test
+    @MediumTest
+    public void testShoppingChipVisibility() {
+        Assert.assertFalse(mShoppingFilterChip.isShown());
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mPropertyModel.set(BookmarkSearchBoxRowProperties.SHOPPING_CHIP_VISIBILITY, true);
+        });
+        Assert.assertTrue(mShoppingFilterChip.isShown());
+    }
+
+    @Test
+    @MediumTest
+    public void testShoppingChipToggle() {
+        TestThreadUtils.runOnUiThreadBlockingNoException(mShoppingFilterChip::performClick);
+        Mockito.verify(mToggleCallback).onResult(true);
+
+        TestThreadUtils.runOnUiThreadBlockingNoException(mShoppingFilterChip::performClick);
+        Mockito.verify(mToggleCallback).onResult(false);
     }
 }

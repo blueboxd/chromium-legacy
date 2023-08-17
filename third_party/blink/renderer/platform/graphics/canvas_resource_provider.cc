@@ -42,6 +42,7 @@
 #include "third_party/skia/include/gpu/GrDirectContext.h"
 #include "third_party/skia/include/gpu/GrTypes.h"
 #include "third_party/skia/include/gpu/ganesh/SkSurfaceGanesh.h"
+#include "third_party/skia/include/gpu/ganesh/gl/GrGLBackendSurface.h"
 #include "third_party/skia/include/gpu/gl/GrGLTypes.h"
 
 namespace blink {
@@ -339,9 +340,9 @@ class CanvasResourceProviderSharedImage : public CanvasResourceProvider {
       // Note that the call below is guarenteed to not issue any GPU work for
       // the backend texture since we ensure that all skia work on the resource
       // is issued before releasing write access.
-      SkSurfaces::GetBackendTexture(surface_.get(),
-                                    SkSurfaces::BackendHandleAccess::kFlushRead)
-          .glTextureParametersModified();
+      auto tex = SkSurfaces::GetBackendTexture(
+          surface_.get(), SkSurfaces::BackendHandleAccess::kFlushRead);
+      GrBackendTextures::GLTextureParametersModified(&tex);
     }
   }
 
@@ -843,7 +844,7 @@ class CanvasResourceProviderSwapChain final : public CanvasResourceProvider {
             viz::SkColorTypeToSinglePlaneSharedImageFormat(
                 GetSkImageInfo().colorType()));
 
-    auto backend_texture = GrBackendTexture(
+    auto backend_texture = GrBackendTextures::MakeGL(
         Size().width(), Size().height(), skgpu::Mipmapped::kNo, texture_info);
 
     const auto props = GetSkSurfaceProps();
@@ -956,7 +957,6 @@ CanvasResourceProvider::CreateSharedImageProvider(
     ShouldInitialize should_initialize,
     base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper,
     RasterMode raster_mode,
-    bool is_origin_top_left,
     uint32_t shared_image_usage_flags) {
   // IsGpuCompositingEnabled can re-create the context if it has been lost, do
   // this up front so that we can fail early and not expose ourselves to
@@ -1016,9 +1016,14 @@ CanvasResourceProvider::CreateSharedImageProvider(
   }
 #endif
 
+  // Use top left origin for shared image CanvasResourceProviders since those
+  // can be used for rendering with Skia, and Skia's Graphite backend doesn't
+  // support bottom left origin SkSurfaces.
+  constexpr bool kIsOriginTopLeft = true;
+
   auto provider = std::make_unique<CanvasResourceProviderSharedImage>(
-      adjusted_info, filter_quality, context_provider_wrapper,
-      is_origin_top_left, is_accelerated, shared_image_usage_flags);
+      adjusted_info, filter_quality, context_provider_wrapper, kIsOriginTopLeft,
+      is_accelerated, shared_image_usage_flags);
   if (provider->IsValid()) {
     if (should_initialize ==
         CanvasResourceProvider::ShouldInitialize::kCallClear)
@@ -1034,11 +1039,10 @@ CanvasResourceProvider::CreateWebGPUImageProvider(
     const SkImageInfo& info,
     uint32_t shared_image_usage_flags) {
   auto context_provider_wrapper = SharedGpuContext::ContextProviderWrapper();
-  constexpr bool kIsOriginTopLeft = true;
   return CreateSharedImageProvider(
       info, cc::PaintFlags::FilterQuality::kLow,
       CanvasResourceProvider::ShouldInitialize::kNo,
-      std::move(context_provider_wrapper), RasterMode::kGPU, kIsOriginTopLeft,
+      std::move(context_provider_wrapper), RasterMode::kGPU,
       shared_image_usage_flags | gpu::SHARED_IMAGE_USAGE_WEBGPU);
 }
 
@@ -1088,9 +1092,7 @@ CanvasResourceProvider::CreateSwapChainProvider(
     cc::PaintFlags::FilterQuality filter_quality,
     ShouldInitialize should_initialize,
     base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper,
-    base::WeakPtr<CanvasResourceDispatcher> resource_dispatcher,
-    bool is_origin_top_left) {
-  DCHECK(is_origin_top_left);
+    base::WeakPtr<CanvasResourceDispatcher> resource_dispatcher) {
   // SharedGpuContext::IsGpuCompositingEnabled can potentially replace the
   // context_provider_wrapper, so it's important to call that first as it can
   // invalidate the weak pointer.

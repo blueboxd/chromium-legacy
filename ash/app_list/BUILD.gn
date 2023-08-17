@@ -6,21 +6,6 @@ import("//build/config/chromeos/ui_mode.gni")
 
 assert(is_chromeos_ash)
 
-component("constants") {
-  defines = [ "APP_LIST_CONSTANTS_IMPLEMENTATION" ]
-
-  sources = [
-    "app_list_constants.cc",
-    "app_list_constants.h",
-    "app_list_constants_export.h",
-  ]
-
-  deps = [
-    "//ash/public/cpp",
-    "//ui/base",
-  ]
-}
-
 source_set("app_list") {
   sources = [
     "app_list_badge_controller.cc",
@@ -143,6 +128,8 @@ source_set("app_list") {
     "views/search_box_view.cc",
     "views/search_box_view.h",
     "views/search_box_view_delegate.h",
+    "views/search_notifier_controller.cc",
+    "views/search_notifier_controller.h",
     "views/search_result_actions_view.cc",
     "views/search_result_actions_view.h",
     "views/search_result_actions_view_delegate.h",
@@ -176,7 +163,6 @@ source_set("app_list") {
   defines = [ "ASH_IMPLEMENTATION" ]
 
   deps = [
-    ":constants",
     "//ash/app_menu",
     "//ash/assistant/model",
     "//ash/assistant/ui",
@@ -185,6 +171,7 @@ source_set("app_list") {
     "//ash/assistant/util",
     "//ash/keyboard/ui",
     "//ash/public/cpp/app_list/vector_icons",
+    "//ash/public/cpp/resources:ash_public_unscaled_resources",
     "//ash/resources/vector_icons",
     "//ash/search_box",
     "//ash/strings",
@@ -323,7 +310,6 @@ source_set("unit_tests") {
 
   deps = [
     ":app_list",
-    ":constants",
     ":test_support",
     "//ash:test_support",
     "//ash/app_menu",
@@ -350,6 +336,7 @@ source_set("unit_tests") {
     "//ui/accessibility",
     "//ui/aura:test_support",
     "//ui/base",
+    "//ui/base:test_support",
     "//ui/chromeos/styles:cros_tokens_color_mappings",
     "//ui/color",
     "//ui/compositor",

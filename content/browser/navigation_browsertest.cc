@@ -804,7 +804,13 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
             controller.GetLastCommittedEntry()->GetVirtualURL());
 }
 
-IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, BackFollowedByReload) {
+// TODO(https://crbug.com/1467626): Test is flaky on Android.
+#if BUILDFLAG(IS_ANDROID)
+#define MAYBE_BackFollowedByReload DISABLED_BackFollowedByReload
+#else
+#define MAYBE_BackFollowedByReload BackFollowedByReload
+#endif
+IN_PROC_BROWSER_TEST_F(NavigationBrowserTest, MAYBE_BackFollowedByReload) {
   // First, make two history entries.
   GURL url1(embedded_test_server()->GetURL("/title1.html"));
   GURL url2(embedded_test_server()->GetURL("/title2.html"));
@@ -5717,6 +5723,137 @@ IN_PROC_BROWSER_TEST_F(UndoCommitNavigationBrowserTest,
   EXPECT_EQ(1, EvalJs(first_subframe_node, "top.length"));
 }
 
+class ResumeCommitClosureSetWaiter {
+ public:
+  explicit ResumeCommitClosureSetWaiter(NavigationHandle* handle) {
+    // `Helper` "observes" the set via its own destruction, since the navigation
+    // code setting a resume commit closure will replace the testing one
+    // installed here.
+    NavigationRequest::From(handle)->set_resume_commit_closure(
+        base::DoNothingWithBoundArgs(std::make_unique<Helper>(loop_)));
+  }
+
+  void Wait() { loop_.Run(); }
+
+ private:
+  class Helper {
+   public:
+    explicit Helper(base::RunLoop& loop) : loop_(loop) {}
+
+    ~Helper() { loop_->Quit(); }
+
+   private:
+    raw_ref<base::RunLoop> loop_;
+  };
+
+  base::RunLoop loop_;
+};
+
+class NavigationQueueingBrowserTest : public NavigationBrowserTest {
+ public:
+  NavigationQueueingBrowserTest() {
+    feature_list_.InitAndEnableFeatureWithParameters(
+        features::kQueueNavigationsWhileWaitingForCommit,
+        {{"queueing_level", "full"}});
+  }
+
+  void SetUpOnMainThread() override {
+    // These navigation tests require full site isolation since they test races
+    // with committing a navigation in a speculative RenderFrameHost.
+    if (!AreAllSitesIsolatedForTesting()) {
+      GTEST_SKIP();
+    }
+
+    NavigationBrowserTest::SetUpOnMainThread();
+  }
+
+  const base::HistogramTester& histogram_tester() const {
+    return histogram_tester_;
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+  base::HistogramTester histogram_tester_;
+};
+
+IN_PROC_BROWSER_TEST_F(NavigationQueueingBrowserTest, Regular) {
+  ASSERT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("a.com", "/title1.html")));
+
+  NavigationLogger logger(shell()->web_contents());
+
+  // Start a navigation that will create a speculative RFH.
+  const GURL infinitely_loading_url =
+      embedded_test_server()->GetURL("b.com", "/infinitely_loading_image.html");
+  ASSERT_TRUE(BeginNavigateToURLFromRenderer(shell(), infinitely_loading_url));
+
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  RenderFrameHostImpl* speculative_render_frame_host =
+      web_contents->GetPrimaryFrameTree()
+          .root()
+          ->render_manager()
+          ->speculative_frame_host();
+  ASSERT_TRUE(speculative_render_frame_host);
+
+  // Pause the next `DidCommitProvisionalLoad()` for b.com.
+  CommitNavigationPauser commit_pauser(speculative_render_frame_host);
+  commit_pauser.WaitForCommitAndPause();
+
+  // Now begin a new navigation to c.com while the previous b.com navigation
+  // above is paused in the pending commit state.
+  {
+    const GURL next_url =
+        embedded_test_server()->GetURL("c.com", "/title1.html");
+
+    absl::optional<ResumeCommitClosureSetWaiter>
+        resume_commit_closure_set_waiter;
+    OnNextDidStartNavigation(web_contents, [&](NavigationHandle* handle) {
+      resume_commit_closure_set_waiter.emplace(handle);
+    });
+    ASSERT_TRUE(BeginNavigateToURLFromRenderer(shell(), next_url));
+    resume_commit_closure_set_waiter->Wait();
+  }
+
+  // Cancel the c.com navigation that was previously queued and (nearly) ready
+  // for commit, to make sure one pending commit navigation that causes multiple
+  // subsequent navigations to queue is correctly counted in the metrics.
+  const GURL final_url =
+      embedded_test_server()->GetURL("d.com", "/title1.html");
+  absl::optional<ResumeCommitClosureSetWaiter> resume_commit_closure_set_waiter;
+  OnNextDidStartNavigation(web_contents, [&](NavigationHandle* handle) {
+    resume_commit_closure_set_waiter.emplace(handle);
+  });
+  ASSERT_TRUE(BeginNavigateToURLFromRenderer(shell(), final_url));
+  resume_commit_closure_set_waiter->Wait();
+
+  commit_pauser.ResumePausedCommit();
+
+  EXPECT_TRUE(WaitForLoadStop(web_contents));
+  EXPECT_EQ(final_url, web_contents->GetLastCommittedURL());
+
+  // Both the b.com commit and the d.com commit should record the PendingCommit
+  // time.
+  histogram_tester().ExpectTotalCount(
+      "Navigation.PendingCommit.Duration.Regular", 2);
+  // The d.com navigation should not have blocked any navigation requests from
+  // making progress.
+  histogram_tester().ExpectBucketCount(
+      "Navigation.PendingCommit.DidBlockGetFrameHostForNavigation.Regular",
+      false, 1);
+  // But the b.com navigation blocked c.com and d.com.
+  histogram_tester().ExpectBucketCount(
+      "Navigation.PendingCommit.DidBlockGetFrameHostForNavigation.Regular",
+      true, 1);
+  // For 2 blocked navigations, 4 total blocks are expected: 2 when trying to
+  // assign a RenderFrameHost when starting a navigation, and 2 when trying to
+  // pick a final RenderFrameHost to commit the navigation.
+  histogram_tester().ExpectBucketCount(
+      "Navigation.PendingCommit.BlockedCount.Regular", 4, 1);
+  histogram_tester().ExpectBucketCount(
+      "Navigation.PendingCommit.BlockedCommitCount.Regular", 2, 1);
+}
+
 class CommitNavigationRaceBrowserTest
     : public NavigationBrowserTest,
       public ::testing::WithParamInterface<bool> {
@@ -5746,32 +5883,6 @@ class CommitNavigationRaceBrowserTest
 
  private:
   base::test::ScopedFeatureList feature_list_;
-};
-
-class ResumeCommitClosureSetWaiter {
- public:
-  explicit ResumeCommitClosureSetWaiter(NavigationHandle* handle) {
-    // `Helper` "observes" the set via its own destruction, since the navigation
-    // code setting a resume commit closure will replace the testing one
-    // installed here.
-    NavigationRequest::From(handle)->set_resume_commit_closure(
-        base::DoNothingWithBoundArgs(std::make_unique<Helper>(loop_)));
-  }
-
-  void Wait() { loop_.Run(); }
-
- private:
-  class Helper {
-   public:
-    explicit Helper(base::RunLoop& loop) : loop_(loop) {}
-
-    ~Helper() { loop_->Quit(); }
-
-   private:
-    raw_ref<base::RunLoop> loop_;
-  };
-
-  base::RunLoop loop_;
 };
 
 IN_PROC_BROWSER_TEST_P(CommitNavigationRaceBrowserTest,
@@ -6772,11 +6883,11 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTestCredentiallessIframe,
   EXPECT_TRUE(child->current_frame_host()->IsCredentialless());
   EXPECT_EQ(true, EvalJs(child->current_frame_host(), "window.credentialless"));
   // A credentialless document has a storage key with a nonce.
-  EXPECT_TRUE(child->current_frame_host()->storage_key().nonce().has_value());
+  EXPECT_TRUE(child->current_frame_host()->GetStorageKey().nonce().has_value());
   base::UnguessableToken credentialless_nonce =
       current_frame_host()->credentialless_iframes_nonce();
   EXPECT_EQ(credentialless_nonce,
-            child->current_frame_host()->storage_key().nonce().value());
+            child->current_frame_host()->GetStorageKey().nonce().value());
 
   // Create a grandchild iframe.
   EXPECT_TRUE(ExecJs(
@@ -6796,9 +6907,9 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTestCredentiallessIframe,
 
   // The storage key's nonce is the same for all credentialless documents in the
   // same page.
-  EXPECT_TRUE(child->current_frame_host()->storage_key().nonce().has_value());
+  EXPECT_TRUE(child->current_frame_host()->GetStorageKey().nonce().has_value());
   EXPECT_EQ(credentialless_nonce,
-            child->current_frame_host()->storage_key().nonce().value());
+            child->current_frame_host()->GetStorageKey().nonce().value());
 
   // Now navigate the grandchild iframe.
   EXPECT_TRUE(ExecJs(
@@ -6810,9 +6921,9 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTestCredentiallessIframe,
             EvalJs(grandchild->current_frame_host(), "window.credentialless"));
 
   // The storage key's nonce is still the same.
-  EXPECT_TRUE(child->current_frame_host()->storage_key().nonce().has_value());
+  EXPECT_TRUE(child->current_frame_host()->GetStorageKey().nonce().has_value());
   EXPECT_EQ(credentialless_nonce,
-            child->current_frame_host()->storage_key().nonce().value());
+            child->current_frame_host()->GetStorageKey().nonce().value());
 
   // Remove the 'credentialless' attribute from the iframe. This propagates to
   // the FrameTreeNode. The RenderFrameHost, however, is updated only on
@@ -6823,9 +6934,9 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTestCredentiallessIframe,
   EXPECT_FALSE(child->Credentialless());
   EXPECT_TRUE(child->current_frame_host()->IsCredentialless());
   EXPECT_EQ(true, EvalJs(child->current_frame_host(), "window.credentialless"));
-  EXPECT_TRUE(child->current_frame_host()->storage_key().nonce().has_value());
+  EXPECT_TRUE(child->current_frame_host()->GetStorageKey().nonce().has_value());
   EXPECT_EQ(credentialless_nonce,
-            child->current_frame_host()->storage_key().nonce().value());
+            child->current_frame_host()->GetStorageKey().nonce().value());
 
   // Create another grandchild iframe. Even if the parent iframe element does
   // not have the 'credentialless' attribute anymore, the grandchild document is
@@ -6842,9 +6953,9 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTestCredentiallessIframe,
   EXPECT_EQ(true,
             EvalJs(grandchild2->current_frame_host(), "window.credentialless"));
   EXPECT_TRUE(
-      grandchild2->current_frame_host()->storage_key().nonce().has_value());
+      grandchild2->current_frame_host()->GetStorageKey().nonce().has_value());
   EXPECT_EQ(credentialless_nonce,
-            grandchild2->current_frame_host()->storage_key().nonce().value());
+            grandchild2->current_frame_host()->GetStorageKey().nonce().value());
 
   // Navigate the child iframe. Since the iframe element does not set the
   // 'credentialless' attribute, the resulting RenderFrameHost will not be
@@ -6858,7 +6969,8 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTestCredentiallessIframe,
   EXPECT_FALSE(child->current_frame_host()->IsCredentialless());
   EXPECT_EQ(false,
             EvalJs(child->current_frame_host(), "window.credentialless"));
-  EXPECT_FALSE(child->current_frame_host()->storage_key().nonce().has_value());
+  EXPECT_FALSE(
+      child->current_frame_host()->GetStorageKey().nonce().has_value());
 
   // Now navigate the whole page away.
   GURL main_url_b = embedded_test_server()->GetURL(
@@ -6875,12 +6987,13 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTestCredentiallessIframe,
   EXPECT_EQ(true,
             EvalJs(child_b->current_frame_host(), "window.credentialless"));
 
-  EXPECT_TRUE(child_b->current_frame_host()->storage_key().nonce().has_value());
+  EXPECT_TRUE(
+      child_b->current_frame_host()->GetStorageKey().nonce().has_value());
   base::UnguessableToken credentialless_nonce_b =
       current_frame_host()->credentialless_iframes_nonce();
   EXPECT_NE(credentialless_nonce, credentialless_nonce_b);
   EXPECT_EQ(credentialless_nonce_b,
-            child_b->current_frame_host()->storage_key().nonce().value());
+            child_b->current_frame_host()->GetStorageKey().nonce().value());
 }
 
 // Ensures that OpenURLParams::FromNavigationHandle translates navigation params
@@ -6993,64 +7106,6 @@ IN_PROC_BROWSER_TEST_F(NavigationBrowserTest,
 
   // Ensure that the process was marked as used as part of setting the site.
   EXPECT_FALSE(site_instance->GetProcess()->IsUnused());
-}
-
-class CacheTransparencyNavigationBrowserTest : public ContentBrowserTest {
- public:
-  CacheTransparencyNavigationBrowserTest() {
-    EXPECT_TRUE(embedded_test_server()->Start());
-
-    pervasive_payload_url_ = embedded_test_server()->GetURL(kPervasivePayload);
-    std::string pervasive_payloads_params = base::StrCat(
-        {"1,", pervasive_payload_url_.spec(),
-         ",2478392C652868C0AAF0316A28284610DBDACF02D66A00B39F3BA75D887F4829"});
-
-    feature_list_.InitWithFeaturesAndParameters(
-        {{network::features::kPervasivePayloadsList,
-          {{"pervasive-payloads", pervasive_payloads_params}}},
-         {network::features::kCacheTransparency, {}},
-         {net::features::kSplitCacheByNetworkIsolationKey, {}}},
-        {/* disabled_features */});
-    ForceInProcessNetworkService();
-  }
-
-  void ExpectCacheUsed() const {
-    histogram_tester_.ExpectUniqueSample(kCacheUsedHistogram, 0, 1);
-  }
-
-  void ExpectCacheNotUsed() const {
-    histogram_tester_.ExpectTotalCount(kCacheUsedHistogram, 0);
-  }
-
- private:
-  static constexpr char kPervasivePayload[] =
-      "/cache_transparency/pervasive.js";
-  static constexpr char kCacheUsedHistogram[] =
-      "Network.CacheTransparency2.SingleKeyedCacheIsUsed";
-
-  base::test::ScopedFeatureList feature_list_;
-  GURL pervasive_payload_url_;
-  base::HistogramTester histogram_tester_;
-};
-
-IN_PROC_BROWSER_TEST_F(CacheTransparencyNavigationBrowserTest,
-                       SuccessfulPervasivePayload) {
-  GURL url_main_document =
-      embedded_test_server()->GetURL("/cache_transparency/pervasive.html");
-
-  EXPECT_TRUE(NavigateToURL(shell(), url_main_document));
-
-  ExpectCacheUsed();
-}
-
-IN_PROC_BROWSER_TEST_F(CacheTransparencyNavigationBrowserTest,
-                       NotAPervasivePayload) {
-  GURL url_main_document =
-      embedded_test_server()->GetURL("/cache_transparency/cacheable.html");
-
-  EXPECT_TRUE(NavigateToURL(shell(), url_main_document));
-
-  ExpectCacheNotUsed();
 }
 
 class NavigationBrowserTestWarnSandboxIneffective

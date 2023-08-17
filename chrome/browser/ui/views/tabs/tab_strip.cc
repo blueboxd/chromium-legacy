@@ -503,7 +503,7 @@ class TabStrip::TabDragContextImpl : public TabDragContext,
     int x = 0;
     for (const TabSlotView* view : views) {
       const int width = view->width();
-      bounds.emplace_back(x, 0, width, view->height());
+      bounds.emplace_back(x, height() - view->height(), width, view->height());
       x += width - overlap;
     }
 
@@ -1185,7 +1185,8 @@ bool TabStrip::ShouldDrawStrokes() const {
   // the window activation state changes.
   constexpr float kMinimumContrastRatioForOutlines = 1.3f;
   const SkColor background_color = TabStyle::Get()->GetTabBackgroundColor(
-      TabStyle::TabSelectionState::kActive, true, *GetColorProvider());
+      TabStyle::TabSelectionState::kActive, /*hovered=*/false,
+      /*frame_active=*/true, *GetColorProvider());
   const SkColor frame_color =
       controller_->GetFrameColor(BrowserFrameActiveState::kActive);
   const float contrast_ratio =
@@ -1807,7 +1808,7 @@ void TabStrip::Layout() {
         tab_container_->GetAvailableWidthForTabContainer();
     // Be as wide as possible subject to the above constraints.
     const int width = std::min(max_width, std::max(min_width, available_width));
-    SetBounds(0, 0, width, GetLayoutConstant(TAB_HEIGHT));
+    SetBounds(0, 0, width, GetLayoutConstant(TAB_STRIP_HEIGHT));
   }
 
   if (tab_container_->bounds() != GetLocalBounds()) {
@@ -1959,15 +1960,16 @@ void TabStrip::UpdateContrastRatioValues() {
 
   const SkColor inactive_bg = TabStyle::Get()->GetTabBackgroundColor(
       TabStyle::TabSelectionState::kInactive,
-      GetWidget()->ShouldPaintAsActive(), *GetColorProvider());
+      /*hovered=*/false, GetWidget()->ShouldPaintAsActive(),
+      *GetColorProvider());
   const auto get_blend = [inactive_bg](SkColor target, float contrast) {
     return color_utils::BlendForMinContrast(inactive_bg, inactive_bg, target,
                                             contrast);
   };
 
   const SkColor active_bg = TabStyle::Get()->GetTabBackgroundColor(
-      TabStyle::TabSelectionState::kActive, GetWidget()->ShouldPaintAsActive(),
-      *GetColorProvider());
+      TabStyle::TabSelectionState::kActive, /*hovered=*/false,
+      GetWidget()->ShouldPaintAsActive(), *GetColorProvider());
   const auto get_hover_opacity = [active_bg, &get_blend](float contrast) {
     return get_blend(active_bg, contrast).alpha / 255.0f;
   };

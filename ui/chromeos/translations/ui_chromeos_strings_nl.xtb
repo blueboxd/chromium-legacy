@@ -114,7 +114,6 @@
 <translation id="1920798810075583923">Watermeloen</translation>
 <translation id="1924372192547904021"><ph name="DRIVE_NAME" /> is geformatteerd</translation>
 <translation id="1931134289871235022">Slowaaks</translation>
-<translation id="1933345018156373194">Verplaatsen mislukt. Onverwachte fout: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="1936717151811561466">Fins</translation>
 <translation id="1942765061641586207">Afbeeldingsresolutie</translation>
 <translation id="1972984168337863910">Feedbackvensters voor bestanden uitvouwen</translation>
@@ -166,7 +165,6 @@
 <translation id="2312704192806647271">{COUNT,plural, =1{Er kan geen extensie met de ID <ph name="BEGIN_LIST" /><ph name="END_LIST" /> worden gevonden. Neem contact op met je beheerder.}other{Er kunnen geen extensies met de ID's <ph name="BEGIN_LIST" /><ph name="END_LIST" /> worden gevonden. Neem contact op met je beheerder.}}</translation>
 <translation id="2325650632570794183">Dit bestandstype wordt niet ondersteund. Ga naar de Chrome Web Store om een app te vinden die dit bestandstype kan openen.</translation>
 <translation id="2326539130272988168">Bulgaars</translation>
-<translation id="2337715497728194187">Delen met Bruschetta</translation>
 <translation id="233822363739146957">Er is niet genoeg opslagruimte beschikbaar om al je bestanden te synchroniseren</translation>
 <translation id="23721837607121582">Mobiel profiel downloaden, netwerk <ph name="NETWORK_INDEX" /> van <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" /></translation>
 <translation id="2377319039870049694">Overschakelen naar lijstweergave</translation>
@@ -197,7 +195,6 @@
 <translation id="2544853746127077729">Verificatiecertificaat geweigerd door netwerk</translation>
 <translation id="255937426064304553">Verenigde Staten (internationaal)</translation>
 <translation id="2563185590376525700">Kikker</translation>
-<translation id="2574327434504608656">1 map gedeeld met Bruschetta</translation>
 <translation id="2578394532502990878">Tamil (fonetisch)</translation>
 <translation id="2579959351793446050">Odia</translation>
 <translation id="2587195714949534472">Synchronisatie van <ph name="FILE_NAME" /> voorbereiden...</translation>
@@ -297,7 +294,6 @@
 <translation id="3408072735282270043">Activeren, <ph name="NETWORK_NAME" /></translation>
 <translation id="3408236822532681288">Duits (Duitsland) met Neo 2-toetsenbord</translation>
 <translation id="3414856743105198592">Als je het verwisselbare medium formatteert, worden alle gegevens gewist. Wil je doorgaan?</translation>
-<translation id="3435143625481187092">Bruschetta toegang geven tot bestanden in de map <ph name="FOLDER_NAME" /></translation>
 <translation id="3437801641691368414">Gemaakt op</translation>
 <translation id="343907260260897561">Instantcamera</translation>
 <translation id="3455931012307786678">Estlands</translation>
@@ -385,7 +381,6 @@
 <translation id="4159731583141908892"><ph name="FILE_NAME" /> verplaatst.</translation>
 <translation id="4176286497474237543">Prullenbak leegmaken</translation>
 <translation id="4179621117429069925">Dit item staat in je prullenbak</translation>
-<translation id="4181839429935094755"><ph name="NUMBER_OF_ITEMS" /> mappen gedeeld met Bruschetta</translation>
 <translation id="4186579485882418952">Offline aanzetten</translation>
 <translation id="4193154014135846272">Google-document</translation>
 <translation id="4197674956721858839">Geselecteerde bestanden toevoegen aan zip-bestand</translation>
@@ -452,7 +447,6 @@
 <translation id="4646813851450205600">Tsjechisch met Qwerty-toetsenbord</translation>
 <translation id="4656777537938206294">Bestanden offline beschikbaar maken</translation>
 <translation id="4658782175094886150">Persoon in de sneeuw</translation>
-<translation id="466782788172479199">Geef Bruschetta toegang tot bestanden in je Google Drive. Wijzigingen worden gesynchroniseerd met je andere apparaten.</translation>
 <translation id="4669606053856530811">Leden van '<ph name="SOURCE_NAME" />' hebben geen toegang meer, tenzij deze items met ze zijn gedeeld.</translation>
 <translation id="467809019005607715">Google Presentaties</translation>
 <translation id="4690246192099372265">Zweeds</translation>
@@ -503,7 +497,6 @@
 <translation id="4969785127455456148">Album</translation>
 <translation id="4972330214479971536">Kan instellingen van de bestandssynchronisatie niet afronden</translation>
 <translation id="4973523518332075481">Gebruik een naam die maximaal <ph name="MAX_LENGTH" /> tekens bevat</translation>
-<translation id="4973970068702235170">Inpakken mislukt. Onverwachte fout: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4984616446166309645">Japans</translation>
 <translation id="4987699874727873250">Engels (India)</translation>
 <translation id="4988205478593450158">Weet je zeker dat je '<ph name="FILE_NAME" />' wilt verwijderen?</translation>
@@ -565,7 +558,6 @@
 <translation id="5323213332664049067">Latijns-Amerikaans</translation>
 <translation id="5330145655348521461">Deze bestanden zijn op een ander bureaublad geopend. Verplaats ze naar <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />) om ze te bekijken.</translation>
 <translation id="5330512191124428349">Informatie ophalen</translation>
-<translation id="5344246330454251646">Delen met Bruschetta beheren</translation>
 <translation id="535792325654997756">Persoon met katten</translation>
 <translation id="5358764674931277">Framesnelheid</translation>
 <translation id="5363339716524495120">Invoertaal is Chinees</translation>
@@ -641,7 +633,6 @@
 <translation id="5896749729057314184">Netwerk <ph name="NETWORK_INDEX" /> van <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, niet geactiveerd, signaalsterkte <ph name="SIGNAL_STRENGTH" />%, details</translation>
 <translation id="5911887972742538906">Er is een fout opgetreden tijdens de installatie van je Linux-app.</translation>
 <translation id="5912396950572065471">Indeling</translation>
-<translation id="5913638992615760742">Kopiëren mislukt. Onverwachte fout: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="5918480239180455431">Nieuwe zoekfuncties beschikbaar</translation>
 <translation id="5926082595146149752">Nederlands (Nederland) met Amerikaans pc-toetsenbord (internationaal)</translation>
 <translation id="5932901536148835538">Chromebit</translation>
@@ -649,7 +640,6 @@
 <translation id="5955954492236143329"><ph name="NUMBER_OF_ITEMS" /> items</translation>
 <translation id="5957366693331451795">Chromeboxes</translation>
 <translation id="5982621672636444458">Sorteeropties</translation>
-<translation id="6007237601604674381">Verplaatsen mislukt. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="6011074160056912900">Ethernet-netwerk</translation>
 <translation id="60357267506638014">Tsjechisch QWERTY</translation>
 <translation id="603895874132768835">Je kunt dit netwerk pas gebruiken nadat je een nieuwe pincode hebt ingesteld.</translation>
@@ -733,7 +723,6 @@
 <translation id="6710213216561001401">Vorige</translation>
 <translation id="6732801395666424405">Certificaten niet geladen</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />]</translation>
-<translation id="6740270213273127264">Map delen met Bruschetta</translation>
 <translation id="6750737795876287924">Huidige map</translation>
 <translation id="6751256176799620176">1 map geselecteerd</translation>
 <translation id="6755827872271341378">Chrome OS Flex-apparaat</translation>

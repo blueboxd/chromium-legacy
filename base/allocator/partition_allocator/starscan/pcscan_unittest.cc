@@ -52,12 +52,14 @@ class PartitionAllocPCScanTestBase : public testing::Test {
   PartitionAllocPCScanTestBase()
       : allocator_(PartitionOptions{
             .aligned_alloc = PartitionOptions::AlignedAlloc::kAllowed,
-            .quarantine = PartitionOptions::Quarantine::kAllowed,
-            .memory_tagging =
-                base::CPU::GetInstanceNoAllocation().has_mte()
-                    ? partition_alloc::PartitionOptions::MemoryTagging::kEnabled
-                    : partition_alloc::PartitionOptions::MemoryTagging::
-                          kDisabled}) {
+            .star_scan_quarantine =
+                PartitionOptions::StarScanQuarantine::kAllowed,
+            .memory_tagging = {
+                .enabled = base::CPU::GetInstanceNoAllocation().has_mte()
+                               ? partition_alloc::PartitionOptions::
+                                     MemoryTagging::kEnabled
+                               : partition_alloc::PartitionOptions::
+                                     MemoryTagging::kDisabled}}) {
     PartitionAllocGlobalInit([](size_t) { PA_LOG(FATAL) << "Out of memory"; });
     // Previous test runs within the same process decommit pools, therefore
     // we need to make sure that the card table is recommitted for each run.
@@ -461,11 +463,11 @@ TEST_F(PartitionAllocPCScanTest, DanglingInterPartitionReference) {
   using ValueList = SourceList;
 
   PartitionRoot source_root(PartitionOptions{
-      .quarantine = PartitionOptions::Quarantine::kAllowed,
+      .star_scan_quarantine = PartitionOptions::StarScanQuarantine::kAllowed,
   });
   source_root.UncapEmptySlotSpanMemoryForTesting();
   PartitionRoot value_root(PartitionOptions{
-      .quarantine = PartitionOptions::Quarantine::kAllowed,
+      .star_scan_quarantine = PartitionOptions::StarScanQuarantine::kAllowed,
   });
   value_root.UncapEmptySlotSpanMemoryForTesting();
 
@@ -486,11 +488,11 @@ TEST_F(PartitionAllocPCScanTest, DanglingReferenceToNonScannablePartition) {
   using ValueList = SourceList;
 
   PartitionRoot source_root(PartitionOptions{
-      .quarantine = PartitionOptions::Quarantine::kAllowed,
+      .star_scan_quarantine = PartitionOptions::StarScanQuarantine::kAllowed,
   });
   source_root.UncapEmptySlotSpanMemoryForTesting();
   PartitionRoot value_root(PartitionOptions{
-      .quarantine = PartitionOptions::Quarantine::kAllowed,
+      .star_scan_quarantine = PartitionOptions::StarScanQuarantine::kAllowed,
   });
   value_root.UncapEmptySlotSpanMemoryForTesting();
 
@@ -511,11 +513,11 @@ TEST_F(PartitionAllocPCScanTest, DanglingReferenceFromNonScannablePartition) {
   using ValueList = SourceList;
 
   PartitionRoot source_root(PartitionOptions{
-      .quarantine = PartitionOptions::Quarantine::kAllowed,
+      .star_scan_quarantine = PartitionOptions::StarScanQuarantine::kAllowed,
   });
   source_root.UncapEmptySlotSpanMemoryForTesting();
   PartitionRoot value_root(PartitionOptions{
-      .quarantine = PartitionOptions::Quarantine::kAllowed,
+      .star_scan_quarantine = PartitionOptions::StarScanQuarantine::kAllowed,
   });
   value_root.UncapEmptySlotSpanMemoryForTesting();
 

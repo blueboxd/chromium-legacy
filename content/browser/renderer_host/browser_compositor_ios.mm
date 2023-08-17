@@ -24,10 +24,6 @@
 #include "ui/gfx/geometry/dip_util.h"
 #include "ui/gfx/geometry/size_conversions.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 namespace content {
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -396,6 +392,11 @@ ui::Compositor* BrowserCompositorIOS::GetCompositor() const {
     return parent_ui_layer_->GetCompositor();
   }
   return compositor_.get();
+}
+
+void BrowserCompositorIOS::InvalidateSurfaceAllocationGroup() {
+  local_surface_id_allocator_.Invalidate(
+      /*also_invalidate_allocation_group=*/true);
 }
 
 cc::DeadlinePolicy BrowserCompositorIOS::GetDeadlinePolicy(

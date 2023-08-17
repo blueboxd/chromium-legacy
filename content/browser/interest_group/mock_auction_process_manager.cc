@@ -31,6 +31,7 @@
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/blink/public/common/interest_group/ad_display_size.h"
 #include "third_party/blink/public/common/interest_group/auction_config.h"
 #include "third_party/blink/public/mojom/devtools/devtools_agent.mojom.h"
 #include "url/gurl.h"
@@ -78,6 +79,7 @@ void MockBidderWorklet::BeginGenerateBid(
     const base::TimeDelta browser_signal_recency,
     auction_worklet::mojom::BiddingBrowserSignalsPtr bidding_browser_signals,
     base::Time auction_start_time,
+    const absl::optional<blink::AdSize>& requested_ad_size,
     uint64_t trace_id,
     mojo::PendingAssociatedRemote<auction_worklet::mojom::GenerateBidClient>
         generate_bid_client,
@@ -286,13 +288,14 @@ void MockBidderWorklet::WaitForReportWin() {
 void MockBidderWorklet::InvokeReportWinCallback(
     absl::optional<GURL> report_url,
     base::flat_map<std::string, GURL> ad_beacon_map,
+    base::flat_map<std::string, std::string> ad_macro_map,
     std::vector<auction_worklet::mojom::PrivateAggregationRequestPtr>
         pa_requests,
     std::vector<std::string> errors) {
   DCHECK(report_win_callback_);
   std::move(report_win_callback_)
-      .Run(report_url, ad_beacon_map, std::move(pa_requests),
-           reporting_latency_, std::move(errors));
+      .Run(report_url, std::move(ad_beacon_map), std::move(ad_macro_map),
+           std::move(pa_requests), reporting_latency_, std::move(errors));
 }
 
 void MockBidderWorklet::Flush() {

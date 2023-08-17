@@ -290,6 +290,11 @@ void TemplateURLService::RegisterProfilePrefs(
   registry->RegisterBooleanPref(prefs::kDefaultSearchProviderEnabled, true);
   registry->RegisterBooleanPref(
       prefs::kDefaultSearchProviderContextMenuAccessAllowed, true);
+
+  if (base::FeatureList::IsEnabled(switches::kSearchEngineChoice)) {
+    registry->RegisterInt64Pref(
+        prefs::kDefaultSearchProviderChoiceScreenCompletionTimestamp, 0);
+  }
 }
 
 #if BUILDFLAG(IS_ANDROID)
@@ -1604,7 +1609,7 @@ void TemplateURLService::Init(const Initializer* initializers,
 
   if (prefs_) {
     pref_change_registrar_.Init(prefs_);
-    if (base::FeatureList::IsEnabled(switches::kWaffle)) {
+    if (base::FeatureList::IsEnabled(switches::kSearchEngineChoice)) {
       pref_change_registrar_.Add(
           prefs::kDefaultSearchProviderGUID,
           base::BindRepeating(

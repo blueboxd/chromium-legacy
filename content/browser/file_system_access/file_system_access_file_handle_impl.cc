@@ -37,6 +37,7 @@
 #include "third_party/blink/public/mojom/blob/blob.mojom.h"
 #include "third_party/blink/public/mojom/blob/serialized_blob.mojom.h"
 #include "third_party/blink/public/mojom/file_system_access/file_system_access_capacity_allocation_host.mojom.h"
+#include "third_party/blink/public/mojom/file_system_access/file_system_access_cloud_identifier.mojom.h"
 #include "third_party/blink/public/mojom/file_system_access/file_system_access_error.mojom.h"
 #include "third_party/blink/public/mojom/file_system_access/file_system_access_file_handle.mojom.h"
 #include "third_party/blink/public/mojom/file_system_access/file_system_access_transfer_token.mojom.h"
@@ -226,6 +227,7 @@ void FileSystemAccessFileHandleImpl::Remove(RemoveCallback callback) {
 }
 
 void FileSystemAccessFileHandleImpl::OpenAccessHandle(
+    blink::mojom::FileSystemAccessAccessHandleLockMode mode,
     OpenAccessHandleCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -239,7 +241,21 @@ void FileSystemAccessFileHandleImpl::OpenAccessHandle(
     return;
   }
 
-  auto lock = manager()->TakeLock(url(), manager()->GetExclusiveLockType());
+  FileSystemAccessLockManager::LockType lock_type;
+
+  switch (mode) {
+    case blink::mojom::FileSystemAccessAccessHandleLockMode::kReadwrite:
+      lock_type = manager()->GetExclusiveLockType();
+      break;
+    case blink::mojom::FileSystemAccessAccessHandleLockMode::kReadOnly:
+      lock_type = sah_read_only_lock_type_;
+      break;
+    case blink::mojom::FileSystemAccessAccessHandleLockMode::kReadwriteUnsafe:
+      lock_type = sah_readwrite_unsafe_lock_type_;
+      break;
+  }
+
+  auto lock = manager()->TakeLock(url(), lock_type);
   if (!lock) {
     std::move(callback).Run(
         file_system_access_error::FromStatus(
@@ -783,6 +799,13 @@ bool FileSystemAccessFileHandleImpl::CanUseCowSwapFile() const {
          url().type() == storage::kFileSystemTypeLocal;
 }
 #endif  // BUILDFLAG(IS_MAC)
+
+void FileSystemAccessFileHandleImpl::GetCloudIdentifiers(
+    GetCloudIdentifiersCallback callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DoGetCloudIdentifiers(FileSystemAccessPermissionContext::HandleType::kFile,
+                        std::move(callback));
+}
 
 base::WeakPtr<FileSystemAccessHandleBase>
 FileSystemAccessFileHandleImpl::AsWeakPtr() {

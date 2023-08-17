@@ -34,6 +34,8 @@ import {navigation, Page} from './navigation_helper.js';
 
 export interface ItemDelegate {
   deleteItem(id: string): void;
+  deleteItems(ids: string[]): Promise<void>;
+  uninstallItem(id: string): Promise<void>;
   setItemEnabled(id: string, isEnabled: boolean): void;
   setItemAllowedIncognito(id: string, isAllowedIncognito: boolean): void;
   setItemAllowedOnFileUrls(id: string, isAllowedOnFileUrls: boolean): void;
@@ -172,9 +174,11 @@ export class ExtensionsItemElement extends ExtensionsItemElementBase {
   }
 
   private onRemoveClick_() {
-    if (this.safetyCheckShowing && !this.data.safetyCheckText) {
-      chrome.metricsPrivate.recordUserAction(
-          'SafetyCheck.NonTriggeringExtensionRemoved');
+    if (this.safetyCheckShowing) {
+      const actionToRecord = this.data.safetyCheckText ?
+          'SafetyCheck.ReviewPanelRemoveClicked' :
+          'SafetyCheck.NonTriggeringExtensionRemoved';
+      chrome.metricsPrivate.recordUserAction(actionToRecord);
     }
     this.delegate.deleteItem(this.data.id);
   }

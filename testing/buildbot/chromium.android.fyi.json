@@ -23,16 +23,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android31",
@@ -40,11 +38,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android31"
-              }
-            ]
+            "60": {
+              "caches": "generic_android31"
+            }
           },
           "output_links": [
             {
@@ -67,6 +63,7 @@
     "gtest_tests": [
       {
         "args": [
+          "--enable-features=NetworkServiceOutOfProcessMemoryThreshold:network_service_oop_threshold_mb/1077",
           "--disable-features=NetworkServiceInProcess2",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
@@ -88,16 +85,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android31",
@@ -105,11 +100,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android31"
-              }
-            ]
+            "60": {
+              "caches": "generic_android31"
+            }
           },
           "output_links": [
             {
@@ -151,16 +144,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android32_foldable_experimental",
@@ -168,11 +159,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android32_foldable_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android32_foldable_experimental"
+            }
           },
           "output_links": [
             {
@@ -210,16 +199,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android32_foldable_experimental",
@@ -227,11 +214,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android32_foldable_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android32_foldable_experimental"
+            }
           },
           "output_links": [
             {
@@ -270,16 +255,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android32_foldable_experimental",
@@ -287,11 +270,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android32_foldable_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android32_foldable_experimental"
+            }
           },
           "output_links": [
             {
@@ -328,16 +309,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android32_foldable_experimental",
@@ -345,11 +324,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android32_foldable_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android32_foldable_experimental"
+            }
           },
           "output_links": [
             {
@@ -379,16 +356,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android32_foldable_experimental",
@@ -396,11 +371,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android32_foldable_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android32_foldable_experimental"
+            }
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -429,16 +402,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android32_foldable_experimental",
@@ -446,11 +417,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android32_foldable_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android32_foldable_experimental"
+            }
           },
           "output_links": [
             {
@@ -487,16 +456,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android32_foldable_experimental",
@@ -504,11 +471,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android32_foldable_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android32_foldable_experimental"
+            }
           },
           "output_links": [
             {
@@ -545,16 +510,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android32_foldable_experimental",
@@ -562,11 +525,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android32_foldable_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android32_foldable_experimental"
+            }
           },
           "output_links": [
             {
@@ -603,16 +564,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android32_foldable_experimental",
@@ -620,11 +579,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android32_foldable_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android32_foldable_experimental"
+            }
           },
           "output_links": [
             {
@@ -662,16 +619,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android32_foldable_experimental",
@@ -679,11 +634,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android32_foldable_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android32_foldable_experimental"
+            }
           },
           "output_links": [
             {
@@ -721,16 +674,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android32_foldable_experimental",
@@ -738,11 +689,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android32_foldable_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android32_foldable_experimental"
+            }
           },
           "output_links": [
             {
@@ -779,16 +728,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android32_foldable_experimental",
@@ -796,11 +743,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android32_foldable_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android32_foldable_experimental"
+            }
           },
           "output_links": [
             {
@@ -838,16 +783,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android32_foldable_experimental",
@@ -855,11 +798,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android32_foldable_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android32_foldable_experimental"
+            }
           },
           "output_links": [
             {
@@ -896,16 +837,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android32_foldable_experimental",
@@ -913,11 +852,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android32_foldable_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android32_foldable_experimental"
+            }
           },
           "output_links": [
             {
@@ -954,16 +891,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android32_foldable_experimental",
@@ -971,11 +906,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android32_foldable_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android32_foldable_experimental"
+            }
           },
           "output_links": [
             {
@@ -1012,16 +945,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android32_foldable_experimental",
@@ -1029,11 +960,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android32_foldable_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android32_foldable_experimental"
+            }
           },
           "output_links": [
             {
@@ -1078,16 +1007,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android32_foldable_experimental",
@@ -1095,11 +1022,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android32_foldable_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android32_foldable_experimental"
+            }
           },
           "output_links": [
             {
@@ -1145,16 +1070,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android32_foldable_experimental",
@@ -1162,11 +1085,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android32_foldable_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android32_foldable_experimental"
+            }
           },
           "output_links": [
             {
@@ -1210,16 +1131,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android32_foldable_experimental",
@@ -1227,11 +1146,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android32_foldable_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android32_foldable_experimental"
+            }
           },
           "output_links": [
             {
@@ -1269,16 +1186,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android32_foldable_experimental",
@@ -1286,11 +1201,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android32_foldable_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android32_foldable_experimental"
+            }
           },
           "output_links": [
             {
@@ -1327,16 +1240,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android32_foldable_experimental",
@@ -1344,11 +1255,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android32_foldable_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android32_foldable_experimental"
+            }
           },
           "output_links": [
             {
@@ -1387,16 +1296,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android32_foldable_experimental",
@@ -1404,11 +1311,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android32_foldable_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android32_foldable_experimental"
+            }
           },
           "output_links": [
             {
@@ -1447,16 +1352,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android32_foldable_experimental",
@@ -1464,11 +1367,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android32_foldable_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android32_foldable_experimental"
+            }
           },
           "output_links": [
             {
@@ -1506,16 +1407,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android32_foldable_experimental",
@@ -1523,11 +1422,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android32_foldable_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android32_foldable_experimental"
+            }
           },
           "output_links": [
             {
@@ -1566,16 +1463,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android32_foldable_experimental",
@@ -1583,11 +1478,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android32_foldable_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android32_foldable_experimental"
+            }
           },
           "output_links": [
             {
@@ -1624,16 +1517,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android32_foldable_experimental",
@@ -1641,11 +1532,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android32_foldable_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android32_foldable_experimental"
+            }
           },
           "output_links": [
             {
@@ -1683,16 +1572,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android32_foldable_experimental",
@@ -1700,11 +1587,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android32_foldable_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android32_foldable_experimental"
+            }
           },
           "output_links": [
             {
@@ -1741,16 +1626,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android32_foldable_experimental",
@@ -1758,11 +1641,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android32_foldable_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android32_foldable_experimental"
+            }
           },
           "output_links": [
             {
@@ -1800,16 +1681,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android32_foldable_experimental",
@@ -1817,11 +1696,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android32_foldable_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android32_foldable_experimental"
+            }
           },
           "output_links": [
             {
@@ -1858,16 +1735,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android32_foldable_experimental",
@@ -1875,11 +1750,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android32_foldable_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android32_foldable_experimental"
+            }
           },
           "output_links": [
             {
@@ -1916,16 +1789,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android32_foldable_experimental",
@@ -1933,11 +1804,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android32_foldable_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android32_foldable_experimental"
+            }
           },
           "output_links": [
             {
@@ -1974,16 +1843,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android32_foldable_experimental",
@@ -1991,11 +1858,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android32_foldable_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android32_foldable_experimental"
+            }
           },
           "output_links": [
             {
@@ -2032,16 +1897,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android32_foldable_experimental",
@@ -2049,11 +1912,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android32_foldable_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android32_foldable_experimental"
+            }
           },
           "output_links": [
             {
@@ -2093,16 +1954,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android32_foldable_experimental",
@@ -2110,11 +1969,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android32_foldable_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android32_foldable_experimental"
+            }
           },
           "output_links": [
             {
@@ -2151,16 +2008,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android32_foldable_experimental",
@@ -2168,11 +2023,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android32_foldable_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android32_foldable_experimental"
+            }
           },
           "output_links": [
             {
@@ -2209,16 +2062,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android32_foldable_experimental",
@@ -2226,11 +2077,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android32_foldable_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android32_foldable_experimental"
+            }
           },
           "output_links": [
             {
@@ -2267,16 +2116,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android32_foldable_experimental",
@@ -2284,11 +2131,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android32_foldable_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android32_foldable_experimental"
+            }
           },
           "output_links": [
             {
@@ -2325,16 +2170,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android32_foldable_experimental",
@@ -2342,11 +2185,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android32_foldable_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android32_foldable_experimental"
+            }
           },
           "output_links": [
             {
@@ -2383,16 +2224,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android32_foldable_experimental",
@@ -2400,11 +2239,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android32_foldable_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android32_foldable_experimental"
+            }
           },
           "output_links": [
             {
@@ -2441,16 +2278,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android32_foldable_experimental",
@@ -2458,11 +2293,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android32_foldable_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android32_foldable_experimental"
+            }
           },
           "output_links": [
             {
@@ -2500,16 +2333,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android32_foldable_experimental",
@@ -2517,11 +2348,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android32_foldable_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android32_foldable_experimental"
+            }
           },
           "output_links": [
             {
@@ -2558,16 +2387,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android32_foldable_experimental",
@@ -2575,11 +2402,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android32_foldable_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android32_foldable_experimental"
+            }
           },
           "output_links": [
             {
@@ -2616,16 +2441,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android32_foldable_experimental",
@@ -2633,11 +2456,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android32_foldable_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android32_foldable_experimental"
+            }
           },
           "output_links": [
             {
@@ -2675,16 +2496,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android32_foldable_experimental",
@@ -2692,11 +2511,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android32_foldable_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android32_foldable_experimental"
+            }
           },
           "output_links": [
             {
@@ -2733,16 +2550,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android32_foldable_experimental",
@@ -2750,11 +2565,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android32_foldable_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android32_foldable_experimental"
+            }
           },
           "output_links": [
             {
@@ -2791,16 +2604,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android32_foldable_experimental",
@@ -2808,11 +2619,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android32_foldable_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android32_foldable_experimental"
+            }
           },
           "output_links": [
             {
@@ -2849,16 +2658,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android32_foldable_experimental",
@@ -2866,11 +2673,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android32_foldable_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android32_foldable_experimental"
+            }
           },
           "output_links": [
             {
@@ -2907,16 +2712,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android32_foldable_experimental",
@@ -2924,11 +2727,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android32_foldable_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android32_foldable_experimental"
+            }
           },
           "output_links": [
             {
@@ -2967,16 +2768,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android32_foldable_experimental",
@@ -2984,11 +2783,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android32_foldable_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android32_foldable_experimental"
+            }
           },
           "output_links": [
             {
@@ -3025,16 +2822,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android32_foldable_experimental",
@@ -3042,11 +2837,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android32_foldable_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android32_foldable_experimental"
+            }
           },
           "output_links": [
             {
@@ -3083,16 +2876,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android32_foldable_experimental",
@@ -3100,11 +2891,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android32_foldable_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android32_foldable_experimental"
+            }
           },
           "output_links": [
             {
@@ -3141,16 +2930,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android32_foldable_experimental",
@@ -3158,11 +2945,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android32_foldable_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android32_foldable_experimental"
+            }
           },
           "output_links": [
             {
@@ -3199,16 +2984,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android32_foldable_experimental",
@@ -3216,11 +2999,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android32_foldable_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android32_foldable_experimental"
+            }
           },
           "output_links": [
             {
@@ -3257,16 +3038,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android32_foldable_experimental",
@@ -3274,11 +3053,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android32_foldable_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android32_foldable_experimental"
+            }
           },
           "output_links": [
             {
@@ -3315,16 +3092,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android32_foldable_experimental",
@@ -3332,11 +3107,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android32_foldable_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android32_foldable_experimental"
+            }
           },
           "output_links": [
             {
@@ -3373,16 +3146,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android32_foldable_experimental",
@@ -3390,11 +3161,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android32_foldable_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android32_foldable_experimental"
+            }
           },
           "output_links": [
             {
@@ -3431,16 +3200,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android32_foldable_experimental",
@@ -3448,11 +3215,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android32_foldable_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android32_foldable_experimental"
+            }
           },
           "output_links": [
             {
@@ -3489,16 +3254,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android32_foldable_experimental",
@@ -3506,11 +3269,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android32_foldable_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android32_foldable_experimental"
+            }
           },
           "output_links": [
             {
@@ -3547,16 +3308,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android32_foldable_experimental",
@@ -3564,11 +3323,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android32_foldable_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android32_foldable_experimental"
+            }
           },
           "output_links": [
             {
@@ -3605,16 +3362,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android32_foldable_experimental",
@@ -3622,11 +3377,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android32_foldable_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android32_foldable_experimental"
+            }
           },
           "output_links": [
             {
@@ -3663,16 +3416,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android32_foldable_experimental",
@@ -3680,11 +3431,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android32_foldable_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android32_foldable_experimental"
+            }
           },
           "output_links": [
             {
@@ -3722,16 +3471,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android32_foldable_experimental",
@@ -3739,11 +3486,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android32_foldable_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android32_foldable_experimental"
+            }
           },
           "output_links": [
             {
@@ -3780,16 +3525,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android32_foldable_experimental",
@@ -3797,11 +3540,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android32_foldable_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android32_foldable_experimental"
+            }
           },
           "output_links": [
             {
@@ -3817,122 +3558,6 @@
         },
         "test": "viz_unittests",
         "test_id_prefix": "ninja://components/viz:viz_unittests/"
-      },
-      {
-        "args": [
-          "--gs-results-bucket=chromium-result-details",
-          "--recover-devices",
-          "--avd-config=../../tools/android/avd/proto/generic_android32_foldable_experimental.textpb"
-        ],
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "webengine_support_instrumentation_test_apk"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
-        },
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
-        "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
-          "named_caches": [
-            {
-              "name": "generic_android32_foldable_experimental",
-              "path": ".android_emulator/generic_android32_foldable_experimental"
-            }
-          ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android32_foldable_experimental"
-              }
-            ]
-          },
-          "output_links": [
-            {
-              "link": [
-                "https://luci-logdog.appspot.com/v/?s",
-                "=android%2Fswarming%2Flogcats%2F",
-                "${TASK_ID}%2F%2B%2Funified_logcats"
-              ],
-              "name": "shard #${SHARD_INDEX} logcats"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "webengine_support_instrumentation_test_apk",
-        "test_id_prefix": "ninja://weblayer/browser/android/javatests:webengine_support_instrumentation_test_apk/"
-      },
-      {
-        "args": [
-          "--gs-results-bucket=chromium-result-details",
-          "--recover-devices",
-          "--avd-config=../../tools/android/avd/proto/generic_android32_foldable_experimental.textpb"
-        ],
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "weblayer_browsertests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
-        },
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
-        "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
-          "named_caches": [
-            {
-              "name": "generic_android32_foldable_experimental",
-              "path": ".android_emulator/generic_android32_foldable_experimental"
-            }
-          ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android32_foldable_experimental"
-              }
-            ]
-          },
-          "output_links": [
-            {
-              "link": [
-                "https://luci-logdog.appspot.com/v/?s",
-                "=android%2Fswarming%2Flogcats%2F",
-                "${TASK_ID}%2F%2B%2Funified_logcats"
-              ],
-              "name": "shard #${SHARD_INDEX} logcats"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "weblayer_browsertests",
-        "test_id_prefix": "ninja://weblayer/test:weblayer_browsertests/"
       },
       {
         "args": [
@@ -3955,16 +3580,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android32_foldable_experimental",
@@ -3972,11 +3595,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android32_foldable_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android32_foldable_experimental"
+            }
           },
           "output_links": [
             {
@@ -4014,16 +3635,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android32_foldable_experimental",
@@ -4031,11 +3650,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android32_foldable_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android32_foldable_experimental"
+            }
           },
           "output_links": [
             {
@@ -4072,16 +3689,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android32_foldable_experimental",
@@ -4089,11 +3704,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android32_foldable_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android32_foldable_experimental"
+            }
           },
           "output_links": [
             {
@@ -4130,16 +3743,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android32_foldable_experimental",
@@ -4147,11 +3758,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android32_foldable_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android32_foldable_experimental"
+            }
           },
           "output_links": [
             {
@@ -4192,16 +3801,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android33_experimental",
@@ -4209,11 +3816,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android33_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android33_experimental"
+            }
           },
           "output_links": [
             {
@@ -4251,16 +3856,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android33_experimental",
@@ -4268,11 +3871,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android33_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android33_experimental"
+            }
           },
           "output_links": [
             {
@@ -4311,16 +3912,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android33_experimental",
@@ -4328,11 +3927,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android33_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android33_experimental"
+            }
           },
           "output_links": [
             {
@@ -4369,16 +3966,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android33_experimental",
@@ -4386,11 +3981,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android33_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android33_experimental"
+            }
           },
           "output_links": [
             {
@@ -4420,16 +4013,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android33_experimental",
@@ -4437,11 +4028,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android33_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android33_experimental"
+            }
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -4470,16 +4059,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android33_experimental",
@@ -4487,11 +4074,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android33_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android33_experimental"
+            }
           },
           "output_links": [
             {
@@ -4528,16 +4113,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android33_experimental",
@@ -4545,11 +4128,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android33_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android33_experimental"
+            }
           },
           "output_links": [
             {
@@ -4586,16 +4167,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android33_experimental",
@@ -4603,11 +4182,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android33_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android33_experimental"
+            }
           },
           "output_links": [
             {
@@ -4644,16 +4221,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android33_experimental",
@@ -4661,11 +4236,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android33_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android33_experimental"
+            }
           },
           "output_links": [
             {
@@ -4703,16 +4276,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android33_experimental",
@@ -4720,11 +4291,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android33_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android33_experimental"
+            }
           },
           "output_links": [
             {
@@ -4762,16 +4331,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android33_experimental",
@@ -4779,11 +4346,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android33_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android33_experimental"
+            }
           },
           "output_links": [
             {
@@ -4820,16 +4385,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android33_experimental",
@@ -4837,11 +4400,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android33_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android33_experimental"
+            }
           },
           "output_links": [
             {
@@ -4879,16 +4440,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android33_experimental",
@@ -4896,11 +4455,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android33_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android33_experimental"
+            }
           },
           "output_links": [
             {
@@ -4937,16 +4494,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android33_experimental",
@@ -4954,11 +4509,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android33_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android33_experimental"
+            }
           },
           "output_links": [
             {
@@ -4995,16 +4548,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android33_experimental",
@@ -5012,11 +4563,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android33_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android33_experimental"
+            }
           },
           "output_links": [
             {
@@ -5053,16 +4602,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android33_experimental",
@@ -5070,11 +4617,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android33_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android33_experimental"
+            }
           },
           "output_links": [
             {
@@ -5119,16 +4664,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android33_experimental",
@@ -5136,11 +4679,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android33_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android33_experimental"
+            }
           },
           "output_links": [
             {
@@ -5186,16 +4727,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android33_experimental",
@@ -5203,11 +4742,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android33_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android33_experimental"
+            }
           },
           "output_links": [
             {
@@ -5251,16 +4788,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android33_experimental",
@@ -5268,11 +4803,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android33_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android33_experimental"
+            }
           },
           "output_links": [
             {
@@ -5310,16 +4843,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android33_experimental",
@@ -5327,11 +4858,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android33_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android33_experimental"
+            }
           },
           "output_links": [
             {
@@ -5368,16 +4897,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android33_experimental",
@@ -5385,11 +4912,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android33_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android33_experimental"
+            }
           },
           "output_links": [
             {
@@ -5428,16 +4953,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android33_experimental",
@@ -5445,11 +4968,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android33_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android33_experimental"
+            }
           },
           "output_links": [
             {
@@ -5488,16 +5009,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android33_experimental",
@@ -5505,11 +5024,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android33_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android33_experimental"
+            }
           },
           "output_links": [
             {
@@ -5547,16 +5064,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android33_experimental",
@@ -5564,11 +5079,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android33_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android33_experimental"
+            }
           },
           "output_links": [
             {
@@ -5607,16 +5120,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android33_experimental",
@@ -5624,11 +5135,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android33_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android33_experimental"
+            }
           },
           "output_links": [
             {
@@ -5665,16 +5174,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android33_experimental",
@@ -5682,11 +5189,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android33_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android33_experimental"
+            }
           },
           "output_links": [
             {
@@ -5724,16 +5229,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android33_experimental",
@@ -5741,11 +5244,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android33_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android33_experimental"
+            }
           },
           "output_links": [
             {
@@ -5782,16 +5283,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android33_experimental",
@@ -5799,11 +5298,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android33_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android33_experimental"
+            }
           },
           "output_links": [
             {
@@ -5841,16 +5338,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android33_experimental",
@@ -5858,11 +5353,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android33_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android33_experimental"
+            }
           },
           "output_links": [
             {
@@ -5899,16 +5392,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android33_experimental",
@@ -5916,11 +5407,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android33_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android33_experimental"
+            }
           },
           "output_links": [
             {
@@ -5957,16 +5446,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android33_experimental",
@@ -5974,11 +5461,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android33_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android33_experimental"
+            }
           },
           "output_links": [
             {
@@ -6015,16 +5500,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android33_experimental",
@@ -6032,11 +5515,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android33_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android33_experimental"
+            }
           },
           "output_links": [
             {
@@ -6073,16 +5554,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android33_experimental",
@@ -6090,11 +5569,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android33_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android33_experimental"
+            }
           },
           "output_links": [
             {
@@ -6134,16 +5611,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android33_experimental",
@@ -6151,11 +5626,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android33_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android33_experimental"
+            }
           },
           "output_links": [
             {
@@ -6192,16 +5665,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android33_experimental",
@@ -6209,11 +5680,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android33_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android33_experimental"
+            }
           },
           "output_links": [
             {
@@ -6250,16 +5719,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android33_experimental",
@@ -6267,11 +5734,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android33_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android33_experimental"
+            }
           },
           "output_links": [
             {
@@ -6308,16 +5773,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android33_experimental",
@@ -6325,11 +5788,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android33_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android33_experimental"
+            }
           },
           "output_links": [
             {
@@ -6366,16 +5827,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android33_experimental",
@@ -6383,11 +5842,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android33_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android33_experimental"
+            }
           },
           "output_links": [
             {
@@ -6424,16 +5881,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android33_experimental",
@@ -6441,11 +5896,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android33_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android33_experimental"
+            }
           },
           "output_links": [
             {
@@ -6482,16 +5935,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android33_experimental",
@@ -6499,11 +5950,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android33_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android33_experimental"
+            }
           },
           "output_links": [
             {
@@ -6541,16 +5990,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android33_experimental",
@@ -6558,11 +6005,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android33_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android33_experimental"
+            }
           },
           "output_links": [
             {
@@ -6599,16 +6044,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android33_experimental",
@@ -6616,11 +6059,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android33_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android33_experimental"
+            }
           },
           "output_links": [
             {
@@ -6657,16 +6098,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android33_experimental",
@@ -6674,11 +6113,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android33_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android33_experimental"
+            }
           },
           "output_links": [
             {
@@ -6716,16 +6153,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android33_experimental",
@@ -6733,11 +6168,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android33_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android33_experimental"
+            }
           },
           "output_links": [
             {
@@ -6774,16 +6207,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android33_experimental",
@@ -6791,11 +6222,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android33_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android33_experimental"
+            }
           },
           "output_links": [
             {
@@ -6832,16 +6261,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android33_experimental",
@@ -6849,11 +6276,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android33_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android33_experimental"
+            }
           },
           "output_links": [
             {
@@ -6890,16 +6315,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android33_experimental",
@@ -6907,11 +6330,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android33_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android33_experimental"
+            }
           },
           "output_links": [
             {
@@ -6948,16 +6369,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android33_experimental",
@@ -6965,11 +6384,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android33_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android33_experimental"
+            }
           },
           "output_links": [
             {
@@ -7008,16 +6425,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android33_experimental",
@@ -7025,11 +6440,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android33_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android33_experimental"
+            }
           },
           "output_links": [
             {
@@ -7066,16 +6479,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android33_experimental",
@@ -7083,11 +6494,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android33_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android33_experimental"
+            }
           },
           "output_links": [
             {
@@ -7124,16 +6533,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android33_experimental",
@@ -7141,11 +6548,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android33_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android33_experimental"
+            }
           },
           "output_links": [
             {
@@ -7182,16 +6587,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android33_experimental",
@@ -7199,11 +6602,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android33_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android33_experimental"
+            }
           },
           "output_links": [
             {
@@ -7240,16 +6641,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android33_experimental",
@@ -7257,11 +6656,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android33_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android33_experimental"
+            }
           },
           "output_links": [
             {
@@ -7298,16 +6695,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android33_experimental",
@@ -7315,11 +6710,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android33_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android33_experimental"
+            }
           },
           "output_links": [
             {
@@ -7356,16 +6749,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android33_experimental",
@@ -7373,11 +6764,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android33_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android33_experimental"
+            }
           },
           "output_links": [
             {
@@ -7414,16 +6803,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android33_experimental",
@@ -7431,11 +6818,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android33_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android33_experimental"
+            }
           },
           "output_links": [
             {
@@ -7472,16 +6857,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android33_experimental",
@@ -7489,11 +6872,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android33_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android33_experimental"
+            }
           },
           "output_links": [
             {
@@ -7530,16 +6911,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android33_experimental",
@@ -7547,11 +6926,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android33_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android33_experimental"
+            }
           },
           "output_links": [
             {
@@ -7588,16 +6965,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android33_experimental",
@@ -7605,11 +6980,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android33_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android33_experimental"
+            }
           },
           "output_links": [
             {
@@ -7646,16 +7019,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android33_experimental",
@@ -7663,11 +7034,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android33_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android33_experimental"
+            }
           },
           "output_links": [
             {
@@ -7704,16 +7073,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android33_experimental",
@@ -7721,11 +7088,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android33_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android33_experimental"
+            }
           },
           "output_links": [
             {
@@ -7763,16 +7128,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android33_experimental",
@@ -7780,11 +7143,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android33_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android33_experimental"
+            }
           },
           "output_links": [
             {
@@ -7821,16 +7182,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android33_experimental",
@@ -7838,11 +7197,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android33_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android33_experimental"
+            }
           },
           "output_links": [
             {
@@ -7879,16 +7236,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android33_experimental",
@@ -7896,11 +7251,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android33_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android33_experimental"
+            }
           },
           "output_links": [
             {
@@ -7946,16 +7299,14 @@
               "revision": "D9ziv4Z61qHwterMTFEoPeCZzFNyUfMnWAlYuxEKlM8C"
             }
           ],
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android33_experimental",
@@ -7963,11 +7314,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android33_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android33_experimental"
+            }
           },
           "output_links": [
             {
@@ -8017,16 +7366,14 @@
               "revision": "D9ziv4Z61qHwterMTFEoPeCZzFNyUfMnWAlYuxEKlM8C"
             }
           ],
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android33_experimental",
@@ -8034,11 +7381,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android33_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android33_experimental"
+            }
           },
           "output_links": [
             {
@@ -8086,16 +7431,14 @@
               "revision": "D9ziv4Z61qHwterMTFEoPeCZzFNyUfMnWAlYuxEKlM8C"
             }
           ],
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android33_experimental",
@@ -8103,11 +7446,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android33_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android33_experimental"
+            }
           },
           "output_links": [
             {
@@ -8145,16 +7486,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android33_experimental",
@@ -8162,11 +7501,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android33_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android33_experimental"
+            }
           },
           "output_links": [
             {
@@ -8203,16 +7540,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android33_experimental",
@@ -8220,11 +7555,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android33_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android33_experimental"
+            }
           },
           "output_links": [
             {
@@ -8261,16 +7594,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android33_experimental",
@@ -8278,11 +7609,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android33_experimental"
-              }
-            ]
+            "60": {
+              "caches": "generic_android33_experimental"
+            }
           },
           "output_links": [
             {
@@ -8331,16 +7660,14 @@
         },
         "results_handler": "layout tests",
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "expiration": 18000,
           "hard_timeout": 14400,
           "named_caches": [
@@ -8350,11 +7677,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android28"
-              }
-            ]
+            "60": {
+              "caches": "generic_android28"
+            }
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 36
@@ -8389,16 +7714,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "4",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "4",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android23",
@@ -8406,11 +7729,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android23"
-              }
-            ]
+            "60": {
+              "caches": "generic_android23"
+            }
           },
           "output_links": [
             {
@@ -8447,16 +7768,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "4",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "4",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android23",
@@ -8464,11 +7783,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android23"
-              }
-            ]
+            "60": {
+              "caches": "generic_android23"
+            }
           },
           "output_links": [
             {
@@ -8505,16 +7822,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "4",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "4",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android23",
@@ -8522,11 +7837,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android23"
-              }
-            ]
+            "60": {
+              "caches": "generic_android23"
+            }
           },
           "output_links": [
             {
@@ -8563,16 +7876,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "4",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "4",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android23",
@@ -8580,11 +7891,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android23"
-              }
-            ]
+            "60": {
+              "caches": "generic_android23"
+            }
           },
           "output_links": [
             {
@@ -8621,16 +7930,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "4",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "4",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android23",
@@ -8638,11 +7945,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android23"
-              }
-            ]
+            "60": {
+              "caches": "generic_android23"
+            }
           },
           "output_links": [
             {
@@ -8679,16 +7984,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "4",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "4",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android23",
@@ -8696,11 +7999,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android23"
-              }
-            ]
+            "60": {
+              "caches": "generic_android23"
+            }
           },
           "output_links": [
             {
@@ -8737,16 +8038,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "4",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "4",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android23",
@@ -8754,11 +8053,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android23"
-              }
-            ]
+            "60": {
+              "caches": "generic_android23"
+            }
           },
           "output_links": [
             {
@@ -8775,43 +8072,6 @@
         },
         "test": "net_unittests",
         "test_id_prefix": "ninja://net:net_unittests/"
-      }
-    ]
-  },
-  "android-cronet-mainline-clang-arm-dbg": {
-    "additional_compile_targets": [
-      "cronet_package",
-      "cronet_perf_test_apk",
-      "cronet_sample_test_apk",
-      "cronet_smoketests_missing_native_library_instrumentation_apk",
-      "cronet_smoketests_platform_only_instrumentation_apk",
-      "cronet_test_instrumentation_apk",
-      "cronet_tests_android",
-      "cronet_unittests_android",
-      "net_unittests"
-    ],
-    "isolated_scripts": [
-      {
-        "isolate_name": "cronet_sizes",
-        "merge": {
-          "script": "//tools/perf/process_perf_results.py"
-        },
-        "name": "cronet_sizes",
-        "resultdb": {
-          "enable": true,
-          "result_file": "${ISOLATED_OUTDIR}/sizes/test_results.json",
-          "result_format": "single"
-        },
-        "swarming": {
-          "dimension_sets": [
-            {
-              "cpu": "x86",
-              "os": "Ubuntu-22.04"
-            }
-          ],
-          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test_id_prefix": "ninja://components/cronet/android:cronet_sizes/"
       }
     ]
   },
@@ -8837,16 +8097,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android31",
@@ -8854,11 +8112,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android31"
-              }
-            ]
+            "60": {
+              "caches": "generic_android31"
+            }
           },
           "output_links": [
             {
@@ -8895,16 +8151,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android31",
@@ -8912,11 +8166,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android31"
-              }
-            ]
+            "60": {
+              "caches": "generic_android31"
+            }
           },
           "output_links": [
             {
@@ -8960,16 +8212,14 @@
               "revision": "D9ziv4Z61qHwterMTFEoPeCZzFNyUfMnWAlYuxEKlM8C"
             }
           ],
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android31",
@@ -8977,11 +8227,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android31"
-              }
-            ]
+            "60": {
+              "caches": "generic_android31"
+            }
           },
           "output_links": [
             {
@@ -9028,16 +8276,14 @@
               "revision": "D9ziv4Z61qHwterMTFEoPeCZzFNyUfMnWAlYuxEKlM8C"
             }
           ],
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android31",
@@ -9045,11 +8291,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android31"
-              }
-            ]
+            "60": {
+              "caches": "generic_android31"
+            }
           },
           "output_links": [
             {
@@ -9087,16 +8331,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android31",
@@ -9104,11 +8346,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android31"
-              }
-            ]
+            "60": {
+              "caches": "generic_android31"
+            }
           },
           "output_links": [
             {
@@ -9128,7 +8368,7 @@
       },
       {
         "args": [
-          "--disable-field-trials",
+          "--disable-field-trial-config",
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
           "--avd-config=../../tools/android/avd/proto/generic_android31.textpb"
@@ -9148,16 +8388,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android31",
@@ -9165,11 +8403,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android31"
-              }
-            ]
+            "60": {
+              "caches": "generic_android31"
+            }
           },
           "output_links": [
             {
@@ -9207,16 +8443,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android31",
@@ -9224,11 +8458,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android31"
-              }
-            ]
+            "60": {
+              "caches": "generic_android31"
+            }
           },
           "output_links": [
             {
@@ -9267,16 +8499,14 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android31",
@@ -9284,11 +8514,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android31"
-              }
-            ]
+            "60": {
+              "caches": "generic_android31"
+            }
           },
           "output_links": [
             {
@@ -9336,16 +8564,14 @@
               "revision": "D9ziv4Z61qHwterMTFEoPeCZzFNyUfMnWAlYuxEKlM8C"
             }
           ],
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android33",
@@ -9353,11 +8579,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android33"
-              }
-            ]
+            "60": {
+              "caches": "generic_android33"
+            }
           },
           "output_links": [
             {
@@ -9404,16 +8628,14 @@
               "revision": "D9ziv4Z61qHwterMTFEoPeCZzFNyUfMnWAlYuxEKlM8C"
             }
           ],
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "named_caches": [
             {
               "name": "generic_android33",
@@ -9421,11 +8643,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android33"
-              }
-            ]
+            "60": {
+              "caches": "generic_android33"
+            }
           },
           "output_links": [
             {
@@ -9467,16 +8687,14 @@
         },
         "results_handler": "layout tests",
         "swarming": {
-          "dimension_sets": [
-            {
-              "cores": "8",
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-22.04",
-              "pool": "chromium.tests.avd"
-            }
-          ],
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
           "expiration": 18000,
           "hard_timeout": 14400,
           "named_caches": [
@@ -9486,11 +8704,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "generic_android28"
-              }
-            ]
+            "60": {
+              "caches": "generic_android28"
+            }
           },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 25

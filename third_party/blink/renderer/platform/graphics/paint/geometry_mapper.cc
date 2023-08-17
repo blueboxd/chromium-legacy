@@ -387,7 +387,10 @@ FloatClipRect GeometryMapper::LocalToAncestorClipRectInternal(
 
   FloatClipRect clip;
   const auto* clip_node = &descendant_clip;
-  Vector<const ClipPaintPropertyNode*> intermediate_nodes;
+  // The average number of intermediate clips is very small in the real world.
+  // 16 was chosen based on the maximum size in a large, performance-intensive
+  // case. Details and links to Pinpoint trials: crbug.com/1468987.
+  Vector<const ClipPaintPropertyNode*, 16> intermediate_nodes;
 
   GeometryMapperClipCache::ClipAndTransform clip_and_transform(
       &ancestor_clip, &ancestor_transform, clip_behavior);
@@ -621,6 +624,10 @@ bool GeometryMapper::
 
 absl::optional<gfx::RectF> GeometryMapper::VisibilityLimit(
     const PropertyTreeState& state) {
+  if (state.Effect().SelfOrAncestorParticipatesInViewTransition()) {
+    return absl::nullopt;
+  }
+
   if (&state.Clip().LocalTransformSpace() == &state.Transform()) {
     return state.Clip().PaintClipRect().Rect();
   }

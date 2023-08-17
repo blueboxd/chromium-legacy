@@ -341,9 +341,10 @@ MinPurgeableSlotSize() {
 }
 }  // namespace
 
-static size_t PartitionPurgeSlotSpan(internal::SlotSpanMetadata* slot_span,
-                                     bool discard) {
-  auto* root = PartitionRoot::FromSlotSpan(slot_span);
+static size_t PartitionPurgeSlotSpan(PartitionRoot* root,
+                                     internal::SlotSpanMetadata* slot_span,
+                                     bool discard)
+    PA_EXCLUSIVE_LOCKS_REQUIRED(internal::PartitionRootLock(root)) {
   const internal::PartitionBucket* bucket = slot_span->bucket;
   size_t slot_size = bucket->slot_size;
 
@@ -387,14 +388,15 @@ static size_t PartitionPurgeSlotSpan(internal::SlotSpanMetadata* slot_span,
 #endif
   PA_DCHECK(bucket_num_slots <= kMaxSlotCount);
   PA_DCHECK(slot_span->num_unprovisioned_slots < bucket_num_slots);
-  size_t num_slots = bucket_num_slots - slot_span->num_unprovisioned_slots;
+  size_t num_providioned_slots =
+      bucket_num_slots - slot_span->num_unprovisioned_slots;
   char slot_usage[kMaxSlotCount];
 #if !BUILDFLAG(IS_WIN)
   // The last freelist entry should not be discarded when using OS_WIN.
   // DiscardVirtualMemory makes the contents of discarded memory undefined.
   size_t last_slot = static_cast<size_t>(-1);
 #endif
-  memset(slot_usage, 1, num_slots);
+  memset(slot_usage, 1, num_providioned_slots);
   uintptr_t slot_span_start = SlotSpanMetadata::ToSlotSpanStart(slot_span);
   // First, walk the freelist for this slot span and make a bitmap of which
   // slots are not in use.
@@ -402,7 +404,7 @@ static size_t PartitionPurgeSlotSpan(internal::SlotSpanMetadata* slot_span,
        /**/) {
     size_t slot_number =
         bucket->GetSlotNumber(SlotStartPtr2Addr(entry) - slot_span_start);
-    PA_DCHECK(slot_number < num_slots);
+    PA_DCHECK(slot_number < num_providioned_slots);
     slot_usage[slot_number] = 0;
 #if !BUILDFLAG(IS_WIN)
     // If we have a slot where the encoded next pointer is 0, we can actually
@@ -420,28 +422,29 @@ static size_t PartitionPurgeSlotSpan(internal::SlotSpanMetadata* slot_span,
   // If the slot(s) at the end of the slot span are not in used, we can truncate
   // them entirely and rewrite the freelist.
   size_t truncated_slots = 0;
-  while (!slot_usage[num_slots - 1]) {
+  while (!slot_usage[num_providioned_slots - 1]) {
     truncated_slots++;
-    num_slots--;
-    PA_DCHECK(num_slots);
+    num_providioned_slots--;
+    PA_DCHECK(num_providioned_slots);
   }
   // First, do the work of calculating the discardable bytes. Don't actually
   // discard anything unless the discard flag was passed in.
   if (truncated_slots) {
     size_t unprovisioned_bytes = 0;
-    uintptr_t begin_addr = slot_span_start + (num_slots * slot_size);
+    uintptr_t begin_addr =
+        slot_span_start + (num_providioned_slots * slot_size);
     uintptr_t end_addr = begin_addr + (slot_size * truncated_slots);
 
     // The slots that do not contain discarded pages should not be included to
     // |truncated_slots|. Detects those slots and fixes |truncated_slots| and
-    // |num_slots| accordingly.
+    // |num_providioned_slots| accordingly.
     uintptr_t rounded_up_truncatation_begin_addr =
         RoundUpToSystemPage(begin_addr);
     while (begin_addr + slot_size <= rounded_up_truncatation_begin_addr) {
       begin_addr += slot_size;
       PA_DCHECK(truncated_slots);
       --truncated_slots;
-      ++num_slots;
+      ++num_providioned_slots;
     }
     begin_addr = rounded_up_truncatation_begin_addr;
 
@@ -463,8 +466,9 @@ static size_t PartitionPurgeSlotSpan(internal::SlotSpanMetadata* slot_span,
       // Rewrite the freelist.
       internal::PartitionFreelistEntry* head = nullptr;
       internal::PartitionFreelistEntry* back = head;
-      size_t num_new_entries = 0;
-      for (size_t slot_index = 0; slot_index < num_slots; ++slot_index) {
+      size_t num_new_freelist_entries = 0;
+      for (size_t slot_index = 0; slot_index < num_providioned_slots;
+           ++slot_index) {
         if (slot_usage[slot_index]) {
           continue;
         }
@@ -478,7 +482,7 @@ static size_t PartitionPurgeSlotSpan(internal::SlotSpanMetadata* slot_span,
           back->SetNext(entry);
           back = entry;
         }
-        num_new_entries++;
+        num_new_freelist_entries++;
 #if !BUILDFLAG(IS_WIN)
         last_slot = slot_index;
 #endif
@@ -486,16 +490,30 @@ static size_t PartitionPurgeSlotSpan(internal::SlotSpanMetadata* slot_span,
 
       slot_span->SetFreelistHead(head);
 
-      PA_DCHECK(num_new_entries == num_slots - slot_span->num_allocated_slots);
+      PA_DCHECK(num_new_freelist_entries ==
+                num_providioned_slots - slot_span->num_allocated_slots);
 
 #if BUILDFLAG(USE_FREESLOT_BITMAP)
-      FreeSlotBitmapReset(slot_span_start + (slot_size * num_slots), end_addr,
-                          slot_size);
+      FreeSlotBitmapReset(slot_span_start + (slot_size * num_providioned_slots),
+                          end_addr, slot_size);
 #endif
 
-      // Discard the memory.
-      ScopedSyscallTimer timer{root};
-      DiscardSystemPages(begin_addr, unprovisioned_bytes);
+      if (!kUseLazyCommit) {
+        // Discard the memory.
+        ScopedSyscallTimer timer{root};
+        DiscardSystemPages(begin_addr, unprovisioned_bytes);
+      } else {
+        // See crbug.com/1431606 to understand the detail. LazyCommit depends
+        // on the design: both used slots and unused slots (=in the freelist)
+        // are committed. However this removes the unused slots from the
+        // freelist. So if using DiscardSystemPages() here, PartitionAlloc may
+        // commit the system pages which has been already committed again.
+        // This will make commited_size and max_committed_size metrics wrong.
+        // PA should use DecommitSystemPagesForData() instead.
+        root->DecommitSystemPagesForData(
+            begin_addr, unprovisioned_bytes,
+            PageAccessibilityDisposition::kAllowKeepForPerf);
+      }
     }
   }
 
@@ -509,14 +527,14 @@ static size_t PartitionPurgeSlotSpan(internal::SlotSpanMetadata* slot_span,
   // are no longer needed. We can release any system pages back to the system as
   // long as we don't interfere with a freelist pointer or an adjacent used
   // slot.
-  for (size_t i = 0; i < num_slots; ++i) {
+  for (size_t i = 0; i < num_providioned_slots; ++i) {
     if (slot_usage[i]) {
       continue;
     }
 
     // The first address we can safely discard is just after the freelist
     // pointer. There's one quirk: if the freelist pointer is actually nullptr,
-    // we can discard that pointer value too.
+    // we can discard that pointer value too (except on Windows).
     uintptr_t begin_addr = slot_span_start + (i * slot_size);
     uintptr_t end_addr = begin_addr + slot_size;
 
@@ -563,20 +581,24 @@ static size_t PartitionPurgeSlotSpan(internal::SlotSpanMetadata* slot_span,
   return discardable_bytes;
 }
 
-static void PartitionPurgeBucket(internal::PartitionBucket* bucket) {
+static void PartitionPurgeBucket(PartitionRoot* root,
+                                 internal::PartitionBucket* bucket)
+    PA_EXCLUSIVE_LOCKS_REQUIRED(internal::PartitionRootLock(root)) {
   if (bucket->active_slot_spans_head !=
       internal::SlotSpanMetadata::get_sentinel_slot_span()) {
     for (internal::SlotSpanMetadata* slot_span = bucket->active_slot_spans_head;
          slot_span; slot_span = slot_span->next_slot_span) {
       PA_DCHECK(slot_span !=
                 internal::SlotSpanMetadata::get_sentinel_slot_span());
-      PartitionPurgeSlotSpan(slot_span, true);
+      PartitionPurgeSlotSpan(root, slot_span, true);
     }
   }
 }
 
 static void PartitionDumpSlotSpanStats(PartitionBucketMemoryStats* stats_out,
-                                       internal::SlotSpanMetadata* slot_span) {
+                                       PartitionRoot* root,
+                                       internal::SlotSpanMetadata* slot_span)
+    PA_EXCLUSIVE_LOCKS_REQUIRED(internal::PartitionRootLock(root)) {
   uint16_t bucket_num_slots = slot_span->bucket->get_slots_per_span();
 
   if (slot_span->is_decommitted()) {
@@ -584,7 +606,8 @@ static void PartitionDumpSlotSpanStats(PartitionBucketMemoryStats* stats_out,
     return;
   }
 
-  stats_out->discardable_bytes += PartitionPurgeSlotSpan(slot_span, false);
+  stats_out->discardable_bytes +=
+      PartitionPurgeSlotSpan(root, slot_span, false);
 
   if (slot_span->CanStoreRawSize()) {
     stats_out->active_bytes += static_cast<uint32_t>(slot_span->GetRawSize());
@@ -610,7 +633,9 @@ static void PartitionDumpSlotSpanStats(PartitionBucketMemoryStats* stats_out,
 }
 
 static void PartitionDumpBucketStats(PartitionBucketMemoryStats* stats_out,
-                                     const internal::PartitionBucket* bucket) {
+                                     PartitionRoot* root,
+                                     const internal::PartitionBucket* bucket)
+    PA_EXCLUSIVE_LOCKS_REQUIRED(internal::PartitionRootLock(root)) {
   PA_DCHECK(!bucket->is_direct_mapped());
   stats_out->is_valid = false;
   // If the active slot span list is empty (==
@@ -641,13 +666,13 @@ static void PartitionDumpBucketStats(PartitionBucketMemoryStats* stats_out,
   for (internal::SlotSpanMetadata* slot_span = bucket->empty_slot_spans_head;
        slot_span; slot_span = slot_span->next_slot_span) {
     PA_DCHECK(slot_span->is_empty() || slot_span->is_decommitted());
-    PartitionDumpSlotSpanStats(stats_out, slot_span);
+    PartitionDumpSlotSpanStats(stats_out, root, slot_span);
   }
   for (internal::SlotSpanMetadata* slot_span =
            bucket->decommitted_slot_spans_head;
        slot_span; slot_span = slot_span->next_slot_span) {
     PA_DCHECK(slot_span->is_decommitted());
-    PartitionDumpSlotSpanStats(stats_out, slot_span);
+    PartitionDumpSlotSpanStats(stats_out, root, slot_span);
   }
 
   if (bucket->active_slot_spans_head !=
@@ -656,7 +681,7 @@ static void PartitionDumpBucketStats(PartitionBucketMemoryStats* stats_out,
          slot_span; slot_span = slot_span->next_slot_span) {
       PA_DCHECK(slot_span !=
                 internal::SlotSpanMetadata::get_sentinel_slot_span());
-      PartitionDumpSlotSpanStats(stats_out, slot_span);
+      PartitionDumpSlotSpanStats(stats_out, root, slot_span);
     }
   }
 }
@@ -876,7 +901,7 @@ void PartitionRoot::Init(PartitionOptions opts) {
     settings.allow_aligned_alloc =
         opts.aligned_alloc == PartitionOptions::AlignedAlloc::kAllowed;
 #if BUILDFLAG(PA_DCHECK_IS_ON)
-    settings.use_cookie = opts.cookie == PartitionOptions::Cookie::kAllowed;
+    settings.use_cookie = true;
 #else
     static_assert(!Settings::use_cookie);
 #endif  // BUILDFLAG(PA_DCHECK_IS_ON)
@@ -896,7 +921,8 @@ void PartitionRoot::Init(PartitionOptions opts) {
     PA_DCHECK(!settings.use_configurable_pool || IsConfigurablePoolAvailable());
 #if PA_CONFIG(HAS_MEMORY_TAGGING)
     settings.memory_tagging_enabled_ =
-        opts.memory_tagging == PartitionOptions::MemoryTagging::kEnabled;
+        opts.memory_tagging.enabled ==
+        PartitionOptions::MemoryTagging::kEnabled;
     // Memory tagging is not supported in the configurable pool because MTE
     // stores tagging information in the high bits of the pointer, it causes
     // issues with components like V8's ArrayBuffers which use custom pointer
@@ -904,6 +930,9 @@ void PartitionRoot::Init(PartitionOptions opts) {
     // "is in configurable pool?" check, so we use that as a proxy.
     PA_CHECK(!settings.memory_tagging_enabled_ ||
              !settings.use_configurable_pool);
+
+    settings.memory_tagging_reporting_mode_ =
+        opts.memory_tagging.reporting_mode;
 #endif  // PA_CONFIG(HAS_MEMORY_TAGGING)
 
     // brp_enabled() is not supported in the configurable pool because
@@ -963,7 +992,8 @@ void PartitionRoot::Init(PartitionOptions opts) {
 
     settings.quarantine_mode =
 #if BUILDFLAG(USE_STARSCAN)
-        (opts.quarantine == PartitionOptions::Quarantine::kDisallowed
+        (opts.star_scan_quarantine ==
+                 PartitionOptions::StarScanQuarantine::kDisallowed
              ? QuarantineMode::kAlwaysDisabled
              : QuarantineMode::kDisabledByDefault);
 #else
@@ -1269,7 +1299,7 @@ void* PartitionRoot::ReallocWithFlags(unsigned int flags,
   }
 
   if (PA_UNLIKELY(!new_size)) {
-    Free(ptr);
+    FreeInUnknownRoot(ptr);
     return nullptr;
   }
 
@@ -1310,8 +1340,9 @@ void* PartitionRoot::ReallocWithFlags(unsigned int flags,
     }
     if (success) {
       if (PA_UNLIKELY(!no_hooks && hooks_enabled)) {
-        PartitionAllocHooks::ReallocObserverHookIfEnabled(ptr, ptr, new_size,
-                                                          type_name);
+        PartitionAllocHooks::ReallocObserverHookIfEnabled(
+            CreateFreeNotificationData(ptr),
+            CreateAllocationNotificationData(ptr, new_size, type_name));
       }
       return ptr;
     }
@@ -1338,7 +1369,7 @@ void* PartitionRoot::ReallocWithFlags(unsigned int flags,
   }
 
   memcpy(ret, ptr, std::min(old_usable_size, new_size));
-  Free(ptr);  // Implicitly protects the old ptr on MTE systems.
+  FreeInUnknownRoot(ptr);  // Implicitly protects the old ptr on MTE systems.
   return ret;
 #endif
 }
@@ -1367,7 +1398,7 @@ void PartitionRoot::PurgeMemory(int flags) {
         }
 
         if (bucket.slot_size >= internal::MinPurgeableSlotSize()) {
-          internal::PartitionPurgeBucket(&bucket);
+          internal::PartitionPurgeBucket(this, &bucket);
         } else {
           bucket.SortSlotSpanFreelists();
         }
@@ -1472,7 +1503,7 @@ void PartitionRoot::DumpStats(const char* partition_name,
       if (!bucket->is_valid()) {
         bucket_stats[i].is_valid = false;
       } else {
-        internal::PartitionDumpBucketStats(&bucket_stats[i], bucket);
+        internal::PartitionDumpBucketStats(&bucket_stats[i], this, bucket);
       }
       if (bucket_stats[i].is_valid) {
         stats.total_resident_bytes += bucket_stats[i].resident_bytes;

@@ -45,10 +45,6 @@
 #import "net/test/embedded_test_server/http_response.h"
 #import "ui/base/l10n/l10n_util.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 namespace {
 
 const char kPageLoadedString[] = "Page loaded!";
@@ -577,12 +573,11 @@ id<GREYMatcher> notPracticallyVisible() {
 // and moved up, the scroll position restored is the position before the omnibox
 // is selected.
 - (void)testPositionRestoredWithShiftingOffset {
-  [self addMostVisitedTile];
-  // Scroll to have a position to restored.
+  // Scroll a bit to have a position to restore.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::NTPCollectionView()]
-      performAction:grey_scrollInDirection(kGREYDirectionDown, 50)];
+      performAction:grey_scrollInDirection(kGREYDirectionDown, 20)];
 
-  // Save the position before navigating.
+  // Save the position before focusing the omnibox.
   UICollectionView* collectionView = [NewTabPageAppInterface collectionView];
   CGFloat previousPosition = collectionView.contentOffset.y;
 
@@ -590,16 +585,15 @@ id<GREYMatcher> notPracticallyVisible() {
   [self focusFakebox];
 
   // Navigate and come back.
-  [[EarlGrey selectElementWithMatcher:
-                 chrome_test_util::StaticTextWithAccessibilityLabel(
-                     base::SysUTF8ToNSString(kPageTitle))]
-      performAction:grey_tap()];
+  self.testServer->RegisterRequestHandler(
+      base::BindRepeating(&StandardResponse));
+  GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
+  const GURL pageURL = self.testServer->GetURL(kPageURL);
+  [ChromeEarlGrey loadURL:pageURL];
   [ChromeEarlGrey waitForWebStateContainingText:kPageLoadedString];
   [ChromeEarlGrey goBack];
 
-  [ChromeEarlGreyUI waitForAppToIdle];
-
-  // Check that the new position is the same.
+  // Check that the new position is the same as before focusing the omnibox.
   collectionView = [NewTabPageAppInterface collectionView];
   GREYAssertEqual(
       previousPosition, collectionView.contentOffset.y,
@@ -1211,10 +1205,9 @@ id<GREYMatcher> notPracticallyVisible() {
   }
 
   [ChromeEarlGreyUI openNewTabMenu];
-  [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
-                                   IDS_IOS_TOOLS_MENU_NEW_SEARCH)]
-      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:
+                 chrome_test_util::ContextMenuItemWithAccessibilityLabelId(
+                     IDS_IOS_TOOLS_MENU_NEW_SEARCH)] performAction:grey_tap()];
   GREYWaitForAppToIdle(@"App failed to idle");
 
   // Check that there's now a new tab, that the new (second) tab is the active
@@ -1246,10 +1239,9 @@ id<GREYMatcher> notPracticallyVisible() {
   [self hideFeedFromNTPMenu];
 
   [ChromeEarlGreyUI openNewTabMenu];
-  [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
-                                   IDS_IOS_TOOLS_MENU_NEW_SEARCH)]
-      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:
+                 chrome_test_util::ContextMenuItemWithAccessibilityLabelId(
+                     IDS_IOS_TOOLS_MENU_NEW_SEARCH)] performAction:grey_tap()];
   GREYWaitForAppToIdle(@"App failed to idle");
 
   // Check that there's now a new tab, that the new (third) tab is the active

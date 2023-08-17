@@ -97,7 +97,7 @@ gfx::Insets ChromeLayoutProvider::GetInsetsMetric(int metric) const {
       return gfx::Insets::VH(insets.height(), horizontal_padding);
     }
     case INSETS_INFOBAR_VIEW:
-      return features::IsChromeRefresh2023() ? gfx::Insets::VH(8, 0)
+      return features::IsChromeRefresh2023() ? gfx::Insets::VH(4, 0)
                                              : gfx::Insets::VH(0, 0);
     default:
       return LayoutProvider::GetInsetsMetric(metric);
@@ -176,6 +176,10 @@ int ChromeLayoutProvider::GetDistanceMetric(int metric) const {
       return features::IsChromeRefresh2023() ? 20 : 0;
     case DISTANCE_INFOBAR_HORIZONTAL_ICON_LABEL_PADDING:
       return features::IsChromeRefresh2023() ? 16 : 12;
+    case DISTANCE_PERMISSION_PROMPT_HORIZONTAL_ICON_LABEL_PADDING:
+      return features::IsChromeRefresh2023()
+                 ? 8
+                 : GetDistanceMetric(views::DISTANCE_RELATED_LABEL_HORIZONTAL);
     case DISTANCE_RICH_HOVER_BUTTON_ICON_HORIZONTAL:
       return features::IsChromeRefresh2023() ? 8 : 12;
   }

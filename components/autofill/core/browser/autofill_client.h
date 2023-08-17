@@ -40,10 +40,6 @@
 #include "url/gurl.h"
 #include "url/origin.h"
 
-#if !BUILDFLAG(IS_IOS)
-#include "components/webauthn/core/browser/internal_authenticator.h"
-#endif
-
 class PrefService;
 
 namespace signin {
@@ -60,6 +56,16 @@ class UkmRecorder;
 
 namespace version_info {
 enum class Channel;
+}
+
+#if !BUILDFLAG(IS_IOS)
+namespace webauthn {
+class InternalAuthenticator;
+}
+#endif
+
+namespace plus_addresses {
+class PlusAddressService;
 }
 
 namespace autofill {
@@ -85,8 +91,8 @@ enum class CreditCardFetchResult;
 class CreditCardOtpAuthenticator;
 class FormDataImporter;
 class FormStructure;
-class IBAN;
-class IBANManager;
+class Iban;
+class IbanManager;
 class LogManager;
 class MigratableCreditCard;
 class MerchantPromoCodeManager;
@@ -164,7 +170,7 @@ class AutofillClient : public RiskDataLoader {
     kIgnored,
   };
 
-  enum class SaveIBANOfferUserDecision {
+  enum class SaveIbanOfferUserDecision {
     // The user accepted IBAN save.
     kAccepted,
 
@@ -347,8 +353,8 @@ class AutofillClient : public RiskDataLoader {
   // `user_decision` indicating whether the prompt was accepted, declined,
   // or ignored. `nickname` is optionally provided by the user when IBAN local
   // save is offered, and can be nullopt.
-  using LocalSaveIBANPromptCallback =
-      base::OnceCallback<void(SaveIBANOfferUserDecision user_decision,
+  using LocalSaveIbanPromptCallback =
+      base::OnceCallback<void(SaveIbanOfferUserDecision user_decision,
                               const absl::optional<std::u16string>& nickname)>;
 
   // Callback to run if the OK button or the cancel button in a
@@ -384,6 +390,7 @@ class AutofillClient : public RiskDataLoader {
   // To distinguish between (non-)incognito mode when deciding to persist data,
   // use the client's `IsOffTheRecord()` function.
   virtual PersonalDataManager* GetPersonalDataManager() = 0;
+  const PersonalDataManager* GetPersonalDataManager() const;
 
   // Gets the AutofillOptimizationGuide instance associated with the client.
   virtual AutofillOptimizationGuide* GetAutofillOptimizationGuide() const;
@@ -391,8 +398,10 @@ class AutofillClient : public RiskDataLoader {
   // Gets the AutocompleteHistoryManager instance associated with the client.
   virtual AutocompleteHistoryManager* GetAutocompleteHistoryManager() = 0;
 
-  // Gets the IBANManager instance associated with the client.
-  virtual IBANManager* GetIBANManager();
+  // Gets the IbanManager instance associated with the client.
+  virtual IbanManager* GetIbanManager();
+
+  virtual plus_addresses::PlusAddressService* GetPlusAddressService();
 
   // Gets the MerchantPromoCodeManager instance associated with the
   // client (can be null for unsupported platforms).
@@ -403,7 +412,7 @@ class AutofillClient : public RiskDataLoader {
   virtual CreditCardOtpAuthenticator* GetOtpAuthenticator();
 
   // Creates and returns a SingleFieldFormFillRouter using the
-  // AutocompleteHistoryManager, IBANManager and MerchantPromoCodeManager
+  // AutocompleteHistoryManager, IbanManager and MerchantPromoCodeManager
   // instances associated with the client.
   std::unique_ptr<SingleFieldFormFillRouter> CreateSingleFieldFormFillRouter();
 
@@ -423,7 +432,10 @@ class AutofillClient : public RiskDataLoader {
   // Gets the payments::PaymentsClient instance owned by the client.
   virtual payments::PaymentsClient* GetPaymentsClient() = 0;
 
-  // Gets the StrikeDatabase associated with the client.
+  // Gets the StrikeDatabase associated with the client. Note: Nullptr may be
+  // returned so check before use.
+  // TODO(crbug.com/1472094): Make sure all strike database usages check for
+  // the nullptr.
   virtual StrikeDatabase* GetStrikeDatabase() = 0;
 
   // Gets the UKM service associated with this client (for metrics).
@@ -576,9 +588,9 @@ class AutofillClient : public RiskDataLoader {
   // Runs `callback` once the user makes a decision with respect to the
   // offer-to-save prompt. On desktop, shows the offer-to-save bubble if
   // `should_show_prompt` is true; otherwise only shows the omnibox icon.
-  virtual void ConfirmSaveIBANLocally(const IBAN& iban,
+  virtual void ConfirmSaveIbanLocally(const Iban& iban,
                                       bool should_show_prompt,
-                                      LocalSaveIBANPromptCallback callback) = 0;
+                                      LocalSaveIbanPromptCallback callback) = 0;
 
   // TODO(crbug.com/991037): Find a way to merge these two functions. Shouldn't
   // use WebauthnDialogState as that state is a purely UI state (should not be
@@ -799,19 +811,17 @@ class AutofillClient : public RiskDataLoader {
 
   // Pass the form structures to the password manager to choose correct username
   // and to the password generation manager to detect account creation forms.
-  virtual void PropagateAutofillPredictions(
+  //
+  // TODO(crbug.com/1466435): Do not use or rely on this function anymore.
+  virtual void PropagateAutofillPredictionsDeprecated(
       AutofillDriver* driver,
       const std::vector<FormStructure*>& forms) = 0;
 
-  // Handle the parsed forms for the provided driver.
-  virtual void HandleParsedForms(
-      AutofillDriver* driver,
-      const std::vector<autofill::FormStructure*>& forms);
-
   // Inform the client that the form has been filled.
-  virtual void DidFillOrPreviewForm(mojom::RendererFormDataAction action,
-                                    AutofillTriggerSource trigger_source,
-                                    bool is_refill) = 0;
+  virtual void DidFillOrPreviewForm(
+      mojom::AutofillActionPersistence action_persistence,
+      AutofillTriggerSource trigger_source,
+      bool is_refill) = 0;
 
   // Inform the client that the field has been filled.
   virtual void DidFillOrPreviewField(

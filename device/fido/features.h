@@ -87,6 +87,7 @@ COMPONENT_EXPORT(DEVICE_FIDO)
 BASE_DECLARE_FEATURE(kWebAuthnWindowsUIv6);
 
 // List synced GPM passkeys on webauthn credential pickers.
+// Depends on kWebAuthnNewPasskeyUI.
 COMPONENT_EXPORT(DEVICE_FIDO)
 BASE_DECLARE_FEATURE(kWebAuthnListSyncedPasskeys);
 
@@ -102,14 +103,33 @@ BASE_DECLARE_FEATURE(kWebAuthnCableViaCredMan);
 COMPONENT_EXPORT(DEVICE_FIDO)
 BASE_DECLARE_FEATURE(kWebAuthnLinkingExperimentation);
 
+#if !BUILDFLAG(IS_CHROMEOS) && !BUILDFLAG(IS_ANDROID)
 // Enable use of a cloud enclave authenticator service.
 COMPONENT_EXPORT(DEVICE_FIDO)
 BASE_DECLARE_FEATURE(kWebAuthnEnclaveAuthenticator);
+#endif
 
 // Serialize WebAuthn requests to JSON on the desktop. Useful for future
 // projects but only concretely used for better logging at the time of writing.
 COMPONENT_EXPORT(DEVICE_FIDO)
 BASE_DECLARE_FEATURE(kWebAuthnJSONSerializeRequests);
+
+// Cache prelinking information on Android.
+COMPONENT_EXPORT(DEVICE_FIDO)
+BASE_DECLARE_FEATURE(kWebAuthnCachePaaSK);
+
+// Don't publish prelinking information if Chrome is running in a work profile
+// on Android.
+COMPONENT_EXPORT(DEVICE_FIDO)
+BASE_DECLARE_FEATURE(kWebAuthnDontPrelinkInProfiles);
+
+// Use the new desktop passkey UI that has the following changes:
+// * Display passkeys from multiple sources, including from Windows Hello,
+//   alongside mechanisms on the modal UI.
+// * Merge the QR and USB screens when available.
+// * String tweaks on modal and conditional UI.
+COMPONENT_EXPORT(DEVICE_FIDO)
+BASE_DECLARE_FEATURE(kWebAuthnNewPasskeyUI);
 
 }  // namespace device
 

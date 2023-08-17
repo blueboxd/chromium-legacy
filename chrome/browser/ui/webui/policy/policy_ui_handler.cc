@@ -10,6 +10,7 @@
 #include <string>
 #include <utility>
 
+#include "base/barrier_closure.h"
 #include "base/check.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_util.h"
@@ -30,8 +31,10 @@
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_prefs.h"
+#include "chrome/browser/enterprise/reporting/cloud_profile_reporting_service.h"
+#include "chrome/browser/enterprise/reporting/cloud_profile_reporting_service_factory.h"
 #include "chrome/browser/enterprise/util/affiliation.h"
-#include "chrome/browser/infobars/simple_alert_infobar_creator.h"
+#include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "chrome/browser/policy/policy_ui_utils.h"
 #include "chrome/browser/policy/policy_value_and_status_aggregator.h"
@@ -48,8 +51,6 @@
 #include "components/enterprise/browser/controller/browser_dm_token_storage.h"
 #include "components/enterprise/browser/controller/chrome_browser_cloud_management_controller.h"
 #include "components/enterprise/browser/reporting/common_pref_names.h"
-#include "components/infobars/content/content_infobar_manager.h"
-#include "components/infobars/core/infobar_delegate.h"
 #include "components/policy/core/browser/configuration_policy_handler_list.h"
 #include "components/policy/core/browser/policy_conversions.h"
 #include "components/policy/core/browser/webui/json_generation.h"
@@ -58,10 +59,11 @@
 #include "components/policy/core/common/cloud/cloud_policy_manager.h"
 #include "components/policy/core/common/cloud/cloud_policy_refresh_scheduler.h"
 #include "components/policy/core/common/cloud/cloud_policy_util.h"
+#include "components/policy/core/common/local_test_policy_loader.h"
 #include "components/policy/core/common/local_test_policy_provider.h"
 #include "components/policy/core/common/policy_details.h"
-#include "components/policy/core/common/policy_loader_local_test.h"
 #include "components/policy/core/common/policy_logger.h"
+#include "components/policy/core/common/policy_pref_names.h"
 #include "components/policy/core/common/policy_scheduler.h"
 #include "components/policy/core/common/policy_types.h"
 #include "components/policy/core/common/remote_commands/remote_commands_service.h"
@@ -72,6 +74,8 @@
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
+#include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/buildflags/buildflags.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -199,6 +203,16 @@ void PolicyUIHandler::RegisterMessages() {
       base::BindRepeating(&PolicyUIHandler::HandleGetPolicyLogs,
                           base::Unretained(this)));
 
+  web_ui()->RegisterMessageCallback(
+      "restartBrowser",
+      base::BindRepeating(&PolicyUIHandler::HandleRestartBrowser,
+                          base::Unretained(this)));
+
+  web_ui()->RegisterMessageCallback(
+      "setUserAffiliation",
+      base::BindRepeating(&PolicyUIHandler::HandleSetUserAffiliated,
+                          base::Unretained(this)));
+
 #if !BUILDFLAG(IS_CHROMEOS)
   web_ui()->RegisterMessageCallback(
       "uploadReport", base::BindRepeating(&PolicyUIHandler::HandleUploadReport,
@@ -227,16 +241,6 @@ void PolicyUIHandler::FileSelected(const base::FilePath& path,
 void PolicyUIHandler::FileSelectionCanceled(void* params) {
   DCHECK(export_policies_select_file_dialog_);
   export_policies_select_file_dialog_ = nullptr;
-}
-
-void PolicyUIHandler::AddInfobarForActiveLocalTestPolicies() {
-  content::WebContents* web_contents = web_ui()->GetWebContents();
-
-  CreateSimpleAlertInfoBar(
-      infobars::ContentInfoBarManager::FromWebContents(web_contents),
-      infobars::InfoBarDelegate::LOCAL_TEST_POLICIES_APPLIED_INFOBAR, nullptr,
-      l10n_util::GetStringUTF16(IDS_LOCAL_TEST_POLICIES_ENABLED),
-      /*auto_expire=*/false, /*should_animate=*/false);
 }
 
 void PolicyUIHandler::HandleExportPoliciesJson(const base::Value::List& args) {
@@ -340,7 +344,8 @@ void PolicyUIHandler::HandleSetLocalTestPolicies(
       ->UseLocalTestPolicyProvider();
 
   local_test_provider->LoadJsonPolicies(json_policies_string);
-  AddInfobarForActiveLocalTestPolicies();
+  AllowJavascript();
+  ResolveJavascriptCallback(args[0], true);
 }
 
 void PolicyUIHandler::HandleRevertLocalTestPolicies(
@@ -348,6 +353,31 @@ void PolicyUIHandler::HandleRevertLocalTestPolicies(
   Profile::FromWebUI(web_ui())
       ->GetProfilePolicyConnector()
       ->RevertUseLocalTestPolicyProvider();
+}
+
+void PolicyUIHandler::HandleRestartBrowser(const base::Value::List& args) {
+  CHECK(args.size() == 2);
+  std::string policies = args[1].GetString();
+
+  // Set policies to preference
+  PrefService* prefs = g_browser_process->local_state();
+  prefs->SetString(policy::policy_prefs::kLocalTestPoliciesForNextStartup,
+                   policies);
+
+  // Restart browser
+  chrome::AttemptRestart();
+}
+
+void PolicyUIHandler::HandleSetUserAffiliated(const base::Value::List& args) {
+  CHECK_EQ(static_cast<int>(args.size()), 2);
+  bool affiliated = args[1].GetBool();
+
+  auto* local_test_provider = static_cast<policy::LocalTestPolicyProvider*>(
+      g_browser_process->browser_policy_connector()
+          ->local_test_policy_provider());
+  local_test_provider->SetUserAffiliated(affiliated);
+  AllowJavascript();
+  ResolveJavascriptCallback(args[0], true);
 }
 
 void PolicyUIHandler::HandleGetPolicyLogs(const base::Value::List& args) {
@@ -365,12 +395,23 @@ void PolicyUIHandler::HandleUploadReport(const base::Value::List& args) {
   auto* report_scheduler = g_browser_process->browser_policy_connector()
                                ->chrome_browser_cloud_management_controller()
                                ->report_scheduler();
+
+  auto* profile_report_scheduler =
+      enterprise_reporting::CloudProfileReportingServiceFactory::GetForProfile(
+          Profile::FromWebUI(web_ui()))
+          ->report_scheduler();
+  CHECK(profile_report_scheduler);
+
   if (report_scheduler) {
-    report_scheduler->UploadFullReport(
+    const auto on_report_uploaded = base::BarrierClosure(
+        2, base::BindOnce(&PolicyUIHandler::OnReportUploaded,
+                          weak_factory_.GetWeakPtr(), callback_id));
+    report_scheduler->UploadFullReport(on_report_uploaded);
+    profile_report_scheduler->UploadFullReport(on_report_uploaded);
+  } else {
+    profile_report_scheduler->UploadFullReport(
         base::BindOnce(&PolicyUIHandler::OnReportUploaded,
                        weak_factory_.GetWeakPtr(), callback_id));
-  } else {
-    OnReportUploaded(callback_id);
   }
 }
 #endif  // !BUILDFLAG(IS_CHROMEOS)

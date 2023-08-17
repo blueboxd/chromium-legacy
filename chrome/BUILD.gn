@@ -180,10 +180,7 @@ if (!is_android && !is_mac) {
           "//components/variations/cros:evaluate_seed",
           "//sandbox/linux:chrome_sandbox",
         ]
-        deps += [
-          "//components/exo/wayland:ui_controls_protocol_stub",
-          "//components/exo/wayland:weston_test_stub",
-        ]
+        deps += [ "//components/exo/wayland:ui_controls_protocol_stub" ]
       }
 
       if (also_build_lacros_chrome_for_architecture != "") {
@@ -538,7 +535,7 @@ if (is_win) {
       ":chrome_app_strings_bundle_data",
       ":chrome_resources",
       ":chrome_versioned_bundle_data",
-      "//base/allocator:early_zone_registration_mac",
+      "//base/allocator:early_zone_registration_apple",
       "//build:branding_buildflags",
       "//chrome/common:buildflags",
       "//chrome/common:version_header",
@@ -779,7 +776,7 @@ if (is_win) {
       defines = [ "HELPER_EXECUTABLE" ]
 
       deps = [
-        "//base/allocator:early_zone_registration_mac",
+        "//base/allocator:early_zone_registration_apple",
         "//build:branding_buildflags",
         "//chrome/common:version_header",
         "//sandbox/mac:seatbelt",
@@ -1208,7 +1205,6 @@ if (is_win) {
 
     configs += [
       ":chrome_dll_symbol_order",
-      "//build/config/compiler:enable_arc",
       "//build/config/compiler:wexit_time_destructors",
     ]
     if (!is_component_build && !using_sanitizer) {

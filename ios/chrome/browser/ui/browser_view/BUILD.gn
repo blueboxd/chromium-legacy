@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 source_set("browser_view") {
-  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "browser_coordinator+private.h",
     "browser_coordinator.h",
@@ -30,6 +29,7 @@ source_set("browser_view") {
     "//components/language/ios/browser",
     "//components/omnibox/browser",
     "//components/password_manager/core/common:features",
+    "//components/prefs",
     "//components/profile_metrics",
     "//components/reading_list/core",
     "//components/safe_browsing/core/common",
@@ -80,6 +80,7 @@ source_set("browser_view") {
     "//ios/chrome/browser/overlays/public/web_content_area",
     "//ios/chrome/browser/overscroll_actions",
     "//ios/chrome/browser/passwords",
+    "//ios/chrome/browser/policy:policy_util",
     "//ios/chrome/browser/prefs",
     "//ios/chrome/browser/prerender",
     "//ios/chrome/browser/promos_manager:features",
@@ -87,7 +88,6 @@ source_set("browser_view") {
     "//ios/chrome/browser/segmentation_platform",
     "//ios/chrome/browser/send_tab_to_self",
     "//ios/chrome/browser/sessions",
-    "//ios/chrome/browser/sessions:restoration_agent",
     "//ios/chrome/browser/sessions:serialisation",
     "//ios/chrome/browser/settings/sync/utils",
     "//ios/chrome/browser/shared/coordinator/alert",
@@ -153,6 +153,7 @@ source_set("browser_view") {
     "//ios/chrome/browser/ui/main:default_browser_scene_agent",
     "//ios/chrome/browser/ui/main_content:main_content_ui",
     "//ios/chrome/browser/ui/main_content:main_content_ui_broadcasting_util",
+    "//ios/chrome/browser/ui/mini_map",
     "//ios/chrome/browser/ui/ntp",
     "//ios/chrome/browser/ui/ntp:component_factory",
     "//ios/chrome/browser/ui/ntp:coordinator",
@@ -235,7 +236,6 @@ source_set("browser_view") {
     "//ios/third_party/material_components_ios",
     "//ios/third_party/webkit",
     "//ios/web",
-    "//ios/web/common:features",
     "//ios/web/public",
     "//services/metrics/public/cpp:ukm_builders",
     "//third_party/abseil-cpp:absl",
@@ -256,7 +256,6 @@ source_set("browser_view") {
 }
 
 source_set("unit_tests") {
-  configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
     "browser_coordinator_unittest.mm",
@@ -270,11 +269,13 @@ source_set("unit_tests") {
     "//components/content_settings/core/browser",
     "//components/omnibox/browser:test_support",
     "//components/open_from_clipboard:test_support",
+    "//components/policy/core/common:common_constants",
     "//components/prefs:test_support",
     "//components/reading_list/core",
     "//components/search_engines",
     "//components/sessions",
     "//components/supervised_user/core/common:features",
+    "//components/sync_preferences:test_support",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/bookmarks",
     "//ios/chrome/browser/content_settings",
@@ -287,6 +288,7 @@ source_set("unit_tests") {
     "//ios/chrome/browser/lens",
     "//ios/chrome/browser/metrics:metrics_browser_agent",
     "//ios/chrome/browser/ntp",
+    "//ios/chrome/browser/policy:policy_util",
     "//ios/chrome/browser/prerender",
     "//ios/chrome/browser/prerender:test_support",
     "//ios/chrome/browser/reading_list",
@@ -363,10 +365,7 @@ source_set("unit_tests") {
 }
 
 source_set("eg2_tests") {
-  configs += [
-    "//build/config/compiler:enable_arc",
-    "//build/config/ios:xctest_config",
-  ]
+  configs += [ "//build/config/ios:xctest_config" ]
   testonly = true
   sources = [ "browser_view_controller_egtest.mm" ]
   deps = [

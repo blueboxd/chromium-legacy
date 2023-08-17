@@ -3,11 +3,16 @@
 # found in the LICENSE file.
 
 source_set("utils") {
-  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
+    "first_run_util.h",
+    "first_run_util.mm",
     "notification_observer_bridge.h",
     "notification_observer_bridge.mm",
   ]
 
-  deps = [ "//base" ]
+  deps = [
+    "//base",
+    "//ios/chrome/browser/first_run",
+    "//ios/chrome/browser/shared/public/features:system_flags",
+  ]
 }

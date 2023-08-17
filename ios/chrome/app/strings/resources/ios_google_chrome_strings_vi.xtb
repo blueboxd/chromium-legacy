@@ -39,6 +39,7 @@
 <translation id="2767464022270041271">Bạn chưa lưu mật khẩu nào. Trình quản lý mật khẩu của Google có thể kiểm tra mật khẩu của bạn khi bạn lưu các mật khẩu đó.</translation>
 <translation id="2840432500933227975">Mở phần Cài đặt Chrome trong iOS, sau đó nhấn vào "Ứng dụng trình duyệt mặc định" và chọn Chrome.</translation>
 <translation id="2869959624320573933">Đăng nhập vào Chrome</translation>
+<translation id="2876628302275096482">Tìm hiểu thêm về <ph name="BEGIN_LINK" />cách Chrome bảo mật dữ liệu của bạn<ph name="END_LINK" /></translation>
 <translation id="2957447865124070833">Chọn <ph name="BEGIN_BOLD" />Chrome<ph name="END_BOLD" /></translation>
 <translation id="3030414234702425231">Vì bạn đăng xuất khỏi tài khoản do <ph name="SIGNOUT_MANAGED_DOMAIN" /> quản lý, nên dữ liệu Chrome của bạn sẽ bị xóa khỏi thiết bị này. Dữ liệu của bạn sẽ vẫn còn trong Tài khoản Google của bạn.</translation>
 <translation id="3167189358072330585">Tài khoản của bạn không hoạt động trên Google Chrome. Vui lòng liên hệ với quản trị viên miền của bạn hoặc sử dụng Tài khoản Google thông thường để đăng nhập.</translation>
@@ -79,10 +80,12 @@
 <translation id="5162467219239570114">Chrome đã lỗi thời. Nếu không có bản cập nhật nào trong <ph name="BEGIN_LINK" />App Store<ph name="END_LINK" />, thì có khả năng thiết bị của bạn không hỗ trợ các phiên bản Chrome mới nữa.</translation>
 <translation id="5389212809648216794">Google Chrome không thể sử dụng máy ảnh của bạn do một ứng dụng khác đang dùng máy ảnh</translation>
 <translation id="5395376160638294582">Đảm bảo bạn luôn có thể sử dụng dữ liệu Chrome trong Tài khoản Google của mình</translation>
+<translation id="5439191312780166229">Cảnh báo cho bạn về các trang web nguy hiểm, kể cả trang web mà Google chưa từng biết, bằng cách phân tích nhiều dữ liệu trên các trang web hơn so với chế độ bảo vệ tiêu chuẩn. Bạn có thể chọn bỏ qua cảnh báo của Chrome.</translation>
 <translation id="5460571915754665838">4. Chọn Chrome</translation>
 <translation id="5492504007368565877">Trình quản lý mật khẩu của Google không thể kiểm tra mật khẩu của bạn.</translation>
 <translation id="5527026824954593399">Nhấn vào "Xem bằng Google Maps trên Chrome".</translation>
 <translation id="5552137475244467770">Chrome kiểm tra định kỳ các mật khẩu của bạn so với những danh sách đã đăng trên Internet. Khi thực hiện việc này, mật khẩu và tên người dùng của bạn được mã hóa nên không ai có thể đọc được, kể cả Google.</translation>
+<translation id="5554520618550346933">Khi bạn dùng một mật khẩu đã bị công khai trên mạng, Chrome sẽ cảnh báo cho bạn. Trong quá trình này, mật khẩu và tên người dùng của bạn được mã hoá nên không ai đọc được, kể cả Google.</translation>
 <translation id="5639704535586432836">Mở Cài đặt &gt; Bảo mật &gt; Máy ảnh &gt; Google Chrome và bật máy ảnh.</translation>
 <translation id="5642200033778930880">Google Chrome không thể sử dụng máy ảnh của bạn ở Chế độ xem phân tách</translation>
 <translation id="5661521615548540542">Trình quản lý mật khẩu của Google không thể kiểm tra tất cả mật khẩu. Hãy thử lại sau.</translation>
@@ -148,6 +151,7 @@
 <translation id="8765470054473112089">Khi bạn nhập vào thanh địa chỉ hoặc hộp tìm kiếm, Chrome sẽ gửi nội dung bạn nhập đến công cụ tìm kiếm mặc định để đề xuất cho bạn cụm từ phù hợp hơn. Tính năng này bị tắt trong chế độ Ẩn danh.</translation>
 <translation id="8772179140489533211">Hiển thị lời nhắc đăng nhập vào Chrome.</translation>
 <translation id="8788269841521769222">Bạn không cần nhớ mật khẩu này. Mật khẩu này sẽ được lưu vào Trình quản lý mật khẩu của Google cho <ph name="EMAIL" /></translation>
+<translation id="8808828119384186784">Cài đặt Chrome</translation>
 <translation id="8857676124663337448">Trình quản lý mật khẩu của Google không thể kiểm tra tất cả mật khẩu. Hãy thử lại vào ngày mai.</translation>
 <translation id="8897749957032330183">Mật khẩu được lưu vào Trình quản lý mật khẩu của Google trên thiết bị này.</translation>
 <translation id="8969290730818637510">Khi bật:

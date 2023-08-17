@@ -18,10 +18,6 @@
 #import "ios/chrome/grit/ios_strings.h"
 #import "ui/base/l10n/l10n_util.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 namespace {
 
 // Layout constants for the image.
@@ -126,19 +122,15 @@ UIImage* ConfirmationAlertImage() {
   _confirmationAlert.showDismissBarButton = NO;
   _confirmationAlert.actionHandler = self;
   _confirmationAlert.presentationController.delegate = self;
-  if (@available(iOS 15, *)) {
-    _confirmationAlert.modalPresentationStyle = UIModalPresentationPageSheet;
-    UISheetPresentationController* presentationController =
-        _confirmationAlert.sheetPresentationController;
-    presentationController.prefersEdgeAttachedInCompactHeight = YES;
-    presentationController.detents = @[
-      UISheetPresentationControllerDetent.mediumDetent,
-      UISheetPresentationControllerDetent.largeDetent
-    ];
-    presentationController.preferredCornerRadius = 20;
-  } else {
-    _confirmationAlert.modalPresentationStyle = UIModalPresentationFormSheet;
-  }
+  _confirmationAlert.modalPresentationStyle = UIModalPresentationPageSheet;
+  UISheetPresentationController* presentationController =
+      _confirmationAlert.sheetPresentationController;
+  presentationController.prefersEdgeAttachedInCompactHeight = YES;
+  presentationController.detents = @[
+    UISheetPresentationControllerDetent.mediumDetent,
+    UISheetPresentationControllerDetent.largeDetent
+  ];
+  presentationController.preferredCornerRadius = 20;
   _confirmationAlert.view.accessibilityIdentifier =
       kInactiveTabsUserEducationAccessibilityIdentifier;
 

@@ -75,6 +75,11 @@ const std::string& GetVariationParam(
   return it->second;
 }
 
+bool doesVariationParamExist(const std::map<std::string, std::string>& params,
+                             const std::string& key) {
+  return params.find(key) != params.end();
+}
+
 spdy::SettingsMap GetHttp2Settings(
     const VariationParameters& http2_trial_params) {
   spdy::SettingsMap http2_settings;
@@ -530,7 +535,6 @@ void ConfigureQuicParams(const base::CommandLine& command_line,
                          base::StringPiece quic_trial_group,
                          const VariationParameters& quic_trial_params,
                          bool is_quic_force_disabled,
-                         const std::string& quic_user_agent_id,
                          net::HttpNetworkSessionParams* params,
                          net::QuicParams* quic_params) {
   if (ShouldDisableQuic(quic_trial_group, quic_trial_params,
@@ -587,8 +591,12 @@ void ConfigureQuicParams(const base::CommandLine& command_line,
     }
     quic_params->estimate_initial_rtt =
         ShouldQuicEstimateInitialRtt(quic_trial_params);
-    quic_params->migrate_sessions_on_network_change_v2 =
-        ShouldQuicMigrateSessionsOnNetworkChangeV2(quic_trial_params);
+
+    if (doesVariationParamExist(quic_trial_params,
+                                "migrate_sessions_on_network_change_v2")) {
+      quic_params->migrate_sessions_on_network_change_v2 =
+          ShouldQuicMigrateSessionsOnNetworkChangeV2(quic_trial_params);
+    }
     quic_params->migrate_sessions_early_v2 =
         ShouldQuicMigrateSessionsEarlyV2(quic_trial_params);
     quic_params->allow_port_migration =
@@ -662,8 +670,6 @@ void ConfigureQuicParams(const base::CommandLine& command_line,
     quic_params->max_packet_length = max_packet_length;
   }
 
-  quic_params->user_agent_id = quic_user_agent_id;
-
   quic::ParsedQuicVersionVector supported_versions =
       GetQuicVersions(quic_trial_params);
   if (!supported_versions.empty())
@@ -676,7 +682,6 @@ namespace network_session_configurator {
 
 void ParseCommandLineAndFieldTrials(const base::CommandLine& command_line,
                                     bool is_quic_force_disabled,
-                                    const std::string& quic_user_agent_id,
                                     net::HttpNetworkSessionParams* params,
                                     net::QuicParams* quic_params) {
   is_quic_force_disabled |= command_line.HasSwitch(switches::kDisableQuic);
@@ -688,8 +693,7 @@ void ParseCommandLineAndFieldTrials(const base::CommandLine& command_line,
     quic_trial_params.clear();
   }
   ConfigureQuicParams(command_line, quic_trial_group, quic_trial_params,
-                      is_quic_force_disabled, quic_user_agent_id, params,
-                      quic_params);
+                      is_quic_force_disabled, params, quic_params);
 
   std::string http2_trial_group =
       base::FieldTrialList::FindFullName(kHttp2FieldTrialName);

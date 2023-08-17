@@ -19,6 +19,7 @@
 #include "components/autofill/core/common/mojom/autofill_types.mojom-shared.h"
 #include "components/autofill/core/common/unique_ids.h"
 #include "third_party/blink/public/platform/web_vector.h"
+#include "third_party/blink/public/web/web_autofill_state.h"
 #include "third_party/blink/public/web/web_element_collection.h"
 #include "ui/gfx/geometry/rect_f.h"
 
@@ -168,14 +169,14 @@ bool IsMonthInput(const blink::WebInputElement& element);
 // Returns true if |element| is a text input element.
 bool IsTextInput(const blink::WebInputElement& element);
 
-// Returns true if `element` is either a select or a selectmenu element.
-bool IsSelectOrSelectMenuElement(const blink::WebFormControlElement& element);
+// Returns true if `element` is either a select or a selectlist element.
+bool IsSelectOrSelectListElement(const blink::WebFormControlElement& element);
 
 // Returns true if |element| is a select element.
 bool IsSelectElement(const blink::WebFormControlElement& element);
 
-// Returns true if `element` is a selectmenu element.
-bool IsSelectMenuElement(const blink::WebFormControlElement& element);
+// Returns true if `element` is a selectlist element.
+bool IsSelectListElement(const blink::WebFormControlElement& element);
 
 // Returns true if |element| is a textarea element.
 bool IsTextAreaElement(const blink::WebFormControlElement& element);
@@ -200,8 +201,8 @@ bool IsWebauthnTaggedElement(const blink::WebFormControlElement& element);
 // Returns true if |element| can be edited (enabled and not read only).
 bool IsElementEditable(const blink::WebInputElement& element);
 
-// True if this element can take focus. If this element is a selectmenu, checks
-// whether a child of the selectmenu can take focus.
+// True if this element can take focus. If this element is a selectlist, checks
+// whether a child of the selectlist can take focus.
 bool IsWebElementFocusableForAutofill(const blink::WebElement& element);
 
 // A heuristic visibility detection. See crbug.com/1335257 for an overview of
@@ -334,23 +335,22 @@ bool FindFormAndFieldForFormControlElement(
     FormData* form,
     FormFieldData* field);
 
-// Fills or previews the form represented by |form|.  |element| is the input
-// element that initiated the auto-fill process. Returns the filled fields.
-std::vector<blink::WebFormControlElement> FillOrPreviewForm(
+// Fills or previews the form represented by `form`.
+// `initiating_element` is the element that initiated the autofill process.
+// Returns the filled elements.
+std::vector<blink::WebFormControlElement> ApplyAutofillAction(
     const FormData& form,
-    const blink::WebFormControlElement& element,
-    mojom::RendererFormDataAction action);
+    const blink::WebFormControlElement& initiating_element,
+    mojom::AutofillActionType action_type,
+    mojom::AutofillActionPersistence action_persistence);
 
-// Applies undo to the form represented by `form`. `element` is the input
-// element that initiated the autofill undo process. Returns the filled fields.
-void UndoForm(const FormData& form,
-              const blink::WebFormControlElement& form_control_element);
-
-// Clears the suggested values in |control_elements|. The state of
-// |initiating_element| is set to |old_autofill_state|; all other fields are set
-// to kNotFilled.
+// Clears the suggested values in `previewed_elements`.
+// `initiating_element` is the element that initiated the preview operation.
+// `old_autofill_state` is the previous state of the field that initiated the
+// preview.
 void ClearPreviewedElements(
-    std::vector<blink::WebFormControlElement>& control_elements,
+    mojom::AutofillActionType action_type,
+    std::vector<blink::WebFormControlElement>& previewed_elements,
     const blink::WebFormControlElement& initiating_element,
     blink::WebAutofillState old_autofill_state);
 

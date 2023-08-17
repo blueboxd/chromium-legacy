@@ -4,14 +4,42 @@
 
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/incognito/incognito_grid_mediator.h"
 
+#import "base/metrics/histogram_functions.h"
 #import "base/metrics/user_metrics.h"
 #import "base/metrics/user_metrics_action.h"
-
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
+#import "ios/chrome/browser/shared/model/web_state_list/web_state_list.h"
+#import "ios/chrome/browser/snapshots/snapshot_browser_agent.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_consumer.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_toolbars_mutator.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_grid_metrics.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_grid/toolbars/tab_grid_toolbars_configuration.h"
 
 @implementation IncognitoGridMediator
+
+// TODO(crbug.com/1457146): Refactor the grid commands to have the same function
+// name to close all.
+#pragma mark - GridCommands
+
+- (void)closeAllItems {
+  RecordTabGridCloseTabsCount(self.webStateList->count());
+  base::RecordAction(
+      base::UserMetricsAction("MobileTabGridCloseAllIncognitoTabs"));
+  // This is a no-op if `webStateList` is already empty.
+  self.webStateList->CloseAllWebStates(WebStateList::CLOSE_USER_ACTION);
+  SnapshotBrowserAgent::FromBrowser(self.browser)->RemoveAllSnapshots();
+}
+
+- (void)saveAndCloseAllItems {
+  NOTREACHED_NORETURN() << "Incognito tabs should not be saved before closing.";
+}
+
+- (void)undoCloseAllItems {
+  NOTREACHED_NORETURN() << "Incognito tabs are not saved before closing.";
+}
+
+- (void)discardSavedClosedItems {
+  NOTREACHED_NORETURN() << "Incognito tabs cannot be saved.";
+}
 
 #pragma mark - TabGridPageMutator
 
@@ -19,8 +47,28 @@
   if (selected) {
     base::RecordAction(
         base::UserMetricsAction("MobileTabGridSelectIncognitoPanel"));
+
+    [self configureToolbarsButtons];
+    [self notifyConsumerAboutChanges];
   }
   // TODO(crbug.com/1457146): Implement.
+}
+
+#pragma mark - Parent's function
+
+- (void)configureToolbarsButtons {
+  TabGridToolbarsConfiguration* toolbarsConfiguration =
+      [[TabGridToolbarsConfiguration alloc] init];
+  toolbarsConfiguration.closeAllButton = !self.webStateList->empty();
+  toolbarsConfiguration.doneButton = YES;
+  toolbarsConfiguration.searchButton = YES;
+  toolbarsConfiguration.selectTabsButton = !self.webStateList->empty();
+  [self.toolbarsMutator setToolbarConfiguration:toolbarsConfiguration];
+}
+
+- (void)notifyConsumerAboutChanges {
+  [self.gridConsumer setItemsCanBeRestored:NO];
+  [self.gridConsumer setItemsCanBeClosed:!self.webStateList->empty()];
 }
 
 @end

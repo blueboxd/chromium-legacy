@@ -54,6 +54,7 @@
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_user_gesture_details.h"
+#include "chrome/browser/ui/toolbar/chrome_labs_utils.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/ui/web_applications/web_app_dialog_utils.h"
@@ -622,7 +623,7 @@ bool BrowserCommandController::ExecuteCommandWithDisposition(
       SaveCreditCard(browser_);
       break;
     case IDC_SAVE_IBAN_FOR_PAGE:
-      SaveIBAN(browser_);
+      SaveIban(browser_);
       break;
     case IDC_AUTOFILL_MANDATORY_REAUTH:
       ShowMandatoryReauthOptInPrompt(browser_);
@@ -1016,8 +1017,8 @@ bool BrowserCommandController::ExecuteCommandWithDisposition(
       break;
 
 #if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
-    case IDC_RUN_SCREEN_AI_VISUAL_ANNOTATIONS:
-      RunScreenAIVisualAnnotation(browser_);
+    case IDC_CONTENT_CONTEXT_RUN_LAYOUT_EXTRACTION:
+      RunScreenAILayoutExtraction(browser_);
       break;
 #endif
 
@@ -1399,7 +1400,7 @@ void BrowserCommandController::InitCommandState() {
       command_updater_.UpdateCommandEnabled(IDC_READING_LIST_MENU_SHOW_UI,
                                             true);
     }
-    if (base::FeatureList::IsEnabled(features::kChromeLabs)) {
+    if (IsChromeLabsEnabled()) {
       command_updater_.UpdateCommandEnabled(IDC_SHOW_CHROME_LABS, true);
     }
   }
@@ -1680,8 +1681,9 @@ void BrowserCommandController::UpdateCommandsForFullscreenMode() {
       IDC_FOCUS_INACTIVE_POPUP_FOR_ACCESSIBILITY, main_not_fullscreen);
 
 #if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
-  command_updater_.UpdateCommandEnabled(IDC_RUN_SCREEN_AI_VISUAL_ANNOTATIONS,
-                                        features::IsLayoutExtractionEnabled());
+  command_updater_.UpdateCommandEnabled(
+      IDC_CONTENT_CONTEXT_RUN_LAYOUT_EXTRACTION,
+      features::IsLayoutExtractionEnabled());
 #endif
 
   // Show various bits of UI

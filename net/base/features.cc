@@ -135,6 +135,12 @@ BASE_FEATURE(kPartitionNelAndReportingByNetworkIsolationKey,
 BASE_FEATURE(kEnableCrossSiteFlagNetworkIsolationKey,
              "EnableCrossSiteFlagNetworkIsolationKey",
              base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kEnableFrameSiteSharedOpaqueNetworkIsolationKey,
+             "EnableFrameSiteSharedOpaqueNetworkIsolationKey",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kHttpCacheKeyingExperimentControlGroup,
+             "HttpCacheKeyingExperimentControlGroup",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kTLS13KeyUpdate,
              "TLS13KeyUpdate",
@@ -171,7 +177,7 @@ BASE_FEATURE(kCertDualVerificationTrialFeature,
 #if BUILDFLAG(CHROME_ROOT_STORE_OPTIONAL)
 BASE_FEATURE(kChromeRootStoreUsed,
              "ChromeRootStoreUsed",
-#if BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_LINUX)
+#if BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_ANDROID)
              base::FEATURE_ENABLED_BY_DEFAULT
 #else
              base::FEATURE_DISABLED_BY_DEFAULT
@@ -253,9 +259,9 @@ BASE_FEATURE(kNoncedPartitionedCookies,
              "NoncedPartitionedCookies",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-BASE_FEATURE(kClampCookieExpiryTo400Days,
-             "ClampCookieExpiryTo400Days",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+BASE_FEATURE(kBlockTruncatedCookies,
+             "BlockTruncatedCookies",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kStaticKeyPinningEnforcement,
              "StaticKeyPinningEnforcement",
@@ -281,6 +287,10 @@ BASE_FEATURE(kThirdPartyStoragePartitioning,
 // increased renderer hangs.
 BASE_FEATURE(kSupportPartitionedBlobUrl,
              "SupportPartitionedBlobUrl",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kTpcdSupportSettings,
+             "TpcdSupportSettings",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kAlpsParsing, "AlpsParsing", base::FEATURE_ENABLED_BY_DEFAULT);
@@ -333,7 +343,11 @@ BASE_FEATURE(kKerberosInBrowserRedirect,
 // A flag to use asynchronous session creation for new QUIC sessions.
 BASE_FEATURE(kAsyncQuicSession,
              "AsyncQuicSession",
+#if BUILDFLAG(IS_WIN)
+             base::FEATURE_ENABLED_BY_DEFAULT);
+#else
              base::FEATURE_DISABLED_BY_DEFAULT);
+#endif
 
 // A flag to make multiport context creation asynchronous.
 BASE_FEATURE(kAsyncMultiPortPath,
@@ -415,8 +429,8 @@ BASE_FEATURE(kZstdContentEncoding,
              "ZstdContentEncoding",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-BASE_FEATURE(kClearSiteDataWildcardSupport,
-             "ClearSiteDataWildcardSupport",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kDigestAuthEnableSecureAlgorithms,
+             "DigestAuthEnableSecureAlgorithms",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 }  // namespace net::features

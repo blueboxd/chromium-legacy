@@ -71,10 +71,6 @@
 #import "ui/strings/grit/ui_strings.h"
 #import "url/gurl.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 // TODO(crbug.com/1425862): SigninPromoViewMediator will be refactored so that
 // we can move the SigninPromoViewConsumer implementation from the coordinator
 // to the view.
@@ -202,20 +198,19 @@
   ChromeAccountManagerService* accountManagerService =
       ChromeAccountManagerServiceFactory::GetForBrowserState(browserState);
   _signinPromoViewMediator = [[SigninPromoViewMediator alloc]
-            initWithBrowser:(Browser*)self.browser
-      accountManagerService:accountManagerService
-                authService:_authService
-                prefService:_prefService
-                syncService:_syncService
-                accessPoint:signin_metrics::AccessPoint::
-                                ACCESS_POINT_READING_LIST
-                  presenter:self
-         baseViewController:self.tableViewController];
+      initWithAccountManagerService:accountManagerService
+                        authService:_authService
+                        prefService:_prefService
+                        syncService:_syncService
+                        accessPoint:signin_metrics::AccessPoint::
+                                        ACCESS_POINT_READING_LIST
+                          presenter:self
+                 baseViewController:self.tableViewController];
   _signinPromoViewMediator.signinPromoAction =
       SigninPromoAction::kInstantSignin;
   _signinPromoViewMediator.consumer = self;
-  [_signinPromoViewMediator
-      setDataTypeToWaitForInitialSync:syncer::ModelType::READING_LIST];
+  _signinPromoViewMediator.dataTypeToWaitForInitialSync =
+      syncer::ModelType::READING_LIST;
   [self updateSignInPromoVisibility];
 
   [super start];
@@ -602,7 +597,7 @@
     (const signin::PrimaryAccountChangeEvent&)event {
   switch (event.GetEventTypeFor(signin::ConsentLevel::kSignin)) {
     case signin::PrimaryAccountChangeEvent::Type::kSet:
-      if (!_signinPromoViewMediator.signinInProgress) {
+      if (!_signinPromoViewMediator.showSpinner) {
         self.shouldShowSignInPromo = NO;
       }
       break;
@@ -642,7 +637,7 @@
     // If the user is signed-in with the promo (thus opted-in for Reading List
     // account storage), the promo should stay visible during the initial sync
     // and a spinner should be shown on it.
-    self.shouldShowSignInPromo = _signinPromoViewMediator.signinInProgress;
+    self.shouldShowSignInPromo = _signinPromoViewMediator.showSpinner;
   } else {
     const std::string lastSignedInGaiaId =
         _prefService->GetString(prefs::kGoogleServicesLastGaiaId);

@@ -15,10 +15,12 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.profiles.ProfileKey;
+import org.chromium.components.autofill.AutofillProfile;
 import org.chromium.components.autofill.VirtualCardEnrollmentState;
 import org.chromium.components.image_fetcher.ImageFetcher;
 import org.chromium.components.image_fetcher.ImageFetcherConfig;
@@ -493,8 +495,9 @@ public class PersonalDataManager {
             String[] profileLabels, String[] profileGUIDs) {
         ArrayList<AutofillProfile> profiles = new ArrayList<AutofillProfile>(profileGUIDs.length);
         for (int i = 0; i < profileGUIDs.length; i++) {
-            AutofillProfile profile = PersonalDataManagerJni.get().getProfileByGUID(
-                    mPersonalDataManagerAndroid, PersonalDataManager.this, profileGUIDs[i]);
+            AutofillProfile profile = new AutofillProfile(
+                    PersonalDataManagerJni.get().getProfileByGUID(mPersonalDataManagerAndroid,
+                            PersonalDataManager.this, profileGUIDs[i]));
             profile.setLabel(profileLabels[i]);
             profiles.add(profile);
         }
@@ -504,8 +507,8 @@ public class PersonalDataManager {
 
     public AutofillProfile getProfile(String guid) {
         ThreadUtils.assertOnUiThread();
-        return PersonalDataManagerJni.get().getProfileByGUID(
-                mPersonalDataManagerAndroid, PersonalDataManager.this, guid);
+        return new AutofillProfile(PersonalDataManagerJni.get().getProfileByGUID(
+                mPersonalDataManagerAndroid, PersonalDataManager.this, guid));
     }
 
     public void deleteProfile(String guid) {
@@ -517,13 +520,13 @@ public class PersonalDataManager {
     public String setProfile(AutofillProfile profile) {
         ThreadUtils.assertOnUiThread();
         return PersonalDataManagerJni.get().setProfile(
-                mPersonalDataManagerAndroid, PersonalDataManager.this, profile);
+                mPersonalDataManagerAndroid, PersonalDataManager.this, profile, profile.getGUID());
     }
 
     public String setProfileToLocal(AutofillProfile profile) {
         ThreadUtils.assertOnUiThread();
         return PersonalDataManagerJni.get().setProfileToLocal(
-                mPersonalDataManagerAndroid, PersonalDataManager.this, profile);
+                mPersonalDataManagerAndroid, PersonalDataManager.this, profile, profile.getGUID());
     }
 
     /**
@@ -705,6 +708,11 @@ public class PersonalDataManager {
         ThreadUtils.assertOnUiThread();
         PersonalDataManagerJni.get().clearServerDataForTesting(
                 mPersonalDataManagerAndroid, PersonalDataManager.this);
+    }
+
+    protected void clearImageDataForTesting() {
+        ThreadUtils.assertOnUiThread();
+        mCreditCardArtImages.clear();
     }
 
     public static void setInstanceForTesting(PersonalDataManager manager) {
@@ -961,9 +969,12 @@ public class PersonalDataManager {
         // Schedule the fetching of image and return null so that the UI thread does not have to
         // wait and can show the default network icon.
         fetchImage(urlToFetch, bitmap -> {
-            // TODO (crbug.com/1410418): Log image fetching failure metrics.
+            RecordHistogram.recordBooleanHistogram("Autofill.ImageFetcher.Result", bitmap != null);
+
             // If the image fetching was unsuccessful, silently return.
-            if (bitmap == null) return;
+            if (bitmap == null) {
+                return;
+            }
 
             // When adding new sizes for card icons, check if the corner radius needs to be added as
             // a suffix for caching (crbug.com/1431283).
@@ -1012,9 +1023,9 @@ public class PersonalDataManager {
         boolean isCountryEligibleForAccountStorage(long nativePersonalDataManagerAndroid,
                 PersonalDataManager caller, String countryCode);
         String setProfile(long nativePersonalDataManagerAndroid, PersonalDataManager caller,
-                AutofillProfile profile);
+                AutofillProfile profile, String guid);
         String setProfileToLocal(long nativePersonalDataManagerAndroid, PersonalDataManager caller,
-                AutofillProfile profile);
+                AutofillProfile profile, String guid);
         String getShippingAddressLabelWithCountryForPaymentRequest(
                 long nativePersonalDataManagerAndroid, PersonalDataManager caller,
                 AutofillProfile profile);

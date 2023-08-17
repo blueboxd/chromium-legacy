@@ -20,6 +20,7 @@
 #include "base/scoped_observation_traits.h"
 #include "base/sequence_checker.h"
 #include "base/supports_user_data.h"
+#include "base/uuid.h"
 #include "components/commerce/core/account_checker.h"
 #include "components/commerce/core/proto/commerce_subscription_db_content.pb.h"
 #include "components/commerce/core/subscriptions/commerce_subscription.h"
@@ -218,6 +219,22 @@ struct PriceInsightsInfo {
   bool has_multiple_catalogs;
 };
 
+// Information returned by the discount APIs.
+struct DiscountInfo {
+  DiscountInfo();
+  DiscountInfo(const DiscountInfo&);
+  DiscountInfo& operator=(const DiscountInfo&);
+  ~DiscountInfo();
+
+  std::string description_detail;
+  absl::optional<std::string> terms_and_conditions;
+  std::string value_in_text;
+  std::string discount_code;
+  int64_t id;
+  bool is_merchant_wide;
+  double expiry_time_sec;
+};
+
 // Callbacks for querying a single URL or observing information from all
 // navigated urls.
 using ProductInfoCallback =
@@ -228,10 +245,13 @@ using PriceInsightsInfoCallback =
     base::OnceCallback<void(const GURL&,
                             const absl::optional<PriceInsightsInfo>&)>;
 
+using DiscountsMap = std::map<GURL, std::vector<DiscountInfo>>;
+using DiscountInfoCallback = base::OnceCallback<void(const DiscountsMap&)>;
+
 // A callback for getting updated ProductInfo for a bookmark. This provides the
 // bookmark ID being updated, the URL, and the product info.
 using BookmarkProductInfoUpdatedCallback = base::RepeatingCallback<
-    void(const int64_t, const GURL&, absl::optional<ProductInfo>)>;
+    void(const base::Uuid&, const GURL&, absl::optional<ProductInfo>)>;
 
 class ShoppingService : public KeyedService, public base::SupportsUserData {
  public:
@@ -272,7 +292,7 @@ class ShoppingService : public KeyedService, public base::SupportsUserData {
   // repeating callback that provides the bookmark's ID, URL, and product info.
   // Currently this API should only be used in the BookmarkUpdateManager.
   virtual void GetUpdatedProductInfoForBookmarks(
-      const std::vector<int64_t>& bookmark_ids,
+      const std::vector<base::Uuid>& bookmark_uuids,
       BookmarkProductInfoUpdatedCallback info_updated_callback);
 
   // Gets the maximum number of bookmarks that the backend will retrieve per
@@ -293,6 +313,12 @@ class ShoppingService : public KeyedService, public base::SupportsUserData {
   // null if there is none available.
   virtual void GetPriceInsightsInfoForUrl(const GURL& url,
                                           PriceInsightsInfoCallback callback);
+
+  // This API fetches valid discounts information on the provided |urls| and
+  // passes the payload back to the caller via |callback|. Call will run after
+  // the fetch is completed.
+  virtual void GetDiscountInfoForUrls(const std::vector<GURL>& urls,
+                                      DiscountInfoCallback callback);
 
   // Create new subscriptions in batch if needed, and will notify |callback| if
   // the operation completes successfully.
@@ -383,6 +409,14 @@ class ShoppingService : public KeyedService, public base::SupportsUserData {
   // whether to create critical, feature-related infrastructure.
   virtual bool IsPriceInsightsEligible();
 
+  // This is a feature check for "show discounts on navigation", which will
+  // return true if the user has the feature flag enabled, is signed-in and
+  // synced, has MSBB enabled, and (if applicable) is in an eligible country and
+  // locale. The value returned by this method can change at runtime, so it
+  // should not be used when deciding whether to create critical,
+  // feature-related infrastructure.
+  virtual bool IsDiscountEligibleToShowOnNavigation();
+
   // Get a weak pointer for this service instance.
   base::WeakPtr<ShoppingService> AsWeakPtr();
 
@@ -459,7 +493,7 @@ class ShoppingService : public KeyedService, public base::SupportsUserData {
   // info.
   void OnProductInfoUpdatedOnDemand(
       BookmarkProductInfoUpdatedCallback callback,
-      std::unordered_map<std::string, int64_t> url_to_id_map,
+      std::unordered_map<std::string, base::Uuid> url_to_uuid_map,
       const GURL& url,
       const base::flat_map<
           optimization_guide::proto::OptimizationType,

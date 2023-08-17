@@ -84,12 +84,11 @@ OncParsedCertificatesForPkcs12File(
   std::string pkcs12_base64_encoded;
   base::Base64Encode(pkcs12_raw, &pkcs12_base64_encoded);
 
-  base::Value::Dict onc_certificate;
-  onc_certificate.Set("GUID", guid);
-  onc_certificate.Set("Type", "Client");
-  onc_certificate.Set("PKCS12", pkcs12_base64_encoded);
-  base::Value::List onc_certificates;
-  onc_certificates.Append(std::move(onc_certificate));
+  auto onc_certificates =
+      base::Value::List().Append(base::Value::Dict()
+                                     .Set("GUID", guid)
+                                     .Set("Type", "Client")
+                                     .Set("PKCS12", pkcs12_base64_encoded));
   return std::make_unique<chromeos::onc::OncParsedCertificates>(
       onc_certificates);
 }
@@ -256,7 +255,8 @@ class ClientCertResolverTest : public testing::Test,
         /*managed_cellular_pref_handler=*/nullptr, network_state_handler_.get(),
         network_profile_handler_.get(), network_config_handler_.get(),
         nullptr /* network_device_handler */,
-        nullptr /* prohibited_technologies_handler */);
+        nullptr /* prohibited_technologies_handler */,
+        /*hotspot_controller=*/nullptr);
     // Run all notifications before starting the cert loader to reduce run time.
     task_environment_.RunUntilIdle();
 

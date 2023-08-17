@@ -43,10 +43,6 @@
 #import "third_party/ocmock/gtest_support.h"
 #import "ui/base/l10n/l10n_util_mac.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 namespace {
 constexpr char kExampleCom[] = "http://www.example.com/";
 constexpr char kAndroid[] = "android://hash@com.example.my.app";
@@ -77,7 +73,7 @@ constexpr char kNote[] = "note";
 - (void)dismissPasswordDetailsTableViewController {
 }
 
-- (void)showPasscodeDialogForReason:(PasscodeDialogReason)reason {
+- (void)showPasscodeDialog {
 }
 
 - (void)showPasswordDeleteDialogWithPasswordDetails:(PasswordDetails*)password

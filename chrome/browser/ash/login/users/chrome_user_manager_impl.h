@@ -27,6 +27,7 @@
 #include "chrome/browser/ash/settings/device_settings_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_manager_observer.h"
+#include "chrome/browser/profiles/profile_observer.h"
 #include "chromeos/ash/components/login/auth/mount_performer.h"
 #include "components/account_id/account_id.h"
 #include "components/session_manager/core/session_manager.h"
@@ -55,6 +56,7 @@ class ChromeUserManagerImpl
       public DeviceSettingsService::Observer,
       public policy::DeviceLocalAccountPolicyService::Observer,
       public policy::MinimumVersionPolicyHandler::Observer,
+      public ProfileObserver,
       public ProfileManagerObserver {
  public:
   ChromeUserManagerImpl(const ChromeUserManagerImpl&) = delete;
@@ -119,6 +121,9 @@ class ChromeUserManagerImpl
   // ProfileManagerObserver:
   void OnProfileAdded(Profile* profile) override;
   void OnProfileManagerDestroying() override;
+
+  // ProfileObserver:
+  void OnProfileWillBeDestroyed(Profile* profile) override;
 
   // ChromeUserManager:
   bool IsEnterpriseManaged() const override;
@@ -196,19 +201,7 @@ class ChromeUserManagerImpl
       const AccountId& account_id,
       const policy::DeviceLocalAccount::Type type) const;
 
-  // Invoked as soon as the definitive device ownership is initialized. The
-  // device owner is first determined by either login with a user account or
-  // enterprise enrollment. After every reboot this value needs to be fetched so
-  // that this class holds the correct owner id.
-  void OnDeviceOwnershipInitialized();
-
-  // Goes through the list of users and removes users that are marked as
-  // ephemeral. This method must only be called after the device owner was
-  // initialized. Returns whether some user state was changed or not.
-  bool CleanEphemeralUsers();
-
-  // Returns whether the device owner is yet initialized or not.
-  bool IsDeviceOwnerInitialized();
+  void UpdateOwnerId();
 
   // Remove non cryptohome data associated with the given `account_id` after
   // having removed all external data (such as wallpapers and avatars)
@@ -253,10 +246,13 @@ class ChromeUserManagerImpl
   base::ScopedObservation<ProfileManager, ProfileManagerObserver>
       profile_manager_observation_{this};
 
+  std::vector<
+      std::unique_ptr<base::ScopedObservation<Profile, ProfileObserver>>>
+      profile_observations_;
+
   base::RepeatingClosure remove_non_cryptohome_data_barrier_;
 
   std::unique_ptr<MountPerformer> mount_performer_;
-  bool is_device_owner_initialized_{false};
 
   base::WeakPtrFactory<ChromeUserManagerImpl> weak_factory_{this};
 };

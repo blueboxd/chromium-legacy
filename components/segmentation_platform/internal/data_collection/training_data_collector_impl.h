@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_SEGMENTATION_PLATFORM_INTERNAL_DATA_COLLECTION_TRAINING_DATA_COLLECTOR_IMPL_H_
 #define COMPONENTS_SEGMENTATION_PLATFORM_INTERNAL_DATA_COLLECTION_TRAINING_DATA_COLLECTOR_IMPL_H_
 
+#include <cstdint>
 #include <set>
 #include <vector>
 
@@ -13,6 +14,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/histogram_base.h"
+#include "base/time/time.h"
 #include "components/segmentation_platform/internal/data_collection/training_data_cache.h"
 #include "components/segmentation_platform/internal/data_collection/training_data_collector.h"
 #include "components/segmentation_platform/internal/database/cached_result_provider.h"
@@ -22,6 +24,8 @@
 #include "components/segmentation_platform/internal/proto/model_prediction.pb.h"
 #include "components/segmentation_platform/internal/signals/histogram_signal_handler.h"
 #include "components/segmentation_platform/internal/signals/user_action_signal_handler.h"
+#include "components/segmentation_platform/internal/stats.h"
+#include "components/segmentation_platform/public/features.h"
 #include "components/segmentation_platform/public/model_provider.h"
 #include "components/segmentation_platform/public/proto/segmentation_platform.pb.h"
 #include "components/segmentation_platform/public/trigger.h"
@@ -68,6 +72,8 @@ class TrainingDataCollectorImpl : public TrainingDataCollector,
   void OnUserAction(const std::string& user_action,
                     base::TimeTicks action_time) override;
 
+  void SetSamplingRateForTesting(uint64_t sampling_rate);
+
  private:
   struct TrainingTimings;
 
@@ -81,7 +87,8 @@ class TrainingDataCollectorImpl : public TrainingDataCollector,
       const proto::SegmentInfo& segment_info,
       SuccessCallback callback);
 
-  void OnGetSegmentsInfoList(DefaultModelManager::SegmentInfoList segment_list);
+  void OnGetSegmentsInfoList(
+      std::unique_ptr<SegmentInfoDatabase::SegmentInfoList> segment_list);
 
   void ReportForSegmentsInfoList(
       const absl::optional<ImmediateCollectionParam>& param,
@@ -96,7 +103,7 @@ class TrainingDataCollectorImpl : public TrainingDataCollector,
       TrainingRequestId request_id,
       DecisionType type,
       scoped_refptr<InputContext> input_context,
-      DefaultModelManager::SegmentInfoList segment_list);
+      std::unique_ptr<SegmentInfoDatabase::SegmentInfoList> segment_list);
 
   void OnGetTrainingTensorsAtDecisionTime(
       TrainingRequestId request_id,
@@ -126,6 +133,11 @@ class TrainingDataCollectorImpl : public TrainingDataCollector,
       bool has_error,
       const ModelProvider::Request& input_tensors,
       const ModelProvider::Response& output_tensors);
+
+  void PostObservationTask(TrainingRequestId request_id,
+                           const proto::SegmentInfo& segment_info,
+                           const base::TimeDelta& delay,
+                           stats::TrainingDataCollectionEvent event);
 
   // Returns whether training data can be reported through UKM. If
   // |include_output| is false, only input data will be checked to see if they
@@ -163,9 +175,6 @@ class TrainingDataCollectorImpl : public TrainingDataCollector,
   // Cache class to temporarily store training data in the observation period.
   std::unique_ptr<TrainingDataCache> training_cache_;
 
-  // Class to get segment info from default models.
-  const raw_ptr<DefaultModelManager, DanglingUntriaged> default_model_manager_;
-
   // Hash of histograms for immediate training data collection. When any
   // histogram hash contained in the map is recorded, a UKM message is reported
   // right away.
@@ -189,6 +198,8 @@ class TrainingDataCollectorImpl : public TrainingDataCollector,
   // TODO(ssid): Clean up the list of segment IDs in this class to be a single
   // list.
   base::flat_set<SegmentId> all_segments_for_training_;
+
+  uint64_t time_trigger_sampling_rate_{0};
 
   base::WeakPtrFactory<TrainingDataCollectorImpl> weak_ptr_factory_{this};
 };

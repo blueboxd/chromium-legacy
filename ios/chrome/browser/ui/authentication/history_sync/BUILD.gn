@@ -5,12 +5,13 @@
 import("//build/config/chrome_build.gni")
 
 source_set("history_sync") {
-  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "history_sync_coordinator.h",
     "history_sync_coordinator.mm",
     "history_sync_mediator.h",
     "history_sync_mediator.mm",
+    "history_sync_popup_coordinator.h",
+    "history_sync_popup_coordinator.mm",
   ]
   deps = [
     ":ui",
@@ -19,11 +20,14 @@ source_set("history_sync") {
     "//components/signin/public/identity_manager/objc",
     "//components/sync/service",
     "//components/unified_consent",
+    "//ios/chrome/app/strings",
     "//ios/chrome/browser/shared/model/browser",
     "//ios/chrome/browser/shared/model/browser_state",
     "//ios/chrome/browser/signin",
     "//ios/chrome/browser/signin:constants",
     "//ios/chrome/browser/sync",
+    "//ios/chrome/browser/ui/authentication",
+    "//ios/chrome/browser/ui/authentication/enterprise:enterprise_utils",
     "//ios/chrome/browser/ui/authentication/signin:constants",
     "//ios/chrome/common/ui/promo_style",
   ]
@@ -32,13 +36,13 @@ source_set("history_sync") {
 }
 
 source_set("ui") {
-  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "history_sync_consumer.h",
     "history_sync_view_controller.h",
     "history_sync_view_controller.mm",
   ]
   deps = [
+    "//ios/chrome/app/strings",
     "//ios/chrome/browser/shared/ui/symbols",
     "//ios/chrome/browser/ui/authentication/signin:constants",
     "//ios/chrome/common/ui/promo_style",

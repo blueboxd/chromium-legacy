@@ -8,6 +8,7 @@
 
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/ui/accelerator_utils.h"
+#include "chrome/browser/ui/tabs/tab_group_model.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_group_header.h"
@@ -130,23 +131,18 @@ int KombuchaInProcessFuzzer::Fuzz(const uint8_t* data, size_t size) {
   FuzzCase fuzz_case;
   fuzz_case.ParseFromArray(data, size);
 
+  // Used to reassign target with NameElement
+  constexpr char TargetName[] = "name";
+  constexpr char OtherTargetName[] = "otherName";
+
   // Should only be defined on first run, as ElementIdentifiers persist when
   // batching
   // Redefining hits CHECK
-  DEFINE_LOCAL_ELEMENT_IDENTIFIER_VALUE(kPrimaryTabElementId);
-  DEFINE_LOCAL_ELEMENT_IDENTIFIER_VALUE(kSecondaryTabElementId);
-
   current_fuzz_case_ = fuzz_case;
   GURL test_url = embedded_test_server()->GetURL("/test.html");
 
   // Base input always used in fuzzer
-  // Start with three tabs
-  auto ui_input =
-      Steps(PressButton(kNewTabButtonElementId),
-            InstrumentTab(kPrimaryTabElementId, 0),
-            AddInstrumentedTab(kSecondaryTabElementId, GURL("about:blank")),
-            Log("[KOMB] Passed initial setup steps"));
-
+  auto ui_input = Steps(Log("[KOMB] First Log Step!"));
   auto input_buffer = Steps(Log("[KOMB] Began procedurally generated inputs"));
 
   // Action can have arbitrary number of steps
@@ -156,51 +152,58 @@ int KombuchaInProcessFuzzer::Fuzz(const uint8_t* data, size_t size) {
   AddStep(input_buffer,
           Log("[KOMB] Count of Steps generated: ", action.steps_size()));
 
+  // TODO(xrosado) Condense calls to NameElement
   for (int j = 0; j < action.steps_size(); j++) {
     test::fuzzing::ui_fuzzing::Step step = action.steps(j);
-
     switch (step.step_choice_case()) {
       case test::fuzzing::ui_fuzzing::Step::kClickAt: {
-        auto* name =
-            target_descriptor->FindValueByNumber(step.click_at().target())
-                ->name()
-                .c_str();
-        ui::ElementIdentifier target = ui::ElementIdentifier::FromName(name);
+        int target = step.click_at().target();
+        AddStep(input_buffer,
+                NameElement(
+                    TargetName, base::BindLambdaForTesting([target]() {
+                      auto elements = ui::ElementTracker::GetElementTracker()
+                                          ->GetAllElementsForTesting();
+                      auto* choice = elements[target % elements.size()];
+                      // TODO(xrosado) Make sure we don't ever select this
+                      // element in the first place
+                      // Check if we chose the internal test element
+                      // This isn't a valid element, so we have to ignore it.
+                      if (choice->identifier() ==
+                          ui::test::internal::kInteractiveTestPivotElementId) {
+                        choice = elements[(target - 1) % elements.size()];
+                      }
+
+                      return choice;
+                    })));
 
         AddStep(input_buffer,
-                CheckStep(target,
-                          step.click_at().right_click() ? ClickRight(target)
-                                                        : ClickLeft(target),
-                          step.click_at().right_click() ? "ClickRight"
-                                                        : "ClickLeft"));
+                Steps(step.click_at().right_click() ? ClickRight(TargetName)
+                                                    : ClickLeft(TargetName)));
+
+        AddStep(input_buffer, Log("[KOMB] Added ClickAt"));
         break;
       }
       case test::fuzzing::ui_fuzzing::Step::kDragFromTo: {
-        auto* sname =
-            target_descriptor->FindValueByNumber(step.drag_from_to().source())
-                ->name()
-                .c_str();
-
-        auto* dname =
-            target_descriptor->FindValueByNumber(step.drag_from_to().dest())
-                ->name()
-                .c_str();
-
-        ui::ElementIdentifier source = ui::ElementIdentifier::FromName(sname);
-        ui::ElementIdentifier dest = ui::ElementIdentifier::FromName(dname);
-
-        AddStep(input_buffer, CheckStep(source, dest, DragFromTo(source, dest),
-                                        "DragFromTo"));
-        break;
-      }
-      case test::fuzzing::ui_fuzzing::Step::kSelectTab: {
-        auto index =
-            step.select_tab().target() % browser()->tab_strip_model()->count();
-
-        // No need to check step, so we log here instead
-        AddStep(input_buffer, Log("[KOMB] Adding SelectTab: ", index));
-        AddStep(input_buffer, Steps(SelectTab(kTabStripElementId, index)));
-
+        int source = step.drag_from_to().source();
+        int dest = step.drag_from_to().dest();
+        AddStep(input_buffer,
+                NameElement(TargetName, base::BindLambdaForTesting([source]() {
+                              auto elements =
+                                  ui::ElementTracker::GetElementTracker()
+                                      ->GetAllElementsForTesting();
+                              auto* choice = elements[source % elements.size()];
+                              return choice;
+                            })));
+        AddStep(input_buffer,
+                NameElement(
+                    OtherTargetName, base::BindLambdaForTesting([dest]() {
+                      auto elements = ui::ElementTracker::GetElementTracker()
+                                          ->GetAllElementsForTesting();
+                      auto* choice = elements[dest % elements.size()];
+                      return choice;
+                    })));
+        AddStep(input_buffer, DragFromTo(TargetName, OtherTargetName));
+        AddStep(input_buffer, Log("[KOMB] Added DragFromTo"));
         break;
       }
       case test::fuzzing::ui_fuzzing::Step::kSendAccelerator: {
@@ -213,33 +216,101 @@ int KombuchaInProcessFuzzer::Fuzz(const uint8_t* data, size_t size) {
             ->GetAcceleratorForCommandId(chosen_id, &current_accelerator_);
         AddStep(input_buffer,
                 SendAccelerator(kBrowserViewElementId, current_accelerator_));
+        break;
+      }
+      case test::fuzzing::ui_fuzzing::Step::kClickTab: {
+        int target = step.click_tab().target();
+        bool right_click = step.click_tab().right_click();
 
+        AddStep(input_buffer,
+                If([]() { return true; },
+                   [&, target]() {
+                     auto index =
+                         target % browser()->tab_strip_model()->count();
+                     return Steps(ClickTab(target, right_click),
+                                  Log("[KOMB] Added ClickTab", index,
+                                      " target: ", target, " tab_count: ",
+                                      browser()->tab_strip_model()->count()));
+                   }()));
+        break;
+      }
+      case test::fuzzing::ui_fuzzing::Step::kClickTabGroupHeader: {
+        int target = step.click_tab_group_header().target();
+        int right_click = step.click_tab_group_header().right_click();
+        AddStep(input_buffer,
+                If(
+                    [this]() {
+                      return browser()->tab_strip_model()->SupportsTabGroups();
+                    },
+                    [this, target, right_click]() {
+                      auto groups = browser()
+                                        ->tab_strip_model()
+                                        ->group_model()
+                                        ->ListTabGroups();
+                      int size = groups.size();
+                      if (size == 0) {
+                        return Steps(
+                            Log("[KOMB] Attempted ClickTabGroupHeader. "
+                                "Couldn't select tab group. Empty list!"));
+                      }
+                      auto tab_group = groups[target % size];
+                      return ClickTabGroupHeader(tab_group, right_click);
+                    }()));
+        break;
+      }
+      case test::fuzzing::ui_fuzzing::Step::kSaveTabGroup: {
+        int target = step.save_tab_group().target();
+        bool close_editor = step.save_tab_group().close_editor();
+
+        AddStep(input_buffer,
+                If(
+                    [this]() {
+                      return browser()->tab_strip_model()->SupportsTabGroups();
+                    },
+                    [this, target, close_editor]() {
+                      TabStripModel* tab_strip = browser()->tab_strip_model();
+                      auto groups = tab_strip->group_model()->ListTabGroups();
+                      int size = groups.size();
+                      if (size == 0) {
+                        return Steps(
+                            Log("[KOMB] Attempted SaveTabGroup. Couldn't save "
+                                "tab group. Empty list!"));
+                      }
+                      auto tab_group = groups[target % size];
+                      return close_editor
+                                 ? SaveGroupAndCloseEditorBubble(tab_group)
+                                 : SaveGroupLeaveEditorBubbleOpen(tab_group);
+                    }()));
+        break;
+      }
+
+      case test::fuzzing::ui_fuzzing::Step::kAddNewTabGroup: {
+        int target = step.add_new_tab_group().target();
+
+        AddStep(
+            input_buffer,
+            If(
+                [this]() {
+                  return browser()->tab_strip_model()->SupportsTabGroups();
+                },
+                [this, target]() {
+                  return Steps(
+                      Do([this, target]() {
+                        int actual_target =
+                            target % browser()->tab_strip_model()->count();
+                        browser()->tab_strip_model()->AddToNewGroup(
+                            {actual_target});
+                      }),
+                      Log("[KOMB] Added New Tab Group with Target: ", target));
+                }()));
         break;
       }
       default:  // Unspecified Value
         break;
     }
   }
-
-  if (action.has_parallel_flag()) {
-    // TODO(xrosado) Add InParallel() and AnyOf() case in future
-    AddStep(input_buffer, Log("[KOMB] Have not implemented Parallelism!"));
-    ui_input = Steps(std::move(ui_input), std::move(input_buffer));
-  } else {
-    // Join ui_input with input_buffer to one input
-    ui_input = Steps(std::move(ui_input), std::move(input_buffer));
-  }
-
-  AddStep(ui_input,
-          Log("[KOMB] Executed all procedurally generated UI inputs"));
-
-  // Set of inputs always placed at the end
-  // Mainly used for debugging and sanity checks
-  AddStep(ui_input, Steps(NavigateWebContents(kSecondaryTabElementId, test_url),
-                          Log("[KOMB] Passed navigation step")));
-
+  AddStep(ui_input, std::move(input_buffer));
   RunTestSequence(std::move(ui_input));
-
   return 0;
 }
 

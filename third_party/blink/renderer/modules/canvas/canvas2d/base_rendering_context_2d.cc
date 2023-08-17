@@ -18,9 +18,11 @@
 #include "base/task/single_thread_task_runner.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/privacy_budget/identifiability_metrics.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_begin_layer_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_union_canvasfilter_string.h"
 #include "third_party/blink/renderer/core/css/cssom/css_color_value.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser.h"
+#include "third_party/blink/renderer/core/css/properties/computed_style_utils.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/html/canvas/canvas_context_creation_attributes_core.h"
@@ -173,7 +175,7 @@ void BaseRenderingContext2D::restore(ExceptionState& exception_state) {
 }
 
 void BaseRenderingContext2D::beginLayer(ScriptState* script_state,
-                                        const V8CanvasFilterInput* filter_init,
+                                        const BeginLayerOptions* options,
                                         ExceptionState& exception_state) {
   if (UNLIKELY(isContextLost())) {
     return;
@@ -190,13 +192,21 @@ void BaseRenderingContext2D::beginLayer(ScriptState* script_state,
   if (!canvas)
     return;
 
-  ++layer_count_;
-
   CanvasRenderingContext2DState& state = GetState();
-  if (filter_init != nullptr) {
+  if (const V8CanvasFilterInput* filter_input = CHECK_DEREF(options).filter();
+      filter_input != nullptr) {
+    FilterOperations filter_operations =
+        CanvasFilterOperationResolver::CreateFilterOperations(
+            *filter_input, CHECK_DEREF(ExecutionContext::From(script_state)),
+            exception_state);
+    if (exception_state.HadException()) {
+      return;
+    }
+
     FilterEffectBuilder filter_effect_builder(
         gfx::RectF(Width(), Height()),
         1.0f);  // Deliberately ignore zoom on the canvas element.
+
     // Save the layer's filter in the parent state, along with all the other
     // render states impacting the layer. Technically, this is only required so
     // that we could restore the `cc::PaintCanvas` matrix stack (in
@@ -204,14 +214,12 @@ void BaseRenderingContext2D::beginLayer(ScriptState* script_state,
     // opened. The filter can be discarded from the parent state as soon as the
     // layer is closed.
     state.SetLayerFilter(paint_filter_builder::Build(
-        filter_effect_builder.BuildFilterEffect(
-            CanvasFilterOperationResolver::CreateFilterOperations(
-                CHECK_DEREF(filter_init),
-                CHECK_DEREF(ExecutionContext::From(script_state)),
-                exception_state),
-            !OriginClean()),
+        filter_effect_builder.BuildFilterEffect(std::move(filter_operations),
+                                                !OriginClean()),
         kInterpolationSpaceSRGB));
   }
+
+  ++layer_count_;
 
   state_stack_.push_back(MakeGarbageCollected<CanvasRenderingContext2DState>(
       state, CanvasRenderingContext2DState::kDontCopyClipList,
@@ -229,8 +237,6 @@ void BaseRenderingContext2D::beginLayer(ScriptState* script_state,
   DCHECK(!GetState().ShouldDrawShadows());
   setGlobalAlpha(1.0);
   setGlobalCompositeOperation("source-over");
-  setFilter(script_state,
-            MakeGarbageCollected<V8UnionCanvasFilterOrString>("none"));
 }
 
 CanvasRenderingContext2DState::SaveType
@@ -1780,8 +1786,9 @@ void BaseRenderingContext2D::drawImage(CanvasImageSource* image_source,
 
   WillDrawImage(image_source);
 
-  if (!origin_tainted_by_content_ && WouldTaintOrigin(image_source))
+  if (!origin_tainted_by_content_ && WouldTaintCanvasOrigin(image_source)) {
     SetOriginTaintedByContent();
+  }
 
   Draw<OverdrawOp::kDrawImage>(
       [this, image_source, image, src_rect, dst_rect](
@@ -1964,7 +1971,7 @@ CanvasPattern* BaseRenderingContext2D::createPattern(
   if (!image_for_rendering)
     return nullptr;
 
-  bool origin_clean = !WouldTaintOrigin(image_source);
+  bool origin_clean = !WouldTaintCanvasOrigin(image_source);
 
   auto* pattern = MakeGarbageCollected<CanvasPattern>(
       std::move(image_for_rendering), repeat_mode, origin_clean);
@@ -2494,6 +2501,41 @@ void BaseRenderingContext2D::WillOverwriteCanvas(
   }
 
   WillOverwriteCanvas();
+}
+
+void BaseRenderingContext2D::WillUseCurrentFont() const {}
+
+String BaseRenderingContext2D::font() const {
+  if (!GetState().HasRealizedFont()) {
+    return kDefaultFont;
+  }
+
+  WillUseCurrentFont();
+  StringBuilder serialized_font;
+  const FontDescription& font_description = GetState().GetFontDescription();
+
+  if (font_description.Style() == ItalicSlopeValue()) {
+    serialized_font.Append("italic ");
+  }
+  if (font_description.Weight() == BoldWeightValue()) {
+    serialized_font.Append("bold ");
+  } else if (font_description.Weight() != NormalWeightValue()) {
+    int weight_as_int = static_cast<int>((float)font_description.Weight());
+    serialized_font.AppendNumber(weight_as_int);
+    serialized_font.Append(" ");
+  }
+  if (font_description.VariantCaps() == FontDescription::kSmallCaps) {
+    serialized_font.Append("small-caps ");
+  }
+
+  serialized_font.AppendNumber(font_description.ComputedSize());
+  serialized_font.Append("px ");
+
+  serialized_font.Append(
+      ComputedStyleUtils::ValueForFontFamily(font_description.Family())
+          ->CssText());
+
+  return serialized_font.ToString();
 }
 
 }  // namespace blink

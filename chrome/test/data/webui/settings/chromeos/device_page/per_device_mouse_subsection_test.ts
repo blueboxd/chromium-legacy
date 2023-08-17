@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import 'chrome://os-settings/os_settings.js';
 import 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
 
-import {CrToggleElement, FakeInputDeviceSettingsProvider, fakeMice, Mouse, PolicyStatus, Router, routes, setInputDeviceSettingsProviderForTesting, SettingsDropdownMenuElement, SettingsPerDeviceMouseSubsectionElement, SettingsSliderElement, SettingsToggleButtonElement} from 'chrome://os-settings/os_settings.js';
-import {CrLinkRowElement} from 'chrome://resources/cr_elements/cr_link_row/cr_link_row.js';
+import {CrLinkRowElement, CrToggleElement, FakeInputDeviceSettingsProvider, fakeMice, Mouse, PolicyStatus, Router, routes, setInputDeviceSettingsProviderForTesting, SettingsDropdownMenuElement, SettingsPerDeviceMouseSubsectionElement, SettingsSliderElement, SettingsToggleButtonElement} from 'chrome://os-settings/os_settings.js';
 import {assert} from 'chrome://resources/js/assert_ts.js';
 import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {flushTasks, waitAfterNextRender} from 'chrome://webui-test/polymer_test_util.js';
@@ -91,7 +91,7 @@ suite('<settings-per-device-mouse-subsection>', function() {
         mouseReverseScrollToggleButton.checked);
 
     const mouseScrollAccelerationToggleButton =
-        subsection.shadowRoot!.querySelector<SettingsToggleButtonElement>(
+        subsection.shadowRoot!.querySelector<CrToggleElement>(
             '#mouseScrollAcceleration');
     assert(mouseScrollAccelerationToggleButton);
     mouseScrollAccelerationToggleButton.click();
@@ -99,7 +99,7 @@ suite('<settings-per-device-mouse-subsection>', function() {
     updatedMice = await provider.getConnectedMouseSettings();
     assertEquals(
         updatedMice[0]!.settings.scrollAcceleration,
-        mouseScrollAccelerationToggleButton.pref!.value);
+        mouseScrollAccelerationToggleButton.checked);
 
     const mouseScrollSpeedSlider =
         subsection.shadowRoot!.querySelector<SettingsSliderElement>(
@@ -139,12 +139,12 @@ suite('<settings-per-device-mouse-subsection>', function() {
         fakeMice[0]!.settings.reverseScrolling,
         subsection.get('reverseScrollValue'));
     let mouseScrollAccelerationToggleButton =
-        subsection.shadowRoot!.querySelector<SettingsSliderElement>(
+        subsection.shadowRoot!.querySelector<CrToggleElement>(
             '#mouseScrollAcceleration');
     assertTrue(isVisible(mouseScrollAccelerationToggleButton));
     assertEquals(
         fakeMice[0]!.settings.scrollAcceleration,
-        mouseScrollAccelerationToggleButton!.pref!.value);
+        mouseScrollAccelerationToggleButton!.checked);
     let mouseScrollSpeedSlider =
         subsection.shadowRoot!.querySelector<SettingsSliderElement>(
             '#mouseScrollSpeedSlider');
@@ -273,4 +273,38 @@ suite('<settings-per-device-mouse-subsection>', function() {
     const expectedMouseId = subsection.get('mouse.id');
     assertEquals(expectedMouseId, mouseId);
   });
+
+  /**
+   * Test that turn on scroll acceleration will disable scrolling speed slider.
+   */
+  test(
+      'turn on scroll acceleration will disable scrolling speed slider',
+      async () => {
+        await initializePerDeviceMouseSubsection();
+        const mouseScrollAccelerationToggleButton =
+            subsection.shadowRoot!.querySelector<SettingsToggleButtonElement>(
+                '#mouseScrollAcceleration');
+        assert(mouseScrollAccelerationToggleButton);
+        const mouseScrollSpeedSlider =
+            subsection.shadowRoot!.querySelector<SettingsSliderElement>(
+                '#mouseScrollSpeedSlider');
+        assert(mouseScrollSpeedSlider);
+
+        // When scroll acceleration is off, scroll speed slider is enabled.
+        assertFalse(fakeMice[0]!.settings.scrollAcceleration);
+        assertFalse(mouseScrollSpeedSlider.disabled);
+
+        mouseScrollAccelerationToggleButton.click();
+        // Refresh the whole subsection page is necessary since the slider
+        // element has some issue getting updated.
+        await initializePerDeviceMouseSubsection();
+
+        // When scroll acceleration is on, scroll speed slider is disaabled.
+        assertTrue(fakeMice[0]!.settings.scrollAcceleration);
+        const updatedMouseScrollSpeedSlider =
+            subsection.shadowRoot!.querySelector<SettingsSliderElement>(
+                '#mouseScrollSpeedSlider');
+        assert(updatedMouseScrollSpeedSlider);
+        assertTrue(updatedMouseScrollSpeedSlider.disabled);
+      });
 });

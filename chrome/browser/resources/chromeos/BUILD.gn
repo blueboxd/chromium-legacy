@@ -18,6 +18,7 @@ group("resources") {
     "assistant_optin:resources",
     "audio:resources",
     "bluetooth_pairing_dialog:resources",
+    "borealis_installer:resources",
     "cloud_upload:resources",
     "desk_api:resources",
     "emoji_picker:resources",
@@ -38,6 +39,7 @@ group("resources") {
     "password_change:resources",
     "remote_maintenance_curtain:resources",
     "sensor_info:resources",
+    "status_area_tester:resources",
     "supervision:resources",
     "vc_tray_tester:resources",
   ]

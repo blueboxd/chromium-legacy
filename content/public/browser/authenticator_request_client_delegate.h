@@ -15,8 +15,10 @@
 #include "content/public/browser/web_authentication_request_proxy.h"
 #include "device/fido/authenticator_get_assertion_response.h"
 #include "device/fido/cable/cable_discovery_data.h"
+#include "device/fido/discoverable_credential_metadata.h"
 #include "device/fido/fido_request_handler_base.h"
 #include "device/fido/fido_transport_protocol.h"
+#include "device/fido/public_key_credential_descriptor.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 #if BUILDFLAG(IS_ANDROID)
@@ -180,7 +182,7 @@ class CONTENT_EXPORT AuthenticatorRequestClientDelegate
     : public device::FidoRequestHandlerBase::Observer {
  public:
   using AccountPreselectedCallback =
-      base::RepeatingCallback<void(std::vector<uint8_t> credential_id)>;
+      base::RepeatingCallback<void(device::PublicKeyCredentialDescriptor)>;
 
   // Failure reasons that might be of interest to the user, so the embedder may
   // decide to inform the user.
@@ -203,6 +205,17 @@ class CONTENT_EXPORT AuthenticatorRequestClientDelegate
     // Windows UI.
     kWinUserCancelled,
     kHybridTransportError,
+  };
+
+  // RequestSource enumerates the source of a request, which is either the Web
+  // Authentication API (https://www.w3.org/TR/webauthn-2/), the Secure Payment
+  // Authentication API (https://www.w3.org/TR/secure-payment-confirmation), or
+  // a browser-internal use (which applies whenever
+  // `AuthenticatorCommon::Create` is used).
+  enum class RequestSource {
+    kWebAuthentication,
+    kSecurePaymentConfirmation,
+    kInternal,
   };
 
   AuthenticatorRequestClientDelegate();
@@ -231,6 +244,13 @@ class CONTENT_EXPORT AuthenticatorRequestClientDelegate
   // resolve the request. Returning false causes AuthenticatorImpl to resolve
   // the request with the error right away.
   virtual bool DoesBlockRequestOnFailure(InterestingFailureReason reason);
+
+  // TransactionSuccessful is called when any WebAuthn get() or create() call
+  // completes successfully.
+  virtual void OnTransactionSuccessful(
+      RequestSource request_source,
+      device::FidoRequestType request_type,
+      device::AuthenticatorType authenticator_type);
 
   // Supplies callbacks that the embedder can invoke to initiate certain
   // actions, namely: cancel the request, start the request over, preselect an
@@ -276,6 +296,7 @@ class CONTENT_EXPORT AuthenticatorRequestClientDelegate
   virtual void ConfigureDiscoveries(
       const url::Origin& origin,
       const std::string& rp_id,
+      RequestSource request_source,
       device::FidoRequestType request_type,
       absl::optional<device::ResidentKeyRequirement> resident_key_requirement,
       base::span<const device::CableDiscoveryData> pairings_from_extension,

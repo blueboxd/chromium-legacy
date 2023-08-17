@@ -15,13 +15,11 @@
 #import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/shared/ui/util/dynamic_type_util.h"
 #import "ios/chrome/browser/shared/ui/util/layout_guide_names.h"
-#import "ios/chrome/browser/shared/ui/util/named_guide.h"
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/shared/ui/util/util_swift.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_animator.h"
 #import "ios/chrome/browser/ui/keyboard/UIKeyCommand+Chrome.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_ui_features.h"
-#import "ios/chrome/browser/ui/toolbar/adaptive_toolbar_view_controller+subclassing.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_button.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_button_factory.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_configuration.h"
@@ -30,10 +28,6 @@
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_constants.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_utils.h"
 #import "ios/chrome/common/ui/util/ui_util.h"
-
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
 
 @interface PrimaryToolbarViewController ()
 // Redefined to be a PrimaryToolbarView.
@@ -48,18 +42,6 @@
 @implementation PrimaryToolbarViewController
 
 @dynamic view;
-
-#pragma mark - Public
-
-- (void)showPrerenderingAnimation {
-  __weak PrimaryToolbarViewController* weakSelf = self;
-  [self.view.progressBar setProgress:0];
-  [self.view.progressBar setHidden:NO
-                          animated:YES
-                        completion:^(BOOL finished) {
-                          [weakSelf stopProgressBar];
-                        }];
-}
 
 #pragma mark - AdaptiveToolbarViewController
 
@@ -89,6 +71,15 @@
   } else {
     DCHECK(IsBottomOmniboxSteadyStateEnabled());
   }
+}
+
+#pragma mark - AdaptiveToolbarViewController (Subclassing)
+
+- (void)setLocationBarViewController:
+    (UIViewController*)locationBarViewController {
+  [super setLocationBarViewController:locationBarViewController];
+
+  self.view.separator.hidden = !self.hasOmnibox;
 }
 
 #pragma mark - NewTabPageControllerDelegate

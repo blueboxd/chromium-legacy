@@ -33,24 +33,22 @@ void OnLoadCallback(
   std::move(restore_callback).Run(res);
 }
 
-const std::string GetKey(int tab_id, const std::string& data_id) {
-  return base::StringPrintf("%d-%s", tab_id, data_id.c_str());
+const std::string GetKey(int tab_id, const char* data_id) {
+  return base::StringPrintf("%d-%s", tab_id, data_id);
+}
+
+const std::string GetKeyAll(int tab_id) {
+  return base::StringPrintf("%d-", tab_id);
 }
 
 }  // namespace
-
-LevelDBPersistedTabDataStorageAndroid::LevelDBPersistedTabDataStorageAndroid()
-    : proto_db_(
-          SessionProtoDBFactory<
-              persisted_state_db::PersistedStateContentProto>::GetInstance()
-              ->GetForProfile(ProfileManager::GetLastUsedProfile())) {}
 
 LevelDBPersistedTabDataStorageAndroid::
     ~LevelDBPersistedTabDataStorageAndroid() = default;
 
 void LevelDBPersistedTabDataStorageAndroid::Save(
     int tab_id,
-    const std::string& data_id,
+    const char* data_id,
     const std::vector<uint8_t>& data) {
   persisted_state_db::PersistedStateContentProto proto;
   std::string key = GetKey(tab_id, data_id);
@@ -61,7 +59,7 @@ void LevelDBPersistedTabDataStorageAndroid::Save(
 
 void LevelDBPersistedTabDataStorageAndroid::Restore(
     int tab_id,
-    const std::string& data_id,
+    const char* data_id,
     RestoreCallback restore_callback) {
   proto_db_->LoadContentWithPrefix(
       GetKey(tab_id, data_id),
@@ -69,7 +67,19 @@ void LevelDBPersistedTabDataStorageAndroid::Restore(
 }
 
 void LevelDBPersistedTabDataStorageAndroid::Remove(int tab_id,
-                                                   const std::string& data_id) {
+                                                   const char* data_id) {
   proto_db_->DeleteContentWithPrefix(GetKey(tab_id, data_id),
                                      base::BindOnce(&OnUpdateCallback));
 }
+
+void LevelDBPersistedTabDataStorageAndroid::RemoveAll(int tab_id) {
+  proto_db_->DeleteContentWithPrefix(GetKeyAll(tab_id),
+                                     base::BindOnce(&OnUpdateCallback));
+}
+
+LevelDBPersistedTabDataStorageAndroid::LevelDBPersistedTabDataStorageAndroid(
+    Profile* profile)
+    : proto_db_(
+          SessionProtoDBFactory<
+              persisted_state_db::PersistedStateContentProto>::GetInstance()
+              ->GetForProfile(profile)) {}

@@ -43,8 +43,8 @@ import './user/user_subpage_element.js';
 import './utils.js';
 import './wallpaper/index.js';
 
-import {loadTimeData} from 'chrome://resources/ash/common/load_time_data.m.js';
 import {ColorChangeUpdater} from 'chrome://resources/cr_components/color_change_listener/colors_css_updater.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 
 import {isPersonalizationJellyEnabled} from './load_time_booleans.js';
 import {emptyState} from './personalization_state.js';
@@ -92,6 +92,7 @@ export {setDarkModeEnabledAction, SetDarkModeEnabledAction, setColorSchemeAction
 export {setThemeProviderForTesting} from './theme/theme_interface_provider.js';
 export {ColorSchemeIconSvgElement} from './theme/color_scheme_icon_svg_element.js';
 export {DynamicColorElement} from './theme/dynamic_color_element.js';
+export {getThemeProvider} from './theme/theme_interface_provider.js';
 export {ThemeObserver} from './theme/theme_observer.js';
 export {TimeOfDayBannerElement} from './time_of_day_banner_element.js';
 export {AvatarCamera, AvatarCameraMode} from './user/avatar_camera_element.js';

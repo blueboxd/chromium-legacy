@@ -25,10 +25,6 @@ BASE_FEATURE(kAdSamplerTriggerFeature,
              "SafeBrowsingAdSamplerTrigger",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-BASE_FEATURE(kAddPageLoadTokenToClientSafeBrowsingReport,
-             "AddPageLoadTokenToClientSafeBrowsingReport",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 BASE_FEATURE(kAntiPhishingTelemetry,
              "AntiPhishingTelemetry",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -49,10 +45,6 @@ BASE_FEATURE(kClientSideDetectionTypeForceRequest,
              "ClientSideDetectionTypeForceRequest",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-BASE_FEATURE(kComponentUpdaterAndroidProtegoAllowlist,
-             "SafeBrowsingComponentUpdaterAndroidProtegoAllowlist",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 BASE_FEATURE(kDeepScanningUpdatedUX,
              "SafeBrowsingDeepScanningUpdatedUX",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -70,11 +62,11 @@ const base::FeatureParam<bool> kDelayedWarningsEnableMouseClicks{
 
 BASE_FEATURE(kDownloadBubble,
              "DownloadBubble",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kDownloadBubbleV2,
              "DownloadBubbleV2",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kDownloadTailoredWarnings,
              "DownloadTailoredWarnings",
@@ -171,8 +163,12 @@ BASE_FEATURE(kFileTypePoliciesTag,
              "FileTypePoliciesTag",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-BASE_FEATURE(kFriendlierSafeBrowsingSettings,
-             "FriendlierSafeBrowsingSettings",
+BASE_FEATURE(kFriendlierSafeBrowsingSettingsEnhancedProtection,
+             "FriendlierSafeBrowsingSettingsEnhancedProtection",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kFriendlierSafeBrowsingSettingsStandardProtection,
+             "FriendlierSafeBrowsingSettingsStandardProtection",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kHashPrefixRealTimeLookups,
@@ -192,6 +188,14 @@ constexpr base::FeatureParam<std::string> kHashRealTimeOverOhttpRelayUrl{
     &kHashRealTimeOverOhttp, "SafeBrowsingHashRealTimeOverOhttpRelayUrl",
     /*default_value=*/""};
 
+BASE_FEATURE(kImprovedDownloadBubbleWarnings,
+             "ImprovedDownloadBubbleWarnings",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kImprovedDownloadPageWarnings,
+             "ImprovedDownloadPageWarnings",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kLogAccountEnhancedProtectionStateInProtegoPings,
              "TailoredSecurityLogAccountEnhancedProtectionStateInProtegoPings",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -206,7 +210,7 @@ constexpr base::FeatureParam<bool> kMmapSafeBrowsingDatabaseAsync{
 
 BASE_FEATURE(kNestedArchives,
              "SafeBrowsingArchiveImprovements",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kRedWarningSurvey,
              "RedWarningSurvey",
@@ -281,7 +285,7 @@ BASE_FEATURE(kSimplifiedUrlDisplay,
 
 BASE_FEATURE(kStrictDownloadTimeout,
              "SafeBrowsingStrictDownloadtimeout",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 constexpr base::FeatureParam<int> kStrictDownloadTimeoutMilliseconds{
     &kStrictDownloadTimeout, "TimeoutMilliseconds",
@@ -298,7 +302,7 @@ BASE_FEATURE(kTailoredSecurityRetryForSyncUsers,
 #if BUILDFLAG(IS_ANDROID)
 BASE_FEATURE(kTailoredSecurityObserverRetries,
              "TailoredSecurityObserverRetries",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 #endif
 
 BASE_FEATURE(kTailoredSecurityIntegration,
@@ -354,13 +358,11 @@ constexpr struct {
   bool show_state;
 } kExperimentalFeatures[]{
     {&kAdSamplerTriggerFeature, false},
-    {&kAddPageLoadTokenToClientSafeBrowsingReport, false},
     {&kAntiPhishingTelemetry, false},
     {&kClientSideDetectionKillswitch, true},
     {&kClientSideDetectionModelOptimizationGuide, true},
     {&kClientSideDetectionModelIsFlatBuffer, true},
     {&kClientSideDetectionTypeForceRequest, true},
-    {&kComponentUpdaterAndroidProtegoAllowlist, true},
     {&kDelayedWarnings, true},
     {&kDownloadBubble, true},
     {&kDownloadBubbleV2, true},
@@ -379,6 +381,8 @@ constexpr struct {
     {&kFileTypePoliciesTag, true},
     {&kHashPrefixRealTimeLookups, true},
     {&kHashRealTimeOverOhttp, true},
+    {&kImprovedDownloadBubbleWarnings, true},
+    {&kImprovedDownloadPageWarnings, true},
     {&kLogAccountEnhancedProtectionStateInProtegoPings, true},
     {&kMmapSafeBrowsingDatabase, true},
     {&kNestedArchives, true},

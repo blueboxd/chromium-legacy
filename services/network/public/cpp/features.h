@@ -34,6 +34,9 @@ BASE_DECLARE_FEATURE(kSplitAuthCacheByNetworkIsolationKey);
 COMPONENT_EXPORT(NETWORK_CPP) BASE_DECLARE_FEATURE(kDnsOverHttpsUpgrade);
 COMPONENT_EXPORT(NETWORK_CPP) BASE_DECLARE_FEATURE(kMaskedDomainList);
 COMPONENT_EXPORT(NETWORK_CPP)
+extern const base::FeatureParam<std::string>
+    kMaskedDomainListExperimentalVersion;
+COMPONENT_EXPORT(NETWORK_CPP)
 BASE_DECLARE_FEATURE(kMdnsResponderGeneratedNameListing);
 COMPONENT_EXPORT(NETWORK_CPP) BASE_DECLARE_FEATURE(kOpaqueResponseBlockingV02);
 COMPONENT_EXPORT(NETWORK_CPP)
@@ -155,6 +158,10 @@ BASE_DECLARE_FEATURE(kCompressionDictionaryTransport);
 // requestors.
 COMPONENT_EXPORT(NETWORK_CPP)
 BASE_DECLARE_FEATURE(kVisibilityAwareResourceScheduler);
+
+// Enables Compression Dictionary Transport with Zstandard (aka Shared Zstd).
+COMPONENT_EXPORT(NETWORK_CPP)
+BASE_DECLARE_FEATURE(kSharedZstd);
 
 }  // namespace features
 }  // namespace network

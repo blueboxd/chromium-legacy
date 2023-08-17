@@ -63,6 +63,13 @@ BASE_FEATURE(kAppShimRemoteCocoa,
 BASE_FEATURE(kAppShimNewCloseBehavior,
              "AppShimNewCloseBehavior",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+// When enabled, notifications coming from PWAs will be displayed via their app
+// shim processes, rather than directly by chrome.
+// https://crbug.com/938661
+BASE_FEATURE(kAppShimNotificationAttribution,
+             "AppShimNotificationAttribution",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 #endif  // BUILDFLAG(IS_MAC)
 
 // Enables the built-in DNS resolver.
@@ -107,6 +114,11 @@ BASE_FEATURE(kBackgroundModeAllowRestart,
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 // Enable Borealis on Chrome OS.
 BASE_FEATURE(kBorealis, "Borealis", base::FEATURE_DISABLED_BY_DEFAULT);
+#endif
+
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_CHROMEOS)
+// Enables cco test1.
+BASE_FEATURE(kCcoTest1, "CcoTest1", base::FEATURE_DISABLED_BY_DEFAULT);
 #endif
 
 // Enables change picture video mode.
@@ -212,11 +224,6 @@ BASE_FEATURE(kDMServerOAuthForChildUser,
 // Whether to allow installed-by-default web apps to be installed or not.
 BASE_FEATURE(kPreinstalledWebAppInstallation,
              "DefaultWebAppInstallation",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-// Whether to run the PreinstalledWebAppDuplicationFixer code during start up.
-BASE_FEATURE(kPreinstalledWebAppDuplicationFixer,
-             "PreinstalledWebAppDuplicationFixer",
              base::FEATURE_ENABLED_BY_DEFAULT);
 #endif
 
@@ -327,6 +334,12 @@ BASE_FEATURE(kKeepForceInstalledPreinstalledApps,
 // Controls if the 'launch anyways' button is shown.
 const base::FeatureParam<bool> kChromeAppsDeprecationHideLaunchAnyways{
     &kChromeAppsDeprecation, "HideLaunchAnyways", true};
+
+// Enables user link capturing on desktop platforms, i.e. Windows, Mac
+// Linux amd Fuchsia.
+BASE_FEATURE(kDesktopPWAsLinkCapturing,
+             "DesktopPWAsLinkCapturing",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 #endif
 
 // Enables notification permission revocation for origins that may send
@@ -417,6 +430,10 @@ BASE_FEATURE(kExternalExtensionDefaultButtonControl,
 BASE_FEATURE(kFileTransferEnterpriseConnector,
              "FileTransferEnterpriseConnector",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kFileTransferEnterpriseConnectorUI,
+             "FileTransferEnterpriseConnectorUI",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 #endif
 
 #if BUILDFLAG(ENABLE_PLUGINS)
@@ -434,6 +451,12 @@ BASE_FEATURE(kFlashDeprecationWarning,
 // not initialized at startup, and clients calling it will receive an empty list
 // of languages.
 BASE_FEATURE(kGeoLanguage, "GeoLanguage", base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enables or disables the Privacy Guide v3 update of the Privacy Guide feature
+// in Chrome Settings.
+BASE_FEATURE(kPrivacyGuide3,
+             "PrivacyGuide3",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 #if !BUILDFLAG(IS_ANDROID)
 // Enables or disables the Happiness Tracking System demo mode for Desktop
@@ -645,9 +668,9 @@ BASE_FEATURE(kHappinessTrackingPhotosExperience,
 BASE_FEATURE(kHappinessTrackingGeneralCamera,
              "HappinessTrackingGeneralCamera",
              base::FEATURE_DISABLED_BY_DEFAULT);
-// Enables the Happiness Tracking System for Privacy Hub baseline survey.
-BASE_FEATURE(kHappinessTrackingPrivacyHubBaseline,
-             "HappinessTrackingPrivacyHubBaseline",
+// Enables the Happiness Tracking System for Privacy Hub post launch survey.
+BASE_FEATURE(kHappinessTrackingPrivacyHubPostLaunch,
+             "HappinessTrackingPrivacyHubPostLaunch",
              base::FEATURE_DISABLED_BY_DEFAULT);
 // Enables the Happiness Tracking System for OS Settings Search survey.
 BASE_FEATURE(kHappinessTrackingOsSettingsSearch,
@@ -664,23 +687,21 @@ BASE_FEATURE(kHideWebAppOriginText,
              "HideWebAppOriginText",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Sets whether the HTTPS-Only Mode setting is displayed in the settings UI.
-BASE_FEATURE(kHttpsOnlyMode, "HttpsOnlyMode", base::FEATURE_ENABLED_BY_DEFAULT);
-
 // Kill switch for crbug.com/1414633.
 BASE_FEATURE(kHttpsFirstModeForAdvancedProtectionUsers,
              "HttpsOnlyModeForAdvancedProtectionUsers",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-// Enables the new implementation of HTTPS-First Mode.
-BASE_FEATURE(kHttpsFirstModeV2,
-             "HttpsFirstModeV2",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables HTTPS-First Mode for engaged sites. No-op if HttpsFirstModeV2 or
 // HTTPS-Upgrades is disabled.
 BASE_FEATURE(kHttpsFirstModeV2ForEngagedSites,
              "HttpsFirstModeV2ForEngagedSites",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enables HTTPS-First Mode for typically secure users. No-op if
+// HttpsFirstModeV2 or HTTPS-Upgrades is disabled.
+BASE_FEATURE(kHttpsFirstModeV2ForTypicallySecureUsers,
+             "HttpsFirstModeV2ForTypicallySecureUsers",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables automatically upgrading main frame navigations to HTTPS.
@@ -847,7 +868,7 @@ BASE_FEATURE(kMacSystemScreenCapturePermissionCheck,
 // whether to treat a WiFi or Cellular network as 'metered'.
 BASE_FEATURE(kMeteredShowToggle,
              "MeteredShowToggle",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Whether to show the Hidden toggle in Settings, allowing users to toggle
 // whether to treat a WiFi network as having a hidden ssid.
@@ -1056,7 +1077,7 @@ BASE_FEATURE(kSafetyHub, "SafetyHub", base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Time between automated runs of the password check.
 const base::FeatureParam<base::TimeDelta> kBackgroundPasswordCheckInterval{
-    &kSafetyHub, "background-password-check-interval", base::Days(20)};
+    &kSafetyHub, "background-password-check-interval", base::Days(10)};
 #endif  // !BUILDFLAG(IS_ANDROID)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)

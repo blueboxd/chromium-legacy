@@ -6,18 +6,13 @@
 
 #include <memory>
 
-#include "base/test/bind.h"
 #include "build/build_config.h"
-#include "cc/base/features.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
-#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/input/web_gesture_event.h"
 #include "third_party/blink/public/common/input/web_keyboard_event.h"
 #include "third_party/blink/public/common/input/web_mouse_wheel_event.h"
 #include "third_party/blink/public/common/input/web_pointer_event.h"
 #include "third_party/blink/public/mojom/input/focus_type.mojom-blink.h"
-#include "third_party/blink/renderer/core/css/css_style_declaration.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/focus_params.h"
 #include "third_party/blink/renderer/core/dom/range.h"
@@ -32,7 +27,6 @@
 #include "third_party/blink/renderer/core/editing/testing/selection_sample.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
-#include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/frame/web_frame_widget_impl.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
@@ -116,15 +110,7 @@ class EventHandlerSimTest : public SimTest {
 
   void DispatchElementTargetedGestureScroll(
       const WebGestureEvent& gesture_event) {
-    if (base::FeatureList::IsEnabled(::features::kScrollUnification)) {
-      GetWebFrameWidget().DispatchThroughCcInputHandler(gesture_event);
-    } else {
-      // Pre-unification cc -> main forwarding doesn't work for events targeted
-      // to non-composited scrollers (cc::InputHandler returns SCROLL_IGNORED).
-      // Instead, inject directly into the main thread handler.
-      GetDocument().GetFrame()->GetEventHandler().HandleGestureEvent(
-          gesture_event);
-    }
+    GetWebFrameWidget().DispatchThroughCcInputHandler(gesture_event);
   }
 };
 
@@ -2207,155 +2193,6 @@ TEST_F(EventHandlerSimTest, TestUpdateHoverAfterCompositorScrollAtBeginFrame) {
   EXPECT_EQ("hover over me", element3.InnerHTML().Utf8());
 }
 
-// Test that the hover is updated at the next begin frame after the main thread
-// scroll ends.
-TEST_F(EventHandlerSimTest, TestUpdateHoverAfterMainThreadScrollAtBeginFrame) {
-  // This test is specific to pre-unification main-thread scrolling.  The test
-  // case TestUpdateHoverAfterCompositorScrollAtBeginFrame covers hover effects
-  // for unified scrolls.
-  if (base::FeatureList::IsEnabled(::features::kScrollUnification))
-    return;
-
-  WebView().MainFrameViewWidget()->Resize(gfx::Size(800, 600));
-  SimRequest request("https://example.com/test.html", "text/html");
-  LoadURL("https://example.com/test.html");
-  request.Complete(R"HTML(
-    <!DOCTYPE html>
-    <style>
-      body, html {
-        margin: 0;
-      }
-      div {
-        height: 300px;
-        width: 100%;
-      }
-    </style>
-    <body>
-    <div class="hoverme" id="line1">hover over me</div>
-    <div class="hoverme" id="line2">hover over me</div>
-    <div class="hoverme" id="line3">hover over me</div>
-    <div class="hoverme" id="line4">hover over me</div>
-    <div class="hoverme" id="line5">hover over me</div>
-    </body>
-    <script>
-      let array = document.getElementsByClassName('hoverme');
-      for (let element of array) {
-        element.addEventListener('mouseover', function (e) {
-          this.innerHTML = "currently hovered";
-        });
-        element.addEventListener('mouseout', function (e) {
-          this.innerHTML = "was hovered";
-        });
-      }
-    </script>
-  )HTML");
-  Compositor().BeginFrame();
-
-  // Set mouse position and active web view.
-  InitializeMousePositionAndActivateView(1, 1);
-
-  WebElement element1 = GetDocument().getElementById(AtomicString("line1"));
-  WebElement element2 = GetDocument().getElementById(AtomicString("line2"));
-  WebElement element3 = GetDocument().getElementById(AtomicString("line3"));
-  EXPECT_EQ("currently hovered", element1.InnerHTML().Utf8());
-  EXPECT_EQ("hover over me", element2.InnerHTML().Utf8());
-  EXPECT_EQ("hover over me", element3.InnerHTML().Utf8());
-
-  // Send scroll gesture events which will cause scroll happen in main thread
-  // and mark hover state dirty in ScrollManager.
-  LocalFrameView* frame_view = GetDocument().View();
-  constexpr float delta_y = 500;
-  InjectScrollFromGestureEvents(
-      frame_view->LayoutViewport()->GetScrollElementId(), 0, delta_y);
-  ASSERT_EQ(500, frame_view->LayoutViewport()->GetScrollOffset().y());
-  EXPECT_EQ("currently hovered", element1.InnerHTML().Utf8());
-  EXPECT_EQ("hover over me", element2.InnerHTML().Utf8());
-  EXPECT_EQ("hover over me", element3.InnerHTML().Utf8());
-
-  // The fake mouse move event is dispatched at the begin frame to update hover.
-  Compositor().BeginFrame();
-  EXPECT_EQ("was hovered", element1.InnerHTML().Utf8());
-  EXPECT_EQ("currently hovered", element2.InnerHTML().Utf8());
-  EXPECT_EQ("hover over me", element3.InnerHTML().Utf8());
-}
-
-// Test that the hover is updated at the next begin frame after the main thread
-// scroll ends in an iframe.
-TEST_F(EventHandlerSimTest,
-       TestUpdateHoverAfterMainThreadScrollInIFrameAtBeginFrame) {
-  // This test is specific to pre-unification main-thread scrolling.  The test
-  // case TestUpdateHoverAfterCompositorScrollAtBeginFrame covers hover effects
-  // for unified scrolls.
-  if (base::FeatureList::IsEnabled(::features::kScrollUnification))
-    return;
-
-  WebView().MainFrameViewWidget()->Resize(gfx::Size(800, 600));
-  SimRequest main_resource("https://example.com/test.html", "text/html");
-  SimRequest frame_resource("https://example.com/iframe.html", "text/html");
-  LoadURL("https://example.com/test.html");
-  main_resource.Complete(R"HTML(
-    <!DOCTYPE html>
-    <style>
-    body {
-      margin: 0;
-    }
-    iframe {
-      width: 800px;
-      height: 600px;
-    }
-    </style>
-    <iframe id='iframe' src='iframe.html'>
-    </iframe>
-  )HTML");
-
-  frame_resource.Complete(R"HTML(
-    <!DOCTYPE html>
-    <style>
-      body, html {
-        margin: 0;
-        height: 500vh;
-      }
-      div {
-        height: 500px;
-        width: 100%;
-      }
-    </style>
-    <body>
-    <div class="hoverme" id="hoverarea">hover over me</div>
-    </body>
-  )HTML");
-  Compositor().BeginFrame();
-
-  auto* iframe_element = To<HTMLIFrameElement>(
-      GetDocument().getElementById(AtomicString("iframe")));
-  Document* iframe_doc = iframe_element->contentDocument();
-  FrameView* child_frame_view =
-      iframe_element->GetLayoutEmbeddedContent()->ChildFrameView();
-  auto* local_child_frame_view = DynamicTo<LocalFrameView>(child_frame_view);
-  ScrollableArea* iframe_scrollable_area =
-      local_child_frame_view->GetScrollableArea();
-
-  // Set mouse position and active web view.
-  InitializeMousePositionAndActivateView(100, 100);
-
-  Element* element = iframe_doc->getElementById(AtomicString("hoverarea"));
-  EXPECT_TRUE(element->IsHovered());
-
-  // Send scroll gesture events which will cause scroll happen in main thread
-  // and mark hover state dirty in ScrollManager.
-  constexpr float delta_y = 1000;
-  InjectScrollFromGestureEvents(iframe_scrollable_area->GetScrollElementId(), 0,
-                                delta_y);
-  LocalFrameView* frame_view = GetDocument().View();
-  ASSERT_EQ(0, frame_view->LayoutViewport()->GetScrollOffset().y());
-  ASSERT_EQ(1000, iframe_scrollable_area->ScrollOffsetInt().y());
-  EXPECT_TRUE(element->IsHovered());
-
-  // The fake mouse move event is dispatched at the begin frame to update hover.
-  Compositor().BeginFrame();
-  EXPECT_FALSE(element->IsHovered());
-}
-
 // Test that the hover is updated at the next begin frame after the smooth JS
 // scroll ends.
 TEST_F(EventHandlerSimTest, TestUpdateHoverAfterJSScrollAtBeginFrame) {
@@ -2421,172 +2258,6 @@ TEST_F(EventHandlerSimTest, TestUpdateHoverAfterJSScrollAtBeginFrame) {
   EXPECT_FALSE(element->IsHovered());
 }
 
-// Test that the hover is only updated at the next begin frame after the main
-// thread scroll snap animation finishes.
-TEST_F(EventHandlerSimTest,
-       TestUpdateHoverAfterMainThreadScrollSnapAtBeginFrame) {
-  // This test is specific to pre-unification main-thread scrolling.  The test
-  // case TestUpdateHoverAfterCompositorScrollAtBeginFrame covers hover effects
-  // for unified scrolls.
-  if (base::FeatureList::IsEnabled(::features::kScrollUnification))
-    return;
-
-  WebView().MainFrameViewWidget()->Resize(gfx::Size(800, 600));
-  SimRequest request("https://example.com/test.html", "text/html");
-  LoadURL("https://example.com/test.html");
-  request.Complete(R"HTML(
-    <!DOCTYPE html>
-    <style>
-      div {
-        position: absolute;
-      }
-      #scroller {
-        width: 500px;
-        height: 500px;
-        overflow: scroll;
-        scroll-snap-type: both mandatory;
-        border: solid black 5px;
-      }
-      .target:hover {
-        background-color: red;
-      }
-
-      .target {
-        width: 200px;
-        height: 800px;
-        scroll-snap-align: start;
-        background-color: blue;
-      }
-    </style>
-    <body>
-      <div id="scroller">
-        <div class="target" id="target1" style="left: 0px; top: 0px;"></div>
-        <div class="target" id="target2" style="left: 80px; top: 400px;"></div>
-      </div>
-    </body>
-  )HTML");
-  Compositor().BeginFrame();
-
-  // Set mouse position and active web view.
-  InitializeMousePositionAndActivateView(150, 150);
-  Compositor().BeginFrame();
-
-  Element* const scroller =
-      GetDocument().getElementById(AtomicString("scroller"));
-  Element* target1 = GetDocument().getElementById(AtomicString("target1"));
-  Element* target2 = GetDocument().getElementById(AtomicString("target2"));
-  EXPECT_TRUE(target1->IsHovered());
-  EXPECT_FALSE(target2->IsHovered());
-
-  // Send scroll gesture events which will cause scroll happen in main thread
-  // and the snap animation will happen after gesture scroll end. The hover
-  // state will be marked dirty after the snap animation finishes.
-  ScrollableArea* scrollable_area =
-      scroller->GetLayoutBox()->GetScrollableArea();
-  constexpr float delta_y = 300;
-  InjectScrollFromGestureEvents(scrollable_area->GetScrollElementId(), 0,
-                                delta_y);
-  ASSERT_EQ(300, scrollable_area->GetScrollOffset().y());
-  EXPECT_TRUE(target1->IsHovered());
-  EXPECT_FALSE(target2->IsHovered());
-
-  // Gesture scroll end is received and scroll snap animation starts, but it is
-  // not finished.
-  Compositor().BeginFrame();
-  Compositor().BeginFrame();
-  ASSERT_EQ(300, scrollable_area->GetScrollOffset().y());
-  EXPECT_TRUE(target1->IsHovered());
-  EXPECT_FALSE(target2->IsHovered());
-
-  // The programmatic scroll animation finishes and the hover state is set to
-  // dirty.
-  Compositor().BeginFrame(1);
-  ASSERT_EQ(400, scrollable_area->GetScrollOffset().y());
-  EXPECT_TRUE(target1->IsHovered());
-  EXPECT_FALSE(target2->IsHovered());
-
-  // The hover effect on targets is updated after the next begin frame.
-  Compositor().BeginFrame();
-  ASSERT_EQ(400, scrollable_area->GetScrollOffset().y());
-  EXPECT_FALSE(target1->IsHovered());
-  EXPECT_TRUE(target2->IsHovered());
-}
-
-TEST_F(EventHandlerSimTest,
-       TestUpdateHoverAfterMainThreadScrollAtSnapPointAtBeginFrame) {
-  // This test is specific to pre-unification main-thread scrolling.  The test
-  // case TestUpdateHoverAfterCompositorScrollAtBeginFrame covers hover effects
-  // for unified scrolls.
-  if (base::FeatureList::IsEnabled(::features::kScrollUnification))
-    return;
-
-  WebView().MainFrameViewWidget()->Resize(gfx::Size(800, 600));
-  SimRequest request("https://example.com/test.html", "text/html");
-  LoadURL("https://example.com/test.html");
-  request.Complete(R"HTML(
-    <!DOCTYPE html>
-    <style>
-      div {
-        position: absolute;
-      }
-      #scroller {
-        width: 500px;
-        height: 500px;
-        overflow: scroll;
-        scroll-snap-type: both mandatory;
-        border: solid black 5px;
-      }
-      .target:hover {
-        background-color: red;
-      }
-
-      .target {
-        width: 200px;
-        height: 500px;
-        scroll-snap-align: start;
-        background-color: blue;
-      }
-    </style>
-    <body>
-      <div id="scroller">
-        <div class="target" id="target1" style="left: 0px; top: 0px;"></div>
-        <div class="target" id="target2" style="left: 0px; top: 500px;"></div>
-      </div>
-    </body>
-  )HTML");
-  Compositor().BeginFrame();
-
-  // Set mouse position and active web view.
-  InitializeMousePositionAndActivateView(150, 150);
-  Compositor().BeginFrame();
-
-  Element* const scroller =
-      GetDocument().getElementById(AtomicString("scroller"));
-  Element* target1 = GetDocument().getElementById(AtomicString("target1"));
-  Element* target2 = GetDocument().getElementById(AtomicString("target2"));
-  EXPECT_TRUE(target1->IsHovered());
-  EXPECT_FALSE(target2->IsHovered());
-
-  // Send scroll gesture events which will cause scroll happen in main thread.
-  // The hover state will be marked dirty when the scroll lands exactly on a
-  // snap point.
-  ScrollableArea* scrollable_area =
-      scroller->GetLayoutBox()->GetScrollableArea();
-  ASSERT_EQ(0, scrollable_area->GetScrollOffset().y());
-  constexpr float delta_y = 500;
-  InjectScrollFromGestureEvents(scrollable_area->GetScrollElementId(), 0,
-                                delta_y);
-  ASSERT_EQ(500, scrollable_area->GetScrollOffset().y());
-  EXPECT_TRUE(target1->IsHovered());
-  EXPECT_FALSE(target2->IsHovered());
-
-  // The hover effect on targets is updated after the next begin frame.
-  Compositor().BeginFrame();
-  ASSERT_EQ(500, scrollable_area->GetScrollOffset().y());
-  EXPECT_FALSE(target1->IsHovered());
-  EXPECT_TRUE(target2->IsHovered());
-}
-
 TEST_F(EventHandlerSimTest, LargeCustomCursorIntersectsViewport) {
   WebView().MainFrameViewWidget()->Resize(gfx::Size(800, 600));
   SimRequest request("https://example.com/test.html", "text/html");
@@ -2598,14 +2269,13 @@ TEST_F(EventHandlerSimTest, LargeCustomCursorIntersectsViewport) {
         <!DOCTYPE html>
         <style>
         div {
-          width: 300px;
-          height: 100px;
-          cursor: url('100x100.png') 100 100, auto;
+          width: 100vw;
+          height: 100vh;
+          cursor: url('100x100.png') 50 50, auto;
         }
         </style>
         <div>foo</div>
       )HTML");
-
   GetDocument().UpdateStyleAndLayoutTree();
 
   scoped_refptr<SharedBuffer> img =
@@ -2614,33 +2284,55 @@ TEST_F(EventHandlerSimTest, LargeCustomCursorIntersectsViewport) {
 
   Compositor().BeginFrame();
 
-  // Move the cursor so no part of it intersects the viewport.
-  {
-    WebMouseEvent mouse_move_event(
-        WebMouseEvent::Type::kMouseMove, gfx::PointF(101, 101),
-        gfx::PointF(101, 101), WebPointerProperties::Button::kNoButton, 0, 0,
-        WebInputEvent::GetStaticTimeStampForTests());
-    GetDocument().GetFrame()->GetEventHandler().HandleMouseMoveEvent(
-        mouse_move_event, Vector<WebMouseEvent>(), Vector<WebMouseEvent>());
+  EventHandler& event_handler = GetDocument().GetFrame()->GetEventHandler();
 
+  struct TestCase {
+    gfx::PointF point;
+    bool custom_expected;
+    float cursor_accessibility_scale_factor = 1.f;
+    float device_scale_factor = 1.f;
+    std::string ToString() const {
+      return base::StringPrintf(
+          "point: (%s), cursor-scale: %g, device-scale: %g, custom?: %d",
+          point.ToString().c_str(), cursor_accessibility_scale_factor,
+          device_scale_factor, custom_expected);
+    }
+  } test_cases[] = {
+      // Test top left and bottom right, within viewport.
+      {gfx::PointF(60, 60), true},
+      {gfx::PointF(740, 540), true},
+      // Test top left and bottom right, beyond viewport.
+      {gfx::PointF(40, 40), false},
+      {gfx::PointF(760, 560), false},
+      // Test a larger cursor accessibility scale factor. crbug.com/1455005
+      {gfx::PointF(110, 110), true, 2.f},
+      {gfx::PointF(690, 490), true, 2.f},
+      {gfx::PointF(90, 90), false, 2.f},
+      {gfx::PointF(710, 510), false, 2.f},
+      // Test a larger display device scale factor. crbug.com/1357442
+      {gfx::PointF(110, 110), true, 1.f, 2.f},
+      {gfx::PointF(690, 490), true, 1.f, 2.f},
+      {gfx::PointF(90, 90), false, 1.f, 2.f},
+      {gfx::PointF(710, 510), false, 1.f, 2.f},
+  };
+  for (const TestCase& test_case : test_cases) {
+    SCOPED_TRACE(test_case.ToString());
+    DeviceEmulationParams params;
+    params.device_scale_factor = test_case.device_scale_factor;
+    WebView().EnableDeviceEmulation(params);
+    event_handler.set_cursor_accessibility_scale_factor(
+        test_case.cursor_accessibility_scale_factor);
+    WebMouseEvent mouse_move_event(
+        WebMouseEvent::Type::kMouseMove, test_case.point, test_case.point,
+        WebPointerProperties::Button::kNoButton, 0, 0,
+        WebInputEvent::GetStaticTimeStampForTests());
+    event_handler.HandleMouseMoveEvent(mouse_move_event, {}, {});
     const ui::Cursor& cursor =
         GetDocument().GetFrame()->GetChromeClient().LastSetCursorForTesting();
-    EXPECT_EQ(ui::mojom::blink::CursorType::kCustom, cursor.type());
-  }
-
-  // Now, move the cursor so that it intersects the visual viewport. The cursor
-  // should be removed.
-  {
-    WebMouseEvent mouse_move_event(
-        WebMouseEvent::Type::kMouseMove, gfx::PointF(99, 99),
-        gfx::PointF(99, 99), WebPointerProperties::Button::kNoButton, 0, 0,
-        WebInputEvent::GetStaticTimeStampForTests());
-    GetDocument().GetFrame()->GetEventHandler().HandleMouseMoveEvent(
-        mouse_move_event, Vector<WebMouseEvent>(), Vector<WebMouseEvent>());
-
-    const ui::Cursor& cursor =
-        GetDocument().GetFrame()->GetChromeClient().LastSetCursorForTesting();
-    EXPECT_EQ(ui::mojom::blink::CursorType::kPointer, cursor.type());
+    const ui::mojom::blink::CursorType expected_type =
+        test_case.custom_expected ? ui::mojom::blink::CursorType::kCustom
+                                  : ui::mojom::blink::CursorType::kPointer;
+    EXPECT_EQ(expected_type, cursor.type());
   }
 }
 
@@ -2910,83 +2602,6 @@ TEST_F(EventHandlerSimTest, DoNotScrollWithTouchpadIfOverflowIsHidden) {
   Compositor().BeginFrame();
   EXPECT_EQ(0,
             GetDocument().getElementById(AtomicString("outer"))->scrollLeft());
-}
-
-TEST_F(EventHandlerSimTest, GestureScrollUpdateModifiedScrollChain) {
-  // After unification, we do not distribute a scroll gesture to an
-  // ancestor if the latched scroller becomes unscrollable.
-  if (base::FeatureList::IsEnabled(::features::kScrollUnification))
-    return;
-
-  WebView().MainFrameViewWidget()->Resize(gfx::Size(400, 400));
-  SimRequest request("https://example.com/test.html", "text/html");
-  LoadURL("https://example.com/test.html");
-  request.Complete(R"HTML(
-    <!DOCTYPE html>
-    <style>
-    #scroller {
-        width: 50vw;
-        height: 50vh;
-        overflow-y: scroll;
-    }
-    .inline {
-        display:inline;
-    }
-    .content {
-        height: 300vh;
-    }
-    </style>
-    <body>
-      <div id='scroller'>
-        <div class='content'>
-      </div>
-    </body>
-  )HTML");
-  Compositor().BeginFrame();
-
-  WebGestureEvent scroll_begin_event(
-      WebInputEvent::Type::kGestureScrollBegin, WebInputEvent::kNoModifiers,
-      WebInputEvent::GetStaticTimeStampForTests(),
-      blink::WebGestureDevice::kTouchpad);
-  scroll_begin_event.SetPositionInWidget(gfx::PointF(10, 10));
-  scroll_begin_event.SetPositionInScreen(gfx::PointF(10, 10));
-
-  WebGestureEvent scroll_update_event(
-      WebInputEvent::Type::kGestureScrollUpdate, WebInputEvent::kNoModifiers,
-      WebInputEvent::GetStaticTimeStampForTests(),
-      blink::WebGestureDevice::kTouchpad);
-  scroll_update_event.data.scroll_update.delta_x = 0;
-  scroll_update_event.data.scroll_update.delta_y = -100;
-  scroll_update_event.SetPositionInWidget(gfx::PointF(10, 10));
-  scroll_update_event.SetPositionInScreen(gfx::PointF(10, 10));
-
-  WebGestureEvent scroll_end_event(WebInputEvent::Type::kGestureScrollEnd,
-                                   WebInputEvent::kNoModifiers,
-                                   WebInputEvent::GetStaticTimeStampForTests(),
-                                   blink::WebGestureDevice::kTouchpad);
-  scroll_end_event.SetPositionInWidget(gfx::PointF(10, 10));
-  scroll_end_event.SetPositionInScreen(gfx::PointF(10, 10));
-
-  WebView().MainFrameWidget()->HandleInputEvent(
-      WebCoalescedInputEvent(scroll_begin_event, ui::LatencyInfo()));
-
-  // Between the GSB (when the scroll chain is computed) and GSU, update the
-  // scroller to be display:inline. Applying the scroll should handle this
-  // by detecting a non-box LayoutObject in the scroll chain and not crash.
-  Element* const scroller =
-      GetDocument().getElementById(AtomicString("scroller"));
-  scroller->setAttribute(html_names::kClassAttr, AtomicString("inline"));
-
-  WebView().MainFrameWidget()->HandleInputEvent(
-      WebCoalescedInputEvent(scroll_update_event, ui::LatencyInfo()));
-  WebView().MainFrameWidget()->HandleInputEvent(
-      WebCoalescedInputEvent(scroll_end_event, ui::LatencyInfo()));
-
-  EXPECT_EQ(scroller->scrollTop(), 0);
-
-  // Since the scroller is now display:inline, the scroll should be routed to
-  // the document instead.
-  EXPECT_EQ(GetDocument().documentElement()->scrollTop(), 100);
 }
 
 TEST_F(EventHandlerSimTest, ElementTargetedGestureScroll) {
@@ -3760,6 +3375,42 @@ TEST_F(EventHandlerSimTest, TestScrollendFiresOnKeyUpAfterScrollInstant) {
   EXPECT_EQ(
       GetDocument().getElementById(AtomicString("log"))->innerHTML().Utf8(),
       "scrollend");
+}
+
+// Tests that click.pointerId is valid for a gesture tap for which no low-level
+// pointer events (pointerdown, pointermove, pointerup etc) are sent from the
+// browser to the renderer because of absence of relevant event listeners.
+TEST_F(EventHandlerSimTest, ValidClickPointerIdForUnseenPointerEvent) {
+  WebView().MainFrameViewWidget()->Resize(gfx::Size(200, 200));
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <div id='pointer_id' style='width:100px;height:100px'></div>
+    <script>
+      document.body.addEventListener('click', e => {
+        document.getElementById('pointer_id').textContent = e.pointerId;
+      });
+    </script>
+  )HTML");
+
+  WebElement pointer_id_elem =
+      GetDocument().getElementById(AtomicString("pointer_id"));
+  EXPECT_EQ("", pointer_id_elem.TextContent().Utf8());
+
+  TapEventBuilder tap_event(gfx::PointF(20, 20), 1);
+
+  // Blink-defined behavior: touch pointer-id starts at 2.
+  tap_event.primary_unique_touch_event_id = 321;
+  GetDocument().GetFrame()->GetEventHandler().HandleGestureEvent(tap_event);
+  auto pointer_id_1 = stoi(pointer_id_elem.TextContent().Utf8());
+  EXPECT_GT(pointer_id_1, 1);
+
+  // Blink-defined behavior: pointer-id increases with each new event.
+  tap_event.primary_unique_touch_event_id = 123;
+  GetDocument().GetFrame()->GetEventHandler().HandleGestureEvent(tap_event);
+  auto pointer_id_2 = stoi(pointer_id_elem.TextContent().Utf8());
+  EXPECT_GT(pointer_id_2, pointer_id_1);
 }
 
 }  // namespace blink

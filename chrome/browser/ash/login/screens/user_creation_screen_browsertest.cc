@@ -16,6 +16,7 @@
 #include "chrome/browser/ash/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/ash/login/ui/login_display_host.h"
 #include "chrome/browser/ash/login/wizard_controller.h"
+#include "chrome/browser/ui/webui/ash/login/consumer_update_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/error_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/gaia_info_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/gaia_screen_handler.h"
@@ -64,7 +65,9 @@ class UserCreationScreenTest
     : public OobeBaseTest,
       public UserCreationScreen::UserCreationScreenExitTestDelegate {
  public:
-  UserCreationScreenTest() = default;
+  UserCreationScreenTest() : OobeBaseTest() {
+    feature_list_.InitWithFeatures({}, {ash::features::kOobeSoftwareUpdate});
+  }
   ~UserCreationScreenTest() override = default;
 
   void SetUpOnMainThread() override {
@@ -150,7 +153,7 @@ IN_PROC_BROWSER_TEST_F(UserCreationScreenTest, EnterpriseEnroll) {
   ASSERT_TRUE(LoginScreenTestApi::ClickEnterpriseEnrollmentButton());
   WaitForScreenExit();
   EXPECT_EQ(screen_result_.value(),
-            UserCreationScreen::Result::ENTERPRISE_ENROLL);
+            UserCreationScreen::Result::ENTERPRISE_ENROLL_SHORTCUT);
   OobeScreenWaiter(EnrollmentScreenView::kScreenId).Wait();
 }
 
@@ -231,6 +234,10 @@ class UserCreationScreenSoftwareUpdateTest : public UserCreationScreenTest {
   // UserMethod and Next button is disabled
   void SelectUserTypeOnUserCreationScreen(test::UIPath element_id) {
     OobeScreenWaiter(UserCreationView::kScreenId).Wait();
+    test::OobeJS()
+        .CreateWaiter(
+            test::GetAttributeExpression("isOobeLoaded_", {kUserCreationId}))
+        ->Wait();
     ASSERT_TRUE(LoginScreenTestApi::IsEnterpriseEnrollmentButtonShown());
     test::OobeJS().ExpectVisiblePath(kUserCreationDialog);
     test::OobeJS().ExpectHasNoAttribute("checked", kSelfButton);
@@ -243,7 +250,6 @@ class UserCreationScreenSoftwareUpdateTest : public UserCreationScreenTest {
   base::test::ScopedFeatureList feature_list_;
 };
 
-// Verify flow for setting up the device for self.
 IN_PROC_BROWSER_TEST_F(UserCreationScreenSoftwareUpdateTest, SignInForSelf) {
   SelectUserTypeOnUserCreationScreen(kSelfButton);
   WaitForScreenExit();
@@ -251,11 +257,6 @@ IN_PROC_BROWSER_TEST_F(UserCreationScreenSoftwareUpdateTest, SignInForSelf) {
                    ->GetWizardContextForTesting()
                    ->sign_in_as_child);
   EXPECT_EQ(screen_result_.value(), UserCreationScreen::Result::SIGNIN);
-  if (features::IsOobeGaiaInfoScreenEnabled()) {
-    OobeScreenWaiter(GaiaInfoScreenView::kScreenId).Wait();
-  } else {
-    OobeScreenWaiter(GaiaView::kScreenId).Wait();
-  }
 }
 
 // Verify that google account in the child setup step in user creation
@@ -279,7 +280,7 @@ IN_PROC_BROWSER_TEST_F(UserCreationScreenSoftwareUpdateTest,
   test::OobeJS().TapOnPath(kSchoolAccountButton);
   test::OobeJS().TapOnPath(kChildSetupNextButton);
   WaitForScreenExit();
-  EXPECT_EQ(screen_result_.value(), UserCreationScreen::Result::SIGNIN);
+  EXPECT_EQ(screen_result_.value(), UserCreationScreen::Result::SIGNIN_SCHOOL);
 }
 
 // Verify that don't-enroll-the-device in the enorll triage step in user
@@ -302,7 +303,7 @@ IN_PROC_BROWSER_TEST_F(UserCreationScreenSoftwareUpdateTest, EnrollDevice) {
   test::OobeJS().TapOnPath(kEnrollTriageNextButton);
   WaitForScreenExit();
   EXPECT_EQ(screen_result_.value(),
-            UserCreationScreen::Result::ENTERPRISE_ENROLL);
+            UserCreationScreen::Result::ENTERPRISE_ENROLL_TRIAGE);
 }
 
 // Verify that back button display create step in the child setup step

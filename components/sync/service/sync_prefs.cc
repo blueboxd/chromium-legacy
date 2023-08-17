@@ -37,6 +37,12 @@ namespace {
 constexpr char kObsoleteAutofillWalletImportEnabled[] =
     "autofill.wallet_import_enabled";
 
+// Boolean representing whether kObsoleteAutofillWalletImportEnabled was
+// migrated to the new pref representing a UserSelectableType. Should be cleaned
+// up together with the migration code (after 2024-07).
+constexpr char kObsoleteAutofillWalletImportEnabledMigrated[] =
+    "sync.autofill_wallet_import_enabled_migrated";
+
 // State of the migration done by
 // MaybeMigratePrefsForSyncToSigninPart1() and
 // MaybeMigratePrefsForSyncToSigninPart2(). Should be cleaned up
@@ -103,6 +109,8 @@ void SyncPrefs::RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(prefs::internal::kSyncAppsEnabledByOs, false);
 #endif
 
+  registry->RegisterBooleanPref(kObsoleteAutofillWalletImportEnabledMigrated,
+                                false);
   registry->RegisterIntegerPref(kSyncToSigninMigrationState, kNotMigrated);
 
   // The passphrase type, determined upon the first engine initialization.
@@ -123,12 +131,12 @@ void SyncPrefs::RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(kObsoleteAutofillWalletImportEnabled, true);
 }
 
-void SyncPrefs::AddSyncPrefObserver(SyncPrefObserver* sync_pref_observer) {
+void SyncPrefs::AddObserver(SyncPrefObserver* sync_pref_observer) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   sync_pref_observers_.AddObserver(sync_pref_observer);
 }
 
-void SyncPrefs::RemoveSyncPrefObserver(SyncPrefObserver* sync_pref_observer) {
+void SyncPrefs::RemoveObserver(SyncPrefObserver* sync_pref_observer) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   sync_pref_observers_.RemoveObserver(sync_pref_observer);
 }
@@ -588,9 +596,8 @@ bool SyncPrefs::IsTypeSupportedInTransportMode(UserSelectableType type) {
       // practice that kPayments depends on kAutofill (when it comes to user
       // choice).
       // TODO(crbug.com/1435431): Update comment once the decoupling is removed.
-      return base::FeatureList::IsEnabled(kSyncEnableContactInfoDataType) &&
-             base::FeatureList::IsEnabled(
-                 kSyncEnableContactInfoDataTypeInTransportMode);
+      return base::FeatureList::IsEnabled(
+          kSyncEnableContactInfoDataTypeInTransportMode);
     case UserSelectableType::kPayments:
       // Always supported, since AUTOFILL_WALLET_DATA is supported in
       // transport mode everywhere.
@@ -769,23 +776,49 @@ void SyncPrefs::MaybeMigratePrefsForSyncToSigninPart2(
         update_selected_types_dict->EnsureDict(gaia_id_hash.ToBase64());
     account_settings->Set(GetPrefNameForType(UserSelectableType::kAutofill),
                           false);
+    // When the auto fill data type is updated, the payments should be updated
+    // too. Payments should not be enabled when auto fill data type disabled.
+    // TODO(crbug.com/1435431): This can be removed once kPayments is decoupled
+    // from kAutofill.
+    account_settings->Set(GetPrefNameForType(UserSelectableType::kPayments),
+                          false);
   }
 }
 
 // static
 void SyncPrefs::MigrateAutofillWalletImportEnabledPref(
     PrefService* pref_service) {
-  if (!pref_service->GetUserPrefValue(kObsoleteAutofillWalletImportEnabled)) {
-    // Nothing to migrate.
+  if (pref_service->GetBoolean(kObsoleteAutofillWalletImportEnabledMigrated)) {
+    // Migration already happened; nothing else needed.
     return;
   }
 
-  pref_service->SetBoolean(
-      prefs::internal::kSyncPayments,
-      pref_service->GetBoolean(kObsoleteAutofillWalletImportEnabled));
-  pref_service->ClearPref(kObsoleteAutofillWalletImportEnabled);
+  const base::Value* autofill_wallet_import_enabled =
+      pref_service->GetUserPrefValue(kObsoleteAutofillWalletImportEnabled);
 
-  CHECK(!pref_service->GetUserPrefValue(kObsoleteAutofillWalletImportEnabled));
+  if (autofill_wallet_import_enabled != nullptr) {
+    // If the previous pref was populated explicitly, carry over the value.
+    pref_service->SetBoolean(prefs::internal::kSyncPayments,
+                             autofill_wallet_import_enabled->GetBool());
+  } else if (pref_service->GetBoolean(
+                 prefs::internal::kSyncKeepEverythingSynced)) {
+    // The old pref isn't explicitly set (defaults to true) and sync-everything
+    // is on: in this case there is no need to explicitly set individual
+    // UserSelectableType to true.
+  } else {
+    // There is a special case for very old profiles, created before 2019 (i.e.
+    // before https://codereview.chromium.org/2068653003 and similar code
+    // changes). In older versions of the UI, it was possible to set
+    // kSyncKeepEverythingSynced to false, without populating
+    // kObsoleteAutofillWalletImportEnabled. The latter defaults to true, but
+    // that's not the case for the new replacement, i.e.
+    // prefs::internal::kSyncPayments, so it needs to be populated manually to
+    // migrate the old behavior.
+    pref_service->SetBoolean(prefs::internal::kSyncPayments, true);
+  }
+
+  pref_service->ClearPref(kObsoleteAutofillWalletImportEnabled);
+  pref_service->SetBoolean(kObsoleteAutofillWalletImportEnabledMigrated, true);
 }
 
 void SyncPrefs::MarkPartialSyncToSigninMigrationFullyDone() {

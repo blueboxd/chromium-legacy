@@ -62,10 +62,10 @@ using signin::GaiaIdHash;
 namespace password_manager {
 
 // The current version number of the login database schema.
-constexpr int kCurrentVersionNumber = 37;
+constexpr int kCurrentVersionNumber = 38;
 // The oldest version of the schema such that a legacy Chrome client using that
 // version can still read/write the current database.
-constexpr int kCompatibleVersionNumber = 36;
+constexpr int kCompatibleVersionNumber = 38;
 
 base::Pickle SerializeAlternativeElementVector(
     const AlternativeElementVector& vector) {
@@ -186,7 +186,7 @@ enum DatabaseInitError {
   MIGRATION_ERROR = 7,
   COMMIT_TRANSACTION_ERROR = 8,
   INIT_COMPROMISED_CREDENTIALS_ERROR = 9,
-  INIT_FIELD_INFO_ERROR = 10,
+  INIT_FIELD_INFO_ERROR = 10,  // Deprecated.
   FOREIGN_KEY_ERROR = 11,
   INIT_PASSWORD_NOTES_ERROR = 12,
 
@@ -240,7 +240,8 @@ void BindAddStatement(const PasswordForm& form, sql::Statement* s) {
   autofill::SerializeFormData(form.form_data, &form_data_pickle);
   s->BindBlob(COLUMN_FORM_DATA, PickleToSpan(form_data_pickle));
   s->BindString16(COLUMN_DISPLAY_NAME, form.display_name);
-  s->BindString(COLUMN_ICON_URL, form.icon_url.spec());
+  s->BindString(COLUMN_ICON_URL,
+                form.icon_url.is_valid() ? form.icon_url.spec() : "");
   // An empty Origin serializes as "null" which would be strange to store here.
   s->BindString(COLUMN_FEDERATION_URL,
                 form.federation_origin.opaque()
@@ -300,6 +301,10 @@ bool DoesMatchConstraints(const PasswordForm& form) {
   }
   if (form.signon_realm.empty()) {
     DLOG(ERROR) << "Constraint violation: form.signon_realm is empty";
+    return false;
+  }
+  if (!form.url.is_empty() && !form.url.is_valid()) {
+    DLOG(ERROR) << "Constraint violation: form.url is non-empty and invalid";
     return false;
   }
   return true;
@@ -958,7 +963,6 @@ bool LoginDatabase::Init() {
   stats_table_.Init(&db_);
   insecure_credentials_table_.Init(&db_);
   password_notes_table_.Init(&db_);
-  field_info_table_.Init(&db_);
 
   int current_version = meta_table_.GetVersionNumber();
   bool migration_success = FixVersionIfNeeded(&db_, &current_version);
@@ -1036,12 +1040,14 @@ bool LoginDatabase::Init() {
     }
   }
 
-  if (!field_info_table_.CreateTableIfNecessary()) {
-    LogDatabaseInitError(INIT_FIELD_INFO_ERROR);
-    LOG(ERROR) << "Unable to create the field info table.";
-    transaction.Rollback();
-    db_.Close();
-    return false;
+  // The table "field_info" is deprecated.
+  if (db_.DoesTableExist("field info")) {
+    if (!db_.Execute("DROP TABLE field_info")) {
+      LOG(ERROR) << "Unable to delete the field info table.";
+      transaction.Rollback();
+      db_.Close();
+      return false;
+    }
   }
 
   if (!transaction.Commit()) {
@@ -1250,7 +1256,8 @@ PasswordStoreChangeList LoginDatabase::UpdateLogin(
   autofill::SerializeFormData(form.form_data, &form_data_pickle);
   s.BindBlob(next_param++, PickleToSpan(form_data_pickle));
   s.BindString16(next_param++, form.display_name);
-  s.BindString(next_param++, form.icon_url.spec());
+  s.BindString(next_param++,
+               form.icon_url.is_valid() ? form.icon_url.spec() : "");
   // An empty Origin serializes as "null" which would be strange to store here.
   s.BindString(next_param++, form.federation_origin.opaque()
                                  ? std::string()

@@ -11,6 +11,8 @@
 #include <utility>
 
 #include "base/auto_reset.h"
+#include "base/check.h"
+#include "base/check_op.h"
 #include "base/command_line.h"
 #include "base/containers/contains.h"
 #include "base/containers/flat_set.h"
@@ -23,6 +25,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
+#include "base/notreached.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/sequenced_task_runner.h"
@@ -107,6 +110,7 @@
 #include "chrome/browser/ui/views/eye_dropper/eye_dropper.h"
 #include "chrome/browser/ui/views/find_bar_host.h"
 #include "chrome/browser/ui/views/frame/app_menu_button.h"
+#include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/browser_view_layout.h"
 #include "chrome/browser/ui/views/frame/browser_view_layout_delegate.h"
 #include "chrome/browser/ui/views/frame/contents_layout_manager.h"
@@ -143,7 +147,9 @@
 #include "chrome/browser/ui/views/side_panel/side_panel.h"
 #include "chrome/browser/ui/views/side_panel/side_panel_coordinator.h"
 #include "chrome/browser/ui/views/side_panel/side_panel_registry.h"
+#include "chrome/browser/ui/views/side_panel/side_panel_rounded_corner.h"
 #include "chrome/browser/ui/views/side_panel/side_panel_toolbar_container.h"
+#include "chrome/browser/ui/views/side_panel/side_panel_util.h"
 #include "chrome/browser/ui/views/status_bubble_views.h"
 #include "chrome/browser/ui/views/sync/one_click_signin_dialog_view.h"
 #include "chrome/browser/ui/views/tab_contents/chrome_web_contents_view_focus_helper.h"
@@ -233,6 +239,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/text/bytes_formatting.h"
 #include "ui/base/theme_provider.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/base/window_open_disposition_utils.h"
 #include "ui/compositor/layer.h"
@@ -242,7 +249,10 @@
 #include "ui/events/event_utils.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
+#include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_conversions.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/gfx/scoped_canvas.h"
 #include "ui/gfx/scrollbar_size.h"
 #include "ui/views/accessibility/view_accessibility.h"
@@ -255,6 +265,7 @@
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/focus/external_focus_tracker.h"
 #include "ui/views/interaction/element_tracker_views.h"
+#include "ui/views/view.h"
 #include "ui/views/view_class_properties.h"
 #include "ui/views/views_features.h"
 #include "ui/views/widget/native_widget.h"
@@ -414,6 +425,35 @@ bool WidgetHasChildModalDialog(views::Widget* parent_widget) {
       return true;
   }
   return false;
+}
+
+// Return the DevTools docked placement. It infers the docked placement from
+// the bounds of contents_webview relative to the local bounds of the container
+// that holds both contents_webview and devtools_webview.
+BrowserView::DevToolsDockedPlacement GetDevToolsDockedPlacement(
+    const gfx::Rect& contents_webview_bounds,
+    const gfx::Rect& local_webview_container_bounds) {
+  // If contents_webview has the same bounds as webview_container, it either
+  // means that devtools are not open or devtools are open in a separate
+  // window (not docked).
+  if (contents_webview_bounds == local_webview_container_bounds) {
+    return BrowserView::DevToolsDockedPlacement::kNone;
+  }
+
+  if (contents_webview_bounds.x() > 0 && contents_webview_bounds.y() == 0 &&
+      contents_webview_bounds.x() + contents_webview_bounds.width() ==
+          local_webview_container_bounds.width()) {
+    return BrowserView::DevToolsDockedPlacement::kLeft;
+  } else if (contents_webview_bounds.origin().IsOrigin() &&
+             contents_webview_bounds.height() ==
+                 local_webview_container_bounds.height()) {
+    return BrowserView::DevToolsDockedPlacement::kRight;
+  } else if (contents_webview_bounds.width() ==
+             local_webview_container_bounds.width()) {
+    return BrowserView::DevToolsDockedPlacement::kBottom;
+  }
+
+  return BrowserView::DevToolsDockedPlacement::kUnknown;
 }
 
 // Overlay view that owns TopContainerView in some cases (such as during
@@ -925,6 +965,10 @@ BrowserView::BrowserView(std::unique_ptr<Browser> browser)
       this, is_right_aligned ? SidePanel::kAlignRight : SidePanel::kAlignLeft));
   left_aligned_side_panel_separator_ =
       AddChildView(std::make_unique<ContentsSeparator>());
+  if (features::IsChromeRefresh2023()) {
+    side_panel_rounded_corner_ =
+        AddChildView(std::make_unique<SidePanelRoundedCorner>(this));
+  }
 
   SidePanelUI::SetSidePanelUIForBrowser(
       browser_.get(), std::make_unique<SidePanelCoordinator>(this));
@@ -998,7 +1042,9 @@ BrowserView::~BrowserView() {
   // OffTheRecordProfile's PrefService which gets deleted by ~Browser.
   RemoveAllChildViews();
 
-  SidePanelUI::RemoveSidePanelUIForBrowser(browser_.get());
+  // `SidePanelUI::RemoveSidePanelUIForBrowser()` deletes the
+  // SidePanelCoordinator.
+  SidePanelUI::RemoveSidePanelUIForBrowser(browser());
 }
 
 // static
@@ -1774,11 +1820,26 @@ void BrowserView::UpdateExclusiveAccessExitBubbleContent(
   bool is_trusted_pinned =
       platform_util::IsBrowserLockedFullscreen(browser_.get());
 
+  // Immersive mode allows the toolbar to be shown, so do not show the bubble.
+  // However, do show the bubble in a managed guest session (see
+  // crbug.com/741069).
+  bool immersive_not_public = ShouldUseImmersiveFullscreenForUrl(url) &&
+                              !profiles::IsManagedGuestSession();
+
+  // Whether we should remove the bubble if it exists, or not show the bubble.
   // TODO(jamescook): Figure out what to do with mouse-lock.
-  if (is_trusted_pinned ||
-      (!notify_download && bubble_type == EXCLUSIVE_ACCESS_BUBBLE_TYPE_NONE) ||
-      (ShouldUseImmersiveFullscreenForUrl(url) &&
-       !profiles::IsPublicSession())) {
+  bool should_close_bubble = is_trusted_pinned;
+  if (!notify_download) {
+    should_close_bubble = should_close_bubble ||
+                          // ...TYPE_NONE indicates deleting the bubble, except
+                          // when used with notify_download.
+                          bubble_type == EXCLUSIVE_ACCESS_BUBBLE_TYPE_NONE ||
+                          // Immersive mode logic for downloads is handled by
+                          // the download controller.
+                          immersive_not_public;
+  }
+
+  if (should_close_bubble) {
     if (bubble_first_hide_callback) {
       std::move(bubble_first_hide_callback)
           .Run(ExclusiveAccessBubbleHideReason::kNotShown);
@@ -2068,7 +2129,12 @@ void BrowserView::UpdateWindowControlsOverlayEnabled() {
 
   // Clear the title-bar-area rect when window controls overlay is disabled.
   if (!window_controls_overlay_enabled_) {
-    GetActiveWebContents()->UpdateWindowControlsOverlay(gfx::Rect());
+    content::WebContents* web_contents = GetActiveWebContents();
+    // `web_contents` can be null while the window is closing, but possibly
+    // also at other times. See https://crbug.com/1467247.
+    if (web_contents) {
+      web_contents->UpdateWindowControlsOverlay(gfx::Rect());
+    }
   }
 
   if (web_app_frame_toolbar()) {
@@ -2263,6 +2329,10 @@ void BrowserView::UpdateSidePanelHorizontalAlignment() {
   unified_side_panel_->SetHorizontalAlignment(
       is_right_aligned ? SidePanel::kAlignRight : SidePanel::kAlignLeft);
   GetBrowserViewLayout()->Layout(this);
+  if (side_panel_rounded_corner_) {
+    side_panel_rounded_corner_->Layout();
+    side_panel_rounded_corner_->SchedulePaint();
+  }
 }
 
 void BrowserView::FocusBookmarksToolbar() {
@@ -2605,8 +2675,9 @@ BrowserView::ShowQRCodeGeneratorBubble(content::WebContents* contents,
           : PageActionIconType::kQRCodeGenerator;
 
   auto* bubble = new qrcode_generator::QRCodeGeneratorBubble(
-      toolbar_button_provider()->GetAnchorView(icon_type), contents,
-      std::move(on_closing), std::move(on_back_button_pressed), url);
+      toolbar_button_provider()->GetAnchorView(icon_type),
+      contents->GetWeakPtr(), std::move(on_closing),
+      std::move(on_back_button_pressed), url);
 
   PageActionIconView* icon_view =
       toolbar_button_provider()->GetPageActionIconView(icon_type);
@@ -3568,9 +3639,8 @@ views::ClientView* BrowserView::CreateClientView(views::Widget* widget) {
 views::View* BrowserView::CreateOverlayView() {
   overlay_view_ = new TopContainerOverlayView(weak_ptr_factory_.GetWeakPtr());
   overlay_view_->SetVisible(false);
-  overlay_view_targeter_ = std::make_unique<OverlayViewTargeterDelegate>();
-  overlay_view_->SetEventTargeter(
-      std::make_unique<views::ViewTargeter>(overlay_view_targeter_.get()));
+  overlay_view_->SetEventTargeter(std::make_unique<views::ViewTargeter>(
+      std::make_unique<OverlayViewTargeterDelegate>()));
   return overlay_view_;
 }
 
@@ -3612,9 +3682,8 @@ views::View* BrowserView::CreateMacOverlayView() {
       std::make_unique<TopContainerOverlayView>(weak_ptr_factory_.GetWeakPtr());
   overlay_view->set_context_menu_controller(frame());
 
-  overlay_view_targeter_ = std::make_unique<OverlayViewTargeterDelegate>();
-  overlay_view->SetEventTargeter(
-      std::make_unique<views::ViewTargeter>(overlay_view_targeter_.get()));
+  overlay_view->SetEventTargeter(std::make_unique<views::ViewTargeter>(
+      std::make_unique<OverlayViewTargeterDelegate>()));
   overlay_view_ = overlay_view.get();
   overlay_widget_->GetRootView()->AddChildView(std::move(overlay_view));
 
@@ -3625,10 +3694,8 @@ views::View* BrowserView::CreateMacOverlayView() {
         std::make_unique<TabContainerOverlayView>(
             weak_ptr_factory_.GetWeakPtr());
     tab_overlay_view->set_context_menu_controller(frame());
-    tab_overlay_view_targeter_ =
-        std::make_unique<OverlayViewTargeterDelegate>();
     tab_overlay_view->SetEventTargeter(std::make_unique<views::ViewTargeter>(
-        tab_overlay_view_targeter_.get()));
+        std::make_unique<OverlayViewTargeterDelegate>()));
     tab_overlay_view_ = tab_overlay_view.get();
     tab_overlay_widget_->GetRootView()->AddChildView(
         std::move(tab_overlay_view));
@@ -3940,6 +4007,18 @@ void BrowserView::Layout() {
       IsToolbarVisible() ? FocusBehavior::ALWAYS : FocusBehavior::NEVER);
   frame()->GetFrameView()->UpdateMinimumSize();
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // In chromeOS ash we round the bottom two corners of the browser frame by
+  // rounding the respective corners of visible client contents i.e main web
+  // contents, devtools web contents and side panel. When ever there is change
+  // in the layout or visibility of these contents (devtools opened, devtools
+  // docked placement change, side panel open etc), we might need to update
+  // which corners are currently rounded. See
+  // `BrowserNonClientFrameViewChromeOS::UpdateWindowRoundedCorners()` for more
+  // details.
+  frame()->GetFrameView()->UpdateWindowRoundedCorners();
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
   // Some of the situations when the BrowserView is laid out are:
   // - Enter/exit immersive fullscreen mode.
   // - Enter/exit tablet mode.
@@ -4047,7 +4126,8 @@ void BrowserView::AddedToWidget() {
       tab_strip_region_view_, tabstrip_, toolbar_, infobar_container_,
       contents_container_, left_aligned_side_panel_separator_,
       unified_side_panel_, right_aligned_side_panel_separator_,
-      immersive_mode_controller_.get(), contents_separator_));
+      side_panel_rounded_corner_, immersive_mode_controller_.get(),
+      contents_separator_));
 
   EnsureFocusOrder();
 
@@ -4331,6 +4411,18 @@ void BrowserView::UpdateDevToolsForContents(WebContents* web_contents,
     if (strategy.hide_inspected_contents() != devtools_is_on_top)
       contents_container_->ReorderChildView(contents_web_view_, devtools_index);
   }
+
+  DevToolsDockedPlacement new_placement = GetDevToolsDockedPlacement(
+      contents_web_view_->bounds(), contents_container_->GetLocalBounds());
+
+  // When browser window is resizing, the contents_container and web_contents
+  // bounds can be out of sync, resulting in a state, where it is impossible to
+  // infer docked placement based on contents webview bounds. In this case, use
+  // the last known docked placement, since resizing a window does not change
+  // the devtools dock placement.
+  if (new_placement != DevToolsDockedPlacement::kUnknown) {
+    current_devtools_docked_placement_ = new_placement;
+  }
 }
 
 void BrowserView::UpdateUIForContents(WebContents* contents) {
@@ -4471,6 +4563,8 @@ bool BrowserView::ShouldUseImmersiveFullscreenForUrl(const GURL& url) const {
   // Kiosk mode needs the whole screen.
   if (chrome::IsRunningInAppMode())
     return false;
+  // An empty URL signifies browser fullscreen. Immersive is used for browser
+  // fullscreen only.
   return url.is_empty();
 #else
   // No immersive except in Chrome OS.

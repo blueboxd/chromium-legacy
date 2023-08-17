@@ -405,6 +405,15 @@ enum class GenerationDialogChoice {
   kMaxValue = kRejected
 };
 
+enum class SignInState {
+  // The user is signed out.
+  kSignedOut = 0,
+  // The user is signed in but has not enabled Sync.
+  kSignedInSyncDisabled = 1,
+  // The user has enabled Sync.
+  kSyncing = 2,
+};
+
 // Represents the state of the user wrt. sign-in and account-scoped storage.
 // Used for metrics. Always keep this enum in sync with the corresponding
 // histogram_suffixes in histograms.xml!
@@ -644,6 +653,7 @@ enum class PasswordManagementBubbleInteractions {
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused. Always keep this enum in sync with the
 // corresponding PasswordMigrationWarningTriggers in enums.xml.
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.pwd_migration
 enum class PasswordMigrationWarningTriggers {
   kChromeStartup = 0,
   kPasswordSaveUpdateMessage = 1,
@@ -665,6 +675,33 @@ enum class PasswordManagerShortcutMetric {
   // User switched profile in the standalone password manager app.
   kProfileSwitched = 2,
   kMaxValue = kProfileSwitched,
+};
+
+// Presumed password form type. Calculated using heuristics after form parsing.
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+// Needs to stay in sync with PasswordFormType2 in enums.xml.
+enum class SubmittedFormType {
+  kUndefined = 0,
+  kLogin = 1,
+  kSignup = 2,
+  kChangePassword = 3,
+  kResetPassword = 4,
+  kSingleUsername = 5,
+  kMaxValue = kSingleUsername,
+};
+
+// Represents different user interactions related to shared password
+// notification bubble. These values are persisted to logs. Entries should not
+// be renumbered and numeric values should never be reused. Always keep this
+// enum in sync with the corresponding
+// PasswordManager.SharedPasswordsNotificationInteractions in enums.xml.
+enum class SharedPasswordsNotificationBubbleInteractions {
+  kNotificationDisplayed = 0,
+  kGotItButtonClicked = 1,
+  kManagePasswordsButtonClicked = 2,
+  kCloseButtonClicked = 3,
+  kMaxValue = kCloseButtonClicked,
 };
 
 std::string GetPasswordAccountStorageUsageLevelHistogramSuffix(
@@ -721,10 +758,6 @@ void LogSaveUIDismissalReason(
     UIDismissalReason reason,
     autofill::mojom::SubmissionIndicatorEvent submission_event,
     absl::optional<PasswordAccountStorageUserState> user_state);
-
-// Log the |reason| a user dismissed the save password prompt after previously
-// having unblocklisted the origin while on the page.
-void LogSaveUIDismissalReasonAfterUnblocklisting(UIDismissalReason reason);
 
 // Log the |reason| a user dismissed the update password bubble. If the
 // submission is detected on a cleared change password form, dismissal reason is
@@ -838,11 +871,8 @@ void LogIsSyncPasswordHashSaved(IsSyncPasswordHashSaved state,
 // privacy of individual data points, we will log with 10% noise.
 void LogIsPasswordProtected(bool is_password_protected);
 
-// Log the number of Gaia password hashes saved. Currently only called on
-// profile start up.
 void LogProtectedPasswordHashCounts(size_t gaia_hash_count,
-                                    bool does_primary_account_exists,
-                                    bool is_signed_in);
+                                    SignInState sign_in_state);
 
 // Log the user interaction events when creating a new credential from settings.
 void LogUserInteractionsWhenAddingCredentialFromSettings(
@@ -857,6 +887,10 @@ void LogPasswordNoteActionInSettings(PasswordNoteAction action);
 void LogUserInteractionsInPasswordManagementBubble(
     PasswordManagementBubbleInteractions
         password_management_bubble_interaction);
+
+// Log the user interaction events in the shared passwords notification bubble.
+void LogUserInteractionsInSharedPasswordsNotificationBubble(
+    SharedPasswordsNotificationBubbleInteractions interaction);
 
 // Wraps |callback| into another callback that measures the elapsed time between
 // construction and actual execution of the callback. Records the result to

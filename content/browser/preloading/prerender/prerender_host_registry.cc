@@ -460,6 +460,18 @@ BASE_FEATURE(kPrerender2BypassMemoryLimitCheck,
              "Prerender2BypassMemoryLimitCheck",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+// Enables to introduce the new limit and scheduler for prerender triggers.
+// See crbug.com/1464021 for more details.
+BASE_FEATURE(kPrerender2NewLimitAndScheduler,
+             "Prerender2NewLimitAndScheduler",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+const char kMaxNumOfRunningSpeculationRulesEagerPrerenders[] =
+    "max_num_of_running_speculation_rules_eager_prerenders";
+const char kMaxNumOfRunningSpeculationRulesNonEagerPrerenders[] =
+    "max_num_of_running_speculation_rules_non_eager_prerenders";
+const char kMaxNumOfRunningEmbedderPrerenders[] =
+    "max_num_of_running_embedder_prerenders";
+
 PrerenderHostRegistry::PrerenderHostRegistry(WebContents& web_contents)
     : memory_pressure_listener_(
           FROM_HERE,
@@ -674,7 +686,8 @@ int PrerenderHostRegistry::CreateAndStartHost(
     // TODO(crbug.com/1355151): Enqueue the request exceeding the number limit
     // until the forerunners are cancelled, and suspend starting a new prerender
     // when the number reaches the limit.
-    if (!IsAllowedToStartPrerenderingForTrigger(attributes.trigger_type)) {
+    if (!IsAllowedToStartPrerenderingForTrigger(attributes.trigger_type,
+                                                attributes.eagerness)) {
       // The reason we don't consider limit exceeded as an ineligibility
       // reason is because we can't replicate the behavior in our other
       // experiment groups for analysis. To prevent this we set
@@ -1397,6 +1410,23 @@ void PrerenderHostRegistry::ResourceLoadComplete(
         &host->GetPrerenderedMainFrameHost()->GetPage()) {
       continue;
     }
+
+    // Investigation of crbug.com/1445438
+    SCOPED_CRASH_KEY_STRING1024("Bug1445438", "host_url",
+                                host->prerendering_url().spec());
+    SCOPED_CRASH_KEY_STRING1024("Bug1445438", "rli_final_url",
+                                resource_load_info.final_url.spec());
+    SCOPED_CRASH_KEY_STRING1024("Bug1445438", "rli_original_url",
+                                resource_load_info.original_url.spec());
+    SCOPED_CRASH_KEY_STRING1024("Bug1445438", "rli_method",
+                                resource_load_info.method);
+    SCOPED_CRASH_KEY_NUMBER(
+        "Bug1445438", "rli_request_destination",
+        static_cast<int32_t>(resource_load_info.request_destination));
+    SCOPED_CRASH_KEY_STRING1024("Bug1445438", "rli_mime_type",
+                                resource_load_info.mime_type);
+    base::debug::DumpWithoutCrashing();
+
     RecordBlockedByClientResourceType(resource_load_info.request_destination,
                                       host->trigger_type(),
                                       host->embedder_histogram_suffix());
@@ -1568,29 +1598,91 @@ const std::string& PrerenderHostRegistry::GetPrerenderEmbedderHistogramSuffix(
   return prerender_host->embedder_histogram_suffix();
 }
 
-bool PrerenderHostRegistry::IsAllowedToStartPrerenderingForTrigger(
-    PrerenderTriggerType trigger_type) {
-  int trigger_type_count = 0;
-  for (const auto& host_by_id : prerender_host_by_frame_tree_node_id_) {
-    if (host_by_id.second->trigger_type() == trigger_type)
-      ++trigger_type_count;
-  }
-  // TODO(crbug.com/1350676): Make this function care about
-  // `prerender_new_tab_handle_by_frame_tree_node_id_` as well.
+PrerenderHostRegistry::PrerenderLimitGroup
+PrerenderHostRegistry::GetPrerenderLimitGroup(
+    PrerenderTriggerType trigger_type,
+    absl::optional<blink::mojom::SpeculationEagerness> eagerness) {
+  CHECK(base::FeatureList::IsEnabled(kPrerender2NewLimitAndScheduler));
 
   switch (trigger_type) {
     case PrerenderTriggerType::kSpeculationRule:
     case PrerenderTriggerType::kSpeculationRuleFromIsolatedWorld:
-      // The number of prerenders triggered by speculation rules is limited to a
-      // Finch config param.
+      CHECK(eagerness.has_value());
+      switch (eagerness.value()) {
+        // Separate the limits of speculation rules into two categories: eager,
+        // which are triggered immediately after adding the rule, and
+        // non-eager(moderate, conservative), which wait for a specific user
+        // action to trigger, aiming to apply the appropriate corresponding
+        // limits for these attributes.
+        case blink::mojom::SpeculationEagerness::kEager:
+          return PrerenderLimitGroup::kSpeculationRulesEager;
+        case blink::mojom::SpeculationEagerness::kModerate:
+        case blink::mojom::SpeculationEagerness::kConservative:
+          return PrerenderLimitGroup::kSpeculationRulesNonEager;
+      }
+    case PrerenderTriggerType::kEmbedder:
+      return PrerenderLimitGroup::kEmbedder;
+  }
+}
+
+bool PrerenderHostRegistry::IsAllowedToStartPrerenderingForTrigger(
+    PrerenderTriggerType trigger_type,
+    absl::optional<blink::mojom::SpeculationEagerness> eagerness) {
+  int trigger_type_count = 0;
+
+  PrerenderLimitGroup limit_group;
+  if (base::FeatureList::IsEnabled(kPrerender2NewLimitAndScheduler)) {
+    limit_group = GetPrerenderLimitGroup(trigger_type, eagerness);
+  }
+
+  for (const auto& [_, host] : prerender_host_by_frame_tree_node_id_) {
+    if (base::FeatureList::IsEnabled(kPrerender2NewLimitAndScheduler)) {
+      if (GetPrerenderLimitGroup(host->trigger_type(), host->eagerness()) ==
+          limit_group) {
+        ++trigger_type_count;
+      }
+    } else {
+      if (host->trigger_type() == trigger_type) {
+        ++trigger_type_count;
+      }
+    }
+  }
+  // TODO(crbug.com/1350676): Make this function care about
+  // `prerender_new_tab_handle_by_frame_tree_node_id_` as well.
+
+  if (base::FeatureList::IsEnabled(kPrerender2NewLimitAndScheduler)) {
+    // Apply the limit of maximum number of running prerenders per
+    // PrerenderLimitGroup.
+    switch (limit_group) {
+      case PrerenderLimitGroup::kSpeculationRulesEager:
+        return trigger_type_count <
+               base::GetFieldTrialParamByFeatureAsInt(
+                   kPrerender2NewLimitAndScheduler,
+                   kMaxNumOfRunningSpeculationRulesEagerPrerenders, 10);
+      case PrerenderLimitGroup::kSpeculationRulesNonEager:
+        return trigger_type_count <
+               base::GetFieldTrialParamByFeatureAsInt(
+                   kPrerender2NewLimitAndScheduler,
+                   kMaxNumOfRunningSpeculationRulesNonEagerPrerenders, 2);
+      case PrerenderLimitGroup::kEmbedder:
+        return trigger_type_count < base::GetFieldTrialParamByFeatureAsInt(
+                                        kPrerender2NewLimitAndScheduler,
+                                        kMaxNumOfRunningEmbedderPrerenders, 2);
+    }
+  }
+  switch (trigger_type) {
+    case PrerenderTriggerType::kSpeculationRule:
+    case PrerenderTriggerType::kSpeculationRuleFromIsolatedWorld:
+      // The number of prerenders triggered by speculation rules is limited to
+      // a Finch config param.
       return trigger_type_count <
              base::GetFieldTrialParamByFeatureAsInt(
                  blink::features::kPrerender2,
                  blink::features::kPrerender2MaxNumOfRunningSpeculationRules,
                  10);
     case PrerenderTriggerType::kEmbedder:
-      // Currently the number of prerenders triggered by an embedder is limited
-      // to two.
+      // Currently the number of prerenders triggered by an embedder is
+      // limited to two.
       return trigger_type_count < 2;
   }
 }

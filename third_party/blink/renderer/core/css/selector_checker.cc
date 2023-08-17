@@ -1531,19 +1531,10 @@ bool SelectorChecker::CheckPseudoClass(const SelectorCheckingContext& context,
       }
     }
     case CSSSelector::kPseudoAutofill:
-    case CSSSelector::kPseudoWebKitAutofill: {
-      auto* html_form_element = DynamicTo<HTMLFormControlElement>(&element);
-      return html_form_element && html_form_element->IsAutofilled();
-    }
-    case CSSSelector::kPseudoAutofillPreviewed: {
-      auto* html_form_element = DynamicTo<HTMLFormControlElement>(&element);
-      return html_form_element && html_form_element->GetAutofillState() ==
-                                      WebAutofillState::kPreviewed;
-    }
-    case CSSSelector::kPseudoAutofillSelected: {
-      auto* html_form_element = DynamicTo<HTMLFormControlElement>(&element);
-      return html_form_element && html_form_element->HighlightAutofilled();
-    }
+    case CSSSelector::kPseudoWebKitAutofill:
+    case CSSSelector::kPseudoAutofillPreviewed:
+    case CSSSelector::kPseudoAutofillSelected:
+      return CheckPseudoAutofill(selector.GetPseudoType(), element);
     case CSSSelector::kPseudoAnyLink:
     case CSSSelector::kPseudoWebkitAnyLink:
       return element.IsLink();
@@ -1728,6 +1719,22 @@ bool SelectorChecker::CheckPseudoClass(const SelectorCheckingContext& context,
       }
       break;
     }
+    case CSSSelector::kPseudoDialogInTopLayer:
+      if (auto* dialog = DynamicTo<HTMLDialogElement>(element)) {
+        if (dialog->IsModal() &&
+            dialog->FastHasAttribute(html_names::kOpenAttr)) {
+          DCHECK(dialog->GetDocument().TopLayerElements().Contains(dialog));
+          return true;
+        }
+        // When the dialog is transitioning to closed, we have to check the
+        // elements which are in the top layer but are pending removal to see if
+        // this element used to be open as a dialog.
+        absl::optional<Document::TopLayerReason> top_layer_reason =
+            dialog->GetDocument().IsScheduledForTopLayerRemoval(dialog);
+        return top_layer_reason &&
+               *top_layer_reason == Document::TopLayerReason::kDialog;
+      }
+      return false;
     case CSSSelector::kPseudoPopoverInTopLayer:
       if (auto* html_element = DynamicTo<HTMLElement>(element);
           html_element && html_element->HasPopoverAttribute()) {
@@ -1755,13 +1762,13 @@ bool SelectorChecker::CheckPseudoClass(const SelectorCheckingContext& context,
       }
       return false;
     case CSSSelector::kPseudoOpen:
-      if (auto* selectmenu = DynamicTo<HTMLSelectMenuElement>(element)) {
-        return selectmenu->open();
+      if (auto* selectlist = DynamicTo<HTMLSelectListElement>(element)) {
+        return selectlist->open();
       }
       return false;
     case CSSSelector::kPseudoClosed:
-      if (auto* selectmenu = DynamicTo<HTMLSelectMenuElement>(element)) {
-        return !selectmenu->open();
+      if (auto* selectlist = DynamicTo<HTMLSelectListElement>(element)) {
+        return !selectlist->open();
       }
       return false;
     case CSSSelector::kPseudoFullscreen:
@@ -1945,6 +1952,37 @@ bool SelectorChecker::CheckPseudoClass(const SelectorCheckingContext& context,
 static bool MatchesUAShadowElement(Element& element, const AtomicString& id) {
   ShadowRoot* root = element.ContainingShadowRoot();
   return root && root->IsUserAgent() && element.ShadowPseudoId() == id;
+}
+
+bool SelectorChecker::CheckPseudoAutofill(CSSSelector::PseudoType pseudo_type,
+                                          Element& element) const {
+  HTMLFormControlElement* html_form_element = nullptr;
+  HTMLSelectListElement* owner_html_select_list_element =
+      HTMLSelectListElement::OwnerSelectList(&element);
+  if (owner_html_select_list_element &&
+      owner_html_select_list_element->AssignedPartType(&element) ==
+          HTMLSelectListElement::PartType::kButton) {
+    html_form_element = owner_html_select_list_element;
+  } else {
+    html_form_element = DynamicTo<HTMLFormControlElement>(&element);
+  }
+
+  if (!html_form_element) {
+    return false;
+  }
+  switch (pseudo_type) {
+    case CSSSelector::kPseudoAutofill:
+    case CSSSelector::kPseudoWebKitAutofill:
+      return html_form_element->IsAutofilled();
+    case CSSSelector::kPseudoAutofillPreviewed:
+      return html_form_element->GetAutofillState() ==
+             WebAutofillState::kPreviewed;
+    case CSSSelector::kPseudoAutofillSelected:
+      return html_form_element->HighlightAutofilled();
+    default:
+      NOTREACHED();
+  }
+  return false;
 }
 
 bool SelectorChecker::CheckPseudoElement(const SelectorCheckingContext& context,

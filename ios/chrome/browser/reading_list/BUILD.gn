@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 source_set("reading_list") {
-  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "favicon_web_state_dispatcher_impl.h",
     "favicon_web_state_dispatcher_impl.mm",
@@ -62,6 +61,7 @@ source_set("reading_list") {
     "//ios/chrome/browser/shared/ui/util:url_with_title",
     "//ios/chrome/browser/signin",
     "//ios/chrome/browser/sync:model_type_store_service_factory",
+    "//ios/chrome/browser/ui/ntp/metrics:home_metrics",
     "//ios/chrome/common",
     "//ios/components/webui:url_constants",
     "//ios/third_party/material_components_ios",
@@ -81,7 +81,6 @@ source_set("reading_list") {
 }
 
 source_set("reading_list_remover") {
-  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "reading_list_remover_helper.h",
     "reading_list_remover_helper.mm",
@@ -106,7 +105,6 @@ source_set("constants") {
     "reading_list_constants.h",
     "reading_list_constants.mm",
   ]
-  configs += [ "//build/config/compiler:enable_arc" ]
 }
 
 source_set("test_support") {
@@ -119,6 +117,7 @@ source_set("test_support") {
     "//base",
     "//components/reading_list/core:test_support",
     "//components/sync/base",
+    "//components/sync/model",
   ]
   public_deps = [
     "//components/keyed_service/core",
@@ -128,7 +127,6 @@ source_set("test_support") {
 }
 
 source_set("unit_tests") {
-  configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
     "favicon_web_state_dispatcher_impl_unittest.mm",
@@ -147,6 +145,7 @@ source_set("unit_tests") {
     "//components/reading_list/core",
     "//components/reading_list/core:test_support",
     "//components/sync/base",
+    "//components/sync/model",
     "//ios/chrome/browser/dom_distiller",
     "//ios/chrome/browser/shared/model/browser_state:test_support",
     "//ios/chrome/browser/shared/model/paths",

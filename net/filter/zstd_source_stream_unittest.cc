@@ -11,6 +11,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "net/base/io_buffer.h"
 #include "net/base/test_completion_callback.h"
 #include "net/filter/mock_source_stream.h"
@@ -22,6 +23,17 @@ namespace net {
 namespace {
 
 const size_t kDefaultBufferSize = 4096;
+const size_t kLargeBufferSize = 7168;
+
+// Get the path of data directory.
+base::FilePath GetTestDataDir() {
+  base::FilePath data_dir;
+  base::PathService::Get(base::DIR_SOURCE_ROOT, &data_dir);
+  data_dir = data_dir.AppendASCII("net");
+  data_dir = data_dir.AppendASCII("data");
+  data_dir = data_dir.AppendASCII("filter_unittests");
+  return data_dir;
+}
 
 }  // namespace
 
@@ -31,11 +43,7 @@ class ZstdSourceStreamTest : public PlatformTest {
     PlatformTest::SetUp();
 
     // Get the path of data directory.
-    base::FilePath data_dir;
-    base::PathService::Get(base::DIR_SOURCE_ROOT, &data_dir);
-    data_dir = data_dir.AppendASCII("net");
-    data_dir = data_dir.AppendASCII("data");
-    data_dir = data_dir.AppendASCII("filter_unittests");
+    base::FilePath data_dir = GetTestDataDir();
 
     // Read data from the original file into buffer.
     base::FilePath file_path;
@@ -50,6 +58,7 @@ class ZstdSourceStreamTest : public PlatformTest {
     ASSERT_GE(kDefaultBufferSize, encoded_buffer_.size());
 
     auto source = std::make_unique<MockSourceStream>();
+    source->set_expect_all_input_consumed(false);
     source_ = source.get();
     zstd_stream_ = CreateZstdSourceStream(std::move(source));
 
@@ -87,6 +96,11 @@ class ZstdSourceStreamTest : public PlatformTest {
   MockSourceStream* source() { return source_; }
   SourceStream* zstd_stream() { return zstd_stream_.get(); }
 
+  void ResetStream() {
+    source_ = nullptr;
+    zstd_stream_ = nullptr;
+  }
+
  private:
   std::unique_ptr<SourceStream> zstd_stream_;
   raw_ptr<MockSourceStream> source_;
@@ -106,12 +120,24 @@ TEST_F(ZstdSourceStreamTest, EmptyStream) {
 
 // Basic scenario: decoding zstd data with big enough buffer
 TEST_F(ZstdSourceStreamTest, DecodeZstdOneBlockSync) {
+  base::HistogramTester histograms;
+
   source()->AddReadResult(encoded_buffer(), encoded_buffer_len(), OK,
                           MockSourceStream::SYNC);
+
   TestCompletionCallback callback;
   int bytes_read = ReadStream(callback.callback());
   EXPECT_EQ(static_cast<int>(source_data_len()), bytes_read);
   EXPECT_EQ(0, memcmp(out_data(), source_data().c_str(), source_data_len()));
+
+  // Resetting streams is needed to call the destructor of ZstdSourceStream,
+  // where the histograms are recorded.
+  ResetStream();
+
+  histograms.ExpectTotalCount("Net.ZstdFilter.Status", 1);
+  histograms.ExpectUniqueSample(
+      "Net.ZstdFilter.Status",
+      static_cast<int>(ZstdDecodingStatus::kEndOfFrame), 1);
 }
 
 TEST_F(ZstdSourceStreamTest, IgnoreExtraDataInOneRead) {
@@ -174,10 +200,101 @@ TEST_F(ZstdSourceStreamTest, DecodeZstdOneBlockAsync) {
       bytes_read = callback.WaitForResult();
     }
     EXPECT_GE(static_cast<int>(kDefaultBufferSize), bytes_read);
-    actual_output.append(out_data(), bytes_read);
+    EXPECT_GE(bytes_read, 0);
+    if (bytes_read > 0) {
+      actual_output.append(out_data(), bytes_read);
+    }
   } while (bytes_read > 0);
   EXPECT_EQ(source_data_len(), actual_output.size());
   EXPECT_EQ(source_data(), actual_output);
+}
+
+TEST_F(ZstdSourceStreamTest, DecodeTwoConcatenatedFrames) {
+  std::string encoded_buffer;
+  std::string source_data;
+
+  base::FilePath data_dir = GetTestDataDir();
+
+  // Read data from the original file into buffer.
+  base::FilePath file_path;
+  file_path = data_dir.AppendASCII("google.txt");
+  ASSERT_TRUE(base::ReadFileToString(file_path, &source_data));
+  source_data.append(source_data);
+  ASSERT_GE(kLargeBufferSize, source_data.size());
+
+  // Read data from the encoded file into buffer.
+  base::FilePath encoded_file_path;
+  encoded_file_path = data_dir.AppendASCII("google.zst");
+  ASSERT_TRUE(base::ReadFileToString(encoded_file_path, &encoded_buffer));
+
+  // Concatenate two encoded buffers.
+  encoded_buffer.append(encoded_buffer);
+  ASSERT_GE(kLargeBufferSize, encoded_buffer.size());
+
+  scoped_refptr<IOBufferWithSize> out_buffer =
+      base::MakeRefCounted<IOBufferWithSize>(kLargeBufferSize);
+
+  // Decompress content.
+  auto source = std::make_unique<MockSourceStream>();
+  source->AddReadResult(encoded_buffer.c_str(), encoded_buffer.size(), OK,
+                        MockSourceStream::SYNC);
+  source->AddReadResult(nullptr, 0, OK, MockSourceStream::SYNC);
+  source->set_expect_all_input_consumed(false);
+
+  std::unique_ptr<SourceStream> zstd_stream =
+      CreateZstdSourceStream(std::move(source));
+
+  std::string actual_output;
+  while (true) {
+    TestCompletionCallback callback;
+    int bytes_read = zstd_stream->Read(out_buffer.get(), kLargeBufferSize,
+                                       callback.callback());
+    if (bytes_read <= OK) {
+      break;
+    }
+    actual_output.append(out_buffer->data(), bytes_read);
+  }
+
+  EXPECT_EQ(source_data.length(), actual_output.size());
+  EXPECT_EQ(source_data, actual_output);
+}
+
+TEST_F(ZstdSourceStreamTest, WithDictionary) {
+  std::string encoded_buffer;
+  std::string dictionary_data;
+
+  base::FilePath data_dir = GetTestDataDir();
+  // Read data from the encoded file into buffer.
+  base::FilePath encoded_file_path;
+  encoded_file_path = data_dir.AppendASCII("google.szst");
+  ASSERT_TRUE(base::ReadFileToString(encoded_file_path, &encoded_buffer));
+
+  // Read data from the dictionary file into buffer.
+  base::FilePath dictionary_file_path;
+  dictionary_file_path = data_dir.AppendASCII("test.dict");
+  ASSERT_TRUE(base::ReadFileToString(dictionary_file_path, &dictionary_data));
+
+  scoped_refptr<net::IOBuffer> dictionary_buffer =
+      base::MakeRefCounted<net::StringIOBuffer>(dictionary_data);
+
+  scoped_refptr<IOBufferWithSize> out_buffer =
+      base::MakeRefCounted<IOBufferWithSize>(kDefaultBufferSize);
+
+  auto source = std::make_unique<MockSourceStream>();
+  source->AddReadResult(encoded_buffer.c_str(), encoded_buffer.size(), OK,
+                        MockSourceStream::SYNC);
+
+  std::unique_ptr<SourceStream> zstd_stream =
+      CreateZstdSourceStreamWithDictionary(std::move(source), dictionary_buffer,
+                                           dictionary_data.size());
+
+  TestCompletionCallback callback;
+  int bytes_read = zstd_stream->Read(out_buffer.get(), kDefaultBufferSize,
+                                     callback.callback());
+
+  EXPECT_EQ(static_cast<int>(source_data_len()), bytes_read);
+  EXPECT_EQ(
+      0, memcmp(out_buffer->data(), source_data().c_str(), source_data_len()));
 }
 
 }  // namespace net

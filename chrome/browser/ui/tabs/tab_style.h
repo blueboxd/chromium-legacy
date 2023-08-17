@@ -66,7 +66,6 @@ class TabStyle {
   enum class TabSelectionState {
     kActive,
     kSelected,
-    kHovered,
     kInactive,
   };
 
@@ -114,8 +113,6 @@ class TabStyle {
   TabStyle& operator=(const TabStyle&) = delete;
   virtual ~TabStyle();
 
-  virtual int GetHeight() const = 0;
-
   // Returns the preferred width of a single Tab, assuming space is
   // available.
   virtual int GetStandardWidth() const = 0;
@@ -140,6 +137,9 @@ class TabStyle {
   // Gets the distance between the separator and tab, if any.
   virtual gfx::Insets GetSeparatorMargins() const = 0;
 
+  // Gets the radius of the rounded rect used to draw the separator.
+  virtual int GetSeparatorCornerRadius() const = 0;
+
   // Returns, for a tab of height |height|, how far the window top drag handle
   // can extend down into inactive tabs or the new tab button. This behavior
   // is not used in all cases.
@@ -161,6 +161,7 @@ class TabStyle {
   // use their own color ids.
   virtual SkColor GetTabBackgroundColor(
       TabSelectionState state,
+      bool hovered,
       bool frame_active,
       const ui::ColorProvider& color_provider) const = 0;
 

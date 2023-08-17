@@ -61,6 +61,7 @@ class PersonalDataManagerCleanerTest : public PersonalDataManagerTestBase,
   }
 
   void TearDown() override {
+    personal_data_manager_cleaner_.reset();
     if (personal_data_)
       personal_data_->Shutdown();
     personal_data_.reset();
@@ -104,10 +105,11 @@ class PersonalDataManagerCleanerTest : public PersonalDataManagerTestBase,
   }
 
   void SetServerCards(const std::vector<CreditCard>& server_cards) {
-    test::SetServerCreditCards(personal_data_->IsSyncFeatureEnabled()
-                                   ? profile_autofill_table_.get()
-                                   : account_autofill_table_.get(),
-                               server_cards);
+    test::SetServerCreditCards(
+        personal_data_->IsSyncFeatureEnabledForPaymentsServerMetrics()
+            ? profile_autofill_table_.get()
+            : account_autofill_table_.get(),
+        server_cards);
   }
 
   std::unique_ptr<PersonalDataManager> personal_data_;
@@ -658,12 +660,8 @@ TEST_F(PersonalDataManagerCleanerTest, ApplyDedupingRoutine_OncePerVersion) {
 
 // Tests that `kAccount` profiles are not deduplicated against each other.
 TEST_F(PersonalDataManagerCleanerTest, Deduplicate_kAccountPairs) {
-  base::test::ScopedFeatureList features;
-  features.InitWithFeatures(
-      /*enabled_features=*/
-      {features::kAutofillAccountProfilesUnionView,
-       features::kAutofillAccountProfileStorage},
-      /*disabled_features=*/{});
+  base::test::ScopedFeatureList features(
+      features::kAutofillAccountProfileStorage);
   AutofillProfile account_profile1 = test::StandardProfile();
   account_profile1.set_source_for_testing(AutofillProfile::Source::kAccount);
   AutofillProfile account_profile2 = test::StandardProfile();
@@ -676,12 +674,8 @@ TEST_F(PersonalDataManagerCleanerTest, Deduplicate_kAccountPairs) {
 // Tests that `kLocalOrSyncable` profiles which are a subset of a `kAccount`
 // profile are deduplicated. The result is a Chrome account profile.
 TEST_F(PersonalDataManagerCleanerTest, Deduplicate_kAccountSuperset) {
-  base::test::ScopedFeatureList features;
-  features.InitWithFeatures(
-      /*enabled_features=*/
-      {features::kAutofillAccountProfilesUnionView,
-       features::kAutofillAccountProfileStorage},
-      /*disabled_features=*/{});
+  base::test::ScopedFeatureList features(
+      features::kAutofillAccountProfileStorage);
   // Create a non-Chrome account profile and a local profile.
   AutofillProfile account_profile = test::StandardProfile();
   const int non_chrome_service =
@@ -705,12 +699,8 @@ TEST_F(PersonalDataManagerCleanerTest, Deduplicate_kAccountSuperset) {
 // Tests that `kAccount` profiles which are a subset of a `kLocalOrSyncable`
 // profile are not deduplicated.
 TEST_F(PersonalDataManagerCleanerTest, Deduplicate_kAccountSubset) {
-  base::test::ScopedFeatureList features;
-  features.InitWithFeatures(
-      /*enabled_features=*/
-      {features::kAutofillAccountProfilesUnionView,
-       features::kAutofillAccountProfileStorage},
-      /*disabled_features=*/{});
+  base::test::ScopedFeatureList features(
+      features::kAutofillAccountProfileStorage);
   AutofillProfile account_profile = test::SubsetOfStandardProfile();
   account_profile.set_source_for_testing(AutofillProfile::Source::kAccount);
   AutofillProfile local_profile = test::StandardProfile();
@@ -722,8 +712,7 @@ TEST_F(PersonalDataManagerCleanerTest, Deduplicate_kAccountSubset) {
 // profile on startup.
 TEST_F(PersonalDataManagerCleanerTest,
        RemoveInaccessibleProfileValuesOnStartup) {
-  base::test::ScopedFeatureList feature;
-  feature.InitAndEnableFeature(
+  base::test::ScopedFeatureList features(
       features::kAutofillRemoveInaccessibleProfileValuesOnStartup);
 
   // Add a German and a US profile.
@@ -848,14 +837,14 @@ TEST_F(PersonalDataManagerCleanerTest,
   // Create a unmasked server card expired 400 days ago, and last used 400
   // days ago.
   // It is expected to remain because we do not delete server cards.
-  CreditCard credit_card5(CreditCard::FULL_SERVER_CARD, "c789");
+  CreditCard credit_card5(CreditCard::RecordType::kFullServerCard, "c789");
   test::SetCreditCardInfo(&credit_card5, "Emma", "4234567890123456" /* Visa */,
                           "04", "1999", "1");
   credit_card5.set_use_date(now - base::Days(400));
 
   // Create masked server card expired 400 days ago, and last used 400 days ago.
   // It is expected to remain because we do not delete server cards.
-  CreditCard credit_card6(CreditCard::MASKED_SERVER_CARD, "c987");
+  CreditCard credit_card6(CreditCard::RecordType::kMaskedServerCard, "c987");
   test::SetCreditCardInfo(&credit_card6, "Frank", "6543", "01", "1998", "1");
   credit_card6.set_use_date(now - base::Days(400));
   credit_card6.SetNetworkForMaskedCard(kVisaCard);

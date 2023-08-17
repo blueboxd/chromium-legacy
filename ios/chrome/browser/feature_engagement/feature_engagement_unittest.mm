@@ -10,10 +10,6 @@
 #import "components/feature_engagement/test/test_tracker.h"
 #import "testing/platform_test.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 namespace {
 
 // The minimum number of times Chrome must be opened in order for the Reading
@@ -145,18 +141,6 @@ class FeatureEngagementTest : public PlatformTest {
         "name:default_site_view_shown;comparator:==0;window:720;storage:720";
     params["event_1"] =
         "name:desktop_version_requested;comparator:>=3;window:60;storage:60";
-    return params;
-  }
-
-  std::map<std::string, std::string> TabPinnedTipParams() {
-    std::map<std::string, std::string> params;
-    params["availability"] = "any";
-    params["session_rate"] = "any";
-    params["event_used"] = "name:popup_menu_tip_used;comparator:==0;window:180;"
-                           "storage:180";
-    params["event_trigger"] =
-        "name:tab_pinned_tip_triggered;comparator:==0;window:1825;"
-        "storage:1825";
     return params;
   }
 
@@ -557,25 +541,3 @@ TEST_F(FeatureEngagementTest,
       feature_engagement::kIPHDefaultSiteViewFeature));
 }
 
-// Verifies that the IPH for Pinned tab triggers after pinning a tab from
-// the overflow menu.
-TEST_F(FeatureEngagementTest, TestPinTabFromOverflowMenu) {
-  feature_engagement::test::ScopedIphFeatureList list;
-  list.InitAndEnableFeaturesWithParameters(
-      {{feature_engagement::kIPHTabPinnedFeature, TabPinnedTipParams()}});
-
-  std::unique_ptr<feature_engagement::Tracker> tracker =
-      feature_engagement::CreateTestTracker();
-  // Make sure tracker is initialized.
-  tracker->AddOnInitializedCallback(BoolArgumentQuitClosure());
-  run_loop_.Run();
-
-  // Check that the badge is initially displayed.
-  EXPECT_TRUE(
-      tracker->ShouldTriggerHelpUI(feature_engagement::kIPHTabPinnedFeature));
-  tracker->Dismissed(feature_engagement::kIPHTabPinnedFeature);
-
-  // Check that the badge is not displayed a second time.
-  EXPECT_FALSE(
-      tracker->ShouldTriggerHelpUI(feature_engagement::kIPHTabPinnedFeature));
-}

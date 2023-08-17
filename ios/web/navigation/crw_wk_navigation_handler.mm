@@ -49,10 +49,6 @@
 #import "net/http/http_content_disposition.h"
 #import "url/gurl.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 using web::wk_navigation_util::kReferrerHeaderName;
 using web::wk_navigation_util::IsRestoreSessionUrl;
 using web::wk_navigation_util::IsWKInternalUrl;
@@ -1892,7 +1888,8 @@ web::HttpsUpgradeType GetFailedHttpsUpgradeType(
   self.navigationManagerImpl->AddPendingItem(
       blockedURL, web::Referrer(), transition,
       web::NavigationInitiationType::BROWSER_INITIATED,
-      /*is_post_navigation=*/false, web::HttpsUpgradeType::kNone);
+      /*is_post_navigation=*/false, /*is_error_navigation=*/true,
+      web::HttpsUpgradeType::kNone);
 
   // Create context.
   std::unique_ptr<web::NavigationContextImpl> context =
@@ -1902,6 +1899,8 @@ web::HttpsUpgradeType GetFailedHttpsUpgradeType(
           /*is_renderer_initiated=*/false);
   std::unique_ptr<web::NavigationItemImpl> item =
       self.navigationManagerImpl->ReleasePendingItem();
+  CHECK(item);
+
   context->SetNavigationItemUniqueID(item->GetUniqueID());
   context->SetItem(std::move(item));
   context->SetError(error);

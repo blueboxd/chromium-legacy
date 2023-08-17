@@ -19,6 +19,7 @@
 #include "chrome/browser/nearby_sharing/public/cpp/nearby_connection.h"
 #include "chromeos/ash/components/quick_start/logging.h"
 #include "chromeos/ash/components/quick_start/quick_start_message.h"
+#include "chromeos/ash/components/quick_start/quick_start_metrics.h"
 #include "chromeos/ash/components/quick_start/quick_start_requests.h"
 #include "chromeos/ash/services/nearby/public/mojom/quick_start_decoder.mojom.h"
 #include "chromeos/ash/services/nearby/public/mojom/quick_start_decoder_types.mojom-forward.h"
@@ -217,6 +218,9 @@ void Connection::OnRequestAccountTransferAssertionResponse(
     RequestAccountTransferAssertionCallback callback,
     absl::optional<std::vector<uint8_t>> response_bytes) {
   if (!response_bytes.has_value()) {
+    quick_start_metrics::RecordGaiaTransferResult(
+        /*succeeded=*/false, /*failure_reason=*/quick_start_metrics::
+            GaiaTransferResultFailureReason::kNoAccountsReceivedFromPhone);
     std::move(callback).Run(absl::nullopt);
     return;
   }
@@ -233,6 +237,8 @@ void Connection::GenerateFidoAssertionInfo(
     RequestAccountTransferAssertionCallback callback,
     ash::quick_start::mojom::FidoAssertionResponsePtr fido_response,
     absl::optional<::ash::quick_start::mojom::QuickStartDecoderError> error) {
+  // TODO (b/279614284): Emit metric for Gaia transfer failure reasons when
+  // unknown message logic is finalized.
   if (error.has_value()) {
     // TODO (b/286877412): Update this logic once we've aligned on an unknown
     // message strategy.
@@ -248,6 +254,9 @@ void Connection::GenerateFidoAssertionInfo(
   assertion_info.credential_id = fido_response->credential_id;
   assertion_info.authenticator_data = fido_response->auth_data;
   assertion_info.signature = fido_response->signature;
+
+  quick_start_metrics::RecordGaiaTransferResult(
+      /*succeeded=*/true, /*failure_reason=*/absl::nullopt);
 
   std::move(callback).Run(assertion_info);
 }
@@ -293,11 +302,14 @@ void Connection::SendBytesAndReadResponse(std::vector<uint8_t>&& bytes,
                                           QuickStartResponseType response_type,
                                           ConnectionResponseCallback callback,
                                           base::TimeDelta timeout) {
+  quick_start_metrics::RecordMessageSent(
+      quick_start_metrics::MapResponseToMessageType(response_type));
   nearby_connection_->Write(std::move(bytes));
   nearby_connection_->Read(base::BindOnce(
       &Connection::OnResponseReceived, response_weak_ptr_factory_.GetWeakPtr(),
       std::move(callback), response_type));
 
+  message_elapsed_timer_ = std::make_unique<base::ElapsedTimer>();
   response_timeout_timer_.Start(
       FROM_HERE, timeout,
       base::BindOnce(&Connection::OnResponseTimeout,
@@ -313,6 +325,7 @@ void Connection::InitiateHandshake(const std::string& authentication_token,
       base::BindOnce(&Connection::OnHandshakeResponse,
                      weak_ptr_factory_.GetWeakPtr(), authentication_token,
                      std::move(callback)));
+  handshake_elapsed_timer_ = std::make_unique<base::ElapsedTimer>();
 }
 
 void Connection::OnHandshakeResponse(
@@ -321,11 +334,29 @@ void Connection::OnHandshakeResponse(
     absl::optional<std::vector<uint8_t>> response_bytes) {
   if (!response_bytes) {
     QS_LOG(ERROR) << "Failed to read handshake response from NearbyConnection";
+    quick_start_metrics::RecordHandshakeResult(
+        /*success=*/false, /*duration=*/handshake_elapsed_timer_->Elapsed(),
+        /*error_code=*/
+        quick_start_metrics::HandshakeErrorCode::kFailedToReadResponse);
+    handshake_elapsed_timer_.reset();
     std::move(callback).Run(/*success=*/false);
     return;
   }
-  bool success = handshake::VerifyHandshakeMessage(
-      *response_bytes, authentication_token, session_context_.shared_secret());
+  handshake::VerifyHandshakeMessageStatus status =
+      handshake::VerifyHandshakeMessage(*response_bytes, authentication_token,
+                                        session_context_.shared_secret());
+  bool success = status == handshake::VerifyHandshakeMessageStatus::kSuccess;
+  if (success) {
+    quick_start_metrics::RecordHandshakeResult(
+        /*success=*/true, /*duration=*/handshake_elapsed_timer_->Elapsed(),
+        /*error_code=*/absl::nullopt);
+  } else {
+    quick_start_metrics::RecordHandshakeResult(
+        /*success=*/false, /*duration=*/handshake_elapsed_timer_->Elapsed(),
+        /*error_code=*/
+        handshake::MapHandshakeStatusToErrorCode(status));
+  }
+  handshake_elapsed_timer_.reset();
   std::move(callback).Run(success);
 }
 
@@ -416,6 +447,17 @@ void Connection::OnResponseTimeout(QuickStartResponseType response_type) {
   QS_LOG(ERROR) << "Timed out waiting for " << response_type
                 << " response from source device.";
   Close(TargetDeviceConnectionBroker::ConnectionClosedReason::kResponseTimeout);
+  quick_start_metrics::RecordMessageReceived(
+      /*desired_message_type=*/quick_start_metrics::MapResponseToMessageType(
+          response_type),
+      /*succeeded=*/false,
+      /*listen_duration=*/kDefaultRoundTripTimeout,
+      quick_start_metrics::MessageReceivedErrorCode::kTimeOut);
+  message_elapsed_timer_.reset();
+  if (response_type == QuickStartResponseType::kHandshake &&
+      handshake_elapsed_timer_) {
+    handshake_elapsed_timer_.reset();
+  }
 }
 
 void Connection::OnResponseReceived(
@@ -427,6 +469,22 @@ void Connection::OnResponseReceived(
 
   QS_LOG(INFO) << "Received " << response_type
                << " response from source device";
+
+  if (!response_bytes.has_value()) {
+    quick_start_metrics::RecordMessageReceived(
+        /*desired_message_type=*/quick_start_metrics::MapResponseToMessageType(
+            response_type),
+        /*succeeded=*/false,
+        /*listen_duration=*/message_elapsed_timer_->Elapsed(),
+        quick_start_metrics::MessageReceivedErrorCode::kDeserializationFailure);
+  } else {
+    quick_start_metrics::RecordMessageReceived(
+        /*desired_message_type=*/quick_start_metrics::MapResponseToMessageType(
+            response_type),
+        /*succeeded=*/true,
+        /*listen_duration=*/message_elapsed_timer_->Elapsed(), absl::nullopt);
+  }
+  message_elapsed_timer_.reset();
   std::move(callback).Run(std::move(response_bytes));
 }
 

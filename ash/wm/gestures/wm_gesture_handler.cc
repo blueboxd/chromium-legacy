@@ -116,7 +116,7 @@ absl::optional<OverviewEnterExitType> HandleContinuousScrollIntoOverview(
 
   // A continuous gesture has ended and we should animate into overview mode.
   if (scroll_y >= WmGestureHandler::kEnterOverviewModeThresholdDp) {
-    return OverviewEnterExitType::kContinuousAnimationEnterOnScrollEnd;
+    return OverviewEnterExitType::kNormal;
   }
 
   // A continuous gesture has ended and we should animate out of overview mode.
@@ -163,9 +163,16 @@ bool Handle3FingerContinuousVerticalScroll(float scroll_y,
   const bool in_overview = overview_controller->InOverviewSession();
 
   // Ignore downward scrolls when not in overview mode.
-  // TODO(b/291778355): Add logic to ignore upward scrolls when already in
-  // overview mode.
   if (scroll_y < 0.f && !in_overview) {
+    return false;
+  }
+
+  // Ignore scrolls beyond the upward threshold. Note that we already clamped
+  // `scroll_y` to `kVerticalThresholdDp`. If the threshold has been met but the
+  // scroll is in progress, we will need to do the final placement before we
+  // mark the scroll as finished.
+  if (scroll_y == WmGestureHandler::kVerticalThresholdDp &&
+      !overview_controller->is_continuous_scroll_in_progress()) {
     return false;
   }
 
@@ -369,7 +376,9 @@ bool WmGestureHandler::EndScroll() {
     // `vertical_continuous_gesture_started` is false.
     if (features::IsContinuousOverviewScrollAnimationEnabled()) {
       return vertical_continuous_gesture_started
-                 ? Handle3FingerContinuousVerticalScroll(scroll_y, false)
+                 ? Handle3FingerContinuousVerticalScroll(
+                       std::clamp(scroll_y, 0.f, kVerticalThresholdDp),
+                       /*scroll_in_progress=*/false)
                  : false;
     }
 
@@ -413,10 +422,10 @@ bool WmGestureHandler::UpdateScrollForContinuousOverviewAnimation() {
   if (in_overview && !scroll_data_->vertical_continuous_gesture_started) {
     scroll_data_->scroll_y = kVerticalThresholdDp + scroll_data_->scroll_y;
   }
+  scroll_data_->vertical_continuous_gesture_started = true;
   bool scroll_started = Handle3FingerContinuousVerticalScroll(
       std::clamp(scroll_data_->scroll_y, 0.f, kVerticalThresholdDp),
       /*scroll_in_progress=*/scroll_data_->vertical_continuous_gesture_started);
-  scroll_data_->vertical_continuous_gesture_started = true;
   return scroll_started;
 }
 

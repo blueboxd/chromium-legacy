@@ -44,11 +44,13 @@
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
+#include "components/content_settings/core/common/pref_names.h"
 #include "components/embedder_support/pref_names.h"
 #include "components/embedder_support/switches.h"
 #include "components/language/core/browser/language_prefs.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/metrics/metrics_pref_names.h"
+#include "components/permissions/features.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -75,10 +77,6 @@
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "third_party/blink/public/common/features.h"
-
-#if BUILDFLAG(IS_ANDROID)
-#include "base/android/remove_stale_data.h"
-#endif
 
 #if BUILDFLAG(IS_CHROMEOS)
 #include "chrome/browser/certificate_provider/certificate_provider.h"
@@ -237,8 +235,38 @@ void UpdateLegacyCookieSettings(Profile* profile) {
       settings));
 }
 
+void Update3pcdSettings(Profile* profile) {
+  ContentSettingsForOneType settings =
+      HostContentSettingsMapFactory::GetForProfile(profile)
+          ->GetSettingsForOneType(ContentSettingsType::TPCD_SUPPORT);
+  profile->ForEachLoadedStoragePartition(base::BindRepeating(
+      [](ContentSettingsForOneType settings,
+         content::StoragePartition* storage_partition) {
+        storage_partition->GetCookieManagerForBrowserProcess()
+            ->SetContentSettingsFor3pcd(settings);
+      },
+      settings));
+}
+
+// `kPermissionStorageAccessAPI` enables feature: Storage Access API with
+// Prompts (https://chromestatus.com/feature/5085655327047680). StorageAccessAPI
+// is considered enabled when either feature is enabled (by different field
+// trial studies).
+bool StorageAccessAPIEnabled() {
+  return base::FeatureList::IsEnabled(blink::features::kStorageAccessAPI) ||
+         base::FeatureList::IsEnabled(
+             permissions::features::kPermissionStorageAccessAPI);
+}
+
+// TODO(crbug.com/1385156): Separate the two flags entirely.
+bool TopLevelStorageAccessAPIEnabled() {
+  return base::FeatureList::IsEnabled(blink::features::kStorageAccessAPI) &&
+         base::FeatureList::IsEnabled(
+             blink::features::kStorageAccessAPIForOriginExtension);
+}
+
 void UpdateStorageAccessSettings(Profile* profile) {
-  if (base::FeatureList::IsEnabled(blink::features::kStorageAccessAPI)) {
+  if (StorageAccessAPIEnabled()) {
     ContentSettingsForOneType settings =
         HostContentSettingsMapFactory::GetForProfile(profile)
             ->GetSettingsForOneType(ContentSettingsType::STORAGE_ACCESS);
@@ -254,10 +282,7 @@ void UpdateStorageAccessSettings(Profile* profile) {
 }
 
 void UpdateAllStorageAccessSettings(Profile* profile) {
-  // TODO(crbug.com/1385156): Switch to an independent feature flag.
-  if (base::FeatureList::IsEnabled(blink::features::kStorageAccessAPI) &&
-      base::FeatureList::IsEnabled(
-          blink::features::kStorageAccessAPIForOriginExtension)) {
+  if (TopLevelStorageAccessAPIEnabled()) {
     ContentSettingsForOneType top_level_settings =
         HostContentSettingsMapFactory::GetForProfile(profile)
             ->GetSettingsForOneType(
@@ -338,6 +363,11 @@ ProfileNetworkContextService::ProfileNetworkContextService(Profile* profile)
       base::BindRepeating(&ProfileNetworkContextService::
                               UpdateCorsNonWildcardRequestHeadersSupport,
                           base::Unretained(this)));
+  pref_change_registrar_.Add(
+      prefs::kBlockTruncatedCookies,
+      base::BindRepeating(
+          &ProfileNetworkContextService::OnTruncatedCookieBlockingChanged,
+          base::Unretained(this)));
 }
 
 ProfileNetworkContextService::~ProfileNetworkContextService() = default;
@@ -439,6 +469,22 @@ void ProfileNetworkContextService::OnThirdPartyCookieBlockingChanged(
             ->BlockThirdPartyCookies(block_third_party_cookies);
       },
       block_third_party_cookies));
+}
+
+void ProfileNetworkContextService::OnTruncatedCookieBlockingChanged() {
+  const bool block_truncated_cookies =
+      profile_->GetPrefs()->GetBoolean(prefs::kBlockTruncatedCookies);
+
+  profile_->ForEachLoadedStoragePartition(base::BindRepeating(
+      [](bool block_truncated_cookies,
+         content::StoragePartition* storage_partition) {
+        // Update the main CookieManager's CookieSettings object to block
+        // truncated cookies, and since this is shared with all of the
+        // RestrictedCookieManager instances, those will get the change as well.
+        storage_partition->GetCookieManagerForBrowserProcess()
+            ->BlockTruncatedCookies(block_truncated_cookies);
+      },
+      block_truncated_cookies));
 }
 
 void ProfileNetworkContextService::OnFirstPartySetsEnabledChanged(
@@ -588,16 +634,17 @@ ProfileNetworkContextService::CreateCookieManagerParams(
       host_content_settings_map->GetSettingsForOneType(
           ContentSettingsType::LEGACY_COOKIE_ACCESS);
 
-  if (base::FeatureList::IsEnabled(blink::features::kStorageAccessAPI)) {
+  out->settings_for_3pcd = host_content_settings_map->GetSettingsForOneType(
+      ContentSettingsType::TPCD_SUPPORT);
+
+  if (StorageAccessAPIEnabled()) {
     out->settings_for_storage_access =
         host_content_settings_map->GetSettingsForOneType(
             ContentSettingsType::STORAGE_ACCESS);
   }
 
   // TODO(crbug.com/1385156): Separate the two flags entirely.
-  if (base::FeatureList::IsEnabled(blink::features::kStorageAccessAPI) &&
-      base::FeatureList::IsEnabled(
-          blink::features::kStorageAccessAPIForOriginExtension)) {
+  if (TopLevelStorageAccessAPIEnabled()) {
     out->settings_for_top_level_storage_access =
         host_content_settings_map->GetSettingsForOneType(
             ContentSettingsType::TOP_LEVEL_STORAGE_ACCESS);
@@ -605,6 +652,10 @@ ProfileNetworkContextService::CreateCookieManagerParams(
 
   out->cookie_access_delegate_type =
       network::mojom::CookieAccessDelegateType::USE_CONTENT_SETTINGS;
+
+  out->block_truncated_cookies =
+      profile->GetPrefs()->GetBoolean(prefs::kBlockTruncatedCookies);
+
   return out;
 }
 
@@ -725,6 +776,23 @@ bool GetHttpCacheBackendResetParam(PrefService* local_state) {
   current_field_trial_status +=
       (field_trial ? field_trial->group_name() : "None");
 
+  // For the ongoing HTTP Cache keying experiments, if a flag indicates that the
+  // user is in an experiment group, modify `current_field_trial_status` to
+  // ensure that the cache gets cleared. If the user is not a part of the
+  // experiment, don't make any changes so as not to invalidate the existing
+  // cache.
+  if (base::FeatureList::IsEnabled(
+          net::features::kEnableCrossSiteFlagNetworkIsolationKey)) {
+    current_field_trial_status += " CrossSiteFlagNIK";
+  } else if (base::FeatureList::IsEnabled(
+                 net::features::
+                     kEnableFrameSiteSharedOpaqueNetworkIsolationKey)) {
+    current_field_trial_status += " FrameSiteSharedOpaqueNIK";
+  } else if (base::FeatureList::IsEnabled(
+                 net::features::kHttpCacheKeyingExperimentControlGroup)) {
+    current_field_trial_status += " 2023ExperimentControlGroup";
+  }
+
   std::string previous_field_trial_status =
       local_state->GetString(kHttpCacheFinchExperimentGroups);
   local_state->SetString(kHttpCacheFinchExperimentGroups,
@@ -820,16 +888,6 @@ void ProfileNetworkContextService::ConfigureNetworkContextParamsInternal(
     network_context_params->file_paths->unsandboxed_data_path = path;
     network_context_params->file_paths->trigger_migration =
         base::FeatureList::IsEnabled(features::kTriggerNetworkDataMigration);
-
-#if BUILDFLAG(IS_ANDROID)
-    // On Android the `data_directory` was used by some wrong builds instead of
-    // `unsandboxed_data_path`. Cleaning it up. See crbug.com/1331809.
-    // The `trigger_migration` has always been false and will remain to be such
-    // on Android, hence not checking for it.
-    DCHECK(!network_context_params->file_paths->trigger_migration);
-    base::android::RemoveStaleDataDirectory(
-        network_context_params->file_paths->data_directory.path());
-#endif  // BUILDFLAG(IS_ANDROID)
 
     // Currently this just contains HttpServerProperties, but that will likely
     // change.
@@ -1058,6 +1116,9 @@ void ProfileNetworkContextService::OnContentSettingChanged(
     case ContentSettingsType::LEGACY_COOKIE_ACCESS:
       UpdateLegacyCookieSettings(profile_);
       break;
+    case ContentSettingsType::TPCD_SUPPORT:
+      Update3pcdSettings(profile_);
+      break;
     case ContentSettingsType::STORAGE_ACCESS:
       UpdateStorageAccessSettings(profile_);
       break;
@@ -1068,6 +1129,7 @@ void ProfileNetworkContextService::OnContentSettingChanged(
       UpdateAntiAbuseSettings(profile_);
       UpdateCookieSettings(profile_);
       UpdateLegacyCookieSettings(profile_);
+      Update3pcdSettings(profile_);
       UpdateAllStorageAccessSettings(profile_);
       break;
     default:

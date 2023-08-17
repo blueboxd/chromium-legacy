@@ -16,10 +16,6 @@
 #import "ios/chrome/grit/ios_strings.h"
 #import "ui/base/l10n/l10n_util.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 @implementation TabGridBottomToolbar {
   UIToolbar* _toolbar;
   UIBarButtonItem* _newTabButtonItem;
@@ -234,7 +230,7 @@
 
 #pragma mark Add To
 
-- (void)setAddToButtonMenu:(UIMenu*)menu API_AVAILABLE(ios(14.0)) {
+- (void)setAddToButtonMenu:(UIMenu*)menu {
   _addToButton.menu = menu;
 }
 
@@ -244,7 +240,7 @@
 
 #pragma mark Edit Button
 
-- (void)setEditButtonMenu:(UIMenu*)menu API_AVAILABLE(ios(14.0)) {
+- (void)setEditButtonMenu:(UIMenu*)menu {
   _editButton.menu = menu;
 }
 
@@ -392,7 +388,7 @@
     [_largeNewTabButton removeFromSuperview];
 
     // For incognito/regular pages, display all 3 buttons;
-    // For remote tabs page, only display new tab button.
+    // For remote tabs page, only display trailing button.
     if (self.page == TabGridPageRemoteTabs) {
       [_toolbar setItems:@[ _spaceItem, trailingButton ]];
     } else {
@@ -407,10 +403,16 @@
   } else {
     [NSLayoutConstraint deactivateConstraints:_compactConstraints];
     [_toolbar removeFromSuperview];
-
+    // Do not display new tab button for remote tabs page.
+    if (self.page == TabGridPageRemoteTabs) {
+      [NSLayoutConstraint deactivateConstraints:_floatingConstraints];
+      [_largeNewTabButton removeFromSuperview];
+      self.hidden = YES;
+    } else {
       [self addSubview:_largeNewTabButton];
       [NSLayoutConstraint activateConstraints:_floatingConstraints];
       self.hidden = NO;
+    }
   }
 
   [self updateBackgroundVisibility];

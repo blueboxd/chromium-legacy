@@ -18,6 +18,7 @@
 #import "components/prefs/pref_service.h"
 #import "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #import "components/strings/grit/components_strings.h"
+#import "components/supervised_user/core/common/supervised_user_utils.h"
 #import "components/sync/service/sync_service.h"
 #import "ios/chrome/browser/browsing_data/browsing_data_features.h"
 #import "ios/chrome/browser/net/crurl.h"
@@ -40,6 +41,7 @@
 #import "ios/chrome/browser/ui/incognito_interstitial/incognito_interstitial_constants.h"
 #import "ios/chrome/browser/ui/settings/elements/enterprise_info_popover_view_controller.h"
 #import "ios/chrome/browser/ui/settings/elements/info_popover_view_controller.h"
+#import "ios/chrome/browser/ui/settings/elements/supervised_user_info_popover_view_controller.h"
 #import "ios/chrome/browser/ui/settings/privacy/privacy_constants.h"
 #import "ios/chrome/browser/ui/settings/privacy/privacy_navigation_commands.h"
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
@@ -55,10 +57,6 @@
 #import "ui/base/l10n/l10n_util.h"
 #import "ui/base/l10n/l10n_util_mac.h"
 #import "url/gurl.h"
-
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
 
 namespace {
 
@@ -86,8 +84,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeLockdownMode,
 };
 
-// Only used in this class to openn the Sync and Google services settings.
-// This link should not be dispatched.
+// Used to open the Sync and Google Services settings.
+// These links should not be dispatched.
 const char kGoogleServicesSettingsURL[] = "settings://open_google_services";
 const char kSyncSettingsURL[] = "settings://open_sync";
 
@@ -182,11 +180,6 @@ const char kSyncSettingsURL[] = "settings://open_sync";
     [_incognitoInterstitialPref setObserver:self];
   }
   return self;
-}
-
-- (void)dealloc {
-  // TODO(crbug.com/1454777)
-  DUMP_WILL_BE_CHECK(_settingsAreDismissed);
 }
 
 #pragma mark - UIViewController
@@ -349,6 +342,9 @@ const char kSyncSettingsURL[] = "settings://open_sync";
       SyncServiceFactory::GetInstance()->GetForBrowserState(_browserState);
 
   NSMutableArray* urls = [[NSMutableArray alloc] init];
+  // TODO(crbug.com/1462552): Remove IsSyncFeatureEnabled() usage after kSync
+  // users are migrated to kSignin in phase 3. See ConsentLevel::kSync for more
+  // details.
   if (syncService->IsSyncFeatureEnabled()) {
     privacyFooterText =
         l10n_util::GetNSString(IDS_IOS_PRIVACY_SYNC_AND_GOOGLE_SERVICES_FOOTER);
@@ -629,17 +625,22 @@ const char kSyncSettingsURL[] = "settings://open_sync";
 // Called when the user taps on the information button of the disabled Incognito
 // reauth setting's UI cell.
 - (void)didTapIncognitoReauthDisabledInfoButton:(UIButton*)buttonView {
-  NSString* popoverMessage =
-      IsIncognitoModeDisabled(_browserState->GetPrefs())
-          ? l10n_util::GetNSString(IDS_IOS_SNACKBAR_MESSAGE_INCOGNITO_DISABLED)
-          : l10n_util::GetNSString(
-                IDS_IOS_INCOGNITO_REAUTH_SET_UP_PASSCODE_HINT);
-  InfoPopoverViewController* popover =
-      IsIncognitoModeDisabled(_browserState->GetPrefs())
-          ? [[EnterpriseInfoPopoverViewController alloc]
-                initWithMessage:popoverMessage
-                 enterpriseName:nil]
-          : [[InfoPopoverViewController alloc] initWithMessage:popoverMessage];
+  InfoPopoverViewController* popover;
+  if (supervised_user::IsSubjectToParentalControls(_browserState->GetPrefs())) {
+    popover = [[SupervisedUserInfoPopoverViewController alloc]
+        initWithMessage:
+            l10n_util::GetNSString(
+                IDS_IOS_SNACKBAR_MESSAGE_INCOGNITO_DISABLED_BY_PARENT)];
+  } else if (IsIncognitoModeDisabled(_browserState->GetPrefs())) {
+    popover = [[EnterpriseInfoPopoverViewController alloc]
+        initWithMessage:l10n_util::GetNSString(
+                            IDS_IOS_SNACKBAR_MESSAGE_INCOGNITO_DISABLED)
+         enterpriseName:nil];
+  } else {
+    popover = [[InfoPopoverViewController alloc]
+        initWithMessage:l10n_util::GetNSString(
+                            IDS_IOS_INCOGNITO_REAUTH_SET_UP_PASSCODE_HINT)];
+  }
 
   [self showInfoPopover:popover forInfoButton:buttonView];
 }
@@ -647,14 +648,23 @@ const char kSyncSettingsURL[] = "settings://open_sync";
 // Called when the user taps on the information button of the disabled Incognito
 // interstitial setting's UI cell.
 - (void)didTapIncognitoInterstitialDisabledInfoButton:(UIButton*)buttonView {
-  NSString* popoverMessage =
-      IsIncognitoModeDisabled(_browserState->GetPrefs())
-          ? l10n_util::GetNSString(IDS_IOS_SNACKBAR_MESSAGE_INCOGNITO_DISABLED)
-          : l10n_util::GetNSString(IDS_IOS_SNACKBAR_MESSAGE_INCOGNITO_FORCED);
-  EnterpriseInfoPopoverViewController* popover =
-      [[EnterpriseInfoPopoverViewController alloc]
-          initWithMessage:popoverMessage
-           enterpriseName:nil];
+  InfoPopoverViewController* popover;
+  if (supervised_user::IsSubjectToParentalControls(_browserState->GetPrefs())) {
+    popover = [[SupervisedUserInfoPopoverViewController alloc]
+        initWithMessage:
+            l10n_util::GetNSString(
+                IDS_IOS_SNACKBAR_MESSAGE_INCOGNITO_DISABLED_BY_PARENT)];
+  } else {
+    NSString* popoverMessage =
+        IsIncognitoModeDisabled(_browserState->GetPrefs())
+            ? l10n_util::GetNSString(
+                  IDS_IOS_SNACKBAR_MESSAGE_INCOGNITO_DISABLED)
+            : l10n_util::GetNSString(IDS_IOS_SNACKBAR_MESSAGE_INCOGNITO_FORCED);
+
+    popover = [[EnterpriseInfoPopoverViewController alloc]
+        initWithMessage:popoverMessage
+         enterpriseName:nil];
+  }
 
   [self showInfoPopover:popover forInfoButton:buttonView];
 }

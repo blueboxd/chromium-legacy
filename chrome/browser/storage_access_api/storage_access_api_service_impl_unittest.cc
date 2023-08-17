@@ -20,10 +20,12 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/features_generated.h"
+#include "url/gurl.h"
+#include "url/origin.h"
 
 namespace {
-const char* kHostA = "a.test";
-const char* kHostB = "b.test";
+constexpr char kHostA[] = "a.test";
+constexpr char kHostB[] = "b.test";
 }  // namespace
 
 class StorageAccessAPIServiceImplTest : public testing::Test {

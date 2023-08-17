@@ -136,7 +136,8 @@ INSTANTIATE_TEST_SUITE_P(All,
                          PaintPropertyTreeBuilderTest,
                          ::testing::Values(0,
                                            kUnderInvalidationChecking,
-                                           kSparseObjectPaintProperties));
+                                           kSparseObjectPaintProperties,
+                                           kElementCapture));
 
 TEST_P(PaintPropertyTreeBuilderTest, FixedPosition) {
   LoadTestData("fixed-position.html");
@@ -5571,6 +5572,46 @@ TEST_P(PaintPropertyTreeBuilderTest, SVGRootWithCSSMask) {
   EXPECT_TRUE(root.FirstFragment().PaintProperties()->Mask());
 }
 
+TEST_P(PaintPropertyTreeBuilderTest, ElementCaptureEffectNode) {
+  // This test makes sure that an ElementCaptureEffect node is properly added
+  // when an element has a crop ID.
+  SetBodyInnerHTML(R"HTML(
+    <body id="body1">
+      <div id="div1" width="640" height="480"/>
+    </body>
+  )HTML");
+
+  Element* element = GetDocument().getElementById(AtomicString("div1"));
+  ASSERT_TRUE(element);
+
+  // As a plain div, the element shouldn't have a separate stacking context.
+  EXPECT_FALSE(element->GetLayoutObject()->HasLayer());
+  EXPECT_FALSE(element->GetLayoutObject()->IsStackingContext());
+  element->SetRegionCaptureCropId(
+      std::make_unique<RegionCaptureCropId>(base::Token::CreateRandom()));
+  UpdateAllLifecyclePhasesForTest();
+
+  // The element should now have a proper stacking context, assuming element
+  // capture is enabled.
+  if (RuntimeEnabledFeatures::ElementCaptureEnabled()) {
+    EXPECT_TRUE(element->GetLayoutObject()->HasLayer());
+    EXPECT_TRUE(element->GetLayoutObject()->IsStackingContext());
+  }
+
+  // If the feature is enabled, now that the div has a crop ID, it should have
+  // an element capture effect node. If the feature is not enabled, this element
+  // shouldn't have an element capture effect (and may or may not have paint
+  // properties at all).
+  const ObjectPaintProperties* paint_properties =
+      element->GetLayoutObject()->FirstFragment().PaintProperties();
+  EXPECT_EQ(RuntimeEnabledFeatures::ElementCaptureEnabled(),
+            paint_properties && paint_properties->ElementCaptureEffect());
+
+  // NOTE: we don't currently have a teardown path for element capture. Once an
+  // element is marked for capture it is marked for the rest of its lifetime.
+  // TODO(https://crbug.com/1472139): add a teardown path for element capture.
+}
+
 TEST_P(PaintPropertyTreeBuilderTest, ClearClipPathEffectNode) {
   // This test makes sure ClipPath effect node is cleared properly upon
   // removal of a clip-path.
@@ -5784,15 +5825,12 @@ TEST_P(PaintPropertyTreeBuilderTest, RepeatingFixedPositionInPagedMedia) {
   UpdateAllLifecyclePhasesForTest();
 
   const auto* fixed = GetLayoutObjectByElementId("fixed");
-  EXPECT_FALSE(fixed->IsFixedPositionObjectInPagedMedia());
   EXPECT_EQ(1u, NumFragments(fixed));
 
   const auto* fixed_child = GetLayoutObjectByElementId("fixed-child");
-  EXPECT_FALSE(fixed_child->IsFixedPositionObjectInPagedMedia());
   EXPECT_EQ(1u, NumFragments(fixed_child));
 
   const auto* normal = GetLayoutObjectByElementId("normal");
-  EXPECT_FALSE(normal->IsFixedPositionObjectInPagedMedia());
   EXPECT_EQ(1u, NumFragments(normal));
 
   gfx::SizeF page_size(300, 400);
@@ -5803,7 +5841,6 @@ TEST_P(PaintPropertyTreeBuilderTest, RepeatingFixedPositionInPagedMedia) {
   normal = GetLayoutObjectByElementId("normal");
 
   // "fixed" should create fragments to repeat in each printed page.
-  EXPECT_TRUE(fixed->IsFixedPositionObjectInPagedMedia());
   EXPECT_EQ(3u, NumFragments(fixed));
   for (int i = 0; i < 3; i++) {
     const auto& fragment = FragmentAt(fixed, i);
@@ -5815,7 +5852,6 @@ TEST_P(PaintPropertyTreeBuilderTest, RepeatingFixedPositionInPagedMedia) {
     EXPECT_EQ(PhysicalOffset(), fragment.PaintOffset());
   }
 
-  EXPECT_FALSE(fixed_child->IsFixedPositionObjectInPagedMedia());
   EXPECT_EQ(3u, NumFragments(fixed_child));
   for (int i = 0; i < 3; i++) {
     const auto& fragment = FragmentAt(fixed_child, i);
@@ -5823,7 +5859,6 @@ TEST_P(PaintPropertyTreeBuilderTest, RepeatingFixedPositionInPagedMedia) {
               fragment.PaintOffset());
   }
 
-  EXPECT_FALSE(normal->IsFixedPositionObjectInPagedMedia());
   EXPECT_EQ(3u, NumFragments(normal));
 
   GetFrame().EndPrinting();
@@ -5832,9 +5867,7 @@ TEST_P(PaintPropertyTreeBuilderTest, RepeatingFixedPositionInPagedMedia) {
   fixed_child = GetLayoutObjectByElementId("fixed-child");
   normal = GetLayoutObjectByElementId("normal");
   EXPECT_EQ(1u, NumFragments(fixed));
-  EXPECT_FALSE(fixed_child->IsFixedPositionObjectInPagedMedia());
   EXPECT_EQ(1u, NumFragments(fixed_child));
-  EXPECT_FALSE(normal->IsFixedPositionObjectInPagedMedia());
   EXPECT_EQ(1u, NumFragments(normal));
 }
 
@@ -5851,11 +5884,9 @@ TEST_P(PaintPropertyTreeBuilderTest,
   UpdateAllLifecyclePhasesForTest();
 
   const auto* fixed = GetLayoutObjectByElementId("fixed");
-  EXPECT_FALSE(fixed->IsFixedPositionObjectInPagedMedia());
   EXPECT_EQ(1u, NumFragments(fixed));
 
   const auto* fixed_child = GetLayoutObjectByElementId("fixed-child");
-  EXPECT_FALSE(fixed_child->IsFixedPositionObjectInPagedMedia());
   EXPECT_EQ(1u, NumFragments(fixed_child));
 
   gfx::SizeF page_size(300, 400);
@@ -5865,7 +5896,6 @@ TEST_P(PaintPropertyTreeBuilderTest,
   fixed_child = GetLayoutObjectByElementId("fixed-child");
 
   // "fixed" should create fragments to repeat in each printed page.
-  EXPECT_TRUE(fixed->IsFixedPositionObjectInPagedMedia());
   EXPECT_EQ(3u, NumFragments(fixed));
   for (int i = 0; i < 3; i++) {
     const auto& fragment = FragmentAt(fixed, i);
@@ -5879,7 +5909,6 @@ TEST_P(PaintPropertyTreeBuilderTest,
               properties->Transform()->Parent());
   }
 
-  EXPECT_FALSE(fixed_child->IsFixedPositionObjectInPagedMedia());
   for (int i = 0; i < 3; i++) {
     const auto& fragment = FragmentAt(fixed_child, i);
     EXPECT_EQ(PhysicalOffset(0, 10), fragment.PaintOffset());
@@ -5892,7 +5921,6 @@ TEST_P(PaintPropertyTreeBuilderTest,
   fixed = GetLayoutObjectByElementId("fixed");
   fixed_child = GetLayoutObjectByElementId("fixed-child");
   EXPECT_EQ(1u, NumFragments(fixed));
-  EXPECT_FALSE(fixed_child->IsFixedPositionObjectInPagedMedia());
   EXPECT_EQ(1u, NumFragments(fixed_child));
 }
 

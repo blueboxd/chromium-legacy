@@ -10,14 +10,12 @@ import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.recyclerview.widget.RecyclerView.RecycledViewPool;
 
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
-import org.chromium.chrome.browser.omnibox.OmniboxFeatures;
 import org.chromium.chrome.browser.omnibox.OmniboxMetrics;
 import org.chromium.chrome.browser.omnibox.R;
+import org.chromium.chrome.browser.omnibox.styles.OmniboxImageSupplier;
 import org.chromium.chrome.browser.omnibox.styles.OmniboxResourceProvider;
-import org.chromium.chrome.browser.omnibox.suggestions.FaviconFetcher;
 import org.chromium.chrome.browser.omnibox.suggestions.SuggestionCommonProperties;
 import org.chromium.chrome.browser.omnibox.suggestions.SuggestionHost;
 import org.chromium.chrome.browser.omnibox.suggestions.carousel.BaseCarouselSuggestionItemViewBuilder;
@@ -41,21 +39,10 @@ import java.util.List;
  * SuggestionProcessor for Most Visited URL tiles.
  */
 public class MostVisitedTilesProcessor extends BaseCarouselSuggestionProcessor {
-    /**
-     * RecyclerView pool that adds the max recycled view for the most visited tile carousel and
-     * avoid re-creating views until we're sure we won't be needing them.
-     */
-    private class MostVisitedTilesRecycledViewPool extends RecycledViewPool {
-        public MostVisitedTilesRecycledViewPool() {
-            setMaxRecycledViews(OmniboxSuggestionUiType.DEFAULT, 10);
-        }
-    }
-
     private final @NonNull Context mContext;
     private final @NonNull SuggestionHost mSuggestionHost;
-    private final @Nullable FaviconFetcher mFaviconFetcher;
+    private final @Nullable OmniboxImageSupplier mImageSupplier;
     private final int mMinCarouselItemViewHeight;
-    private @Nullable RecycledViewPool mMostVisitedTilesRecycledViewPool;
     private boolean mEnableOrganicRepeatableQueries;
 
     /**
@@ -63,14 +50,14 @@ public class MostVisitedTilesProcessor extends BaseCarouselSuggestionProcessor {
      *
      * @param context An Android context.
      * @param host SuggestionHost receiving notifications about user actions.
-     * @param faviconFetcher Class retrieving favicons for the MV Tiles.
+     * @param imageSupplier Class retrieving favicons for the MV Tiles.
      */
     public MostVisitedTilesProcessor(@NonNull Context context, @NonNull SuggestionHost host,
-            @Nullable FaviconFetcher faviconFetcher) {
+            @Nullable OmniboxImageSupplier imageSupplier) {
         super(context);
         mContext = context;
         mSuggestionHost = host;
-        mFaviconFetcher = faviconFetcher;
+        mImageSupplier = imageSupplier;
         mMinCarouselItemViewHeight =
                 mContext.getResources().getDimensionPixelSize(R.dimen.tile_view_min_height);
     }
@@ -101,12 +88,6 @@ public class MostVisitedTilesProcessor extends BaseCarouselSuggestionProcessor {
 
         mEnableOrganicRepeatableQueries =
                 ChromeFeatureList.isEnabled(ChromeFeatureList.HISTORY_ORGANIC_REPEATABLE_QUERIES);
-
-        // Initialize a recycled view pool for the most visited tiles carousel to reduce unnecessary
-        // fetching and jankiness.
-        if (OmniboxFeatures.shouldAddMostVisitedTilesRecycledViewPool()) {
-            mMostVisitedTilesRecycledViewPool = new MostVisitedTilesRecycledViewPool();
-        }
     }
 
     @Override
@@ -166,8 +147,16 @@ public class MostVisitedTilesProcessor extends BaseCarouselSuggestionProcessor {
                 tileModel.set(TileViewProperties.SMALL_ICON_ROUNDING_RADIUS,
                         mContext.getResources().getDimensionPixelSize(
                                 R.dimen.omnibox_small_icon_rounding_radius));
-                if (mFaviconFetcher != null) {
-                    mFaviconFetcher.fetchFaviconWithBackoff(url, true, (icon, type) -> {
+                if (mImageSupplier != null) {
+                    mImageSupplier.fetchFavicon(url, icon -> {
+                        if (icon == null) {
+                            mImageSupplier.generateFavicon(url, fallback -> {
+                                tileModel.set(
+                                        TileViewProperties.ICON, new BitmapDrawable(fallback));
+                                tileModel.set(TileViewProperties.ICON_TINT, null);
+                            });
+                            return;
+                        }
                         tileModel.set(TileViewProperties.ICON, new BitmapDrawable(icon));
                         tileModel.set(TileViewProperties.ICON_TINT, null);
                     });
@@ -179,20 +168,5 @@ public class MostVisitedTilesProcessor extends BaseCarouselSuggestionProcessor {
         }
 
         model.set(BaseCarouselSuggestionViewProperties.TILES, tileList);
-        model.set(BaseCarouselSuggestionViewProperties.RECYCLED_VIEW_POOL,
-                mMostVisitedTilesRecycledViewPool);
-    }
-
-    /**
-     * Respond to URL bar focus change.
-     *
-     * @param hasFocus Indicates whether URL bar is now focused.
-     */
-    @Override
-    public void onUrlFocusChange(boolean hasFocus) {
-        // Clear the Recycled View Pool when the omnibox loses focus.
-        if (!hasFocus && mMostVisitedTilesRecycledViewPool != null) {
-            mMostVisitedTilesRecycledViewPool.clear();
-        }
     }
 }

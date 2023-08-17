@@ -38,13 +38,14 @@
 #include "chrome/browser/ash/arc/session/arc_session_manager.h"
 #include "chrome/browser/ash/arc/tracing/arc_app_performance_tracing.h"
 #include "chrome/browser/ash/arc/tracing/arc_app_performance_tracing_session.h"
-#include "chrome/browser/ash/arc/tracing/arc_app_performance_tracing_test_helper.h"
+#include "chrome/browser/ash/arc/tracing/test/arc_app_performance_tracing_test_helper.h"
 #include "chrome/browser/ash/settings/scoped_testing_cros_settings.h"
 #include "chrome/browser/ash/system_web_apps/test_support/test_system_web_app_installation.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/shelf/chrome_shelf_prefs.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chromeos/ash/components/standalone_browser/feature_refs.h"
 #include "components/feature_engagement/public/feature_constants.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
@@ -494,7 +495,8 @@ class AutotestPrivateSystemWebAppsTest : public AutotestPrivateApiTest {
 };
 
 // TODO(crbug.com/1201545): Fix flakiness.
-IN_PROC_BROWSER_TEST_F(AutotestPrivateSystemWebAppsTest, SystemWebApps) {
+IN_PROC_BROWSER_TEST_F(AutotestPrivateSystemWebAppsTest,
+                       DISABLED_SystemWebApps) {
   ASSERT_TRUE(RunAutotestPrivateExtensionTest("systemWebApps")) << message_;
 }
 
@@ -507,12 +509,7 @@ class AutotestPrivateLacrosTest : public AutotestPrivateApiTest {
  protected:
   AutotestPrivateLacrosTest() {
     feature_list_.InitWithFeatures(
-        {
-            ash::features::kLacrosSupport,
-            ash::features::kLacrosPrimary,
-            ash::features::kLacrosOnly,
-            ash::features::kLacrosProfileMigrationForceOff,
-        },
+        ash::standalone_browser::GetFeatureRefs(),
         // Disable ash extension keeplist so that the test extension will not
         // be blocked in Ash.
         {ash::features::kEnforceAshExtensionKeeplist});

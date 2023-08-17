@@ -18,12 +18,6 @@ BASE_FEATURE(kEnableOverwritingPlaceholderUsernames,
              "EnableOverwritingPlaceholderUsernames",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Enables logging the content of chrome://password-manager-internals to the
-// terminal.
-BASE_FEATURE(kPasswordManagerLogToTerminal,
-             "PasswordManagerLogToTerminal",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 #if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
 // When enabled, initial sync will be forced during startup if the password
 // store has encryption service failures.
@@ -31,6 +25,12 @@ BASE_FEATURE(kForceInitialSyncWhenDecryptionFails,
              "ForceInitialSyncWhenDecryptionFails",
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif
+
+// When enabled, username fields for forgot password flows are recognized
+// and filled.
+BASE_FEATURE(kForgotPasswordFormSupport,
+             "ForgotPasswordFormSupport",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 #if BUILDFLAG(IS_IOS)
 // Removes the list of passwords from the Settings UI and adds a separate
@@ -53,19 +53,6 @@ BASE_FEATURE(kIOSPasswordBottomSheet,
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif  // IS_IOS
 
-// Enables memory mapping the word lists used in the zxcvbn library employed
-// for the password weakness check.
-#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)  // Desktop
-BASE_FEATURE(kMemoryMapWeaknessCheckDictionaries,
-             "MemoryMapWeaknessCheckDictionaries",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-#endif
-
-// Enables new regex for OTP fields.
-BASE_FEATURE(kNewRegexForOtpFields,
-             "NewRegexForOtpFields",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // Killswitch for changes regarding password issues in
 // `PasswordSpcificsMetadata`. Guards writing issues to metadata and preserving
 // the new notification field.
@@ -85,7 +72,7 @@ BASE_FEATURE(kPasswordChangeWellKnown,
 
 BASE_FEATURE(kPasswordsImportM2,
              "PasswordsImportM2",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables password reuse detection.
 BASE_FEATURE(kPasswordReuseDetectionEnabled,
@@ -100,31 +87,11 @@ BASE_FEATURE(kPasswordGenerationExperiment,
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif
 
-// Enables requesting and saving passwords grouping information from the
-// affiliation service.
-// TODO(crbug.com/1359392): Remove once launched on all platforms.
-BASE_FEATURE(kPasswordsGrouping,
-             "PasswordsGrouping_LAUNCHED",
-#if (BUILDFLAG(IS_IOS) && BUILDFLAG(USE_BLINK)) || BUILDFLAG(IS_ANDROID)
-             base::FEATURE_DISABLED_BY_DEFAULT
-#else
-             base::FEATURE_ENABLED_BY_DEFAULT
-#endif
-);
-
 // Enables showing UI which allows users to easily revert their choice to
 // never save passwords on a certain website.
 BASE_FEATURE(kRecoverFromNeverSaveAndroid,
              "RecoverFromNeverSaveAndroid_LAUNCHED",
              base::FEATURE_ENABLED_BY_DEFAULT);
-
-#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
-// Enables a revamped version of the password management bubble triggered by
-// manually clicking on the key icon in the omnibox.
-BASE_FEATURE(kRevampedPasswordManagementBubble,
-             "RevampedPasswordManagementBubble",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-#endif
 
 #if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
 // Displays at least the decryptable and never saved logins in the password
@@ -157,12 +124,6 @@ BASE_FEATURE(kPasswordGenerationBottomSheet,
 // TTF to the user.
 BASE_FEATURE(kPasswordSuggestionBottomSheetV2,
              "PasswordSuggestionBottomSheetV2",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Enables the intent fetching for the credential manager in Google Mobile
-// Services. It does not enable launching the credential manager.
-BASE_FEATURE(kUnifiedCredentialManagerDryRun,
-             "UnifiedCredentialManagerDryRun",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables use of Google Mobile Services for password storage. Chrome's local
@@ -221,6 +182,12 @@ BASE_FEATURE(kUsernameFirstFlowHonorAutocomplete,
              "UsernameFirstFlowHonorAutocomplete",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Enables tolerating intermediate fields like OTP or CAPTCHA
+// between username and password fields in Username First Flow.
+BASE_FEATURE(kUsernameFirstFlowWithIntermediateValues,
+             "UsernameFirstFlowWithIntermediateValues",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)  // Desktop
 // Show, update, and delete GPM passkeys on the Chrome Password Manager.
 BASE_FEATURE(kPasswordManagerPasskeys,
@@ -235,6 +202,16 @@ BASE_FEATURE(kPasswordManagerPasskeys,
 // currently are 2 and 3.
 extern const base::FeatureParam<int> kSaveUpdatePromptSyncingStringVersion = {
     &kExploratorySaveUpdatePasswordStrings, "syncing_string_version", 2};
+
+// The version of the password migration warning prefs. When the version
+// increases, the value of the pref LocalPasswordMigrationWarningPrefsVersion
+// increases and the affected prefs are reset. The affected prefs are:
+// LocalPasswordMigrationWarningShownAtStartup and
+// LocalPasswordsMigrationWarningShownTimestamp.
+extern const base::FeatureParam<int>
+    kLocalPasswordMigrationWarningPrefsVersion = {
+        &kUnifiedPasswordManagerLocalPasswordsMigrationWarning,
+        "pwd_migration_warning_prefs_version", 0};
 #endif
 
 // Field trial identifier for password generation requirements.

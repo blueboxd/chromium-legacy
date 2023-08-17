@@ -37,7 +37,7 @@ BASE_FEATURE(kPartitionAllocDanglingPtr,
              "PartitionAllocDanglingPtr",
 #if BUILDFLAG(ENABLE_DANGLING_RAW_PTR_FEATURE_FLAG) ||                   \
     (BUILDFLAG(ENABLE_DANGLING_RAW_PTR_CHECKS) && BUILDFLAG(IS_LINUX) && \
-     !defined(NDEBUG))
+     !defined(OFFICIAL_BUILD) && (!defined(NDEBUG) || DCHECK_IS_ON()))
              FEATURE_ENABLED_BY_DEFAULT
 #else
              FEATURE_DISABLED_BY_DEFAULT
@@ -104,10 +104,9 @@ BASE_FEATURE(kPartitionAllocLargeEmptySlotSpanRing,
 BASE_FEATURE(kPartitionAllocBackupRefPtr,
              "PartitionAllocBackupRefPtr",
 #if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || \
-    BUILDFLAG(IS_CHROMEOS_ASH) ||                                      \
+    BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS) ||     \
     (BUILDFLAG(IS_LINUX) && !BUILDFLAG(IS_CASTOS)) ||                  \
-    BUILDFLAG(ENABLE_BACKUP_REF_PTR_FEATURE_FLAG) ||                   \
-    (BUILDFLAG(USE_ASAN_BACKUP_REF_PTR) && BUILDFLAG(IS_LINUX))
+    BUILDFLAG(ENABLE_BACKUP_REF_PTR_FEATURE_FLAG)
              FEATURE_ENABLED_BY_DEFAULT
 #else
              FEATURE_DISABLED_BY_DEFAULT
@@ -234,6 +233,10 @@ const base::FeatureParam<BucketDistributionMode>
 BASE_FEATURE(kPartitionAllocMemoryReclaimer,
              "PartitionAllocMemoryReclaimer",
              FEATURE_ENABLED_BY_DEFAULT);
+const base::FeatureParam<TimeDelta> kPartitionAllocMemoryReclaimerInterval = {
+    &kPartitionAllocMemoryReclaimer, "interval",
+    TimeDelta(),  // Defaults to zero.
+};
 
 // Configures whether we set a lower limit for renderers that do not have a main
 // frame, similar to the limit that is already done for backgrounded renderers.

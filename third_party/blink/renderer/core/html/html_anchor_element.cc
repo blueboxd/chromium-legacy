@@ -354,7 +354,12 @@ void HTMLAnchorElement::SetHref(const AtomicString& value) {
 }
 
 KURL HTMLAnchorElement::Url() const {
-  return Href();
+  KURL href = Href();
+  if (RuntimeEnabledFeatures::AnchorHrefCheckInvalidURLEnabled() &&
+      !href.IsValid()) {
+    return KURL();
+  }
+  return href;
 }
 
 void HTMLAnchorElement::SetURL(const KURL& url) {
@@ -672,11 +677,15 @@ Node::InsertionNotificationRequest HTMLAnchorElement::InsertedInto(
   }
 
   if (isConnected() && IsLink() &&
-      base::FeatureList::IsEnabled(features::kSpeculativeServiceWorkerWarmUp) &&
-      features::kSpeculativeServiceWorkerWarmUpOnVisible.Get()) {
+      base::FeatureList::IsEnabled(features::kSpeculativeServiceWorkerWarmUp)) {
     if (auto* observer =
             AnchorElementObserverForServiceWorker::From(top_document)) {
-      observer->ObserveAnchorElementVisibility(*this);
+      if (features::kSpeculativeServiceWorkerWarmUpOnVisible.Get()) {
+        observer->ObserveAnchorElementVisibility(*this);
+      }
+      if (features::kSpeculativeServiceWorkerWarmUpOnInsertedIntoDom.Get()) {
+        observer->MaybeSendNavigationTargetLinks({this});
+      }
     }
   }
 

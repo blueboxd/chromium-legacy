@@ -8,7 +8,6 @@
 
 #include "base/containers/span.h"
 #include "base/functional/bind.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_future.h"
 #include "base/time/time.h"
@@ -18,17 +17,17 @@
 #include "chrome/browser/signin/bound_session_credentials/bound_session_test_cookie_manager.h"
 #include "chrome/browser/signin/bound_session_credentials/fake_bound_session_refresh_cookie_fetcher.h"
 #include "chrome/browser/signin/bound_session_credentials/session_binding_helper.h"
-#include "components/signin/public/base/test_signin_client.h"
-#include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/unexportable_keys/service_error.h"
 #include "components/unexportable_keys/unexportable_key_id.h"
 #include "components/unexportable_keys/unexportable_key_loader.h"
 #include "components/unexportable_keys/unexportable_key_service_impl.h"
 #include "components/unexportable_keys/unexportable_key_task_manager.h"
+#include "content/public/test/test_storage_partition.h"
 #include "crypto/scoped_mock_unexportable_key_provider.h"
 #include "crypto/signature_verifier.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/cookies/canonical_cookie.h"
+#include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -53,17 +52,23 @@ class BoundSessionCookieControllerImplTest
  public:
   BoundSessionCookieControllerImplTest()
       : unexportable_key_service_(unexportable_key_task_manager_),
-        signin_client_(&prefs_),
         key_id_(GenerateNewKey()) {
-    signin_client_.set_cookie_manager(
-        std::make_unique<BoundSessionTestCookieManager>());
 
+    std::vector<uint8_t> wrapped_key = GetWrappedKey(key_id_);
+    bound_session_credentials::RegistrationParams registration_params;
+    registration_params.set_site(
+        GaiaUrls::GetInstance()->secure_google_url().spec());
+    registration_params.set_session_id("test_session_id");
+    registration_params.set_wrapped_key(
+        std::string(wrapped_key.begin(), wrapped_key.end()));
+
+    storage_partition_.set_cookie_manager_for_browser_process(&cookie_manager_);
     bound_session_cookie_controller_ =
         std::make_unique<BoundSessionCookieControllerImpl>(
-            unexportable_key_service_, &signin_client_,
-            GaiaUrls::GetInstance()->secure_google_url(),
-            std::vector<std::string>({k1PSIDTSCookieName, k3PSIDTSCookieName}),
-            GetWrappedKey(key_id_), this);
+            unexportable_key_service_, &storage_partition_, registration_params,
+            base::flat_set<std::string>(
+                {k1PSIDTSCookieName, k3PSIDTSCookieName}),
+            this);
 
     bound_session_cookie_controller_
         ->set_refresh_cookie_fetcher_factory_for_testing(
@@ -96,19 +101,24 @@ class BoundSessionCookieControllerImplTest
   }
 
   std::unique_ptr<BoundSessionRefreshCookieFetcher>
-  CreateBoundSessionRefreshCookieFetcher(SigninClient* client,
-                                         const GURL& url,
-                                         const std::string& cookie_name) {
+  CreateBoundSessionRefreshCookieFetcher(
+      network::mojom::CookieManager* cookie_manager,
+      const GURL& url,
+      base::flat_set<std::string> cookie_names) {
     // `SimulateCompleteRefreshRequest()` must be called for the
     // refresh request to complete.
     auto fetcher = std::make_unique<FakeBoundSessionRefreshCookieFetcher>(
-        client, url, cookie_name);
+        cookie_manager, url, std::move(cookie_names));
     cookie_fetcher_ = fetcher.get();
     return fetcher;
   }
 
   void MaybeRefreshCookie() {
     bound_session_cookie_controller_->MaybeRefreshCookie();
+  }
+
+  bool AreAllCookiesFresh() {
+    return bound_session_cookie_controller_->AreAllCookiesFresh();
   }
 
   bool CompletePendingRefreshRequestIfAny() {
@@ -145,8 +155,8 @@ class BoundSessionCookieControllerImplTest
 
   base::test::TaskEnvironment* task_environment() { return &task_environment_; }
 
-  void OnCookieExpirationDateChanged() override {
-    on_cookie_expiration_date_changed_call_count_++;
+  void OnBoundSessionParamsChanged() override {
+    on_bound_session_params_changed_call_count_++;
   }
 
   void TerminateSession() override { on_terminate_session_called_ = true; }
@@ -199,16 +209,16 @@ class BoundSessionCookieControllerImplTest
 
   const UnexportableKeyId& key_id() { return key_id_; }
 
-  size_t on_cookie_expiration_date_changed_call_count() {
-    return on_cookie_expiration_date_changed_call_count_;
+  size_t on_bound_session_params_changed_call_count() {
+    return on_bound_session_params_changed_call_count_;
   }
 
   bool on_cookie_refresh_persistent_failure_called() {
     return on_terminate_session_called_;
   }
 
-  void ResetOnCookieExpirationDateChangedCallCount() {
-    on_cookie_expiration_date_changed_call_count_ = 0;
+  void ResetOnBoundSessionParamsChangedCallCount() {
+    on_bound_session_params_changed_call_count_ = 0;
   }
 
   void ResetBoundSessionCookieController() {
@@ -221,14 +231,14 @@ class BoundSessionCookieControllerImplTest
   crypto::ScopedMockUnexportableKeyProvider scoped_key_provider_;
   unexportable_keys::UnexportableKeyTaskManager unexportable_key_task_manager_;
   unexportable_keys::UnexportableKeyServiceImpl unexportable_key_service_;
-  sync_preferences::TestingPrefServiceSyncable prefs_;
-  TestSigninClient signin_client_;
+  BoundSessionTestCookieManager cookie_manager_;
+  content::TestStoragePartition storage_partition_;
   UnexportableKeyId key_id_;
   std::unique_ptr<BoundSessionCookieControllerImpl>
       bound_session_cookie_controller_;
   raw_ptr<FakeBoundSessionRefreshCookieFetcher, DanglingUntriaged>
       cookie_fetcher_ = nullptr;
-  size_t on_cookie_expiration_date_changed_call_count_ = 0;
+  size_t on_bound_session_params_changed_call_count_ = 0;
   bool on_terminate_session_called_ = false;
 };
 
@@ -248,31 +258,18 @@ TEST_F(BoundSessionCookieControllerImplTest, TwoCookieObserversCreated) {
 
 TEST_F(BoundSessionCookieControllerImplTest, CookieRefreshOnStartup) {
   EXPECT_TRUE(CompletePendingRefreshRequestIfAny());
-  EXPECT_EQ(on_cookie_expiration_date_changed_call_count(), 1u);
-  EXPECT_EQ(bound_session_cookie_controller()->cookie_expiration_time(),
+  EXPECT_EQ(on_bound_session_params_changed_call_count(), 1u);
+  EXPECT_EQ(cookie_expiration_time(k1PSIDTSCookieName),
             GetTimeInTenMinutes() - kCookieExpirationThreshold);
-}
-
-TEST_F(BoundSessionCookieControllerImplTest,
-       OnRefreshCookieFailedDoesNotUpdateCookieExpirationTime) {
-  CompletePendingRefreshRequestIfAny();
-  ResetOnCookieExpirationDateChangedCallCount();
-  base::Time cookie_expiration =
-      bound_session_cookie_controller()->cookie_expiration_time();
-
-  MaybeRefreshCookie();
-  SimulateCompleteRefreshRequest(
-      BoundSessionRefreshCookieFetcher::Result::kServerTransientError,
-      absl::nullopt);
-  EXPECT_EQ(on_cookie_expiration_date_changed_call_count(), 0u);
-  EXPECT_EQ(bound_session_cookie_controller()->cookie_expiration_time(),
-            cookie_expiration);
+  EXPECT_EQ(cookie_expiration_time(k3PSIDTSCookieName),
+            GetTimeInTenMinutes() - kCookieExpirationThreshold);
+  EXPECT_TRUE(AreAllCookiesFresh());
 }
 
 TEST_F(BoundSessionCookieControllerImplTest,
        MaybeRefreshCookieMultipleRequests) {
   CompletePendingRefreshRequestIfAny();
-  ResetOnCookieExpirationDateChangedCallCount();
+  ResetOnBoundSessionParamsChangedCallCount();
 
   EXPECT_FALSE(cookie_fetcher());
   MaybeRefreshCookie();
@@ -286,42 +283,61 @@ TEST_F(BoundSessionCookieControllerImplTest,
 }
 
 TEST_F(BoundSessionCookieControllerImplTest,
-       NotifiesOnlyIfCookieExpiryDateChanged) {
+       NotifiesOnlyIfMinimumCookieExpirationDateChanged) {
   CompletePendingRefreshRequestIfAny();
-  ResetOnCookieExpirationDateChangedCallCount();
+  ResetOnBoundSessionParamsChangedCallCount();
 
-  // Update with the same date
+  // Update with the same date.
   SetExpirationTimeAndNotify(
       k1PSIDTSCookieName,
-      bound_session_cookie_controller()->cookie_expiration_time() +
-          kCookieExpirationThreshold);
-  EXPECT_EQ(on_cookie_expiration_date_changed_call_count(), 0u);
+      cookie_expiration_time(k1PSIDTSCookieName) + kCookieExpirationThreshold);
+  EXPECT_EQ(on_bound_session_params_changed_call_count(), 0u);
 
-  // Update with null time should trigger a notification.
+  // Update with null time should change the minimum expiration date and
+  // trigger a notification.
   SetExpirationTimeAndNotify(k1PSIDTSCookieName, base::Time());
-  EXPECT_EQ(on_cookie_expiration_date_changed_call_count(), 1u);
-  EXPECT_EQ(bound_session_cookie_controller()->cookie_expiration_time(),
-            base::Time());
+  EXPECT_EQ(on_bound_session_params_changed_call_count(), 1u);
   EXPECT_EQ(cookie_expiration_time(k1PSIDTSCookieName), base::Time());
+  EXPECT_EQ(bound_session_cookie_controller()->min_cookie_expiration_time(),
+            base::Time());
 }
 
 TEST_F(BoundSessionCookieControllerImplTest, CookieChange) {
   CompletePendingRefreshRequestIfAny();
-  ResetOnCookieExpirationDateChangedCallCount();
+  ResetOnBoundSessionParamsChangedCallCount();
+  task_environment()->FastForwardBy(base::Minutes(2));
+
+  BoundSessionCookieController* controller = bound_session_cookie_controller();
+  base::Time expiration_time_1PSIDTS =
+      cookie_expiration_time(k1PSIDTSCookieName);
+  base::Time expiration_time_3PSIDTS =
+      cookie_expiration_time(k3PSIDTSCookieName);
+  base::Time minimum_expiration_time = controller->min_cookie_expiration_time();
+  EXPECT_EQ(expiration_time_1PSIDTS, minimum_expiration_time);
+  EXPECT_EQ(expiration_time_1PSIDTS, expiration_time_3PSIDTS);
 
   // Simulate cookie change of 1st cookie.
-  base::Time old_expiration_time = cookie_expiration_time(k3PSIDTSCookieName);
-  SimulateCookieChange(k1PSIDTSCookieName, base::Time::Now());
-  EXPECT_EQ(on_cookie_expiration_date_changed_call_count(), 1u);
-  EXPECT_EQ(cookie_expiration_time(k1PSIDTSCookieName),
-            base::Time::Now() - kCookieExpirationThreshold);
-  EXPECT_EQ(cookie_expiration_time(k3PSIDTSCookieName), old_expiration_time);
-
-  // Simulate cookie change of 2nd cookie.
-  SimulateCookieChange(k3PSIDTSCookieName, base::Time::Now());
-  EXPECT_EQ(on_cookie_expiration_date_changed_call_count(), 2u);
+  SimulateCookieChange(k1PSIDTSCookieName, GetTimeInTenMinutes());
+  expiration_time_1PSIDTS = cookie_expiration_time(k1PSIDTSCookieName);
+  EXPECT_EQ(expiration_time_1PSIDTS,
+            GetTimeInTenMinutes() - kCookieExpirationThreshold);
+  // The other cookie expiration time remains unchanged.
   EXPECT_EQ(cookie_expiration_time(k3PSIDTSCookieName),
-            base::Time::Now() - kCookieExpirationThreshold);
+            expiration_time_3PSIDTS);
+  // The new `expiration_time_1PSIDTS` is larger than the other cookie
+  // expiration time so the minimum remains unchanged.
+  EXPECT_EQ(controller->min_cookie_expiration_time(), minimum_expiration_time);
+  EXPECT_EQ(on_bound_session_params_changed_call_count(), 0u);
+
+  task_environment()->FastForwardBy(base::Minutes(2));
+  // Simulate cookie change of 2nd cookie.
+  SimulateCookieChange(k3PSIDTSCookieName, GetTimeInTenMinutes());
+  EXPECT_EQ(cookie_expiration_time(k3PSIDTSCookieName),
+            GetTimeInTenMinutes() - kCookieExpirationThreshold);
+  // Expiration time of: `k3PSIDTSCookieName` > `k1PSIDTSCookieName`.
+  // The minimum changes to the expiration date of `k1PSIDTSCookieName`.
+  EXPECT_EQ(controller->min_cookie_expiration_time(), expiration_time_1PSIDTS);
+  EXPECT_EQ(on_bound_session_params_changed_call_count(), 1u);
 }
 
 TEST_F(BoundSessionCookieControllerImplTest,
@@ -329,8 +345,7 @@ TEST_F(BoundSessionCookieControllerImplTest,
   // Set fresh cookie.
   CompletePendingRefreshRequestIfAny();
   BoundSessionCookieController* controller = bound_session_cookie_controller();
-  EXPECT_EQ(controller->cookie_expiration_time(),
-            GetTimeInTenMinutes() - kCookieExpirationThreshold);
+  EXPECT_TRUE(AreAllCookiesFresh());
 
   // No fetch should be triggered since the cookie is fresh.
   // The callback should return immediately.
@@ -341,21 +356,20 @@ TEST_F(BoundSessionCookieControllerImplTest,
 }
 
 TEST_F(BoundSessionCookieControllerImplTest,
-       RequestBlockedOnCookieWhenCookieStale) {
+       RequestBlockedOnCookieWhenCookieStaleTriggersARefresh) {
   CompletePendingRefreshRequestIfAny();
 
   BoundSessionCookieController* controller = bound_session_cookie_controller();
   task_environment()->FastForwardBy(base::Minutes(12));
   // Cookie stale.
-  EXPECT_LT(controller->cookie_expiration_time(),
-            base::Time::Now() - kCookieExpirationThreshold);
-  // Preemptive cookie rotation also fails with persistent error
+  EXPECT_FALSE(AreAllCookiesFresh());
+  // Preemptive cookie rotation also fails with persistent error.
   SimulateCompleteRefreshRequest(
       BoundSessionRefreshCookieFetcher::Result::kConnectionError,
       absl::nullopt);
   EXPECT_FALSE(cookie_fetcher());
 
-  // Request blocked on the cookie
+  // Request blocked on the cookie.
   base::test::TestFuture<void> future;
   controller->OnRequestBlockedOnCookie(future.GetCallback());
   EXPECT_FALSE(future.IsReady());
@@ -366,8 +380,32 @@ TEST_F(BoundSessionCookieControllerImplTest,
       GetTimeInTenMinutes());
   task_environment()->RunUntilIdle();
   EXPECT_TRUE(future.IsReady());
-  EXPECT_EQ(controller->cookie_expiration_time(),
-            GetTimeInTenMinutes() - kCookieExpirationThreshold);
+  EXPECT_TRUE(AreAllCookiesFresh());
+}
+
+TEST_F(BoundSessionCookieControllerImplTest,
+       RequestBlockedWhenNotAllCookiesFresh) {
+  CompletePendingRefreshRequestIfAny();
+  BoundSessionCookieController* controller = bound_session_cookie_controller();
+
+  // All cookies stale.
+  task_environment()->FastForwardBy(base::Minutes(12));
+  EXPECT_FALSE(AreAllCookiesFresh());
+  // Request blocked on the cookies.
+  base::test::TestFuture<void> future;
+  controller->OnRequestBlockedOnCookie(future.GetCallback());
+  EXPECT_FALSE(future.IsReady());
+
+  // One cookie is fresh.
+  SetExpirationTimeAndNotify(k1PSIDTSCookieName, GetTimeInTenMinutes());
+  EXPECT_FALSE(future.IsReady());
+  EXPECT_FALSE(AreAllCookiesFresh());
+
+  // All cookies fresh.
+  SetExpirationTimeAndNotify(k3PSIDTSCookieName, GetTimeInTenMinutes());
+  EXPECT_TRUE(future.IsReady());
+  EXPECT_TRUE(AreAllCookiesFresh());
+  CompletePendingRefreshRequestIfAny();
 }
 
 TEST_F(BoundSessionCookieControllerImplTest,
@@ -377,11 +415,11 @@ TEST_F(BoundSessionCookieControllerImplTest,
 
   BoundSessionCookieController* controller = bound_session_cookie_controller();
   task_environment()->FastForwardBy(base::Minutes(12));
-  base::Time cookie_expiration = controller->cookie_expiration_time();
+  base::Time min_cookie_expiration = controller->min_cookie_expiration_time();
 
   // Cookie stale.
-  EXPECT_LT(cookie_expiration, base::Time::Now());
-  // Preemptive cookie rotation also fails with persistent error
+  EXPECT_FALSE(AreAllCookiesFresh());
+  // Preemptive cookie rotation also fails with persistent error.
   SimulateCompleteRefreshRequest(
       BoundSessionRefreshCookieFetcher::Result::kConnectionError,
       absl::nullopt);
@@ -398,16 +436,13 @@ TEST_F(BoundSessionCookieControllerImplTest,
   task_environment()->RunUntilIdle();
   EXPECT_TRUE(on_cookie_refresh_persistent_failure_called());
   EXPECT_TRUE(future.IsReady());
-  EXPECT_EQ(controller->cookie_expiration_time(), cookie_expiration);
+  EXPECT_EQ(controller->min_cookie_expiration_time(), min_cookie_expiration);
 }
 
 TEST_F(BoundSessionCookieControllerImplTest, RefreshFailedTransient) {
   CompletePendingRefreshRequestIfAny();
   task_environment()->FastForwardBy(base::Minutes(12));
-
-  BoundSessionCookieController* controller = bound_session_cookie_controller();
-  EXPECT_LT(controller->cookie_expiration_time(), base::Time::Now());
-
+  EXPECT_FALSE(AreAllCookiesFresh());
   std::array<BoundSessionRefreshCookieFetcher::Result, 2> result_types = {
       BoundSessionRefreshCookieFetcher::Result::kConnectionError,
       BoundSessionRefreshCookieFetcher::Result::kServerTransientError};
@@ -438,7 +473,7 @@ TEST_F(BoundSessionCookieControllerImplTest, RefreshFailedTransient) {
 TEST_F(BoundSessionCookieControllerImplTest,
        RequestBlockedOnCookieMultipleRequests) {
   CompletePendingRefreshRequestIfAny();
-  ResetOnCookieExpirationDateChangedCallCount();
+  ResetOnBoundSessionParamsChangedCallCount();
   // Cookie stale.
   task_environment()->FastForwardBy(base::Minutes(12));
 
@@ -456,9 +491,8 @@ TEST_F(BoundSessionCookieControllerImplTest,
   for (auto& future : futures) {
     EXPECT_TRUE(future.IsReady());
   }
-  EXPECT_EQ(on_cookie_expiration_date_changed_call_count(), 1u);
-  EXPECT_EQ(controller->cookie_expiration_time(),
-            GetTimeInTenMinutes() - kCookieExpirationThreshold);
+  EXPECT_EQ(on_bound_session_params_changed_call_count(), 1u);
+  EXPECT_TRUE(AreAllCookiesFresh());
 }
 
 TEST_F(BoundSessionCookieControllerImplTest,
@@ -476,6 +510,8 @@ TEST_F(BoundSessionCookieControllerImplTest,
 
   // Cookie fresh.
   SimulateCookieChange(k1PSIDTSCookieName, GetTimeInTenMinutes());
+  EXPECT_FALSE(future.IsReady());
+  SimulateCookieChange(k3PSIDTSCookieName, GetTimeInTenMinutes());
   EXPECT_TRUE(future.IsReady());
 
   // Complete the pending fetch.
@@ -503,7 +539,9 @@ TEST_F(BoundSessionCookieControllerImplTest,
 TEST_F(BoundSessionCookieControllerImplTest,
        NotNullCookieExpirationTimeIsReducedByThreshold) {
   EXPECT_TRUE(CompletePendingRefreshRequestIfAny());
-  EXPECT_EQ(bound_session_cookie_controller()->cookie_expiration_time(),
+  EXPECT_EQ(cookie_expiration_time(k1PSIDTSCookieName),
+            GetTimeInTenMinutes() - kCookieExpirationThreshold);
+  EXPECT_EQ(cookie_expiration_time(k3PSIDTSCookieName),
             GetTimeInTenMinutes() - kCookieExpirationThreshold);
 }
 
@@ -516,26 +554,62 @@ TEST_F(BoundSessionCookieControllerImplTest,
 
 TEST_F(BoundSessionCookieControllerImplTest,
        ScheduleCookieRotationOnSetCookieExpiration) {
-  ResetOnCookieExpirationDateChangedCallCount();
+  ResetOnBoundSessionParamsChangedCallCount();
   EXPECT_TRUE(CompletePendingRefreshRequestIfAny());
-  EXPECT_EQ(on_cookie_expiration_date_changed_call_count(), 1u);
+  EXPECT_EQ(on_bound_session_params_changed_call_count(), 1u);
   EXPECT_TRUE(cookie_refresh_timer()->IsRunning());
   base::TimeDelta expected_refresh_delay =
-      bound_session_cookie_controller()->cookie_expiration_time() -
+      bound_session_cookie_controller()->min_cookie_expiration_time() -
       base::Time::Now() - kCookieRefreshInterval;
-  EXPECT_EQ(expected_refresh_delay, cookie_refresh_timer()->GetCurrentDelay());
+  EXPECT_EQ(cookie_refresh_timer()->GetCurrentDelay(), expected_refresh_delay);
   task_environment()->FastForwardBy(expected_refresh_delay);
   EXPECT_TRUE(cookie_fetcher());
   CompletePendingRefreshRequestIfAny();
 }
 
 TEST_F(BoundSessionCookieControllerImplTest,
+       RescheduleCookieRotationOnlyIfMinimumExpirationDateChanged) {
+  CompletePendingRefreshRequestIfAny();
+  EXPECT_TRUE(cookie_refresh_timer()->IsRunning());
+  task_environment()->FastForwardBy(base::Minutes(12));
+
+  // We want to test that a cookie refresh is scheduled only when the minimum
+  // expiration time of the two cookies changes.
+  // We first set up a situation where both cookies are stale and there is no
+  // ongoing refresh. `kServerTransientError` is used to complete the refresh
+  // request without updating the cookies.
+  SimulateCompleteRefreshRequest(
+      BoundSessionRefreshCookieFetcher::Result::kServerTransientError,
+      absl::nullopt);
+  EXPECT_FALSE(cookie_fetcher());
+  EXPECT_FALSE(cookie_refresh_timer()->IsRunning());
+  base::Time old_min_cookie_expiration =
+      bound_session_cookie_controller()->min_cookie_expiration_time();
+
+  SetExpirationTimeAndNotify(k1PSIDTSCookieName, GetTimeInTenMinutes());
+  // The new expiration time of `k1PSIDTSCookieName` is larger than the other
+  // cookie expiration time so the minimum remains unchanged.
+  EXPECT_EQ(bound_session_cookie_controller()->min_cookie_expiration_time(),
+            old_min_cookie_expiration);
+  // Cookie rotation is not scheduled.
+  EXPECT_FALSE(cookie_refresh_timer()->IsRunning());
+
+  SetExpirationTimeAndNotify(k3PSIDTSCookieName, GetTimeInTenMinutes());
+  // The expiration time of the other cookie is updated, and the minimum
+  // expiration time changes.
+  EXPECT_NE(bound_session_cookie_controller()->min_cookie_expiration_time(),
+            old_min_cookie_expiration);
+  // Cookie rotation scheduled.
+  EXPECT_TRUE(cookie_refresh_timer()->IsRunning());
+}
+
+TEST_F(BoundSessionCookieControllerImplTest,
        RefreshCookieImmediatelyOnSetCookieExpirationBelowRefreshInterval) {
   EXPECT_TRUE(CompletePendingRefreshRequestIfAny());
-  ResetOnCookieExpirationDateChangedCallCount();
+  ResetOnBoundSessionParamsChangedCallCount();
   SetExpirationTimeAndNotify(k1PSIDTSCookieName,
                              base::Time::Now() + kCookieRefreshInterval / 2);
-  EXPECT_EQ(on_cookie_expiration_date_changed_call_count(), 1u);
+  EXPECT_EQ(on_bound_session_params_changed_call_count(), 1u);
   EXPECT_FALSE(cookie_refresh_timer()->IsRunning());
   EXPECT_TRUE(cookie_fetcher());
   CompletePendingRefreshRequestIfAny();

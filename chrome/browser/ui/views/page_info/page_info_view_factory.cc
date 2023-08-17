@@ -391,6 +391,10 @@ const ui::ImageModel PageInfoViewFactory::GetPermissionIcon(
         icon = show_blocked_badge ? &vector_icons::kDevicesOffChromeRefreshIcon
                                   : &vector_icons::kDevicesChromeRefreshIcon;
         break;
+      case ContentSettingsType::STORAGE_ACCESS:
+        icon = show_blocked_badge ? &vector_icons::kStorageAccessOffIcon
+                                  : &vector_icons::kStorageAccessIcon;
+        break;
       default:
         break;
     }
@@ -491,8 +495,7 @@ const ui::ImageModel PageInfoViewFactory::GetPermissionIcon(
       icon = &vector_icons::kDevicesIcon;
       break;
     case ContentSettingsType::STORAGE_ACCESS:
-      // TODO(crbug.com/1433644): Choose the right icon.
-      icon = &vector_icons::kCookieIcon;
+      icon = &vector_icons::kStorageAccessIcon;
       break;
     default:
       // All other |ContentSettingsType|s do not have icons on desktop or are
@@ -614,25 +617,21 @@ const ui::ImageModel PageInfoViewFactory::GetAboutThisSiteIcon() {
 // static
 const gfx::VectorIcon& PageInfoViewFactory::GetAboutThisSiteColorVectorIcon() {
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-  if (page_info::IsAboutThisSiteNewIconFeatureEnabled()) {
-    return vector_icons::kPageInsightsColorIcon;
-  }
-#endif  // !BUILDFLAG(GOOGLE_CHROME_BRANDING)
-
+  return vector_icons::kPageInsightsColorIcon;
+#else
   return features::IsChromeRefresh2023() ? views::kInfoChromeRefreshIcon
                                          : views::kInfoIcon;
+#endif  // !BUILDFLAG(GOOGLE_CHROME_BRANDING)
 }
 
 // static
 const gfx::VectorIcon& PageInfoViewFactory::GetAboutThisSiteVectorIcon() {
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-  if (page_info::IsAboutThisSiteNewIconFeatureEnabled()) {
-    return vector_icons::kPageInsightsIcon;
-  }
-#endif  // !BUILDFLAG(GOOGLE_CHROME_BRANDING)
-
+  return vector_icons::kPageInsightsIcon;
+#else
   return features::IsChromeRefresh2023() ? views::kInfoChromeRefreshIcon
                                          : views::kInfoIcon;
+#endif  // !BUILDFLAG(GOOGLE_CHROME_BRANDING)
 }
 // static
 const ui::ImageModel PageInfoViewFactory::GetHistoryIcon() {

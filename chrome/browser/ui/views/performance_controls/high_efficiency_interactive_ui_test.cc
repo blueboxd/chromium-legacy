@@ -719,8 +719,9 @@ class HighEfficiencyFaviconTreatmentTest
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
+// See crbug.com/1472907
 IN_PROC_BROWSER_TEST_P(HighEfficiencyFaviconTreatmentTest,
-                       FaviconTreatmentOnDiscard) {
+                       DISABLED_FaviconTreatmentOnDiscard) {
   constexpr char kFirstTabFavicon[] = "first_tab_favicon";
 
   RunTestSequence(
@@ -735,16 +736,7 @@ IN_PROC_BROWSER_TEST_P(HighEfficiencyFaviconTreatmentTest,
       NameView(kFirstTabFavicon, base::BindLambdaForTesting([&]() {
                  return views::AsViewClass<views::View>(GetTabIcon(0));
                })),
-      Check(base::BindLambdaForTesting([&]() {
-        return GetTabIcon(0)
-            ->GetTabDiscardAnimationForTesting()
-            ->is_animating();
-      })),
-      Do(base::BindLambdaForTesting([&]() {
-        // Force animation to end as it may not have finished progressing
-        // before taking a screenshot
-        GetTabIcon(0)->GetTabDiscardAnimationForTesting()->End();
-      })),
+      WaitForEvent(kFirstTabFavicon, kDiscardAnimationFinishes), FlushEvents(),
       Screenshot(kFirstTabFavicon, GetParam().screenshot_name,
                  GetParam().cl_number));
 }

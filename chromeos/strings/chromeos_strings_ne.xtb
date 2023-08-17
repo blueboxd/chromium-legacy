@@ -15,7 +15,6 @@
 <translation id="1075811647922107217">पेजको आकार</translation>
 <translation id="1082009148392559545">स्क्रिन सेभर डाउनलोड गरिँदै छ</translation>
 <translation id="1094693127011229778">IP ठेगाना उपलब्ध छैन</translation>
-<translation id="1113892970288677790">छनौट गरिएका कलाकृति तथा फोटोहरू चयन गर्नुहोस्</translation>
 <translation id="1118572504348554005">हामी यो फाराममार्फत पेस गरिएका प्रतिक्रिया त्रुटि सच्याउने र तपाईंले हामीलाई जानकारी गराउने अन्य समस्याहरू निवारण गर्ने प्रयोजनका लागि हाम्रा साझेदारसँग सेयर गर्न सक्छौँ। आफ्नो पासवर्ड जस्ता संवेदनशील जानकारी समावेश नगर्नुहोस्।</translation>
 <translation id="1119447706177454957">आन्तरिक त्रुटि</translation>
 <translation id="1124772482545689468">प्रयोगकर्ता</translation>
@@ -183,6 +182,7 @@
 <translation id="225692081236532131">सक्रियताको वस्तुस्थिति</translation>
 <translation id="2271469253353559191">अँध्यारो मोडको समयतालिका</translation>
 <translation id="2276999893457278469">मद्दतसम्बन्धी मुख्य सामग्री</translation>
+<translation id="2279051792571591988">डिफल्ट सेटिङ रिस्टोर गर्नुहोस्</translation>
 <translation id="2287186687001756809">कुनै पनि फोटो छैन। तपाईं फोटो हाल्न चाहनुहुन्छ भने <ph name="LINK" /> मा जानुहोस्</translation>
 <translation id="2307344026739914387">हालको किपेयर प्रयोग गर्नुहोस्</translation>
 <translation id="2320295602967756579">उज्यालो थिम अन गर्नुहोस्</translation>
@@ -224,6 +224,7 @@
 <translation id="2620436844016719705">सिस्टम</translation>
 <translation id="2638662041295312666">प्रोफाइल फोटो</translation>
 <translation id="2640549051766135490"><ph name="TITLE" /> <ph name="DESC" /> एल्बम चयन गरियो</translation>
+<translation id="2652403576514495859">स्पिच-टु-टेक्स्ट अन वा अफ गर्नुहोस्</translation>
 <translation id="267442004702508783">पुनःताजा</translation>
 <translation id="268270014981824665">किबोर्डको ब्याकलाइटको चमक कम गर्नुहोस्</translation>
 <translation id="2712812801627182647">TLS प्रमाणीकरण की</translation>
@@ -331,7 +332,6 @@
 <translation id="361575905210396100">प्रतिक्रिया दिनुभएकोमा धन्यवाद</translation>
 <translation id="3632579075709132555">प्राइभेसी स्क्रिन टगल</translation>
 <translation id="3651050199673793219">तापक्रमको एकाइ चयन गर्नुहोस्</translation>
-<translation id="3663574643422533538"><ph name="PRODUCT_NAME" /> को खास कलाकृति चयन गर्नुहोस्</translation>
 <translation id="3668449597372804501">क्लाउड फ्लो वालपेपर</translation>
 <translation id="3689839747745352263"><ph name="TEST_NAME" /> परीक्षण</translation>
 <translation id="370665806235115550">लोड गर्दै...</translation>
@@ -589,6 +589,7 @@
 <translation id="5620281292257375798">आन्तरिक प्रयोजनका लागि मात्र</translation>
 <translation id="5649768706273821470">सुन्नुहोस्</translation>
 <translation id="5655283760733841251">किबोर्डको चमक बढाउने की</translation>
+<translation id="5655296450510165335">डिभाइस दर्ता गर्ने प्रक्रिया</translation>
 <translation id="5655776422854483175">कुनै पनि प्रिन्टसम्बन्धी कार्य भइरहेको छैन</translation>
 <translation id="5659593005791499971">इमेल</translation>
 <translation id="5662240986744577912">"प्राइभेसी स्क्रिन टगल गर्नुहोस्" जनाउने आइकन</translation>
@@ -644,6 +645,7 @@
 <translation id="6061772781719867950">HTTP अनुरोधहरू पठाउन सकिएन</translation>
 <translation id="6073292342939316679">"किबोर्डको चमक घटाउनुहोस्" जनाउने आइकन</translation>
 <translation id="6075872808778243331">(Android) HTTP को विलम्बता</translation>
+<translation id="6078323886959318429">सर्टकट थप्नुहोस्</translation>
 <translation id="6104112872696127344">स्क्यान गर्ने कार्य रद्द गरिएको छ</translation>
 <translation id="6106186594183574873">यो कार्य पूरा गर्न आफ्नो पुरानो पासवर्ड प्रविष्टि गर्नुहोस्</translation>
 <translation id="6108689792487843350">गेटवेमा कनेक्ट गर्न सकिएन</translation>
@@ -799,10 +801,10 @@
 <translation id="7297226631177386107">फायरवाल पार गरेर HTTPS वेबसाइटहरूमा कनेक्ट गर्न सकिएन</translation>
 <translation id="7297726121602187087">गाढा हरियो</translation>
 <translation id="7302860742311162920">ICCID</translation>
-<translation id="7305236594389852547">"स्पिच-टु-टेक्स्ट टगल गर्नुहोस्" जनाउने आइकन</translation>
 <translation id="7305884605064981971">EDGE</translation>
 <translation id="7308203371573257315">Chromebook को मद्दतसम्बन्धी फोरममा विशेषज्ञसँग मद्दत माग्नुहोस्</translation>
 <translation id="7311368985037279727">किबोर्डको रङ</translation>
+<translation id="7317831949569936035">स्कुलको इमेल ठेगाना हालेर डिभाइस दर्ता गर्ने प्रक्रिया</translation>
 <translation id="7319430975418800333">A3</translation>
 <translation id="7343581795491695942"><ph name="QUERY_TEXT" />; <ph name="RESULT_TEXT" />; Google Search मा परिणाम हेर्न Search र Space बटन एकै चोटि थिच्नुहोस्।</translation>
 <translation id="7343649194310845056">नेटवर्कसम्बन्धी यन्त्रहरू</translation>
@@ -814,6 +816,7 @@
 <translation id="7397270852490618635">उज्यालो थिम अफ गर्नुहोस्</translation>
 <translation id="741244894080940828">रूपान्तरण</translation>
 <translation id="7415801143053185905">HTTP को विलम्बता अति धेरै छ</translation>
+<translation id="7425178841057519191">{NUM_ROOL_APPS,plural,offset:2 =1{तपाईंका एड्मिनले तपाईंले हरेक पटक लग इन गर्दा <ph name="APP_NAME_1" /> स्वतः सुरु हुने बनाउनुभएको छ।}=2{तपाईंका एड्मिनले तपाईंले हरेक पटक लग इन गर्दा <ph name="APP_NAME_1" /> र <ph name="APP_NAME_2" /> स्वतः सुरु हुने बनाउनुभएको छ।}=3{तपाईंका एड्मिनले तपाईंले हरेक पटक लग इन गर्दा <ph name="APP_NAME_1" />, <ph name="APP_NAME_2" /> र <ph name="APP_NAME_3" /> स्वतः सुरु हुने बनाउनुभएको छ।}other{तपाईंका एड्मिनले तपाईंले हरेक पटक लग इन गर्दा <ph name="APP_NAME_1" />, <ph name="APP_NAME_2" /> र अन्य # वटा एप स्वतः सुरु हुने बनाउनुभएको छ।}}</translation>
 <translation id="7427315641433634153">MSCHAP</translation>
 <translation id="7458970041932198923">अवतारहरू हेर्न र सेट गर्न इन्टरनेटमा कनेक्ट गर्नुहोस् र यो पेज रिलोड गर्नुहोस्।</translation>
 <translation id="7469648432129124067">पोर्टल पत्ता लागेको छ</translation>
@@ -1012,6 +1015,7 @@
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8987565828374052507">{NUMBER_OF_PAGES,plural, =0{स्क्यान गर्नुहोस्}=1{{NUMBER_OF_PAGES} पृष्ठ स्क्यान गर्नुहोस्}other{{NUMBER_OF_PAGES} पृष्ठ स्क्यान गर्नुहोस्}}</translation>
 <translation id="8997710128084572139">यो डिभाइसमा <ph name="BATTERY_PERCENTAGE" />% ब्याट्री बाँकी छ।</translation>
+<translation id="8998156756248178381">{NUM_ROOL_APPS,plural, =1{<ph name="APP_NAME_1" /> स्वतः सुरु गरियो}other{# वटा एप स्वतः सुरु गरिए}}</translation>
 <translation id="8998289560386111590">तपाईंको डिभाइसमा उपलब्ध छैन</translation>
 <translation id="9003704114456258138">फ्रिक्वेन्सी</translation>
 <translation id="9024331582947483881">फुल स्क्रिन</translation>

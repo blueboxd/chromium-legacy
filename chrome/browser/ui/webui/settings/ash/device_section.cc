@@ -778,6 +778,10 @@ bool AreScrollSettingsAllowed() {
   return base::FeatureList::IsEnabled(features::kAllowScrollSettings);
 }
 
+bool AreTouchpadScrollSettingsAllowed() {
+  return base::FeatureList::IsEnabled(features::kAllowTouchpadScrollSettings);
+}
+
 bool IsUnifiedDesktopAvailable() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       ::switches::kEnableUnifiedDesktop);
@@ -891,6 +895,22 @@ void AddDeviceKeyboardStrings(content::WebUIDataSource* html_source) {
     html_source->AddLocalizedString(
         "keyboardSendFunctionKeysDescription",
         IDS_SETTINGS_KEYBOARD_SEND_FUNCTION_KEYS_LAYOUT2_DESCRIPTION);
+    html_source->AddLocalizedString("sixPackKeyDeleteSearch",
+                                    IDS_SETTINGS_SIX_PACK_KEY_DELETE_LAUNCHER);
+    html_source->AddLocalizedString("sixPackKeyHomeSearch",
+                                    IDS_SETTINGS_SIX_PACK_KEY_HOME_LAUNCHER);
+    html_source->AddLocalizedString("sixPackKeyEndSearch",
+                                    IDS_SETTINGS_SIX_PACK_KEY_END_LAUNCHER);
+    html_source->AddLocalizedString("sixPackKeyPageUpSearch",
+                                    IDS_SETTINGS_SIX_PACK_KEY_PAGE_UP_LAUNCHER);
+    html_source->AddLocalizedString(
+        "sixPackKeyPageDownSearch",
+        IDS_SETTINGS_SIX_PACK_KEY_PAGE_DOWN_LAUNCHER);
+    html_source->AddLocalizedString("sixPackKeyInsertSearch",
+                                    IDS_SETTINGS_SIX_PACK_KEY_INSERT_LAUNCHER);
+    html_source->AddLocalizedString(
+        "touchpadSimulateRightClickOptionSearch",
+        IDS_SETTINGS_TOUCHPAD_SIMULATE_RIGHT_CLICK_OPTION_LAUNCHER);
   } else {
     html_source->AddLocalizedString(
         "keyboardBlockMetaFunctionKeyRewrites",
@@ -906,6 +926,21 @@ void AddDeviceKeyboardStrings(content::WebUIDataSource* html_source) {
     html_source->AddLocalizedString(
         "keyboardSendFunctionKeysDescription",
         IDS_SETTINGS_KEYBOARD_SEND_FUNCTION_KEYS_DESCRIPTION);
+    html_source->AddLocalizedString("sixPackKeyDeleteSearch",
+                                    IDS_SETTINGS_SIX_PACK_KEY_DELETE_SEARCH);
+    html_source->AddLocalizedString("sixPackKeyHomeSearch",
+                                    IDS_SETTINGS_SIX_PACK_KEY_HOME_SEARCH);
+    html_source->AddLocalizedString("sixPackKeyEndSearch",
+                                    IDS_SETTINGS_SIX_PACK_KEY_END_SEARCH);
+    html_source->AddLocalizedString("sixPackKeyPageUpSearch",
+                                    IDS_SETTINGS_SIX_PACK_KEY_PAGE_UP_SEARCH);
+    html_source->AddLocalizedString("sixPackKeyPageDownSearch",
+                                    IDS_SETTINGS_SIX_PACK_KEY_PAGE_DOWN_SEARCH);
+    html_source->AddLocalizedString("sixPackKeyInsertSearch",
+                                    IDS_SETTINGS_SIX_PACK_KEY_INSERT_SEARCH);
+    html_source->AddLocalizedString(
+        "touchpadSimulateRightClickOptionSearch",
+        IDS_SETTINGS_TOUCHPAD_SIMULATE_RIGHT_CLICK_OPTION_SEARCH);
   }
 }
 
@@ -1183,9 +1218,16 @@ DeviceSection::~DeviceSection() {
 }
 
 void DeviceSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
-  static constexpr webui::LocalizedString kDeviceStrings[] = {
+  const bool kIsRevampEnabled =
+      ash::features::IsOsSettingsRevampWayfindingEnabled();
+
+  webui::LocalizedString kDeviceStrings[] = {
       {"devicePageTitle", IDS_SETTINGS_DEVICE_TITLE},
-      {"touchPadScrollLabel", IDS_OS_SETTINGS_TOUCHPAD_REVERSE_SCROLL_LABEL},
+      {"touchpadScrollLabel",
+       kIsRevampEnabled ? IDS_OS_SETTINGS_REVAMP_TOUCHPAD_REVERSE_SCROLL_LABEL
+                        : IDS_OS_SETTINGS_TOUCHPAD_REVERSE_SCROLL_LABEL},
+      {"touchpadScrollDescription",
+       IDS_OS_SETTINGS_REVAMP_TOUCHPAD_REVERSE_SCROLL_DESCRIPTION},
   };
   html_source->AddLocalizedStrings(kDeviceStrings);
 
@@ -1241,7 +1283,7 @@ mojom::SearchResultIcon DeviceSection::GetSectionIcon() const {
   return mojom::SearchResultIcon::kLaptop;
 }
 
-std::string DeviceSection::GetSectionPath() const {
+const char* DeviceSection::GetSectionPath() const {
   return mojom::kDeviceSectionPath;
 }
 
@@ -1715,7 +1757,12 @@ void DeviceSection::UpdateStylusSearchTags() {
 
 void DeviceSection::AddDevicePointersStrings(
     content::WebUIDataSource* html_source) {
-  static constexpr webui::LocalizedString kPointersStrings[] = {
+  const bool kIsRevampEnabled =
+      ash::features::IsOsSettingsRevampWayfindingEnabled();
+  const bool kIsAllowMouseScrollSettingsEnabled =
+      base::FeatureList::IsEnabled(ash::features::kAllowScrollSettings);
+
+  webui::LocalizedString kPointersStrings[] = {
       {"mouseTitle", IDS_SETTINGS_MOUSE_TITLE},
       {"builtInPointingStickName", IDS_SETTINGS_BUILT_IN_POINTING_STICK_NAME},
       {"pointingStickTitle", IDS_SETTINGS_POINTING_STICK_TITLE},
@@ -1723,26 +1770,48 @@ void DeviceSection::AddDevicePointersStrings(
       {"touchpadTitle", IDS_SETTINGS_TOUCHPAD_TITLE},
       {"mouseAndTouchpadTitle", IDS_SETTINGS_MOUSE_AND_TOUCHPAD_TITLE},
       {"touchpadTapToClickEnabledLabel",
-       IDS_SETTINGS_TOUCHPAD_TAP_TO_CLICK_ENABLED_LABEL},
+       kIsRevampEnabled ? IDS_OS_SETTINGS_REVAMP_TOUCHPAD_TAP_TO_CLICK_LABEL
+                        : IDS_SETTINGS_TOUCHPAD_TAP_TO_CLICK_ENABLED_LABEL},
+      {"touchpadTapToClickDescription",
+       IDS_OS_SETTINGS_REVAMP_TOUCHPAD_TAP_TO_CLICK_DESCRIPTION},
       {"touchpadSpeed", IDS_SETTINGS_TOUCHPAD_SPEED_LABEL},
       {"pointerSlow", IDS_SETTINGS_POINTER_SPEED_SLOW_LABEL},
       {"pointerFast", IDS_SETTINGS_POINTER_SPEED_FAST_LABEL},
       {"mouseScrollSpeed", IDS_SETTINGS_MOUSE_SCROLL_SPEED_LABEL},
       {"mouseSpeed", IDS_SETTINGS_MOUSE_SPEED_LABEL},
+      {"cursorSpeed", IDS_SETTINGS_CURSOR_SPEED_LABEL},
       {"pointingStickSpeed", IDS_SETTINGS_POINTING_STICK_SPEED_LABEL},
-      {"mouseSwapButtons", IDS_SETTINGS_MOUSE_SWAP_BUTTONS_LABEL},
+      {"mouseSwapButtonsLabel",
+       kIsRevampEnabled ? IDS_OS_SETTINGS_REVAMP_MOUSE_SWAP_BUTTONS_LABEL
+                        : IDS_SETTINGS_MOUSE_SWAP_BUTTONS_LABEL},
+      {"mouseCursor", IDS_SETTINGS_MOUSE_CURSOR_LABEL},
+      {"mouseScrolling", IDS_SETTINGS_MOUSE_SCROLLING_LABEL},
       {"pointingStickPrimaryButton",
        IDS_SETTINGS_POINTING_STICK_PRIMARY_BUTTON_LABEL},
       {"primaryMouseButtonLeft", IDS_SETTINGS_PRIMARY_MOUSE_BUTTON_LEFT_LABEL},
       {"primaryMouseButtonRight",
        IDS_SETTINGS_PRIMARY_MOUSE_BUTTON_RIGHT_LABEL},
-      {"mouseReverseScroll", IDS_SETTINGS_MOUSE_REVERSE_SCROLL_LABEL},
-      {"mouseAccelerationLabel", IDS_SETTINGS_MOUSE_ACCELERATION_LABEL},
+      {"mouseReverseScrollLabel",
+       (kIsRevampEnabled || kIsAllowMouseScrollSettingsEnabled)
+           ? IDS_OS_SETTINGS_REVAMP_MOUSE_REVERSE_SCROLL_LABEL
+           : IDS_SETTINGS_MOUSE_REVERSE_SCROLL_LABEL},
+      {"mouseReverseScrollDescription",
+       IDS_OS_SETTINGS_REVAMP_MOUSE_REVERSE_SCROLL_DESCRIPTION},
+      {"mouseAccelerationLabel",
+       kIsRevampEnabled ? IDS_OS_SETTINGS_REVAMP_MOUSE_ACCELERATION_LABEL
+                        : IDS_SETTINGS_MOUSE_ACCELERATION_LABEL},
+      {"mouseAccelerationDescription",
+       IDS_OS_SETTINGS_REVAMP_MOUSE_ACCELERATION_DESCRIPTION},
+      {"cursorAccelerationLabel", IDS_SETTINGS_CURSOR_ACCELERATION_LABEL},
       {"mouseScrollAccelerationLabel",
        IDS_SETTINGS_MOUSE_SCROLL_ACCELERATION_LABEL},
       {"pointingStickAccelerationLabel",
        IDS_SETTINGS_POINTING_STICK_ACCELERATION_LABEL},
-      {"touchpadAccelerationLabel", IDS_SETTINGS_TOUCHPAD_ACCELERATION_LABEL},
+      {"touchpadAccelerationLabel",
+       kIsRevampEnabled ? IDS_OS_SETTINGS_REVAMP_TOUCHPAD_ACCELERATION_LABEL
+                        : IDS_SETTINGS_TOUCHPAD_ACCELERATION_LABEL},
+      {"touchpadAccelerationDescription",
+       IDS_OS_SETTINGS_REVAMP_TOUCHPAD_ACCELERATION_DESCRIPTION},
       {"touchpadHapticClickSensitivityLabel",
        IDS_SETTINGS_TOUCHPAD_HAPTIC_CLICK_SENSITIVITY_LABEL},
       {"touchpadHapticFeedbackTitle",
@@ -1760,10 +1829,8 @@ void DeviceSection::AddDevicePointersStrings(
        IDS_SETTINGS_TOUCHPAD_SIMULATE_RIGHT_CLICK_LABEL},
       {"touchpadSimulateRightClickOptionAlt",
        IDS_SETTINGS_TOUCHPAD_SIMULATE_RIGHT_CLICK_OPTION_ALT},
-      {"touchpadSimulateRightClickOptionOff",
-       IDS_SETTINGS_TOUCHPAD_SIMULATE_RIGHT_CLICK_OPTION_OFF},
-      {"touchpadSimulateRightClickOptionSearch",
-       IDS_SETTINGS_TOUCHPAD_SIMULATE_RIGHT_CLICK_OPTION_SEARCH},
+      {"touchpadSimulateRightClickOptionDisabled",
+       IDS_SETTINGS_TOUCHPAD_SIMULATE_RIGHT_CLICK_OPTION_DISABLED},
       {"learnMoreLabel", IDS_SETTINGS_LEARN_MORE_LABEL},
       {"modifierKeysLabel", IDS_SETTINGS_MODIFIER_KEYS_LABEL},
       {"otherKeysLabel", IDS_SETTINGS_OTHER_KEYS_LABEL},
@@ -1774,26 +1841,27 @@ void DeviceSection::AddDevicePointersStrings(
       {"sixPackKeyLabelPageUp", IDS_SETTINGS_SIX_PACK_KEY_PAGE_UP},
       {"sixPackKeyLabelPageDown", IDS_SETTINGS_SIX_PACK_KEY_PAGE_DOWN},
       {"sixPackKeyDeleteAlt", IDS_SETTINGS_SIX_PACK_KEY_DELETE_ALT},
-      {"sixPackKeyDeleteSearch", IDS_SETTINGS_SIX_PACK_KEY_DELETE_SEARCH},
       {"sixPackKeyHomeAlt", IDS_SETTINGS_SIX_PACK_KEY_HOME_ALT},
-      {"sixPackKeyHomeSearch", IDS_SETTINGS_SIX_PACK_KEY_HOME_SEARCH},
       {"sixPackKeyEndAlt", IDS_SETTINGS_SIX_PACK_KEY_END_ALT},
-      {"sixPackKeyEndSearch", IDS_SETTINGS_SIX_PACK_KEY_END_SEARCH},
       {"sixPackKeyPageUpAlt", IDS_SETTINGS_SIX_PACK_KEY_PAGE_UP_ALT},
-      {"sixPackKeyPageUpSearch", IDS_SETTINGS_SIX_PACK_KEY_PAGE_UP_SEARCH},
       {"sixPackKeyPageDownAlt", IDS_SETTINGS_SIX_PACK_KEY_PAGE_DOWN_ALT},
       {"sixPackKeyPageDownSearch", IDS_SETTINGS_SIX_PACK_KEY_PAGE_DOWN_SEARCH},
       {"sixPackKeyInsertSearch", IDS_SETTINGS_SIX_PACK_KEY_INSERT_SEARCH},
-      {"sixPackKeyOff", IDS_SETTINGS_SIX_PACK_KEY_OPTION_OFF},
+      {"sixPackKeyDisabled", IDS_SETTINGS_SIX_PACK_KEY_OPTION_DISABLED},
   };
   html_source->AddLocalizedStrings(kPointersStrings);
 
   html_source->AddString("naturalScrollLearnMoreLink",
                          GetHelpUrlWithBoard(chrome::kNaturalScrollHelpURL));
+  html_source->AddString(
+      "scrollAccelerationLearnMoreLink",
+      GetHelpUrlWithBoard(chrome::kScrollAccelerationHelpURL));
   html_source->AddString("hapticFeedbackLearnMoreLink",
                          GetHelpUrlWithBoard(chrome::kHapticFeedbackHelpURL));
 
   html_source->AddBoolean("allowScrollSettings", AreScrollSettingsAllowed());
+  html_source->AddBoolean("allowTouchpadScrollSettings",
+                          AreTouchpadScrollSettingsAllowed());
 }
 
 void DeviceSection::AddDeviceGraphicsTabletStrings(
@@ -1813,13 +1881,18 @@ void DeviceSection::AddCustomizeButtonsPageStrings(
   static constexpr webui::LocalizedString kCustomizeButtonsPageStrings[] = {
       {"customizeMouseButtonsTitle",
        IDS_SETTINGS_CUSTOMIZE_MOUSE_BUTTONS_TITLE},
+      {"keyCombinationOptionLabel", IDS_SETTINGS_KEY_COMBINATION_OPTION_LABEL},
+      {"noRemappingOptionLabel", IDS_SETTINGS_NO_REMAPPING_OPTION_LABEL},
   };
   html_source->AddLocalizedStrings(kCustomizeButtonsPageStrings);
 }
 
 void DeviceSection::AddDeviceDisplayStrings(
     content::WebUIDataSource* html_source) const {
-  static constexpr webui::LocalizedString kDisplayStrings[] = {
+  const bool kIsRevampEnabled =
+      ash::features::IsOsSettingsRevampWayfindingEnabled();
+
+  webui::LocalizedString kDisplayStrings[] = {
       {"displayAmbientColorTitle", IDS_SETTINGS_DISPLAY_AMBIENT_COLOR_TITLE},
       {"displayAmbientColorSubtitle",
        IDS_SETTINGS_DISPLAY_AMBIENT_COLOR_SUBTITLE},
@@ -1881,7 +1954,8 @@ void DeviceSection::AddDeviceDisplayStrings(
       {"displayScreenTitle", IDS_SETTINGS_DISPLAY_SCREEN},
       {"displaySizeSliderMaxLabel", IDS_SETTINGS_DISPLAY_ZOOM_SLIDER_MAXIMUM},
       {"displaySizeSliderMinLabel", IDS_SETTINGS_DISPLAY_ZOOM_SLIDER_MINIMUM},
-      {"displayTitle", IDS_SETTINGS_DISPLAY_TITLE},
+      {"displayTitle", kIsRevampEnabled ? IDS_OS_SETTINGS_REVAMP_DISPLAY_TITLE
+                                        : IDS_SETTINGS_DISPLAY_TITLE},
       {"displayTouchCalibrationText",
        IDS_SETTINGS_DISPLAY_TOUCH_CALIBRATION_TEXT},
       {"displayTouchCalibrationTitle",

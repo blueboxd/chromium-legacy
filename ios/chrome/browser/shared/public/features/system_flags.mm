@@ -21,26 +21,23 @@
 #import "ios/chrome/browser/flags/chrome_switches.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 namespace {
 
 NSString* const kAlternateDiscoverFeedServerURL =
     @"AlternateDiscoverFeedServerURL";
 NSString* const kEnableStartupCrash = @"EnableStartupCrash";
 NSString* const kFirstRunForceEnabled = @"FirstRunForceEnabled";
+NSString* const kUpgradePromoForceEnabled = @"UpgradePromoForceEnabled";
 NSString* const kOriginServerHost = @"AlternateOriginServerHost";
 NSString* const kWhatsNewPromoStatus = @"WhatsNewPromoStatus";
 NSString* const kClearApplicationGroup = @"ClearApplicationGroup";
 NSString* const kNextPromoForDisplayOverride = @"NextPromoForDisplayOverride";
 NSString* const kForceExperienceForDeviceSwitcherExperimentalSettings =
     @"ForceExperienceForDeviceSwitcher";
+NSString* const kSimulatePostDeviceRestore = @"SimulatePostDeviceRestore";
 BASE_FEATURE(kEnableThirdPartyKeyboardWorkaround,
              "EnableThirdPartyKeyboardWorkaround",
              base::FEATURE_ENABLED_BY_DEFAULT);
-NSString* const kForcePostRestoreState = @"ForcePostRestoreState";
 
 }  // namespace
 
@@ -49,6 +46,11 @@ namespace experimental_flags {
 bool AlwaysDisplayFirstRun() {
   return
       [[NSUserDefaults standardUserDefaults] boolForKey:kFirstRunForceEnabled];
+}
+
+bool AlwaysDisplayUpgradePromo() {
+  return [[NSUserDefaults standardUserDefaults]
+      boolForKey:kUpgradePromoForceEnabled];
 }
 
 NSString* GetOriginServerHost() {
@@ -161,9 +163,9 @@ std::string GetSegmentForForcedDeviceSwitcherExperience() {
   return segment;
 }
 
-bool IsPostDeviceRestoreForced() {
-  return
-      [[NSUserDefaults standardUserDefaults] boolForKey:kForcePostRestoreState];
+bool SimulatePostDeviceRestore() {
+  return [[NSUserDefaults standardUserDefaults]
+      boolForKey:kSimulatePostDeviceRestore];
 }
 
 }  // namespace experimental_flags

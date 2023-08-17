@@ -19,6 +19,7 @@
 
 class IOSChromeSafetyCheckManager;
 class PrefService;
+struct UpgradeRecommendedDetails;
 
 // All IOSChromeSafetyCheckManagerObserver events will be evaluated on the
 // same sequence the IOSChromeSafetyCheckManager is created on.
@@ -65,6 +66,7 @@ class IOSChromeSafetyCheckManager
  public:
   explicit IOSChromeSafetyCheckManager(
       PrefService* pref_service,
+      PrefService* local_pref_service,
       scoped_refptr<IOSChromePasswordCheckManager> password_check_manager,
       const scoped_refptr<base::SequencedTaskRunner> task_runner);
 
@@ -76,6 +78,20 @@ class IOSChromeSafetyCheckManager
 
   // KeyedService implementation.
   void Shutdown() override;
+
+  // Starts the Safety Check, which comprises starting
+  // the: [1] Safe Browsing check, [2] Update Chrome check, and [3] Passwords
+  // Check, and notifies any observers of the change.
+  //
+  // NOTE: If the Safety Check is already running, does nothing.
+  void StartSafetyCheck();
+
+  // Stops the currently running Safety Check, if any, which comprises stopping
+  // the: [1] Safe Browsing check, [2] Update Chrome check, and [3] Passwords
+  // Check, and notifies any observers of the change.
+  //
+  // NOTE: If the Safety Check is not currently running, does nothing.
+  void StopSafetyCheck();
 
   // IOSChromePasswordCheckManager::Observer implementation.
   void PasswordCheckStatusChanged(PasswordCheckState state) override;
@@ -93,7 +109,53 @@ class IOSChromeSafetyCheckManager
   // Returns the current state of the Password check.
   PasswordSafetyCheckState GetPasswordCheckState() const;
 
+  // Returns the current state of the Update Chrome check.
+  UpdateChromeSafetyCheckState GetUpdateChromeCheckState() const;
+
+  // Returns the App Store Chrome upgrade URL.
+  const GURL& GetChromeAppUpgradeUrl() const;
+
+  // Returns the next Chrome app version.
+  std::string GetChromeAppNextVersion() const;
+
+  // Returns all insecure credentials that are present, provided by the Password
+  // Check Manager.
+  std::vector<password_manager::CredentialUIEntry> GetInsecureCredentials()
+      const;
+
+  // Returns the time of the last Safety Check run, if ever.
+  base::Time GetLastSafetyCheckRunTime() const;
+
+  // For unit-testing only.
+  void StartOmahaCheckForTesting();
+  void HandleOmahaResponseForTesting(UpgradeRecommendedDetails details);
+  RunningSafetyCheckState GetRunningCheckStateForTesting() const;
+  void SetPasswordCheckStateForTesting(PasswordSafetyCheckState state);
+  void PasswordCheckStatusChangedForTesting(PasswordCheckState state);
+  void InsecureCredentialsChangedForTesting();
+  void RestorePreviousSafetyCheckStateForTesting();
+
  private:
+  // Restores the Safety Check Manager with the previous check states, if any,
+  // from Prefs.
+  void RestorePreviousSafetyCheckState();
+
+  // Starts the asynchronous Password check, and notifies any observers of the
+  // change.
+  void StartPasswordCheck();
+
+  // Stops the currently running Password check, if any, and notifies any
+  // observers of the change.
+  void StopPasswordCheck();
+
+  // Starts the asynchronous Update Chrome check, and notifies any observers of
+  // the change.
+  void StartUpdateChromeCheck();
+
+  // Stops the currently running Update Chrome check, if any, and notifies any
+  // observers of the change.
+  void StopUpdateChromeCheck();
+
   // Sets `safe_browsing_check_state_` to `state` and notifies any observers
   // of the change.
   void SetSafeBrowsingCheckState(SafeBrowsingSafetyCheckState state);
@@ -101,6 +163,10 @@ class IOSChromeSafetyCheckManager
   // Updates `password_check_state_` to `state` and notifies any observers
   // of the change.
   void SetPasswordCheckState(PasswordSafetyCheckState state);
+
+  // Updates `update_chrome_check_state_` to `state` and notifies any observers
+  // of the change.
+  void SetUpdateChromeCheckState(UpdateChromeSafetyCheckState state);
 
   // Converts `state` (`PasswordCheckState`) to type
   // `PasswordSafetyCheckState`, then calls
@@ -115,8 +181,74 @@ class IOSChromeSafetyCheckManager
   // credentials list may change while the Password check is currently running.
   void RefreshOutdatedPasswordCheckState();
 
-  // Called when a Safe Browsing pref value changes.
-  void OnSafeBrowsingPrefChanged();
+  // Reads the latest Safe Browsing values from Prefs, and updates the internal
+  // Safe Browsing check state.
+  void UpdateSafeBrowsingCheckState();
+
+  // Sets the app's upgrade details provided by the Omaha service.
+  void SetUpdateChromeDetails(GURL upgrade_url, std::string next_version);
+
+  // Starts an async request to the Omaha service for whether the current device
+  // is up to date.
+  //
+  // NOTE: The response from the Omaha service is handled by
+  // `HandleOmahaResponse()`.
+  void StartOmahaCheck();
+
+  // Ingests the Omaha response, `details`, to determine if the app is up to
+  // date.
+  //
+  // If the app is up-to-date, calls `SetUpdateChromeCheckState()` to reflect
+  // the new, updated state.
+  //
+  // If the app is outdated, sets `upgrade_url_` and `next_version_` to maintain
+  // the upgrade details.
+  void HandleOmahaResponse(UpgradeRecommendedDetails details);
+
+  // Checks if the Update Chrome check is still running after
+  // `kOmahaNetworkWaitTime` has elapsed. If so, considers this an Omaha
+  // error, and updates all relevant state to reflect the error. (If not, does
+  // nothing.)
+  //
+  // NOTE: This method is called `kOmahaNetworkWaitTime` after
+  // `StartOmahaCheck()`.
+  void HandleOmahaError();
+
+  // Checks if any checks are currently running. If so, sets
+  // `running_safety_check_state_` to the running state, and notifies any
+  // observers of the change.
+  void RefreshSafetyCheckRunningState();
+
+  // Logs the time of the current Safety Check run to Prefs.
+  void LogCurrentSafetyCheckRunTime();
+
+  // Current running state of the Safety Check. If any checks are currently
+  // running (e.g. Safe Browsing check, Update Chrome check, Passwords Check),
+  // then the Safety Check is considered to be running, too. For example:
+  //
+  //               (✓ = running, x = not running)
+  //
+  // +--------+----------+---------------+-------+--------------+
+  // | Update | Password | Safe Browsing |       | Safety Check |
+  // +--------+----------+---------------+-------+--------------+
+  // |    ✓   |     ✓    |       ✓       |   =   |       ✓      |
+  // +--------+----------+---------------+-------+--------------+
+  // |    x   |     ✓    |       ✓       |   =   |       ✓      |
+  // +--------+----------+---------------+-------+--------------+
+  // |    ✓   |     x    |       ✓       |   =   |       ✓      |
+  // +--------+----------+---------------+-------+--------------+
+  // |    ✓   |     ✓    |       x       |   =   |       ✓      |
+  // +--------+----------+---------------+-------+--------------+
+  // |    x   |     x    |       ✓       |   =   |       ✓      |
+  // +--------+----------+---------------+-------+--------------+
+  // |    ✓   |     x    |       x       |   =   |       ✓      |
+  // +--------+----------+---------------+-------+--------------+
+  // |    x   |     ✓    |       x       |   =   |       ✓      |
+  // +--------+----------+---------------+-------+--------------+
+  // |    x   |     x    |       x       |   =   |       x      |
+  // +--------+----------+---------------+-------+--------------+
+  RunningSafetyCheckState running_safety_check_state_ =
+      RunningSafetyCheckState::kDefault;
 
   // Current state of the Safe Browsing check.
   SafeBrowsingSafetyCheckState safe_browsing_check_state_ =
@@ -126,12 +258,65 @@ class IOSChromeSafetyCheckManager
   PasswordSafetyCheckState password_check_state_ =
       PasswordSafetyCheckState::kDefault;
 
+  // Previous state of the Password check. (Used as a fallback state, which
+  // enables users to cancel a currently running Password check.)
+  PasswordSafetyCheckState previous_password_check_state_ =
+      PasswordSafetyCheckState::kDefault;
+
+  // Current state of the Update Chrome check.
+  UpdateChromeSafetyCheckState update_chrome_check_state_ =
+      UpdateChromeSafetyCheckState::kDefault;
+
+  // Previous state of the Update Chrome check. (Used as a fallback state, which
+  // enables users to cancel a currently running Update Chrome check.)
+  UpdateChromeSafetyCheckState previous_update_chrome_check_state_ =
+      UpdateChromeSafetyCheckState::kDefault;
+
+  // The last time the Safety Check was run, if ever.
+  base::Time last_safety_check_run_time_;
+
+  // If `ignore_omaha_changes_` is true when either
+  // `HandleOmahaResponse()` or `HandleOmahaError()` are called, nothing
+  // happens. Effectively, this enables users to cancel a currently running
+  // Update Chrome check.
+  //
+  // NOTE: `ignore_omaha_changes_` is reset to false when the Safety Check is
+  // run again.
+  bool ignore_omaha_changes_ = false;
+
+  // If `ignore_password_check_changes_` is true when Password Check Manager
+  // observer methods are called, nothing happens. Effectively, this enables
+  // users to cancel a currently running Password check.
+  //
+  // NOTE: `ignore_password_check_changes_` is reset to false when the Safety
+  // Check is run again.
+  bool ignore_password_check_changes_ = false;
+
+  // The app upgrade URL generated by the Omaha service.
+  //
+  // NOTE: This may be an empty, invalid URL, which doesn't necessarily indicate
+  // an issue. Rather, an empty, invalid URL likely means the URL was never set
+  // because the app is already up to date.
+  GURL upgrade_url_;
+
+  // The app's next version generated by the Omaha service.
+  //
+  // NOTE: This may be empty, which doesn't necessarily indicate
+  // an issue. Rather, it likely means the next version was never set
+  // because the app is already up to date.
+  std::string next_version_;
+
   // Observers to listen to Safety Check changes.
   base::ObserverList<IOSChromeSafetyCheckManagerObserver> observers_;
 
   // Weak pointer to the pref service, which checks the user's Enhanced Safe
   // Browsing state.
   raw_ptr<PrefService> pref_service_;
+
+  // Weak pointer to the local-state pref service, which stores information
+  // about the latest Safety Check run (e.g. the results of each check, the
+  // timestamp of the run, etc.)
+  raw_ptr<PrefService> local_pref_service_;
 
   // Registrar for pref changes notifications.
   PrefChangeRegistrar pref_change_registrar_;

@@ -64,10 +64,6 @@
 #import "ios/public/provider/chrome/browser/branded_images/branded_images_api.h"
 #import "ui/base/l10n/l10n_util_mac.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 const char kCBDSignOutOfChromeURL[] = "settings://CBDSignOutOfChrome";
 
 namespace {
@@ -250,15 +246,10 @@ UIImage* SymbolForItemType(ClearBrowsingDataItemType itemType) {
   _timeRangePref.Destroy();
   _prefObserverBridge.reset();
   _prefChangeRegistrar.RemoveAll();
-  _browsingDataRemoverObserver.reset();
   _scoped_observation.reset();
+  _browsingDataRemoverObserver.reset();
   _countersByMasks.clear();
   _counterWrapperProducer = nil;
-}
-
-- (void)dealloc {
-  // TODO(crbug.com/1454777)
-  DUMP_WILL_BE_CHECK(!_counterWrapperProducer);
 }
 
 // Add items for types of browsing data to clear.
@@ -385,6 +376,7 @@ UIImage* SymbolForItemType(ClearBrowsingDataItemType itemType) {
       addItemWithTitle:l10n_util::GetNSString(IDS_IOS_CLEAR_BUTTON)
                 action:^{
                   [weakSelf clearDataForDataTypes:dataTypeMaskToRemove];
+                  [weakSelf.consumer dismissAlertCoordinator];
                 }
                  style:UIAlertActionStyleDestructive];
   return actionCoordinator;
@@ -418,11 +410,6 @@ UIImage* SymbolForItemType(ClearBrowsingDataItemType itemType) {
 
   syncer::SyncService* syncService = [self syncService];
   [self addSavedSiteDataSectionWithModel:model];
-
-  // If not syncing, no need to continue with profile syncing.
-  if (![self identityManager]->HasPrimaryAccount(signin::ConsentLevel::kSync)) {
-    return;
-  }
 
   history::WebHistoryService* historyService =
       ios::WebHistoryServiceFactory::GetForBrowserState(_browserState);

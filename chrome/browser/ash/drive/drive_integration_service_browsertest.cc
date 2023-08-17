@@ -6,11 +6,9 @@
 
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
-#include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/functional/bind.h"
 #include "base/run_loop.h"
 #include "base/test/bind.h"
 #include "base/test/gmock_callback_support.h"
@@ -24,6 +22,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chromeos/ash/components/drivefs/fake_drivefs.h"
 #include "chromeos/ash/components/drivefs/mojom/drivefs.mojom.h"
+#include "chromeos/ash/components/standalone_browser/feature_refs.h"
 #include "chromeos/components/drivefs/mojom/drivefs_native_messaging.mojom.h"
 #include "chromeos/crosapi/mojom/drive_integration_service.mojom.h"
 #include "components/drive/drive_pref_names.h"
@@ -35,7 +34,6 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "testing/gmock/include/gmock/gmock.h"
 
 namespace drive {
 
@@ -657,10 +655,7 @@ class DriveIntegrationServiceBrowserTestLacros
  protected:
   DriveIntegrationServiceBrowserTestLacros() {
     scoped_feature_list_.InitWithFeatures(
-        {ash::features::kLacrosSupport, ash::features::kLacrosPrimary,
-         ash::features::kLacrosOnly,
-         ash::features::kLacrosProfileMigrationForceOff},
-        {});
+        ash::standalone_browser::GetFeatureRefs(), {});
   }
 
   // browser() does not exist in Lacros, so get the profile from ProfileManager.

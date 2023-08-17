@@ -61,7 +61,6 @@ source_set("common") {
 
   if (is_mac) {
     sources += [ "it2me_confirmation_dialog_mac.mm" ]
-    configs += [ "//build/config/compiler:enable_arc" ]
   }
 
   if (is_win) {
@@ -114,6 +113,7 @@ source_set("common") {
     deps += [
       "//chromeos/ui/vector_icons",
       "//remoting/host/chromeos",
+      "//remoting/host/chromeos:features",
       "//remoting/host/chromeos:host_event_reporter_impl",
       "//ui/message_center",
       "//ui/message_center/public/cpp",

@@ -246,8 +246,10 @@ void PingRlzServer(std::string url,
 
   // Browser shutdown will cause the factory to be reset to NULL.
   // ShutdownCheck will catch this.
-  if (!url_loader_factory)
+  if (!url_loader_factory) {
+    event->SignalFetchComplete(-1, "");
     return;
+  }
 
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation("rlz_ping", R"(
@@ -279,6 +281,13 @@ void PingRlzServer(std::string url,
 
   auto url_loader = network::SimpleURLLoader::Create(
       std::move(resource_request), traffic_annotation);
+
+  constexpr int kMaxNetworkRetries = 3;
+  url_loader->SetRetryOptions(
+      kMaxNetworkRetries,
+      network::SimpleURLLoader::RetryMode::RETRY_ON_5XX |
+          network::SimpleURLLoader::RETRY_ON_NETWORK_CHANGE |
+          network::SimpleURLLoader::RETRY_ON_NAME_NOT_RESOLVED);
 
   // Pass ownership of the loader to the bound function. Otherwise the load will
   // be canceled when the SimpleURLLoader object is destroyed.
@@ -326,6 +335,7 @@ FinancialPing::PingResponse FinancialPing::PingServer(const char* request,
     return PING_FAILURE;
 
   if (event->GetResponseCode() == -1) {
+    send_financial_ping_interrupted_for_test = true;
     return PING_SHUTDOWN;
   } else if (event->GetResponseCode() != 200) {
     return PING_FAILURE;

@@ -34,6 +34,7 @@
 #include "ash/shelf/scrollable_shelf_view.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_layout_manager.h"
+#include "ash/shelf/shelf_test_util.h"
 #include "ash/shelf/shelf_view.h"
 #include "ash/shelf/shelf_view_test_api.h"
 #include "ash/shelf/shelf_widget.h"
@@ -157,6 +158,7 @@ namespace ash {
 namespace {
 
 using ::testing::ElementsAre;
+using ::testing::ElementsAreArray;
 using ::testing::ValuesIn;
 
 void NewDesk() {
@@ -287,7 +289,7 @@ class TestObserver : public DesksController::Observer {
   }
 
   // DesksController::Observer:
-  void OnDeskAdded(const Desk* desk) override {
+  void OnDeskAdded(const Desk* desk, bool from_undo) override {
     const size_t new_desk_index = DesksController::Get()->GetDeskIndex(desk);
     if (new_desk_index > desks_.size()) {
       desks_.emplace_back(desk);
@@ -389,6 +391,7 @@ struct DesksTestParams {
   bool use_touch_gestures = false;
   bool use_16_desks = false;
   bool enable_jellyroll = false;
+  bool per_desk_shelf = false;
 };
 
 // Defines a parameterized test fixture to test Virtual Desks behavior.
@@ -414,7 +417,8 @@ class DesksTest : public AshTestBase,
         {{features::kDeskButton, true},
          {features::kFeatureManagement16Desks, GetParam().use_16_desks},
          {chromeos::features::kJellyroll, GetParam().enable_jellyroll},
-         {chromeos::features::kJelly, GetParam().enable_jellyroll}});
+         {chromeos::features::kJelly, GetParam().enable_jellyroll},
+         {features::kPerDeskShelf, GetParam().per_desk_shelf}});
 
     AshTestBase::SetUp();
     SetVirtualKeyboardEnabled(true);
@@ -4158,6 +4162,10 @@ struct PerDeskZOrderTestCase {
   // this will push it to the front of the MRU list.
   std::vector<int> move_windows;
 
+  // Windows to move from the first display to the second. This can include both
+  // normal and adw windows.
+  std::vector<int> move_windows_to_other_display;
+
   // Windows to close while on the second desk. Can include any windows.
   std::vector<int> close_windows;
 
@@ -4204,6 +4212,11 @@ class DesksPerDeskZOrderTest : public AshTestBase {
         UpdateDisplay("700x600");
       }
 
+      // This is only used for multi-displays tests and will in those cases
+      // represent the secondary display.
+      display::Display secondary_display =
+          display::Screen::GetScreen()->GetAllDisplays().back();
+
       std::map<int, std::unique_ptr<aura::Window>> id_to_window;
       std::map<aura::Window*, int> window_to_id;
 
@@ -4220,12 +4233,13 @@ class DesksPerDeskZOrderTest : public AshTestBase {
               for (int id : window_ids) {
                 auto window =
                     CreateAppWindow(gfx::Rect(offset + id, 0 + id, 100, 100));
+                window->SetTitle(u"TestWindow" + base::NumberToString16(id));
                 window_to_id[window.get()] = id;
                 id_to_window[id] = std::move(window);
               }
               // Increment the offset to ensure that the window will be created
               // on the next root window.
-              offset += 700;
+              offset += secondary_display.bounds().x();
             }
           };
 
@@ -4268,10 +4282,14 @@ class DesksPerDeskZOrderTest : public AshTestBase {
 
             // Tests that `mirrored_layers` and `expected_windows` are sync'ed.
             ASSERT_EQ(expected_windows.size(), mirrored_layers.size());
+
+            std::vector<gfx::Rect> actual_bounds, expected_bounds;
             for (size_t i = 0; i < expected_windows.size(); i++) {
-              EXPECT_EQ(id_to_window[expected_windows[i]]->layer()->bounds(),
-                        mirrored_layers[i]->bounds());
+              expected_bounds.push_back(
+                  id_to_window[expected_windows[i]]->layer()->bounds());
+              actual_bounds.push_back(mirrored_layers[i]->bounds());
             }
+            EXPECT_THAT(actual_bounds, ElementsAreArray(expected_bounds));
 
             ToggleOverview();
           };
@@ -4282,8 +4300,6 @@ class DesksPerDeskZOrderTest : public AshTestBase {
       auto verify_windows = [&](Desk* desk, aura::Window* root,
                                 const std::vector<int>& expected_windows,
                                 const std::string& debug_info) {
-        SCOPED_TRACE("Verify " + base::UTF16ToUTF8(desk->name()) + " " +
-                     root->GetName() + " " + debug_info);
         aura::Window* container = desk->GetDeskContainerForRoot(root);
 
         // Collect any test windows present on the desk.
@@ -4295,8 +4311,9 @@ class DesksPerDeskZOrderTest : public AshTestBase {
           }
         }
 
-        ASSERT_EQ(expected_windows.size(), actual_windows.size());
-        EXPECT_EQ(expected_windows, actual_windows);
+        ASSERT_EQ(expected_windows, actual_windows)
+            << "Window mismatch " << debug_info << " on " << root->GetName()
+            << ":" << desk->name();
       };
 
       auto root_windows = Shell::GetAllRootWindows();
@@ -4306,7 +4323,7 @@ class DesksPerDeskZOrderTest : public AshTestBase {
       ActivateDesk(desk_2);
       for (size_t i = 0; i < root_windows.size(); i++) {
         verify_windows(desk_2, root_windows[i],
-                       test.expected_desk_2_windows_before[i], "before");
+                       test.expected_desk_2_windows_before[i], "before moving");
         verify_desk_preview_mirrored_layer_tree(
             desk_1, root_windows[i], test.expected_desk_1_windows_before[i],
             "before");
@@ -4324,6 +4341,16 @@ class DesksPerDeskZOrderTest : public AshTestBase {
             DesksMoveWindowFromActiveDeskSource::kShortcut));
       }
 
+      // Move specified windows to display 2.
+      for (int id : test.move_windows_to_other_display) {
+        const auto& window = id_to_window.at(id);
+        aura::Window* root_before_moving = window->GetRootWindow();
+        auto bounds = window->GetBoundsInScreen();
+        bounds.Offset(secondary_display.bounds().origin().x(), 0);
+        window->SetBoundsInScreen(bounds, secondary_display);
+        ASSERT_NE(root_before_moving, window->GetRootWindow());
+      }
+
       // Close specified windows.
       for (int id : test.close_windows) {
         auto it = id_to_window.find(id);
@@ -4335,7 +4362,7 @@ class DesksPerDeskZOrderTest : public AshTestBase {
       ActivateDesk(desk_1);
       for (size_t i = 0; i < root_windows.size(); i++) {
         verify_windows(desk_1, root_windows[i],
-                       test.expected_desk_1_windows_after[i], "after");
+                       test.expected_desk_1_windows_after[i], "after moving");
         verify_desk_preview_mirrored_layer_tree(
             desk_1, root_windows[i], test.expected_desk_1_windows_after[i],
             "after");
@@ -4347,8 +4374,13 @@ class DesksPerDeskZOrderTest : public AshTestBase {
       // Verify that the correct window is activated. This is particularly
       // important for when we have all desk windows and multiple displays.
       // Please refer to b/274110274.
-      EXPECT_EQ(id_to_window[test.expected_desk_1_final_active_window].get(),
-                window_util::GetActiveWindow());
+      int actual_active_window_id = -1;
+      auto active_window_it = window_to_id.find(window_util::GetActiveWindow());
+      if (active_window_it != window_to_id.end()) {
+        actual_active_window_id = active_window_it->second;
+      }
+      ASSERT_EQ(test.expected_desk_1_final_active_window,
+                actual_active_window_id);
     }
   }
 
@@ -4579,6 +4611,31 @@ TEST_F(DesksPerDeskZOrderTest, MultiDisplaySingleADW) {
        .expected_desk_1_windows_after = {{1, 5}, {4, 3, 2}},
        .expected_desk_2_windows_after = {{1}, {}},
        .expected_desk_1_final_active_window = 5},
+      {.test_name = "Multiple displays single adw 9",
+       .multi_display = true,
+       .desk_1_windows = {{}, {1, 2, 3}},
+       .desk_2_windows = {{}, {}},
+       .adw_windows = {1},
+       .expected_desk_1_windows_before = {{}, {1, 2, 3}},
+       .expected_desk_2_windows_before = {{}, {1}},
+       .move_windows = {},
+       .close_windows = {},
+       .expected_desk_1_windows_after = {{}, {1, 2, 3}},
+       .expected_desk_2_windows_after = {{}, {1}},
+       .expected_desk_1_final_active_window = 3},
+      {.test_name = "Multiple displays single adw 10",
+       .multi_display = true,
+       .desk_1_windows = {{1}, {2, 3, 4}},
+       .desk_2_windows = {{5}, {}},
+       .adw_windows = {4},
+       .activate_windows = {1, 4, 3, 2},
+       .expected_desk_1_windows_before = {{1}, {4, 3, 2}},
+       .expected_desk_2_windows_before = {{5}, {4}},
+       .move_windows = {},
+       .close_windows = {},
+       .expected_desk_1_windows_after = {{1}, {4, 3, 2}},
+       .expected_desk_2_windows_after = {{5}, {4}},
+       .expected_desk_1_final_active_window = 2},
   });
 }
 
@@ -4740,6 +4797,66 @@ TEST_F(DesksPerDeskZOrderTest, MultiDisplayMultipleADW) {
        .expected_desk_1_windows_after = {{2, 1}, {4, 3, 5}},
        .expected_desk_2_windows_after = {{1, 2}, {}},
        .expected_desk_1_final_active_window = 5},
+      {.test_name = "Multiple displays multiple adw on same root 4",
+       .multi_display = true,
+       .desk_1_windows = {{1}, {2, 3, 4}},
+       .desk_2_windows = {{5}, {}},
+       .adw_windows = {3, 4},
+       .activate_windows = {1, 2, 3, 4},
+       .expected_desk_1_windows_before = {{1}, {2, 3, 4}},
+       .expected_desk_2_windows_before = {{5}, {3, 4}},
+       .move_windows = {},
+       .close_windows = {},
+       .expected_desk_1_windows_after = {{1}, {2, 3, 4}},
+       .expected_desk_2_windows_after = {{5}, {3, 4}},
+       .expected_desk_1_final_active_window = 4},
+  });
+}
+
+TEST_F(DesksPerDeskZOrderTest, MultiDisplayMultipleAdwWithMoving) {
+  RunTests(std::vector<const PerDeskZOrderTestCase>{
+      {.test_name = "Multiple displays moving windows 1",
+       .multi_display = true,
+       .desk_1_windows = {{1}, {}},
+       .desk_2_windows = {{}, {}},
+       .adw_windows = {1},
+       .activate_windows = {1},
+       .expected_desk_1_windows_before = {{1}, {}},
+       .expected_desk_2_windows_before = {{1}, {}},
+       .move_windows = {},
+       .move_windows_to_other_display = {1},
+       .close_windows = {},
+       .expected_desk_1_windows_after = {{}, {1}},
+       .expected_desk_2_windows_after = {{}, {1}},
+       .expected_desk_1_final_active_window = 1},
+      {.test_name = "Multiple displays moving windows 2",
+       .multi_display = true,
+       .desk_1_windows = {{1, 2}, {}},
+       .desk_2_windows = {{}, {}},
+       .adw_windows = {1, 2},
+       .activate_windows = {1, 2},
+       .expected_desk_1_windows_before = {{1, 2}, {}},
+       .expected_desk_2_windows_before = {{1, 2}, {}},
+       .move_windows = {},
+       .move_windows_to_other_display = {1},
+       .close_windows = {},
+       .expected_desk_1_windows_after = {{2}, {1}},
+       .expected_desk_2_windows_after = {{2}, {1}},
+       .expected_desk_1_final_active_window = 1},
+      {.test_name = "Multiple displays moving windows 3",
+       .multi_display = true,
+       .desk_1_windows = {{1}, {2, 3, 4}},
+       .desk_2_windows = {{}, {}},
+       .adw_windows = {1, 4},
+       .activate_windows = {1, 2, 3},
+       .expected_desk_1_windows_before = {{1}, {4, 2, 3}},
+       .expected_desk_2_windows_before = {{1}, {4}},
+       .move_windows = {},
+       .move_windows_to_other_display = {1},
+       .close_windows = {},
+       .expected_desk_1_windows_after = {{}, {4, 2, 3, 1}},
+       .expected_desk_2_windows_after = {{}, {1, 4}},
+       .expected_desk_1_final_active_window = 1},
   });
 }
 
@@ -4778,10 +4895,12 @@ class DesksMultiUserTest : public NoSessionAshTestBase,
     // desks restore data before the user signs in.
     auto user_1_prefs = std::make_unique<TestingPrefServiceSimple>();
     user_1_prefs_ = user_1_prefs.get();
-    RegisterUserProfilePrefs(user_1_prefs_->registry(), /*for_test=*/true);
+    RegisterUserProfilePrefs(user_1_prefs_->registry(), /*country=*/"",
+                             /*for_test=*/true);
     auto user_2_prefs = std::make_unique<TestingPrefServiceSimple>();
     user_2_prefs_ = user_2_prefs.get();
-    RegisterUserProfilePrefs(user_2_prefs_->registry(), /*for_test=*/true);
+    RegisterUserProfilePrefs(user_2_prefs_->registry(), /*country=*/"",
+                             /*for_test=*/true);
     session_controller->AddUserSession(kUser1Email,
                                        user_manager::USER_TYPE_REGULAR,
                                        /*provide_pref_service=*/false);
@@ -5874,7 +5993,9 @@ TEST_P(PerDeskShelfTest, RemoveActiveDesk) {
   VerifyViewVisibility(app2, true);
 }
 
-TEST_P(PerDeskShelfTest, ShelfViewTransformUpdatedForScrollWhenSwitchingDesks) {
+// TODO(b/293869853): Fix and re-enable the test.
+TEST_P(PerDeskShelfTest,
+       DISABLED_ShelfViewTransformUpdatedForScrollWhenSwitchingDesks) {
   ScrollableShelfView* scrollable_shelf_view = GetPrimaryShelf()
                                                    ->shelf_widget()
                                                    ->hotseat_widget()
@@ -6743,6 +6864,31 @@ TEST_P(DesksTest, VisibleOnAllDesksWindowDestruction) {
   window.reset();
   EXPECT_EQ(0u, controller->visible_on_all_desks_windows().size());
   EXPECT_EQ(0u, desk_1->GetDeskContainerForRoot(root)->children().size());
+}
+
+// Tests that when a window that isn't on the currently active desk is made
+// visible on all desks, it is also moved to the active desk.
+TEST_P(DesksTest, VisibleOnAllDesksInactiveDesk) {
+  auto* controller = DesksController::Get();
+  auto window = CreateAppWindow(gfx::Rect(0, 0, 100, 100));
+  auto* widget = views::Widget::GetWidgetForNativeWindow(window.get());
+
+  NewDesk();
+  auto* desk1 = controller->GetDeskAtIndex(0);
+  auto* desk2 = controller->GetDeskAtIndex(1);
+
+  ActivateDesk(desk2);
+  ASSERT_FALSE(desk1->is_active());
+  ASSERT_TRUE(desk2->is_active());
+
+  // The test `window` should exist on the first desk.
+  ASSERT_THAT(desk1->windows(), ElementsAre(window.get()));
+  ASSERT_THAT(desk2->windows(), ElementsAre());
+
+  // Assign `window` to all desks, this should move it to the active desk.
+  widget->SetVisibleOnAllWorkspaces(true);
+  EXPECT_THAT(desk1->windows(), ElementsAre());
+  EXPECT_THAT(desk2->windows(), ElementsAre(window.get()));
 }
 
 // Tests that the desk bar exit animation would not cause any crash or UAF.
@@ -8411,17 +8557,16 @@ TEST_P(DesksCloseAllTest, HideCombineDesksOptionWhenNoWindowsOnDesk) {
   event_generator->MoveMouseTo(desk_preview_view_center);
   EXPECT_FALSE(combine_desks_button->GetVisible());
 
-  // We need to open the context menu to trigger state change for the combine
-  // desks option in the context menu.
+  // We need to open the context menu to trigger its creation.
   OpenContextMenuForMiniView(0);
-  EXPECT_FALSE(
-      DesksTestApi::GetContextMenuModelForDesk(DeskBarViewBase::Type::kOverview,
-                                               0)
-          .IsVisibleAt(DeskActionContextMenu::CommandId::kCombineDesks));
+  // If there are no windows, there should only be 1 option in the context menu.
+  EXPECT_EQ(1u, DesksTestApi::GetContextMenuModelForDesk(
+                    DeskBarViewBase::Type::kOverview, 0)
+                    .GetItemCount());
   event_generator->ClickLeftButton();
 
-  // Add a window and check to see if that makes the context option visible for
-  // the desk's action view.
+  // Add a window and check to see if that causes the creation of the context
+  // option for combining desks.
   auto window = CreateAppWindow();
   DesksController::Get()->SendToDeskAtIndex(window.get(), 0);
   EnterOverview();
@@ -8436,10 +8581,9 @@ TEST_P(DesksCloseAllTest, HideCombineDesksOptionWhenNoWindowsOnDesk) {
   event_generator->MoveMouseTo(desk_preview_view_center);
   EXPECT_TRUE(combine_desks_button->GetVisible());
   OpenContextMenuForMiniView(0);
-  EXPECT_TRUE(
-      DesksTestApi::GetContextMenuModelForDesk(DeskBarViewBase::Type::kOverview,
-                                               0)
-          .IsVisibleAt(DeskActionContextMenu::CommandId::kCombineDesks));
+  EXPECT_EQ(2u, DesksTestApi::GetContextMenuModelForDesk(
+                    DeskBarViewBase::Type::kOverview, 0)
+                    .GetItemCount());
 }
 
 // Tests that the shortcut to close all (Ctrl + Shift + W) on a desk mini view
@@ -10471,11 +10615,9 @@ TEST_P(DeskBarTest, MergeNonActiveDesk) {
   CloseDeskBar();
 }
 
-// Tests that the actions in the desk button desk bar are being correctly
-// recorded in their histograms.
+// Tests that the actions in the desk button and overview desk bars are being
+// correctly recorded in their histograms.
 TEST_P(DeskBarTest, DeskBarActionMetrics) {
-  NewDesk();
-  NewDesk();
   NewDesk();
 
   // Add a saved desk so that the library button can show up.
@@ -10489,59 +10631,85 @@ TEST_P(DeskBarTest, DeskBarActionMetrics) {
   // the combine desks button will not show.
   WindowHolder window(CreateAppWindow());
   auto* desks_controller = DesksController::Get();
-  desks_controller->SendToDeskAtIndex(window.window(), 3);
+  desks_controller->SendToDeskAtIndex(window.window(), 1);
+
+  OpenDeskBar();
+  auto* desk_bar_view = GetDeskBarView();
+
+  // Add new desk.
+  ClickOrPressOnView(GetExpandedStateInnerNewDeskButton(desk_bar_view));
+  histogram_tester.ExpectTotalCount(
+      bar_type_ == DeskBarViewBase::Type::kDeskButton
+          ? kDeskButtonDeskBarNewDeskHistogramName
+          : kOverviewDeskBarNewDeskHistogramName,
+      1);
+
+  // Set desk name.
+  PressAndReleaseKey(ui::VKEY_A, ui::EF_NONE);
+  PressAndReleaseKey(ui::VKEY_B, ui::EF_NONE);
+  PressAndReleaseKey(ui::VKEY_C, ui::EF_NONE);
+  PressAndReleaseKey(ui::VKEY_RETURN, ui::EF_NONE);
+  histogram_tester.ExpectTotalCount(
+      bar_type_ == DeskBarViewBase::Type::kDeskButton
+          ? kDeskButtonDeskBarRenameDeskHistogramName
+          : kOverviewDeskBarRenameDeskHistogramName,
+      1);
+
+  // Activate the third desk.
+  DeskSwitchAnimationWaiter waiter;
+  ClickOrPressOnView(desk_bar_view->mini_views()[2]->desk_preview());
+  waiter.Wait();
+  histogram_tester.ExpectTotalCount(
+      bar_type_ == DeskBarViewBase::Type::kDeskButton
+          ? kDeskButtonDeskBarActivateDeskHistogramName
+          : kOverviewDeskBarActivateDeskHistogramName,
+      1);
+
+  // Activating the desk should take us out of our desk bar, so we need a new
+  // one.
+  OpenDeskBar();
+  desk_bar_view = GetDeskBarView();
+
+  // Drag desk to reorder.
+  const auto& mini_views = desk_bar_view->mini_views();
+  auto* event_generator = GetEventGenerator();
+  StartDragDeskPreview(mini_views[0], event_generator);
+  EXPECT_TRUE(desk_bar_view->IsDraggingDesk());
+  event_generator->MoveMouseTo(
+      mini_views[2]->GetPreviewBoundsInScreen().CenterPoint());
+  event_generator->ReleaseLeftButton();
+  EXPECT_FALSE(desk_bar_view->IsDraggingDesk());
+  histogram_tester.ExpectTotalCount(
+      bar_type_ == DeskBarViewBase::Type::kDeskButton
+          ? kDeskButtonDeskBarReorderDeskHistogramName
+          : kOverviewDeskBarReorderDeskHistogramName,
+      1);
 
   auto* root_window = Shell::Get()->GetPrimaryRootWindow();
-  OpenDeskBar(root_window, DeskBarViewBase::Type::kDeskButton);
 
-  auto validate_actions = [&](DeskBarViewBase::Type bar_type) {
-    auto* desk_bar_view = GetDeskBarView(root_window, bar_type);
+  // Combine desks.
+  CloseDeskWithButton(/*index=*/0, /*close_all=*/false, root_window, bar_type_);
+  histogram_tester.ExpectTotalCount(
+      bar_type_ == DeskBarViewBase::Type::kDeskButton
+          ? kDeskButtonDeskBarCombineDesksHistogramName
+          : kOverviewDeskBarCombineDesksHistogramName,
+      1);
 
-    // Add new desk.
-    ClickOrPressOnView(GetExpandedStateInnerNewDeskButton(desk_bar_view));
-    histogram_tester.ExpectTotalCount(kDeskBarNewDeskHistogramName, 1);
+  // Close desk with windows.
+  CloseDeskWithButton(/*index=*/1, /*close_all=*/true, root_window, bar_type_);
+  histogram_tester.ExpectTotalCount(
+      bar_type_ == DeskBarViewBase::Type::kDeskButton
+          ? kDeskButtonDeskBarCloseDeskHistogramName
+          : kOverviewDeskBarCloseDeskHistogramName,
+      1);
 
-    // Set desk name.
-    PressAndReleaseKey(ui::VKEY_A, ui::EF_NONE);
-    PressAndReleaseKey(ui::VKEY_B, ui::EF_NONE);
-    PressAndReleaseKey(ui::VKEY_C, ui::EF_NONE);
-    PressAndReleaseKey(ui::VKEY_RETURN, ui::EF_NONE);
-    histogram_tester.ExpectTotalCount(kDeskBarRenameDeskHistogramName, 1);
-
-    // Drag desk to reorder.
-    const auto& mini_views = desk_bar_view->mini_views();
-    auto* event_generator = GetEventGenerator();
-    StartDragDeskPreview(mini_views[1], event_generator);
-    EXPECT_TRUE(desk_bar_view->IsDraggingDesk());
-    event_generator->MoveMouseTo(
-        mini_views[3]->GetPreviewBoundsInScreen().CenterPoint());
-    event_generator->ReleaseLeftButton();
-    EXPECT_FALSE(desk_bar_view->IsDraggingDesk());
-    histogram_tester.ExpectTotalCount(kDeskBarReorderDeskHistogramName, 1);
-
-    // Close desk with windows.
-    CloseDeskWithButton(/*index=*/1, /*close_all=*/true, root_window, bar_type);
-    histogram_tester.ExpectTotalCount(kDeskBarCloseDeskHistogramName, 1);
-
-    // Combine desks.
-    CloseDeskWithButton(/*index=*/1, /*close_all=*/false, root_window,
-                        bar_type);
-    histogram_tester.ExpectTotalCount(kDeskBarCombineDesksHistogramName, 1);
-
-    // Open library.
-    EnterLibrary(root_window, bar_type);
-    histogram_tester.ExpectTotalCount(kDeskBarOpenLibraryHistogramName, 1);
-  };
-
-  validate_actions(DeskBarViewBase::Type::kDeskButton);
-
-  // Make sure that histogram entries are not generated from the overview desk
-  // bar.
-  ExitOverview();
-  NewDesk();
-  desks_controller->SendToDeskAtIndex(window.window(), 3);
-  EnterOverview();
-  validate_actions(DeskBarViewBase::Type::kOverview);
+  // Open library.
+  EnterLibrary();
+  histogram_tester.ExpectTotalCount(
+      bar_type_ == DeskBarViewBase::Type::kDeskButton
+          ? kDeskButtonDeskBarOpenLibraryHistogramName
+          : kOverviewDeskBarOpenLibraryHistogramName,
+      1);
 }
 
 // Tests that metrics are correctly separated for desk switches between the
@@ -10632,6 +10800,13 @@ TEST_P(DeskBarTest, DeskCreationRemovalMetrics) {
           ? DesksCreationRemovalSource::kDeskButtonDeskBarButton
           : DesksCreationRemovalSource::kButton,
       2);
+}
+
+// Tests that setting to bottom locked shelf should not crash. Please refer to
+// b/293625099.
+TEST_P(DeskBarTest, BottomLockedShelf) {
+  OpenDeskBar();
+  GetPrimaryShelf()->SetAlignment(ShelfAlignment::kBottomLocked);
 }
 
 namespace {
@@ -10836,7 +11011,7 @@ TEST_P(DeskButtonTest, DeskButtonTextReflectsDeskChange) {
 
   GetEventGenerator()->MoveMouseTo(
       Shell::GetPrimaryRootWindow()->bounds().origin());
-  EXPECT_EQ(GetParam().alignment == ShelfAlignment::kBottom ? u"Desk 3" : u"D3",
+  EXPECT_EQ(GetParam().alignment == ShelfAlignment::kBottom ? u"Desk 3" : u"#3",
             desk_button->GetTextForTest());
 }
 
@@ -10850,7 +11025,7 @@ TEST_P(DeskButtonTest, DeskButtonTextWorksWithEmojis) {
   auto* desk_button = GetDeskButton();
   ASSERT_TRUE(desk_button);
   EXPECT_EQ(
-      GetParam().alignment == ShelfAlignment::kBottom ? u"😃emoji" : u"😃",
+      GetParam().alignment == ShelfAlignment::kBottom ? u"😃emoji" : u"#1",
       desk_button->GetTextForTest());
 }
 
@@ -10978,27 +11153,100 @@ TEST_P(DeskButtonTest, DeskButtonPressMetrics) {
   histogram_tester.ExpectTotalCount(kDeskButtonPressesHistogramName, 2);
 }
 
-// Tests that the desk button shows up in the correct position in RTL.
-TEST_P(DeskButtonTest, PositionInRTL) {
-  // Set the display size since this test tests the location of elements in the
-  // display.
-  UpdateDisplay("1200x800");
-
+// Tests that the desk button shows up in the correct position and layout
+// in RTL. The desk bar is laid out LTR in RTL mode so the desk button should be
+// too, ensuring that pressing the left chevron button moves activation to the
+// desk to the left in the desk bar.
+TEST_P(DeskButtonTest, LayoutInRTL) {
   // Turn on RTL mode.
   const bool default_rtl = base::i18n::IsRTL();
   base::i18n::SetRTLForTesting(true);
   EXPECT_TRUE(base::i18n::IsRTL());
 
-  auto* desk_button = GetDeskButton();
-  ASSERT_TRUE(desk_button);
+  // The test doesn't start in RTL so we need to tell the widget to swap the
+  // desk switch buttons because RTL was disabled in the constructor.
+  GetDeskButtonWidget()->HandleLocaleChange();
+  GetPrimaryShelf()->shelf_layout_manager()->LayoutShelf();
 
-  if (GetParam().alignment == ShelfAlignment::kBottom) {
-    EXPECT_EQ(gfx::Rect(494, 758, 96, 36), desk_button->GetBoundsInScreen());
-  } else if (GetParam().alignment == ShelfAlignment::kLeft) {
-    EXPECT_EQ(gfx::Rect(6, 354, 36, 36), desk_button->GetBoundsInScreen());
-  } else if (GetParam().alignment == ShelfAlignment::kRight) {
-    EXPECT_EQ(gfx::Rect(1158, 354, 36, 36), desk_button->GetBoundsInScreen());
+  // Set the display size since this test tests the location of elements in the
+  // display.
+  UpdateDisplay("1200x800");
+
+  // Add an app icon to the shelf.
+  SkBitmap app_bitmap;
+  app_bitmap.allocN32Pixels(1, 1);
+  app_bitmap.eraseColor(SK_ColorRED);
+  ShelfTestUtil::AddAppShortcutWithIcon(
+      "0", TYPE_PINNED_APP, gfx::ImageSkia::CreateFrom1xBitmap(app_bitmap));
+
+  // Navigate to the 2nd of 3 desks so both buttons should be visible.
+  NewDesk();
+  NewDesk();
+  ClickDeskSwitchButton(/*next=*/true);
+
+  auto* desk_button = GetDeskButton();
+  auto* event_generator = GetEventGenerator();
+  event_generator->MoveMouseTo(gfx::Point(600, 400));
+  ASSERT_TRUE(desk_button);
+  ASSERT_EQ(desk_button->is_expanded_for_test(),
+            GetParam().alignment == ShelfAlignment::kBottom);
+  ASSERT_FALSE(desk_button->is_hovered());
+  ASSERT_FALSE(desk_button->is_activated());
+
+  // The desk button should show up to the right of the shelf apps in horizontal
+  // and on top in vertical.
+  const gfx::Rect desk_button_bounds = desk_button->GetBoundsInScreen();
+  const gfx::Rect app_icon_bounds = GetPrimaryShelf()
+                                        ->hotseat_widget()
+                                        ->GetShelfView()
+                                        ->first_visible_button_for_testing()
+                                        ->GetBoundsInScreen();
+
+  switch (GetParam().alignment) {
+    case ShelfAlignment::kBottom:
+    case ShelfAlignment::kBottomLocked:
+      EXPECT_EQ(gfx::Rect(634, 758, 96, 36), desk_button_bounds);
+      EXPECT_LT(app_icon_bounds.x(), desk_button_bounds.x());
+      break;
+    case ShelfAlignment::kLeft:
+      EXPECT_EQ(gfx::Rect(6, 330, 36, 36), desk_button_bounds);
+      EXPECT_LT(desk_button_bounds.y(), app_icon_bounds.y());
+      break;
+    case ShelfAlignment::kRight:
+      EXPECT_EQ(gfx::Rect(1158, 330, 36, 36), desk_button_bounds);
+      EXPECT_LT(desk_button_bounds.y(), app_icon_bounds.y());
+      break;
   }
+
+  // Hover over the button to show the desk switch buttons.
+  event_generator->MoveMouseTo(desk_button_bounds.CenterPoint());
+  ASSERT_TRUE(desk_button->is_hovered());
+  auto* prev_desk_button = GetPrevDeskButton();
+  auto* next_desk_button = GetNextDeskButton();
+  ASSERT_TRUE(prev_desk_button->GetEnabled());
+  ASSERT_TRUE(next_desk_button->GetEnabled());
+
+  // The previous desk button should be to the left of the next desk button.
+  EXPECT_LT(prev_desk_button->GetBoundsInScreen().CenterPoint().x(),
+            next_desk_button->GetBoundsInScreen().CenterPoint().x());
+
+  // The previous desk button should be to the left of the desk button label,
+  // and the next desk button should be to the right of it.
+  gfx::Rect desk_name_label_bounds =
+      GetDeskButton()->desk_name_label_for_test()->GetBoundsInScreen();
+  EXPECT_LT(prev_desk_button->GetBoundsInScreen().CenterPoint().x(),
+            desk_name_label_bounds.CenterPoint().x());
+  EXPECT_LT(desk_name_label_bounds.CenterPoint().x(),
+            next_desk_button->GetBoundsInScreen().CenterPoint().x());
+
+  // Clicking the previous desk button should take us to desk 1, and clicking
+  // the next desk button twice should take us to desk 3.
+  auto* desks_controller = DesksController::Get();
+  ClickDeskSwitchButton(/*next=*/false);
+  EXPECT_EQ(0, desks_controller->GetActiveDeskIndex());
+  ClickDeskSwitchButton(/*next=*/true);
+  ClickDeskSwitchButton(/*next=*/true);
+  EXPECT_EQ(2, desks_controller->GetActiveDeskIndex());
 
   // Recover to default RTL mode.
   base::i18n::SetRTLForTesting(default_rtl);
@@ -11094,6 +11342,30 @@ TEST_P(DeskButtonTest, BarBoundsWithWorkAreaChangeDockedMagnifier) {
   EXPECT_EQ(bounds, expected_bounds);
 }
 
+TEST_P(DeskButtonTest, BarBoundsWithRTL) {
+  UpdateDisplay("800x600");
+
+  // Turn on RTL mode.
+  const bool default_rtl = base::i18n::IsRTL();
+  base::i18n::SetRTLForTesting(true);
+  ASSERT_TRUE(base::i18n::IsRTL());
+
+  OpenDeskBar();
+  gfx::Rect bounds = GetDeskBarView()->bounds();
+  if (GetParam().alignment == ShelfAlignment::kBottom) {
+    EXPECT_EQ(bounds, gfx::Rect(323, 0, 154, 98));
+  } else if (GetParam().alignment == ShelfAlignment::kLeft) {
+    EXPECT_EQ(bounds, gfx::Rect(590, 0, 154, 98));
+  } else {
+    EXPECT_EQ(bounds, gfx::Rect(0, 0, 154, 98));
+  }
+
+  CloseDeskBar();
+
+  // Recover to default RTL mode.
+  base::i18n::SetRTLForTesting(default_rtl);
+}
+
 // Tests that desk button tab order is correct in the shelf.
 TEST_P(DeskButtonTest, TabOrder) {
   NewDesk();
@@ -11143,8 +11415,9 @@ TEST_P(DeskButtonTest, TabOrder) {
 // Instantiate the parametrized tests.
 
 // This is used for tests that test all combinations of 8/16 desks, enabled /
-// disabled feature flag `Jellyroll` as well as clicks/touch.
-constexpr DesksTestParams kAllCombinations[] = {
+// disabled feature flag `Jellyroll` as well as clicks/touch. Additionally, some
+// combinations are tested with per-desk-shelf enabled.
+constexpr DesksTestParams kTestCombinations[] = {
     {.use_touch_gestures = false,
      .use_16_desks = false,
      .enable_jellyroll = false},
@@ -11169,6 +11442,11 @@ constexpr DesksTestParams kAllCombinations[] = {
     {.use_touch_gestures = true,
      .use_16_desks = true,
      .enable_jellyroll = true},
+    // Per-desk shelf enabled combinations.
+    // TODO(b/293951721): Enable once the current per-desk-shelf test failures
+    // have been sorted out.
+    // {.enable_jellyroll = false, .per_desk_shelf = true},
+    // {.enable_jellyroll = true, .per_desk_shelf = true},
 };
 
 // This is used for tests that only want to test 8/16 desks.
@@ -11177,30 +11455,109 @@ constexpr DesksTestParams kDeskCountOnly[] = {
     {.use_16_desks = true},
 };
 
+std::string GetDeskCountSuffix(bool use_16_desks) {
+  return use_16_desks ? "16Desks" : "8Desks";
+}
+
+std::string GetTestSuffix(const DesksTestParams& params) {
+  std::string use_touch = params.use_touch_gestures ? "Touch" : "Mouse";
+  std::string use_16 = GetDeskCountSuffix(params.use_16_desks);
+  std::string use_jelly = params.enable_jellyroll ? "Jelly" : "NoJelly";
+  std::string use_per_desk_shelf =
+      params.per_desk_shelf ? "PerDeskShelf" : "NoPerDeskShelf";
+  return base::StringPrintf("%s_%s_%s_%s", use_touch.c_str(), use_16.c_str(),
+                            use_jelly.c_str(), use_per_desk_shelf.c_str());
+}
+
+std::string GetDeskCountOnlyTestSuffix(
+    const testing::TestParamInfo<DesksTestParams>& info) {
+  return GetDeskCountSuffix(info.param.use_16_desks);
+}
+
 constexpr DeskButtonTestParams kDeskButtonTestParamCombinations[] = {
     {.alignment = ShelfAlignment::kBottom},
     {.alignment = ShelfAlignment::kLeft},
     {.alignment = ShelfAlignment::kRight}};
 
-INSTANTIATE_TEST_SUITE_P(All, DesksTest, ValuesIn(kAllCombinations));
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    DesksTest,
+    ValuesIn(kTestCombinations),
+    [](const testing::TestParamInfo<DesksTestParams>& info) {
+      return GetTestSuffix(info.param);
+    });
 
-INSTANTIATE_TEST_SUITE_P(All, DesksEditableNamesTest, ValuesIn(kDeskCountOnly));
-INSTANTIATE_TEST_SUITE_P(All, TabletModeDesksTest, ValuesIn(kDeskCountOnly));
-INSTANTIATE_TEST_SUITE_P(All, DesksAcceleratorsTest, ValuesIn(kDeskCountOnly));
-INSTANTIATE_TEST_SUITE_P(All, DesksMockTimeTest, ValuesIn(kDeskCountOnly));
-INSTANTIATE_TEST_SUITE_P(All, DesksCloseAllTest, ValuesIn(kDeskCountOnly));
-INSTANTIATE_TEST_SUITE_P(All, PerDeskShelfTest, ::testing::Bool());
+INSTANTIATE_TEST_SUITE_P(All,
+                         DesksEditableNamesTest,
+                         ValuesIn(kDeskCountOnly),
+                         GetDeskCountOnlyTestSuffix);
+INSTANTIATE_TEST_SUITE_P(All,
+                         TabletModeDesksTest,
+                         ValuesIn(kDeskCountOnly),
+                         GetDeskCountOnlyTestSuffix);
+INSTANTIATE_TEST_SUITE_P(All,
+                         DesksAcceleratorsTest,
+                         ValuesIn(kDeskCountOnly),
+                         GetDeskCountOnlyTestSuffix);
+INSTANTIATE_TEST_SUITE_P(All,
+                         DesksMockTimeTest,
+                         ValuesIn(kDeskCountOnly),
+                         GetDeskCountOnlyTestSuffix);
+INSTANTIATE_TEST_SUITE_P(All,
+                         DesksCloseAllTest,
+                         ValuesIn(kDeskCountOnly),
+                         GetDeskCountOnlyTestSuffix);
+INSTANTIATE_TEST_SUITE_P(All,
+                         PerDeskShelfTest,
+                         testing::Bool(),
+                         [](const testing::TestParamInfo<bool>& info) {
+                           return info.param ? "PerDeskShelfOn"
+                                             : "PerDeskShelfOff";
+                         });
 INSTANTIATE_TEST_SUITE_P(
     All,
     DeskBarTest,
-    testing::Combine(testing::Bool(),
-                     testing::Bool(),
-                     testing::Bool(),
+    testing::Combine(testing::Bool(),  // use touch gestures
+                     testing::Bool(),  // use 16 desks
+                     testing::Bool(),  // enable jelly
                      testing::Values(DeskBarViewBase::Type::kDeskButton,
-                                     DeskBarViewBase::Type::kOverview)));
-INSTANTIATE_TEST_SUITE_P(All,
-                         DeskButtonTest,
-                         ValuesIn(kDeskButtonTestParamCombinations));
+                                     DeskBarViewBase::Type::kOverview)),
+    [](const testing::TestParamInfo<DeskBarTest::ParamType>& info) {
+      DesksTestParams params;
+      DeskBarViewBase::Type bar_type;
+      std::tie(params.use_touch_gestures, params.use_16_desks,
+               params.enable_jellyroll, bar_type) = info.param;
+      std::string result = GetTestSuffix(params);
+      std::string bar_type_str;
+      switch (bar_type) {
+        case DeskBarViewBase::Type::kDeskButton:
+          bar_type_str = "DeskButtonBar";
+          break;
+        case DeskBarViewBase::Type::kOverview:
+          bar_type_str = "OverviewBar";
+          break;
+      }
+
+      return base::StringPrintf("%s_%s", result.c_str(), bar_type_str.c_str());
+    });
+
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    DeskButtonTest,
+    ValuesIn(kDeskButtonTestParamCombinations),
+    [](const testing::TestParamInfo<DeskButtonTestParams>& info) {
+      switch (info.param.alignment) {
+        case ShelfAlignment::kBottom:
+          return "ShelfBottom";
+        case ShelfAlignment::kLeft:
+          return "ShelfLeft";
+        case ShelfAlignment::kRight:
+          return "ShelfRight";
+        case ShelfAlignment::kBottomLocked:
+          NOTREACHED_NORETURN();
+          return "ShelfBottomLocked";
+      }
+    });
 
 }  // namespace
 

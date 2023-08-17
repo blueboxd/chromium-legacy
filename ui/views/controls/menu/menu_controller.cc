@@ -8,11 +8,13 @@
 #include <set>
 #include <utility>
 
+#include "base/callback_list.h"
 #include "base/containers/flat_set.h"
 #include "base/functional/bind.h"
 #include "base/i18n/case_conversion.h"
 #include "base/i18n/rtl.h"
 #include "base/memory/raw_ptr.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/single_thread_task_runner.h"
@@ -446,9 +448,7 @@ struct MenuController::MenuPart {
 
 class MenuController::MenuScrollTask {
  public:
-  MenuScrollTask() {
-    pixels_per_second_ = MenuItemView::pref_menu_height() * 20;
-  }
+  MenuScrollTask() = default;
 
   MenuScrollTask(const MenuScrollTask&) = delete;
   MenuScrollTask& operator=(const MenuScrollTask&) = delete;
@@ -458,19 +458,20 @@ class MenuController::MenuScrollTask {
       StopScrolling();
       return;
     }
-    DCHECK(part.submenu);
-    SubmenuView* new_menu = part.submenu;
-    bool new_is_up = part.type == MenuPartType::kScrollUp;
-    if (new_menu == submenu_ && is_scrolling_up_ == new_is_up)
+
+    SubmenuView* const new_menu = part.submenu;
+    CHECK(new_menu);
+    const bool new_is_up = part.type == MenuPartType::kScrollUp;
+    if (std::exchange(submenu_, new_menu) == new_menu &&
+        std::exchange(is_scrolling_up_, new_is_up) == new_is_up) {
       return;
+    }
 
     start_scroll_time_ = base::Time::Now();
-    start_y_ = part.submenu->GetVisibleBounds().y();
-    submenu_ = new_menu;
-    is_scrolling_up_ = new_is_up;
-
+    pixels_per_second_ = submenu_->GetPreferredItemHeight() * 20;
+    start_y_ = submenu_->GetVisibleBounds().y();
     if (!scrolling_timer_.IsRunning()) {
-      scrolling_timer_.Start(FROM_HERE, base::Milliseconds(30), this,
+      scrolling_timer_.Start(FROM_HERE, base::Hertz(60), this,
                              &MenuScrollTask::Run);
     }
   }
@@ -483,15 +484,15 @@ class MenuController::MenuScrollTask {
   }
 
   // The menu being scrolled. Returns null if not scrolling.
-  SubmenuView* submenu() const { return submenu_; }
+  const SubmenuView* submenu() const { return submenu_; }
 
  private:
   void Run() {
-    DCHECK(submenu_);
+    CHECK(submenu_);
     gfx::Rect vis_rect = submenu_->GetVisibleBounds();
-    const int delta_y = static_cast<int>(
-        (base::Time::Now() - start_scroll_time_).InMilliseconds() *
-        pixels_per_second_ / 1000);
+    const int delta_y =
+        base::ClampRound((base::Time::Now() - start_scroll_time_).InSecondsF() *
+                         pixels_per_second_);
     vis_rect.set_y(is_scrolling_up_
                        ? std::max(0, start_y_ - delta_y)
                        : std::min(submenu_->height() - vis_rect.height(),
@@ -1967,8 +1968,7 @@ bool MenuController::ShowSiblingMenu(SubmenuView* source,
                                   button->width(), button->height()),
                         anchor, state_.context_menu);
   alt_menu->PrepareForRun(
-      false, has_mnemonics,
-      source->GetMenuItem()->GetRootMenuItem()->show_mnemonics_);
+      has_mnemonics, source->GetMenuItem()->GetRootMenuItem()->show_mnemonics_);
   alt_menu->controller_ = AsWeakPtr();
   SetSelection(alt_menu, SELECTION_OPEN_SUBMENU | SELECTION_UPDATE_IMMEDIATELY);
   return true;
@@ -2182,13 +2182,8 @@ void MenuController::OpenMenuImpl(MenuItemView* item, bool show) {
   // TODO(oshima|sky): Don't show the menu if drag is in progress and
   // this menu doesn't support drag drop. See crbug.com/110495.
   if (show) {
-    size_t old_num_children = item->GetSubmenu()->children().size();
     item->GetDelegate()->WillShowMenu(item);
-    if (old_num_children != item->GetSubmenu()->children().size()) {
-      // If the number of children changed then we may need to add empty items.
-      item->RemoveEmptyMenus();
-      item->AddEmptyMenus();
-    }
+    item->UpdateEmptyMenusAndMetrics();
   }
   const MenuConfig& menu_config = MenuConfig::instance();
   const size_t menu_depth = MenuDepth(item);
@@ -2198,18 +2193,28 @@ void MenuController::OpenMenuImpl(MenuItemView* item, bool show) {
   // Anchor for calculated bounds. Can be alternatively used by a system
   // compositor for better positioning.
   ui::OwnedWindowAnchor anchor;
-  // While the Windows 11 style menus uses the same bubble border as "touch-
-  // style" menus, some positioning calculations are different. Testing for that
-  // condition separately will allow those subtle positioning differences to be
-  // taken into account within CalculateBubbleMenuBounds() and elsewhere.
-  gfx::Rect bounds =
+  bool calculate_as_bubble_menu =
       MenuItemView::IsBubble(state_.anchor) ||
-              (!IsCombobox() && menu_config.use_bubble_border &&
-               menu_config.CornerRadiusForMenu(this))
+      (menu_config.use_bubble_border && menu_config.CornerRadiusForMenu(this));
+  gfx::Rect bounds =
+      calculate_as_bubble_menu
           ? CalculateBubbleMenuBounds(item, preferred_open_direction,
                                       &resulting_direction, &anchor)
           : CalculateMenuBounds(item, preferred_open_direction,
                                 &resulting_direction, &anchor);
+
+  // TODO(crbug.com/1467321): Investigate why menu bounds can be zero. Remove
+  // the log when the crash is fixed.
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  CHECK(!bounds.size().IsEmpty())
+      << "Menu size must NOT be empty but it is " << bounds.ToString()
+      << " calculated as "
+      << (calculate_as_bubble_menu ? "bubble menu" : "menu")
+      << ". The item count is "
+      << static_cast<int>(item->GetSubmenu()->GetMenuItems().size())
+      << ". See crbug.com/1467321.";
+#endif
+
   SetChildMenuOpenDirectionAtDepth(menu_depth, resulting_direction);
   bool do_capture = (!did_capture_ && !for_drop_ && !IsEditableCombobox());
   showing_submenu_ = true;
@@ -2367,15 +2372,16 @@ gfx::Rect MenuController::CalculateMenuBounds(
   // Sets additional anchor parameters.
   SetAnchorParametersForItem(item, item_loc, anchor);
 
-  gfx::Rect menu_bounds =
-      gfx::Rect(submenu->GetScrollViewContainer()->GetPreferredSize());
+  const auto* const scroll_view_container = submenu->GetScrollViewContainer();
+  gfx::Rect menu_bounds = gfx::Rect(scroll_view_container->GetPreferredSize());
 
   const gfx::Rect& monitor_bounds = state_.monitor_bounds;
   const gfx::Rect& anchor_bounds = state_.initial_bounds;
 
   // For comboboxes, ensure the menu is at least as wide as the anchor.
-  if (IsCombobox())
+  if (IsCombobox()) {
     menu_bounds.set_width(std::max(menu_bounds.width(), anchor_bounds.width()));
+  }
 
   // Don't let the menu go too wide or too tall.
   menu_bounds.set_width(std::min(
@@ -2402,16 +2408,13 @@ gfx::Rect MenuController::CalculateMenuBounds(
     const bool create_on_right =
         layout_is_rtl ? preferred_open_direction == MenuOpenDirection::kTrailing
                       : preferred_open_direction == MenuOpenDirection::kLeading;
-    const int submenu_horizontal_inset = menu_config.submenu_horizontal_inset;
 
-    const int left_of_parent =
-        item_loc.x() - menu_bounds.width() + submenu_horizontal_inset;
+    const int left_of_parent = item_loc.x() - menu_bounds.width() +
+                               menu_config.submenu_horizontal_overlap;
     const int right_of_parent =
-        item_loc.x() + item->width() - submenu_horizontal_inset;
+        item_loc.x() + item->width() - menu_config.submenu_horizontal_overlap;
 
-    MenuScrollViewContainer* container =
-        item->GetParentMenuItem()->GetSubmenu()->GetScrollViewContainer();
-    menu_bounds.set_y(item_loc.y() - container->GetInsets().top());
+    menu_bounds.set_y(item_loc.y() - scroll_view_container->GetInsets().top());
 
     // Assume the menu can be placed in the preferred location.
     menu_bounds.set_x(create_on_right ? right_of_parent : left_of_parent);
@@ -2538,8 +2541,6 @@ gfx::Rect MenuController::CalculateBubbleMenuBounds(
   DCHECK(item);
   DCHECK(anchor);
 
-  const bool is_anchored_bubble = MenuItemView::IsBubble(state_.anchor);
-
   // TODO(msisov): Shall we also calculate anchor for bubble menus, which are
   // used by ash? If there is a need. Fix that.
   anchor->anchor_position = ui::OwnedWindowAnchorPosition::kTopLeft;
@@ -2551,49 +2552,44 @@ gfx::Rect MenuController::CalculateBubbleMenuBounds(
   *resulting_direction = preferred_open_direction;
 
   SubmenuView* submenu = item->GetSubmenu();
-  DCHECK(submenu);
+  CHECK(submenu);
+  const auto* const scroll_view_container = submenu->GetScrollViewContainer();
+  gfx::Size menu_size = scroll_view_container->GetPreferredSize();
+  // Respect the delegate's maximum width.
+  menu_size.set_width(std::min(menu_size.width(),
+                               item->GetDelegate()->GetMaxWidthForMenu(item)));
 
-  gfx::Size menu_size = submenu->GetScrollViewContainer()->GetPreferredSize();
+  // For comboboxes, ensure the menu is at least as wide as the anchor.
+  const gfx::Rect& anchor_bounds = state_.initial_bounds;
+  const gfx::Insets border_insets =
+      scroll_view_container->outside_border_insets();
+  if (IsCombobox()) {
+    menu_size.SetToMax({anchor_bounds.width() + border_insets.width(), 0});
+  }
+
   int x = 0;
   int y = 0;
-  const MenuConfig& menu_config = MenuConfig::instance();
-  // Shadow insets are built into MenuScrollView's preferred size so it must be
-  // compensated for when determining the bounds of touchable menus.
-  BubbleBorder::Shadow shadow_type = BubbleBorder::STANDARD_SHADOW;
-  int elevation = menu_config.touchable_menu_shadow_elevation;
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  if (use_ash_system_ui_layout_) {
-    shadow_type = BubbleBorder::CHROMEOS_SYSTEM_UI_SHADOW;
-    elevation = item->GetParentMenuItem()
-                    ? menu_config.touchable_submenu_shadow_elevation
-                    : menu_config.touchable_menu_shadow_elevation;
-  }
-#endif
-  const gfx::Insets border_and_shadow_insets =
-      BubbleBorder::GetBorderAndShadowInsets(elevation, shadow_type);
-
   const gfx::Rect& monitor_bounds = state_.monitor_bounds;
-
-  const bool is_bubble_menu =
-      menu_config.use_bubble_border && menu_config.CornerRadiusForMenu(this);
+  const MenuConfig& menu_config = MenuConfig::instance();
+  const int corner_radius = menu_config.CornerRadiusForMenu(this);
 
   if (!item->GetParentMenuItem()) {
     // This is a top-level menu, position it relative to the anchor bounds.
-    const gfx::Rect& anchor_bounds = state_.initial_bounds;
-
     using MenuPosition = MenuItemView::MenuPosition;
 
     // First the size gets reduced to the possible space.
+    const bool is_anchored_bubble = MenuItemView::IsBubble(state_.anchor);
     if (!monitor_bounds.IsEmpty()) {
       int max_width = monitor_bounds.width();
       int max_height = monitor_bounds.height();
       // In case of bubbles, the maximum width is limited by the space
       // between the display corner and the target area + the tip size.
+      const bool is_bubble_menu =
+          menu_config.use_bubble_border && corner_radius;
       if (is_anchored_bubble || is_bubble_menu ||
           item->actual_menu_position() == MenuPosition::kAboveBounds) {
-        // Don't consider |border_and_shadow_insets| because when the max size
-        // is enforced, the scroll view is shown and the md shadows are not
-        // applied.
+        // Don't consider `border_insets` because when the max size is enforced,
+        // the scroll view is shown and the md shadows are not applied.
         max_height =
             std::max(anchor_bounds.y() - monitor_bounds.y(),
                      monitor_bounds.bottom() - anchor_bounds.bottom()) -
@@ -2604,9 +2600,6 @@ gfx::Rect MenuController::CalculateBubbleMenuBounds(
       DCHECK_GE(max_height, kBubbleTipSizeTopBottom);
       menu_size.SetToMin(gfx::Size(max_width, max_height));
     }
-    // Respect the delegate's maximum width.
-    menu_size.set_width(std::min(
-        menu_size.width(), item->GetDelegate()->GetMaxWidthForMenu(item)));
 
     // Calculate possible coordinates. Do not clamp values; that happens later.
     int x_menu_on_left = 0;
@@ -2626,34 +2619,32 @@ gfx::Rect MenuController::CalculateBubbleMenuBounds(
                          (state_.anchor == MenuAnchorPosition::kBottomCenter
                               ? menu_size.width() / 2
                               : menu_size.width()) +
-                         border_and_shadow_insets.right();
+                         border_insets.right();
         // Align the left edges of the menu and anchor.
-        x_menu_on_right = anchor_bounds.x() - border_and_shadow_insets.left();
+        x_menu_on_right = anchor_bounds.x() - border_insets.left();
         // Align the bottom of the menu with the top of the anchor.
         y_menu_above =
-            anchor_bounds.y() - menu_size.height() +
-            border_and_shadow_insets.bottom() -
+            anchor_bounds.y() - menu_size.height() + border_insets.bottom() -
             (is_anchored_bubble ? menu_config.touchable_anchor_offset : 0);
         // Align the top of the menu with the bottom of the anchor.
         y_menu_below =
-            anchor_bounds.bottom() - border_and_shadow_insets.top() +
+            anchor_bounds.bottom() - border_insets.top() +
             (is_anchored_bubble ? menu_config.touchable_anchor_offset : 0);
         break;
       case MenuAnchorPosition::kBubbleLeft:
       case MenuAnchorPosition::kBubbleRight:
         // Align the right edge of the menu with the left edge of the anchor.
         x_menu_on_left = anchor_bounds.x() - menu_size.width() +
-                         border_and_shadow_insets.right() -
+                         border_insets.right() -
                          menu_config.touchable_anchor_offset;
         // Align the left edge of the menu with the right edge of the anchor.
-        x_menu_on_right = anchor_bounds.right() -
-                          border_and_shadow_insets.left() +
+        x_menu_on_right = anchor_bounds.right() - border_insets.left() +
                           menu_config.touchable_anchor_offset;
         // Align the bottom of the menu with the bottom of the anchor.
         y_menu_above = anchor_bounds.bottom() - menu_size.height() +
-                       border_and_shadow_insets.bottom();
+                       border_insets.bottom();
         // Align the top of the menu with the top of the anchor.
-        y_menu_below = anchor_bounds.y() - border_and_shadow_insets.top();
+        y_menu_below = anchor_bounds.y() - border_insets.top();
         break;
     }
 
@@ -2727,12 +2718,12 @@ gfx::Rect MenuController::CalculateBubbleMenuBounds(
 
     // The above adjustments may have shifted a large menu off the screen.
     // Clamp the menu origin to the valid range.
-    const int x_min = monitor_bounds.x() - border_and_shadow_insets.left();
-    const int x_max = monitor_bounds.right() - menu_size.width() +
-                      border_and_shadow_insets.right();
-    const int y_min = monitor_bounds.y() - border_and_shadow_insets.top();
-    const int y_max = monitor_bounds.bottom() - menu_size.height() +
-                      border_and_shadow_insets.bottom();
+    const int x_min = monitor_bounds.x() - border_insets.left();
+    const int x_max =
+        monitor_bounds.right() - menu_size.width() + border_insets.right();
+    const int y_min = monitor_bounds.y() - border_insets.top();
+    const int y_max =
+        monitor_bounds.bottom() - menu_size.height() + border_insets.bottom();
     DCHECK_LE(x_min, x_max);
     DCHECK_LE(y_min, y_max);
     x = std::clamp(x, x_min, x_max);
@@ -2747,19 +2738,13 @@ gfx::Rect MenuController::CalculateBubbleMenuBounds(
             ? preferred_open_direction == MenuOpenDirection::kTrailing
             : preferred_open_direction == MenuOpenDirection::kLeading;
 
-    // Don't let the menu get too wide if bubble menus are on.
-    if (is_bubble_menu) {
-      menu_size.set_width(std::min(
-          menu_size.width(), item->GetDelegate()->GetMaxWidthForMenu(item)));
-    }
-
     const int width_with_right_inset =
-        is_bubble_menu ? (menu_size.width() - border_and_shadow_insets.right())
-                       : (menu_config.touchable_menu_min_width +
-                          border_and_shadow_insets.right());
+        menu_size.width() - border_insets.right();
     const int x_max = monitor_bounds.right() - width_with_right_inset;
-    const int x_left = item_bounds.x() - width_with_right_inset;
-    const int x_right = item_bounds.right() - border_and_shadow_insets.left();
+    const int x_left = item_bounds.x() - width_with_right_inset +
+                       menu_config.submenu_horizontal_overlap;
+    const int x_right = item_bounds.right() - border_insets.left() -
+                        menu_config.submenu_horizontal_overlap;
     if (create_on_right) {
       x = x_right;
       if (monitor_bounds.width() == 0 || x_right <= x_max) {
@@ -2792,17 +2777,16 @@ gfx::Rect MenuController::CalculateBubbleMenuBounds(
 
     // Make sure the menu doesn't exceed the monitor bounds while cancelling
     // out the border and shadow at the top and bottom.
-    menu_size.set_height(
-        std::min(menu_size.height(),
-                 monitor_bounds.height() + border_and_shadow_insets.height()));
-    y = item_bounds.y() - border_and_shadow_insets.top() -
-        (is_bubble_menu ? 0 : menu_config.vertical_touchable_menu_item_padding);
-    auto y_min = monitor_bounds.y() - border_and_shadow_insets.top();
-    auto y_max = is_bubble_menu ? monitor_bounds.bottom() +
-                                      border_and_shadow_insets.bottom() -
-                                      menu_size.height()
-                                : monitor_bounds.bottom() - menu_size.height() +
-                                      border_and_shadow_insets.top();
+    menu_size.set_height(std::min(
+        menu_size.height(), monitor_bounds.height() + border_insets.height()));
+    y = item_bounds.y() - border_insets.top() -
+        (use_ash_system_ui_layout_
+             ? menu_config.vertical_touchable_menu_item_padding
+             : menu_config.rounded_menu_vertical_border_size.value_or(
+                   corner_radius));
+    auto y_min = monitor_bounds.y() - border_insets.top();
+    auto y_max =
+        monitor_bounds.bottom() + border_insets.bottom() - menu_size.height();
     y = std::clamp(y, y_min, y_max);
   }
 
@@ -3504,28 +3488,30 @@ void MenuController::SetAnchorParametersForItem(MenuItemView* item,
   }
 }
 
-MenuController::AnnotationCallbackHandle MenuController::SetAnnotationCallback(
+base::CallbackListSubscription MenuController::AddAnnotationCallback(
     AnnotationCallback callback) {
-  // TODO(dfried): change this so multiple annotations can be supported.
-  // This check avoids a potential race/UAF situation.
-  CHECK(!annotation_callback_)
-      << "Only one annotation callback allowed at a time.";
-  return AnnotationCallbackHandle(
-      AsWeakPtr(), &MenuController::annotation_callback_, callback);
+  return annotation_callbacks_.Add(base::BindRepeating(
+      [](AnnotationCallback callback, bool& result,
+         const ui::LocatedEvent& event) {
+        if (result) {
+          // A different annotation has already handled this event.
+          return;
+        }
+        result = callback.Run(event);
+      },
+      std::move(callback)));
 }
 
 bool MenuController::MaybeForwardToAnnotation(SubmenuView* source,
                                               const ui::LocatedEvent& event) {
-  if (!annotation_callback_) {
-    return false;
-  }
-
   const std::unique_ptr<ui::Event> cloned = event.Clone();
   auto* located = static_cast<ui::LocatedEvent*>(cloned.get());
   const gfx::Point screen_loc = View::ConvertPointToScreen(
       source->GetScrollViewContainer(), event.location());
   located->set_root_location(screen_loc);
-  return annotation_callback_.Run(*located);
+  bool result = false;
+  annotation_callbacks_.Notify(result, *located);
+  return result;
 }
 
 bool MenuController::CanProcessInputEvents() const {

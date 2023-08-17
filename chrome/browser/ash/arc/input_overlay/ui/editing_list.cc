@@ -45,6 +45,40 @@ EditingList::~EditingList() {
   controller_->RemoveTouchInjectorObserver(this);
 }
 
+bool EditingList::OnMousePressed(const ui::MouseEvent& event) {
+  OnDragStart(event);
+  return true;
+}
+
+bool EditingList::OnMouseDragged(const ui::MouseEvent& event) {
+  OnDragUpdate(event);
+  return true;
+}
+
+void EditingList::OnMouseReleased(const ui::MouseEvent& event) {
+  OnDragEnd(event);
+}
+
+void EditingList::OnGestureEvent(ui::GestureEvent* event) {
+  switch (event->type()) {
+    case ui::ET_GESTURE_SCROLL_BEGIN:
+      OnDragStart(*event);
+      event->SetHandled();
+      break;
+    case ui::ET_GESTURE_SCROLL_UPDATE:
+      OnDragUpdate(*event);
+      event->SetHandled();
+      break;
+    case ui::ET_GESTURE_SCROLL_END:
+    case ui::ET_SCROLL_FLING_START:
+      OnDragEnd(*event);
+      event->SetHandled();
+      break;
+    default:
+      return;
+  }
+}
+
 void EditingList::Init() {
   SetUseDefaultFillLayout(true);
 
@@ -136,12 +170,7 @@ void EditingList::AddZeroStateContent() {
       content_container->AddChildView(std::make_unique<views::ImageView>());
   zero_banner->SetImage(
       ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
-          // TODO(b/270969479): Replace the image once the lottie json is
-          // ready.
-          IDS_ARC_INPUT_OVERLAY_ONBOARDING_ILLUSTRATION_DARK_JSON));
-  // TODO(b/270969479): The size will be removed once the right lottie json is
-  // added.
-  zero_banner->SetImageSize(gfx::Size(92, 92));
+          IDS_ARC_INPUT_OVERLAY_ZERO_STATE_ILLUSTRATION_JSON));
   zero_banner->SetProperty(views::kMarginsKey, gfx::Insets::TLBR(0, 0, 32, 0));
   content_container->AddChildView(ash::bubble_utils::CreateLabel(
       ash::TypographyToken::kCrosBody2,
@@ -162,7 +191,7 @@ void EditingList::AddControlListContent() {
   // | ---------------------- |
   // | ......                 |
   // --------------------------
-  // TODO(b/270969479): Wrap |scroll_content| in a scroll view.
+  // TODO(b/270969479): Wrap `scroll_content` in a scroll view.
   DCHECK(controller_);
   DCHECK(scroll_content_);
   for (const auto& action : controller_->touch_injector()->actions()) {
@@ -248,6 +277,31 @@ void EditingList::OnActionNameUpdated(const Action& action) {
       break;
     }
   }
+}
+
+void EditingList::OnDragStart(const ui::LocatedEvent& event) {
+  start_drag_event_pos_ = event.location();
+  start_drag_pos_ = origin();
+  window_bounds_ = controller_->GetEditingListWidgetBoundsInRootWindow();
+}
+
+void EditingList::OnDragUpdate(const ui::LocatedEvent& event) {
+  auto target_position = origin() + (event.location() - start_drag_event_pos_);
+  ClampPosition(target_position);
+  SetPosition(target_position);
+}
+
+void EditingList::OnDragEnd(const ui::LocatedEvent& event) {
+  auto reposition_delta = origin() - start_drag_pos_;
+  controller_->UpdateEditingListWidgetPosition(reposition_delta);
+  SetPosition(gfx::Point(0, 0));
+}
+
+void EditingList::ClampPosition(gfx::Point& position) {
+  position.set_x(std::clamp(position.x(), window_bounds_.x(),
+                            window_bounds_.right() - width()));
+  position.set_y(std::clamp(position.y(), window_bounds_.y(),
+                            window_bounds_.bottom() - height()));
 }
 
 }  // namespace arc::input_overlay

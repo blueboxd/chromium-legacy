@@ -132,10 +132,8 @@ missing_new_fields,chrome/browser/preloading/prefetch/search_prefetch/search_pre
 missing_new_fields,chrome/browser/profile_resetter/brandcode_config_fetcher.cc
 missing_new_fields,chrome/browser/profile_resetter/reset_report_uploader.cc
 missing_new_fields,chrome/browser/profiles/profile_avatar_downloader.cc
-missing_new_fields,chrome/browser/profiles/profile_downloader.cc
 missing_new_fields,chrome/browser/renderer_context_menu/render_view_context_menu.cc
 missing_new_fields,chrome/browser/safe_browsing/chrome_enterprise_url_lookup_service.cc
-missing_new_fields,chrome/browser/safe_browsing/cloud_content_scanning/cloud_binary_upload_service.cc
 missing_new_fields,chrome/browser/safe_browsing/download_protection/check_client_download_request_base.cc
 missing_new_fields,chrome/browser/safe_browsing/download_protection/download_feedback.cc
 missing_new_fields,chrome/browser/safe_browsing/download_protection/ppapi_download_request.cc
@@ -152,7 +150,6 @@ missing_new_fields,chrome/browser/supervised_user/supervised_user_service.cc
 missing_new_fields,chrome/browser/sync_file_system/drive_backend/sync_engine.cc
 missing_new_fields,chrome/browser/ui/ash/ambient/ambient_client_impl.cc
 missing_new_fields,chrome/browser/ui/ash/assistant/search_and_assistant_enabled_checker.cc
-missing_new_fields,chrome/browser/ui/ash/calendar/calendar_keyed_service.cc
 missing_new_fields,chrome/browser/ui/commerce/price_tracking/shopping_list_ui_tab_helper.cc
 missing_new_fields,chrome/browser/ui/global_media_controls/cast_media_notification_item.cc
 missing_new_fields,chrome/browser/ui/omnibox/chrome_omnibox_navigation_observer.cc
@@ -179,7 +176,6 @@ missing_new_fields,chromeos/ash/components/login/auth/recovery/cryptohome_recove
 missing_new_fields,chromeos/ash/components/timezone/timezone_request.cc
 missing_new_fields,chromeos/components/quick_answers/result_loader.cc
 missing_new_fields,components/assist_ranker/ranker_url_fetcher.cc
-missing_new_fields,components/autofill/core/browser/autofill_download_manager.cc
 missing_new_fields,components/autofill/core/browser/payments/payments_client.cc
 missing_new_fields,components/captive_portal/content/captive_portal_service.cc
 missing_new_fields,components/commerce/core/account_checker.cc
@@ -319,7 +315,6 @@ missing_new_fields,remoting/base/telemetry_log_writer.cc
 missing_new_fields,remoting/client/notification/notification_client.cc
 missing_new_fields,remoting/host/heartbeat_sender.cc
 missing_new_fields,remoting/host/security_key/security_key_socket.cc
-missing_new_fields,remoting/protocol/remoting_ice_config_request.cc
 missing_new_fields,remoting/protocol/ssl_hmac_channel_authenticator.cc
 missing_new_fields,remoting/protocol/stream_message_pipe_adapter.cc
 missing_new_fields,remoting/protocol/stream_packet_socket.cc

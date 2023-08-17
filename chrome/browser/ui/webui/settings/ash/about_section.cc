@@ -17,8 +17,8 @@
 #include "chrome/browser/ash/policy/core/browser_policy_connector_ash.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
+#include "chrome/browser/enterprise/browser_management/management_service_factory.h"
 #include "chrome/browser/obsolete_system/obsolete_system.h"
-#include "chrome/browser/policy/management_utils.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/ui/webui/management/management_ui.h"
 #include "chrome/browser/ui/webui/settings/about_handler.h"
@@ -32,6 +32,7 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/dbus/constants/dbus_switches.h"
+#include "components/policy/core/common/management/management_service.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/tribool.h"
@@ -244,15 +245,26 @@ AboutSection::AboutSection(Profile* profile,
 AboutSection::~AboutSection() = default;
 
 void AboutSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
+  const bool kIsRevampEnabled =
+      ash::features::IsOsSettingsRevampWayfindingEnabled();
+
   // Top level About page strings.
-  static constexpr webui::LocalizedString kLocalizedStrings[] = {
+  webui::LocalizedString kLocalizedStrings[] = {
     {"aboutProductLogoAlt", IDS_SHORT_PRODUCT_LOGO_ALT_TEXT},
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
     {"aboutReportAnIssue", IDS_SETTINGS_ABOUT_PAGE_REPORT_AN_ISSUE},
     {"aboutSendFeedback", IDS_SETTINGS_ABOUT_PAGE_SEND_FEEDBACK},
+    {"aboutSendFeedbackDescription",
+     IDS_OS_SETTINGS_REVAMP_SEND_FEEDBACK_DESCRIPTION},
 #endif
     {"aboutDiagnostics", IDS_SETTINGS_ABOUT_PAGE_DIAGNOSTICS},
+    {"aboutDiagnosticseDescription",
+     IDS_OS_SETTINGS_REVAMP_DIAGNOSTICS_DESCRIPTION},
     {"aboutFirmwareUpdates", IDS_SETTINGS_ABOUT_PAGE_FIRMWARE_UPDATES},
+    {"aboutFirmwareUpToDateDescription",
+     IDS_OS_SETTINGS_REVAMP_FIRMWARE_UP_TO_DATE_DESCRIPTION},
+    {"aboutFirmwareUpdateAvailableDescription",
+     IDS_OS_SETTINGS_REVAMP_FIRMWARE_UPDATE_AVAILABLE_DESCRIPTION},
     {"aboutRelaunch", IDS_SETTINGS_ABOUT_PAGE_RELAUNCH},
     {"aboutUpgradeCheckStarted", IDS_SETTINGS_ABOUT_UPGRADE_CHECK_STARTED},
     {"aboutUpgradeNotUpToDate", IDS_SETTINGS_UPGRADE_NOT_UP_TO_DATE},
@@ -350,10 +362,16 @@ void AboutSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
     {"isEnterpriseManagedTitle",
      IDS_OS_SETTINGS_ABOUT_PAGE_ENTERPRISE_ENNROLLED_TITLE},
     {"aboutOsPageTitle", IDS_SETTINGS_ABOUT_OS},
-    {"aboutGetHelpUsingChromeOs", IDS_SETTINGS_GET_HELP_USING_CHROME_OS},
+    {"aboutGetHelpUsingChromeOs",
+     kIsRevampEnabled ? IDS_OS_SETTINGS_REVAMP_GET_HELP_USING_CHROME_OS
+                      : IDS_SETTINGS_GET_HELP_USING_CHROME_OS},
+    {"aboutGetHelpDescription",
+     IDS_OS_SETTINGS_REVAMP_GET_HELP_USING_CHROME_OS_DESCRIPTION},
     {"aboutOsProductTitle", IDS_PRODUCT_OS_NAME},
     {"aboutReleaseNotesOffline", IDS_SETTINGS_ABOUT_PAGE_RELEASE_NOTES},
     {"aboutShowReleaseNotes", IDS_SETTINGS_ABOUT_PAGE_SHOW_RELEASE_NOTES},
+    {"aboutShowReleaseNotesDescription",
+     IDS_OS_SETTINGS_REVAMP_ABOUT_PAGE_SHOW_RELEASE_NOTES_DESCRIPTION},
     {"aboutManagedEndOfLifeSubtitle",
      IDS_SETTINGS_ABOUT_PAGE_MANAGED_END_OF_LIFE_SUBTITLE},
     {"aboutUpgradeTryAgain", IDS_SETTINGS_UPGRADE_TRY_AGAIN},
@@ -389,7 +407,8 @@ void AboutSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
   html_source->AddString("deviceManager", GetDeviceManager());
 
   if (user_manager::UserManager::IsInitialized()) {
-    bool is_enterprise_managed = policy::IsDeviceEnterpriseManaged();
+    bool is_enterprise_managed =
+        policy::ManagementServiceFactory::GetForPlatform()->IsManaged();
     user_manager::UserManager* user_manager = user_manager::UserManager::Get();
     bool is_current_owner = user_manager->IsCurrentUserOwner();
 
@@ -430,8 +449,9 @@ void AboutSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
       base::ASCIIToUTF16(chrome::kChromeUICrostiniCreditsURL));
   html_source->AddString("aboutProductOsWithLinuxLicense",
                          os_with_linux_license);
-  html_source->AddBoolean("aboutEnterpriseManaged",
-                          policy::IsDeviceEnterpriseManaged());
+  html_source->AddBoolean(
+      "aboutEnterpriseManaged",
+      policy::ManagementServiceFactory::GetForPlatform()->IsManaged());
   html_source->AddBoolean("aboutIsArcEnabled",
                           arc::IsArcPlayStoreEnabledForProfile(profile()));
   html_source->AddBoolean("aboutIsDeveloperMode",
@@ -501,7 +521,7 @@ mojom::SearchResultIcon AboutSection::GetSectionIcon() const {
   return mojom::SearchResultIcon::kChrome;
 }
 
-std::string AboutSection::GetSectionPath() const {
+const char* AboutSection::GetSectionPath() const {
   return mojom::kAboutChromeOsSectionPath;
 }
 

@@ -13,3 +13,14 @@
 <div id="header">
   <div id="description">[[selectedTablet.name]]</div>
 </div>
+<div class="subsection">
+  <template is="dom-repeat"
+      items="[[selectedTablet.settings.penButtonRemappings]]"
+      index-as="index">
+    <customize-button-row
+        button-remapping-list="[[selectedTablet.settings.penButtonRemappings]]"
+        remapping-index="[[index]]"
+        action-list$="[[buttonActionList_]]">
+    </customize-button-row>
+  </template>
+</div>

@@ -12,7 +12,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "base/allocator/early_zone_registration_mac.h"
+#include "base/allocator/early_zone_registration_apple.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -25,10 +25,6 @@
 #include "chrome/common/chrome_switches.h"
 #import "chrome/common/mac/app_mode_chrome_locator.h"
 #include "chrome/common/mac/app_mode_common.h"
-
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
 
 namespace {
 

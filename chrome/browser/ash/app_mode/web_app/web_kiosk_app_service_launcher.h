@@ -56,7 +56,7 @@ class WebKioskAppServiceLauncher : public KioskAppLauncher {
   void LaunchApp() override;
 
  private:
-  // |KioskAppServiceLauncher| callbacks.
+  // `KioskAppServiceLauncher` callbacks.
   void OnWebAppInitialized();
   void NotifyAppPrepared(const absl::optional<web_app::AppId>& app_id);
   void OnAppLaunched(bool success);
@@ -80,7 +80,7 @@ class WebKioskAppServiceLauncher : public KioskAppLauncher {
   KioskAppLauncher::ObserverList observers_;
 
   std::unique_ptr<chromeos::WebKioskAppInstaller> app_installer_;
-  std::unique_ptr<KioskAppServiceLauncher> app_service_launcher_;
+  std::unique_ptr<chromeos::KioskAppServiceLauncher> app_service_launcher_;
 
   base::WeakPtrFactory<WebKioskAppServiceLauncher> weak_ptr_factory_{this};
 };

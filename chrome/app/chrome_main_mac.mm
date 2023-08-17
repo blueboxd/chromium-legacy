@@ -20,10 +20,6 @@
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 void SetUpBundleOverrides() {
   @autoreleasepool {
     base::apple::SetOverrideFrameworkBundlePath(
@@ -38,7 +34,9 @@ void SetUpBundleOverrides() {
 
     // On the Mac, the child executable lives at a predefined location within
     // the app bundle's versioned directory.
-    base::PathService::Override(content::CHILD_PROCESS_EXE, child_exe_path);
+    base::PathService::OverrideAndCreateIfNeeded(
+        content::CHILD_PROCESS_EXE, child_exe_path, /*is_absolute=*/true,
+        /*create=*/false);
   }
 }
 

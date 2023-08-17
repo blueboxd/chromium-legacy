@@ -44,6 +44,8 @@ build_webui("build") {
     "images/privacy_guide/horizon_graphic.svg",
     "images/privacy_guide/msbb_graphic_dark_v2.svg",
     "images/privacy_guide/msbb_graphic_v2.svg",
+    "images/privacy_guide/search_suggestions_graphic.svg",
+    "images/privacy_guide/search_suggestions_graphic_dark.svg",
     "images/privacy_guide/privacy_sandbox_graphic_dark.svg",
     "images/privacy_guide/privacy_sandbox_graphic.svg",
     "images/privacy_guide/promo_banner_dark.svg",
@@ -128,6 +130,7 @@ build_webui("build") {
     "privacy_page/privacy_guide/privacy_guide_page.ts",
     "privacy_page/privacy_guide/privacy_guide_promo.ts",
     "privacy_page/privacy_guide/privacy_guide_safe_browsing_fragment.ts",
+    "privacy_page/privacy_guide/privacy_guide_search_suggestions_fragment.ts",
     "privacy_page/privacy_guide/privacy_guide_welcome_fragment.ts",
     "privacy_page/privacy_guide/step_indicator.ts",
     "privacy_page/privacy_page.ts",
@@ -160,8 +163,11 @@ build_webui("build") {
     "safety_check_page/safety_check_safe_browsing_child.ts",
     "safety_check_page/safety_check_unused_site_permissions.ts",
     "safety_check_page/safety_check_updates_child.ts",
+    "safety_hub/safety_hub_card.ts",
+    "safety_hub/safety_hub_entry_point.ts",
     "safety_hub/safety_hub_module.ts",
     "safety_hub/safety_hub_page.ts",
+    "safety_hub/unused_site_permissions_module.ts",
     "search_engines_page/omnibox_extension_entry.ts",
     "search_engines_page/search_engine_edit_dialog.ts",
     "search_engines_page/search_engine_entry.ts",
@@ -201,6 +207,9 @@ build_webui("build") {
     "site_settings/site_entry.ts",
     "site_settings/site_list_entry.ts",
     "site_settings/site_list.ts",
+    "site_settings/storage_access_static_site_list_entry.ts",
+    "site_settings/storage_access_site_list_entry.ts",
+    "site_settings/storage_access_site_list.ts",
     "site_settings/zoom_levels.ts",
   ]
 
@@ -372,6 +381,7 @@ build_webui("build") {
   ts_deps = [
     "//chrome/browser/resources/settings_shared:build_ts",
     "//third_party/polymer/v3_0:library",
+    "//ui/webui/resources/cr_components/customize_color_scheme_mode:build_ts",
     "//ui/webui/resources/cr_components/help_bubble:build_ts",
     "//ui/webui/resources/cr_components/localized_link:build_ts",
     "//ui/webui/resources/cr_components/managed_dialog:build_ts",
@@ -382,8 +392,10 @@ build_webui("build") {
   ]
 
   if (!is_chromeos_ash) {
-    ts_deps +=
-        [ "//ui/webui/resources/cr_components/customize_themes:build_ts" ]
+    ts_deps += [
+      "//ui/webui/resources/cr_components/customize_themes:build_ts",
+      "//ui/webui/resources/cr_components/theme_color_picker:build_ts",
+    ]
   } else {
     ts_deps += [ "//ash/webui/common/resources:build_ts" ]
   }

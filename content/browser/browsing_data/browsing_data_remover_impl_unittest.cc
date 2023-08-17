@@ -61,6 +61,7 @@
 #include "storage/browser/test/mock_special_storage_policy.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "url/origin.h"
@@ -1751,7 +1752,9 @@ TEST_F(BrowsingDataRemoverImplTest, DeferCookieDeletion) {
       StoragePartition::REMOVE_DATA_MASK_SERVICE_WORKERS |
       StoragePartition::REMOVE_DATA_MASK_CACHE_STORAGE |
       StoragePartition::REMOVE_DATA_MASK_BACKGROUND_FETCH |
-      StoragePartition::REMOVE_DATA_MASK_INDEXEDDB;
+      StoragePartition::REMOVE_DATA_MASK_INDEXEDDB |
+      // TODO(crbug.com/1434517): remove.
+      StoragePartition::REMOVE_DATA_MASK_MEDIA_LICENSES;
   uint32_t dom_storage_and_cookie_mask =
       dom_storage_mask | StoragePartition::REMOVE_DATA_MASK_INTEREST_GROUPS |
       StoragePartition::REMOVE_DATA_MASK_COOKIES;
@@ -1854,7 +1857,7 @@ TEST_F(BrowsingDataRemoverImplTest, RemoveStorageBucketsAndReply) {
           StoragePartitionConfig::CreateDefault(&browser_context),
           &storage_partition);
       remover.RemoveStorageBucketsAndReply(
-          storage_key, buckets,
+          absl::nullopt, storage_key, buckets,
           base::BindOnce(&TestObserver::OnBrowsingDataRemoverDone,
                          base::Unretained(this), 0));
     }

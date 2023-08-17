@@ -209,7 +209,7 @@ public class ChromeBrowserInitializer {
         ThreadUtils.assertOnUiThread();
         if (mPreInflationStartupComplete) return;
 
-        new Thread(SafeBrowsingApiBridge::ensureInitialized).start();
+        new Thread(SafeBrowsingApiBridge::ensureSafetyNetApiInitialized).start();
 
         // Ensure critical files are available, so they aren't blocked on the file-system
         // behind long-running accesses in next phase.
@@ -467,7 +467,7 @@ public class ChromeBrowserInitializer {
 
     /**
      * For unit testing of clients.
-     * @param initializer The (dummy or mocked) initializer to use.
+     * @param initializer The (placeholder or mocked) initializer to use.
      */
     public static void setForTesting(ChromeBrowserInitializer initializer) {
         var oldValue = sChromeBrowserInitializer;
@@ -477,7 +477,7 @@ public class ChromeBrowserInitializer {
 
     /**
      * Set {@link BrowserStartupController ) to use for unit testing.
-     * @param controller The (dummy or mocked) {@link BrowserStartupController) instance.
+     * @param controller The (placeholder or mocked) {@link BrowserStartupController) instance.
      */
     public static void setBrowserStartupControllerForTesting(BrowserStartupController controller) {
         var oldValue = sBrowserStartupController;

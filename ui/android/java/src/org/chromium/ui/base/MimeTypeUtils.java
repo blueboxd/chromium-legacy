@@ -20,6 +20,21 @@ import java.lang.annotation.RetentionPolicy;
  */
 public class MimeTypeUtils {
     /**
+     * The MIME type for a plain text objects dragged from Chrome.
+     */
+    public static final String CHROME_MIMETYPE_TEXT = "chrome/text";
+
+    /**
+     * The MIME type for a link objects dragged from Chrome.
+     */
+    public static final String CHROME_MIMETYPE_LINK = "chrome/link";
+
+    /**
+     * The MIME type for text.
+     */
+    public static final String TEXT_MIME_TYPE = "text/plain";
+
+    /**
      * A set of known mime types.
      */
     // Note: these values must match the AndroidUtilsMimeTypes enum in enums.xml.

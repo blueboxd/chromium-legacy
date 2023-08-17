@@ -784,12 +784,13 @@ scoped_refptr<StaticBitmapImage> WebGLRenderingContextBase::GetImage(
   const auto image_info =
       SkImageInfo::Make(SkISize::Make(size.width(), size.height()),
                         CanvasRenderingContextSkColorInfo());
+  constexpr auto kShouldInitialize =
+      CanvasResourceProvider::ShouldInitialize::kNo;
   std::unique_ptr<CanvasResourceProvider> resource_provider =
       CanvasResourceProvider::CreateSharedImageProvider(
-          image_info, GetDrawingBuffer()->FilterQuality(),
-          CanvasResourceProvider::ShouldInitialize::kNo,
+          image_info, GetDrawingBuffer()->FilterQuality(), kShouldInitialize,
           SharedGpuContext::ContextProviderWrapper(), RasterMode::kGPU,
-          is_origin_top_left_, gpu::SHARED_IMAGE_USAGE_DISPLAY_READ);
+          gpu::SHARED_IMAGE_USAGE_DISPLAY_READ);
   if (!resource_provider || !resource_provider->IsValid()) {
     resource_provider = CanvasResourceProvider::CreateBitmapProvider(
         image_info, GetDrawingBuffer()->FilterQuality(),
@@ -2158,23 +2159,13 @@ void WebGLRenderingContextBase::bindTexture(GLenum target,
     }
     texture_units_[active_texture_unit_].texture_video_image_binding_ = texture;
   } else if (target == GL_TEXTURE_EXTERNAL_OES) {
-    if (!ExtensionEnabled(kWebGLWebCodecsVideoFrameName)) {
-      SynthesizeGLError(
-          GL_INVALID_ENUM, "bindTexture",
-          "unhandled type, WEBGL_webcodecs_video_frame extension not enabled");
-      return;
-    }
-    texture_units_[active_texture_unit_].texture_external_oes_binding_ =
-        texture;
+    SynthesizeGLError(GL_INVALID_ENUM, "bindTexture",
+                      "GL_TEXTURE_EXTERNAL_OES textures not supported");
+    return;
   } else if (target == GL_TEXTURE_RECTANGLE_ARB) {
-    if (!ExtensionEnabled(kWebGLWebCodecsVideoFrameName)) {
-      SynthesizeGLError(
-          GL_INVALID_ENUM, "bindTexture",
-          "unhandled type, WEBGL_webcodecs_video_frame extension not enabled");
-      return;
-    }
-    texture_units_[active_texture_unit_].texture_rectangle_arb_binding_ =
-        texture;
+    SynthesizeGLError(GL_INVALID_ENUM, "bindTexture",
+                      "GL_TEXTURE_RECTANGLE_ARB textures not supported");
+    return;
   } else {
     SynthesizeGLError(GL_INVALID_ENUM, "bindTexture", "invalid target");
     return;
@@ -6092,7 +6083,7 @@ void WebGLRenderingContextBase::TexImageHelperHTMLVideoElement(
     return;
 
   // This is enforced by ValidateHTMLVideoElement(), but DCHECK to be sure.
-  DCHECK(!WouldTaintOrigin(video));
+  DCHECK(!WouldTaintCanvasOrigin(video));
   TexImageHelperMediaVideoFrame(params, texture, std::move(media_video_frame),
                                 video_renderer);
 }
@@ -7748,24 +7739,6 @@ WebGLTexture* WebGLRenderingContextBase::ValidateTextureBinding(
       tex = texture_units_[active_texture_unit_]
                 .texture_video_image_binding_.Get();
       break;
-    case GL_TEXTURE_EXTERNAL_OES:
-      if (!ExtensionEnabled(kWebGLWebCodecsVideoFrameName)) {
-        SynthesizeGLError(GL_INVALID_ENUM, function_name,
-                          "invalid texture target");
-        return nullptr;
-      }
-      tex = texture_units_[active_texture_unit_]
-                .texture_external_oes_binding_.Get();
-      break;
-    case GL_TEXTURE_RECTANGLE_ARB:
-      if (!ExtensionEnabled(kWebGLWebCodecsVideoFrameName)) {
-        SynthesizeGLError(GL_INVALID_ENUM, function_name,
-                          "invalid texture target");
-        return nullptr;
-      }
-      tex = texture_units_[active_texture_unit_]
-                .texture_rectangle_arb_binding_.Get();
-      break;
     default:
       SynthesizeGLError(GL_INVALID_ENUM, function_name,
                         "invalid texture target");
@@ -8509,7 +8482,7 @@ bool WebGLRenderingContextBase::ValidateHTMLImageElement(
     return false;
   }
 
-  if (WouldTaintOrigin(image)) {
+  if (WouldTaintCanvasOrigin(image)) {
     exception_state.ThrowSecurityError(
         "The image element contains cross-origin data, and may not be loaded.");
     return false;
@@ -8527,7 +8500,7 @@ bool WebGLRenderingContextBase::ValidateCanvasRenderingContextHost(
     return false;
   }
 
-  if (WouldTaintOrigin(context_host)) {
+  if (WouldTaintCanvasOrigin(context_host)) {
     exception_state.ThrowSecurityError("Tainted canvases may not be loaded.");
     return false;
   }
@@ -8544,7 +8517,7 @@ bool WebGLRenderingContextBase::ValidateHTMLVideoElement(
     return false;
   }
 
-  if (WouldTaintOrigin(video)) {
+  if (WouldTaintCanvasOrigin(video)) {
     exception_state.ThrowSecurityError(
         "The video element contains cross-origin data, and may not be loaded.");
     return false;

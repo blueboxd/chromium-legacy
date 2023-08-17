@@ -9,6 +9,8 @@
 #include <utility>
 
 #include "base/check_op.h"
+#include "base/containers/contains.h"
+#include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "base/notreached.h"
 #include "base/ranges/algorithm.h"
@@ -21,6 +23,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/strings/grit/components_strings.h"
 #include "device/fido/discoverable_credential_metadata.h"
+#include "device/fido/features.h"
 #include "device/fido/fido_types.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -1287,6 +1290,35 @@ std::u16string AuthenticatorQRSheetModel::GetStepDescription() const {
   }
 }
 
+bool AuthenticatorQRSheetModel::ShowSecurityKeyLabel() const {
+  return base::FeatureList::IsEnabled(device::kWebAuthnNewPasskeyUI) &&
+         base::Contains(
+             dialog_model()->transport_availability()->available_transports,
+             device::FidoTransportProtocol::kUsbHumanInterfaceDevice);
+}
+
+std::u16string AuthenticatorQRSheetModel::GetSecurityKeyLabel() const {
+  // TODO(crbug.com/1459273): i18n.
+  switch (dialog_model()->transport_availability()->request_type) {
+    case device::FidoRequestType::kMakeCredential:
+      return u"If you want to create passkey for " +
+             base::UTF8ToUTF16(dialog_model()->relying_party_id()) +
+             u" on a hardware security key, insert and touch it now "
+             u"(UNTRANSLATED)";
+    case device::FidoRequestType::kGetAssertion:
+      return u"If your passkey for " +
+             base::UTF8ToUTF16(dialog_model()->relying_party_id()) +
+             u" is on a hardware security key, insert and touch it now "
+             u"(UNTRANSLATED)";
+  }
+}
+
+std::u16string AuthenticatorQRSheetModel::GetOtherMechanismButtonLabel() const {
+  return base::FeatureList::IsEnabled(device::kWebAuthnNewPasskeyUI)
+             ? u"Back (UNTRANSLATED)"
+             : l10n_util::GetStringUTF16(IDS_WEBAUTHN_USE_A_DIFFERENT_DEVICE);
+}
+
 // AuthenticatorConnectingSheetModel ------------------------------------------
 
 AuthenticatorConnectingSheetModel::AuthenticatorConnectingSheetModel(
@@ -1454,6 +1486,8 @@ void AuthenticatorPhoneConfirmationSheet::OnAccept() {
   dialog_model()->ContactPriorityPhone();
 }
 
+// AuthenticatorMultiSourcePickerSheetModel --------------------------------
+
 AuthenticatorMultiSourcePickerSheetModel::
     AuthenticatorMultiSourcePickerSheetModel(
         AuthenticatorRequestDialogModel* dialog_model)
@@ -1517,4 +1551,45 @@ std::u16string AuthenticatorMultiSourcePickerSheetModel::GetStepTitle() const {
 std::u16string AuthenticatorMultiSourcePickerSheetModel::GetStepDescription()
     const {
   return u"";
+}
+
+// AuthenticatorPriorityMechanismSheetModel --------------------------------
+
+AuthenticatorPriorityMechanismSheetModel::
+    AuthenticatorPriorityMechanismSheetModel(
+        AuthenticatorRequestDialogModel* dialog_model)
+    : AuthenticatorSheetModelBase(dialog_model,
+                                  OtherMechanismButtonVisibility::kVisible) {
+  vector_illustrations_.emplace(kPasskeyHeaderIcon, kPasskeyHeaderDarkIcon);
+}
+AuthenticatorPriorityMechanismSheetModel::
+    ~AuthenticatorPriorityMechanismSheetModel() = default;
+
+std::u16string AuthenticatorPriorityMechanismSheetModel::GetStepTitle() const {
+  return l10n_util::GetStringFUTF16(IDS_WEBAUTHN_USE_PASSKEY_TITLE,
+                                    GetRelyingPartyIdString(dialog_model()));
+}
+
+std::u16string AuthenticatorPriorityMechanismSheetModel::GetStepDescription()
+    const {
+  return u"";
+}
+
+bool AuthenticatorPriorityMechanismSheetModel::IsAcceptButtonVisible() const {
+  return true;
+}
+
+bool AuthenticatorPriorityMechanismSheetModel::IsAcceptButtonEnabled() const {
+  return true;
+}
+
+std::u16string AuthenticatorPriorityMechanismSheetModel::GetAcceptButtonLabel()
+    const {
+  return l10n_util::GetStringUTF16(IDS_WEBAUTHN_CONTINUE);
+}
+
+void AuthenticatorPriorityMechanismSheetModel::OnAccept() {
+  dialog_model()
+      ->mechanisms()[*dialog_model()->priority_mechanism_index()]
+      .callback.Run();
 }

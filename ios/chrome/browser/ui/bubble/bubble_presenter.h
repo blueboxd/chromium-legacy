@@ -10,9 +10,12 @@
 
 @protocol BubblePresenterDelegate;
 @class BubbleViewControllerPresenter;
+@class CommandDispatcher;
 class HostContentSettingsMap;
 @class LayoutGuideCenter;
 @class SceneState;
+@protocol TabStripCommands;
+@protocol ToolbarCommands;
 class UrlLoadingNotifierBrowserAgent;
 class WebStateList;
 
@@ -39,6 +42,8 @@ class DeviceSwitcherResultDispatcher;
                            loadingNotifier:(UrlLoadingNotifierBrowserAgent*)
                                                urlLoadingNotifier
                                 sceneState:(SceneState*)sceneState
+                   tabStripCommandsHandler:
+                       (id<TabStripCommands>)tabStripCommandsHandler
                                    tracker:(feature_engagement::Tracker*)
                                                engagementTracker
                               webStateList:(WebStateList*)webStateList
@@ -53,6 +58,7 @@ class DeviceSwitcherResultDispatcher;
 @property(nonatomic, weak) id<BubblePresenterDelegate> delegate;
 @property(nonatomic, weak) UIViewController* rootViewController;
 @property(nonatomic, strong) LayoutGuideCenter* layoutGuideCenter;
+@property(nonatomic, weak) id<ToolbarCommands> toolbarCommandsHandler;
 
 // Stops this presenter.
 - (void)stop;
@@ -79,10 +85,6 @@ class DeviceSwitcherResultDispatcher;
 // Presents a help bubble to inform the user that they can track the price of
 // the item on the current website.
 - (void)presentPriceNotificationsWhileBrowsingTipBubble;
-
-// Presents a help bubble to inform the user how they can find the tab they just
-// pinned.
-- (void)presentTabPinnedBubble;
 
 @end
 

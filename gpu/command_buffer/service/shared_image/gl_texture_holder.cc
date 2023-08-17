@@ -8,6 +8,7 @@
 #include "build/build_config.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
 #include "gpu/command_buffer/service/shared_image/gl_repack_utils.h"
+#include "gpu/command_buffer/service/shared_image/shared_image_gl_utils.h"
 #include "gpu/command_buffer/service/skia_utils.h"
 #include "third_party/skia/include/gpu/GrContextThreadSafeProxy.h"
 #include "third_party/skia/include/private/chromium/GrPromiseImageTexture.h"
@@ -136,10 +137,9 @@ void GLTextureHolder::Initialize(
   format_desc_.image_internal_format = format_info.image_internal_format;
   format_desc_.storage_internal_format = format_info.storage_internal_format;
 
-  GLTextureImageBackingHelper::MakeTextureAndSetParameters(
-      format_desc_.target, framebuffer_attachment_angle,
-      is_passthrough_ ? &passthrough_texture_ : nullptr,
-      is_passthrough_ ? nullptr : &texture_);
+  MakeTextureAndSetParameters(format_desc_.target, framebuffer_attachment_angle,
+                              is_passthrough_ ? &passthrough_texture_ : nullptr,
+                              is_passthrough_ ? nullptr : &texture_);
 
   if (is_passthrough_) {
     passthrough_texture_->SetEstimatedSize(format_.EstimatedSizeInBytes(size_));
@@ -156,8 +156,7 @@ void GLTextureHolder::Initialize(
   }
 
   gl::GLApi* api = gl::g_current_gl_context;
-  GLTextureImageBackingHelper::ScopedRestoreTexture scoped_restore(
-      api, format_desc_.target, GetServiceId());
+  ScopedRestoreTexture scoped_restore(api, format_desc_.target, GetServiceId());
 
   // Initialize the texture storage/image parameters and upload initial pixels
   // if available.

@@ -56,9 +56,6 @@ public class OmniboxFeatures {
             MODERNIZE_VISUAL_UPDATE_MERGE_CLIPBOARD_ON_NTP = new BooleanCachedFieldTrialParameter(
                     ChromeFeatureList.OMNIBOX_MODERNIZE_VISUAL_UPDATE,
                     "modernize_visual_update_merge_clipboard_on_ntp", false);
-
-    private static final MutableFlagWithSafeDefault sOmniboxConsumesImeInsets =
-            new MutableFlagWithSafeDefault(ChromeFeatureList.OMNIBOX_CONSUMERS_IME_INSETS, true);
     private static final MutableFlagWithSafeDefault sShouldAdaptToNarrowTabletWindows =
             new MutableFlagWithSafeDefault(
                     ChromeFeatureList.OMNIBOX_ADAPT_NARROW_TABLET_WINDOWS, false);
@@ -81,6 +78,14 @@ public class OmniboxFeatures {
     private static final MutableFlagWithSafeDefault sNoopEditUrlSuggestionClicks =
             new MutableFlagWithSafeDefault(
                     ChromeFeatureList.OMNIBOX_NOOP_EDIT_URL_SUGGESTION_CLICKS, false);
+
+    private static final MutableFlagWithSafeDefault sAvoidRelayoutDuringFocusAnimation =
+            new MutableFlagWithSafeDefault(
+                    ChromeFeatureList.AVOID_RELAYOUT_DURING_FOCUS_ANIMATION, true);
+
+    private static final MutableFlagWithSafeDefault sShortCircuitUnfocusAnimation =
+            new MutableFlagWithSafeDefault(
+                    ChromeFeatureList.SHORT_CIRCUIT_UNFOCUS_ANIMATION, false);
 
     /**
      * @param context The activity context.
@@ -131,11 +136,6 @@ public class OmniboxFeatures {
                 && MODERNIZE_VISUAL_UPDATE_SMALLEST_MARGINS.getValue();
     }
 
-    /** Returns whether the omnibox should directly consume IME (keyboard) insets. */
-    public static boolean omniboxConsumesImeInsets() {
-        return sOmniboxConsumesImeInsets.isEnabled();
-    }
-
     /**
      * @param context The activity context.
      * @return Whether current activity is in tablet mode.
@@ -156,13 +156,6 @@ public class OmniboxFeatures {
      */
     public static boolean shouldMatchToolbarAndStatusBarColor() {
         return ChromeFeatureList.sOmniboxMatchToolbarAndStatusBarColor.isEnabled();
-    }
-
-    /**
-     * Returns whether we need to add a RecycledViewPool to MostVisitedTiles.
-     */
-    public static boolean shouldAddMostVisitedTilesRecycledViewPool() {
-        return ChromeFeatureList.sOmniboxMostVisitedTilesAddRecycledViewPool.isEnabled();
     }
 
     /** Whether Journeys suggestions should be shown as an action chip. */
@@ -208,5 +201,17 @@ public class OmniboxFeatures {
      */
     public static boolean noopEditUrlSuggestionClicks() {
         return sNoopEditUrlSuggestionClicks.isEnabled();
+    }
+
+    public static boolean shouldAvoidRelayoutDuringFocusAnimation() {
+        return sAvoidRelayoutDuringFocusAnimation.isEnabled();
+    }
+
+    /**
+     * Whether the omnibox unfocus animation should be short-circuited when navigating to a
+     * suggestion in order to speed up navigation.
+     */
+    public static boolean shouldShortCircuitUnfocusAnimation() {
+        return sShortCircuitUnfocusAnimation.isEnabled();
     }
 }

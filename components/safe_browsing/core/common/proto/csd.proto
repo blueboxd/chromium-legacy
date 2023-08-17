@@ -990,6 +990,9 @@ message ClientDownloadRequest {
     // TailoredVerdict is ignored.
     // Version 1: Client supports CT warnings and suspicious archives. Supported
     // in M107. See go/tailored-download-v1.
+    // Note: Version 1 can have inconsistent behavior because it uses
+    // indeterminate UI strings (can be changed by a client-side feature flag).
+    // Version 2: Client-side UI string/icon updates. Supported in M117.
     optional int32 version = 1;
   }
   optional TailoredInfo tailored_info = 86;
@@ -1618,6 +1621,8 @@ message ClientSafeBrowsingReportRequest {
     REAL_TIME = 5;
     // The Safe Browsing API v5 protocol hit in real time (non-Android).
     PVER5_NATIVE_REAL_TIME = 6;
+    // The Android Safe Browsing API hit in real time.
+    ANDROID_SAFEBROWSING_REAL_TIME = 7;
   }
 
   // The information propagated from the client about various environment
@@ -2293,4 +2298,20 @@ message ExtensionTelemetryReportResponse {
     repeated ExtensionParameters extension_parameters = 4;
   }
   optional Configuration configuration = 1;
+
+  // Verdict returned by the telemetry server for any unsafe off-store
+  // extensions installed.
+  message OffstoreExtensionVerdict {
+    enum OffstoreExtensionVerdictType {
+      UNSPECIFIED = 0;
+      NONE = 1;  // Used to unblocklisted an extension.
+      MALWARE = 2;
+    }
+
+    optional string extension_id = 1;
+    optional OffstoreExtensionVerdictType verdict_type = 2;
+  }
+
+  // Verdicts for unsafe off-store extensions.
+  repeated OffstoreExtensionVerdict offstore_extension_verdicts = 2;
 }

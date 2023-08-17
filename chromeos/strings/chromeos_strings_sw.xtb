@@ -15,7 +15,6 @@
 <translation id="1075811647922107217">Ukubwa wa ukurasa</translation>
 <translation id="1082009148392559545">Kupakua taswira ya skrini</translation>
 <translation id="1094693127011229778">Anwani ya IP haipatikani</translation>
-<translation id="1113892970288677790">Chagua kazi ya sanaa na picha zilizoratibiwa</translation>
 <translation id="1118572504348554005">Tunaweza kushiriki maoni yaliyowasilishwa kupitia fomu hii na washirika wetu ili kutatua hitilafu na matatizo mengine ambayo unaripoti kwetu. Usijumuishe taarifa nyeti kama vile manenosiri.</translation>
 <translation id="1119447706177454957">Hitilafu ya ndani</translation>
 <translation id="1124772482545689468">Mtumiaji</translation>
@@ -183,6 +182,7 @@
 <translation id="225692081236532131">Hali ya kuwasha</translation>
 <translation id="2271469253353559191">Ratiba ya hali nyeusi</translation>
 <translation id="2276999893457278469">Maudhui maarufu ya usaidizi</translation>
+<translation id="2279051792571591988">Rejesha viwe chaguo msingi</translation>
 <translation id="2287186687001756809">Hakuna picha inayopatikana. Ili uweke picha, nenda kwenye <ph name="LINK" /></translation>
 <translation id="2307344026739914387">Tumia jozi ya funguo ya sasa</translation>
 <translation id="2320295602967756579">Washa mandhari meupe</translation>
@@ -224,6 +224,7 @@
 <translation id="2620436844016719705">Mfumo</translation>
 <translation id="2638662041295312666">Picha ya akaunti kwenye kifaa</translation>
 <translation id="2640549051766135490">Albamu ya <ph name="TITLE" /> <ph name="DESC" /> imechaguliwa</translation>
+<translation id="2652403576514495859">washa au ugeuze kipengele cha kuandika kwa kutamka</translation>
 <translation id="267442004702508783">onyesha upya</translation>
 <translation id="268270014981824665">mwangaza hafifu wa kibodi</translation>
 <translation id="2712812801627182647">Ufunguo wa uthibitishaji wa TLS</translation>
@@ -331,7 +332,6 @@
 <translation id="361575905210396100">Asante kwa maoni yako</translation>
 <translation id="3632579075709132555">Kugeuza skrini ya faragha</translation>
 <translation id="3651050199673793219">Chagua kizio cha halijoto</translation>
-<translation id="3663574643422533538">Chagua kazi ya sanaa ya kipekee ya <ph name="PRODUCT_NAME" /></translation>
 <translation id="3668449597372804501">Mandhari kulingana na mwelekeo wa mawingu</translation>
 <translation id="3689839747745352263">Jaribio la <ph name="TEST_NAME" /></translation>
 <translation id="370665806235115550">Inapakia...</translation>
@@ -367,11 +367,12 @@
 <translation id="3942420633017001071">Vichunguzi</translation>
 <translation id="3954678691475912818">Aina ya kifaa haijulikani.</translation>
 <translation id="3966286471246132217">Ili upate matokeo sahihi zaidi, funga programu zote hadi jaribio litakapokamilika.</translation>
-<translation id="3967822245660637423">Faili imekamilika kupakuliwa</translation>
+<translation id="3967822245660637423">Imemaliza kupakua</translation>
 <translation id="3969602104473960991">Nenosiri la Mfumo wa Uendeshaji wa Chrome limesasishwa</translation>
 <translation id="397105322502079400">Inakokotoa...</translation>
 <translation id="39823212440917567">Kazi za kuchapisha zilizohifadhiwa kwa zaidi ya siku <ph name="NUMBER_OF_DAYS" /> zitaondolewa</translation>
 <translation id="3993704782688964914">Sasa <ph name="DEVICE_NAME" /> imesasishwa</translation>
+<translation id="3998976413398910035">Dhibiti printa</translation>
 <translation id="4003384961948020559">Haijakamilika - Sehemu ya kutoa karatasi imejaa</translation>
 <translation id="4021031199988160623">Badilisha utumie hali ya kompyuta ya kupakata ili ujaribu</translation>
 <translation id="4034824040120875894">Printa</translation>
@@ -588,6 +589,8 @@
 <translation id="5620281292257375798">Ndani ya kampuni pekee</translation>
 <translation id="5649768706273821470">Sikiliza</translation>
 <translation id="5655283760733841251">Ongeza mwangaza wa kibodi</translation>
+<translation id="5655296450510165335">Uandikishaji wa kifaa</translation>
+<translation id="5655776422854483175">Hakuna kazi za kuchapisha</translation>
 <translation id="5659593005791499971">Barua pepe</translation>
 <translation id="5662240986744577912">kuwasha au kuzima skrini ya faragha</translation>
 <translation id="5669267381087807207">Inawashwa</translation>
@@ -642,6 +645,7 @@
 <translation id="6061772781719867950">Maombi ya HTTP hayakutumwa</translation>
 <translation id="6073292342939316679">kupunguza mwangaza wa kibodi</translation>
 <translation id="6075872808778243331">Muda wa Kusubiri Maombi ya HTTP (Android)</translation>
+<translation id="6078323886959318429">Ongeza njia ya mkato</translation>
 <translation id="6104112872696127344">Uchanganuzi umeghairiwa</translation>
 <translation id="6106186594183574873">Ili ukamilishe, weka nenosiri lako la awali</translation>
 <translation id="6108689792487843350">Imeshindwa kufikia lango</translation>
@@ -668,6 +672,7 @@
 <translation id="6278428485366576908">Mandhari</translation>
 <translation id="6280912520669706465">ARC</translation>
 <translation id="6284632978374966585">Washa mandhari meusi</translation>
+<translation id="628726841779494414">Dhibiti printa zako kwenye mipangilio ya printa</translation>
 <translation id="629550705077076970">kupunguza mwangaza wa kibodi</translation>
 <translation id="6302401976930124515">Jaribio la <ph name="TEST_NAME" /> limeghairiwa</translation>
 <translation id="631063167932043783">Programu ya Gundua</translation>
@@ -796,10 +801,10 @@
 <translation id="7297226631177386107">Imeshindwa kuunganisha kwenye tovuti za HTTPS kupitia kinga mtandao</translation>
 <translation id="7297726121602187087">Kijani kilichokolea</translation>
 <translation id="7302860742311162920">ICCID</translation>
-<translation id="7305236594389852547">kuwasha au kuzima kipengele cha kuandika kwa kutamka</translation>
 <translation id="7305884605064981971">EDGE</translation>
 <translation id="7308203371573257315">Waulize wataalamu katika mijadala ya usaidizi ya Chromebook</translation>
 <translation id="7311368985037279727">rangi ya kibodi</translation>
+<translation id="7317831949569936035">Uandikishaji wa kifaa cha shuleni</translation>
 <translation id="7319430975418800333">A3</translation>
 <translation id="7343581795491695942"><ph name="QUERY_TEXT" />; <ph name="RESULT_TEXT" />; Bonyeza kitufe cha Utafutaji pamoja na kitufe cha Nafasi ili uone matokeo katika huduma ya Tafuta na Google.</translation>
 <translation id="7343649194310845056">Vifaa vya Mtandao</translation>
@@ -811,6 +816,7 @@
 <translation id="7397270852490618635">Zima mandhari meupe</translation>
 <translation id="741244894080940828">ubadilishaji</translation>
 <translation id="7415801143053185905">Muda mwingi sana wa kusubiri maombi ya HTTP</translation>
+<translation id="7425178841057519191">{NUM_ROOL_APPS,plural,offset:2 =1{Msimamizi wako ameiwekea mipangilio <ph name="APP_NAME_1" /> ili ianze kiotomatiki kila unapoingia katika akaunti.}=2{Msimamizi wako ameziwekea mipangilio <ph name="APP_NAME_1" /> na <ph name="APP_NAME_2" /> ili zianze kiotomatiki kila unapoingia katika akaunti.}=3{Msimamizi wako ameziwekea mipangilio <ph name="APP_NAME_1" />, <ph name="APP_NAME_2" /> na <ph name="APP_NAME_3" /> ili zianze kiotomatiki kila unapoingia katika akaunti.}other{Msimamizi wako ameziwekea mipangilio <ph name="APP_NAME_1" />, <ph name="APP_NAME_2" /> na programu zingine # ili zianze kiotomatiki kila unapoingia katika akaunti.}}</translation>
 <translation id="7427315641433634153">MSCHAP</translation>
 <translation id="7458970041932198923">Tafadhali unganisha kwenye mtandao kisha upakie upya ukurasa ili uangalie na uweke ishara.</translation>
 <translation id="7469648432129124067">Imetambua ukurasa wa mwanzo</translation>
@@ -1009,6 +1015,7 @@
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8987565828374052507">{NUMBER_OF_PAGES,plural, =0{Changanua}=1{Changanua ukurasa {NUMBER_OF_PAGES}}other{Changanua kurasa {NUMBER_OF_PAGES}}}</translation>
 <translation id="8997710128084572139">Kiwango cha chaji ya betri kwenye kifaa ni asilimia <ph name="BATTERY_PERCENTAGE" />.</translation>
+<translation id="8998156756248178381">{NUM_ROOL_APPS,plural, =1{<ph name="APP_NAME_1" /> ilianzishwa kiotomatiki}other{Programu # zilianzishwa kiotomatiki}}</translation>
 <translation id="8998289560386111590">Haipatikani katika kifaa chako</translation>
 <translation id="9003704114456258138">Masafa</translation>
 <translation id="9024331582947483881">skrini nzima</translation>

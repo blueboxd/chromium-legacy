@@ -4,11 +4,13 @@
 
 #import "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
+#import "ios/chrome/browser/shared/model/prefs/pref_names.h"
 #import "ios/chrome/browser/signin/fake_system_identity.h"
 #import "ios/chrome/browser/tabs/tab_pickup/features.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey_ui_test_util.h"
 #import "ios/chrome/browser/ui/infobars/banners/infobar_banner_constants.h"
+#import "ios/chrome/browser/ui/settings/tabs/tabs_settings_constants.h"
 #import "ios/chrome/browser/ui/tabs/tests/distant_tabs_app_interface.h"
 #import "ios/chrome/browser/ui/tabs/tests/fake_distant_tab.h"
 #import "ios/chrome/grit/ios_strings.h"
@@ -22,14 +24,22 @@
 #import "net/test/embedded_test_server/embedded_test_server.h"
 #import "ui/base/l10n/l10n_util.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 namespace {
 
 // Timeout in seconds to wait for asynchronous sync operations.
 constexpr base::TimeDelta kSyncOperationTimeout = base::Seconds(10);
+
+// Resets the prefs::kTabPickupLastDisplayedTime pref.
+void ResetTabPickupLastDisplayedTimePref() {
+  [ChromeEarlGrey setTimeValue:base::Time()
+             forLocalStatePref:prefs::kTabPickupLastDisplayedTime];
+}
+
+// Resets the prefs::kTabPickupLastDisplayedURL pref.
+void ResetTabPickupLastDisplayedURLPref() {
+  [ChromeEarlGrey setStringValue:std::string()
+               forLocalStatePref:prefs::kTabPickupLastDisplayedURL];
+}
 
 // Sign in and sync using a fake identity.
 void SignInAndSync() {
@@ -92,6 +102,9 @@ void WaitUntilInfobarBannerVisibleOrTimeout(bool should_show) {
 
 - (void)setUp {
   [super setUp];
+  [ChromeEarlGrey clearBrowsingHistory];
+  ResetTabPickupLastDisplayedTimePref();
+  ResetTabPickupLastDisplayedURLPref();
   GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
   SignInAndSync();
 }
@@ -101,7 +114,6 @@ void WaitUntilInfobarBannerVisibleOrTimeout(bool should_show) {
   [ChromeEarlGrey waitForSyncEngineInitialized:NO
                                    syncTimeout:kSyncOperationTimeout];
   [ChromeEarlGrey clearSyncServerData];
-  [ChromeEarlGrey clearBrowsingHistory];
   [[AppLaunchManager sharedManager] backgroundAndForegroundApp];
   [super tearDown];
 }
@@ -171,6 +183,36 @@ void WaitUntilInfobarBannerVisibleOrTimeout(bool should_show) {
                             self.testServer->base_url().host())];
 }
 
+// Verifies that tapping on the wheel icon correctly opens the tab pickup
+// settings screen.
+- (void)testOpenSettingsFromBanner {
+  // Create a distant session with 4 tabs.
+  [DistantTabsAppInterface
+      addSessionToFakeSyncServer:@"Desktop"
+               modifiedTimeDelta:base::Minutes(5)
+                            tabs:[FakeDistantTab
+                                     createFakeTabsForServerURL:self.testServer
+                                                                    ->base_url()
+                                                   numberOfTabs:4]];
+  [ChromeEarlGrey triggerSyncCycleForType:syncer::SESSIONS];
+
+  // Check that the tabPickup banner is correctly displayed.
+  WaitUntilInfobarBannerVisibleOrTimeout(true);
+  [[EarlGrey selectElementWithMatcher:BannerTitleMatcher(@"Desktop")]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  // Tap on the wheel icon.
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(
+                                   kInfobarBannerOpenModalButtonIdentifier)]
+      performAction:grey_tap()];
+
+  // Check that the tab pickup settings screen is displayed.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          kTabPickupSettingsTableViewId)]
+      assertWithMatcher:grey_sufficientlyVisible()];
+}
+
 // Verifies that the TabPickup banner is displayed only once.
 - (void)testBannerDisplayedOnce {
   // Create a distant session with 4 tabs.
@@ -207,10 +249,53 @@ void WaitUntilInfobarBannerVisibleOrTimeout(bool should_show) {
   WaitUntilInfobarBannerVisibleOrTimeout(false);
 }
 
-// Verifies that the TabPickup banner is displayed after backgrounding and
-// foregrounding the app.
-// TODO(crbug.com/1466869): Flaky on iPhone.
-- (void)DISABLED_testBannerDisplayedAfterBackground {
+// Verifies that a second TabPickup banner is displayed after backgrounding and
+// foregrounding the app if the last banner was displayed after the minimum
+// delay between the presentation of two tab pickup banners.
+- (void)testBannerDisplayedAfterBackground {
+  // Create a distant session with 4 tabs.
+  [DistantTabsAppInterface
+      addSessionToFakeSyncServer:@"Desktop-1"
+               modifiedTimeDelta:base::Minutes(5)
+                            tabs:[FakeDistantTab
+                                     createFakeTabsForServerURL:self.testServer
+                                                                    ->base_url()
+                                                   numberOfTabs:4]];
+  [ChromeEarlGrey triggerSyncCycleForType:syncer::SESSIONS];
+
+  // Check that the tabPickup banner is correctly displayed.
+  WaitUntilInfobarBannerVisibleOrTimeout(true);
+  [[EarlGrey selectElementWithMatcher:BannerTitleMatcher(@"Desktop-1")]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  // Accept the banner.
+  [[EarlGrey selectElementWithMatcher:BannerButtonMatcher()]
+      performAction:grey_tap()];
+  WaitUntilInfobarBannerVisibleOrTimeout(false);
+
+  // Background and foreground the app.
+  [[AppLaunchManager sharedManager] backgroundAndForegroundApp];
+  ResetTabPickupLastDisplayedTimePref();
+
+  // Create a new distant session with 1 tab.
+  [DistantTabsAppInterface
+      addSessionToFakeSyncServer:@"Desktop-2"
+               modifiedTimeDelta:base::Minutes(2)
+                            tabs:[FakeDistantTab
+                                     createFakeTabsForServerURL:self.testServer
+                                                                    ->base_url()
+                                                   numberOfTabs:1]];
+  [ChromeEarlGrey triggerSyncCycleForType:syncer::SESSIONS];
+
+  // Check that the tabPickup banner is correctly displayed.
+  WaitUntilInfobarBannerVisibleOrTimeout(true);
+  [[EarlGrey selectElementWithMatcher:BannerTitleMatcher(@"Desktop-2")]
+      assertWithMatcher:grey_sufficientlyVisible()];
+}
+
+// Verifies that a second TabPickup banner is not displayed after backgrounding
+// and foregrounding the app.
+- (void)testBannerNotDisplayedAfterBackground {
   // Create a distant session with 4 tabs.
   [DistantTabsAppInterface
       addSessionToFakeSyncServer:@"Desktop-1"
@@ -244,10 +329,48 @@ void WaitUntilInfobarBannerVisibleOrTimeout(bool should_show) {
                                                    numberOfTabs:1]];
   [ChromeEarlGrey triggerSyncCycleForType:syncer::SESSIONS];
 
+  // Check that the tabPickup banner is not displayed.
+  WaitUntilInfobarBannerVisibleOrTimeout(false);
+}
+
+// Verifies that the same TabPickup banner is not displayed twice.
+- (void)testSameBannerNotDisplayedTwice {
+  // Create a distant session with 4 tabs.
+  [DistantTabsAppInterface
+      addSessionToFakeSyncServer:@"Desktop-1"
+               modifiedTimeDelta:base::Minutes(5)
+                            tabs:[FakeDistantTab
+                                     createFakeTabsForServerURL:self.testServer
+                                                                    ->base_url()
+                                                   numberOfTabs:4]];
+  [ChromeEarlGrey triggerSyncCycleForType:syncer::SESSIONS];
+
   // Check that the tabPickup banner is correctly displayed.
   WaitUntilInfobarBannerVisibleOrTimeout(true);
-  [[EarlGrey selectElementWithMatcher:BannerTitleMatcher(@"Desktop-2")]
+  [[EarlGrey selectElementWithMatcher:BannerTitleMatcher(@"Desktop-1")]
       assertWithMatcher:grey_sufficientlyVisible()];
+
+  // Accept the banner.
+  [[EarlGrey selectElementWithMatcher:BannerButtonMatcher()]
+      performAction:grey_tap()];
+  WaitUntilInfobarBannerVisibleOrTimeout(false);
+
+  // Background and foreground the app.
+  [[AppLaunchManager sharedManager] backgroundAndForegroundApp];
+  ResetTabPickupLastDisplayedTimePref();
+
+  // Re-create and sync the same distant session.
+  [DistantTabsAppInterface
+      addSessionToFakeSyncServer:@"Desktop-1"
+               modifiedTimeDelta:base::Minutes(5)
+                            tabs:[FakeDistantTab
+                                     createFakeTabsForServerURL:self.testServer
+                                                                    ->base_url()
+                                                   numberOfTabs:4]];
+  [ChromeEarlGrey triggerSyncCycleForType:syncer::SESSIONS];
+
+  // Check that the tabPickup banner is not displayed.
+  WaitUntilInfobarBannerVisibleOrTimeout(false);
 }
 
 @end

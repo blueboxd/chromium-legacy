@@ -35,10 +35,6 @@
 #import "testing/gtest_mac.h"
 #import "testing/platform_test.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 namespace {
 
 using testing::UnorderedElementsAre;
@@ -70,6 +66,13 @@ class MockLargeIconService : public favicon::LargeIconService {
                int,
                int,
                favicon_base::LargeIconImageCallback,
+               base::CancelableTaskTracker*),
+              (override));
+  MOCK_METHOD(base::CancelableTaskTracker::TaskId,
+              GetLargeIconRawBitmapForPageUrl,
+              (const GURL&,
+               int,
+               favicon_base::FaviconRawBitmapCallback,
                base::CancelableTaskTracker*),
               (override));
   MOCK_METHOD(base::CancelableTaskTracker::TaskId,

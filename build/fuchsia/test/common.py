@@ -18,12 +18,42 @@ from typing import Iterable, List, Optional, Tuple
 
 from compatible_utils import get_ssh_prefix, get_host_arch
 
-DIR_SRC_ROOT = os.path.abspath(
-    os.path.join(os.path.dirname(__file__), os.pardir, os.pardir, os.pardir))
-IMAGES_ROOT = os.path.join(DIR_SRC_ROOT, 'third_party', 'fuchsia-sdk',
-                           'images')
+
+def _find_src_root() -> str:
+    """Find the root of the src folder."""
+    if os.environ.get('SRC_ROOT'):
+        return os.environ['SRC_ROOT']
+    return os.path.join(os.path.dirname(__file__), os.pardir, os.pardir,
+                        os.pardir)
+
+
+# The absolute path of the root folder to work on. It may not always be the
+# src folder since there may not be source code at all, but it's expected to
+# have folders like third_party/fuchsia-sdk in it.
+DIR_SRC_ROOT = os.path.abspath(_find_src_root())
+
+
+def _find_fuchsia_images_root() -> str:
+    """Define the root of the fuchsia images."""
+    if os.environ.get('FUCHSIA_IMAGES_ROOT'):
+        return os.environ['FUCHSIA_IMAGES_ROOT']
+    return os.path.join(DIR_SRC_ROOT, 'third_party', 'fuchsia-sdk', 'images')
+
+
+IMAGES_ROOT = os.path.abspath(_find_fuchsia_images_root())
+
 REPO_ALIAS = 'fuchsia.com'
-SDK_ROOT = os.path.join(DIR_SRC_ROOT, 'third_party', 'fuchsia-sdk', 'sdk')
+
+
+def _find_fuchsia_sdk_root() -> str:
+    """Define the root of the fuchsia sdk."""
+    if os.environ.get('FUCHSIA_SDK_ROOT'):
+        return os.environ['FUCHSIA_SDK_ROOT']
+    return os.path.join(DIR_SRC_ROOT, 'third_party', 'fuchsia-sdk', 'sdk')
+
+
+SDK_ROOT = os.path.abspath(_find_fuchsia_sdk_root())
+
 SDK_TOOLS_DIR = os.path.join(SDK_ROOT, 'tools', get_host_arch())
 _FFX_TOOL = os.path.join(SDK_TOOLS_DIR, 'ffx')
 
@@ -325,27 +355,27 @@ def resolve_packages(packages: List[str], target_id: Optional[str]) -> None:
     ssh_prefix = get_ssh_prefix(get_ssh_address(target_id))
     subprocess.run(ssh_prefix + ['--', 'pkgctl', 'gc'], check=False)
 
+    def _retry_command(cmd: List[str],
+                       retries: int = 2,
+                       **kwargs) -> Optional[subprocess.CompletedProcess]:
+        """Helper function for retrying a subprocess.run command."""
+
+        for i in range(retries):
+            if i == retries - 1:
+                proc = subprocess.run(cmd, **kwargs, check=True)
+                return proc
+            proc = subprocess.run(cmd, **kwargs, check=False)
+            if proc.returncode == 0:
+                return proc
+            time.sleep(3)
+        return None
+
     for package in packages:
         resolve_cmd = [
             '--', 'pkgctl', 'resolve',
             'fuchsia-pkg://%s/%s' % (REPO_ALIAS, package)
         ]
-        retry_command(ssh_prefix + resolve_cmd)
-
-
-def retry_command(cmd: List[str], retries: int = 2,
-                  **kwargs) -> Optional[subprocess.CompletedProcess]:
-    """Helper function for retrying a subprocess.run command."""
-
-    for i in range(retries):
-        if i == retries - 1:
-            proc = subprocess.run(cmd, **kwargs, check=True)
-            return proc
-        proc = subprocess.run(cmd, **kwargs, check=False)
-        if proc.returncode == 0:
-            return proc
-        time.sleep(3)
-    return None
+        _retry_command(ssh_prefix + resolve_cmd)
 
 
 def get_ssh_address(target_id: Optional[str]) -> str:
@@ -396,6 +426,25 @@ def catch_sigterm() -> None:
         sys.exit(0)
 
     signal.signal(signal.SIGTERM, _sigterm_handler)
+
+
+def wait_for_sigterm(extra_msg: str = '') -> None:
+    """
+    Spin-wait for either ctrl+c or sigterm. Caller can use try-finally
+    statement to perform extra cleanup.
+
+    Args:
+      extra_msg: The extra message to be logged.
+    """
+    try:
+        while True:
+            # We do expect receiving either ctrl+c or sigterm, so this line
+            # literally means sleep forever.
+            time.sleep(10000)
+    except KeyboardInterrupt:
+        logging.info('Ctrl-C received; %s', extra_msg)
+    except SystemExit:
+        logging.info('SIGTERM received; %s', extra_msg)
 
 
 def get_system_info(target: Optional[str] = None) -> Tuple[str, str]:

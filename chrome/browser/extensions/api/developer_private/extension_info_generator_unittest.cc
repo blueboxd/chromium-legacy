@@ -293,13 +293,13 @@ TEST_F(ExtensionInfoGeneratorUnitTest, BasicInfoTest) {
   error_console->ReportError(std::make_unique<RuntimeError>(
       extension->id(), false, u"source", u"message",
       StackTrace(1, StackFrame(1, 1, u"source", u"function")), kContextUrl,
-      logging::LOG_ERROR, 1, 1));
+      logging::LOGGING_ERROR, 1, 1));
   error_console->ReportError(std::make_unique<ManifestError>(
       extension->id(), u"message", u"key", std::u16string()));
   error_console->ReportError(std::make_unique<RuntimeError>(
       extension->id(), false, u"source", u"message",
       StackTrace(1, StackFrame(1, 1, u"source", u"function")), kContextUrl,
-      logging::LOG_WARNING, 1, 1));
+      logging::LOGGING_WARNING, 1, 1));
 
   // It's not feasible to validate every field here, because that would be
   // a duplication of the logic in the method itself. Instead, test a handful
@@ -940,6 +940,11 @@ TEST_F(ExtensionInfoGeneratorUnitTest, Blocklisted) {
   ASSERT_NE(nullptr, info2);
   EXPECT_EQ(developer::EXTENSION_STATE_BLACKLISTED, info1->state);
   EXPECT_EQ(developer::EXTENSION_STATE_ENABLED, info2->state);
+
+  // Verify getExtensionInfo() returns data on blocklisted extensions.
+  auto info3 = GenerateExtensionInfo(id1);
+  ASSERT_NE(nullptr, info3);
+  EXPECT_EQ(developer::EXTENSION_STATE_BLACKLISTED, info3->state);
 }
 
 // Test generating extension action commands properly.

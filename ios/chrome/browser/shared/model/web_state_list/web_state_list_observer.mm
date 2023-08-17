@@ -8,10 +8,6 @@
 
 #import "base/check.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 WebStateListChangeStatusOnly::WebStateListChangeStatusOnly(
     raw_ptr<web::WebState> selected_web_state)
     : selected_web_state_(selected_web_state) {}
@@ -76,12 +72,6 @@ void WebStateListObserver::WebStateListDidChange(
     WebStateList* web_state_list,
     const WebStateListChange& change,
     const WebStateListStatus& status) {}
-void WebStateListObserver::WebStateActivatedAt(
-    WebStateList* web_state_list,
-    web::WebState* old_web_state,
-    web::WebState* new_web_state,
-    int active_index,
-    ActiveWebStateChangeReason reason) {}
 
 void WebStateListObserver::WillBeginBatchOperation(
     WebStateList* web_state_list) {}

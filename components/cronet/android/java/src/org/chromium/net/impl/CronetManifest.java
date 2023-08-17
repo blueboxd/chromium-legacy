@@ -50,7 +50,10 @@ public final class CronetManifest {
      * #ENABLE_TELEMETRY_META_DATA_KEY} meta-data entry in the Android manifest.
      */
     public static boolean isAppOptedInForTelemetry(Context context, CronetSource source) {
-        return getMetaData(context).getBoolean(ENABLE_TELEMETRY_META_DATA_KEY, /*default=*/false);
+        boolean telemetryIsDefaultEnabled = source == CronetSource.CRONET_SOURCE_PLATFORM
+                || source == CronetSource.CRONET_SOURCE_PLAY_SERVICES;
+        return getMetaData(context).getBoolean(
+                ENABLE_TELEMETRY_META_DATA_KEY, /*default*/ telemetryIsDefaultEnabled);
     }
 
     /**
@@ -68,7 +71,6 @@ public final class CronetManifest {
         } catch (PackageManager.NameNotFoundException e) {
             serviceInfo = null;
         }
-        Bundle metaData = serviceInfo != null ? serviceInfo.metaData : null;
-        return metaData != null ? metaData : new Bundle();
+        return serviceInfo != null ? serviceInfo.metaData : new Bundle();
     }
 }

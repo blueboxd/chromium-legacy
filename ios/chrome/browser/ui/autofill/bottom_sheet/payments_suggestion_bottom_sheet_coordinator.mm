@@ -14,13 +14,12 @@
 #import "ios/chrome/browser/ui/autofill/bottom_sheet/payments_suggestion_bottom_sheet_view_controller.h"
 #import "ios/web/public/web_state.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 @interface PaymentsSuggestionBottomSheetCoordinator () {
   // Information regarding the triggering form for this bottom sheet.
   autofill::FormActivityParams _params;
+
+  // Currently in the process of dismissing the bottom sheet.
+  bool _dismissing;
 }
 
 // This mediator is used to fetch data related to the bottom sheet.
@@ -45,6 +44,7 @@
   self = [super initWithBaseViewController:viewController browser:browser];
   if (self) {
     _params = params;
+    _dismissing = NO;
 
     ChromeBrowserState* browserState =
         browser->GetBrowserState()->GetOriginalChromeBrowserState();
@@ -77,9 +77,12 @@
   // can happen between these two operations.
   if (!self.mediator.hasCreditCards) {
     [self.mediator disableBottomSheet];
+    [self.mediator disconnect];
     return;
   }
 
+  self.viewController.parentViewControllerHeight =
+      self.baseViewController.view.frame.size.height;
   [self.baseViewController presentViewController:self.viewController
                                         animated:YES
                                       completion:nil];
@@ -106,7 +109,6 @@
                          }];
 }
 
-// Displays the payment details menu.
 - (void)displayPaymentDetailsForCreditCardIdentifier:
     (NSString*)creditCardIdentifier {
   autofill::CreditCard* creditCard =
@@ -121,6 +123,37 @@
                                  showCreditCardDetails:creditCard];
                            }];
   }
+}
+
+- (void)primaryButtonTapped:(NSString*)backendIdentifier {
+  _dismissing = YES;
+  __weak __typeof(self) weakSelf = self;
+  [self.viewController
+      dismissViewControllerAnimated:NO
+                         completion:^{
+                           [weakSelf didSelectCreditCard:backendIdentifier];
+                         }];
+}
+
+- (void)secondaryButtonTapped {
+  // "No thanks" button, which dismisses the bottom sheet.
+  [self.viewController dismissViewControllerAnimated:YES completion:NULL];
+}
+
+- (void)viewDidDisappear:(BOOL)animated {
+  if (_dismissing) {
+    return;
+  }
+
+  [self.mediator disconnect];
+}
+
+#pragma mark - Private
+
+- (void)didSelectCreditCard:(NSString*)backendIdentifier {
+  // Send a notification to fill the credit card related fields.
+  [self.mediator didSelectCreditCard:backendIdentifier];
+  [self.mediator disconnect];
 }
 
 @end

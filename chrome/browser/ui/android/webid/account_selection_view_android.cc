@@ -38,7 +38,6 @@ ScopedJavaLocalRef<jobject> ConvertToJavaAccount(JNIEnv* env,
       ConvertUTF8ToJavaString(env, account.name),
       ConvertUTF8ToJavaString(env, account.given_name),
       url::GURLAndroid::FromNativeGURL(env, account.picture),
-      base::android::ToJavaArrayOfStrings(env, account.login_hints),
       account.login_state == Account::LoginState::kSignIn);
 }
 
@@ -84,7 +83,6 @@ Account ConvertFieldsToAccount(
     JNIEnv* env,
     const JavaParamRef<jobjectArray>& string_fields_obj,
     const JavaParamRef<jobject>& picture_url_obj,
-    const JavaParamRef<jobjectArray>& account_hints,
     bool is_sign_in) {
   std::vector<std::string> string_fields;
   AppendJavaStringArrayToStringVector(env, string_fields_obj, &string_fields);
@@ -98,9 +96,11 @@ Account ConvertFieldsToAccount(
 
   GURL picture_url = *url::GURLAndroid::ToNativeGURL(env, picture_url_obj);
 
+  // The login hints and hosted domains are only used before account selection.
   std::vector<std::string> login_hints;
-  AppendJavaStringArrayToStringVector(env, account_hints, &login_hints);
-  return Account(account_id, email, name, given_name, picture_url, login_hints,
+  std::vector<std::string> hosted_domains;
+  return Account(account_id, email, name, given_name, picture_url,
+                 std::move(login_hints), std::move(hosted_domains),
                  login_state);
 }
 
@@ -144,7 +144,7 @@ void AccountSelectionViewAndroid::Show(
     const std::vector<content::IdentityProviderData>& identity_provider_data,
     Account::SignInMode sign_in_mode,
     bool show_auto_reauthn_checkbox) {
-  if (!RecreateJavaObject()) {
+  if (!MaybeCreateJavaObject()) {
     // It's possible that the constructor cannot access the bottom sheet clank
     // component. That case may be temporary but we can't let users in a
     // waiting state so report that AccountSelectionView is dismissed instead.
@@ -183,7 +183,7 @@ void AccountSelectionViewAndroid::ShowFailureDialog(
     const std::string& idp_for_display,
     const blink::mojom::RpContext& rp_context,
     const content::IdentityProviderMetadata& idp_metadata) {
-  if (!RecreateJavaObject()) {
+  if (!MaybeCreateJavaObject()) {
     // It's possible that the constructor cannot access the bottom sheet clank
     // component. That case may be temporary but we can't let users in a
     // waiting state so report that AccountSelectionView is dismissed instead.
@@ -229,6 +229,11 @@ content::WebContents* AccountSelectionViewAndroid::ShowModalDialog(
 }
 
 void AccountSelectionViewAndroid::CloseModalDialog() {
+  // The Java object needs to be recreated, as this is invoked for the
+  // CCT that was closed.
+  if (!MaybeCreateJavaObject()) {
+    return;
+  }
   JNIEnv* env = AttachCurrentThread();
   Java_AccountSelectionBridge_closeModalDialog(env, java_object_internal_);
 }
@@ -238,13 +243,11 @@ void AccountSelectionViewAndroid::OnAccountSelected(
     const JavaParamRef<jobject>& idp_config_url,
     const JavaParamRef<jobjectArray>& account_string_fields,
     const JavaParamRef<jobject>& account_picture_url,
-    const JavaParamRef<jobjectArray>& account_hints,
     bool is_sign_in) {
   GURL config_url = *url::GURLAndroid::ToNativeGURL(env, idp_config_url);
   delegate_->OnAccountSelected(
-      config_url,
-      ConvertFieldsToAccount(env, account_string_fields, account_picture_url,
-                             account_hints, is_sign_in));
+      config_url, ConvertFieldsToAccount(env, account_string_fields,
+                                         account_picture_url, is_sign_in));
   // The AccountSelectionViewAndroid may be destroyed.
   // AccountSelectionView::Delegate::OnAccountSelected() might delete this.
   // See https://crbug.com/1393650 for details.
@@ -258,14 +261,13 @@ void AccountSelectionViewAndroid::OnSignInToIdp(JNIEnv* env) {
   delegate_->OnSigninToIdP();
 }
 
-bool AccountSelectionViewAndroid::RecreateJavaObject() {
+bool AccountSelectionViewAndroid::MaybeCreateJavaObject() {
   if (delegate_->GetNativeView() == nullptr ||
       delegate_->GetNativeView()->GetWindowAndroid() == nullptr) {
     return false;  // No window attached (yet or anymore).
   }
   if (java_object_internal_) {
-    Java_AccountSelectionBridge_destroy(AttachCurrentThread(),
-                                        java_object_internal_);
+    return true;
   }
   java_object_internal_ = Java_AccountSelectionBridge_create(
       AttachCurrentThread(), reinterpret_cast<intptr_t>(this),

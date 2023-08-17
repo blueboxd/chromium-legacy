@@ -123,7 +123,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="CustomTabs.ClientAppId" enum="ClientAppId"
-    expires_after="2023-12-10">
+    expires_after="2024-02-11">
   <owner>yusufo@chromium.org</owner>
   <summary>
     Android: AppId declared by the launching application in EXTRA_APPLICATION_ID
@@ -167,7 +167,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="CustomTabs.ConnectionStatusOnReturn.GSA"
-    enum="CustomTabsConnection" expires_after="2023-10-16">
+    enum="CustomTabsConnection" expires_after="2024-02-04">
   <owner>kgrosu@google.com</owner>
   <owner>jinsukkim@chromium.org</owner>
   <owner>cct-team@google.com</owner>
@@ -181,7 +181,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="CustomTabs.ConnectionStatusOnReturn.NonGSA"
-    enum="CustomTabsConnection" expires_after="2023-10-16">
+    enum="CustomTabsConnection" expires_after="2024-02-04">
   <owner>kgrosu@google.com</owner>
   <owner>jinsukkim@chromium.org</owner>
   <owner>cct-team@google.com</owner>
@@ -270,7 +270,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="CustomTabs.HadInteractionOnClose.FormStillActive"
-    enum="Boolean" expires_after="2023-11-19">
+    enum="Boolean" expires_after="2024-01-21">
   <owner>katzz@google.com</owner>
   <owner>chrome-connective-tissue@google.com</owner>
   <summary>
@@ -321,7 +321,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="CustomTabs.IncognitoCCTCallerId" enum="IncognitoCCTCallerId"
-    expires_after="2023-11-19">
+    expires_after="2024-02-04">
   <owner>roagarwal@chromium.org</owner>
   <owner>chrome-incognito@google.com</owner>
   <owner>cct-team@google.com</owner>
@@ -334,7 +334,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="CustomTabs.IntentToFirstCommitNavigationTime3" units="ms"
-    expires_after="M120">
+    expires_after="2024-02-11">
   <owner>lizeb@chromium.org</owner>
   <summary>
     Time between the intent arrival to a Custom Tab and the first navigation
@@ -344,7 +344,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="CustomTabs.IntentToFirstNavigationStartTime" units="ms"
-    expires_after="M120">
+    expires_after="2024-02-11">
   <owner>lizeb@chromium.org</owner>
   <summary>
     Time between the intent arrival to a Custom Tab and the navigation start.
@@ -363,7 +363,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="CustomTabs.MayLaunchUrlType" enum="MayLaunchUrlType"
-    expires_after="M120">
+    expires_after="2024-01-21">
   <owner>lizeb@chromium.org</owner>
   <summary>
     Android only. Which flavors of mayLaunchUrl() were used before a tab launch.
@@ -371,6 +371,9 @@ chromium-metrics-reviews@google.com.
     CustomTabs.WarmupStateOnLaunch for the buckets &quot;Session, No Warmup,
     Warmup called from another UID&quot;, &quot;Session, No Warmup&quot; and
     &quot;Session, Warmup&quot;.
+
+    Before M118, unlike CustomTabs.WarmupStateOnLaunch, this metric was only
+    recorded with a valid session.
   </summary>
 </histogram>
 
@@ -387,7 +390,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="CustomTabs.PartialCustomTabType"
-    enum="CustomTabsPartialCustomTabType" expires_after="2023-12-04">
+    enum="CustomTabsPartialCustomTabType" expires_after="2024-02-04">
   <owner>kgrosu@google.com</owner>
   <owner>chrome-connective-tissue@google.com</owner>
   <summary>
@@ -480,7 +483,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="CustomTabs.ResizeType2" enum="CustomTabsResizeType2"
-    expires_after="2023-12-10">
+    expires_after="2024-02-11">
   <owner>kgrosu@google.com</owner>
   <owner>chrome-connective-tissue@google.com</owner>
   <summary>
@@ -532,7 +535,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="CustomTabs.SessionDisconnectStatus"
-    enum="CustomTabsSessionDisconnectStatus" expires_after="2023-11-19">
+    enum="CustomTabsSessionDisconnectStatus" expires_after="2024-01-21">
   <owner>kgrosu@google.com</owner>
   <owner>chrome-connective-tissue@google.com</owner>
   <summary>
@@ -566,7 +569,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="CustomTabs.ShareOptionLocation" enum="ShareOptionLocation"
-    expires_after="M115">
+    expires_after="M120">
   <owner>sophey@chromium.org</owner>
   <owner>src/components/send_tab_to_self/OWNERS</owner>
   <summary>
@@ -576,7 +579,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="CustomTabs.SideSheetResizeType" enum="CustomTabsResizeType2"
-    expires_after="2023-12-10">
+    expires_after="2024-02-11">
   <owner>kgrosu@google.com</owner>
   <owner>chrome-connective-tissue@google.com</owner>
   <summary>
@@ -625,7 +628,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="CustomTabs.TabCounts.UniqueTabsSeen" units="count"
-    expires_after="2023-12-10">
+    expires_after="2024-02-11">
   <owner>wenyufu@chromium.org</owner>
   <owner>chrome-connective-tissue@google.com</owner>
   <summary>
@@ -640,7 +643,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="CustomTabs.TimeScrollUpdateReceivedAfterScrollEnd" units="ms"
-    expires_after="2023-11-12">
+    expires_after="2024-01-21">
   <owner>sinansahin@google.com</owner>
   <owner>chrome-connective-tissue@google.com</owner>
   <summary>
@@ -670,7 +673,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="CustomTabs.WarmupStateOnLaunch" enum="WarmupStateOnLaunch"
-    expires_after="2023-12-04">
+    expires_after="2024-02-05">
   <owner>lizeb@chromium.org</owner>
   <summary>
     Recorded only on Android. Reports whether warmup() has been called when a
@@ -681,7 +684,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="CustomTabs.WebContentsStateOnLaunch" enum="WebContentsState"
-    expires_after="M120">
+    expires_after="2024-01-21">
   <owner>lizeb@chromium.org</owner>
   <summary>
     Android: When a CustomTabActivity creates its Tab, whether we use a
@@ -806,7 +809,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="TrustedWebActivity.SplashScreenShown" enum="Boolean"
-    expires_after="2023-09-17">
+    expires_after="2024-01-01">
   <owner>peconn@chromium.org</owner>
   <owner>peter@chromium.org</owner>
   <summary>

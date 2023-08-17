@@ -13,6 +13,7 @@
 #include "base/functional/bind.h"
 #include "base/i18n/rtl.h"
 #include "base/memory/weak_ptr.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/time/time.h"
@@ -137,7 +138,11 @@ void AutofillPopupControllerImpl::Show(
   }
 
   SetSuggestions(std::move(suggestions));
+
   trigger_source_ = trigger_source;
+  should_ignore_mouse_observed_outside_item_bounds_check_ =
+      trigger_source_ == AutofillSuggestionTriggerSource::
+                             kManualFallbackForAutocompleteUnrecognized;
 
   if (view_) {
     OnSuggestionsChanged();
@@ -157,10 +162,12 @@ void AutofillPopupControllerImpl::Show(
         ->UpdateSourceAvailability(FillingSource::AUTOFILL,
                                    !suggestions_.empty());
 #endif
-    if (!view_.Call(&AutofillPopupView::Show,
-                    AutoselectFirstSuggestion(
-                        trigger_source == AutofillSuggestionTriggerSource::
-                                              kTextFieldDidReceiveKeyDown))) {
+    if (!view_
+             .Call(&AutofillPopupView::Show,
+                   AutoselectFirstSuggestion(trigger_source ==
+                                             AutofillSuggestionTriggerSource::
+                                                 kTextFieldDidReceiveKeyDown))
+             .value_or(false)) {
       return;
     }
 
@@ -189,6 +196,11 @@ void AutofillPopupControllerImpl::Show(
 AutofillSuggestionTriggerSource
 AutofillPopupControllerImpl::GetAutofillSuggestionTriggerSource() const {
   return trigger_source_;
+}
+
+bool AutofillPopupControllerImpl::
+    ShouldIgnoreMouseObservedOutsideItemBoundsCheck() const {
+  return should_ignore_mouse_observed_outside_item_bounds_check_;
 }
 
 void AutofillPopupControllerImpl::UpdateDataListValues(
@@ -305,9 +317,14 @@ void AutofillPopupControllerImpl::AcceptSuggestion(int index) {
   // Ignore clicks immediately after the popup was shown. This is to prevent
   // users accidentally accepting suggestions (crbug.com/1279268).
   DCHECK(!time_view_shown_.is_null());
-  if ((base::TimeTicks::Now() - time_view_shown_ <
-       kIgnoreEarlyClicksOnPopupDuration) &&
+  const base::TimeDelta time_elapsed =
+      base::TimeTicks::Now() - time_view_shown_;
+  if ((time_elapsed < kIgnoreEarlyClicksOnPopupDuration) &&
       !disable_threshold_for_testing_) {
+    base::UmaHistogramCustomTimes(
+        "Autofill.Popup.AcceptanceDelayThresholdNotMet", time_elapsed,
+        base::Milliseconds(0), kIgnoreEarlyClicksOnPopupDuration,
+        /*buckets=*/50);
     return;
   }
 
@@ -343,9 +360,15 @@ void AutofillPopupControllerImpl::AcceptSuggestionWithoutThreshold(int index) {
 
   if (web_contents_ &&
       suggestion.popup_item_id == PopupItemId::kVirtualCreditCardEntry) {
+    std::string event_name =
+        suggestion.feature_for_iph ==
+                feature_engagement::kIPHAutofillVirtualCardCVCSuggestionFeature
+                    .name
+            ? "autofill_virtual_card_cvc_suggestion_accepted"
+            : "autofill_virtual_card_suggestion_accepted";
     feature_engagement::TrackerFactory::GetForBrowserContext(
         web_contents_->GetBrowserContext())
-        ->NotifyEvent("autofill_virtual_card_suggestion_accepted");
+        ->NotifyEvent(event_name);
   }
 
   if (web_contents_ &&
@@ -450,6 +473,8 @@ bool AutofillPopupControllerImpl::RemoveSuggestion(int list_index) {
   // TODO(crbug.com/1209792): Replace these checks with a stronger identifier.
   if (list_index < 0 || static_cast<size_t>(list_index) >= suggestions_.size())
     return false;
+
+  PopupItemId suggestion_type = suggestions_[list_index].popup_item_id;
   if (!delegate_->RemoveSuggestion(
           suggestions_[list_index].main_text.value,
           suggestions_[list_index].popup_item_id,
@@ -462,6 +487,8 @@ bool AutofillPopupControllerImpl::RemoveSuggestion(int list_index) {
 
   if (HasSuggestions()) {
     delegate_->ClearPreviewedForm();
+    should_ignore_mouse_observed_outside_item_bounds_check_ =
+        suggestion_type == PopupItemId::kAutocompleteEntry;
     OnSuggestionsChanged();
   } else {
     Hide(PopupHidingReason::kNoSuggestions);

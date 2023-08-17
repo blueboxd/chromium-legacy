@@ -938,7 +938,7 @@ bool FormStructure::ShouldBeParsed(ShouldBeParsedParams params,
   }
 
   bool has_text_field = base::ranges::any_of(*this, [](const auto& field) {
-    return !field->IsSelectOrSelectMenuElement();
+    return !field->IsSelectOrSelectListElement();
   });
   if (!has_text_field) {
     LOG_AF(log_manager) << LoggingScope::kAbortParsing
@@ -1019,7 +1019,7 @@ void FormStructure::RetrieveFromCache(const FormStructure& cached_form,
         // During form parsing (as in "assigning field types to fields")
         // the `value` represents the initial value found at page load and needs
         // to be preserved.
-        if (!field->IsSelectOrSelectMenuElement()) {
+        if (!field->IsSelectOrSelectListElement()) {
           field->value = cached_field->value;
           value_from_dynamic_change_form_ = true;
         }
@@ -1036,7 +1036,7 @@ void FormStructure::RetrieveFromCache(const FormStructure& cached_form,
         const bool field_is_neither_state_nor_country =
             field->server_type() != ADDRESS_HOME_COUNTRY &&
             field->server_type() != ADDRESS_HOME_STATE;
-        if (!field->IsSelectOrSelectMenuElement() &&
+        if (!field->IsSelectOrSelectListElement() &&
             same_value_as_on_page_load && field_is_neither_state_nor_country) {
           field->value = std::u16string();
         }
@@ -1946,6 +1946,41 @@ LogBuffer& operator<<(LogBuffer& buffer, const FormStructure& form) {
   buffer << CTag{"table"};
   buffer << CTag{"div"};
   return buffer;
+}
+
+FormDataAndServerPredictions::FormDataAndServerPredictions() = default;
+
+FormDataAndServerPredictions::FormDataAndServerPredictions(
+    const FormDataAndServerPredictions&) = default;
+
+FormDataAndServerPredictions& FormDataAndServerPredictions::operator=(
+    const FormDataAndServerPredictions&) = default;
+
+FormDataAndServerPredictions::FormDataAndServerPredictions(
+    FormDataAndServerPredictions&&) = default;
+
+FormDataAndServerPredictions& FormDataAndServerPredictions::operator=(
+    FormDataAndServerPredictions&&) = default;
+
+FormDataAndServerPredictions::~FormDataAndServerPredictions() = default;
+
+FormDataAndServerPredictions GetFormDataAndServerPredictions(
+    base::span<const FormStructure* const> form_structures) {
+  FormDataAndServerPredictions result;
+  result.form_datas.reserve(form_structures.size());
+  std::vector<std::pair<FieldGlobalId, AutofillType::ServerPrediction>>
+      predictions;
+  for (const FormStructure* form_structure : form_structures) {
+    result.form_datas.push_back(form_structure->ToFormData());
+    for (const std::unique_ptr<AutofillField>& field : *form_structure) {
+      predictions.emplace_back(field->global_id(),
+                               AutofillType::ServerPrediction(*field));
+    }
+  }
+  result.predictions =
+      base::flat_map<FieldGlobalId, AutofillType::ServerPrediction>(
+          std::move(predictions));
+  return result;
 }
 
 }  // namespace autofill

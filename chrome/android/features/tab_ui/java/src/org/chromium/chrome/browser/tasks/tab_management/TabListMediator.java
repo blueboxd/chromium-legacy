@@ -477,6 +477,15 @@ class TabListMediator {
         }
     };
 
+    /**
+     * Interface for toggling whether item animations will run on the recycler view.
+     */
+    interface RecyclerViewItemAnimationToggle {
+        void setDisableItemAnimations(boolean state);
+    }
+
+    private RecyclerViewItemAnimationToggle mRecyclerViewItemAnimationToggle;
+
     private final TabModelObserver mTabModelObserver;
 
     private ListObserver<Void> mListObserver;
@@ -721,9 +730,22 @@ class TabListMediator {
             }
         };
 
+        TabActionListener swipeSafeTabActionListener = (id) -> {
+            // The DefaultItemAnimator is prone to crashing in combination with the swipe animation.
+            // Avoid this issue by disabling the default item animation for the duration of the tab
+            // removal. This is a framework issue. For more details see crbug/1319859.
+            mRecyclerViewItemAnimationToggle.setDisableItemAnimations(true);
+            mTabClosedListener.run(id);
+            // It is necessary to post the restoration as otherwise any animation triggered by
+            // removing the tab will still use the animator as they are also posted to the UI
+            // thread.
+            new Handler().post(
+                    () -> { mRecyclerViewItemAnimationToggle.setDisableItemAnimations(false); });
+        };
+
         mTabGridItemTouchHelperCallback = new TabGridItemTouchHelperCallback(context, mModel,
-                mTabModelSelector, mTabClosedListener, mTabGridDialogHandler, mComponentName,
-                mActionsOnAllRelatedTabs, mMode);
+                mTabModelSelector, swipeSafeTabActionListener, mTabGridDialogHandler,
+                mComponentName, mActionsOnAllRelatedTabs, mMode);
 
         // Right now we need to update layout only if there is a price welcome message card in tab
         // switcher.
@@ -763,6 +785,11 @@ class TabListMediator {
                     .OnLongPressTabItemEventListener onLongPressTabItemEventListener) {
         mTabGridItemTouchHelperCallback.setOnLongPressTabItemEventListener(
                 onLongPressTabItemEventListener);
+    }
+
+    void setRecyclerViewItemAnimationToggle(
+            RecyclerViewItemAnimationToggle recyclerViewItemAnimationToggle) {
+        mRecyclerViewItemAnimationToggle = recyclerViewItemAnimationToggle;
     }
 
     /**
@@ -857,7 +884,7 @@ class TabListMediator {
                     if (mActionsOnAllRelatedTabs) {
                         if (isUngroupingLastTabInGroup) return;
 
-                        Tab currentSelectedTab = mTabModelSelector.getCurrentTab();
+                        final int currentSelectedTabId = mTabModelSelector.getCurrentTabId();
                         if (isShowingTabsInMRUOrder()) {
                             int groupTabIndex = mModel.indexFromId(groupTab.getId());
                             if (groupTabIndex == TabModel.INVALID_TAB_INDEX) {
@@ -866,7 +893,7 @@ class TabListMediator {
                                 groupTabIndex = mModel.indexFromId(movedTab.getId());
                             }
                             if (!isValidMovePosition(groupTabIndex)) return;
-                            boolean isSelected = currentSelectedTab.getId() == groupTab.getId();
+                            boolean isSelected = currentSelectedTabId == groupTab.getId();
                             // We may need to adjust the group's index after removing the movedTab
                             // from the group.
                             int newGroupTabIndexMRU =
@@ -886,7 +913,7 @@ class TabListMediator {
 
                             int modelIndex = mModel.getNewPositionInMruOrderList(movedTab.getId());
                             addTabInfoToModel(PseudoTab.fromTab(movedTab), modelIndex,
-                                    currentSelectedTab.getId() == movedTab.getId());
+                                    currentSelectedTabId == movedTab.getId());
                         } else {
                             // Only add a tab to the model if it represents a new card (new group or
                             // new singular tab). However, always update the previous group to clean
@@ -896,10 +923,9 @@ class TabListMediator {
                                 int filterIndex = filter.indexOf(movedTab);
                                 addTabInfoToModel(PseudoTab.fromTab(movedTab),
                                         mModel.indexOfNthTabCard(filterIndex),
-                                        currentSelectedTab.getId() == movedTab.getId());
+                                        currentSelectedTabId == movedTab.getId());
                             }
-                            boolean isSelected =
-                                    mTabModelSelector.getCurrentTabId() == groupTab.getId();
+                            boolean isSelected = currentSelectedTabId == groupTab.getId();
                             updateTab(mModel.indexOfNthTabCard(prevFilterIndex),
                                     PseudoTab.fromTab(groupTab), isSelected, true, false);
                         }

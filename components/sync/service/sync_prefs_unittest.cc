@@ -87,7 +87,7 @@ TEST_F(SyncPrefsTest, ObservedPrefs) {
   ASSERT_FALSE(sync_prefs_->IsInitialSyncFeatureSetupComplete());
   ASSERT_FALSE(sync_prefs_->IsSyncRequested());
 
-  sync_prefs_->AddSyncPrefObserver(&mock_sync_pref_observer);
+  sync_prefs_->AddObserver(&mock_sync_pref_observer);
 
   pref_service_.SetBoolean(prefs::internal::kSyncManaged, true);
   EXPECT_TRUE(sync_prefs_->IsSyncClientDisabledByPolicy());
@@ -104,7 +104,7 @@ TEST_F(SyncPrefsTest, ObservedPrefs) {
   sync_prefs_->SetSyncRequested(false);
   EXPECT_FALSE(sync_prefs_->IsSyncRequested());
 
-  sync_prefs_->RemoveSyncPrefObserver(&mock_sync_pref_observer);
+  sync_prefs_->RemoveObserver(&mock_sync_pref_observer);
 }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -114,11 +114,11 @@ TEST_F(SyncPrefsTest, SetSelectedOsTypesTriggersPreferredDataTypesPrefChange) {
               OnPreferredDataTypesPrefChange(
                   /*payments_integration_enabled_changed=*/false));
 
-  sync_prefs_->AddSyncPrefObserver(&mock_sync_pref_observer);
+  sync_prefs_->AddObserver(&mock_sync_pref_observer);
   sync_prefs_->SetSelectedOsTypes(/*sync_all_os_types=*/false,
                                   UserSelectableOsTypeSet(),
                                   UserSelectableOsTypeSet());
-  sync_prefs_->RemoveSyncPrefObserver(&mock_sync_pref_observer);
+  sync_prefs_->RemoveObserver(&mock_sync_pref_observer);
 }
 #endif
 
@@ -302,7 +302,6 @@ TEST_F(SyncPrefsTest, DefaultSelectedTypesInTransportMode) {
                             kReadingListEnableSyncTransportModeUponSignIn,
                             password_manager::features::
                                 kEnablePasswordsAccountStorage,
-                            kSyncEnableContactInfoDataType,
                             kSyncEnableContactInfoDataTypeInTransportMode,
                             kEnablePreferencesAccountStorage},
       /*disabled_features=*/{kReplaceSyncPromosWithSignInPromos});
@@ -341,7 +340,6 @@ TEST_F(SyncPrefsTest, DefaultSelectedTypesForAccountInTransportMode) {
                             kReadingListEnableSyncTransportModeUponSignIn,
                             password_manager::features::
                                 kEnablePasswordsAccountStorage,
-                            kSyncEnableContactInfoDataType,
                             kSyncEnableContactInfoDataTypeInTransportMode,
                             kEnablePreferencesAccountStorage},
       /*disabled_features=*/{});
@@ -365,7 +363,6 @@ TEST_F(SyncPrefsTest, SetSelectedTypesInTransportMode) {
                             kReadingListEnableSyncTransportModeUponSignIn,
                             password_manager::features::
                                 kEnablePasswordsAccountStorage,
-                            kSyncEnableContactInfoDataType,
                             kSyncEnableContactInfoDataTypeInTransportMode},
       /*disabled_features=*/{kReplaceSyncPromosWithSignInPromos});
 
@@ -651,7 +648,7 @@ TEST_F(SyncPrefsTest, ShouldSetAppsSyncEnabledByOsToFalseByDefault) {
 
 TEST_F(SyncPrefsTest, ShouldChangeAppsSyncEnabledByOsAndNotifyObservers) {
   StrictMock<MockSyncPrefObserver> mock_sync_pref_observer;
-  sync_prefs_->AddSyncPrefObserver(&mock_sync_pref_observer);
+  sync_prefs_->AddObserver(&mock_sync_pref_observer);
 
   EXPECT_CALL(mock_sync_pref_observer,
               OnPreferredDataTypesPrefChange(
@@ -719,7 +716,6 @@ class SyncPrefsMigrationTest : public testing::Test {
                               kReadingListEnableSyncTransportModeUponSignIn,
                               password_manager::features::
                                   kEnablePasswordsAccountStorage,
-                              kSyncEnableContactInfoDataType,
                               kSyncEnableContactInfoDataTypeInTransportMode,
                               kEnablePreferencesAccountStorage},
         /*disabled_features=*/{});
@@ -771,6 +767,8 @@ class SyncPrefsMigrationTest : public testing::Test {
       SyncPrefs::GetPrefNameForTypeForTesting(UserSelectableType::kPasswords);
   const char* kAutofillPref =
       SyncPrefs::GetPrefNameForTypeForTesting(UserSelectableType::kAutofill);
+  const char* kPaymentsPref =
+      SyncPrefs::GetPrefNameForTypeForTesting(UserSelectableType::kPayments);
   const char* kPreferencesPref =
       SyncPrefs::GetPrefNameForTypeForTesting(UserSelectableType::kPreferences);
 
@@ -805,6 +803,27 @@ TEST_F(SyncPrefsMigrationTest, MigrateAutofillWalletImportEnabledPrefIfUnset) {
   SyncPrefs prefs(&pref_service_);
 
   EXPECT_FALSE(pref_service_.GetUserPrefValue(
+      SyncPrefs::GetPrefNameForTypeForTesting(UserSelectableType::kPayments)));
+}
+
+// Regression test for crbug.com/1467307.
+TEST_F(SyncPrefsMigrationTest,
+       MigrateAutofillWalletImportEnabledPrefIfUnsetWithSyncEverythingOff) {
+  // Mimic an old profile where sync-everything was turned off without
+  // populating kObsoleteAutofillWalletImportEnabled (i.e. before the UI
+  // included the payments toggle).
+  pref_service_.SetBoolean(prefs::internal::kSyncKeepEverythingSynced, false);
+
+  ASSERT_FALSE(
+      pref_service_.GetUserPrefValue(kObsoleteAutofillWalletImportEnabled));
+
+  SyncPrefs::MigrateAutofillWalletImportEnabledPref(&pref_service_);
+
+  SyncPrefs prefs(&pref_service_);
+
+  EXPECT_TRUE(pref_service_.GetUserPrefValue(
+      SyncPrefs::GetPrefNameForTypeForTesting(UserSelectableType::kPayments)));
+  EXPECT_TRUE(pref_service_.GetBoolean(
       SyncPrefs::GetPrefNameForTypeForTesting(UserSelectableType::kPayments)));
 }
 
@@ -1101,7 +1120,7 @@ TEST_F(SyncPrefsMigrationTest, SyncToSignin_MigratesBookmarksNotOptedIn) {
 #endif  // BUILDFLAG(IS_IOS)
 
 TEST_F(SyncPrefsMigrationTest,
-       SyncToSignin_TurnsAutofillOffForCustomPassphraseUser) {
+       SyncToSignin_TurnsAutofillAndPaymentsOffForCustomPassphraseUser) {
   base::test::ScopedFeatureList enable_sync_to_signin(
       kReplaceSyncPromosWithSignInPromos);
 
@@ -1109,6 +1128,8 @@ TEST_F(SyncPrefsMigrationTest,
 
   // Autofill is enabled (by default; not set explicitly).
   ASSERT_TRUE(BooleanUserPrefMatches(kAutofillPref, PREF_UNSET));
+  // Payments is enabled (by default; not set explicitly).
+  ASSERT_TRUE(BooleanUserPrefMatches(kPaymentsPref, PREF_UNSET));
 
   // Run the first phase of the migration.
   prefs.MaybeMigratePrefsForSyncToSigninPart1(
@@ -1118,6 +1139,10 @@ TEST_F(SyncPrefsMigrationTest,
   // wasn't known yet.
   ASSERT_TRUE(prefs.GetSelectedTypesForAccount(gaia_id_hash_)
                   .Has(UserSelectableType::kAutofill));
+  // Payments should still be unaffected for now, since Autofill is not affected
+  // yet.
+  ASSERT_TRUE(prefs.GetSelectedTypesForAccount(gaia_id_hash_)
+                  .Has(UserSelectableType::kPayments));
 
   // Now run the second phase, once the passphrase state is known (and it's
   // a custom passphrase).
@@ -1128,8 +1153,12 @@ TEST_F(SyncPrefsMigrationTest,
   // Now Autofill should've been turned off in the account-scoped settings.
   EXPECT_FALSE(prefs.GetSelectedTypesForAccount(gaia_id_hash_)
                    .Has(UserSelectableType::kAutofill));
+  // Payments should've been also turned off in the account-scoped settings.
+  EXPECT_FALSE(prefs.GetSelectedTypesForAccount(gaia_id_hash_)
+                   .Has(UserSelectableType::kPayments));
   // The global setting is unaffected.
   ASSERT_TRUE(BooleanUserPrefMatches(kAutofillPref, PREF_UNSET));
+  ASSERT_TRUE(BooleanUserPrefMatches(kPaymentsPref, PREF_UNSET));
 }
 
 TEST_F(SyncPrefsMigrationTest,

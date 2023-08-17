@@ -49,6 +49,7 @@ class VIZ_SERVICE_EXPORT OverlayCandidateFactory {
   struct VIZ_SERVICE_EXPORT OverlayContext {
     bool is_delegated_context = false;
     bool supports_clip_rect = false;
+    bool supports_out_of_window_clip_rect = false;
     bool supports_arbitrary_transform = false;
     bool supports_rounded_display_masks = false;
     bool supports_mask_filter = false;
@@ -145,6 +146,11 @@ class VIZ_SERVICE_EXPORT OverlayCandidateFactory {
   // to be applied is empty.
   CandidateStatus DoGeometricClipping(const DrawQuad* quad,
                                       OverlayCandidate& candidate) const;
+
+  // Set |candidate.display_rect| based on |quad|. In delegated contexts, this
+  // will also apply content clipping in the quad, and expand to a render pass's
+  // filter bounds.
+  void SetDisplayRect(const DrawQuad& quad, OverlayCandidate& candidate) const;
 
   raw_ptr<const AggregatedRenderPass> render_pass_;
   raw_ptr<DisplayResourceProvider> resource_provider_;

@@ -399,6 +399,8 @@ const OncFieldSignature network_with_state_fields[] = {
 const OncFieldSignature global_network_configuration_fields[] = {
     {::onc::global_network_config::kAllowCellularSimLock, &kBoolSignature,
      []() { return base::Value(true); }},
+    {::onc::global_network_config::kAllowCellularHotspot, &kBoolSignature,
+     []() { return base::Value(true); }},
     {::onc::global_network_config::kAllowOnlyPolicyCellularNetworks,
      &kBoolSignature},
     {::onc::global_network_config::kAllowOnlyPolicyNetworksToAutoconnect,
@@ -407,6 +409,7 @@ const OncFieldSignature global_network_configuration_fields[] = {
      &kBoolSignature},
     {::onc::global_network_config::kAllowOnlyPolicyWiFiToConnectIfAvailable,
      &kBoolSignature},
+    {::onc::global_network_config::kAllowTextMessages, &kStringSignature},
     {/* Deprecated */ ::onc::global_network_config::kBlacklistedHexSSIDs,
      &kStringListSignature},
     {::onc::global_network_config::kBlockedHexSSIDs, &kStringListSignature},

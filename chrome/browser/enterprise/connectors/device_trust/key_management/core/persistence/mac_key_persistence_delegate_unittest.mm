@@ -22,10 +22,6 @@
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 using BPKUR = enterprise_management::BrowserPublicKeyUploadRequest;
 using ::testing::_;
 using ::testing::InSequence;
@@ -262,6 +258,16 @@ TEST_F(MacKeyPersistenceDelegateTest, CleanupTemporaryKeyData) {
         return true;
       });
   persistence_delegate_->CleanupTemporaryKeyData();
+}
+
+// TODO(b/290068552): Add test coverage for this method.
+TEST_F(MacKeyPersistenceDelegateTest, PromoteTemporaryKeyPair) {
+  EXPECT_TRUE(persistence_delegate_->PromoteTemporaryKeyPair());
+}
+
+// TODO(b/290068552): Add test coverage for this method.
+TEST_F(MacKeyPersistenceDelegateTest, DeleteKeyPair) {
+  EXPECT_TRUE(persistence_delegate_->DeleteKeyPair(KeyStorageType::kTemporary));
 }
 
 }  // namespace enterprise_connectors

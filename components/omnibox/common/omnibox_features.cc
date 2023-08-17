@@ -6,6 +6,7 @@
 
 #include "base/feature_list.h"
 #include "build/build_config.h"
+#include "ui/base/ui_base_features.h"
 
 namespace omnibox {
 
@@ -18,13 +19,6 @@ constexpr auto enabled_by_default_desktop_only =
 
 constexpr auto enabled_by_default_android_only =
 #if BUILDFLAG(IS_ANDROID)
-    base::FEATURE_ENABLED_BY_DEFAULT;
-#else
-    base::FEATURE_DISABLED_BY_DEFAULT;
-#endif
-
-constexpr auto enabled_by_default_ios_only =
-#if BUILDFLAG(IS_IOS)
     base::FEATURE_ENABLED_BY_DEFAULT;
 #else
     base::FEATURE_DISABLED_BY_DEFAULT;
@@ -54,15 +48,6 @@ BASE_FEATURE(kImageSearchSuggestionThumbnail,
 BASE_FEATURE(kOmniboxRemoveSuggestionsFromClipboard,
              "OmniboxRemoveSuggestionsFromClipboard",
              enabled_by_default_android_only);
-
-// When enabled, intermediate asynchronous updates will not be processed or
-// pushed to AutocompleteListeners. Only the first (synchronous) and the last
-// (final) AutocompleteResult will be pushed to listeners.
-// The change is expected to help help improve latency on low-end (Android)
-// devices.
-BASE_FEATURE(kIgnoreIntermediateResults,
-             "OmniboxIgnoreIntermediateResults",
-             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // When enabled, uses the grouping framework with zero prefix suggestions (i.e.
 // autocomplete_grouper_sections.h) to limit and group (but not sort) matches.
@@ -312,7 +297,7 @@ BASE_FEATURE(kSuppressClipboardSuggestionAfterFirstUsed,
 // the omnibox suggestion popup.
 BASE_FEATURE(kCr2023ActionChips,
              "Cr2023ActionChips",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // If enabled, uses the Chrome Refresh 2023 design's icons for action chips in
 // the omnibox suggestion popup.
@@ -357,16 +342,11 @@ BASE_FEATURE(kOmniboxMatchToolbarAndStatusBarColor,
              "OmniboxMatchToolbarAndStatusBarColor",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Feature used to add a recycled view pool on the most visited tile carousel.
-BASE_FEATURE(kOmniboxMostVisitedTilesAddRecycledViewPool,
-             "OmniboxMostVisitedTilesAddRecycledViewPool",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 // Feature used to add most visited tiles to the suggestions when the user is on
 // a search result page that does not do search term replacement.
 BASE_FEATURE(kOmniboxMostVisitedTilesOnSrp,
              "OmniboxMostVisitedTilesOnSrp",
-             enabled_by_default_ios_only);
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // If enabled, adds a grey square background to search icons, and makes answer
 // icon square instead of round.
@@ -391,13 +371,13 @@ BASE_FEATURE(kWebUIOmniboxPopup,
 // If enabled, Omnibox "expanded state" height is increased from 42 px to 44 px.
 BASE_FEATURE(kExpandedStateHeight,
              "OmniboxExpandedStateHeight",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // If enabled, Omnibox "expanded state" corner radius is increased from 8px to
 // 16px.
 BASE_FEATURE(kExpandedStateShape,
              "OmniboxExpandedStateShape",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // If enabled, Omnibox "expanded state" colors are updated to match CR23
 // guidelines.
@@ -472,10 +452,12 @@ BASE_FEATURE(kOmniboxModernizeVisualUpdate,
              "OmniboxModernizeVisualUpdate",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Experiment to introduce new security indicators for HTTPS.
+// Android only flag that controls whether the new security indicator should be
+// used, on non-Android platforms this is controlled through the
+// ChromeRefresh2023 flag.
 BASE_FEATURE(kUpdatedConnectionSecurityIndicators,
              "OmniboxUpdatedConnectionSecurityIndicators",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Feature used to default typed navigations to use HTTPS instead of HTTP.
 // This only applies to navigations that don't have a scheme such as
@@ -499,7 +481,7 @@ const char kDefaultTypedNavigationsToHttpsTimeoutParam[] = "timeout";
 // Search Results Page URL.
 BASE_FEATURE(kReportAssistedQueryStats,
              "OmniboxReportAssistedQueryStats",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // If enabled, `OmniboxEditModel` uses a new version of `current_match_` that
 // should be valid, and therefore usable, more often. The previous
@@ -526,7 +508,7 @@ BASE_FEATURE(kUseExistingAutocompleteClient,
 // Search Results Page URL.
 BASE_FEATURE(kReportSearchboxStats,
              "OmniboxReportSearchboxStats",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // If enabled, logs Omnibox URL scoring signals to OmniboxEventProto for
 // training the ML scoring models.
@@ -560,4 +542,24 @@ BASE_FEATURE(kActionsInSuggest,
 BASE_FEATURE(kCategoricalSuggestions,
              "CategoricalSuggestions",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+// If enabled, merges the suggestion subtypes for the remote suggestions and the
+// local verbatim and history suggestion duplicates at the provider level. This
+// is needed for omnibox::kCategoricalSuggestions to function correctly but is
+// being controlled by a separate feature in case there are unintended side
+// effects beyond the categorical suggestions.
+BASE_FEATURE(kMergeSubtypes, "MergeSubtypes", base::FEATURE_ENABLED_BY_DEFAULT);
+
+bool IsOmniboxCr23CustomizeGuardedFeatureEnabled(const base::Feature& feature) {
+  if (!features::CustomizeChromeSupportsChromeRefresh2023()) {
+    // Bail before checking any other feature flags so that associated studies
+    // don't get activated.
+    return false;
+  }
+
+  return features::GetChromeRefresh2023Level() ==
+             features::ChromeRefresh2023Level::kLevel2 ||
+         base::FeatureList::IsEnabled(feature);
+}
+
 }  // namespace omnibox

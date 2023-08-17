@@ -66,63 +66,6 @@ class Runner():
     if args:
       self.parse_args(args)
 
-  def install_xcode(self):
-    """Installs the requested Xcode build version.
-
-    Returns:
-      (bool, bool)
-        First bool: True if installation was successful. False otherwise.
-        Second bool: True if Xcode is legacy package. False if it's new.
-    """
-    try:
-      if not self.args.mac_toolchain_cmd:
-        raise test_runner.MacToolchainNotFoundError(self.args.mac_toolchain_cmd)
-      # Guard against incorrect install paths. On swarming, this path
-      # should be a requested named cache, and it must exist.
-      if not os.path.exists(self.args.xcode_path):
-        raise test_runner.XcodePathNotFoundError(self.args.xcode_path)
-
-      runtime_cache_folder = None
-      # Runner script only utilizes runtime cache when it's a simulator task.
-      if self.args.version:
-        runtime_cache_folder = xcode.construct_runtime_cache_folder(
-            self.args.runtime_cache_prefix, self.args.version)
-        if not os.path.exists(runtime_cache_folder):
-          # Depending on infra project, runtime named cache might not be
-          # deployed. Create the dir if it doesn't exist since xcode_util
-          # assumes it exists.
-          # TODO(crbug.com/1191260): Raise error instead of creating dirs after
-          # runtime named cache is deployed everywhere.
-          os.makedirs(runtime_cache_folder)
-      # xcode.install() installs the Xcode & iOS runtime, and returns a bool
-      # indicating if the Xcode version in CIPD is a legacy Xcode package (which
-      # includes iOS runtimes).
-      # Update as of 2023: for MacOS13+, iOS runtime will not be installed in
-      # xcode.install(). See xcode.install_runtime_dmg below().
-      is_legacy_xcode = xcode.install(
-          self.args.mac_toolchain_cmd,
-          self.args.xcode_build_version,
-          self.args.xcode_path,
-          runtime_cache_folder=runtime_cache_folder,
-          ios_version=self.args.version)
-      xcode.select(self.args.xcode_path)
-
-      # Starting MacOS13+, additional simulator runtime will be installed
-      # in DMG format
-      if self.args.version and mac_util.is_macos_13_or_higher():
-        xcode.install_runtime_dmg(self.args.mac_toolchain_cmd,
-                                  runtime_cache_folder, self.args.version,
-                                  self.args.xcode_build_version)
-    except subprocess.CalledProcessError as e:
-      # Flush buffers to ensure correct output ordering.
-      sys.stdout.flush()
-      sys.stderr.write('Xcode build version %s failed to install: %s\n' %
-                       (self.args.xcode_build_version, e))
-      sys.stderr.flush()
-      return (False, False)
-    else:
-      return (True, is_legacy_xcode)
-
   def use_xcodebuild_runner(self, args):
     return args.xcode_parallelization or args.xcodebuild_device_runner
 
@@ -195,19 +138,11 @@ class Runner():
 
     # This logic is run by default before the otool command is invoked such that
     # otool has the correct Xcode selected for command line dev tools.
-    install_success, is_legacy_xcode = self.install_xcode()
+    install_success, is_legacy_xcode = xcode.install_xcode(
+        self.args.mac_toolchain_cmd, self.args.xcode_build_version,
+        self.args.xcode_path, self.args.runtime_cache_prefix, self.args.version)
     if not install_success:
       raise test_runner.XcodeVersionNotFoundError(self.args.xcode_build_version)
-
-    # TODO(crbug.com/1457029): remove the below hack once we roll to xc15 beta3.
-    # The hack is required for Xcode simulators to work in xc15 beta2.
-    if self.args.xcode_build_version.lower() == '15a5161b':
-      logging.info("Xcode version is 15a5161b, going to force override runtime")
-      set_runtime_cmd = [
-          'xcrun', 'simctl', 'runtime', 'match', 'set', 'iphoneos17.0',
-          '21A5268h', '--sdkBuild', '21A5268f'
-      ]
-      subprocess.check_output(set_runtime_cmd, stderr=subprocess.STDOUT)
 
     # Sharding env var is required to shard GTest.
     env_vars = self.args.env_var + self.sharding_env_vars()

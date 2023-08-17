@@ -16,9 +16,9 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/mac/foundation_util.h"
-#include "base/path_service.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_path_override.h"
 #include "chrome/browser/web_applications/test/os_integration_test_override_impl.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -33,10 +33,6 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
-
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
 
 using ::testing::_;
 using ::testing::Return;
@@ -153,8 +149,7 @@ class WebAppShortcutCreatorTest : public testing::Test {
     // When using base::PathService::Override, it calls
     // base::MakeAbsoluteFilePath. On Mac this prepends "/private" to the path,
     // but points to the same directory in the file system.
-    EXPECT_TRUE(
-        base::PathService::Override(chrome::DIR_USER_DATA, user_data_dir_));
+    user_data_dir_override_.emplace(chrome::DIR_USER_DATA, user_data_dir_);
     user_data_dir_ = base::MakeAbsoluteFilePath(user_data_dir_);
     app_data_dir_ = base::MakeAbsoluteFilePath(app_data_dir_);
 
@@ -187,6 +182,7 @@ class WebAppShortcutCreatorTest : public testing::Test {
   base::FilePath app_data_dir_;
   base::FilePath destination_dir_;
   base::FilePath user_data_dir_;
+  absl::optional<base::ScopedPathOverride> user_data_dir_override_;
 
   std::unique_ptr<WebAppAutoLoginUtilMock> auto_login_util_mock_;
   std::unique_ptr<ShortcutInfo> info_;
@@ -916,21 +912,34 @@ TEST_F(WebAppShortcutCreatorTest, CreateFailure) {
 }
 
 TEST_F(WebAppShortcutCreatorTest, UpdateIcon) {
-  gfx::Image product_logo =
+  gfx::Image product_logo_16 =
+      ui::ResourceBundle::GetSharedInstance().GetNativeImageNamed(
+          IDR_PRODUCT_LOGO_16);
+  gfx::Image product_logo_32 =
       ui::ResourceBundle::GetSharedInstance().GetNativeImageNamed(
           IDR_PRODUCT_LOGO_32);
-  info_->favicon.Add(product_logo);
-  WebAppShortcutCreatorMock shortcut_creator(app_data_dir_, info_.get());
 
-  ASSERT_TRUE(shortcut_creator.UpdateIcon(shim_path_));
+  WebAppShortcutCreatorMock shortcut_creator(app_data_dir_, info_.get());
   base::FilePath icon_path =
       shim_path_.Append("Contents").Append("Resources").Append("app.icns");
 
+  // regular favicon should be used if no maskable favicons exist
+  info_->favicon.Add(product_logo_32);
+  ASSERT_TRUE(shortcut_creator.UpdateIcon(shim_path_));
   NSImage* image = [[NSImage alloc]
       initWithContentsOfFile:base::mac::FilePathToNSString(icon_path)];
   EXPECT_TRUE(image);
-  EXPECT_EQ(product_logo.Width(), image.size.width);
-  EXPECT_EQ(product_logo.Height(), image.size.height);
+  EXPECT_EQ(product_logo_32.Width(), image.size.width);
+  EXPECT_EQ(product_logo_32.Height(), image.size.height);
+
+  // maskable favicon should be used if present
+  info_->favicon_maskable.Add(product_logo_16);
+  ASSERT_TRUE(shortcut_creator.UpdateIcon(shim_path_));
+  image = [[NSImage alloc]
+      initWithContentsOfFile:base::mac::FilePathToNSString(icon_path)];
+  EXPECT_TRUE(image);
+  EXPECT_EQ(product_logo_16.Width(), image.size.width);
+  EXPECT_EQ(product_logo_16.Height(), image.size.height);
 }
 
 TEST_F(WebAppShortcutCreatorTest, RevealAppShimInFinder) {

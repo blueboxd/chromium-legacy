@@ -85,10 +85,6 @@
 #import "ui/base/l10n/l10n_util_mac.h"
 #import "url/gurl.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 using autofill::FieldRendererId;
 using autofill::FormActivityObserverBridge;
 using autofill::FormData;
@@ -573,19 +569,20 @@ constexpr int kNotifyAutoSigninDuration = 3;  // seconds
 
 - (void)attachListenersForBottomSheet:
             (const std::vector<autofill::FieldRendererId>&)rendererIds
-                              inFrame:(web::WebFrame*)frame {
+                           forFrameId:(const std::string&)frameId {
   AutofillBottomSheetTabHelper* bottomSheetTabHelper =
       AutofillBottomSheetTabHelper::FromWebState(_webState);
   if (bottomSheetTabHelper) {
-    bottomSheetTabHelper->AttachPasswordListeners(rendererIds, frame);
+    bottomSheetTabHelper->AttachPasswordListeners(rendererIds, frameId);
   }
 }
 
-- (void)detachListenersForBottomSheet:(web::WebFrame*)frame {
+- (void)detachListenersForBottomSheet:(const std::string&)frameId {
   AutofillBottomSheetTabHelper* bottomSheetTabHelper =
       AutofillBottomSheetTabHelper::FromWebState(_webState);
   if (bottomSheetTabHelper) {
-    bottomSheetTabHelper->DetachPasswordListeners(frame, /*refocus = */ false);
+    bottomSheetTabHelper->DetachPasswordListeners(frameId,
+                                                  /*refocus = */ false);
   }
 }
 

@@ -14,6 +14,7 @@
 #include "chrome/browser/ash/scalable_iph/scalable_iph_delegate_impl.h"
 #include "chrome/browser/feature_engagement/tracker_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/scalable_iph/scalable_iph_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chromeos/ash/components/scalable_iph/scalable_iph.h"
@@ -84,16 +85,19 @@ void ScalableIphBrowserTestBase::SetUpOnMainThread() {
   // before our `SetUpOnMainThread` as login happens in the method, i.e. profile
   // is not available before it.
   CustomizableTestEnvBrowserTestBase::SetUpOnMainThread();
-  CHECK(browser()->profile());
 
-  CHECK(IsMockDelegateCreatedFor(browser()->profile()))
+  // Do not access profile via `browser()` as a browser might not be created if
+  // session type is WithOobe.
+  Profile* profile = ProfileManager::GetActiveUserProfile();
+  CHECK(profile);
+
+  CHECK(IsMockDelegateCreatedFor(profile))
       << "ScalableIph service has a timer inside. The service must be created "
          "at a login time. We check the behavior by confirming creation of a "
          "delegate.";
 
   mock_tracker_ = static_cast<feature_engagement::test::MockTracker*>(
-      feature_engagement::TrackerFactory::GetForBrowserContext(
-          browser()->profile()));
+      feature_engagement::TrackerFactory::GetForBrowserContext(profile));
   CHECK(mock_tracker_)
       << "mock_tracker_ must be non-nullptr. GetForBrowserContext should "
          "create one via CreateMockTracker if it does not exist.";
@@ -110,7 +114,7 @@ void ScalableIphBrowserTestBase::SetUpOnMainThread() {
       << "This test uses MockScalableIphDelegate. A factory for testing must "
          "be set.";
   scalable_iph::ScalableIph* scalable_iph =
-      ScalableIphFactory::GetForBrowserContext(browser()->profile());
+      ScalableIphFactory::GetForBrowserContext(profile);
   CHECK(scalable_iph);
 
   // `ScalableIph` for the profile is initialzied in
@@ -139,6 +143,7 @@ void ScalableIphBrowserTestBase::TearDownOnMainThread() {
 
 void ScalableIphBrowserTestBase::InitializeScopedFeatureList() {
   base::FieldTrialParams params;
+  AppendVersionNumber(params);
   AppendFakeUiParamsNotification(params);
   base::test::FeatureRefAndParams test_config(kScalableIphTest, params);
 
@@ -146,6 +151,13 @@ void ScalableIphBrowserTestBase::InitializeScopedFeatureList() {
       ash::features::kScalableIph, {});
   scoped_feature_list_.InitWithFeaturesAndParameters(
       {scalable_iph_feature, test_config}, {});
+}
+
+void ScalableIphBrowserTestBase::AppendVersionNumber(
+    base::FieldTrialParams& params) {
+  params[FullyQualified(kScalableIphTest,
+                        scalable_iph::kCustomParamsVersionNumberParamName)] =
+      base::NumberToString(scalable_iph::kCurrentVersionNumber);
 }
 
 void ScalableIphBrowserTestBase::AppendFakeUiParamsNotification(
@@ -165,6 +177,12 @@ void ScalableIphBrowserTestBase::AppendFakeUiParamsNotification(
   params[FullyQualified(kScalableIphTest,
                         scalable_iph::kCustomNotificationButtonTextParamName)] =
       kTestNotificationButtonText;
+  params[FullyQualified(kScalableIphTest,
+                        scalable_iph::kCustomButtonActionTypeParamName)] =
+      kTestButtonActionTypeOpenChrome;
+  params[FullyQualified(kScalableIphTest,
+                        scalable_iph::kCustomButtonActionEventParamName)] =
+      kTestActionEventName;
 }
 
 void ScalableIphBrowserTestBase::AppendFakeUiParamsBubble(
@@ -181,6 +199,15 @@ void ScalableIphBrowserTestBase::AppendFakeUiParamsBubble(
   params[FullyQualified(kScalableIphTest,
                         scalable_iph::kCustomBubbleButtonTextParamName)] =
       kTestBubbleButtonText;
+  params[FullyQualified(kScalableIphTest,
+                        scalable_iph::kCustomButtonActionTypeParamName)] =
+      kTestButtonActionTypeOpenGoogleDocs;
+  params[FullyQualified(kScalableIphTest,
+                        scalable_iph::kCustomButtonActionEventParamName)] =
+      kTestActionEventName;
+  params[FullyQualified(kScalableIphTest,
+                        scalable_iph::kCustomBubbleIconParamName)] =
+      kTestBubbleIconString;
 }
 
 // static
@@ -200,11 +227,16 @@ void ScalableIphBrowserTestBase::EnableTestIphFeature() {
         return &feature == &kScalableIphTest;
       });
 
+  // Do not access profile via `browser()` as this method can be called before a
+  // browser is created.
+  Profile* profile = ProfileManager::GetActiveUserProfile();
+  CHECK(profile);
+
   // `OverrideFeatureListForTesting` prohibits calling it twice and it has a
   // check. We don't need to do another check for `EnableTestIphFeature` being
   // called twice.
   scalable_iph::ScalableIph* scalable_iph =
-      ScalableIphFactory::GetForBrowserContext(browser()->profile());
+      ScalableIphFactory::GetForBrowserContext(profile);
   scalable_iph->OverrideFeatureListForTesting({&kScalableIphTest});
 }
 
@@ -212,10 +244,16 @@ const base::Feature& ScalableIphBrowserTestBase::TestIphFeature() const {
   return kScalableIphTest;
 }
 
-void ScalableIphBrowserTestBase::TriggerConditionsCheckWithAFakeEvent() {
+void ScalableIphBrowserTestBase::TriggerConditionsCheckWithAFakeEvent(
+    scalable_iph::ScalableIph::Event event) {
+  // Do not access profile via `browser()` as this method can be called before a
+  // browser is created.
+  Profile* profile = ProfileManager::GetActiveUserProfile();
+  CHECK(profile);
+
   scalable_iph::ScalableIph* scalable_iph =
-      ScalableIphFactory::GetForBrowserContext(browser()->profile());
-  scalable_iph->RecordEvent(scalable_iph::ScalableIph::Event::kFiveMinTick);
+      ScalableIphFactory::GetForBrowserContext(profile);
+  scalable_iph->RecordEvent(event);
 }
 
 void ScalableIphBrowserTestBase::ShutdownScalableIph() {

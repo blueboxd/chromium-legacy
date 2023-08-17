@@ -109,7 +109,6 @@
 #include "components/omnibox/browser/omnibox_prefs.h"
 #include "components/open_from_clipboard/clipboard_recent_content.h"
 #include "components/password_manager/core/browser/features/password_features.h"
-#include "components/password_manager/core/browser/field_info_store.h"
 #include "components/password_manager/core/browser/password_manager_features_util.h"
 #include "components/password_manager/core/browser/password_store_interface.h"
 #include "components/password_manager/core/browser/smart_bubble_stats_store.h"
@@ -123,6 +122,7 @@
 #include "components/web_cache/browser/web_cache_manager.h"
 #include "components/webrtc_logging/browser/log_cleanup.h"
 #include "components/webrtc_logging/browser/text_log_list.h"
+#include "content/public/browser/background_tracing_manager.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/browsing_data_filter_builder.h"
@@ -576,6 +576,9 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
 
     CreateCrashUploadList()->Clear(delete_begin_, delete_end_);
 
+    content::BackgroundTracingManager::GetInstance().DeleteTracesInDateRange(
+        delete_begin_, delete_end_);
+
     FindBarStateFactory::GetForBrowserContext(profile_)->SetLastSearchText(
         std::u16string());
 
@@ -596,6 +599,11 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
     browsing_data::RemoveFederatedSiteSettingsData(delete_begin_, delete_end_,
                                                    website_settings_filter,
                                                    host_content_settings_map_);
+
+    // Cleared for both DATA_TYPE_HISTORY and DATA_TYPE_CONTENT_SETTINGS.
+    host_content_settings_map_->ClearSettingsForOneTypeWithPredicate(
+        ContentSettingsType::COOKIE_CONTROLS_METADATA, delete_begin, delete_end,
+        website_settings_filter);
   }
 
   //////////////////////////////////////////////////////////////////////////////
@@ -715,6 +723,11 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
                                                                   delete_end_);
       privacy_sandbox_settings->ClearTopicSettings(delete_begin_, delete_end_);
     }
+
+    // Cleared for both DATA_TYPE_HISTORY and DATA_TYPE_CONTENT_SETTINGS.
+    host_content_settings_map_->ClearSettingsForOneTypeWithPredicate(
+        ContentSettingsType::COOKIE_CONTROLS_METADATA, delete_begin, delete_end,
+        website_settings_filter);
 
 #if !BUILDFLAG(IS_ANDROID)
     content::HostZoomMap* zoom_map =
@@ -946,13 +959,6 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
         stats_store->RemoveStatisticsByOriginAndTime(
             nullable_filter, delete_begin_, delete_end_,
             CreateTaskCompletionClosure(TracingDataType::kPasswordsStatistics));
-      }
-      password_manager::FieldInfoStore* field_store =
-          password_store->GetFieldInfoStore();
-      if (field_store) {
-        field_store->RemoveFieldInfoByTime(
-            delete_begin_, delete_end_,
-            CreateTaskCompletionClosure(TracingDataType::kFieldInfo));
       }
     }
   }
@@ -1294,7 +1300,8 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
     const web_app::WebAppRegistrar& web_app_registrar =
         web_app::WebAppProvider::GetForLocalAppsUnchecked(profile_)
             ->registrar_unsafe();
-    for (const web_app::WebApp& web_app : web_app_registrar.GetApps()) {
+    for (const web_app::WebApp& web_app :
+         web_app_registrar.GetAppsIncludingStubs()) {
       if (!web_app_registrar.IsIsolated(web_app.app_id()) ||
           !filter.Run(web_app.scope())) {
         continue;
@@ -1316,6 +1323,15 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
           }
           // For Controlled Frame partitions, all data should be deleted, so
           // |iwa_remove_mask| should stay DATA_TYPE_ON_STORAGE_PARTITION.
+        }
+
+        // COOKIES are a domain-scoped datatype. ISOLATED_WEB_APP_COOKIES are
+        // attributed to the Isolated Web App's origin, so we're tracking them
+        // as a separate origin-scoped datatype. A deletion request for an
+        // app's ISOLATED_WEB_APP_COOKIES is implemented as a deletion request
+        // for COOKIES for all domains on the app's StoragePartition.
+        if (remove_mask & constants::DATA_TYPE_ISOLATED_WEB_APP_COOKIES) {
+          iwa_remove_mask |= content::BrowsingDataRemover::DATA_TYPE_COOKIES;
         }
 
         // We can't wait for the `RemoveWithFilter` call to finish because
@@ -1454,8 +1470,6 @@ const char* ChromeBrowsingDataRemoverDelegate::GetHistogramSuffix(
       return "TpmAttestationKeys";
     case TracingDataType::kStrikes:
       return "Strikes";
-    case TracingDataType::kFieldInfo:
-      return "FieldInfo";
     case TracingDataType::kCompromisedCredentials:
       return "CompromisedCredentials";
     case TracingDataType::kUserDataSnapshot:

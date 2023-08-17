@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/component_export.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/values.h"
 #include "device/fido/authenticator_get_assertion_response.h"
 #include "device/fido/ctap_get_assertion_request.h"
@@ -20,13 +21,19 @@ class WebauthnCredentialSpecifics;
 
 namespace device {
 
-std::string CtapGetAssertionRequestToJson(
-    const CtapGetAssertionRequest& request);
+class JSONRequest;
 
-// For testing only.
-std::pair<absl::optional<CtapGetAssertionRequest>, std::string>
-    COMPONENT_EXPORT(DEVICE_FIDO)
-        CtapGetAssertionRequestFromJson(const std::string& json);
+namespace enclave {
+
+const char kInitPath[] = "v1/init";
+const char kCommandPath[] = "v1/cmd";
+
+// Keys for the RPC param names to the HTTP front end:
+const char kInitSessionRequestData[] = "request";
+const char kInitSessionResponseData[] = "response";
+const char kSessionId[] = "session_id";
+const char kSendCommandRequestData[] = "command";
+const char kSendCommandResponseData[] = "response";
 
 // For testing only.
 std::string COMPONENT_EXPORT(DEVICE_FIDO)
@@ -34,12 +41,20 @@ std::string COMPONENT_EXPORT(DEVICE_FIDO)
         const AuthenticatorGetAssertionResponse& response);
 
 std::pair<absl::optional<AuthenticatorGetAssertionResponse>, std::string>
-AuthenticatorGetAssertionRequestFromJson(const std::string& json);
+AuthenticatorGetAssertionResponseFromJson(const std::string& json);
 
 void BuildGetAssertionRequestBody(
     const sync_pb::WebauthnCredentialSpecifics& passkey,
-    const std::string& request,
+    scoped_refptr<JSONRequest> request,
     std::string* out_request_body);
+
+// For testing only.
+bool COMPONENT_EXPORT(DEVICE_FIDO) ParseGetAssertionRequestBody(
+    const std::string& request_body,
+    sync_pb::WebauthnCredentialSpecifics* out_passkey,
+    base::Value* out_request);
+
+}  // namespace enclave
 
 }  // namespace device
 

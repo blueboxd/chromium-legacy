@@ -37,6 +37,7 @@
 #include "third_party/blink/renderer/core/dom/tree_scope.h"
 #include "third_party/blink/renderer/core/scroll/scroll_customization.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_map.h"
 #include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_set.h"
 #include "third_party/blink/renderer/platform/heap/custom_spaces.h"
@@ -291,8 +292,20 @@ class CORE_EXPORT Node : public EventTarget {
 
   bool hasChildren() const { return firstChild(); }
   Node* cloneNode(bool deep, ExceptionState&) const;
+
   // https://dom.spec.whatwg.org/#concept-node-clone
-  virtual Node* Clone(Document&, NodeCloningData&) const = 0;
+  // The implementation differs a bit from the spec algorithm, notably in the
+  // order that nodes are appended to their eventual destination. The spec
+  // requires each Element's children to be cloned before they are appended to
+  // the Element, whereas the Chromium implementation first attaches a new
+  // clone to its parent, and then clones children. This avoids an O(log-n^2)
+  // set of calls to Node::InsertedInto().
+  virtual Node* Clone(
+      Document& factory,
+      NodeCloningData& data,
+      ContainerNode* append_to,
+      ExceptionState& append_exception_state = ASSERT_NO_EXCEPTION) const = 0;
+
   // This is not web-exposed. We should rename it or remove it.
   Node* cloneNode(bool deep) const;
   void normalize();
@@ -662,7 +675,7 @@ class CORE_EXPORT Node : public EventTarget {
   // This differs from GetTreeScope for shadow clones inside <svg:use/>.
   TreeScope& OriginatingTreeScope() const;
 
-  HashSet<Member<TreeScope>> GetAncestorTreeScopes() const;
+  HeapHashSet<Member<TreeScope>> GetAncestorTreeScopes() const;
 
   bool InActiveDocument() const;
 
@@ -947,11 +960,11 @@ class CORE_EXPORT Node : public EventTarget {
 
   void AddDOMPart(Part& part) { EnsureRareData().AddDOMPart(part); }
   void RemoveDOMPart(Part& part) { EnsureRareData().RemoveDOMPart(part); }
-  bool HasDOMParts() const {
-    return HasRareData() && RareData()->HasDOMParts();
+  PartsList* GetDOMParts() const {
+    return HasRareData() ? RareData()->GetDOMParts() : nullptr;
   }
-  PartsList GetDOMParts() const { return RareData()->GetDOMParts(); }
-  void InvalidateDOMParts();
+  void UpdateForRemovedDOMParts(ContainerNode& insertion_point);
+  void UpdateForInsertedDOMParts(ContainerNode& insertion_point);
 
   // For the imperative slot distribution API.
   void SetManuallyAssignedSlot(HTMLSlotElement* slot);

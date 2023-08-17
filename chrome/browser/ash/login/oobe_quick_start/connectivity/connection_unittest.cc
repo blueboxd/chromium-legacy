@@ -11,6 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "base/test/bind.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/task_environment.h"
 #include "base/test/test_future.h"
 #include "base/time/time.h"
@@ -24,6 +25,7 @@
 #include "chrome/browser/nearby_sharing/public/cpp/nearby_connection.h"
 #include "chromeos/ash/components/quick_start/fake_quick_start_decoder.h"
 #include "chromeos/ash/components/quick_start/quick_start_message.h"
+#include "chromeos/ash/components/quick_start/quick_start_metrics.h"
 #include "chromeos/ash/components/quick_start/quick_start_requests.h"
 #include "chromeos/ash/components/quick_start/types.h"
 #include "chromeos/ash/services/nearby/public/mojom/quick_start_decoder.mojom.h"
@@ -82,6 +84,10 @@ constexpr std::array<uint8_t, 12> kNonce = {0x60, 0x3e, 0x87, 0x69, 0xa3, 0x55,
                                             0xd3, 0x49, 0xbd, 0x0a, 0x63, 0xed};
 
 constexpr base::TimeDelta kResponseTimeout = base::Seconds(3);
+
+constexpr char kGaiaTransferResultName[] = "QuickStart.GaiaTransferResult";
+constexpr char kGaiaTransferResultFailureReasonName[] =
+    "QuickStart.GaiaTransferResult.FailureReason";
 
 }  // namespace
 
@@ -143,10 +149,135 @@ class ConnectionTest : public testing::Test {
 
   void SendBytesAndReadResponse(std::vector<uint8_t>&& bytes,
                                 Connection::ConnectionResponseCallback callback,
-                                base::TimeDelta timeout) {
-    connection_->SendBytesAndReadResponse(std::move(bytes),
-                                          QuickStartResponseType::kHandshake,
+                                base::TimeDelta timeout,
+                                QuickStartResponseType response_type =
+                                    QuickStartResponseType::kHandshake) {
+    connection_->SendBytesAndReadResponse(std::move(bytes), response_type,
                                           std::move(callback), timeout);
+  }
+
+  void EmulateEmptyResponseReceived(QuickStartResponseType response_type) {
+    base::test::TestFuture<absl::optional<std::vector<uint8_t>>> future;
+    SendBytesAndReadResponse(std::vector<uint8_t>(kTestBytes),
+                             future.GetCallback(), kResponseTimeout,
+                             response_type);
+    connection_->OnResponseReceived(future.GetCallback(), response_type,
+                                    absl::nullopt);
+    TestMessageMetrics(
+        /*succeeded=*/false, /*message_type=*/
+        quick_start_metrics::MapResponseToMessageType(response_type),
+        /*error_code=*/
+        quick_start_metrics::MessageReceivedErrorCode::kDeserializationFailure);
+  }
+
+  void OnHandshakeResponse(base::OnceCallback<void(bool)> callback) {
+    connection_->OnHandshakeResponse(kAuthToken, std::move(callback),
+                                     absl::nullopt);
+  }
+
+  void OnRequestAccountTransferAssertionResponse() {
+    base::test::TestFuture<absl::optional<FidoAssertionInfo>> future;
+    connection_->OnRequestAccountTransferAssertionResponse(future.GetCallback(),
+                                                           absl::nullopt);
+  }
+
+  void TestMessageMetrics(
+      bool should_succeed,
+      quick_start_metrics::MessageType message_type,
+      absl::optional<quick_start_metrics::MessageReceivedErrorCode>
+          error_code) {
+    histogram_tester_.ExpectBucketCount("QuickStart.MessageSent.MessageType",
+                                        message_type, 1);
+    histogram_tester_.ExpectBucketCount(
+        "QuickStart.MessageReceived.DesiredMessageType", message_type, 1);
+    switch (message_type) {
+      case quick_start_metrics::MessageType::kWifiCredentials:
+        histogram_tester_.ExpectBucketCount(
+            "QuickStart.MessageReceived.WifiCredentials.Succeeded",
+            should_succeed, 1);
+        histogram_tester_.ExpectTotalCount(
+            "QuickStart.MessageReceived.WifiCredentials.ListenDuration", 1);
+        if (error_code.has_value()) {
+          histogram_tester_.ExpectBucketCount(
+              "QuickStart.MessageReceived.WifiCredentials.ErrorCode",
+              error_code.value(), 1);
+        }
+        break;
+      case quick_start_metrics::MessageType::kBootstrapConfigurations:
+        histogram_tester_.ExpectBucketCount(
+            "QuickStart.MessageReceived.BootstrapConfigurations.Succeeded",
+            should_succeed, 1);
+        histogram_tester_.ExpectTotalCount(
+            "QuickStart.MessageReceived.BootstrapConfigurations.ListenDuration",
+            1);
+        if (error_code.has_value()) {
+          histogram_tester_.ExpectBucketCount(
+              "QuickStart.MessageReceived.BootstrapConfigurations.ErrorCode",
+              error_code.value(), 1);
+        }
+        break;
+      case quick_start_metrics::MessageType::kHandshake:
+        histogram_tester_.ExpectBucketCount(
+            "QuickStart.MessageReceived.Handshake.Succeeded", should_succeed,
+            1);
+        histogram_tester_.ExpectTotalCount(
+            "QuickStart.MessageReceived.Handshake.ListenDuration", 1);
+        if (error_code.has_value()) {
+          histogram_tester_.ExpectBucketCount(
+              "QuickStart.MessageReceived.Handshake.ErrorCode",
+              error_code.value(), 1);
+        }
+        break;
+      case quick_start_metrics::MessageType::kNotifySourceOfUpdate:
+        histogram_tester_.ExpectBucketCount(
+            "QuickStart.MessageReceived.NotifySourceOfUpdate.Succeeded",
+            should_succeed, 1);
+        histogram_tester_.ExpectTotalCount(
+            "QuickStart.MessageReceived.NotifySourceOfUpdate.ListenDuration",
+            1);
+        if (error_code.has_value()) {
+          histogram_tester_.ExpectBucketCount(
+              "QuickStart.MessageReceived.NotifySourceOfUpdate.ErrorCode",
+              error_code.value(), 1);
+        }
+        break;
+      case quick_start_metrics::MessageType::kGetInfo:
+        histogram_tester_.ExpectBucketCount(
+            "QuickStart.MessageReceived.GetInfo.Succeeded", should_succeed, 1);
+        histogram_tester_.ExpectTotalCount(
+            "QuickStart.MessageReceived.GetInfo.ListenDuration", 1);
+        if (error_code.has_value()) {
+          histogram_tester_.ExpectBucketCount(
+              "QuickStart.MessageReceived.GetInfo.ErrorCode",
+              error_code.value(), 1);
+        }
+        break;
+      case quick_start_metrics::MessageType::kAssertion:
+        histogram_tester_.ExpectBucketCount(
+            "QuickStart.MessageReceived.Assertion.Succeeded", should_succeed,
+            1);
+        histogram_tester_.ExpectTotalCount(
+            "QuickStart.MessageReceived.Assertion.ListenDuration", 1);
+        if (error_code.has_value()) {
+          histogram_tester_.ExpectBucketCount(
+              "QuickStart.MessageReceived.Assertion.ErrorCode",
+              error_code.value(), 1);
+        }
+        break;
+    }
+  }
+
+  void TestHandshakeMetrics(
+      bool should_succeed,
+      absl::optional<quick_start_metrics::HandshakeErrorCode> error_code) {
+    if (!should_succeed) {
+      histogram_tester_.ExpectBucketCount(
+          "QuickStart.HandshakeResult.ErrorCode", error_code.value(), 1);
+    }
+    histogram_tester_.ExpectBucketCount("QuickStart.HandshakeResult.Succeeded",
+                                        should_succeed, 1);
+    histogram_tester_.ExpectTotalCount("QuickStart.HandshakeResult.Duration",
+                                       1);
   }
 
   base::test::TaskEnvironment task_environment_{
@@ -163,6 +294,7 @@ class ConnectionTest : public testing::Test {
   absl::optional<FidoAssertionInfo> assertion_info_;
   const Base64UrlString kChallenge_ =
       *Base64UrlTranscode(Base64String(kChallengeBase64));
+  base::HistogramTester histogram_tester_;
 };
 
 TEST_F(ConnectionTest, RequestWifiCredentials) {
@@ -225,6 +357,10 @@ TEST_F(ConnectionTest, RequestWifiCredentials) {
   EXPECT_EQ(credentials.value().security_type,
             ash::quick_start::mojom::WifiSecurityType::kPSK);
   EXPECT_TRUE(credentials.value().is_hidden);
+  TestMessageMetrics(
+      /*should_succeed=*/true,
+      /*message_type=*/quick_start_metrics::MessageType::kWifiCredentials,
+      /*error_code=*/absl::nullopt);
 }
 
 TEST_F(ConnectionTest, RequestWifiCredentialsReturnsEmptyOnFailure) {
@@ -274,6 +410,10 @@ TEST_F(ConnectionTest, RequestAccountTransferAssertion) {
       expected_cryptauth_device_id, absl::nullopt);
   fake_nearby_connection_->AppendReadableData(kTestBytes);
 
+  TestMessageMetrics(/*should_succeed=*/true, /*message_type=*/
+                     quick_start_metrics::MessageType::kBootstrapConfigurations,
+                     /*error_code=*/absl::nullopt);
+
   // OnBootstrapOptionsResponse should trigger a write of FIDO GetInfo
   // request.
   std::vector<uint8_t> fido_get_info_data =
@@ -294,6 +434,10 @@ TEST_F(ConnectionTest, RequestAccountTransferAssertion) {
 
   // Emulate a GetInfo response.
   fake_nearby_connection_->AppendReadableData(kTestBytes);
+  TestMessageMetrics(
+      /*should_succeed=*/true,
+      /*message_type=*/quick_start_metrics::MessageType::kGetInfo,
+      /*error_code=*/absl::nullopt);
 
   // OnFidoGetInfoResponse should trigger a write of FIDO GetAssertion
   // request.
@@ -339,6 +483,10 @@ TEST_F(ConnectionTest, RequestAccountTransferAssertion) {
           /*signature=*/signature));
   fake_nearby_connection_->AppendReadableData(data);
   EXPECT_FALSE(fake_nearby_connection_->IsClosed());
+  TestMessageMetrics(
+      /*should_succeed=*/true,
+      /*message_type=*/quick_start_metrics::MessageType::kAssertion,
+      /*error_code=*/absl::nullopt);
 
   // Wait for callback to finish and verify response
   base::RunLoop().RunUntilIdle();
@@ -347,6 +495,17 @@ TEST_F(ConnectionTest, RequestAccountTransferAssertion) {
   EXPECT_EQ(expected_credential_id, assertion_info_->credential_id);
   EXPECT_EQ(auth_data, assertion_info_->authenticator_data);
   EXPECT_EQ(signature, assertion_info_->signature);
+  histogram_tester_.ExpectBucketCount(kGaiaTransferResultName, true, 1);
+}
+
+TEST_F(ConnectionTest, RequestAccountTransferAssertion_EmptyResponse) {
+  OnRequestAccountTransferAssertionResponse();
+  histogram_tester_.ExpectBucketCount(kGaiaTransferResultName, false, 1);
+  histogram_tester_.ExpectBucketCount(
+      kGaiaTransferResultFailureReasonName,
+      quick_start_metrics::GaiaTransferResultFailureReason::
+          kNoAccountsReceivedFromPhone,
+      1);
 }
 
 TEST_F(ConnectionTest, NotifySourceOfUpdate_Success) {
@@ -380,6 +539,10 @@ TEST_F(ConnectionTest, NotifySourceOfUpdate_Success) {
   EXPECT_EQ(*parsed_payload.FindString("shared_secret"), shared_secret_base64);
 
   EXPECT_TRUE(future.Get());
+  TestMessageMetrics(
+      /*should_succeed=*/true,
+      /*message_type=*/quick_start_metrics::MessageType::kNotifySourceOfUpdate,
+      /*error_code=*/absl::nullopt);
 }
 
 TEST_F(ConnectionTest, NotifySourceOfUpdate_FalseAckReceivedValue) {
@@ -394,6 +557,10 @@ TEST_F(ConnectionTest, NotifySourceOfUpdate_FalseAckReceivedValue) {
 
   fake_nearby_connection_->AppendReadableData({0x00, 0x01, 0x02});
   EXPECT_FALSE(future.Get());
+  TestMessageMetrics(
+      /*should_succeed=*/true,
+      /*message_type=*/quick_start_metrics::MessageType::kNotifySourceOfUpdate,
+      /*error_code=*/absl::nullopt);
 }
 
 TEST_F(ConnectionTest, NotifySourceOfUpdate_NoAckReceivedValue) {
@@ -421,6 +588,10 @@ TEST_F(ConnectionTest, NotifySourceOfUpdate_ResponseTimeout) {
 
   task_environment_.FastForwardBy(kResponseTimeout);
   EXPECT_EQ(connection_->GetState(), Connection::State::kClosed);
+  TestMessageMetrics(
+      /*should_succeed=*/false,
+      /*message_type=*/quick_start_metrics::MessageType::kNotifySourceOfUpdate,
+      /*error_code=*/quick_start_metrics::MessageReceivedErrorCode::kTimeOut);
 }
 
 TEST_F(ConnectionTest, SendBytesAndReadResponse_TimedOut) {
@@ -506,14 +677,20 @@ TEST_F(ConnectionTest, TestDisconnectsWithoutCloseIssueUnknownError) {
 TEST_F(ConnectionTest, InitiateHandshake) {
   base::test::TestFuture<bool> future;
   connection_->InitiateHandshake(kAuthToken, future.GetCallback());
-  EXPECT_TRUE(handshake::VerifyHandshakeMessage(
-      fake_nearby_connection_->GetWrittenData(), kAuthToken, kSharedSecret,
-      handshake::DeviceRole::kTarget));
+  EXPECT_EQ(handshake::VerifyHandshakeMessage(
+                fake_nearby_connection_->GetWrittenData(), kAuthToken,
+                kSharedSecret, handshake::DeviceRole::kTarget),
+            handshake::VerifyHandshakeMessageStatus::kSuccess);
 
   std::vector<uint8_t> response = handshake::BuildHandshakeMessage(
       kAuthToken, kSharedSecret, kNonce, handshake::DeviceRole::kSource);
   fake_nearby_connection_->AppendReadableData(response);
   EXPECT_TRUE(future.Get());
+  TestMessageMetrics(
+      /*should_succeed=*/true,
+      /*message_type=*/quick_start_metrics::MessageType::kHandshake,
+      /*error_code=*/absl::nullopt);
+  TestHandshakeMetrics(/*should_succeed=*/true, /*error_code=*/absl::nullopt);
 }
 
 TEST_F(ConnectionTest, InitiateHandshake_BadResponse) {
@@ -526,6 +703,18 @@ TEST_F(ConnectionTest, InitiateHandshake_BadResponse) {
   // the target device. Should fail because it uses the wrong role.
   fake_nearby_connection_->AppendReadableData(written_payload);
   EXPECT_FALSE(future.Get());
+  TestHandshakeMetrics(/*should_succeed=*/false,
+                       /*error_code=*/quick_start_metrics::HandshakeErrorCode::
+                           kUnexpectedAuthPayloadRole);
+}
+
+TEST_F(ConnectionTest, EmptyHandshakeResponse) {
+  base::test::TestFuture<bool> future;
+  connection_->InitiateHandshake(kAuthToken, future.GetCallback());
+  OnHandshakeResponse(future.GetCallback());
+  TestHandshakeMetrics(/*should_succeed=*/false,
+                       /*error_code=*/quick_start_metrics::HandshakeErrorCode::
+                           kFailedToReadResponse);
 }
 
 TEST_F(ConnectionTest, TestUserVerificationRequested_ReturnsResult) {
@@ -615,6 +804,19 @@ TEST_F(ConnectionTest, GetPhoneInstanceId) {
   run_loop.Run();
   EXPECT_EQ(authenticated_connection_->get_phone_instance_id(),
             expected_cryptauth_device_id);
+}
+
+TEST_F(ConnectionTest, MetricsEmittedOnEmptyResponse) {
+  const QuickStartResponseType response_types[] = {
+      QuickStartResponseType::kWifiCredentials,
+      QuickStartResponseType::kBootstrapConfigurations,
+      QuickStartResponseType::kHandshake,
+      QuickStartResponseType::kAssertion,
+      QuickStartResponseType::kGetInfo,
+      QuickStartResponseType::kNotifySourceOfUpdate};
+  for (const auto response_type : response_types) {
+    EmulateEmptyResponseReceived(response_type);
+  }
 }
 
 }  // namespace ash::quick_start

@@ -44,6 +44,11 @@
 #include "chrome/browser/task_manager/task_manager_browsertest_util.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/browser/ui/login/login_handler.h"
+#include "chrome/browser/ui/login/login_handler_test_utils.h"
+#include "chrome/browser/usb/usb_browser_test_utils.h"
+#include "chrome/browser/usb/usb_chooser_context.h"
+#include "chrome/browser/usb/usb_chooser_context_factory.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -123,6 +128,7 @@
 #include "net/test/test_data_directory.h"
 #include "pdf/buildflags.h"
 #include "ppapi/buildflags/buildflags.h"
+#include "services/device/public/cpp/test/fake_usb_device_manager.h"
 #include "services/device/public/cpp/test/scoped_geolocation_overrider.h"
 #include "services/network/public/cpp/network_switches.h"
 #include "third_party/blink/public/common/features.h"
@@ -134,8 +140,8 @@
 #include "url/url_constants.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/webui/settings/public/constants/routes.mojom.h"  // nogncheck
 #include "chrome/browser/ash/system_web_apps/system_web_app_manager.h"
-#include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"  // nogncheck
 #endif
 
 #if defined(USE_AURA)
@@ -2350,21 +2356,10 @@ IN_PROC_BROWSER_TEST_F(WebViewSafeBrowsingTest,
   TestHelper("testLoadAbortSafeBrowsing", "web_view/shim", NO_TEST_SERVER);
 }
 
-class WebViewHttpsFirstModeTest : public WebViewSSLErrorTest {
- public:
-  WebViewHttpsFirstModeTest() {
-    feature_list_.InitAndEnableFeature(features::kHttpsOnlyMode);
-  }
-  ~WebViewHttpsFirstModeTest() override = default;
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
-
 // Tests that loading an HTTPS page in a guest <webview> with HTTPS-First Mode
 // enabled doesn't crash nor shows error page.
 // Regression test for crbug.com/1233889
-IN_PROC_BROWSER_TEST_F(WebViewHttpsFirstModeTest, GuestLoadsHttpsWithoutError) {
+IN_PROC_BROWSER_TEST_F(WebViewSSLErrorTest, GuestLoadsHttpsWithoutError) {
   browser()->profile()->GetPrefs()->SetBoolean(prefs::kHttpsOnlyModeEnabled,
                                                true);
 
@@ -2389,7 +2384,7 @@ IN_PROC_BROWSER_TEST_F(WebViewHttpsFirstModeTest, GuestLoadsHttpsWithoutError) {
 
 // Tests that loading an HTTP page in a guest <webview> with HTTPS-First Mode
 // enabled doesn't crash and doesn't trigger the error page.
-IN_PROC_BROWSER_TEST_F(WebViewHttpsFirstModeTest, GuestLoadsHttpWithoutError) {
+IN_PROC_BROWSER_TEST_F(WebViewSSLErrorTest, GuestLoadsHttpWithoutError) {
   browser()->profile()->GetPrefs()->SetBoolean(prefs::kHttpsOnlyModeEnabled,
                                                true);
 
@@ -3992,6 +3987,91 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestDisabledZoomMode) {
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestZoomBeforeNavigation) {
   TestHelper("testZoomBeforeNavigation", "web_view/shim", NO_TEST_SERVER);
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewTest, HttpAuth) {
+  ASSERT_TRUE(StartEmbeddedTestServer());
+  LoadAppWithGuest("web_view/simple");
+
+  const GURL auth_url = embedded_test_server()->GetURL("/auth-basic");
+  content::NavigationController* guest_controller =
+      &GetGuestView()->GetController();
+  LoginPromptBrowserTestObserver login_observer;
+  login_observer.Register(
+      content::Source<content::NavigationController>(guest_controller));
+  WindowedAuthNeededObserver auth_needed(guest_controller);
+  WindowedAuthSuppliedObserver auth_supplied(guest_controller);
+  // There are two navigations occurring here. The first fails due to the need
+  // for auth. After it's supplied, a second navigation will succeed.
+  content::TestNavigationObserver nav_observer(GetGuestWebContents(), 2);
+  nav_observer.set_wait_event(
+      content::TestNavigationObserver::WaitEvent::kNavigationFinished);
+
+  EXPECT_TRUE(
+      content::ExecJs(GetGuestRenderFrameHost(),
+                      content::JsReplace("location.href = $1;", auth_url)));
+  auth_needed.Wait();
+
+  LoginHandler* login_handler = login_observer.handlers().front();
+  login_handler->SetAuth(u"basicuser", u"secret");
+  auth_supplied.Wait();
+  nav_observer.WaitForNavigationFinished();
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewTest, HttpAuthIdentical) {
+  ASSERT_TRUE(StartEmbeddedTestServer());
+  LoadAppWithGuest("web_view/simple");
+
+  const GURL auth_url = embedded_test_server()->GetURL("/auth-basic");
+  content::NavigationController* guest_controller =
+      &GetGuestView()->GetController();
+  content::NavigationController* tab_controller =
+      &browser()->tab_strip_model()->GetActiveWebContents()->GetController();
+  LoginPromptBrowserTestObserver login_observer;
+  login_observer.Register(
+      content::Source<content::NavigationController>(guest_controller));
+  login_observer.Register(
+      content::Source<content::NavigationController>(tab_controller));
+  WindowedAuthNeededObserver guest_auth_needed(guest_controller);
+  WindowedAuthNeededObserver tab_auth_needed(tab_controller);
+  WindowedAuthSuppliedObserver guest_auth_supplied(guest_controller);
+  // There are two navigations occurring here. The first fails due to the need
+  // for auth. After it's supplied, a second navigation will succeed.
+  content::TestNavigationObserver guest_nav_observer(GetGuestWebContents(), 2);
+  guest_nav_observer.set_wait_event(
+      content::TestNavigationObserver::WaitEvent::kNavigationFinished);
+
+  EXPECT_TRUE(
+      content::ExecJs(GetGuestRenderFrameHost(),
+                      content::JsReplace("location.href = $1;", auth_url)));
+  guest_auth_needed.Wait();
+
+  // While the login UI is showing for the app, navigate a tab to the same URL
+  // requiring auth.
+  tab_controller->LoadURL(auth_url, content::Referrer(),
+                          ui::PAGE_TRANSITION_TYPED, std::string());
+  tab_auth_needed.Wait();
+
+  // Both the guest and the tab should be prompting for credentials and the auth
+  // challenge should be the same. Normally, the login code de-duplicates
+  // identical challenges if multiple prompts are shown for them. However,
+  // credentials can't be shared across StoragePartitions. So providing
+  // credentials within the guest should not affect the tab.
+  ASSERT_EQ(2u, login_observer.handlers().size());
+  LoginHandler* guest_login_handler = login_observer.handlers().front();
+  LoginHandler* tab_login_handler = login_observer.handlers().back();
+  EXPECT_EQ(tab_controller,
+            &tab_login_handler->web_contents()->GetController());
+  EXPECT_TRUE(guest_login_handler->auth_info().MatchesExceptPath(
+      tab_login_handler->auth_info()));
+
+  guest_login_handler->SetAuth(u"basicuser", u"secret");
+  guest_auth_supplied.Wait();
+  guest_nav_observer.WaitForNavigationFinished();
+
+  // The tab should still be prompting for credentials.
+  ASSERT_EQ(1u, login_observer.handlers().size());
+  EXPECT_EQ(tab_login_handler, login_observer.handlers().front());
 }
 
 namespace {
@@ -6524,7 +6604,7 @@ IN_PROC_BROWSER_TEST_F(WebViewWithDefaultSiteInstanceTest, SimpleNavigations) {
   // Expect that we stayed in the same (default) SiteInstance.
   main_frame = GetGuestRenderFrameHost();
   ASSERT_TRUE(main_frame);
-  if (!content::WillSameSiteNavigationsChangeRenderFrameHosts()) {
+  if (!main_frame->ShouldChangeRenderFrameHostOnSameSiteNavigation()) {
     // The RenderFrameHost will stay the same when we don't change
     // RenderFrameHosts on same-SiteInstance navigations.
     EXPECT_EQ(main_frame->GetGlobalId(), original_id);
@@ -6722,4 +6802,74 @@ class WebViewPortalTest : public WebViewTest {
 // Creates and activates a <portal> element inside a <webview>.
 IN_PROC_BROWSER_TEST_F(WebViewPortalTest, PortalActivationInGuest) {
   TestHelper("testActivatePortal", "web_view/shim", NEEDS_TEST_SERVER);
+}
+
+class WebViewUsbTest : public WebViewTest {
+ public:
+  WebViewUsbTest() = default;
+  ~WebViewUsbTest() override = default;
+
+  void SetUpOnMainThread() override {
+    WebViewTest::SetUpOnMainThread();
+    fake_device_info_ = device_manager_.CreateAndAddDevice(
+        0, 0, "Test Manufacturer", "Test Device", "123456");
+    mojo::PendingRemote<device::mojom::UsbDeviceManager> device_manager;
+    device_manager_.AddReceiver(
+        device_manager.InitWithNewPipeAndPassReceiver());
+    UsbChooserContextFactory::GetForProfile(browser()->profile())
+        ->SetDeviceManagerForTesting(std::move(device_manager));
+
+    test_content_browser_client_.SetAsBrowserClient();
+  }
+
+  void TearDownOnMainThread() override {
+    test_content_browser_client_.UnsetAsBrowserClient();
+    WebViewTest::TearDownOnMainThread();
+  }
+
+  void UseFakeChooser() {
+    test_content_browser_client_.delegate().UseFakeChooser();
+  }
+
+ private:
+  device::FakeUsbDeviceManager device_manager_;
+  device::mojom::UsbDeviceInfoPtr fake_device_info_;
+  TestUsbContentBrowserClient test_content_browser_client_;
+};
+
+IN_PROC_BROWSER_TEST_F(WebViewUsbTest, Shim_TestCannotRequestUsb) {
+  TestHelper("testCannotRequestUsb", "web_view/shim", NEEDS_TEST_SERVER);
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewUsbTest, Shim_TestCannotReuseUsbPairedInTab) {
+  // We start the test server here, instead of in TestHelper, because we need
+  // to know the origin used in both the tab and webview before running the rest
+  // of the test.
+  ASSERT_TRUE(StartEmbeddedTestServer());
+
+  const GURL url = embedded_test_server()->GetURL("localhost", "/title1.html");
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
+  content::WebContents* tab_web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  UseFakeChooser();
+  // Request permission to access the fake device in the tab. The fake chooser
+  // will automatically select the item representing the fake device, granting
+  // the permission.
+  EXPECT_EQ("123456", EvalJs(tab_web_contents,
+                             R"((async () => {
+        let device =
+            await navigator.usb.requestDevice({filters: []});
+        return device.serialNumber;
+      })())"));
+  EXPECT_EQ(content::ListValueOf("123456"), EvalJs(tab_web_contents,
+                                                   R"((async () => {
+        let devices = await navigator.usb.getDevices();
+        return devices.map(device => device.serialNumber);
+      })())"));
+
+  // Have the embedder create a webview which navigates to the same origin and
+  // attempts to use the paired device. The granted permission should not be
+  // available for that context.
+  TestHelper("testCannotReuseUsbPairedInTab", "web_view/shim", NO_TEST_SERVER);
 }

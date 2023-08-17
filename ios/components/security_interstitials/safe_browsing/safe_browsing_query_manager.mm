@@ -13,10 +13,6 @@
 #import "ios/web/public/thread/web_thread.h"
 #import "services/network/public/mojom/fetch_api.mojom.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 using security_interstitials::UnsafeResource;
 
 WEB_STATE_USER_DATA_KEY_IMPL(SafeBrowsingQueryManager)
@@ -132,7 +128,7 @@ void SafeBrowsingQueryManager::UrlCheckFinished(
   // when an observer is notified.
   auto weak_this = weak_factory_.GetWeakPtr();
   for (auto& observer : observers_) {
-    observer.SafeBrowsingQueryFinished(this, query, result);
+    observer.SafeBrowsingQueryFinished(this, query, result, performed_check);
     if (!weak_this)
       return;
   }

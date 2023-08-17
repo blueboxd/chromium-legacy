@@ -76,6 +76,8 @@ suite('acceleratorEditViewTest', function() {
 
     // Click on the Cancel button and expect the edit buttons to be available.
     getElementById('cancelButton')!.click();
+
+    await flushTasks();
     assertTrue(isVisible(getElementById('editButtonsContainer')));
     assertFalse(isVisible(getElementById('cancelButtonContainer')));
   });
@@ -216,7 +218,8 @@ suite('acceleratorEditViewTest', function() {
 
     // Input hint message should be shown.
     const expectedHintMessage =
-        'Press 1-4 modifiers and 1 other key on your keyboard';
+        'Press 1-4 modifiers and 1 other key on your keyboard. To exit ' +
+        'editing mode, press alt + esc.';
     const statusMessageElement = strictQuery(
         '#acceleratorInfoText', editViewElement!.shadowRoot, HTMLDivElement);
     assertEquals(expectedHintMessage, statusMessageElement.textContent!.trim());

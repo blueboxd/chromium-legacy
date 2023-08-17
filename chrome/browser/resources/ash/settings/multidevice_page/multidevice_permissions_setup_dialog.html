@@ -29,8 +29,9 @@
 
   /* TODO(b/281116317) Remove once Jelly is launched */
   :host-context(body:not(.jelly-enabled)) #title {
-    font-family: 'Google Sans Medium';
+    font-family: var(--cros-font-family-google-sans);
     font-size: 16px;
+    font-weight: 500;
     line-height: 24px;
   }
 
@@ -280,7 +281,8 @@
 </style>
 <cr-dialog id="dialog" close-text="$i18n{close}">
   <div id="dialogTitle" slot="title">
-    <div id="title">
+    <div id="title" aria-live="[[getLiveStatus_(setupState_)]]"
+        aria-labelledby="title" aria-describedby="description">
       <template is="dom-if" if="[[didSetupAttemptFail_]]" restamp>
         <iron-icon id="failure-icon" icon="os-settings:multidevice-error">
         </iron-icon>
@@ -392,7 +394,7 @@
       </template>
       <template is="dom-if" if="[[hasCompletedSetup_]]" restamp>
         <cr-button id="doneButton" class="action-button"
-            on-click="onDoneOrCloseButtonClicked_">
+            on-click="onDoneOrCloseButtonClicked_" autofocus>
           $i18n{done}
         </cr-button>
       </template>

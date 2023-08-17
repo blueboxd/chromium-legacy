@@ -318,6 +318,8 @@ const char kChromeUIAudioHost[] = "audio";
 const char kChromeUIAudioURL[] = "chrome://audio/";
 const char kChromeUIBluetoothPairingHost[] = "bluetooth-pairing";
 const char kChromeUIBluetoothPairingURL[] = "chrome://bluetooth-pairing/";
+const char kChromeUIBorealisInstallerHost[] = "borealis-installer";
+const char kChromeUIBorealisInstallerUrl[] = "chrome://borealis-installer";
 const char kChromeUICertificateManagerDialogURL[] =
     "chrome://certificate-manager/";
 const char kChromeUICertificateManagerHost[] = "certificate-manager";
@@ -393,6 +395,8 @@ const char kChromeUISmbShareHost[] = "smb-share-dialog";
 const char kChromeUISmbShareURL[] = "chrome://smb-share-dialog/";
 const char kChromeUISmbCredentialsHost[] = "smb-credentials-dialog";
 const char kChromeUISmbCredentialsURL[] = "chrome://smb-credentials-dialog/";
+const char kChromeUIStatusAreaTesterHost[] = "status-area-tester";
+const char kChromeUIStatusAreaTesterURL[] = "chrome://status-area-tester";
 const char kChromeUISysInternalsHost[] = "sys-internals";
 const char kChromeUISysInternalsUrl[] = "chrome://sys-internals";
 const char kChromeUIUntrustedCroshHost[] = "crosh";
@@ -447,6 +451,7 @@ bool IsSystemWebUIHost(base::StringPiece host) {
     kChromeUISetTimeHost,
     kChromeUISmbCredentialsHost,
     kChromeUISmbShareHost,
+    kChromeUIStatusAreaTesterHost,
     kChromeUIVcTrayTesterHost,
     kChromeUIEmojiPickerHost,
 #if BUILDFLAG(PLATFORM_CFM)
@@ -532,6 +537,8 @@ const char kChromeUIEnterpriseProfileWelcomeURL[] =
     "chrome://enterprise-profile-welcome/";
 const char kChromeUIIntroHost[] = "intro";
 const char kChromeUIIntroURL[] = "chrome://intro";
+const char kChromeUIIntroDefaultBrowserSubPage[] = "default-browser";
+const char kChromeUIIntroDefaultBrowserURL[] = "chrome://intro/default-browser";
 const char kChromeUIProfileCustomizationHost[] = "profile-customization";
 const char kChromeUIProfileCustomizationURL[] =
     "chrome://profile-customization";
@@ -633,9 +640,9 @@ const char kCleanupSubPage[] = "cleanup";
 const char kChromeUICastFeedbackHost[] = "cast-feedback";
 #endif
 
-#if BUILDFLAG(ENABLE_WAFFLE_DESKTOP)
-const char kChromeUIWaffleHost[] = "waffle";
-const char kChromeUIWaffleURL[] = "chrome://waffle";
+#if BUILDFLAG(ENABLE_SEARCH_ENGINE_CHOICE)
+const char kChromeUISearchEngineChoiceHost[] = "search-engine-choice";
+const char kChromeUISearchEngineChoiceURL[] = "chrome://search-engine-choice";
 #endif
 
 #if BUILDFLAG(ENABLE_LENS_DESKTOP_GOOGLE_BRANDED_FEATURES)
@@ -737,7 +744,7 @@ const char* const kChromeHostURLs[] = {
     content::kChromeUIWebXrInternalsHost,
 #endif
 #if !BUILDFLAG(IS_ANDROID)
-#if !BUILDFLAG(IS_CHROMEOS_ASH)
+#if !BUILDFLAG(IS_CHROMEOS)
     kChromeUIAppLauncherPageHost,
 #endif
     kChromeUIBookmarksHost,

@@ -15,10 +15,6 @@
 #import "ios/chrome/browser/tabs/inactive_tabs/features.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/inactive_tabs/inactive_tabs_info_consumer.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 using ScopedWebStateListObservation =
     base::ScopedObservation<WebStateList, WebStateListObserver>;
 
@@ -121,14 +117,9 @@ using ScopedWebStateListObservation =
   }
 
   switch (change.type()) {
-    case WebStateListChange::Type::kStatusOnly: {
-      CHECK(!status.pinned_state_change);
-      // TODO(crbug.com/1442546): Move the implementation from
-      // webStateList:didChangeActiveWebState:oldWebState:atIndex:reason to
-      // here. Note that here is reachable only when `reason` ==
-      // ActiveWebStateChangeReason::Activated in didChangeActiveWebState:.
+    case WebStateListChange::Type::kStatusOnly:
+      // Do nothing when the status in WebStateList is updated.
       break;
-    }
     case WebStateListChange::Type::kDetach:
       [_consumer updateInactiveTabsCount:_webStateList->count()];
       break;
@@ -137,15 +128,6 @@ using ScopedWebStateListObservation =
     case WebStateListChange::Type::kInsert:
       NOTREACHED_NORETURN();
   }
-}
-
-- (void)webStateList:(WebStateList*)webStateList
-    didChangeActiveWebState:(web::WebState*)newWebState
-                oldWebState:(web::WebState*)oldWebState
-                    atIndex:(int)atIndex
-                     reason:(ActiveWebStateChangeReason)reason {
-  // No-op. This is called when the selected web state is moved (closed and
-  // opened elsewhere) from inactive to active.
 }
 
 - (void)webStateListWillBeginBatchOperation:(WebStateList*)webStateList {

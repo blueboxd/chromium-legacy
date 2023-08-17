@@ -18,6 +18,7 @@
 #include "ash/public/cpp/new_window_delegate.h"
 #include "ash/public/cpp/style/dark_light_mode_controller.h"
 #include "ash/public/cpp/tablet_mode.h"
+#include "ash/webui/settings/public/constants/routes_util.h"
 #include "base/command_line.h"
 #include "base/files/file.h"
 #include "base/files/file_util.h"
@@ -65,9 +66,9 @@
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/browser/ui/webui/ash/cloud_upload/cloud_upload_dialog.h"
-#include "chrome/browser/ui/webui/settings/chromeos/constants/routes_util.h"
 #include "chrome/common/extensions/api/file_manager_private_internal.h"
 #include "chrome/common/extensions/api/manifest_types.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chromeos/ash/components/drivefs/drivefs_pin_manager.h"
@@ -513,8 +514,7 @@ FileManagerPrivateAddProvidedFileSystemFunction::Run() {
   // There will already a ODFS mount if the user is requesting a new mount to
   // replace the unauthenticated one.
   if (chromeos::IsEligibleAndEnabledUploadOfficeToCloud(profile) &&
-      params->provider_id ==
-          file_manager::file_tasks::GetODFSExtensionId(profile) &&
+      params->provider_id == extension_misc::kODFSExtensionId &&
       first_file_system) {
     // Get Files App window, if it exists.
     Browser* browser =

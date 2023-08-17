@@ -72,7 +72,6 @@ Na tym koncie mogą obowiązywać uprawnienia przyznane stronom i aplikacjom. K
 <translation id="2592940277904433508">Nadal korzystaj z Chromium</translation>
 <translation id="2648074677641340862">Podczas instalacji wystąpił błąd systemu operacyjnego. Pobierz Chromium ponownie.</translation>
 <translation id="2661879430930417727">Jeśli dzielisz urządzenie ze znajomymi lub rodziną, wszyscy możecie niezależnie przeglądać internet i skonfigurować Chromium po swojemu</translation>
-<translation id="2669853942967761236">Ten plik archiwum został zablokowany przez Chromium, bo może zawierać złośliwe oprogramowanie</translation>
 <translation id="268602741124540128">Witamy w Chromium, <ph name="ACCOUNT_FIRST_NAME" /></translation>
 <translation id="2711502716910134313">Karta Chromium</translation>
 <translation id="2718390899429598676">Dla większego bezpieczeństwa Chromium szyfruje dane.</translation>
@@ -268,6 +267,7 @@ Na tym koncie mogą obowiązywać uprawnienia przyznane stronom i aplikacjom. K
 <translation id="6613594504749178791">Zmiany zostaną zastosowane po ponownym uruchomieniu Chromium.</translation>
 <translation id="665732753414869868">Aby utworzyć mapę 3D Twojego otoczenia, Chromium potrzebuje dostępu do aparatu</translation>
 <translation id="6663852025006259149">Strony będą prawdopodobnie działać zgodnie z oczekiwaniami, ale nie będą Cię pamiętać po zamknięciu wszystkich okien Chromium</translation>
+<translation id="6669284030132180248">Jeśli zapisujesz też zakładki na koncie Google, możesz śledzić ceny produktów w Chromium i otrzymywać powiadomienia o obniżkach</translation>
 <translation id="6676384891291319759">Skorzystaj z internetu</translation>
 <translation id="668175097507315160">System operacyjny Chromium nie może zsynchronizować danych z powodu błędu podczas logowania.</translation>
 <translation id="6709350901466051922">Ta strona musi mieć w Chromium dostęp do mikrofonu</translation>
@@ -403,6 +403,5 @@ Chromium nie może odzyskać ustawień.</translation>
 <translation id="942598560705308788">Certyfikaty zarządzane przez Chromium</translation>
 <translation id="965162752251293939">Kto używa Chromium?</translation>
 <translation id="967427899662692980">Korzystaj z najlepszych zabezpieczeń Chromium</translation>
-<translation id="9792300276217204">Zawsze usuwaj dane witryn z urządzenia po zamknięciu Chromium</translation>
 <translation id="985602178874221306">Autorzy Chromium</translation>
 </translationbundle>

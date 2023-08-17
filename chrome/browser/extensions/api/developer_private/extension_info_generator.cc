@@ -144,15 +144,15 @@ developer::RuntimeError ConstructRuntimeError(const RuntimeError& error) {
   developer::RuntimeError result;
   PopulateErrorBase(error, &result);
   switch (error.level()) {
-    case logging::LOG_VERBOSE:
-    case logging::LOG_INFO:
+    case logging::LOGGING_VERBOSE:
+    case logging::LOGGING_INFO:
       result.severity = developer::ERROR_LEVEL_LOG;
       break;
-    case logging::LOG_WARNING:
+    case logging::LOGGING_WARNING:
       result.severity = developer::ERROR_LEVEL_WARN;
       break;
-    case logging::LOG_FATAL:
-    case logging::LOG_ERROR:
+    case logging::LOGGING_FATAL:
+    case logging::LOGGING_ERROR:
       result.severity = developer::ERROR_LEVEL_ERROR;
       break;
     default:
@@ -403,6 +403,8 @@ void ExtensionInfoGenerator::CreateExtensionInfo(
     state = developer::EXTENSION_STATE_DISABLED;
   else if ((ext = registry->terminated_extensions().GetByID(id)) != nullptr)
     state = developer::EXTENSION_STATE_TERMINATED;
+  else if ((ext = registry->blocklisted_extensions().GetByID(id)) != nullptr)
+    state = developer::EXTENSION_STATE_BLACKLISTED;
 
   if (ext && ui_util::ShouldDisplayInExtensionSettings(*ext))
     CreateExtensionInfoHelper(*ext, state);

@@ -106,10 +106,15 @@ int g_num_monitors = 0;
 bool g_system_hdr_enabled = false;
 
 // Per-monitor HDR capability
-std::set<HMONITOR> g_hdr_monitors = {};
+std::set<HMONITOR>* GetHDRMonitors() {
+  static base::NoDestructor<std::set<HMONITOR>> hdr_monitors;
+  return hdr_monitors.get();
+}
 
 // Global direct composition device.
 IDCompositionDevice3* g_dcomp_device = nullptr;
+// Global d3d11 device used by direct composition.
+ID3D11Device* g_d3d11_device = nullptr;
 // Whether swap chain present failed and direct composition should be disabled.
 bool g_direct_composition_swap_chain_failed = false;
 
@@ -439,11 +444,11 @@ void UpdateMonitorInfo() {
     g_primary_monitor_size = gfx::Size();
   }
 
-  g_hdr_monitors.clear();
+  GetHDRMonitors()->clear();
   g_system_hdr_enabled = false;
   for (const auto& desc : GetDirectCompositionOutputDescs()) {
     if (desc.ColorSpace == DXGI_COLOR_SPACE_RGB_FULL_G2084_NONE_P2020) {
-      g_hdr_monitors.insert(desc.Monitor);
+      GetHDRMonitors()->insert(desc.Monitor);
       g_system_hdr_enabled = true;
     }
   }
@@ -452,36 +457,18 @@ void UpdateMonitorInfo() {
 
 }  // namespace
 
-void InitializeDirectComposition(GLDisplayEGL* display) {
+void InitializeDirectComposition(
+    Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device) {
   DCHECK(!g_dcomp_device);
-
   if (GetGlWorkarounds().disable_direct_composition) {
     return;
   }
-
-  // Direct composition can only be used with ANGLE.
-  if (gl::GetGLImplementation() != gl::kGLImplementationEGLANGLE)
-    return;
 
   // Blocklist direct composition if MCTU.dll or MCTUX.dll are injected. These
   // are user mode drivers for display adapters from Magic Control Technology
   // Corporation.
   if (GetModuleHandle(TEXT("MCTU.dll")) || GetModuleHandle(TEXT("MCTUX.dll"))) {
     DLOG(ERROR) << "Blocklisted due to third party modules";
-    return;
-  }
-
-  // EGL_KHR_no_config_context surface compatibility is required to be able to
-  // MakeCurrent with the default pbuffer surface.
-  if (!display->ext->b_EGL_KHR_no_config_context) {
-    DLOG(ERROR) << "EGL_KHR_no_config_context not supported";
-    return;
-  }
-
-  Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device =
-      QueryD3D11DeviceObjectFromANGLE();
-  if (!d3d11_device) {
-    DLOG(ERROR) << "Failed to retrieve D3D11 device";
     return;
   }
 
@@ -524,17 +511,48 @@ void InitializeDirectComposition(GLDisplayEGL* display) {
 
   g_dcomp_device = dcomp_device.Detach();
   DCHECK(g_dcomp_device);
+
+  g_d3d11_device = d3d11_device.Detach();
+}
+
+void InitializeDirectCompositionANGLE(GLDisplayEGL* display) {
+  // Direct composition can only be used with ANGLE.
+  if (gl::GetGLImplementation() != gl::kGLImplementationEGLANGLE) {
+    return;
+  }
+
+  // EGL_KHR_no_config_context surface compatibility is required to be able to
+  // MakeCurrent with the default pbuffer surface.
+  if (!display->ext->b_EGL_KHR_no_config_context) {
+    DLOG(ERROR) << "EGL_KHR_no_config_context not supported";
+    return;
+  }
+
+  Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device =
+      QueryD3D11DeviceObjectFromANGLE();
+  if (!d3d11_device) {
+    DLOG(ERROR) << "Failed to retrieve D3D11 device";
+    return;
+  }
+
+  InitializeDirectComposition(std::move(d3d11_device));
 }
 
 void ShutdownDirectComposition() {
   if (g_dcomp_device) {
     g_dcomp_device->Release();
     g_dcomp_device = nullptr;
+    g_d3d11_device->Release();
+    g_d3d11_device = nullptr;
   }
 }
 
 IDCompositionDevice3* GetDirectCompositionDevice() {
   return g_dcomp_device;
+}
+
+ID3D11Device* GetDirectCompositionD3D11Device() {
+  return g_d3d11_device;
 }
 
 bool DirectCompositionSupported() {
@@ -640,8 +658,8 @@ bool DirectCompositionMonitorHDREnabled(HWND window) {
     UpdateMonitorInfo();
   }
 
-  return g_hdr_monitors.find(MonitorFromWindow(
-             window, MONITOR_DEFAULTTONEAREST)) != g_hdr_monitors.end();
+  return GetHDRMonitors()->find(MonitorFromWindow(
+             window, MONITOR_DEFAULTTONEAREST)) != GetHDRMonitors()->end();
 }
 
 DXGI_FORMAT GetDirectCompositionSDROverlayFormat() {

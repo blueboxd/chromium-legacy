@@ -8,6 +8,7 @@ import("//build/config/features.gni")
 import("//build/config/nacl/config.gni")
 import("//build/config/ui.gni")
 import("//build_overrides/build.gni")
+import("//third_party/perfetto/gn/perfetto_cc_proto_descriptor.gni")
 import("//third_party/protobuf/proto_library.gni")
 
 if (is_android) {
@@ -53,6 +54,7 @@ static_library("test_support") {
     "copy_only_int.cc",
     "copy_only_int.h",
     "gmock_callback_support.h",
+    "gmock_expected_support.h",
     "gmock_move_support.h",
     "gtest_links.cc",
     "gtest_links.h",
@@ -150,6 +152,7 @@ static_library("test_support") {
     "test_waitable_event.h",
     "thread_test_helper.cc",
     "thread_test_helper.h",
+    "to_vector.h",
     "values_test_util.cc",
     "values_test_util.h",
     "with_feature_override.cc",
@@ -171,6 +174,7 @@ static_library("test_support") {
   deps = [
     "//base/third_party/dynamic_annotations",
     "//build:chromeos_buildflags",
+    "//third_party/google_benchmark",
     "//third_party/icu:icuuc",
     "//third_party/libxml:libxml_utils",
     "//third_party/libxml:xml_reader",
@@ -183,6 +187,7 @@ static_library("test_support") {
       "test_trace_processor.cc",
       "test_trace_processor.h",
     ]
+    deps += [ ":gen_cc_chrome_track_event_descriptor" ]
     if (is_ios) {
       deps += [
         ":test_trace_processor+bundle",
@@ -217,10 +222,6 @@ static_library("test_support") {
   if (is_linux || is_chromeos) {
     sources += [ "test_file_util_linux.cc" ]
     public_deps += [ "//third_party/test_fonts/fontconfig:test_support" ]
-  }
-
-  if (is_apple) {
-    configs += [ "//build/config/compiler:enable_arc" ]
   }
 
   if (is_mac) {
@@ -505,10 +506,7 @@ if (is_ios) {
       "//base",
     ]
     frameworks = [ "UIKit.framework" ]
-    configs += [
-      "//build/config/compiler:enable_arc",
-      "//build/config/ios:xctest_config",
-    ]
+    configs += [ "//build/config/ios:xctest_config" ]
   }
 }
 
@@ -520,6 +518,11 @@ executable("test_child_process") {
 }
 
 if (enable_base_tracing) {
+  perfetto_cc_proto_descriptor("gen_cc_chrome_track_event_descriptor") {
+    descriptor_name = "chrome_track_event.descriptor"
+    descriptor_target = "//base/tracing/protos:chrome_track_event"
+  }
+
   # We encapsulate the trace processor in a separate shared library to prevent
   # any duplicate symbol issues. Perfetto symbols are exported by chromium’s
   # base via a public_dep on libperfetto; libtrace_processor also depends on

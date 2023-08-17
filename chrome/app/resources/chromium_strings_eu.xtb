@@ -74,7 +74,6 @@ Baliteke webguneei eta aplikazioei emandako baimenak kontu honi aplikatzea. Goog
 <translation id="2592940277904433508">Jarraitu Chromium erabiltzen</translation>
 <translation id="2648074677641340862">Sistema-eragilean errore bat gertatu da instalatu bitartean. Deskargatu Chromium berriro.</translation>
 <translation id="2661879430930417727">Gailu bat partekatzen baduzu, lagunak eta familiako kideak beren kontuak erabilita ibil daitezke Interneten, eta Chromium nahi duten moduan konfiguratu</translation>
-<translation id="2669853942967761236">Chromium-ek artxiboko fitxategia blokeatu du agian malwarea ezkutatzen duelako</translation>
 <translation id="268602741124540128">Ongi etorri Chromium-era, <ph name="ACCOUNT_FIRST_NAME" /></translation>
 <translation id="2711502716910134313">Chromium fitxa</translation>
 <translation id="2718390899429598676">Segurtasun gehiago izateko, Chromium-ek datuak enkriptatuko ditu.</translation>
@@ -272,6 +271,7 @@ Baliteke webguneei eta aplikazioei emandako baimenak kontu honi aplikatzea. Goog
 <translation id="6613594504749178791">Aldaketek Chromium abiarazten duzun hurrengo aldian izango dute eragina.</translation>
 <translation id="665732753414869868">Chromium-ek kamera erabiltzeko baimena behar du zure inguruaren 3D-ko mapa bat sortzeko</translation>
 <translation id="6663852025006259149">Webguneek espero duzun bezala funtzionatuko dute segur aski, baina ez zaituzte gogoratuko Chromium-eko leiho guztiak itxi ondoren</translation>
+<translation id="6669284030132180248">Era berean, laster-markak Google-ko kontuan gordetzen badituzu, Chromium-en produktuen prezioen jarraipena egin ahal izango duzu, eta prezioak jaisten direnean jakinarazpenak jaso</translation>
 <translation id="6676384891291319759">Sartu Interneten</translation>
 <translation id="668175097507315160">Saioa hastean gertatu den errore bat dela-eta, Chromium OS-k ezin izan ditu sinkronizatu zure datuak.</translation>
 <translation id="6709350901466051922">Chromium-ek mikrofonoa erabiltzeko baimena behar du webgune honetan</translation>
@@ -407,6 +407,5 @@ Chromium-ek ezin ditu ezarpenak berreskuratu.</translation>
 <translation id="942598560705308788">Chromium-ek kudeatutako ziurtagiriak</translation>
 <translation id="965162752251293939">Nor erabiltzen ari da Chromium?</translation>
 <translation id="967427899662692980">Lortu Chromium-en segurtasun-aukerarik sendoena</translation>
-<translation id="9792300276217204">Chromium ixten duzunean, garbitu beti webguneetako datuak gailutik</translation>
 <translation id="985602178874221306">Chromium egileak</translation>
 </translationbundle>

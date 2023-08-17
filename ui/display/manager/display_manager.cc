@@ -1209,7 +1209,7 @@ const Display& DisplayManager::GetFakePrimaryDisplay() {
     // https://crbug.com/1057501
     gfx::DisplayColorSpaces display_color_spaces(
         gfx::ColorSpace::CreateSRGB(), DisplaySnapshot::PrimaryFormat());
-    fake_display->set_color_spaces(display_color_spaces);
+    fake_display->SetColorSpaces(display_color_spaces);
   }
   return *fake_display;
 }
@@ -1348,7 +1348,8 @@ const Display DisplayManager::GetMirroringDisplayById(
     int64_t display_id) const {
   auto iter = base::ranges::find(software_mirroring_display_list_, display_id,
                                  &Display::id);
-  return iter == software_mirroring_display_list_.end() ? Display() : *iter;
+  return iter == software_mirroring_display_list_.end() ? GetInvalidDisplay()
+                                                        : *iter;
 }
 
 std::string DisplayManager::GetDisplayNameForId(int64_t id) const {
@@ -2113,11 +2114,9 @@ Display DisplayManager::CreateDisplayFromDisplayInfoById(int64_t id) {
   new_display.set_panel_rotation(display_info.GetLogicalActiveRotation());
   new_display.set_touch_support(display_info.touch_support());
   new_display.set_maximum_cursor_size(display_info.maximum_cursor_size());
-  new_display.set_color_spaces(display_info.display_color_spaces());
+  new_display.SetColorSpaces(display_info.display_color_spaces());
   new_display.set_display_frequency(display_info.refresh_rate());
   new_display.set_label(display_info.name());
-  new_display.SetDRMFormatsAndModifiers(
-      display_info.GetDRMFormatsAndModifiers());
   new_display.set_detected(display_info.detected());
 
   constexpr uint32_t kNormalBitDepthNumBitsPerChannel = 8u;

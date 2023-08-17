@@ -7,6 +7,8 @@
 #import <AppKit/AppKit.h>
 #include <stdint.h>
 
+#include <algorithm>
+
 #include "base/check.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
@@ -19,10 +21,6 @@
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/image/image.h"
 #include "ui/resources/grit/ui_resources.h"
-
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
 
 // Private interface to CoreCursor. See
 // https://github.com/WebKit/WebKit/blob/main/Source/WebCore/PAL/pal/spi/mac/HIServicesSPI.h
@@ -273,6 +271,18 @@ NSCursor* GetNativeCursor(const ui::Cursor& cursor) {
   }
   NOTREACHED();
   return nil;
+}
+
+float GetCursorAccessibilityScaleFactor(bool force_update) {
+  static absl::optional<float> scale;
+  if (!scale.has_value() || force_update) {
+    NSUserDefaults* defaults =
+        [[NSUserDefaults alloc] initWithSuiteName:@"com.apple.universalaccess"];
+    // This may be 0 in tests, but the expected production range is [1.0, 4.0].
+    scale =
+        std::clamp([defaults floatForKey:@"mouseDriverCursorSize"], 1.f, 4.f);
+  }
+  return scale.value();
 }
 
 }  // namespace ui

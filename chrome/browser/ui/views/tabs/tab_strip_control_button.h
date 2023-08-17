@@ -57,9 +57,46 @@ class TabStripControlButton : public views::LabelButton {
   // views::Button
   void NotifyClick(const ui::Event& event) override;
 
+  void UpdateForegroundFrameActiveColorId(ui::ColorId new_color_id) {
+    foreground_frame_active_color_id_ = new_color_id;
+    UpdateColors();
+  }
+  void UpdateForegroundFrameInactiveColorId(ui::ColorId new_color_id) {
+    foreground_frame_inactive_color_id_ = new_color_id;
+    UpdateColors();
+  }
+  void UpdateBackgroundFrameActiveColorId(ui::ColorId new_color_id) {
+    background_frame_active_color_id_ = new_color_id;
+    UpdateColors();
+  }
+  void UpdateBackgroundFrameInactiveColorId(ui::ColorId new_color_id) {
+    background_frame_inactive_color_id_ = new_color_id;
+    UpdateColors();
+  }
+
+  bool GetPaintTransparentForCustomImageTheme() {
+    return paint_transparent_for_custom_image_theme_;
+  }
+
+  void SetPaintTransparentForCustomImageTheme(
+      bool paint_transparent_for_custom_image_theme) {
+    paint_transparent_for_custom_image_theme_ =
+        paint_transparent_for_custom_image_theme;
+  }
+
+  virtual int GetCornerRadius();
+
  private:
+  void UpdateBackground();
+  void UpdateInkDrop();
+
   // Icon for the label button.
   const raw_ref<const gfx::VectorIcon> icon_;
+
+  bool paint_transparent_for_custom_image_theme_;
+
+  // Tab strip that contains this button.
+  raw_ptr<TabStrip, AcrossTasksDanglingUntriaged> tab_strip_;
 
   // Stored ColorId values to differentiate for ChromeRefresh.
   ui::ColorId foreground_frame_active_color_id_;

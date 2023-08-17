@@ -15,7 +15,6 @@ extern const char kLocalWebApprovalsPreferredButtonLocal[];
 extern const char kLocalWebApprovalsPreferredButtonRemote[];
 
 // Flags related to supervision features on Desktop and iOS platforms.
-BASE_DECLARE_FEATURE(kEnableSupervisionOnDesktopAndIOS);
 BASE_DECLARE_FEATURE(kFilterWebsitesForSupervisedUsersOnDesktopAndIOS);
 BASE_DECLARE_FEATURE(kEnableExtensionsPermissionsForSupervisedUsersOnDesktop);
 BASE_DECLARE_FEATURE(kSupervisedPrefsControlledBySupervisedStore);
@@ -23,19 +22,18 @@ BASE_DECLARE_FEATURE(kEnableManagedByParentUi);
 extern const base::FeatureParam<std::string> kManagedByParentUiMoreInfoUrl;
 BASE_DECLARE_FEATURE(kClearingCookiesKeepsSupervisedUsersSignedIn);
 
-// Enables invoking the CreatePermissionRequest service through a proto fetcher.
-BASE_DECLARE_FEATURE(kEnableCreatePermissionRequestFetcher);
-
 // Returns whether banner can be displayed to the user after website filtering
 // is enabled
 bool CanDisplayFirstTimeInterstitialBanner();
 
 BASE_DECLARE_FEATURE(kLocalExtensionApprovalsV2);
 
-// Enables invoking the ClassifyUrl service through a proto fetcher.
+// Experiments to enable proto fetchers
 BASE_DECLARE_FEATURE(kEnableProtoApiForClassifyUrl);
+BASE_DECLARE_FEATURE(kEnableCreatePermissionRequestFetcher);
 
-BASE_DECLARE_FEATURE(kUpdateSupervisedUserFactoryCreation);
+// Instead of manually implementing the process, use the proto_fetcher.cc's one.
+BASE_DECLARE_FEATURE(kUseBuiltInRetryingMechanismForListFamilyMembers);
 
 // Returns whether local parent approvals on Family Link user's device are
 // enabled.
@@ -51,8 +49,19 @@ bool IsLocalWebApprovalThePreferredButton();
 // Returns whether the ClassifyUrl call uses proto apis.
 bool IsProtoApiForClassifyUrlEnabled();
 
+// Decides whether to use built-in configurable mechanism, instead of manually
+// programmed.
+bool IsRetryMechanismForListFamilyMembersEnabled();
+
 // Returns whether the new local extension approval experience is enabled.
 bool IsLocalExtensionApprovalsV2Enabled();
+
+// Returns true if child account supervision features should be enabled for this
+// client.
+//
+// This method does not take into account whether the user is actually a child;
+// that must be handled by calling code.
+bool IsChildAccountSupervisionEnabled();
 
 }  // namespace supervised_user
 

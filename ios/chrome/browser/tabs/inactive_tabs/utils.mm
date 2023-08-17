@@ -13,11 +13,10 @@
 #import "ios/chrome/browser/tabs/inactive_tabs/features.h"
 #import "ios/web/public/web_state.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 namespace {
+
+// Number of allowed moves between active and inactive.
+const int kMoveTabsLimit = 500;
 
 // Returns true if the given web state last is inactive determined by the given
 // threshold.
@@ -72,15 +71,18 @@ void MoveTabsFromActiveToInactive(Browser* active_browser,
                        WebStateList* inactive_web_state_list) {
         const base::TimeDelta inactivity_threshold =
             InactiveTabsTimeThreshold();
+        int removed_web_state_number = 0;
         for (int index =
                  active_web_state_list->GetIndexOfFirstNonPinnedWebState();
-             index < active_web_state_list->count();) {
+             index < active_web_state_list->count() &&
+             removed_web_state_number < kMoveTabsLimit;) {
           web::WebState* current_web_state =
               active_web_state_list->GetWebStateAt(index);
           if (!IsVisibleURLNewTabPage(current_web_state) &&
               IsInactive(inactivity_threshold, current_web_state)) {
             MoveTabFromBrowserToBrowser(active_browser, index, inactive_browser,
                                         inactive_web_state_list->count());
+            removed_web_state_number++;
           } else {
             ++index;
           }
@@ -99,7 +101,8 @@ void MoveTabsFromInactiveToActive(Browser* inactive_browser,
         const base::TimeDelta inactivity_threshold =
             InactiveTabsTimeThreshold();
         int removed_web_state_number = 0;
-        for (int index = 0; index < inactive_web_state_list->count();) {
+        for (int index = 0; index < inactive_web_state_list->count() &&
+                            removed_web_state_number < kMoveTabsLimit;) {
           if (!IsInactive(inactivity_threshold,
                           inactive_web_state_list->GetWebStateAt(index))) {
             int insertion_index =

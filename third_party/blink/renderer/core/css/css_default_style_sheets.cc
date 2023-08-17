@@ -38,10 +38,13 @@
 #include "third_party/blink/renderer/core/execution_context/security_context.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/html/forms/html_button_element.h"
+#include "third_party/blink/renderer/core/html/forms/html_input_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_select_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_text_area_element.h"
 #include "third_party/blink/renderer/core/html/html_anchor_element.h"
 #include "third_party/blink/renderer/core/html/html_html_element.h"
+#include "third_party/blink/renderer/core/html/html_meter_element.h"
+#include "third_party/blink/renderer/core/html/html_progress_element.h"
 #include "third_party/blink/renderer/core/layout/layout_theme.h"
 #include "third_party/blink/renderer/core/mathml_names.h"
 #include "third_party/blink/renderer/platform/data_resource_helper.h"
@@ -122,8 +125,7 @@ void CSSDefaultStyleSheets::PrepareForLeakDetection() {
   text_track_style_sheet_.Clear();
   forced_colors_style_sheet_.Clear();
   fullscreen_style_sheet_.Clear();
-  popover_style_sheet_.Clear();
-  selectmenu_style_sheet_.Clear();
+  selectlist_style_sheet_.Clear();
   marker_style_sheet_.Clear();
   form_controls_not_vertical_style_sheet_.Clear();
   // Recreate the default style sheet to clean up possible SVG resources.
@@ -307,24 +309,13 @@ bool CSSDefaultStyleSheets::EnsureDefaultStyleSheetsForElement(
     }
   }
 
-  if (!popover_style_sheet_ && IsA<HTMLElement>(element) &&
-      To<HTMLElement>(element).HasPopoverAttribute()) {
-    // TODO: We should assert that this sheet only contains rules for popovers.
-    DCHECK(RuntimeEnabledFeatures::HTMLPopoverAttributeEnabled(
-        element.GetDocument().GetExecutionContext()));
-    popover_style_sheet_ =
-        ParseUASheet(UncompressResourceAsASCIIString(IDR_UASTYLE_POPOVER_CSS));
-    AddRulesToDefaultStyleSheets(popover_style_sheet_, NamespaceType::kHTML);
-    changed_default_style = true;
-  }
-
-  if (!selectmenu_style_sheet_ && IsA<HTMLSelectMenuElement>(element)) {
+  if (!selectlist_style_sheet_ && IsA<HTMLSelectListElement>(element)) {
     // TODO: We should assert that this sheet only contains rules for
-    // <selectmenu>.
-    DCHECK(RuntimeEnabledFeatures::HTMLSelectMenuElementEnabled());
-    selectmenu_style_sheet_ = ParseUASheet(
-        UncompressResourceAsASCIIString(IDR_UASTYLE_SELECTMENU_CSS));
-    AddRulesToDefaultStyleSheets(selectmenu_style_sheet_, NamespaceType::kHTML);
+    // <selectlist>.
+    CHECK(RuntimeEnabledFeatures::HTMLSelectListElementEnabled());
+    selectlist_style_sheet_ = ParseUASheet(
+        UncompressResourceAsASCIIString(IDR_UASTYLE_SELECTLIST_CSS));
+    AddRulesToDefaultStyleSheets(selectlist_style_sheet_, NamespaceType::kHTML);
     changed_default_style = true;
   }
 
@@ -456,8 +447,7 @@ void CSSDefaultStyleSheets::Trace(Visitor* visitor) const {
   visitor->Trace(text_track_style_sheet_);
   visitor->Trace(forced_colors_style_sheet_);
   visitor->Trace(fullscreen_style_sheet_);
-  visitor->Trace(popover_style_sheet_);
-  visitor->Trace(selectmenu_style_sheet_);
+  visitor->Trace(selectlist_style_sheet_);
   visitor->Trace(marker_style_sheet_);
   visitor->Trace(form_controls_not_vertical_style_sheet_);
 }

@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 load("//lib/branches.star", "branches")
-load("//lib/builders.star", "builders", "cpu")
+load("//lib/builders.star", "builders", "cpu", "reclient")
 load("//lib/ci.star", "ci")
 load("//lib/consoles.star", "consoles")
 load("//project.star", "settings")
@@ -15,7 +15,10 @@ ci.defaults.set(
     cpu = cpu.X86_64,
     free_space = builders.free_space.standard,
     build_numbers = True,
+    shadow_builderless = True,
+    shadow_free_space = None,
     shadow_pool = "luci.chromium.try",
+    shadow_reclient_instance = reclient.instance.DEFAULT_UNTRUSTED,
 )
 
 luci.bucket(
@@ -70,12 +73,17 @@ luci.bucket(
             groups = [
                 "mdb/chrome-troopers",
             ],
+            users = [
+                ci.DEFAULT_SHADOW_SERVICE_ACCOUNT,
+                ci.gpu.SHADOW_SERVICE_ACCOUNT,
+            ],
         ),
         # Allow ci builders to create invocations in their own builds.
         luci.binding(
             roles = "role/resultdb.invocationCreator",
-            groups = [
-                "project-chromium-ci-task-accounts",
+            users = [
+                ci.DEFAULT_SHADOW_SERVICE_ACCOUNT,
+                ci.gpu.SHADOW_SERVICE_ACCOUNT,
             ],
         ),
     ],
@@ -162,10 +170,8 @@ consoles.console_view(
     ("fuchsia-fyi-astro", "gardener|hardware", "ast"),
     ("fuchsia-fyi-nelson", "gardener|hardware", "nsn"),
     ("fuchsia-fyi-sherlock", "gardener|hardware", "sher"),
-    ("fuchsia-smoke-astro", "gardener|hardware|smoke", "ast"),
     ("fuchsia-smoke-nelson", "gardener|hardware|smoke", "nsn"),
     ("fuchsia-smoke-sherlock", "gardener|hardware|smoke", "sher"),
-    ("fuchsia-perf-ast", "gardener|hardware|perf", "ast"),
     ("fuchsia-perf-nsn", "gardener|hardware|perf", "nsn"),
     ("fuchsia-perf-shk", "gardener|hardware|perf", "sher"),
     ("fuchsia-x64", "gardener|p/chrome|x64", "rel"),

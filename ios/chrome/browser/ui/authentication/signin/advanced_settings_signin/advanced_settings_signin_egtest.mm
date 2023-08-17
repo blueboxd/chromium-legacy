@@ -7,6 +7,7 @@
 #import "base/test/ios/wait_util.h"
 #import "base/time/time.h"
 #import "components/bookmarks/common/bookmark_features.h"
+#import "components/bookmarks/common/storage_type.h"
 #import "components/strings/grit/components_strings.h"
 #import "components/sync/base/features.h"
 #import "ios/chrome/browser/signin/fake_system_identity.h"
@@ -31,10 +32,6 @@
 #import "ios/testing/earl_grey/matchers.h"
 #import "net/test/embedded_test_server/embedded_test_server.h"
 #import "ui/base/l10n/l10n_util_mac.h"
-
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
 
 using base::test::ios::kWaitForUIElementTimeout;
 using base::test::ios::WaitUntilConditionOrTimeout;
@@ -94,15 +91,15 @@ void WaitForSettingDoneButton() {
 - (void)setUp {
   [super setUp];
 
-  [ChromeEarlGrey waitForBookmarksToFinishLoading];
-  [ChromeEarlGrey clearBookmarks];
+  [BookmarkEarlGrey waitForBookmarkModelsLoaded];
+  [BookmarkEarlGrey clearBookmarks];
   // TODO(crbug.com/1450472): Remove when kHideSettingsSyncPromo is launched.
   [SigninSettingsAppInterface setSettingsSigninPromoDisplayedCount:INT_MAX];
 }
 
 - (void)tearDown {
   [super tearDown];
-  [ChromeEarlGrey clearBookmarks];
+  [BookmarkEarlGrey clearBookmarks];
   [BookmarkEarlGrey clearBookmarksPositionCache];
 }
 
@@ -178,8 +175,9 @@ void WaitForSettingDoneButton() {
   // Add a bookmark after sync is initialized.
   [ChromeEarlGrey waitForSyncEngineInitialized:YES
                                    syncTimeout:kSyncOperationTimeout];
-  [ChromeEarlGrey waitForBookmarksToFinishLoading];
-  [BookmarkEarlGrey setupStandardBookmarks];
+  [BookmarkEarlGrey waitForBookmarkModelsLoaded];
+  [BookmarkEarlGrey
+      setupStandardBookmarksInStorage:bookmarks::StorageType::kLocalOrSyncable];
 
   // Sign out and clear data from Sync settings.
   [ChromeEarlGreyUI tapSettingsMenuButton:GoogleSyncSettingsButton()];
@@ -226,8 +224,9 @@ void WaitForSettingDoneButton() {
   // Add a bookmark after sync is initialized.
   [ChromeEarlGrey waitForSyncEngineInitialized:YES
                                    syncTimeout:kSyncOperationTimeout];
-  [ChromeEarlGrey waitForBookmarksToFinishLoading];
-  [BookmarkEarlGrey setupStandardBookmarks];
+  [BookmarkEarlGrey waitForBookmarkModelsLoaded];
+  [BookmarkEarlGrey
+      setupStandardBookmarksInStorage:bookmarks::StorageType::kLocalOrSyncable];
 
   // Sign out and keep data from Sync settings.
   [ChromeEarlGreyUI tapSettingsMenuButton:GoogleSyncSettingsButton()];

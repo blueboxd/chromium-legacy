@@ -10,6 +10,7 @@
 #include "ash/capture_mode/capture_mode_controller.h"
 #include "ash/constants/ash_features.h"
 #include "ash/game_dashboard/game_dashboard_context.h"
+#include "ash/game_dashboard/game_dashboard_controller.h"
 #include "ash/game_dashboard/game_dashboard_utils.h"
 #include "ash/public/cpp/app_types_util.h"
 #include "ash/public/cpp/ash_view_ids.h"
@@ -28,7 +29,6 @@
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/chromeos/styles/cros_tokens_color_mappings.h"
 #include "ui/compositor/layer.h"
-#include "ui/gfx/geometry/rrect_f.h"
 #include "ui/views/animation/ink_drop.h"
 #include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/layout/fill_layout.h"
@@ -59,7 +59,6 @@ std::unique_ptr<FeatureTile> CreateTile(base::RepeatingClosure callback,
   auto tile =
       std::make_unique<FeatureTile>(std::move(callback), is_togglable, type);
   tile->SetID(id);
-  tile->SetVisible(true);
   tile->SetVectorIcon(icon);
   tile->SetLabel(text);
   tile->SetTooltipText(text);
@@ -192,7 +191,7 @@ class GameDashboardMainMenuView::FeatureDetailsRow : public views::Button {
 
     // Set up highlight and focus ring for the whole row.
     StyleUtil::SetUpInkDropForButton(
-        /*host=*/this, gfx::Insets(), /*highlight_on_hover=*/true,
+        /*button=*/this, gfx::Insets(), /*highlight_on_hover=*/true,
         /*highlight_on_focus=*/true, /*background_color=*/
         GetColorProvider()->GetColor(cros_tokens::kCrosSysHoverOnSubtle));
 
@@ -238,19 +237,31 @@ GameDashboardMainMenuView::GameDashboardMainMenuView(
 
 GameDashboardMainMenuView::~GameDashboardMainMenuView() = default;
 
+void GameDashboardMainMenuView::OnRecordingStarted(
+    bool is_recording_game_window) {
+  UpdateRecordGameTile(is_recording_game_window);
+}
+
+void GameDashboardMainMenuView::OnRecordingEnded() {
+  UpdateRecordGameTile(/*is_recording_game_window=*/false);
+}
+
 void GameDashboardMainMenuView::OnToolbarTilePressed() {
   toolbar_tile_->SetToggled(context_->ToggleToolbar());
 }
 
 void GameDashboardMainMenuView::OnRecordGameTilePressed() {
-  GetWidget()->Close();
-  CaptureModeController::Get()->StartForGameDashboard(context_->game_window());
-  // TODO(b/286889385): Add support to stop game recording using
-  // `GameDashboardMainMenuView` and the `GameDashboardMainMenuButton`.
+  if (record_game_tile_->IsToggled()) {
+    CaptureModeController::Get()->EndVideoRecording(
+        EndRecordingReason::kGameDashboardStopRecordingButton);
+  } else {
+    context_->CloseMainMenu();
+    GameDashboardController::Get()->StartCaptureSession(context_);
+  }
 }
 
 void GameDashboardMainMenuView::OnScreenshotTilePressed() {
-  GetWidget()->Close();
+  context_->CloseMainMenu();
   CaptureModeController::Get()->CaptureScreenshotOfGivenWindow(
       context_->game_window());
 }
@@ -283,12 +294,12 @@ void GameDashboardMainMenuView::OnGameControlsTilePressed() {
 
 void GameDashboardMainMenuView::OnGameControlsDetailsPressed() {
   EnableGameControlsEditMode();
-  GetWidget()->Close();
+  context_->CloseMainMenu();
 }
 
 void GameDashboardMainMenuView::OnGameControlsSetUpButtonPressed() {
   EnableGameControlsEditMode();
-  GetWidget()->Close();
+  context_->CloseMainMenu();
 }
 
 void GameDashboardMainMenuView::OnGameControlsHintSwitchButtonPressed() {
@@ -336,13 +347,15 @@ void GameDashboardMainMenuView::AddShortcutTilesRow() {
 
   if (base::FeatureList::IsEnabled(
           features::kFeatureManagementGameDashboardRecordGame)) {
-    container->AddChildView(CreateTile(
+    record_game_tile_ = container->AddChildView(CreateTile(
         base::BindRepeating(&GameDashboardMainMenuView::OnRecordGameTilePressed,
                             base::Unretained(this)),
-        /*is_togglable=*/false, FeatureTile::TileType::kCompact,
+        /*is_togglable=*/true, FeatureTile::TileType::kCompact,
         VIEW_ID_GD_RECORD_GAME_TILE, kGdRecordGameIcon,
         l10n_util::GetStringUTF16(
             IDS_ASH_GAME_DASHBOARD_RECORD_GAME_TILE_BUTTON_TITLE)));
+    UpdateRecordGameTile(
+        GameDashboardController::Get()->active_recording_context() == context_);
   }
 
   container->AddChildView(CreateTile(
@@ -537,6 +550,20 @@ void GameDashboardMainMenuView::VisibilityChanged(views::View* starting_from,
       kArcGameControlsFlagsKey,
       game_dashboard_utils::UpdateFlag(*flags, ArcGameControlsFlag::kMenu,
                                        /*enable_flag=*/is_visible));
+}
+
+void GameDashboardMainMenuView::UpdateRecordGameTile(
+    bool is_recording_game_window) {
+  if (!record_game_tile_) {
+    return;
+  }
+
+  record_game_tile_->SetEnabled(
+      is_recording_game_window ||
+      !CaptureModeController::Get()->is_recording_in_progress());
+  record_game_tile_->SetToggled(is_recording_game_window);
+  // TODO(b/273641154): Update record_game_tile_'s UI to reflect the updated
+  // state.
 }
 
 BEGIN_METADATA(GameDashboardMainMenuView, views::BubbleDialogDelegateView)

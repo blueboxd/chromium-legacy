@@ -46,10 +46,6 @@
 #import "ui/base/l10n/l10n_util.h"
 #import "ui/base/test/ios/ui_image_test_utils.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 using base::test::ios::kWaitForUIElementTimeout;
 using chrome_test_util::DeleteButton;
 using chrome_test_util::ReadingListMarkAsReadButton;
@@ -152,9 +148,9 @@ void TapToolbarButtonWithID(NSString* button_id) {
 
 // Taps the context menu button with the a11y label of `a11y_label_id`.
 void TapContextMenuButtonWithA11yLabelID(int a11y_label_id) {
-  [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
-                                   a11y_label_id)] performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:
+                 chrome_test_util::ContextMenuItemWithAccessibilityLabelId(
+                     a11y_label_id)] performAction:grey_tap()];
 }
 
 // Performs `action` on the entry with the title `entryTitle`. The view can be

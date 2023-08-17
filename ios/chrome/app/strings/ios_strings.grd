@@ -183,6 +183,12 @@ locale.  The strings in this file are specific to iOS.
       <message name="IDS_IOS_SYNC_PROMO_TURN_ON_SYNC" desc="Button that the user can press if they want to turn on sync with this account. [iOS only]">
         Turn On Sync
       </message>
+      <message name="IDS_IOS_SIGNIN_PROMO_TURN_ON" desc="Button that the user can press if they want to sign-in to the browser. [iOS only]">
+        Turn On
+      </message>
+      <message name="IDS_IOS_SIGNIN_PROMO_SIGNIN_WITH_UNO" desc="Button that the user can press if they want to sign-in in the browser. [iOS only]">
+        Sign In
+      </message>
       <message name="IDS_IOS_ACCOUNT_UNIFIED_CONSENT_SYNC_TITLE" desc="Title of the sync description section on the sync consent dialog to explain why sync can be useful for the user. [iOS only]">
         Sync your passwords, history &amp; more on all devices
       </message>
@@ -883,6 +889,12 @@ See your search engine’s instructions for deleting your search history, if app
       <message name="IDS_IOS_DEFAULT_BROWSER_VIDEO_PROMO_SECONDARY_BUTTON_TEXT" desc="Text of button that will dismiss the video default browser promo [iOS only]">
         No, Thanks
       </message>
+      <message name="IDS_IOS_DETECT_ADDRESSES_SETTING_TITLE" desc="Title of the setting to enable address detection in web pages [iOS only]">
+        Detect Addresses
+      </message>
+      <message name="IDS_IOS_DETECT_ADDRESSES_SETTING_DESCRIPTION" desc="Description of the setting to enable address detection in web pages [iOS only]">
+        Get directions and local info from Google Maps
+      </message>
       <message name="IDS_IOS_DISCONNECT_DIALOG_CONTINUE_BUTTON_MOBILE" desc="The title of the continue button on the disconnect dialog [Length: 20em].">
         Sign Out
       </message>
@@ -1036,8 +1048,8 @@ See your search engine’s instructions for deleting your search history, if app
       <message name="IDS_IOS_FEED_CARD_SIGN_IN_PROMO_CONTINUE_BUTTON" desc="Text of the continue button in the feed card sign-in promo UI. [iOS only]">
         Continue
       </message>
-      <message name="IDS_IOS_FEED_CARD_SIGN_IN_ONLY_PROMO_LABEL" desc="Label of the feed card sign-in only promo UI. [iOS only]">
-        Sign in to manage your preferences.
+      <message name="IDS_IOS_FEED_CARD_SIGN_IN_ONLY_PROMO_LABEL" desc="This string is on a promo intended to promote signing in to Chrome with the user's Google Account. It appears at the bottom of the Discover news feed on the New Tab Page when the user is not signed in. It explains that the user can sign in to see content suggestions related to their existing content interests and preferences. [iOS only].">
+        Manage your interests and preferences.
       </message>
       <message name="IDS_IOS_FEED_CARD_SYNC_HALF_SHEET_DESC" desc="Description of the feed card sync half sheet. [iOS only]">
         To personalize your Discover feed and Chrome, turn on sync.
@@ -1234,30 +1246,44 @@ See your search engine’s instructions for deleting your search history, if app
       <message name="IDS_IOS_GOOGLE_SYNC_SETTINGS_TITLE" desc="Title for the view in the Settings for enabling/disabling Sync. [Length: 26em] [iOS only]">
         Sync
       </message>
-      <!-- TODO(crbug.com/1449220): Introduce final strings. -->
-      <message translateable="false" name="IDS_IOS_GOOGLE_ACCOUNT_SETTINGS_TITLE" desc="Title for the view in the Settings for account features management UI. [Length: 26em] [iOS only]">
-        **Account**
+      <message name="IDS_IOS_GOOGLE_ACCOUNT_SETTINGS_TITLE" desc="Title for the view in the Settings for account features management UI. [iOS only]">
+        Account
       </message>
-      <message translateable="false" name="IDS_IOS_GOOGLE_ACCOUNT_SETTINGS_TYPES_LIST_HEADER" desc="Title for the types list in the account features management UI. [Length: 26em] [iOS only]">
-        **In Your Google Account**
+      <message name="IDS_IOS_GOOGLE_ACCOUNT_SETTINGS_TYPES_LIST_HEADER" desc="Header of a section with toggles to control which types of data users can use and save in their Google Account (as opposed to saving them only on the device). Try to avoid long strings because this is a header in large font size.">
+        In Your Google Account
       </message>
-      <message translateable="false" name="IDS_IOS_GOOGLE_ACCOUNT_SETTINGS_TYPES_LIST_DESCRIPTION" desc="Description of what happens when switching a type in the types list in the account features management UI. [Length: 26em] [iOS only]">
-        **When on, data is saved in your Google Account. When off, data is saved only to this device.**
+      <message name="IDS_IOS_GOOGLE_ACCOUNT_SETTINGS_TYPES_LIST_DESCRIPTION" desc="Footer below a section with toggles to control which types of data users can use and save in their Google Account (as opposed to saving them only on the device).">
+        When on, use and save data in your Google Account. When off, data is saved only to this device.
       </message>
-      <message translateable="false" name="IDS_IOS_GOOGLE_ACCOUNTS_MANAGEMENT_FROM_ACCOUNT_SETTINGS_TITLE" desc="Title for the management UI of the accounts on the device.[iOS only]">
-        **Accounts on This Device**
+      <message name="IDS_IOS_GOOGLE_ACCOUNTS_MANAGEMENT_FROM_ACCOUNT_SETTINGS_TITLE" desc="Title of a page that shows all accounts on the user's device and lets them add, remove and otherwise manage their accounts. Avoid long strings given the limited space between surrounding buttons.">
+        Accounts on This Device
       </message>
-      <message translateable="false" name="IDS_IOS_GOOGLE_ACCOUNT_SETTINGS_MANAGE_GOOGLE_ACCOUNT_ITEM" desc="Title shown on the manage your Google Account button item. [iOS only]">
-        **Manage Your Google Account**
+      <message name="IDS_IOS_GOOGLE_ACCOUNT_SETTINGS_MANAGE_GOOGLE_ACCOUNT_ITEM" desc="Title shown on the manage your Google Account button item. [iOS only]">
+        Manage Your Google Account
       </message>
-      <message translateable="false" name="IDS_IOS_GOOGLE_ACCOUNT_SETTINGS_MANAGE_ACCOUNTS_ITEM" desc="Title shown on the manage accounts on this device button item. [iOS only]">
-        **Manage Accounts on This Device**
+      <message name="IDS_IOS_GOOGLE_ACCOUNT_SETTINGS_MANAGE_ACCOUNTS_ITEM" desc="Title shown on the manage accounts on this device button item. [iOS only]">
+        Manage Accounts on This Device...
       </message>
-      <message translateable="false" name="IDS_IOS_GOOGLE_ACCOUNT_SETTINGS_SIGN_OUT_ITEM" desc="Title shown on the sign out button item. [iOS only]">
-        **Sign Out**
+      <message name="IDS_IOS_GOOGLE_ACCOUNT_SETTINGS_SIGN_OUT_ITEM" desc="Title shown on the sign out button item. [iOS only]">
+        Sign Out
       </message>
-      <message translateable="false" name="IDS_IOS_GOOGLE_ACCOUNT_SETTINGS_SIGN_OUT_SNACKBAR_MESSAGE" desc="Snackbar message shown after signing out from account settings. [iOS only]">
-        **Signed out. Sign back in to see the bookmarks, passwords, and more in your account.**
+      <message name="IDS_IOS_GOOGLE_ACCOUNT_SETTINGS_SIGN_OUT_SNACKBAR_MESSAGE" desc="Snackbar message shown after signing out from account settings. [iOS only]">
+        Signed out. Sign back in to use the bookmarks, passwords, and more in your account.
+      </message>
+      <message name="IDS_IOS_GOOGLE_ACCOUNT_SETTINGS_SIGN_OUT_SNACKBAR_MESSAGE_ENTERPRISE" desc="Snackbar message shown after signing out from account settings, when an enterprise policy disabled sync. [iOS only]">
+        Signed out
+      </message>
+      <message name="IDS_SIGNIN_DISABLED_ACTION_SHEET_LABEL" desc="Body of a message that is shown when the user starts to sign out. This string precedes the confirmation button 'Sign Out'. If the user chooses to continue to sign out, then the data in their Google Account (such as bookmarks, passwords, history, settings, and more) won't be available on their device. If they sign back in to their Google Account, their data will come back. The tone should be helpful and instructive. [iOS only]">
+        After you sign out, the bookmarks, passwords, and more in your Google Account will be removed from this device.
+      </message>
+      <message name="IDS_IOS_DATA_NOT_UPLOADED_DIALOG_TITLE" desc="Title of a dialog that is shown when the user starts to sign out; the user chooses to sync some or all data types, but some data hasn't been saved in their Google Account yet (for example, if there was an error). This string precedes the body text 'Some of your Chrome data hasn't been saved to your Google Account yet. Try waiting a few minutes before signing out. If you sign out now, this data will be deleted.', and the user can choose to tap on the buttons 'Cancel' or 'Delete and Sign Out'. If the user chooses to continue to sign out, then any of their data (such as bookmarks, passwords, history, settings, and more) that isn't saved in their account will be deleted. The tone should be helpful and instructive. [iOS only]">
+        Some Data Isn't Saved Yet
+      </message>
+      <message name="IDS_IOS_DATA_NOT_UPLOADED_DIALOG_BUTTON" desc="Button of a dialog that is shown when the user starts to sign out; the user chooses to sync some or all data types, but some data hasn't been saved in their Google Account yet (for example, if there was an error). This string follows the heading 'Some Data Isn't Saved Yet' and the body text 'Some of your Chrome data hasn't been saved to your Google Account yet. Try waiting a few minutes before signing out. If you sign out now, this data will be deleted.'; the user can choose to tap on the buttons 'Cancel' or 'Delete and Sign Out'. If the user chooses to continue to sign out, then any of their data (such as bookmarks, passwords, history, settings, and more) that isn't saved in their account will be deleted. The tone should be helpful and instructive. [iOS only]">
+        Delete and Sign Out
+      </message>
+      <message name="IDS_IOS_ADDRESSES_NOT_ENCRYPTED_DIALOG_TEXT" desc="Text of a dialog shown to users when they turn on the ability to use and save addresses in their Google Account. This is shown to users who encrypt their data with their own passphrase in order to explain that addresses they will save in the future will not be encrypted. [iOS only]">
+        Addresses aren't encrypted with your passphrase. This lets you use them in other Google services.
       </message>
       <message name="IDS_IOS_SYNC_SETTINGS_TITLE" desc="Title for the navigation item in Advanced Settings. [Length: 26em] [iOS only]">
         Sync
@@ -1316,11 +1342,14 @@ See your search engine’s instructions for deleting your search history, if app
       <message name="IDS_IOS_IDENTITY_DISC_SIGNED_OUT_ACCESSIBILITY_LABEL" desc="The content description for a toolbar button displaying the signed-out avatar. Tapping on this button opens the sign-in sheet [iOS only].">
         Signed out. Opens options to sign in.
       </message>
-      <message name="IDS_IOS_IDENTITY_DISC_SIGNED_OUT_PROMO_LABEL" desc="Text in the sheet that offers the user to sign-in to Chrome [iOS only].">
+      <message name="IDS_IOS_IDENTITY_DISC_SIGN_IN_PROMO_LABEL" desc="Text in the sheet that offers the user to sign-in to Chrome [iOS only].">
         Get your bookmarks, passwords, and more on all your devices.
       </message>
       <message name="IDS_IOS_SIGNIN_SHEET_LABEL_FOR_FEED_PROMO" desc="Text in the sheet that offers the user to sign-in to Chrome, when the sheet is opened from one of the NTP feed promos [iOS only].">
         Sign in to get content based on your interests.
+      </message>
+      <message name="IDS_IOS_SIGNIN_SHEET_LABEL_FOR_RECENT_TABS" desc="This string is on a sign-in page, after the user taps on a promotion about signing in to Chrome with the user's Google Account. It explains the specific user benefit of signing in from this page (access to tabs from other devices). We want users to understand why signing in is beneficial, and click 'Turn on' to sign in to their Google Account. The tone should be informative and lightweight. [iOS only]">
+        Sign in to see your tabs from your other devices.
       </message>
       <message name="IDS_IOS_INACTIVE_TABS_BUTTON_SUBTITLE" desc="Subtitle of the button in the Tab Grid that opens the grid of Inactive Tabs.">
         Tabs not used for <ph name="THRESHOLD">$1<ex>14</ex></ph> days
@@ -1601,7 +1630,7 @@ See your search engine’s instructions for deleting your search history, if app
         Manage Your Google Account
       </message>
       <message name="IDS_IOS_REMOVE_GOOGLE_ACCOUNT_TITLE" desc="Title for the button that removes a Google account from the device">
-        Remove from this Device
+        Remove from This Device
       </message>
       <message name="IDS_IOS_MANAGE_SYNC_SETTINGS_TITLE" desc="Title for the view in the Settings for enabling/disabling Sync. [iOS only]">
         Manage Sync
@@ -1614,6 +1643,12 @@ See your search engine’s instructions for deleting your search history, if app
       </message>
       <message name="IDS_IOS_REMOVE_ACTION_TITLE" desc="Title of the action used to remove a selected item. [iOS only]">
         Remove
+      </message>
+      <message name="IDS_IOS_MANAGE_DATA_IN_YOUR_ACCOUNT_TITLE" desc="Title for the cell to open 'Data from Chromium sync' web page where the user can control all their data data from sync.">
+        Data in your account
+      </message>
+      <message name="IDS_IOS_MANAGE_DATA_IN_YOUR_ACCOUNT_DESCRIPTION" desc="Subtitle for the cell to open 'Data from Chromium sync' web page where the user can control all their data data from sync.">
+        Review your account data
       </message>
       <message name="IDS_IOS_MANAGE_SYNC_ENCRYPTION" desc="Title for the cell to open the encryption dialog.">
         Encryption
@@ -1713,6 +1748,24 @@ See your search engine’s instructions for deleting your search history, if app
       </message>
       <message name="IDS_IOS_MICROPHONE_USAGE_DESCRIPTION" desc="Specifies the reason for accessing the user's microphone while the app is in use [Length: unlimited] [iOS only].">
         This lets you search using your voice
+      </message>
+      <message name="IDS_IOS_MINI_MAP_CONSENT_ACCEPT" desc="The text of the consent button in the consent screen for mini map [iOS only].">
+        Accept
+      </message>
+      <message name="IDS_IOS_MINI_MAP_CONSENT_NO_THANKS" desc="The text of the no consent button in the consent screen for mini map [iOS only].">
+        No Thanks
+      </message>
+      <message name="IDS_IOS_MINI_MAP_CONSENT_FOOTER" desc="The text of the footer note in the consent screen for mini map. Contains a link [iOS only].">
+        You can manage this in BEGIN_LINK Content Settings END_LINK
+      </message>
+      <message name="IDS_IOS_MINI_MAP_CONSENT_MORE" desc="The text of the button to show more text of the consent [iOS only].">
+        More
+      </message>
+      <message name="IDS_IOS_MINI_MAP_CONSENT_SUBTITLE" desc="The subtitle of the consent screen for mini map [iOS only].">
+        Allow Chrome to use Google Maps to give you directions and local info on detected addresses.
+      </message>
+      <message name="IDS_IOS_MINI_MAP_CONSENT_TITLE" desc="The title of the consent screen for mini map [iOS only].">
+        Address Found
       </message>
       <message name="IDS_IOS_NAVIGATION_BAR_CANCEL_BUTTON" desc="Label of the cancel button displayed on the navigation bar  [Length: 7em] [iOS only].">
         Cancel
@@ -1969,8 +2022,14 @@ While in Incognito, sites can't use cookies to see your browsing activity across
       <message name="IDS_IOS_OPTIONS_PRIVACY_COOKIES_FOOTER" desc="Footer description explaining how to apply the new cookies setting">
         Your cookies setting applies to all tabs. To apply a new setting to an open tab, reload the tab.
       </message>
-      <message name="IDS_IOS_OPTIONS_PRIVACY_GOOGLE_SERVICES_FOOTER" desc="Footer to invite the user to open the Sync and Google Services settings.">
-        For more settings that relate to privacy, security, and data collection, see <ph name="BEGIN_LINK">BEGIN_LINK</ph>Sync and Google Services<ph name="END_LINK">END_LINK</ph>.
+      <message name="IDS_IOS_OPTIONS_TAB_PICKUP" desc="Title for opening the setting for displaying tab suggestions from other devices. (Title case)">
+        Show Tab Suggestions from Other Devices
+      </message>
+      <message name="IDS_IOS_OPTIONS_TAB_PICKUP_SCREEN_TITLE" desc="Title for the screen setting displaying tab suggestion settings. (Title case)">
+        Tab Suggestions
+      </message>
+      <message name="IDS_IOS_OPTIONS_TAB_PICKUP_SCREEN_FOOTER" desc="Footer for the screen setting displaying tab suggestion settings.">
+        Gives you tab suggestions based on your browsing activity on your other devices using your Google account. Your devices must be signed in and synced using the same Google account.
       </message>
       <message name="IDS_IOS_PARTIAL_TRANSLATE_ACTION_TRANSLATE_FULL_PAGE" desc="The action button to translate the full page (Title Case).">
         Translate Full Page
@@ -2022,6 +2081,9 @@ While in Incognito, sites can't use cookies to see your browsing activity across
       </message>
       <message name="IDS_IOS_PAYMENT_BOTTOM_SHEET_USE_KEYBOARD" desc="The action button to dismiss the payment bottom sheet and revert to using the keyboard to fill in payment fields on the webpage.">
         Use Keyboard
+      </message>
+      <message name="IDS_IOS_PAYMENT_BOTTOM_SHEET_CARD_DESCRIPTION" desc="The (accessibility) credit card description from the network of the card and last 4 digits of the card number.">
+        <ph name="NETWORK_NAME">$1<ex>Visa</ex></ph> ending in <ph name="LAST_FOUR_DIGITS">$2<ex>1234</ex></ph>
       </message>
       <message name="IDS_IOS_POST_RESTORE_DEFAULT_BROWSER_PRIMARY_ACTION" desc="The text for the primary action button of the post restore default browser promo.">
         Make Default in Settings…
@@ -2140,17 +2202,26 @@ While in Incognito, sites can't use cookies to see your browsing activity across
       <message name="IDS_IOS_PRIVACY_SAFE_BROWSING_ENHANCED_PROTECTION_SUMMARY" desc="Summary for Privacy Safe Browsing enhanced protection mode.">
         Faster, proactive protection against dangerous websites, downloads, and extensions. Warns you about password breaches. Requires browsing data to be sent to Google.
       </message>
+      <message name="IDS_IOS_PRIVACY_SAFE_BROWSING_ENHANCED_PROTECTION_FRIENDLIER_SUMMARY" desc="Friendlier summary for Privacy Safe Browsing enhanced protection mode.">
+        Real-time, proactive protection against dangerous sites, downloads, and extensions that’s based on your browsing data getting sent to Google
+      </message>
       <message name="IDS_IOS_PRIVACY_SAFE_BROWSING_ENHANCED_PROTECTION_TITLE" desc="Title for Privacy Safe Browsing enhanced protection mode.">
         Enhanced Protection
       </message>
       <message name="IDS_IOS_PRIVACY_SAFE_BROWSING_STANDARD_PROTECTION_SUMMARY" desc="Summary for Privacy Safe Browsing standard protection mode.">
         Standard protection against websites, downloads, and extensions that are known to be dangerous.
       </message>
+      <message name="IDS_IOS_PRIVACY_SAFE_BROWSING_STANDARD_PROTECTION_FRIENDLIER_SUMMARY" desc="Friendlier summary for Privacy Safe Browsing standard protection mode.">
+        Protects against sites, downloads, and extensions that are known to be dangerous. If a page does something suspicious, URLs and bits of page content are sent to Google Safe Browsing.
+      </message>
       <message name="IDS_IOS_PRIVACY_SAFE_BROWSING_STANDARD_PROTECTION_TITLE" desc="Title for Privacy Safe Browsing standard protection mode.">
         Standard Protection
       </message>
       <message name="IDS_IOS_PRIVACY_SAFE_BROWSING_NO_PROTECTION_SUMMARY" desc="Summary for Privacy Safe Browsing no protection mode.">
         Does not protect you against dangerous websites, downloads, and extensions. You’ll still get Safe Browsing protection, where available, in other Google services, like Gmail and Search.
+      </message>
+      <message name="IDS_IOS_PRIVACY_SAFE_BROWSING_NO_PROTECTION_FRIENDLIER_SUMMARY" desc="Friendlier summary for Privacy Safe Browsing no protection mode.">
+        Does not protect you against dangerous websites, downloads, and extensions. Your Safe Browsing settings in other Google products won't be affected.
       </message>
       <message name="IDS_IOS_PRIVACY_SAFE_BROWSING_NO_PROTECTION_TITLE" desc="Title for Privacy Safe Browsing no protection mode.">
         No Protection (not recommended)
@@ -2302,7 +2373,7 @@ While in Incognito, sites can't use cookies to see your browsing activity across
         When you're signed in, this data is linked to your Google Account to protect you across Google services, for example increasing protection in Gmail after a security incident.
       </message>
       <message name="IDS_IOS_SAFE_BROWSING_ENHANCED_PROTECTION_DOWNLOAD_ICON_DESCRIPTION" desc="Description for Safe Browsing enhanced protection download icon.">
-        Offers in-depth scans for suspicious downloads.
+        In-depth scans for suspicious downloads.
       </message>
       <message name="IDS_IOS_SAFE_BROWSING_ENHANCED_PROTECTION_G_ICON_DESCRIPTION" desc="Description for Safe Browsing enhanced protection G icon.">
         When you're signed in, protects you across Google services.
@@ -2317,10 +2388,10 @@ While in Incognito, sites can't use cookies to see your browsing activity across
         Things To Consider
       </message>
       <message name="IDS_IOS_SAFE_BROWSING_ENHANCED_PROTECTION_KEY_ICON_DESCRIPTION" desc="Description for Safe Browsing enhanced protection key icon.">
-        Warns you if you use a password that has been compromised by a data breach.
+        Warns you if you use a password that has been compromised in a data breach.
       </message>
       <message name="IDS_IOS_SAFE_BROWSING_ENHANCED_PROTECTION_LINK_ICON_DESCRIPTION" desc="Description for Safe Browsing enhanced protection link icon.">
-        Sends the URLs you visit and a small sample of page content, downloads, extension activity, and system information to Google Safe Browsing to check if they're harmful. If safe, this data is deleted after 30 days.
+        Sends the URLs you visit and a small sample of page content, downloads, extension activity, and system information to Google Safe Browsing to check if they're harmful.
       </message>
       <message name="IDS_IOS_SAFE_BROWSING_ENHANCED_PROTECTION_PERFORMANCE_ICON_DESCRIPTION" desc="Description for Safe Browsing enhanced protection performance icon.">
         Doesn't noticeably slow down your browser or device.
@@ -2408,12 +2479,6 @@ While in Incognito, sites can't use cookies to see your browsing activity across
       </message>
       <message name="IDS_IOS_PINNED_TABS_DRAG_TO_PIN_LABEL" desc="Label displayed in the pin tab toolbar when a Tab is being dragged.">
         Drag tab here to pin it.
-      </message>
-      <message name="IDS_IOS_PINNED_TAB_OVERFLOW_ACTION_IPH_TEXT" desc="Text for the In Product Help displayed after the user pinned a tab using the overflow menu indicating where the pinned tab is.">
-        You can find your pinned tabs here.
-      </message>
-      <message name="IDS_IOS_PINNED_TAB_OVERFLOW_ACTION_IPH_VOICE_OVER_ANNOUNCEMENT" desc="Voiceover announcement for the In Product Help displayed after the user pinned a tab using the overflow menu indicating where the pinned tab is.">
-        You can find your pinned tabs by tapping Show Tabs button.
       </message>
       <message name="IDS_IOS_PINNED_TAB_ACCESSIBILITY_LABEL" desc="Accessibility label for the Pinned Tab following by the tab title.">
         Pinned, <ph name="TAB_TITLE">$1<ex>CNN: Breaking News, Latest News and Videos</ex></ph>
@@ -2627,17 +2692,14 @@ While in Incognito, sites can't use cookies to see your browsing activity across
       <message name="IDS_IOS_SNACKBAR_MESSAGE_OFFLINE" desc="The iOS snackbar message when failed to follow/unfollow a web content because of offline. [iOS only]">
         You're offline. Check your internet connection and try again.
       </message>
-      <message name="IDS_IOS_SNACKBAR_MESSAGE_PINNED_TAB" desc="The iOS snackbar message when a tab has been pinned. [iOS only]">
-        Tab Pinned
-      </message>
       <message name="IDS_IOS_SNACKBAR_MESSAGE_UNFOLLOW_FAILED" desc="The iOS snackbar message when failed to unfollow a web content. [iOS only]">
         Can't unfollow. Something went wrong.
       </message>
       <message name="IDS_IOS_SNACKBAR_MESSAGE_UNFOLLOW_SUCCEED" desc="The iOS snackbar message when succeed to unfollow a web content. [iOS only]">
         Unfollowed <ph name="CHANNEL_NAME">$1<ex>CNN</ex></ph>
       </message>
-      <message name="IDS_IOS_SNACKBAR_MESSAGE_UNPINNED_TAB" desc="The iOS snackbar message when a tab has been unpinned. [iOS only]">
-        Tab Unpinned
+      <message name="IDS_IOS_SNACKBAR_MESSAGE_INCOGNITO_DISABLED_BY_PARENT" desc="The material toast message when incogonito mode is disabled by parent [iOS only].">
+        Incognito Mode is Unavailable
       </message>
       <message name="IDS_IOS_SNACKBAR_MESSAGE_INCOGNITO_DISABLED" desc="The material toast message when incogonito mode is disabled by policy [iOS only].">
         Your organization turned off Incognito mode
@@ -2659,12 +2721,6 @@ While in Incognito, sites can't use cookies to see your browsing activity across
       </message>
       <message name="IDS_IOS_TOOLS_MENU_NEW_WINDOW" desc="The iOS menu item for opening a new window [iOS only]" meaning="[Length: unlimited]">
         New Window
-      </message>
-      <message name="IDS_IOS_TOOLS_MENU_PIN_TAB" desc="The iOS menu item for pinning a tab [iOS only]" meaning="[Length: unlimited]">
-        Pin Tab
-      </message>
-      <message name="IDS_IOS_TOOLS_MENU_UNPIN_TAB" desc="The iOS menu item for unpinning a tab [iOS only]" meaning="[Length: unlimited]">
-        Unpin Tab
       </message>
       <message name="IDS_IOS_READING_LIST_CONTENT_CONTEXT_OFFLINE" desc="Title of the button to display the Offline version instead of the Online one. [Length: 50em]">
         View Offline Version in New Tab
@@ -2743,6 +2799,12 @@ While in Incognito, sites can't use cookies to see your browsing activity across
       </message>
       <message name="IDS_IOS_RECENT_TABS_OTHER_DEVICES_TURN_ON_SYNC" desc="Button label to turn Sync on for user. [Length: 30em]" meaning="Label using the Title Casing as recommended for buttons.">
           Turn On Sync
+      </message>
+      <message name="IDS_IOS_RECENT_TABS_OTHER_DEVICES_LABEL" desc="Label for the sign-in promo in the Recent tabs page.">
+          To see tabs from your other devices, sync your tabs and history.
+      </message>
+      <message name="IDS_IOS_RECENT_TABS_OTHER_DEVICES_TURN_ON_TABS" desc="Button for the sign-in promo in the Recent tabs page.">
+          Turn On
       </message>
       <message name="IDS_IOS_RECENT_TABS_RECENTLY_CLOSED" desc="The heading of the recently closed section in the recent tab panel. [Length: 35em] [iOS only]">
         Recently Closed
@@ -2828,8 +2890,20 @@ While in Incognito, sites can't use cookies to see your browsing activity across
       <message name="IDS_IOS_PASSWORD_SETTINGS_ON_DEVICE_ENCRYPTION_OPTED_IN_LEARN_MORE" desc="Section title in settings > password, allow to learn more about on-device encryption. [iOS Only]">
         Learn More
       </message>
+      <message name="IDS_IOS_PASSWORD_SHARING_FAMILY_MEMBER_INELIGIBLE" desc="Info text in the recipient picker view of the password sharing flow explaining why one of the family members is not eligible to be a recipient. [iOS Only]">
+        Your family member can't receive passwords right now. Ask them to update Chrome and sync their passwords. <ph name="BEGIN_LINK">BEGIN_LINK</ph>Learn more<ph name="END_LINK">END_LINK</ph>
+      </message>
       <message name="IDS_IOS_PASSWORD_SHARING_FAMILY_PICKER_SUBTITLE" desc="Header text in the view that allows to choose recipients for password sharing from a list of family members explaining what happens when the user shares their password with them. [iOS Only]">
         When you share a copy of your username and password, your family member can fill them using Google Password Manager.
+      </message>
+      <message name="IDS_IOS_PASSWORD_SHARING_FETCHING_RECIPIENTS_LABEL" desc="Text describing what is happening at the beginning of the password sharing flow. [iOS only]">
+        Checking your family members…
+      </message>
+      <message name="IDS_IOS_PASSWORD_SHARING_TITLE" desc="Title of the password sharing bottom sheet view. [iOS only]">
+        Share Password
+      </message>
+      <message name="IDS_IOS_PASSWORD_SHARING_SHARE_BUTTON" desc="Button text for the confirm action in the password sharing flow. [iOS only]">
+        Share
       </message>
       <message name="IDS_IOS_SETTINGS_ADD_PASSWORD_DESCRIPTION" desc="Footer text shown when the user is trying to add a new credential manually via settings [iOS only]" meaning="Telling user to ensure provided password matches password on the website.">
         Make sure you're saving your current password for this site.
@@ -2909,9 +2983,6 @@ While in Incognito, sites can't use cookies to see your browsing activity across
       <message name="IDS_IOS_SET_UP_LIST_SIGN_IN_SYNC_MAGIC_STACK_DESCRIPTION" desc="Description for the Set Up List item in the Magic Stack that encourages the user to sign in and set up syncing.">
         Sign in with your Google Account to sync your passwords and more.
       </message>
-      <message name="IDS_IOS_SET_UP_LIST_SIGN_IN_SYNC_SEE_MORE_DESCRIPTION" desc="Description for the Set Up List item in the See More modal that encourages the user to sign in and set up syncing.">
-          New menu to help you get to where you want to go.
-      </message>
       <message name="IDS_IOS_SET_UP_LIST_SIGN_IN_SYNC_SHORT_DESCRIPTION" desc="Shortened description for the Set Up List item that encourages the user to sign in and set up syncing.">
         Sync your bookmarks, history, and more.
       </message>
@@ -2958,6 +3029,10 @@ While in Incognito, sites can't use cookies to see your browsing activity across
         Managed by your organization.
 <ph name="BEGIN_LINK">BEGIN_LINK</ph>Learn More<ph name="END_LINK">END_LINK</ph>
       </message>
+      <message name="IDS_IOS_PARENT_MANAGED_SETTING" desc="Text displayed to inform the user that the browser is managed by their parent. [iOS only]">
+        Your account is managed by your parent.
+<ph name="BEGIN_LINK">BEGIN_LINK</ph>Learn More<ph name="END_LINK">END_LINK</ph>
+      </message>
       <message name="IDS_IOS_ENTERPRISE_MANAGED_SETTING_MESSAGE" desc="Text displayed to inform the user that the setting is managed by an Enterprise policy. [iOS only]">
         This setting is enforced by your administrator.
       </message>
@@ -2967,9 +3042,8 @@ While in Incognito, sites can't use cookies to see your browsing activity across
       <message name="IDS_IOS_ENTERPRISE_MANAGED_SYNC" desc="Text displayed to inform the user that syncable types are limited (i.e. managed). [iOS only]">
         Your organization limits what you can sync.
       </message>
-      <!-- TODO(crbug.com/1449220): Introduce final strings. -->
-      <message translateable="false" name="IDS_IOS_ENTERPRISE_MANAGED_SAVE_IN_ACCOUNT" desc="Text displayed to inform the user that types that can be stored on their account are limited (i.e. managed). [iOS only]">
-        **Your organization limits what you can save in your Google Account.**
+      <message name="IDS_IOS_ENTERPRISE_MANAGED_SAVE_IN_ACCOUNT" desc="Text displayed to inform the user that types that can be stored on their account are limited (i.e. managed). [iOS only]">
+        Your organization limits what you can save in your Google Account.
       </message>
       <message name="IDS_IOS_ENTERPRISE_SIGNED_OUT" desc="Text displayed in an alert when the user is signed out due to browser sign-in becoming disabled by policy. [iOS only]">
         You're Signed Out
@@ -2983,11 +3057,20 @@ While in Incognito, sites can't use cookies to see your browsing activity across
       <message name="IDS_IOS_ENTERPRISE_SIGNED_OUT_MESSAGE" desc="Message displayed in a prompt when the user is signed out due to browser sign-in becoming disabled by policy.">
         Your organization turned off sign in. You can still see your bookmarks, history, passwords and other settings on this device. If you make changes, they won’t sync to your account.
       </message>
+      <message name="IDS_IOS_ENTERPRISE_SIGNED_OUT_MESSAGE_WITH_UNO" desc="Message displayed in a prompt when the user is signed out due to browser sign-in becoming disabled by policy. Related with IDS_IOS_ENTERPRISE_SIGNED_OUT.">
+        Your organization turned off sign-in. New bookmarks, passwords, and more will be saved only to this device.
+      </message>
       <message name="IDS_IOS_ENTERPRISE_SYNC_DISABLED_MESSAGE" desc="Message displayed in a prompt when sync is disabled due to an enterprise policy. [iOS only]">
         Your organization turned off sync. You can still see your bookmarks, history, passwords and other settings on this device. If you make changes, they won’t sync to your account.
       </message>
+      <message name="IDS_IOS_ENTERPRISE_SYNC_DISABLED_MESSAGE_WITH_UNO" desc="Message displayed in a prompt when saving data (like bookmarks/reading list/passwords...) is disabled due to an enterprise policy. Related with IDS_IOS_ENTERPRISE_SYNC_DISABLED_TITLE_UNO.">
+        Your organization turned off the ability to use and save Chrome data in your Google Account. New bookmarks, passwords, and more will be saved only to this device.
+      </message>
       <message name="IDS_IOS_ENTERPRISE_SYNC_DISABLED_TITLE" desc="Title displayed in a prompt when sync is disabled due to an enterprise policy. [iOS only]">
         Sync has Been Turned Off
+      </message>
+      <message name="IDS_IOS_ENTERPRISE_SYNC_DISABLED_TITLE_WITH_UNO" desc="Message displayed in a prompt when saving data (like bookmarks/reading list/passwords...) is disabled due to an enterprise policy. Related with IDS_IOS_ENTERPRISE_SYNC_DISABLED_MESSAGE_UNO.">
+        Some Features No Longer Available
       </message>
       <message name="IDS_IOS_EXPORT_PASSWORDS" desc="Button that the user can press to export passwords. [Length: 22em] [iOS only]">
         Export Passwords...
@@ -3270,9 +3353,6 @@ Try to use a unique password for every site.
       <message name="IDS_IOS_SAVE_PASSWORD_TO_ACCOUNT_STORE" desc="Action button to save password in google account. [iOS only]" meaning="User wants to move password from local device to google account storage.">
         Save in Account
       </message>
-      <message name="IDS_IOS_AUTH_TO_SAVE_PASSWORD_TO_ACCOUNT_STORE" desc="Auth reason to save password in google account. [iOS only]" meaning="Auth when user wants to move a password to their google account storage from local device storage.">
-        Save password in your Google Account
-      </message>
       <message name="IDS_IOS_SAVE_PASSWORD_TO_ACCOUNT_STORE_DESCRIPTION" desc="Description of save password in google account action. [iOS only]" meaning="Telling user that current password is in local device store and suggesting moving it to their google account store.">
         This password is saved only to this device. To use it on your other devices, save it in your Google Account, <ph name="EMAIL">$1<ex>johndoe@gmail.com</ex></ph>.
       </message>
@@ -3495,9 +3575,6 @@ Try to use a unique password for every site.
       <message name="IDS_IOS_SETTINGS_SET_UP_SCREENLOCK_CONTENT" desc="Message informing the user that in order to view or copy the password, a screen lock needs to be set up on the device. This is shown as an alert message after the user tries to view or copy the password from a settings page. [Length: about two lines]">
         To see passwords, you must first set a passcode on your device.
       </message>
-      <message name="IDS_IOS_SETTINGS_SET_UP_SCREENLOCK_CONTENT_FOR_MOVE_TO_ACCOUNT" desc="Message informing the user that in order to move a local-only password to their account, a screen lock needs to be set up on the device. [Length: about two lines]">
-        To save this password in your account, you must first set a passcode on your device.
-      </message>
       <message name="IDS_IOS_SETTINGS_SET_UP_SCREENLOCK_LEARN_HOW" desc="The label of the 'Learn how' button of the alert informing the user that in order to view or copy the password, a screen lock needs to be set up on the device. The button leads to a help article on how to set up a device lock.">
         Learn How
       </message>
@@ -3710,6 +3787,9 @@ Try to use a unique password for every site.
       </message>
       <message name="IDS_IOS_WEBSIGN_ERROR_TIMEOUT_ERROR" desc="Title displayed when sign in fails due to an authentication issue. [iOS only]">
         Check your connection and try signing in again.
+      </message>
+      <message name="IDS_IOS_DEFAULT_BROWSER_VIDEO_PROMO_DEFAULT_BROWSER_APP" desc="Text in the default browser video promo indicating the default browser app in the chrome settings to set a default browser. [iOS only]">
+        Default Browser App
       </message>
       <message name="IDS_IOS_WHATS_NEW_FEATURE_SEARCH_TABS_TITLE" desc="Search Tabs title displayed in What's New. [iOS only]">
         Search Tabs Across Synced Devices
@@ -4111,6 +4191,9 @@ Your data was encrypted with your passphrase on <ph name="TIME">$2<ex>Sept 1, 20
       <message name="IDS_SYNC_NEEDS_VERIFICATION_TITLE" desc="Title of the error message shown when sync needs to verify the user. [iOS only]">
         Sync Needs To Verify It's You
       </message>
+      <message name="IDS_IOS_PARENT_MANAGED_POPOVER_TEXT" desc="This text is shown when parental controls are enabled for a supervised user which affects settings.">
+      Managed by your parent
+      </message>
       <message name="IDS_IOS_SYNC_SETTINGS_DISABLED_POPOVER_TEXT" desc="This text is shown when sync is disabled by an enterprise policy and the user taps on the info pop-over of the Sync button in the settings.">
        Your organization requires you to turn off sync.
       </message>
@@ -4206,6 +4289,10 @@ Your data was encrypted with your passphrase on <ph name="TIME">$2<ex>Sept 1, 20
       </message>
       <message name="IDS_IOS_TAB_GRID_INCOGNITO_TABS_UNAVAILABLE_MESSAGE" desc="Message shown in the Incognito Tabs page of the tab grid when the IncognitoModeAvailability enterprise policy is set to disabled. [iOS only]">
         Your organization turned off private browsing.
+<ph name="BEGIN_LINK">BEGIN_LINK</ph>Learn more<ph name="END_LINK">END_LINK</ph>
+      </message>
+      <message name="IDS_IOS_TAB_GRID_SUPERVISED_INCOGNITO_MESSAGE" desc="Message shown in the Incognito Tabs page of the tab grid when a supervised user tries to access incognito mode. [iOS only]">
+        Your account is managed by your parent.
 <ph name="BEGIN_LINK">BEGIN_LINK</ph>Learn more<ph name="END_LINK">END_LINK</ph>
       </message>
       <message name="IDS_IOS_TAB_GRID_INCOGNITO_TABS_UNAVAILABLE_TITLE" desc="Title shown above a message in the Incognito Tabs page of the tab grid when the IncognitoModeAvailability enterprise policy is set to disabled. [iOS only]">
@@ -4336,6 +4423,24 @@ Your data was encrypted with your passphrase on <ph name="TIME">$2<ex>Sept 1, 20
       <message name="IDS_IOS_TANGIBLE_SYNC_SUBTITLE_BACK_UP" desc="This string appears as a subheading a full-page screen that asks users if they want to turn on sync. This string explains to users that they can back up their Chrome/Chromium data and use it on all their computers, phones, and other devices; a user's Chrome/Chromium data includes their bookmarks, passwords, history, settings, and more. The word 'stuff' can be translated as 'data' or similar if there is no natural translation of 'stuff'. Maintain the level of formality that your language generally uses in the Chrome/Chromium app. The tone should be informative and inviting. [iOS only][CHAR_LIMIT=100]">
         Back up your stuff and use it on any device.
       </message>
+      <message name="IDS_IOS_HISTORY_SYNC_TITLE" desc="Title of a page that asks users to start syncing their tabs and browsing history, so they can get back to sites they visited more quickly without having to type them, for example by seeing these sites suggested in the Omnibox.">
+        Save Time, Type Less
+      </message>
+      <message name="IDS_IOS_HISTORY_SYNC_SUBTITLE" desc="Text of a page that asks users to start syncing their tabs and browsing history, so they can get back to sites they visited more quickly without having to type them, for example by seeing these sites suggested in the Omnibox.">
+        To quickly get back to sites you've visited, sync your tabs and history.
+      </message>
+      <message name="IDS_IOS_HISTORY_SYNC_PRIMARY_ACTION" desc="Title of the button to validate the user consent to sync their history and tabs data.">
+        Yes, I'm In
+      </message>
+      <message name="IDS_IOS_HISTORY_SYNC_SECONDARY_ACTION" desc="Title of the button to refuse to give the  consent to sync their history and tabs data.">
+        No Thanks
+      </message>
+      <message name="IDS_IOS_HISTORY_SYNC_FOOTER_WITH_EMAIL" desc="Small text above the main button on a page that asks users to start syncing their tabs and browsing history. The first sentence reminds the user that they're signed in with a certain account. The second sentence is meant to reassure users that they can always change their mind and opt out again. The third sentence explains how history data may be used to personalise the user's experience in other services. The tone should be friendly and reassuring.">
+        You are signed in as <ph name="USER_EMAIL">$1<ex>janedoe@google.com</ex></ph>. You can stop syncing anytime in settings. Google may personalize Search and other services based on your history.
+      </message>
+      <message name="IDS_IOS_HISTORY_SYNC_FOOTER_WITHOUT_EMAIL" desc="Small text above the main button on a page that asks users to start syncing their tabs and browsing history. The first sentence is meant to reassure users that they can always change their mind and opt out again. Separately, the second sentence explains how history data may be used to personalise the user's experience in other services.  The tone should be friendly and reassuring.">
+        You can stop syncing anytime in settings. Google may personalize Search and other services based on your history.
+      </message>
       <message name="IDS_IOS_TERMS_OF_SERVICE" desc="The label to access the terms of service, displayed in the application settings, with no product name. [Length: 30em] [iOS only]">
         Terms of Service
       </message>
@@ -4366,11 +4471,11 @@ Your data was encrypted with your passphrase on <ph name="TIME">$2<ex>Sept 1, 20
       <message name="IDS_IOS_TOOLBAR_SHOW_TAB_GRID" desc="The accessibility label for the toolbar show tab grid button [iOS only].">
         Show Tab Grid
       </message>
-      <message name="IDS_IOS_TOOLBAR_MENU_TOP_OMNIBOX" desc="The iOS menu item for moving the address bar to the top of the screen [iOS only].">
-        Show Top Address Bar
+      <message name="IDS_IOS_TOOLBAR_MENU_TOP_OMNIBOX" desc="The iOS menu item for moving the address bar to the top of the screen [iOS only]. In title case.">
+        Move Address Bar To Top
       </message>
-      <message name="IDS_IOS_TOOLBAR_MENU_BOTTOM_OMNIBOX" desc="The iOS menu item for moving the address bar to the bottom of the screen [iOS only].">
-        Show Bottom Address Bar
+      <message name="IDS_IOS_TOOLBAR_MENU_BOTTOM_OMNIBOX" desc="The iOS menu item for moving the address bar to the bottom of the screen [iOS only]. In title case.">
+        Move Address Bar To Bottom
       </message>
       <message name="IDS_IOS_TOOLS_MENU" desc="The accessibility label for the iOS tools menu [iOS only]">
         Tools Menu
@@ -4462,6 +4567,15 @@ Your data was encrypted with your passphrase on <ph name="TIME">$2<ex>Sept 1, 20
       <message name="IDS_IOS_TOOLS_MENU_RECENT_TABS" desc="The iOS menu item for opening the panel showing the recently closed tabs and the tabs from other devices." meaning="[In Title case] [iOS only] [Length: Unlimited]">
         Recent Tabs
       </message>
+      <message name="IDS_IOS_OVERFLOW_MENU_CUSTOMIZE_MENU_CANCEL" desc="The title of the button on the overflow menu customization screen for users to cancel customization." meaning="[In Title case] [iOS only]">
+        Cancel
+      </message>
+      <message name="IDS_IOS_OVERFLOW_MENU_CUSTOMIZE_MENU_DONE" desc="The title of the button on the overflow menu customization screen for users to finish and save customization." meaning="[In Title case] [iOS only]">
+        Done
+      </message>
+      <message name="IDS_IOS_OVERFLOW_MENU_CUSTOMIZE_MENU_TITLE" desc="The title of the screen on the overflow menu where users can customize the items in the menu." meaning="[In Title case] [iOS only]">
+        Customize Menu
+      </message>
       <message name="IDS_IOS_OVERFLOW_MENU_SHARE_CHROME" desc="The iOS menu item for opening a share sheet with the URL to the Chrome app in the iOS app store" meaning="[In Title case] [iOS only] [Length: Unlimited]">
         Share Chrome
       </message>
@@ -4472,7 +4586,16 @@ Your data was encrypted with your passphrase on <ph name="TIME">$2<ex>Sept 1, 20
         Download Chrome here.
       </message>
       <message name="IDS_IOS_OVERFLOW_MENU_EDIT_ACTIONS" desc="The iOS menu item for starting the process to edit actions on the overflow menu." meaning="[In Title case] [iOS only] [Length: Unlimited]">
-        Edit Actions
+        Customize Menu
+      </message>
+      <message name="IDS_IOS_OVERFLOW_MENU_EDIT_SECTION_HIDDEN_TITLE" desc="The title for the overflow menu edit section showing hidden destinations" meaning="[In Title case] [iOS only] [Length: Unlimited]">
+        Hidden
+      </message>
+      <message name="IDS_IOS_OVERFLOW_MENU_SORT_TITLE" desc="The title of the overflow menu option where the menu will be auto-sorted by frequency." meaning="[iOS only] [Length: Unlimited]">
+        Smart Order Menu Bar
+      </message>
+      <message name="IDS_IOS_OVERFLOW_MENU_SORT_DESCRIPTION" desc="The description of the overflow menu option where the menu will be auto-sorted by frequency." meaning="[iOS only] [Length: Unlimited]">
+        Show frequently used items first.
       </message>
       <message name="IDS_IOS_TOOLS_MENU_RELOAD" desc="The title of the button in the menu allowing the user to reload the page.">
         Reload
@@ -4741,6 +4864,9 @@ Your data was encrypted with your passphrase on <ph name="TIME">$2<ex>Sept 1, 20
       <message name="IDS_IOS_USER_POLICY_CONTINUE" desc="Label of the button to continue with the current managed account in the User Policy notification dialog. [iOS only] [300em]">
         Continue
       </message>
+      <message name="IDS_IOS_USER_POLICY_NOTIFICATION_NO_SIGNOUT_TITLE" desc="The title of the User Policy notification dialog. [iOS only] [300em]">
+        Your Account is Managed
+      </message>
       <message name="IDS_IOS_USER_POLICY_SIGNOUT_AND_CLEAR_DATA" desc="Label of the button to sign out the current managed account and clear its data in the User Policy notification dialog. [iOS only] [300em]">
         Sign Out and Clear Data
       </message>
@@ -4910,6 +5036,99 @@ Your data was encrypted with your passphrase on <ph name="TIME">$2<ex>Sept 1, 20
       </message>
       <message name="IDS_IOS_IDENTITY_ERROR_INFOBAR_VERIFY_BUTTON_LABEL" desc="The label of the verify your account action button in the identity error info bar. [iOS only]">
         Verify
+      </message>
+      <message name="IDS_IOS_SPOTLIGHT_CHROME_ACTIONS_LABEL" desc="Tag label title displayed for chrome actions spotlight items. [iOS only]">
+        Chrome Actions
+      </message>
+      <message name="IDS_IOS_SPOTLIGHT_OPEN_TAB_LABEL" desc="Tag label title displayed for opent tabs spotlight items. [iOS only]">
+        Open Tab
+      </message>
+      <message name="IDS_IOS_ADDRESS_BAR_SETTING" desc="Tag label title displayed in the address bar setting section. [iOS only]">
+        Address Bar
+      </message>
+      <message name="IDS_IOS_ADDRESS_BAR_TIP_NOTE" desc="Tag label footer note displayed in the address bar setting section. [iOS only]">
+        You can also touch and hold the address bar to change the position.
+      </message>
+      <message name="IDS_IOS_TOP_ADDRESS_BAR_OPTION" desc="Tag label title displayed for the top address bar preference option. [iOS only]">
+        Top
+      </message>
+      <message name="IDS_IOS_BOTTOM_ADDRESS_BAR_OPTION" desc="Tag label title displayed for the bottom address bar preference option. [iOS only]">
+        Bottom
+      </message>
+      <message name="IDS_IOS_UNO_UPGRADE_PROMO_SIGNIN_SUBTITLE" desc="This string is on a sign-in page, shown several weeks after the user has installed Chrome. It explains the overarching user benefit of signing in (access to bookmarks, passwords, history, settings, etc.). We want users to understand why signing in is beneficial, and click 'Continue as name' to sign in to their Google Account. The tone should be informative and lightweight.">
+        Get your bookmarks, passwords, and more on all your devices.
+      </message>
+      <message name="IDS_IOS_SAFETY_CHECK_TITLE_ALL_SAFE" desc="Tag label title displayed for the Safety Check module in the Magic Stack when there are no Safety Check issue found. [iOS only]">
+        Your Browser Looks Good
+      </message>
+      <message name="IDS_IOS_SAFETY_CHECK_DESCRIPTION_ALL_SAFE" desc="Tag label description displayed for the Safety Check module in the Magic Stack when there are no Safety Check issue found. [iOS only]">
+        Safety Check didn't find any security issues for you to fix.
+      </message>
+      <message name="IDS_IOS_SAFETY_CHECK_RUNNING" desc="Tag label title displayed for the Safety Check module in the Magic Stack when the Safety Check is running. [iOS only]">
+        Safety Check is running…
+      </message>
+      <message name="IDS_IOS_SAFETY_CHECK_TITLE_UPDATE_CHROME" desc="Tag label title displayed for the Safety Check module in the Magic Stack when the Update Chrome check finds an issue. [iOS only]">
+        Update Your Browser
+      </message>
+      <message name="IDS_IOS_SAFETY_CHECK_DESCRIPTION_UPDATE_CHROME" desc="Tag label description displayed for the Safety Check module in the Magic Stack when the Update Chrome check finds an issue. [iOS only]">
+        Chrome is out of date, update to the latest version to stay secure.
+      </message>
+      <message name="IDS_IOS_SAFETY_CHECK_COMPACT_DESCRIPTION_UPDATE_CHROME" desc="Tag label description displayed for the Safety Check module in the Magic Stack when the Update Chrome check finds an issue. [iOS only]">
+        Your Chrome is out of date.
+      </message>
+      <message name="IDS_IOS_SAFETY_CHECK_TITLE_PASSWORD" desc="Tag label title displayed for the Safety Check module in the Magic Stack when the Password check finds an issue. [iOS only]">
+        Change Your Passwords
+      </message>
+      <message name="IDS_IOS_SAFETY_CHECK_DESCRIPTION_COMPROMISED_PASSWORD" desc="Tag label description displayed for the Safety Check module in the Magic Stack when the Password check finds a compromised password issue. [iOS only]">
+        You have 1 compromised password. Fix it now to stay safe.
+      </message>
+      <message name="IDS_IOS_SAFETY_CHECK_COMPACT_DESCRIPTION_COMPROMISED_PASSWORD" desc="Tag label description displayed for the Safety Check module in the Magic Stack when the Password check finds a compromised password issue. [iOS only]">
+        You have compromised passwords.
+      </message>
+      <message name="IDS_IOS_SAFETY_CHECK_DESCRIPTION_REUSED_PASSWORD" desc="Tag label description displayed for the Safety Check module in the Magic Stack when the Password check finds a reused password issue. [iOS only]">
+        You have 1 reused password. Fix it now to stay safe.
+      </message>
+      <message name="IDS_IOS_SAFETY_CHECK_COMPACT_DESCRIPTION_REUSED_PASSWORD" desc="Tag label description displayed for the Safety Check module in the Magic Stack when the Password check finds a reused password issue. [iOS only]">
+        You have reused passwords.
+      </message>
+      <message name="IDS_IOS_SAFETY_CHECK_DESCRIPTION_WEAK_PASSWORD" desc="Tag label description displayed for the Safety Check module in the Magic Stack when the Password check finds a weak password issue. [iOS only]">
+        You have 1 weak password. Fix it now to stay safe.
+      </message>
+      <message name="IDS_IOS_SAFETY_CHECK_COMPACT_DESCRIPTION_WEAK_PASSWORD" desc="Tag label description displayed for the Safety Check module in the Magic Stack when the Password check finds a weak password issue. [iOS only]">
+        You have weak passwords.
+      </message>
+      <message name="IDS_IOS_SAFETY_CHECK_DESCRIPTION_MULTIPLE_COMPROMISED_PASSWORDS" desc="Tag label description displayed for the Safety Check module in the Magic Stack when the Password check finds multiple compromised passwords. [iOS only]">
+        You have <ph name="NUMBER_OF_PASSWORDS">$1<ex>2</ex></ph> compromised passwords that could put your security at risk.
+      </message>
+      <message name="IDS_IOS_SAFETY_CHECK_DESCRIPTION_MULTIPLE_REUSED_PASSWORDS" desc="Tag label description displayed for the Safety Check module in the Magic Stack when the Password check finds multiple reused passwords. [iOS only]">
+        You have <ph name="NUMBER_OF_PASSWORDS">$1<ex>2</ex></ph> reused passwords that could put your security at risk.
+      </message>
+      <message name="IDS_IOS_SAFETY_CHECK_DESCRIPTION_MULTIPLE_WEAK_PASSWORDS" desc="Tag label description displayed for the Safety Check module in the Magic Stack when the Password check finds multiple weak passwords. [iOS only]">
+        You have <ph name="NUMBER_OF_PASSWORDS">$1<ex>2</ex></ph> weak passwords that could put your security at risk.
+      </message>
+      <message name="IDS_IOS_SAFETY_CHECK_DESCRIPTION_MULTIPLE_PASSWORD_ISSUES" desc="Tag label description displayed for the Safety Check module in the Magic Stack when the Password check finds multiple password issues of different type (e.g. compromised, reused, weak). [iOS only]">
+        You have several password issues that could put your security at risk.
+      </message>
+      <message name="IDS_IOS_SAFETY_CHECK_COMPACT_DESCRIPTION_MULTIPLE_PASSWORD_ISSUES" desc="Tag label description displayed for the Safety Check module in the Magic Stack when the Password check finds multiple password issues of different type (e.g. compromised, reused, weak). [iOS only]">
+        You have several password issues.
+      </message>
+      <message name="IDS_IOS_SAFETY_CHECK_TITLE_SAFE_BROWSING" desc="Tag label title displayed for the Safety Check module in the Magic Stack when the Safe Browsing check finds an issue. [iOS only]">
+        Add Browsing Protection
+      </message>
+      <message name="IDS_IOS_SAFETY_CHECK_DESCRIPTION_SAFE_BROWSING" desc="Tag label description displayed for the Safety Check module in the Magic Stack when the Safe Browsing check finds an issue. [iOS only]">
+        Get protection from dangerous sites, downloads, and extensions.
+      </message>
+      <message name="IDS_IOS_SAFETY_CHECK_COMPACT_DESCRIPTION_SAFE_BROWSING" desc="Tag label description displayed for the Safety Check module in the Magic Stack when the Safe Browsing check finds an issue. [iOS only]">
+        Get protection from dangerous sites.
+      </message>
+      <message name="IDS_IOS_SAFETY_CHECK_TITLE_DEFAULT" desc="Tag label title displayed for the Safety Check module in the Magic Stack when the Safety Check has not been run yet. [iOS only]">
+        Run Safety Check
+      </message>
+      <message name="IDS_IOS_SAFETY_CHECK_DESCRIPTION_DEFAULT" desc="Tag label description displayed for the Safety Check module in the Magic Stack when the Safety Check has not been run yet. [iOS only]">
+        Stay safe from data breaches, unsafe websites and more.
+      </message>
+      <message name="IDS_IOS_SAFETY_CHECK_TITLE" desc="Tag label title displayed for the Safety Check module in the Magic Stack. [iOS only]">
+        Safety Check
       </message>
     </messages>
   </release>

@@ -14,9 +14,11 @@ enum class Destination;
 enum class ActionType;
 }
 @class ActionCustomizationModel;
+@class DestinationCustomizationModel;
 @class OverflowMenuAction;
 @class OverflowMenuActionGroup;
 @class OverflowMenuDestination;
+@class OverflowMenuModel;
 class PrefService;
 
 @protocol OverflowMenuDestinationProvider <NSObject>
@@ -29,6 +31,16 @@ class PrefService;
 // page does not support the given `destinationType`.
 - (OverflowMenuDestination*)destinationForDestinationType:
     (overflow_menu::Destination)destinationType;
+
+// Returns a representative `OverflowMenuDestination` for the corresponding
+// `overflow_menu::Destination` to display to the user when customizing the
+// order and show/hide state of the destinations.
+- (OverflowMenuDestination*)customizationDestinationForDestinationType:
+    (overflow_menu::Destination)destinationType;
+
+// Allows destination provider to fire any feature-specific logic for clearing
+// feature-driven badges.
+- (void)destinationCustomizationCompleted;
 
 @end
 
@@ -71,6 +83,10 @@ class PrefService;
 
 @property(nonatomic, weak) id<OverflowMenuActionProvider> actionProvider;
 
+// The model provided to this orderer, allowing it to update the
+// order when needed.
+@property(nonatomic, weak) OverflowMenuModel* model;
+
 // The page actions group provided to this orderer, allowing it to update the
 // order when needed.
 @property(nonatomic, weak) OverflowMenuActionGroup* pageActionsGroup;
@@ -79,22 +95,46 @@ class PrefService;
 @property(nonatomic, readonly)
     ActionCustomizationModel* actionCustomizationModel;
 
+// Model object to be used for customizing (reordering, showing/hiding)
+// destinations.
+@property(nonatomic, readonly)
+    DestinationCustomizationModel* destinationCustomizationModel;
+
 // Release any C++ objects that can't be reference counted.
 - (void)disconnect;
 
 // Records a `destination` click from the overflow menu carousel.
 - (void)recordClickForDestination:(overflow_menu::Destination)destination;
 
-// Returns the current sorted list of active destinations.
-- (NSArray<OverflowMenuDestination*>*)sortedDestinations;
+// Requests that the orderer perform any per-appearance order updates.
+- (void)reorderDestinationsForInitialMenu;
+
+// Requests that the orderer update the order of the destinations in its model.
+- (void)updateDestinations;
 
 // Requests that the orderer update the order of the page actions in its page
 // actions group.
 - (void)updatePageActions;
 
+// Alerts the orderer that the menu has disappeared, so it can perform any
+// necessary updates.
+- (void)updateForMenuDisappearance;
+
 // Tells the orderer that actions customization has finished using the current
 // data in `actionCustomizationModel`.
 - (void)commitActionsUpdate;
+
+// Tells the orderer that destinations customization has finished using the
+// current data in `destinationCustomizationModel`.
+- (void)commitDestinationsUpdate;
+
+// Tells the orderer that actions customization was cancelled and should not be
+// saved.
+- (void)cancelActionsUpdate;
+
+// Tells the orderer that destinations customization was cancelled and should
+// not be saved.
+- (void)cancelDestinationsUpdate;
 
 @end
 

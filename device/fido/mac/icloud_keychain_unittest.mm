@@ -17,10 +17,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 namespace device::fido::icloud_keychain {
 
 namespace {
@@ -409,6 +405,26 @@ TEST_F(iCloudKeychainTest, FetchCredentialMetadata) {
 
     ASSERT_EQ(creds_out.size(), 1u);
     EXPECT_EQ(creds[0], creds_out[0]);
+  }
+}
+
+TEST_F(iCloudKeychainTest, FetchCredentialMetadataNoPermission) {
+  if (@available(macOS 13.3, *)) {
+    fake_->set_auth_state(FakeSystemInterface::kAuthNotAuthorized);
+
+    test::TestCallbackReceiver<std::vector<DiscoverableCredentialMetadata>,
+                               FidoRequestHandlerBase::RecognizedCredential>
+        callback;
+    CtapGetAssertionRequest request("example.com", "{}");
+    CtapGetAssertionOptions options;
+
+    CHECK(authenticator_);
+    authenticator_->GetPlatformCredentialInfoForRequest(request, options,
+                                                        callback.callback());
+    callback.WaitForCallback();
+    auto result = callback.TakeResult();
+    EXPECT_EQ(std::get<1>(result),
+              FidoRequestHandlerBase::RecognizedCredential::kUnknown);
   }
 }
 

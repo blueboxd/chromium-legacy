@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {SettingsDateTimePageElement, TimeZoneAutoDetectMethod, TimeZoneBrowserProxyImpl, TimezoneSubpageElement} from 'chrome://os-settings/lazy_load.js';
-import {ControlledRadioButtonElement, CrSettingsPrefs, Router, routes, SettingsDropdownMenuElement, SettingsToggleButtonElement} from 'chrome://os-settings/os_settings.js';
-import {CrLinkRowElement} from 'chrome://resources/cr_elements/cr_link_row/cr_link_row.js';
+import 'chrome://os-settings/lazy_load.js';
+
+import {SettingsDateTimeCardElement, SettingsDateTimePageElement, TimeZoneAutoDetectMethod, TimeZoneBrowserProxyImpl, TimezoneSubpageElement} from 'chrome://os-settings/lazy_load.js';
+import {ControlledRadioButtonElement, CrLinkRowElement, CrSettingsPrefs, Router, routes, SettingsDropdownMenuElement, SettingsToggleButtonElement} from 'chrome://os-settings/os_settings.js';
 import {webUIListenerCallback} from 'chrome://resources/js/cr.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {getDeepActiveElement} from 'chrome://resources/js/util_ts.js';
@@ -174,60 +175,6 @@ function initializeDateTime(
   return dateTime;
 }
 
-function clickDisableAutoDetect(dateTime: SettingsDateTimePageElement|
-                                TimezoneSubpageElement): void {
-  if (dateTime.prefs.cros.flags.fine_grained_time_zone_detection_enabled
-          .value) {
-    const timeZoneAutoDetectOff =
-        dateTime.shadowRoot!.querySelector<ControlledRadioButtonElement>(
-            '#timeZoneAutoDetectOff');
-    assertTrue(!!timeZoneAutoDetectOff);
-    timeZoneAutoDetectOff.click();
-  } else {
-    const timeZoneAutoDetect =
-        dateTime.shadowRoot!.querySelector<SettingsToggleButtonElement>(
-            '#timeZoneAutoDetect');
-    assertTrue(!!timeZoneAutoDetect);
-    timeZoneAutoDetect.click();
-  }
-}
-
-function clickEnableAutoDetect(dateTime: SettingsDateTimePageElement|
-                               TimezoneSubpageElement): void {
-  if (dateTime.prefs.cros.flags.fine_grained_time_zone_detection_enabled
-          .value) {
-    const timeZoneAutoDetectOn =
-        dateTime.shadowRoot!.querySelector<ControlledRadioButtonElement>(
-            '#timeZoneAutoDetectOn');
-    assertTrue(!!timeZoneAutoDetectOn);
-    timeZoneAutoDetectOn.click();
-  } else {
-    const timeZoneAutoDetect =
-        dateTime.shadowRoot!.querySelector<SettingsToggleButtonElement>(
-            '#timeZoneAutoDetect');
-    assertTrue(!!timeZoneAutoDetect);
-    timeZoneAutoDetect.click();
-  }
-}
-
-function getAutodetectOnButton(dateTime: SettingsDateTimePageElement|
-                               TimezoneSubpageElement):
-    SettingsToggleButtonElement|ControlledRadioButtonElement {
-  if (dateTime.prefs.cros.flags.fine_grained_time_zone_detection_enabled
-          .value) {
-    const timeZoneAutoDetectOn =
-        dateTime.shadowRoot!.querySelector<ControlledRadioButtonElement>(
-            '#timeZoneAutoDetectOn');
-    assertTrue(!!timeZoneAutoDetectOn);
-    return timeZoneAutoDetectOn;
-  }
-  const timeZoneAutoDetect =
-      dateTime.shadowRoot!.querySelector<SettingsToggleButtonElement>(
-          '#timeZoneAutoDetect');
-  assertTrue(!!timeZoneAutoDetect);
-  return timeZoneAutoDetect;
-}
-
 suite('<settings-date-time-page>', () => {
   let dateTime: SettingsDateTimePageElement|TimezoneSubpageElement;
   let testBrowserProxy: TestTimeZoneBrowserProxy;
@@ -243,6 +190,65 @@ suite('<settings-date-time-page>', () => {
     dateTime.remove();
     Router.getInstance().resetRouteForTesting();
   });
+
+  function getDateTimeCard(): SettingsDateTimeCardElement {
+    const dateTimeCard =
+        dateTime.shadowRoot!.querySelector('settings-date-time-card');
+    assertTrue(!!dateTimeCard);
+    return dateTimeCard;
+  }
+
+  function getTimeZoneAutoDetectToggle(): SettingsToggleButtonElement {
+    const dateTimeCard = getDateTimeCard();
+    const timeZoneAutoDetectToggle =
+        dateTimeCard.shadowRoot!.querySelector<SettingsToggleButtonElement>(
+            '#timeZoneAutoDetectToggle');
+    assertTrue(!!timeZoneAutoDetectToggle);
+    return timeZoneAutoDetectToggle;
+  }
+
+  function getTimeZoneAutoDetectOn(): ControlledRadioButtonElement {
+    const timeZoneAutoDetectOn =
+        dateTime.shadowRoot!.querySelector<ControlledRadioButtonElement>(
+            '#timeZoneAutoDetectOn');
+    assertTrue(!!timeZoneAutoDetectOn);
+    return timeZoneAutoDetectOn;
+  }
+
+  function getTimeZoneAutoDetectOff(): ControlledRadioButtonElement {
+    const timeZoneAutoDetectOff =
+        dateTime.shadowRoot!.querySelector<ControlledRadioButtonElement>(
+            '#timeZoneAutoDetectOff');
+    assertTrue(!!timeZoneAutoDetectOff);
+    return timeZoneAutoDetectOff;
+  }
+
+  function clickDisableAutoDetect(): void {
+    if (dateTime.prefs.cros.flags.fine_grained_time_zone_detection_enabled
+            .value) {
+      getTimeZoneAutoDetectOff().click();
+    } else {
+      getTimeZoneAutoDetectToggle().click();
+    }
+  }
+
+  function clickEnableAutoDetect(): void {
+    if (dateTime.prefs.cros.flags.fine_grained_time_zone_detection_enabled
+            .value) {
+      getTimeZoneAutoDetectOn().click();
+    } else {
+      getTimeZoneAutoDetectToggle().click();
+    }
+  }
+
+  function getAutodetectOnButton(): SettingsToggleButtonElement|
+      ControlledRadioButtonElement {
+    if (dateTime.prefs.cros.flags.fine_grained_time_zone_detection_enabled
+            .value) {
+      return getTimeZoneAutoDetectOn();
+    }
+    return getTimeZoneAutoDetectToggle();
+  }
 
   function getTimeZoneSelector(id: string): SettingsDropdownMenuElement {
     const timezoneSelector =
@@ -262,7 +268,7 @@ suite('<settings-date-time-page>', () => {
     const selectorDisabled = selector ? selector.disabled : true;
     assertEquals(managed || autoDetect || selectorDisabled, selectorHidden);
 
-    const checkButton = getAutodetectOnButton(dateTime);
+    const checkButton = getAutodetectOnButton();
     const checkButtonChecked = checkButton ? checkButton.checked : false;
     if (!managed) {
       assertEquals(autoDetect, checkButtonChecked);
@@ -307,7 +313,7 @@ suite('<settings-date-time-page>', () => {
     assertFalse(resolveMethodDropdown.disabled);
     verifyTimeZonesPopulated(false);
 
-    clickDisableAutoDetect(dateTime);
+    clickDisableAutoDetect();
     flush();
 
     verifyAutoDetectSetting(false, false);
@@ -337,7 +343,7 @@ suite('<settings-date-time-page>', () => {
     assertTrue(resolveMethodDropdown.disabled);
     verifyTimeZonesPopulated(true);
 
-    clickEnableAutoDetect(dateTime);
+    clickEnableAutoDetect();
 
     verifyAutoDetectSetting(true, false);
     assertFalse(resolveMethodDropdown.disabled);
@@ -355,11 +361,9 @@ suite('<settings-date-time-page>', () => {
 
     flush();
 
-    const timeZoneAutoDetect =
-        dateTime.shadowRoot!.querySelector('#timeZoneAutoDetect');
-    assertTrue(!!timeZoneAutoDetect);
+    const timeZoneAutoDetectToggle = getTimeZoneAutoDetectToggle();
     const deepLinkElement =
-        timeZoneAutoDetect.shadowRoot!.querySelector('cr-toggle');
+        timeZoneAutoDetectToggle.shadowRoot!.querySelector('cr-toggle');
     assertTrue(!!deepLinkElement);
     await waitAfterNextRender(deepLinkElement);
     assertEquals(
@@ -384,7 +388,7 @@ suite('<settings-date-time-page>', () => {
     verifyTimeZonesPopulated(false);
 
     // Cannot disable auto-detect.
-    clickDisableAutoDetect(dateTime);
+    clickDisableAutoDetect();
 
     verifyAutoDetectSetting(true, true);
     assertFalse(resolveMethodDropdown.disabled);
@@ -422,7 +426,7 @@ suite('<settings-date-time-page>', () => {
     assertFalse(resolveMethodDropdown.disabled);
 
     // User can disable auto-detect.
-    clickDisableAutoDetect(dateTime);
+    clickDisableAutoDetect();
 
     verifyAutoDetectSetting(false, false);
   });
@@ -534,7 +538,8 @@ suite('<settings-date-time-page>', () => {
     dateTime = initializeDateTime(prefs, false);
 
     const setDateTimeButton =
-        dateTime.shadowRoot!.querySelector<CrLinkRowElement>('#setDateTime');
+        getDateTimeCard().shadowRoot!.querySelector<CrLinkRowElement>(
+            '#setDateTimeRow');
     assertTrue(!!setDateTimeButton);
     assertEquals(0, setDateTimeButton.offsetHeight);
 
@@ -570,8 +575,9 @@ suite('<settings-date-time-page>', () => {
         flush();
 
         const triggerSelector = '#timeZoneSettingsTrigger';
-        const triggerEl =
-            dateTime.shadowRoot!.querySelector<HTMLElement>(triggerSelector);
+        const dateTimeCard = getDateTimeCard();
+        const triggerEl = dateTimeCard.shadowRoot!.querySelector<HTMLElement>(
+            triggerSelector);
         assertTrue(!!triggerEl);
         triggerEl.click();
         flush();
@@ -582,7 +588,7 @@ suite('<settings-date-time-page>', () => {
         await waitAfterNextRender(dateTime);
 
         assertEquals(
-            triggerEl, dateTime.shadowRoot!.activeElement,
+            triggerEl, dateTimeCard.shadowRoot!.activeElement,
             `${triggerSelector} should be focused.`);
       });
 });

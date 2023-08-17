@@ -23,7 +23,6 @@
 #include "chrome/browser/ash/crosapi/resource_manager_ash.h"
 #include "chrome/browser/ash/policy/core/browser_policy_connector_ash.h"
 #include "chrome/browser/ash/policy/handlers/device_name_policy_handler.h"
-#include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/ash/settings/device_settings_service.h"
 #include "chrome/browser/browser_process.h"
@@ -33,7 +32,10 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/speech/tts_crosapi_util.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_controller_factory.h"
+#include "chrome/browser/web_applications/preinstalled_web_app_utils.h"
 #include "chrome/browser/web_applications/web_app_utils.h"
+#include "chromeos/ash/components/browser_context_helper/browser_context_helper.h"
+#include "chromeos/ash/components/browser_context_helper/browser_context_types.h"
 #include "chromeos/ash/components/install_attributes/install_attributes.h"
 #include "chromeos/ash/components/settings/cros_settings_names.h"
 #include "chromeos/ash/components/settings/cros_settings_provider.h"
@@ -78,6 +80,7 @@
 #include "chromeos/crosapi/mojom/extension_info_private.mojom.h"
 #include "chromeos/crosapi/mojom/feedback.mojom.h"
 #include "chromeos/crosapi/mojom/file_manager.mojom.h"
+#include "chromeos/crosapi/mojom/file_system_access_cloud_identifier.mojom.h"
 #include "chromeos/crosapi/mojom/file_system_provider.mojom.h"
 #include "chromeos/crosapi/mojom/firewall_hole.mojom.h"
 #include "chromeos/crosapi/mojom/force_installed_tracker.mojom.h"
@@ -273,6 +276,9 @@ mojom::DevicePropertiesPtr GetDeviceProperties() {
         device_name_policy_handler->GetHostnameChosenByAdministrator();
   }
 
+  result->has_stylus_enabled_touchscreen =
+      web_app::DeviceHasStylusEnabledTouchscreen();
+
   return result;
 }
 
@@ -286,7 +292,7 @@ constexpr InterfaceVersionEntry MakeInterfaceVersionEntry() {
   return {T::Uuid_, T::Version_};
 }
 
-static_assert(crosapi::mojom::Crosapi::Version_ == 113,
+static_assert(crosapi::mojom::Crosapi::Version_ == 114,
               "If you add a new crosapi, please add it to "
               "kInterfaceVersionEntries below.");
 
@@ -336,6 +342,8 @@ constexpr InterfaceVersionEntry kInterfaceVersionEntries[] = {
     MakeInterfaceVersionEntry<crosapi::mojom::Feedback>(),
     MakeInterfaceVersionEntry<crosapi::mojom::FieldTrialService>(),
     MakeInterfaceVersionEntry<crosapi::mojom::FileManager>(),
+    MakeInterfaceVersionEntry<
+        crosapi::mojom::FileSystemAccessCloudIdentifierProvider>(),
     MakeInterfaceVersionEntry<crosapi::mojom::FileSystemProviderService>(),
     MakeInterfaceVersionEntry<crosapi::mojom::FirewallHoleServiceDeprecated>(),
     MakeInterfaceVersionEntry<crosapi::mojom::ForceInstalledTracker>(),
@@ -647,6 +655,12 @@ void InjectBrowserInitParams(
 
   params->is_drivefs_bulk_pinning_enabled =
       ash::features::IsDriveFsBulkPinningEnabled();
+
+  params->is_sys_ui_downloads_integration_v2_enabled =
+      ash::features::IsSysUiDownloadsIntegrationV2Enabled();
+
+  params->is_cros_battery_saver_available =
+      ash::features::IsBatterySaverAvailable();
 }
 
 template <typename BrowserParams>
@@ -666,17 +680,20 @@ void InjectBrowserPostLoginParams(BrowserParams* params,
         account_manager::ToMojoAccount(maybe_device_account.value());
   }
 
-  params->cros_user_id_hash = ash::ProfileHelper::GetUserIdHashFromProfile(
-      ProfileManager::GetPrimaryUserProfile());
+  params->cros_user_id_hash =
+      ash::BrowserContextHelper::GetUserIdHashFromBrowserContext(
+          ProfileManager::GetPrimaryUserProfile());
   params->device_account_policy = GetDeviceAccountPolicy(environment_provider);
   params->last_policy_fetch_attempt_timestamp =
       environment_provider->GetLastPolicyFetchAttemptTimestamp().ToTimeT();
 
   params->initial_browser_action = initial_browser_action.action;
-  params->web_apps_enabled = web_app::IsWebAppsCrosapiEnabled();
-  params->standalone_browser_is_primary = IsLacrosPrimaryBrowser();
 
-  params->standalone_browser_is_only_browser = !IsAshWebBrowserEnabled();
+  // TODO(crbug.com/1448575): These three are redundant. Remove them in M120.
+  params->web_apps_enabled = true;
+  params->standalone_browser_is_primary = true;
+  params->standalone_browser_is_only_browser = true;
+
   params->publish_chrome_apps = browser_util::IsLacrosChromeAppsEnabled();
   params->publish_hosted_apps = crosapi::IsStandaloneBrowserHostedAppsEnabled();
 
@@ -685,7 +702,6 @@ void InjectBrowserPostLoginParams(BrowserParams* params,
 
   params->is_current_user_device_owner = GetIsCurrentUserOwner();
   params->is_current_user_ephemeral = IsCurrentUserEphemeral();
-  params->do_not_mux_extension_app_ids = !apps::ShouldMuxExtensionIds();
   params->enable_lacros_tts_support =
       tts_crosapi_util::ShouldEnableLacrosTtsSupport();
 }
@@ -747,7 +763,7 @@ bool WritePostLoginData(base::PlatformFile fd,
 }
 
 bool IsSigninProfileOrBelongsToAffiliatedUser(Profile* profile) {
-  if (ash::ProfileHelper::IsSigninProfile(profile)) {
+  if (ash::IsSigninBrowserContext(profile)) {
     return true;
   }
 
@@ -756,7 +772,7 @@ bool IsSigninProfileOrBelongsToAffiliatedUser(Profile* profile) {
   }
 
   const user_manager::User* user =
-      ash::ProfileHelper::Get()->GetUserByProfile(profile);
+      ash::BrowserContextHelper::Get()->GetUserByBrowserContext(profile);
   if (!user) {
     return false;
   }

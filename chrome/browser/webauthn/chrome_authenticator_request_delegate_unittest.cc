@@ -93,12 +93,9 @@ class MockCableDiscoveryFactory : public device::FidoDiscoveryFactory {
       device::FidoRequestType request_type,
       std::vector<device::CableDiscoveryData> data,
       const absl::optional<std::array<uint8_t, device::cablev2::kQRKeySize>>&
-          qr_generator_key,
-      std::vector<std::unique_ptr<device::cablev2::Pairing>> pairings)
-      override {
+          qr_generator_key) override {
     cable_data = std::move(data);
     qr_key = qr_generator_key;
-    v2_pairings = std::move(pairings);
   }
 
   void set_android_accessory_params(
@@ -109,7 +106,6 @@ class MockCableDiscoveryFactory : public device::FidoDiscoveryFactory {
 
   std::vector<device::CableDiscoveryData> cable_data;
   absl::optional<std::array<uint8_t, device::cablev2::kQRKeySize>> qr_key;
-  std::vector<std::unique_ptr<device::cablev2::Pairing>> v2_pairings;
   bool aoa_configured = false;
 };
 
@@ -118,7 +114,8 @@ class ChromeAuthenticatorRequestDelegateTest
  public:
   ChromeAuthenticatorRequestDelegateTest() {
     scoped_feature_list_.InitWithFeatures(
-        {device::kWebAuthnListSyncedPasskeys, syncer::kSyncWebauthnCredentials},
+        {device::kWebAuthnListSyncedPasskeys, syncer::kSyncWebauthnCredentials,
+         device::kWebAuthnNewPasskeyUI},
         /*disabled_features=*/{});
   }
 
@@ -389,23 +386,23 @@ TEST_F(ChromeAuthenticatorRequestDelegateTest, CableConfiguration) {
       ChromeAuthenticatorRequestDelegate delegate(main_rfh());
       delegate.SetRelyingPartyId(/*rp_id=*/"example.com");
       delegate.SetPassEmptyUsbDeviceManagerForTesting(true);
-      delegate.ConfigureDiscoveries(url::Origin::Create(GURL(test.origin)),
-                                    test.origin, test.request_type,
-                                    test.resident_key_requirement,
-                                    test.extensions, &discovery_factory);
+      delegate.ConfigureDiscoveries(
+          url::Origin::Create(GURL(test.origin)), test.origin,
+          content::AuthenticatorRequestClientDelegate::RequestSource::
+              kWebAuthentication,
+          test.request_type, test.resident_key_requirement, test.extensions,
+          &discovery_factory);
 
       switch (windows_has_hybrid ? test.expected_result_with_system_hybrid
                                  : test.expected_result) {
         case Result::kNone:
           EXPECT_FALSE(discovery_factory.qr_key.has_value());
-          EXPECT_TRUE(discovery_factory.v2_pairings.empty());
           EXPECT_TRUE(discovery_factory.cable_data.empty());
           EXPECT_TRUE(discovery_factory.aoa_configured);
           break;
 
         case Result::kV1:
           EXPECT_FALSE(discovery_factory.qr_key.has_value());
-          EXPECT_TRUE(discovery_factory.v2_pairings.empty());
           EXPECT_FALSE(discovery_factory.cable_data.empty());
           EXPECT_TRUE(discovery_factory.aoa_configured);
           EXPECT_EQ(delegate.dialog_model()->cable_ui_type(),
@@ -414,7 +411,6 @@ TEST_F(ChromeAuthenticatorRequestDelegateTest, CableConfiguration) {
 
         case Result::kServerLink:
           EXPECT_TRUE(discovery_factory.qr_key.has_value());
-          EXPECT_TRUE(discovery_factory.v2_pairings.empty());
           EXPECT_FALSE(discovery_factory.cable_data.empty());
           EXPECT_TRUE(discovery_factory.aoa_configured);
           EXPECT_EQ(delegate.dialog_model()->cable_ui_type(),
@@ -424,7 +420,6 @@ TEST_F(ChromeAuthenticatorRequestDelegateTest, CableConfiguration) {
 
         case Result::k3rdParty:
           EXPECT_TRUE(discovery_factory.qr_key.has_value());
-          EXPECT_TRUE(discovery_factory.v2_pairings.empty());
           EXPECT_TRUE(discovery_factory.cable_data.empty());
           EXPECT_TRUE(discovery_factory.aoa_configured);
           EXPECT_EQ(delegate.dialog_model()->cable_ui_type(),
@@ -525,7 +520,7 @@ TEST_F(ChromeAuthenticatorRequestDelegateTest, VirtualEnvironmentAttestation) {
 
 // Tests that synced GPM passkeys are injected in the transport availability
 // info.
-TEST_F(ChromeAuthenticatorRequestDelegateTest, GPMPasskeys) {
+TEST_F(ChromeAuthenticatorRequestDelegateTest, GpmPasskeys) {
   std::string relying_party = "example.com";
   GURL url("https://example.com");
   content::WebContentsTester::For(web_contents())->NavigateAndCommit(url);
@@ -548,6 +543,8 @@ TEST_F(ChromeAuthenticatorRequestDelegateTest, GPMPasskeys) {
   MockCableDiscoveryFactory discovery_factory;
   delegate.ConfigureDiscoveries(
       url::Origin::Create(url), relying_party,
+      content::AuthenticatorRequestClientDelegate::RequestSource::
+          kWebAuthentication,
       device::FidoRequestType::kGetAssertion,
       /*resident_key_requirement=*/absl::nullopt,
       /*pairings_from_extension=*/std::vector<device::CableDiscoveryData>(),
@@ -593,7 +590,7 @@ TEST_F(ChromeAuthenticatorRequestDelegateTest, GPMPasskeys) {
 
 // Tests that synced GPM passkeys are not discovered if there are no sync paired
 // phones.
-TEST_F(ChromeAuthenticatorRequestDelegateTest, GPMPasskeys_NoSyncPairedPhones) {
+TEST_F(ChromeAuthenticatorRequestDelegateTest, GpmPasskeys_NoSyncPairedPhones) {
   std::string relying_party = "example.com";
   GURL url("https://example.com");
   content::WebContentsTester::For(web_contents())->NavigateAndCommit(url);
@@ -608,6 +605,8 @@ TEST_F(ChromeAuthenticatorRequestDelegateTest, GPMPasskeys_NoSyncPairedPhones) {
   MockCableDiscoveryFactory discovery_factory;
   delegate.ConfigureDiscoveries(
       url::Origin::Create(url), relying_party,
+      content::AuthenticatorRequestClientDelegate::RequestSource::
+          kWebAuthentication,
       device::FidoRequestType::kGetAssertion,
       /*resident_key_requirement=*/absl::nullopt,
       /*pairings_from_extension=*/std::vector<device::CableDiscoveryData>(),
@@ -633,6 +632,76 @@ TEST_F(ChromeAuthenticatorRequestDelegateTest, GPMPasskeys_NoSyncPairedPhones) {
 
   // The GPM passkey should not be present in the recognized credentials list.
   EXPECT_TRUE(tai.recognized_credentials.empty());
+}
+
+// Tests that shadowed GPM passkeys are not discovered.
+TEST_F(ChromeAuthenticatorRequestDelegateTest, GpmPasskeys_ShadowedPasskeys) {
+  std::string relying_party = "example.com";
+  GURL url("https://example.com");
+  content::WebContentsTester::For(web_contents())->NavigateAndCommit(url);
+  ChromeWebAuthnCredentialsDelegateFactory::CreateForWebContents(
+      web_contents());
+  ChromeAuthenticatorRequestDelegate delegate(main_rfh());
+  delegate.SetPassEmptyUsbDeviceManagerForTesting(true);
+  delegate.SetRelyingPartyId(relying_party);
+
+  // Set up a paired phone from sync.
+  auto phone = std::make_unique<device::cablev2::Pairing>();
+  phone->name = "Miku's Pixel 7 XL";
+  phone->contact_id = {1, 2, 3, 4};
+  phone->id = {5, 6, 7, 8};
+  phone->from_sync_deviceinfo = true;
+  std::vector<std::unique_ptr<device::cablev2::Pairing>> phones;
+  phones.emplace_back(std::move(phone));
+  EXPECT_CALL(observer_, GetCablePairingsFromSyncedDevices)
+      .WillOnce(testing::Return(testing::ByMove(std::move(phones))));
+  MockCableDiscoveryFactory discovery_factory;
+  delegate.ConfigureDiscoveries(
+      url::Origin::Create(url), relying_party,
+      content::AuthenticatorRequestClientDelegate::RequestSource::
+          kWebAuthentication,
+      device::FidoRequestType::kGetAssertion,
+      /*resident_key_requirement=*/absl::nullopt,
+      /*pairings_from_extension=*/std::vector<device::CableDiscoveryData>(),
+      &discovery_factory);
+
+  // Add a synced passkey for example.com and another that shadows it.
+  webauthn::PasskeyModel* passkey_model =
+      PasskeyModelFactory::GetForProfile(profile());
+  ASSERT_TRUE(passkey_model);
+  sync_pb::WebauthnCredentialSpecifics passkey;
+  passkey.set_sync_id(std::string(16, 'a'));
+  passkey.set_credential_id(std::string(16, 'b'));
+  passkey.set_rp_id(relying_party);
+  passkey.set_user_id(std::string({5, 6, 7, 8}));
+  passkey.set_user_name("hmiku");
+  passkey.set_user_display_name("Hatsune Miku");
+
+  sync_pb::WebauthnCredentialSpecifics shadowed_passkey = passkey;
+  shadowed_passkey.set_credential_id(std::string(16, 'c'));
+  passkey.add_newly_shadowed_credential_ids(shadowed_passkey.credential_id());
+
+  passkey_model->AddNewPasskeyForTesting(std::move(passkey));
+  passkey_model->AddNewPasskeyForTesting(std::move(shadowed_passkey));
+
+  AuthenticatorRequestDialogModel::TransportAvailabilityInfo tai;
+  EXPECT_CALL(observer_, OnTransportAvailabilityEnumerated)
+      .WillOnce([&tai](const auto* _, const auto* new_tai) {
+        tai = std::move(*new_tai);
+      });
+  delegate.OnTransportAvailabilityEnumerated(tai);
+
+  // The GPM passkey that is not shadowed should have been added to the
+  // recognized credentials list.
+  ASSERT_EQ(tai.recognized_credentials.size(), 1u);
+  const device::DiscoverableCredentialMetadata credential =
+      tai.recognized_credentials.at(0);
+  EXPECT_EQ(credential.cred_id, std::vector<uint8_t>(16, 'b'));
+  EXPECT_EQ(credential.rp_id, relying_party);
+  EXPECT_EQ(credential.source, device::AuthenticatorType::kPhone);
+  EXPECT_EQ(credential.user.display_name, "Hatsune Miku");
+  EXPECT_EQ(credential.user.name, "hmiku");
+  EXPECT_EQ(credential.user.id, std::vector<uint8_t>({5, 6, 7, 8}));
 }
 
 #if BUILDFLAG(IS_MAC)
@@ -671,6 +740,30 @@ TEST_F(ChromeAuthenticatorRequestDelegateTest,
   EXPECT_EQ(
       32u, TouchIdMetadataSecret(delegate, other_browser_context.get()).size());
 }
+
+TEST_F(ChromeAuthenticatorRequestDelegateTest, DaysSinceDate) {
+  const base::Time now = base::Time::FromTimeT(1691188997);  // 2023-08-04
+  const struct {
+    char input[16];
+    absl::optional<int> expected_result;
+  } kTestCases[] = {
+      {"", absl::nullopt},          //
+      {"2023-08-", absl::nullopt},  //
+      {"2023-08-04", 0},            //
+      {"2023-08-03", 1},            //
+      {"2023-8-3", 1},              //
+      {"2023-07-04", 31},           //
+      {"2001-11-23", 7924},         //
+  };
+
+  for (const auto& test : kTestCases) {
+    SCOPED_TRACE(test.input);
+    const absl::optional<int> result =
+        ChromeAuthenticatorRequestDelegate::DaysSinceDate(test.input, now);
+    EXPECT_EQ(result, test.expected_result);
+  }
+}
+
 #endif  // BUILDFLAG(IS_MAC)
 
 #if BUILDFLAG(IS_WIN)

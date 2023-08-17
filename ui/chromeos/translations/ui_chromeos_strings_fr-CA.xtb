@@ -114,7 +114,6 @@
 <translation id="1920798810075583923">Melon d'eau</translation>
 <translation id="1924372192547904021"><ph name="DRIVE_NAME" /> formaté</translation>
 <translation id="1931134289871235022">Slovaque</translation>
-<translation id="1933345018156373194">Échec du transfert en raison d'une erreur inattendue : <ph name="ERROR_MESSAGE" /></translation>
 <translation id="1936717151811561466">Finnois</translation>
 <translation id="1942765061641586207">Résolution de l'image</translation>
 <translation id="1972984168337863910">Développer les panneaux de commentaires sur les fichiers</translation>
@@ -166,7 +165,6 @@
 <translation id="2312704192806647271">{COUNT,plural, =1{Une extension avec la pièce d'identité <ph name="BEGIN_LIST" /><ph name="END_LIST" /> est introuvable. Communiquez avec votre administrateur.}one{Des extensions associées aux pièces d'identité <ph name="BEGIN_LIST" /><ph name="END_LIST" /> sont introuvables. Communiquez avec votre administrateur.}other{Des extensions associées aux pièces d'identité <ph name="BEGIN_LIST" /><ph name="END_LIST" /> sont introuvables. Communiquez avec votre administrateur.}}</translation>
 <translation id="2325650632570794183">Ce type de fichier n'est pas pris en charge. Veuillez visiter la boutique Chrome Web Store pour trouver une application permettant de l'ouvrir.</translation>
 <translation id="2326539130272988168">Bulgare</translation>
-<translation id="2337715497728194187">Partager avec Bruschetta</translation>
 <translation id="233822363739146957">L'espace de stockage est insuffisant pour synchroniser tous vos fichiers</translation>
 <translation id="23721837607121582">Télécharger le profil mobile, réseau <ph name="NETWORK_INDEX" /> sur <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" /></translation>
 <translation id="2377319039870049694">Passer à l'affichage sous forme de liste</translation>
@@ -197,7 +195,6 @@
 <translation id="2544853746127077729">Certificat d'authentification rejeté par le réseau</translation>
 <translation id="255937426064304553">États-Unis international</translation>
 <translation id="2563185590376525700">Grenouille</translation>
-<translation id="2574327434504608656">1 dossier partagé avec Bruschetta</translation>
 <translation id="2578394532502990878">Tamoul (phonétique)</translation>
 <translation id="2579959351793446050">Odia</translation>
 <translation id="2587195714949534472">Préparation de la synchronisation de <ph name="FILE_NAME" />…</translation>
@@ -297,7 +294,6 @@
 <translation id="3408072735282270043">Activer <ph name="NETWORK_NAME" /></translation>
 <translation id="3408236822532681288">Allemand (Allemagne) avec clavier neo 2</translation>
 <translation id="3414856743105198592">Le formatage du support amovible va effacer toutes les données. Voulez-vous continuer?</translation>
-<translation id="3435143625481187092">Autoriser Bruschetta à accéder aux fichiers du dossier <ph name="FOLDER_NAME" /></translation>
 <translation id="3437801641691368414">Date de création</translation>
 <translation id="343907260260897561">Appareil photo instantané</translation>
 <translation id="3455931012307786678">Estonien</translation>
@@ -385,7 +381,6 @@
 <translation id="4159731583141908892"><ph name="FILE_NAME" /> déplacé.</translation>
 <translation id="4176286497474237543">Vider la corbeille maintenant</translation>
 <translation id="4179621117429069925">Cet élément se trouve dans la corbeille</translation>
-<translation id="4181839429935094755"><ph name="NUMBER_OF_ITEMS" /> dossiers partagés avec Bruschetta</translation>
 <translation id="4186579485882418952">Activer le mode hors ligne</translation>
 <translation id="4193154014135846272">Document Google</translation>
 <translation id="4197674956721858839">Sélection pour fichier ZIP</translation>
@@ -452,7 +447,6 @@
 <translation id="4646813851450205600">Tchèque avec clavier QWERTY</translation>
 <translation id="4656777537938206294">Rendre les fichiers accessibles hors ligne</translation>
 <translation id="4658782175094886150">Personne dans la neige</translation>
-<translation id="466782788172479199">Autoriser Bruschetta à accéder aux fichiers de votre Google Drive. Les modifications seront synchronisées sur vos autres appareils.</translation>
 <translation id="4669606053856530811">Les membres de « <ph name="SOURCE_NAME" /> » perdront l'accès à ces éléments à moins que ces derniers soient partagés avec eux.</translation>
 <translation id="467809019005607715">Google Présentations</translation>
 <translation id="4690246192099372265">Suédois</translation>
@@ -503,7 +497,6 @@
 <translation id="4969785127455456148">Album</translation>
 <translation id="4972330214479971536">Impossible de terminer la configuration de la synchronisation des fichiers</translation>
 <translation id="4973523518332075481">Utilisez un nom contenant au maximum <ph name="MAX_LENGTH" /> caractères</translation>
-<translation id="4973970068702235170">Échec de compression au format .zip en raison d'une erreur inattendue : <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4984616446166309645">Japonais</translation>
 <translation id="4987699874727873250">Anglais (Inde)</translation>
 <translation id="4988205478593450158">Voulez-vous vraiment supprimer « <ph name="FILE_NAME" /> »?</translation>
@@ -565,7 +558,6 @@
 <translation id="5323213332664049067">Amérique latine</translation>
 <translation id="5330145655348521461">Ces fichiers sont ouverts sur un autre bureau. Utilisez le compte de <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />) pour les afficher.</translation>
 <translation id="5330512191124428349">En savoir plus</translation>
-<translation id="5344246330454251646">Gérer le partage Bruschetta</translation>
 <translation id="535792325654997756">Personne avec des chats</translation>
 <translation id="5358764674931277">Fréquence d'images</translation>
 <translation id="5363339716524495120">La langue d'entrée définie est le chinois</translation>
@@ -641,7 +633,6 @@
 <translation id="5896749729057314184">Réseau <ph name="NETWORK_INDEX" /> sur <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, non activé, force du signal : <ph name="SIGNAL_STRENGTH" />%, renseignements</translation>
 <translation id="5911887972742538906">Une erreur s'est produite lors de l'installation de votre application Linux.</translation>
 <translation id="5912396950572065471">Format</translation>
-<translation id="5913638992615760742">Échec de la copie en raison d'une erreur inattendue : <ph name="ERROR_MESSAGE" /></translation>
 <translation id="5918480239180455431">Nouvelles fonctionnalités de recherche offertes</translation>
 <translation id="5926082595146149752">Néerlandais (Pays-Bas) avec clavier international américain (PC)</translation>
 <translation id="5932901536148835538">Chromebit</translation>
@@ -649,7 +640,6 @@
 <translation id="5955954492236143329"><ph name="NUMBER_OF_ITEMS" /> éléments</translation>
 <translation id="5957366693331451795">Chromebox</translation>
 <translation id="5982621672636444458">Options de tri</translation>
-<translation id="6007237601604674381">Le déplacement a échoué. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="6011074160056912900">Réseau Ethernet</translation>
 <translation id="60357267506638014">QWERTY tchèque</translation>
 <translation id="603895874132768835">Vous ne pourrez pas utiliser ce réseau tant que vous n'aurez pas configuré un nouveau NIP</translation>
@@ -733,7 +723,6 @@
 <translation id="6710213216561001401">Précédent</translation>
 <translation id="6732801395666424405">Certificats non chargés</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />]</translation>
-<translation id="6740270213273127264">Partager le dossier avec Bruschetta</translation>
 <translation id="6750737795876287924">Répertoire actuel</translation>
 <translation id="6751256176799620176">1 dossier sélectionné</translation>
 <translation id="6755827872271341378">Appareil Chrome OS Flex</translation>

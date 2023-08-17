@@ -132,7 +132,7 @@ class BrowsingDataRemoverBrowserTest
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
     enabled_features.push_back(media::kExternalClearKeyForTesting);
 #endif
-    InitFeatureList(std::move(enabled_features));
+    InitFeatureLists(std::move(enabled_features), {});
   }
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -1400,8 +1400,15 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest,
   ExpectCookieTreeModelCount(0);
 }
 
+// TODO(crbug.com/1472412): Enable after fixing flakiness.
+#if BUILDFLAG(IS_WIN)
+#define MAYBE_MediaLicenseDeletionWithFilter \
+  DISABLED_MediaLicenseDeletionWithFilter
+#else
+#define MAYBE_MediaLicenseDeletionWithFilter MediaLicenseDeletionWithFilter
+#endif
 IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest,
-                       MediaLicenseDeletionWithFilter) {
+                       MAYBE_MediaLicenseDeletionWithFilter) {
   const std::string kMediaLicenseType = "MediaLicense";
 
   GURL url =
@@ -1563,7 +1570,8 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest,
 }
 
 // TODO(crbug.com/1317431): WebSQL does not work on Fuchsia.
-#if BUILDFLAG(IS_FUCHSIA)
+// TODO(crbug.com/1469354): Test is flaky on Mac.
+#if BUILDFLAG(IS_FUCHSIA) || BUILDFLAG(IS_MAC)
 #define MAYBE_SessionOnlyStorageRemoved DISABLED_SessionOnlyStorageRemoved
 #else
 #define MAYBE_SessionOnlyStorageRemoved SessionOnlyStorageRemoved

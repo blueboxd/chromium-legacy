@@ -16,6 +16,11 @@ BrowserParamsProxy* BrowserParamsProxy::Get() {
   return browser_params_proxy.get();
 }
 
+// static
+void BrowserParamsProxy::WaitForLogin() {
+  BrowserPostLoginParams::WaitForLogin();
+}
+
 bool BrowserParamsProxy::DisableCrosapiForTesting() const {
   return BrowserInitParams::disable_crosapi_for_testing();
 }
@@ -253,13 +258,6 @@ bool BrowserParamsProxy::IsCurrentUserEphemeral() const {
   return BrowserInitParams::Get()->is_current_user_ephemeral;
 }
 
-bool BrowserParamsProxy::DoNotMuxExtensionAppIds() const {
-  if (IsLaunchedWithPostLoginParams()) {
-    return BrowserPostLoginParams::Get()->do_not_mux_extension_app_ids;
-  }
-  return BrowserInitParams::Get()->do_not_mux_extension_app_ids;
-}
-
 bool BrowserParamsProxy::EnableLacrosTtsSupport() const {
   if (IsLaunchedWithPostLoginParams()) {
     return BrowserPostLoginParams::Get()->enable_lacros_tts_support;
@@ -327,6 +325,14 @@ bool BrowserParamsProxy::IsPdfOcrEnabled() const {
 
 bool BrowserParamsProxy::IsDriveFsBulkPinningEnabled() const {
   return BrowserInitParams::Get()->is_drivefs_bulk_pinning_enabled;
+}
+
+bool BrowserParamsProxy::IsSysUiDownloadsIntegrationV2Enabled() const {
+  return BrowserInitParams::Get()->is_sys_ui_downloads_integration_v2_enabled;
+}
+
+bool BrowserParamsProxy::IsCrosBatterySaverAvailable() const {
+  return BrowserInitParams::Get()->is_cros_battery_saver_available;
 }
 
 }  // namespace chromeos

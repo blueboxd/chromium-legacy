@@ -37,12 +37,13 @@ CFArrayRef CTFontCopyDefaultCascadeListForLanguagesWrapper(
   typedef CFArrayRef (*MountainLionPrototype)(CTFontRef, CFArrayRef);
   static const MountainLionPrototype cascade_with_languages_function =
       reinterpret_cast<MountainLionPrototype>(
-          dlsym(((void *) -2), "CTFontCopyDefaultCascadeListForLanguages"));
-  if (cascade_with_languages_function)
+          dlsym(((void*)-2), "CTFontCopyDefaultCascadeListForLanguages"));
+  if (cascade_with_languages_function) {
     return cascade_with_languages_function(font_ref, language_pref_list);
+  }
 
   // Fallback to the 10.6 Private API.
-//  DCHECK(base::mac::IsOSLionOrEarlier());
+  //  DCHECK(base::mac::IsOSLionOrEarlier());
   return CTFontCopyDefaultCascadeList(font_ref);
 }
 
@@ -55,8 +56,9 @@ namespace {
 bool TextSequenceHasEmoji(base::StringPiece16 text) {
   for (base::i18n::UTF16CharIterator iter(text); !iter.end(); iter.Advance()) {
     const UChar32 codepoint = iter.get();
-    if (u_hasBinaryProperty(codepoint, UCHAR_EMOJI))
+    if (u_hasBinaryProperty(codepoint, UCHAR_EMOJI)) {
       return true;
+    }
   }
   return false;
 }
@@ -72,12 +74,13 @@ std::vector<Font> GetFallbackFonts(const Font& font) {
       [NSUserDefaults.standardUserDefaults stringArrayForKey:@"AppleLanguages"];
   CFArrayRef languages_cf = base::apple::NSToCFPtrCast(languages);
   base::ScopedCFTypeRef<CFArrayRef> cascade_list(
-      CTFontCopyDefaultCascadeListForLanguagesWrapper(
-          font.GetCTFont(), languages_cf));
+      CTFontCopyDefaultCascadeListForLanguagesWrapper(font.GetCTFont(),
+                                                      languages_cf));
 
   std::vector<Font> fallback_fonts;
-  if (!cascade_list)
+  if (!cascade_list) {
     return fallback_fonts;  // This should only happen for an invalid |font|.
+  }
 
   const CFIndex fallback_count = CFArrayGetCount(cascade_list);
   for (CFIndex i = 0; i < fallback_count; ++i) {
@@ -91,8 +94,9 @@ std::vector<Font> GetFallbackFonts(const Font& font) {
     }
   }
 
-  if (fallback_fonts.empty())
+  if (fallback_fonts.empty()) {
     return std::vector<Font>(1, font);
+  }
 
   return fallback_fonts;
 }
@@ -111,8 +115,9 @@ bool GetFallbackFont(const Font& font,
   sk_sp<SkTypeface> fallback_typeface =
       GetSkiaFallbackTypeface(font, locale, text);
 
-  if (!fallback_typeface)
+  if (!fallback_typeface) {
     return false;
+  }
 
   // Fallback needs to keep the exact SkTypeface, as re-matching the font using
   // family name and styling information loses access to the underlying platform

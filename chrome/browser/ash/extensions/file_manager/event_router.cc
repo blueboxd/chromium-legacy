@@ -39,13 +39,17 @@
 #include "chrome/browser/ash/extensions/file_manager/file_system_provider_metrics_util.h"
 #include "chrome/browser/ash/extensions/file_manager/private_api_util.h"
 #include "chrome/browser/ash/file_manager/app_id.h"
+#include "chrome/browser/ash/file_manager/file_tasks.h"
 #include "chrome/browser/ash/file_manager/fileapi_util.h"
 #include "chrome/browser/ash/file_manager/io_task.h"
 #include "chrome/browser/ash/file_manager/open_util.h"
 #include "chrome/browser/ash/file_manager/path_util.h"
 #include "chrome/browser/ash/file_manager/trash_common_util.h"
 #include "chrome/browser/ash/file_manager/volume_manager.h"
+#include "chrome/browser/ash/file_system_provider/mount_path_util.h"
+#include "chrome/browser/ash/file_system_provider/operation_request_manager.h"
 #include "chrome/browser/ash/file_system_provider/provided_file_system_info.h"
+#include "chrome/browser/ash/file_system_provider/provided_file_system_interface.h"
 #include "chrome/browser/ash/guest_os/guest_os_share_path.h"
 #include "chrome/browser/ash/guest_os/public/guest_os_service.h"
 #include "chrome/browser/ash/login/lock/screen_locker.h"
@@ -59,11 +63,13 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/api/file_manager_private.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/ash/components/disks/disk.h"
 #include "chromeos/ash/components/drivefs/drivefs_host.h"
 #include "chromeos/ash/components/login/login_state/login_state.h"
 #include "chromeos/components/disks/disks_prefs.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
 #include "components/drive/drive_pref_names.h"
@@ -78,6 +84,7 @@
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "storage/browser/file_system/external_mount_points.h"
+#include "storage/browser/file_system/file_system_url.h"
 #include "storage/common/file_system/file_system_types.h"
 #include "storage/common/file_system/file_system_util.h"
 
@@ -250,6 +257,8 @@ std::string FileErrorToErrorName(base::File::Error error_code) {
       return "QuotaExceededError";
     case base::File::FILE_ERROR_INVALID_URL:
       return "EncodingError";
+    case base::File::FILE_ERROR_IN_USE:
+      return "InUseError";
     default:
       return "InvalidModificationError";
   }
@@ -458,32 +467,6 @@ class DriveFsEventRouterImpl : public DriveFsEventRouter {
       file_watchers_;
 };
 
-// Observes App Service and notifies Files app when there are any changes in the
-// apps which might affect which file tasks are currently available, e.g. when
-// an app is installed or uninstalled.
-class RecalculateTasksObserver : public apps::AppRegistryCache::Observer {
- public:
-  explicit RecalculateTasksObserver(base::WeakPtr<EventRouter> event_router)
-      : event_router_(event_router) {}
-
-  // Tell Files app frontend that file tasks might have changed.
-  void OnAppUpdate(const apps::AppUpdate& update) override {
-    // TODO(petermarshall): Filter update more carefully.
-    if (!event_router_) {
-      return;
-    }
-    event_router_->BroadcastOnAppsUpdatedEvent();
-  }
-
-  void OnAppRegistryCacheWillBeDestroyed(
-      apps::AppRegistryCache* cache) override {
-    apps::AppRegistryCache::Observer::Observe(nullptr);
-  }
-
- private:
-  base::WeakPtr<EventRouter> event_router_;
-};
-
 // Records mounted File System Provider type if known otherwise UNKNOWN.
 void RecordFileSystemProviderMountMetrics(const Volume& volume) {
   const ash::file_system_provider::ProviderId& provider_id =
@@ -549,6 +532,21 @@ extensions::api::file_manager_private::FileWatchEvent CreateFileWatchEvent(
   }
 
   return event;
+}
+
+std::unique_ptr<ash::file_system_provider::ScopedUserInteraction>
+MaybeStartInteractionWithODFS(const storage::FileSystemURL& url,
+                              Profile* profile) {
+  ash::file_system_provider::util::FileSystemURLParser parser(url);
+  if (!parser.Parse()) {
+    return nullptr;
+  }
+  if (parser.file_system()->GetFileSystemInfo().provider_id() !=
+      ash::file_system_provider::ProviderId::CreateFromExtensionId(
+          extension_misc::kODFSExtensionId)) {
+    return nullptr;
+  }
+  return parser.file_system()->StartUserInteraction();
 }
 
 }  // namespace
@@ -618,8 +616,6 @@ EventRouter::EventRouter(Profile* profile)
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // Notification manager can call into Drive FS for dialog handling.
   notification_manager_->SetDriveFSEventRouter(drivefs_event_router_.get());
-  recalculate_tasks_observer_ =
-      std::make_unique<RecalculateTasksObserver>(weak_factory_.GetWeakPtr());
   ObserveEvents();
 }
 
@@ -691,12 +687,13 @@ void EventRouter::Shutdown() {
     registry->RemoveObserver(this);
   }
 
-  if (apps::AppServiceProxyFactory::IsAppServiceAvailableForProfile(profile_)) {
-    apps::AppServiceProxy* proxy =
-        apps::AppServiceProxyFactory::GetForProfile(profile_);
-    DCHECK(proxy);
-    proxy->AppRegistryCache().RemoveObserver(recalculate_tasks_observer_.get());
+  auto* guest_os_share_path =
+      guest_os::GuestOsSharePath::GetForProfile(profile_);
+  if (guest_os_share_path) {
+    guest_os_share_path->RemoveObserver(this);
   }
+
+  app_registry_cache_observer_.Reset();
 
   auto* dlp_client = chromeos::DlpClient::Get();
   if (dlp_client) {
@@ -813,7 +810,7 @@ void EventRouter::ObserveEvents() {
     apps::AppServiceProxy* proxy =
         apps::AppServiceProxyFactory::GetForProfile(profile_);
     DCHECK(proxy);
-    proxy->AppRegistryCache().AddObserver(recalculate_tasks_observer_.get());
+    app_registry_cache_observer_.Observe(&proxy->AppRegistryCache());
   }
 
   auto* dlp_client = chromeos::DlpClient::Get();
@@ -1285,6 +1282,32 @@ void EventRouter::OnIOTaskStatus(const io_task::ProgressStatus& status) {
     return;
   }
 
+  // If copying to/from ODFS, mark the provider's request manager
+  // as "interacting with user" to prevent long operation warnings when
+  // progress UI is already displayed.
+  if (chromeos::features::IsUploadOfficeToCloudEnabled()) {
+    if (status.IsCompleted()) {
+      odfs_interactions_.erase(status.task_id);
+    } else {
+      auto it = odfs_interactions_.find(status.task_id);
+      if (it == odfs_interactions_.end()) {
+        auto interaction = MaybeStartInteractionWithODFS(
+            status.GetDestinationFolder(), profile_);
+        if (!interaction) {
+          for (const io_task::EntryStatus& entry : status.sources) {
+            interaction = MaybeStartInteractionWithODFS(entry.url, profile_);
+            if (interaction) {
+              break;
+            }
+          }
+        }
+        if (interaction) {
+          odfs_interactions_[status.task_id] = std::move(interaction);
+        }
+      }
+    }
+  }
+
   // Send directory change events on I/O task completion. inotify is flaky on
   // some filesystems, so send these notifications so that at least operations
   // made from Files App are always reflected in the UI. Additionally, this
@@ -1579,6 +1602,18 @@ void EventRouter::OnFilesAddedToDlpDaemon(
     const std::vector<base::FilePath>& files) {
   OnFilesChanged(files, extensions::api::file_manager_private::ChangeType::
                             CHANGE_TYPE_ADD_OR_UPDATE);
+}
+
+// Observes App Service and notifies Files app when there are any changes in the
+// apps which might affect which file tasks are currently available, e.g. when
+// an app is installed or uninstalled.
+void EventRouter::OnAppUpdate(const apps::AppUpdate& update) {
+  BroadcastOnAppsUpdatedEvent();
+}
+
+void EventRouter::OnAppRegistryCacheWillBeDestroyed(
+    apps::AppRegistryCache* cache) {
+  app_registry_cache_observer_.Reset();
 }
 
 }  // namespace file_manager

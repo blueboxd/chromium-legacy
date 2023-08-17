@@ -30,6 +30,7 @@
 #include "third_party/blink/renderer/core/html/html_body_element.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/style/clip_path_operation.h"
+#include "third_party/blink/renderer/core/style/computed_style_constants.h"
 #include "third_party/blink/renderer/core/style/shape_clip_path_operation.h"
 #include "third_party/blink/renderer/core/style/shape_value.h"
 #include "third_party/blink/renderer/core/style/style_difference.h"
@@ -57,6 +58,11 @@ class ComputedStyleTest : public testing::Test {
 
   ComputedStyleBuilder CreateComputedStyleBuilder() {
     return ComputedStyleBuilder(*initial_style_);
+  }
+
+  ComputedStyleBuilder CreateComputedStyleBuilderFrom(
+      const ComputedStyle& style) {
+    return ComputedStyleBuilder(style);
   }
 
  private:
@@ -90,9 +96,9 @@ TEST_F(ComputedStyleTest, ShapeOutsideCircleEqual) {
 TEST_F(ComputedStyleTest, ClipPathEqual) {
   scoped_refptr<BasicShapeCircle> shape = BasicShapeCircle::Create();
   scoped_refptr<ShapeClipPathOperation> path1 =
-      ShapeClipPathOperation::Create(shape);
+      ShapeClipPathOperation::Create(shape, GeometryBox::kBorderBox);
   scoped_refptr<ShapeClipPathOperation> path2 =
-      ShapeClipPathOperation::Create(shape);
+      ShapeClipPathOperation::Create(shape, GeometryBox::kBorderBox);
   ComputedStyleBuilder builder1 = CreateComputedStyleBuilder();
   ComputedStyleBuilder builder2 = CreateComputedStyleBuilder();
   builder1.SetClipPath(path1);
@@ -146,17 +152,16 @@ TEST_F(ComputedStyleTest, IsStackingContextWithoutContainmentAfterClone) {
   EXPECT_FALSE(style3->IsStackingContextWithoutContainment());
 }
 
-TEST_F(ComputedStyleTest, DerivedFlagCopyNonInheritedFromCached) {
+TEST_F(ComputedStyleTest, DerivedFlagCopyNonInherited) {
   {
     ComputedStyleBuilder builder1 = CreateComputedStyleBuilder();
     builder1.SetForcesStackingContext(true);
     scoped_refptr<const ComputedStyle> style1 = builder1.TakeStyle();
     EXPECT_TRUE(style1->IsStackingContextWithoutContainment());
 
-    // Calling CopyNonInheritedFromCached should not change whether or not
-    // the style is a stacking context.
-    ComputedStyleBuilder builder2 = CreateComputedStyleBuilder();
-    builder2.CopyNonInheritedFromCached(*style1);
+    // Whether the style is a stacking context or not should not be copied
+    // from the style we're cloning.
+    ComputedStyleBuilder builder2 = CreateComputedStyleBuilderFrom(*style1);
     scoped_refptr<const ComputedStyle> style2 = builder2.TakeStyle();
     EXPECT_TRUE(style2->IsStackingContextWithoutContainment());
   }
@@ -168,23 +173,20 @@ TEST_F(ComputedStyleTest, DerivedFlagCopyNonInheritedFromCached) {
     scoped_refptr<const ComputedStyle> style1 = builder1.TakeStyle();
     EXPECT_FALSE(style1->IsStackingContextWithoutContainment());
 
-    ComputedStyleBuilder builder2 = CreateComputedStyleBuilder();
-    builder2.CopyNonInheritedFromCached(*style1);
+    ComputedStyleBuilder builder2 = CreateComputedStyleBuilderFrom(*style1);
     scoped_refptr<const ComputedStyle> style2 = builder2.TakeStyle();
     EXPECT_FALSE(style2->IsStackingContextWithoutContainment());
   }
 
   // The same as the first case, except builder2 sets
-  // SetForcesStackingContext(false) after calling
-  // CopyNonInheritedFromCached.
+  // SetForcesStackingContext(false) after cloning.
   {
     ComputedStyleBuilder builder1 = CreateComputedStyleBuilder();
     builder1.SetForcesStackingContext(true);
     scoped_refptr<const ComputedStyle> style1 = builder1.TakeStyle();
     EXPECT_TRUE(style1->IsStackingContextWithoutContainment());
 
-    ComputedStyleBuilder builder2 = CreateComputedStyleBuilder();
-    builder2.CopyNonInheritedFromCached(*style1);
+    ComputedStyleBuilder builder2 = CreateComputedStyleBuilderFrom(*style1);
     builder2.SetForcesStackingContext(false);
     scoped_refptr<const ComputedStyle> style2 = builder2.TakeStyle();
     // Value copied from 'style1' must not persist.
@@ -580,7 +582,7 @@ TEST_F(ComputedStyleTest, AnimationFlags) {
   TEST_ANIMATION_FLAG(HasCurrentOpacityAnimation, kNonInherited);
   TEST_ANIMATION_FLAG(HasCurrentFilterAnimation, kNonInherited);
   TEST_ANIMATION_FLAG(HasCurrentBackdropFilterAnimation, kNonInherited);
-  TEST_ANIMATION_FLAG(SubtreeWillChangeContents, kInherited);
+  TEST_ANIMATION_FLAG(SubtreeWillChangeContents, kNonInherited);
   TEST_ANIMATION_FLAG_NO_DIFF(IsRunningTransformAnimationOnCompositor);
   TEST_ANIMATION_FLAG_NO_DIFF(IsRunningScaleAnimationOnCompositor);
   TEST_ANIMATION_FLAG_NO_DIFF(IsRunningRotateAnimationOnCompositor);
@@ -1686,7 +1688,14 @@ TEST_F(ComputedStyleTest, DebugDiffFields) {
   EXPECT_EQ(0u, style2->DebugDiffFields(*style2).size());
 
   EXPECT_EQ(1u, style1->DebugDiffFields(*style2).size());
-  EXPECT_EQ(DebugField::width_, style1->DebugDiffFields(*style2)[0]);
+
+  // The extra quotes are unfortunate, but comes from operator<< on String.
+  EXPECT_EQ(DebugField::width_, style1->DebugDiffFields(*style2)[0].field);
+  EXPECT_EQ("\"Length(Fixed, 100)\"",
+            style1->DebugDiffFields(*style2)[0].actual);
+  EXPECT_EQ("\"Length(Fixed, 200)\"",
+            style1->DebugDiffFields(*style2)[0].correct);
+
   EXPECT_EQ("width_",
             ComputedStyleBase::DebugFieldToString(DebugField::width_));
 }
@@ -1703,10 +1712,16 @@ TEST_F(ComputedStyleTest, DerivedDebugDiff) {
   scoped_refptr<const ComputedStyle> style2 = builder2.TakeStyle();
 
   ASSERT_EQ(2u, style1->DebugDiffFields(*style2).size());
+
   EXPECT_EQ(DebugField::forces_stacking_context_,
-            style1->DebugDiffFields(*style2)[0]);
+            style1->DebugDiffFields(*style2)[0].field);
+  EXPECT_EQ("1", style1->DebugDiffFields(*style2)[0].actual);
+  EXPECT_EQ("0", style1->DebugDiffFields(*style2)[0].correct);
+
   EXPECT_EQ(DebugField::is_stacking_context_without_containment_,
-            style1->DebugDiffFields(*style2)[1]);
+            style1->DebugDiffFields(*style2)[1].field);
+  EXPECT_EQ("true", style1->DebugDiffFields(*style2)[1].actual);
+  EXPECT_EQ("false", style1->DebugDiffFields(*style2)[1].correct);
 }
 
 TEST_F(ComputedStyleTest, DerivedDebugDiffLazy) {

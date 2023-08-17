@@ -26,10 +26,6 @@ def __step_config(ctx, step_config):
             "name": "android/write_build_config",
             "command_prefix": "python3 ../../build/android/gyp/write_build_config.py",
             "handler": "android_write_build_config",
-            # TODO(crbug.com/1452038): include only required build_config.json files in GN config.
-            "indirect_inputs": {
-                "includes": ["*.build_config.json"],
-            },
             "remote": remote_run,
             "canonicalize_dir": True,
             "timeout": "2m",
@@ -56,11 +52,9 @@ def __step_config(ctx, step_config):
                 # Slow actions that exceed deadline on the default worker pool.
                 "./obj/chrome/android/chrome_test_java.turbine.jar": {"platform_ref": "large"},
             },
-            # TODO(crbug.com/1452038): include only required jar files in GN config.
-            "indirect_inputs": {
-                "includes": ["*.jar"],
-            },
-            "remote": remote_run,
+            # TODO(b/284252142): Run turbine actions locally by default because it slows down developer builds.
+            "remote": config.get(ctx, "remote_all"),
+            "platform_ref": "large",
             "canonicalize_dir": True,
             "timeout": "2m",
         },
@@ -71,18 +65,18 @@ def __step_config(ctx, step_config):
             "inputs": [
                 "third_party/protobuf/python/google:pyprotolib",
             ],
-            "outputs_map": {
-                # Slow actions that exceed deadline on the default worker pool.
-                "./gen/android_webview/system_webview_64_base_bundle_module__compile_resources.srcjar": {"platform_ref": "large"},
-                "./gen/chrome/android/chrome_public_apk__compile_resources.srcjar": {"platform_ref": "large"},
-                "./gen/chrome/android/chrome_public_bundle__base_bundle_module__compile_resources.srcjar": {"platform_ref": "large"},
-                "./gen/chrome/android/monochrome_64_public_apk__compile_resources.srcjar": {"platform_ref": "large"},
-                "./gen/chrome/android/monochrome_64_public_bundle__base_bundle_module__compile_resources.srcjar": {"platform_ref": "large"},
-                "./gen/chrome/android/trichrome_chrome_64_bundle__base_bundle_module__compile_resources.srcjar": {"platform_ref": "large"},
-            },
+            "exclude_input_patterns": [
+                "*.h",
+                "*.o",
+                "*.cc",
+                "*.a",
+                "*.info",
+                "*.pak",
+                "*.inc",
+            ],
             "remote": remote_run,
             "canonicalize_dir": True,
-            "timeout": "2m",
+            "timeout": "5m",
         },
         {
             "name": "android/compile_java",
@@ -94,28 +88,15 @@ def __step_config(ctx, step_config):
                 "third_party/android_sdk/public/platforms/android-34/optional/android.test.base.jar",
                 "third_party/android_sdk/public/platforms/android-34/optional/org.apache.http.legacy.jar",
             ],
-            # TODO(crbug.com/1452038): include only required java, jar files in GN config.
-            "indirect_inputs": {
-                "includes": ["*.java", "*.ijar.jar", "*.turbine.jar", "*.kt"],
-            },
             # Don't include files under --generated-dir.
             # This is probably optimization for local incrmental builds.
             # However, this is harmful for remote build cache hits.
             "ignore_extra_input_pattern": ".*srcjars.*\\.java",
             "ignore_extra_output_pattern": ".*srcjars.*\\.java",
             "remote": remote_run,
+            "platform_ref": "large",
             "canonicalize_dir": True,
             "timeout": "2m",
-        },
-        {
-            # TODO(b/284252142): this dex action takes long time even on a n2-highmem-8 worker.
-            # It needs to figure out how to make it faster. e.g. use intermediate files.
-            "name": "android/dex-local",
-            "command_prefix": "python3 ../../build/android/gyp/dex.py",
-            "action_outs": [
-                "./obj/android_webview/tools/system_webview_shell/system_webview_shell_apk/system_webview_shell_apk.mergeddex.jar",
-            ],
-            "remote": False,
         },
         {
             "name": "android/dex",
@@ -136,7 +117,9 @@ def __step_config(ctx, step_config):
             # Fo remote actions, let's ignore them, assuming remote cache hits compensate.
             "ignore_extra_input_pattern": ".*\\.dex",
             "ignore_extra_output_pattern": ".*\\.dex",
-            "remote": remote_run,
+            # TODO(b/284252142): Run dex actions locally by default because it slows down developer builds.
+            "remote": config.get(ctx, "remote_all"),
+            "platform_ref": "large",
             "canonicalize_dir": True,
             "timeout": "2m",
         },
@@ -230,10 +213,12 @@ def __android_compile_java_handler(ctx, cmd):
     #   --header-jar obj/chrome/android/chrome_test_java.turbine.jar
     #   --classpath=\[\"obj/chrome/android/chrome_test_java.turbine.jar\"\]
     #   --classpath=@FileArg\(gen/chrome/android/chrome_test_java.build_config.json:deps_info:javac_full_interface_classpath\)
+    #   --kotlin-jar-path=obj/chrome/browser/tabmodel/internal/java.kotlinc.jar
     #   --chromium-code=1
     #   --warnings-as-errors
     #   --jar-info-exclude-globs=\[\"\*/R.class\",\ \"\*/R\\\$\*.class\",\ \"\*/Manifest.class\",\ \"\*/Manifest\\\$\*.class\",\ \"\*/\*GEN_JNI.class\"\]
     #   @gen/chrome/android/chrome_test_java.sources
+
     out = cmd.outputs[0]
     outputs = [
         out + ".md5.stamp",
@@ -245,7 +230,7 @@ def __android_compile_java_handler(ctx, cmd):
         if arg.startswith("@"):
             sources = str(ctx.fs.read(ctx.fs.canonpath(arg.removeprefix("@")))).splitlines()
             inputs += sources
-        for k in ["--java-srcjars=", "--classpath=", "--bootclasspath=", "--processorpath="]:
+        for k in ["--java-srcjars=", "--classpath=", "--bootclasspath=", "--processorpath=", "--kotlin-jar-path="]:
             if arg.startswith(k):
                 arg = arg.removeprefix(k)
                 fn, v = __filearg(ctx, arg)
@@ -317,11 +302,56 @@ def __android_turbine_handler(ctx, cmd):
         outputs = cmd.outputs + outputs,
     )
 
+def __deps_configs(ctx, f, seen, inputs):
+    if f in seen:
+        return
+    seen[f] = True
+    inputs.append(f)
+    v = json.decode(str(ctx.fs.read(f)))
+    for f in v["deps_info"]["deps_configs"]:
+        f = ctx.fs.canonpath(f)
+        __deps_configs(ctx, f, seen, inputs)
+    if "public_deps_configs" in v["deps_info"]:
+        for f in v["deps_info"]["public_deps_configs"]:
+            f = ctx.fs.canonpath(f)
+            __deps_configs(ctx, f, seen, inputs)
+
 def __android_write_build_config_handler(ctx, cmd):
+    # Script:
+    #   https://crsrc.org/c/build/android/gyp/write_build_config.py
+    # GN Config:
+    #   https://crsrc.org/c/build/config/android/internal_rules.gni;l=122;drc=99e4f79301e108ea3d27ec84320f430490382587
+    # Sample args:
+    #   --type=java_library
+    #   --depfile gen/third_party/android_deps/org_jetbrains_kotlinx_kotlinx_metadata_jvm_java__build_config_crbug_908819.d
+    #   --deps-configs=\[\"gen/third_party/kotlin_stdlib/kotlin_stdlib_java.build_config.json\"\]
+    #   --public-deps-configs=\[\]
+    #   --build-config gen/third_party/android_deps/org_jetbrains_kotlinx_kotlinx_metadata_jvm_java.build_config.json
+    #   --gn-target //third_party/android_deps:org_jetbrains_kotlinx_kotlinx_metadata_jvm_java
+    #   --non-chromium-code
+    #   --host-jar-path lib.java/third_party/android_deps/org_jetbrains_kotlinx_kotlinx_metadata_jvm.jar
+    #   --unprocessed-jar-path ../../third_party/android_deps/libs/org_jetbrains_kotlinx_kotlinx_metadata_jvm/kotlinx-metadata-jvm-0.1.0.jar
+    #   --interface-jar-path obj/third_party/android_deps/org_jetbrains_kotlinx_kotlinx_metadata_jvm.ijar.jar
+    #   --is-prebuilt
+    #   --bundled-srcjars=\[\]
     inputs = []
+    seen = {}
     for i, arg in enumerate(cmd.args):
         if arg in ["--shared-libraries-runtime-deps", "--secondary-abi-shared-libraries-runtime-deps"]:
             inputs.append(ctx.fs.canonpath(cmd.args[i + 1]))
+            continue
+        if arg == "--tested-apk-config":
+            f = ctx.fs.canonpath(cmd.args[i + 1])
+            __deps_configs(ctx, f, seen, inputs)
+            continue
+        for k in ["--deps-configs=", "--public-deps-configs=", "--annotation-processor-configs="]:
+            if arg.startswith(k):
+                arg = arg.removeprefix(k)
+                v = json.decode(arg)
+                for f in v:
+                    f = ctx.fs.canonpath(f)
+                    __deps_configs(ctx, f, seen, inputs)
+
     ctx.actions.fix(inputs = cmd.inputs + inputs)
 
 __handlers = {
@@ -336,7 +366,7 @@ def __input_deps(ctx, input_deps):
     # TODO(crrev.com/c/4596899): Add Java inputs in GN config.
     input_deps["third_party/jdk/current:current"] = [
         "third_party/jdk/current/bin/java",
-        "third_party/jdk/current/bin/java.orig",
+        "third_party/jdk/current/bin/java.chromium",
         "third_party/jdk/current/conf/logging.properties",
         "third_party/jdk/current/conf/security/java.security",
         "third_party/jdk/current/lib/ct.sym",

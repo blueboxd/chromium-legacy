@@ -128,7 +128,9 @@ bool AutocompleteMatchHasCustomDescription(const AutocompleteMatch& match) {
     return true;
   }
   return match.type == AutocompleteMatchType::SEARCH_SUGGEST_ENTITY ||
-         match.type == AutocompleteMatchType::SEARCH_SUGGEST_PROFILE;
+         match.type == AutocompleteMatchType::SEARCH_SUGGEST_PROFILE ||
+         match.type == AutocompleteMatchType::CLIPBOARD_TEXT ||
+         match.type == AutocompleteMatchType::CLIPBOARD_IMAGE;
 }
 
 // Returns which rich autocompletion type, if any, had (or would have had for
@@ -361,7 +363,9 @@ AutocompleteController::AutocompleteController(
       search_service_worker_signal_sent_(false),
       template_url_service_(provider_client_->GetTemplateURLService()),
       triggered_feature_service_(
-          provider_client_->GetOmniboxTriggeredFeatureService()) {
+          provider_client_->GetOmniboxTriggeredFeatureService()),
+      steady_state_omnibox_position_(
+          metrics::OmniboxEventProto::UNKNOWN_POSITION) {
   provider_types &= ~OmniboxFieldTrial::GetDisabledProviderTypes();
 
   // Providers run in the order they're added. Async providers should run first
@@ -691,14 +695,6 @@ void AutocompleteController::OnProviderUpdate(
 
   CheckIfDone();
 
-  // Do not process or propagate asynchronous events coming from
-  // AutocompleteProviders. This helps us reduce the pressure on CPU and memory
-  // on low-end mobile devices.
-  if (base::FeatureList::IsEnabled(omnibox::kIgnoreIntermediateResults) &&
-      !done_) {
-    return;
-  }
-
   if (updated_matches || done_)
     UpdateResult(false, false);
 }
@@ -718,6 +714,8 @@ void AutocompleteController::AddProviderAndTriggeringLogs(
     // This is also a good place to put code to add info that you want to
     // add for every provider.
   }
+
+  logs->steady_state_omnibox_position = steady_state_omnibox_position_;
 
   // Add any features that have been triggered.
   triggered_feature_service_->RecordToLogs(
@@ -1078,58 +1076,56 @@ void AutocompleteController::UpdateResult(
     // If not all providers are done, merge the old and new matches before
     // sorting.
     result_.TransferOldMatches(input_, &old_matches_to_reuse);
-  } else if (sync_pass_done_ && OmniboxFieldTrial::IsMlUrlScoringEnabled() &&
-             provider_client_->GetAutocompleteScoringModelService()) {
-    // The async scoring model is only run once all the providers are done.
+  }
 
-    // When the preserve default feature param is enabled, the default match
-    // that would have been shown before ML scoring is preserved. In this case,
-    // call `SortAndCull()` before the ML model is invoked to determine what
-    // this default match would've been. This also limits the potential
-    // suggestions to only what would've been shown in the legacy system.
-    const auto& ml_config = OmniboxFieldTrial::GetMLConfig();
-    if (ml_config.ml_url_scoring_rerank_final_matches_only) {
-      result_.SortAndCull(input_, template_url_service_,
-                          triggered_feature_service_,
-                          default_match_to_preserve);
-      if (result_.default_match() &&
-          ml_config.ml_url_scoring_preserve_default) {
-        default_match_to_preserve = *result_.default_match();
-      }
-    } else {
-      // Deduplicate matches according to `stripped_destination_url` prior to
-      // running ML scoring. This step is not needed if `SortAndCull()` is
-      // called before the model is executed.
-      result_.DeduplicateMatches(input_, template_url_service_);
-    }
+  // When sync ML scoring is enabled, run ML scoring in the sync pass and other
+  // async update passes. Otherwise, only run ML scoring after all async passes.
+  if ((OmniboxFieldTrial::IsMlSyncBatchUrlScoringEnabled() ||
+       (done_ && sync_pass_done_ &&
+        OmniboxFieldTrial::IsMlUrlScoringEnabled())) &&
+      provider_client_->GetAutocompleteScoringModelService()) {
+    default_match_to_preserve =
+        PreprocessResultForMlScoring(default_match_to_preserve);
 
 #if BUILDFLAG(BUILD_WITH_TFLITE_LIB)
     // Use a WeakPtr since the model is not owned and `this` may no longer be
     // alive. `SortCullAndAnnotateResult()` is called when the model is done.
-    if (OmniboxFieldTrial::IsMlBatchUrlScoringEnabled()) {
-      RunBatchUrlScoringModel(base::BindOnce(
-          &AutocompleteController::SortCullAndAnnotateResult,
-          weak_ptr_factory_.GetWeakPtr(), last_default_match,
-          last_default_associated_keyword, force_notify_default_match_changed,
-          default_match_to_preserve));
-    } else {
-      RunUrlScoringModel(base::BindOnce(
-          &AutocompleteController::SortCullAndAnnotateResult,
-          weak_ptr_factory_.GetWeakPtr(), last_default_match,
-          last_default_associated_keyword, force_notify_default_match_changed,
-          default_match_to_preserve));
-    }
-    return;
+    RunBatchUrlScoringModel(
+        base::BindOnce(&AutocompleteController::SortCullAndAnnotateResult,
+                       weak_ptr_factory_.GetWeakPtr(), last_default_match,
+                       last_default_associated_keyword,
+                       force_notify_default_match_changed,
+                       default_match_to_preserve),
+        OmniboxFieldTrial::IsMlSyncBatchUrlScoringEnabled());
 #endif  // BUILDFLAG(BUILD_WITH_TFLITE_LIB)
+  } else {
+    // The final call to `SortAndCull()` happens inside
+    // `SortCullAndAnnotateResult()`. Here, the result is sorted, trimmed to a
+    // small number of "best" matches, and annotated with relevant information
+    // before notifying listeners that the result is ready.
+    SortCullAndAnnotateResult(
+        last_default_match, last_default_associated_keyword,
+        force_notify_default_match_changed, default_match_to_preserve);
   }
+}
 
-  // The final call to `SortAndCull()` happens inside
-  // `SortCullAndAnnotateResult()`. Here, the result is sorted, trimmed to a
-  // small number of "best" matches, and annotated with relevant information
-  // before notifying listeners that the result is ready.
-  SortCullAndAnnotateResult(last_default_match, last_default_associated_keyword,
-                            force_notify_default_match_changed,
-                            default_match_to_preserve);
+absl::optional<AutocompleteMatch>
+AutocompleteController::PreprocessResultForMlScoring(
+    absl::optional<AutocompleteMatch> default_match_to_preserve) {
+  const auto& ml_config = OmniboxFieldTrial::GetMLConfig();
+  if (ml_config.ml_url_scoring_rerank_final_matches_only) {
+    result_.SortAndCull(input_, template_url_service_,
+                        triggered_feature_service_, default_match_to_preserve);
+    if (result_.default_match() && ml_config.ml_url_scoring_preserve_default) {
+      default_match_to_preserve = *result_.default_match();
+    }
+  } else {
+    // Deduplicate matches according to `stripped_destination_url` prior to
+    // running ML scoring. This step is not needed if `SortAndCull()` is
+    // called before the model is executed.
+    result_.DeduplicateMatches(input_, template_url_service_);
+  }
+  return default_match_to_preserve;
 }
 
 void AutocompleteController::SortCullAndAnnotateResult(
@@ -1584,6 +1580,11 @@ size_t AutocompleteController::InjectAdHocMatch(AutocompleteMatch match) {
   return index;
 }
 
+void AutocompleteController::SetSteadyStateOmniboxPosition(
+    metrics::OmniboxEventProto::OmniboxPosition position) {
+  steady_state_omnibox_position_ = position;
+}
+
 bool AutocompleteController::ShouldRunProvider(
     AutocompleteProvider* provider) const {
   if (provider->InKeywordMode(input_)) {
@@ -1671,7 +1672,8 @@ void AutocompleteController::RunUrlScoringModel(
 }
 
 void AutocompleteController::RunBatchUrlScoringModel(
-    base::OnceClosure completion_callback) {
+    base::OnceClosure completion_callback,
+    bool is_sync) {
   TRACE_EVENT0("omnibox", "AutocompleteController::RunBatchUrlScoringModel");
 
   size_t eligible_matches_count = base::ranges::count_if(
@@ -1696,13 +1698,27 @@ void AutocompleteController::RunBatchUrlScoringModel(
     batch_scoring_signals.push_back(&match.scoring_signals.value());
     stripped_destination_urls.push_back(match.stripped_destination_url.spec());
   }
-  provider_client_->GetAutocompleteScoringModelService()
-      ->BatchScoreAutocompleteUrlMatches(
-          &scoring_model_task_tracker_, std::move(batch_scoring_signals),
-          std::move(stripped_destination_urls),
-          base::BindOnce(&AutocompleteController::OnUrlScoringModelDone,
-                         weak_ptr_factory_.GetWeakPtr(), base::ElapsedTimer(),
-                         std::move(completion_callback)));
+
+  auto timer = base::ElapsedTimer();
+  if (is_sync) {
+    // Synchronous ML model execution.
+    const auto batch_results =
+        provider_client_->GetAutocompleteScoringModelService()
+            ->BatchScoreAutocompleteUrlMatchesSync(
+                std::move(batch_scoring_signals),
+                std::move(stripped_destination_urls));
+    OnUrlScoringModelDone(std::move(timer), std::move(completion_callback),
+                          batch_results);
+  } else {
+    // Async ML model execution.
+    provider_client_->GetAutocompleteScoringModelService()
+        ->BatchScoreAutocompleteUrlMatches(
+            &scoring_model_task_tracker_, std::move(batch_scoring_signals),
+            std::move(stripped_destination_urls),
+            base::BindOnce(&AutocompleteController::OnUrlScoringModelDone,
+                           weak_ptr_factory_.GetWeakPtr(), std::move(timer),
+                           std::move(completion_callback)));
+  }
 }
 
 void AutocompleteController::OnUrlScoringModelDone(
@@ -1788,8 +1804,21 @@ void AutocompleteController::OnUrlScoringModelDone(
     // score to the match with the highest respective model prediction score.
     if (!OmniboxFieldTrial::IsMlUrlScoringCounterfactual()) {
       auto match_itr = prediction_and_match_itr_heap.top().second;
-      match_itr->RecordAdditionalInfo("legacy_relevance", match_itr->relevance);
+      match_itr->RecordAdditionalInfo("ml_legacy_relevance",
+                                      match_itr->relevance);
       match_itr->relevance = relevance_heap.top();
+
+      // Fuzzy matches use the scoring signals for history and bookmark
+      // providers with the "corrected" input. This leads to an artificially
+      // high confidence from the model. Correct for this by re-applying the
+      // penalty from the history fuzzy provider.
+      if (match_itr->provider && match_itr->provider->type() ==
+                                     AutocompleteProvider::TYPE_HISTORY_FUZZY) {
+        match_itr->RecordAdditionalInfo("ml_relevance_before_penalty",
+                                        match_itr->relevance);
+        HistoryFuzzyProvider::ApplyRelevancePenalty(
+            *match_itr, match_itr->fuzzy_match_penalty);
+      }
     }
     relevance_heap.pop();
     prediction_and_match_itr_heap.pop();

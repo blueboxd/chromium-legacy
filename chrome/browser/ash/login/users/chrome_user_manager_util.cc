@@ -71,10 +71,10 @@ bool IsUserAllowed(const user_manager::User& user,
   return true;
 }
 
-bool IsPublicSessionOrEphemeralLogin() {
+bool IsManagedGuestSessionOrEphemeralLogin() {
   const user_manager::UserManager* user_manager =
       user_manager::UserManager::Get();
-  return user_manager->IsLoggedInAsPublicAccount() ||
+  return user_manager->IsLoggedInAsManagedGuestSession() ||
          user_manager->IsCurrentUserCryptohomeDataEphemeral();
 }
 

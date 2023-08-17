@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/check.h"
+#include "base/containers/contains.h"
 #include "base/functional/callback.h"
 #include "base/location.h"
 #include "base/memory/raw_ptr.h"
@@ -123,6 +124,26 @@ class TrivialSerializerDelegate : public v8::ValueSerializer::Delegate {
 
 AuctionV8Helper::TimeLimit::~TimeLimit() = default;
 
+AuctionV8Helper::TimeLimitScope::TimeLimitScope(TimeLimit* script_timeout)
+    : script_timeout_(script_timeout) {
+  if (script_timeout) {
+    resumed_ = script_timeout->Resume();
+    if (!resumed_) {
+      // If we are inside a nested context (e.g. CallFunction -> some binding
+      // -> type conversion), we need to explicitly tell v8 we are
+      // still OK with termination.
+      safe_for_termination_scope_.emplace(
+          script_timeout->v8_helper()->isolate());
+    }
+  }
+}
+
+AuctionV8Helper::TimeLimitScope::~TimeLimitScope() {
+  if (resumed_) {
+    script_timeout_->Pause();
+  }
+}
+
 // Utility class to timeout running a v8::Script or calling a v8::Function.
 // Instantiate a ScriptTimeoutHelper, and it will terminate script if
 // `script_timeout` passes before it is destroyed.
@@ -134,15 +155,15 @@ class AuctionV8Helper::ScriptTimeoutHelper : public AuctionV8Helper::TimeLimit {
       AuctionV8Helper* v8_helper,
       scoped_refptr<base::SequencedTaskRunner> timer_task_runner,
       base::TimeDelta script_timeout)
-      : v8_helper_(v8_helper),
+      : TimeLimit(v8_helper),
         termination_scope_(v8_helper->isolate()),
         remaining_delay_(script_timeout),
         running_(false),
         timer_task_runner_(std::move(timer_task_runner)) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(v8_sequence_checker_);
     DCHECK(v8_helper->v8_runner()->RunsTasksInCurrentSequence());
-    DCHECK_EQ(v8_helper_->timeout_helper_, nullptr);
-    v8_helper_->timeout_helper_ = this;
+    DCHECK_EQ(v8_helper->timeout_helper_, nullptr);
+    v8_helper->timeout_helper_ = this;
   }
 
   ScriptTimeoutHelper(const ScriptTimeoutHelper&) = delete;
@@ -151,8 +172,8 @@ class AuctionV8Helper::ScriptTimeoutHelper : public AuctionV8Helper::TimeLimit {
   ~ScriptTimeoutHelper() override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(v8_sequence_checker_);
     DCHECK(!running_);
-    DCHECK_EQ(v8_helper_->timeout_helper_, this);
-    v8_helper_->timeout_helper_ = nullptr;
+    DCHECK_EQ(v8_helper()->timeout_helper_, this);
+    v8_helper()->timeout_helper_ = nullptr;
   }
 
   void Pause() override {
@@ -249,7 +270,7 @@ class AuctionV8Helper::ScriptTimeoutHelper : public AuctionV8Helper::TimeLimit {
     DCHECK_GT(remaining_delay_, base::TimeDelta());
     last_start_ = base::TimeTicks::Now();
     off_thread_timer_ = std::make_unique<OffThreadTimer>(
-        timer_task_runner_, v8_helper_->isolate(), remaining_delay_);
+        timer_task_runner_, v8_helper()->isolate(), remaining_delay_);
     running_ = true;
   }
 
@@ -261,8 +282,6 @@ class AuctionV8Helper::ScriptTimeoutHelper : public AuctionV8Helper::TimeLimit {
     running_ = false;
   }
 
-  // `this` exists a local in `v8_helper_`'s method.
-  const raw_ptr<AuctionV8Helper> v8_helper_;
   v8::Isolate::SafeForTerminationScope termination_scope_;
   base::TimeDelta remaining_delay_;
   base::TimeTicks last_start_;
@@ -579,6 +598,11 @@ std::unique_ptr<AuctionV8Helper::TimeLimit> AuctionV8Helper::CreateTimeLimit(
       this, timer_task_runner_, script_timeout.value_or(script_timeout_));
 }
 
+AuctionV8Helper::TimeLimit* AuctionV8Helper::GetTimeLimit() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return timeout_helper_;
+}
+
 bool AuctionV8Helper::RunScript(v8::Local<v8::Context> context,
                                 v8::Local<v8::UnboundScript> script,
                                 const DebugId* debug_id,
@@ -713,7 +737,7 @@ int AuctionV8Helper::AllocContextGroupId() {
     int candidate = ++last_context_group_id_;
     DCHECK_GT(candidate, 0);
 
-    if (resume_callbacks_.find(candidate) == resume_callbacks_.end()) {
+    if (!base::Contains(resume_callbacks_, candidate)) {
       resume_callbacks_.emplace(candidate, base::OnceClosure());
       return candidate;
     }

@@ -29,10 +29,6 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 using content::DropData;
 using features::kMacWebContentsOcclusion;
 using remote_cocoa::mojom::DraggingInfo;

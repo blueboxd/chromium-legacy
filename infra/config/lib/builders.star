@@ -119,8 +119,7 @@ reclient = struct(
         LOW_JOBS_FOR_CI = 80,
         HIGH_JOBS_FOR_CI = 500,
         LOW_JOBS_FOR_CQ = 150,
-        # TODO(b/285080767): increase this to 500 gradually.
-        HIGH_JOBS_FOR_CQ = 400,
+        HIGH_JOBS_FOR_CQ = 500,
     ),
 )
 
@@ -174,8 +173,10 @@ xcode = struct(
     x14main = xcode_enum("14c18"),
     # A newer Xcode 14 RC  used on beta bots.
     x14betabots = xcode_enum("14e222b"),
+    # Default Xcode 15 for chromium iOS
+    x15main = xcode_enum("15a5209g"),
     # A newer Xcode 15 version used on beta bots.
-    x15betabots = xcode_enum("15a5195m"),
+    x15betabots = xcode_enum("15a5219j"),
     # in use by ios-webkit-tot
     x14wk = xcode_enum("14c18wk"),
 )
@@ -410,8 +411,11 @@ defaults = args.defaults(
     health_spec = None,
 
     # Variables for modifying builder characteristics in a shadow bucket
+    shadow_builderless = None,
+    shadow_free_space = args.COMPUTE,  # None will clear the non-shadow dimension, so use args.COMPUTE as the default
     shadow_pool = None,
     shadow_service_account = None,
+    shadow_reclient_instance = None,
 
     # Provide vars for bucket and executable so users don't have to
     # unnecessarily make wrapper functions
@@ -481,8 +485,11 @@ def builder(
         siso_enable_cloud_trace = args.DEFAULT,
         siso_experiments = args.DEFAULT,
         health_spec = args.DEFAULT,
+        shadow_builderless = args.DEFAULT,
+        shadow_free_space = args.DEFAULT,
         shadow_pool = args.DEFAULT,
         shadow_service_account = args.DEFAULT,
+        shadow_reclient_instance = args.DEFAULT,
         **kwargs):
     """Define a builder.
 
@@ -670,10 +677,24 @@ def builder(
         siso_enable_cloud_profiler: If True, enable cloud profiler in siso.
         siso_enable_cloud_trace: If True, enable cloud trace in siso.
         siso_experiments: a list of experiment flags for siso.
+        shadow_builderless: If set to True, then led builds created for this
+            builder will have the builderless dimension set and the builder
+            dimension removed. If set to False, then led builds created for this
+            builder will have the builderless dimension removed and the builder
+            dimension set. See description of builderless and
+            auto_builder_dimension for more information.
+        shadow_free_space: If set, then led builds created for this builder will
+            use the specified value for the free_space dimension. None will
+            cause the free_space dimension to be removed for led builds. See
+            description of free_space for more information.
         shadow_pool: If set, then led builds created for this Builder will be
             set to use this alternate pool instead.
         shadow_service_account: If set, then led builds created for this builder
             will use this service account instead.
+        shadow_reclient_instance: If set, then led builds for this builder will
+            use this as the reclient instance instead of reclient_instance. The
+            other reclient_* values will continue to be used for the shadow
+            build.
         **kwargs: Additional keyword arguments to forward on to `luci.builder`.
 
     Returns:
@@ -709,6 +730,8 @@ def builder(
         fail('Setting "$build/reclient" property is not supported: ' +
              "use reclient_instance and reclient_rewrapper_env instead")
     properties = dict(properties)
+
+    shadow_properties = {}
 
     # bucket might be the args.COMPUTE sentinel value if the caller didn't set
     # bucket in some way, which will result in a weird fully-qualified builder
@@ -818,9 +841,9 @@ def builder(
         reclient_scandeps_server,
     )
 
-    # Enable scandeps_server on Mac by default.
+    # Enable scandeps_server by default.
     if reclient_scandeps_server == args.COMPUTE:
-        reclient_scandeps_server = os and os.category == os_category.MAC
+        reclient_scandeps_server = True
 
     reclient = _reclient_property(
         instance = reclient_instance,
@@ -837,6 +860,22 @@ def builder(
     )
     if reclient != None:
         properties["$build/reclient"] = reclient
+        shadow_reclient_instance = defaults.get_value("shadow_reclient_instance", shadow_reclient_instance)
+        shadow_reclient = _reclient_property(
+            instance = shadow_reclient_instance,
+            service = reclient_service,
+            jobs = reclient_jobs,
+            rewrapper_env = reclient_rewrapper_env,
+            bootstrap_env = reclient_bootstrap_env,
+            profiler_service = reclient_profiler_service,
+            publish_trace = reclient_publish_trace,
+            scandeps_server = reclient_scandeps_server,
+            cache_silo = reclient_cache_silo,
+            ensure_verified = reclient_ensure_verified,
+            disable_bq_upload = reclient_disable_bq_upload,
+        )
+        if shadow_reclient:
+            shadow_properties["$build/reclient"] = shadow_reclient
 
     siso_project = defaults.get_value("siso_project", siso_project)
     if defaults.get_value("siso_enabled", siso_enabled) and siso_project:
@@ -847,6 +886,23 @@ def builder(
             "experiments": defaults.get_value("siso_experiments", siso_experiments),
             "project": siso_project,
         }
+
+    shadow_dimensions = {}
+    shadow_builderless = defaults.get_value("shadow_builderless", shadow_builderless)
+    if shadow_builderless:
+        shadow_dimensions["builderless"] = "1"
+        shadow_dimensions["builder"] = None
+    elif shadow_builderless != None:
+        shadow_dimensions["builderless"] = None
+        shadow_dimensions["builder"] = name
+    shadow_free_space = defaults.get_value("shadow_free_space", shadow_free_space)
+    if shadow_free_space != args.COMPUTE:
+        shadow_dimensions["free_space"] = shadow_free_space
+    shadow_pool = defaults.get_value("shadow_pool", shadow_pool)
+    if shadow_pool != None:
+        shadow_dimensions["pool"] = shadow_pool
+
+    shadow_dimensions = {k: v for k, v in shadow_dimensions.items() if dimensions.get(k) != v}
 
     kwargs = dict(kwargs)
     if bucket != args.COMPUTE:
@@ -878,8 +934,9 @@ def builder(
             resultdb_bigquery_exports = resultdb_bigquery_exports,
             resultdb_index_by_timestamp = resultdb_index_by_timestamp,
         ),
-        shadow_pool = defaults.get_value("shadow_pool", shadow_pool),
+        shadow_dimensions = shadow_dimensions,
         shadow_service_account = defaults.get_value("shadow_service_account", shadow_service_account),
+        shadow_properties = shadow_properties,
         **kwargs
     )
 

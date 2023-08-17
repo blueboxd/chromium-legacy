@@ -82,10 +82,6 @@ BASE_FEATURE(kUpdateBrowserControlsWithoutProxy,
              "UpdateBrowserControlsWithoutProxy",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-BASE_FEATURE(kRasterTilePriorityQueue,
-             "RasterTilePriorityQueue",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 BASE_FEATURE(kUIEnableSharedImageCacheForGpu,
              "UIEnableSharedImageCacheForGpu",
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -128,5 +124,12 @@ const base::FeatureParam<int> kInterestAreaSizeInPixels{
 BASE_FEATURE(kImageCacheNoCache,
              "ImageCacheNoCache",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kReclaimOldPrepaintTiles,
+             "ReclaimOldPrepaintTiles",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+const base::FeatureParam<int> kReclaimDelayInSeconds{&kSmallerInterestArea,
+                                                     "reclaim_delay_s", 30};
 
 }  // namespace features

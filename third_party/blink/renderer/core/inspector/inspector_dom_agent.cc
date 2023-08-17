@@ -1555,7 +1555,7 @@ protocol::Response InspectorDOMAgent::getNodeForLocation(
   HitTestResult result(request, location);
   document->GetFrame()->ContentLayoutObject()->HitTest(location, result);
   if (!include_user_agent_shadow_dom)
-    result.SetToShadowHostIfInRestrictedShadowRoot();
+    result.SetToShadowHostIfInUAShadowRoot();
   Node* node = result.InnerPossiblyPseudoNode();
   while (node && node->getNodeType() == Node::kTextNode)
     node = node->parentNode();
@@ -1866,7 +1866,8 @@ std::unique_ptr<protocol::DOM::Node> InspectorDOMAgent::BuildObjectForNode(
     if (auto* template_element = DynamicTo<HTMLTemplateElement>(*element)) {
       // The inspector should not try to access the .content() property of
       // declarative Shadow DOM <template> elements, because it will be null.
-      if (!template_element->IsDeclarativeShadowRoot()) {
+      if (!template_element->IsDeclarativeShadowRoot() &&
+          template_element->content()) {
         value->setTemplateContent(BuildObjectForNode(
             template_element->content(), 0, pierce, nodes_map, flatten_result));
         force_push_children = true;

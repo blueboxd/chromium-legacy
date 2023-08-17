@@ -17,9 +17,9 @@
 #include "components/supervised_user/core/browser/fetcher_config.h"
 #include "components/supervised_user/core/browser/proto/kidschromemanagement_messages.pb.h"
 #include "components/supervised_user/core/browser/proto/permissions_common.pb.h"
+#include "components/supervised_user/core/browser/proto/test.pb.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
-#include "url/gurl.h"
 
 namespace supervised_user {
 // -----------------------------------------------------------------------------
@@ -98,10 +98,6 @@ class ProtoFetcherStatus {
   // Returns a message describing the status.
   std::string ToString() const;
 
-  // Translate the status to metric enum label as defined in
-  // tools/metrics/histograms/enums.xml.
-  std::string ToMetricEnumLabel() const;
-
   State state() const;
   HttpStatusOrNetErrorType http_status_or_net_error() const;
   const class GoogleServiceAuthError& google_service_auth_error() const;
@@ -141,6 +137,7 @@ template <typename Response>
 class DeferredProtoFetcher : public ProtoFetcher<Response> {
  public:
   virtual void Start(typename ProtoFetcher<Response>::Callback callback) = 0;
+  virtual void Stop() = 0;
 };
 
 // Component for managing multiple fetches at once.
@@ -149,7 +146,7 @@ class DeferredProtoFetcher : public ProtoFetcher<Response> {
 // also happen when this manager is destroyed. In the latter case, callbacks
 // won't be executed (the pending requests will be canceled).
 template <typename Request, typename Response>
-class RepeatableFetchManager {
+class ParallelFetchManager {
  private:
   // Deferred fetcher is required because it should be started after it is
   // stored internally.
@@ -160,11 +157,11 @@ class RepeatableFetchManager {
   using FetcherFactory =
       base::RepeatingCallback<std::unique_ptr<Fetcher>(const Request&)>;
 
-  RepeatableFetchManager() = delete;
-  explicit RepeatableFetchManager(FetcherFactory fetcher_factory);
-  RepeatableFetchManager(const RepeatableFetchManager&) = delete;
-  RepeatableFetchManager& operator=(const RepeatableFetchManager&) = delete;
-  ~RepeatableFetchManager() = default;
+  ParallelFetchManager() = delete;
+  explicit ParallelFetchManager(FetcherFactory fetcher_factory);
+  ParallelFetchManager(const ParallelFetchManager&) = delete;
+  ParallelFetchManager& operator=(const ParallelFetchManager&) = delete;
+  ~ParallelFetchManager() = default;
 
   // Starts the fetch. Underlying fetcher is stored internally, and will be
   // cleaned up after finish or when this manager is destroyed.
@@ -180,13 +177,20 @@ class RepeatableFetchManager {
 
   base::IDMap<std::unique_ptr<Fetcher>, KeyType> requests_in_flight_;
   FetcherFactory fetcher_factory_;
-  base::WeakPtrFactory<RepeatableFetchManager<Request, Response>> weak_factory_{
+  base::WeakPtrFactory<ParallelFetchManager<Request, Response>> weak_factory_{
       this};
 };
 
-// Creates a disposable instance of an access token consumer that will fetch
-// list of family members.
-std::unique_ptr<ProtoFetcher<kids_chrome_management::ListFamilyMembersResponse>>
+template <typename Response>
+std::unique_ptr<DeferredProtoFetcher<Response>> CreateFetcher(
+    signin::IdentityManager& identity_manager,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+    const google::protobuf::MessageLite& request,
+    const FetcherConfig& fetcher_config);
+
+// Fetches list family members. The returned fetcher is already started.
+std::unique_ptr<
+    DeferredProtoFetcher<kids_chrome_management::ListFamilyMembersResponse>>
 FetchListFamilyMembers(
     signin::IdentityManager& identity_manager,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
@@ -198,10 +202,11 @@ FetchListFamilyMembers(
 // the URL for supervised user.
 std::unique_ptr<
     DeferredProtoFetcher<kids_chrome_management::ClassifyUrlResponse>>
-ClassifyURL(signin::IdentityManager& identity_manager,
-            scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-            const kids_chrome_management::ClassifyUrlRequest& request,
-            const FetcherConfig& config = kClassifyUrlConfig);
+CreateClassifyURLFetcher(
+    signin::IdentityManager& identity_manager,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+    const kids_chrome_management::ClassifyUrlRequest& request,
+    const FetcherConfig& config = kClassifyUrlConfig);
 
 // Creates a disposable instance of an access token consumer that will create
 // a new permission request for a given url.
@@ -217,6 +222,12 @@ CreatePermissionRequestFetcher(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const kids_chrome_management::PermissionRequest& request,
     const FetcherConfig& config = kCreatePermissionRequestConfig);
+
+std::unique_ptr<DeferredProtoFetcher<Response>> CreateTestFetcher(
+    signin::IdentityManager& identity_manager,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+    const Request& request,
+    const FetcherConfig& fetcher_config);
 
 }  // namespace supervised_user
 #endif  // COMPONENTS_SUPERVISED_USER_CORE_BROWSER_PROTO_FETCHER_H_

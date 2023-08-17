@@ -6,6 +6,10 @@ The test verifies functionality of querying style information for view-transitio
         ]
         cssPositionFallbackRules : [
         ]
+        cssPropertyRegistrations : [
+        ]
+        cssPropertyRules : [
+        ]
         inherited : [
         ]
         inheritedPseudoElements : [
@@ -329,6 +333,14 @@ The test verifies functionality of querying style information for view-transitio
                                         name : writing-mode
                                         value : horizontal-tb
                                     }
+                                    [4] : {
+                                        name : mix-blend-mode
+                                        value : normal
+                                    }
+                                    [5] : {
+                                        name : text-orientation
+                                        value : mixed
+                                    }
                                 ]
                                 shorthandEntries : [
                                 ]
@@ -546,6 +558,14 @@ The test verifies functionality of querying style information for view-transitio
                                     [3] : {
                                         name : writing-mode
                                         value : horizontal-tb
+                                    }
+                                    [4] : {
+                                        name : mix-blend-mode
+                                        value : normal
+                                    }
+                                    [5] : {
+                                        name : text-orientation
+                                        value : mixed
                                     }
                                 ]
                                 shorthandEntries : [
@@ -2032,6 +2052,37 @@ Dumping styles for : ::view-transition-group with id root{
     id : <number>
     result : {
         cssKeyframesRules : [
+            [0] : {
+                animationName : {
+                    text : -ua-view-transition-group-anim-root
+                }
+                keyframes : [
+                    [0] : {
+                        keyText : {
+                            text : 0%
+                        }
+                        origin : user-agent
+                        style : {
+                            cssProperties : [
+                                [0] : {
+                                    name : transform
+                                    value : matrix(1, 0, 0, 1, 0, 0)
+                                }
+                                [1] : {
+                                    name : width
+                                    value : 800px
+                                }
+                                [2] : {
+                                    name : height
+                                    value : 600px
+                                }
+                            ]
+                            shorthandEntries : [
+                            ]
+                        }
+                    }
+                ]
+            }
         ]
         inherited : [
         ]
@@ -2180,6 +2231,14 @@ Dumping styles for : ::view-transition-group with id root{
                             [3] : {
                                 name : writing-mode
                                 value : horizontal-tb
+                            }
+                            [4] : {
+                                name : mix-blend-mode
+                                value : normal
+                            }
+                            [5] : {
+                                name : text-orientation
+                                value : mixed
                             }
                         ]
                         shorthandEntries : [
@@ -2421,6 +2480,68 @@ Dumping styles for : ::view-transition-old with id root{
     id : <number>
     result : {
         cssKeyframesRules : [
+            [0] : {
+                animationName : {
+                    text : -ua-view-transition-fade-out
+                }
+                keyframes : [
+                    [0] : {
+                        keyText : {
+                            text : 100%
+                        }
+                        origin : user-agent
+                        style : {
+                            cssProperties : [
+                                [0] : {
+                                    name : opacity
+                                    value : 0
+                                }
+                            ]
+                            shorthandEntries : [
+                            ]
+                        }
+                    }
+                ]
+            }
+            [1] : {
+                animationName : {
+                    text : -ua-mix-blend-mode-plus-lighter
+                }
+                keyframes : [
+                    [0] : {
+                        keyText : {
+                            text : 0%
+                        }
+                        origin : user-agent
+                        style : {
+                            cssProperties : [
+                                [0] : {
+                                    name : mix-blend-mode
+                                    value : plus-lighter
+                                }
+                            ]
+                            shorthandEntries : [
+                            ]
+                        }
+                    }
+                    [1] : {
+                        keyText : {
+                            text : 100%
+                        }
+                        origin : user-agent
+                        style : {
+                            cssProperties : [
+                                [0] : {
+                                    name : mix-blend-mode
+                                    value : plus-lighter
+                                }
+                            ]
+                            shorthandEntries : [
+                            ]
+                        }
+                    }
+                ]
+            }
         ]
         inherited : [
         ]
@@ -2739,6 +2860,68 @@ Dumping styles for : ::view-transition-new with id root{
     id : <number>
     result : {
         cssKeyframesRules : [
+            [0] : {
+                animationName : {
+                    text : -ua-view-transition-fade-in
+                }
+                keyframes : [
+                    [0] : {
+                        keyText : {
+                            text : 0%
+                        }
+                        origin : user-agent
+                        style : {
+                            cssProperties : [
+                                [0] : {
+                                    name : opacity
+                                    value : 0
+                                }
+                            ]
+                            shorthandEntries : [
+                            ]
+                        }
+                    }
+                ]
+            }
+            [1] : {
+                animationName : {
+                    text : -ua-mix-blend-mode-plus-lighter
+                }
+                keyframes : [
+                    [0] : {
+                        keyText : {
+                            text : 0%
+                        }
+                        origin : user-agent
+                        style : {
+                            cssProperties : [
+                                [0] : {
+                                    name : mix-blend-mode
+                                    value : plus-lighter
+                                }
+                            ]
+                            shorthandEntries : [
+                            ]
+                        }
+                    }
+                    [1] : {
+                        keyText : {
+                            text : 100%
+                        }
+                        origin : user-agent
+                        style : {
+                            cssProperties : [
+                                [0] : {
+                                    name : mix-blend-mode
+                                    value : plus-lighter
+                                }
+                            ]
+                            shorthandEntries : [
+                            ]
+                        }
+                    }
+                ]
+            }
         ]
         inherited : [
         ]
@@ -2904,6 +3087,37 @@ Dumping styles for : ::view-transition-group with id shared{
     id : <number>
     result : {
         cssKeyframesRules : [
+            [0] : {
+                animationName : {
+                    text : -ua-view-transition-group-anim-shared
+                }
+                keyframes : [
+                    [0] : {
+                        keyText : {
+                            text : 0%
+                        }
+                        origin : user-agent
+                        style : {
+                            cssProperties : [
+                                [0] : {
+                                    name : transform
+                                    value : matrix(1, 0, 0, 1, 8, 8)
+                                }
+                                [1] : {
+                                    name : width
+                                    value : 100px
+                                }
+                                [2] : {
+                                    name : height
+                                    value : 100px
+                                }
+                            ]
+                            shorthandEntries : [
+                            ]
+                        }
+                    }
+                ]
+            }
         ]
         inherited : [
         ]
@@ -3052,6 +3266,14 @@ Dumping styles for : ::view-transition-group with id shared{
                             [3] : {
                                 name : writing-mode
                                 value : horizontal-tb
+                            }
+                            [4] : {
+                                name : mix-blend-mode
+                                value : normal
+                            }
+                            [5] : {
+                                name : text-orientation
+                                value : mixed
                             }
                         ]
                         shorthandEntries : [
@@ -3293,6 +3515,68 @@ Dumping styles for : ::view-transition-old with id shared{
     id : <number>
     result : {
         cssKeyframesRules : [
+            [0] : {
+                animationName : {
+                    text : -ua-view-transition-fade-out
+                }
+                keyframes : [
+                    [0] : {
+                        keyText : {
+                            text : 100%
+                        }
+                        origin : user-agent
+                        style : {
+                            cssProperties : [
+                                [0] : {
+                                    name : opacity
+                                    value : 0
+                                }
+                            ]
+                            shorthandEntries : [
+                            ]
+                        }
+                    }
+                ]
+            }
+            [1] : {
+                animationName : {
+                    text : -ua-mix-blend-mode-plus-lighter
+                }
+                keyframes : [
+                    [0] : {
+                        keyText : {
+                            text : 0%
+                        }
+                        origin : user-agent
+                        style : {
+                            cssProperties : [
+                                [0] : {
+                                    name : mix-blend-mode
+                                    value : plus-lighter
+                                }
+                            ]
+                            shorthandEntries : [
+                            ]
+                        }
+                    }
+                    [1] : {
+                        keyText : {
+                            text : 100%
+                        }
+                        origin : user-agent
+                        style : {
+                            cssProperties : [
+                                [0] : {
+                                    name : mix-blend-mode
+                                    value : plus-lighter
+                                }
+                            ]
+                            shorthandEntries : [
+                            ]
+                        }
+                    }
+                ]
+            }
         ]
         inherited : [
         ]
@@ -3611,6 +3895,68 @@ Dumping styles for : ::view-transition-new with id shared{
     id : <number>
     result : {
         cssKeyframesRules : [
+            [0] : {
+                animationName : {
+                    text : -ua-view-transition-fade-in
+                }
+                keyframes : [
+                    [0] : {
+                        keyText : {
+                            text : 0%
+                        }
+                        origin : user-agent
+                        style : {
+                            cssProperties : [
+                                [0] : {
+                                    name : opacity
+                                    value : 0
+                                }
+                            ]
+                            shorthandEntries : [
+                            ]
+                        }
+                    }
+                ]
+            }
+            [1] : {
+                animationName : {
+                    text : -ua-mix-blend-mode-plus-lighter
+                }
+                keyframes : [
+                    [0] : {
+                        keyText : {
+                            text : 0%
+                        }
+                        origin : user-agent
+                        style : {
+                            cssProperties : [
+                                [0] : {
+                                    name : mix-blend-mode
+                                    value : plus-lighter
+                                }
+                            ]
+                            shorthandEntries : [
+                            ]
+                        }
+                    }
+                    [1] : {
+                        keyText : {
+                            text : 100%
+                        }
+                        origin : user-agent
+                        style : {
+                            cssProperties : [
+                                [0] : {
+                                    name : mix-blend-mode
+                                    value : plus-lighter
+                                }
+                            ]
+                            shorthandEntries : [
+                            ]
+                        }
+                    }
+                ]
+            }
         ]
         inherited : [
         ]

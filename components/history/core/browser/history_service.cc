@@ -29,6 +29,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/observer_list.h"
+#include "base/process/process.h"
 #include "base/sequence_checker.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/single_thread_task_runner.h"
@@ -118,10 +119,12 @@ class HistoryService::BackendDelegate : public HistoryBackend::Delegate {
   }
 
   void NotifyURLVisited(const URLRow& url_row,
-                        const VisitRow& visit_row) override {
+                        const VisitRow& visit_row,
+                        absl::optional<int64_t> local_navigation_id) override {
     service_task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(&HistoryService::NotifyURLVisited,
-                                  history_service_, url_row, visit_row));
+        FROM_HERE,
+        base::BindOnce(&HistoryService::NotifyURLVisited, history_service_,
+                       url_row, visit_row, local_navigation_id));
   }
 
   void NotifyURLsModified(const URLRows& changed_urls) override {
@@ -459,6 +462,7 @@ void HistoryService::SetCanAddForeignVisitsToSegmentsOnBackend(
 }
 
 void HistoryService::OnDeviceInfoChange() {
+  TRACE_EVENT0("browser,startup", "HistoryService::OnDeviceInfoChange");
   CHECK(history::IsSyncSegmentsDataEnabled());
   CHECK(device_info_tracker_ != nullptr);
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -567,7 +571,8 @@ void HistoryService::AddPage(const GURL& url,
                              bool did_replace_entry) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   AddPage(HistoryAddPageArgs(
-      url, time, context_id, nav_entry_id, referrer, redirects, transition,
+      url, time, context_id, nav_entry_id,
+      /*local_navigation_id=*/absl::nullopt, referrer, redirects, transition,
       !ui::PageTransitionIsMainFrame(transition), visit_source,
       did_replace_entry, /*consider_for_ntp_most_visited=*/true));
 }
@@ -578,6 +583,7 @@ void HistoryService::AddPage(const GURL& url,
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   AddPage(HistoryAddPageArgs(
       url, time, /*context_id=*/0, /*nav_entry_id=*/0,
+      /*local_navigation_id=*/absl::nullopt,
       /*referrer=*/GURL(), RedirectList(), ui::PAGE_TRANSITION_LINK,
       /*hidden=*/false, visit_source,
       /*did_replace_entry=*/false, /*consider_for_ntp_most_visited=*/true));
@@ -1395,10 +1401,13 @@ bool HistoryService::Init(
                           base::Unretained(this)));
 
   if (visit_delegate_ && !visit_delegate_->Init(this)) {
-    // This is rare enough that it's worth logging.
-    LOG(WARNING) << "HistoryService::Init() failed by way of "
-                    "VisitDelegate::Init failing";
-    return false;
+    // This is a low-level service that many other services in chromium depend
+    // on. If it fails to initialize (which can happen when there's insufficient
+    // shared memory) we will end up with nullptr dereferences in higher-level
+    // services that are harder to diagnose. Explicitly terminate here instead.
+    LOG(ERROR) << "HistoryService::Init() failed by way of "
+                  "VisitDelegate::Init failing";
+    base::Process::TerminateCurrentProcessImmediately(0);
   }
 
   if (history_client_)
@@ -1649,11 +1658,16 @@ void HistoryService::OnDBLoaded() {
   NotifyHistoryServiceLoaded();
 }
 
-void HistoryService::NotifyURLVisited(const URLRow& url_row,
-                                      const VisitRow& new_visit) {
+void HistoryService::NotifyURLVisited(
+    const URLRow& url_row,
+    const VisitRow& new_visit,
+    absl::optional<int64_t> local_navigation_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  for (HistoryServiceObserver& observer : observers_)
+  for (HistoryServiceObserver& observer : observers_) {
     observer.OnURLVisited(this, url_row, new_visit);
+    observer.OnURLVisitedWithNavigationId(this, url_row, new_visit,
+                                          local_navigation_id);
+  }
 }
 
 void HistoryService::NotifyURLsModified(const URLRows& changed_urls) {

@@ -75,12 +75,13 @@ class MockAutofillAgent : public mojom::AutofillAgent {
               (override));
   MOCK_METHOD(void,
               FillOrPreviewForm,
-              (const FormData& form, mojom::RendererFormDataAction action),
+              (const FormData& form,
+               mojom::AutofillActionPersistence action_persistence),
               (override));
   MOCK_METHOD(void,
               UndoAutofill,
               (const FormData& form,
-               mojom::RendererFormDataAction renderer_action),
+               mojom::AutofillActionPersistence action_persistence),
               (override));
   MOCK_METHOD(void,
               FieldTypePredictionsAvailable,
@@ -207,18 +208,22 @@ class ContentAutofillDriverFactoryTest_WithTwoFrames
  public:
   void NavigateChildFrame(base::StringPiece url) {
     CHECK(main_rfh());
-    if (!child_rfh_) {
-      child_rfh_ = content::RenderFrameHostTester::For(main_rfh())
-                       ->AppendChild(std::string("child"));
+    if (!child_rfh()) {
+      child_rfh_id_ = content::RenderFrameHostTester::For(main_rfh())
+                          ->AppendChild(std::string("child"))
+                          ->GetGlobalId();
     }
-    child_rfh_ = content::NavigationSimulator::NavigateAndCommitFromDocument(
-        GURL(url), child_rfh_);
+    child_rfh_id_ = content::NavigationSimulator::NavigateAndCommitFromDocument(
+                        GURL(url), child_rfh())
+                        ->GetGlobalId();
   }
 
-  content::RenderFrameHost* child_rfh() { return child_rfh_; }
+  content::RenderFrameHost* child_rfh() {
+    return content::RenderFrameHost::FromID(child_rfh_id_);
+  }
 
  private:
-  raw_ptr<content::RenderFrameHost, DanglingUntriaged> child_rfh_ = nullptr;
+  content::GlobalRenderFrameHostId child_rfh_id_;
 };
 
 TEST_F(ContentAutofillDriverFactoryTest_WithTwoFrames, TwoDrivers) {

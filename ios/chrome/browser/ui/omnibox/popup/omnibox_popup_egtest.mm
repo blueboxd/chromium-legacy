@@ -24,10 +24,6 @@
 #import "net/test/embedded_test_server/http_request.h"
 #import "net/test/embedded_test_server/http_response.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 namespace {
 
 /// Returns the popup row containing the `url` as suggestion.
@@ -669,7 +665,8 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 
 // Tests that leading image in omnibox changes based on the suggestion
 // highlighted.
-- (void)testOmniboxLeadingImage {
+// TODO(crbug.com/1455347): Test is flaky on both device and simulator.
+- (void)DISABLED_testOmniboxLeadingImage {
   // Start a server to be able to navigate to a web page.
   self.testServer->RegisterRequestHandler(
       base::BindRepeating(&StandardResponse));

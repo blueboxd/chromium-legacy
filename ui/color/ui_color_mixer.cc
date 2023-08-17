@@ -31,10 +31,9 @@ void AddUiColorMixer(ColorProvider* provider, const ColorProviderKey& key) {
   mixer[kColorBadgeInCocoaMenuBackground] = {kColorBadgeBackground};
   mixer[kColorBadgeInCocoaMenuForeground] = {kColorBadgeForeground};
   mixer[kColorBubbleBackground] = {kColorPrimaryBackground};
-  mixer[kColorBubbleBorder] = {kColorMidground};
+  mixer[kColorBubbleBorder] = {kColorSysSurfaceVariant};
   mixer[kColorBubbleBorderShadowLarge] = {SetAlpha(kColorShadowBase, 0x1A)};
   mixer[kColorBubbleBorderShadowSmall] = {SetAlpha(kColorShadowBase, 0x33)};
-  mixer[kColorBubbleBorderWhenShadowPresent] = {SetAlpha(SK_ColorBLACK, 0x26)};
   mixer[kColorBubbleFooterBackground] = {kColorSubtleEmphasisBackground};
   mixer[kColorBubbleFooterBorder] = {kColorMidground};
   mixer[kColorButtonBackground] = {kColorPrimaryBackground};

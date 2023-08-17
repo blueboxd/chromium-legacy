@@ -10,10 +10,6 @@
 #import "testing/gtest_mac.h"
 #import "testing/platform_test.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 // Fixture to test BubbleViewController.
 class BubbleViewControllerTest : public PlatformTest {
  public:
@@ -22,7 +18,7 @@ class BubbleViewControllerTest : public PlatformTest {
         titleText_(@"Title"),
         image_([[UIImage alloc] init]),
         arrowDirection_(BubbleArrowDirectionUp),
-        alignment_(BubbleAlignmentLeading) {}
+        alignment_(BubbleAlignmentTopOrLeading) {}
 
  protected:
   // Text for the bubble view.

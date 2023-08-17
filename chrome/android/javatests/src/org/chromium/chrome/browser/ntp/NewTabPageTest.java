@@ -40,7 +40,6 @@ import androidx.test.filters.MediumTest;
 import androidx.test.filters.SmallTest;
 import androidx.test.platform.app.InstrumentationRegistry;
 
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Before;
@@ -250,13 +249,6 @@ public class NewTabPageTest {
         mFakebox = mNtp.getView().findViewById(R.id.search_box);
         mMvTilesLayout = mNtp.getView().findViewById(R.id.mv_tiles_layout);
         Assert.assertEquals(mSiteSuggestions.size(), mMvTilesLayout.getChildCount());
-    }
-
-    @After
-    public void tearDown() {
-        if (mTestServer != null) {
-            mTestServer.stopAndDestroyServer();
-        }
     }
 
     @Test
@@ -1142,7 +1134,7 @@ public class NewTabPageTest {
                 ntpLayout.findViewById(org.chromium.chrome.test.R.id.mv_tiles_container);
 
         int expectedMvtLateralMargin =
-                res.getDimensionPixelSize(R.dimen.mvt_container_lateral_margin_ntp_polish);
+                res.getDimensionPixelSize(R.dimen.mvt_container_lateral_margin_polish);
         Assert.assertEquals("The left margin of the most visited tiles container is wrong.",
                 expectedMvtLateralMargin,
                 ((MarginLayoutParams) mvTilesContainer.getLayoutParams()).leftMargin);

@@ -10,6 +10,7 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros_local.h"
+#include "base/metrics/user_metrics.h"
 #include "base/no_destructor.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -237,26 +238,32 @@ void RecordCommerceEvent(CommerceEvent event) {
     case CommerceEvent::kAddToCartByForm:
       LOCAL_HISTOGRAM_BOOLEAN("Commerce.Carts.AddToCartByPOST", true);
       DVLOG(1) << "Commerce.AddToCart by POST form";
+      base::RecordAction(base::UserMetricsAction("Commerce.AddToCart"));
       break;
     case CommerceEvent::kAddToCartByURL:
       LOCAL_HISTOGRAM_BOOLEAN("Commerce.Carts.AddToCartByURL", true);
       DVLOG(1) << "Commerce.AddToCart by URL";
+      base::RecordAction(base::UserMetricsAction("Commerce.AddToCart"));
       break;
     case CommerceEvent::kVisitCart:
       LOCAL_HISTOGRAM_BOOLEAN("Commerce.Carts.VisitCart", true);
       DVLOG(1) << "Commerce.VisitCart";
+      base::RecordAction(base::UserMetricsAction("Commerce.VisitCart"));
       break;
     case CommerceEvent::kVisitCheckout:
       LOCAL_HISTOGRAM_BOOLEAN("Commerce.Carts.VisitCheckout", true);
       DVLOG(1) << "Commerce.VisitCheckout";
+      base::RecordAction(base::UserMetricsAction("Commerce.VisitCheckout"));
       break;
     case CommerceEvent::kPurchaseByForm:
       LOCAL_HISTOGRAM_BOOLEAN("Commerce.Carts.PurchaseByPOST", true);
       DVLOG(1) << "Commerce.Purchase by POST form";
+      base::RecordAction(base::UserMetricsAction("Commerce.Purchase"));
       break;
     case CommerceEvent::kPurchaseByURL:
       LOCAL_HISTOGRAM_BOOLEAN("Commerce.Carts.PurchaseByURL", true);
       DVLOG(1) << "Commerce.Purchase by URL";
+      base::RecordAction(base::UserMetricsAction("Commerce.Purchase"));
       break;
     default:
       NOTREACHED();
@@ -1230,7 +1237,16 @@ void CommerceHintAgent::OnMainFrameIntersectionChanged(
 
 void CommerceHintAgent::FocusedElementChanged(
     const blink::WebElement& focused_element) {
+  // Don't observe focused element change when the navigation hasn't finished
+  // to avoid being triggered by auto focus due to page rendering.
+  if (!starting_url_.is_empty()) {
+    return;
+  }
   base::Time before_check = base::Time::Now();
+  if ((before_check - add_to_cart_heuristics_execution_time_) <
+      commerce::kHeuristicsExecutionGapTime.Get()) {
+    return;
+  }
   if (!should_skip_.has_value() || should_skip_.value()) {
     return;
   }
@@ -1240,6 +1256,8 @@ void CommerceHintAgent::FocusedElementChanged(
   auto builder = ukm::builders::Shopping_AddToCartDetection(
       render_frame()->GetWebFrame()->GetDocument().GetUkmSourceId());
   blink::WebElement element = focused_element;
+  // Record the last time that the heuristics is run.
+  add_to_cart_heuristics_execution_time_ = base::Time::Now();
   if (IsAddToCartButton(element)) {
     add_to_cart_focus_time_ = base::Time::Now();
   }

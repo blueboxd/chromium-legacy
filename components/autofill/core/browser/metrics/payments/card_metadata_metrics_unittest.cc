@@ -105,8 +105,8 @@ TEST_P(CardMetadataFormEventMetricsTest, LogShownMetrics) {
 
   // Simulate activating the autofill popup for the credit card field.
   autofill_manager().OnAskForValuesToFillTest(form(), form().fields.back());
-  autofill_manager().DidShowSuggestions(/*has_autofill_suggestions=*/true,
-                                        form(), form().fields.back());
+  autofill_manager().DidShowSuggestions(
+      /*has_autofill_suggestions=*/true, form(), form().fields.back());
 
   // Verify that:
   // 1. if the card suggestion shown had metadata,
@@ -148,8 +148,8 @@ TEST_P(CardMetadataFormEventMetricsTest, LogShownMetrics) {
 
   // Show the popup again.
   autofill_manager().OnAskForValuesToFillTest(form(), form().fields.back());
-  autofill_manager().DidShowSuggestions(/*has_autofill_suggestions=*/true,
-                                        form(), form().fields.back());
+  autofill_manager().DidShowSuggestions(
+      /*has_autofill_suggestions=*/true, form(), form().fields.back());
 
   EXPECT_THAT(histogram_tester.GetAllSamples("Autofill.FormEvents.CreditCard"),
               BucketsInclude(
@@ -176,10 +176,10 @@ TEST_P(CardMetadataFormEventMetricsTest, LogSelectedMetrics) {
 
   // Simulate selecting the card.
   autofill_manager().OnAskForValuesToFillTest(form(), form().fields.back());
-  autofill_manager().DidShowSuggestions(/*has_autofill_suggestions=*/true,
-                                        form(), form().fields.back());
+  autofill_manager().DidShowSuggestions(
+      /*has_autofill_suggestions=*/true, form(), form().fields.back());
   autofill_manager().FillOrPreviewForm(
-      mojom::RendererFormDataAction::kFill, form(), form().fields.back(),
+      mojom::AutofillActionPersistence::kFill, form(), form().fields.back(),
       Suggestion::BackendId(kCardGuid), AutofillTriggerSource::kPopup);
 
   // Verify that:
@@ -224,7 +224,7 @@ TEST_P(CardMetadataFormEventMetricsTest, LogSelectedMetrics) {
 
   // Select the suggestion again.
   autofill_manager().FillOrPreviewForm(
-      mojom::RendererFormDataAction::kFill, form(), form().fields.back(),
+      mojom::AutofillActionPersistence::kFill, form(), form().fields.back(),
       Suggestion::BackendId(kCardGuid), AutofillTriggerSource::kPopup);
 
   EXPECT_THAT(
@@ -253,7 +253,7 @@ TEST_P(CardMetadataFormEventMetricsTest, LogFilledMetrics) {
 
   // Simulate filling the card.
   autofill_manager().FillOrPreviewForm(
-      mojom::RendererFormDataAction::kFill, form(), form().fields.back(),
+      mojom::AutofillActionPersistence::kFill, form(), form().fields.back(),
       Suggestion::BackendId(kCardGuid), AutofillTriggerSource::kPopup);
   test_api(autofill_manager())
       .OnCreditCardFetched(CreditCardFetchResult::kSuccess, &card(), u"123");
@@ -328,7 +328,7 @@ TEST_P(CardMetadataFormEventMetricsTest, LogSubmitMetrics) {
   // Simulate filling and then submitting the card.
   autofill_manager().OnAskForValuesToFillTest(form(), form().fields.back());
   autofill_manager().FillOrPreviewForm(
-      mojom::RendererFormDataAction::kFill, form(), form().fields.back(),
+      mojom::AutofillActionPersistence::kFill, form(), form().fields.back(),
       Suggestion::BackendId(kCardGuid), AutofillTriggerSource::kPopup);
   test_api(autofill_manager())
       .OnCreditCardFetched(CreditCardFetchResult::kSuccess, &card(), u"123");
@@ -453,11 +453,11 @@ TEST_P(CardMetadataLatencyMetricsTest, LogMetrics) {
 
   // Simulate activating the autofill popup for the credit card field.
   autofill_manager().OnAskForValuesToFillTest(form(), form().fields.back());
-  autofill_manager().DidShowSuggestions(/*has_autofill_suggestions=*/true,
-                                        form(), form().fields.back());
+  autofill_manager().DidShowSuggestions(
+      /*has_autofill_suggestions=*/true, form(), form().fields.back());
   test_clock.SetNowTicks(now + base::Seconds(2));
   autofill_manager().FillOrPreviewForm(
-      mojom::RendererFormDataAction::kFill, form(), form().fields.front(),
+      mojom::AutofillActionPersistence::kFill, form(), form().fields.front(),
       Suggestion::BackendId(kTestMaskedCardId), AutofillTriggerSource::kPopup);
 
   std::string latency_histogram_prefix =

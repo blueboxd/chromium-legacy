@@ -99,6 +99,7 @@
 #include "third_party/blink/renderer/modules/cookie_store/cookie_change_event.h"
 #include "third_party/blink/renderer/modules/cookie_store/extendable_cookie_change_event.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
+#include "third_party/blink/renderer/modules/hid/hid.h"
 #include "third_party/blink/renderer/modules/notifications/notification.h"
 #include "third_party/blink/renderer/modules/notifications/notification_event.h"
 #include "third_party/blink/renderer/modules/payments/abort_payment_event.h"
@@ -1586,7 +1587,7 @@ void ServiceWorkerGlobalScope::DispatchFetchEventForSubresource(
               GetThread()->GetTaskRunner(TaskType::kNetworking));
   fetch_response_callbacks_.Set(event_id, WrapDisallowNew(std::move(remote)));
 
-  if (params->did_start_race_network_request) {
+  if (params->race_network_request_loader_factory) {
     UseCounter::Count(
         this,
         // If the runtime flag is enabled, that means the feature is enabled via
@@ -2692,6 +2693,11 @@ ServiceWorkerGlobalScope::FetchHandlerType() {
       "No-op fetch handler may bring overhead during navigation. "
       "Consider removing the handler if possible."));
   return mojom::blink::ServiceWorkerFetchHandlerType::kEmptyFetchHandler;
+}
+
+bool ServiceWorkerGlobalScope::HasHidEventHandlers() {
+  HID* hid = Supplement<NavigatorBase>::From<HID>(*navigator());
+  return hid ? hid->HasEventListeners() : false;
 }
 
 bool ServiceWorkerGlobalScope::SetAttributeEventListener(

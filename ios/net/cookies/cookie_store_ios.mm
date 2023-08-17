@@ -34,10 +34,6 @@
 #import "third_party/abseil-cpp/absl/types/optional.h"
 #import "url/gurl.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 namespace net {
 
 using CookieDeletionInfo = CookieDeletionInfo;
@@ -65,7 +61,7 @@ class NotificationTrampoline {
   NotificationTrampoline();
   ~NotificationTrampoline();
 
-  base::ObserverList<CookieNotificationObserver>::Unchecked observer_list_;
+  base::ObserverList<CookieNotificationObserver> observer_list_;
 
   static NotificationTrampoline* g_notification_trampoline;
 };

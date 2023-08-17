@@ -317,7 +317,7 @@ bool IsNavigationBlockedByCoopRestrictProperties(
   // block one window from navigating the other. This prevents restricting
   // things that were not meant to. These are the cross browsing context group
   // accesses that already existed before COOP: restrict-properties.
-  // TODO(https://crbug.com/1221127): Is there actually any scenario where cross
+  // TODO(https://crbug.com/1464618): Is there actually any scenario where cross
   // browsing context group was allowed before COOP: restrict-properties? Verify
   // that we need to have this check.
   if (accessing_frame.GetPage()->CoopRelatedGroupToken() !=
@@ -1249,20 +1249,26 @@ scoped_refptr<InspectorTaskRunner> LocalFrame::GetInspectorTaskRunner() {
   return inspector_task_runner_;
 }
 
+void LocalFrame::StartPrinting(
+    const WebPrintPageDescription& default_page_description,
+    float maximum_shrink_ratio) {
+  DCHECK(!saved_scroll_offsets_);
+  LayoutView* layout_view = GetDocument()->GetLayoutView();
+  layout_view->SetDefaultPageDescription(default_page_description);
+  SetPrinting(true, maximum_shrink_ratio);
+}
+
 void LocalFrame::StartPrinting(const gfx::SizeF& page_size,
                                float maximum_shrink_ratio) {
-  DCHECK(!saved_scroll_offsets_);
-  SetPrinting(true, page_size, maximum_shrink_ratio);
+  StartPrinting(WebPrintPageDescription(page_size), maximum_shrink_ratio);
 }
 
 void LocalFrame::EndPrinting() {
   RestoreScrollOffsets();
-  SetPrinting(false, gfx::SizeF(), 0);
+  SetPrinting(false, 0);
 }
 
-void LocalFrame::SetPrinting(bool printing,
-                             const gfx::SizeF& page_size,
-                             float maximum_shrink_ratio) {
+void LocalFrame::SetPrinting(bool printing, float maximum_shrink_ratio) {
   // In setting printing, we should not validate resources already cached for
   // the document.  See https://bugs.webkit.org/show_bug.cgi?id=43704
   ResourceCacheValidationSuppressor validation_suppressor(
@@ -1276,7 +1282,7 @@ void LocalFrame::SetPrinting(bool printing,
     text_autosizer->UpdatePageInfo();
 
   if (ShouldUsePrintingLayout()) {
-    View()->ForceLayoutForPagination(page_size, maximum_shrink_ratio);
+    View()->ForceLayoutForPagination(maximum_shrink_ratio);
   } else {
     if (LayoutView* layout_view = View()->GetLayoutView()) {
       layout_view->SetIntrinsicLogicalWidthsDirty();
@@ -1393,30 +1399,6 @@ void LocalFrame::RestoreScrollOffsets() {
         entry.value, mojom::blink::ScrollType::kProgrammatic);
   }
   saved_scroll_offsets_ = nullptr;
-}
-
-gfx::SizeF LocalFrame::ResizePageRectsKeepingRatio(
-    const gfx::SizeF& aspect_ratio,
-    const gfx::SizeF& expected_size) const {
-  auto* layout_object = ContentLayoutObject();
-  if (!layout_object)
-    return gfx::SizeF();
-
-  bool is_horizontal = layout_object->StyleRef().IsHorizontalWritingMode();
-  float numerator =
-      is_horizontal ? aspect_ratio.height() : aspect_ratio.width();
-  float denominator =
-      is_horizontal ? aspect_ratio.width() : aspect_ratio.height();
-  DCHECK_GT(fabs(denominator), std::numeric_limits<float>::epsilon());
-  float ratio = numerator / denominator;
-
-  float inline_size =
-      floorf(is_horizontal ? expected_size.width() : expected_size.height());
-  float block_size = floorf(inline_size * ratio);
-  if (!is_horizontal) {
-    return gfx::SizeF(block_size, inline_size);
-  }
-  return gfx::SizeF(inline_size, block_size);
 }
 
 void LocalFrame::SetPageZoomFactor(float factor) {
@@ -1690,8 +1672,18 @@ LocalFrame::LocalFrame(LocalFrameClient* client,
       GetLocalFramesMap().insert(FrameToken::Hasher()(GetFrameToken()), this);
   CHECK(frame_tracking_result.stored_value) << "Inserting a duplicate item.";
   v8::Isolate* isolate = V8PerIsolateData::MainThreadIsolate();
+
+  // There is generally one probe sink per local frame tree, so for root frames
+  // we create a new child sink and for child frames we propagate one from root.
+  // However, if local frame swap is performed, we don't want both frames to be
+  // active at once, so a dummy probe sink is created for provisional frame and
+  // swapped for that of the frame being swapped on in `SwapIn()`. Since we can
+  // only know whether the frame is provisional upon `Initialize()` call which
+  // does a lot of things that may potentially lead to instrumentation calls,
+  // we set provisional probe sink unconditionally here, then possibly replace
+  // it with that of the local root after `Initialize()`.
+  probe_sink_ = MakeGarbageCollected<CoreProbeSink>();
   if (IsLocalRoot()) {
-    probe_sink_ = MakeGarbageCollected<CoreProbeSink>();
     performance_monitor_ =
         MakeGarbageCollected<PerformanceMonitor>(this, isolate);
     inspector_issue_reporter_ = MakeGarbageCollected<InspectorIssueReporter>(
@@ -1708,7 +1700,6 @@ LocalFrame::LocalFrame(LocalFrameClient* client,
     // it will be updated later.
     UpdateInertIfPossible();
     UpdateInheritedEffectiveTouchActionIfPossible();
-    probe_sink_ = LocalFrameRoot().probe_sink_;
     ad_tracker_ = LocalFrameRoot().ad_tracker_;
     performance_monitor_ = LocalFrameRoot().performance_monitor_;
   }
@@ -1724,16 +1715,21 @@ LocalFrame::LocalFrame(LocalFrameClient* client,
   DCHECK(ad_tracker_ ? RuntimeEnabledFeatures::AdTaggingEnabled()
                      : !RuntimeEnabledFeatures::AdTaggingEnabled());
 
-  absl::optional<AdScriptIdentifier> ad_script_on_stack;
   // See SubresourceFilterAgent::Initialize for why we don't set this here for
   // fenced frames.
   is_frame_created_by_ad_script_ =
       !IsMainFrame() && ad_tracker_ &&
-      ad_tracker_->IsAdScriptInStack(AdTracker::StackType::kBottomAndTop,
-                                     /*out_ad_script=*/&ad_script_on_stack);
-  Initialize();
+      ad_tracker_->IsAdScriptInStack(
+          AdTracker::StackType::kBottomAndTop,
+          /*out_ad_script=*/&ad_script_from_frame_creation_stack_);
 
-  probe::FrameAttachedToParent(this, ad_script_on_stack);
+  Initialize();
+  // Now that we know whether the frame is provisional, inherit the probe
+  // sink from parent if appropriate. See comment above for more details.
+  if (!IsLocalRoot() && !IsProvisional()) {
+    probe_sink_ = LocalFrameRoot().probe_sink_;
+    probe::FrameAttachedToParent(this, ad_script_from_frame_creation_stack_);
+  }
 }
 
 FrameScheduler* LocalFrame::GetFrameScheduler() {
@@ -2722,6 +2718,20 @@ bool LocalFrame::SwapIn() {
   // Swap in `this`, which is a provisional frame to an existing frame.
   Frame* provisional_owner_frame = GetProvisionalOwnerFrame();
 
+  if (!IsLocalRoot()) {
+    if (auto* local_provisional_owner =
+            DynamicTo<LocalFrame>(provisional_owner_frame)) {
+      // For local roots, the initial probe sink should not be changed. For
+      // others, we use a provisional sink that needs to be swapped with that of
+      // the previous frame. The probes dispatched to provisional sink are lost,
+      // so no events are sent before swap in or after swap out.
+      std::swap(probe_sink_, local_provisional_owner->probe_sink_);
+    } else {
+      probe_sink_ = LocalFrameRoot().probe_sink_;
+    }
+    probe::FrameAttachedToParent(this, ad_script_from_frame_creation_stack_);
+  }
+
   // First, check if there's a previous main frame to be used for a main frame
   // LocalFrame <-> LocalFrame swap.
   Frame* previous_local_main_frame =
@@ -3107,7 +3117,7 @@ HitTestResult LocalFrame::HitTestResultForVisualViewportPos(
   HitTestLocation location(View()->ConvertFromRootFrame(root_frame_point));
   HitTestResult result = GetEventHandler().HitTestResultAtLocation(
       location, HitTestRequest::kReadOnly | HitTestRequest::kActive);
-  result.SetToShadowHostIfInRestrictedShadowRoot();
+  result.SetToShadowHostIfInUAShadowRoot();
   return result;
 }
 

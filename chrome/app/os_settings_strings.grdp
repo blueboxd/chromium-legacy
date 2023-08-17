@@ -183,6 +183,9 @@
   <message name="IDS_SETTINGS_ABOUT_PAGE_SHOW_RELEASE_NOTES" desc="Text of the button which shows user the release notes.">
     See what's new
   </message>
+  <message name="IDS_OS_SETTINGS_REVAMP_ABOUT_PAGE_SHOW_RELEASE_NOTES_DESCRIPTION" desc="Sublabel description shown for See What's New button.">
+    Automatic updates provide you with the latest features. Explore highlights from recent updates.
+  </message>
   <message name="IDS_SETTINGS_ABOUT_PAGE_EDIT_DEVICE_NAME" desc="The title of the dialog that allows the user to edit the device hostname.">
     Edit device name
   </message>
@@ -243,8 +246,26 @@
   <message name="IDS_SETTINGS_ABOUT_PAGE_DIAGNOSTICS" desc="Text of the button which allows the user to diagnose their device.">
     Diagnostics
   </message>
+  <message name="IDS_OS_SETTINGS_REVAMP_DIAGNOSTICS_DESCRIPTION" desc="Sublabel description shown for Diagnostics button.">
+    Test your battery, CPU, memory, connectivity, and more
+  </message>
   <message name="IDS_SETTINGS_ABOUT_PAGE_FIRMWARE_UPDATES" desc="Text of the button for the surface which allows users to update all their peripheral firmwares in one place.">
     Firmware updates
+  </message>
+  <message name="IDS_OS_SETTINGS_REVAMP_FIRMWARE_UP_TO_DATE_DESCRIPTION" desc="Sublabel shown when no firmware updates are available.">
+    Firmware is up to date
+  </message>
+  <message name="IDS_OS_SETTINGS_REVAMP_FIRMWARE_UPDATE_AVAILABLE_DESCRIPTION" desc="Sublabel shown when firmware updates are available.">
+    Update available
+  </message>
+  <message name="IDS_OS_SETTINGS_REVAMP_SEND_FEEDBACK_DESCRIPTION" desc="Sublabel description shown for Send Feedback button.">
+    Share feedback or report an issue
+  </message>
+  <message name="IDS_OS_SETTINGS_REVAMP_GET_HELP_USING_CHROME_OS" desc="Text of the button which takes the user to the Chrome help page.">
+    Get help
+  </message>
+  <message name="IDS_OS_SETTINGS_REVAMP_GET_HELP_USING_CHROME_OS_DESCRIPTION" desc="Sublabel description shown for Get Help button.">
+    View help articles or find device support
   </message>
   <message name="IDS_SETTINGS_ABOUT_PAGE_CONSUMER_AUTO_UPDATE_TOGGLE_TITLE" desc="Text of the auto update toggle feature.">
     Updates
@@ -859,6 +880,12 @@
   <message name="IDS_OS_SETTINGS_TOUCHPAD_REVERSE_SCROLL_LABEL">
     Enable reverse scrolling. <ph name="LINK_BEGIN">&lt;a&gt;</ph>Learn more<ph name="LINK_END">&lt;/a&gt;</ph>
   </message>
+  <message name="IDS_OS_SETTINGS_REVAMP_TOUCHPAD_REVERSE_SCROLL_LABEL">
+    Reverse scrolling <ph name="LINK_BEGIN">&lt;a&gt;</ph>Learn more<ph name="LINK_END">&lt;/a&gt;</ph>
+  </message>
+  <message name="IDS_OS_SETTINGS_REVAMP_TOUCHPAD_REVERSE_SCROLL_DESCRIPTION" desc="In Device Settings, the description for the label to set reverse scrolling.">
+    Swipe up to move the page down
+  </message>
   <message name="IDS_SETTINGS_DEVICE_TITLE" desc="Name of the settings page which displays device and peripheral settings.">
     Device
   </message>
@@ -867,8 +894,14 @@
   <message name="IDS_OS_SETTINGS_PERSONALIZATION" desc="Name of the OS settings page which displays personalization preferences.">
     Personalization
   </message>
+  <message name="IDS_OS_SETTINGS_REVAMP_PERSONALIZATION" desc="Name of the OS settings page which displays personalization preferences.">
+    Wallpaper and style
+  </message>
   <message name="IDS_OS_SETTINGS_OPEN_PERSONALIZATION_HUB" desc="Title for the link to open personalization hub.">
     Set your wallpaper &amp; style
+  </message>
+  <message name="IDS_OS_SETTINGS_REVAMP_OPEN_PERSONALIZATION_HUB" desc="Title for the link to open personalization hub.">
+    Personalize wallpaper, screen saver, accent colors, and more
   </message>
   <message name="IDS_OS_SETTINGS_OPEN_PERSONALIZATION_HUB_SUBTITLE" desc="Description for the link to open personalization hub.">
     Personalize wallpaper, screen saver, accent colors, and more
@@ -877,6 +910,9 @@
   <!-- Search and Assistant section. -->
   <message name="IDS_OS_SETTINGS_SEARCH_ENGINE_LABEL" desc="Label in OS settings describing search engine behavior.">
     Preferred search engine
+  </message>
+  <message name="IDS_OS_SETTINGS_REVAMP_SEARCH_ENGINE_LABEL" desc="Label in OS settings describing search engine behavior.">
+    Set search engine in Chrome browser settings
   </message>
   <message name="IDS_OS_SETTINGS_SEARCH_ENGINE_DESCRIPTION" desc="Description in the search engine dialog in OS settings explaining that search engine is used in both the Chrome browser and the ChromeOS app launcher.">
     Set your default search engine for Chrome browser and <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> Launcher
@@ -890,10 +926,10 @@
   <message name="IDS_SETTINGS_SEARCH_GOOGLE_ASSISTANT_DISABLED" desc="Sub label for the Google Assistant button when Assistant is disabled.">
     Disabled
   </message>
-  <message name="IDS_SETTINGS_SEARCH_GOOGLE_ASSISTANT_ON" desc="Row label in Google Assistant settings." meaning="Google Assistant is on.">
+  <message name="IDS_OS_SETTINGS_SEARCH_GOOGLE_ASSISTANT_ON" desc="Row label in Google Assistant settings." meaning="Google Assistant is on.">
     On
   </message>
-  <message name="IDS_SETTINGS_SEARCH_GOOGLE_ASSISTANT_OFF" desc="Row label in Google Assistant settings." meaning="Google Assistant is off.">
+  <message name="IDS_OS_SETTINGS_SEARCH_GOOGLE_ASSISTANT_OFF" desc="Row label in Google Assistant settings." meaning="Google Assistant is off.">
     Off
   </message>
    <message name="IDS_SETTINGS_SEARCH_AND_ASSISTANT" desc="Name of the settings page which displays search engine and assistant preferences on ChromeOS.">
@@ -1488,6 +1524,12 @@ Use Ctrl + Alt + Brightness down to zoom out.
   </message>
   <message name="IDS_SETTINGS_TAP_DRAGGING_LABEL" desc="Label for checkbox which enables tap dragging.">
     Enable tap dragging
+  </message>
+  <message name="IDS_OS_SETTINGS_REVAMP_TAP_DRAGGING_LABEL" desc="Label for checkbox which enables tap dragging.">
+    Tap and drag to move items
+  </message>
+  <message name="IDS_OS_SETTINGS_REVAMP_TAP_DRAGGING_DESCRIPTION" desc="Description for checkbox which enables tap dragging.">
+    Double-tap an item, hold down on the second tap, and then drag the item to move it
   </message>
   <message name="IDS_SETTINGS_CLICK_ON_STOP_LABEL" desc="Label for checkbox which enables automatically do a mouse action when the mouse cursor stops.">
     Automatic clicks
@@ -2251,7 +2293,7 @@ Press an assigned switch or key to remove assignment.
   <message name="IDS_SETTINGS_GUEST_OS_SHARED_USB_DEVICES_EXTRA_DESCRIPTION" desc="Extra description for managing shared USB devices.">
     Only supported devices are shown.
   </message>
-  <message name="IDS_SETTINGS_GUEST_OS_SHARED_USB_DEVICES_LIST_EMPTY_MESSAGE" desc="Message shown when there are no avaiable USB devices.">
+  <message name="IDS_SETTINGS_GUEST_OS_SHARED_USB_DEVICES_LIST_EMPTY_MESSAGE" desc="Message shown when there are no available USB devices.">
     Available USB devices will appear here.
   </message>
   <message name="IDS_SETTINGS_GUEST_OS_SHARED_USB_DEVICES_IN_USE" desc="Dialog title describing that a USB device is currently in use.">
@@ -2276,6 +2318,9 @@ Press an assigned switch or key to remove assignment.
   </message>
   <message name="IDS_SETTINGS_CROSTINI_LABEL" desc="The text associated with the primary section setting. This contains settings for a Linux container running in a virtual machine for use by software developers.">
     Linux development environment
+  </message>
+  <message name="IDS_OS_SETTINGS_REVAMP_CROSTINI_SET_UP" desc="Crostini Set up button label.">
+    Set Up
   </message>
   <message name="IDS_SETTINGS_CROSTINI_SHARED_PATHS_INSTRUCTIONS_LOCATE" desc="Instructions for how to locate shared folders in Crostini.">
     Shared folders are available in Linux at <ph name="BASE_DIR">$1<ex>/mnt/chromeos</ex></ph>.
@@ -2538,6 +2583,9 @@ Press an assigned switch or key to remove assignment.
   <message name="IDS_SETTINGS_CROSTINI_SUBTEXT" desc="Description for the section for enabling and managing Crostini.">
     Run Linux tools, editors, and IDEs on your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>. <ph name="LINK_BEGIN">&lt;a target="_blank" href="$2<ex>https://google.com/</ex>"&gt;</ph>Learn more<ph name="LINK_END">&lt;/a&gt;</ph>
   </message>
+  <message name="IDS_OS_SETTINGS_REVAMP_CROSTINI_SUBTEXT" desc="Description for the section for enabling and managing Crostini.">
+    Run developer tools, IDEs, and editors. <ph name="LINK_BEGIN">&lt;a target="_blank" href="$1<ex>https://google.com/</ex>"&gt;</ph>Learn more<ph name="LINK_END">&lt;/a&gt;</ph>
+  </message>
   <message name="IDS_SETTINGS_CROSTINI_SUBTEXT_NOT_SUPPORTED" desc="Description for the Developers section when crostini is not supported due to hardware limitation or account restrictions.">
     Linux is not supported on your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>. <ph name="LINK_BEGIN">&lt;a target="_blank" href="$2<ex>https://google.com/</ex>"&gt;</ph>Learn more<ph name="LINK_END">&lt;/a&gt;</ph>
   </message>
@@ -2560,28 +2608,28 @@ Press an assigned switch or key to remove assignment.
   <!-- Bruschetta sub-page -->
   <!-- TODO(b/233129383): Finalize and translate these strings -->
   <message name="IDS_SETTINGS_BRUSCHETTA_LABEL" translateable="false" desc="Label for the Bruschetta sub-page.">
-    Bruschetta
+    Managed Development Environment (<ph name="GENERAL_NAME">$1<ex>HappyVm</ex></ph>)
   </message>
   <message name="IDS_SETTINGS_BRUSCHETTA_SHARED_USB_DEVICES_DESCRIPTION" translateable="false" desc="Description for managing shared USB devices.">
-    Give Bruschetta permission to access USB devices. Bruschetta won't remember a USB device after it's removed.
+    Give <ph name="SPECIFIC_NAME">$1<ex>HappyVm</ex></ph> permission to access USB devices. <ph name="SPECIFIC_NAME">$1<ex>HappyVm</ex></ph> won't remember a USB device after it's removed.
   </message>
-  <!-- <message name="IDS_SETTINGS_BRUSCHETTA_SHARED_PATHS_DESCRIPTION" translateable="false" desc="Description for managing shared paths.">
-    Give Bruschetta permission to access USB devices. Bruschetta won't remember a USB device after it's removed.
-  </message> -->
-  <message name="IDS_SETTINGS_BRUSCHETTA_SHARED_PATHS_INSTRUCTIONS_LOCATE" translateable="false" desc="Instructions for how to locate shared folders in Bruschetta. Do not translate 'Bruschetta'.">
-    Shared folders are available in Bruschetta at <ph name="BASE_DIR">$1<ex>/mnt/chromeos</ex></ph>.
+  <message name="IDS_SETTINGS_BRUSCHETTA_SHARED_PATHS_INSTRUCTIONS_LOCATE" translateable="false" desc="Instructions for how to locate shared folders in Bruschetta..">
+    Shared folders are available in <ph name="SPECIFIC_NAME">$1<ex>HappyVm</ex></ph> at <ph name="BASE_DIR">$2<ex>/mnt/chromeos</ex></ph>.
   </message>
-  <message name="IDS_SETTINGS_BRUSCHETTA_SHARED_PATHS_INSTRUCTIONS_ADD" translateable="false" desc="Instructions for how to add shared folders in Bruschetta. Do not translate 'Bruschetta'.">
-    To share, right-click on a folder in Files app, then select "Share with Bruschetta".
+  <message name="IDS_SETTINGS_BRUSCHETTA_SHARED_PATHS_INSTRUCTIONS_ADD" translateable="false" desc="Instructions for how to add shared folders in Bruschetta..">
+    To share, right-click on a folder in Files app, then select "Share with <ph name="SPECIFIC_NAME">$1<ex>HappyVm</ex></ph>".
   </message>
-  <message name="IDS_SETTINGS_BRUSCHETTA_SHARED_PATHS_REMOVE_FAILURE_DIALOG_MESSAGE" translateable="false" desc="Message to show user when unsharing a Bruschetta shared folder fails. Do not translate 'Bruschetta'.">
-    Couldn't unshare because an application is using this folder. The folder will be unshared when Bruschetta is next shut down.
+  <message name="IDS_SETTINGS_BRUSCHETTA_SHARED_PATHS_REMOVE_FAILURE_DIALOG_MESSAGE" translateable="false" desc="Message to show user when unsharing a Bruschetta shared folder fails..">
+    Couldn't unshare because an application is using this folder. The folder will be unshared when <ph name="SPECIFIC_NAME">$1<ex>HappyVm</ex></ph> is next shut down.
   </message>
   <message name="IDS_SETTINGS_BRUSCHETTA_SUBTEXT" desc="Description for the section for enabling and managing Bruschetta (codename).">
-    Run Bruschetta on your device.
+    Run tools, editors, and IDEs in an environment managed by your enterprise on your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>. <ph name="LINK_BEGIN">&lt;a target="_blank" href="$2<ex>https://google.com/</ex>"&gt;</ph>Learn more<ph name="LINK_END">&lt;/a&gt;</ph>
+  </message>
+  <message name="IDS_SETTINGS_BRUSCHETTA_SUBTEXT_NO_LINK" desc="Description for the section for enabling and managing Bruschetta (codename).">
+    Run tools, editors, and IDEs in an environment managed by your enterprise on your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>.
   </message>
   <message name="IDS_SETTINGS_BRUSCHETTA_REMOVE" desc="Label for the row to open a dialog confirming removal of Bruschetta (codename).">
-    Remove Bruschetta
+    Remove Managed Development Environment (<ph name="SPECIFIC_NAME">$1<ex>HappyVm</ex></ph>)
   </message>
   <message name="IDS_SETTINGS_BRUSCHETTA_REMOVE_BUTTON" desc="Label for the button to open a dialog confirming removal of Bruschetta.">
     Remove
@@ -2666,6 +2714,12 @@ Press an assigned switch or key to remove assignment.
   <!-- Customize buttons page (OS settings)-->
   <message name="IDS_SETTINGS_CUSTOMIZE_MOUSE_BUTTONS_TITLE" translateable="false" desc="Title of Customize mouse buttons page">
     Customize mouse buttons
+  </message>
+  <message name="IDS_SETTINGS_KEY_COMBINATION_OPTION_LABEL" translateable="false" desc="Label of key combination option in the button remapping action dropdown menu.">
+    Key combination
+  </message>
+  <message name="IDS_SETTINGS_NO_REMAPPING_OPTION_LABEL" translateable="false" desc="Label of no remapping option in the button remapping action dropdown menu.">
+    None
   </message>
 
   <!-- Bluetooth page (OS settings) -->
@@ -3008,8 +3062,14 @@ Press an assigned switch or key to remove assignment.
   <message name="IDS_SETTINGS_TOUCHPAD_TITLE" desc="In Device Settings, the title of the touchpad settings subpage.">
     Touchpad
   </message>
-    <message name="IDS_SETTINGS_TOUCHPAD_TAP_TO_CLICK_ENABLED_LABEL" desc="In Device Settings, the text next to the checkbox that allows tapping the touchpad to work as a click.">
+  <message name="IDS_SETTINGS_TOUCHPAD_TAP_TO_CLICK_ENABLED_LABEL" desc="In Device Settings, the text next to the checkbox that allows tapping the touchpad to work as a click.">
     Enable tap-to-click
+  </message>
+  <message name="IDS_OS_SETTINGS_REVAMP_TOUCHPAD_TAP_TO_CLICK_LABEL" desc="In Device Settings, the text next to the checkbox that allows tapping the touchpad to work as a click.">
+    Tap to click
+  </message>
+  <message name="IDS_OS_SETTINGS_REVAMP_TOUCHPAD_TAP_TO_CLICK_DESCRIPTION" desc="In Device Settings, the description of the label next to the checkbox that allows tapping the touchpad to work as a click.">
+    To click, tap your touchpad instead of pressing it
   </message>
   <message name="IDS_SETTINGS_TOUCHPAD_SPEED_LABEL" desc="In Device Settings, the text next to the slider that sets the speed (sensitivity) of the touchpad.">
     Touchpad speed
@@ -3030,10 +3090,19 @@ Press an assigned switch or key to remove assignment.
     TrackPoint speed
   </message>
   <message name="IDS_SETTINGS_MOUSE_SCROLL_SPEED_LABEL" desc="In Device Settings, the text next to the slider that sets the speed (sensitivity) of mouse scrolling.">
-    Mouse scroll speed
+    Scrolling speed
+  </message>
+  <message name="IDS_SETTINGS_MOUSE_CURSOR_LABEL" desc="In Device Settings, the text of mouse cursor subsection title.">
+    Cursor
+  </message>
+  <message name="IDS_SETTINGS_MOUSE_SCROLLING_LABEL" desc="In Device Settings, the text of mouse scrolling subsection title.">
+    Scrolling
   </message>
   <message name="IDS_SETTINGS_MOUSE_SWAP_BUTTONS_LABEL" desc="In Device Settings, the text next to the checkbox to set the primary mouse button to the right button instead of the left button.">
     Swap primary mouse button
+  </message>
+  <message name="IDS_OS_SETTINGS_REVAMP_MOUSE_SWAP_BUTTONS_LABEL" desc="In Device Settings, the text next to the checkbox to set the primary mouse button to the right button instead of the left button.">
+    Primary mouse button
   </message>
   <message name="IDS_SETTINGS_POINTING_STICK_PRIMARY_BUTTON_LABEL" desc="In Device Settings, the text next to the dropdown menu to set the primary pointing stick (a.k.a. TrackPoint) button. (TrackPoint is a trademark that's not translated.)">
     Primary TrackPoint button
@@ -3047,17 +3116,41 @@ Press an assigned switch or key to remove assignment.
   <message name="IDS_SETTINGS_MOUSE_REVERSE_SCROLL_LABEL" desc="In Device Settings, the text next to the checkbox to set reverse scrolling.">
     Enable reverse scrolling. <ph name="LINK_BEGIN">&lt;a&gt;</ph>Learn more<ph name="LINK_END">&lt;/a&gt;</ph>
   </message>
-  <message name="IDS_SETTINGS_MOUSE_ACCELERATION_LABEL" desc="In Device Settings, the text next to the checkbox to disable mouse acceleration.">
+  <message name="IDS_OS_SETTINGS_REVAMP_MOUSE_REVERSE_SCROLL_LABEL" desc="In Device Settings, the text next to the checkbox to set reverse scrolling.">
+    Reverse scrolling <ph name="LINK_BEGIN">&lt;a&gt;</ph>Learn more<ph name="LINK_END">&lt;/a&gt;</ph>
+  </message>
+  <message name="IDS_OS_SETTINGS_REVAMP_MOUSE_REVERSE_SCROLL_DESCRIPTION" desc="In Device Settings, the description for the label to set mouse reverse scrolling.">
+    Scroll up to move the page down
+  </message>
+  <message name="IDS_SETTINGS_MOUSE_ACCELERATION_LABEL" desc="In Device Settings, the text next to the checkbox to enable mouse acceleration.">
     Enable mouse acceleration
   </message>
-  <message name="IDS_SETTINGS_MOUSE_SCROLL_ACCELERATION_LABEL" desc="In Device Settings, the text next to the toggle for mouse scroll acceleration.">
-    Enable mouse scroll acceleration
+  <message name="IDS_OS_SETTINGS_REVAMP_MOUSE_ACCELERATION_LABEL" desc="In Device Settings, the text next to the checkbox to enable mouse acceleration.">
+    Mouse acceleration
+  </message>
+  <message name="IDS_OS_SETTINGS_REVAMP_MOUSE_ACCELERATION_DESCRIPTION" desc="In Device Settings, the description for the label next to the checkbox to enable mouse acceleration.">
+    Faster movements with your mouse will move the cursor farther
+  </message>
+  <message name="IDS_SETTINGS_MOUSE_SCROLL_ACCELERATION_LABEL" desc="In Device Settings, the text next to the toggle for mouse scroll acceleration. Faster scrolling with your mouse will scroll farther.">
+    Scroll acceleration <ph name="LINK_BEGIN">&lt;a&gt;</ph>Learn more<ph name="LINK_END">&lt;/a&gt;</ph>
+  </message>
+  <message name="IDS_SETTINGS_CURSOR_SPEED_LABEL" desc="In Device Settings, the text next to the slider that sets the speed (sensitivity) of the mouse cursor.">
+    Cursor speed
+  </message>
+  <message name="IDS_SETTINGS_CURSOR_ACCELERATION_LABEL" desc="In Device Settings, the text next to the checkbox to disable mouse cursor acceleration. Faster movements with your mouse will move the cursor farther.">
+    Cursor acceleration
   </message>
   <message name="IDS_SETTINGS_POINTING_STICK_ACCELERATION_LABEL" desc="In Device Settings, the text next to the checkbox to disable pointing stick (a.k.a. TrackPoint) acceleration. (TrackPoint is a trademark that's not translated.)">
     Enable TrackPoint acceleration
   </message>
   <message name="IDS_SETTINGS_TOUCHPAD_ACCELERATION_LABEL" desc="In Device Settings, the text next to the checkbox to disable touchpad acceleration.">
     Enable touchpad acceleration
+  </message>
+  <message name="IDS_OS_SETTINGS_REVAMP_TOUCHPAD_ACCELERATION_LABEL" desc="In Device Settings, the text next to the checkbox to disable touchpad acceleration.">
+    Touchpad acceleration
+  </message>
+  <message name="IDS_OS_SETTINGS_REVAMP_TOUCHPAD_ACCELERATION_DESCRIPTION" desc="In Device Settings, the description of the label next to the checkbox to disable touchpad acceleration.">
+    Faster movements on your touchpad will move the cursor farther
   </message>
   <message name="IDS_SETTINGS_TOUCHPAD_SCROLL_ACCELERATION_LABEL" desc="In Device Settings, the text next to the toggle for touchpad scroll acceleration.">
     Enable touchpad scroll acceleration
@@ -3083,24 +3176,27 @@ Press an assigned switch or key to remove assignment.
   <message name="IDS_SETTINGS_LEARN_MORE_LABEL" translateable="false" desc="In Device Settings, the learn more label for the cr toggle button.">
     Learn more
   </message>
-  <message name="IDS_SETTINGS_TOUCHPAD_SIMULATE_RIGHT_CLICK_LABEL" translateable="false" desc="In Device Settings, the text next to the dropdown for setting the behavior of simulating a right click using a keyboard and touchpad.">
+  <message name="IDS_SETTINGS_TOUCHPAD_SIMULATE_RIGHT_CLICK_LABEL" desc="In Device Settings, the text next to the dropdown for setting the behavior of simulating a right click using a keyboard and touchpad.">
     Use touchpad and keyboard to right-click
   </message>
-  <message name="IDS_SETTINGS_TOUCHPAD_SIMULATE_RIGHT_CLICK_OPTION_OFF" translateable="false" desc="In the touchpad settings subpage, the dropdown list item for the Off option.">
-    Off
+  <message name="IDS_SETTINGS_TOUCHPAD_SIMULATE_RIGHT_CLICK_OPTION_DISABLED" desc="In the touchpad settings subpage, the dropdown list item for the disabled option.">
+    disabled
   </message>
-  <message name="IDS_SETTINGS_TOUCHPAD_SIMULATE_RIGHT_CLICK_OPTION_SEARCH" translateable="false" desc="In the touchpad settings subpage, the dropdown list item for the Search + Click option.">
+  <message name="IDS_SETTINGS_TOUCHPAD_SIMULATE_RIGHT_CLICK_OPTION_SEARCH" desc="In the touchpad settings subpage, the dropdown list item for the Search + Click option.">
     search + click
   </message>
-  <message name="IDS_SETTINGS_TOUCHPAD_SIMULATE_RIGHT_CLICK_OPTION_ALT" translateable="false" desc="In the touchpad settings subpage, the dropdown list item for the Alt + Click option.">
+  <message name="IDS_SETTINGS_TOUCHPAD_SIMULATE_RIGHT_CLICK_OPTION_LAUNCHER" desc="In the touchpad settings subpage, the dropdown list item for the Launcher + Click option.">
+    launcher + click
+  </message>
+  <message name="IDS_SETTINGS_TOUCHPAD_SIMULATE_RIGHT_CLICK_OPTION_ALT" desc="In the touchpad settings subpage, the dropdown list item for the Alt + Click option.">
     alt + click
   </message>
   <!-- TODO(b/286937607): Finalize and translate these strings -->
-  <message name="IDS_SETTINGS_MODIFIER_KEYS_LABEL" translateable="false" desc="In the remap keyboard keys settings subpage, the label for the section that contains all of the modifier keys (Ctrl, Alt, etc).">
-    Choose an action for each key
+  <message name="IDS_SETTINGS_MODIFIER_KEYS_LABEL" desc="In the remap keyboard keys settings subpage, the label for the section that contains all of the modifier keys (Ctrl, Alt, etc).">
+    Select an action for each key
   </message>
-  <message name="IDS_SETTINGS_OTHER_KEYS_LABEL" translateable="false" desc="In the remap keyboard keys settings subpage, the label for the section that contains all of the non-modifier keys (Backspace, Home, etc).">
-    Choose a key combination to generate each action
+  <message name="IDS_SETTINGS_OTHER_KEYS_LABEL" desc="In the remap keyboard keys settings subpage, the label for the section that contains all of the non-modifier keys (Backspace, Home, etc).">
+    Select a shortcut for each action
   </message>
   <message name="IDS_SETTINGS_SIX_PACK_KEY_INSERT" translateable="false" desc="In the keyboard settings subpage, the text next to the dropdown for setting the shortcut used to trigger the insert 6-pack key action.">
     insert
@@ -3123,8 +3219,11 @@ Press an assigned switch or key to remove assignment.
   <message name="IDS_SETTINGS_SIX_PACK_KEY_DELETE_ALT" translateable="false" desc="In the keyboard settings subpage, the dropdown list item for the alt + backspace option.">
     alt + backspace
   </message>
-  <message name="IDS_SETTINGS_SIX_PACK_KEY_DELETE_SEARCH" translateable="false" desc="In the keyboard settings subpage, the dropdown list item for the alt + backspace option.">
+  <message name="IDS_SETTINGS_SIX_PACK_KEY_DELETE_SEARCH" translateable="false" desc="In the keyboard settings subpage, the dropdown list item for the search + backspace option.">
     search + backspace
+  </message>
+  <message name="IDS_SETTINGS_SIX_PACK_KEY_DELETE_LAUNCHER" desc="In the keyboard settings subpage, the dropdown list item for the launcher + backspace option.">
+    launcher + backspace
   </message>
   <message name="IDS_SETTINGS_SIX_PACK_KEY_HOME_ALT" translateable="false" desc="In the keyboard settings subpage, the dropdown list item for the alt + backspace option.">
     ctrl + alt + up arrow
@@ -3132,14 +3231,23 @@ Press an assigned switch or key to remove assignment.
   <message name="IDS_SETTINGS_SIX_PACK_KEY_HOME_SEARCH" translateable="false" desc="In the keyboard settings subpage, the dropdown list item for the alt + backspace option.">
     search + left arrow
   </message>
+  <message name="IDS_SETTINGS_SIX_PACK_KEY_HOME_LAUNCHER" desc="In the keyboard settings subpage, the dropdown list item for the launcher + left arrow option.">
+    launcher + left arrow
+  </message>
   <message name="IDS_SETTINGS_SIX_PACK_KEY_END_ALT" translateable="false" desc="In the keyboard settings subpage, the dropdown list item for the alt + backspace option.">
     ctrl + alt + down arrow
   </message>
   <message name="IDS_SETTINGS_SIX_PACK_KEY_END_SEARCH" translateable="false" desc="In the keyboard settings subpage, the dropdown list item for the alt + backspace option.">
     search + right arrow
   </message>
+  <message name="IDS_SETTINGS_SIX_PACK_KEY_END_LAUNCHER" desc="In the keyboard settings subpage, the dropdown list item for the launcher + right arrow option.">
+    launcher + right arrow
+  </message>
   <message name="IDS_SETTINGS_SIX_PACK_KEY_INSERT_SEARCH" translateable="false" desc="In the keyboard settings subpage, the dropdown list item for the alt + backspace option.">
     search + shift + backspace
+  </message>
+  <message name="IDS_SETTINGS_SIX_PACK_KEY_INSERT_LAUNCHER" desc="In the keyboard settings subpage, the dropdown list item for the launcher + shift + backspace option.">
+    launcher + shift + backspace
   </message>
   <message name="IDS_SETTINGS_SIX_PACK_KEY_PAGE_DOWN_ALT" translateable="false" desc="In the keyboard settings subpage, the dropdown list item for the alt + backspace option.">
     alt + down arrow
@@ -3147,14 +3255,20 @@ Press an assigned switch or key to remove assignment.
   <message name="IDS_SETTINGS_SIX_PACK_KEY_PAGE_DOWN_SEARCH" translateable="false" desc="In the keyboard settings subpage, the dropdown list item for the alt + backspace option.">
     search + down arrow
   </message>
+  <message name="IDS_SETTINGS_SIX_PACK_KEY_PAGE_DOWN_LAUNCHER" desc="In the keyboard settings subpage, the dropdown list item for the launcher + down arrow option.">
+    launcher + down arrow
+  </message>
   <message name="IDS_SETTINGS_SIX_PACK_KEY_PAGE_UP_ALT" translateable="false" desc="In the keyboard settings subpage, the dropdown list item for the alt + backspace option.">
     alt + up arrow
   </message>
   <message name="IDS_SETTINGS_SIX_PACK_KEY_PAGE_UP_SEARCH" translateable="false" desc="In the keyboard settings subpage, the dropdown list item for the alt + backspace option.">
     search + up arrow
   </message>
-  <message name="IDS_SETTINGS_SIX_PACK_KEY_OPTION_OFF" translateable="false" desc="In the keyboard settings subpage, the dropdown list item for the Off option.">
-    Off
+  <message name="IDS_SETTINGS_SIX_PACK_KEY_PAGE_UP_LAUNCHER" desc="In the keyboard settings subpage, the dropdown list item for the launcher + up arrow option.">
+    launcher + up arrow
+  </message>
+  <message name="IDS_SETTINGS_SIX_PACK_KEY_OPTION_DISABLED" desc="In the keyboard settings subpage, the dropdown list item for the disabled option.">
+    disabled
   </message>
 
   <!-- Printing Page (OS Settings)-->
@@ -3470,6 +3584,9 @@ Press an assigned switch or key to remove assignment.
   <message name="IDS_SETTINGS_PRINTING_SCANNING_LAUNCH_APP_SUBLABEL" desc="Sub-label that describes the scanning app which lets users scan documents.">
     Scan documents and images
   </message>
+  <!-- TODO(b/278895546): Keep printer status messages in sync with print
+       preview printer status messages in `chrome/app/printing_strings.grdp`
+       until a shared resource is established. -->
   <message name="IDS_SETTINGS_PRINTING_PRINTER_STATUS_DEVICE_ERROR" desc="Error label to show under the destination dropdown when there is a mechanical error inside the printer.">
     Mechanical issue. Check printer
   </message>
@@ -3504,7 +3621,7 @@ Press an assigned switch or key to remove assignment.
     Printer queue is full
   </message>
   <message name="IDS_SETTINGS_PRINTING_PRINTER_STATUS_PRINTER_UNREACHABLE" desc="Error label to show under the destination dropdown when the device is attempting to schedule a print job on the printer but can't get a connection to the printer">
-    Can’t connect to printer
+    Not connected to printer
   </message>
   <message name="IDS_SETTINGS_PRINTING_PRINTER_STATUS_STOPPED" desc="Error label to show under the destination dropdown when the printer is in the process of stopping or the printer is powered down.">
     Printer has stopped
@@ -3706,6 +3823,9 @@ Press an assigned switch or key to remove assignment.
   <message name="IDS_SETTINGS_INTERNET_KNOWN_NETWORKS_MESSAGE" desc="Message describing the behavior of the known networks page.">
     Preferred networks will be preferred over other known networks if more than one is available
   </message>
+  <message name="IDS_OS_SETTINGS_REVAMP_INTERNET_KNOWN_NETWORKS_MESSAGE" desc="Message describing the behavior of the known networks page.">
+    Preferred networks will be used if more than one previous network is available
+  </message>
   <message name="IDS_SETTINGS_INTERNET_KNOWN_NETWORKS_PREFFERED" desc="Title for list of preferred networks.">
     Preferred networks
   </message>
@@ -3898,6 +4018,9 @@ Press an assigned switch or key to remove assignment.
   <message name="IDS_SETTINGS_INTERNET_NETWORK_PREFER" desc="Settings > Internet > Network details: Label for the checkbox determining whether a network is preferred over other networks.">
     Prefer this network
   </message>
+  <message name="IDS_OS_SETTINGS_REVAMP_INTERNET_NETWORK_PREFER_DESCRIPTION" desc="Settings > Internet > Network details: Description of the label for the checkbox determining whether a network is preferred over other networks.">
+    This network will be preferred if more than one previously connected or configured network is available
+  </message>
   <message name="IDS_SETTINGS_INTERNET_NETWORK_PRIMARY_USER_CONTROLLED" desc="Settings > Internet > Network details: Text to show when a network configuration is controlled by the primary user.">
     Network configuration is controlled by <ph name="USER_EMAIL">$1<ex>joe@gmail.com</ex></ph>.
   </message>
@@ -3948,6 +4071,9 @@ Press an assigned switch or key to remove assignment.
   </message>
   <message name="IDS_SETTINGS_INTERNET_NETWORK_SHARED_OWNER" desc="Settings > Internet > Network details: Text to show when a network is shared and was configured by the current user.">
     You are sharing this network with other users of this device
+  </message>
+  <message name="IDS_OS_SETTINGS_REVAMP_INTERNET_NETWORK_SHARED_OWNER" desc="Settings > Internet > Network details: Text to show when a network is shared and was configured by the current user.">
+    Other users on this device can also use this network
   </message>
   <message name="IDS_SETTINGS_INTERNET_NETWORK_SHARED_NOT_OWNER" desc="Settings > Internet > Network details: Text to show when a network is shared with you (by another user or configured before login).">
     This network is shared with you
@@ -4527,11 +4653,38 @@ Press an assigned switch or key to remove assignment.
   <message name="IDS_SETTINGS_MULTIDEVICE_SMART_LOCK_SUMMARY" desc="Description of for the 'Smart Lock' setting. This feature automatically unlocks the user's Chromebook if their phone is nearby and unlocked.">
     Unlock your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> with your phone. <ph name="LINK_BEGIN">&lt;a target="_blank" href="$2<ex>https://google.com/</ex>"&gt;</ph>Learn more<ph name="LINK_END">&lt;/a&gt;</ph>
   </message>
+  <message name="IDS_SETTINGS_PEOPLE_LOCK_SCREEN_CHANGE_PASSWORD_BUTTON" desc="Button that is used to change a password.">
+    Change password
+  </message>
+  <message name="IDS_SETTINGS_PEOPLE_LOCK_SCREEN_DEVICE_PASSWORD_OPTION_LABEL" desc="Label for the option to use a device password to sign in.">
+    Device password
+  </message>
+  <message name="IDS_SETTINGS_PEOPLE_LOCK_SCREEN_GOOGLE_ACCOUNT_PASSWORD_OPTION_LABEL" desc="Label for the option to use the Google Account password to sign in.">
+    Google Account password
+  </message>
   <message name="IDS_SETTINGS_PEOPLE_LOCK_SCREEN_OPTIONS_LOGIN_LOCK" desc="Text on the lock screen which is the subheader for the screen locking options.">
     Lock screen from sleep mode
   </message>
+  <message name="IDS_SETTINGS_PEOPLE_LOCK_SCREEN_REMOVE_PIN_BUTTON" desc="Label of the button that removes the user's PIN.">
+    Remove
+  </message>
+  <message name="IDS_SETTINGS_PEOPLE_LOCK_SCREEN_PASSWORD_LABEL" desc="Label for the password authentication factor on the lock screen page.">
+    Password
+  </message>
+  <message name="IDS_SETTINGS_PEOPLE_LOCK_SCREEN_PASSWORD_DESCRIPTION" desc="Description of the password authentication factor on the lock screen page.">
+    Device password or Google Account password
+  </message>
+  <message name="IDS_SETTINGS_PEOPLE_LOCK_SCREEN_PIN_LABEL" desc="Label for PIN authentication factor on the lock screen page.">
+    PIN
+  </message>
+  <message name="IDS_SETTINGS_PEOPLE_LOCK_SCREEN_SETUP_PASSWORD_BUTTON" desc="Button that is used to setup a password when the user does not have a password yet.">
+    Set up
+  </message>
   <message name="IDS_SETTINGS_PEOPLE_LOCK_SCREEN_SETUP_PIN_BUTTON" desc="Button that is used to setup a new PIN when the user does not have a PIN yet.">
-    Set up PIN
+    Set up
+  </message>
+  <message name="IDS_SETTINGS_PEOPLE_LOCK_SCREEN_SIGN_IN_OPTIONS" desc="Heading for the list of sign-in factor options on the lock screen page.">
+    Sign-in options
   </message>
   <message name="IDS_SETTINGS_PEOPLE_LOCK_SCREEN_TITLE_LOCK" desc="Text on the people page which opens up the quick unlock subpage and the title of the quick unlock subpage.">
     Lock screen
@@ -4803,6 +4956,9 @@ Press an assigned switch or key to remove assignment.
   <message name="IDS_SETTINGS_RESET_TITLE" desc="Title of a section of settings. This section describes settings for resetting the device.">
     Reset settings
   </message>
+  <message name="IDS_OS_SETTINGS_REVAMP_RESET_TITLE" desc="Title of a section of settings. This section describes settings for resetting the device.">
+    Reset
+  </message>
   <message name="IDS_SETTINGS_FACTORY_RESET" desc="Name of the factory reset option on the Chrome settings page">
     Powerwash
   </message>
@@ -4811,6 +4967,9 @@ Press an assigned switch or key to remove assignment.
   </message>
   <message name="IDS_SETTINGS_FACTORY_RESET_DESCRIPTION" desc="Description of the factory reset option on the Chrome settings page">
     Remove all user accounts and reset your <ph name="IDS_SHORT_PRODUCT_NAME">$1<ex>Chrome</ex></ph> device to be just like new.
+  </message>
+  <message name="IDS_OS_SETTINGS_REVAMP_FACTORY_RESET_DESCRIPTION" desc="Description of the factory reset option on the ChromeOS settings page">
+    Remove all user accounts and reset your Chromebook to be just like new.
   </message>
   <message name="IDS_SETTINGS_FACTORY_RESET_WARNING" desc="Warning text in the 'Factory Reset' window">
     A restart is required before your device can be reset with Powerwash. <ph name="LINK_BEGIN">&lt;a&gt;</ph>Learn more<ph name="LINK_END">&lt;/a&gt;</ph>
@@ -4890,6 +5049,9 @@ Press an assigned switch or key to remove assignment.
   <!-- Device display (OS settings) -->
   <message name="IDS_SETTINGS_DISPLAY_TITLE" desc="In Device Settings, the title for display settings.">
     Displays
+  </message>
+  <message name="IDS_OS_SETTINGS_REVAMP_DISPLAY_TITLE" desc="In Device Settings, the title for display settings.">
+    Display
   </message>
   <message name="IDS_SETTINGS_DISPLAY_ARRANGEMENT_WITH_KEYBOARD_TEXT" desc="In Device Settings > Displays, text describing how to use a mouse or keyboard to change arrangement of displays.">
     Drag or use arrow keys to move a display
@@ -5131,6 +5293,9 @@ Press an assigned switch or key to remove assignment.
   </message>
   <message name="IDS_SETTINGS_TIME_ZONE_DETECTION_MODE_IP_ONLY_DEFAULT" desc="Display name for the automatic time zone detection mode which enables time zone detection sending unprecise location to Google servers. Default means that this is the default time zone detection mode.">
     Use your IP address to determine location (default)
+  </message>
+  <message name="IDS_OS_SETTINGS_REVAMP_TIME_ZONE_DETECTION_MODE_IP_ONLY_DEFAULT" desc="Display name for the automatic time zone detection mode which enables time zone detection sending unprecise location to Google servers.">
+    Use your IP address to determine location
   </message>
   <message name="IDS_SETTINGS_TIME_ZONE_DETECTION_MODE_SEND_WIFI_AP" desc="Display name for the automatic time zone detection mode which enables time zone detection sending list of visible WiFi Access Point names to Google servers.">
     Use only Wi-Fi to determine location
@@ -5632,6 +5797,11 @@ Press &amp; hold keyboard keys to see accent marks and special characters. This 
   </message>
   <message name="IDS_OS_SETTINGS_ON_STARTUP_DO_NOT_RESTORE" desc="Label for the dropdown menu which enables the do not restore option, which means not restore apps or pages on startup.">
     Off
+  </message>
+
+  <!-- System Preferences Page -->
+  <message name="IDS_OS_SETTINGS_SYSTEM_PREFERENCES_TITLE" desc="The title of the System Preferences page and respective menu item.">
+    System Preferences
   </message>
 </if>
 </grit-part>

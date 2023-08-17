@@ -4,6 +4,8 @@
 
 #include "components/optimization_guide/core/optimization_guide_features.h"
 
+#include <cstring>
+
 #include "base/command_line.h"
 #include "base/containers/contains.h"
 #include "base/feature_list.h"
@@ -18,6 +20,7 @@
 #include "components/optimization_guide/core/optimization_guide_constants.h"
 #include "components/optimization_guide/core/optimization_guide_switches.h"
 #include "components/optimization_guide/machine_learning_tflite_buildflags.h"
+#include "components/optimization_guide/proto/common_types.pb.h"
 #include "components/variations/hashing.h"
 #include "google_apis/google_api_keys.h"
 #include "net/base/url_util.h"
@@ -231,6 +234,16 @@ BASE_FEATURE(kModelStoreUseRelativePath,
 #endif
 );
 
+// Enables fetching personalized metadata from Optimization Guide Service.
+BASE_FEATURE(kOptimizationGuidePersonalizedFetching,
+             "OptimizationPersonalizedHintsFetching",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Whether to resolve all URLs (minus fragments) to the same URL.
+BASE_FEATURE(kOptimizationGuideHintsURLKeyedCacheDropFragments,
+             "OptimizationGuideHintsURLKeyedCacheDropFragments",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // The default value here is a bit of a guess.
 // TODO(crbug/1163244): This should be tuned once metrics are available.
 base::TimeDelta PageTextExtractionOutstandingRequestsGracePeriod() {
@@ -433,6 +446,12 @@ base::TimeDelta URLKeyedHintValidCacheDuration() {
       60 * 60 /* 1 hour */));
 }
 
+base::TimeDelta PCAServiceWaitForTitleDelayDuration() {
+  return base::Milliseconds(GetFieldTrialParamByFeatureAsInt(
+      kPageContentAnnotations,
+      "pca_service_wait_for_title_delay_in_milliseconds", 5000));
+}
+
 size_t MaxHostsForOptimizationGuideServiceModelsFetch() {
   return GetFieldTrialParamByFeatureAsInt(
       kOptimizationTargetPrediction,
@@ -461,6 +480,38 @@ size_t MaxURLKeyedHintCacheSize() {
 bool ShouldPersistHintsToDisk() {
   return GetFieldTrialParamByFeatureAsBool(kOptimizationHints,
                                            "persist_hints_to_disk", true);
+}
+
+bool EnabledPersonalizedMetadata(proto::RequestContext request_context) {
+  if (!base::FeatureList::IsEnabled(kOptimizationGuidePersonalizedFetching)) {
+    return false;
+  }
+
+  static const base::flat_set<std::string> contexts =
+      []() -> base::flat_set<std::string> {
+    if (base::FeatureList::IsEnabled(kOptimizationGuidePersonalizedFetching)) {
+      std::string param = base::GetFieldTrialParamValueByFeature(
+          kOptimizationGuidePersonalizedFetching, "allowed_contexts");
+      std::vector<std::string> allowed_contexts = base::SplitString(
+          param, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+      return base::flat_set<std::string>(allowed_contexts);
+    }
+    return {};
+  }();
+
+  return base::Contains(contexts, proto::RequestContext_Name(request_context));
+}
+
+base::flat_set<std::string> OAuthScopesForPersonalizedMetadata() {
+  if (base::FeatureList::IsEnabled(kOptimizationGuidePersonalizedFetching)) {
+    std::string param = base::GetFieldTrialParamValueByFeature(
+        kOptimizationGuidePersonalizedFetching, "oauth_scopes");
+    std::vector<std::string> scopes = base::SplitString(
+        param, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+    return base::flat_set<std::string>(scopes);
+  };
+
+  return {};
 }
 
 bool ShouldOverrideOptimizationTargetDecisionForMetricsPurposes(
@@ -495,6 +546,18 @@ base::TimeDelta PredictionModelFetchStartupDelay() {
 base::TimeDelta PredictionModelFetchInterval() {
   return base::Hours(GetFieldTrialParamByFeatureAsInt(
       kOptimizationTargetPrediction, "fetch_interval_hours", 24));
+}
+
+bool IsPredictionModelNewRegistrationFetchEnabled() {
+  return GetFieldTrialParamByFeatureAsBool(
+      kOptimizationGuideInstallWideModelStore, "new_registration_fetch_enabled",
+      true);
+}
+
+base::TimeDelta PredictionModelNewRegistrationFetchDelay() {
+  return base::Seconds(GetFieldTrialParamByFeatureAsInt(
+      kOptimizationGuideInstallWideModelStore,
+      "new_registration_fetch_delay_secs", 30));
 }
 
 bool IsModelExecutionWatchdogEnabled() {
@@ -700,6 +763,11 @@ bool IsInstallWideModelStoreEnabled() {
 bool ShouldPersistSalientImageMetadata() {
   return base::FeatureList::IsEnabled(
       kPageContentAnnotationsPersistSalientImageMetadata);
+}
+
+bool ShouldDropFragmentsForURLKeyedHintCacheKey() {
+  return base::FeatureList::IsEnabled(
+      kOptimizationGuideHintsURLKeyedCacheDropFragments);
 }
 
 }  // namespace features

@@ -158,6 +158,9 @@ class ChromeAuthenticatorRequestDelegate
       AccountPreselectedCallback account_preselected_callback,
       device::FidoRequestHandlerBase::RequestCallback request_callback,
       base::RepeatingClosure bluetooth_adapter_power_on_callback) override;
+  void OnTransactionSuccessful(RequestSource request_source,
+                               device::FidoRequestType,
+                               device::AuthenticatorType) override;
   void ShouldReturnAttestation(
       const std::string& relying_party_id,
       const device::FidoAuthenticator* authenticator,
@@ -166,6 +169,7 @@ class ChromeAuthenticatorRequestDelegate
   void ConfigureDiscoveries(
       const url::Origin& origin,
       const std::string& rp_id,
+      RequestSource request_source,
       device::FidoRequestType request_type,
       absl::optional<device::ResidentKeyRequirement> resident_key_requirement,
       base::span<const device::CableDiscoveryData> pairings_from_extension,
@@ -217,12 +221,18 @@ class ChromeAuthenticatorRequestDelegate
   // "leaks" to be reported.
   void SetPassEmptyUsbDeviceManagerForTesting(bool value);
 
- private:
-  FRIEND_TEST_ALL_PREFIXES(ChromeAuthenticatorRequestDelegateTest,
-                           TestTransportPrefType);
-  FRIEND_TEST_ALL_PREFIXES(ChromeAuthenticatorRequestDelegateTest,
-                           TestPairedDeviceAddressPreference);
+#if BUILDFLAG(IS_MAC)
+  // DaysSinceDate returns the number of days between `formatted_date` (in ISO
+  // 8601 format) and `now`. It returns `nullopt` if `formatted_date` cannot be
+  // parsed or if it's in `now`s future.
+  //
+  // It does not parse `formatted_date` strictly and is intended for trusted
+  // inputs.
+  static absl::optional<int> DaysSinceDate(const std::string& formatted_date,
+                                           base::Time now);
+#endif
 
+ private:
   // GetRenderFrameHost returns a pointer to the RenderFrameHost that was given
   // to the constructor.
   content::RenderFrameHost* GetRenderFrameHost() const;
@@ -236,19 +246,21 @@ class ChromeAuthenticatorRequestDelegate
   // information that will be broadcast by the device.
   bool ShouldPermitCableExtension(const url::Origin& origin);
 
-  void OnInvalidatedCablePairing(size_t failed_contact_index);
+  void OnInvalidatedCablePairing(
+      std::unique_ptr<device::cablev2::Pairing> failed_pairing);
   void OnCableEvent(device::cablev2::Event event);
 
   // Adds GPM passkeys matching |rp_id| to |passkeys|.
   void GetPhoneContactableGpmPasskeysForRpId(
-      const std::string& rp_id,
       std::vector<device::DiscoverableCredentialMetadata>* passkeys);
 
+#if !BUILDFLAG(IS_CHROMEOS)
   // Configures an WebAuthn enclave authenticator discovery and provides it with
   // synced passkeys.
   void ConfigureEnclaveDiscovery(
       const std::string& rp_id,
       device::FidoDiscoveryFactory* discovery_factory);
+#endif
 
   const content::GlobalRenderFrameHostId render_frame_host_id_;
   const std::unique_ptr<AuthenticatorRequestDialogModel> dialog_model_;
@@ -256,11 +268,6 @@ class ChromeAuthenticatorRequestDelegate
   base::RepeatingClosure start_over_callback_;
   AccountPreselectedCallback account_preselected_callback_;
   device::FidoRequestHandlerBase::RequestCallback request_callback_;
-
-  // The next two fields are the same length and contain the names and public
-  // keys of paired phones.
-  std::vector<std::string> phone_names_;
-  std::vector<std::array<uint8_t, device::kP256X962Length>> phone_public_keys_;
 
   // If in the TransportAvailabilityInfo reported by the request handler,
   // disable_embedder_ui is set, this will be set to true. No UI must be

@@ -32,16 +32,19 @@ import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.text.BidiFormatter;
+import androidx.core.text.TextDirectionHeuristicsCompat;
 import androidx.core.view.inputmethod.EditorInfoCompat;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
 import org.chromium.base.Log;
+import org.chromium.base.MathUtils;
 import org.chromium.base.SysUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.compat.ApiHelperForO;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
+import org.chromium.build.BuildConfig;
 import org.chromium.chrome.browser.back_press.BackPressManager;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.MutableFlagWithSafeDefault;
@@ -334,7 +337,6 @@ public abstract class UrlBar extends AutocompleteEditText {
     public void onFinishInflate() {
         super.onFinishInflate();
         setPrivateImeOptions(IME_OPTION_RESTRICT_STYLUS_WRITING_AREA);
-        ApiCompatibilityUtils.clearHandwritingBoundsOffsetBottom(this);
     }
 
     /**
@@ -416,6 +418,8 @@ public abstract class UrlBar extends AutocompleteEditText {
             // https://cs.android.com/android/platform/superproject/+/5d123b67756dffcfdebdb936ab2de2b29c799321:frameworks/base/core/java/android/widget/TextView.java;l=10618;drc=master;bpv=0
             ApiHelperForO.notifyValueChangedForAutofill(this);
         }
+
+        limitDisplayableLength();
     }
 
     @Override
@@ -791,6 +795,23 @@ public abstract class UrlBar extends AutocompleteEditText {
         scrollTo((int) scrollPos, getScrollY());
     }
 
+    // TODO(crbug.com/1465967): remove after getting enough data to diagnose
+    // failed assert
+    private String getWrongIndexErrorMessage(int incorrectIndex) {
+        Editable url = getText();
+        int measuredWidth = getVisibleMeasuredViewportWidth();
+        int urlTextLength = url.length();
+        int finalVisibleCharIndexSlow = getLayout().getOffsetForHorizontal(0, measuredWidth);
+        String errorMessage = "scrollToTLD incorrect optimized"
+                + " finalVisibleCharIndex. old index: " + String.valueOf(finalVisibleCharIndexSlow)
+                + " optimized index: " + String.valueOf(incorrectIndex)
+                + " viewport: " + String.valueOf(measuredWidth)
+                + " prefix: " + url.subSequence(0, Math.max(mOriginEndIndex - 4, 0))
+                + " suffix: " + url.subSequence(mOriginEndIndex, urlTextLength)
+                + " url length: " + String.valueOf(urlTextLength);
+        return errorMessage;
+    }
+
     /**
      * Scrolls the omnibox text to bring the TLD into view.
      */
@@ -854,29 +875,31 @@ public abstract class UrlBar extends AutocompleteEditText {
                         finalVisibleCharIndex = textLayout.getOffsetForHorizontal(0, measuredWidth);
                     }
 
-                    // getOffsetForHorizontal and getOffsetForAdvance could return an invalid index.
-                    boolean isFinalVisibleCharRtl = finalVisibleCharIndex >= urlTextLength
-                            ? false
-                            : BidiFormatter.getInstance().isRtl(url.subSequence(
-                                    finalVisibleCharIndex, finalVisibleCharIndex + 1));
-                    if (isFinalVisibleCharRtl) {
-                        // If the section of the url near the end of the viewport is not LTR, then
-                        // clear the visible text hint. If RTL or Bi-Di URLs become more prevalant,
-                        // update this to correctly calculate the hint.
+                    int finalVisibleCharIndexExclusive =
+                            Math.min(finalVisibleCharIndex + 1, urlTextLength);
+
+                    BidiFormatter bidi = new BidiFormatter.Builder()
+                                                 .setTextDirectionHeuristic(
+                                                         TextDirectionHeuristicsCompat.ANYRTL_LTR)
+                                                 .build();
+                    boolean visibleUrlContainsRtl =
+                            bidi.isRtl(url.subSequence(0, finalVisibleCharIndexExclusive));
+                    if (visibleUrlContainsRtl) {
+                        // getOffsetForAdvance does not calculate the correct index if there is RTL
+                        // text before finalVisibleCharIndex, so clear the visible text hint. If RTL
+                        // or Bi-Di URLs become more prevalant, update this to correctly calculate
+                        // the hint.
                         mVisibleTextPrefixHint = null;
                     } else {
-                        int finalVisibleCharIndexSlow =
-                                textLayout.getOffsetForHorizontal(0, measuredWidth);
+                        if (BuildConfig.ENABLE_ASSERTS) {
+                            float horizontal =
+                                    textLayout.getPrimaryHorizontal(finalVisibleCharIndexExclusive);
+                            float width = (float) measuredWidth;
 
-                        // TODO(crbug.com/1465967): remove after getting enough data to diagnose
-                        // failed assert
-                        String errorMessage = "scrollToTLD incorrect optimized "
-                                + "finalVisibleCharIndex. old index: "
-                                + String.valueOf(finalVisibleCharIndexSlow) + " optimized index: "
-                                + String.valueOf(finalVisibleCharIndex) + " url: " + url.toString()
-                                + " viewport: " + String.valueOf(measuredWidth)
-                                + " url length: " + String.valueOf(urlTextLength);
-                        assert finalVisibleCharIndex == finalVisibleCharIndexSlow : errorMessage;
+                            assert MathUtils.areFloatsEqual(horizontal, width)
+                                    || horizontal > width
+                                : getWrongIndexErrorMessage(finalVisibleCharIndex);
+                        }
 
                         // To avoid issues where a small portion of the character following
                         // finalVisibleCharIndex is visible on screen, be more conservative and
@@ -885,8 +908,7 @@ public abstract class UrlBar extends AutocompleteEditText {
                         // screen. By extending the offset by an additional character, the risk is
                         // of having visual artifacts from the subsequence character on screen is
                         // mitigated.
-                        mVisibleTextPrefixHint = url.subSequence(
-                                0, Math.min(finalVisibleCharIndex + 1, urlTextLength));
+                        mVisibleTextPrefixHint = url.subSequence(0, finalVisibleCharIndexExclusive);
                     }
                 }
             }
@@ -1035,7 +1057,6 @@ public abstract class UrlBar extends AutocompleteEditText {
             Log.i(TAG, "onAutocompleteTextStateChanged: DIS[%b]", updateDisplay);
         }
         if (mUrlTextChangeListener == null) return;
-        if (updateDisplay) limitDisplayableLength();
         // crbug.com/764749
         Log.w(TAG, "Text change observed, triggering autocomplete.");
 

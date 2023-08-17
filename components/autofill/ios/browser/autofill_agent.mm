@@ -66,10 +66,6 @@
 #import "ui/gfx/geometry/rect.h"
 #import "url/gurl.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 using autofill::AutofillJavaScriptFeature;
 using autofill::FieldDataManager;
 using autofill::FieldRendererId;
@@ -591,11 +587,6 @@ constexpr base::TimeDelta kA11yAnnouncementQueueDelay = base::Seconds(1);
 
 - (void)handleParsedForms:(const std::vector<autofill::FormStructure*>&)forms
                   inFrame:(web::WebFrame*)frame {
-  autofill::BrowserAutofillManager* autofillManager =
-      [self autofillManagerFromWebState:_webState webFrame:frame];
-  if (autofillManager) {
-    autofillManager->HandleParsedForms(forms);
-  }
 }
 
 - (void)fillFormDataPredictions:
@@ -673,6 +664,19 @@ constexpr base::TimeDelta kA11yAnnouncementQueueDelay = base::Seconds(1);
         // which case we do not set an icon at all.
         if (!popup_suggestion.custom_icon.IsEmpty()) {
           icon = popup_suggestion.custom_icon.ToUIImage();
+
+          // On iOS, the keyboard accessory wants smaller icons than the default
+          // 40x24 size, so we resize them to 32x20, if the provided icon is
+          // larger than that.
+          constexpr CGFloat kSuggestionIconWidth = 32;
+          if (icon && (icon.size.width > kSuggestionIconWidth)) {
+            // For a simple image resize, we can keep the same underlying image
+            // and only adjust the ratio.
+            CGFloat ratio = icon.size.width / kSuggestionIconWidth;
+            icon = [UIImage imageWithCGImage:[icon CGImage]
+                                       scale:icon.scale * ratio
+                                 orientation:icon.imageOrientation];
+          }
         } else if (!popup_suggestion.icon.empty()) {
           const int resourceID =
               autofill::CreditCard::IconResourceId(popup_suggestion.icon);

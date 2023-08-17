@@ -12,6 +12,7 @@
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
 #include "ash/constants/ash_switches.h"
+#include "ash/public/cpp/personalization_app/time_of_day_test_utils.h"
 #include "ash/public/cpp/schedule_enums.h"
 #include "ash/public/cpp/session/session_controller.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -21,6 +22,7 @@
 #include "ash/public/cpp/wallpaper/online_wallpaper_variant.h"
 #include "ash/public/cpp/wallpaper/wallpaper_controller_client.h"
 #include "ash/public/cpp/wallpaper/wallpaper_controller_observer.h"
+#include "ash/public/cpp/wallpaper/wallpaper_info.h"
 #include "ash/public/cpp/wallpaper/wallpaper_types.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller_impl.h"
@@ -60,6 +62,7 @@
 #include "base/test/task_environment.h"
 #include "base/test/test_future.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/time/time.h"
 #include "base/time/time_override.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "components/prefs/scoped_user_pref_update.h"
@@ -160,7 +163,7 @@ gfx::ImageSkia CreateImage(int width, int height, SkColor color) {
 
 // Returns the bitmap for test image decoder.
 SkBitmap TestImageBitmap() {
-  return *CreateImage(1, 1, SK_ColorBLUE).bitmap();
+  return *CreateImage(10, 10, SK_ColorBLUE).bitmap();
 }
 
 // Returns number of child windows in a shell window container.
@@ -360,12 +363,22 @@ class TestWallpaperControllerObserver : public WallpaperControllerObserver {
     DCHECK(is_in_wallpaper_preview_);
     is_in_wallpaper_preview_ = false;
   }
+  void OnDailyRefreshCheckpointChanged() override {
+    ++daily_refresh_checkpoint_count_;
+  }
 
   int colors_changed_count() const { return colors_changed_count_; }
   int blur_changed_count() const { return blur_changed_count_; }
   int first_shown_count() const { return first_shown_count_; }
   int wallpaper_changed_count() const { return wallpaper_changed_count_; }
+  int daily_refresh_checkpoint_count() const {
+    return daily_refresh_checkpoint_count_;
+  }
   bool is_in_wallpaper_preview() const { return is_in_wallpaper_preview_; }
+
+  void ClearDailyRefreshCheckpointCount() {
+    daily_refresh_checkpoint_count_ = 0;
+  }
 
  private:
   raw_ptr<WallpaperController, ExperimentalAsh> controller_;
@@ -377,6 +390,7 @@ class TestWallpaperControllerObserver : public WallpaperControllerObserver {
   int blur_changed_count_ = 0;
   int first_shown_count_ = 0;
   int wallpaper_changed_count_ = 0;
+  int daily_refresh_checkpoint_count_ = 0;
   bool is_in_wallpaper_preview_ = false;
 };
 
@@ -786,17 +800,32 @@ class WallpaperControllerTestBase : public AshTestBase {
   TestImageDecoder decoder_;
 };
 
-class WallpaperControllerTest : public WallpaperControllerTestBase,
-                                public testing::WithParamInterface<bool> {
+// All possible feature combinations that can occur in the real world.
+enum class JellyFeatureCombination {
+  kDisabled,
+  kEnabled,
+  kEnabledWithTimeOfDay
+};
+
+class WallpaperControllerTest
+    : public WallpaperControllerTestBase,
+      public testing::WithParamInterface<JellyFeatureCombination> {
  public:
   WallpaperControllerTest() {
-    std::vector<base::test::FeatureRef> enabled_features = {
-        features::kTimeOfDayWallpaper};
+    std::vector<base::test::FeatureRef> enabled_features;
     std::vector<base::test::FeatureRef> disabled_features;
-    if (IsJellyEnabled()) {
-      enabled_features.push_back(chromeos::features::kJelly);
-    } else {
-      disabled_features.push_back(chromeos::features::kJelly);
+    switch (GetParam()) {
+      case JellyFeatureCombination::kDisabled:
+        disabled_features = personalization_app::GetTimeOfDayDisabledFeatures();
+        disabled_features.push_back(chromeos::features::kJelly);
+        break;
+      case JellyFeatureCombination::kEnabled:
+        disabled_features = personalization_app::GetTimeOfDayDisabledFeatures();
+        enabled_features.push_back(chromeos::features::kJelly);
+        break;
+      case JellyFeatureCombination::kEnabledWithTimeOfDay:
+        enabled_features = personalization_app::GetTimeOfDayEnabledFeatures();
+        break;
     }
     scoped_feature_list_.InitWithFeatures(enabled_features, disabled_features);
   }
@@ -806,13 +835,38 @@ class WallpaperControllerTest : public WallpaperControllerTestBase,
 
   ~WallpaperControllerTest() override = default;
 
-  bool IsJellyEnabled() { return GetParam(); }
+  bool IsJellyEnabled() const {
+    switch (GetParam()) {
+      case JellyFeatureCombination::kDisabled:
+        return false;
+      case JellyFeatureCombination::kEnabled:
+      case JellyFeatureCombination::kEnabledWithTimeOfDay:
+        return true;
+    }
+  }
+
+  bool IsTimeOfDayEnabled() const {
+    switch (GetParam()) {
+      case JellyFeatureCombination::kDisabled:
+      case JellyFeatureCombination::kEnabled:
+        return false;
+      case JellyFeatureCombination::kEnabledWithTimeOfDay:
+        return true;
+    }
+  }
 
   // Populate meaningful test suffixes instead of /0, /1, etc.
   struct PrintToStringParamName {
     std::string operator()(
         const testing::TestParamInfo<ParamType>& info) const {
-      return info.param ? "JellyOn" : "JellyOff";
+      switch (info.param) {
+        case JellyFeatureCombination::kDisabled:
+          return "JellyOff";
+        case JellyFeatureCombination::kEnabled:
+          return "JellyOn";
+        case JellyFeatureCombination::kEnabledWithTimeOfDay:
+          return "JellyOnWithTimeOfDay";
+      }
     }
   };
 
@@ -824,7 +878,9 @@ INSTANTIATE_TEST_SUITE_P(
     // Empty to simplify gtest output
     ,
     WallpaperControllerTest,
-    testing::Bool(),
+    ::testing::Values(JellyFeatureCombination::kDisabled,
+                      JellyFeatureCombination::kEnabled,
+                      JellyFeatureCombination::kEnabledWithTimeOfDay),
     WallpaperControllerTest::PrintToStringParamName());
 
 TEST_P(WallpaperControllerTest, Client) {
@@ -1497,6 +1553,9 @@ TEST_P(WallpaperControllerTest, SetOnlineWallpaper) {
 }
 
 TEST_P(WallpaperControllerTest, SetTimeOfDayWallpaper) {
+  if (!IsTimeOfDayEnabled()) {
+    return;
+  }
   auto images = TimeOfDayImageSet();
   client_.AddCollection(wallpaper_constants::kTimeOfDayWallpaperCollectionId,
                         images);
@@ -1536,6 +1595,9 @@ TEST_P(WallpaperControllerTest, SetTimeOfDayWallpaper) {
 
 TEST_P(WallpaperControllerTest,
        ActiveUserPrefServiceChanged_SetTimeOfDayWallpaper) {
+  if (!IsTimeOfDayEnabled()) {
+    return;
+  }
   auto images = TimeOfDayImageSet();
   client_.AddCollection(wallpaper_constants::kTimeOfDayWallpaperCollectionId,
                         images);
@@ -1556,6 +1618,9 @@ TEST_P(WallpaperControllerTest,
 
 TEST_P(WallpaperControllerTest,
        TimeOfDayWallpaper_ReplacedByUserWallpaper_DuringOobe) {
+  if (!IsTimeOfDayEnabled()) {
+    return;
+  }
   auto images = TimeOfDayImageSet();
   client_.AddCollection(wallpaper_constants::kTimeOfDayWallpaperCollectionId,
                         images);
@@ -1588,6 +1653,9 @@ TEST_P(WallpaperControllerTest,
 
 TEST_P(WallpaperControllerTest,
        ActiveUserPrefServiceChanged_OOBEForSecondUser_SetTimeOfDayWallpaper) {
+  if (!IsTimeOfDayEnabled()) {
+    return;
+  }
   auto images = TimeOfDayImageSet();
   client_.AddCollection(wallpaper_constants::kTimeOfDayWallpaperCollectionId,
                         images);
@@ -1610,6 +1678,9 @@ TEST_P(WallpaperControllerTest,
 
 TEST_P(WallpaperControllerTest,
        ActiveUserPrefServiceChanged_NonOOBE_SetTimeOfDayWallpaper) {
+  if (!IsTimeOfDayEnabled()) {
+    return;
+  }
   auto images = TimeOfDayImageSet();
   client_.AddCollection(wallpaper_constants::kTimeOfDayWallpaperCollectionId,
                         images);
@@ -3849,7 +3920,7 @@ class WallpaperControllerPrefTest : public AshTestBase {
  public:
   WallpaperControllerPrefTest() {
     scoped_feature_list_.InitWithFeatures(
-        {chromeos::features::kJelly, features::kTimeOfDayWallpaper}, {});
+        personalization_app::GetTimeOfDayEnabledFeatures(), {});
     base::Value::Dict property;
     property.Set("rotation", static_cast<int>(display::Display::ROTATE_90));
     property.Set("width", 800);
@@ -4187,7 +4258,7 @@ TEST_P(WallpaperControllerTest, UpdateDailyRefreshWallpaper) {
   info.collection_id = expected;
   pref_manager_->SetUserWallpaperInfo(kAccountId1, info);
 
-  controller_->UpdateDailyRefreshWallpaperForTesting();
+  controller_->UpdateDailyRefreshWallpaper();
   EXPECT_EQ(expected, client_.get_fetch_daily_refresh_wallpaper_param());
 }
 
@@ -4224,7 +4295,7 @@ TEST_P(WallpaperControllerTest, UpdateDailyRefreshWallpaper_NotEnabled) {
   info.collection_id = "fun_collection";
   pref_manager_->SetUserWallpaperInfo(kAccountId1, info);
 
-  controller_->UpdateDailyRefreshWallpaperForTesting();
+  controller_->UpdateDailyRefreshWallpaper();
   EXPECT_EQ(std::string(), client_.get_fetch_daily_refresh_wallpaper_param());
 }
 
@@ -4235,7 +4306,7 @@ TEST_P(WallpaperControllerTest, UpdateDailyRefreshWallpaper_NoCollectionId) {
       WallpaperInfo(std::string(), WALLPAPER_LAYOUT_CENTER,
                     WallpaperType::kDaily, DayBeforeYesterdayish()));
 
-  controller_->UpdateDailyRefreshWallpaperForTesting();
+  controller_->UpdateDailyRefreshWallpaper();
   EXPECT_EQ(std::string(), client_.get_fetch_daily_refresh_wallpaper_param());
 }
 
@@ -4277,7 +4348,7 @@ TEST_P(WallpaperControllerTest,
   info.collection_id = "fun_collection";
   pref_manager_->SetUserWallpaperInfo(kAccountId1, info);
 
-  controller_->UpdateDailyRefreshWallpaperForTesting();
+  controller_->UpdateDailyRefreshWallpaper();
   Time run_time =
       controller_->GetUpdateWallpaperTimerForTesting().desired_run_time();
   base::TimeDelta delay = run_time - Time::Now();
@@ -4302,7 +4373,7 @@ TEST_P(WallpaperControllerTest,
   test_wallpaper_image_downloader()->set_image_generator(
       base::BindLambdaForTesting([]() { return gfx::ImageSkia(); }));
 
-  controller_->UpdateDailyRefreshWallpaperForTesting();
+  controller_->UpdateDailyRefreshWallpaper();
 
   RunAllTasksUntilIdle();
 
@@ -4491,6 +4562,7 @@ TEST_P(WallpaperControllerTest, UpdateWallpaperOnScheduleCheckpointChanged) {
     const AccountId active_account_id =
         Shell::Get()->session_controller()->GetActiveAccountId();
     // Enable dark mode by default.
+    Shell::Get()->dark_light_mode_controller()->SetAutoScheduleEnabled(false);
     Shell::Get()->dark_light_mode_controller()->SetDarkModeEnabledForTest(true);
 
     auto run_loop = std::make_unique<base::RunLoop>();
@@ -4515,6 +4587,12 @@ TEST_P(WallpaperControllerTest, UpdateWallpaperOnScheduleCheckpointChanged) {
     run_loop->Run();
     EXPECT_EQ(1, GetWallpaperCount());
     EXPECT_EQ(controller_->GetWallpaperType(), WallpaperType::kOnline);
+    WallpaperInfo actual;
+    ASSERT_TRUE(
+        pref_manager_->GetUserWallpaperInfo(active_account_id, &actual));
+    base::Time original_timestamp = actual.date;
+
+    task_environment()->FastForwardBy(base::Hours(1));
 
     // Switch to light mode and simulate schedule checkpoint change to reflect
     // light mode.
@@ -4529,11 +4607,61 @@ TEST_P(WallpaperControllerTest, UpdateWallpaperOnScheduleCheckpointChanged) {
         WALLPAPER_LAYOUT_CENTER_CROPPED, /*preview_mode=*/false,
         /*from_user=*/true,
         /*daily_refresh_enabled=*/false, kUnitId, variants));
-    WallpaperInfo actual;
-    EXPECT_TRUE(
+    ASSERT_TRUE(
         pref_manager_->GetUserWallpaperInfo(active_account_id, &actual));
-    EXPECT_TRUE(actual.MatchesAsset(expected));
+    // The wallpaper in pref should still match what was originally selected.
+    // However, the |date| should not be affected by the dark -> light change.
+    EXPECT_TRUE(actual.MatchesSelection(WallpaperInfo(params)));
+    EXPECT_EQ(actual.date, original_timestamp);
   }
+}
+
+TEST_P(WallpaperControllerTest, UpdateWallpaperOnAutoColorMode) {
+  SimulateUserLogin(kAccountId1);
+
+  Shell::Get()->dark_light_mode_controller()->SetAutoScheduleEnabled(true);
+
+  auto run_loop = std::make_unique<base::RunLoop>();
+  ClearWallpaperCount();
+  std::vector<OnlineWallpaperVariant> variants;
+  variants.emplace_back(kAssetId, GURL(kDummyUrl),
+                        backdrop::Image::IMAGE_TYPE_DARK_MODE);
+  variants.emplace_back(kAssetId2, GURL(kDummyUrl2),
+                        backdrop::Image::IMAGE_TYPE_LIGHT_MODE);
+  const OnlineWallpaperParams& params =
+      OnlineWallpaperParams(kAccountId1, kAssetId, GURL(kDummyUrl),
+                            TestWallpaperControllerClient::kDummyCollectionId,
+                            WALLPAPER_LAYOUT_CENTER_CROPPED,
+                            /*preview_mode=*/false, /*from_user=*/true,
+                            /*daily_refresh_enabled=*/true, kUnitId, variants);
+  controller_->SetOnlineWallpaper(
+      params, base::BindLambdaForTesting([&run_loop](bool success) {
+        EXPECT_TRUE(success);
+        run_loop->Quit();
+      }));
+  run_loop->Run();
+  EXPECT_EQ(1, GetWallpaperCount());
+  EXPECT_EQ(controller_->GetWallpaperType(), WallpaperType::kDaily);
+  WallpaperInfo actual;
+  ASSERT_TRUE(pref_manager_->GetUserWallpaperInfo(kAccountId1, &actual));
+  base::Time original_timestamp = actual.date;
+
+  // Forward time to trigger checkpoints.
+  task_environment()->FastForwardBy(base::Hours(12));
+  RunAllTasksUntilIdle();
+
+  WallpaperInfo expected = WallpaperInfo(OnlineWallpaperParams(
+      kAccountId1, kAssetId2, GURL(kDummyUrl2),
+      TestWallpaperControllerClient::kDummyCollectionId,
+      WALLPAPER_LAYOUT_CENTER_CROPPED, /*preview_mode=*/false,
+      /*from_user=*/true,
+      /*daily_refresh_enabled=*/true, kUnitId, variants));
+
+  ASSERT_TRUE(pref_manager_->GetUserWallpaperInfo(kAccountId1, &actual));
+  // The wallpaper in pref should still match what was originally selected.
+  // However, the |date| should not be affected by the dark -> light change.
+  EXPECT_TRUE(actual.MatchesSelection(expected));
+  EXPECT_EQ(actual.date, original_timestamp);
 }
 
 TEST_P(WallpaperControllerTest,
@@ -4541,6 +4669,7 @@ TEST_P(WallpaperControllerTest,
   SimulateUserLogin(kAccountId1);
 
   // Enable dark mode by default.
+  Shell::Get()->dark_light_mode_controller()->SetAutoScheduleEnabled(false);
   Shell::Get()->dark_light_mode_controller()->SetDarkModeEnabledForTest(true);
 
   auto run_loop = std::make_unique<base::RunLoop>();
@@ -4604,6 +4733,7 @@ TEST_P(WallpaperControllerTest,
   SimulateUserLogin(kAccountId1);
 
   // Enable dark mode by default.
+  Shell::Get()->dark_light_mode_controller()->SetAutoScheduleEnabled(false);
   Shell::Get()->dark_light_mode_controller()->SetDarkModeEnabledForTest(true);
 
   auto run_loop = std::make_unique<base::RunLoop>();
@@ -4717,7 +4847,7 @@ TEST_P(WallpaperControllerTest,
   pref_manager_->SetUserWallpaperInfo(kAccountId1, info);
 
   // Set a new daily wallpaper.
-  controller_->UpdateDailyRefreshWallpaperForTesting();
+  controller_->UpdateDailyRefreshWallpaper();
   RunAllTasksUntilIdle();
 
   Time run_time =
@@ -5450,7 +5580,7 @@ TEST_P(WallpaperControllerTest, UpdateGooglePhotosDailyRefreshWallpaper) {
   WallpaperInfo info(params);
   pref_manager_->SetUserWallpaperInfo(kAccountId1, info);
 
-  controller_->UpdateDailyRefreshWallpaperForTesting();
+  controller_->UpdateDailyRefreshWallpaper();
   RunAllTasksUntilIdle();
 
   WallpaperInfo expected_info;
@@ -5469,7 +5599,7 @@ TEST_P(WallpaperControllerTest, DailyRefreshTimerStartsForDailyGooglePhotos) {
   WallpaperInfo info(params);
   pref_manager_->SetUserWallpaperInfo(kAccountId1, info);
 
-  controller_->UpdateDailyRefreshWallpaperForTesting();
+  controller_->UpdateDailyRefreshWallpaper();
   RunAllTasksUntilIdle();
   auto& timer = controller_->GetUpdateWallpaperTimerForTesting();
   base::TimeDelta run_time =
@@ -5493,7 +5623,7 @@ TEST_P(WallpaperControllerTest, DailyRefreshRetryTimerStartsOnFailedFetch) {
   pref_manager_->SetUserWallpaperInfo(kAccountId1, info);
 
   client_.set_fetch_google_photos_photo_fails(true);
-  controller_->UpdateDailyRefreshWallpaperForTesting();
+  controller_->UpdateDailyRefreshWallpaper();
   RunAllTasksUntilIdle();
 
   base::TimeDelta run_time = controller_->GetUpdateWallpaperTimerForTesting()
@@ -5558,7 +5688,7 @@ TEST_P(WallpaperControllerTest,
   // successful call, which is the sign for a deleted or empty album.
   client_.set_google_photo_has_been_deleted(true);
 
-  controller_->UpdateDailyRefreshWallpaperForTesting();
+  controller_->UpdateDailyRefreshWallpaper();
   RunAllTasksUntilIdle();
 
   pref_manager_->GetUserWallpaperInfo(kAccountId1, &current_info);
@@ -5667,12 +5797,40 @@ TEST_P(
   client_.set_wallpaper_google_photos_integration_enabled_for_account_id(
       kAccountId1, false);
 
-  controller_->UpdateDailyRefreshWallpaperForTesting();
+  controller_->UpdateDailyRefreshWallpaper();
   RunAllTasksUntilIdle();
 
   pref_manager_->GetUserWallpaperInfo(kAccountId1, &current_info);
 
   EXPECT_EQ(WallpaperType::kDefault, current_info.type);
+}
+
+TEST_P(WallpaperControllerTest,
+       OnCheckpointChanged_WallpaperDailyRefreshScheduler) {
+  TestWallpaperControllerObserver observer(controller_);
+  EXPECT_EQ(0, observer.daily_refresh_checkpoint_count());
+  // User's wallpaper info should exist.
+  pref_manager_->SetUserWallpaperInfo(kAccountId1,
+                                      InfoWithType(WallpaperType::kDaily));
+  SimulateUserLogin(kAccountId1);
+  // Clears signal on login.
+  observer.ClearDailyRefreshCheckpointCount();
+  task_environment()->FastForwardBy(base::Days(1));
+  // Expect that 2 signals are sent every day by WallpaperDailyRefreshScheduler.
+  EXPECT_EQ(2, observer.daily_refresh_checkpoint_count());
+}
+
+TEST_P(WallpaperControllerTest,
+       OnCheckpointChanged_CalledOnLogin_WallpaperDailyRefreshScheduler) {
+  TestWallpaperControllerObserver observer(controller_);
+  EXPECT_EQ(0, observer.daily_refresh_checkpoint_count());
+  // User's wallpaper info should exist.
+  pref_manager_->SetUserWallpaperInfo(kAccountId1,
+                                      InfoWithType(WallpaperType::kDaily));
+  SimulateUserLogin(kAccountId1);
+  RunAllTasksUntilIdle();
+  // Expect that one signal is sent on login.
+  EXPECT_EQ(1, observer.daily_refresh_checkpoint_count());
 }
 
 }  // namespace ash

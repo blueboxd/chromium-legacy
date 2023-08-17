@@ -241,7 +241,6 @@ component("bluetooth") {
       "IOKit.framework",
       "Foundation.framework",
     ]
-    configs += [ "//build/config/compiler:enable_arc" ]
   }
 
   if (is_mac) {
@@ -529,6 +528,8 @@ component("bluetooth") {
         "floss/fake_floss_advertiser_client.h",
         "floss/fake_floss_battery_manager_client.cc",
         "floss/fake_floss_battery_manager_client.h",
+        "floss/fake_floss_bluetooth_telephony_client.cc",
+        "floss/fake_floss_bluetooth_telephony_client.h",
         "floss/fake_floss_gatt_manager_client.cc",
         "floss/fake_floss_gatt_manager_client.h",
         "floss/fake_floss_lescan_client.cc",
@@ -547,6 +548,8 @@ component("bluetooth") {
         "floss/floss_advertiser_client.h",
         "floss/floss_battery_manager_client.cc",
         "floss/floss_battery_manager_client.h",
+        "floss/floss_bluetooth_telephony_client.cc",
+        "floss/floss_bluetooth_telephony_client.h",
         "floss/floss_dbus_client.cc",
         "floss/floss_dbus_client.h",
         "floss/floss_dbus_manager.cc",

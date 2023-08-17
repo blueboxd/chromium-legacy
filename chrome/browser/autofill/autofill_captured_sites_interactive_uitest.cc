@@ -183,7 +183,7 @@ class AutofillCapturedSitesInteractiveTest
       translate::test_utils::CloseCurrentBubble(browser());
       TryToCloseAllPrompts(web_contents);
 
-      autofill_manager->client()->HideAutofillPopup(
+      autofill_manager->client().HideAutofillPopup(
           autofill::PopupHidingReason::kViewDestroyed);
 
       testing::AssertionResult suggestions_shown = ShowAutofillSuggestion(
@@ -221,7 +221,8 @@ class AutofillCapturedSitesInteractiveTest
       bool should_cvc_dialog_pop_up = is_credit_card_field && cvc;
 
       // Press the enter key to invoke autofill using the first suggestion.
-      test_delegate()->SetExpectations({ObservedUiEvents::kFormDataFilled},
+      test_delegate()->SetExpectations({ObservedUiEvents::kSuggestionsHidden,
+                                        ObservedUiEvents::kFormDataFilled},
                                        kAutofillWaitForFillInterval);
       TestCardUnmaskPromptWaiter test_card_unmask_prompt_waiter(
           web_contents,
@@ -247,7 +248,7 @@ class AutofillCapturedSitesInteractiveTest
       return true;
     }
 
-    autofill_manager->client()->HideAutofillPopup(
+    autofill_manager->client().HideAutofillPopup(
         autofill::PopupHidingReason::kViewDestroyed);
     ADD_FAILURE() << "Failed to autofill the form!";
     return false;

@@ -218,6 +218,7 @@ void FeatureTile::CreateDecorativeDrillInArrow() {
   drill_in_arrow_->SetProperty(views::kMarginsKey, kDrillInArrowMargins);
   // Allow hover events to fall through to show tooltips from the main view.
   drill_in_arrow_->SetCanProcessEventsWithinSubtree(false);
+  drill_in_arrow_->SetFlipCanvasOnPaintForRTLUI(true);
   UpdateDrillInArrowColor();
 }
 
@@ -266,8 +267,9 @@ void FeatureTile::UpdateColors() {
 }
 
 void FeatureTile::SetToggled(bool toggled) {
-  if (!is_togglable_ || toggled_ == toggled)
+  if (!is_togglable_ || toggled_ == toggled) {
     return;
+  }
 
   toggled_ = toggled;
   UpdateColors();
@@ -299,6 +301,10 @@ void FeatureTile::SetIconButtonTooltipText(const std::u16string& tooltip_text) {
 
 void FeatureTile::SetLabel(const std::u16string& label) {
   label_->SetText(label);
+}
+
+int FeatureTile::GetSubLabelMaxWidth() const {
+  return kTitlesContainerSize.width();
 }
 
 void FeatureTile::SetSubLabel(const std::u16string& sub_label) {

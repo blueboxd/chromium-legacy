@@ -114,7 +114,6 @@
 <translation id="1920798810075583923">Sandía</translation>
 <translation id="1924372192547904021">Formatouse <ph name="DRIVE_NAME" /></translation>
 <translation id="1931134289871235022">Eslovaco</translation>
-<translation id="1933345018156373194">Non se puido realizar o movemento debido a un erro inesperado: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="1936717151811561466">Finés</translation>
 <translation id="1942765061641586207">Resolución da imaxe</translation>
 <translation id="1972984168337863910">Despregar paneis de comentarios de ficheiros</translation>
@@ -166,7 +165,6 @@
 <translation id="2312704192806647271">{COUNT,plural, =1{A extensión co código <ph name="BEGIN_LIST" /><ph name="END_LIST" /> non se pode localizar. Ponte en contacto co teu administrador.}other{As extensións cos códigos <ph name="BEGIN_LIST" /><ph name="END_LIST" /> non se poden localizar. Ponte en contacto co teu administrador.}}</translation>
 <translation id="2325650632570794183">Este tipo de ficheiro non é compatible. Visita a Chrome Web Store para atopar unha aplicación que poida abrir este tipo de ficheiro.</translation>
 <translation id="2326539130272988168">Búlgaro</translation>
-<translation id="2337715497728194187">Compartir con Bruschetta</translation>
 <translation id="233822363739146957">Non hai suficiente espazo de almacenamento para sincronizar todos os ficheiros</translation>
 <translation id="23721837607121582">Descargar perfil para móbiles, rede <ph name="NETWORK_INDEX" /> de <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" /></translation>
 <translation id="2377319039870049694">Cambiar á vista de lista</translation>
@@ -197,7 +195,6 @@
 <translation id="2544853746127077729">A rede rexeitou o certificado de autenticación</translation>
 <translation id="255937426064304553">Internacional dos EUA</translation>
 <translation id="2563185590376525700">Ra</translation>
-<translation id="2574327434504608656">Compartiuse 1 cartafol con Bruschetta</translation>
 <translation id="2578394532502990878">Támil (fonético)</translation>
 <translation id="2579959351793446050">Odiá</translation>
 <translation id="2587195714949534472">Preparando sincronización de <ph name="FILE_NAME" />...</translation>
@@ -297,7 +294,6 @@
 <translation id="3408072735282270043">Activar, <ph name="NETWORK_NAME" /></translation>
 <translation id="3408236822532681288">Alemán (Alemaña) con teclado Neo 2</translation>
 <translation id="3414856743105198592">Se formatas as unidades extraíbles borraranse todos os datos. Queres continuar?</translation>
-<translation id="3435143625481187092">Concede permiso a Bruschetta para acceder aos ficheiros do cartafol <ph name="FOLDER_NAME" /></translation>
 <translation id="3437801641691368414">Hora de creación</translation>
 <translation id="343907260260897561">Cámara instantánea</translation>
 <translation id="3455931012307786678">Estoniano</translation>
@@ -385,7 +381,6 @@
 <translation id="4159731583141908892">Moveuse <ph name="FILE_NAME" />.</translation>
 <translation id="4176286497474237543">Baleirar papeleira agora</translation>
 <translation id="4179621117429069925">Este elemento está na papeleira</translation>
-<translation id="4181839429935094755">Compartíronse <ph name="NUMBER_OF_ITEMS" /> cartafoles con Bruschetta</translation>
 <translation id="4186579485882418952">Activar modo sen conexión</translation>
 <translation id="4193154014135846272">Documento de Google</translation>
 <translation id="4197674956721858839">Selección para comprimir</translation>
@@ -452,7 +447,6 @@
 <translation id="4646813851450205600">Checo con teclado QWERTY</translation>
 <translation id="4656777537938206294">Activa o acceso sen conexión a estes ficheiros</translation>
 <translation id="4658782175094886150">Persoa na neve</translation>
-<translation id="466782788172479199">Concede permiso a Bruschetta para acceder aos ficheiros de Google Drive. Os cambios sincronizaranse cos teus outros dispositivos.</translation>
 <translation id="4669606053856530811">Os membros de "<ph name="SOURCE_NAME" />" perderán o acceso a menos que estes elementos se compartan con eles.</translation>
 <translation id="467809019005607715">Presentacións de Google</translation>
 <translation id="4690246192099372265">Sueco</translation>
@@ -503,7 +497,6 @@
 <translation id="4969785127455456148">Álbum</translation>
 <translation id="4972330214479971536">Non se puido terminar de configurar a sincronización de ficheiros</translation>
 <translation id="4973523518332075481">Utiliza un nome de <ph name="MAX_LENGTH" /> caracteres ou menos</translation>
-<translation id="4973970068702235170">Non se puido realizar a operación de comprimir debido a un erro inesperado: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4984616446166309645">Xaponés</translation>
 <translation id="4987699874727873250">Inglés (India)</translation>
 <translation id="4988205478593450158">Seguro que queres eliminar "<ph name="FILE_NAME" />"?</translation>
@@ -563,7 +556,6 @@
 <translation id="5323213332664049067">Latinoamericano</translation>
 <translation id="5330145655348521461">Estes ficheiros abríronse nun ordenador diferente. Diríxete a <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />) para velo.</translation>
 <translation id="5330512191124428349">Obter información</translation>
-<translation id="5344246330454251646">Xestionar contido compartido con Bruschetta</translation>
 <translation id="535792325654997756">Persoa con gatos</translation>
 <translation id="5358764674931277">Fotogramas por segundo</translation>
 <translation id="5363339716524495120">O idioma de escritura é o chinés</translation>
@@ -639,7 +631,6 @@
 <translation id="5896749729057314184">Rede <ph name="NETWORK_INDEX" /> de <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, desactivada, intensidade do sinal do <ph name="SIGNAL_STRENGTH" /> %, detalles</translation>
 <translation id="5911887972742538906">Produciuse un erro durante a instalación da aplicación Linux.</translation>
 <translation id="5912396950572065471">Formato</translation>
-<translation id="5913638992615760742">Non se puido efectuar a copia porque se produciu un erro inesperado: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="5918480239180455431">Novas funcións de busca dispoñibles</translation>
 <translation id="5926082595146149752">Neerlandés (Países Baixos) con teclado internacional estadounidense (PC)</translation>
 <translation id="5932901536148835538">Chromebit</translation>
@@ -647,7 +638,6 @@
 <translation id="5955954492236143329"><ph name="NUMBER_OF_ITEMS" /> elementos</translation>
 <translation id="5957366693331451795">Dispositivos Chromebox</translation>
 <translation id="5982621672636444458">Opcións de ordenación</translation>
-<translation id="6007237601604674381">Non se puido mover. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="6011074160056912900">Rede Ethernet</translation>
 <translation id="60357267506638014">QWERTY checo</translation>
 <translation id="603895874132768835">Non poderás utilizar esta rede ata que configures un PIN novo</translation>
@@ -731,7 +721,6 @@
 <translation id="6710213216561001401">Anterior</translation>
 <translation id="6732801395666424405">Non se poden cargar os certificados</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />]</translation>
-<translation id="6740270213273127264">Compartir cartafol con Bruschetta</translation>
 <translation id="6750737795876287924">Directorio actual</translation>
 <translation id="6751256176799620176">Seleccionouse 1 cartafol</translation>
 <translation id="6755827872271341378">Dispositivo Chrome OS Flex</translation>

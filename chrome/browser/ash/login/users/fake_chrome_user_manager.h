@@ -113,7 +113,7 @@ class FakeChromeUserManager : public ChromeUserManager {
   bool IsUserLoggedIn() const override;
   bool IsLoggedInAsUserWithGaiaAccount() const override;
   bool IsLoggedInAsChildUser() const override;
-  bool IsLoggedInAsPublicAccount() const override;
+  bool IsLoggedInAsManagedGuestSession() const override;
   bool IsLoggedInAsGuest() const override;
   bool IsLoggedInAsKioskApp() const override;
   bool IsLoggedInAsArcKioskApp() const override;
@@ -211,8 +211,7 @@ class FakeChromeUserManager : public ChromeUserManager {
   bool current_user_child_ = false;
   bool mock_user_image_manager_enabled_ = false;
 
-  raw_ptr<MultiProfileUserController, DanglingUntriaged>
-      multi_profile_user_controller_ = nullptr;
+  raw_ptr<MultiProfileUserController> multi_profile_user_controller_ = nullptr;
 
   // If set this is the active user. If empty, the first created user is the
   // active user.

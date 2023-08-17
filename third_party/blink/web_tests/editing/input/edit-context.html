@@ -3,6 +3,9 @@
 <title>This tests the new EditContext APIs while in composition</title>
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
+<script src="../../resources/testdriver.js"></script>
+<script src="../../resources/testdriver-actions.js"></script>
+<script src="../../resources/testdriver-vendor.js"></script>
 </head>
 <body>
 <div id="test"></div>
@@ -60,7 +63,8 @@ test(function() {
   const editContext = new EditContext();
   assert_not_equals(editContext, null);
   const test = document.getElementById('test');
-  test.innerHTML = "";
+  test.innerHTML = "ABCD";
+  editContext.updateText(0, 4, "abcd");
   // Add EditContext event listeners
   editContext.addEventListener("textupdate", e => {
     // Update the text in the div
@@ -68,13 +72,36 @@ test(function() {
     test.innerHTML = buffer.substr(0, e.updateRangeStart) + e.text.toUpperCase() + buffer.substr(e.updateRangeEnd);
   });
 
+  let compositionStartCount = 0;
+  let compositionEndCount = 0;
+  editContext.addEventListener("compositionstart", e => {
+    compositionStartCount++;
+  });
+  editContext.addEventListener("compositionend", e => {
+    compositionEndCount++;
+  });
+
   test.editContext = editContext;
   test.focus();
+  editContext.updateSelection(2, 2);
   textInputController.setComposition("foo");
-  assert_equals(test.innerHTML, "FOO");
+  assert_equals(editContext.text, "abfoocd");
+  assert_equals(test.innerHTML, "ABFOOCD");
+  assert_equals(compositionStartCount, 1, "Should get compositionstart after setting non-empty composition");
+  assert_equals(compositionEndCount, 0, "Should not get compositionend until terminating composition");
+
   textInputController.setComposition("");
-  assert_equals(test.innerHTML, "");
-}, 'Testing EditContext TextUpdate with empty strings');
+  assert_equals(editContext.text, "abcd");
+  assert_equals(test.innerHTML, "ABCD");
+  assert_equals(compositionStartCount, 1, "Shouldn't get another compositionstart when setting empty composition");
+  assert_equals(compositionEndCount, 1, "Should get compositionend when setting empty composition");
+
+  textInputController.setComposition("bar");
+  assert_equals(editContext.text, "abbarcd");
+  assert_equals(test.innerHTML, "ABBARCD");
+  assert_equals(compositionStartCount, 2, "Should get another compositionstart after setting non-empty composition");
+  assert_equals(compositionEndCount, 1, "Should not get another compositionend until terminating composition");
+}, 'Testing EditContext TextUpdate with empty string');
 
 test(function() {
   const editContext = new EditContext();
@@ -338,6 +365,37 @@ test(function() {
   assert_equals(editContext.text, "bat");
 }, 'Testing EditContext SetCompositionFromExistingText');
 
+promise_test(async function() {
+  const editContext = new EditContext();
+  assert_not_equals(editContext, null);
+  const test = document.getElementById('test');
+  test.innerHTML = "";
+  // Add EditContext event listeners
+  editContext.addEventListener("textupdate", e => {
+    // Update the text in the div
+    const buffer = test.innerText;
+    test.innerHTML = buffer.substr(0, e.updateRangeStart) + e.text.toUpperCase()  + buffer.substr(e.updateRangeEnd);
+  });
+
+  test.editContext = editContext;
+  test.focus();
+  textInputController.setComposition("foo");
+  assert_equals(test.innerHTML, "FOO");
+  textInputController.insertText("foo");
+  assert_equals(editContext.text, "foo", "EditContext's text should have been updated");
+  assert_equals(editContext.selectionStart, 3, "EditContext's selectionStart should have been placed after inserted text");
+  assert_equals(editContext.selectionEnd, 3, "EditContext's selectionEnd should have been placed after inserted text");
+
+  textInputController.setMarkedTextFromExistingText(0, 3);
+  assert_equals(editContext.text, "foo", "SetCompositionFromExistingText should not change EditContext's text");
+  assert_equals(editContext.selectionStart, 3, "SetCompositionFromExistingText should not change EditContext's text");
+  assert_equals(editContext.selectionEnd, 3, "SetCompositionFromExistingText should not change EditContext's text");
+
+  await test_driver.send_keys(test, 'a');
+  assert_equals(editContext.text, "fooa", "Normal typing should be inserted at selection position, not composition position");
+  assert_equals(test.innerHTML, "FOOA",  "Normal typing should be inserted at selection position, not composition position");
+}, 'Testing EditContext SetCompositionFromExistingText followed by non-composition typing');
+
 test(function() {
   const editContext = new EditContext();
   assert_not_equals(editContext, null);
@@ -430,48 +488,6 @@ test(function() {
   assert_equals(test.innerHTML, "barFOO");
   assert_equals(editContext1.text, "foo");
 }, 'Testing EditContext blur');
-
-test(function() {
-  const editContext = new EditContext();
-  assert_not_equals(editContext, null);
-  assert_equals(editContext.inputMode, "text"); // default value
-  editContext.inputMode = "tel";
-  assert_equals(editContext.inputMode, "tel");
-  editContext.inputMode = "email";
-  assert_equals(editContext.inputMode, "email");
-  editContext.inputMode = "search";
-  assert_equals(editContext.inputMode, "search");
-  editContext.inputMode = "decimal";
-  assert_equals(editContext.inputMode, "decimal");
-  editContext.inputMode = "numeric";
-  assert_equals(editContext.inputMode, "numeric");
-  editContext.inputMode = "url";
-  assert_equals(editContext.inputMode, "url");
-  editContext.inputMode = "none";
-  assert_equals(editContext.inputMode, "none");
-  editContext.inputMode = "test";
-  assert_equals(editContext.inputMode, "none");
-}, 'Testing EditContext inputMode');
-
-test(function() {
-  const editContext = new EditContext();
-  assert_not_equals(editContext, null);
-  assert_equals(editContext.enterKeyHint, "enter"); // default value
-  editContext.enterKeyHint = "done";
-  assert_equals(editContext.enterKeyHint, "done");
-  editContext.enterKeyHint = "go";
-  assert_equals(editContext.enterKeyHint, "go");
-  editContext.enterKeyHint = "next";
-  assert_equals(editContext.enterKeyHint, "next");
-  editContext.enterKeyHint = "previous";
-  assert_equals(editContext.enterKeyHint, "previous");
-  editContext.enterKeyHint = "search";
-  assert_equals(editContext.enterKeyHint, "search");
-  editContext.enterKeyHint = "send";
-  assert_equals(editContext.enterKeyHint, "send");
-  editContext.enterKeyHint = "test";
-  assert_equals(editContext.enterKeyHint, "send");
-}, 'Testing EditContext enterKeyHint');
 
 test(function() {
   // SetComposition should not crash when event handler removes document

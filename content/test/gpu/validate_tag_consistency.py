@@ -14,7 +14,7 @@ import sys
 TAG_HEADER = """\
 # OS
 # tags: [ android android-lollipop android-marshmallow android-nougat
-#             android-pie android-r android-s android-t
+#             android-oreo android-pie android-r android-s android-t
 #         chromeos
 #         fuchsia
 #         linux ubuntu
@@ -82,6 +82,8 @@ TAG_HEADER = """\
 # tags: [ webgpu-compat webgpu-not-compat ]
 # Clang coverage
 # tags: [ clang-coverage no-clang-coverage ]
+# Skia Graphite
+# tags: [ graphite-enabled graphite-disabled ]
 # results: [ Failure RetryOnFailure Skip Slow ]
 """
 

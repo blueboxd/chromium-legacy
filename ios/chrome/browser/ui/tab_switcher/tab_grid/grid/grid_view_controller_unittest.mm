@@ -14,10 +14,6 @@
 #import "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 // Fake object that conforms to GridViewControllerDelegate.
 @interface FakeGridViewControllerDelegate
     : NSObject <GridViewControllerDelegate>
@@ -108,7 +104,10 @@ class GridViewControllerTest : public RootViewControllerTest {
  public:
   GridViewControllerTest() {
     view_controller_ = [[GridViewController alloc] init];
+    // Load the view and notify its content will appear. This sets the data
+    // source and loads the initial snapshot.
     [view_controller_ loadView];
+    [view_controller_ contentWillAppearAnimated:NO];
     NSArray* items = @[
       [[TabSwitcherItem alloc] initWithIdentifier:@"A"],
       [[TabSwitcherItem alloc] initWithIdentifier:@"B"]

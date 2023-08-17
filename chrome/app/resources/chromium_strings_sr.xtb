@@ -74,7 +74,6 @@
 <translation id="2592940277904433508">Настави са коришћењем Chromium-а</translation>
 <translation id="2648074677641340862">Током инсталације је дошло до грешке у оперативном систему. Преузмите Chromium поново.</translation>
 <translation id="2661879430930417727">Ако делите уређај, пријатељи и породица могу засебно да прегледају и да подесе Chromium баш онако како желе</translation>
-<translation id="2669853942967761236">Chromium је блокирао овај фајл архиве јер можда крије малвер</translation>
 <translation id="268602741124540128">Добро дошли у Chromium, <ph name="ACCOUNT_FIRST_NAME" /></translation>
 <translation id="2711502716910134313">Картица Chromium</translation>
 <translation id="2718390899429598676">Chromium ће шифровати податке ради додатне сигурности.</translation>
@@ -272,6 +271,7 @@
 <translation id="6613594504749178791">Промене ће ступити на снагу када следећи пут поново покренете Chromium.</translation>
 <translation id="665732753414869868">Chromium-у треба дозвола за камеру да би направио 3D мапу окружења</translation>
 <translation id="6663852025006259149">Сајтови ће вероватно радити на очекивани начин, али вас неће запамтити када затворите све Chromium прозоре</translation>
+<translation id="6669284030132180248">Ако сачувате обележиваче и на Google налогу, можете да пратите цене производа у Chromium-у и да добијате обавештења када падне цена</translation>
 <translation id="6676384891291319759">Приступите Интернету</translation>
 <translation id="668175097507315160">Chromium ОС не може да синхронизује податке због грешке при пријављивању.</translation>
 <translation id="6709350901466051922">Chromium-у треба дозвола за микрофон за овај сајт</translation>
@@ -408,6 +408,5 @@ Chromium не може да врати подешавања.</translation>
 <translation id="942598560705308788">Сертификати којима управља Chromium</translation>
 <translation id="965162752251293939">Ко користи Chromium?</translation>
 <translation id="967427899662692980">Набавите најјачу Chromium заштиту</translation>
-<translation id="9792300276217204">Увек обришите податке о сајтовима са уређаја када затворите Chromium</translation>
 <translation id="985602178874221306">The Chromium Authors</translation>
 </translationbundle>

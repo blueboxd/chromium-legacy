@@ -39,10 +39,6 @@
 #import "ios/web/public/web_state.h"
 #import "ui/base/l10n/l10n_util_mac.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 using base::UmaHistogramEnumeration;
 
 @interface FormInputAccessoryMediator () <FormActivityObserver,
@@ -214,7 +210,11 @@ using base::UmaHistogramEnumeration;
 }
 
 - (void)dealloc {
-  [self disconnect];
+  // TODO(crbug.com/1454777)
+  DUMP_WILL_BE_CHECK(!_formActivityObserverBridge.get());
+  DUMP_WILL_BE_CHECK(!_personalDataManager);
+  DUMP_WILL_BE_CHECK(!_webState);
+  DUMP_WILL_BE_CHECK(!_webStateList);
 }
 
 - (void)disconnect {
@@ -222,6 +222,7 @@ using base::UmaHistogramEnumeration;
   if (_personalDataManager && _personalDataManagerObserver.get()) {
     _personalDataManager->RemoveObserver(_personalDataManagerObserver.get());
     _personalDataManagerObserver.reset();
+    _personalDataManager = nullptr;
   }
   if (_webState) {
     _webState->RemoveObserver(_webStateObserverBridge.get());
@@ -361,15 +362,15 @@ using base::UmaHistogramEnumeration;
   [self detachFromWebState];
 }
 
-#pragma mark - CRWWebStateListObserver
+#pragma mark - WebStateListObserving
 
-- (void)webStateList:(WebStateList*)webStateList
-    didChangeActiveWebState:(web::WebState*)newWebState
-                oldWebState:(web::WebState*)oldWebState
-                    atIndex:(int)atIndex
-                     reason:(ActiveWebStateChangeReason)reason {
-  [self reset];
-  [self updateWithNewWebState:newWebState];
+- (void)didChangeWebStateList:(WebStateList*)webStateList
+                       change:(const WebStateListChange&)change
+                       status:(const WebStateListStatus&)status {
+  if (status.active_web_state_change()) {
+    [self reset];
+    [self updateWithNewWebState:status.new_active_web_state];
+  }
 }
 
 #pragma mark - Public
@@ -528,6 +529,8 @@ using base::UmaHistogramEnumeration;
 - (void)didSelectSuggestion:(FormSuggestion*)formSuggestion {
   UmaHistogramEnumeration("IOS.Reauth.Password.Autofill",
                           ReauthenticationEvent::kAttempt);
+  LogAutofillUseForDefaultBrowserPromo();
+
   __weak __typeof(self) weakSelf = self;
   auto suggestionHandler = ^() {
     __typeof(self) strongSelf = weakSelf;

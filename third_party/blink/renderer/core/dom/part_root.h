@@ -7,7 +7,9 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/v8_union_childnodepart_documentpartroot.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/part.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_deque.h"
 #include "third_party/blink/renderer/platform/heap/collection_support/heap_vector.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
@@ -16,8 +18,6 @@ namespace blink {
 
 class ContainerNode;
 class Document;
-class DocumentPartRoot;
-class Part;
 
 using PartRootUnion = V8UnionChildNodePartOrDocumentPartRoot;
 
@@ -35,7 +35,11 @@ class CORE_EXPORT PartRoot : public GarbageCollectedMixin {
   void AddPart(Part& new_part);
   void RemovePart(Part& part);
   void MarkPartsDirty() { cached_parts_list_dirty_ = true; }
+
   virtual Document& GetDocument() const = 0;
+  virtual bool IsDocumentPartRoot() const = 0;
+  virtual Node* FirstIncludedChildNode() const = 0;
+  virtual Node* LastIncludedChildNode() const = 0;
 
   // Utilities to convert to/from the IDL union.
   static PartRootUnion* GetUnionFromPartRoot(PartRoot* root);
@@ -45,21 +49,17 @@ class CORE_EXPORT PartRoot : public GarbageCollectedMixin {
   }
 
   // PartRoot API
-  HeapVector<Member<Part>> getParts();
+  HeapVector<Member<Part>>& getParts();
   virtual ContainerNode* rootContainer() const = 0;
 
  protected:
   PartRoot() = default;
   virtual const PartRoot* GetParentPartRoot() const = 0;
-  bool IsDocumentPartRoot() { return !GetParentPartRoot(); }
 
  private:
-  const DocumentPartRoot* GetDocumentPartRoot();
-  HeapVector<Member<Part>> RebuildPartsList();
-
-  HeapVector<Member<Part>> parts_unordered_;
-  HeapVector<Member<Part>> cached_ordered_parts_;
-  bool cached_parts_list_dirty_{true};
+  HeapDeque<Member<Part>>& RebuildPartsList();
+  HeapDeque<Member<Part>> cached_ordered_parts_;
+  bool cached_parts_list_dirty_{false};
 };
 
 }  // namespace blink

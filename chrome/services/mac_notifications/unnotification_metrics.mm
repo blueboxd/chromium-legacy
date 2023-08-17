@@ -13,10 +13,6 @@
 #include "base/strings/strcat.h"
 #include "chrome/services/mac_notifications/public/cpp/mac_notification_metrics.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 namespace mac_notifications {
 
 namespace {
@@ -69,18 +65,19 @@ UNNotificationPermissionStatus ConvertAuthorizationStatus(
 void LogUNNotificationRequestPermissionResult(
     UNNotificationRequestPermissionResult result) {
   base::UmaHistogramEnumeration(
-      base::StrCat({"Notifications.Permissions.UNNotification.",
-                    MacNotificationStyleSuffix(IsAppBundleAlertStyle()),
-                    ".PermissionRequest"}),
+      base::StrCat(
+          {"Notifications.Permissions.UNNotification.",
+           MacNotificationStyleSuffix(NotificationStyleFromAppBundle()),
+           ".PermissionRequest"}),
       result);
 }
 
 void LogUNNotificationSettings(UNUserNotificationCenter* center) {
   [center getNotificationSettingsWithCompletionHandler:^(
               UNNotificationSettings* _Nonnull settings) {
-    std::string prefix =
-        base::StrCat({"Notifications.Permissions.UNNotification.",
-                      MacNotificationStyleSuffix(IsAppBundleAlertStyle())});
+    std::string prefix = base::StrCat(
+        {"Notifications.Permissions.UNNotification.",
+         MacNotificationStyleSuffix(NotificationStyleFromAppBundle())});
 
     base::UmaHistogramEnumeration(
         base::StrCat({prefix, ".Style"}),

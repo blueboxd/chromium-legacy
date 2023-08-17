@@ -200,7 +200,6 @@ void LocalFrameClientImpl::DispatchDidClearWindowObjectInMainWorld(
     // Do not run microtasks while invoking the callback.
     {
       v8::MicrotasksScope microtasks(isolate, microtask_queue,
-
                                      v8::MicrotasksScope::kDoNotRunMicrotasks);
       web_frame_->Client()->DidClearWindowObject();
     }
@@ -708,18 +707,25 @@ void LocalFrameClientImpl::DidStopLoading() {
     web_frame_->Client()->DidStopLoading();
 }
 
-void LocalFrameClientImpl::NavigateBackForward(
+bool LocalFrameClientImpl::NavigateBackForward(
     int offset,
     absl::optional<scheduler::TaskAttributionId>
         soft_navigation_heuristics_task_id) const {
   WebViewImpl* webview = web_frame_->ViewImpl();
   DCHECK(webview->Client());
   DCHECK(web_frame_->Client());
+
   DCHECK(offset);
+  if (offset > webview->HistoryForwardListCount())
+    return false;
+  if (offset < -webview->HistoryBackListCount())
+    return false;
+
   bool has_user_gesture =
       LocalFrame::HasTransientUserActivation(web_frame_->GetFrame());
   web_frame_->GetFrame()->GetLocalFrameHostRemote().GoToEntryAtOffset(
       offset, has_user_gesture, soft_navigation_heuristics_task_id);
+  return true;
 }
 
 void LocalFrameClientImpl::DidDispatchPingLoader(const KURL& url) {
@@ -739,10 +745,11 @@ void LocalFrameClientImpl::DidObserveInputDelay(base::TimeDelta input_delay) {
 }
 
 void LocalFrameClientImpl::DidObserveUserInteraction(
-    base::TimeDelta max_event_duration,
+    base::TimeTicks max_event_start,
+    base::TimeTicks max_event_end,
     UserInteractionType interaction_type) {
-  web_frame_->Client()->DidObserveUserInteraction(max_event_duration,
-                                                  interaction_type);
+  web_frame_->Client()->DidObserveUserInteraction(
+      max_event_start, max_event_end, interaction_type);
 }
 
 void LocalFrameClientImpl::DidChangeCpuTiming(base::TimeDelta time) {

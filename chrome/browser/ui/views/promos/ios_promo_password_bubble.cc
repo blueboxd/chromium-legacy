@@ -58,7 +58,9 @@ views::BubbleDialogDelegate* ios_promo_password_delegate_ = nullptr;
 class IOSPromoPasswordBubbleDelegate : public ui::DialogModelDelegate {
  public:
   explicit IOSPromoPasswordBubbleDelegate(Browser* browser)
-      : browser_(browser) {}
+      : browser_(browser) {
+    impression_histogram_already_recorded_ = false;
+  }
 
   // Returns a new QR code generator service if one does not yet exist.
   qrcode_generator::QRImageGenerator& GetQRCodeGenerator() {
@@ -88,16 +90,9 @@ class IOSPromoPasswordBubbleDelegate : public ui::DialogModelDelegate {
           feature_engagement::kIPHiOSPasswordPromoDesktopFeature);
     }
 
-    // User explicitly closed the bubble by clicking "x".
-    if (ios_promo_password_delegate_->GetWidget()->closed_reason() ==
-        views::Widget::ClosedReason::kCloseButtonClicked) {
-      browser_->profile()->GetPrefs()->SetBoolean(
-          promos_prefs::kiOSPasswordPromoOptOut, true);
-      promos_utils::RecordIOSPasswordPromoUserInteractionHistogram(
-          browser_->profile()->GetPrefs()->GetInteger(
-              promos_prefs::kiOSPasswordPromoImpressionsCounter),
-          promos_utils::DesktopIOSPasswordPromoAction::kExplicitlyClosed);
-    } else {
+    // Don't record a histogram if either of the buttons' callbacks have run and
+    // a histogram has already been recorded.
+    if (!impression_histogram_already_recorded_) {
       promos_utils::RecordIOSPasswordPromoUserInteractionHistogram(
           browser_->profile()->GetPrefs()->GetInteger(
               promos_prefs::kiOSPasswordPromoImpressionsCounter),
@@ -132,6 +127,8 @@ class IOSPromoPasswordBubbleDelegate : public ui::DialogModelDelegate {
           browser_->profile()->GetPrefs()->GetInteger(
               promos_prefs::kiOSPasswordPromoImpressionsCounter),
           promos_utils::DesktopIOSPasswordPromoAction::kGetStartedClicked);
+
+      impression_histogram_already_recorded_ = true;
     }
 
     browser_->OpenURL(content::OpenURLParams(
@@ -142,12 +139,32 @@ class IOSPromoPasswordBubbleDelegate : public ui::DialogModelDelegate {
     ios_promo_password_delegate_->GetWidget()->Close();
   }
 
+  // Callback for when the "No thanks" button is clicked.
+  void OnNoThanksButtonClicked() {
+    if (!promos_utils::IsActivationCriteriaOverriddenIOSPasswordPromo()) {
+      browser_->profile()->GetPrefs()->SetBoolean(
+          promos_prefs::kiOSPasswordPromoOptOut, true);
+
+      promos_utils::RecordIOSPasswordPromoUserInteractionHistogram(
+          browser_->profile()->GetPrefs()->GetInteger(
+              promos_prefs::kiOSPasswordPromoImpressionsCounter),
+          promos_utils::DesktopIOSPasswordPromoAction::kExplicitlyClosed);
+
+      impression_histogram_already_recorded_ = true;
+    }
+
+    ios_promo_password_delegate_->GetWidget()->Close();
+  }
+
  private:
   // Pointer to the QR code generator service.
   std::unique_ptr<qrcode_generator::QRImageGenerator> qr_code_service_;
 
   // Pointer to the current Browser;
   raw_ptr<Browser> browser_;
+
+  // Flag tracking whether the impression histogram has already been recorded.
+  bool impression_histogram_already_recorded_;
 };
 
 // CreateFooter creates the view that is inserted as footer to the bubble.
@@ -184,6 +201,16 @@ std::unique_ptr<views::View> CreateFooter(
               views::DistanceMetric::
                   DISTANCE_DIALOG_CONTENT_MARGIN_BOTTOM_TEXT));
 
+  auto decline_button_callback = base::BindRepeating(
+      &IOSPromoPasswordBubbleDelegate::OnNoThanksButtonClicked,
+      base::Unretained(bubble_delegate));
+
+  auto decline_button = views::Builder<views::MdTextButton>()
+                            .SetText(l10n_util::GetStringUTF16(
+                                IDS_IOS_PASSWORD_PROMO_BUBBLE_BUTTON_DECLINE))
+                            .SetIsDefault(false)
+                            .SetCallback(decline_button_callback);
+
   if (variant ==
       IOSPromoPasswordBubble::PromoVariant::GET_STARTED_BUTTON_VARIANT) {
     auto footer_description =
@@ -195,18 +222,21 @@ std::unique_ptr<views::View> CreateFooter(
             .SetMultiLine(true)
             .SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_TO_HEAD);
 
-    auto button_callback = base::BindRepeating(
+    auto accept_button_callback = base::BindRepeating(
         &IOSPromoPasswordBubbleDelegate::OnGetStartedButtonClicked,
         base::Unretained(bubble_delegate));
     auto footer_button_container =
         views::Builder<views::BoxLayoutView>()
             .SetOrientation(views::BoxLayout::Orientation::kHorizontal)
             .SetMainAxisAlignment(views::BoxLayout::MainAxisAlignment::kEnd)
+            .SetBetweenChildSpacing(provider->GetDistanceMetric(
+                views::DISTANCE_RELATED_LABEL_HORIZONTAL))
+            .AddChild(decline_button)
             .AddChild(views::Builder<views::MdTextButton>()
                           .SetText(l10n_util::GetStringUTF16(
                               IDS_IOS_PASSWORD_PROMO_BUBBLE_BUTTON))
                           .SetIsDefault(true)
-                          .SetCallback(button_callback));
+                          .SetCallback(accept_button_callback));
 
     return std::move(footer_view.AddChild(footer_title_container)
                          .AddChild(footer_description)
@@ -258,8 +288,15 @@ std::unique_ptr<views::View> CreateFooter(
             .SetFlexAllocationOrder(views::FlexAllocationOrder::kReverse);
 
     auto built_footer_view =
-        std::move(footer_view.AddChild(footer_title_container)
-                      .AddChild(footer_content_container))
+        std::move(
+            footer_view.AddChild(footer_title_container)
+                .AddChild(footer_content_container)
+                .AddChild(views::Builder<views::BoxLayoutView>()
+                              .SetOrientation(
+                                  views::BoxLayout::Orientation::kHorizontal)
+                              .SetMainAxisAlignment(
+                                  views::BoxLayout::MainAxisAlignment::kStart)
+                              .AddChild(decline_button)))
             .Build();
 
     qrcode_generator::mojom::GenerateQRCodeRequestPtr request =

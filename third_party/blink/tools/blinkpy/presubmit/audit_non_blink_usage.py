@@ -46,6 +46,7 @@ _CONFIG = [
             'absl::get_if',
             'absl::holds_alternative',
             'absl::in_place',
+            'absl::in_place_type',
             'absl::int128',
             'absl::make_optional',
             'absl::nullopt',
@@ -460,6 +461,7 @@ _CONFIG = [
             'cc::BrowserControlsState',
             'cc::EventListenerClass',
             'cc::EventListenerProperties',
+            'cc::HitTestOpaqueness',
 
             # Animation
             'cc::AnimationHost',
@@ -507,6 +509,7 @@ _CONFIG = [
             'cc::SnapContainerData',
             'cc::SnapFlingClient',
             'cc::SnapFlingController',
+            'cc::SnapPositionData',
             'cc::SnapSelectionStrategy',
             'cc::SnapStrictness',
             'cc::TargetSnapAreaElementIds',
@@ -573,6 +576,7 @@ _CONFIG = [
             'trace_event::.+',
             'unicode::.+',
             'vector_math::.+',
+            'v8_compile_hints::.+',
             'web_core_test_support::.+',
             'worker_pool::.+',
             'xpath::.+',
@@ -1442,9 +1446,11 @@ _CONFIG = [
         'paths': [
             'third_party/blink/renderer/modules/webgpu/',
         ],
-        # The WebGPU Blink module needs access to the WebGPU control
-        # command buffer interface.
         'allowed': [
+            'base::CommandLine',
+            'switches::kEnableUnsafeWebGPU',
+            # The WebGPU Blink module needs access to the WebGPU control
+            # command buffer interface.
             'gpu::webgpu::PowerPreference',
             'gpu::webgpu::WebGPUInterface',
             'media::PIXEL_FORMAT_NV12',

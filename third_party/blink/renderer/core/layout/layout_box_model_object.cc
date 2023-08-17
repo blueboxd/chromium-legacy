@@ -54,12 +54,6 @@
 namespace blink {
 
 namespace {
-inline bool IsOutOfFlowPositionedWithImplicitHeight(
-    const LayoutBoxModelObject* child) {
-  return child->IsOutOfFlowPositioned() &&
-         !child->StyleRef().LogicalTop().IsAuto() &&
-         !child->StyleRef().LogicalBottom().IsAuto();
-}
 
 void MarkBoxForRelayoutAfterSplit(LayoutBoxModelObject* box) {
   box->SetNeedsLayoutAndIntrinsicWidthsRecalcAndFullPaintInvalidation(
@@ -182,9 +176,13 @@ void LayoutBoxModelObject::StyleDidChange(StyleDifference diff,
 
   if (Layer() && old_style->HasStickyConstrainedPosition() &&
       !StyleRef().HasStickyConstrainedPosition()) {
-    if (const auto* scroll_container =
-            Layer()->ContainingScrollContainerLayer()) {
-      scroll_container->GetScrollableArea()->InvalidateAllStickyConstraints();
+    if (RuntimeEnabledFeatures::LayoutNewStickyLogicEnabled()) {
+      SetStickyConstraints(nullptr);
+    } else {
+      if (const auto* scroll_container =
+              Layer()->ContainingScrollContainerLayer()) {
+        scroll_container->GetScrollableArea()->InvalidateAllStickyConstraints();
+      }
     }
   }
 
@@ -205,6 +203,7 @@ void LayoutBoxModelObject::StyleDidChange(StyleDifference diff,
     Layer()->UpdateFilters(old_style, StyleRef());
     Layer()->UpdateBackdropFilters(old_style, StyleRef());
     Layer()->UpdateClipPath(old_style, StyleRef());
+    Layer()->UpdateOffsetPath(old_style, StyleRef());
     // Calls DestroyLayer() which clears the layer.
     Layer()->RemoveOnlyThisLayerAfterStyleChange(old_style);
     if (EverHadLayout())
@@ -285,17 +284,16 @@ void LayoutBoxModelObject::StyleDidChange(StyleDifference diff,
   // on the document element because of change of BackgroundTransfersToView()
   // which depends on the document element style.
   if (IsDocumentElement()) {
-    if (HTMLBodyElement* body = GetDocument().FirstBodyElement()) {
-      if (auto* body_object = body->GetLayoutObject()) {
-        if (body_object->IsBoxModelObject()) {
-          auto* body_box_model = To<LayoutBoxModelObject>(body_object);
-          bool new_body_background_transfers =
-              body_box_model->BackgroundTransfersToView(Style());
-          bool old_body_background_transfers =
-              old_style && body_box_model->BackgroundTransfersToView(old_style);
-          if (new_body_background_transfers != old_body_background_transfers &&
-              body_object->Style() && body_object->StyleRef().HasBackground())
-            body_object->SetBackgroundNeedsFullPaintInvalidation();
+    if (const HTMLBodyElement* body = GetDocument().FirstBodyElement()) {
+      if (auto* body_object =
+              DynamicTo<LayoutBoxModelObject>(body->GetLayoutObject())) {
+        bool new_body_background_transfers =
+            body_object->BackgroundTransfersToView(Style());
+        bool old_body_background_transfers =
+            old_style && body_object->BackgroundTransfersToView(old_style);
+        if (new_body_background_transfers != old_body_background_transfers &&
+            body_object->Style() && body_object->StyleRef().HasBackground()) {
+          body_object->SetBackgroundNeedsFullPaintInvalidation();
         }
       }
     }
@@ -479,90 +477,6 @@ PhysicalRect LayoutBoxModelObject::ApplyFiltersToRect(
   return PhysicalRect::EnclosingRect(float_rect);
 }
 
-LayoutBlock* LayoutBoxModelObject::ContainingBlockForAutoHeightDetection(
-    const Length& logical_height) const {
-  NOT_DESTROYED();
-  // For percentage heights: The percentage is calculated with respect to the
-  // height of the generated box's containing block. If the height of the
-  // containing block is not specified explicitly (i.e., it depends on content
-  // height), and this element is not absolutely positioned, the used height is
-  // calculated as if 'auto' was specified.
-  if (!logical_height.IsPercentOrCalc() || IsOutOfFlowPositioned())
-    return nullptr;
-
-  // Anonymous block boxes are ignored when resolving percentage values that
-  // would refer to it: the closest non-anonymous ancestor box is used instead.
-  LayoutBlock* cb = ContainingBlock();
-  while (cb->IsAnonymous())
-    cb = cb->ContainingBlock();
-
-  // Matching LayoutBox::percentageLogicalHeightIsResolvableFromBlock() by
-  // ignoring table cell's attribute value, where it says that table cells
-  // violate what the CSS spec says to do with heights. Basically we don't care
-  // if the cell specified a height or not.
-  if (cb->IsTableCell())
-    return nullptr;
-
-  // Match LayoutBox::availableLogicalHeightUsing by special casing the layout
-  // view. The available height is taken from the frame.
-  if (IsA<LayoutView>(cb))
-    return nullptr;
-
-  if (IsOutOfFlowPositionedWithImplicitHeight(cb))
-    return nullptr;
-
-  return cb;
-}
-
-bool LayoutBoxModelObject::HasAutoHeightOrContainingBlockWithAutoHeight()
-    const {
-  NOT_DESTROYED();
-  // TODO(rego): Check if we can somehow reuse LayoutBlock::
-  // availableLogicalHeightForPercentageComputation() (see crbug.com/635655).
-  const auto* this_box = DynamicTo<LayoutBox>(this);
-  const Length& logical_height_length = StyleRef().LogicalHeight();
-  LayoutBlock* cb =
-      ContainingBlockForAutoHeightDetection(logical_height_length);
-  if (this_box && this_box->IsFlexItemIncludingNG()) {
-    if (const NGLayoutResult* result =
-            this_box->GetSingleCachedLayoutResult()) {
-      // TODO(dgrogan): We won't get here when laying out the FlexNG item and
-      // its descendant(s) for the first time because the item (|this_box|)
-      // doesn't have anything in its cache. That seems bad because this method
-      // returns true even when the item has a fixed definite height. There
-      // doesn't seem to be an easy way to check the flex item's definiteness
-      // here because the flex item's LayoutObject doesn't have a
-      // BoxLayoutExtraInput that we could add a flag to.
-      const NGConstraintSpace& space = result->GetConstraintSpaceForCaching();
-      if (space.IsFixedBlockSize() && !space.IsInitialBlockSizeIndefinite())
-        return false;
-    }
-  }
-
-  if ((logical_height_length.IsAutoOrContentOrIntrinsic() ||
-       logical_height_length.IsFillAvailable()) &&
-      !IsOutOfFlowPositionedWithImplicitHeight(this))
-    return true;
-
-  if (cb) {
-    // We need the containing block to have a definite block-size in order to
-    // resolve the block-size of the descendant, except when in quirks mode.
-    // Flexboxes follow strict behavior even in quirks mode, though.
-    if (!GetDocument().InQuirksMode() || cb->IsFlexibleBoxIncludingNG()) {
-      if (this_box && this_box->GetSingleCachedLayoutResult() &&
-          !this_box->GetBoxLayoutExtraInput()) {
-        return this_box->GetSingleCachedLayoutResult()
-                   ->GetConstraintSpaceForCaching()
-                   .AvailableSize()
-                   .block_size == LayoutUnit(-1);
-      }
-      return !cb->HasDefiniteLogicalHeight();
-    }
-  }
-
-  return false;
-}
-
 LayoutBlock* LayoutBoxModelObject::StickyContainer() const {
   return ContainingBlock();
 }
@@ -573,7 +487,6 @@ bool LayoutBoxModelObject::UpdateStickyPositionConstraints() {
   if (!StyleRef().HasStickyConstrainedPosition()) {
     if (StickyConstraints()) {
       SetStickyConstraints(nullptr);
-      SetNeedsPaintPropertyUpdate();
       return true;
     }
     return false;
@@ -622,10 +535,6 @@ bool LayoutBoxModelObject::UpdateStickyPositionConstraints() {
   MapCoordinatesFlags flags =
       kIgnoreTransforms | kIgnoreScrollOffset | kIgnoreStickyOffset;
 
-  LayoutUnit max_container_width =
-      IsA<LayoutView>(sticky_container)
-          ? sticky_container->LogicalWidth()
-          : sticky_container->ContainingBlockLogicalWidthForContent();
   // Sticky positioned element ignore any override logical width on the
   // containing block, as they don't call containingBlockLogicalWidthForContent.
   // It's unclear whether this is totally fine.
@@ -655,15 +564,8 @@ bool LayoutBoxModelObject::UpdateStickyPositionConstraints() {
   // ensure that space between the sticky element and its containing flow box.
   // It is an open issue whether the margin should collapse.
   // See https://www.w3.org/TR/css-position-3/#sticky-pos
-  scroll_container_relative_containing_block_rect.ContractEdges(
-      MinimumValueForLength(sticky_container->StyleRef().PaddingTop(),
-                            max_container_width),
-      MinimumValueForLength(sticky_container->StyleRef().PaddingRight(),
-                            max_container_width),
-      MinimumValueForLength(sticky_container->StyleRef().PaddingBottom(),
-                            max_container_width),
-      MinimumValueForLength(sticky_container->StyleRef().PaddingLeft(),
-                            max_container_width));
+  scroll_container_relative_containing_block_rect.Contract(
+      sticky_container->PaddingOutsets());
   if (!RuntimeEnabledFeatures::LayoutIgnoreMarginsForStickyEnabled()) {
     scroll_container_relative_containing_block_rect.ContractEdges(
         MinimumValueForLength(StyleRef().MarginTop(), max_width),
@@ -763,7 +665,6 @@ bool LayoutBoxModelObject::UpdateStickyPositionConstraints() {
   scrollable_area->AddStickyLayer(Layer());
   constraints->ComputeStickyOffset(scrollable_area->ScrollPosition());
   SetStickyConstraints(constraints);
-  SetNeedsPaintPropertyUpdate();
   return true;
 }
 

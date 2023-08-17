@@ -500,7 +500,7 @@ void ReadAnythingAppController::OnAXTreeDistilled(
     // replace this function call with firing an event.
     std::string script = "chrome.readingMode.showEmpty();";
     render_frame_->ExecuteJavaScript(base::ASCIIToUTF16(script));
-    if (isSelectable()) {
+    if (IsSelectable()) {
       base::UmaHistogramEnumeration(string_constants::kEmptyStateHistogramName,
                                     ReadAnythingEmptyState::kEmptyStateShown);
     }
@@ -589,8 +589,15 @@ gin::ObjectTemplateBuilder ReadAnythingAppController::GetObjectTemplateBuilder(
                    &ReadAnythingAppController::ForegroundColor)
       .SetProperty("letterSpacing", &ReadAnythingAppController::LetterSpacing)
       .SetProperty("lineSpacing", &ReadAnythingAppController::LineSpacing)
+      .SetProperty("standardLineSpacing",
+                   &ReadAnythingAppController::StandardLineSpacing)
+      .SetProperty("looseLineSpacing",
+                   &ReadAnythingAppController::LooseLineSpacing)
+      .SetProperty("veryLooseLineSpacing",
+                   &ReadAnythingAppController::VeryLooseLineSpacing)
       .SetProperty("isWebUIToolbarVisible",
-                   &ReadAnythingAppController::isWebUIToolbarEnabled)
+                   &ReadAnythingAppController::IsWebUIToolbarEnabled)
+      .SetProperty("isSelectable", &ReadAnythingAppController::IsSelectable)
       .SetMethod("getChildren", &ReadAnythingAppController::GetChildren)
       .SetMethod("getTextDirection",
                  &ReadAnythingAppController::GetTextDirection)
@@ -604,7 +611,14 @@ gin::ObjectTemplateBuilder ReadAnythingAppController::GetObjectTemplateBuilder(
       .SetMethod("onCopy", &ReadAnythingAppController::OnCopy)
       .SetMethod("onScroll", &ReadAnythingAppController::OnScroll)
       .SetMethod("onLinkClicked", &ReadAnythingAppController::OnLinkClicked)
-      .SetMethod("isSelectable", &ReadAnythingAppController::isSelectable)
+      .SetMethod("onStandardLineSpacing",
+                 &ReadAnythingAppController::OnStandardLineSpacing)
+      .SetMethod("onLooseLineSpacing",
+                 &ReadAnythingAppController::OnLooseLineSpacing)
+      .SetMethod("onVeryLooseLineSpacing",
+                 &ReadAnythingAppController::OnVeryLooseLineSpacing)
+      .SetMethod("getLineSpacingValue",
+                 &ReadAnythingAppController::GetLineSpacingValue)
       .SetMethod("onSelectionChange",
                  &ReadAnythingAppController::OnSelectionChange)
       .SetMethod("setContentForTesting",
@@ -657,6 +671,16 @@ float ReadAnythingAppController::LetterSpacing() const {
 
 float ReadAnythingAppController::LineSpacing() const {
   return model_.line_spacing();
+}
+
+int ReadAnythingAppController::StandardLineSpacing() {
+  return static_cast<int>(read_anything::mojom::LineSpacing::kStandard);
+}
+int ReadAnythingAppController::LooseLineSpacing() {
+  return static_cast<int>(read_anything::mojom::LineSpacing::kLoose);
+}
+int ReadAnythingAppController::VeryLooseLineSpacing() {
+  return static_cast<int>(read_anything::mojom::LineSpacing::kVeryLoose);
 }
 
 std::vector<ui::AXNodeID> ReadAnythingAppController::GetChildren(
@@ -764,11 +788,11 @@ bool ReadAnythingAppController::IsOverline(ui::AXNodeID ax_node_id) const {
   return ax_node->HasTextStyle(ax::mojom::TextStyle::kOverline);
 }
 
-bool ReadAnythingAppController::isSelectable() const {
+bool ReadAnythingAppController::IsSelectable() const {
   return model_.active_tree_selectable();
 }
 
-bool ReadAnythingAppController::isWebUIToolbarEnabled() const {
+bool ReadAnythingAppController::IsWebUIToolbarEnabled() const {
   return features::IsReadAnythingWebUIToolbarEnabled();
 }
 
@@ -801,6 +825,31 @@ void ReadAnythingAppController::OnLinkClicked(ui::AXNodeID ax_node_id) const {
     return;
   }
   page_handler_->OnLinkClicked(model_.active_tree_id(), ax_node_id);
+}
+
+void ReadAnythingAppController::OnStandardLineSpacing() {
+  page_handler_->OnLineSpaceChange(
+      read_anything::mojom::LineSpacing::kStandard);
+}
+
+void ReadAnythingAppController::OnLooseLineSpacing() {
+  page_handler_->OnLineSpaceChange(read_anything::mojom::LineSpacing::kLoose);
+}
+
+void ReadAnythingAppController::OnVeryLooseLineSpacing() {
+  page_handler_->OnLineSpaceChange(
+      read_anything::mojom::LineSpacing::kVeryLoose);
+}
+
+double ReadAnythingAppController::GetLineSpacingValue(int line_spacing) const {
+  if (line_spacing >
+      static_cast<int>(read_anything::mojom::LineSpacing::kMaxValue)) {
+    return model_.GetLineSpacingValue(
+        read_anything::mojom::LineSpacing::kDefaultValue);
+  }
+
+  return model_.GetLineSpacingValue(
+      static_cast<read_anything::mojom::LineSpacing>(line_spacing));
 }
 
 void ReadAnythingAppController::OnSelectionChange(ui::AXNodeID anchor_node_id,

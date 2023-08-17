@@ -11,7 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/functional/callback.h"
 #include "base/gtest_prod_util.h"
-#include "base/memory/raw_ptr.h"
+#include "base/memory/raw_ref.h"
 #include "base/memory/weak_ptr.h"
 #include "components/autofill/core/browser/autofill_trigger_source.h"
 #include "components/autofill/core/browser/ui/autofill_popup_delegate.h"
@@ -37,8 +37,7 @@ class AutofillExternalDelegate : public AutofillPopupDelegate {
  public:
   // Creates an AutofillExternalDelegate for the specified
   // BrowserAutofillManager and AutofillDriver.
-  AutofillExternalDelegate(BrowserAutofillManager* manager,
-                           AutofillDriver* driver);
+  explicit AutofillExternalDelegate(BrowserAutofillManager* manager);
 
   AutofillExternalDelegate(const AutofillExternalDelegate&) = delete;
   AutofillExternalDelegate& operator=(const AutofillExternalDelegate&) = delete;
@@ -120,16 +119,23 @@ class AutofillExternalDelegate : public AutofillPopupDelegate {
 
   const FormData& query_form() const { return query_form_; }
 
- protected:
-  base::WeakPtr<AutofillExternalDelegate> GetWeakPtr();
+  base::WeakPtr<AutofillExternalDelegate> GetWeakPtrForTest() {
+    return GetWeakPtr();
+  }
 
  private:
   FRIEND_TEST_ALL_PREFIXES(AutofillExternalDelegateUnitTest,
                            FillCreditCardFormImpl);
 
+  base::WeakPtr<AutofillExternalDelegate> GetWeakPtr();
+
   // Called when a credit card is scanned using device camera.
   void OnCreditCardScanned(const AutofillTriggerSource trigger_source,
                            const CreditCard& card);
+
+  // Fills the form field with the given plus address.
+  // Called when a plus address is created.
+  void OnPlusAddressCreated(const std::string& plus_address);
 
   // Fills the form with the Autofill data corresponding to `backend_id`.
   // If `is_preview` is true then this is just a preview to show the user what
@@ -164,11 +170,7 @@ class AutofillExternalDelegate : public AutofillPopupDelegate {
   // Returns the text (i.e. |Suggestion| value) for Chrome autofill options.
   std::u16string GetSettingsSuggestionValue() const;
 
-  const raw_ptr<BrowserAutofillManager> manager_;  // weak.
-
-  // Provides driver-level context to the shared code of the component. Must
-  // outlive this object.
-  const raw_ptr<AutofillDriver, DanglingUntriaged> driver_;  // weak
+  const raw_ref<BrowserAutofillManager> manager_;
 
   // The current form and field selected by Autofill.
   FormData query_form_;

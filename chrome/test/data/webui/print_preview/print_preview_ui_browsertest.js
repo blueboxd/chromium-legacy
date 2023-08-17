@@ -710,6 +710,13 @@ TEST_F(
       this.runMochaTest(
           printer_setup_info_cros_test.TestNames.MessageMatchesMessageType);
     });
+
+TEST_F(
+    'PrintPreviewPrinterSetupInfoCrosTest', 'ManagePrintersButtonMetrics',
+    function() {
+      this.runMochaTest(
+          printer_setup_info_cros_test.TestNames.ManagePrintersButtonMetrics);
+    });
 GEN('#endif')
 
 GEN('#if BUILDFLAG(IS_CHROMEOS)');
@@ -815,6 +822,20 @@ TEST_F(
                             .PrinterSetupAssistanceHasNoDestinations);
     });
 
+TEST_F(
+    'PrintPreviewDestinationDialogCrosTest',
+    'ManagePrintersMetrics_HasDestinations', function() {
+      this.runMochaTest(destination_dialog_cros_test.TestNames
+                            .ManagePrintersMetrics_HasDestinations);
+    });
+
+TEST_F(
+    'PrintPreviewDestinationDialogCrosTest',
+    'ManagePrintersMetrics_HasNoDestinations', function() {
+      this.runMochaTest(destination_dialog_cros_test.TestNames
+                            .ManagePrintersMetrics_HasNoDestinations);
+    });
+
 GEN('#endif');
 
 var PrintPreviewAdvancedDialogTest = class extends PrintPreviewTest {
@@ -880,6 +901,10 @@ TEST_F(
       this.runMochaTest(
           preview_area_test.TestNames.StateChangesPrinterSetupCros);
     });
+
+TEST_F('PrintPreviewPreviewAreaTest', 'ManagePrinterMetricsCros', function() {
+  this.runMochaTest(preview_area_test.TestNames.ManagePrinterMetricsCros);
+});
 GEN('#endif');
 
 TEST_F('PrintPreviewPreviewAreaTest', 'ViewportSizeChanges', function() {
@@ -1319,10 +1344,17 @@ var PrintPreviewPrinterStatusTestCros = class extends PrintPreviewTest {
 };
 
 TEST_F(
-    'PrintPreviewPrinterStatusTestCros', 'PrinterStatusUpdatesColor',
+    'PrintPreviewPrinterStatusTestCros', 'PrinterStatusUpdatesColor_FlagOff',
     function() {
       this.runMochaTest(
-          printer_status_test_cros.TestNames.PrinterStatusUpdatesColor);
+          printer_status_test_cros.TestNames.PrinterStatusUpdatesColor_FlagOff);
+    });
+
+TEST_F(
+    'PrintPreviewPrinterStatusTestCros', 'PrinterStatusUpdatesColor_FlagOn',
+    function() {
+      this.runMochaTest(
+          printer_status_test_cros.TestNames.PrinterStatusUpdatesColor_FlagOn);
     });
 
 TEST_F(
@@ -1593,6 +1625,17 @@ var PrintPreviewMediaSizeSettingsTest = class extends PrintPreviewTest {
 };
 
 TEST_F('PrintPreviewMediaSizeSettingsTest', 'All', function() {
+  mocha.run();
+});
+
+var PrintPreviewMediaTypeSettingsTest = class extends PrintPreviewTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://print/test_loader.html?module=print_preview/media_type_settings_test.js';
+  }
+};
+
+TEST_F('PrintPreviewMediaTypeSettingsTest', 'All', function() {
   mocha.run();
 });
 

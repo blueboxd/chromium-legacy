@@ -7,12 +7,14 @@
 #include <algorithm>
 #include <vector>
 
+#include "base/command_line.h"
 #include "base/containers/cxx20_erase.h"
 #include "base/feature_list.h"
 #include "base/json/json_string_value_serializer.h"
 #include "components/cbor/diagnostic_writer.h"
 #include "components/cbor/values.h"
 #include "components/cbor/writer.h"
+#include "content/public/common/content_switches.h"
 #include "content/services/auction_worklet/public/mojom/bidder_worklet.mojom.h"
 #include "third_party/abseil-cpp/absl/numeric/bits.h"
 #include "third_party/blink/public/common/features.h"
@@ -30,11 +32,27 @@ const uint8_t kRequestVersionBitOffset = 5;
 const uint8_t kGzipCompression = 2;
 const uint8_t kCompressionBitOffset = 0;
 
-cbor::Value SerializeAds(const std::vector<blink::InterestGroup::Ad>& ads) {
+cbor::Value SerializeAds(const std::vector<blink::InterestGroup::Ad>& ads,
+                         bool include_full_ads) {
   cbor::Value::ArrayValue result;
   for (const auto& ad : ads) {
-    if (ad.ad_render_id) {
-      result.emplace_back(ad.ad_render_id.value());
+    if (include_full_ads) {
+      cbor::Value::MapValue obj;
+      obj[cbor::Value("renderURL")] = cbor::Value(ad.render_url.spec());
+      if (ad.metadata) {
+        obj[cbor::Value("metadata")] = cbor::Value(ad.metadata.value());
+      }
+      if (ad.size_group) {
+        obj[cbor::Value("sizeGroup")] = cbor::Value(ad.size_group.value());
+      }
+      if (ad.ad_render_id) {
+        obj[cbor::Value("adRenderId")] = cbor::Value(ad.ad_render_id.value());
+      }
+      result.emplace_back(std::move(obj));
+    } else {
+      if (ad.ad_render_id) {
+        result.emplace_back(ad.ad_render_id.value());
+      }
     }
   }
   return cbor::Value(std::move(result));
@@ -60,12 +78,20 @@ cbor::Value SerializeInterestGroup(base::Time start_time,
     group_obj[cbor::Value("userBiddingSignals")] =
         cbor::Value(*group.interest_group.user_bidding_signals);
   }
-  if (group.interest_group.ads) {
-    group_obj[cbor::Value("ads")] = SerializeAds(*group.interest_group.ads);
-  }
-  if (group.interest_group.ad_components) {
-    group_obj[cbor::Value("adComponents")] =
-        SerializeAds(*group.interest_group.ad_components);
+  if (!group.interest_group.auction_server_request_flags.Has(
+          blink::AuctionServerRequestFlagsEnum::kOmitAds)) {
+    if (group.interest_group.ads) {
+      group_obj[cbor::Value("ads")] = SerializeAds(
+          *group.interest_group.ads,
+          group.interest_group.auction_server_request_flags.Has(
+              blink::AuctionServerRequestFlagsEnum::kIncludeFullAds));
+    }
+    if (group.interest_group.ad_components) {
+      group_obj[cbor::Value("adComponents")] = SerializeAds(
+          *group.interest_group.ad_components,
+          group.interest_group.auction_server_request_flags.Has(
+              blink::AuctionServerRequestFlagsEnum::kIncludeFullAds));
+    }
   }
   cbor::Value::MapValue browser_signals;
   browser_signals[cbor::Value("bidCount")] =
@@ -93,12 +119,37 @@ cbor::Value SerializeInterestGroup(base::Time start_time,
       // Just do our best regardless.
       continue;
     }
-    std::string* ad_render_id = ad->GetDict().FindString("adRenderId");
-    if (ad_render_id) {
-      tuple.emplace_back(*ad_render_id);
+    if (group.interest_group.auction_server_request_flags.Has(
+            blink::AuctionServerRequestFlagsEnum::kIncludeFullAds)) {
+      cbor::Value::MapValue obj;
+      for (const auto kv : ad->GetDict()) {
+        switch (kv.second.type()) {
+          case base::Value::Type::BOOLEAN:
+            obj[cbor::Value(kv.first)] = cbor::Value(kv.second.GetBool());
+            break;
+          case base::Value::Type::INTEGER:
+            obj[cbor::Value(kv.first)] = cbor::Value(kv.second.GetInt());
+            break;
+          case base::Value::Type::DOUBLE:
+            obj[cbor::Value(kv.first)] = cbor::Value(kv.second.GetDouble());
+            break;
+          case base::Value::Type::STRING:
+            obj[cbor::Value(kv.first)] = cbor::Value(kv.second.GetString());
+            break;
+          default:
+            LOG(ERROR) << "Unsupported type in prevWins.ad for key '"
+                       << kv.first << "': " << kv.second.DebugString();
+        }
+      }
+      tuple.emplace_back(std::move(obj));
     } else {
-      // If there's no adRenderId we still can send the time.
-      tuple.emplace_back("");
+      std::string* ad_render_id = ad->GetDict().FindString("adRenderId");
+      if (ad_render_id) {
+        tuple.emplace_back(*ad_render_id);
+      } else {
+        // If there's no adRenderId we still can send the time.
+        tuple.emplace_back("");
+      }
     }
     prev_wins.emplace_back(std::move(tuple));
   }
@@ -181,6 +232,18 @@ BiddingAndAuctionData BiddingAndAuctionSerializer::Build() {
 
   message_obj[cbor::Value("interestGroups")] =
       cbor::Value(std::move(groups_map));
+
+  std::string debug_key =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kProtectedAudiencesConsentedDebugToken);
+  if (!debug_key.empty()) {
+    cbor::Value::MapValue debug_map;
+    debug_map[cbor::Value("isConsented")] = cbor::Value(true);
+    debug_map[cbor::Value("token")] = cbor::Value(debug_key);
+
+    message_obj[cbor::Value("consentedDebugConfig")] =
+        cbor::Value(std::move(debug_map));
+  }
 
   cbor::Value message(std::move(message_obj));
   absl::optional<std::vector<uint8_t>> maybe_msg = cbor::Writer::Write(message);

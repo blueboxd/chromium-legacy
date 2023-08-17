@@ -45,7 +45,6 @@
 #include "ash/wm/window_util.h"
 #include "base/auto_reset.h"
 #include "base/containers/contains.h"
-#include "base/containers/cxx20_erase.h"
 #include "base/containers/flat_set.h"
 #include "base/functional/bind.h"
 #include "base/metrics/histogram_functions.h"
@@ -60,7 +59,6 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window_delegate.h"
-#include "ui/base/class_property.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/ime/ash/ime_bridge.h"
 #include "ui/base/ime/input_method.h"
@@ -218,6 +216,11 @@ bool IsInTabletMode() {
   return tablet_mode_controller && tablet_mode_controller->InTabletMode();
 }
 
+bool IsInTabletTransitionMode() {
+  return chromeos::TabletState::Get()->state() !=
+         display::TabletState::kInClamshellMode;
+}
+
 bool IsInOverviewSession() {
   OverviewController* overview_controller = Shell::Get()->overview_controller();
   return overview_controller && overview_controller->InOverviewSession();
@@ -268,17 +271,18 @@ void TriggerWMEventToSnapWindow(WindowState* window_state,
 // TODO(b/286963080) : The removal of snap group should be handled in
 // `SnapGroup`.
 void MaybeRemoveSnapGroupContainingWindow(aura::Window* window) {
-  // Snap group should not be removed when entering overview mode, as it is not
-  // an exit point for snap group. The snap groups vector stored in
+  // Snap group should not be removed when entering overview or tablet mode, as
+  // it is not an exit point for snap group. The snap groups vector stored in
   // `SnapGroupController` will be used later to restore the snapped state of
-  // windows in snap group on overview exit.
+  // windows in snap group on overview or tablet mode exit.
   Shell* shell = Shell::Get();
-  if (!window || !IsSnapGroupEnabledInClamshellMode() ||
-      shell->overview_controller()->InOverviewSession()) {
+  if (!window || !SnapGroupController::Get() ||
+      shell->overview_controller()->InOverviewSession() ||
+      IsInTabletTransitionMode()) {
     return;
   }
 
-  SnapGroupController* snap_group_controller = shell->snap_group_controller();
+  SnapGroupController* snap_group_controller = SnapGroupController::Get();
   if (auto* snap_group =
           snap_group_controller->GetSnapGroupForGivenWindow(window)) {
     snap_group_controller->RemoveSnapGroup(snap_group);
@@ -784,8 +788,7 @@ SplitViewController::SplitViewController(aura::Window* root_window)
           std::make_unique<SplitViewMetricsController>(this)) {
   Shell::Get()->accessibility_controller()->AddObserver(this);
   Shell::Get()->tablet_mode_controller()->AddObserver(this);
-  if (SnapGroupController* snap_group_controller =
-          Shell::Get()->snap_group_controller()) {
+  if (SnapGroupController* snap_group_controller = SnapGroupController::Get()) {
     snap_group_controller->AddObserver(this);
   }
   split_view_type_ = IsInTabletMode() ? SplitViewType::kTabletType
@@ -799,8 +802,7 @@ SplitViewController::~SplitViewController() {
   if (Shell::Get()->accessibility_controller()) {
     Shell::Get()->accessibility_controller()->RemoveObserver(this);
   }
-  if (SnapGroupController* snap_group_controller =
-          Shell::Get()->snap_group_controller()) {
+  if (SnapGroupController* snap_group_controller = SnapGroupController::Get()) {
     snap_group_controller->RemoveObserver(this);
   }
 
@@ -916,7 +918,9 @@ void SplitViewController::SnapWindow(aura::Window* window,
   DCHECK(window && CanSnapWindow(window));
   DCHECK_NE(snap_position, SnapPosition::kNone);
   DCHECK(!is_resizing_with_divider_);
-  DCHECK(!IsDividerAnimating());
+  if (IsDividerAnimating()) {
+    StopSnapAnimation();
+  }
 
   OverviewSession* overview_session = GetOverviewSession();
   if (activate_window ||
@@ -1154,8 +1158,7 @@ void SplitViewController::SwapWindows(SwapWindowsSource swap_windows_source) {
     return;
   }
 
-  SnapGroupController* snap_group_controller =
-      Shell::Get()->snap_group_controller();
+  SnapGroupController* snap_group_controller = SnapGroupController::Get();
   if (snap_group_controller && snap_group_controller->AreWindowsInSnapGroup(
                                    primary_window_, secondary_window_)) {
     snap_group_controller->RemoveSnapGroupContainingWindow(primary_window_);
@@ -1562,8 +1565,7 @@ void SplitViewController::EndSplitView(EndReason end_reason) {
     is_resizing_with_divider_ = false;
     if (is_divider_animating) {
       // Don't call StopAndShoveAnimatedDivider as it will call observers.
-      divider_snap_animation_->Stop();
-      divider_position_ = divider_snap_animation_->ending_position();
+      StopSnapAnimation();
     }
     EndResizeWithDividerImpl();
   }
@@ -1745,7 +1747,7 @@ void SplitViewController::MaybeDetachWindow(aura::Window* dragged_window) {
   // If one of the windows in the snap group is dragged,  it may result in
   // ending split view and some post processings to be done such as removing
   // snap group and split view divider.
-  auto* snap_group_controller = Shell::Get()->snap_group_controller();
+  auto* snap_group_controller = SnapGroupController::Get();
   if (snap_group_controller && InSplitViewMode() &&
       !is_resizing_with_divider_ &&
       !Shell::Get()->overview_controller()->InOverviewSession()) {
@@ -1761,7 +1763,7 @@ void SplitViewController::OpenPartialOverviewToUpdateSnapGroup(
   default_snap_position_ = snap_position;
 
   if (!IsInOverviewSession() && !DesksController::Get()->animation()) {
-    Shell::Get()->snap_group_controller()->RemoveSnapGroupContainingWindow(
+    SnapGroupController::Get()->RemoveSnapGroupContainingWindow(
         primary_window_);
     split_view_divider_.reset();
     in_snap_group_creation_session_ = true;
@@ -2355,7 +2357,7 @@ void SplitViewController::OnSnapGroupCreated() {
 }
 
 void SplitViewController::OnSnapGroupRemoved() {
-  CHECK(IsSnapGroupEnabledInClamshellMode());
+  CHECK(Shell::Get()->snap_group_controller());
   split_view_divider_.reset();
 }
 
@@ -2678,12 +2680,16 @@ int SplitViewController::GetClosestFixedDividerPosition() {
 }
 
 void SplitViewController::StopAndShoveAnimatedDivider() {
-  DCHECK(IsDividerAnimating());
+  CHECK(IsDividerAnimating());
 
-  divider_snap_animation_->Stop();
-  divider_position_ = divider_snap_animation_->ending_position();
+  StopSnapAnimation();
   NotifyDividerPositionChanged();
   UpdateSnappedWindowsAndDividerBounds();
+}
+
+void SplitViewController::StopSnapAnimation() {
+  divider_snap_animation_->Stop();
+  divider_position_ = divider_snap_animation_->ending_position();
 }
 
 bool SplitViewController::ShouldEndSplitViewAfterResizingAtEdge() {
@@ -2741,8 +2747,7 @@ void SplitViewController::OnWindowSnapped(
   RestoreTransformIfApplicable(window);
   UpdateStateAndNotifyObservers();
 
-  SnapGroupController* snap_group_controller =
-      Shell::Get()->snap_group_controller();
+  SnapGroupController* snap_group_controller = SnapGroupController::Get();
   const bool snap_group_enabled_in_clamshell =
       IsSnapGroupEnabledInClamshellMode();
   if (state_ == State::kBothSnapped && snap_group_enabled_in_clamshell &&

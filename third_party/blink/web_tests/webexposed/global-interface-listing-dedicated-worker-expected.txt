@@ -523,6 +523,14 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method readAsBinaryString
 [Worker]     method readAsDataURL
 [Worker]     method readAsText
+[Worker] interface FileSystemChangeRecord
+[Worker]     attribute @@toStringTag
+[Worker]     getter changedHandle
+[Worker]     getter relativePathComponents
+[Worker]     getter relativePathMovedFrom
+[Worker]     getter root
+[Worker]     getter type
+[Worker]     method constructor
 [Worker] interface FileSystemDirectoryHandle : FileSystemHandle
 [Worker]     attribute @@toStringTag
 [Worker]     method @@asyncIterator
@@ -552,8 +560,15 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method queryPermission
 [Worker]     method remove
 [Worker]     method requestPermission
+[Worker] interface FileSystemObserver
+[Worker]     attribute @@toStringTag
+[Worker]     method constructor
+[Worker]     method disconnect
+[Worker]     method observe
+[Worker]     method unobserve
 [Worker] interface FileSystemSyncAccessHandle
 [Worker]     attribute @@toStringTag
+[Worker]     getter mode
 [Worker]     method close
 [Worker]     method constructor
 [Worker]     method flush
@@ -991,7 +1006,6 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     getter name
 [Worker]     getter objectStore
 [Worker]     getter unique
-[Worker]     method batchGetAll
 [Worker]     method constructor
 [Worker]     method count
 [Worker]     method get
@@ -1021,7 +1035,6 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     getter name
 [Worker]     getter transaction
 [Worker]     method add
-[Worker]     method batchGetAll
 [Worker]     method clear
 [Worker]     method constructor
 [Worker]     method count
@@ -3593,7 +3606,7 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker] interface WebSocketStream
 [Worker]     attribute @@toStringTag
 [Worker]     getter closed
-[Worker]     getter connection
+[Worker]     getter opened
 [Worker]     getter url
 [Worker]     method close
 [Worker]     method constructor

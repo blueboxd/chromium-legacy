@@ -38,8 +38,8 @@ import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteControllerPro
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteCoordinator;
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteDelegate;
 import org.chromium.chrome.browser.omnibox.suggestions.OmniboxSuggestionsDropdownScrollListener;
-import org.chromium.chrome.browser.omnibox.suggestions.base.HistoryClustersProcessor.OpenHistoryClustersDelegate;
 import org.chromium.chrome.browser.omnibox.suggestions.basic.BasicSuggestionProcessor.BookmarkState;
+import org.chromium.chrome.browser.omnibox.suggestions.history_clusters.HistoryClustersProcessor.OpenHistoryClustersDelegate;
 import org.chromium.chrome.browser.omnibox.voice.VoiceRecognitionHandler;
 import org.chromium.chrome.browser.privacy.settings.PrivacyPreferencesManager;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -105,6 +105,7 @@ public class LocationBarCoordinator
     private final int mDropdownIncognitoBackgroundColor;
     private final int mSuggestionStandardBackgroundColor;
     private final int mSuggestionIncognitoBackgroundColor;
+    private boolean mShortCircuitUnfocusAnimation;
 
     /**
      * Creates {@link LocationBarCoordinator} and its subcoordinator: {@link
@@ -427,6 +428,8 @@ public class LocationBarCoordinator
 
     @Override
     public void loadUrl(String url, int transition, long inputStart) {
+        mShortCircuitUnfocusAnimation =
+                isUrlBarFocused() && OmniboxFeatures.shouldShortCircuitUnfocusAnimation();
         mLocationBarMediator.loadUrl(url, transition, inputStart);
     }
 
@@ -658,6 +661,19 @@ public class LocationBarCoordinator
         mLocationBarMediator.setShouldShowButtonsWhenUnfocusedForTablet(shouldShowButtons);
     }
 
+    /**
+     * Whether the unfocus animation should be skipped to speed up navigation. If short circuiting
+     * occurs, the caller should immediately call {@link #onUnfocusAnimationShortCircuited()}.
+     */
+    public boolean shouldShortCircuitUnfocusAnimation() {
+        return mShortCircuitUnfocusAnimation;
+    }
+
+    /** Call to report that the focus animation was short circuited. */
+    public void onUnfocusAnimationShortCircuited() {
+        mShortCircuitUnfocusAnimation = false;
+    }
+
     // End tablet-specific methods.
 
     public void setVoiceRecognitionHandlerForTesting(
@@ -708,19 +724,5 @@ public class LocationBarCoordinator
     public int getSuggestionBackgroundColor(boolean isIncognito) {
         return isIncognito ? mSuggestionIncognitoBackgroundColor
                            : mSuggestionStandardBackgroundColor;
-    }
-
-    /**
-     * Function used to position the url bar inside the location bar during omnibox animation.
-     *
-     * @param urlExpansionPercent The current expansion percent, 1 is fully focused and 0 is
-     *                            completely unfocused.
-     * @param isOnNtp True if tab mode is the NTP.
-     * @return The X translation for the URL bar, used in the toolbar animation.
-     */
-    public float getUrlBarTranslationXForToolbarAnimation(
-            float urlExpansionPercent, boolean isOnNtp) {
-        return mLocationBarMediator.getUrlBarTranslationXForToolbarAnimation(
-                urlExpansionPercent, isOnNtp);
     }
 }

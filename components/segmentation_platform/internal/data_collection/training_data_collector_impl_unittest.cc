@@ -10,6 +10,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/metrics/metrics_hashes.h"
 #include "base/test/gmock_callback_support.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/simple_test_clock.h"
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
@@ -22,6 +23,7 @@
 #include "components/segmentation_platform/internal/database/config_holder.h"
 #include "components/segmentation_platform/internal/database/mock_signal_storage_config.h"
 #include "components/segmentation_platform/internal/database/test_segment_info_database.h"
+#include "components/segmentation_platform/internal/execution/processing/feature_list_query_processor.h"
 #include "components/segmentation_platform/internal/execution/processing/mock_feature_list_query_processor.h"
 #include "components/segmentation_platform/internal/metadata/metadata_utils.h"
 #include "components/segmentation_platform/internal/mock_ukm_data_manager.h"
@@ -31,6 +33,7 @@
 #include "components/segmentation_platform/internal/selection/segmentation_result_prefs.h"
 #include "components/segmentation_platform/internal/signals/mock_histogram_signal_handler.h"
 #include "components/segmentation_platform/internal/signals/mock_user_action_signal_handler.h"
+#include "components/segmentation_platform/internal/stats.h"
 #include "components/segmentation_platform/public/config.h"
 #include "components/segmentation_platform/public/features.h"
 #include "components/segmentation_platform/public/local_state_helper.h"
@@ -54,9 +57,9 @@ using Segmentation_ModelExecution =
     ::ukm::builders::Segmentation_ModelExecution;
 
 constexpr auto kTestOptimizationTarget0 =
-    SegmentId::OPTIMIZATION_TARGET_SEGMENTATION_NEW_TAB;
+    SegmentId::OPTIMIZATION_TARGET_SEGMENTATION_SHOPPING_USER;
 constexpr auto kTestOptimizationTarget1 =
-    SegmentId::OPTIMIZATION_TARGET_SEGMENTATION_SHARE;
+    SegmentId::OPTIMIZATION_TARGET_SEGMENTATION_SEARCH_USER;
 constexpr auto kTestOptimizationTarget2 =
     SegmentId::OPTIMIZATION_TARGET_SEGMENTATION_ADAPTIVE_TOOLBAR;
 constexpr char kHistogramName0[] = "histogram0";
@@ -69,6 +72,20 @@ constexpr DecisionType kOnDemandDecisionType =
     proto::TrainingOutputs::TriggerConfig::ONDEMAND;
 constexpr DecisionType kPeriodicDecisionType =
     proto::TrainingOutputs::TriggerConfig::PERIODIC;
+
+class MockModelManager : public ModelManager {
+ public:
+  MOCK_METHOD(ModelProvider*,
+              GetModelProvider,
+              (proto::SegmentId segment_id, proto::ModelSource model_source));
+
+  MOCK_METHOD(void, Initialize, ());
+
+  MOCK_METHOD(
+      void,
+      SetSegmentationModelUpdatedCallbackForTesting,
+      (ModelManager::SegmentationModelUpdatedCallback model_updated_callback));
+};
 
 class TrainingDataCollectorImplTest : public ::testing::Test {
  public:
@@ -109,15 +126,14 @@ class TrainingDataCollectorImplTest : public ::testing::Test {
     configs_.emplace_back(std::make_unique<Config>());
     configs_[0]->segmentation_key = kSegmentationKey;
     configs_[0]->segments.insert(
-        {SegmentId::OPTIMIZATION_TARGET_SEGMENTATION_NEW_TAB,
+        {kTestOptimizationTarget0,
          std::make_unique<Config::SegmentMetadata>("UmaNameNewTab")});
     configs_[0]->segments.insert(
-        {SegmentId::OPTIMIZATION_TARGET_SEGMENTATION_SHARE,
+        {kTestOptimizationTarget1,
          std::make_unique<Config::SegmentMetadata>("UmaNameShare")});
 
     SegmentationResultPrefs result_prefs(&prefs_);
-    SelectedSegment selected_segment(
-        SegmentId::OPTIMIZATION_TARGET_SEGMENTATION_SHARE, 10);
+    SelectedSegment selected_segment(kTestOptimizationTarget1, 10);
     selected_segment.selection_time = base::Time::Now() - base::Days(1);
     result_prefs.SaveSegmentationResultToPref(kSegmentationKey,
                                               selected_segment);
@@ -158,12 +174,12 @@ class TrainingDataCollectorImplTest : public ::testing::Test {
     CachedResultWriter(std::make_unique<ClientResultPrefs>(&prefs_), &clock_)
         .UpdatePrefsIfExpired(configs_[1].get(), client_2_result,
                               PlatformOptions::CreateDefault());
-
     storage_service_ = std::make_unique<StorageService>(
         std::move(test_segment_info_db), nullptr,
         std::move(signal_storage_config),
         std::make_unique<DefaultModelManager>(nullptr,
                                               base::flat_set<SegmentId>()),
+        std::make_unique<MockModelManager>(),
         std::make_unique<ConfigHolder>(std::move(configs_)),
         &ukm_data_manager_);
 
@@ -175,6 +191,8 @@ class TrainingDataCollectorImplTest : public ::testing::Test {
         &histogram_signal_handler_, &user_action_signal_handler_,
         storage_service_.get(), &prefs_, &clock_,
         cached_result_provider_.get());
+
+    collector_->SetSamplingRateForTesting(1);
   }
 
  protected:
@@ -201,14 +219,13 @@ class TrainingDataCollectorImplTest : public ::testing::Test {
   }
 
   proto::SegmentInfo* CreateSegmentInfo(SegmentId segment_id,
-                                        DecisionType type,
-                                        bool upload_tensors = false) {
+                                        DecisionType type) {
     test_segment_db()->AddUserActionFeature(segment_id, "action", 1, 1,
                                             proto::Aggregation::COUNT);
     // Segment 0 contains 1 immediate collection uma output for
     // |kHistogramName0|, 1 uma output collection with delay for
     // |kHistogramName1|.
-    auto* segment_info = CreateSegment(segment_id, upload_tensors);
+    auto* segment_info = CreateSegment(segment_id);
 
     auto* trigger = segment_info->mutable_model_metadata()
                         ->mutable_training_outputs()
@@ -256,11 +273,10 @@ class TrainingDataCollectorImplTest : public ::testing::Test {
     delay_trigger->set_delay_sec(delay.InSeconds());
   }
 
-  proto::SegmentInfo* CreateSegment(SegmentId segment_id,
-                                    bool upload_tensors = false) {
+  proto::SegmentInfo* CreateSegment(SegmentId segment_id) {
     auto* segment_info = test_segment_db()->FindOrCreateSegment(segment_id);
     auto* model_metadata = segment_info->mutable_model_metadata();
-    model_metadata->set_upload_tensors(upload_tensors);
+    model_metadata->set_upload_tensors(true);
     model_metadata->set_time_unit(proto::TimeUnit::DAY);
     model_metadata->set_signal_storage_length(7);
     segment_info->set_model_version(kModelVersion);
@@ -431,8 +447,7 @@ TEST_F(TrainingDataCollectorImplTest, SignalCollectionRequirementNotMet) {
   EXPECT_CALL(*signal_storage_config(), MeetsSignalCollectionRequirement(_, _))
       .WillOnce(Return(false));
 
-  CreateSegmentInfo(kTestOptimizationTarget0, kPeriodicDecisionType,
-                    /*upload_tensors=*/true);
+  CreateSegmentInfo(kTestOptimizationTarget0, kPeriodicDecisionType);
   clock()->Advance(base::Hours(24));
   Init();
   task_environment()->RunUntilIdle();
@@ -472,8 +487,7 @@ TEST_F(TrainingDataCollectorImplTest, PartialOutputNotAllowed) {
 
 // Tests that continuous collection happens on startup.
 TEST_F(TrainingDataCollectorImplTest, ContinuousCollectionOnStartupNoDelay) {
-  CreateSegmentInfo(kTestOptimizationTarget0, kPeriodicDecisionType,
-                    /*upload_tensors=*/true);
+  CreateSegmentInfo(kTestOptimizationTarget0, kPeriodicDecisionType);
   clock()->Advance(base::Days(1));
 
   base::Time current = clock()->Now();
@@ -484,6 +498,22 @@ TEST_F(TrainingDataCollectorImplTest, ContinuousCollectionOnStartupNoDelay) {
   ExpectResult1Ukm();
 }
 
+// Tests that continuous collection do not collect for ondemand models on
+// startup.
+TEST_F(TrainingDataCollectorImplTest,
+       OnDemandModelsDoNotTriggerPeriodicCollection) {
+  AddTimeTrigger(
+      CreateSegmentInfo(kTestOptimizationTarget0, kOnDemandDecisionType),
+      base::Seconds(10));
+
+  clock()->Advance(base::Days(1));
+  collector()->OnDecisionTime(kTestOptimizationTarget0, nullptr,
+                              kPeriodicDecisionType);
+  Init();
+  task_environment()->RunUntilIdle();
+  ExpectUkmCount(0u);
+}
+
 // Tests that ReportCollectedContinuousTrainingData() works well later if
 // no data is reported on start up.
 TEST_F(TrainingDataCollectorImplTest,
@@ -491,8 +521,7 @@ TEST_F(TrainingDataCollectorImplTest,
   base::Time prediction_time = clock()->Now() + base::Days(1);
   SetupFeatureProcessorResult(kTestOptimizationTarget0, prediction_time,
                               base::Time());
-  CreateSegmentInfo(kTestOptimizationTarget0, kPeriodicDecisionType,
-                    /*upload_tensors=*/true);
+  CreateSegmentInfo(kTestOptimizationTarget0, kPeriodicDecisionType);
   Init();
   clock()->Advance(base::Days(1));
   WaitForContinuousCollection();
@@ -505,8 +534,7 @@ TEST_F(TrainingDataCollectorImplTest,
        Segmentation_ModelExecution::kActualResultName,
        Segmentation_ModelExecution::kActualResult2Name},
       {kTestOptimizationTarget0, kModelVersion,
-       SegmentationUkmHelper::FloatToInt64(1.f),
-       SegmentId::OPTIMIZATION_TARGET_SEGMENTATION_SHARE,
+       SegmentationUkmHelper::FloatToInt64(1.f), kTestOptimizationTarget1,
        base::Days(1).InSeconds(), SegmentationUkmHelper::FloatToInt64(2.f),
        SegmentationUkmHelper::FloatToInt64(3.f)});
 }
@@ -518,8 +546,7 @@ TEST_F(TrainingDataCollectorImplTest,
   base::Time prediction_time = clock()->Now() + base::Days(1);
   SetupFeatureProcessorResult(kTestOptimizationTarget2, prediction_time,
                               base::Time());
-  CreateSegmentInfo(kTestOptimizationTarget2, kPeriodicDecisionType,
-                    /*upload_tensors=*/true);
+  CreateSegmentInfo(kTestOptimizationTarget2, kPeriodicDecisionType);
   Init();
   clock()->Advance(base::Days(1));
   WaitForContinuousCollection();
@@ -564,7 +591,7 @@ TEST_F(TrainingDataCollectorImplTest, ContinuousWithExactPrediction) {
 
   Init();
   collector()->OnDecisionTime(kTestOptimizationTarget0, nullptr,
-                              kOnDemandDecisionType);
+                              kPeriodicDecisionType);
   task_environment()->RunUntilIdle();
   clock()->Advance(kNextUserSession);
   WaitForContinuousCollection();
@@ -591,7 +618,7 @@ TEST_F(TrainingDataCollectorImplTest, ContinuousWithFlexibleObservation) {
 
   Init();
   collector()->OnDecisionTime(kTestOptimizationTarget0, nullptr,
-                              kOnDemandDecisionType);
+                              kPeriodicDecisionType);
   task_environment()->RunUntilIdle();
   clock()->Advance(kNextUserSession);
   WaitForContinuousCollection();
@@ -630,8 +657,7 @@ TEST_F(TrainingDataCollectorImplTest,
               ProcessFeatureList(_, _, _, _, _, _, _))
       .WillRepeatedly(RunOnceCallback<6>(false, ModelProvider::Request{1.f},
                                          ModelProvider::Response{2.f, 3.f}));
-  CreateSegmentInfo(kTestOptimizationTarget0, kPeriodicDecisionType,
-                    /*upload_tensors=*/true);
+  CreateSegmentInfo(kTestOptimizationTarget0, kPeriodicDecisionType);
   Init();
   clock()->Advance(base::Hours(24));
   WaitForContinuousCollection();
@@ -674,8 +700,7 @@ TEST_F(TrainingDataCollectorImplTest, DataCollectionWithEnumHistogramTrigger) {
                               current + kTriggerDuration);
 
   // Create a segment that contain a uma trigger.
-  CreateSegmentInfo(kTestOptimizationTarget0, kOnDemandDecisionType,
-                    /*upload_tensors=*/true);
+  CreateSegmentInfo(kTestOptimizationTarget0, kOnDemandDecisionType);
   Init();
 
   // Wait for input collection to be done and cached in memory.
@@ -706,8 +731,7 @@ TEST_F(TrainingDataCollectorImplTest, DataCollectionWithUserActionTrigger) {
 
   // Create a segment that contain a uma trigger.
   AddUserActionTrigger(
-      CreateSegmentInfo(kTestOptimizationTarget0, kOnDemandDecisionType,
-                        /*upload_tensors=*/true),
+      CreateSegmentInfo(kTestOptimizationTarget0, kOnDemandDecisionType),
       kHistogramName1);
   Init();
 
@@ -733,14 +757,12 @@ TEST_F(TrainingDataCollectorImplTest,
                                          ModelProvider::Response{2.f, 3.f}));
 
   // Create a segment that contain a uma trigger.
-  CreateSegmentInfo(kTestOptimizationTarget0, kOnDemandDecisionType,
-                    /*upload_tensors=*/true);
+  CreateSegmentInfo(kTestOptimizationTarget0, kOnDemandDecisionType);
 
   // Create a second segment that contain the same uma trigger.
   test_segment_db()->AddUserActionFeature(kTestOptimizationTarget1, "action", 1,
                                           1, proto::Aggregation::COUNT);
-  auto* segment_info =
-      CreateSegment(kTestOptimizationTarget1, /*upload_tensors=*/true);
+  auto* segment_info = CreateSegment(kTestOptimizationTarget1);
 
   auto* trigger = segment_info->mutable_model_metadata()
                       ->mutable_training_outputs()
@@ -815,7 +837,7 @@ TEST_F(TrainingDataCollectorImplTest, DataCollectionWithStoreToDisk) {
   // the training data.
   Init();
   collector()->OnDecisionTime(kTestOptimizationTarget0, nullptr,
-                              kOnDemandDecisionType);
+                              kPeriodicDecisionType);
   task_environment()->RunUntilIdle();
   ExpectUkmCount(0);
   clock()->Advance(kNextUserSession);
@@ -857,6 +879,43 @@ TEST_F(TrainingDataCollectorImplTest, DataCollectionWithTriggerAPI) {
   run_loop.Run();
   ExpectUkmCount(1u);
   ExpectResult1UkmWithSample(kSample);
+}
+
+// Tests that we don't collect training data if input processing fails.
+TEST_F(TrainingDataCollectorImplTest,
+       DataCollectionSkippedWhenInputProcessingFails) {
+  base::HistogramTester tester;
+
+  // Set feature_list_processor to return an error when processing input data.
+  EXPECT_CALL(
+      *feature_list_processor(),
+      ProcessFeatureList(
+          _, _, _, _, _,
+          processing::FeatureListQueryProcessor::ProcessOption::kInputsOnly, _))
+      .WillOnce(RunOnceCallback<6>(/* has_error= */ true,
+                                   ModelProvider::Request{},
+                                   ModelProvider::Response{}));
+
+  CreateSegmentInfo(kTestOptimizationTarget0, kOnDemandDecisionType);
+  Init();
+
+  auto input_context = base::MakeRefCounted<InputContext>();
+  auto request_id = collector()->OnDecisionTime(
+      kTestOptimizationTarget0, input_context, kOnDemandDecisionType);
+  task_environment()->RunUntilIdle();
+  ExpectUkmCount(0u);
+
+  TrainingLabels label;
+  label.output_metric = {{kHistogramName0, kSample}};
+  // Trigger output collection and ukm data recording.
+  collector()->CollectTrainingData(kTestOptimizationTarget0, request_id, label,
+                                   base::DoNothing());
+  ExpectUkmCount(0u);
+  // A histogram should have been recorded.
+  EXPECT_EQ(
+      1, tester.GetBucketCount(
+             "SegmentationPlatform.TrainingDataCollectionEvents.ShoppingUser",
+             stats::TrainingDataCollectionEvent::kGetInputTensorsFailed));
 }
 
 }  // namespace

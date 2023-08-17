@@ -32,12 +32,11 @@ import {LockStateMixin} from '../lock_state_mixin.js';
 import {recordSettingChange} from '../metrics_recorder.js';
 import {Section} from '../mojom-webui/routes.mojom-webui.js';
 import {Setting} from '../mojom-webui/setting.mojom-webui.js';
-import {RouteObserverMixin} from '../route_observer_mixin.js';
+import {RouteOriginMixin} from '../route_origin_mixin.js';
 import {Route, Router, routes} from '../router.js';
 
 import {getTemplate} from './os_privacy_page.html.js';
 import {PeripheralDataAccessBrowserProxy, PeripheralDataAccessBrowserProxyImpl} from './peripheral_data_access_browser_proxy.js';
-import {PrivacyHubBrowserProxy, PrivacyHubBrowserProxyImpl} from './privacy_hub_browser_proxy.js';
 import {PrivacyHubNavigationOrigin} from './privacy_hub_subpage.js';
 
 export interface OsSettingsPrivacyPageElement {
@@ -47,7 +46,7 @@ export interface OsSettingsPrivacyPageElement {
 }
 
 const OsSettingsPrivacyPageElementBase = PrefsMixin(
-    LockStateMixin(RouteObserverMixin(DeepLinkingMixin(PolymerElement))));
+    LockStateMixin(RouteOriginMixin(DeepLinkingMixin(PolymerElement))));
 
 export class OsSettingsPrivacyPageElement extends
     OsSettingsPrivacyPageElementBase {
@@ -65,20 +64,6 @@ export class OsSettingsPrivacyPageElement extends
         type: Number,
         value: Section.kPrivacyAndSecurity,
         readOnly: true,
-      },
-
-      focusConfig_: {
-        type: Object,
-        value() {
-          const map = new Map();
-          if (routes.ACCOUNTS) {
-            map.set(routes.ACCOUNTS.path, '#manageOtherPeopleSubpageTrigger');
-          }
-          if (routes.LOCK_SCREEN) {
-            map.set(routes.LOCK_SCREEN.path, '#lockScreenSubpageTrigger');
-          }
-          return map;
-        },
       },
 
       /**
@@ -215,7 +200,6 @@ export class OsSettingsPrivacyPageElement extends
 
   private authTokenInfo_: chrome.quickUnlockPrivate.TokenInfo|undefined;
   private browserProxy_: PeripheralDataAccessBrowserProxy;
-  private privacyHubBrowserProxy_: PrivacyHubBrowserProxy;
 
   /**
    * The timeout ID to pass to clearTimeout() to cancel auth token
@@ -225,9 +209,7 @@ export class OsSettingsPrivacyPageElement extends
   private dataAccessProtectionPrefName_: string;
   private dataAccessShiftTabPressed_: boolean;
   private fingerprintUnlockEnabled_: boolean;
-  private focusConfig_: Map<string, string>;
   private isGuestMode_: boolean;
-  private isHatsSurveyEnabled_: boolean;
   private isRevenBranding_: boolean;
   private isSmartPrivacyEnabled_: boolean;
   private isThunderboltSupported_: boolean;
@@ -241,6 +223,9 @@ export class OsSettingsPrivacyPageElement extends
   constructor() {
     super();
 
+    /** RouteOriginMixin override */
+    this.route = routes.OS_PRIVACY;
+
     this.browserProxy_ = PeripheralDataAccessBrowserProxyImpl.getInstance();
 
     this.browserProxy_.isThunderboltSupported().then(enabled => {
@@ -249,8 +234,6 @@ export class OsSettingsPrivacyPageElement extends
         this.supportedSettingIds.add(Setting.kPeripheralDataAccessProtection);
       }
     });
-
-    this.privacyHubBrowserProxy_ = PrivacyHubBrowserProxyImpl.getInstance();
   }
 
   override ready(): void {
@@ -258,18 +241,17 @@ export class OsSettingsPrivacyPageElement extends
 
     this.addEventListener(
         AUTH_TOKEN_INVALID_EVENT_TYPE, this.onAuthTokenInvalid_);
+
+    this.addFocusConfig(routes.ACCOUNTS, '#manageOtherPeopleRow');
+    this.addFocusConfig(routes.LOCK_SCREEN, '#lockScreenRow');
   }
 
-  override currentRouteChanged(route: Route): void {
+  override currentRouteChanged(newRoute: Route, oldRoute?: Route): void {
+    super.currentRouteChanged(newRoute, oldRoute);
+
     // Does not apply to this page.
-    if (route !== routes.OS_PRIVACY) {
-      if (this.isHatsSurveyEnabled_) {
-        this.privacyHubBrowserProxy_.sendLeftOsPrivacyPage();
-      }
+    if (newRoute !== this.route) {
       return;
-    }
-    if (this.isHatsSurveyEnabled_) {
-      this.privacyHubBrowserProxy_.sendOpenedOsPrivacyPage();
     }
     this.attemptDeepLink();
   }

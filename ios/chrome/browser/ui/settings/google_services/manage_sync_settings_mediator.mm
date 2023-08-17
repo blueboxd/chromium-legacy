@@ -53,10 +53,6 @@
 #import "ui/base/l10n/l10n_util.h"
 #import "url/gurl.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 using l10n_util::GetNSString;
 
 namespace {
@@ -78,12 +74,12 @@ static const syncer::UserSelectableType kSyncSwitchItems[] = {
 // This is the list of available datatypes for account state `kSignedIn`.
 static const syncer::UserSelectableType kAccountSwitchItems[] = {
     syncer::UserSelectableType::kHistory,
-    syncer::UserSelectableType::kAutofill,
     syncer::UserSelectableType::kBookmarks,
-    syncer::UserSelectableType::kPasswords,
     syncer::UserSelectableType::kReadingList,
-    syncer::UserSelectableType::kPreferences,
-    syncer::UserSelectableType::kPayments};
+    syncer::UserSelectableType::kAutofill,
+    syncer::UserSelectableType::kPasswords,
+    syncer::UserSelectableType::kPayments,
+    syncer::UserSelectableType::kPreferences};
 
 // Returns the configuration to be used for the accessory.
 UIImageConfiguration* AccessoryConfiguration() {
@@ -396,6 +392,10 @@ constexpr CGFloat kErrorSymbolPointSize = 22.;
   if (self.syncAccountState == SyncSettingsAccountState::kSignedOut) {
     return;
   }
+  if (self.syncAccountState == SyncSettingsAccountState::kSignedIn &&
+      self.isSyncDisabledByAdministrator) {
+    return;
+  }
   TableViewModel* model = self.consumer.tableViewModel;
   [model addSectionWithIdentifier:AdvancedSettingsSectionIdentifier];
   // EncryptionItemType.
@@ -454,17 +454,24 @@ constexpr CGFloat kErrorSymbolPointSize = 22.;
                                                    AccessoryConfiguration())];
   dataFromChromeSyncItem.accessoryView.tintColor =
       [UIColor colorNamed:kTextQuaternaryColor];
-  dataFromChromeSyncItem.title =
-      GetNSString(IDS_IOS_MANAGE_SYNC_DATA_FROM_CHROME_SYNC_TITLE);
-  dataFromChromeSyncItem.detailText =
-      GetNSString(IDS_IOS_MANAGE_SYNC_DATA_FROM_CHROME_SYNC_DESCRIPTION);
   dataFromChromeSyncItem.accessibilityIdentifier =
       kDataFromChromeSyncAccessibilityIdentifier;
   dataFromChromeSyncItem.accessibilityTraits |= UIAccessibilityTraitButton;
 
   switch (self.syncAccountState) {
     case SyncSettingsAccountState::kSignedIn:
+      dataFromChromeSyncItem.title =
+          GetNSString(IDS_IOS_MANAGE_DATA_IN_YOUR_ACCOUNT_TITLE);
+      dataFromChromeSyncItem.detailText =
+          GetNSString(IDS_IOS_MANAGE_DATA_IN_YOUR_ACCOUNT_DESCRIPTION);
+      [model addItem:dataFromChromeSyncItem
+          toSectionWithIdentifier:AdvancedSettingsSectionIdentifier];
+      break;
     case SyncSettingsAccountState::kSyncing:
+      dataFromChromeSyncItem.title =
+          GetNSString(IDS_IOS_MANAGE_SYNC_DATA_FROM_CHROME_SYNC_TITLE);
+      dataFromChromeSyncItem.detailText =
+          GetNSString(IDS_IOS_MANAGE_SYNC_DATA_FROM_CHROME_SYNC_DESCRIPTION);
       [model addItem:dataFromChromeSyncItem
           toSectionWithIdentifier:AdvancedSettingsSectionIdentifier];
       break;
@@ -478,6 +485,16 @@ constexpr CGFloat kErrorSymbolPointSize = 22.;
 // Updates encryption item, and notifies the consumer if `notifyConsumer` is set
 // to YES.
 - (void)updateEncryptionItem:(BOOL)notifyConsumer {
+  if (![self.consumer.tableViewModel
+          hasSectionForSectionIdentifier:AdvancedSettingsSectionIdentifier]) {
+    return;
+  }
+  if (self.syncAccountState == SyncSettingsAccountState::kSignedIn &&
+      self.isSyncDisabledByAdministrator) {
+    [self.consumer.tableViewModel
+        removeSectionWithIdentifier:AdvancedSettingsSectionIdentifier];
+    return;
+  }
   BOOL needsUpdate =
       self.shouldEncryptionItemBeEnabled &&
       (self.encryptionItem.enabled != self.shouldEncryptionItemBeEnabled);
@@ -593,11 +610,16 @@ constexpr CGFloat kErrorSymbolPointSize = 22.;
 
   // Creates the manage accounts and sign-out section.
   TableViewModel* model = self.consumer.tableViewModel;
-  NSInteger advancedSettingsSectionIndex =
-      [model sectionForSectionIdentifier:AdvancedSettingsSectionIdentifier];
-  DCHECK_NE(NSNotFound, advancedSettingsSectionIndex);
+  // The AdvancedSettingsSectionIdentifier does not exist when sync is disabled
+  // by administrator for a signed-in not syncing account.
+  NSInteger previousSection =
+      [model hasSectionForSectionIdentifier:AdvancedSettingsSectionIdentifier]
+          ? [model
+                sectionForSectionIdentifier:AdvancedSettingsSectionIdentifier]
+          : [model sectionForSectionIdentifier:SyncDataTypeSectionIdentifier];
+  DCHECK_NE(NSNotFound, previousSection);
   [model insertSectionWithIdentifier:SignOutSectionIdentifier
-                             atIndex:advancedSettingsSectionIndex + 1];
+                             atIndex:previousSection + 1];
 
   // Creates items in the manage accounts and sign-out section.
   // Manage Google Account item.
@@ -1160,19 +1182,24 @@ constexpr CGFloat kErrorSymbolPointSize = 22.;
           ? [model sectionForSectionIdentifier:AccountSectionIdentifier] + 1
           : 0;
   if (!errorSectionAlreadyExists) {
-    [model insertSectionWithIdentifier:SyncErrorsSectionIdentifier
-                               atIndex:syncErrorSectionIndex];
     if (self.syncAccountState == SyncSettingsAccountState::kSignedIn &&
         type.value() != SyncDisabledByAdministratorErrorItemType) {
+      [model insertSectionWithIdentifier:SyncErrorsSectionIdentifier
+                                 atIndex:syncErrorSectionIndex];
       // For signed in not syncing users, the sync error item will be preceded
       // by a descriptive message item.
       [model addItem:[self createSyncErrorMessageItem:GetAccountErrorUIInfo(
                                                           _syncService)
                                                           .messageID]
           toSectionWithIdentifier:SyncErrorsSectionIdentifier];
+      [model addItem:self.syncErrorItem
+          toSectionWithIdentifier:SyncErrorsSectionIdentifier];
+    } else if (self.syncAccountState != SyncSettingsAccountState::kSignedIn) {
+      [model insertSectionWithIdentifier:SyncErrorsSectionIdentifier
+                                 atIndex:syncErrorSectionIndex];
+      [model addItem:self.syncErrorItem
+          toSectionWithIdentifier:SyncErrorsSectionIdentifier];
     }
-    [model addItem:self.syncErrorItem
-        toSectionWithIdentifier:SyncErrorsSectionIdentifier];
   }
 
   if (notifyConsumer) {
@@ -1243,7 +1270,9 @@ constexpr CGFloat kErrorSymbolPointSize = 22.;
 
 // Returns YES if the given type is managed by policies (i.e. is not syncable)
 - (BOOL)isManagedSyncSettingsDataType:(syncer::UserSelectableType)type {
-  return IsManagedSyncDataType(_syncService, type);
+  return IsManagedSyncDataType(_syncService, type) ||
+         (self.syncAccountState == SyncSettingsAccountState::kSignedIn &&
+          self.isSyncDisabledByAdministrator);
 }
 
 #pragma mark - Properties

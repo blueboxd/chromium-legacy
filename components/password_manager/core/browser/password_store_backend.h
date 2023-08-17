@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/functional/callback_forward.h"
+#include "base/memory/weak_ptr.h"
 #include "components/password_manager/core/browser/password_form_digest.h"
 #include "components/password_manager/core/browser/password_store_backend_error.h"
 #include "components/password_manager/core/browser/password_store_change.h"
@@ -25,7 +26,6 @@ namespace password_manager {
 struct PasswordForm;
 
 class AffiliatedMatchHelper;
-class FieldInfoStore;
 class SmartBubbleStatsStore;
 
 using LoginsResult = std::vector<std::unique_ptr<PasswordForm>>;
@@ -46,7 +46,8 @@ using LoginsOrErrorReply = base::OnceCallback<void(LoginsResultOrError)>;
 // Android, it sends requests to a service).
 // All methods are required to do their work asynchronously to prevent expensive
 // IO operation from possibly blocking the main thread.
-class PasswordStoreBackend {
+class PasswordStoreBackend
+    : public base::SupportsWeakPtr<PasswordStoreBackend> {
  public:
   using RemoteChangesReceived =
       base::RepeatingCallback<void(absl::optional<PasswordStoreChangeList>)>;
@@ -146,7 +147,6 @@ class PasswordStoreBackend {
       base::OnceClosure completion) = 0;
 
   virtual SmartBubbleStatsStore* GetSmartBubbleStatsStore() = 0;
-  virtual FieldInfoStore* GetFieldInfoStore() = 0;
 
   // For sync codebase only: instantiates a proxy controller delegate to
   // react to sync events.

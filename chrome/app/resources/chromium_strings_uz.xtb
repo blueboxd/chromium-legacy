@@ -72,7 +72,6 @@ Sayt va ilovalarga berilgan ruxsatlar bu hisobga tatbiq etilishi mumkin. Google 
 <translation id="2592940277904433508">Chromium yopilmasin</translation>
 <translation id="2648074677641340862">O‘rnatish vaqtida operatsion tizim xatoligi yuz berdi. Chromium‘ni qaytadan yuklab oling.</translation>
 <translation id="2661879430930417727">Agar qurilmangizdan yaqinlaringiz va doʻstlaringiz ham foydalansa, ular Chromium brauzerini oʻzlari xohlagancha sozlab olishlari mumkin.</translation>
-<translation id="2669853942967761236">Tarkibida zararli kod borligi sababli bu arxiv fayli Chromium tomonidan bloklandi.</translation>
 <translation id="268602741124540128">Chromium brauzeriga xush kelibsiz, <ph name="ACCOUNT_FIRST_NAME" /></translation>
 <translation id="2711502716910134313">Chromium sahifasi</translation>
 <translation id="2718390899429598676">Xavfsizlik himoyasini oshirish maqsadida Chromium ma’lumotlaringizni shifrlaydi.</translation>
@@ -268,6 +267,7 @@ Sayt va ilovalarga berilgan ruxsatlar bu hisobga tatbiq etilishi mumkin. Google 
 <translation id="6613594504749178791">O‘zgartirishlar Chromium qaytadan ishga tushirilganda kuchga kiradi.</translation>
 <translation id="665732753414869868">Chromium atrofingiz 3D xxaritasini yaratishi uchun kameradan foydalanishiga ruxsat kerak</translation>
 <translation id="6663852025006259149">Saytlar siz kutganingizdek ishlaydi, lekin barcha Chromium oynalarini yopganingizdan keyin sizni eslay olmaydi</translation>
+<translation id="6669284030132180248">Bukmarklarni Google hisobingizda ham saqlasangiz, Chromiumʼda mahsulot narxlarini kuzatishingiz va narx tushganda xabar olasiz.</translation>
 <translation id="6676384891291319759">Internetga ulanish</translation>
 <translation id="668175097507315160">Hisobga kirishdagi xatolik sababli ChromiumOS maʼlumotlarni sinxronlay olmadi.</translation>
 <translation id="6709350901466051922">Chromium bu saytda mikrofondan foydalanishiga ruxsat kerak</translation>
@@ -404,6 +404,5 @@ Chromium sozlamalaringizni qaytadan tiklay olmadi.</translation>
 <translation id="942598560705308788">Chromium boshqaradigan sertifikatlar</translation>
 <translation id="965162752251293939">Chromiumni kim ochdi?</translation>
 <translation id="967427899662692980">Chromium brauzerining kuchli xavfsizligidan foydalaning</translation>
-<translation id="9792300276217204">Chromium yopilganda har doim qurilmadan sayt maʼlumotlarini oʻchirib tashlang</translation>
 <translation id="985602178874221306">Chromium mualliflari</translation>
 </translationbundle>

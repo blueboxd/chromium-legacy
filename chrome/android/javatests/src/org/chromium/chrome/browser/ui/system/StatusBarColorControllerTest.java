@@ -65,7 +65,6 @@ import java.util.concurrent.TimeoutException;
 @Batch(Batch.PER_CLASS)
 // clang-format off
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
-@Features.EnableFeatures({ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID})
 public class StatusBarColorControllerTest {
     // clang-format on
     @ClassRule
@@ -396,7 +395,7 @@ public class StatusBarColorControllerTest {
                 "ToolbarLayout should be of type ToolbarPhone to get and check toolbar background.",
                 toolbar instanceof ToolbarPhone);
 
-        final int toolbarColor = ((ToolbarPhone) toolbar).getToolbarBackgroundColor();
+        final int toolbarColor = ((ToolbarPhone) toolbar).getBackgroundDrawable().getColor();
         CriteriaHelper.pollUiThread(() -> {
             Criteria.checkThat(activity.getWindow().getStatusBarColor(), Matchers.is(toolbarColor));
         }, CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL, CriteriaHelper.DEFAULT_POLLING_INTERVAL);

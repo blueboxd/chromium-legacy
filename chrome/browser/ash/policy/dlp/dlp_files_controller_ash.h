@@ -14,6 +14,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ash/file_manager/io_task.h"
+#include "chrome/browser/ash/file_manager/volume_manager_observer.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_file_destination.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_files_controller.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_files_utils.h"
@@ -44,7 +45,8 @@ class DlpExtractIOTaskObserver;
 // DlpFilesControllerAsh is responsible for deciding whether file transfers are
 // allowed according to the files sources saved in the DLP daemon and the rules
 // of the Data leak prevention policy set by the admin.
-class DlpFilesControllerAsh : public DlpFilesController {
+class DlpFilesControllerAsh : public DlpFilesController,
+                              public file_manager::VolumeManagerObserver {
  public:
   // Returns the instance if it exists.
   static DlpFilesControllerAsh* GetForPrimaryProfile();
@@ -189,6 +191,9 @@ class DlpFilesControllerAsh : public DlpFilesController {
       const ui::DataTransferEndpoint* data_dst,
       CheckIfDlpAllowedCallback result_callback);
 
+  //  VolumeManagerObserver overrides:
+  void OnShutdownStart(file_manager::VolumeManager* volume_manager) override;
+
   DlpFilesEventStorage* GetEventStorageForTesting();
 
   void SetFileSystemContextForTesting(
@@ -231,7 +236,7 @@ class DlpFilesControllerAsh : public DlpFilesController {
                             FilterDisallowedUploadsCallback result_callback,
                             ::dlp::CheckFilesTransferResponse response);
 
-  void ReturnDlpMetadata(std::vector<absl::optional<ino64_t>> inodes,
+  void ReturnDlpMetadata(const std::vector<storage::FileSystemURL>& files,
                          absl::optional<DlpFileDestination> destination,
                          GetDlpMetadataCallback result_callback,
                          const ::dlp::GetFilesSourcesResponse response);
@@ -246,6 +251,7 @@ class DlpFilesControllerAsh : public DlpFilesController {
   // `dst_pattern` is missing, we report `dst.component.value()` instead. When
   // `level` is missing, we report a warning proceeded event.
   void MaybeReportEvent(ino64_t inode,
+                        time_t crtime,
                         const base::FilePath& path,
                         const std::string& source_pattern,
                         const DlpFileDestination& dst,
@@ -276,11 +282,6 @@ class DlpFilesControllerAsh : public DlpFilesController {
       const DlpFileDestination& destination,
       CheckIfDlpAllowedCallback result_callback,
       std::vector<storage::FileSystemURL> dropped_files);
-
-  // Gets the component out of |destination| if possible.
-  absl::optional<data_controls::Component> MaybeGetComponent(
-      Profile* profile,
-      const DlpFileDestination& destination);
 
   // Keeps track of events and detects duplicate ones using time based
   // approach.

@@ -51,6 +51,7 @@
 <translation id="3650632991272923014"><ph name="USER_EMAIL1" /> izmantoja pārlūku Chromium un neizdzēsa grāmatzīmes, paroles un citus iestatījumus šajā ierīcē.</translation>
 <translation id="3661862315467204831">Atveriet Chromium iestatījumus iOS ierīcē, pēc tam pieskarieties vienumam “Browser Default APP” (Noklusējuma pārlūka lietotne) un atlasiet Chromium.</translation>
 <translation id="372658070733623520">Lai izmantotu un saglabātu Chromium datus savā Google kontā, apstipriniet savu identitāti.</translation>
+<translation id="3780779443901618967">Tiek rādīts brīdinājums par bīstamām vietnēm (pat ja Google par tām iepriekš nezināja), analizējot vairāk datu no vietnēm, nekā analizē standarta aizsardzība. Varat izlaist Chromium brīdinājumus.</translation>
 <translation id="3805899903892079518">Chromium nevar piekļūt jūsu fotoattēliem un videoklipiem. Iespējojiet piekļuvi: iOS Settings &gt; Privacy &gt; Photos.</translation>
 <translation id="3827545470516145620">Jūs saņemat standarta drošības aizsardzību šajā ierīcē.</translation>
 <translation id="3955621079070267756">Atveriet Chromium jebkurā lietotnē</translation>
@@ -94,6 +95,7 @@
 <translation id="632825460376924298">Atļaut pierakstīšanos pārlūkā Chromium</translation>
 <translation id="6337530241089703714">Izvēlieties, vai notīrīt Chromium datus no šīs ierīces vai tos paturēt</translation>
 <translation id="6424492062988593837">Lietojumprogramma Chromium ir uzlabota! Ir pieejama jauna versija.</translation>
+<translation id="6563921047760808519">Uzziniet vairāk par to, <ph name="BEGIN_LINK" />kā pārlūkā Chromium tiek saglabāta jūsu datu konfidencialitāte<ph name="END_LINK" />.</translation>
 <translation id="6625409903340039086">Pārlūkā Chromium tagad tiek atbalstīta lietotāju politiku izmantošana jūsu pārvaldītajos kontos</translation>
 <translation id="6752854822223394465">Notiek Chromium iestatīšana jūsu organizācijā...</translation>
 <translation id="6820823224820483452">Pārlūkprogrammā Chromium nevarēja pārbaudīt visas paroles. Mēģiniet vēlreiz rīt.</translation>
@@ -121,6 +123,7 @@
 <translation id="7859018312476869945">Kad rakstāt adreses joslā vai meklēšanas lodziņā, pārlūks Chromium nosūta ierakstīto tekstu jūsu noklusējuma meklētājprogrammai, lai iegūtu labākus ieteikumus. Inkognito režīmā šis iestatījums ir izslēgts.</translation>
 <translation id="786327964234957808">Jūs pārslēdzat sinhronizējamos kontus no konta <ph name="USER_EMAIL1" /> uz kontu <ph name="USER_EMAIL2" />. Jūsu pašreizējos Chromium datus pārvalda <ph name="DOMAIN" />. Šādi jūsu dati tiks dzēsti no šīs ierīces, bet dati joprojām būs pieejami kontā <ph name="USER_EMAIL1" />.</translation>
 <translation id="7890287942691234100">Darba sākšana ar Chromium skeneri</translation>
+<translation id="7905064834449738336">Pārlūkā Chromium tiek parādīts brīdinājums, ja izmantojat paroli, kas ir publicēta tiešsaistē. Šo pārbaužu laikā paroles un lietotājvārdi ir šifrēti, lai neviens tos nevarētu lasīt, tostarp Google.</translation>
 <translation id="7928628054454574139">Tiks atvērts pārlūks Chromium ikreiz, kad pieskarsieties saitēm citās lietotnēs.</translation>
 <translation id="7931842119211730154">Bloķēt inkognito cilnes, kad pārlūks Chromium tiek aizvērts</translation>
 <translation id="7980860476903281594">Chromium kopīgo jūsu atrašanās vietu ar vietnēm, kam atļaujat saņemt šo informāciju.</translation>

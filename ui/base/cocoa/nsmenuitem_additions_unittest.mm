@@ -16,10 +16,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/keycodes/keyboard_code_conversion_mac.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 @interface NSEventForTesting : NSEvent
 @property(copy, nonatomic) NSString* characters;
 @end
@@ -71,8 +67,7 @@ NSMenuItem* MenuItem(NSString* equiv, NSUInteger mask = 0) {
   NSMenuItem* item = [[NSMenuItem alloc] initWithTitle:@""
                                                 action:nil
                                          keyEquivalent:@""];
-  item.keyEquivalent = equiv;
-  item.keyEquivalentModifierMask = mask;
+  [item cr_setKeyEquivalent:equiv modifierMask:mask];
   return item;
 }
 
@@ -746,6 +741,19 @@ TEST(NSMenuItemAdditionsTest, MMFKEHandlesFlagsChangedEvents) {
   // Make sure we correctly handle the situation of function key press event
   // with no characters (dead keys).
   EXPECT_EQ(expected_flags, ModifierMaskForKeyEvent(empty_chars_event));
+}
+
+// Tests that cr_clearKeyEquivalent clears a menu item's key equivalent.
+TEST(NSMenuItemAdditionsTest, TestClearKeyEquivalent) {
+  NSMenuItem* item =
+      MenuItem(@"W", NSEventModifierFlagCommand | NSEventModifierFlagControl |
+                         NSEventModifierFlagOption);
+  [item cr_clearKeyEquivalent];
+
+  NSString* kNoKeyEquivalentString = @"";
+  EXPECT_TRUE([kNoKeyEquivalentString isEqualToString:item.keyEquivalent]);
+  NSUInteger kEmptyMask = 0;
+  EXPECT_EQ(item.keyEquivalentModifierMask, kEmptyMask);
 }
 
 }  // namespace

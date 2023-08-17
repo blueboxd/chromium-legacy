@@ -77,6 +77,7 @@
 #include "third_party/skia/include/gpu/GrDirectContext.h"
 #include "third_party/skia/include/private/chromium/GrDeferredDisplayList.h"
 #include "third_party/skia/modules/skcms/skcms.h"
+#include "third_party/skia/src/core/SkCanvasPriv.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/color_transform.h"
@@ -730,6 +731,9 @@ struct SkiaRenderer::DrawRPDQParams {
   // The content space bounds that includes any filtered extents. If empty,
   // the draw can be skipped.
   gfx::Rect filter_bounds;
+
+  // Multiplier used for downscaling backdrop filter.
+  float backdrop_filter_quality = 1.0f;
 
   // Geometry from the bypassed RenderPassDrawQuad.
   absl::optional<BypassGeometry> bypass_geometry;
@@ -1502,9 +1506,9 @@ void SkiaRenderer::PrepareCanvasForRPDQ(const DrawRPDQParams& rpdq_params,
   SkRect bounds = gfx::RectFToSkRect(
       rpdq_params.bypass_geometry ? rpdq_params.bypass_geometry->clip_rect
                                   : params->visible_rect);
-  current_canvas_->saveLayer(
-      SkCanvas::SaveLayerRec(&bounds, &layer_paint, backdrop_filter.get(), 0));
-
+  current_canvas_->saveLayer(SkCanvasPriv::ScaledBackdropLayer(
+      &bounds, &layer_paint, backdrop_filter.get(),
+      rpdq_params.backdrop_filter_quality, 0));
   // If we have backdrop filtered content (and not transparent black like with
   // regular render passes), we have to clear out the parts of the layer that
   // shouldn't show the backdrop
@@ -2851,6 +2855,7 @@ void SkiaRenderer::ScheduleOverlays() {
                .supports_non_backed_solid_color_overlays &&
           !output_surface_->capabilities().supports_single_pixel_buffer) {
         overlay.mailbox = GetImageMailboxForColor(*overlay.color);
+        overlay.resource_size_in_pixels = gfx::Size(1, 1);
         // This can now be treated as a regular overlay with a mailbox backing.
         overlay.is_solid_color = false;
         locks.emplace_back(overlay.mailbox);
@@ -3037,6 +3042,18 @@ SkiaRenderer::DrawRPDQParams SkiaRenderer::CalculateRPDQParams(
   // TODO(weiliangc): ChromeOS would need backdrop_filter_quality implemented
   if (backdrop_filters) {
     DCHECK(!backdrop_filters->IsEmpty());
+    cc::FilterOperations filter_operations;
+    for (const cc::FilterOperation& op : backdrop_filters->operations()) {
+      if (op.type() == cc::FilterOperation::BLUR) {
+        cc::FilterOperation blur_op(op);
+        blur_op.set_amount(op.amount() * quad->backdrop_filter_quality);
+        filter_operations.Append(blur_op);
+      } else {
+        filter_operations.Append(op);
+      }
+    }
+
+    rpdq_params.backdrop_filter_quality = quad->backdrop_filter_quality;
 
     // quad->rect represents the layer's bounds *after* any display scale has
     // been applied to it. The ZOOM FilterOperation uses the layer's bounds as
@@ -3049,7 +3066,7 @@ SkiaRenderer::DrawRPDQParams SkiaRenderer::CalculateRPDQParams(
       SkIRect filter_rect =
           inv_local_matrix.mapRect(gfx::RectToSkRect(quad->rect)).roundOut();
       auto bg_paint_filter = cc::RenderSurfaceFilters::BuildImageFilter(
-          *backdrop_filters, gfx::SkIRectToRect(filter_rect));
+          filter_operations, gfx::SkIRectToRect(filter_rect));
 
       auto sk_bg_filter =
           bg_paint_filter ? bg_paint_filter->cached_sk_filter_ : nullptr;
@@ -3556,11 +3573,10 @@ void SkiaRenderer::PrepareRenderPassOverlay(
       const_cast<SharedQuadState*>(quad->shared_quad_state);
 
   absl::optional<gfx::Transform> quad_to_target_transform_inverse;
-  if (shared_quad_state->clip_rect ||
-      !shared_quad_state->mask_filter_info.IsEmpty()) {
-    // We cannot handle rotation with clip rect or mask filter.
-    DCHECK(
-        shared_quad_state->quad_to_target_transform.Preserves2dAxisAlignment());
+  // We cannot handle rotation with clip rect or mask filter.
+  if ((shared_quad_state->clip_rect ||
+       !shared_quad_state->mask_filter_info.IsEmpty()) &&
+      shared_quad_state->quad_to_target_transform.Preserves2dAxisAlignment()) {
     quad_to_target_transform_inverse.emplace();
     // Flatten before inverting, since we're interested in how points
     // with z=0 in local space map to the clip rect, not in how the clip
@@ -3574,19 +3590,26 @@ void SkiaRenderer::PrepareRenderPassOverlay(
 
   // The |clip_rect| is in the device coordinate and with all transforms
   // (translation, scaling, rotation, etc), so remove them.
-  absl::optional<base::AutoReset<gfx::Rect>> auto_reset_clip_rect;
+  absl::optional<base::AutoReset<absl::optional<gfx::Rect>>>
+      auto_reset_clip_rect;
   if (shared_quad_state->clip_rect) {
-    // TODO(dbaron): This operation is likely not to be valid if
-    // quad_to_target_transform_inverse.HasPerspective().
     gfx::RectF clip_rect(*shared_quad_state->clip_rect);
-    clip_rect = quad_to_target_transform_inverse->MapRect(clip_rect);
-    auto_reset_clip_rect.emplace(&shared_quad_state->clip_rect.value(),
-                                 gfx::ToEnclosedRect(clip_rect));
+    if (quad_to_target_transform_inverse) {
+      clip_rect = quad_to_target_transform_inverse->MapRect(clip_rect);
+      auto_reset_clip_rect.emplace(&shared_quad_state->clip_rect,
+                                   gfx::ToEnclosedRect(clip_rect));
+    } else {
+      // If we can't position the clip rect into render pass space, we shouldn't
+      // use it when rendering.
+      auto_reset_clip_rect.emplace(&shared_quad_state->clip_rect,
+                                   absl::nullopt);
+    }
   }
 
   // The |mask_filter_info| is in the device coordinate and with all transforms
   // (translation, scaling, rotation, etc), so remove them.
-  if (!shared_quad_state->mask_filter_info.IsEmpty()) {
+  if (!shared_quad_state->mask_filter_info.IsEmpty() &&
+      shared_quad_state->quad_to_target_transform.Preserves2dAxisAlignment()) {
     shared_quad_state->mask_filter_info.ApplyTransform(
         *quad_to_target_transform_inverse);
   }
@@ -3640,7 +3663,7 @@ void SkiaRenderer::PrepareRenderPassOverlay(
 
     // For bypassed render pass, we use the same format and color space for the
     // framebuffer.
-    buffer_format = GetSharedImageFormat(reshape_buffer_format());
+    buffer_format = GetSinglePlaneSharedImageFormat(reshape_buffer_format());
     color_space = reshape_color_space();
   } else {
     // A real render pass that was turned into an image
@@ -3675,6 +3698,7 @@ void SkiaRenderer::PrepareRenderPassOverlay(
   const RenderPassBacking& dst_overlay_backing =
       overlay_params->render_pass_backing;
   overlay->mailbox = dst_overlay_backing.mailbox;
+  overlay->resource_size_in_pixels = dst_overlay_backing.size;
 
   if (can_skip_render_pass) {
     int pixel_size = quad->rect.width() * quad->rect.height();
@@ -3760,26 +3784,13 @@ void SkiaRenderer::PrepareRenderPassOverlay(
   overlay->display_rect.set_origin(gfx::PointF(filter_bounds.origin()));
   overlay->display_rect.set_size(gfx::SizeF(buffer_size));
 #else   // BUILDFLAG(IS_OZONE)
-  // Adjust |display_rect| to be include the expanded |filter_bounds|, and
-  // transformed.
   // TODO(fangzhoug): Merge Ozone and Apple code paths of delegated compositing.
-  overlay->display_rect =
-      quad->shared_quad_state->quad_to_target_transform.MapRect(
-          gfx::RectF(filter_bounds));
-  // Set |uv_rect| to reflect rounding from |filter_bounds| to |buffer_size|.
-  overlay->uv_rect = gfx::RectF{
-      static_cast<float>(filter_bounds.width()) / buffer_size.width(),
-      static_cast<float>(filter_bounds.height()) / buffer_size.height()};
-  // TODO(rivr): Handle the case where the overlay has an arbitrary transform
-  // applied.
-  if (absl::holds_alternative<gfx::OverlayTransform>(overlay->transform)) {
-    gfx::Rect apply_clip = gfx::Rect(current_frame()->device_viewport_size);
-    if (overlay->clip_rect.has_value())
-      apply_clip.Intersect(overlay->clip_rect.value());
 
-    OverlayCandidate::ApplyClip(*overlay, gfx::RectF(apply_clip));
-    overlay->clip_rect = absl::nullopt;
-  }
+  // |display_rect| already accounts for expanded filter bounds.
+
+  // Set |uv_rect| to reflect rounding from |display_rect| to |buffer_size|.
+  overlay->uv_rect = gfx::RectF(overlay->display_rect.size());
+  overlay->uv_rect.InvScale(buffer_size.width(), buffer_size.height());
   // Fill in |format| and |color_space| information based on selected backing.
   overlay->color_space = color_space;
   overlay->format = SinglePlaneSharedImageFormatToBufferFormat(buffer_format);

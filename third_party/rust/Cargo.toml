@@ -28,13 +28,14 @@ qr_code = "2"
 quote = "1"
 rand = "0.8"
 rand_pcg = "0.3"
-read-fonts = "0.5"
+read-fonts = "0.10"
 regex = "1"
 rstest_reuse = "0.5"
+rustc-demangle-capi = "0.1"
 semver = "1"
 serde = "1"
 serde_json = "1"
-skrifa = "0.4"
+skrifa = "0.9"
 small_ctor = "0.1"
 static_assertions = "1"
 tempfile = "3"
@@ -238,8 +239,8 @@ package = "rand_pcg"
 path = "rand/v0_8/crate"
 package = "rand"
 
-[patch.crates-io.read-fonts_v0_5]
-path = "read_fonts/v0_5/crate"
+[patch.crates-io.read-fonts_v0_10]
+path = "read_fonts/v0_10/crate"
 package = "read-fonts"
 
 [patch.crates-io.regex-syntax_v0_6]
@@ -265,6 +266,14 @@ package = "rstest_reuse"
 [patch.crates-io.rstest_v0_17]
 path = "rstest/v0_17/crate"
 package = "rstest"
+
+[patch.crates-io.rustc-demangle-capi_v0_1]
+path = "rustc_demangle_capi/v0_1/crate"
+package = "rustc-demangle-capi"
+
+[patch.crates-io.rustc-demangle_v0_1]
+path = "rustc_demangle/v0_1/crate"
+package = "rustc-demangle"
 
 [patch.crates-io.rustc_version_v0_4]
 path = "rustc_version/v0_4/crate"
@@ -298,8 +307,8 @@ package = "serde_json"
 path = "serde/v1/crate"
 package = "serde"
 
-[patch.crates-io.skrifa_v0_4]
-path = "skrifa/v0_4/crate"
+[patch.crates-io.skrifa_v0_9]
+path = "skrifa/v0_9/crate"
 package = "skrifa"
 
 [patch.crates-io.small_ctor_v0_1]

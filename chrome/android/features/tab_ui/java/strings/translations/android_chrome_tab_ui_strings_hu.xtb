@@ -3,7 +3,6 @@
 <translationbundle lang="hu">
 <translation id="1075622780330595106"><ph name="NUMBER_OF_TABS" /> lapot nem használt mostanában. Szeretné bezárni őket?</translation>
 <translation id="125153950246128346">Koppintson másik lap megtekintéséhez</translation>
-<translation id="1455506303394048917">Az ezeken az inkognitó lapokon végzett tevékenységei törlődnek erről az eszközről</translation>
 <translation id="1499635324672558517">Bezárja az összes inkognitó lapot?</translation>
 <translation id="1657719826150349398">Lap mozgatása lefelé</translation>
 <translation id="1869137256605757565">{TABS_COUNT,plural, =1{<ph name="TABS_COUNT_ONE" /> lap}other{<ph name="TABS_COUNT_MANY" /> lap}}</translation>
@@ -37,7 +36,6 @@
 <translation id="4133493477912226187">Úgy tűnik, <ph name="NUMBER_OF_TABS" /> lap kapcsolódik egymáshoz. Csoportosítja őket?</translation>
 <translation id="4212246570487010370">Böngészés folytatása</translation>
 <translation id="4648718555153979859">A lapok itt vannak csoportosítva</translation>
-<translation id="4763557557015254160">{INCOGNITO_TABS_COUNT,plural, =0{A bezárt lapjait a Chrome főmenüjének Nemrég megnyitott lapok szakaszában találja.}=1{A bezárt lapjait a Chrome főmenüjének Nemrég megnyitott lapok szakaszában találja. Az inkognitó lap nem lesz hozzáférhető.}other{A bezárt lapjait a Chrome főmenüjének Nemrég megnyitott lapok szakaszában találja. # inkognitó lap nem lesz hozzáférhető.}}</translation>
 <translation id="4788280460033928884">{REVIEWS,plural, =1{(<ph name="REVIEWS_COUNT_ONE" /> vélemény)}other{(<ph name="REVIEWS_COUNT_MANY" /> vélemény)}}</translation>
 <translation id="4850886885716139402">Nézet</translation>
 <translation id="4870911314065352661">Az összes lapot bezárja?</translation>
@@ -63,10 +61,12 @@
 <translation id="6228793724645064692">(az üzlet értékelése)</translation>
 <translation id="6333260925957816943">Információ erről az üzletről</translation>
 <translation id="639823877092900621">{TABS_COUNT,plural, =1{<ph name="TABS_COUNT_ONE" /> kijelölt lap csoportosításának megszüntetése}other{<ph name="TABS_COUNT_MANY" /> kijelölt lap csoportosításának megszüntetése}}</translation>
+<translation id="6421412308143682486">{INCOGNITO_TABS_COUNT,plural, =1{A bezárt lapjait a Chrome főmenüjének Nemrég megnyitott lapok szakaszában találja. Az inkognitó lap nem lesz hozzáférhető.}other{A bezárt lapjait a Chrome főmenüjének Nemrég megnyitott lapok szakaszában találja. # inkognitó lap nem lesz hozzáférhető.}}</translation>
 <translation id="6422650314852876533">{TABS_COUNT,plural, =1{<ph name="TABS_COUNT_ONE" /> lap}other{<ph name="TABS_COUNT_MANY" /> lap}}</translation>
 <translation id="6549021453810473782">Üzletadatok megtekintése</translation>
 <translation id="6562820390860419811">Lap mozgatása balra</translation>
 <translation id="6615455863669487791">Megjelenítés</translation>
+<translation id="661742612106409204">A bezárt lapjait a Chrome főmenüjének Nemrég megnyitott lapok szakaszában találja.</translation>
 <translation id="6840760312327750441">Lapok csoportosításához tartsa nyomva az egyik lapot, majd húzza rá a másikra.</translation>
 <translation id="6856809498882026482">Több lapot kiválasztó mód elrejtése</translation>
 <translation id="7100731960740376323">{TABS_COUNT,plural, =1{Lap megosztása}other{Lapok megosztása}}</translation>

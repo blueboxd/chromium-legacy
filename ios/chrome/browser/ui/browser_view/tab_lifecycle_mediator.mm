@@ -20,6 +20,7 @@
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/shared/public/commands/autofill_bottom_sheet_commands.h"
 #import "ios/chrome/browser/shared/public/commands/command_dispatcher.h"
+#import "ios/chrome/browser/shared/public/commands/mini_map_commands.h"
 #import "ios/chrome/browser/shared/public/commands/web_content_commands.h"
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
 #import "ios/chrome/browser/ssl/captive_portal_tab_helper.h"
@@ -37,10 +38,6 @@
 #import "ios/chrome/browser/webui/net_export_tab_helper.h"
 #import "ios/chrome/browser/webui/net_export_tab_helper_delegate.h"
 #import "ui/base/device_form_factor.h"
-
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
 
 @interface TabLifecycleMediator () <DependencyInstalling>
 @end
@@ -97,9 +94,9 @@
       _overscrollActionsDelegate);
 
   // DownloadManagerTabHelper cannot function without its delegate.
-  DCHECK(_downloadManagerCoordinator);
+  DCHECK(_downloadManagerTabHelperDelegate);
   DownloadManagerTabHelper::FromWebState(webState)->SetDelegate(
-      _downloadManagerCoordinator);
+      _downloadManagerTabHelperDelegate);
 
   DCHECK(_tabHelperDelegate);
   NetExportTabHelper::FromWebState(webState)->SetDelegate(_tabHelperDelegate);
@@ -134,10 +131,13 @@
   NewTabPageTabHelper::FromWebState(webState)->SetDelegate(
       _NTPTabHelperDelegate);
 
-  if (AnnotationsTabHelper::FromWebState(webState)) {
+  AnnotationsTabHelper* annotationsTabHelper =
+      AnnotationsTabHelper::FromWebState(webState);
+  if (annotationsTabHelper) {
     DCHECK(_baseViewController);
-    AnnotationsTabHelper::FromWebState(webState)->SetBaseViewController(
-        _baseViewController);
+    annotationsTabHelper->SetBaseViewController(_baseViewController);
+    annotationsTabHelper->SetMiniMapCommands(
+        HandlerForProtocol(_commandDispatcher, MiniMapCommands));
   }
 
   PriceNotificationsTabHelper* priceNotificationsTabHelper =
@@ -189,8 +189,11 @@
 
   NewTabPageTabHelper::FromWebState(webState)->SetDelegate(nil);
 
-  if (AnnotationsTabHelper::FromWebState(webState)) {
-    AnnotationsTabHelper::FromWebState(webState)->SetBaseViewController(nil);
+  AnnotationsTabHelper* annotationsTabHelper =
+      AnnotationsTabHelper::FromWebState(webState);
+  if (annotationsTabHelper) {
+    annotationsTabHelper->SetBaseViewController(nil);
+    annotationsTabHelper->SetMiniMapCommands(nil);
   }
 
   PriceNotificationsTabHelper* priceNotificationsTabHelper =

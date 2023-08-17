@@ -47,10 +47,6 @@
 #import "url/gurl.h"
 #import "url/url_constants.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 namespace web {
 
 class WebStateImpl::RealizedWebState::PendingSession {
@@ -77,6 +73,10 @@ class WebStateImpl::RealizedWebState::PendingSession {
   const GURL& page_visible_url() const { return page_visible_url_; }
 
  private:
+  // The WebStateStorage is only needed to implement SerializeToProto() while
+  // the navigation history restoration is in progress for the legacy session
+  // serialization logic.
+  // TODO(crbug.com/1383087): Remove it once the feature has launched.
   const proto::WebStateStorage storage_;
   const std::u16string page_title_;
   const GURL page_visible_url_;
@@ -171,7 +171,11 @@ void WebStateImpl::RealizedWebState::InitWithProto(
 void WebStateImpl::RealizedWebState::SerializeToProto(
     proto::WebStateStorage& storage) const {
   // If restorating is in progress, copy the currently cached storage.
+  // TODO(crbug.com/1383087): This is required to support legacy logic
+  // that captures the state of the WebState even while restoration is
+  // in progress. Remove when the feature is launched.
   if (restored_session_) {
+    DCHECK(!features::UseSessionSerializationOptimizations());
     storage = restored_session_->storage();
     return;
   }
@@ -824,14 +828,8 @@ void WebStateImpl::RealizedWebState::TakeSnapshot(const gfx::RectF& rect,
 
 void WebStateImpl::RealizedWebState::CreateFullPagePdf(
     base::OnceCallback<void(NSData*)> callback) {
-  // Move the callback to a __block pointer, which will be in scope as long
-  // as the callback is retained.
-  __block base::OnceCallback<void(NSData*)> callback_for_block =
-      std::move(callback);
-  [web_controller_
-      createFullPagePDFWithCompletion:^(NSData* pdf_document_data) {
-        std::move(callback_for_block).Run(pdf_document_data);
-      }];
+  [web_controller_ createFullPagePDFWithCompletion:base::CallbackToBlock(
+                                                       std::move(callback))];
 }
 
 void WebStateImpl::RealizedWebState::CloseMediaPresentations() {

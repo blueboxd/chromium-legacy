@@ -150,14 +150,14 @@ void PlatformMimeUtil::GetPlatformExtensionsForMimeType(
   // http://mxr.mozilla.org/mozilla-central/search?string=extensionsForMIMEType
   // http://www.openradar.me/11384153
   // rdar://11384153
-  NSArray* extensions_list =
-      [[NSURLFileTypeMappings sharedMappings]
-          extensionsForMIMEType:base::SysUTF8ToNSString(mime_type)];
+  NSArray* extensions_list = [[NSURLFileTypeMappings sharedMappings]
+      extensionsForMIMEType:base::SysUTF8ToNSString(mime_type)];
 #endif  // defined(OS_IOS)
 
   if (extensions_list) {
-    for (NSString* extension in extensions_list)
+    for (NSString* extension in extensions_list) {
       extensions->insert(base::SysNSStringToUTF8(extension));
+    }
   } else {
     // Huh? Give up.
     base::FilePath::StringType ext;

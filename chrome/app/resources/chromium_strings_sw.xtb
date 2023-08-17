@@ -74,7 +74,6 @@ Huenda ruhusa ambazo tayari umezipa tovuti na programu zikatumika kwenye akaunti
 <translation id="2592940277904433508">Endelea kutumia Chromium</translation>
 <translation id="2648074677641340862">Hitilafu ya mfumo wa uendeshaji imetokea wakati wa usakinishaji. Tafadhali pakua Chromium tena.</translation>
 <translation id="2661879430930417727">Kama unatumia kifaa pamoja na wengine, marafiki na familia wanaweza kuvinjari kivyao na kuweka mipangilio ya Chromium wapendavyo</translation>
-<translation id="2669853942967761236">Chromium imezuia faili hii ya kumbukumbu kwa sababu inaweza kuficha programu hasidi</translation>
 <translation id="268602741124540128"><ph name="ACCOUNT_FIRST_NAME" />, karibu kwenye Chromium</translation>
 <translation id="2711502716910134313">Kichupo cha Chromium</translation>
 <translation id="2718390899429598676">Kwa usalama ulioongezwa, Chromium itasimba data yako kwa njia fiche.</translation>
@@ -272,6 +271,7 @@ Huenda ruhusa ambazo tayari umezipa tovuti na programu zikatumika kwenye akaunti
 <translation id="6613594504749178791">Mabadiliko yako yataanza kufanya kazi wakati ujao utakapozindua upya Chromium.</translation>
 <translation id="665732753414869868">Chromium inahitaji ruhusa ya kufikia kamera ili iunde ramani ya 3D ya mazingira yako</translation>
 <translation id="6663852025006259149">Huenda tovuti zikafanya kazi kama unavyotarajia lakini hazitakumbuka taarifa zako baada ya kufunga madirisha yote ya Chromium</translation>
+<translation id="6669284030132180248">Iwapo pia unahifadhi alamisho kwenye Akaunti yako ya Google, unaweza kufuatilia bei za bidhaa katika Chromium na upokee arifa bei inapopunguzwa</translation>
 <translation id="6676384891291319759">Fikia wavuti</translation>
 <translation id="668175097507315160">Mfumo wa Uendeshaji wa Chromium haukuweza kusawazisha data yako kutokana na hitilafu wakati wa kuingia katika akaunti.</translation>
 <translation id="6709350901466051922">Chromium inahitaji ruhusa ya kufikia maikrofoni kwa ajili ya tovuti hii</translation>
@@ -408,6 +408,5 @@ Chromium haiwezi kufufua mipangilio yako.</translation>
 <translation id="942598560705308788">Vyeti vinavyodhibitiwa na Chromium</translation>
 <translation id="965162752251293939">Ni nani anayetumia Chromium?</translation>
 <translation id="967427899662692980">Pata usalama thabiti zaidi kutoka Chromium</translation>
-<translation id="9792300276217204">Futa data ya tovuti kila wakati kwenye kifaa chako unapofunga Chromium</translation>
 <translation id="985602178874221306">Waandishi wa Chromium</translation>
 </translationbundle>

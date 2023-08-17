@@ -8,12 +8,16 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.verify;
 
 import static org.chromium.chrome.browser.dragdrop.toolbar.ToolbarDragDropCoordinator.isValidMimeType;
 
 import android.app.Activity;
 import android.content.ClipData;
 import android.content.ClipData.Item;
+import android.content.Intent;
+import android.net.Uri;
+import android.os.SystemClock;
 import android.view.DragEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -29,9 +33,15 @@ import org.mockito.Mockito;
 import org.robolectric.Robolectric;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.base.test.util.HistogramWatcher;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.dragdrop.toolbar.ToolbarDragDropCoordinator.DropType;
+import org.chromium.chrome.browser.omnibox.OmniboxFocusReason;
+import org.chromium.chrome.browser.omnibox.OmniboxStub;
 import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteDelegate;
+import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.modelutil.PropertyModel;
+import org.chromium.url.JUnitTestGURLs;
 
 /**
  * Basic test for creating, using drag and drop to omnibox with {@link ToolbarDragDropCoordinator}.
@@ -40,6 +50,8 @@ import org.chromium.ui.modelutil.PropertyModel;
 public class ToolbarDragDropCoordinatorUnitTest {
     @Mock
     private AutocompleteDelegate mAutocompleteDelegate;
+    @Mock
+    private OmniboxStub mOmniboxStub;
     private Activity mActivity;
 
     private ToolbarDragDropCoordinator mToolbarDragDropCoordinator;
@@ -56,13 +68,15 @@ public class ToolbarDragDropCoordinatorUnitTest {
         mTargetView = (FrameLayout) LayoutInflater.from(mActivity).inflate(
                 R.layout.drag_drop_target_view, null);
         mAutocompleteDelegate = Mockito.mock(AutocompleteDelegate.class);
+        mOmniboxStub = Mockito.mock(OmniboxStub.class);
         mToolbarDragDropCoordinator =
-                new ToolbarDragDropCoordinator(mTargetView, mAutocompleteDelegate);
+                new ToolbarDragDropCoordinator(mTargetView, mAutocompleteDelegate, mOmniboxStub);
         PropertyModel model = new PropertyModel.Builder(TargetViewProperties.ALL_KEYS)
                                       .with(TargetViewProperties.TARGET_VIEW_VISIBLE, View.GONE)
                                       .build();
         // mTargetViewDragListener is stateless in order to test TargetViewDragListener
-        mTargetViewDragListener = new TargetViewDragListener(model, mAutocompleteDelegate);
+        mTargetViewDragListener =
+                new TargetViewDragListener(model, mToolbarDragDropCoordinator::parseDragEvent);
     }
 
     @After
@@ -139,11 +153,69 @@ public class ToolbarDragDropCoordinatorUnitTest {
     }
 
     @Test
-    public void testTargetViewDragListener_ActionDrop() {
-        DragEvent event = mockDragEvent(DragEvent.ACTION_DROP, mValidData);
-        boolean result = mTargetViewDragListener.onDrag(mTargetView, event);
-        assertTrue("Drag event should be consumed by target view", result);
-        // TODO(https://crbug.com/1465940): Fix parsing and add tests for parsing
+    public void testOnDrop_ChromeText() {
+        HistogramWatcher histogramExpectation = HistogramWatcher.newSingleRecordWatcher(
+                "Android.DragDrop.ToOmnibox.DropType", DropType.CHROME_TEXT);
+        ClipData chromeText = new ClipData(
+                null, new String[] {"text/plain", "chrome/text"}, new Item("Mock Text"));
+        DragEvent eventDragTextFromChrome = mockDragEvent(DragEvent.ACTION_DROP, chromeText);
+        boolean resultDragTextFromChrome =
+                mTargetViewDragListener.onDrag(mTargetView, eventDragTextFromChrome);
+        assertTrue("Drag eventTextFromChrome should be consumed by target view",
+                resultDragTextFromChrome);
+        verify(mOmniboxStub)
+                .setUrlBarFocus(true, "Mock Text", OmniboxFocusReason.DRAG_DROP_TO_OMNIBOX);
+        histogramExpectation.assertExpected();
+    }
+
+    @Test
+    public void testOnDrop_NonChromeText() {
+        HistogramWatcher histogramExpectation = HistogramWatcher.newSingleRecordWatcher(
+                "Android.DragDrop.ToOmnibox.DropType", DropType.TEXT);
+        ClipData nonChromeText =
+                new ClipData(null, new String[] {"text/plain"}, new Item("Mock Text 2"));
+        DragEvent eventDragText = mockDragEvent(DragEvent.ACTION_DROP, nonChromeText);
+        boolean resultDragText = mTargetViewDragListener.onDrag(mTargetView, eventDragText);
+        assertTrue("Drag eventTextFromChrome should be consumed by target view", resultDragText);
+        verify(mOmniboxStub)
+                .setUrlBarFocus(true, "Mock Text 2", OmniboxFocusReason.DRAG_DROP_TO_OMNIBOX);
+        histogramExpectation.assertExpected();
+    }
+
+    @Test
+    public void testOnDrop_MultipleMimeTypes() {
+        HistogramWatcher histogramExpectation = HistogramWatcher.newSingleRecordWatcher(
+                "Android.DragDrop.ToOmnibox.DropType", DropType.TEXT);
+        ClipData multipleMimeTypes = new ClipData(null,
+                new String[] {"audio/ac3", "text/plain", "audio/alac"}, new Item("Mock Text 3"));
+        DragEvent eventDragMultipleMimeTypes =
+                mockDragEvent(DragEvent.ACTION_DROP, multipleMimeTypes);
+        boolean resultDragMultipleMimeTypes =
+                mTargetViewDragListener.onDrag(mTargetView, eventDragMultipleMimeTypes);
+        assertTrue("Drag eventTextFromChrome should be consumed by target view",
+                resultDragMultipleMimeTypes);
+        verify(mOmniboxStub)
+                .setUrlBarFocus(true, "Mock Text 3", OmniboxFocusReason.DRAG_DROP_TO_OMNIBOX);
+        histogramExpectation.assertExpected();
+    }
+
+    @Test
+    public void testTargetViewDragEvents_ChromeLink() {
+        HistogramWatcher histogramExpectation = HistogramWatcher.newSingleRecordWatcher(
+                "Android.DragDrop.ToOmnibox.DropType", DropType.CHROME_LINK);
+        Intent intent = new Intent().setData(Uri.parse(JUnitTestGURLs.EXAMPLE_URL));
+        ClipData multipleMimeTypes =
+                new ClipData(null, new String[] {"text/plain", "chrome/link"}, new Item(intent));
+        DragEvent eventDragMultipleMimeTypes =
+                mockDragEvent(DragEvent.ACTION_DROP, multipleMimeTypes);
+        boolean resultDragMultipleMimeTypes =
+                mTargetViewDragListener.onDrag(mTargetView, eventDragMultipleMimeTypes);
+        assertTrue("Drag eventTextFromChrome should be consumed by target view",
+                resultDragMultipleMimeTypes);
+        verify(mAutocompleteDelegate)
+                .loadUrl(JUnitTestGURLs.EXAMPLE_URL, PageTransition.TYPED,
+                        SystemClock.uptimeMillis());
+        histogramExpectation.assertExpected();
     }
 
     @Test

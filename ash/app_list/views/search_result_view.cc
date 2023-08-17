@@ -27,15 +27,16 @@
 #include "ash/public/cpp/ash_typography.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_id.h"
-#include "ash/style/ash_color_provider.h"
 #include "ash/style/typography.h"
 #include "base/functional/bind.h"
 #include "base/i18n/number_formatting.h"
+#include "base/trace_event/trace_event.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/chromeos/styles/cros_tokens_color_mappings.h"
 #include "ui/color/color_id.h"
+#include "ui/color/color_provider.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
@@ -43,6 +44,7 @@
 #include "ui/gfx/geometry/skia_conversions.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/text_constants.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/image_view.h"
@@ -80,9 +82,10 @@ constexpr int kImageIconCornerRadius = 4;
 constexpr int kMultiLineLimit = 3;
 
 // For the progress bar.
-constexpr int kProgressBarWidth = 540;
-constexpr int kProgressBarHeight = 9;
-constexpr int kBarChartAnswerCardVerticalOffset = 5;
+constexpr int kProgressBarWidth = 536;
+constexpr int kProgressBarHeight = 8;
+constexpr int kBarChartAnswerCardVerticalUpperOffset = 8;
+constexpr int kBarChartAnswerCardVerticalLowerOffset = 4;
 
 // Flex layout orders detailing how container views are prioritized.
 constexpr int kSeparatorOrder = 1;
@@ -305,8 +308,11 @@ views::Label* SetupChildLabelView(
   return label;
 }
 
-views::ProgressBar* SetupChildProgressBarView(views::FlexLayoutView* parent,
-                                              double value) {
+views::ProgressBar* SetupChildProgressBarView(
+    views::FlexLayoutView* parent,
+    double value,
+    absl::optional<double> upper_warning_limit,
+    absl::optional<double> lower_warning_limit) {
   views::ProgressBar* progress_bar_view =
       parent->AddChildView(std::make_unique<views::ProgressBar>());
   progress_bar_view->GetViewAccessibility().OverrideIsIgnored(true);
@@ -320,8 +326,15 @@ views::ProgressBar* SetupChildProgressBarView(views::FlexLayoutView* parent,
       views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToMinimum,
                                views::MaximumFlexSizeRule::kUnbounded,
                                /*adjust_height_for_width=*/false));
-  progress_bar_view->SetForegroundColorId(
-      kColorAshSystemInfoBarChartColorForeground);
+
+  auto foreground_color =
+      ((upper_warning_limit.has_value() &&
+        value * 100 >= upper_warning_limit.value()) ||
+       (lower_warning_limit.has_value() &&
+        value * 100 <= lower_warning_limit.value()))
+          ? kColorAshSystemInfoBarChartWarningColorForeground
+          : kColorAshSystemInfoBarChartColorForeground;
+  progress_bar_view->SetForegroundColorId(foreground_color);
   progress_bar_view->SetBackgroundColorId(
       kColorAshSystemInfoBarChartColorBackground);
   return progress_bar_view;
@@ -499,8 +512,48 @@ SearchResultView::SearchResultView(
   progress_bar_container_->SetOrientation(
       views::LayoutOrientation::kHorizontal);
   progress_bar_container_->SetBorder(views::CreateEmptyBorder(
-      gfx::Insets::TLBR(kBarChartAnswerCardVerticalOffset, 0,
-                        kBarChartAnswerCardVerticalOffset, 0)));
+      gfx::Insets::TLBR(kBarChartAnswerCardVerticalUpperOffset, 0,
+                        kBarChartAnswerCardVerticalLowerOffset, 0)));
+
+  system_details_container_ = title_and_details_container_->AddChildView(
+      std::make_unique<views::FlexLayoutView>());
+  system_details_container_->SetCrossAxisAlignment(
+      views::LayoutAlignment::kStretch);
+  system_details_container_->SetOrientation(
+      views::LayoutOrientation::kHorizontal);
+  system_details_container_->SetProperty(
+      views::kFlexBehaviorKey,
+      views::FlexSpecification(views::MinimumFlexSizeRule::kPreferred,
+                               views::MaximumFlexSizeRule::kScaleToMaximum));
+
+  left_details_container_ = system_details_container_->AddChildView(
+      std::make_unique<views::FlexLayoutView>());
+  left_details_container_->SetCrossAxisAlignment(
+      views::LayoutAlignment::kStretch);
+  left_details_container_->SetOrientation(
+      views::LayoutOrientation::kHorizontal);
+  left_details_container_->SetProperty(
+      views::kFlexBehaviorKey,
+      views::FlexSpecification(views::MinimumFlexSizeRule::kPreferred,
+                               views::MaximumFlexSizeRule::kUnbounded)
+          .WithOrder(TitleDetailContainerOrder)
+          .WithWeight(1));
+  left_details_container_->SetMainAxisAlignment(views::LayoutAlignment::kStart);
+
+  right_details_container_ = system_details_container_->AddChildView(
+      std::make_unique<views::FlexLayoutView>());
+  right_details_container_->SetCrossAxisAlignment(
+      views::LayoutAlignment::kStretch);
+  right_details_container_->SetMainAxisAlignment(views::LayoutAlignment::kEnd);
+  right_details_container_->SetOrientation(
+      views::LayoutOrientation::kHorizontal);
+
+  right_details_container_->SetProperty(
+      views::kFlexBehaviorKey,
+      views::FlexSpecification(views::MinimumFlexSizeRule::kPreferred,
+                               views::MaximumFlexSizeRule::kUnbounded)
+          .WithOrder(TitleDetailContainerOrder)
+          .WithWeight(1));
 
   result_text_separator_label_ = SetupChildLabelView(
       title_and_details_container_, view_type_, LabelType::kDetails,
@@ -850,11 +903,13 @@ void SearchResultView::UpdateBadgeIcon() {
     return;
   }
 
+  const auto* color_provider = GetColorProvider();
   gfx::ImageSkia badge_icon_skia =
-      result()->badge_icon().Rasterize(GetColorProvider());
+      result()->badge_icon().Rasterize(color_provider);
 
   if (result()->use_badge_icon_background()) {
-    badge_icon_skia = CreateIconWithCircleBackground(badge_icon_skia);
+    badge_icon_skia =
+        CreateIconWithCircleBackground(badge_icon_skia, color_provider);
   }
 
   gfx::ImageSkia resized_badge_icon(
@@ -945,6 +1000,9 @@ void SearchResultView::UpdateDetailsContainer() {
   non_elided_details_label_width_ = 0;
   details_container_->RemoveAllChildViews();
   details_label_tags_.clear();
+  right_details_container_->RemoveAllChildViews();
+  left_details_container_->RemoveAllChildViews();
+  right_details_label_tags_.clear();
 
   // Hide details container for answer cards with multiline titles.
   bool hide_details_container_for_answer_card =
@@ -955,6 +1013,29 @@ void SearchResultView::UpdateDetailsContainer() {
       hide_details_container_for_answer_card) {
     details_container_->SetVisible(false);
     result_text_separator_label_->SetVisible(false);
+  } else if (result() && result()->has_extra_system_data_details()) {
+    details_container_->SetVisible(false);
+    details_label_tags_ = SetupContainerViewForTextVector(
+        left_details_container_, result()->details_text_vector(),
+        LabelType::kDetails, has_keyboard_shortcut_contents_,
+        /*is_multi_line=*/result()->multiline_details());
+
+    absl::optional<std::u16string> right_details =
+        result()->system_info_extra_details();
+    ash::SearchResultTextItem text_item(SearchResultTextItemType::kString);
+    text_item.SetText(right_details.value());
+    text_item.SetTextTags({});
+
+    right_details_label_tags_ = SetupContainerViewForTextVector(
+        right_details_container_, {text_item}, LabelType::kDetails,
+        has_keyboard_shortcut_contents_,
+        /*is_multi_line=*/result()->multiline_details());
+    StyleDetailsContainer();
+
+    left_details_container_->SetVisible(true);
+    system_details_container_->SetVisible(true);
+    right_details_container_->SetVisible(true);
+
   } else {
     // Create details labels from text vector metadata.
     details_label_tags_ = SetupContainerViewForTextVector(
@@ -1020,7 +1101,9 @@ void SearchResultView::UpdateProgressBarContainer() {
   if (result() && result()->is_system_info_card_bar_chart()) {
     is_progress_bar_answer_card_ = true;
     progress_bar_ = SetupChildProgressBarView(
-        progress_bar_container_, result()->bar_chart_value().value() / 100);
+        progress_bar_container_, result()->bar_chart_value().value() / 100.0,
+        result()->upper_limit_for_bar_chart(),
+        result()->lower_limit_for_bar_chart());
     text_container_->SetVisible(true);
     title_container_->SetVisible(false);
     title_and_details_container_->SetVisible(true);
@@ -1081,6 +1164,11 @@ void SearchResultView::StyleTitleContainer() {
 void SearchResultView::StyleDetailsContainer() {
   for (auto& span : details_label_tags_) {
     StyleLabel(span.GetLabel(), span.GetTags());
+  }
+  if (result() && result()->has_extra_system_data_details()) {
+    for (auto& span : right_details_label_tags_) {
+      StyleLabel(span.GetLabel(), span.GetTags());
+    }
   }
 }
 
@@ -1340,6 +1428,7 @@ void SearchResultView::OnGestureEvent(ui::GestureEvent* event) {
 }
 
 void SearchResultView::OnMetadataChanged() {
+  TRACE_EVENT0("ui", "SearchResultView::OnMetadataChanged");
   if (view_type_ == SearchResultViewType::kAnswerCard) {
     UpdateBigTitleContainer();
     UpdateBigTitleSuperscriptContainer();
@@ -1387,6 +1476,7 @@ void SearchResultView::OnButtonPressed(const ui::Event& event) {
 void SearchResultView::SetIconImage(const gfx::ImageSkia& source,
                                     views::ImageView* const icon,
                                     const gfx::Size& size) {
+  TRACE_EVENT0("ui", "SearchResultView::SetIconImage");
   gfx::ImageSkia image(source);
   image = gfx::ImageSkiaOperations::CreateResizedImage(
       source, skia::ImageOperations::RESIZE_BEST, size);

@@ -4,6 +4,21 @@
 
 #include "chrome/browser/signin/bound_session_credentials/bound_session_refresh_cookie_fetcher.h"
 
+// static
+bool BoundSessionRefreshCookieFetcher::IsPersistentError(Result result) {
+  switch (result) {
+    case Result::kSuccess:
+    case Result::kConnectionError:
+    case Result::kServerTransientError:
+      return false;
+    case Result::kServerPersistentError:
+    case Result::kServerUnexepectedResponse:
+    case Result::kChallengeRequiredUnexpectedFormat:
+    case Result::kSignChallengeFailed:
+      return true;
+  }
+}
+
 std::ostream& operator<<(
     std::ostream& os,
     const BoundSessionRefreshCookieFetcher::Result& result) {
@@ -20,5 +35,10 @@ std::ostream& operator<<(
                    "error.";
     case BoundSessionRefreshCookieFetcher::Result::kServerUnexepectedResponse:
       return os << "Cookie rotation request didn't set the expected cookies.";
+    case BoundSessionRefreshCookieFetcher::Result::
+        kChallengeRequiredUnexpectedFormat:
+      return os << "Challenge required unexpected format.";
+    case BoundSessionRefreshCookieFetcher::Result::kSignChallengeFailed:
+      return os << "Sign challenge failed on cookie rotation request.";
   }
 }

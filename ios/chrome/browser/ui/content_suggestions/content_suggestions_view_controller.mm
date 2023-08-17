@@ -7,10 +7,12 @@
 #import "base/mac/foundation_util.h"
 #import "base/metrics/user_metrics.h"
 #import "base/metrics/user_metrics_action.h"
+#import "components/segmentation_platform/public/features.h"
 #import "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/drag_and_drop/url_drag_drop_handler.h"
 #import "ios/chrome/browser/ntp/set_up_list_item.h"
 #import "ios/chrome/browser/ntp/set_up_list_item_type.h"
+#import "ios/chrome/browser/safety_check/ios_chrome_safety_check_manager_constants.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_cells_constants.h"
@@ -34,6 +36,8 @@
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_metrics_recorder.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller_audience.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
+#import "ios/chrome/browser/ui/content_suggestions/safety_check/safety_check_state.h"
+#import "ios/chrome/browser/ui/content_suggestions/safety_check/safety_check_view.h"
 #import "ios/chrome/browser/ui/content_suggestions/set_up_list/set_up_list_item_view.h"
 #import "ios/chrome/browser/ui/content_suggestions/set_up_list/set_up_list_item_view_data.h"
 #import "ios/chrome/browser/ui/content_suggestions/set_up_list/set_up_list_view.h"
@@ -50,10 +54,6 @@
 #import "ui/base/device_form_factor.h"
 #import "ui/base/l10n/l10n_util.h"
 #import "url/gurl.h"
-
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
 
 namespace {
 
@@ -122,6 +122,8 @@ const base::TimeDelta kSetUpListHideAnimationDuration = base::Milliseconds(250);
     NSMutableArray<ContentSuggestionsShortcutTileView*>* shortcutsViews;
 // The SetUpListView, if it is currently being displayed.
 @property(nonatomic, strong) SetUpListView* setUpListView;
+// The SafetyCheckView, if it is currently being displayed.
+@property(nonatomic, strong) SafetyCheckView* safetyCheckView;
 @end
 
 @implementation ContentSuggestionsViewController {
@@ -129,7 +131,7 @@ const base::TimeDelta kSetUpListHideAnimationDuration = base::Milliseconds(250);
   NSLayoutConstraint* _returnToRecentTabWidthAnchor;
   UIScrollView* _magicStackScrollView;
   UIStackView* _magicStack;
-  BOOL _shouldShowMagicStack;
+  BOOL _magicStackRankReceived;
   NSMutableArray<NSNumber*>* _magicStackModuleOrder;
   NSLayoutConstraint* _magicStackScrollViewWidthAnchor;
   NSArray<SetUpListItemViewData*>* _savedSetUpListItems;
@@ -185,7 +187,8 @@ const base::TimeDelta kSetUpListHideAnimationDuration = base::Milliseconds(250);
     [self.verticalStackView.trailingAnchor
         constraintEqualToAnchor:self.view.trailingAnchor],
     [self.verticalStackView.topAnchor
-        constraintEqualToAnchor:self.view.topAnchor],
+        constraintEqualToAnchor:self.view.topAnchor
+                       constant:content_suggestions::HeaderBottomPadding()],
     [self.verticalStackView.bottomAnchor
         constraintEqualToAnchor:self.view.bottomAnchor
                        constant:-bottomSpacing]
@@ -193,8 +196,10 @@ const base::TimeDelta kSetUpListHideAnimationDuration = base::Milliseconds(250);
 
   if (self.returnToRecentTabTile) {
     [self addUIElement:self.returnToRecentTabTile
-        withCustomBottomSpacing:content_suggestions::
-                                    kReturnToRecentTabSectionBottomMargin];
+        withCustomBottomSpacing:
+            IsMagicStackEnabled()
+                ? kMostVisitedBottomMargin
+                : content_suggestions::kReturnToRecentTabSectionBottomMargin];
     [self layoutReturnToRecentTabTile];
   }
   if ([self.mostVisitedViews count] > 0) {
@@ -206,7 +211,7 @@ const base::TimeDelta kSetUpListHideAnimationDuration = base::Milliseconds(250);
   }
   if (self.shortcutsViews) {
     self.shortcutsStackView = [self createShortcutsStackView];
-    if (!_shouldShowMagicStack) {
+    if (!IsMagicStackEnabled()) {
       [self addUIElement:self.shortcutsStackView
           withCustomBottomSpacing:kMostVisitedBottomMargin];
       CGFloat width =
@@ -222,8 +227,9 @@ const base::TimeDelta kSetUpListHideAnimationDuration = base::Milliseconds(250);
     }
   }
 
-  if (_shouldShowMagicStack) {
-    CHECK(IsMagicStackEnabled());
+  // Only Create Magic Stack if the ranking has been received. It can be delayed
+  // to after -viewDidLoad if fecthing from Segmentation Platform.
+  if (IsMagicStackEnabled() && _magicStackRankReceived) {
     [self createMagicStack];
   }
 }
@@ -277,8 +283,10 @@ const base::TimeDelta kSetUpListHideAnimationDuration = base::Milliseconds(250);
     [self.verticalStackView insertArrangedSubview:self.returnToRecentTabTile
                                           atIndex:0];
     [self.verticalStackView
-        setCustomSpacing:content_suggestions::
-                             kReturnToRecentTabSectionBottomMargin
+        setCustomSpacing:IsMagicStackEnabled()
+                             ? kMostVisitedBottomMargin
+                             : content_suggestions::
+                                   kReturnToRecentTabSectionBottomMargin
                afterView:self.returnToRecentTabTile];
     [self layoutReturnToRecentTabTile];
     [self.audience returnToRecentTabWasAdded];
@@ -412,8 +420,17 @@ const base::TimeDelta kSetUpListHideAnimationDuration = base::Milliseconds(250);
 
 - (void)setMagicStackOrder:(NSArray<NSNumber*>*)order {
   CHECK([order count] > 0);
-  _shouldShowMagicStack = YES;
+  _magicStackRankReceived = YES;
   _magicStackModuleOrder = [order mutableCopy];
+  if (self.viewLoaded &&
+      base::FeatureList::IsEnabled(segmentation_platform::features::
+                                       kSegmentationPlatformIosModuleRanker)) {
+    // Magic Stack order is only passed to the VC late when fetching it from the
+    // Segmentation Platform
+    [self createMagicStack];
+    [self.view setNeedsLayout];
+    [self.view layoutIfNeeded];
+  }
 }
 
 - (void)scrollToNextMagicStackModuleForCompletedModule:
@@ -635,7 +652,7 @@ const base::TimeDelta kSetUpListHideAnimationDuration = base::Milliseconds(250);
                   .height +
               kMostVisitedBottomMargin;
   }
-  if (_shouldShowMagicStack) {
+  if (IsMagicStackEnabled()) {
     height += _magicStackScrollView.contentSize.height;
   } else {
     if ([self.shortcutsViews count] > 0) {
@@ -1003,6 +1020,32 @@ const base::TimeDelta kSetUpListHideAnimationDuration = base::Milliseconds(250);
         [_magicStack addArrangedSubview:setUpListAllSetModule];
         break;
       }
+      case ContentSuggestionsModuleType::kSafetyCheck:
+      case ContentSuggestionsModuleType::kSafetyCheckMultiRow: {
+        // TODO(crbug.com/1472382): In a follow-up CL, this information will
+        // come from the new Safety Check Manager. For now, this is placeholder
+        // showing the default state.
+        SafetyCheckState* defaultState = [[SafetyCheckState alloc]
+            initWithUpdateChromeState:UpdateChromeSafetyCheckState::kDefault
+                        passwordState:PasswordSafetyCheckState::kDefault
+                    safeBrowsingState:SafeBrowsingSafetyCheckState::kDefault
+                         runningState:RunningSafetyCheckState::kDefault];
+
+        self.safetyCheckView =
+            [[SafetyCheckView alloc] initWithState:defaultState];
+
+        self.safetyCheckView.delegate = self.audience;
+
+        MagicStackModuleContainer* safetyCheckModule =
+            [[MagicStackModuleContainer alloc]
+                initWithContentView:self.safetyCheckView
+                               type:type
+                           delegate:self];
+
+        [_magicStack addArrangedSubview:safetyCheckModule];
+
+        break;
+      }
       default:
         break;
     }
@@ -1073,6 +1116,7 @@ const base::TimeDelta kSetUpListHideAnimationDuration = base::Milliseconds(250);
       case ContentSuggestionsModuleType::kSetUpListSync:
       case ContentSuggestionsModuleType::kSetUpListDefaultBrowser:
       case ContentSuggestionsModuleType::kSetUpListAutofill:
+      case ContentSuggestionsModuleType::kCompactedSetUpList:
         [viewIndicesToRemove addObject:@(index)];
         break;
       default:

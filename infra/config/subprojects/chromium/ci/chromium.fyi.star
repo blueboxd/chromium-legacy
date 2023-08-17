@@ -78,7 +78,7 @@ def fyi_ios_builder(*, name, **kwargs):
     if kwargs.get("builderless", False):
         kwargs.setdefault("os", os.MAC_DEFAULT)
     kwargs.setdefault("reclient_scandeps_server", True)
-    kwargs.setdefault("xcode", xcode.x14main)
+    kwargs.setdefault("xcode", xcode.x15main)
     return ci.builder(name = name, **kwargs)
 
 def mac_builder_defaults(**kwargs):
@@ -1002,6 +1002,7 @@ The bot specs should be in sync with <a href="https://ci.chromium.org/p/chromium
     execution_timeout = 15 * time.hour,
     reclient_cache_silo = "Comparison Android - cache siloed",
     reclient_instance = reclient.instance.TEST_TRUSTED,
+    shadow_reclient_instance = reclient.instance.TEST_UNTRUSTED,
 )
 
 fyi_reclient_comparison_builder(
@@ -1021,6 +1022,7 @@ The bot specs should be in sync with <a href="https://ci.chromium.org/p/chromium
     execution_timeout = 15 * time.hour,
     reclient_cache_silo = "Comparison Android (reproxy cache) - cache siloed",
     reclient_instance = reclient.instance.TEST_TRUSTED,
+    shadow_reclient_instance = reclient.instance.TEST_UNTRUSTED,
 )
 
 fyi_reclient_comparison_builder(
@@ -1033,6 +1035,7 @@ fyi_reclient_comparison_builder(
     execution_timeout = 6 * time.hour,
     reclient_cache_silo = "Comparison Linux - cache siloed",
     reclient_instance = reclient.instance.TEST_TRUSTED,
+    shadow_reclient_instance = reclient.instance.TEST_UNTRUSTED,
 )
 
 fyi_mac_reclient_comparison_builder(
@@ -1049,6 +1052,7 @@ fyi_mac_reclient_comparison_builder(
     },
     reclient_cache_silo = "Comparison Mac - cache siloed",
     reclient_instance = reclient.instance.TEST_TRUSTED,
+    shadow_reclient_instance = reclient.instance.TEST_UNTRUSTED,
 )
 
 fyi_mac_reclient_comparison_builder(
@@ -1065,6 +1069,7 @@ fyi_mac_reclient_comparison_builder(
     },
     reclient_cache_silo = "Comparison Mac - cache siloed",
     reclient_instance = reclient.instance.TEST_TRUSTED,
+    shadow_reclient_instance = reclient.instance.TEST_UNTRUSTED,
 )
 
 fyi_mac_reclient_comparison_builder(
@@ -1082,6 +1087,7 @@ fyi_mac_reclient_comparison_builder(
     },
     reclient_cache_silo = "Comparison Mac - cache siloed",
     reclient_instance = reclient.instance.TEST_TRUSTED,
+    shadow_reclient_instance = reclient.instance.TEST_UNTRUSTED,
 )
 
 fyi_reclient_comparison_builder(
@@ -1097,6 +1103,7 @@ fyi_reclient_comparison_builder(
     reclient_cache_silo = "Comparison Windows 8 cores - cache siloed",
     reclient_instance = reclient.instance.TEST_TRUSTED,
     reclient_jobs = 80,
+    shadow_reclient_instance = reclient.instance.TEST_UNTRUSTED,
 )
 
 fyi_reclient_comparison_builder(
@@ -1112,6 +1119,7 @@ fyi_reclient_comparison_builder(
     execution_timeout = 6 * time.hour,
     reclient_cache_silo = "Comparison Windows - cache siloed",
     reclient_instance = reclient.instance.TEST_TRUSTED,
+    shadow_reclient_instance = reclient.instance.TEST_UNTRUSTED,
 )
 
 fyi_reclient_comparison_builder(
@@ -1125,6 +1133,7 @@ fyi_reclient_comparison_builder(
     execution_timeout = 10 * time.hour,
     reclient_cache_silo = "Comparison Simple Chrome - cache siloed",
     reclient_instance = reclient.instance.TEST_TRUSTED,
+    shadow_reclient_instance = reclient.instance.TEST_UNTRUSTED,
 )
 
 fyi_mac_reclient_comparison_builder(
@@ -1138,7 +1147,8 @@ fyi_mac_reclient_comparison_builder(
     execution_timeout = 10 * time.hour,
     reclient_cache_silo = "Comparison ios - cache siloed",
     reclient_instance = reclient.instance.TEST_TRUSTED,
-    xcode = xcode.x14main,
+    shadow_reclient_instance = reclient.instance.TEST_UNTRUSTED,
+    xcode = xcode.x15main,
 )
 
 fyi_reclient_comparison_builder(
@@ -1158,6 +1168,7 @@ The bot specs should be in sync with <a href="https://ci.chromium.org/p/chromium
     reclient_cache_silo = "Comparison Android CQ - cache siloed",
     reclient_instance = reclient.instance.TEST_UNTRUSTED,
     reclient_jobs = 300,
+    shadow_reclient_instance = reclient.instance.TEST_UNTRUSTED,
 )
 
 fyi_reclient_comparison_builder(
@@ -1177,6 +1188,7 @@ The bot specs should be in sync with <a href="https://ci.chromium.org/p/chromium
     reclient_cache_silo = "Comparison Linux CQ - cache siloed",
     reclient_instance = reclient.instance.TEST_UNTRUSTED,
     reclient_jobs = 150,
+    shadow_reclient_instance = reclient.instance.TEST_UNTRUSTED,
 )
 
 fyi_mac_reclient_comparison_builder(
@@ -1199,6 +1211,7 @@ The bot specs should be in sync with <a href="https://ci.chromium.org/p/chromium
     reclient_cache_silo = "Comparison Mac CQ - cache siloed",
     reclient_instance = reclient.instance.TEST_UNTRUSTED,
     reclient_jobs = 150,
+    shadow_reclient_instance = reclient.instance.TEST_UNTRUSTED,
 )
 
 fyi_reclient_comparison_builder(
@@ -1220,6 +1233,7 @@ The bot specs should be in sync with <a href="https://ci.chromium.org/p/chromium
     reclient_cache_silo = "Comparison Windows CQ - cache siloed",
     reclient_instance = reclient.instance.TEST_UNTRUSTED,
     reclient_jobs = 300,
+    shadow_reclient_instance = reclient.instance.TEST_UNTRUSTED,
 )
 
 fyi_reclient_comparison_builder(
@@ -1240,6 +1254,7 @@ The bot specs should be in sync with <a href="https://ci.chromium.org/p/chromium
     reclient_cache_silo = "Comparison Simple Chrome CQ - cache siloed",
     reclient_instance = reclient.instance.TEST_UNTRUSTED,
     reclient_jobs = 300,
+    shadow_reclient_instance = reclient.instance.TEST_UNTRUSTED,
 )
 
 fyi_mac_reclient_comparison_builder(
@@ -1259,7 +1274,8 @@ The bot specs should be in sync with <a href="https://ci.chromium.org/p/chromium
     reclient_cache_silo = "Comparison ios CQ - cache siloed",
     reclient_instance = reclient.instance.TEST_UNTRUSTED,
     reclient_jobs = 150,
-    xcode = xcode.x14main,
+    shadow_reclient_instance = reclient.instance.TEST_UNTRUSTED,
+    xcode = xcode.x15main,
 )
 
 # Build Perf builders use CQ reclient instance and high reclient jobs/cores and
@@ -1270,6 +1286,7 @@ def build_perf_builder(description_html, **kwargs):
     kwargs.setdefault("reclient_instance", reclient.instance.DEFAULT_UNTRUSTED)
     kwargs.setdefault("reclient_jobs", reclient.jobs.HIGH_JOBS_FOR_CQ)
     kwargs.setdefault("use_clang_coverage", True)
+    kwargs.setdefault("siso_configs", [])
 
     return ci.builder(
         service_account = "chromium-build-perf-ci-builder@chops-service-accounts.iam.gserviceaccount.com",
@@ -1280,7 +1297,6 @@ def build_perf_builder(description_html, **kwargs):
         siso_enable_cloud_profiler = True,
         siso_enable_cloud_trace = True,
         siso_project = siso.project.DEFAULT_UNTRUSTED,
-        siso_configs = [],
         notifies = ["chrome-build-perf"],
         description_html = description_html + "<br>Build stats is show in http://shortn/_gaAdI3x6o6.",
         **kwargs
@@ -1352,6 +1368,7 @@ The build configs and the bot specs should be in sync with <a href="https://ci.c
         category = "buildperf",
         short_name = "andss",
     ),
+    siso_configs = ["remote_all"],
 )
 
 build_perf_builder(
@@ -1388,6 +1405,7 @@ This builder measures build performance for Android developer builds, by simulat
     ),
     reclient_instance = reclient.instance.DEVELOPER,
     reclient_jobs = 5120,
+    shadow_reclient_instance = None,
     use_clang_coverage = None,
 )
 
@@ -1441,6 +1459,7 @@ The build configs and the bot specs should be in sync with <a href="https://ci.c
         category = "buildperf",
         short_name = "lnxss",
     ),
+    siso_configs = ["remote_all"],
 )
 
 build_perf_builder(
@@ -1470,6 +1489,7 @@ This builder measures build performance for Linux developer builds, by simulatin
     ),
     reclient_instance = reclient.instance.DEVELOPER,
     reclient_jobs = 5120,
+    shadow_reclient_instance = None,
     use_clang_coverage = None,
 )
 
@@ -1523,6 +1543,7 @@ The build configs and the bot specs should be in sync with <a href="https://ci.c
         category = "buildperf",
         short_name = "winss",
     ),
+    siso_configs = ["remote_all"],
 )
 
 build_perf_builder(
@@ -1552,6 +1573,7 @@ This builder measures build performance for Windows developer builds, by simulat
     ),
     reclient_instance = reclient.instance.DEVELOPER,
     reclient_jobs = 1000,
+    shadow_reclient_instance = None,
     use_clang_coverage = None,
 )
 
@@ -1580,9 +1602,8 @@ The build configs and the bot specs should be in sync with <a href="https://ci.c
         category = "buildperf",
         short_name = "cros",
     ),
-    # TODO(b/285080767): increase reclient.jobs.HIGH_JOBS_FOR_CQ to 500 and
-    # remove this.
-    reclient_jobs = 500,
+    # Use the same config with linux-chromeos-rel CQ builder here.
+    reclient_jobs = reclient.jobs.HIGH_JOBS_FOR_CQ,
 )
 
 build_perf_builder(
@@ -1612,6 +1633,7 @@ The build configs and the bot specs should be in sync with <a href="https://ci.c
         category = "buildperf",
         short_name = "crosss",
     ),
+    siso_configs = ["remote_all"],
 )
 
 ci.builder(
@@ -1670,6 +1692,7 @@ ci.builder(
     reclient_rewrapper_env = {
         "RBE_compare": "true",
     },
+    shadow_reclient_instance = None,
 )
 
 ci.builder(
@@ -1699,6 +1722,7 @@ ci.builder(
     ),
     reclient_instance = reclient.instance.TEST_TRUSTED,
     reclient_jobs = None,
+    shadow_reclient_instance = None,
 )
 
 ci.builder(
@@ -1729,6 +1753,7 @@ ci.builder(
     reclient_rewrapper_env = {
         "RBE_compare": "true",
     },
+    shadow_reclient_instance = None,
 )
 
 fyi_mac_builder(
@@ -1764,6 +1789,7 @@ fyi_mac_builder(
     reclient_rewrapper_env = {
         "RBE_compare": "true",
     },
+    shadow_reclient_instance = None,
 )
 
 fyi_mac_builder(
@@ -2299,7 +2325,7 @@ fyi_ios_builder(
             short_name = "dev",
         ),
     ],
-    xcode = xcode.x14betabots,
+    xcode = xcode.x15betabots,
 )
 
 fyi_ios_builder(
@@ -2328,7 +2354,7 @@ fyi_ios_builder(
         category = "iOS|iOS16",
         short_name = "sdk16",
     ),
-    xcode = xcode.x14betabots,
+    xcode = xcode.x15betabots,
 )
 
 fyi_mac_builder(
@@ -2449,6 +2475,7 @@ ci.builder(
     experimental = True,
     reclient_instance = reclient.instance.DEFAULT_TRUSTED,
     reclient_jobs = reclient.jobs.DEFAULT,
+    shadow_reclient_instance = None,
 )
 
 ci.builder(

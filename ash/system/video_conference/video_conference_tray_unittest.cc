@@ -108,9 +108,10 @@ class VideoConferenceTrayTest : public AshTestBase {
 
   // AshTestBase:
   void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(features::kVideoConference);
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kCameraEffectsSupportedByHardware);
+    scoped_feature_list_.InitWithFeatures(
+        {features::kVideoConference,
+         features::kCameraEffectsSupportedByHardware},
+        {});
 
     // Instantiates a fake controller (the real one is created in
     // ChromeBrowserMainExtraPartsAsh::PreProfileInit() which is not called in
@@ -121,6 +122,8 @@ class VideoConferenceTrayTest : public AshTestBase {
   }
 
   void TearDown() override {
+    num_media_apps_simulated_ = 0;
+
     AshTestBase::TearDown();
     controller_.reset();
   }
@@ -203,9 +206,26 @@ class VideoConferenceTrayTest : public AshTestBase {
     return state;
   }
 
+  // Simulates adding or removing (depending on `add`) a single app that is
+  // capturing camera or mic. `CreateMediaApps()` updates the media state, and
+  // `OnAppUpdated()` is called by the backend when a new app starts capturing.
+  void ModifyAppsCapturing(bool add) {
+    if (add) {
+      CreateMediaApps(/*num_apps=*/++num_media_apps_simulated_,
+                      /*clear_existing_apps=*/false);
+      // `VideoConferenceTrayController::HandleClientUpdate()` is triggered via
+      // mojo, this directly calls `OnAppAdded()`.
+      controller_->OnAppAdded();
+    } else {
+      CreateMediaApps(--num_media_apps_simulated_,
+                      /*clear_existing_apps=*/false);
+    }
+  }
+
   FakeVideoConferenceTrayController* controller() { return controller_.get(); }
 
  private:
+  int num_media_apps_simulated_ = 0;
   base::test::ScopedFeatureList scoped_feature_list_;
   std::unique_ptr<FakeVideoConferenceTrayController> controller_;
 };
@@ -522,7 +542,7 @@ TEST_F(VideoConferenceTrayTest, AutoHiddenShelfShownSingleDisplay) {
   auto widget = ForceShelfToAutoHideOnPrimaryDisplay();
   // Update the list of media apps in the mock controller so the
   // VideoConferenceTray sees that a new app has begun capturing.
-  CreateMediaApps(/*num_apps=*/1, /*clear_existing_apps=*/true);
+  ModifyAppsCapturing(/*add=*/true);
 
   // Update the `VideoConferenceMediaState` to force the `VideoConferenceTray`
   // to show. The shelf should also show, since the number of apps capturing has
@@ -549,7 +569,7 @@ TEST_F(VideoConferenceTrayTest, AutoHiddenShelfReShown) {
   auto widget = ForceShelfToAutoHideOnPrimaryDisplay();
   // Update the list of media apps in the mock controller so the
   // VideoConferenceTray sees that a new app has begun capturing.
-  CreateMediaApps(/*num_apps=*/1, /*clear_existing_apps=*/true);
+  ModifyAppsCapturing(/*add=*/true);
 
   // Update the `VideoConferenceMediaState` to force the `VideoConferenceTray`
   // to show. The shelf should also show, since the number of apps capturing has
@@ -567,7 +587,7 @@ TEST_F(VideoConferenceTrayTest, AutoHiddenShelfReShown) {
   EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, shelf->GetAutoHideState());
 
   // Add a second app, the shelf should re-show.
-  CreateMediaApps(/*num_apps=*/1, /*clear_existing_apps=*/false);
+  ModifyAppsCapturing(/*add=*/true);
   controller()->UpdateWithMediaState(state);
 
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
@@ -586,7 +606,8 @@ TEST_F(VideoConferenceTrayTest, AutoHiddenShelfTimerRestarted) {
   auto widget = ForceShelfToAutoHideOnPrimaryDisplay();
   // Update the list of media apps in the mock controller so the
   // VideoConferenceTray sees that a new app has begun capturing.
-  CreateMediaApps(/*num_apps=*/1, /*clear_existing_apps=*/true);
+  ModifyAppsCapturing(/*add=*/true);
+
   // Update the `VideoConferenceMediaState` to force the `VideoConferenceTray`
   // to show. The shelf should also show, since the number of apps capturing has
   // increased.
@@ -595,7 +616,7 @@ TEST_F(VideoConferenceTrayTest, AutoHiddenShelfTimerRestarted) {
   // Fast forward for 2/3rds of the timer duration, then simulate a second app
   // capturing. The timer should extend for another 6s.
   task_environment()->FastForwardBy(base::Seconds(4));
-  CreateMediaApps(/*num_apps=*/1, /*clear_existing_apps=*/false);
+  ModifyAppsCapturing(/*add-*/ true);
   controller()->UpdateWithMediaState(state);
 
   auto* shelf = Shell::GetPrimaryRootWindowController()->shelf();
@@ -620,7 +641,8 @@ TEST_F(VideoConferenceTrayTest, DecreasedAppCountDoesNotShowShelf) {
   auto widget = ForceShelfToAutoHideOnPrimaryDisplay();
   // Update the list of media apps in the mock controller so the
   // VideoConferenceTray sees that a new app has begun capturing.
-  CreateMediaApps(/*num_apps=*/1, /*clear_existing_apps=*/true);
+  ModifyAppsCapturing(/*add-*/ true);
+
   // Update the `VideoConferenceMediaState` to force the `VideoConferenceTray`
   // to show. The shelf should also show, since the number of apps capturing has
   // increased.
@@ -645,7 +667,8 @@ TEST_F(VideoConferenceTrayTest, DecreasedAppCountDoesNotHideShelf) {
   auto widget = ForceShelfToAutoHideOnPrimaryDisplay();
   // Update the list of media apps in the mock controller so the
   // VideoConferenceTray sees that a new app has begun capturing.
-  CreateMediaApps(/*num_apps=*/2, /*clear_existing_apps=*/true);
+  ModifyAppsCapturing(/*add-*/ true);
+  ModifyAppsCapturing(/*add-*/ true);
   // Update the `VideoConferenceMediaState` to force the `VideoConferenceTray`
   // to show. The shelf should also show, since the number of apps capturing has
   // increased.
@@ -657,7 +680,7 @@ TEST_F(VideoConferenceTrayTest, DecreasedAppCountDoesNotHideShelf) {
 
   // Simulate a decrease in number of apps capturing, the shelf should still be
   // shown.
-  CreateMediaApps(/*num_apps=*/1, /*clear_existing_apps=*/true);
+  ModifyAppsCapturing(/*add-*/ false);
   controller()->UpdateWithMediaState(state);
   // Fast forward the timer to 2/3rds, the shelf should still be shown.
   task_environment()->FastForwardBy(base::Seconds(2));
@@ -671,7 +694,7 @@ TEST_F(VideoConferenceTrayTest, AppCountFromOneToZero) {
   auto widget = ForceShelfToAutoHideOnPrimaryDisplay();
   // Update the list of media apps in the mock controller so the
   // VideoConferenceTray sees that a new app has begun capturing.
-  CreateMediaApps(/*num_apps=*/1, /*clear_existing_apps=*/true);
+  ModifyAppsCapturing(/*add=*/true);
   // Update the `VideoConferenceMediaState` to force the `VideoConferenceTray`
   // to show. The shelf should also show, since the number of apps capturing has
   // increased.
@@ -682,7 +705,7 @@ TEST_F(VideoConferenceTrayTest, AppCountFromOneToZero) {
   ASSERT_EQ(SHELF_AUTO_HIDE_SHOWN, shelf->GetAutoHideState());
 
   // Simulate that no more apps are capturing. The shelf should hide.
-  controller()->ClearMediaApps();
+  ModifyAppsCapturing(/*add=*/false);
   controller()->UpdateWithMediaState(VideoConferenceMediaState());
 
   // To prevent flakiness, wait for the async call to fetch media apps to
@@ -721,7 +744,7 @@ TEST_F(VideoConferenceTrayTest, AutoHiddenShelfTwoDisplays) {
 
   // Update the list of media apps in the mock controller so the
   // VideoConferenceTray sees that a new app has begun capturing.
-  CreateMediaApps(/*num_apps=*/1, /*clear_existing_apps=*/true);
+  ModifyAppsCapturing(/*add=*/true);
 
   // Update the `VideoConferenceMediaState` to force the `VideoConferenceTray`
   // to show. The shelf should also show, since the number of apps capturing has
@@ -1036,9 +1059,10 @@ class VideoConferenceTrayDelayTest : public VideoConferenceTrayTest {
 
   // AshTestBase:
   void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(features::kVideoConference);
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kCameraEffectsSupportedByHardware);
+    scoped_feature_list_.InitWithFeatures(
+        {features::kVideoConference,
+         features::kCameraEffectsSupportedByHardware},
+        {});
 
     // Instantiates a fake controller (the real one is created in
     // ChromeBrowserMainExtraPartsAsh::PreProfileInit() which is not called in

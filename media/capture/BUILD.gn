@@ -167,6 +167,8 @@ component("capture_lib") {
 
   if (is_apple) {
     sources += [
+      "video/apple/gpu_memory_buffer_tracker_apple.cc",
+      "video/apple/gpu_memory_buffer_tracker_apple.h",
       "video/apple/pixel_buffer_pool.cc",
       "video/apple/pixel_buffer_pool.h",
       "video/apple/pixel_buffer_transferer.cc",
@@ -184,7 +186,6 @@ component("capture_lib") {
       "video/apple/video_capture_device_frame_receiver.h",
     ]
     deps += [ "//components/crash/core/common:crash_key" ]
-    configs += [ "//build/config/compiler:enable_arc" ]
     frameworks = [
       "AVFoundation.framework",
       "CoreFoundation.framework",
@@ -199,8 +200,6 @@ component("capture_lib") {
 
   if (is_mac) {
     sources += [
-      "video/mac/gpu_memory_buffer_tracker_mac.cc",
-      "video/mac/gpu_memory_buffer_tracker_mac.h",
       "video/mac/uvc_control_mac.h",
       "video/mac/uvc_control_mac.mm",
       "video/mac/video_capture_device_decklink_mac.h",
@@ -533,7 +532,6 @@ test("capture_unittests") {
       "CoreMedia.framework",
       "CoreVideo.framework",
     ]
-    configs += [ "//build/config/compiler:enable_arc" ]
   }
 
   if (is_mac) {

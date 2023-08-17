@@ -16,6 +16,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/time/time.h"
+#include "base/uuid.h"
 #include "base/values.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
@@ -96,6 +97,11 @@ PriceInsightsInfo& PriceInsightsInfo::operator=(const PriceInsightsInfo&) =
     default;
 PriceInsightsInfo::~PriceInsightsInfo() = default;
 
+DiscountInfo::DiscountInfo() = default;
+DiscountInfo::DiscountInfo(const DiscountInfo&) = default;
+DiscountInfo& DiscountInfo::operator=(const DiscountInfo&) = default;
+DiscountInfo::~DiscountInfo() = default;
+
 ShoppingService::ShoppingService(
     const std::string& country_on_startup,
     const std::string& locale_on_startup,
@@ -163,7 +169,7 @@ ShoppingService::ShoppingService(
     if (power_bookmark_service_ && IsProductInfoApiEnabled()) {
       shopping_power_bookmark_data_provider_ =
           std::make_unique<ShoppingPowerBookmarkDataProvider>(
-              bookmark_model_, power_bookmark_service_, this);
+              power_bookmark_service_, this);
     }
   }
 
@@ -510,13 +516,13 @@ absl::optional<ProductInfo> ShoppingService::GetAvailableProductInfoForUrl(
 }
 
 void ShoppingService::GetUpdatedProductInfoForBookmarks(
-    const std::vector<int64_t>& bookmark_ids,
+    const std::vector<base::Uuid>& bookmark_uuids,
     BookmarkProductInfoUpdatedCallback info_updated_callback) {
   std::vector<GURL> urls;
-  std::unordered_map<std::string, int64_t> url_to_id_map;
-  for (uint64_t id : bookmark_ids) {
+  std::unordered_map<std::string, base::Uuid> url_to_uuid_map;
+  for (const base::Uuid& uuid : bookmark_uuids) {
     const bookmarks::BookmarkNode* bookmark =
-        bookmarks::GetBookmarkNodeByID(bookmark_model_, id);
+        bookmarks::GetBookmarkNodeByUuid(bookmark_model_, uuid);
 
     std::unique_ptr<power_bookmarks::PowerBookmarkMeta> meta =
         power_bookmarks::GetNodePowerBookmarkMeta(bookmark_model_, bookmark);
@@ -528,7 +534,7 @@ void ShoppingService::GetUpdatedProductInfoForBookmarks(
       continue;
 
     urls.push_back(bookmark->url());
-    url_to_id_map[bookmark->url().spec()] = id;
+    url_to_uuid_map[bookmark->url().spec()] = uuid;
   }
 
   opt_guide_->CanApplyOptimizationOnDemand(
@@ -537,7 +543,7 @@ void ShoppingService::GetUpdatedProductInfoForBookmarks(
       base::BindRepeating(&ShoppingService::OnProductInfoUpdatedOnDemand,
                           weak_ptr_factory_.GetWeakPtr(),
                           std::move(info_updated_callback),
-                          std::move(url_to_id_map)));
+                          std::move(url_to_uuid_map)));
 }
 
 size_t ShoppingService::GetMaxProductBookmarkUpdatesPerBatch() {
@@ -587,6 +593,12 @@ void ShoppingService::GetPriceInsightsInfoForUrl(
                      weak_ptr_factory_.GetWeakPtr(), url, std::move(callback)));
 }
 
+void ShoppingService::GetDiscountInfoForUrls(const std::vector<GURL>& urls,
+                                             DiscountInfoCallback callback) {
+  // TODO(b:289244075): Implement this method.
+  std::move(callback).Run(DiscountsMap());
+}
+
 bool ShoppingService::IsProductInfoApiEnabled() {
   return IsRegionLockedFeatureEnabled(
              kShoppingList, kShoppingListRegionLaunched, country_on_startup_,
@@ -629,6 +641,16 @@ bool ShoppingService::IsPriceInsightsInfoApiEnabled() {
   return IsRegionLockedFeatureEnabled(kPriceInsights,
                                       kPriceInsightsRegionLaunched,
                                       country_on_startup_, locale_on_startup_);
+}
+
+bool ShoppingService::IsDiscountEligibleToShowOnNavigation() {
+  if (!IsRegionLockedFeatureEnabled(kShowDiscountOnNavigation,
+                                    kShowDiscountOnNavigationRegionLaunched,
+                                    country_on_startup_, locale_on_startup_)) {
+    return false;
+  }
+  return account_checker_ && account_checker_->IsSignedIn() &&
+         account_checker_->IsAnonymizedUrlDataCollectionEnabled();
 }
 
 void ShoppingService::HandleOptGuideProductInfoResponse(
@@ -752,7 +774,7 @@ std::unique_ptr<ProductInfo> ShoppingService::OptGuideResultToProductInfo(
 
 void ShoppingService::OnProductInfoUpdatedOnDemand(
     BookmarkProductInfoUpdatedCallback callback,
-    std::unordered_map<std::string, int64_t> url_to_id_map,
+    std::unordered_map<std::string, base::Uuid> url_to_uuid_map,
     const GURL& url,
     const base::flat_map<
         optimization_guide::proto::OptimizationType,
@@ -780,7 +802,7 @@ void ShoppingService::OnProductInfoUpdatedOnDemand(
     optional_info.emplace(*info);
     UpdateProductInfoCache(url, false, std::move(info));
 
-    std::move(callback).Run(url_to_id_map[url.spec()], url, optional_info);
+    std::move(callback).Run(url_to_uuid_map[url.spec()], url, optional_info);
   }
 }
 
@@ -938,7 +960,8 @@ void ShoppingService::HandleOptGuidePriceInsightsInfoResponse(
   commerce::PriceInsightsData insights_data = parsed_any.value();
 
   if (!parsed_any.has_value() || !insights_data.IsInitialized() ||
-      !insights_data.has_product_cluster_id()) {
+      !insights_data.has_product_cluster_id() ||
+      insights_data.product_cluster_id() == 0) {
     std::move(callback).Run(url, absl::nullopt);
     return;
   }
@@ -948,7 +971,9 @@ void ShoppingService::HandleOptGuidePriceInsightsInfoResponse(
 
   info->product_cluster_id = insights_data.product_cluster_id();
 
-  if (insights_data.has_price_range()) {
+  bool has_range = insights_data.has_price_range() &&
+                   !insights_data.price_range().currency_code().empty();
+  if (has_range) {
     info->currency_code = insights_data.price_range().currency_code();
     info->typical_low_price_micros =
         insights_data.price_range().lowest_typical_price_micros();
@@ -956,14 +981,16 @@ void ShoppingService::HandleOptGuidePriceInsightsInfoResponse(
         insights_data.price_range().highest_typical_price_micros();
   }
 
-  if (insights_data.has_price_history()) {
+  if (insights_data.has_price_history() &&
+      !insights_data.price_history().currency_code().empty()) {
     bool currency_code_match =
-        insights_data.has_price_range()
-            ? insights_data.price_history().currency_code() ==
-                  insights_data.price_range().currency_code()
-            : true;
+        has_range ? insights_data.price_history().currency_code() ==
+                        insights_data.price_range().currency_code()
+                  : true;
     if (currency_code_match) {
       const commerce::PriceHistory history = insights_data.price_history();
+
+      info->currency_code = history.currency_code();
 
       if (history.has_attributes()) {
         info->catalog_attributes = history.attributes();
@@ -975,7 +1002,7 @@ void ShoppingService::HandleOptGuidePriceInsightsInfoResponse(
             history.price_points(i).min_price_micros());
       }
 
-      if (history.has_jackpot_url()) {
+      if (history.has_jackpot_url() && !history.jackpot_url().empty()) {
         info->jackpot_url = GURL(history.jackpot_url());
       }
     }

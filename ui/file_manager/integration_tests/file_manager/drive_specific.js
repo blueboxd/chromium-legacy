@@ -42,6 +42,12 @@ const ENABLE_DOCS_OFFLINE_MESSAGE =
 /** The query selector for the search box input field. */
 const searchBox = '#search-box cr-input';
 
+/** The id attribute of the dismiss button in the educational banner. */
+async function getDismissButtonId(appId) {
+  return await remoteCall.isCrosComponents(appId) ? '#dismiss-button' :
+                                                    '#dismiss-button-old';
+}
+
 /**
  * Returns the steps to start a search for 'hello' and wait for the
  * autocomplete results to appear.
@@ -856,7 +862,7 @@ testcase.driveWelcomeBanner = async () => {
   const driveWelcomeBannerDismissButtonQuery = [
     '#banners > drive-welcome-banner',
     'educational-banner',
-    '#dismiss-button',
+    await getDismissButtonId(appId),
   ];
 
   // Open the Drive volume in the files-list.
@@ -919,8 +925,9 @@ testcase.driveEncryptionBadge = async () => {
   // Check: encrypted file has a badge.
   const encrypted = await remoteCall.waitForElementStyles(
       appId, '#file-list [file-name="test-encrypted.txt"] .encrypted-icon',
-      ['display']);
+      ['display', 'visibility']);
   chrome.test.assertNe('none', encrypted.styles.display);
+  chrome.test.assertEq('visible', encrypted.styles.visibility);
 
   // Check: non-encrypted file doesn't have a badge.
   const plain = await remoteCall.callRemoteTestUtil(
@@ -1479,9 +1486,11 @@ testcase.driveGoogleOneOfferBannerDismiss = async () => {
       appId, 'google-one-offer-banner:not([hidden])');
 
   // dismiss-button is provided by educational-banner.
-  await remoteCall.waitAndClickElement(
-      appId,
-      ['google-one-offer-banner', 'educational-banner', '#dismiss-button']);
+  await remoteCall.waitAndClickElement(appId, [
+    'google-one-offer-banner',
+    'educational-banner',
+    await getDismissButtonId(appId),
+  ]);
   chrome.test.assertEq(1, await getUserActionCount(userActionDismiss));
   await remoteCall.waitForElement(appId, 'google-one-offer-banner[hidden]');
 };
@@ -1496,8 +1505,9 @@ testcase.drivePinToggleIsDisabledAndHiddenWhenBulkPinningEnabled = async () => {
       await setupAndWaitUntilReady(RootPath.DRIVE, [], [ENTRIES.hello]);
 
 
-  const toggleId = await remoteCall.isJellybean(appId) ? 'pinned-toggle-jelly' :
-                                                         'pinned-toggle';
+  const toggleId = await remoteCall.isCrosComponents(appId) ?
+      'pinned-toggle-jelly' :
+      'pinned-toggle';
 
   // Bring up the context menu for test.txt.
   await remoteCall.waitAndRightClick(
@@ -1590,8 +1600,9 @@ testcase.drivePinToggleIsEnabledInSharedWithMeWhenBulkPinningEnabled =
     ENTRIES.sharedWithMeDirectoryFile,
   ]);
 
-  const toggleId = await remoteCall.isJellybean(appId) ? 'pinned-toggle-jelly' :
-                                                         'pinned-toggle';
+  const toggleId = await remoteCall.isCrosComponents(appId) ?
+      'pinned-toggle-jelly' :
+      'pinned-toggle';
 
   // Click the Shared with me volume, it has no children so navigating using the
   // directory tree doesn't work.
@@ -1848,8 +1859,11 @@ testcase.driveBulkPinningBannerDisabled = async () => {
   await remoteCall.waitForElement(appId, 'drive-welcome-banner:not([hidden])');
 
   // extra-button (get perk button) is provided by google-one-offer-banner.
-  await remoteCall.waitAndClickElement(
-      appId, ['drive-welcome-banner', 'educational-banner', '#dismiss-button']);
+  await remoteCall.waitAndClickElement(appId, [
+    'drive-welcome-banner',
+    'educational-banner',
+    await getDismissButtonId(appId),
+  ]);
 
   await remoteCall.waitForElement(appId, 'drive-welcome-banner[hidden]');
   // Check: If Google One offer banner is shown, Drive welcome banner should not
@@ -1871,8 +1885,11 @@ testcase.driveBulkPinningBannerEnabled = async () => {
   await remoteCall.waitForElement(appId, 'drive-welcome-banner:not([hidden])');
 
   // extra-button (get perk button) is provided by google-one-offer-banner.
-  await remoteCall.waitAndClickElement(
-      appId, ['drive-welcome-banner', 'educational-banner', '#dismiss-button']);
+  await remoteCall.waitAndClickElement(appId, [
+    'drive-welcome-banner',
+    'educational-banner',
+    await getDismissButtonId(appId),
+  ]);
 
   await remoteCall.waitForElement(appId, 'drive-welcome-banner[hidden]');
   // Check: If Google One offer banner is shown, Drive welcome banner should not
@@ -1931,4 +1948,49 @@ testcase.openDriveDocWhenOffline = async () => {
       ['#file-list li.table-row[selected] .filename-label span']));
   await remoteCall.waitForElement(
       appId, '.files-alert-dialog[aria-label="You are offline"]');
+};
+
+/*
+ * Verifies that once a file completes syncing, its syncing status
+ * indicator displays as "completed" and is dismissed about 300ms
+ * later.
+ */
+testcase.completedSyncStatusDismissesAfter300Ms = async () => {
+  const appId = await setupAndWaitUntilReady(RootPath.DRIVE, [], [
+    ENTRIES.hello,
+  ]);
+
+  const timeBeforeCompletion = Date.now();
+
+  // Fake the file finishing syncing.
+  await sendTestMessage({
+    name: 'setDriveSyncProgress',
+    path: `/root/${ENTRIES.hello.targetPath}`,
+    progress: 100,
+  });
+
+  const completedQuery = '#file-list xf-inline-status[sync-status=completed]';
+
+  // Verify the "sync completed" icon is displayed.
+  await remoteCall.waitForElement(appId, completedQuery);
+
+  // Verify the completed state is eventually dismissed.
+  await remoteCall.waitForElementLost(appId, completedQuery);
+
+  // Verify that at least 300ms have passed since the syncing completed.
+  chrome.test.assertTrue(Date.now() - timeBeforeCompletion >= 300);
+};
+
+/**
+ * Tests that when the organization limit has exceeded (not the user storage)
+ * the out of organization space banner appears.
+ */
+testcase.driveOutOfOrganizationSpaceBanner = async () => {
+  await remoteCall.setPooledStorageQuotaUsage(
+      1 * 1024 * 1024, 2 * 1024 * 1024, true);
+
+  const appId = await setupAndWaitUntilReady(RootPath.DRIVE, [ENTRIES.hello]);
+
+  await remoteCall.waitForElement(
+      appId, 'drive-out-of-organization-space-banner');
 };

@@ -99,6 +99,11 @@ public class ChromeSiteSettingsDelegate implements SiteSettingsDelegate {
     }
 
     @Override
+    public void resetZoomLevel(String host) {
+        // TODO(crbug.com/1459631): Add delete logic here.
+    }
+
+    @Override
     public void getFaviconImageForURL(GURL faviconUrl, Callback<Drawable> callback) {
         if (mLargeIconBridge == null) {
             mLargeIconBridge = new LargeIconBridge(mProfile);
@@ -128,6 +133,8 @@ public class ChromeSiteSettingsDelegate implements SiteSettingsDelegate {
                 return ContentFeatureMap.isEnabled(ContentFeatures.FED_CM);
             case SiteSettingsCategory.Type.NFC:
                 return ContentFeatureMap.isEnabled(ContentFeatureList.WEB_NFC);
+            case SiteSettingsCategory.Type.ZOOM:
+                return ContentFeatureMap.isEnabled(ContentFeatureList.SMART_ZOOM);
             default:
                 return true;
         }
@@ -151,6 +158,11 @@ public class ChromeSiteSettingsDelegate implements SiteSettingsDelegate {
     @Override
     public boolean isPrivacySandboxSettings4Enabled() {
         return ChromeFeatureList.isEnabled(ChromeFeatureList.PRIVACY_SANDBOX_SETTINGS_4);
+    }
+
+    @Override
+    public boolean isUserBypassUIEnabled() {
+        return ChromeFeatureList.isEnabled(ChromeFeatureList.USER_BYPASS_UI);
     }
 
     @Override

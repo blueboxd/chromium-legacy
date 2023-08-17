@@ -34,6 +34,7 @@ import org.chromium.base.ResettersForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.OneshotSupplier;
+import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.banners.AppMenuVerbiage;
@@ -58,6 +59,7 @@ import org.chromium.chrome.browser.omaha.UpdateMenuItemHelper;
 import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomizations;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.quick_delete.QuickDeleteController;
+import org.chromium.chrome.browser.readaloud.ReadAloudController;
 import org.chromium.chrome.browser.share.ShareHelper;
 import org.chromium.chrome.browser.share.ShareUtils;
 import org.chromium.chrome.browser.tab.Tab;
@@ -125,6 +127,8 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
     private ShareUtils mShareUtils;
     // Keeps track of which menu item was shown when installable app is detected.
     private int mAddAppTitleShown;
+    @Nullable
+    private final Supplier<ReadAloudController> mReadAloudControllerSupplier;
 
     /**
      * This is non null for the case of ChromeTabbedActivity when the corresponding {@link
@@ -191,7 +195,8 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
             @Nullable OneshotSupplier<StartSurface> startSurfaceSupplier,
             ObservableSupplier<BookmarkModel> bookmarkModelSupplier,
             @Nullable OneshotSupplier<IncognitoReauthController>
-                    incognitoReauthControllerOneshotSupplier) {
+                    incognitoReauthControllerOneshotSupplier,
+            @Nullable Supplier<ReadAloudController> readAloudControllerSupplier) {
         mContext = context;
         mIsTablet = DeviceFormFactor.isNonMultiDisplayContextOnTablet(mContext);
         mActivityTabProvider = activityTabProvider;
@@ -199,6 +204,7 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
         mTabModelSelector = tabModelSelector;
         mToolbarManager = toolbarManager;
         mDecorView = decorView;
+        mReadAloudControllerSupplier = readAloudControllerSupplier;
 
         if (incognitoReauthControllerOneshotSupplier != null) {
             incognitoReauthControllerOneshotSupplier.onAvailable(
@@ -533,6 +539,9 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
         // Prepare translate menu button.
         prepareTranslateMenuItem(menu, currentTab);
 
+        // Set visibility of Read Aloud menu item.
+        prepareReadAloudMenuItem(menu, currentTab);
+
         prepareAddToHomescreenMenuItem(menu, currentTab,
                 shouldShowHomeScreenMenuItem(
                         isChromeScheme, isFileScheme, isContentScheme, isIncognito, url));
@@ -701,6 +710,9 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
      * @return Whether the "Move to other window" menu item should be displayed.
      */
     protected boolean shouldShowMoveToOtherWindow() {
+        // Hide the menu on automotive devices.
+        if (BuildInfo.getInstance().isAutomotive) return false;
+
         if (!instanceSwitcherEnabled() && shouldShowNewWindow()) return false;
         boolean hasMoreThanOneTab = mTabModelSelector.getTotalTabCount() > 1;
         boolean showAlsoForSingleTab = !isPartnerHomepageEnabled();
@@ -744,11 +756,12 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
      * @return Whether the "New window" menu item should be displayed.
      */
     protected boolean shouldShowNewWindow() {
+        // Hide the menu on automotive devices.
+        if (BuildInfo.getInstance().isAutomotive) return false;
+
         if (instanceSwitcherEnabled()) {
             // Hide the menu if we already have the maximum number of windows.
             if (getInstanceCount() >= MultiWindowUtils.getMaxInstances()) return false;
-            // Hide the menu on automotive devices.
-            if (BuildInfo.getInstance().isAutomotive) return false;
 
             // On phones, show the menu only when in split-screen, with a single instance
             // running on the foreground.
@@ -913,6 +926,17 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
     protected void prepareTranslateMenuItem(Menu menu, @Nullable Tab currentTab) {
         boolean isTranslateVisible = currentTab != null && shouldShowTranslateMenuItem(currentTab);
         menu.findItem(R.id.translate_id).setVisible(isTranslateVisible);
+    }
+
+    /** Sets visibility of the "Listen to this page" menu item. */
+    private void prepareReadAloudMenuItem(Menu menu, @Nullable Tab currentTab) {
+        boolean visible = false;
+        if (mReadAloudControllerSupplier != null) {
+            ReadAloudController readAloudController = mReadAloudControllerSupplier.get();
+            visible = readAloudController != null && currentTab != null
+                    && readAloudController.isReadable(currentTab);
+        }
+        menu.findItem(R.id.readaloud_menu_id).setVisible(visible);
     }
 
     @Override

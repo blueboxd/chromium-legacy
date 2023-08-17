@@ -17,6 +17,7 @@ import android.view.Window;
 import android.widget.TextView;
 
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.test.platform.app.InstrumentationRegistry;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -28,7 +29,6 @@ import org.junit.runner.RunWith;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Criteria;
 import org.chromium.base.test.util.CriteriaHelper;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.DoNotBatch;
 import org.chromium.base.test.util.IntegrationTest;
 import org.chromium.base.test.util.Matchers;
@@ -150,7 +150,6 @@ public class PasswordGenerationIntegrationTest {
 
     @Test
     @IntegrationTest
-    @DisabledTest(message = "crbug.com/1353701")
     public void testManualGenerationCancel() throws InterruptedException, TimeoutException {
         waitForGenerationLabel();
         focusField(PASSWORD_NODE_ID_MANUAL);
@@ -235,23 +234,25 @@ public class PasswordGenerationIntegrationTest {
     }
 
     private void toggleAccessorySheet() {
-        CriteriaHelper.pollInstrumentationThread(() -> {
+        CriteriaHelper.pollUiThread(() -> {
             mKeyboardAccessoryBarItems = (RecyclerView) mActivity.findViewById(R.id.bar_items_view);
             return mKeyboardAccessoryBarItems != null;
         });
-        CriteriaHelper.pollInstrumentationThread(() -> {
+        CriteriaHelper.pollUiThread(() -> {
             return mKeyboardAccessoryBarItems.findViewHolderForLayoutPosition(0) != null;
         });
         KeyboardAccessoryButtonGroupView keyboardAccessoryView =
                 (KeyboardAccessoryButtonGroupView) mKeyboardAccessoryBarItems
                         .findViewHolderForLayoutPosition(0)
                         .itemView;
-        CriteriaHelper.pollInstrumentationThread(() -> {
+        CriteriaHelper.pollUiThread(() -> {
             return keyboardAccessoryView.getButtons().size() == KEYBOARD_ACCESSORY_BAR_ITEM_COUNT;
         });
         ArrayList<ChromeImageButton> buttons = keyboardAccessoryView.getButtons();
         ChromeImageButton keyButton = buttons.get(0);
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
         runOnUiThreadBlocking(() -> { keyButton.callOnClick(); });
+        InstrumentationRegistry.getInstrumentation().waitForIdleSync();
     }
 
     private void focusField(String node) throws TimeoutException, InterruptedException {

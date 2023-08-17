@@ -46,7 +46,9 @@ using device::mojom::SmartCardSuccess;
 using device::mojom::SmartCardTransaction;
 using ::testing::_;
 using testing::Exactly;
+using testing::HasSubstr;
 using testing::InSequence;
+using testing::MatchesRegex;
 using testing::StrictMock;
 
 namespace content {
@@ -201,7 +203,8 @@ class SmartCardTest : public ContentBrowserTest {
         let context = await navigator.smartCard.establishContext();
 
         let connection =
-          (await context.connect("Fake reader", "shared", ["t1"])).connection;
+          (await context.connect("Fake reader", "shared",
+            {{preferredProtocols: ["t1"]}})).connection;
 
         let transaction = {};
 
@@ -297,14 +300,17 @@ absl::optional<blink::ParsedPermissionsPolicy>
 SmartCardTestContentBrowserClient::GetPermissionsPolicyForIsolatedWebApp(
     content::BrowserContext* browser_context,
     const url::Origin& app_origin) {
-  blink::ParsedPermissionsPolicy out;
-  blink::ParsedPermissionsPolicyDeclaration decl(
+  blink::ParsedPermissionsPolicyDeclaration coi_decl(
+      blink::mojom::PermissionsPolicyFeature::kCrossOriginIsolated,
+      /*allowed_origins=*/{},
+      /*self_if_matches=*/absl::nullopt, /*matches_all_origins=*/true,
+      /*matches_opaque_src=*/false);
+  blink::ParsedPermissionsPolicyDeclaration smart_card_decl(
       blink::mojom::PermissionsPolicyFeature::kSmartCard,
       /*allowed_origins=*/{},
       /*self_if_matches=*/app_origin, /*matches_all_origins=*/false,
       /*matches_opaque_src=*/false);
-  out.push_back(decl);
-  return out;
+  return {{coi_decl, smart_card_decl}};
 }
 
 mojo::PendingRemote<device::mojom::SmartCardContextFactory>
@@ -342,7 +348,8 @@ IN_PROC_BROWSER_TEST_F(SmartCardTest, Disconnect) {
       let context = await navigator.smartCard.establishContext();
 
       let connection =
-        (await context.connect("Fake reader", "shared", ["t1"])).connection;
+        (await context.connect("Fake reader", "shared",
+          {preferredProtocols: ["t1"]})).connection;
 
       await connection.disconnect("eject");
 
@@ -384,13 +391,15 @@ IN_PROC_BROWSER_TEST_F(SmartCardTest, ConcurrentDisconnect) {
 
   EXPECT_EQ(
       "second disconnect: InvalidStateError, Failed to execute 'disconnect' on "
-      "'SmartCardConnection': An operation is in progress.",
+      "'SmartCardConnection': An operation is already in progress in this "
+      "smart card context.",
       EvalJs(shell(), R"(
     (async () => {
       let context = await navigator.smartCard.establishContext();
 
       let connection =
-        (await context.connect("Fake reader", "shared", ["t1"])).connection;
+        (await context.connect("Fake reader", "shared",
+          {preferredProtocols: ["t1"]})).connection;
 
       // This first disconnect() call will go through but won't be finished
       // before the end of this script.
@@ -439,7 +448,8 @@ IN_PROC_BROWSER_TEST_F(SmartCardTest, Transmit) {
       let context = await navigator.smartCard.establishContext();
 
       let connection =
-        (await context.connect("Fake reader", "shared", ["t1"])).connection;
+        (await context.connect("Fake reader", "shared",
+          {preferredProtocols: ["t1"]})).connection;
 
       let apdu = new Uint8Array([0x03, 0x02, 0x01]);
       let response = await connection.transmit(apdu);
@@ -447,6 +457,119 @@ IN_PROC_BROWSER_TEST_F(SmartCardTest, Transmit) {
       let responseString = new Uint8Array(response).toString();
       return `response: ${responseString}`;
     })())"));
+}
+
+IN_PROC_BROWSER_TEST_F(SmartCardTest, TransmitWithOptions) {
+  ASSERT_TRUE(NavigateToURL(shell(), GetIsolatedContextUrl()));
+
+  MockSmartCardContextFactory& mock_context_factory =
+      GetFakeSmartCardDelegate().mock_context_factory;
+  MockSmartCardConnection mock_connection;
+  mojo::Receiver<SmartCardConnection> connection_receiver(&mock_connection);
+
+  {
+    InSequence s;
+
+    EXPECT_CALL(mock_context_factory,
+                Connect("Fake reader", SmartCardShareMode::kDirect, _, _))
+        .WillOnce([&connection_receiver](
+                      const std::string& reader,
+                      device::mojom::SmartCardShareMode share_mode,
+                      device::mojom::SmartCardProtocolsPtr preferred_protocols,
+                      SmartCardContext::ConnectCallback callback) {
+          EXPECT_FALSE(preferred_protocols->t0);
+          EXPECT_FALSE(preferred_protocols->t1);
+          EXPECT_FALSE(preferred_protocols->raw);
+
+          auto success = device::mojom::SmartCardConnectSuccess::New(
+              connection_receiver.BindNewPipeAndPassRemote(),
+              SmartCardProtocol::kUndefined);
+
+          std::move(callback).Run(
+              device::mojom::SmartCardConnectResult::NewSuccess(
+                  std::move(success)));
+        });
+
+    EXPECT_CALL(mock_connection, Transmit(SmartCardProtocol::kT0, _, _))
+        .WillOnce([](SmartCardProtocol protocol,
+                     const std::vector<uint8_t>& data,
+                     SmartCardConnection::TransmitCallback callback) {
+          EXPECT_EQ(data, std::vector<uint8_t>({3u, 2u, 1u}));
+          std::move(callback).Run(
+              device::mojom::SmartCardDataResult::NewData({12u, 34u}));
+        });
+  }
+
+  EXPECT_EQ("response: 12,34", EvalJs(shell(), R"(
+    (async () => {
+      let context = await navigator.smartCard.establishContext();
+
+      let connection =
+        (await context.connect("Fake reader", "direct")).connection;
+
+      // In real usage you would have in between:
+      // let IOCTL_SMARTCARD_SET_PROTOCOL = ...;
+      // connection.control(IOCTL_SMARTCARD_SET_PROTOCOL, ...);
+
+      let apdu = new Uint8Array([0x03, 0x02, 0x01]);
+      let response = await connection.transmit(apdu, {protocol: "t0"});
+
+      let responseString = new Uint8Array(response).toString();
+      return `response: ${responseString}`;
+    })())"));
+}
+
+IN_PROC_BROWSER_TEST_F(SmartCardTest, TransmitNoProtocol) {
+  ASSERT_TRUE(NavigateToURL(shell(), GetIsolatedContextUrl()));
+
+  MockSmartCardContextFactory& mock_context_factory =
+      GetFakeSmartCardDelegate().mock_context_factory;
+  StrictMock<MockSmartCardConnection> mock_connection;
+  mojo::Receiver<SmartCardConnection> connection_receiver(&mock_connection);
+
+  {
+    InSequence s;
+
+    EXPECT_CALL(mock_context_factory,
+                Connect("Fake reader", SmartCardShareMode::kDirect, _, _))
+        .WillOnce([&connection_receiver](
+                      const std::string& reader,
+                      device::mojom::SmartCardShareMode share_mode,
+                      device::mojom::SmartCardProtocolsPtr preferred_protocols,
+                      SmartCardContext::ConnectCallback callback) {
+          EXPECT_FALSE(preferred_protocols->t0);
+          EXPECT_FALSE(preferred_protocols->t1);
+          EXPECT_FALSE(preferred_protocols->raw);
+
+          auto success = device::mojom::SmartCardConnectSuccess::New(
+              connection_receiver.BindNewPipeAndPassRemote(),
+              SmartCardProtocol::kUndefined);
+
+          std::move(callback).Run(
+              device::mojom::SmartCardConnectResult::NewSuccess(
+                  std::move(success)));
+        });
+  }
+
+  EXPECT_THAT(
+      EvalJs(shell(), R"(
+    (async () => {
+      let context = await navigator.smartCard.establishContext();
+
+      let connection =
+        (await context.connect("Fake reader", "direct")).connection;
+
+      let apdu = new Uint8Array([0x03, 0x02, 0x01]);
+      try {
+        await connection.transmit(apdu);
+      } catch(e) {
+        return `transmit: ${e.name}, ${e.message}`;
+      }
+
+      return "ok";
+    })())")
+          .ExtractString(),
+      MatchesRegex("transmit: InvalidStateError, .*No active protocol\\."));
 }
 
 IN_PROC_BROWSER_TEST_F(SmartCardTest, Control) {
@@ -476,7 +599,8 @@ IN_PROC_BROWSER_TEST_F(SmartCardTest, Control) {
       let context = await navigator.smartCard.establishContext();
 
       let connection =
-        (await context.connect("Fake reader", "shared", ["t1"])).connection;
+        (await context.connect("Fake reader", "shared",
+          {preferredProtocols: ["t1"]})).connection;
 
       let data = new Uint8Array([0x03, 0x02, 0x01]);
       let response = await connection.control(42, data);
@@ -512,7 +636,8 @@ IN_PROC_BROWSER_TEST_F(SmartCardTest, GetAttribute) {
       let context = await navigator.smartCard.establishContext();
 
       let connection =
-        (await context.connect("Fake reader", "shared", ["t1"])).connection;
+        (await context.connect("Fake reader", "shared",
+          {preferredProtocols: ["t1"]})).connection;
 
       let response = await connection.getAttribute(42);
 
@@ -548,7 +673,8 @@ IN_PROC_BROWSER_TEST_F(SmartCardTest, SetAttribute) {
       let context = await navigator.smartCard.establishContext();
 
       let connection =
-        (await context.connect("Fake reader", "shared", ["t1"])).connection;
+        (await context.connect("Fake reader", "shared",
+          {preferredProtocols: ["t1"]})).connection;
 
       let data = new Uint8Array([0x03, 0x02, 0x01]);
       await connection.setAttribute(42, data);
@@ -585,7 +711,8 @@ IN_PROC_BROWSER_TEST_F(SmartCardTest, Status) {
       let context = await navigator.smartCard.establishContext();
 
       let connection =
-        (await context.connect("Fake reader", "shared", ["t1"])).connection;
+        (await context.connect("Fake reader", "shared",
+          {preferredProtocols: ["t1"]})).connection;
 
       let status = await connection.status();
 
@@ -804,6 +931,26 @@ IN_PROC_BROWSER_TEST_F(SmartCardTest, GetStatusChangeAborted) {
      })())"));
 }
 
+// Tests passing an AbortSignal to getStatusChange() that is already aborted.
+IN_PROC_BROWSER_TEST_F(SmartCardTest, GetStatusChangeAlreadyAborted) {
+  ASSERT_TRUE(NavigateToURL(shell(), GetIsolatedContextUrl()));
+
+  EXPECT_EQ("Exception: Error, Something", EvalJs(shell(), R"((async () => {
+       let context = await navigator.smartCard.establishContext();
+
+       let getStatusPromise = context.getStatusChange(
+           [{readerName: "Fake Reader", currentState: {empty: true}}],
+           {signal: AbortSignal.abort(Error("Something"))});
+
+       try {
+         let result = await getStatusPromise;
+         return "Success";
+       } catch (e) {
+         return `Exception: ${e.name}, ${e.message}`;
+       }
+     })())"));
+}
+
 IN_PROC_BROWSER_TEST_F(SmartCardTest, Connect) {
   MockSmartCardContextFactory& mock_context_factory =
       GetFakeSmartCardDelegate().mock_context_factory;
@@ -841,7 +988,7 @@ IN_PROC_BROWSER_TEST_F(SmartCardTest, Connect) {
     (async () => {
       let context = await navigator.smartCard.establishContext();
       let result = await context.connect("Fake reader", "shared",
-          ["t0", "t1"]);
+          {preferredProtocols: ["t0", "t1"]});
       return `${result.connection}, ${result.activeProtocol}`;
     })())"));
 }
@@ -882,7 +1029,8 @@ IN_PROC_BROWSER_TEST_F(SmartCardTest, StartTransaction) {
       let context = await navigator.smartCard.establishContext();
 
       let connection =
-        (await context.connect("Fake reader", "shared", ["t1"])).connection;
+        (await context.connect("Fake reader", "shared",
+          {preferredProtocols: ["t1"]})).connection;
 
       let transaction = async () => {
         let apdu = new Uint8Array([0x03, 0x02, 0x01]);
@@ -893,6 +1041,74 @@ IN_PROC_BROWSER_TEST_F(SmartCardTest, StartTransaction) {
       await connection.startTransaction(transaction);
 
       return "ok";
+    })())"));
+}
+
+IN_PROC_BROWSER_TEST_F(SmartCardTest, StartTransactionAborted) {
+  ASSERT_TRUE(NavigateToURL(shell(), GetIsolatedContextUrl()));
+
+  MockSmartCardContextFactory& mock_context_factory =
+      GetFakeSmartCardDelegate().mock_context_factory;
+  StrictMock<MockSmartCardConnection> mock_connection;
+  mojo::Receiver<SmartCardConnection> connection_receiver(&mock_connection);
+
+  base::test::TestFuture<SmartCardConnection::BeginTransactionCallback>
+      begin_transaction_callback;
+
+  {
+    InSequence s;
+
+    mock_context_factory.ExpectConnectFakeReaderSharedT1(connection_receiver);
+
+    EXPECT_CALL(mock_connection, BeginTransaction(_))
+        .WillOnce([&begin_transaction_callback](
+                      SmartCardConnection::BeginTransactionCallback callback) {
+          // Don't respond immediately.
+          begin_transaction_callback.SetValue(std::move(callback));
+        });
+
+    // Aborting a blink connection.startTransaction() call means sending a
+    // Cancel() request down to device.mojom.SmartCardContext
+    EXPECT_CALL(mock_context_factory, Cancel(_))
+        .WillOnce([&begin_transaction_callback](
+                      SmartCardContext::CancelCallback callback) {
+          begin_transaction_callback.Take().Run(
+              device::mojom::SmartCardTransactionResult::NewError(
+                  SmartCardError::kCancelled));
+
+          std::move(callback).Run(
+              SmartCardResult::NewSuccess(SmartCardSuccess::kOk));
+        });
+  }
+
+  EXPECT_EQ("Exception: Error, Something", EvalJs(shell(), R"(
+    (async () => {
+      let context = await navigator.smartCard.establishContext();
+
+      let connection =
+        (await context.connect("Fake reader", "shared",
+          {preferredProtocols: ["t1"]})).connection;
+
+      let transaction = async () => {
+        let apdu = new Uint8Array([0x03, 0x02, 0x01]);
+        await connection.transmit(apdu);
+        return "reset";
+      }
+
+      let abortController = new AbortController();
+
+      let promise =
+          connection.startTransaction(transaction,
+              {signal: abortController.signal});
+
+      abortController.abort(Error("Something"));
+
+      try {
+        await promise;
+        return "Success";
+      } catch (e) {
+        return `Exception: ${e.name}, ${e.message}`;
+      }
     })())"));
 }
 
@@ -967,7 +1183,8 @@ IN_PROC_BROWSER_TEST_F(SmartCardTest, EndTransactionFails) {
       let context = await navigator.smartCard.establishContext();
 
       let connection =
-        (await context.connect("Fake reader", "shared", ["t1"])).connection;
+        (await context.connect("Fake reader", "shared",
+          {preferredProtocols: ["t1"]})).connection;
 
       let transaction = async () => {
         return "eject";
@@ -1019,7 +1236,8 @@ IN_PROC_BROWSER_TEST_F(SmartCardTest, DisconnectedOnTransactionReturn) {
       let context = await navigator.smartCard.establishContext();
 
       let connection =
-        (await context.connect("Fake reader", "shared", ["t1"])).connection;
+        (await context.connect("Fake reader", "shared",
+          {preferredProtocols: ["t1"]})).connection;
 
       let transaction = async () => {
         await connection.disconnect();
@@ -1075,7 +1293,8 @@ IN_PROC_BROWSER_TEST_F(SmartCardTest, OngoingTransmitOnTransactionReturn) {
       let context = await navigator.smartCard.establishContext();
 
       let connection =
-        (await context.connect("Fake reader", "shared", ["t1"])).connection;
+        (await context.connect("Fake reader", "shared",
+          {preferredProtocols: ["t1"]})).connection;
 
       let transaction = async () => {
         // Return before the transmit() completes.
@@ -1092,6 +1311,172 @@ IN_PROC_BROWSER_TEST_F(SmartCardTest, OngoingTransmitOnTransactionReturn) {
       }
       return "ok";
     })())"));
+}
+
+IN_PROC_BROWSER_TEST_F(SmartCardTest,
+                       ContextOperationBlocksConnectionOperation) {
+  ASSERT_TRUE(NavigateToURL(shell(), GetIsolatedContextUrl()));
+
+  MockSmartCardContextFactory& mock_context_factory =
+      GetFakeSmartCardDelegate().mock_context_factory;
+  StrictMock<MockSmartCardConnection> mock_connection;
+  mojo::Receiver<SmartCardConnection> connection_receiver(&mock_connection);
+
+  TestFuture<SmartCardContext::ListReadersCallback> list_readers_callback;
+
+  {
+    InSequence s;
+
+    mock_context_factory.ExpectConnectFakeReaderSharedT1(connection_receiver);
+
+    EXPECT_CALL(mock_context_factory, ListReaders(_))
+        .WillOnce([&list_readers_callback](
+                      SmartCardContext::ListReadersCallback callback) {
+          // Don't respond immediately.
+          list_readers_callback.SetValue(std::move(callback));
+        });
+  }
+
+  EXPECT_EQ(
+      "control: InvalidStateError, Failed to execute 'control' on "
+      "'SmartCardConnection': An operation is already in progress in this "
+      "smart card context.",
+      EvalJs(shell(), R"(
+    (async () => {
+      let context = await navigator.smartCard.establishContext();
+
+      let connection =
+        (await context.connect("Fake reader", "shared",
+          {preferredProtocols: ["t1"]})).connection;
+
+      let listReadersPromise = context.listReaders();
+
+      try {
+        let data = new Uint8Array([0x03, 0x02, 0x01]);
+        await connection.control(42, data);
+      } catch (e) {
+        return `control: ${e.name}, ${e.message}`;
+      }
+
+      await listReadersPromise;
+
+      return `ok`;
+    })())"));
+
+  // Let context.listReaders() conclude
+  std::vector<std::string> readers{"Fake reader"};
+  auto result = device::mojom::SmartCardListReadersResult::NewReaders(readers);
+  list_readers_callback.Take().Run(std::move(result));
+}
+
+IN_PROC_BROWSER_TEST_F(SmartCardTest, ConnectionDiesWithOperationInProgress) {
+  ASSERT_TRUE(NavigateToURL(shell(), GetIsolatedContextUrl()));
+
+  MockSmartCardContextFactory& mock_context_factory =
+      GetFakeSmartCardDelegate().mock_context_factory;
+  StrictMock<MockSmartCardConnection> mock_connection;
+  mojo::Receiver<SmartCardConnection> connection_receiver(&mock_connection);
+
+  {
+    InSequence s;
+
+    mock_context_factory.ExpectConnectFakeReaderSharedT1(connection_receiver);
+
+    EXPECT_CALL(mock_connection, Control(42, _, _))
+        .WillOnce([&connection_receiver](
+                      uint32_t control_code, const std::vector<uint8_t>& data,
+                      SmartCardConnection::ControlCallback callback) {
+          connection_receiver.reset();
+        });
+  }
+
+  EXPECT_EQ(
+      "control: InvalidStateError, Failed to execute 'control' on "
+      "'SmartCardConnection': Is disconnected.",
+      EvalJs(shell(), R"(
+    (async () => {
+      let context = await navigator.smartCard.establishContext();
+
+      let connection =
+        (await context.connect("Fake reader", "shared",
+          {preferredProtocols: ["t1"]})).connection;
+
+      try {
+        let data = new Uint8Array([0x03, 0x02, 0x01]);
+        await connection.control(42, data);
+      } catch (e) {
+        return `control: ${e.name}, ${e.message}`;
+      }
+    })())"));
+}
+
+IN_PROC_BROWSER_TEST_F(SmartCardTest, ContextDiesConnectionStays) {
+  ASSERT_TRUE(NavigateToURL(shell(), GetIsolatedContextUrl()));
+
+  MockSmartCardContextFactory& mock_context_factory =
+      GetFakeSmartCardDelegate().mock_context_factory;
+  StrictMock<MockSmartCardConnection> mock_connection;
+  mojo::Receiver<SmartCardConnection> connection_receiver(&mock_connection);
+
+  {
+    InSequence s;
+
+    mock_context_factory.ExpectConnectFakeReaderSharedT1(connection_receiver);
+
+    EXPECT_CALL(mock_connection, Control(42, _, _))
+        .WillOnce([&mock_context_factory](
+                      uint32_t control_code, const std::vector<uint8_t>& data,
+                      SmartCardConnection::ControlCallback callback) {
+          mock_context_factory.ClearContextReceivers();
+          std::move(callback).Run(
+              device::mojom::SmartCardDataResult::NewData({12u, 34u}));
+        });
+  }
+
+  EXPECT_EQ("response: 12,34", EvalJs(shell(), R"(
+    (async () => {
+      let context = await navigator.smartCard.establishContext();
+
+      let connection =
+        (await context.connect("Fake reader", "shared",
+          {preferredProtocols: ["t1"]})).connection;
+
+      let data = new Uint8Array([0x03, 0x02, 0x01]);
+      let response = await connection.control(42, data);
+
+      let responseString = new Uint8Array(response).toString();
+      return `response: ${responseString}`;
+    })())"));
+}
+
+// A ContentBrowserClient that grants Isolated Web Apps the "smart-card"
+// permission, but not "cross-origin-isolated", which should result in Smart
+// Cards being disabled.
+class NoCoiPermissionSmartCardTestContentBrowserClient
+    : public SmartCardTestContentBrowserClient {
+ public:
+  absl::optional<blink::ParsedPermissionsPolicy>
+  GetPermissionsPolicyForIsolatedWebApp(
+      content::BrowserContext* browser_context,
+      const url::Origin& app_origin) override {
+    return {{blink::ParsedPermissionsPolicyDeclaration(
+        blink::mojom::PermissionsPolicyFeature::kSmartCard,
+        /*allowed_origins=*/{},
+        /*self_if_matches=*/app_origin,
+        /*matches_all_origins=*/false, /*matches_opaque_src=*/false)}};
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(SmartCardTest, NoCoiPermission) {
+  NoCoiPermissionSmartCardTestContentBrowserClient client;
+  client.SetSmartCardDelegate(std::make_unique<FakeSmartCardDelegate>());
+
+  ASSERT_TRUE(NavigateToURL(shell(), GetIsolatedContextUrl()));
+
+  EXPECT_EQ(false, EvalJs(shell(), "self.crossOriginIsolated"));
+  EXPECT_THAT(
+      EvalJs(shell(), "navigator.smartCard.establishContext()").error,
+      HasSubstr("Frame is not sufficiently isolated to use smart cards."));
 }
 
 }  // namespace content

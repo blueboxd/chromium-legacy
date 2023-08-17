@@ -66,6 +66,7 @@
 #include "chrome/browser/upgrade_detector/upgrade_detector.h"
 #include "chrome/browser/web_applications/mojom/user_display_mode.mojom.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
+#include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -136,6 +137,8 @@ DEFINE_CLASS_ELEMENT_IDENTIFIER_VALUE(AppMenuModel, kHistoryMenuItem);
 DEFINE_CLASS_ELEMENT_IDENTIFIER_VALUE(AppMenuModel, kExtensionsMenuItem);
 DEFINE_CLASS_ELEMENT_IDENTIFIER_VALUE(AppMenuModel, kMoreToolsMenuItem);
 DEFINE_CLASS_ELEMENT_IDENTIFIER_VALUE(AppMenuModel, kIncognitoMenuItem);
+DEFINE_CLASS_ELEMENT_IDENTIFIER_VALUE(AppMenuModel,
+                                      kPasswordAndAutofillMenuItem);
 DEFINE_CLASS_ELEMENT_IDENTIFIER_VALUE(AppMenuModel, kPasswordManagerMenuItem);
 DEFINE_CLASS_ELEMENT_IDENTIFIER_VALUE(ToolsMenuModel, kPerformanceMenuItem);
 DEFINE_CLASS_ELEMENT_IDENTIFIER_VALUE(ToolsMenuModel, kChromeLabsMenuItem);
@@ -482,6 +485,8 @@ PasswordsAndAutofillSubMenuModel::PasswordsAndAutofillSubMenuModel(
       IDC_SHOW_PASSWORD_MANAGER, IDS_VIEW_PASSWORDS,
       ui::ImageModel::FromVectorIcon(kKeyChromeRefreshIcon, ui::kColorMenuIcon,
                                      kDefaultIconSize));
+  SetElementIdentifierAt(GetIndexOfCommandId(IDC_SHOW_PASSWORD_MANAGER).value(),
+                         AppMenuModel::kPasswordManagerMenuItem);
   AddItemWithStringIdAndIcon(
       IDC_SHOW_PAYMENT_METHODS, IDS_PAYMENT_METHOD_SUBMENU_OPTION,
       ui::ImageModel::FromVectorIcon(kCreditCardChromeRefreshIcon,
@@ -707,14 +712,15 @@ void ToolsMenuModel::Build(Browser* browser) {
     AddCheckItemWithStringId(IDC_PROFILING_ENABLED, IDS_PROFILING_ENABLED);
   }
   if (features::IsChromeRefresh2023()) {
-    if (base::FeatureList::IsEnabled(features::kChromeLabs)) {
+    if (IsChromeLabsEnabled()) {
       auto* profile = browser->profile();
       chrome_labs_model_ = std::make_unique<ChromeLabsModel>();
       UpdateChromeLabsNewBadgePrefs(profile, chrome_labs_model_.get());
       if (ShouldShowChromeLabsUI(chrome_labs_model_.get(), profile)) {
         BooleanPrefMember show_chrome_labs_item;
-        show_chrome_labs_item.Init(chrome_labs_prefs::kBrowserLabsEnabled,
-                                   profile->GetPrefs());
+        show_chrome_labs_item.Init(
+            chrome_labs_prefs::kBrowserLabsEnabledEnterprisePolicy,
+            profile->GetPrefs());
         if (show_chrome_labs_item.GetValue()) {
           AddSeparator(ui::NORMAL_SEPARATOR);
           AddItemWithStringIdAndIcon(IDC_SHOW_CHROME_LABS, IDS_CHROMELABS,
@@ -1389,7 +1395,8 @@ bool AppMenuModel::IsCommandIdAlerted(int command_id) const {
     return alert_item_ == AlertMenuItem::kPerformance;
   }
 
-  if (command_id == IDC_VIEW_PASSWORDS) {
+  if (command_id == IDC_VIEW_PASSWORDS ||
+      command_id == IDC_SHOW_PASSWORD_MANAGER) {
     return alert_item_ == AlertMenuItem::kPasswordManager;
   }
 
@@ -1426,7 +1433,8 @@ void AppMenuModel::Build() {
     const auto update_icon =
         features::IsChromeRefresh2023()
             ? ui::ImageModel::FromVectorIcon(
-                  kBrowserToolsUpdateIcon, ui::kColorMenuIcon, kDefaultIconSize)
+                  kBrowserToolsUpdateChromeRefreshIcon, ui::kColorMenuIcon,
+                  kDefaultIconSize)
             : ui::ImageModel::FromVectorIcon(
                   kBrowserToolsUpdateIcon,
                   app_menu_icon_controller_->GetIconColor(absl::nullopt));
@@ -1482,6 +1490,9 @@ void AppMenuModel::Build() {
     AddSubMenuWithStringId(IDC_PASSWORDS_AND_AUTOFILL_MENU,
                            IDS_PASSWORDS_AND_AUTOFILL_MENU,
                            sub_menus_.back().get());
+    SetElementIdentifierAt(
+        GetIndexOfCommandId(IDC_PASSWORDS_AND_AUTOFILL_MENU).value(),
+        kPasswordAndAutofillMenuItem);
   }
 
   if (!browser_->profile()->IsOffTheRecord()) {

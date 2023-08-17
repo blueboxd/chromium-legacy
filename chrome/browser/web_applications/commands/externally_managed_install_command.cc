@@ -14,6 +14,7 @@
 #include "chrome/browser/web_applications/commands/web_app_command.h"
 #include "chrome/browser/web_applications/external_install_options.h"
 #include "chrome/browser/web_applications/install_bounce_metric.h"
+#include "chrome/browser/web_applications/jobs/uninstall/web_app_uninstall_and_replace_job.h"
 #include "chrome/browser/web_applications/locks/app_lock.h"
 #include "chrome/browser/web_applications/locks/noop_lock.h"
 #include "chrome/browser/web_applications/locks/web_app_lock_manager.h"
@@ -21,7 +22,6 @@
 #include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_install_utils.h"
 #include "chrome/browser/web_applications/web_app_logging.h"
-#include "chrome/browser/web_applications/web_app_uninstall_and_replace_job.h"
 #include "chrome/browser/web_applications/web_contents/web_app_data_retriever.h"
 #include "chrome/browser/web_applications/web_contents/web_contents_manager.h"
 #include "chrome/common/chrome_features.h"
@@ -176,7 +176,8 @@ void ExternallyManagedInstallCommand::OnDidPerformInstallableCheck(
 
   if (install_params_.install_as_shortcut) {
     *web_app_info_ = WebAppInstallInfo::CreateInstallInfoForCreateShortcut(
-        web_contents_->GetLastCommittedURL(), *web_app_info_);
+        web_contents_->GetLastCommittedURL(), web_contents_->GetTitle(),
+        *web_app_info_);
   }
 
   app_id_ = GenerateAppIdFromManifestId(web_app_info_->manifest_id);
@@ -324,7 +325,7 @@ void ExternallyManagedInstallCommand::OnInstallFinalized(
 
   DCHECK(app_lock_);
   uninstall_and_replace_job_.emplace(
-      profile_, app_lock_->AsWeakPtr(), apps_to_uninstall_, app_id,
+      profile_, *app_lock_, apps_to_uninstall_, app_id,
       base::BindOnce(&ExternallyManagedInstallCommand::OnUninstallAndReplaced,
                      weak_factory_.GetWeakPtr(), app_id, code));
   uninstall_and_replace_job_->Start();

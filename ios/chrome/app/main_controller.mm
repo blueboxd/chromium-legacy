@@ -88,7 +88,6 @@
 #import "ios/chrome/browser/search_engines/extension_search_engine_data_updater.h"
 #import "ios/chrome/browser/search_engines/search_engines_util.h"
 #import "ios/chrome/browser/search_engines/template_url_service_factory.h"
-#import "ios/chrome/browser/sessions/scene_util.h"
 #import "ios/chrome/browser/sessions/session_service_ios.h"
 #import "ios/chrome/browser/share_extension/share_extension_service.h"
 #import "ios/chrome/browser/share_extension/share_extension_service_factory.h"
@@ -151,10 +150,6 @@
 // To get access to UseSessionSerializationOptimizations().
 // TODO(crbug.com/1383087): remove once the feature is fully launched.
 #import "ios/web/common/features.h"
-
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
 
 namespace {
 

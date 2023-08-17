@@ -17,10 +17,6 @@
 #import "ios/public/provider/chrome/browser/signin/signin_resources_api.h"
 #import "ui/base/l10n/l10n_util.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 @implementation AccountSignInItem
 
 - (instancetype)initWithType:(NSInteger)type {
@@ -42,7 +38,7 @@
   if (base::FeatureList::IsEnabled(
           syncer::kReplaceSyncPromosWithSignInPromos)) {
     cell.textLabel.text =
-        l10n_util::GetNSString(IDS_IOS_CONSISTENCY_PROMO_DEFAULT_ACCOUNT_TITLE);
+        l10n_util::GetNSString(IDS_IOS_SIGNIN_PROMO_SIGNIN_WITH_UNO);
     cell.image = DefaultSymbolTemplateWithPointSize(
         kPersonCropCircleSymbol, kAccountProfilePhotoDimension);
     [cell setImageViewTintColor:[UIColor colorNamed:kBlue600Color]];

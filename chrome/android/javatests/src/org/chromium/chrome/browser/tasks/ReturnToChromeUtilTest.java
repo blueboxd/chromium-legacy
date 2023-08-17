@@ -72,8 +72,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 @RunWith(ParameterizedRunner.class)
 @UseRunnerDelegate(ChromeJUnit4RunnerDelegate.class)
-@EnableFeatures({ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID,
-        ChromeFeatureList.START_SURFACE_RETURN_TIME + "<Study",
+@EnableFeatures({ChromeFeatureList.START_SURFACE_RETURN_TIME + "<Study",
         ChromeFeatureList.START_SURFACE_ANDROID + "<Study"})
 // clang-format off
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE,
@@ -256,10 +255,11 @@ public class ReturnToChromeUtilTest {
         mBackPressHandler = TestThreadUtils.runOnUiThreadBlockingNoException(() -> {
             return new ReturnToChromeBackPressHandler(
                     mActivityTestRule.getActivity().getActivityTabProvider(),
-                    ()
+                    (shouldHandleTabSwitcherShown)
                             -> {},
                     mActivityTestRule.getActivity()::getActivityTab,
-                    mActivityTestRule.getActivity()::getLayoutManager, () -> { return -1L; });
+                    mActivityTestRule.getActivity().getLayoutStateProviderSupplier(),
+                    () -> { return -1L; }, false);
         });
     }
 

@@ -11,6 +11,7 @@
 #include "ash/public/cpp/keyboard/keyboard_controller.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/shelf_test_api.h"
+#include "ash/webui/settings/public/constants/routes.mojom.h"
 #include "base/barrier_closure.h"
 #include "base/check_deref.h"
 #include "base/functional/bind.h"
@@ -41,7 +42,6 @@
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
-#include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/ash/components/network/portal_detector/network_portal_detector.h"
 #include "components/user_manager/scoped_user_manager.h"
@@ -55,6 +55,7 @@
 #include "extensions/browser/browsertest_util.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_observer.h"
+#include "extensions/common/extension_id.h"
 #include "extensions/common/mojom/manifest.mojom-shared.h"
 #include "extensions/components/native_app_window/native_app_window_views.h"
 #include "extensions/test/extension_test_message_listener.h"
@@ -79,7 +80,7 @@ const test::UIPath kSplashScreenLaunchText = {"app-launch-splash",
 // Webstore data json is in
 //     chrome/test/data/chromeos/app_mode/webstore/inlineinstall/
 //         detail/enelnimkndkcejhjnpaofdlbbfmdnagi
-const char kTestGetVolumeListKioskApp[] = "enelnimkndkcejhjnpaofdlbbfmdnagi";
+const char kTestGetVolumeListKioskAppId[] = "enelnimkndkcejhjnpaofdlbbfmdnagi";
 
 constexpr char kSettingsPage1[] = "chrome://os-settings/manageAccessibility";
 constexpr char kSettingsPage2[] =
@@ -127,7 +128,7 @@ class ScopedSettingsPages {
 class ExtensionReadyObserver : public extensions::ExtensionRegistryObserver {
  public:
   ExtensionReadyObserver(extensions::ExtensionRegistry* registry,
-                         const std::string& extension_id)
+                         const extensions::ExtensionId& extension_id)
       : extension_id_(extension_id) {
     extension_registry_observation_.Observe(registry);
   }
@@ -148,7 +149,7 @@ class ExtensionReadyObserver : public extensions::ExtensionRegistryObserver {
   base::ScopedObservation<extensions::ExtensionRegistry,
                           ExtensionRegistryObserver>
       extension_registry_observation_{this};
-  const std::string extension_id_;
+  const extensions::ExtensionId extension_id_;
 };
 
 }  // namespace
@@ -156,7 +157,11 @@ class ExtensionReadyObserver : public extensions::ExtensionRegistryObserver {
 // Kiosk tests with a fake device owner setup.
 class KioskDeviceOwnedTest : public KioskBaseTest {
  public:
-  KioskDeviceOwnedTest() { login_manager_.AppendRegularUsers(1); }
+  KioskDeviceOwnedTest() {
+    settings_helper_.Set(kDeviceOwner,
+                         base::Value(test_owner_account_id_.GetUserEmail()));
+    login_manager_.AppendRegularUsers(1);
+  }
 
   void SetUp() override {
     KioskBaseTest::SetUp();
@@ -313,7 +318,8 @@ IN_PROC_BROWSER_TEST_F(KioskDeviceOwnedTest, LaunchAppNetworkDown) {
 
 IN_PROC_BROWSER_TEST_F(KioskDeviceOwnedTest,
                        LaunchAppNetworkDownConfigureNotAllowed) {
-  ScopedCanConfigureNetwork can_configure_network(false);
+  auto auto_reset =
+      NetworkUiController::SetCanConfigureNetworkForTesting(false);
 
   // Start app launch and wait for network connectivity timeout.
   StartAppLaunchFromLoginScreen(
@@ -333,9 +339,7 @@ IN_PROC_BROWSER_TEST_F(KioskDeviceOwnedTest,
 
 // Verifies available volumes for kiosk apps in kiosk session.
 IN_PROC_BROWSER_TEST_F(KioskDeviceOwnedTest, GetVolumeList) {
-  set_test_app_id(kTestGetVolumeListKioskApp);
-  set_test_app_version("0.1");
-  set_test_crx_file(test_app_id() + ".crx");
+  SetTestApp(kTestGetVolumeListKioskAppId, /*version=*/"0.1");
 
   extensions::ResultCatcher catcher;
   StartAppLaunchFromLoginScreen(

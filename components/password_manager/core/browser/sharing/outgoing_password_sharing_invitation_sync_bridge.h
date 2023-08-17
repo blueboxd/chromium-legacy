@@ -10,7 +10,9 @@
 #include <string>
 
 #include "base/sequence_checker.h"
+#include "components/password_manager/core/browser/sharing/recipient_info.h"
 #include "components/sync/model/model_type_sync_bridge.h"
+#include "components/sync/protocol/entity_data.h"
 #include "components/sync/protocol/password_sharing_invitation_specifics.pb.h"
 
 namespace syncer {
@@ -20,7 +22,7 @@ class ModelTypeChangeProcessor;
 
 namespace password_manager {
 
-struct CredentialUIEntry;
+struct PasswordForm;
 struct PasswordRecipient;
 
 // Sync bridge implementation for OUTGOING_PASSWORD_SHARING_INVITATION model
@@ -36,7 +38,8 @@ class OutgoingPasswordSharingInvitationSyncBridge
       const OutgoingPasswordSharingInvitationSyncBridge&) = delete;
   ~OutgoingPasswordSharingInvitationSyncBridge() override;
 
-  void SendPassword(const CredentialUIEntry& credential_ui_entry,
+  // Sends `password` to the corresponding `recipient`.
+  void SendPassword(const PasswordForm& password,
                     const PasswordRecipient& recipient);
 
   // ModelTypeSyncBridge implementation.
@@ -60,9 +63,20 @@ class OutgoingPasswordSharingInvitationSyncBridge
  private:
   SEQUENCE_CHECKER(sequence_checker_);
 
+  // Contains data which is sufficient for creating `EntityData` for an outgoing
+  // invitation.
+  struct OutgoingInvitationWithEncryptionKey {
+    sync_pb::OutgoingPasswordSharingInvitationSpecifics specifics;
+    PublicKey recipient_public_key;
+  };
+
+  static std::unique_ptr<syncer::EntityData> ConvertToEntityData(
+      const OutgoingInvitationWithEncryptionKey&
+          invitation_with_encryption_key);
+
   // Last sent passwords are cached until they are committed to the server. This
   // is required to keep data in case of retries.
-  std::map<std::string, sync_pb::OutgoingPasswordSharingInvitationSpecifics>
+  std::map<std::string, OutgoingInvitationWithEncryptionKey>
       storage_key_to_outgoing_invitations_in_flight_;
 };
 

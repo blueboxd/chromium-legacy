@@ -28,7 +28,6 @@ source_set("path_parser") {
   ]
 
   if (is_mac) {
-    configs += [ "//build/config/compiler:enable_arc" ]
     deps += [ "//build:branding_buildflags" ]
   } else if (is_win) {
     deps += [ "//chrome/install_static:install_static_util" ]
@@ -139,6 +138,13 @@ source_set("test_support") {
     ]
   }
 
+  if (enable_dice_support || is_chromeos_lacros) {
+    sources += [
+      "cloud/user_policy_signin_service_test_util.cc",
+      "cloud/user_policy_signin_service_test_util.h",
+    ]
+  }
+
   if (!is_android) {
     sources += [
       "extension_policy_test_base.cc",
@@ -182,6 +188,7 @@ source_set("policy_specific_browser_tests") {
     "policy_network_browsertest.cc",
     "site_isolation_policy_browsertest.cc",
     "test/certificate_transparency_policy_browsertest.cc",
+    "test/force_permission_policy_unload_default_enabled_policy_browsertest.cc",
     "test/hsts_policy_browsertest.cc",
     "test/network_prediction_policy_browsertest.cc",
     "test/offset_parent_new_spec_behavior_policy_browsertest.cc",
@@ -235,6 +242,7 @@ source_set("policy_specific_browser_tests") {
   if (!is_android) {
     sources += [
       "test/autoplay_policy_browsertest.cc",
+      "test/block_truncated_cookies_policy_browsertest.cc",
       "test/bookmark_bar_enabled_browsertest.cc",
       "test/component_updater_policy_browsertest.cc",
       "test/developer_tools_policy_browsertest.cc",
@@ -244,6 +252,7 @@ source_set("policy_specific_browser_tests") {
       "test/local_fonts_policy_browsertest.cc",
       "test/media_stream_policy_browsertest.cc",
       "test/quic_allowed_browsertest.cc",
+      "test/shared_dictionary_policy_browsertest.cc",
       "test/signed_exchange_browsertest.cc",
       "test/task_manager_end_process_enabled_browsertest.cc",
       "test/web_rtc_event_log_collection_allowed_policy_browsertest.cc",
@@ -388,16 +397,18 @@ source_set("browser_tests") {
       "cloud/chrome_browser_cloud_management_browsertest_mac_util.h",
       "cloud/chrome_browser_cloud_management_browsertest_mac_util.mm",
     ]
-    configs += [ "//build/config/compiler:enable_arc" ]
   }
 
   if (is_win) {
     sources += [
       "test/audio_process_high_priority_enabled_browsertest.cc",
       "test/locale_policy_browsertest.cc",
-      "test/network_service_sandbox_enabled_browsertest.cc",
       "test/renderer_app_container_enabled_win_browsertest.cc",
     ]
+  }
+
+  if (is_win || is_linux) {
+    sources += [ "test/network_service_sandbox_enabled_browsertest.cc" ]
   }
 
   if (!is_android) {

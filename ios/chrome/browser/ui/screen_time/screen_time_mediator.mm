@@ -13,10 +13,6 @@
 #import "ios/web/public/web_state_observer_bridge.h"
 #import "net/base/mac/url_conversions.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 @interface ScreenTimeMediator () <WebStateListObserving, CRWWebStateObserver> {
   std::unique_ptr<WebStateListObserver> _webStateListObserver;
   std::unique_ptr<web::WebStateObserverBridge> _observer;
@@ -71,41 +67,16 @@
   [self updateConsumer];
 }
 
-#pragma mark - WebStateListObserver
+#pragma mark - WebStateListObserving
 
 - (void)didChangeWebStateList:(WebStateList*)webStateList
                        change:(const WebStateListChange&)change
                        status:(const WebStateListStatus&)status {
   DCHECK_EQ(self.webStateList, webStateList);
-  switch (change.type()) {
-    case WebStateListChange::Type::kStatusOnly:
-      // TODO(crbug.com/1442546): Move the implementation from
-      // webStateList:didChangeActiveWebState:oldWebState:atIndex:reason to
-      // here. Note that here is reachable only when `reason` ==
-      // ActiveWebStateChangeReason::Activated.
-      break;
-    case WebStateListChange::Type::kDetach:
-      // Do nothing when a WebState is detached.
-      break;
-    case WebStateListChange::Type::kMove:
-      // Do nothing when a WebState is moved.
-      break;
-    case WebStateListChange::Type::kReplace:
-      [self updateConsumer];
-      break;
-    case WebStateListChange::Type::kInsert:
-      // Do nothing when a new WebState is inserted.
-      break;
+  if (change.type() == WebStateListChange::Type::kReplace ||
+      status.active_web_state_change()) {
+    [self updateConsumer];
   }
-}
-
-- (void)webStateList:(WebStateList*)webStateList
-    didChangeActiveWebState:(web::WebState*)newWebState
-                oldWebState:(web::WebState*)oldWebState
-                    atIndex:(int)atIndex
-                     reason:(ActiveWebStateChangeReason)reason {
-  DCHECK_EQ(self.webStateList, webStateList);
-  [self updateConsumer];
 }
 
 #pragma mark - CRWWebStateObserver

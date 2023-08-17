@@ -14,6 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/supports_user_data.h"
 #include "base/task/sequenced_task_runner.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -21,6 +22,11 @@
 #if BUILDFLAG(IS_ANDROID)
 #include "base/android/jni_android.h"
 #endif  // BUILDFLAG(IS_ANDROID)
+
+namespace base {
+class Clock;
+class CommandLine;
+}
 
 namespace leveldb_proto {
 class ProtoDatabaseProvider;
@@ -145,6 +151,13 @@ class Tracker : public KeyedService, public base::SupportsUserData {
       leveldb_proto::ProtoDatabaseProvider* db_provider,
       base::WeakPtr<TrackerEventExporter> event_exporter);
 
+  // Possibly adds a command line argument for a child browser process to
+  // communicate what IPH are allowed in a testing environment. Has no effect if
+  // IPH behavior is not being modified for testing. If specific IPH features
+  // are explicitly allowed for the test, may add those to the --enable-features
+  // command line parameter as well (will add it if not present).
+  static void PropagateTestStateToChildProcess(base::CommandLine& command_line);
+
   Tracker(const Tracker&) = delete;
   Tracker& operator=(const Tracker&) = delete;
 
@@ -261,6 +274,11 @@ class Tracker : public KeyedService, public base::SupportsUserData {
 
   // Returns the configuration associated with the tracker for testing purposes.
   virtual const Configuration* GetConfigurationForTesting() const = 0;
+
+  // Set a testing clock for the tracker. It's recommended to use a
+  // SimpleTestClock, so we can advacne the clock in test.
+  virtual void SetClockForTesting(const base::Clock& clock,
+                                  base::Time& initial_now) = 0;
 
  protected:
   Tracker() = default;

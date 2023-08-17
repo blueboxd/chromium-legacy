@@ -129,6 +129,7 @@ import org.chromium.chrome.browser.media.FullscreenVideoPictureInPictureControll
 import org.chromium.chrome.browser.metrics.ActivityTabStartupMetricsTracker;
 import org.chromium.chrome.browser.metrics.LaunchMetrics;
 import org.chromium.chrome.browser.metrics.UmaSessionStats;
+import org.chromium.chrome.browser.modaldialog.TabModalLifetimeHandler;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.night_mode.SystemNightModeMonitor;
 import org.chromium.chrome.browser.night_mode.WebContentsDarkModeController;
@@ -144,6 +145,7 @@ import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.printing.TabPrinter;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.readaloud.ReadAloudController;
 import org.chromium.chrome.browser.selection.SelectionPopupBackPressHandler;
 import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
 import org.chromium.chrome.browser.share.ShareDelegate;
@@ -402,6 +404,8 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     private boolean mBlockingDrawForAppRestart;
     private Runnable mShowContentRunnable;
     private boolean mIsRecreatingForTabletModeChange;
+    // Handling the dismissal of tab modal dialog.
+    private TabModalLifetimeHandler mTabModalLifetimeHandler;
 
     protected ChromeActivity() {
         mIntentHandler = new IntentHandler(this, createIntentHandlerDelegate());
@@ -916,7 +920,8 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         return new AppMenuPropertiesDelegateImpl(this, getActivityTabProvider(),
                 getMultiWindowModeStateDispatcher(), getTabModelSelector(), getToolbarManager(),
                 getWindow().getDecorView(), null, null, mBookmarkModelSupplier,
-                /*incognitoReauthControllerOneshotSupplier=*/null);
+                /*incognitoReauthControllerOneshotSupplier=*/null,
+                mRootUiCoordinator.getReadAloudControllerSupplier());
     }
 
     /**
@@ -1639,8 +1644,21 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
 
     @Override
     protected ModalDialogManager createModalDialogManager() {
-        return new ModalDialogManager(
+        var dialogManager = new ModalDialogManager(
                 new AppModalPresenter(this), ModalDialogManager.ModalDialogType.APP);
+        // TODO(crbug.com/1157310): Transition this::method refs to dedicated suppliers.
+        mTabModalLifetimeHandler = new TabModalLifetimeHandler(this, getLifecycleDispatcher(),
+                dialogManager,
+                ()
+                        -> mRootUiCoordinator.getAppBrowserControlsVisibilityDelegate(),
+                this::getTabObscuringHandler, this::getToolbarManager,
+                getContextualSearchManagerSupplier(), getTabModelSelectorSupplier(),
+                this::getBrowserControlsManager, this::getFullscreenManager, mBackPressManager);
+        return dialogManager;
+    }
+
+    protected TabModalLifetimeHandler getTabModalLifetimeHandler() {
+        return mTabModalLifetimeHandler;
     }
 
     protected Drawable getBackgroundDrawable() {
@@ -2227,6 +2245,12 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             }
         }
 
+        // Fullscreen must be before selection popup. crbug.com/1454817.
+        if (exitFullscreenIfShowing()) {
+            BackPressManager.record(Type.FULLSCREEN);
+            return true;
+        }
+
         SelectionPopupController controller = getSelectionPopupController();
         if (controller != null && controller.isSelectActionBarShowing()) {
             controller.clearSelection();
@@ -2236,11 +2260,6 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
 
         if (getManualFillingComponent().onBackPressed()) {
             BackPressManager.record(Type.MANUAL_FILLING);
-            return true;
-        }
-
-        if (exitFullscreenIfShowing()) {
-            BackPressManager.record(Type.FULLSCREEN);
             return true;
         }
 
@@ -2494,6 +2513,12 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
                     Profile.fromWebContents(currentTab.getWebContents()));
             tracker.notifyEvent(EventConstants.TRANSLATE_MENU_BUTTON_CLICKED);
             TranslateBridge.translateTabWhenReady(currentTab);
+            return true;
+        }
+
+        if (id == R.id.readaloud_menu_id) {
+            RecordUserAction.record("MobileMenuReadAloud");
+            doReadCurrentTabAloud(currentTab);
             return true;
         }
 
@@ -2797,7 +2822,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             if (!isFinishing()) {
                 mIsRecreatingForTabletModeChange = true;
                 // Store the OnPause timestamp before recreation to capture unfold latency metric.
-                super.setOnPauseBeforeFoldRecreateTimestampMs();
+                if (isTablet) super.setOnPauseBeforeFoldRecreateTimestampMs();
                 recreate();
                 mHandler.removeCallbacks(mShowContentRunnable);
                 return true;
@@ -2889,6 +2914,14 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             Toast.makeText(context, R.string.open_webapk_failed, Toast.LENGTH_SHORT).show();
         }
         return true;
+    }
+
+    private void doReadCurrentTabAloud(Tab currentTab) {
+        ReadAloudController readAloudController =
+                mRootUiCoordinator.getReadAloudControllerSupplier().get();
+        if (readAloudController != null) {
+            readAloudController.playTab(currentTab);
+        }
     }
 
     /**

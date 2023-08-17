@@ -7,6 +7,7 @@
 
 #include "base/containers/contains.h"
 #include "base/memory/raw_ptr.h"
+#include "base/scoped_observation_traits.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
@@ -52,6 +53,7 @@
 #include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
 #include "chrome/common/chrome_features.h"
 #include "chromeos/ash/components/login/login_state/login_state.h"
+#include "chromeos/ash/components/standalone_browser/feature_refs.h"
 #include "components/services/app_service/public/cpp/app_capability_access_cache.h"
 #include "components/services/app_service/public/cpp/capability_access_update.h"
 #include "components/user_manager/scoped_user_manager.h"
@@ -186,9 +188,9 @@ apps::IntentFilters CreateIntentFilters() {
 
   apps::ConditionValues values3;
   values3.push_back(std::make_unique<apps::ConditionValue>(
-      url.host(), apps::PatternMatchType::kLiteral));
+      apps_util::AuthorityView::Encode(url), apps::PatternMatchType::kLiteral));
   filter->conditions.push_back(std::make_unique<apps::Condition>(
-      apps::ConditionType::kHost, std::move(values3)));
+      apps::ConditionType::kAuthority, std::move(values3)));
 
   apps::ConditionValues values4;
   values4.push_back(std::make_unique<apps::ConditionValue>(
@@ -230,8 +232,7 @@ arc::mojom::PrivacyItemPtr CreateArcPrivacyItem(
 class AppRegistryCacheObserver : public apps::AppRegistryCache::Observer {
  public:
   explicit AppRegistryCacheObserver(apps::AppRegistryCache* cache) {
-    cache_ = cache;
-    Observe(cache);
+    app_registry_cache_observer_.Observe(cache);
   }
 
   ~AppRegistryCacheObserver() override = default;
@@ -247,7 +248,7 @@ class AppRegistryCacheObserver : public apps::AppRegistryCache::Observer {
 
   void OnAppRegistryCacheWillBeDestroyed(
       apps::AppRegistryCache* cache) override {
-    Observe(nullptr);
+    app_registry_cache_observer_.Reset();
   }
 
   std::vector<std::string> updated_ids() const { return updated_ids_; }
@@ -256,7 +257,10 @@ class AppRegistryCacheObserver : public apps::AppRegistryCache::Observer {
  private:
   std::vector<std::string> updated_ids_;
   std::vector<apps::AppType> app_types_;
-  raw_ptr<apps::AppRegistryCache> cache_ = nullptr;
+
+  base::ScopedObservation<apps::AppRegistryCache,
+                          apps::AppRegistryCache::Observer>
+      app_registry_cache_observer_{this};
 };
 
 }  // namespace
@@ -665,10 +669,7 @@ class LegacyPackagedAppLacrosPrimaryPublisherTest : public PublisherTest {
   LegacyPackagedAppLacrosPrimaryPublisherTest() {
     scoped_feature_list_.Reset();
     scoped_feature_list_.InitWithFeatures(
-        {ash::features::kLacrosSupport, ash::features::kLacrosPrimary,
-         ash::features::kLacrosOnly,
-         ash::features::kLacrosProfileMigrationForceOff},
-        {});
+        ash::standalone_browser::GetFeatureRefs(), {});
   }
 
   LegacyPackagedAppLacrosPrimaryPublisherTest(
@@ -691,7 +692,7 @@ class LegacyPackagedAppLacrosPrimaryPublisherTest : public PublisherTest {
 
     PublisherTest::SetUp();
 
-    ASSERT_TRUE(crosapi::browser_util::IsLacrosPrimaryBrowser());
+    ASSERT_TRUE(crosapi::browser_util::IsLacrosEnabled());
   }
 
  private:
@@ -720,10 +721,7 @@ class StandaloneBrowserPublisherTest : public PublisherTest {
   StandaloneBrowserPublisherTest() {
     scoped_feature_list_.Reset();
     scoped_feature_list_.InitWithFeatures(
-        {ash::features::kLacrosSupport, ash::features::kLacrosPrimary,
-         ash::features::kLacrosOnly,
-         ash::features::kLacrosProfileMigrationForceOff},
-        {});
+        ash::standalone_browser::GetFeatureRefs(), {});
   }
 
   StandaloneBrowserPublisherTest(const StandaloneBrowserPublisherTest&) =

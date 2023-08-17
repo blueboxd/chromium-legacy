@@ -17,11 +17,13 @@
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_event_filter.h"
 #include "ash/system/tray/tray_utils.h"
+#include "ash/system/unified/quick_settings_metrics_util.h"
 #include "ash/system/unified/unified_system_tray.h"
 #include "ash/system/unified/unified_system_tray_controller.h"
 #include "ash/system/unified/unified_system_tray_view.h"
 #include "ash/wm/container_finder.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "base/debug/crash_logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
@@ -90,6 +92,16 @@ UnifiedSystemTrayBubble::UnifiedSystemTrayBubble(UnifiedSystemTray* tray)
 }
 
 UnifiedSystemTrayBubble::~UnifiedSystemTrayBubble() {
+  // Record the number of quick settings pages.
+  if (features::IsQsRevampEnabled()) {
+    auto page_count = unified_system_tray_controller()
+                          ->model()
+                          ->pagination_model()
+                          ->total_pages();
+    DCHECK_GT(page_count, 0);
+    quick_settings_metrics_util::RecordQsPageCountOnClose(page_count);
+  }
+
   if (controller_->showing_calendar_view()) {
     tray_->NotifyLeavingCalendarView();
   }
@@ -105,6 +117,8 @@ UnifiedSystemTrayBubble::~UnifiedSystemTrayBubble() {
   // Remove child views synchronously to ensure they don't try to access
   // `controller_` after `this` goes out of scope.
   bubble_view_->RemoveAllChildViews();
+  quick_settings_view_ = nullptr;
+  unified_view_ = nullptr;
   bubble_view_->ResetDelegate();
 
   if (bubble_widget_) {
@@ -339,7 +353,7 @@ void UnifiedSystemTrayBubble::OnWindowActivated(ActivationReason reason,
 
   // If the activated window is a popup notification, interacting with it should
   // not close the bubble.
-  if (features::IsQsRevampEnabled() &&
+  if (features::IsNotifierCollisionEnabled() &&
       tray_->GetMessagePopupCollection()->IsWidgetAPopupNotification(
           gained_active_widget)) {
     return;
@@ -378,11 +392,24 @@ void UnifiedSystemTrayBubble::UpdateBubbleHeight(bool is_showing_detiled_view) {
 }
 
 void UnifiedSystemTrayBubble::UpdateBubbleBounds() {
+  // USTB_UBB stands for `UnifiedSystemTrayBubble::UpdateBubbleBounds`. Here
+  // using the short version since the log method has a character count limit
+  // of 40.
+  SCOPED_CRASH_KEY_BOOL("USTB_UBB", "bubble_view_", !!bubble_view_);
+  SCOPED_CRASH_KEY_BOOL("USTB_UBB", "tray_", !!tray_);
+  SCOPED_CRASH_KEY_BOOL("USTB_UBB", "tray_->shelf()",
+                        !!tray_ && !!tray_->shelf());
+  SCOPED_CRASH_KEY_BOOL("USTB_UBB", "bubble_widget_", !!bubble_widget_);
+  SCOPED_CRASH_KEY_BOOL("USTB_UBB", "bubble_widget_->IsClosed()",
+                        !!bubble_widget_ && !!bubble_widget_->IsClosed());
+
   int max_height =
       CalculateMaxTrayBubbleHeight(tray_->GetBubbleWindowContainer());
   if (bubble_view_->ShouldUseFixedHeight()) {
     DCHECK(features::IsQsRevampEnabled());
-    max_height = std::min(max_height, kDetailedViewHeight);
+    const int qs_current_height = quick_settings_view_->height();
+    max_height =
+        std::min(max_height, std::max(qs_current_height, kDetailedViewHeight));
   }
   if (features::IsQsRevampEnabled()) {
     quick_settings_view_->SetMaxHeight(max_height);

@@ -46,6 +46,7 @@
 #include "third_party/blink/renderer/core/dom/child_node_list.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/document_fragment.h"
+#include "third_party/blink/renderer/core/dom/document_part_root.h"
 #include "third_party/blink/renderer/core/dom/document_type.h"
 #include "third_party/blink/renderer/core/dom/dom_node_ids.h"
 #include "third_party/blink/renderer/core/dom/element.h"
@@ -1002,7 +1003,7 @@ Node* Node::cloneNode(bool deep, ExceptionState& exception_state) const {
       data.Put(CloneOption::kIncludeShadowRoots);
     }
   }
-  return Clone(GetDocument(), data);
+  return Clone(GetDocument(), data, /*append_to*/ nullptr);
 }
 
 Node* Node::cloneNode(bool deep) const {
@@ -1928,16 +1929,14 @@ const AtomicString& Node::lookupNamespaceURI(
     case kElementNode: {
       const auto& element = To<Element>(*this);
 
-      if (RuntimeEnabledFeatures::NodeAsNSResolverEnabled()) {
-        // 1. If prefix is "xml", then return the XML namespace.
-        if (prefix == g_xml_atom) {
-          return xml_names::kNamespaceURI;
-        }
+      // 1. If prefix is "xml", then return the XML namespace.
+      if (prefix == g_xml_atom) {
+        return xml_names::kNamespaceURI;
+      }
 
-        // 2. If prefix is "xmlns", then return the XMLNS namespace.
-        if (prefix == g_xmlns_atom) {
-          return xmlns_names::kNamespaceURI;
-        }
+      // 2. If prefix is "xmlns", then return the XMLNS namespace.
+      if (prefix == g_xmlns_atom) {
+        return xmlns_names::kNamespaceURI;
       }
 
       // 3. If its namespace is not null and its namespace prefix is prefix,
@@ -2234,12 +2233,24 @@ void Node::InvalidateIfHasEffectiveAppearance() const {
   layout_object->SetSubtreeShouldDoFullPaintInvalidation();
 }
 
-void Node::InvalidateDOMParts() {
-  if (UNLIKELY(RuntimeEnabledFeatures::DOMPartsAPIEnabled() && HasDOMParts())) {
-    for (Part* part : GetDOMParts()) {
-      if (part->root()) {
-        part->root()->MarkPartsDirty();
-      }
+void Node::UpdateForRemovedDOMParts(ContainerNode& insertion_point) {
+  if (LIKELY(!RuntimeEnabledFeatures::DOMPartsAPIEnabled())) {
+    return;
+  }
+  if (auto* parts = GetDOMParts()) {
+    for (Part* part : *parts) {
+      part->PartDisconnected(*this);
+    }
+  }
+}
+
+void Node::UpdateForInsertedDOMParts(ContainerNode& insertion_point) {
+  if (LIKELY(!RuntimeEnabledFeatures::DOMPartsAPIEnabled())) {
+    return;
+  }
+  if (auto* parts = GetDOMParts()) {
+    for (Part* part : *parts) {
+      part->PartConnected(*this, insertion_point);
     }
   }
 }
@@ -2249,14 +2260,14 @@ Node::InsertionNotificationRequest Node::InsertedInto(
   DCHECK(!ChildNeedsStyleInvalidation());
   DCHECK(!NeedsStyleInvalidation());
   DCHECK(insertion_point.isConnected() || insertion_point.IsInShadowTree() ||
-         IsContainerNode());
+         IsContainerNode() || GetDOMParts());
   if (insertion_point.isConnected()) {
     SetFlag(kIsConnectedFlag);
 #if DCHECK_IS_ON()
     insertion_point.GetDocument().IncrementNodeCount();
 #endif
   }
-  InvalidateDOMParts();
+  UpdateForInsertedDOMParts(insertion_point);
   if (ParentOrShadowHostNode()->IsInShadowTree())
     SetFlag(kIsInShadowTreeFlag);
   if (auto* cache = GetDocument().ExistingAXObjectCache()) {
@@ -2266,8 +2277,7 @@ Node::InsertionNotificationRequest Node::InsertedInto(
 }
 
 void Node::RemovedFrom(ContainerNode& insertion_point) {
-  DCHECK(insertion_point.isConnected() || IsContainerNode() ||
-         IsInShadowTree());
+  DCHECK(IsContainerNode() || IsInTreeScope() || GetDOMParts());
   if (insertion_point.isConnected()) {
     ClearNeedsStyleRecalc();
     ClearChildNeedsStyleRecalc();
@@ -2278,7 +2288,7 @@ void Node::RemovedFrom(ContainerNode& insertion_point) {
     insertion_point.GetDocument().DecrementNodeCount();
 #endif
   }
-  InvalidateDOMParts();
+  UpdateForRemovedDOMParts(insertion_point);
   if (IsInShadowTree() && !ContainingTreeScope().RootNode().IsShadowRoot())
     ClearFlag(kIsInShadowTreeFlag);
   if (auto* cache = GetDocument().ExistingAXObjectCache()) {
@@ -3389,8 +3399,8 @@ HTMLSlotElement* Node::ManuallyAssignedSlot() {
   return nullptr;
 }
 
-HashSet<Member<TreeScope>> Node::GetAncestorTreeScopes() const {
-  HashSet<Member<TreeScope>> ancestor_tree_scopes;
+HeapHashSet<Member<TreeScope>> Node::GetAncestorTreeScopes() const {
+  HeapHashSet<Member<TreeScope>> ancestor_tree_scopes;
   for (TreeScope* scope = &GetTreeScope(); scope;
        scope = scope->ParentTreeScope()) {
     ancestor_tree_scopes.insert(scope);

@@ -470,8 +470,6 @@ class BookmarkModel final : public BookmarkUndoProvider,
                                          const base::Time delete_begin,
                                          const base::Time delete_end);
 
-  const std::unique_ptr<BookmarkClient> client_;
-
   // Whether the initial set of data has been loaded.
   bool loaded_ = false;
 
@@ -496,7 +494,14 @@ class BookmarkModel final : public BookmarkUndoProvider,
   int64_t next_node_id_ = 1;
 
   // The observers.
-  base::ObserverList<BookmarkModelObserver>::Unchecked observers_;
+#if BUILDFLAG(IS_IOS)
+  // TODO(crbug.com/1470748) Set the parameter to `true` on all platforms.
+  base::ObserverList<BookmarkModelObserver, true> observers_;
+#else
+  base::ObserverList<BookmarkModelObserver> observers_;
+#endif
+
+  std::unique_ptr<BookmarkClient> client_;
 
   // Used for loading favicons.
   base::CancelableTaskTracker cancelable_task_tracker_;

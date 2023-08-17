@@ -71,6 +71,7 @@ body {
   display: flex;
   flex: auto;
   flex-direction: column;
+  overflow: hidden;
 }
 
 /* Directory tree at the left. */
@@ -1975,6 +1976,9 @@ li[renaming=''] .filename-label {
   margin-inline-end: 10px;
   margin-inline-start: auto;
   width: 24px;
+}
+
+.dlp-managed-icon {
   visibility: hidden;
 }
 

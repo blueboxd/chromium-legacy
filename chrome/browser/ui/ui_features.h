@@ -30,6 +30,8 @@ BASE_DECLARE_FEATURE(kDesktopPWAsAppHomePage);
 #endif  // !BUILDFLAG(IS_CHROMEOS) && !BUILDFLAG(IS_ANDROID)
 
 BASE_DECLARE_FEATURE(kChromeLabs);
+extern const char kChromeLabsActivationParameterName[];
+extern const base::FeatureParam<int> kChromeLabsActivationPercentage;
 
 BASE_DECLARE_FEATURE(kChromeWhatsNewUI);
 
@@ -124,6 +126,8 @@ extern const char kTabHoverCardImagesCrossfadePreviewAtParameterName[];
 // Adds an amount of time (in ms) to the show delay when tabs are max width -
 // typically when there are less than 5 or 6 tabs in a browser window.
 extern const char kTabHoverCardAdditionalMaxWidthDelay[];
+
+BASE_DECLARE_FEATURE(kTabOrganization);
 
 BASE_DECLARE_FEATURE(kTabSearchChevronIcon);
 

@@ -156,6 +156,9 @@ class TabListRecyclerView
     // It is null when gts-tab animation is disabled or switching from Start surface to GTS.
     @Nullable
     private RecyclerView.ItemAnimator mOriginalAnimator;
+    // Null unless item animations are disabled.
+    @Nullable
+    private RecyclerView.ItemAnimator mDisabledAnimatorHolder;
     // Null if there is no runnable to execute on the next layout.
     @Nullable
     private Runnable mOnNextLayoutRunnable;
@@ -225,6 +228,19 @@ class TabListRecyclerView
      */
     void setVisibilityListener(VisibilityListener listener) {
         mListener = listener;
+    }
+
+    void setDisableItemAnimations(boolean disable) {
+        if (disable) {
+            ItemAnimator animator = getItemAnimator();
+            if (animator == null) return;
+
+            mDisabledAnimatorHolder = animator;
+            setItemAnimator(null);
+        } else if (mDisabledAnimatorHolder != null) {
+            setItemAnimator(mDisabledAnimatorHolder);
+            mDisabledAnimatorHolder = null;
+        }
     }
 
     void prepareTabSwitcherView() {
@@ -435,13 +451,7 @@ class TabListRecyclerView
     }
 
     private float getMaxDutyCycle() {
-        String maxDutyCycle = ChromeFeatureList.getFieldTrialParamByFeature(
-                ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID, MAX_DUTY_CYCLE_PARAM);
-        try {
-            return Float.valueOf(maxDutyCycle);
-        } catch (NumberFormatException e) {
-            return DEFAULT_MAX_DUTY_CYCLE;
-        }
+        return DEFAULT_MAX_DUTY_CYCLE;
     }
 
     private void registerDynamicView() {

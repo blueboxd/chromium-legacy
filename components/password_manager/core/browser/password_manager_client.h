@@ -448,6 +448,9 @@ class PasswordManagerClient {
   // Returns the identity manager for profile.
   virtual signin::IdentityManager* GetIdentityManager() = 0;
 
+  // Returns the field info manager for profile.
+  virtual password_manager::FieldInfoManager* GetFieldInfoManager() const;
+
   // Returns a pointer to the URLLoaderFactory owned by the storage partition of
   // the current profile.
   virtual scoped_refptr<network::SharedURLLoaderFactory>
@@ -473,9 +476,6 @@ class PasswordManagerClient {
 
   // Returns true if the current page is to the new tab page.
   virtual bool IsNewTabPage() const = 0;
-
-  // Returns a FieldInfoManager associated with the current profile.
-  virtual FieldInfoManager* GetFieldInfoManager() const = 0;
 
   // Returns the WebAuthnCredentialsDelegate for the given driver, if available.
   virtual WebAuthnCredentialsDelegate* GetWebAuthnCredentialsDelegateForDriver(

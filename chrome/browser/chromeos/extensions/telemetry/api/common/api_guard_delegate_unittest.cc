@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -20,6 +21,7 @@
 #include "content/public/browser/ssl_status.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
+#include "extensions/common/extension_id.h"
 #include "extensions/common/extension_urls.h"
 #include "net/base/net_errors.h"
 #include "net/cert/cert_status_flags.h"
@@ -30,9 +32,18 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/constants/ash_features.h"
+#include "base/command_line.h"
+#include "base/strings/string_util.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/test/bind.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
+#include "chrome/common/chromeos/extensions/chromeos_system_extension_info.h"  // nogncheck
+#include "chrome/common/url_constants.h"
+#include "chrome/test/base/testing_profile_manager.h"
+#include "chromeos/ash/components/browser_context_helper/browser_context_types.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "components/account_id/account_id.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "components/user_manager/user.h"
@@ -48,18 +59,18 @@ namespace chromeos {
 
 struct ExtensionInfoTestParams {
   ExtensionInfoTestParams(const std::string& extension_id,
-                          const std::string& pwa_page_url,
+                          const std::string& app_ui_url,
                           const std::string& matches_origin,
                           const std::string& manufacturer)
       : extension_id(extension_id),
-        pwa_page_url(pwa_page_url),
+        app_ui_url(app_ui_url),
         matches_origin(matches_origin),
         manufacturer(manufacturer) {}
   ExtensionInfoTestParams(const ExtensionInfoTestParams& other) = default;
   ~ExtensionInfoTestParams() = default;
 
   const std::string extension_id;
-  const std::string pwa_page_url;
+  const std::string app_ui_url;
   const std::string matches_origin;
   const std::string manufacturer;
 };
@@ -68,23 +79,23 @@ const std::vector<ExtensionInfoTestParams> kAllExtensionInfoTestParams{
     // Make sure the Google extension is allowed for every OEM.
     ExtensionInfoTestParams(
         /*extension_id=*/"gogonhoemckpdpadfnjnpgbjpbjnodgc",
-        /*pwa_page_url=*/"https://googlechromelabs.github.io/",
+        /*app_ui_url=*/"https://googlechromelabs.github.io/",
         /*matches_origin=*/"*://googlechromelabs.github.io/*",
         /*manufacturer=*/"HP"),
     ExtensionInfoTestParams(
         /*extension_id=*/"gogonhoemckpdpadfnjnpgbjpbjnodgc",
-        /*pwa_page_url=*/"https://googlechromelabs.github.io/",
+        /*app_ui_url=*/"https://googlechromelabs.github.io/",
         /*matches_origin=*/"*://googlechromelabs.github.io/*",
         /*manufacturer=*/"ASUS"),
     // Make sure the extensions of each OEM are allowed on their device.
     ExtensionInfoTestParams(
         /*extension_id=*/"alnedpmllcfpgldkagbfbjkloonjlfjb",
-        /*pwa_page_url=*/"https://hpcs-appschr.hpcloud.hp.com",
+        /*app_ui_url=*/"https://hpcs-appschr.hpcloud.hp.com",
         /*matches_origin=*/"https://hpcs-appschr.hpcloud.hp.com/*",
         /*manufacturer=*/"HP"),
     ExtensionInfoTestParams(
         /*extension_id=*/"hdnhcpcfohaeangjpkcjkgmgmjanbmeo",
-        /*pwa_page_url=*/
+        /*app_ui_url=*/
         "https://dlcdnccls.asus.com/app/myasus_for_chromebook/ ",
         /*matches_origin=*/"https://dlcdnccls.asus.com/*",
         /*manufacturer=*/"ASUS"),
@@ -98,7 +109,7 @@ constexpr char kUserEmail[] = "user@example.com";
 // access Telemetry Extension APIs. All tests are parameterized with the
 // following parameters:
 // * |extension_id| - id of the extension under test.
-// * |pwa_page_url| - page URL of the PWA associated with the extension's id.
+// * |app_ui_url| - page URL of the app associated with the extension's id.
 // * |matches_origin| - externally_connectable's matches entry of the
 //                      extension's manifest.json.
 // Note: All tests must be defined using the TEST_P macro and must use the
@@ -141,8 +152,10 @@ class ApiGuardDelegateTest
     // dangling pointer to the User.
     // TODO(b/208629291): Consider removing all users from ProfileHelper in the
     // destructor of ash::FakeChromeUserManager.
-    GetFakeUserManager().RemoveUserFromList(
-        GetFakeUserManager().GetActiveUser()->GetAccountId());
+    if (GetFakeUserManager().GetActiveUser()) {
+      GetFakeUserManager().RemoveUserFromList(
+          GetFakeUserManager().GetActiveUser()->GetAccountId());
+    }
     scoped_user_manager_.reset();
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
@@ -150,9 +163,11 @@ class ApiGuardDelegateTest
   }
 
  protected:
-  std::string extension_id() const { return GetParam().extension_id; }
+  extensions::ExtensionId extension_id() const {
+    return GetParam().extension_id;
+  }
 
-  std::string pwa_page_url() const { return GetParam().pwa_page_url; }
+  std::string app_ui_url() const { return GetParam().app_ui_url; }
 
   std::string matches_origin() const { return GetParam().matches_origin; }
 
@@ -190,15 +205,15 @@ class ApiGuardDelegateTest
         hardware_info_delegate_factory_.get());
   }
 
-  void OpenPwaUrlAndSetCertificateWithStatus(net::CertStatus cert_status) {
+  void OpenAppUIUrlAndSetCertificateWithStatus(net::CertStatus cert_status) {
     const base::FilePath certs_dir = net::GetTestCertsDirectory();
     scoped_refptr<net::X509Certificate> test_cert(
         net::ImportCertFromFile(certs_dir, "ok_cert.pem"));
     ASSERT_TRUE(test_cert);
 
-    // Open the PWA page url and set valid certificate to bypass the
-    // IsPwaUiOpenAndSecure() check.
-    AddTab(browser(), GURL(pwa_page_url()));
+    // Open the app page url and set valid certificate to bypass the
+    // IsAppUiOpenAndSecure() check.
+    AddTab(browser(), GURL(app_ui_url()));
 
     // AddTab() adds a new tab at index 0.
     auto* web_contents = browser()->tab_strip_model()->GetWebContentsAt(0);
@@ -259,7 +274,7 @@ TEST_P(ApiGuardDelegateTest, CurrentUserNotOwner) {
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 TEST_P(ApiGuardDelegateTest, OwnershipDelayed) {
-  OpenPwaUrlAndSetCertificateWithStatus(/*cert_status=*/net::OK);
+  OpenAppUIUrlAndSetCertificateWithStatus(/*cert_status=*/net::OK);
   auto api_guard_delegate = ApiGuardDelegate::Factory::Create();
   base::test::TestFuture<absl::optional<std::string>> future;
 
@@ -293,7 +308,7 @@ TEST_P(ApiGuardDelegateTest, CurrentUserOwnerButNotMainLacrosProfile) {
 }
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
-TEST_P(ApiGuardDelegateTest, PwaNotOpen) {
+TEST_P(ApiGuardDelegateTest, AppNotOpen) {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   SetUserAsOwner();
 #endif  // IS_CHROMEOS_ASH
@@ -305,14 +320,14 @@ TEST_P(ApiGuardDelegateTest, PwaNotOpen) {
   ASSERT_TRUE(future.Wait());
   absl::optional<std::string> error = future.Get();
   ASSERT_TRUE(error.has_value());
-  EXPECT_EQ("Companion PWA UI is not open or not secure", error.value());
+  EXPECT_EQ("Companion app UI is not open or not secure", error.value());
 }
 
-TEST_P(ApiGuardDelegateTest, PwaIsOpenButNotSecure) {
+TEST_P(ApiGuardDelegateTest, AppIsOpenButNotSecure) {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   SetUserAsOwner();
 #endif  // IS_CHROMEOS_ASH
-  OpenPwaUrlAndSetCertificateWithStatus(
+  OpenAppUIUrlAndSetCertificateWithStatus(
       /*cert_status=*/net::CERT_STATUS_INVALID);
 
   auto api_guard_delegate = ApiGuardDelegate::Factory::Create();
@@ -323,14 +338,14 @@ TEST_P(ApiGuardDelegateTest, PwaIsOpenButNotSecure) {
   ASSERT_TRUE(future.Wait());
   absl::optional<std::string> error = future.Get();
   ASSERT_TRUE(error.has_value());
-  EXPECT_EQ("Companion PWA UI is not open or not secure", error.value());
+  EXPECT_EQ("Companion app UI is not open or not secure", error.value());
 }
 
 TEST_P(ApiGuardDelegateTest, ManufacturerNotAllowed) {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   SetUserAsOwner();
 #endif  // IS_CHROMEOS_ASH
-  OpenPwaUrlAndSetCertificateWithStatus(/*cert_status=*/net::OK);
+  OpenAppUIUrlAndSetCertificateWithStatus(/*cert_status=*/net::OK);
 
   // Make sure device manufacturer is not allowed.
   SetDeviceManufacturer("NOT_ALLOWED");
@@ -351,7 +366,7 @@ TEST_P(ApiGuardDelegateTest, SkipManufacturerCheck) {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   SetUserAsOwner();
 #endif  // IS_CHROMEOS_ASH
-  OpenPwaUrlAndSetCertificateWithStatus(/*cert_status=*/net::OK);
+  OpenAppUIUrlAndSetCertificateWithStatus(/*cert_status=*/net::OK);
   // Append the switch to skip the manufacturer check.
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kTelemetryExtensionSkipManufacturerCheckForTesting);
@@ -373,7 +388,7 @@ TEST_P(ApiGuardDelegateTest, NoError) {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   SetUserAsOwner();
 #endif  // IS_CHROMEOS_ASH
-  OpenPwaUrlAndSetCertificateWithStatus(/*cert_status=*/net::OK);
+  OpenAppUIUrlAndSetCertificateWithStatus(/*cert_status=*/net::OK);
 
   auto api_guard_delegate = ApiGuardDelegate::Factory::Create();
   base::test::TestFuture<absl::optional<std::string>> future;
@@ -431,7 +446,7 @@ TEST_P(ApiGuardDelegateAffiliatedUserTest, ExtensionNotForceInstalled) {
   EXPECT_EQ("This extension is not installed by the admin", error.value());
 }
 
-TEST_P(ApiGuardDelegateAffiliatedUserTest, PwaNotOpen) {
+TEST_P(ApiGuardDelegateAffiliatedUserTest, AppNotOpen) {
   {
     extensions::ExtensionManagementPrefUpdater<
         sync_preferences::TestingPrefServiceSyncable>
@@ -450,10 +465,10 @@ TEST_P(ApiGuardDelegateAffiliatedUserTest, PwaNotOpen) {
   ASSERT_TRUE(future.Wait());
   absl::optional<std::string> error = future.Get();
   ASSERT_TRUE(error.has_value());
-  EXPECT_EQ("Companion PWA UI is not open or not secure", error.value());
+  EXPECT_EQ("Companion app UI is not open or not secure", error.value());
 }
 
-TEST_P(ApiGuardDelegateAffiliatedUserTest, PwaIsOpenButNotSecure) {
+TEST_P(ApiGuardDelegateAffiliatedUserTest, AppIsOpenButNotSecure) {
   {
     extensions::ExtensionManagementPrefUpdater<
         sync_preferences::TestingPrefServiceSyncable>
@@ -464,7 +479,7 @@ TEST_P(ApiGuardDelegateAffiliatedUserTest, PwaIsOpenButNotSecure) {
         /*forced=*/true);
   }
 
-  OpenPwaUrlAndSetCertificateWithStatus(
+  OpenAppUIUrlAndSetCertificateWithStatus(
       /*cert_status=*/net::CERT_STATUS_INVALID);
 
   auto api_guard_delegate = ApiGuardDelegate::Factory::Create();
@@ -475,7 +490,7 @@ TEST_P(ApiGuardDelegateAffiliatedUserTest, PwaIsOpenButNotSecure) {
   ASSERT_TRUE(future.Wait());
   absl::optional<std::string> error = future.Get();
   ASSERT_TRUE(error.has_value());
-  EXPECT_EQ("Companion PWA UI is not open or not secure", error.value());
+  EXPECT_EQ("Companion app UI is not open or not secure", error.value());
 }
 
 TEST_P(ApiGuardDelegateAffiliatedUserTest, ManufacturerNotAllowed) {
@@ -489,7 +504,7 @@ TEST_P(ApiGuardDelegateAffiliatedUserTest, ManufacturerNotAllowed) {
         /*forced=*/true);
   }
 
-  OpenPwaUrlAndSetCertificateWithStatus(/*cert_status=*/net::OK);
+  OpenAppUIUrlAndSetCertificateWithStatus(/*cert_status=*/net::OK);
 
   // Make sure device manufacturer is not allowed.
   SetDeviceManufacturer("NOT_ALLOWED");
@@ -517,7 +532,7 @@ TEST_P(ApiGuardDelegateAffiliatedUserTest, NoError) {
         /*forced=*/true);
   }
 
-  OpenPwaUrlAndSetCertificateWithStatus(/*cert_status=*/net::OK);
+  OpenAppUIUrlAndSetCertificateWithStatus(/*cert_status=*/net::OK);
 
   auto api_guard_delegate = ApiGuardDelegate::Factory::Create();
   base::test::TestFuture<absl::optional<std::string>> future;
@@ -531,5 +546,133 @@ TEST_P(ApiGuardDelegateAffiliatedUserTest, NoError) {
 INSTANTIATE_TEST_SUITE_P(All,
                          ApiGuardDelegateAffiliatedUserTest,
                          testing::ValuesIn(kAllExtensionInfoTestParams));
+
+// TODO(b/292227137): Migrate Shimless RMA app to LaCrOS.
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+class ApiGuardDelegateShimlessRMAAppTest : public ApiGuardDelegateTest {
+ public:
+  ApiGuardDelegateShimlessRMAAppTest() = default;
+  ~ApiGuardDelegateShimlessRMAAppTest() override = default;
+
+  void SetUp() override {
+    feature_list_.InitWithFeatures(
+        {
+            ::ash::features::kShimlessRMA3pDiagnostics,
+            ::chromeos::features::kIWAForTelemetryExtensionAPI,
+        },
+        {});
+
+    chromeos_system_extension_info_ =
+        ScopedChromeOSSystemExtensionInfo::CreateForTesting();
+    // TODO(b/293560424): Remove this override after we add some valid IWA id to
+    // the allowlist.
+    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+        chromeos::switches::kTelemetryExtensionIwaIdOverrideForTesting,
+        "pt2jysa7yu326m2cbu5mce4rrajvguagronrsqwn5dhbaris6eaaaaic");
+    chromeos_system_extension_info_->ApplyCommandLineSwitchesForTesting();
+
+    // Above overrides need to be done before creating extensions.
+    ApiGuardDelegateTest::SetUp();
+  }
+
+ protected:
+  // BrowserWithTestWindowTest overrides.
+  TestingProfile* CreateProfile() override {
+    return profile_manager()->CreateTestingProfile(
+        ash::kShimlessRmaAppBrowserContextBaseName);
+  }
+
+  // ApiGuardDelegateTest overrides.
+  void AddUserAndLogIn() override {
+    // No user is logged in during Shimless RMA.
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+  std::unique_ptr<ScopedChromeOSSystemExtensionInfo>
+      chromeos_system_extension_info_;
+};
+
+TEST_P(ApiGuardDelegateShimlessRMAAppTest, IwaNotOpen) {
+  auto api_guard_delegate = ApiGuardDelegate::Factory::Create();
+  base::test::TestFuture<absl::optional<std::string>> future;
+  api_guard_delegate->CanAccessApi(profile(), extension(),
+                                   future.GetCallback());
+
+  ASSERT_TRUE(future.Wait());
+  absl::optional<std::string> error = future.Get();
+  ASSERT_TRUE(error.has_value());
+  EXPECT_EQ("Companion app UI is not open or not secure", error.value());
+}
+
+TEST_P(ApiGuardDelegateShimlessRMAAppTest, AppIsOpenButNotSecure) {
+  OpenAppUIUrlAndSetCertificateWithStatus(
+      /*cert_status=*/net::CERT_STATUS_INVALID);
+
+  auto api_guard_delegate = ApiGuardDelegate::Factory::Create();
+  base::test::TestFuture<absl::optional<std::string>> future;
+  api_guard_delegate->CanAccessApi(profile(), extension(),
+                                   future.GetCallback());
+
+  ASSERT_TRUE(future.Wait());
+  absl::optional<std::string> error = future.Get();
+  if (base::StartsWith(app_ui_url(), chrome::kIsolatedAppScheme)) {
+    // IWA are always considered secure.
+    EXPECT_FALSE(error.has_value()) << error.value();
+  } else {
+    ASSERT_TRUE(error.has_value());
+    EXPECT_EQ("Companion app UI is not open or not secure", error.value());
+  }
+}
+
+TEST_P(ApiGuardDelegateShimlessRMAAppTest, ManufacturerNotAllowed) {
+  OpenAppUIUrlAndSetCertificateWithStatus(/*cert_status=*/net::OK);
+
+  // Make sure device manufacturer is not allowed.
+  SetDeviceManufacturer("NOT_ALLOWED");
+
+  auto api_guard_delegate = ApiGuardDelegate::Factory::Create();
+  base::test::TestFuture<absl::optional<std::string>> future;
+  api_guard_delegate->CanAccessApi(profile(), extension(),
+                                   future.GetCallback());
+
+  ASSERT_TRUE(future.Wait());
+  absl::optional<std::string> error = future.Get();
+  ASSERT_TRUE(error.has_value());
+  EXPECT_EQ("This extension is not allowed to access the API on this device",
+            error.value());
+}
+
+TEST_P(ApiGuardDelegateShimlessRMAAppTest, NoError) {
+  OpenAppUIUrlAndSetCertificateWithStatus(/*cert_status=*/net::OK);
+
+  auto api_guard_delegate = ApiGuardDelegate::Factory::Create();
+  base::test::TestFuture<absl::optional<std::string>> future;
+  api_guard_delegate->CanAccessApi(profile(), extension(),
+                                   future.GetCallback());
+  ASSERT_TRUE(future.Wait());
+  absl::optional<std::string> error = future.Get();
+  EXPECT_FALSE(error.has_value()) << error.value();
+}
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         ApiGuardDelegateShimlessRMAAppTest,
+                         testing::ValuesIn(kAllExtensionInfoTestParams));
+// TODO(chungsheng): Add this to `kAllExtensionInfoTestParams` once the
+// `kIWAForTelemetryExtensionAPI` is enabled by default.
+INSTANTIATE_TEST_SUITE_P(
+    IWA,
+    ApiGuardDelegateShimlessRMAAppTest,
+    testing::Values(ExtensionInfoTestParams(
+        /*extension_id=*/"gogonhoemckpdpadfnjnpgbjpbjnodgc",
+        /*app_ui_url=*/
+        "isolated-app://"
+        "pt2jysa7yu326m2cbu5mce4rrajvguagronrsqwn5dhbaris6eaaaaic",
+        /*matches_origin=*/
+        "isolated-app://"
+        "pt2jysa7yu326m2cbu5mce4rrajvguagronrsqwn5dhbaris6eaaaaic/*",
+        /*manufacturer=*/"HP")));
+
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 }  // namespace chromeos

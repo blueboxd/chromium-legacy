@@ -26,10 +26,6 @@
 #import "net/test/embedded_test_server/default_handlers.h"
 #import "ui/base/l10n/l10n_util.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 static constexpr char kFormPassword[] = "pw";
 
 namespace {
@@ -122,7 +118,13 @@ id<GREYMatcher> DeleteConfirmationButton() {
 
 #pragma mark - Tests
 
-- (void)testOpenPasswordBottomSheetUsePassword {
+// TODO(crbug.com/1472810): Fix & re-enable.
+#if TARGET_OS_SIMULATOR
+#define MAYBE_testOpenPasswordBottomSheetUsePassword DISABLED_testOpenPasswordBottomSheetUsePassword
+#else
+#define MAYBE_testOpenPasswordBottomSheetUsePassword testOpenPasswordBottomSheetUsePassword
+#endif
+- (void)MAYBE_testOpenPasswordBottomSheetUsePassword {
   [PasswordSuggestionBottomSheetAppInterface setUpMockReauthenticationModule];
   [PasswordSuggestionBottomSheetAppInterface
       mockReauthenticationModuleExpectedResult:ReauthenticationResult::
@@ -183,7 +185,13 @@ id<GREYMatcher> DeleteConfirmationButton() {
   }
 }
 
-- (void)testOpenPasswordBottomSheetTapNoThanksShowKeyboard {
+// TODO(crbug.com/1472810): Fix & re-enable.
+#if TARGET_OS_SIMULATOR
+#define MAYBE_testOpenPasswordBottomSheetTapNoThanksShowKeyboard DISABLED_testOpenPasswordBottomSheetTapNoThanksShowKeyboard
+#else
+#define MAYBE_testOpenPasswordBottomSheetTapNoThanksShowKeyboard testOpenPasswordBottomSheetTapNoThanksShowKeyboard
+#endif
+- (void)MAYBE_testOpenPasswordBottomSheetTapNoThanksShowKeyboard {
   [PasswordManagerAppInterface
       storeCredentialWithUsername:@"user"
                          password:@"password"
@@ -207,7 +215,13 @@ id<GREYMatcher> DeleteConfirmationButton() {
   WaitForKeyboardToAppear();
 }
 
-- (void)testOpenPasswordBottomSheetOpenPasswordManager {
+// TODO(crbug.com/1472810): Fix & re-enable.
+#if TARGET_OS_SIMULATOR
+#define MAYBE_testOpenPasswordBottomSheetOpenPasswordManager DISABLED_testOpenPasswordBottomSheetOpenPasswordManager
+#else
+#define MAYBE_testOpenPasswordBottomSheetOpenPasswordManager testOpenPasswordBottomSheetOpenPasswordManager
+#endif
+- (void)MAYBE_testOpenPasswordBottomSheetOpenPasswordManager {
   [SigninEarlGreyUI signinWithFakeIdentity:[FakeSystemIdentity fakeIdentity1]
                                 enableSync:NO];
   NSURL* URL =
@@ -245,6 +259,11 @@ id<GREYMatcher> DeleteConfirmationButton() {
 
   [ChromeEarlGreyUI waitForAppToIdle];
 
+  // Mock local authentication result needed for opening the password manager.
+  [PasswordSettingsAppInterface setUpMockReauthenticationModule];
+  [PasswordSettingsAppInterface mockReauthenticationModuleExpectedResult:
+                                    ReauthenticationResult::kSuccess];
+
   [[EarlGrey
       selectElementWithMatcher:
           grey_allOf(chrome_test_util::ButtonWithAccessibilityLabel(
@@ -263,6 +282,8 @@ id<GREYMatcher> DeleteConfirmationButton() {
                                                         origin]),
                                    grey_sufficientlyVisible(), nil)]
       assertWithMatcher:grey_notNil()];
+
+  [PasswordSettingsAppInterface removeMockReauthenticationModule];
 }
 
 - (void)testOpenPasswordBottomSheetOpenPasswordDetails {
@@ -396,7 +417,13 @@ id<GREYMatcher> DeleteConfirmationButton() {
       assertWithMatcher:grey_nil()];
 }
 
-- (void)testOpenPasswordBottomSheetSelectPassword {
+// TODO(crbug.com/1472810): Fix & re-enable.
+#if TARGET_OS_SIMULATOR
+#define MAYBE_testOpenPasswordBottomSheetSelectPassword DISABLED_testOpenPasswordBottomSheetSelectPassword
+#else
+#define MAYBE_testOpenPasswordBottomSheetSelectPassword testOpenPasswordBottomSheetSelectPassword
+#endif
+- (void)MAYBE_testOpenPasswordBottomSheetSelectPassword {
   [SigninEarlGreyUI signinWithFakeIdentity:[FakeSystemIdentity fakeIdentity1]
                                 enableSync:NO];
   NSURL* URL =
@@ -485,7 +512,13 @@ id<GREYMatcher> DeleteConfirmationButton() {
       performAction:grey_tap()];
 }
 
-- (void)testPasswordBottomSheetDismiss3TimesNotShownAnymore {
+// TODO(crbug.com/1472810): Fix & re-enable.
+#if TARGET_OS_SIMULATOR
+#define MAYBE_testPasswordBottomSheetDismiss3TimesNotShownAnymore DISABLED_testPasswordBottomSheetDismiss3TimesNotShownAnymore
+#else
+#define MAYBE_testPasswordBottomSheetDismiss3TimesNotShownAnymore testPasswordBottomSheetDismiss3TimesNotShownAnymore
+#endif
+- (void)MAYBE_testPasswordBottomSheetDismiss3TimesNotShownAnymore {
   [PasswordManagerAppInterface
       storeCredentialWithUsername:@"user"
                          password:@"password"

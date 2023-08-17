@@ -334,6 +334,7 @@ class BrowsingTopicsDisabledInternalsBrowserTest
         /*enabled_features=*/{},
         /*disabled_features=*/{
             blink::features::kBrowsingTopics,
+            blink::features::kBrowsingTopicsParameters,
             features::kPrivacySandboxAdsAPIsOverride,
             privacy_sandbox::kPrivacySandboxSettings3,
             privacy_sandbox::kPrivacySandboxSettings4,
@@ -357,7 +358,7 @@ BrowsingTopicsBypassIPIsPubliclyRoutableCheck: disabled
 BrowsingTopicsXHR: disabled
 BrowsingTopicsDocumentAPI: enabled
 Configuration version: 1
-BrowsingTopicsParameters: enabled
+BrowsingTopicsParameters: disabled
 BrowsingTopicsParameters:number_of_epochs_to_expose: 3
 BrowsingTopicsParameters:time_period_per_epoch: 7d-0h-0m-0s
 BrowsingTopicsParameters:number_of_top_topics_per_epoch: 5

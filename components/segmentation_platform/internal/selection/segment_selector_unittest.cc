@@ -54,6 +54,13 @@ class MockModelManager : public ModelManager {
   MOCK_METHOD(ModelProvider*,
               GetModelProvider,
               (proto::SegmentId segment_id, proto::ModelSource model_source));
+
+  MOCK_METHOD(void, Initialize, ());
+
+  MOCK_METHOD(
+      void,
+      SetSegmentationModelUpdatedCallbackForTesting,
+      (ModelManager::SegmentationModelUpdatedCallback model_updated_callback));
 };
 
 std::unique_ptr<Config> CreateTestConfig() {
@@ -62,6 +69,7 @@ std::unique_ptr<Config> CreateTestConfig() {
   config->segmentation_uma_name = "TestKey";
   config->segment_selection_ttl = base::Days(28);
   config->unknown_selection_ttl = base::Days(14);
+  config->auto_execute_and_cache = true;
   config->AddSegmentId(SegmentId::OPTIMIZATION_TARGET_SEGMENTATION_NEW_TAB);
   config->AddSegmentId(SegmentId::OPTIMIZATION_TARGET_SEGMENTATION_SHARE);
   return config;
@@ -136,12 +144,11 @@ class SegmentSelectorTest : public testing::Test {
     auto query_processor =
         std::make_unique<processing::MockFeatureListQueryProcessor>();
     mock_query_processor_ = query_processor.get();
-    auto moved_model_manager = std::make_unique<MockModelManager>();
-    mock_execution_manager_ = moved_model_manager.get();
+    mock_model_manager_ = std::make_unique<MockModelManager>();
     execution_service_->InitForTesting(
         std::move(query_processor),
         std::make_unique<ModelExecutorImpl>(&clock_, mock_query_processor_),
-        nullptr, std::move(moved_model_manager));
+        nullptr, mock_model_manager_.get());
   }
 
   void GetSelectedSegment(const SegmentSelectionResult& expected) {
@@ -203,7 +210,7 @@ class SegmentSelectorTest : public testing::Test {
   MockTrainingDataCollector training_data_collector_;
   raw_ptr<processing::MockFeatureListQueryProcessor, DanglingUntriaged>
       mock_query_processor_ = nullptr;
-  raw_ptr<MockModelManager, DanglingUntriaged> mock_execution_manager_;
+  std::unique_ptr<MockModelManager> mock_model_manager_;
   std::unique_ptr<ExecutionService> execution_service_;
 };
 

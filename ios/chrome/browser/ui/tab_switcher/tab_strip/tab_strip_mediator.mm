@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/tab_switcher/tab_strip/tab_strip_mediator.h"
 
 #import "components/favicon/ios/web_favicon_driver.h"
+#import "ios/chrome/browser/policy/policy_util.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/shared/model/url/chrome_url_constants.h"
 #import "ios/chrome/browser/shared/model/url/url_util.h"
@@ -19,10 +20,6 @@
 #import "ios/web/public/web_state.h"
 #import "ios/web/public/web_state_observer_bridge.h"
 #import "ui/gfx/image/image.h"
-
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
 
 namespace {
 
@@ -118,10 +115,7 @@ NSString* GetActiveTabId(WebStateList* web_state_list) {
 
   switch (change.type()) {
     case WebStateListChange::Type::kStatusOnly:
-      // TODO(crbug.com/1442546): Move the implementation from
-      // webStateList:didChangeActiveWebState:oldWebState:atIndex:reason to
-      // here. Note that here is reachable only when `reason` ==
-      // ActiveWebStateChangeReason::Activated.
+      // The activation is handled after this switch statement.
       break;
     case WebStateListChange::Type::kDetach:
     case WebStateListChange::Type::kInsert:
@@ -134,24 +128,18 @@ NSString* GetActiveTabId(WebStateList* web_state_list) {
       // Do nothing when a WebState is replaced.
       break;
   }
-}
 
-- (void)webStateList:(WebStateList*)webStateList
-    didChangeActiveWebState:(web::WebState*)newWebState
-                oldWebState:(web::WebState*)oldWebState
-                    atIndex:(int)atIndex
-                     reason:(ActiveWebStateChangeReason)reason {
-  DCHECK_EQ(_webStateList, webStateList);
-  if (webStateList->IsBatchInProgress())
-    return;
-  // If the selected index changes as a result of the last webstate being
-  // detached, atIndex will be -1.
-  if (atIndex == -1) {
-    [self.consumer selectItemWithID:nil];
-    return;
+  if (status.active_web_state_change()) {
+    // If the selected index changes as a result of the last webstate being
+    // detached, the active index will be -1.
+    if (webStateList->active_index() == WebStateList::kInvalidIndex) {
+      [self.consumer selectItemWithID:nil];
+      return;
+    }
+
+    [self.consumer
+        selectItemWithID:status.new_active_web_state->GetStableIdentifier()];
   }
-
-  [self.consumer selectItemWithID:newWebState->GetStableIdentifier()];
 }
 
 - (void)webStateListWillBeginBatchOperation:(WebStateList*)webStateList {
@@ -173,8 +161,13 @@ NSString* GetActiveTabId(WebStateList* web_state_list) {
   if (!self.webStateList)
     return;
 
-  web::WebState::CreateParams params(
-      self.webStateList->GetActiveWebState()->GetBrowserState());
+  if (self.browserState) {
+    // Make sure that adding a new item is allowed by policy.
+    CHECK(IsAddNewTabAllowedByPolicy(self.browserState->GetPrefs(),
+                                     self.browserState->IsOffTheRecord()));
+  }
+
+  web::WebState::CreateParams params(self.browserState);
   std::unique_ptr<web::WebState> webState = web::WebState::Create(params);
 
   GURL url(kChromeUINewTabURL);

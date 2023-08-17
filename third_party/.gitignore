@@ -19,7 +19,8 @@
 /android_sdk/sources/
 /android_support_test_runner/lib/
 /android_system_sdk/*.jar
-/android_toolchain/
+/android_toolchain/ndk/
+/android_toolchain_canary/ndk/
 /android_tools_internal/
 /android_webview_glue/src
 /androidx/BUILD.gn
@@ -72,6 +73,7 @@
 /chromeos_text_input
 /chromevox/third_party/sre/src
 /chromite
+/chromium-variations
 /crossbench
 /clang-format/script
 /cld_2/src
@@ -158,6 +160,9 @@
 /kotlinc/current
 /leveldatabase/src
 /leveldb
+/libc++/src
+/libc++abi/src
+/libunwind/src
 /libFuzzer/src
 /libaddressinput/src
 /libaom/source/libaom
@@ -193,7 +198,7 @@
 /llvm-build
 /llvm-build-tools
 /lss
-/mainline_clang/linux-amd64
+/cronet_android_mainline_clang/linux-amd64
 /material_color_utilities/src
 /material_design_icons/src
 /mesa/src
@@ -278,6 +283,8 @@
 /syzygy
 /syzygy/binaries
 /text-fragments-polyfill/src
+/tfhub_models/*.tar.gz
+/tfhub_models/models/
 /tflite/src
 /tint/src
 /tsan/

@@ -17,8 +17,9 @@ namespace external_intents {
 namespace {
 
 // Array of features exposed through the Java ExternalIntentsFeatures API.
-const base::Feature* kFeaturesExposedToJava[] = {&kExternalNavigationDebugLogs,
-                                                 &kTrustedClientGestureBypass};
+const base::Feature* kFeaturesExposedToJava[] = {
+    &kExternalNavigationDebugLogs, &kBlockFrameRenavigations,
+    &kBlockIntentsToSelf, &kTrustedClientGestureBypass};
 
 }  // namespace
 
@@ -27,6 +28,14 @@ const base::Feature* kFeaturesExposedToJava[] = {&kExternalNavigationDebugLogs,
 BASE_FEATURE(kExternalNavigationDebugLogs,
              "ExternalNavigationDebugLogs",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kBlockFrameRenavigations,
+             "BlockFrameRenavigations3",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kBlockIntentsToSelf,
+             "BlockIntentsToSelf",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kTrustedClientGestureBypass,
              "TrustedClientGestureBypass",

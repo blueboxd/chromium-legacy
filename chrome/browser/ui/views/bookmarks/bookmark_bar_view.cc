@@ -566,17 +566,13 @@ class BookmarkFolderButton : public BookmarkMenuButtonBase {
     SetTriggerableEventFlags(ui::EF_LEFT_MOUSE_BUTTON |
                              ui::EF_MIDDLE_MOUSE_BUTTON);
 
-    // If the folder is unnamed, set the name to a default string for unnamed
-    // folders; otherwise set the name to the user-supplied folder name.
-    SetAccessibleName(GetText().empty() ? l10n_util::GetStringUTF16(
-                                              IDS_UNNAMED_BOOKMARK_FOLDER)
-                                        : GetText());
+    SetAccessibleName(GetAccessibleText());
   }
   BookmarkFolderButton(const BookmarkFolderButton&) = delete;
   BookmarkFolderButton& operator=(const BookmarkFolderButton&) = delete;
 
   std::u16string GetTooltipText(const gfx::Point& p) const override {
-    return GetAccessibleName();
+    return GetAccessibleText();
   }
 
   bool OnMousePressed(const ui::MouseEvent& event) override {
@@ -590,9 +586,17 @@ class BookmarkFolderButton : public BookmarkMenuButtonBase {
     return BookmarkMenuButtonBase::OnMousePressed(event);
   }
 
+  const std::u16string GetAccessibleText() const {
+    // If the folder is unnamed, set the name to a default string for unnamed
+    // folders; otherwise set the name to the user-supplied folder name.
+    return GetText().empty()
+               ? l10n_util::GetStringUTF16(IDS_UNNAMED_BOOKMARK_FOLDER)
+               : GetText();
+  }
+
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
     BookmarkMenuButtonBase::GetAccessibleNodeData(node_data);
-    node_data->SetNameChecked(GetAccessibleName());
+    node_data->SetNameChecked(GetAccessibleText());
     node_data->AddStringAttribute(
         ax::mojom::StringAttribute::kRoleDescription,
         l10n_util::GetStringUTF8(
@@ -671,7 +675,7 @@ class BookmarkBarView::ButtonSeparatorView : public views::Separator {
  public:
   METADATA_HEADER(ButtonSeparatorView);
   ButtonSeparatorView() {
-    const int leading_padding = features::IsChromeRefresh2023() ? 16 : 4;
+    const int leading_padding = features::IsChromeRefresh2023() ? 8 : 4;
     const int trailing_padding = features::IsChromeRefresh2023() ? 8 : 3;
     // TODO(1465541): Rely on kThickness once value is updated for refresh.
     separator_thickness_ = features::IsChromeRefresh2023()
@@ -805,6 +809,19 @@ void BookmarkBarView::SetBookmarkBarState(
     if (!animations_enabled)
       AnimationEnded(&size_animation_);
   }
+
+#if BUILDFLAG(IS_MAC)
+  // Ensure screen readers can't traverse bookmark bar children while
+  // hidden.
+  if (state == BookmarkBar::SHOW) {
+    GetViewAccessibility().OverrideIsLeaf(false);
+    NotifyAccessibilityEvent(ax::mojom::Event::kTreeChanged, true);
+  } else {
+    GetViewAccessibility().OverrideIsLeaf(true);
+    NotifyAccessibilityEvent(ax::mojom::Event::kTreeChanged, true);
+  }
+#endif
+
   bookmark_bar_state_ = state;
 }
 
@@ -1063,7 +1080,6 @@ void BookmarkBarView::Layout() {
     // Calculate the maximum size needed for the tab group buttons.
     saved_tab_group_bar_width =
         saved_tab_group_bar_->CalculatePreferredWidthRestrictedBy(max_x - x);
-
     saved_tab_group_bar_->SetBounds(x, y, saved_tab_group_bar_width,
                                     button_height);
 
@@ -1072,9 +1088,6 @@ void BookmarkBarView::Layout() {
     // Add the separator width even if its not shown for correct positioning of
     // the bookmark buttons.
     if (saved_tab_group_bar_width > 0) {
-      // Add extra button padding for centering
-      x += bookmark_bar_button_padding;
-
       // Update the bounds for the separator.
       gfx::Size saved_tab_groups_separator_view_pref =
           saved_tab_groups_separator_view_->GetPreferredSize();

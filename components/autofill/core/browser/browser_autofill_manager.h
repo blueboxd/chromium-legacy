@@ -33,6 +33,7 @@
 #include "components/autofill/core/browser/form_autofill_history.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/form_types.h"
+#include "components/autofill/core/browser/metrics/fallback_autocomplete_unrecognized_metrics.h"
 #include "components/autofill/core/browser/metrics/form_events/address_form_event_logger.h"
 #include "components/autofill/core/browser/metrics/form_events/credit_card_form_event_logger.h"
 #include "components/autofill/core/browser/metrics/log_event.h"
@@ -150,11 +151,12 @@ class BrowserAutofillManager : public AutofillManager,
 
   // Called from our external delegate so they cannot be private.
   // TODO(crbug.com/1330108): Clean up the API.
-  virtual void FillOrPreviewForm(mojom::RendererFormDataAction action,
-                                 const FormData& form,
-                                 const FormFieldData& field,
-                                 Suggestion::BackendId backend_id,
-                                 const AutofillTriggerSource trigger_source);
+  virtual void FillOrPreviewForm(
+      mojom::AutofillActionPersistence action_persistence,
+      const FormData& form,
+      const FormFieldData& field,
+      Suggestion::BackendId backend_id,
+      const AutofillTriggerSource trigger_source);
   void FillCreditCardFormImpl(const FormData& form,
                               const FormFieldData& field,
                               const CreditCard& credit_card,
@@ -163,7 +165,7 @@ class BrowserAutofillManager : public AutofillManager,
   // Reverts the last autofill operation on `form` that affected
   // `trigger_field`, virtual for testing. `renderer_action` denotes whether
   // this is an actual filling or a preview operation on the renderer side.
-  virtual void UndoAutofill(mojom::RendererFormDataAction renderer_action,
+  virtual void UndoAutofill(mojom::AutofillActionPersistence action_persistence,
                             FormData form,
                             const FormFieldData& trigger_field);
   // Virtual for testing
@@ -176,7 +178,7 @@ class BrowserAutofillManager : public AutofillManager,
   // Asks for authentication via CVC before filling with server card data.
   // TODO(crbug.com/1330108): Clean up the API.
   virtual void FillOrPreviewCreditCardForm(
-      mojom::RendererFormDataAction action,
+      mojom::AutofillActionPersistence action_persistence,
       const FormData& form,
       const FormFieldData& field,
       const CreditCard* credit_card,
@@ -192,7 +194,7 @@ class BrowserAutofillManager : public AutofillManager,
   // |guid| and fills the information into the form.
   // TODO(crbug.com/1330108): Clean up the API.
   virtual void FillOrPreviewVirtualCardInformation(
-      mojom::RendererFormDataAction action,
+      mojom::AutofillActionPersistence action_persistence,
       const std::string& guid,
       const FormData& form,
       const FormFieldData& field,
@@ -255,9 +257,6 @@ class BrowserAutofillManager : public AutofillManager,
   // Invoked when the "suggestions" popup is hidden.
   void DidHidePopup();
 
-  // Handle the parsed forms for the given web frame.
-  void HandleParsedForms(const std::vector<autofill::FormStructure*>& forms);
-
   // AutofillManager:
   base::WeakPtr<AutofillManager> GetWeakPtr() override;
   CreditCardAccessManager* GetCreditCardAccessManager() override;
@@ -271,23 +270,27 @@ class BrowserAutofillManager : public AutofillManager,
   void OnDidPreviewAutofillFormDataImpl() override;
   void OnDidEndTextFieldEditingImpl() override;
   void OnHidePopupImpl() override;
-  void OnSelectOrSelectMenuFieldOptionsDidChangeImpl(
+  void OnSelectOrSelectListFieldOptionsDidChangeImpl(
       const FormData& form) override;
   void OnJavaScriptChangedAutofilledValueImpl(
       const FormData& form,
       const FormFieldData& field,
       const std::u16string& old_value) override;
-  void PropagateAutofillPredictions(
+  void PropagateAutofillPredictionsDeprecated(
       const std::vector<FormStructure*>& forms) override;
   void Reset() override;
   void OnContextMenuShownInField(const FormGlobalId& form_global_id,
                                  const FieldGlobalId& field_global_id) override;
-
   // SingleFieldFormFiller::SuggestionsHandler:
   void OnSuggestionsReturned(
       FieldGlobalId field_id,
       AutofillSuggestionTriggerSource trigger_source,
       const std::vector<Suggestion>& suggestions) override;
+
+  // Retrieves the four digit combinations from the DOM of the current web page
+  // and stores them in `four_digit_combinations_in_dom_`. This is used to check
+  // for the virtual card last four when checking for standalone CVC field.
+  void FetchPotentialCardLastFourDigitsCombinationFromDOM();
 
   // Returns true if either Profile or CreditCard Autofill is enabled.
   virtual bool IsAutofillEnabled() const;
@@ -364,6 +367,11 @@ class BrowserAutofillManager : public AutofillManager,
   // autofilled. Returns NULL if the field cannot be autofilled.
   [[nodiscard]] AutofillField* GetAutofillField(const FormData& form,
                                                 const FormFieldData& field);
+
+  autofill_metrics::AutocompleteUnrecognizedFallbackEventLogger&
+  GetAutocompleteUnrecognizedFallbackEventLogger() {
+    return *autocomplete_unrecognized_fallback_logger_;
+  }
 
  protected:
   // Stores a `callback` for `form_signature`, possibly overriding an older
@@ -505,16 +513,17 @@ class BrowserAutofillManager : public AutofillManager,
   // Fills or previews the profile form.
   // Assumes the form and field are valid.
   // TODO(crbug.com/1330108): Clean up the API.
-  void FillOrPreviewProfileForm(mojom::RendererFormDataAction action,
-                                const FormData& form,
-                                const FormFieldData& field,
-                                const AutofillProfile& profile,
-                                const AutofillTriggerSource trigger_source);
+  void FillOrPreviewProfileForm(
+      mojom::AutofillActionPersistence action_persistence,
+      const FormData& form,
+      const FormFieldData& field,
+      const AutofillProfile& profile,
+      const AutofillTriggerSource trigger_source);
 
   // Fills or previews |data_model| in the |form|.
   // TODO(crbug.com/1330108): Clean up the API.
   void FillOrPreviewDataModelForm(
-      mojom::RendererFormDataAction action,
+      mojom::AutofillActionPersistence action_persistence,
       const FormData& form,
       const FormFieldData& field,
       absl::variant<const AutofillProfile*, const CreditCard*>
@@ -532,7 +541,7 @@ class BrowserAutofillManager : public AutofillManager,
   // the field as a substring, Autofill would override the filled value in that
   // case.
   [[nodiscard]] bool ShouldPreventAutofillFromOverridingPrefilledField(
-      mojom::RendererFormDataAction action,
+      mojom::AutofillActionPersistence action_persistence,
       AutofillField* cached_field,
       FormFieldData* field_data,
       bool is_initiating_field,
@@ -569,6 +578,13 @@ class BrowserAutofillManager : public AutofillManager,
       const FormFieldData& field,
       const AutofillType& type,
       bool& should_display_gpay_logo) const;
+
+  // Returns a mapping of credit card guid values to virtual card last fours for
+  // standalone CVC field. Cards will only be added to the returned map if they
+  // have usage data on the webpage and the VCN last four was found on webpage
+  // DOM.
+  base::flat_map<std::string, VirtualCardUsageData::VirtualCardLastFour>
+  GetVirtualCreditCardsForStandaloneCvcField(const url::Origin& origin) const;
 
   // If |initial_interaction_timestamp_| is unset or is set to a later time than
   // |interaction_timestamp|, updates the cached timestamp.  The latter check is
@@ -622,7 +638,7 @@ class BrowserAutofillManager : public AutofillManager,
       bool should_notify,
       const std::u16string& cvc,
       uint32_t profile_form_bitmask,
-      mojom::RendererFormDataAction action,
+      mojom::AutofillActionPersistence action_persistence,
       std::string* failure_to_fill);
 
   void SetFillingContext(const FormStructure& form,
@@ -713,6 +729,10 @@ class BrowserAutofillManager : public AutofillManager,
   // focusable input field with a type from heuristics or the server.
   bool ShouldUploadUkm(const FormStructure& form_structure);
 
+  // Returns a plus address suggestion, if eligible, using `client()`'s
+  // `GetPlusAddressService`.
+  absl::optional<Suggestion> MaybeGetPlusAddressSuggestion();
+
   // Delegates to perform external processing (display, selection) on
   // our behalf.
   std::unique_ptr<AutofillExternalDelegate> external_delegate_;
@@ -734,11 +754,22 @@ class BrowserAutofillManager : public AutofillManager,
   // Autocomplete and merchant promo codes.
   std::unique_ptr<SingleFieldFormFillRouter> single_field_form_fill_router_;
 
-  // Utilities for logging form events.
+  // Utilities for logging form events. The loggers emit metrics during their
+  // destruction, effectively when the BrowserAutofillManager is reset or
+  // destroyed.
+  // The address and credit card event loggers are used to emit key and funnel
+  // metrics.
   std::unique_ptr<autofill_metrics::AddressFormEventLogger>
       address_form_event_logger_;
   std::unique_ptr<autofill_metrics::CreditCardFormEventLogger>
       credit_card_form_event_logger_;
+  // The autocomplete unrecognized fallback logger is used to collect metrics
+  // around the manual fallback for autocomplete=unrecognized fields.
+  // Since no metrics for autocomplete=unrecognized fields are emitted through
+  // the `address_form_event_logger_`, a separate logger specifically for
+  // autocomplete=unrecognized fields is used.
+  std::unique_ptr<autofill_metrics::AutocompleteUnrecognizedFallbackEventLogger>
+      autocomplete_unrecognized_fallback_logger_;
 
   // Have we logged whether Autofill is enabled for this page load?
   bool has_logged_autofill_enabled_ = false;
@@ -779,7 +810,6 @@ class BrowserAutofillManager : public AutofillManager,
 
   // Collected information about the autofill form where a credit card will be
   // filled.
-  mojom::RendererFormDataAction credit_card_action_;
   FormData credit_card_form_;
   FormFieldData credit_card_field_;
   CreditCard credit_card_;
@@ -836,6 +866,12 @@ class BrowserAutofillManager : public AutofillManager,
 
   // The source that triggered unlocking a server card with the CVC.
   absl::optional<AutofillTriggerSource> fetched_credit_card_trigger_source_;
+
+  // Contains a list of four digit combinations that were found in the webpage
+  // DOM. Populated after a standalone cvc field is processed on a form. Used to
+  // confirm that the virtual card last four is present in the webpage for card
+  // on file case.
+  std::vector<std::string> four_digit_combinations_in_dom_;
 
   base::WeakPtrFactory<BrowserAutofillManager> weak_ptr_factory_{this};
 };

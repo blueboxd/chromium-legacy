@@ -50,6 +50,8 @@ base::OnceCallback<Result(Result)> ReportMetricsForResultCallback(
 
 PasswordStoreBuiltInBackend::PasswordStoreBuiltInBackend(
     std::unique_ptr<LoginDatabase> login_db,
+    syncer::WipeModelUponSyncDisabledBehavior
+        wipe_model_upon_sync_disabled_behavior,
     std::unique_ptr<UnsyncedCredentialsDeletionNotifier> notifier) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   background_task_runner_ = base::ThreadPool::CreateSequencedTaskRunner(
@@ -57,7 +59,8 @@ PasswordStoreBuiltInBackend::PasswordStoreBuiltInBackend(
   DCHECK(background_task_runner_);
   helper_ = std::make_unique<LoginDatabaseAsyncHelper>(
       std::move(login_db), std::move(notifier),
-      base::SequencedTaskRunner::GetCurrentDefault());
+      base::SequencedTaskRunner::GetCurrentDefault(),
+      wipe_model_upon_sync_disabled_behavior);
 }
 
 PasswordStoreBuiltInBackend::~PasswordStoreBuiltInBackend() {
@@ -258,10 +261,6 @@ SmartBubbleStatsStore* PasswordStoreBuiltInBackend::GetSmartBubbleStatsStore() {
   return this;
 }
 
-FieldInfoStore* PasswordStoreBuiltInBackend::GetFieldInfoStore() {
-  return this;
-}
-
 std::unique_ptr<syncer::ProxyModelTypeControllerDelegate>
 PasswordStoreBuiltInBackend::CreateSyncControllerDelegate() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -328,39 +327,6 @@ void PasswordStoreBuiltInBackend::RemoveStatisticsByOriginAndTime(
       base::BindOnce(&LoginDatabaseAsyncHelper::RemoveStatisticsByOriginAndTime,
                      base::Unretained(helper_.get()), origin_filter,
                      delete_begin, delete_end),
-      std::move(completion));
-}
-
-void PasswordStoreBuiltInBackend::AddFieldInfo(const FieldInfo& field_info) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(helper_);
-  background_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&LoginDatabaseAsyncHelper::AddFieldInfo,
-                                base::Unretained(helper_.get()), field_info));
-}
-
-void PasswordStoreBuiltInBackend::GetAllFieldInfo(
-    base::WeakPtr<PasswordStoreConsumer> consumer) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(helper_);
-  consumer->cancelable_task_tracker()->PostTaskAndReplyWithResult(
-      background_task_runner_.get(), FROM_HERE,
-      base::BindOnce(
-          &LoginDatabaseAsyncHelper::GetAllFieldInfo,
-          base::Unretained(helper_.get())),  // Safe until `Shutdown()`.
-      base::BindOnce(&PasswordStoreConsumer::OnGetAllFieldInfo, consumer));
-}
-
-void PasswordStoreBuiltInBackend::RemoveFieldInfoByTime(
-    base::Time remove_begin,
-    base::Time remove_end,
-    base::OnceClosure completion) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(helper_);
-  background_task_runner_->PostTaskAndReply(
-      FROM_HERE,
-      base::BindOnce(&LoginDatabaseAsyncHelper::RemoveFieldInfoByTime,
-                     base::Unretained(helper_.get()), remove_begin, remove_end),
       std::move(completion));
 }
 

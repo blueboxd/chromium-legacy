@@ -9,6 +9,7 @@
 #include <cmath>
 #include <memory>
 #include <string>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -107,6 +108,7 @@
 #include "content/browser/webui/web_ui_impl.h"
 #include "content/browser/xr/service/xr_runtime_manager_impl.h"
 #include "content/common/content_switches_internal.h"
+#include "content/common/features.h"
 #include "content/public/browser/ax_inspect_factory.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_plugin_guest_manager.h"
@@ -735,7 +737,7 @@ class WebContentsImpl::WebContentsDestructionObserver
   raw_ptr<WebContentsImpl> owner_;
 };
 
-#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_MAC)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_APPLE)
 // TODO(sreejakshetty): Make |WebContentsImpl::ColorChooserHolder| per-frame
 // instead of WebContents-owned.
 // WebContentsImpl::ColorChooserHolder -----------------------------------------
@@ -784,7 +786,7 @@ class WebContentsImpl::ColorChooserHolder : public blink::mojom::ColorChooser {
   // mojo renderer client.
   mojo::Remote<blink::mojom::ColorChooserClient> client_;
 };
-#endif  // BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_MAC)
+#endif  // BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_APPLE)
 
 // WebContentsImpl::WebContentsTreeNode ----------------------------------------
 WebContentsImpl::WebContentsTreeNode::WebContentsTreeNode(
@@ -1073,6 +1075,7 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
   preferred_color_scheme_ = native_theme->GetPreferredColorScheme();
   preferred_contrast_ = native_theme->GetPreferredContrast();
   prefers_reduced_transparency_ = native_theme->GetPrefersReducedTransparency();
+  inverted_colors_ = native_theme->GetInvertedColors();
 
   screen_change_monitor_ =
       std::make_unique<ScreenChangeMonitor>(base::BindRepeating(
@@ -1152,9 +1155,9 @@ WebContentsImpl::~WebContentsImpl() {
     dialog_manager_->CancelDialogs(this, /*reset_state=*/true);
   }
 
-#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_MAC)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_APPLE)
   color_chooser_holder_.reset();
-#endif  // BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_MAC)
+#endif
   find_request_manager_.reset();
 
   // Shutdown the primary FrameTree.
@@ -2925,6 +2928,7 @@ const blink::web_pref::WebPreferences WebContentsImpl::ComputeWebPreferences() {
 
   prefs.prefers_reduced_motion = gfx::Animation::PrefersReducedMotion();
   prefs.prefers_reduced_transparency = prefers_reduced_transparency_;
+  prefs.inverted_colors = inverted_colors_;
 
   if (ChildProcessSecurityPolicyImpl::GetInstance()->HasWebUIBindings(
           GetRenderViewHost()->GetProcess()->GetID())) {
@@ -2934,14 +2938,21 @@ const blink::web_pref::WebPreferences WebContentsImpl::ComputeWebPreferences() {
 
   prefs.viewport_enabled = command_line.HasSwitch(switches::kEnableViewport);
 
-  prefs.threaded_scrolling_enabled =
-      !command_line.HasSwitch(blink::switches::kDisableThreadedScrolling);
-
 #if BUILDFLAG(IS_ANDROID)
+  constexpr int kTabletWidthThreshold = 600;
+  // TODO(crbug.com/1469720): GetPrimaryDisplay() won't be correct for
+  // externally connected displays. Get the display where Chrome is opened
+  // instead.
+  display::Display display = display::Screen::GetScreen()->GetPrimaryDisplay();
+  gfx::Size size = display.GetSizeInPixel();
+  int min_width = size.width() < size.height() ? size.width() : size.height();
+  int min_width_in_dp =
+      static_cast<int>(min_width / display.device_scale_factor());
   if (prefs.viewport_enabled &&
       base::FeatureList::IsEnabled(
           blink::features::kDefaultViewportIsDeviceWidth) &&
-      ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET) {
+      min_width_in_dp >= kTabletWidthThreshold &&
+      ui::GetDeviceFormFactor() != ui::DEVICE_FORM_FACTOR_TV) {
     prefs.viewport_style = blink::mojom::ViewportStyle::kDefault;
   }
 #endif
@@ -3003,11 +3014,7 @@ const blink::web_pref::WebPreferences WebContentsImpl::ComputeWebPreferences() {
     prefs.media_controls_enabled = false;
 
 #if BUILDFLAG(IS_ANDROID)
-  display::Display display = display::Screen::GetScreen()->GetPrimaryDisplay();
-  gfx::Size size = display.GetSizeInPixel();
-  int min_width = size.width() < size.height() ? size.width() : size.height();
-  prefs.device_scale_adjustment = GetDeviceScaleAdjustment(
-      static_cast<int>(min_width / display.device_scale_factor()));
+  prefs.device_scale_adjustment = GetDeviceScaleAdjustment(min_width_in_dp);
 
   if (base::FeatureList::IsEnabled(features::kForceOffTextAutosizing)) {
     prefs.text_autosizing_enabled = false;
@@ -4183,10 +4190,14 @@ FrameTree* WebContentsImpl::CreateNewWindow(
                "opener", opener, "params", params);
   DCHECK(opener);
 
-  // Give the content browser client a chance to intercept the request and open
-  // the URL with an external handler.
-  if (GetContentClient()->browser()->OpenExternally(params.target_url,
-                                                    params.disposition)) {
+  if (base::FeatureList::IsEnabled(kWindowOpenFileSelectFix) &&
+      active_file_chooser_) {
+    // Do not allow opening a new window or tab while a file select is active
+    // file chooser to avoid user confusion over which tab triggered the file
+    // chooser.
+    opener->AddMessageToConsole(
+        blink::mojom::ConsoleMessageLevel::kWarning,
+        "window.open blocked due to active file chooser.");
     return nullptr;
   }
 
@@ -5701,7 +5712,7 @@ WebContents* WebContentsImpl::GetFirstWebContentsInLiveOriginalOpenerChain() {
                     : nullptr;
 }
 
-#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_MAC)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_APPLE)
 void WebContentsImpl::DidChooseColorInColorChooser(SkColor color) {
   OPTIONAL_TRACE_EVENT1("content",
                         "WebContentsImpl::DidChooseColorInColorChooser",
@@ -5714,7 +5725,7 @@ void WebContentsImpl::DidEndColorChooser() {
   OPTIONAL_TRACE_EVENT0("content", "WebContentsImpl::DidEndColorChooser");
   color_chooser_holder_.reset();
 }
-#endif  // BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_MAC)
+#endif
 
 int WebContentsImpl::DownloadImage(
     const GURL& url,
@@ -6642,21 +6653,39 @@ void WebContentsImpl::OnPageScaleFactorChanged(PageImpl& source) {
 }
 
 void WebContentsImpl::EnumerateDirectory(
+    base::WeakPtr<FileChooserImpl> file_chooser,
     RenderFrameHost* render_frame_host,
     scoped_refptr<FileChooserImpl::FileSelectListenerImpl> listener,
     const base::FilePath& directory_path) {
   OPTIONAL_TRACE_EVENT2("content", "WebContentsImpl::EnumerateDirectory",
                         "render_frame_host", render_frame_host,
                         "directory_path", directory_path);
+  base::ScopedClosureRunner cancel_chooser(base::BindOnce(
+      &FileChooserImpl::FileSelectListenerImpl::FileSelectionCanceled,
+      listener));
+  if (base::FeatureList::IsEnabled(kWindowOpenFileSelectFix)) {
+    if (visibility_ == Visibility::HIDDEN) {
+      // Do not allow background tab to open file chooser.
+      return;
+    }
+    if (active_file_chooser_) {
+      // Only allow one active file chooser at one time.
+      return;
+    }
+  }
+
   // Any explicit focusing of another window while this WebContents is in
   // fullscreen can be used to confuse the user, so drop fullscreen.
   base::ScopedClosureRunner fullscreen_block = ForSecurityDropFullscreen();
   listener->SetFullscreenBlock(std::move(fullscreen_block));
 
-  if (delegate_)
+  if (delegate_) {
+    if (base::FeatureList::IsEnabled(kWindowOpenFileSelectFix)) {
+      active_file_chooser_ = std::move(file_chooser);
+    }
     delegate_->EnumerateDirectory(this, std::move(listener), directory_path);
-  else
-    listener->FileSelectionCanceled();
+    std::ignore = cancel_chooser.Release();
+  }
 }
 
 void WebContentsImpl::RegisterProtocolHandler(RenderFrameHostImpl* source,
@@ -6773,7 +6802,7 @@ void WebContentsImpl::OnColorChooserFactoryReceiver(
   color_chooser_factory_receivers_.Add(this, std::move(receiver));
 }
 
-#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_MAC)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_APPLE)
 void WebContentsImpl::OpenColorChooser(
     mojo::PendingReceiver<blink::mojom::ColorChooser> chooser_receiver,
     mojo::PendingRemote<blink::mojom::ColorChooserClient> client,
@@ -6800,7 +6829,7 @@ void WebContentsImpl::OpenColorChooser(
     color_chooser_holder_.reset();
   }
 }
-#endif  // BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_MAC)
+#endif  // BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_APPLE)
 
 #if BUILDFLAG(ENABLE_PPAPI)
 void WebContentsImpl::OnPepperInstanceCreated(RenderFrameHostImpl* source,
@@ -7404,20 +7433,39 @@ void WebContentsImpl::RunBeforeUnloadConfirm(
 }
 
 void WebContentsImpl::RunFileChooser(
+    base::WeakPtr<FileChooserImpl> file_chooser,
     RenderFrameHost* render_frame_host,
     scoped_refptr<FileChooserImpl::FileSelectListenerImpl> listener,
     const blink::mojom::FileChooserParams& params) {
   OPTIONAL_TRACE_EVENT1("content", "WebContentsImpl::RunFileChooser",
                         "render_frame_host", render_frame_host);
+
+  base::ScopedClosureRunner cancel_chooser(base::BindOnce(
+      &FileChooserImpl::FileSelectListenerImpl::FileSelectionCanceled,
+      listener));
+  if (base::FeatureList::IsEnabled(kWindowOpenFileSelectFix)) {
+    if (visibility_ == Visibility::HIDDEN) {
+      // Do not allow background tab to open file chooser.
+      return;
+    }
+    if (active_file_chooser_) {
+      // Only allow one active file chooser at one time.
+      return;
+    }
+  }
+
   // Any explicit focusing of another window while this WebContents is in
   // fullscreen can be used to confuse the user, so drop fullscreen.
   base::ScopedClosureRunner fullscreen_block = ForSecurityDropFullscreen();
   listener->SetFullscreenBlock(std::move(fullscreen_block));
 
-  if (delegate_)
+  if (delegate_) {
+    if (base::FeatureList::IsEnabled(kWindowOpenFileSelectFix)) {
+      active_file_chooser_ = std::move(file_chooser);
+    }
     delegate_->RunFileChooser(render_frame_host, std::move(listener), params);
-  else
-    listener->FileSelectionCanceled();
+    std::ignore = cancel_chooser.Release();
+  }
 }
 
 double WebContentsImpl::GetPendingPageZoomLevel() {
@@ -9569,6 +9617,7 @@ void WebContentsImpl::OnNativeThemeUpdated(ui::NativeTheme* observed_theme) {
       observed_theme->GetPreferredContrast();
   bool prefers_reduced_transparency =
       observed_theme->GetPrefersReducedTransparency();
+  bool inverted_colors = observed_theme->GetInvertedColors();
   bool preferences_changed = false;
 
   if (using_dark_colors_ != using_dark_colors) {
@@ -9587,6 +9636,10 @@ void WebContentsImpl::OnNativeThemeUpdated(ui::NativeTheme* observed_theme) {
     prefers_reduced_transparency_ = prefers_reduced_transparency;
     preferences_changed = true;
   }
+  if (inverted_colors_ != inverted_colors) {
+    inverted_colors_ = inverted_colors;
+    preferences_changed = true;
+  }
 
   if (preferences_changed)
     NotifyPreferencesChanged();
@@ -9597,12 +9650,6 @@ void WebContentsImpl::OnCaptionStyleUpdated() {
 }
 
 void WebContentsImpl::OnColorProviderChanged() {
-  // TODO(tluk): Currently changes to theme related web prefs are being
-  // propagated in OnNativeThemeUpdated(). This logic should be moved here since
-  // there are instances where the system theme may not change but clients
-  // manually change the ColorProviderSource currently being observed by this
-  // WebContents.
-
   // OnColorProviderChanged() might have been triggered as the result of the
   // observed source being reset. If this is the case fallback to the default
   // source.
@@ -9611,6 +9658,20 @@ void WebContentsImpl::OnColorProviderChanged() {
     return;
   }
   observers_.NotifyObservers(&WebContentsObserver::OnColorProviderChanged);
+
+  // Web preferences may change in response to events such as
+  // OnNativeThemeUpdated(). However web preferences may also depend on
+  // ColorProvider state and the associated ColorProvider may change
+  // independently of the native theme. Ensure we propagate web preferences here
+  // to cover this case.
+  // OnColorProviderChanged() can be emitted during the WebContentsImpl's
+  // constructor in response to setting the ColorProviderSource. In this case
+  // Init() will not yet have been called and the current frame host will not be
+  // defined, so we must guard against this here.
+  // TODO(tluk): There may be a more appropriate way to identify this condition.
+  if (GetRenderManager()->current_frame_host()) {
+    NotifyPreferencesChanged();
+  }
 }
 
 const ui::ColorProvider& WebContentsImpl::GetColorProvider() const {
@@ -9829,7 +9890,8 @@ std::unique_ptr<PrerenderHandle> WebContentsImpl::StartPrerendering(
         url_match_predicate) {
   PrerenderAttributes attributes(
       prerendering_url, trigger_type, embedder_histogram_suffix,
-      content::Referrer(), /*initiator_origin=*/absl::nullopt,
+      content::Referrer(), /*eagerness=*/absl::nullopt,
+      /*initiator_origin=*/absl::nullopt,
       content::ChildProcessHost::kInvalidUniqueID, GetWeakPtr(),
       /*initiator_frame_token=*/absl::nullopt,
       /*initiator_frame_tree_node_id=*/RenderFrameHost::kNoFrameTreeNodeId,
@@ -9931,6 +9993,10 @@ std::pair<int, int> WebContentsImpl::GetAvailablePointerAndHoverTypes() {
   base::ScopedAllowBlocking scoped_allow_blocking;
 #endif
   return ui::GetAvailablePointerAndHoverTypes();
+}
+
+void WebContentsImpl::SetOverscrollNavigationEnabled(bool enabled) {
+  GetView()->SetOverscrollControllerEnabled(enabled);
 }
 
 }  // namespace content

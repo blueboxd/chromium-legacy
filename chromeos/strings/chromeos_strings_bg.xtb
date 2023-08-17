@@ -15,7 +15,6 @@
 <translation id="1075811647922107217">Размер на страницата</translation>
 <translation id="1082009148392559545">Скрийнсейвърът се изтегля</translation>
 <translation id="1094693127011229778">IP адресът не е налице</translation>
-<translation id="1113892970288677790">Изберете подбрани произведения на изкуството и изображения</translation>
 <translation id="1118572504348554005">Може да споделим отзивите, изпратени чрез този формуляр, с партньорите си с цел отстраняване на програмни грешки и други проблеми, за които ни сигнализирате. Не въвеждайте поверителна информация, като например пароли.</translation>
 <translation id="1119447706177454957">Вътрешна грешка</translation>
 <translation id="1124772482545689468">Потребител</translation>
@@ -183,6 +182,7 @@
 <translation id="225692081236532131">Състояние на активирането</translation>
 <translation id="2271469253353559191">График за тъмния режим</translation>
 <translation id="2276999893457278469">Най-популярно помощно съдържание</translation>
+<translation id="2279051792571591988">Възстановяване на стандартните</translation>
 <translation id="2287186687001756809">Няма налично изображение. За да добавите снимки, отворете <ph name="LINK" /></translation>
 <translation id="2307344026739914387">Използване на текущата двойка ключове</translation>
 <translation id="2320295602967756579">Активиране на светлата тема</translation>
@@ -224,6 +224,7 @@
 <translation id="2620436844016719705">Система</translation>
 <translation id="2638662041295312666">Изображение при вход</translation>
 <translation id="2640549051766135490">Избран албум <ph name="TITLE" />, <ph name="DESC" /></translation>
+<translation id="2652403576514495859">активиране или превключване на функцията за диктуване</translation>
 <translation id="267442004702508783">опресняване</translation>
 <translation id="268270014981824665">затъмняване на клавиатурата</translation>
 <translation id="2712812801627182647">Ключ за удостоверяване за TLS</translation>
@@ -331,7 +332,6 @@
 <translation id="361575905210396100">Благодарим ви за отзивите</translation>
 <translation id="3632579075709132555">Превключване на екрана за поверителност</translation>
 <translation id="3651050199673793219">Изберете единица за температура</translation>
-<translation id="3663574643422533538">Изберете специални произведения за <ph name="PRODUCT_NAME" /></translation>
 <translation id="3668449597372804501">Тапет с облаци</translation>
 <translation id="3689839747745352263">Тест: <ph name="TEST_NAME" /></translation>
 <translation id="370665806235115550">Зарежда се...</translation>
@@ -589,6 +589,7 @@
 <translation id="5620281292257375798">Само за вътрешно ползване</translation>
 <translation id="5649768706273821470">Слушане</translation>
 <translation id="5655283760733841251">Увеличаване на яркостта на клавиатурата</translation>
+<translation id="5655296450510165335">Регистриране на устройството</translation>
 <translation id="5655776422854483175">Няма задания за отпечатване</translation>
 <translation id="5659593005791499971">Имейл</translation>
 <translation id="5662240986744577912">превключване на екрана за поверителност</translation>
@@ -644,6 +645,7 @@
 <translation id="6061772781719867950">Неуспешни HTTP заявки</translation>
 <translation id="6073292342939316679">намаляване на яркостта на клавиатурата</translation>
 <translation id="6075872808778243331">(Android) Забавяне на HTTP</translation>
+<translation id="6078323886959318429">Добавяне на пряк път</translation>
 <translation id="6104112872696127344">Сканирането бе отменено</translation>
 <translation id="6106186594183574873">За да завършите процеса, въведете старата си парола</translation>
 <translation id="6108689792487843350">Шлюзът е недостъпен</translation>
@@ -799,10 +801,10 @@
 <translation id="7297226631177386107">През защитната стена не може да се установи връзка с уебсайтове, работещи с HTTPS</translation>
 <translation id="7297726121602187087">Тъмнозелено</translation>
 <translation id="7302860742311162920">ICCID</translation>
-<translation id="7305236594389852547">превключване на режима на диктуване</translation>
 <translation id="7305884605064981971">EDGE</translation>
 <translation id="7308203371573257315">Попитайте експертите в Помощния форум за Chromebook</translation>
 <translation id="7311368985037279727">цвят на клавиатурата</translation>
+<translation id="7317831949569936035">Регистриране в учебно заведение</translation>
 <translation id="7319430975418800333">A3</translation>
 <translation id="7343581795491695942"><ph name="QUERY_TEXT" />; <ph name="RESULT_TEXT" />; За да видите резултата в Google Търсене, натиснете клавиша „търсене“ + интервал.</translation>
 <translation id="7343649194310845056">Мрежови устройства</translation>
@@ -814,6 +816,7 @@
 <translation id="7397270852490618635">Изключване на светлата тема</translation>
 <translation id="741244894080940828">преобразуване</translation>
 <translation id="7415801143053185905">Много голямо забавяне на HTTP</translation>
+<translation id="7425178841057519191">{NUM_ROOL_APPS,plural,offset:2 =1{Администраторът ви е задал <ph name="APP_NAME_1" /> да се стартира автоматично всеки път, когато влезете в профила си.}=2{Администраторът ви е задал <ph name="APP_NAME_1" /> и <ph name="APP_NAME_2" /> да се стартират автоматично всеки път, когато влезете в профила си.}=3{Администраторът ви е задал <ph name="APP_NAME_1" />, <ph name="APP_NAME_2" /> и <ph name="APP_NAME_3" /> да се стартират автоматично всеки път, когато влезете в профила си.}other{Администраторът ви е задал <ph name="APP_NAME_1" />, <ph name="APP_NAME_2" /> и още # приложения да се стартират автоматично всеки път, когато влезете в профила си.}}</translation>
 <translation id="7427315641433634153">MSCHAP</translation>
 <translation id="7458970041932198923">Свържете се с мрежа и презаредете страницата, за да прегледате аватарите и да зададете такъв.</translation>
 <translation id="7469648432129124067">Открит е портал</translation>
@@ -1012,6 +1015,7 @@
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8987565828374052507">{NUMBER_OF_PAGES,plural, =0{Сканиране}=1{Сканиране на страница {NUMBER_OF_PAGES}}other{Сканиране на страница {NUMBER_OF_PAGES}}}</translation>
 <translation id="8997710128084572139">Нивото на батерията на устройството е <ph name="BATTERY_PERCENTAGE" />%.</translation>
+<translation id="8998156756248178381">{NUM_ROOL_APPS,plural, =1{Приложението <ph name="APP_NAME_1" /> бе стартирано автоматично}other{# приложения бяха стартирани автоматично}}</translation>
 <translation id="8998289560386111590">Не е налице на устройството ви</translation>
 <translation id="9003704114456258138">Честота</translation>
 <translation id="9024331582947483881">цял екран</translation>

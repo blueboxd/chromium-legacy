@@ -24,6 +24,11 @@ const char kDefaultSearchProviderGUID[] = "default_search_provider.guid";
 const char kSyncedDefaultSearchProviderGUID[] =
     "default_search_provider.synced_guid";
 
+// Windows epoch timestamp in seconds of when the user chose a search engine in
+// the choice screen.
+const char kDefaultSearchProviderChoiceScreenCompletionTimestamp[] =
+    "default_search_provider.choice_screen_completion_timestamp";
+
 // Whether a search context menu item is allowed.
 const char kDefaultSearchProviderContextMenuAccessAllowed[] =
     "default_search_provider.context_menu_access_allowed";

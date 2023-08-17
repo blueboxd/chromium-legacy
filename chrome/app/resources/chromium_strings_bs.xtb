@@ -74,7 +74,6 @@ Odobrenja koja ste već dali web lokacijama i aplikacijama se mogu primjenjivati
 <translation id="2592940277904433508">Nastavi koristiti Chromium</translation>
 <translation id="2648074677641340862">Tokom instaliranja se pojavila greška operativnog sistema. Ponovo preuzmite Chromium.</translation>
 <translation id="2661879430930417727">Ako dijelite uređaj, prijatelji i porodica mogu odvojeno pregledati i postavljati Chromium na način koji njima odgovara</translation>
-<translation id="2669853942967761236">Chromium je blokirao ovaj fajl arhive jer možda sadržava zlonamjerni softver</translation>
 <translation id="268602741124540128">Dobro došli u Chromium, <ph name="ACCOUNT_FIRST_NAME" /></translation>
 <translation id="2711502716910134313">Kartica Chromiuma</translation>
 <translation id="2718390899429598676">Chromium će šifrirati vaše podatke radi dodatne sigurnosti.</translation>
@@ -272,6 +271,7 @@ Odobrenja koja ste već dali web lokacijama i aplikacijama se mogu primjenjivati
 <translation id="6613594504749178791">Vaše promjene će stupiti na snagu kada sljedeći put budete ponovo pokrenuli Chromium.</translation>
 <translation id="665732753414869868">Chromiumu je potrebno odobrenje za kameru radi kreiranja 3D mape vašeg okruženja</translation>
 <translation id="6663852025006259149">Web lokacije će vjerovatno funkcionirati kako očekujete, ali vas neće zapamtiti nakon što zatvorite sve prozore Chromiuma</translation>
+<translation id="6669284030132180248">Ako sačuvate oznake i na svoj Google račun možete pratiti cijene proizvoda u Chromiumu i primati obavještenja kada cijena padne</translation>
 <translation id="6676384891291319759">Pristupite internetu</translation>
 <translation id="668175097507315160">ChromiumOS nije sinhronizirao vaše podatke zbog greške prilikom prijave.</translation>
 <translation id="6709350901466051922">Chromiumu je za ovu web lokaciju potrebno odobrenje za mikrofon</translation>
@@ -408,6 +408,5 @@ Chromium ne može vratiti vaše postavke.</translation>
 <translation id="942598560705308788">Certifikati kojima upravlja Chromium</translation>
 <translation id="965162752251293939">Ko koristi Chromium?</translation>
 <translation id="967427899662692980">Odaberite maksimalnu sigurnost koju nudi Chromium</translation>
-<translation id="9792300276217204">Uvijek obrišite podatke web lokacije s uređaja kada zatvorite Chromium</translation>
 <translation id="985602178874221306">Autori Chromiuma</translation>
 </translationbundle>

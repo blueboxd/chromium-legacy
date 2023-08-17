@@ -7,6 +7,7 @@
 
 #include <memory>
 #include "base/scoped_observation.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/location_bar/cookie_controls/cookie_controls_bubble_coordinator.h"
 #include "chrome/browser/ui/views/page_action/page_action_icon_view.h"
 #include "components/content_settings/browser/ui/cookie_controls_controller.h"
@@ -21,8 +22,8 @@ class CookieControlsIconView : public PageActionIconView,
                                public content_settings::CookieControlsObserver {
  public:
   METADATA_HEADER(CookieControlsIconView);
-  DECLARE_CLASS_ELEMENT_IDENTIFIER_VALUE(kCookieControlsIcon);
   CookieControlsIconView(
+      Browser* browser,
       IconLabelBubbleView::Delegate* icon_label_bubble_delegate,
       PageActionIconView::Delegate* page_action_icon_delegate);
   CookieControlsIconView(const CookieControlsIconView&) = delete;
@@ -37,12 +38,17 @@ class CookieControlsIconView : public PageActionIconView,
                            int blocked_third_party_sites_count) override;
   void OnBreakageConfidenceLevelChanged(
       CookieControlsBreakageConfidenceLevel level) override;
+  void OnFinishedPageReloadWithChangedSettings() override;
+
+  void ShowCookieControlsBubble();
 
   // PageActionIconView:
   views::BubbleDialogDelegate* GetBubble() const override;
   void UpdateImpl() override;
 
   CookieControlsBubbleCoordinator* GetCoordinatorForTesting() const;
+  void SetCoordinatorForTesting(
+      std::unique_ptr<CookieControlsBubbleCoordinator> coordinator);
 
  protected:
   void OnExecuting(PageActionIconView::ExecuteSource source) override;
@@ -53,6 +59,7 @@ class CookieControlsIconView : public PageActionIconView,
 
   bool GetAssociatedBubble() const;
   bool ShouldBeVisible() const;
+  void OnIPHClosed();
 
   // Set confidence_changed = true to animate if the confidence level changed
   // even if the icon is already visible.
@@ -64,12 +71,15 @@ class CookieControlsIconView : public PageActionIconView,
   CookieControlsBreakageConfidenceLevel confidence_ =
       CookieControlsBreakageConfidenceLevel::kUninitialized;
 
+  raw_ptr<Browser> browser_ = nullptr;
+
   std::unique_ptr<content_settings::CookieControlsController> controller_;
   std::unique_ptr<CookieControlsBubbleCoordinator> bubble_coordinator_ =
       nullptr;
   base::ScopedObservation<content_settings::CookieControlsController,
                           content_settings::CookieControlsObserver>
       controller_observation_{this};
+  base::WeakPtrFactory<CookieControlsIconView> weak_ptr_factory_{this};
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_LOCATION_BAR_COOKIE_CONTROLS_COOKIE_CONTROLS_ICON_VIEW_H_

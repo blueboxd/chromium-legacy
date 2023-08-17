@@ -952,8 +952,10 @@ class ClipboardHistoryRefreshDisplayFormatTest
       case crosapi::mojom::ClipboardHistoryDisplayFormat::kText:
         WriteTextToClipboardAndConfirm(u"A");
         WriteTextToClipboardAndConfirm(u"B");
+        WriteTextToClipboardAndConfirm(u"https://google.com/");
         if (refresh_feature_enabled) {
-          return {{u"B", get_icon(chromeos::kTextIcon)},
+          return {{u"https://google.com/", get_icon(vector_icons::kLinkIcon)},
+                  {u"B", get_icon(chromeos::kTextIcon)},
                   {u"A", get_icon(chromeos::kTextIcon)},
                   {show_clipboard_menu_label, gfx::Image()}};
         }
@@ -989,8 +991,7 @@ class ClipboardHistoryRefreshDisplayFormatTest
         WriteFilePathsAndConfirm({u"dummy_child1.jpg", u"dummy_child2.png"});
 
         if (refresh_feature_enabled) {
-          return {{u"dummy_child1.jpg, dummy_child2.png",
-                   get_icon(vector_icons::kContentCopyIcon)},
+          return {{u"2 files", get_icon(vector_icons::kContentCopyIcon)},
                   {u"dummy_file.webm", get_icon(chromeos::kFiletypeVideoIcon)},
                   {show_clipboard_menu_label, gfx::Image()}};
         }

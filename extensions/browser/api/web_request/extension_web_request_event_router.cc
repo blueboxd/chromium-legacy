@@ -405,6 +405,110 @@ ExtensionWebRequestTimeTracker& GetExtensionWebRequestTimeTracker() {
   return *instance.get();
 }
 
+class CrossContextData {
+ public:
+  CrossContextData() = default;
+  ~CrossContextData() = default;
+  CrossContextData(const CrossContextData&) = delete;
+  CrossContextData& operator=(const CrossContextData&) = delete;
+
+  static CrossContextData& Get() {
+    static base::NoDestructor<CrossContextData> instance;
+    return *instance.get();
+  }
+
+  content::BrowserContext* GetCrossBrowserContext(
+      content::BrowserContext* browser_context) {
+    const auto it = cross_context_data_.find(browser_context);
+    return it == cross_context_data_.end() ? nullptr : it->second;
+  }
+
+  void AddContext(content::BrowserContext* original_browser_context,
+                  content::BrowserContext* otr_browser_context) {
+    cross_context_data_[original_browser_context] = otr_browser_context;
+    cross_context_data_[otr_browser_context] = original_browser_context;
+  }
+
+  void RemoveContext(content::BrowserContext* browser_context) {
+    // This context can be either the original one, or the OTR one. Either
+    // way, we need to remove both entries.
+    auto it = cross_context_data_.find(browser_context);
+    if (it != cross_context_data_.end()) {
+      cross_context_data_.erase(it->second);
+      cross_context_data_.erase(it);
+    }
+  }
+
+ private:
+  using CrossContextMap =
+      std::map<content::BrowserContext*, content::BrowserContext*>;
+
+  // For each each on-the-record context that has an off-the-record context,
+  // this bi-map contains an entry for both contexts where the value is the
+  // other context.
+  CrossContextMap cross_context_data_;
+};
+
+// This class is a singleton that tracks a bitmap of event types for a given
+// request ID.
+class SignaledRequestIDTracker {
+ public:
+  using EventTypes = ExtensionWebRequestEventRouter::EventTypes;
+
+  // The instance is leaked.
+  ~SignaledRequestIDTracker() = delete;
+  SignaledRequestIDTracker(const SignaledRequestIDTracker&) = delete;
+  SignaledRequestIDTracker& operator=(const SignaledRequestIDTracker&) = delete;
+
+  static SignaledRequestIDTracker& Get() {
+    static base::NoDestructor<SignaledRequestIDTracker> instance;
+    return *instance.get();
+  }
+
+  // Clears the request.
+  void ClearRequest(uint64_t request_id) {
+    signaled_requests_.erase(request_id);
+  }
+
+  // Gets the previous state of the event and sets the flag for that event.
+  bool GetAndSet(uint64_t request_id, EventTypes event_type) {
+    auto iter = signaled_requests_.find(request_id);
+    if (iter == signaled_requests_.end()) {
+      signaled_requests_[request_id] = event_type;
+      return false;
+    }
+    bool was_signaled_before = iter->second & event_type;
+    iter->second |= event_type;
+    return was_signaled_before;
+  }
+
+  // Clears the flag that `event_type` has been signaled for `request_id`.
+  void ClearEventType(uint64_t request_id, EventTypes event_type) {
+    auto iter = signaled_requests_.find(request_id);
+    if (iter != signaled_requests_.end()) {
+      iter->second &= ~event_type;
+    }
+  }
+
+  // Returns true if `request_id` was already signaled to some event handlers.
+  bool WasSignaled(uint64_t request_id) const {
+    auto flag = signaled_requests_.find(request_id);
+    return flag != signaled_requests_.end() && flag->second;
+  }
+
+ private:
+  friend class base::NoDestructor<SignaledRequestIDTracker>;
+
+  SignaledRequestIDTracker() = default;
+
+  // Map of request_id -> bit vector of EventTypes already signaled
+  using SignaledRequestMap = std::map<uint64_t, int>;
+
+  // A map of request IDs to a bitvector indicating which events have been
+  // signaled and should not be sent again.
+  SignaledRequestMap signaled_requests_;
+};
+
 }  // namespace
 
 // static
@@ -737,11 +841,11 @@ void ExtensionWebRequestEventRouter::RegisterRulesRegistry(
     content::BrowserContext* browser_context,
     int rules_registry_id,
     scoped_refptr<WebRequestRulesRegistry> rules_registry) {
-  RulesRegistryKey key(BrowserContextID(browser_context), rules_registry_id);
+  BrowserContextData& data = data_[GetBrowserContextID(browser_context)];
   if (rules_registry.get()) {
-    rules_registries_[key] = rules_registry;
+    data.rules_registries[rules_registry_id] = rules_registry;
   } else {
-    rules_registries_.erase(key);
+    data.rules_registries.erase(rules_registry_id);
   }
 }
 
@@ -1172,7 +1276,7 @@ void ExtensionWebRequestEventRouter::OnCompleted(
   if (!browser_context ||
       (WebRequestPermissions::HideRequest(
            PermissionHelper::Get(browser_context), *request) &&
-       !WasSignaled(*request))) {
+       !WasSignaled(request->id))) {
     return;
   }
 
@@ -1226,7 +1330,7 @@ void ExtensionWebRequestEventRouter::OnErrorOccurred(
   if (!browser_context ||
       (WebRequestPermissions::HideRequest(
            PermissionHelper::Get(browser_context), *request) &&
-       !WasSignaled(*request))) {
+       !WasSignaled(request->id))) {
     return;
   }
 
@@ -1264,7 +1368,7 @@ void ExtensionWebRequestEventRouter::OnRequestWillBeDestroyed(
     content::BrowserContext* browser_context,
     const WebRequestInfo* request) {
   ClearPendingCallbacks(*request);
-  signaled_requests_.erase(request->id);
+  SignaledRequestIDTracker::Get().ClearRequest(request->id);
   GetExtensionWebRequestTimeTracker().LogRequestEndTime(request->id,
                                                         base::TimeTicks::Now());
 }
@@ -1332,8 +1436,10 @@ void ExtensionWebRequestEventRouter::DispatchEventToListeners(
   Listeners& inactive_listeners = data.inactive_listeners[event_name];
   Listeners* cross_active_listeners = nullptr;
   Listeners* cross_inactive_listeners = nullptr;
-  if (data.cross_context) {
-    auto& cross_data = data_[GetBrowserContextID(data.cross_context.get())];
+  content::BrowserContext* const cross_context =
+      GetCrossBrowserContext(browser_context);
+  if (cross_context) {
+    auto& cross_data = data_[GetBrowserContextID(cross_context)];
     cross_active_listeners = &cross_data.active_listeners[event_name];
     cross_inactive_listeners = &cross_data.inactive_listeners[event_name];
   }
@@ -1380,15 +1486,18 @@ void ExtensionWebRequestEventRouter::DispatchEventToListeners(
 
     if (is_active) {
       DCHECK(render_process);
+      CHECK(ExtensionsBrowserClient::Get()->IsValidContext(browser_context));
       // Active listeners use a bespoke dispatching mechanism.
       // TODO(devlin): Now that the webRequest API is entirely handled on the
       // UI thread (it used to be on the IO thread), can we just use the
       // regular event dispatching code for this case, as well?
-      EventRouter::DispatchEventToSender(
-          render_process, id.browser_context, listener->id.extension_id,
-          listener->histogram_value, listener->id.sub_event_name,
-          listener->id.worker_thread_id, listener->id.service_worker_version_id,
-          std::move(args_filtered), mojom::EventFilteringInfo::New());
+      EventRouter::Get(id.browser_context)
+          ->DispatchEventToSender(
+              render_process, id.browser_context, listener->id.extension_id,
+              listener->histogram_value, listener->id.sub_event_name,
+              listener->id.worker_thread_id,
+              listener->id.service_worker_version_id, std::move(args_filtered),
+              mojom::EventFilteringInfo::New());
     } else {
       DCHECK_EQ(-1, id.service_worker_version_id);
       // In the event of a lazy listener, we go through normal extension
@@ -1618,9 +1727,10 @@ void ExtensionWebRequestEventRouter::RemoveLazyListener(
 
   check_list(data.active_listeners[event_name], original_context_id);
   check_list(data.inactive_listeners[event_name], original_context_id);
-  if (data.cross_context) {
-    BrowserContextID cross_context_id =
-        GetBrowserContextID(data.cross_context.get());
+  content::BrowserContext* const cross_context =
+      GetCrossBrowserContext(original_context);
+  if (cross_context) {
+    BrowserContextID cross_context_id = GetBrowserContextID(cross_context);
     BrowserContextData& cross_data = data_[cross_context_id];
     check_list(cross_data.active_listeners[event_name], cross_context_id);
     check_list(cross_data.inactive_listeners[event_name], cross_context_id);
@@ -1637,14 +1747,16 @@ void ExtensionWebRequestEventRouter::RemoveLazyListener(
 }
 
 void ExtensionWebRequestEventRouter::UpdateActiveListener(
+    content::BrowserContext* browser_context,
     ListenerUpdateType update_type,
-    BrowserContextID browser_context_id,
     const ExtensionId& extension_id,
     const std::string& sub_event_name,
     int worker_thread_id,
     int64_t service_worker_version_id) {
   std::string event_name = EventRouter::GetBaseEventName(sub_event_name);
 
+  const BrowserContextID browser_context_id =
+      GetBrowserContextID(browser_context);
   BrowserContextData& data = data_[browser_context_id];
   auto matching_listener = RemoveMatchingListener(
       data.active_listeners[event_name], extension_id, sub_event_name,
@@ -1724,16 +1836,14 @@ void ExtensionWebRequestEventRouter::RemoveWebViewEventListeners(
 void ExtensionWebRequestEventRouter::OnOTRBrowserContextCreated(
     content::BrowserContext* original_browser_context,
     content::BrowserContext* otr_browser_context) {
-  data_[GetBrowserContextID(original_browser_context)].cross_context =
-      otr_browser_context;
-  auto& otr_data = data_[GetBrowserContextID(otr_browser_context)];
-  otr_data.cross_context = original_browser_context;
+  CrossContextData::Get().AddContext(original_browser_context,
+                                     otr_browser_context);
 }
 
 void ExtensionWebRequestEventRouter::OnOTRBrowserContextDestroyed(
     content::BrowserContext* original_browser_context,
     content::BrowserContext* otr_browser_context) {
-  data_[GetBrowserContextID(original_browser_context)].cross_context = nullptr;
+  CrossContextData::Get().RemoveContext(original_browser_context);
   OnBrowserContextShutdown(otr_browser_context);
   DCHECK(!base::Contains(data_, GetBrowserContextID(otr_browser_context)));
 }
@@ -1839,14 +1949,11 @@ void ExtensionWebRequestEventRouter::NotifyPageLoad() {
 
 content::BrowserContext* ExtensionWebRequestEventRouter::GetCrossBrowserContext(
     content::BrowserContext* browser_context) const {
-  auto iter = data_.find(GetBrowserContextID(browser_context));
-  return iter == data_.end() ? nullptr : iter->second.cross_context;
+  return CrossContextData::Get().GetCrossBrowserContext(browser_context);
 }
 
-bool ExtensionWebRequestEventRouter::WasSignaled(
-    const WebRequestInfo& request) const {
-  auto flag = signaled_requests_.find(request.id);
-  return flag != signaled_requests_.end() && flag->second != 0;
+bool ExtensionWebRequestEventRouter::WasSignaled(uint64_t request_id) const {
+  return SignaledRequestIDTracker::Get().WasSignaled(request_id);
 }
 
 ExtensionWebRequestEventRouter::RawListeners
@@ -2218,38 +2325,40 @@ bool ExtensionWebRequestEventRouter::ProcessDeclarativeRules(
     const WebRequestInfo* request,
     RequestStage request_stage,
     const net::HttpResponseHeaders* original_response_headers) {
-  int rules_registry_id = request->is_web_view
-                              ? request->web_view_rules_registry_id
-                              : RulesRegistryService::kDefaultRulesRegistryID;
-
-  RulesRegistryKey rules_key(BrowserContextID(browser_context),
-                             rules_registry_id);
   // If this check fails, check that the active stages are up to date in
   // extensions/browser/api/declarative_webrequest/request_stage.h.
   DCHECK(request_stage & kActiveStages);
 
-  // Rules of the current |browser_context| may apply but we need to check also
-  // whether there are applicable rules from extensions whose background page
-  // spans from regular to incognito mode.
+  int rules_registry_id = request->is_web_view
+                              ? request->web_view_rules_registry_id
+                              : RulesRegistryService::kDefaultRulesRegistryID;
 
   // First parameter identifies the registry, the second indicates whether the
   // registry belongs to the cross browser_context.
   using RelevantRegistry = std::pair<WebRequestRulesRegistry*, bool>;
   std::vector<RelevantRegistry> relevant_registries;
 
-  auto rules_key_it = rules_registries_.find(rules_key);
-  if (rules_key_it != rules_registries_.end()) {
-    relevant_registries.emplace_back(rules_key_it->second.get(), false);
+  // Get the WebRequestRulesRegistry for the current BrowserContext, if any.
+  {
+    BrowserContextData& data = data_[GetBrowserContextID(browser_context)];
+    auto rules_key_it = data.rules_registries.find(rules_registry_id);
+    if (rules_key_it != data.rules_registries.end()) {
+      relevant_registries.emplace_back(rules_key_it->second.get(), false);
+    }
   }
 
+  // Rules of the current `browser_context` may apply but we need to check also
+  // whether there are applicable rules from extensions whose background page
+  // spans from regular to incognito mode.
   content::BrowserContext* cross_browser_context =
       GetCrossBrowserContext(browser_context);
-  RulesRegistryKey cross_browser_context_rules_key(
-      BrowserContextID(cross_browser_context), rules_registry_id);
   if (cross_browser_context) {
-    auto it = rules_registries_.find(cross_browser_context_rules_key);
-    if (it != rules_registries_.end()) {
-      relevant_registries.emplace_back(it->second.get(), true);
+    BrowserContextData& cross_context_data =
+        data_[GetBrowserContextID(cross_browser_context)];
+    auto cross_rules_key_it =
+        cross_context_data.rules_registries.find(rules_registry_id);
+    if (cross_rules_key_it != cross_context_data.rules_registries.end()) {
+      relevant_registries.emplace_back(cross_rules_key_it->second.get(), true);
     }
   }
 
@@ -2320,22 +2429,12 @@ void ExtensionWebRequestEventRouter::OnRulesRegistryReady(
 
 bool ExtensionWebRequestEventRouter::GetAndSetSignaled(uint64_t request_id,
                                                        EventTypes event_type) {
-  auto iter = signaled_requests_.find(request_id);
-  if (iter == signaled_requests_.end()) {
-    signaled_requests_[request_id] = event_type;
-    return false;
-  }
-  bool was_signaled_before = (iter->second & event_type) != 0;
-  iter->second |= event_type;
-  return was_signaled_before;
+  return SignaledRequestIDTracker::Get().GetAndSet(request_id, event_type);
 }
 
 void ExtensionWebRequestEventRouter::ClearSignaled(uint64_t request_id,
                                                    EventTypes event_type) {
-  auto iter = signaled_requests_.find(request_id);
-  if (iter != signaled_requests_.end()) {
-    iter->second &= ~event_type;
-  }
+  SignaledRequestIDTracker::Get().ClearEventType(request_id, event_type);
 }
 
 }  // namespace extensions

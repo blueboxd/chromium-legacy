@@ -8,6 +8,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
+#include "chrome/browser/sync/sync_service_factory.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/core/browser/tailored_security_service/tailored_security_notification_result.h"
@@ -63,6 +64,7 @@ content::WebContents* GetWebContentsForProfile(Profile* profile) {
 
 ChromeTailoredSecurityService::ChromeTailoredSecurityService(Profile* profile)
     : TailoredSecurityService(IdentityManagerFactory::GetForProfile(profile),
+                              SyncServiceFactory::GetForProfile(profile),
                               profile->GetPrefs()),
       profile_(profile) {
   AddObserver(this);
@@ -126,6 +128,7 @@ void ChromeTailoredSecurityService::OnSyncNotificationMessageRequest(
       RecordEnabledNotificationResult(
           TailoredSecurityNotificationResult::kNoBrowserWindowAvailable);
     }
+    return;
   }
   SetSafeBrowsingState(profile_->GetPrefs(),
                        is_enabled ? SafeBrowsingState::ENHANCED_PROTECTION
@@ -133,6 +136,7 @@ void ChromeTailoredSecurityService::OnSyncNotificationMessageRequest(
                        /*is_esb_enabled_in_sync=*/is_enabled);
   DisplayDesktopDialog(browser, is_enabled);
 #endif
+  SaveRetryState(TailoredSecurityRetryState::NO_RETRY_NEEDED);
   if (is_enabled) {
     RecordEnabledNotificationResult(TailoredSecurityNotificationResult::kShown);
   }
@@ -235,6 +239,15 @@ scoped_refptr<network::SharedURLLoaderFactory>
 ChromeTailoredSecurityService::GetURLLoaderFactory() {
   return profile_->GetDefaultStoragePartition()
       ->GetURLLoaderFactoryForBrowserProcess();
+}
+
+void ChromeTailoredSecurityService::SaveRetryState(
+    TailoredSecurityRetryState state) {
+  if (base::FeatureList::IsEnabled(
+          safe_browsing::kTailoredSecurityRetryForSyncUsers)) {
+    profile_->GetPrefs()->SetInteger(prefs::kTailoredSecuritySyncFlowRetryState,
+                                     state);
+  }
 }
 
 }  // namespace safe_browsing

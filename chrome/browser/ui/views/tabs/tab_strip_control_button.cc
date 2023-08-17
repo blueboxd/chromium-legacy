@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/views/tabs/tab_strip_control_button.h"
+#include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
+#include "chrome/browser/ui/views/toolbar/toolbar_ink_drop_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/gfx/vector_icon_types.h"
@@ -16,27 +18,18 @@ const gfx::Size TabStripControlButton::kButtonSize{28, 28};
 TabStripControlButton::TabStripControlButton(TabStrip* tab_strip,
                                              PressedCallback callback,
                                              const gfx::VectorIcon& icon)
-    : views::LabelButton(std::move(callback)), icon_(icon) {
+    : views::LabelButton(std::move(callback)),
+      icon_(icon),
+      tab_strip_(tab_strip) {
   SetImageCentered(true);
-  bool is_chrome_refresh = features::IsChromeRefresh2023();
 
-  if (is_chrome_refresh) {
-    foreground_frame_active_color_id_ =
-        kColorNewTabButtonCRForegroundFrameActive;
-    foreground_frame_inactive_color_id_ =
-        kColorNewTabButtonCRForegroundFrameInactive;
-    background_frame_active_color_id_ =
-        kColorNewTabButtonCRBackgroundFrameActive;
-    background_frame_inactive_color_id_ =
-        kColorNewTabButtonCRBackgroundFrameInactive;
-  } else {
-    foreground_frame_active_color_id_ = kColorNewTabButtonForegroundFrameActive;
-    foreground_frame_inactive_color_id_ =
-        kColorNewTabButtonForegroundFrameInactive;
-    background_frame_active_color_id_ = kColorNewTabButtonBackgroundFrameActive;
-    background_frame_inactive_color_id_ =
-        kColorNewTabButtonBackgroundFrameInactive;
-  }
+  paint_transparent_for_custom_image_theme_ = true;
+  foreground_frame_active_color_id_ = kColorTabForegroundInactiveFrameActive;
+  foreground_frame_inactive_color_id_ =
+      kColorNewTabButtonCRForegroundFrameInactive;
+  background_frame_active_color_id_ = kColorNewTabButtonBackgroundFrameActive;
+  background_frame_inactive_color_id_ =
+      kColorNewTabButtonBackgroundFrameInactive;
 
   UpdateIcon();
   SetHorizontalAlignment(gfx::ALIGN_CENTER);
@@ -45,23 +38,12 @@ TabStripControlButton::TabStripControlButton(TabStrip* tab_strip,
   SetFocusRingCornerRadius(28);
   SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
 
-  const auto* const color_provider = GetColorProvider();
-
   views::InkDrop::Get(this)->SetMode(views::InkDropHost::InkDropMode::ON);
-  views::InkDrop::Get(this)->SetHighlightOpacity(is_chrome_refresh ? 1.0f
-                                                                   : 0.16f);
-  // TODO (1399942) Decide on changes to visible opacity for chrome refresh
-  views::InkDrop::Get(this)->SetVisibleOpacity(0.14f);
-  views::FocusRing::Get(this)->SetColorId(kColorNewTabButtonFocusRing);
-
-  if (color_provider) {
-    views::InkDrop::Get(this)->SetBaseColor(color_provider->GetColor(
-        GetWidget()->ShouldPaintAsActive()
-            ? (is_chrome_refresh ? kColorTabBackgroundHoverFrameActive
-                                 : kColorNewTabButtonInkDropFrameActive)
-            : (is_chrome_refresh ? kColorTabBackgroundHoverFrameInactive
-                                 : kColorNewTabButtonInkDropFrameInactive)));
+  if (features::IsChromeRefresh2023()) {
+    views::InkDrop::Get(this)->SetLayerRegion(views::LayerRegion::kAbove);
   }
+  UpdateInkDrop();
+  views::FocusRing::Get(this)->SetColorId(kColorNewTabButtonFocusRing);
 }
 
 ui::ColorId TabStripControlButton::GetBackgroundColor() {
@@ -85,24 +67,60 @@ void TabStripControlButton::UpdateIcon() {
   SetImageModel(views::Button::STATE_PRESSED, icon_image_model);
 }
 
+void TabStripControlButton::UpdateInkDrop() {
+  const auto* const color_provider = GetColorProvider();
+
+  if (!color_provider) {
+    return;
+  }
+
+  if (features::IsChromeRefresh2023()) {
+    return CreateToolbarInkdropCallbacks(
+        this, kColorTabStripControlButtonInkDrop,
+        kColorTabStripControlButtonInkDropRipple);
+
+  } else {
+    const bool frame_active =
+        (GetWidget() && GetWidget()->ShouldPaintAsActive());
+
+    // These values are also used in refresh by
+    // `kColorTabStripControlButtonInkDrop` and
+    // `kColorTabStripControlButtonInkDropRipple` in case of themes.
+    views::InkDrop::Get(this)->SetHighlightOpacity(0.16f);
+    views::InkDrop::Get(this)->SetVisibleOpacity(0.14f);
+    views::InkDrop::Get(this)->SetBaseColor(color_provider->GetColor(
+        frame_active ? kColorNewTabButtonInkDropFrameActive
+                     : kColorNewTabButtonInkDropFrameInactive));
+  }
+}
+
 void TabStripControlButton::UpdateColors() {
   const auto* const color_provider = GetColorProvider();
   if (!color_provider) {
     return;
   }
 
-  const bool frame_active = (GetWidget() && GetWidget()->ShouldPaintAsActive());
-  const ui::ColorId hover_color =
-      features::IsChromeRefresh2023()
-          ? (frame_active ? kColorTabBackgroundHoverFrameActive
-                          : kColorTabBackgroundHoverFrameInactive)
-          : (frame_active ? kColorNewTabButtonInkDropFrameActive
-                          : kColorNewTabButtonInkDropFrameInactive);
-
-  views::InkDrop::Get(this)->SetBaseColor(
-      color_provider->GetColor(hover_color));
+  UpdateBackground();
+  UpdateInkDrop();
   UpdateIcon();
   SchedulePaint();
+}
+
+void TabStripControlButton::UpdateBackground() {
+  const absl::optional<int> bg_id =
+      tab_strip_->GetCustomBackgroundId(BrowserFrameActiveState::kUseCurrent);
+
+  // Paint the background as transparent for image based themes.
+  if (bg_id.has_value() && paint_transparent_for_custom_image_theme_) {
+    SetBackground(views::CreateSolidBackground(SK_ColorTRANSPARENT));
+  } else {
+    SetBackground(views::CreateThemedRoundedRectBackground(GetBackgroundColor(),
+                                                           GetCornerRadius()));
+  }
+}
+
+int TabStripControlButton::GetCornerRadius() {
+  return width() / 2;
 }
 
 void TabStripControlButton::AddedToWidget() {

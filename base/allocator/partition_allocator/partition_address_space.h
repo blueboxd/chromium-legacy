@@ -13,12 +13,12 @@
 #include "base/allocator/partition_allocator/partition_alloc_base/bits.h"
 #include "base/allocator/partition_allocator/partition_alloc_base/compiler_specific.h"
 #include "base/allocator/partition_allocator/partition_alloc_base/component_export.h"
+#include "base/allocator/partition_allocator/partition_alloc_base/notreached.h"
 #include "base/allocator/partition_allocator/partition_alloc_buildflags.h"
 #include "base/allocator/partition_allocator/partition_alloc_check.h"
 #include "base/allocator/partition_allocator/partition_alloc_config.h"
 #include "base/allocator/partition_allocator/partition_alloc_constants.h"
 #include "base/allocator/partition_allocator/partition_alloc_forward.h"
-#include "base/allocator/partition_allocator/partition_alloc_notreached.h"
 #include "base/allocator/partition_allocator/tagging.h"
 #include "base/allocator/partition_allocator/thread_isolation/alignment.h"
 #include "build/build_config.h"
@@ -41,6 +41,7 @@ class PA_COMPONENT_EXPORT(PARTITION_ALLOC) PartitionAddressSpace {
   // Represents pool-specific information about a given address.
   struct PoolInfo {
     pool_handle handle;
+    uintptr_t base;
     uintptr_t offset;
   };
 
@@ -54,7 +55,7 @@ class PA_COMPONENT_EXPORT(PARTITION_ALLOC) PartitionAddressSpace {
   }
 #endif
 
-  PA_ALWAYS_INLINE static PoolInfo GetPoolAndOffset(uintptr_t address) {
+  PA_ALWAYS_INLINE static PoolInfo GetPoolInfo(uintptr_t address) {
     // When USE_BACKUP_REF_PTR is off, BRP pool isn't used.
 #if !BUILDFLAG(ENABLE_BACKUP_REF_PTR_SUPPORT)
     PA_DCHECK(!IsInBRPPool(address));
@@ -81,7 +82,7 @@ class PA_COMPONENT_EXPORT(PARTITION_ALLOC) PartitionAddressSpace {
     } else {
       PA_NOTREACHED();
     }
-    return PoolInfo{.handle = pool, .offset = address - base};
+    return PoolInfo{.handle = pool, .base = base, .offset = address - base};
   }
   PA_ALWAYS_INLINE static constexpr size_t ConfigurablePoolMaxSize() {
     return kConfigurablePoolMaxSize;
@@ -373,13 +374,13 @@ class PA_COMPONENT_EXPORT(PARTITION_ALLOC) PartitionAddressSpace {
 #endif
 };
 
-PA_ALWAYS_INLINE PartitionAddressSpace::PoolInfo GetPoolAndOffset(
+PA_ALWAYS_INLINE PartitionAddressSpace::PoolInfo GetPoolInfo(
     uintptr_t address) {
-  return PartitionAddressSpace::GetPoolAndOffset(address);
+  return PartitionAddressSpace::GetPoolInfo(address);
 }
 
 PA_ALWAYS_INLINE pool_handle GetPool(uintptr_t address) {
-  return GetPoolAndOffset(address).handle;
+  return GetPoolInfo(address).handle;
 }
 
 PA_ALWAYS_INLINE uintptr_t OffsetInBRPPool(uintptr_t address) {

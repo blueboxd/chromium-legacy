@@ -41,14 +41,13 @@ bool operator!=(const CollectionInfo& lhs, const CollectionInfo& rhs) {
 }
 
 CollectionInfo CollectionInfo::CreateFromProto(
-    const ntp::background::Collection& collection) {
+    const ntp::background::Collection& collection,
+    absl::optional<GURL> preview_image_url) {
   CollectionInfo collection_info;
   collection_info.collection_id = collection.collection_id();
   collection_info.collection_name = collection.collection_name();
-  // Use the first preview image as the representative one for the collection.
-  if (collection.preview_size() > 0 && collection.preview(0).has_image_url()) {
-    collection_info.preview_image_url = AddOptionsToImageURL(
-        collection.preview(0).image_url(), kThumbnailImageOptions);
+  if (preview_image_url.has_value()) {
+    collection_info.preview_image_url = preview_image_url.value();
   }
 
   return collection_info;

@@ -98,6 +98,16 @@ struct CredentialUIEntry;
 // Shows the Safe Browsing page.
 - (void)showSafeBrowsingSettings;
 
+// Shows the Password Manager's search page.
+- (void)showPasswordSearchPage;
+
+// Shows the Tab Pickup Settings screen.
+- (void)showTabPickupSettings;
+
+// Shows the Content Settings page in the settings on top of baseViewController.
+- (void)showContentsSettingsFromViewController:
+    (UIViewController*)baseViewController;
+
 @end
 
 // Protocol for commands that will generally be handled by the application,

@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/location_bar/location_icon_view.h"
 
 #include "base/functional/bind.h"
+#include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/extension_ui_util.h"
 #include "chrome/browser/ui/browser_element_identifiers.h"
@@ -32,8 +33,10 @@
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/color/color_id.h"
+#include "ui/color/color_provider_utils.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/insets.h"
+#include "ui/gfx/vector_icon_types.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 #include "ui/views/animation/ink_drop.h"
 #include "ui/views/animation/ink_drop_highlight.h"
@@ -43,6 +46,10 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/style/platform_style.h"
 #include "ui/views/view_class_properties.h"
+
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+#include "components/vector_icons/vector_icons.h"  // nogncheck
+#endif
 
 using content::WebContents;
 using security_state::SecurityLevel;
@@ -83,8 +90,7 @@ bool LocationIconView::OnMouseDragged(const ui::MouseEvent& event) {
 }
 
 SkColor LocationIconView::GetForegroundColor() const {
-  const std::u16string& display_text =
-      delegate_->GetLocationBarModel()->GetSecureDisplayText();
+  const std::u16string& display_text = GetText();
   const bool is_text_dangerous =
       display_text == l10n_util::GetStringUTF16(IDS_DANGEROUS_VERBOSE_STATE);
 
@@ -264,6 +270,22 @@ void LocationIconView::UpdateIcon() {
   ui::ImageModel icon = delegate_->GetLocationIcon(
       base::BindOnce(&LocationIconView::OnIconFetched,
                      icon_fetch_weak_ptr_factory_.GetWeakPtr()));
+
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+
+  if (OmniboxFieldTrial::IsChromeRefreshIconsEnabled()) {
+    bool has_custom_theme =
+        this->GetWidget() && this->GetWidget()->GetCustomTheme();
+
+    if (has_custom_theme && !icon.IsEmpty() && icon.IsVectorIcon() &&
+        icon.GetVectorIcon().vector_icon()->name ==
+            vector_icons::kGoogleSuperGIcon.name) {
+      SetBackground(
+          views::CreateRoundedRectBackground(SK_ColorWHITE, height() / 2));
+    }
+  }
+#endif
+
   if (!icon.IsEmpty())
     SetImageModel(icon);
 }
@@ -271,13 +293,13 @@ void LocationIconView::UpdateIcon() {
 void LocationIconView::UpdateBackground() {
   if (OmniboxFieldTrial::IsChromeRefreshIconsEnabled()) {
     CHECK(GetColorProvider());
-    const std::u16string& display_text =
-        delegate_->GetLocationBarModel()->GetSecureDisplayText();
+    const std::u16string& display_text = GetText();
     const bool is_text_dangerous =
         display_text == l10n_util::GetStringUTF16(IDS_DANGEROUS_VERBOSE_STATE);
 
-    ui::ColorId id = is_text_dangerous ? kColorOmniboxSecurityChipDangerous
-                                       : kColorPageInfoBackground;
+    ui::ColorId id = is_text_dangerous
+                         ? kColorOmniboxSecurityChipDangerousBackground
+                         : kColorPageInfoBackground;
     SetBackground(views::CreateRoundedRectBackground(
         GetColorProvider()->GetColor(id), height() / 2));
 
@@ -299,7 +321,8 @@ void LocationIconView::OnIconFetched(const gfx::Image& image) {
   SetImageModel(ui::ImageModel::FromImage(image));
 }
 
-void LocationIconView::Update(bool suppress_animations) {
+void LocationIconView::Update(bool suppress_animations,
+                              bool force_hide_background) {
   UpdateTextVisibility(suppress_animations);
   UpdateBorder();
   // Update the background before the icon, since the vector icon
@@ -310,6 +333,12 @@ void LocationIconView::Update(bool suppress_animations) {
   // The label text color may have changed in response to changes in security
   // level.
   UpdateLabelColors();
+
+  if (force_hide_background &&
+      OmniboxFieldTrial::IsChromeRefreshIconsEnabled()) {
+    SetBackground(
+        views::CreateRoundedRectBackground(SK_ColorTRANSPARENT, height() / 2));
+  }
 
   bool is_editing_or_empty = delegate_->IsEditingOrEmpty();
   // The tooltip should be shown if we are not editing or empty.
@@ -366,9 +395,20 @@ void LocationIconView::UpdateBorder() {
   if (OmniboxFieldTrial::IsChromeRefreshIconsEnabled()) {
     gfx::Insets insets = GetLayoutInsets(LOCATION_BAR_PAGE_INFO_ICON_PADDING);
     if (ShouldShowLabel()) {
-      // An extra space between chip's label and right edge.
-      const int kExtraRightPadding = 4;
-      insets.set_right(insets.right() + kExtraRightPadding);
+      SecurityLevel level =
+          delegate_->GetLocationBarModel()->GetSecurityLevel();
+      if (level == security_state::DANGEROUS) {
+        // Extra space between the left edge and label.
+        const int kLeftHorizontalPadding = 6;
+        // Extra space between the label and right edge.
+        const int kRightHorizontalPadding = 10;
+        insets.set_left(kLeftHorizontalPadding);
+        insets.set_right(kRightHorizontalPadding);
+      } else {
+        // An extra space between chip's label and right edge.
+        const int kExtraRightPadding = 4;
+        insets.set_right(insets.right() + kExtraRightPadding);
+      }
     }
     SetBorder(views::CreateEmptyBorder(insets));
   } else {

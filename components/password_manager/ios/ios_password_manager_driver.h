@@ -10,6 +10,7 @@
 #include "components/password_manager/core/browser/password_generation_frame_helper.h"
 #include "components/password_manager/core/browser/password_manager_driver.h"
 #include "components/password_manager/ios/password_manager_driver_bridge.h"
+#include "url/gurl.h"
 
 namespace autofill {
 struct PasswordFormFillData;
@@ -61,13 +62,8 @@ class IOSPasswordManagerDriver
   bool IsInPrimaryMainFrame() const override;
   bool CanShowAutofillUi() const override;
   const GURL& GetLastCommittedURL() const override;
-  // In some cases the web frame might not exist anymore (when the frame is
-  // deleted by the webpage straight after form submission, but the driver is
-  // still alive). So only use this getter when you are sure that the frame
-  // still exists.
-  web::WebFrame* web_frame() const { return web_frame_; }
+  const std::string& web_frame_id() const { return frame_id_; }
   const GURL& security_origin() const { return security_origin_; }
-  void ProcessFrameDeletion();
 
  private:
   // The constructor below is private so that no one uses it while trying to
@@ -92,9 +88,6 @@ class IOSPasswordManagerDriver
   password_manager::PasswordManagerInterface* password_manager_;
   std::unique_ptr<password_manager::PasswordGenerationFrameHelper>
       password_generation_helper_;
-  // TODO(crbug.com/1383214): Investigate to see if this can be removed
-  // entirely.
-  web::WebFrame* web_frame_;
   int id_;
 
   // The hash of the cached frame ID of `web_frame_`. This is cached because

@@ -20,7 +20,6 @@
 #import "ios/chrome/browser/favicon/ios_chrome_favicon_loader_factory.h"
 #import "ios/chrome/browser/feature_engagement/tracker_factory.h"
 #import "ios/chrome/browser/search_engines/template_url_service_factory.h"
-#import "ios/chrome/browser/shared/coordinator/default_browser_promo/non_modal_default_browser_promo_scheduler_scene_agent.h"
 #import "ios/chrome/browser/shared/coordinator/layout_guide/layout_guide_util.h"
 #import "ios/chrome/browser/shared/coordinator/scene/scene_state_browser_agent.h"
 #import "ios/chrome/browser/shared/model/browser/browser.h"
@@ -51,10 +50,6 @@
 #import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
 #import "ios/web/public/navigation/navigation_manager.h"
-
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
 
 @interface OmniboxCoordinator () <OmniboxViewControllerTextInputDelegate>
 // Object taking care of adding the accessory views to the keyboard.
@@ -221,6 +216,12 @@
     }
 
     [self.textField becomeFirstResponder];
+    if (IsBottomOmniboxSteadyStateEnabled()) {
+      // Ensures that the accessibility system focuses the text field instead of
+      // the popup crbug.com/1469173.
+      UIAccessibilityPostNotification(UIAccessibilityScreenChangedNotification,
+                                      self.textField);
+    }
   }
 }
 

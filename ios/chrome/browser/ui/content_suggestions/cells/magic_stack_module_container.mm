@@ -18,10 +18,6 @@
 #import "ios/chrome/grit/ios_strings.h"
 #import "ui/base/l10n/l10n_util_mac.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 namespace {
 
 // The horizontal inset for the content within this container.
@@ -43,6 +39,8 @@ const float kCornerRadius = 24;
 // The width of the modules.
 const int kModuleWidthCompact = 343;
 const int kModuleWidthRegular = 382;
+// The max height of the modules.
+const int kModuleMaxHeight = 150;
 
 const CGFloat kSeparatorHeight = 0.5;
 
@@ -168,6 +166,17 @@ const CGFloat kTitleStackViewTrailingMargin = 16.0f;
     _contentViewWidthAnchor = [contentView.widthAnchor
         constraintEqualToConstant:[self contentViewWidth]];
     [NSLayoutConstraint activateConstraints:@[ _contentViewWidthAnchor ]];
+    // Ensures that the modules do not become larger than kModuleMaxHeight. The
+    // less than or equal to constraint coupled with a UIViewNoIntrinsicMetric
+    // vertical intrinsic content size declaration allows for it to still
+    // vertically shrink to intrinsic content size. In practice, the largest
+    // module will determine the height of all the modules, but it should not
+    // grow taller than kModuleMaxHeight. The less than or equal to
+    // configuration is for the MVT when it lives outside of the Magic Stack to
+    // stay as close to its intrinsic size as possible.
+    [NSLayoutConstraint activateConstraints:@[
+      [self.heightAnchor constraintLessThanOrEqualToConstant:kModuleMaxHeight]
+    ]];
 
     [self addSubview:stackView];
     AddSameConstraintsWithInsets(stackView, self, [self contentMargins]);
@@ -199,6 +208,9 @@ const CGFloat kTitleStackViewTrailingMargin = 16.0f;
     case ContentSuggestionsModuleType::kCompactedSetUpList:
     case ContentSuggestionsModuleType::kSetUpListAllSet:
       return l10n_util::GetNSString(IDS_IOS_SET_UP_LIST_TITLE);
+    case ContentSuggestionsModuleType::kSafetyCheck:
+    case ContentSuggestionsModuleType::kSafetyCheckMultiRow:
+      return l10n_util::GetNSString(IDS_IOS_SAFETY_CHECK_TITLE);
     default:
       NOTREACHED();
       return @"";
@@ -326,6 +338,7 @@ const CGFloat kTitleStackViewTrailingMargin = 16.0f;
     case ContentSuggestionsModuleType::kSetUpListDefaultBrowser:
     case ContentSuggestionsModuleType::kSetUpListAutofill:
     case ContentSuggestionsModuleType::kSetUpListAllSet:
+    case ContentSuggestionsModuleType::kSafetyCheckMultiRow:
       return YES;
     default:
       return NO;

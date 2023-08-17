@@ -32,10 +32,6 @@
 #import "ios/chrome/browser/synced_sessions/synced_sessions.h"
 #import "ui/base/device_form_factor.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 namespace {
 
 using ::bring_android_tabs::kPromptAttemptStatusHistogramName;
@@ -43,6 +39,9 @@ using ::bring_android_tabs::PromptAttemptStatus;
 
 // The length of time from now in which the tabs will be brought over.
 const base::TimeDelta kTimeRangeOfTabsImported = base::Days(14);
+
+// Maximum number of tabs that should be imported.
+const size_t kMaxNumberOfTabs = 20;
 
 // Logs `status` on UMA.
 void RecordPromptAttemptStatus(PromptAttemptStatus status) {
@@ -145,7 +144,9 @@ void BringAndroidTabsToIOSService::LoadTabs() {
 
 size_t BringAndroidTabsToIOSService::GetNumberOfAndroidTabs() const {
   CHECK(load_tabs_invoked_);
-  return position_of_tabs_in_synced_sessions_.size();
+  size_t tab_count = position_of_tabs_in_synced_sessions_.size();
+  CHECK_LE(tab_count, kMaxNumberOfTabs);
+  return tab_count;
 }
 
 synced_sessions::DistantTab* BringAndroidTabsToIOSService::GetTabAtIndex(
@@ -186,6 +187,7 @@ BringAndroidTabsToIOSService::LoadSyncedSessionsAndComputeTabPositions() {
     return PromptAttemptStatus::kTabSyncDisabled;
   }
 
+  // Synced sessions sorted by recency.
   synced_sessions_ =
       std::make_unique<synced_sessions::SyncedSessions>(session_sync_service_);
   size_t session_count = synced_sessions_->GetSessionCount();
@@ -199,9 +201,16 @@ BringAndroidTabsToIOSService::LoadSyncedSessionsAndComputeTabPositions() {
       continue;
     }
     size_t tab_size = session->tabs.size();
+    // Tabs are already ordered by recency.
     for (size_t tab_idx = 0; tab_idx < tab_size; tab_idx++) {
       std::tuple<size_t, size_t> indices = {session_idx, tab_idx};
       position_of_tabs_in_synced_sessions_.push_back(indices);
+      if (position_of_tabs_in_synced_sessions_.size() >= kMaxNumberOfTabs) {
+        break;
+      }
+    }
+    if (position_of_tabs_in_synced_sessions_.size() >= kMaxNumberOfTabs) {
+      break;
     }
   }
   return position_of_tabs_in_synced_sessions_.empty()

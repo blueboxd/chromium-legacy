@@ -35,6 +35,7 @@ import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.compositor.scene_layer.TabListSceneLayer;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.layouts.EventFilter;
+import org.chromium.chrome.browser.layouts.LayoutStateProvider;
 import org.chromium.chrome.browser.layouts.LayoutType;
 import org.chromium.chrome.browser.layouts.animation.CompositorAnimationHandler;
 import org.chromium.chrome.browser.layouts.animation.CompositorAnimator;
@@ -49,6 +50,7 @@ import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.components.browser_ui.widget.scrim.ScrimCoordinator;
 import org.chromium.components.browser_ui.widget.scrim.ScrimProperties;
 import org.chromium.components.version_info.VersionInfo;
+import org.chromium.ui.accessibility.AccessibilityState;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.interpolators.Interpolators;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -67,7 +69,7 @@ public class TabSwitcherLayout extends Layout {
     private static final String TAG = "TSLayout";
 
     // Duration of the transition animation
-    public static final long ZOOMING_DURATION = 300;
+    public static final long ZOOMING_DURATION = 325;
     private static final int TRANSLATE_DURATION_MS = 300;
     private static final int BACKGROUND_FADING_DURATION_MS = 150;
     private static final int SCRIM_FADE_DURATION_MS = 350;
@@ -94,6 +96,7 @@ public class TabSwitcherLayout extends Layout {
     @Nullable
     private final ScrimCoordinator mScrimCoordinator;
     private final TabSwitcher.TabListDelegate mGridTabListDelegate;
+    private final LayoutStateProvider mLayoutStateProvider;
 
     private boolean mIsInitialized;
 
@@ -112,6 +115,7 @@ public class TabSwitcherLayout extends Layout {
 
     private Handler mHandler;
     private Runnable mFinishedShowingRunnable;
+    private boolean mBackToStartSurface;
 
     /**
      * Notified when the animation is complete.
@@ -124,12 +128,14 @@ public class TabSwitcherLayout extends Layout {
     private PerfListener mPerfListenerForTesting;
 
     public TabSwitcherLayout(Context context, LayoutUpdateHost updateHost,
-            LayoutRenderHost renderHost, BrowserControlsStateProvider browserControlsStateProvider,
-            TabSwitcher tabSwitcher, @Nullable ViewGroup tabSwitcherScrimAnchor,
+            LayoutStateProvider layoutStateProvider, LayoutRenderHost renderHost,
+            BrowserControlsStateProvider browserControlsStateProvider, TabSwitcher tabSwitcher,
+            @Nullable ViewGroup tabSwitcherScrimAnchor,
             @Nullable ScrimCoordinator scrimCoordinator) {
         super(context, updateHost, renderHost);
         mBrowserControlsStateProvider = browserControlsStateProvider;
         mTabSwitcher = tabSwitcher;
+        mLayoutStateProvider = layoutStateProvider;
         mController = mTabSwitcher.getController();
         mTabSwitcher.setOnTabSelectingListener(this::onTabSelecting);
         mGridTabListDelegate = mTabSwitcher.getTabListDelegate();
@@ -186,7 +192,8 @@ public class TabSwitcherLayout extends Layout {
                 // The Android View version of GTS overview is hidden.
                 // If not doing GTS-to-Tab transition animation, we show the fade-out instead, which
                 // was already done.
-                if (!isTabGtsAnimationEnabled(false)) {
+                if (!isTabGtsAnimationEnabled(false) || mBackToStartSurface) {
+                    mBackToStartSurface = false;
                     postHiding();
                     return;
                 }
@@ -252,7 +259,7 @@ public class TabSwitcherLayout extends Layout {
                 showOverviewWithTranslateUp(shouldAnimate);
             } else if (TabUiFeatureUtilities.isTabGroupsAndroidContinuationEnabled(getContext())
                     && GTS_ACCESSIBILITY_SUPPORT.getValue()
-                    && ChromeAccessibilityUtil.get().isTouchExplorationEnabled()) {
+                    && AccessibilityState.isTouchExplorationEnabled()) {
                 // Intentionally disable the shrinking animation when touch exploration is enabled.
                 // During the shrinking animation, since the ComponsitorViewHolder is not focusable,
                 // Chrome is in a temporary no "valid" focus target state. This result in focus
@@ -312,6 +319,13 @@ public class TabSwitcherLayout extends Layout {
     public void startHiding(int nextId, boolean hintAtTabSelection) {
         try (TraceEvent e = TraceEvent.scoped(TRACE_HIDE_TAB_SWITCHER)) {
             super.startHiding(nextId, hintAtTabSelection);
+
+            // If the hiding of TabSwitcherLayout is triggered by
+            // {@link ChromeTabbedActivity#returnToOverviewModeOnBackPressed()} to return to the
+            // Start surface, we set the flag here to skip GTS-to-Tab transition animation when
+            // hiding.
+            mBackToStartSurface =
+                    mLayoutStateProvider.getNextLayoutType() == LayoutType.START_SURFACE;
 
             int sourceTabId = nextId;
             if (sourceTabId == Tab.INVALID_TAB_ID) {
@@ -459,28 +473,27 @@ public class TabSwitcherLayout extends Layout {
 
         animationList.add(CompositorAnimator.ofWritableFloatPropertyKey(handler, sourceLayoutTab,
                 LayoutTab.SCALE, scaleStartValueSupplier, scaleEndValueSupplier, ZOOMING_DURATION,
-                Interpolators.FAST_OUT_SLOW_IN_INTERPOLATOR));
+                Interpolators.EMPHASIZED));
         animationList.add(CompositorAnimator.ofWritableFloatPropertyKey(handler, sourceLayoutTab,
                 LayoutTab.X, xStartValueSupplier, xEndValueSupplier, ZOOMING_DURATION,
-                Interpolators.FAST_OUT_SLOW_IN_INTERPOLATOR));
+                Interpolators.EMPHASIZED));
         animationList.add(CompositorAnimator.ofWritableFloatPropertyKey(handler, sourceLayoutTab,
                 LayoutTab.Y, yStartValueSupplier, yEndValueSupplier, ZOOMING_DURATION,
-                Interpolators.FAST_OUT_SLOW_IN_INTERPOLATOR));
+                Interpolators.EMPHASIZED));
         // TODO(crbug.com/964406): when shrinking to the bottom row, bottom of the tab goes up and
         // down, making the "create group" visible for a while.
         animationList.add(CompositorAnimator.ofWritableFloatPropertyKey(handler, sourceLayoutTab,
                 LayoutTab.MAX_CONTENT_HEIGHT, sourceLayoutTab.getUnclampedOriginalContentHeight(),
-                TabUiFeatureUtilities.isTabThumbnailAspectRatioNotOne() ? Math.min(getWidth()
+                Math.min(getWidth()
                                 / TabUtils.getTabThumbnailAspectRatio(
                                         getContext(), mBrowserControlsStateProvider),
-                        sourceLayoutTab.getUnclampedOriginalContentHeight())
-                                                                        : getWidth(),
+                        sourceLayoutTab.getUnclampedOriginalContentHeight()),
                 ZOOMING_DURATION, Interpolators.FAST_OUT_SLOW_IN_INTERPOLATOR));
 
         CompositorAnimator backgroundAlpha =
                 CompositorAnimator.ofFloat(handler, 0f, 1f, BACKGROUND_FADING_DURATION_MS,
                         animator -> mBackgroundAlpha = animator.getAnimatedValue());
-        backgroundAlpha.setInterpolator(Interpolators.FAST_OUT_LINEAR_IN_INTERPOLATOR);
+        backgroundAlpha.setInterpolator(Interpolators.EMPHASIZED);
         animationList.add(backgroundAlpha);
 
         mTabToSwitcherAnimation = new AnimatorSet();
@@ -529,29 +542,27 @@ public class TabSwitcherLayout extends Layout {
         // Zoom in the source tab
         animationList.add(CompositorAnimator.ofWritableFloatPropertyKey(handler, sourceLayoutTab,
                 LayoutTab.SCALE, source.width() / (getWidth() * mDpToPx), 1, ZOOMING_DURATION,
-                Interpolators.FAST_OUT_SLOW_IN_INTERPOLATOR));
+                Interpolators.EMPHASIZED));
+        animationList.add(
+                CompositorAnimator.ofWritableFloatPropertyKey(handler, sourceLayoutTab, LayoutTab.X,
+                        source.left / mDpToPx, 0f, ZOOMING_DURATION, Interpolators.EMPHASIZED));
         animationList.add(CompositorAnimator.ofWritableFloatPropertyKey(handler, sourceLayoutTab,
-                LayoutTab.X, source.left / mDpToPx, 0f, ZOOMING_DURATION,
-                Interpolators.FAST_OUT_SLOW_IN_INTERPOLATOR));
-        animationList.add(CompositorAnimator.ofWritableFloatPropertyKey(handler, sourceLayoutTab,
-                LayoutTab.Y, source.top / mDpToPx, 0f, ZOOMING_DURATION,
-                Interpolators.FAST_OUT_SLOW_IN_INTERPOLATOR));
+                LayoutTab.Y, source.top / mDpToPx, 0f, ZOOMING_DURATION, Interpolators.EMPHASIZED));
         // TODO(crbug.com/964406): when shrinking to the bottom row, bottom of the tab goes up and
         // down, making the "create group" visible for a while.
         animationList.add(CompositorAnimator.ofWritableFloatPropertyKey(handler, sourceLayoutTab,
                 LayoutTab.MAX_CONTENT_HEIGHT,
-                TabUiFeatureUtilities.isTabThumbnailAspectRatioNotOne() ? Math.min(getWidth()
+                Math.min(getWidth()
                                 / TabUtils.getTabThumbnailAspectRatio(
                                         getContext(), mBrowserControlsStateProvider),
-                        sourceLayoutTab.getUnclampedOriginalContentHeight())
-                                                                        : getWidth(),
+                        sourceLayoutTab.getUnclampedOriginalContentHeight()),
                 sourceLayoutTab.getUnclampedOriginalContentHeight(), ZOOMING_DURATION,
-                Interpolators.FAST_OUT_SLOW_IN_INTERPOLATOR));
+                Interpolators.EMPHASIZED));
 
         CompositorAnimator backgroundAlpha =
                 CompositorAnimator.ofFloat(handler, 1f, 0f, BACKGROUND_FADING_DURATION_MS,
                         animator -> mBackgroundAlpha = animator.getAnimatedValue());
-        backgroundAlpha.setInterpolator(Interpolators.FAST_OUT_LINEAR_IN_INTERPOLATOR);
+        backgroundAlpha.setInterpolator(Interpolators.EMPHASIZED);
         animationList.add(backgroundAlpha);
 
         mTabToSwitcherAnimation = new AnimatorSet();

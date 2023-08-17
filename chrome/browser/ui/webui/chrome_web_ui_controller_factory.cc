@@ -168,7 +168,7 @@
 #include "chrome/browser/ui/webui/side_panel/bookmarks/bookmarks_side_panel_ui.h"
 #include "chrome/browser/ui/webui/side_panel/customize_chrome/customize_chrome_ui.h"
 #include "chrome/browser/ui/webui/side_panel/history_clusters/history_clusters_side_panel_ui.h"
-#include "chrome/browser/ui/webui/side_panel/read_anything/read_anything_ui.h"
+#include "chrome/browser/ui/webui/side_panel/read_anything/read_anything_untrusted_ui.h"
 #include "chrome/browser/ui/webui/side_panel/reading_list/reading_list_ui.h"
 #include "chrome/browser/ui/webui/side_panel/user_notes/user_notes_side_panel_ui.h"
 #include "chrome/browser/ui/webui/signin/sync_confirmation_ui.h"
@@ -279,13 +279,16 @@
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
 #include "chrome/browser/ui/webui/signin/dice_web_signin_intercept_ui.h"
-#include "chrome/browser/ui/webui/signin/signin_reauth_ui.h"
 #include "chrome/browser/ui/webui/welcome/helpers.h"
 #include "chrome/browser/ui/webui/welcome/welcome_ui.h"
 #endif
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT) || BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/ui/webui/signin/inline_login_ui.h"
+#endif
+
+#if BUILDFLAG(ENABLE_DICE_SUPPORT) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "chrome/browser/ui/webui/signin/signin_reauth_ui.h"
 #endif
 
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
@@ -300,8 +303,8 @@
 #include "chrome/browser/ui/webui/ash/chromebox_for_meetings/network_settings_dialog.h"
 #endif  // BUILDFLAG(PLATFORM_CFM)
 
-#if BUILDFLAG(ENABLE_WAFFLE_DESKTOP)
-#include "chrome/browser/ui/webui/waffle/waffle_ui.h"
+#if BUILDFLAG(ENABLE_SEARCH_ENGINE_CHOICE)
+#include "chrome/browser/ui/webui/search_engine_choice/search_engine_choice_ui.h"
 #endif
 
 using content::WebUI;
@@ -715,10 +718,10 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<SigninEmailConfirmationUI>;
 #endif
 
-#if BUILDFLAG(ENABLE_WAFFLE_DESKTOP)
-  if (url.host_piece() == chrome::kChromeUIWaffleHost &&
-      base::FeatureList::IsEnabled(switches::kWaffle)) {
-    return &NewWebUI<WaffleUI>;
+#if BUILDFLAG(ENABLE_SEARCH_ENGINE_CHOICE)
+  if (url.host_piece() == chrome::kChromeUISearchEngineChoiceHost &&
+      base::FeatureList::IsEnabled(switches::kSearchEngineChoice)) {
+    return &NewWebUI<SearchEngineChoiceUI>;
   }
 #endif
 
@@ -857,16 +860,19 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
   }
   if (url.host_piece() == chrome::kChromeUIDiceWebSigninInterceptHost)
     return &NewWebUI<DiceWebSigninInterceptUI>;
-  if (url.host_piece() == chrome::kChromeUISigninReauthHost &&
-      !profile->IsOffTheRecord()) {
-    return &NewWebUI<SigninReauthUI>;
-  }
 #endif
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT) || BUILDFLAG(IS_CHROMEOS_ASH)
   // Inline login UI is available on all platforms except Android and Lacros.
   if (url.host_piece() == chrome::kChromeUIChromeSigninHost)
     return &NewWebUI<InlineLoginUI>;
+#endif
+
+#if BUILDFLAG(ENABLE_DICE_SUPPORT) || BUILDFLAG(IS_CHROMEOS_LACROS)
+  if (url.host_piece() == chrome::kChromeUISigninReauthHost &&
+      !profile->IsOffTheRecord()) {
+    return &NewWebUI<SigninReauthUI>;
+  }
 #endif
 
 #if BUILDFLAG(PLATFORM_CFM)
@@ -1105,12 +1111,15 @@ ChromeWebUIControllerFactory::GetListOfAcceptableURLs() {
     // avoid confusion, the two instances should provide a link to each other.
     GURL(chrome::kChromeUIAboutURL),
     GURL(chrome::kChromeUIAppServiceInternalsURL),
+    GURL(chrome::kChromeUIChromeURLsURL),
     GURL(chrome::kChromeUIComponentsUrl),
     GURL(chrome::kChromeUICreditsURL),
     GURL(chrome::kChromeUIDeviceLogUrl),
+    GURL(chrome::kChromeUIExtensionsURL),
     GURL(chrome::kChromeUIFlagsURL),
     GURL(chrome::kChromeUIGpuURL),
     GURL(chrome::kChromeUIHistogramsURL),
+    GURL(chrome::kChromeUIInspectURL),
     GURL(chrome::kChromeUIInvalidationsUrl),
     GURL(chrome::kChromeUIManagementURL),
     GURL(chrome::kChromeUIPrefsInternalsURL),
@@ -1204,6 +1213,14 @@ ChromeWebUIControllerFactory::GetListOfAcceptableURLs() {
                        url::kStandardSchemeSeparator,
                        extension_misc::kEspeakSpeechSynthesisExtensionId,
                        extension_misc::kEspeakSpeechSynthesisOptionsPath})),
+    // This file doesn't exist but the options page links to it (b/269703827),
+    // so we have to list it here anyways to prevent opening an Ash window on
+    // e.g. shift-click.
+    // TODO(b/269703827): Revisit when Espeak is fixed.
+    GURL(base::StrCat({extensions::kExtensionScheme,
+                       url::kStandardSchemeSeparator,
+                       extension_misc::kEspeakSpeechSynthesisExtensionId,
+                       "/COPYING"})),
     GURL(base::StrCat({extensions::kExtensionScheme,
                        url::kStandardSchemeSeparator,
                        extension_misc::kGoogleSpeechSynthesisExtensionId,

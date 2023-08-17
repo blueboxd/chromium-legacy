@@ -314,6 +314,7 @@ chromium-metrics-reviews@google.com.
   </suffix>
   <suffix name="feedv2" label="Feed V2 Module"/>
   <suffix name="image_editor" label="Image Editor Module"/>
+  <suffix name="read_aloud_playback" label="Read Aloud Playback Module"/>
   <suffix name="stack_unwinder" label="Stack Unwinder Module"/>
   <suffix name="survey" label="Survey Module"/>
   <suffix name="tab_ui" label="Tab Management Module"/>
@@ -1550,6 +1551,7 @@ chromium-metrics-reviews@google.com.
   <suffix name="Google" label="Google."/>
   <suffix name="GoogleDns64" label="Google DNS64."/>
   <suffix name="Iij" label="Iij."/>
+  <suffix name="Levonet" label="Levonet s.r.o."/>
   <suffix name="NextDns" label="NextDNS."/>
   <suffix name="OpenDNS" label="OpenDNS standard service."/>
   <suffix name="OpenDNSFamily" label="OpenDNS Family Shield service."/>
@@ -2431,10 +2433,6 @@ chromium-metrics-reviews@google.com.
   <suffix name="8to16min" label=""/>
   <affected-histogram
       name="Memory.Experimental.Renderer.HighestPrivateMemoryFootprint"/>
-  <affected-histogram
-      name="Memory.Experimental.Renderer.PeakResidentSet.AtHighestPrivateMemoryFootprint"/>
-  <affected-histogram
-      name="Memory.Experimental.Renderer.WebpageCount.AtHighestPrivateMemoryFootprint"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="MimeTypeBucket" separator=".">
@@ -2504,13 +2502,6 @@ chromium-metrics-reviews@google.com.
   <affected-histogram name="Mobile.Messages.Passwords.Modal.Dismiss"/>
   <affected-histogram name="Mobile.Messages.Passwords.Modal.Event"/>
   <affected-histogram name="Mobile.Messages.Passwords.Modal.Present"/>
-</histogram_suffixes>
-
-<histogram_suffixes name="MobileDownloadResumptionsCountTypes" separator=".">
-  <suffix name="Automatic" label=""/>
-  <suffix name="Manual" label=""/>
-  <suffix name="Total" label=""/>
-  <affected-histogram name="MobileDownload.ResumptionsCount"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="MobileFreEntryType" separator=".">
@@ -4362,7 +4353,6 @@ chromium-metrics-reviews@google.com.
   <suffix name="UponDeletion" label="Recorded for a profile upon its deletion"/>
   <affected-histogram name="Profile.State.Avatar"/>
   <affected-histogram name="Profile.State.LastUsed"/>
-  <affected-histogram name="Profile.State.Name"/>
   <affected-histogram name="Profile.State.SyncEnabled"/>
   <affected-histogram name="Profile.State.UnconsentedPrimaryAccountType"/>
 </histogram_suffixes>
@@ -4750,6 +4740,9 @@ chromium-metrics-reviews@google.com.
 </histogram_suffixes>
 
 <histogram_suffixes name="SecurityInterstitialSBWithSourceType" separator=".">
+  <suffix name="from_android_safebrowsing_real_time"
+      label="Interstitial for a resource classified as unsafe by the Android
+             Safe Browsing hash-prefix real-time API."/>
   <suffix name="from_client_side_detection"
       label="Interstitial for a resource classified as unsafe by the client
              side detection."/>

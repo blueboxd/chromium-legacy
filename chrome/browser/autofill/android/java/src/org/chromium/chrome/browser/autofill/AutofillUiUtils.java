@@ -94,11 +94,16 @@ public class AutofillUiUtils {
         int NONE = 7;
     }
 
+    /**
+     * Different sizes in which we show the credit card art images. Update the {@code NUM_SIZES}
+     * entry when adding/removing entries.
+     */
     @IntDef({CardIconSize.SMALL, CardIconSize.LARGE})
     @Retention(RetentionPolicy.SOURCE)
     public @interface CardIconSize {
         int SMALL = 0;
         int LARGE = 1;
+        int NUM_SIZES = 2;
     }
 
     /**
@@ -534,6 +539,31 @@ public class AutofillUiUtils {
             url.append("-s");
         }
         return new GURL(url.toString());
+    }
+
+    /**
+     * Always show the Capital One virtual card icon for virtual cards if the card icon URL is
+     * available for the card. Never show the Capital One virtual card icon for FPAN. Show rich card
+     * art when the metadata experiment is enabled.
+     * @param customIconUrl {@link GURL} for fetching the custom icon.
+     * @param isVirtualCard Whether or not the card is a virtual card.
+     * @return True if the custom icon should be shown. False otherwise.
+     */
+    public static boolean shouldShowCustomIcon(GURL customIconUrl, boolean isVirtualCard) {
+        if (customIconUrl == null) {
+            return false;
+        }
+
+        if (isVirtualCard && customIconUrl.getSpec().equals(CAPITAL_ONE_ICON_URL)) {
+            return true;
+        }
+
+        if (!customIconUrl.getSpec().equals(CAPITAL_ONE_ICON_URL)
+                && ChromeFeatureList.isEnabled(ChromeFeatureList.AUTOFILL_ENABLE_CARD_ART_IMAGE)) {
+            return true;
+        }
+
+        return false;
     }
 
     /**

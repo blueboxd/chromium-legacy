@@ -72,7 +72,6 @@
 <translation id="2592940277904433508">‏ادامه استفاده از Chromium</translation>
 <translation id="2648074677641340862">‏یک خطای سیستم‌عامل در طول نصب روی داد. لطفاً Chromium را دوباره نصب کنید.</translation>
 <translation id="2661879430930417727">‏اگر از دستگاهی به‌صورت مشترک استفاده می‌کنید، دوستان و اعضای خانواده می‌توانند جداگانه مرور کنند و Chromium را به‌شیوه خودشان تنظیم کنند</translation>
-<translation id="2669853942967761236">‏Chromium این فایل بایگانی را مسدود کرده است چون ممکن است بدافزار پنهان کرده باشد</translation>
 <translation id="268602741124540128">‏<ph name="ACCOUNT_FIRST_NAME" /> به Chromium خوش آمدید</translation>
 <translation id="2711502716910134313">‏برگه Chromium</translation>
 <translation id="2718390899429598676">‏برای امنیت بیشتر، Chromium داده‌های شما را رمزگذاری می‌کند.</translation>
@@ -269,6 +268,7 @@
 <translation id="6613594504749178791">‏دفعه بعدی که Chromium را مجدداً راه‌اندازی می‌کنید، این تغییرات اعمال می‌شوند.</translation>
 <translation id="665732753414869868">‏Chromium برای ایجاد نقشه سه‌بعدی از محیط اطراف شما به اجازه دوربین نیاز دارد</translation>
 <translation id="6663852025006259149">‏سایت‌ها احتمالاً عملکردی مطابق انتظار شما خواهند داشت اما بعداز بسته شدن همه پنجره‌های Chromium، شما را به‌یاد نخواهند داشت</translation>
+<translation id="6669284030132180248">‏اگر نشانک‌ها را در «حساب Google» هم ذخیره کنید، می‌توانید قیمت محصولات را در Chromium پیگیری کنید و از کاهش قیمت‌ها مطلع شوید</translation>
 <translation id="6676384891291319759">دسترسی به اینترنت</translation>
 <translation id="668175097507315160">‏به‌دلیل بروز خطا هنگام ورود به سیستم، ChromiumOS نتوانست داده‌های شما را همگام‌سازی کند.</translation>
 <translation id="6709350901466051922">‏Chromium برای این سایت به اجازه میکروفون نیاز دارد</translation>
@@ -404,6 +404,5 @@ Chromium قادر به بازیابی تنظیمات شما نیست.</translati
 <translation id="942598560705308788">‏گواهینامه‌های تحت‌مدیریت Chromium</translation>
 <translation id="965162752251293939">‏چه‌کسی از Chromium استفاده می‌کند؟</translation>
 <translation id="967427899662692980">‏دریافت قوی‌ترین امنیت Chromium</translation>
-<translation id="9792300276217204">‏داده‌های سایت همواره بعداز بستن Chromium از دستگاه پاک شود</translation>
 <translation id="985602178874221306">Chromium Authors</translation>
 </translationbundle>

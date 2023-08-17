@@ -40,6 +40,7 @@ and **events**.
 | ufs_lifetime |
 | power_button |
 | audio_driver |
+| bluetooth_discovery |
 
 ### Enum RoutineStatus
 | Property Name |
@@ -169,6 +170,7 @@ and **events**.
 | runBatteryHealthRoutine | () => Promise<Routine\> | `os.diagnostics` | M96 |
 | runBatteryDischargeRoutine | (params: RunBatteryDischargeRoutineRequest) => Promise<Routine\> | `os.diagnostics` | M96 |
 | runBatteryChargeRoutine | (params: RunBatteryChargeRoutineRequest) => Promise<Routine\> | `os.diagnostics` | M96 |
+| runBluetoothDiscoveryRoutine | () => Promise<Routine\> | `os.diagnostics` | M118 |
 | runBluetoothPowerRoutine | () => Promise<Routine\> | `os.diagnostics` | M117 |
 | runCpuCacheRoutine | (params: RunCpuRoutineRequest) => Promise<Routine\> | `os.diagnostics` | M96 |
 | runCpuFloatingPointAccuracyRoutine | (params: RunCpuRoutineRequest) => Promise<Routine\> | `os.diagnostics` | M99 |
@@ -207,7 +209,7 @@ and **events**.
 | touchpad_button |
 | touchpad_touch |
 | touchpad_connected |
-| hdmi |
+| external_display |
 | stylus_touch |
 | stylus_connected |
 
@@ -352,16 +354,17 @@ and **events**.
 | categories | Array<string\> | USB device categories: https://www.usb.org/defined-class-codes |
 | event | UsbEvent | The event that occurred |
 
-### Enum HdmiEvent
+### Enum ExternalDisplayEvent
 | Property Name |
 ------------ |
 | connected |
 | disconnected |
 
-### HdmiEventInfo
+### ExternalDisplayEventInfo
 | Property Name | Type | Description |
 ------------ | ------- | ----------- |
-| event | HdmiEvent | The event that occurred |
+| event | ExternalDisplayEvent | The event that occurred |
+| display_info | ExternalDisplayInfo | The information related to the plugged in external display |
 
 ### Enum SdCardEvent
 | Property Name |
@@ -433,10 +436,31 @@ and **events**.
 | touchPoints | Array<TouchPointInfo\> | The touch points reported by the touchpad |
 
 ### TouchpadConnectedEventInfo
+| Property Name | Type | Description |
+------------ | ------- | ----------- |
 | maxX | number | The maximum possible x position of touch points |
 | maxY | number | The maximum possible y position of touch points |
 | maxPressure | number | The maximum possible pressure of touch points, or 0 if pressure is not supported |
 | buttons | Array<InputTouchButton\> | The supported buttons |
+
+### StylusTouchPointInfo
+| Property Name | Type | Description |
+------------ | ------- | ----------- |
+| x | number | The x position in the cartesian XY plane. The value ranges from 0 to `max_x` as defined in `StylusConnectedEventInfo` |
+| y | number | The y position in the cartesian XY plane. The value ranges from 0 to `max_y` as defined in `StylusConnectedEventInfo` |
+| pressure | number | The pressure applied to the touch contact. The value ranges from 0 to `max_pressure` as defined in `StylusConnectedEventInfo` |
+
+### StylusTouchEventInfo
+| Property Name | Type | Description |
+------------ | ------- | ----------- |
+| touchPoint | StylusTouchPointInfo | The info of the stylus touch point. A null touch point means the stylus leaves the contact |
+
+### StylusConnectedEventInfo
+| Property Name | Type | Description |
+------------ | ------- | ----------- |
+| maxX | number | The maximum possible x position of touch points |
+| maxY | number | The maximum possible y position of touch points |
+| maxPressure | number | The maximum possible pressure of touch points, or 0 if pressure is not supported |
 
 ## Functions
 
@@ -453,8 +477,8 @@ and **events**.
 | onAudioJackEvent | function(AudioJackEventInfo) | `os.events` | M115 | An audio device was plugged in or out |
 | onKeyboardDiagnosticEvent | function(KeyboardDiagnosticEventInfo) | `os.events` | M117 | Informs the extension that a Keyboard diagnostic has been completed in the first party diagnostic tool |
 | onLidEvent | function(LidEventInfo) | `os.events` | M115 | The device lid was opened or closed |
-| onUsbEvent | function(UsbEventInfo) | `os.events` | M117 | Informs the extension that a `Usb` event occurred |
-| onHdmiEvent | function(HdmiEventInfo) | `os.events` | M117 | Informs the extension that a `Hdmi` event occurred |
+| onUsbEvent | function(UsbEventInfo) | `os.events` | M115 | Informs the extension that a `Usb` event occurred |
+| onExternalDisplayEvent | function(ExternalDisplayEventInfo) | `os.events` | M117 | Informs the extension that a `ExternalDisplay` event occurred |
 | onSdCardEvent | function(SdCardEventInfo) | `os.events` | M117 | Informs the extension that a `SD Card` event occurred |
 | onPowerEvent | function(PowerEventInfo) | `os.events` | M117 | Informs the extension that a `Power` event occurred |
 | onStylusGarageEvent | function(StylusGarageEventInfo) | `os.events` | M117 | Informs the extension that a `Stylus Garage` event occurred |
@@ -605,8 +629,8 @@ and **events**.
 ### ExternalDisplayInfo
 | Property Name | Type | Description |
 ------------ | ------- | ----------- |
-| edpInfo | EmbeddedDisplayInfo | Embedded display info |
-| dpInfos | Array<ExternalDisplayInfo\> | External display info |
+| embeddedDisplay | EmbeddedDisplayInfo | Embedded display info |
+| externalDisplays | Array<ExternalDisplayInfo\> | External display info |
 
 ### Enum NetworkType
 | Property Name |

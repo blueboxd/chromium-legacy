@@ -18,6 +18,8 @@ class ServiceWorkerContext;
 
 namespace extensions {
 
+enum class EventDispatchSource : int;
+
 // Manages in-flight events for extension Service Worker.
 class EventAckData {
  public:
@@ -35,7 +37,8 @@ class EventAckData {
                               int render_process_id,
                               int64_t version_id,
                               int event_id,
-                              base::TimeTicks dispatch_start_time);
+                              base::TimeTicks dispatch_start_time,
+                              EventDispatchSource dispatch_source);
   // Clears the record of our knowledge of an in-flight event with |event_id|.
   //
   // On failure, |failure_callback| is called synchronously or asynchronously.
@@ -49,6 +52,20 @@ class EventAckData {
  private:
   // Information about an unacked event.
   struct EventInfo {
+    EventInfo(const base::Uuid& request_uuid,
+              int render_process_id,
+              bool start_ok,
+              base::TimeTicks dispatch_start_time,
+              EventDispatchSource dispatch_source)
+        : request_uuid(request_uuid),
+          render_process_id(render_process_id),
+          start_ok(start_ok),
+          dispatch_start_time(dispatch_start_time),
+          dispatch_source(dispatch_source) {}
+    EventInfo(const EventInfo&) = delete;
+    EventInfo(EventInfo&&) = default;
+    EventInfo& operator=(const EventInfo&) = delete;
+
     // Uuid of the Service Worker's external request for the event.
     base::Uuid request_uuid;
     // RenderProcessHost id.
@@ -57,11 +74,13 @@ class EventAckData {
     bool start_ok;
     // The time the event was dispatched to the event router for the extension.
     base::TimeTicks dispatch_start_time;
+    // The event dispatching processing flow that was followed for this event.
+    EventDispatchSource dispatch_source;
   };
 
   // TODO(crbug.com/1441221): Mark events that are not acked within 5 minutes
   // (if the worker is still around) as stale, and emit
-  // Extensions.Events.DispatchToAckTime.ExtensionServiceWorker at that point.
+  // Extensions.Events.DispatchToAckTime.ExtensionServiceWorker2 at that point.
   // Acks after that point should check staleness and not emit a second time.
   std::map<int, EventInfo> unacked_events_;
 

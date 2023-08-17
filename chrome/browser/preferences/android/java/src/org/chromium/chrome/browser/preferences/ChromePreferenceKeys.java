@@ -44,7 +44,7 @@ import java.util.List;
  * 3. Delete the KeyPrefix constant.
  *
  * Tests in ChromePreferenceKeysTest and checks in {@link ChromePreferenceKeyChecker} ensure the
- * sanity of this file.
+ * validity of this file.
  */
 public final class ChromePreferenceKeys {
     /**
@@ -350,11 +350,6 @@ public final class ChromePreferenceKeys {
      */
     public static final String FLAGS_CACHED_START_SURFACE_ENABLED = "start_surface_enabled";
 
-    /**
-     * Key to cache whether SWAP_PIXEL_FORMAT_TO_FIX_CONVERT_FROM_TRANSLUCENT is enabled.
-     */
-    public static final String FLAGS_CACHED_SWAP_PIXEL_FORMAT_TO_FIX_CONVERT_FROM_TRANSLUCENT =
-            "swap_pixel_format_to_fix_convert_from_translucent";
     /**
      * Whether or not the tab group is enabled.
      * Default value is false.
@@ -743,6 +738,12 @@ public final class ChromePreferenceKeys {
     /** Key used to store the date of when search engine choice was requested. */
     public static final String SEARCH_ENGINE_CHOICE_REQUESTED_TIMESTAMP =
             "search_engine_choice_requested_timestamp";
+    /**
+     * Key used to store the date of when an OS level choice had last been applied as default
+     * search engine by Chrome. Linux epoch timestamp in millis.
+     */
+    public static final String SEARCH_ENGINE_CHOICE_OS_CHOICE_APPLIED_TIMESTAMP =
+            "Chrome.SearchEngineChoice.OsChoiceAppliedTimestamp";
 
     public static final String SEARCH_WIDGET_IS_VOICE_SEARCH_AVAILABLE =
             "org.chromium.chrome.browser.searchwidget.IS_VOICE_SEARCH_AVAILABLE";
@@ -1080,6 +1081,7 @@ public final class ChromePreferenceKeys {
                 QUERY_TILES_SHOW_SEGMENTATION_RESULT,
                 QUERY_TILES_SHOWN_ON_START_SURFACE,
                 REGULAR_TAB_COUNT,
+                SEARCH_ENGINE_CHOICE_OS_CHOICE_APPLIED_TIMESTAMP,
                 SEGMENTATION_FEED_ACTIVE_USER,
                 SEGMENTATION_SHOW_QUERY_TILES,
                 SETTINGS_SAFETY_CHECK_LAST_RUN_TIMESTAMP,

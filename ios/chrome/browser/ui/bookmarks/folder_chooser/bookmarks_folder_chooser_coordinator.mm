@@ -28,10 +28,6 @@
 #import "ios/chrome/browser/ui/bookmarks/folder_editor/bookmarks_folder_editor_coordinator.h"
 #import "ios/chrome/browser/ui/bookmarks/folder_editor/bookmarks_folder_editor_coordinator_delegate.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 @interface BookmarksFolderChooserCoordinator () <
     BookmarksFolderChooserMediatorDelegate,
     BookmarksFolderChooserViewControllerPresentationDelegate,
@@ -119,7 +115,7 @@
   [super start];
   ChromeBrowserState* browserState =
       self.browser->GetBrowserState()->GetOriginalChromeBrowserState();
-  bookmarks::BookmarkModel* profileModel =
+  bookmarks::BookmarkModel* localOrSyncableModel =
       ios::LocalOrSyncableBookmarkModelFactory::GetForBrowserState(
           browserState);
   bookmarks::BookmarkModel* accountModel =
@@ -129,11 +125,11 @@
   syncer::SyncService* syncService =
       SyncServiceFactory::GetForBrowserState(browserState);
   _mediator = [[BookmarksFolderChooserMediator alloc]
-      initWithProfileBookmarkModel:profileModel
-              accountBookmarkModel:accountModel
-                       editedNodes:std::move(_hiddenNodes)
-             authenticationService:authenticationService
-                       syncService:syncService];
+      initWithLocalOrSyncableBookmarkModel:localOrSyncableModel
+                      accountBookmarkModel:accountModel
+                               editedNodes:std::move(_hiddenNodes)
+                     authenticationService:authenticationService
+                               syncService:syncService];
   _hiddenNodes.clear();
   _mediator.delegate = self;
   _mediator.selectedFolderNode = _selectedFolder;

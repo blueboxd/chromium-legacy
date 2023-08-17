@@ -13,6 +13,7 @@
 #import "base/mac/foundation_util.h"
 #import "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
+#import "ios/chrome/browser/shared/model/prefs/pref_names.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_app_interface.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case_app_interface.h"
@@ -24,10 +25,6 @@
 #import "ios/testing/nserror_util.h"
 #import "ios/web/public/test/element_selector.h"
 #import "net/base/mac/url_conversions.h"
-
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
 
 using base::test::ios::kWaitForActionTimeout;
 using base::test::ios::kWaitForJSCompletionTimeout;
@@ -321,6 +318,11 @@ id<GREYAction> grey_longPressWithDuration(base::TimeDelta duration) {
 
 - (void)closeCurrentTab {
   [ChromeEarlGreyAppInterface closeCurrentTab];
+  GREYWaitForAppToIdle(@"App failed to idle");
+}
+
+- (void)pinCurrentTab {
+  [ChromeEarlGreyAppInterface pinCurrentTab];
   GREYWaitForAppToIdle(@"App failed to idle");
 }
 
@@ -1268,15 +1270,6 @@ id<GREYAction> grey_longPressWithDuration(base::TimeDelta duration) {
   [ChromeEarlGreyAppInterface addBookmarkWithSyncPassphrase:syncPassphrase];
 }
 
-- (void)waitForBookmarksToFinishLoading {
-  EG_TEST_HELPER_ASSERT_NO_ERROR(
-      [ChromeEarlGreyAppInterface waitForBookmarksToFinishinLoading]);
-}
-
-- (void)clearBookmarks {
-  EG_TEST_HELPER_ASSERT_NO_ERROR([ChromeEarlGreyAppInterface clearBookmarks]);
-}
-
 - (base::Value)evaluateJavaScript:(NSString*)javaScript {
   JavaScriptExecutionResult* result =
       [ChromeEarlGreyAppInterface executeJavaScript:javaScript];
@@ -1390,8 +1383,14 @@ id<GREYAction> grey_longPressWithDuration(base::TimeDelta duration) {
   return [ChromeEarlGreyAppInterface isUIButtonConfigurationEnabled];
 }
 
-- (BOOL)isSortingTabsByRecency {
-  return [ChromeEarlGreyAppInterface isSortingTabsByRecency];
+- (BOOL)isBottomOmniboxSteadyStateEnabled {
+  return [ChromeEarlGreyAppInterface isBottomOmniboxSteadyStateEnabled];
+}
+
+- (BOOL)isUnfocusedOmniboxAtBottom {
+  return self.isBottomOmniboxSteadyStateEnabled && !self.isIPadIdiom &&
+         self.isSplitToolbarMode &&
+         [self userBooleanPref:prefs::kBottomOmnibox];
 }
 
 #pragma mark - ContentSettings
@@ -1468,6 +1467,21 @@ id<GREYAction> grey_longPressWithDuration(base::TimeDelta duration) {
   [ChromeEarlGreyAppInterface
         setIntegerValue:value
       forLocalStatePref:base::SysUTF8ToNSString(prefName)];
+}
+
+- (void)setTimeValue:(base::Time)value
+    forLocalStatePref:(const std::string&)UTF8PrefName {
+  NSString* prefName = base::SysUTF8ToNSString(UTF8PrefName);
+  return [ChromeEarlGreyAppInterface setTimeValue:value
+                                forLocalStatePref:prefName];
+}
+
+- (void)setStringValue:(const std::string&)UTF8Value
+     forLocalStatePref:(const std::string&)UTF8PrefName {
+  NSString* value = base::SysUTF8ToNSString(UTF8Value);
+  NSString* prefName = base::SysUTF8ToNSString(UTF8PrefName);
+  return [ChromeEarlGreyAppInterface setStringValue:value
+                                  forLocalStatePref:prefName];
 }
 
 // Returns a base::Value representation of the requested pref.

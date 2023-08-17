@@ -20,6 +20,7 @@
 #include "chrome/browser/web_applications/locks/noop_lock.h"
 #include "chrome/browser/web_applications/locks/web_app_lock_manager.h"
 #include "chrome/browser/web_applications/web_app_command_manager.h"
+#include "chrome/browser/web_applications/web_app_command_scheduler.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_id.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
@@ -316,7 +317,8 @@ void FetchManifestAndInstallCommand::OnDidPerformInstallableCheck(
     // primary key. The only thing that identifies a shortcut is the start URL,
     // which is always set to the current page.
     *web_app_info_ = WebAppInstallInfo::CreateInstallInfoForCreateShortcut(
-        web_contents_->GetLastCommittedURL(), *web_app_info_);
+        web_contents_->GetLastCommittedURL(), web_contents_->GetTitle(),
+        *web_app_info_);
   }
 
   base::flat_set<GURL> icon_urls = GetValidIconUrlsToDownload(*web_app_info_);

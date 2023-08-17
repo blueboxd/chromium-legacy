@@ -53,6 +53,7 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.MutableFlagWithSafeDefault;
 import org.chromium.chrome.browser.fullscreen.BrowserControlsManager;
 import org.chromium.chrome.browser.fullscreen.FullscreenManager;
+import org.chromium.chrome.browser.layouts.EventFilter.EventType;
 import org.chromium.chrome.browser.layouts.components.VirtualView;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
@@ -288,16 +289,6 @@ public class CompositorViewHolder extends FrameLayout
 
     private PrefService mPrefService;
 
-    /**
-     * Creates a {@link CompositorView}.
-     * @param c The Context to create this {@link CompositorView} in.
-     */
-    public CompositorViewHolder(Context c) {
-        super(c);
-
-        internalInit();
-    }
-
     @Override
     public PointerIcon onResolvePointerIcon(MotionEvent event, int pointerIndex) {
         View activeView = getContentView();
@@ -312,7 +303,6 @@ public class CompositorViewHolder extends FrameLayout
      */
     public CompositorViewHolder(Context c, AttributeSet attrs) {
         super(c, attrs);
-
         internalInit();
     }
 
@@ -704,7 +694,7 @@ public class CompositorViewHolder extends FrameLayout
         if (mLayoutManager == null) return false;
 
         mEventOffsetHandler.onInterceptTouchEvent(e);
-        return mLayoutManager.onInterceptTouchEvent(e, mIsKeyboardShowing);
+        return mLayoutManager.onInterceptMotionEvent(e, mIsKeyboardShowing, EventType.TOUCH);
     }
 
     @Override
@@ -753,7 +743,16 @@ public class CompositorViewHolder extends FrameLayout
     @Override
     public boolean onInterceptHoverEvent(MotionEvent e) {
         mEventOffsetHandler.onInterceptHoverEvent(e);
-        return super.onInterceptHoverEvent(e);
+        if (mLayoutManager == null) return super.onInterceptHoverEvent(e);
+        return mLayoutManager.onInterceptMotionEvent(e, mIsKeyboardShowing, EventType.HOVER);
+    }
+
+    @Override
+    public boolean onHoverEvent(MotionEvent e) {
+        super.onHoverEvent(e);
+        boolean consumed = mLayoutManager != null && mLayoutManager.onHoverEvent(e);
+        mEventOffsetHandler.onHoverEvent(e);
+        return consumed;
     }
 
     @Override

@@ -29,8 +29,8 @@
 //
 //  A handler of the Read Anything app
 //  (chrome/browser/resources/side_panel/read_anything/app.ts).
-//  This class is created and owned by ReadAnythingUI and has the same lifetime
-//  as the Side Panel view.
+//  This class is created and owned by ReadAnythingUntrustedUI and has the same
+//  lifetime as the Side Panel view.
 //
 class ReadAnythingUntrustedPageHandler
     : public ui::AXActionHandlerObserver,
@@ -60,6 +60,13 @@ class ReadAnythingUntrustedPageHandler
 
   // read_anything::mojom::UntrustedPageHandler:
   void OnCopy() override;
+  void OnLineSpaceChange(
+      read_anything::mojom::LineSpacing line_spacing) override;
+  void OnLetterSpaceChange(
+      read_anything::mojom::LetterSpacing letter_spacing) override;
+  void OnFontChange(const std::string& font) override;
+  void OnFontSizeChange(double font_size) override;
+  void OnColorChange(read_anything::mojom::Colors color) override;
   void OnLinkClicked(const ui::AXTreeID& target_tree_id,
                      ui::AXNodeID target_node_id) override;
   void OnSelectionChange(const ui::AXTreeID& target_tree_id,

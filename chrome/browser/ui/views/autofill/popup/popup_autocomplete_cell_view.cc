@@ -17,6 +17,7 @@
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/events/keycodes/keyboard_codes.h"
+#include "ui/gfx/canvas.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/animation/ink_drop.h"
 #include "ui/views/controls/button/button_controller.h"
@@ -26,10 +27,13 @@
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/vector_icons.h"
 #include "ui/views/view.h"
+#include "ui/views/widget/widget.h"
 
 namespace autofill {
 
 namespace {
+
+constexpr int kCloseIconSize = 16;
 
 // Overrides `OnMouseEntered` and `OnMouseExited` from
 // `views::ButtonController`. Used by `PopupAutocompleteCellView` to know when
@@ -58,17 +62,71 @@ class DeleteButtonController : public views::ButtonController {
   raw_ptr<DeleteButtonDelegate> delete_button_owner_ = nullptr;
 };
 
-constexpr int kCloseIconSize = 16;
+ButtonPlaceholder::ButtonPlaceholder(DeleteButtonDelegate* delete_button_owner)
+    : delete_button_owner_(delete_button_owner) {}
+ButtonPlaceholder::~ButtonPlaceholder() = default;
 
+void ButtonPlaceholder::OnPaint(gfx::Canvas* canvas) {
+  views::View::OnPaint(canvas);
+  if (first_paint_happened_) {
+    return;
+  }
+
+  // The button placeholder should have only the button as child.
+  CHECK(children().size() == 1);
+  // The placeholder also always have a parent, the cell.
+  CHECK(parent());
+
+  // If the row that owns the placeholder is rendered right under the cursor, we
+  // make the button visible.
+  View* delete_button = children()[0];
+  if (parent()->IsMouseHovered()) {
+    view_bounds_changed_observer_.Observe(delete_button);
+    delete_button->SetVisible(true);
+  }
+  first_paint_happened_ = true;
+}
+
+void ButtonPlaceholder::OnViewBoundsChanged(View* observed_view) {
+  CHECK(children().size() == 1);
+
+  // After making the button visible, we will be notified about its bounds
+  // changing. We emit a `SynthesizeMouseMoveEvent()` to first select the cell
+  // and then conditionally select the button if hovering over it. We cannot
+  // simply call `SynthesizeMouseMoveEvent()` because it calls the cell
+  // `OnMouseEntered` method after we highlight the button, leading the an
+  // incorrect state.
+  View* delete_button = children()[0];
+  if (observed_view == delete_button && observed_view->GetVisible()) {
+    GetWidget()->SynthesizeMouseMoveEvent();
+    if (observed_view->IsMouseHovered()) {
+      delete_button_owner_->OnMouseEnteredDeleteButton();
+      view_bounds_changed_observer_.Reset();
+    }
+  }
+}
+
+int ButtonPlaceholder::GetHeightForWidth(int width) const {
+  // The parent for this view (the cell) and the placeholder button uses a
+  // `BoxLayout` for its `LayoutManager`. Internally `BoxLayout` uses
+  // `GetHeightForWidth` on each children to define their height when the
+  // orientation is not `kVertical`. Finally these children uses
+  // `BoxLayout::GetPreferredSizeForChildWidth` to tell their parent their
+  // height, however they only return a non 0 value if they have visible
+  // children. This is not the case here because the button is at first no
+  // visible. Therefore we override GetHeightForWidth to return the preferred
+  // height regardless of children being visible or not.
+  return GetPreferredSize().height();
+}
 }  // namespace
 
 PopupAutocompleteCellView::PopupAutocompleteCellView(
     base::WeakPtr<AutofillPopupController> controller,
     int line_number)
-    : PopupCellView(controller->GetAutofillSuggestionTriggerSource()),
+    : PopupCellView(
+          controller->ShouldIgnoreMouseObservedOutsideItemBoundsCheck()),
       controller_(controller),
       line_number_(line_number) {
-  CHECK(controller_);
   const Suggestion& kSuggestion = controller->GetSuggestionAt(line_number_);
 
   // Add the label views.
@@ -96,6 +154,10 @@ void PopupAutocompleteCellView::HandleKeyPressEventFocusOnButton() {
   CHECK(button_);
 
   button_focused_ = true;
+  button_->SetAccessibleName(l10n_util::GetStringFUTF16(
+      IDS_AUTOFILL_DELETE_AUTOCOMPLETE_SUGGESTION_A11Y_HINT,
+      popup_cell_utils::GetVoiceOverStringFromSuggestion(
+          controller_->GetSuggestionAt(line_number_))));
   button_->GetViewAccessibility().SetPopupFocusOverride();
   button_->NotifyAccessibilityEvent(ax::mojom::Event::kSelection, true);
   views::InkDrop::Get(button_->ink_drop_view())->GetInkDrop()->SetHovered(true);
@@ -104,12 +166,20 @@ void PopupAutocompleteCellView::HandleKeyPressEventFocusOnButton() {
 
 void PopupAutocompleteCellView::HandleKeyPressEventFocusOnContent() {
   button_focused_ = false;
+
+  // TODO(crbug.com/1417187): Find out the root cause for the necessity of this
+  // workaround. Without explicitly removing the accessible name for the button,
+  // the screen reader is announcing both the content and the delete button (on
+  // MAC). For example, if the content is "jondoe@gmail.com", the screen reader
+  // announces "delete jon". This does not happen if the button has no
+  // accessible name.
+  button_->SetAccessibleName(u"");
+  UpdateSelectedAndRunCallback(true);
   GetViewAccessibility().SetPopupFocusOverride();
   NotifyAccessibilityEvent(ax::mojom::Event::kSelection, true);
   views::InkDrop::Get(button_->ink_drop_view())
       ->GetInkDrop()
       ->SetHovered(false);
-  UpdateSelectedAndRunCallback(true);
 }
 
 bool PopupAutocompleteCellView::HandleKeyPressEvent(
@@ -154,7 +224,15 @@ bool PopupAutocompleteCellView::HandleKeyPressEvent(
 void PopupAutocompleteCellView::SetSelected(bool selected) {
   CHECK(button_);
 
+  // TODO(crbug.com/1417187): Find out the root cause for the necessity of this
+  // workaround. Without explicitly removing the accessible name for the button
+  // the screen reader is announcing both the content and the delete button (on
+  // MAC). For example, if the content is "jondoe@gmail.com", the screen reader
+  // announces "delete jon". This does not happen if the button has no
+  // accessible name.
   button_->SetVisible(selected);
+  button_->SetAccessibleName(u"");
+
   autofill::PopupCellView::SetSelected(selected);
 
   // There are cases where SetSelect is called with the same value as before
@@ -205,10 +283,6 @@ void PopupAutocompleteCellView::CreateDeleteButton() {
   button->SetTooltipText(l10n_util::GetStringUTF16(
       IDS_AUTOFILL_DELETE_AUTOCOMPLETE_SUGGESTION_TOOLTIP));
   button->SetAccessibleRole(ax::mojom::Role::kMenuItem);
-  button->SetAccessibleName(l10n_util::GetStringFUTF16(
-      IDS_AUTOFILL_DELETE_AUTOCOMPLETE_SUGGESTION_A11Y_HINT,
-      popup_cell_utils::GetVoiceOverStringFromSuggestion(
-          controller_->GetSuggestionAt(line_number_))));
   button->SetVisible(false);
 
   // Make child view grow to fill the space and align the button to the right.
@@ -216,12 +290,12 @@ void PopupAutocompleteCellView::CreateDeleteButton() {
     layout->SetFlexForView(child, 1);
   }
 
-  views::View* button_placeholder =
-      AddChildView(std::make_unique<views::View>());
-  button_placeholder->SetLayoutManager(std::make_unique<views::BoxLayout>());
-  button_placeholder->SetPreferredSize(button->GetPreferredSize());
-  button_ = button_placeholder->AddChildView(std::move(button));
-  layout->SetFlexForView(button_placeholder, 0);
+  button_placeholder_ = AddChildView(std::make_unique<ButtonPlaceholder>(this));
+  button_placeholder_->SetLayoutManager(std::make_unique<views::BoxLayout>());
+  button_placeholder_->SetPreferredSize(button->GetPreferredSize());
+
+  button_ = button_placeholder_->AddChildView(std::move(button));
+  layout->SetFlexForView(button_placeholder_, 0);
 
   button_->SetButtonController(std::make_unique<DeleteButtonController>(
       button_, this,

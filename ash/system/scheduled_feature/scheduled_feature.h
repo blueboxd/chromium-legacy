@@ -98,9 +98,6 @@ class ASH_EXPORT ScheduledFeature
   TimeOfDay GetCustomStartTime() const;
   TimeOfDay GetCustomEndTime() const;
 
-  // Get whether the current time is after sunset and before sunrise.
-  bool IsNowWithinSunsetSunrise() const;
-
   // Set the desired ScheduledFeature settings in the current active user
   // prefs.
   void SetEnabled(bool enabled);
@@ -125,6 +122,8 @@ class ASH_EXPORT ScheduledFeature
       const LocalTimeConverter* local_time_converter);
   void SetTaskRunnerForTesting(
       scoped_refptr<base::SequencedTaskRunner> task_runner);
+
+  base::OneShotTimer* timer() const { return timer_.get(); }
 
  protected:
   // Called by `Refresh()` and `RefreshScheduleTimer()` to refresh the feature

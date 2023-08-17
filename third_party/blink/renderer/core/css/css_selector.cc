@@ -319,6 +319,7 @@ PseudoId CSSSelector::GetPseudoId(PseudoType type) {
     case kPseudoDecrement:
     case kPseudoDefault:
     case kPseudoDefined:
+    case kPseudoDialogInTopLayer:
     case kPseudoDir:
     case kPseudoDisabled:
     case kPseudoDoubleButton:
@@ -438,6 +439,7 @@ struct NameToPseudoStruct {
 const static NameToPseudoStruct kPseudoTypeWithoutArgumentsMap[] = {
     {"-internal-autofill-previewed", CSSSelector::kPseudoAutofillPreviewed},
     {"-internal-autofill-selected", CSSSelector::kPseudoAutofillSelected},
+    {"-internal-dialog-in-top-layer", CSSSelector::kPseudoDialogInTopLayer},
     {"-internal-has-datalist", CSSSelector::kPseudoHasDatalist},
     {"-internal-is-html", CSSSelector::kPseudoIsHtml},
     {"-internal-list-box", CSSSelector::kPseudoListBox},
@@ -630,20 +632,6 @@ CSSSelector::PseudoType CSSSelector::NameToPseudoType(
     return CSSSelector::kPseudoUnknown;
   }
 
-  // We enable parsing of the popover pseudo classes in the case that we *don't*
-  // have a document, since that mostly/always occurs when parsing UA
-  // stylesheets.
-  bool popover_attribute_enabled =
-      !document || RuntimeEnabledFeatures::HTMLPopoverAttributeEnabled(
-                       document->GetExecutionContext());
-  if (!popover_attribute_enabled &&
-      (match->type == CSSSelector::kPseudoOpen ||
-       match->type == CSSSelector::kPseudoClosed ||
-       match->type == CSSSelector::kPseudoPopoverOpen ||
-       match->type == CSSSelector::kPseudoPopoverInTopLayer)) {
-    return CSSSelector::kPseudoUnknown;
-  }
-
   if (match->type == CSSSelector::kPseudoHighlight &&
       !RuntimeEnabledFeatures::HighlightAPIEnabled()) {
     return CSSSelector::kPseudoUnknown;
@@ -801,6 +789,7 @@ void CSSSelector::UpdatePseudoType(const AtomicString& value,
     case kPseudoDecrement:
     case kPseudoDefault:
     case kPseudoDefined:
+    case kPseudoDialogInTopLayer:
     case kPseudoDir:
     case kPseudoDisabled:
     case kPseudoDoubleButton:
@@ -1405,7 +1394,8 @@ bool CSSSelector::IsTreeAbidingPseudoElement() const {
 }
 
 bool CSSSelector::IsAllowedAfterPart() const {
-  if (Match() != CSSSelector::kPseudoElement) {
+  if (Match() != CSSSelector::kPseudoElement &&
+      Match() != CSSSelector::kPseudoClass) {
     return false;
   }
   // Everything that makes sense should work following ::part. This list
@@ -1413,6 +1403,9 @@ bool CSSSelector::IsAllowedAfterPart() const {
   switch (GetPseudoType()) {
     case kPseudoBefore:
     case kPseudoAfter:
+    case kPseudoAutofill:
+    case kPseudoAutofillPreviewed:
+    case kPseudoAutofillSelected:
     case kPseudoPlaceholder:
     case kPseudoFileSelectorButton:
     case kPseudoFirstLine:
@@ -1422,6 +1415,7 @@ bool CSSSelector::IsAllowedAfterPart() const {
     case kPseudoHighlight:
     case kPseudoSpellingError:
     case kPseudoGrammarError:
+    case kPseudoWebKitAutofill:
       return true;
     default:
       return false;

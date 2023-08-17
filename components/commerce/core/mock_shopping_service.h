@@ -9,6 +9,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/uuid.h"
 #include "components/commerce/core/shopping_service.h"
 #include "components/commerce/core/subscriptions/commerce_subscription.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -39,7 +40,7 @@ class MockShoppingService : public commerce::ShoppingService {
               (override));
   MOCK_METHOD(void,
               GetUpdatedProductInfoForBookmarks,
-              (const std::vector<int64_t>& bookmark_ids,
+              (const std::vector<base::Uuid>& bookmark_uuids,
                BookmarkProductInfoUpdatedCallback info_updated_callback),
               (override));
   MOCK_METHOD(size_t, GetMaxProductBookmarkUpdatesPerBatch, (), (override));
@@ -97,13 +98,17 @@ class MockShoppingService : public commerce::ShoppingService {
               (override));
   MOCK_METHOD(bool, IsMerchantViewerEnabled, (), (override));
   MOCK_METHOD(bool, IsPriceInsightsEligible, (), (override));
+  MOCK_METHOD(void,
+              GetDiscountInfoForUrls,
+              (const std::vector<GURL>& urls, DiscountInfoCallback callback),
+              (override));
 
   void SetResponseForGetProductInfoForUrl(
       absl::optional<commerce::ProductInfo> product_info);
   void SetResponseForGetPriceInsightsInfoForUrl(
       absl::optional<commerce::PriceInsightsInfo> price_insights_info);
   void SetResponsesForGetUpdatedProductInfoForBookmarks(
-      std::map<int64_t, ProductInfo> bookmark_updates);
+      std::map<base::Uuid, ProductInfo> bookmark_updates);
   void SetResponseForGetMerchantInfoForUrl(
       absl::optional<commerce::MerchantInfo> merchant_info);
   void SetSubscribeCallbackValue(bool subscribe_should_succeed);
@@ -120,6 +125,7 @@ class MockShoppingService : public commerce::ShoppingService {
   void SetGetAllShoppingBookmarksValue(
       std::vector<const bookmarks::BookmarkNode*> bookmarks);
   void SetIsPriceInsightsEligible(bool is_eligible);
+  void SetResponseForGetDiscountInfoForUrls(const DiscountsMap& discounts_map);
 };
 
 }  // namespace commerce

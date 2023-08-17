@@ -3,12 +3,13 @@
 // found in the LICENSE file.
 
 import {PrivacyHubBrowserProxyImpl} from 'chrome://os-settings/lazy_load.js';
-import {CrDialogElement, OsSettingsPrivacyPageElement, PeripheralDataAccessBrowserProxyImpl, Router, routes, SecureDnsMode, settingMojom, SettingsToggleButtonElement} from 'chrome://os-settings/os_settings.js';
+import {CrDialogElement, OsSettingsPrivacyPageElement, OsSettingsRoutes, PeripheralDataAccessBrowserProxyImpl, Router, routes, SecureDnsMode, settingMojom, SettingsToggleButtonElement} from 'chrome://os-settings/os_settings.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {getDeepActiveElement} from 'chrome://resources/js/util_ts.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {assertEquals, assertFalse, assertNotEquals, assertNull, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {waitAfterNextRender} from 'chrome://webui-test/polymer_test_util.js';
+import {eventToPromise} from 'chrome://webui-test/test_util.js';
 
 import {FakeMetricsPrivate} from '../fake_metrics_private.js';
 import {FakeQuickUnlockPrivate} from '../fake_quick_unlock_private.js';
@@ -19,6 +20,11 @@ import {TestPrivacyHubBrowserProxy} from './test_privacy_hub_browser_proxy.js';
 const CROS_SETTING_PREF_NAME = 'cros.device.peripheral_data_access_enabled';
 const LOCAL_STATE_PREF_NAME =
     'settings.local_state_device_pci_data_access_enabled';
+
+interface SubpageTriggerData {
+  triggerSelector: string;
+  routeName: keyof OsSettingsRoutes;
+}
 
 suite('<os-settings-privacy-page>', () => {
   let privacyPage: OsSettingsPrivacyPageElement;
@@ -233,6 +239,43 @@ suite('<os-settings-privacy-page>', () => {
         'Quick dim should be focused for settingId=1115.');
   });
 
+  const subpageTriggerData: SubpageTriggerData[] = [
+    {
+      triggerSelector: '#manageOtherPeopleRow',
+      routeName: 'ACCOUNTS',
+    },
+    {
+      triggerSelector: '#lockScreenRow',
+      routeName: 'LOCK_SCREEN',
+    },
+  ];
+  subpageTriggerData.forEach(({triggerSelector, routeName}) => {
+    test(
+        `Row for ${routeName} is focused when returning from subpage`,
+        async () => {
+          Router.getInstance().navigateTo(routes.OS_PRIVACY);
+
+          const subpageTrigger =
+              privacyPage.shadowRoot!.querySelector<HTMLElement>(
+                  triggerSelector);
+          assertTrue(!!subpageTrigger);
+
+          // Sub-page trigger navigates to subpage for route
+          subpageTrigger.click();
+          assertEquals(routes[routeName], Router.getInstance().currentRoute);
+
+          // Navigate back
+          const popStateEventPromise = eventToPromise('popstate', window);
+          Router.getInstance().navigateToPreviousRoute();
+          await popStateEventPromise;
+          await waitAfterNextRender(privacyPage);
+
+          assertEquals(
+              subpageTrigger, privacyPage.shadowRoot!.activeElement,
+              `${triggerSelector} should be focused.`);
+        });
+  });
+
   test('Fingerprint dialog closes when token expires', async () => {
     loadTimeData.overrideValues({
       fingerprintUnlockEnabled: true,
@@ -251,7 +294,7 @@ suite('<os-settings-privacy-page>', () => {
 
     const subpageTrigger =
         privacyPage.shadowRoot!.querySelector<HTMLButtonElement>(
-            '#lockScreenSubpageTrigger');
+            '#lockScreenRow');
     assertTrue(!!subpageTrigger);
     // Sub-page trigger navigates to the lock screen page.
     subpageTrigger.click();
@@ -365,48 +408,6 @@ suite('<os-settings-privacy-page>', () => {
     assertEquals(
         1,
         fakeMetricsPrivate.countMetricValue('ChromeOS.PrivacyHub.Opened', 0));
-  });
-
-  test('Send HaTS messages', async () => {
-    loadTimeData.overrideValues({
-      isPrivacyHubHatsEnabled: true,
-    });
-
-    const privacyHubBrowserProxy = new TestPrivacyHubBrowserProxy();
-    PrivacyHubBrowserProxyImpl.setInstanceForTesting(privacyHubBrowserProxy);
-
-    privacyPage = document.createElement('os-settings-privacy-page');
-    document.body.appendChild(privacyPage);
-
-    await waitAfterNextRender(privacyPage);
-
-    assertEquals(
-        0, privacyHubBrowserProxy.getCallCount('sendOpenedOsPrivacyPage'));
-    assertEquals(
-        1, privacyHubBrowserProxy.getCallCount('sendLeftOsPrivacyPage'));
-
-    const params = new URLSearchParams();
-    params.append('settingId', settingMojom.Setting.kVerifiedAccess.toString());
-    Router.getInstance().navigateTo(routes.OS_PRIVACY, params);
-
-    flush();
-
-    assertEquals(
-        1, privacyHubBrowserProxy.getCallCount('sendOpenedOsPrivacyPage'));
-    assertEquals(
-        1, privacyHubBrowserProxy.getCallCount('sendLeftOsPrivacyPage'));
-
-    params.set(
-        'settingId',
-        settingMojom.Setting.kShowUsernamesAndPhotosAtSignInV2.toString());
-    Router.getInstance().navigateTo(routes.ACCOUNTS, params);
-
-    flush();
-
-    assertEquals(
-        1, privacyHubBrowserProxy.getCallCount('sendOpenedOsPrivacyPage'));
-    assertEquals(
-        2, privacyHubBrowserProxy.getCallCount('sendLeftOsPrivacyPage'));
   });
 
   // TODO(crbug.com/1262869): add a test for deep linking to snopping setting

@@ -96,13 +96,13 @@
 #include "chrome/browser/ui/recently_audible_helper.h"
 #include "chrome/browser/ui/safety_hub/unused_site_permissions_service.h"
 #include "chrome/browser/ui/safety_hub/unused_site_permissions_service_factory.h"
+#include "chrome/browser/ui/search_engine_choice/search_engine_choice_tab_helper.h"
 #include "chrome/browser/ui/search_engines/search_engine_tab_helper.h"
 #include "chrome/browser/ui/side_panel/companion/companion_utils.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/browser/ui/tab_dialogs.h"
 #include "chrome/browser/ui/tab_ui_helper.h"
 #include "chrome/browser/ui/thumbnails/thumbnail_tab_helper.h"
-#include "chrome/browser/ui/waffle/waffle_tab_helper.h"
 #include "chrome/browser/user_notes/user_notes_tab_helper.h"
 #include "chrome/browser/vr/vr_tab_helper.h"
 #include "chrome/common/buildflags.h"
@@ -161,7 +161,10 @@
 #include "printing/buildflags/buildflags.h"
 
 #if BUILDFLAG(IS_ANDROID)
+#include "base/functional/bind.h"
+#include "base/memory/ptr_util.h"
 #include "chrome/browser/android/oom_intervention/oom_intervention_tab_helper.h"
+#include "chrome/browser/android/persisted_tab_data/sensitivity_persisted_tab_data_android.h"
 #include "chrome/browser/android/policy/policy_auditor_bridge.h"
 #include "chrome/browser/banners/android/chrome_app_banner_manager_android.h"
 #include "chrome/browser/content_settings/request_desktop_site_web_contents_observer_android.h"
@@ -175,6 +178,7 @@
 #else
 #include "chrome/browser/banners/app_banner_manager_desktop.h"
 #include "chrome/browser/companion/core/features.h"
+#include "chrome/browser/picture_in_picture/auto_picture_in_picture_tab_helper.h"
 #include "chrome/browser/preloading/prefetch/zero_suggest_prefetch/zero_suggest_prefetch_tab_helper.h"
 #include "chrome/browser/tab_contents/form_interaction_tab_helper.h"
 #include "chrome/browser/ui/bookmarks/bookmark_tab_helper.h"
@@ -195,6 +199,7 @@
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "components/zoom/zoom_controller.h"
+#include "third_party/blink/public/common/features.h"
 #endif  // BUILDFLAG(IS_ANDROID)
 
 #if defined(TOOLKIT_VIEWS)
@@ -205,6 +210,7 @@
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/ash/boot_times_recorder_tab_helper.h"
 #include "chrome/browser/ui/ash/google_one_offer_iph_tab_helper.h"
 #endif
 
@@ -392,6 +398,29 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
             TemplateURLServiceFactory::GetForProfile(profile),
             prerender::NoStatePrefetchManagerFactory::GetForBrowserContext(
                 profile));
+
+#if BUILDFLAG(IS_ANDROID)
+    // If enabled, save sensitivity data for each non-incognito android tab
+    // TODO(crbug.com/1466970): Consider moving check conditions or the
+    // registration logic to sensitivity_persisted_tab_data_android.*
+    if (!profile->IsOffTheRecord() &&
+        base::FeatureList::IsEnabled(
+            chrome::android::kAndroidAppIntegrationSafeSearch)) {
+      SensitivityPersistedTabDataAndroid::From(
+          TabAndroid::FromWebContents(web_contents),
+          base::BindOnce(
+              [](optimization_guide::PageContentAnnotationsService*
+                     page_content_annotations_service,
+                 PersistedTabDataAndroid* persisted_tab_data) {
+                auto* sensitivity_persisted_tab_data_android =
+                    static_cast<SensitivityPersistedTabDataAndroid*>(
+                        persisted_tab_data);
+                sensitivity_persisted_tab_data_android->RegisterPCAService(
+                    page_content_annotations_service);
+              },
+              page_content_annotations_service));
+    }
+#endif  // BUILDFLAG(IS_ANDROID)
   }
   OutOfMemoryReporter::CreateForWebContents(web_contents);
   chrome::InitializePageLoadMetricsForWebContents(web_contents);
@@ -490,6 +519,10 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
     webapps::MLInstallabilityPromoter::CreateForWebContents(web_contents);
     webapps::AppBannerManagerDesktop::CreateForWebContents(web_contents);
   }
+  if (base::FeatureList::IsEnabled(
+          blink::features::kMediaSessionEnterPictureInPicture)) {
+    AutoPictureInPictureTabHelper::CreateForWebContents(web_contents);
+  }
   BookmarkTabHelper::CreateForWebContents(web_contents);
   BrowserSyncedTabDelegate::CreateForWebContents(web_contents);
   FocusTabAfterNavigationHelper::CreateForWebContents(web_contents);
@@ -507,9 +540,9 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   if (PrivacySandboxPromptHelper::ProfileRequiresPrompt(profile))
     PrivacySandboxPromptHelper::CreateForWebContents(web_contents);
 
-#if BUILDFLAG(ENABLE_WAFFLE_DESKTOP)
-  if (base::FeatureList::IsEnabled(switches::kWaffle)) {
-    WaffleTabHelper::CreateForWebContents(web_contents);
+#if BUILDFLAG(ENABLE_SEARCH_ENGINE_CHOICE)
+  if (base::FeatureList::IsEnabled(switches::kSearchEngineChoice)) {
+    SearchEngineChoiceTabHelper::CreateForWebContents(web_contents);
   }
 #endif
 
@@ -563,6 +596,7 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   GoogleOneOfferIphTabHelper::CreateForWebContents(web_contents);
+  ash::BootTimesRecorderTabHelper::MaybeCreateForWebContents(web_contents);
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)

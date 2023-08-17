@@ -11,10 +11,6 @@
 #include "ui/base/cocoa/cocoa_base_utils.h"
 #import "ui/base/cocoa/user_interface_item_command_handler.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 // Expose -[NSWindow hasKeyAppearance], which determines whether the traffic
 // lights on the window are "lit". CommandDispatcher uses this property on a
 // parent window to decide whether keys and commands should bubble up.
@@ -122,7 +118,7 @@ NSEvent* KeyEventForWindow(NSWindow* window, NSEvent* event) {
       return YES;
     if (result == ui::PerformKeyEquivalentResult::kPassToMainMenu)
       return NO;
-    return [[self bubbleParent] performKeyEquivalent:event];
+    return [_owner.commandDispatchParent performKeyEquivalent:event];
   }
 
   // First, give the delegate an opportunity to consume this event.
@@ -154,7 +150,7 @@ NSEvent* KeyEventForWindow(NSWindow* window, NSEvent* event) {
 
   // Allow commands to "bubble up" to CommandDispatchers in parent windows, if
   // they were not handled here.
-  return [[self bubbleParent] performKeyEquivalent:event];
+  return [_owner.commandDispatchParent performKeyEquivalent:event];
 }
 
 - (BOOL)validateUserInterfaceItem:(id<NSValidatedUserInterfaceItem>)item
@@ -179,18 +175,18 @@ NSEvent* KeyEventForWindow(NSWindow* window, NSEvent* event) {
   }
 
   // -defaultValidateUserInterfaceItem: in most cases will return YES. If
-  // there is a bubble parent give it a chance to validate the item.
-  if (![self bubbleParent]) {
+  // there is a command dispatch parent give it a chance to validate the item.
+  if (!_owner.commandDispatchParent) {
     // Note this may validate an action bubbled up from a child window. However,
     // if the child window also -respondsToSelector: (but validated it `NO`),
     // the action will be dispatched to the child only, which may NSBeep().
-    // TODO(tapted): Fix this. E.g. bubble up validation via the bubbleParent's
-    // CommandDispatcher rather than the NSUserInterfaceValidations protocol, so
-    // that this step can be skipped.
+    // TODO(tapted): Fix this. E.g. bubble up validation via the
+    // commandDispatchParent's CommandDispatcher rather than the
+    // NSUserInterfaceValidations protocol, so that this step can be skipped.
     return [_owner defaultValidateUserInterfaceItem:item];
   }
 
-  return [[self bubbleParent] validateUserInterfaceItem:item];
+  return [_owner.commandDispatchParent validateUserInterfaceItem:item];
 }
 
 - (BOOL)redispatchKeyEvent:(NSEvent*)event {
@@ -259,7 +255,7 @@ NSEvent* KeyEventForWindow(NSWindow* window, NSEvent* event) {
   if (handler)
     [handler commandDispatch:sender window:_owner];
   else
-    [[self bubbleParent] commandDispatch:sender];
+    [_owner.commandDispatchParent commandDispatch:sender];
 }
 
 - (void)dispatchUsingKeyModifiers:(id)sender
@@ -267,15 +263,7 @@ NSEvent* KeyEventForWindow(NSWindow* window, NSEvent* event) {
   if (handler)
     [handler commandDispatchUsingKeyModifiers:sender window:_owner];
   else
-    [[self bubbleParent] commandDispatchUsingKeyModifiers:sender];
-}
-
-- (NSWindow<CommandDispatchingWindow>*)bubbleParent {
-  NSWindow* parent = _owner.parentWindow;
-  if (parent && [parent hasKeyAppearance] &&
-      [parent conformsToProtocol:@protocol(CommandDispatchingWindow)])
-    return static_cast<NSWindow<CommandDispatchingWindow>*>(parent);
-  return nil;
+    [_owner.commandDispatchParent commandDispatchUsingKeyModifiers:sender];
 }
 
 @end

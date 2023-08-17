@@ -23,6 +23,7 @@
 #include "base/strings/utf_string_conversion_utils.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/uuid.h"
+#include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_address_util.h"
 #include "components/autofill/core/browser/autofill_field.h"
 #include "components/autofill/core/browser/autofill_type.h"
@@ -38,6 +39,7 @@
 #include "components/autofill/core/browser/geo/phone_number_i18n.h"
 #include "components/autofill/core/browser/geo/state_names.h"
 #include "components/autofill/core/browser/metrics/autofill_metrics.h"
+#include "components/autofill/core/browser/profile_token_quality.h"
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_constants.h"
@@ -52,6 +54,12 @@
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_data.h"
 #include "third_party/libaddressinput/src/cpp/include/libaddressinput/address_formatter.h"
 #include "ui/base/l10n/l10n_util.h"
+
+#if BUILDFLAG(IS_ANDROID)
+#include "base/android/jni_android.h"
+#include "base/android/jni_string.h"
+#include "components/autofill/android/main_autofill_jni_headers/AutofillProfile_jni.h"
+#endif  // BUILDFLAG(IS_ANDROID)
 
 using base::ASCIIToUTF16;
 using base::UTF16ToUTF8;
@@ -208,6 +216,33 @@ void GetFieldsForDistinguishingProfiles(
   }
 }
 
+#if BUILDFLAG(IS_ANDROID)
+void MaybeSetRawInfoWithVerificationStatus(
+    AutofillProfile* profile,
+    ServerFieldType type,
+    const base::android::JavaRef<jstring>& value,
+    jint status) {
+  if (value) {
+    profile->SetRawInfoWithVerificationStatus(
+        type, ConvertJavaStringToUTF16(value),
+        static_cast<VerificationStatus>(status));
+  }
+}
+
+void MaybeSetInfoWithVerificationStatus(
+    AutofillProfile* profile,
+    ServerFieldType type,
+    const base::android::JavaRef<jstring>& value,
+    jint status,
+    const std::string& app_locale) {
+  if (value) {
+    profile->SetInfoWithVerificationStatus(
+        type, ConvertJavaStringToUTF16(value), app_locale,
+        static_cast<VerificationStatus>(status));
+  }
+}
+#endif  // BUILDFLAG(IS_ANDROID)
+
 }  // namespace
 
 AutofillProfile::AutofillProfile()
@@ -220,7 +255,8 @@ AutofillProfile::AutofillProfile(const std::string& guid, Source source)
       has_converted_(false),
       source_(source),
       initial_creator_id_(kInitialCreatorOrModifierChrome),
-      last_modifier_id_(kInitialCreatorOrModifierChrome) {}
+      last_modifier_id_(kInitialCreatorOrModifierChrome),
+      token_quality_(this) {}
 
 AutofillProfile::AutofillProfile(Source source)
     : AutofillProfile(base::Uuid::GenerateRandomV4().AsLowercaseString(),
@@ -233,12 +269,15 @@ AutofillProfile::AutofillProfile(RecordType type, const std::string& server_id)
       server_id_(server_id),
       record_type_(type),
       has_converted_(false),
-      source_(Source::kLocalOrSyncable) {
+      source_(Source::kLocalOrSyncable),
+      token_quality_(this) {
   DCHECK(type == SERVER_PROFILE);
 }
 
 AutofillProfile::AutofillProfile(const AutofillProfile& profile)
-    : AutofillDataModel(/*guid=*/""), phone_number_(this) {
+    : AutofillDataModel(/*guid=*/""),
+      phone_number_(this),
+      token_quality_(this) {
   operator=(profile);
 }
 
@@ -250,7 +289,6 @@ AutofillProfile& AutofillProfile::operator=(const AutofillProfile& profile) {
 
   set_use_count(profile.use_count());
   set_use_date(profile.use_date());
-  set_previous_use_date(profile.previous_use_date());
   set_modification_date(profile.modification_date());
 
   set_guid(profile.guid());
@@ -276,8 +314,101 @@ AutofillProfile& AutofillProfile::operator=(const AutofillProfile& profile) {
   initial_creator_id_ = profile.initial_creator_id_;
   last_modifier_id_ = profile.last_modifier_id_;
 
+  token_quality_ = profile.token_quality_;
+  token_quality_.set_profile(this);
+
   return *this;
 }
+
+#if BUILDFLAG(IS_ANDROID)
+base::android::ScopedJavaLocalRef<jobject> AutofillProfile::CreateJavaObject(
+    const std::string& app_locale) const {
+  // TODO(crbug.com/1471502): Reconcile usage of GetInfo and GetRawInfo below.
+  JNIEnv* env = base::android::AttachCurrentThread();
+  return Java_AutofillProfile_create(
+      env, base::android::ConvertUTF8ToJavaString(env, guid()),
+      record_type() == AutofillProfile::LOCAL_PROFILE,
+      static_cast<jint>(source()),
+      base::android::ConvertUTF16ToJavaString(
+          env, GetInfo(AutofillType(NAME_HONORIFIC_PREFIX), app_locale)),
+      static_cast<jint>(GetVerificationStatus(NAME_HONORIFIC_PREFIX)),
+      base::android::ConvertUTF16ToJavaString(
+          env, GetInfo(AutofillType(NAME_FULL), app_locale)),
+      static_cast<jint>(GetVerificationStatus(NAME_FULL)),
+      base::android::ConvertUTF16ToJavaString(env, GetRawInfo(COMPANY_NAME)),
+      static_cast<jint>(GetVerificationStatus(COMPANY_NAME)),
+      base::android::ConvertUTF16ToJavaString(
+          env, GetRawInfo(ADDRESS_HOME_STREET_ADDRESS)),
+      static_cast<jint>(GetVerificationStatus(ADDRESS_HOME_STREET_ADDRESS)),
+      base::android::ConvertUTF16ToJavaString(env,
+                                              GetRawInfo(ADDRESS_HOME_STATE)),
+      static_cast<jint>(GetVerificationStatus(ADDRESS_HOME_STATE)),
+      base::android::ConvertUTF16ToJavaString(env,
+                                              GetRawInfo(ADDRESS_HOME_CITY)),
+      static_cast<jint>(GetVerificationStatus(ADDRESS_HOME_CITY)),
+      base::android::ConvertUTF16ToJavaString(
+          env, GetRawInfo(ADDRESS_HOME_DEPENDENT_LOCALITY)),
+      static_cast<jint>(GetVerificationStatus(ADDRESS_HOME_DEPENDENT_LOCALITY)),
+      base::android::ConvertUTF16ToJavaString(env,
+                                              GetRawInfo(ADDRESS_HOME_ZIP)),
+      static_cast<jint>(GetVerificationStatus(ADDRESS_HOME_ZIP)),
+      base::android::ConvertUTF16ToJavaString(
+          env, GetRawInfo(ADDRESS_HOME_SORTING_CODE)),
+      static_cast<jint>(GetVerificationStatus(ADDRESS_HOME_SORTING_CODE)),
+      base::android::ConvertUTF16ToJavaString(env,
+                                              GetRawInfo(ADDRESS_HOME_COUNTRY)),
+      static_cast<jint>(GetVerificationStatus(ADDRESS_HOME_COUNTRY)),
+      base::android::ConvertUTF16ToJavaString(
+          env, GetRawInfo(PHONE_HOME_WHOLE_NUMBER)),
+      static_cast<jint>(GetVerificationStatus(PHONE_HOME_WHOLE_NUMBER)),
+      base::android::ConvertUTF16ToJavaString(env, GetRawInfo(EMAIL_ADDRESS)),
+      static_cast<jint>(GetVerificationStatus(EMAIL_ADDRESS)),
+      base::android::ConvertUTF8ToJavaString(env, language_code()));
+}
+
+// static
+AutofillProfile AutofillProfile::CreateFromJavaObject(
+    const base::android::JavaParamRef<jobject>& jprofile,
+    const std::string& app_locale) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  AutofillProfile profile(static_cast<AutofillProfile::Source>(
+      Java_AutofillProfile_getSource(env, jprofile)));
+
+  // Only set the guid if it is an existing profile (java guid not empty).
+  // Otherwise, keep the generated one.
+  std::string guid =
+      ConvertJavaStringToUTF8(Java_AutofillProfile_getGUID(env, jprofile));
+  if (!guid.empty()) {
+    profile.set_guid(guid);
+  }
+
+  // TODO(crbug.com/1471502): Reconcile usage of GetInfo and GetRawInfo below.
+  for (ServerFieldType fieldType : {NAME_FULL, ADDRESS_HOME_COUNTRY}) {
+    MaybeSetInfoWithVerificationStatus(
+        &profile, fieldType,
+        Java_AutofillProfile_getInfo(env, jprofile, fieldType),
+        Java_AutofillProfile_getInfoStatus(env, jprofile, fieldType),
+        app_locale);
+  }
+
+  for (ServerFieldType fieldType :
+       {NAME_HONORIFIC_PREFIX, COMPANY_NAME, ADDRESS_HOME_STREET_ADDRESS,
+        ADDRESS_HOME_STATE, ADDRESS_HOME_CITY, ADDRESS_HOME_DEPENDENT_LOCALITY,
+        ADDRESS_HOME_ZIP, ADDRESS_HOME_SORTING_CODE, PHONE_HOME_WHOLE_NUMBER,
+        EMAIL_ADDRESS}) {
+    MaybeSetRawInfoWithVerificationStatus(
+        &profile, fieldType,
+        Java_AutofillProfile_getInfo(env, jprofile, fieldType),
+        Java_AutofillProfile_getInfoStatus(env, jprofile, fieldType));
+  }
+
+  profile.set_language_code(ConvertJavaStringToUTF8(
+      Java_AutofillProfile_getLanguageCode(env, jprofile)));
+  profile.FinalizeAfterImport();
+
+  return profile;
+}
+#endif  // BUILDFLAG(IS_ANDROID)
 
 AutofillMetadata AutofillProfile::GetMetadata() const {
   AutofillMetadata metadata = AutofillDataModel::GetMetadata();
@@ -639,36 +770,77 @@ bool AutofillProfile::MergeDataFrom(const AutofillProfile& profile,
   bool modified = false;
 
   if (name_ != name) {
+    MergeFormGroupTokenQuality(name, profile);
     name_ = name;
     modified = true;
   }
 
   if (email_ != email) {
+    MergeFormGroupTokenQuality(email, profile);
     email_ = email;
     modified = true;
   }
 
   if (company_ != company) {
+    MergeFormGroupTokenQuality(company, profile);
     company_ = company;
     modified = true;
   }
 
   if (phone_number_ != phone_number) {
+    MergeFormGroupTokenQuality(phone_number, profile);
     phone_number_ = phone_number;
     modified = true;
   }
 
   if (address_ != address) {
+    MergeFormGroupTokenQuality(address, profile);
     address_ = address;
     modified = true;
   }
 
   if (birthdate_ != birthdate) {
+    MergeFormGroupTokenQuality(birthdate, profile);
     birthdate_ = birthdate;
     modified = true;
   }
 
   return modified;
+}
+
+void AutofillProfile::MergeFormGroupTokenQuality(
+    const FormGroup& merged_group,
+    const AutofillProfile& other_profile) {
+  if (!base::FeatureList::IsEnabled(
+          features::kAutofillTrackProfileTokenQuality)) {
+    return;
+  }
+  ServerFieldTypeSet supported_types;
+  merged_group.GetSupportedTypes(&supported_types);
+  for (ServerFieldType type : supported_types) {
+    const std::u16string& merged_value = merged_group.GetRawInfo(type);
+    if (!ProfileTokenQuality::IsStoredType(type) ||
+        merged_value == GetRawInfo(type)) {
+      // Quality information is only tracked for stored types. If the merged
+      // value matches the existing value, its token quality is kept.
+      continue;
+    }
+    if (merged_value == other_profile.GetRawInfo(type)) {
+      // The merged value comes from the `other_profile`, so its token quality
+      // is carried over.
+      token_quality_.CopyObservationsForStoredType(
+          type, other_profile.token_quality_);
+    } else {
+      // The `merged_value` matches neither `*this` nor the `other_profile`'s
+      // value, because the values were combined in some way. This generally
+      // doesn't happen, because the merging logic only merges values if one is
+      // a subset/substring of the other. However, in some cases, formatting
+      // differences can make this case reachable. For example, merging the
+      // phone numbers "5550199" and "555.0199" gives "555-0199".
+      // Since observations cannot be merged, reset the token quality.
+      token_quality_.ResetObservationsForStoredType(type);
+    }
+  }
 }
 
 bool AutofillProfile::SaveAdditionalInfo(const AutofillProfile& profile,
@@ -839,10 +1011,19 @@ void AutofillProfile::GenerateServerProfileIdentifier() {
 }
 
 void AutofillProfile::RecordAndLogUse() {
-  set_previous_use_date(use_date());
-  UMA_HISTOGRAM_COUNTS_1000("Autofill.DaysSinceLastUse.Profile",
-                            (AutofillClock::Now() - use_date()).InDays());
-  RecordUse();
+  const base::Time now = AutofillClock::Now();
+  const base::TimeDelta time_since_last_used = now - use_date();
+  set_use_date(now);
+  // Ensure that use counts are not skewed by multiple filling operations of the
+  // form. This is especially important for forms fully annotated with
+  // autocomplete=unrecognized. For such forms, keyboard accessory chips only
+  // fill a single field at a time as per
+  // `AutofillSuggestionsForAutocompleteUnrecognizedFieldsOnMobile`.
+  if (time_since_last_used.InSeconds() >= 60) {
+    set_use_count(use_count() + 1);
+    UMA_HISTOGRAM_COUNTS_1000("Autofill.DaysSinceLastUse.Profile",
+                              time_since_last_used.InDays());
+  }
   LogVerificationStatuses();
 }
 

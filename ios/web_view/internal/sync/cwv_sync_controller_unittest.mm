@@ -38,10 +38,6 @@
 #import "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 namespace ios_web_view {
 namespace {
 
@@ -91,7 +87,7 @@ TEST_F(CWVSyncControllerTest, StartSyncWithIdentity) {
 
   CoreAccountInfo primary_account_info =
       identity_test_environment_.identity_manager()->GetPrimaryAccountInfo(
-          signin::ConsentLevel::kSync);
+          signin::ConsentLevel::kSignin);
   EXPECT_EQ(primary_account_info, account_info);
 
   // Ensure opt-ins for transport only sync data is flipped to true.
@@ -107,7 +103,7 @@ TEST_F(CWVSyncControllerTest, StartSyncWithIdentity) {
 TEST_F(CWVSyncControllerTest, StopSyncAndClearIdentity) {
   CoreAccountInfo account_info =
       identity_test_environment_.MakePrimaryAccountAvailable(
-          kTestEmail, signin::ConsentLevel::kSync);
+          kTestEmail, signin::ConsentLevel::kSignin);
 
   CWVSyncController* sync_controller = [[CWVSyncController alloc]
       initWithSyncService:&sync_service_

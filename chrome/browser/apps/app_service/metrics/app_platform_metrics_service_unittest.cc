@@ -12,6 +12,7 @@
 #include "ash/constants/ash_features.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/ash_test_helper.h"
+#include "base/containers/extend.h"
 #include "base/json/values_util.h"
 #include "base/metrics/histogram_base.h"
 #include "base/run_loop.h"
@@ -41,12 +42,14 @@
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/test/base/test_browser_window_aura.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chromeos/ash/components/standalone_browser/feature_refs.h"
 #include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "chromeos/dbus/power_manager/idle.pb.h"
 #include "chromeos/dbus/power_manager/suspend.pb.h"
 #include "components/app_constants/constants.h"
 #include "components/metrics/structured/recorder.h"
 #include "components/metrics/structured/structured_events.h"
+#include "components/metrics/structured/structured_metrics_client.h"
 #include "components/metrics/structured/structured_metrics_features.h"
 #include "components/metrics/structured/test/test_structured_metrics_provider.h"
 #include "components/prefs/pref_service.h"
@@ -219,17 +222,10 @@ class AppPlatformMetricsServiceTest
     AppPlatformMetricsServiceTestBase::SetUp();
     if (IsLacrosEnabled()) {
       feature_list_.InitWithFeatures(
-          /*enabled_features=*/{ash::features::kLacrosSupport,
-                                ash::features::kLacrosPrimary,
-                                ash::features::kLacrosOnly,
-                                ash::features::kLacrosProfileMigrationForceOff},
-          {});
+          /*enabled_features=*/ash::standalone_browser::GetFeatureRefs(), {});
     } else {
       feature_list_.InitWithFeatures(
-          {},
-          /*disabled_features=*/{ash::features::kLacrosSupport,
-                                 ash::features::kLacrosPrimary,
-                                 ash::features::kLacrosOnly});
+          {}, /*disabled_features=*/ash::standalone_browser::GetFeatureRefs());
     }
 
     InstallApps();
@@ -246,6 +242,7 @@ class AppPlatformMetricsServiceTest
     AppPlatformMetricsServiceTestBase::TearDown();
     browser_window1_.reset();
     browser_window2_.reset();
+    metrics::structured::StructuredMetricsClient::Get()->UnsetDelegate();
   }
 
   AppTypeName GetWebAppTypeName() {
@@ -298,15 +295,14 @@ class AppPlatformMetricsServiceTest
            true /* should_notify_initialized */);
 
     AddApp(cache,
-           /*app_id=*/MuxId(profile(), kChromeAppId),
-           AppType::kStandaloneBrowserChromeApp, "Vine", Readiness::kReady,
-           InstallReason::kUser, InstallSource::kChromeWebStore,
-           true /* should_notify_initialized */, true /*is_platform_app*/);
+           /*app_id=*/kChromeAppId, AppType::kStandaloneBrowserChromeApp,
+           "Vine", Readiness::kReady, InstallReason::kUser,
+           InstallSource::kChromeWebStore, true /* should_notify_initialized */,
+           true /*is_platform_app*/);
 
     AddApp(cache,
-           /*app_id=*/MuxId(profile(), kExtensionId),
-           AppType::kStandaloneBrowserExtension, "PDF Viewer",
-           Readiness::kReady, InstallReason::kUser,
+           /*app_id=*/kExtensionId, AppType::kStandaloneBrowserExtension,
+           "PDF Viewer", Readiness::kReady, InstallReason::kUser,
            InstallSource::kChromeWebStore,
            true /* should_notify_initialized */);
 
@@ -636,7 +632,7 @@ class AppPlatformMetricsServiceTest
       test_ukm_recorder()->ExpectEntryMetric(entry, "AppType",
                                              (int)app_type_name);
     }
-    ASSERT_EQ(usage_time, duration);
+    ASSERT_EQ(usage_time, duration) << ukm_name;
   }
 
   void VerifyAppUsageTimeUkm(const std::string& app_id,
@@ -1187,9 +1183,8 @@ TEST_P(AppPlatformMetricsServiceTest, UsageTimeForLacros) {
 
   // Install Chrome apps (hosted apps) during the running time.
   std::string kChromeAppId1 = "bb";
-  InstallOneApp(MuxId(profile(), kChromeAppId1),
-                AppType::kStandaloneBrowserChromeApp, "BB", Readiness::kReady,
-                InstallSource::kChromeWebStore,
+  InstallOneApp(kChromeAppId1, AppType::kStandaloneBrowserChromeApp, "BB",
+                Readiness::kReady, InstallSource::kChromeWebStore,
                 /*is_platform_app=*/false, WindowMode::kBrowser);
 
   const base::UnguessableToken instance_id0 = base::UnguessableToken::Create();
@@ -1216,7 +1211,7 @@ TEST_P(AppPlatformMetricsServiceTest, UsageTimeForLacros) {
   // don't need to set the Lacros window as inactivated, because the activated
   // chrome app tab can set the Lacros window as inactivated. And when the
   // chrome app tabs are inactivated, the Lacros window can be set as activated.
-  ModifyInstance(instance_id1, MuxId(profile(), kChromeAppId1), window1.get(),
+  ModifyInstance(instance_id1, kChromeAppId1, window1.get(),
                  kActiveInstanceState);
   task_environment_.FastForwardBy(base::Minutes(5));
   // Verify recording 5 minutes for AppTypeName::kStandaloneBrowser and
@@ -1233,7 +1228,7 @@ TEST_P(AppPlatformMetricsServiceTest, UsageTimeForLacros) {
 
   // The chrome app tab is inactivated, so the Lacros window is set as activated
   // in code.
-  ModifyInstance(instance_id1, MuxId(profile(), kChromeAppId1), window1.get(),
+  ModifyInstance(instance_id1, kChromeAppId1, window1.get(),
                  kInactiveInstanceState);
   task_environment_.FastForwardBy(base::Minutes(5));
   // Verify recording 5 minutes for AppTypeName::kStandaloneBrowser and
@@ -1255,7 +1250,7 @@ TEST_P(AppPlatformMetricsServiceTest, UsageTimeForLacros) {
   // Create a new window for `kChromeAppId`, and set it as activated.
   auto window2 = std::make_unique<aura::Window>(nullptr);
   window2->Init(ui::LAYER_NOT_DRAWN);
-  ModifyInstance(instance_id2, MuxId(profile(), kChromeAppId), window2.get(),
+  ModifyInstance(instance_id2, kChromeAppId, window2.get(),
                  kActiveInstanceState);
   task_environment_.FastForwardBy(base::Minutes(5));
   // Verify recording 5 minutes for AppTypeName::kStandaloneBrowserChromeApp and
@@ -1298,6 +1293,8 @@ TEST_P(AppPlatformMetricsServiceTest, UsageTimeUkm) {
 
   // Set sync is allowed by setting an empty disable reason set.
   sync_service()->SetDisableReasons(syncer::SyncService::DisableReasonSet());
+  sync_service()->SetTransportState(
+      syncer::SyncService::TransportState::ACTIVE);
 
   static constexpr base::TimeDelta kAppUsageDuration = base::Hours(1);
   task_environment_.FastForwardBy(kAppUsageDuration);
@@ -1663,22 +1660,18 @@ TEST_P(AppPlatformMetricsServiceTest, UsageTimeUkmForStandaloneBrowserApps) {
   window2->Init(ui::LAYER_NOT_DRAWN);
   ModifyInstance(app_constants::kLacrosAppId, window1.get(),
                  kInactiveInstanceState);
-  ModifyInstance(MuxId(profile(), kChromeAppId), window2.get(),
-                 kActiveInstanceState);
+  ModifyInstance(kChromeAppId, window2.get(), kActiveInstanceState);
   task_environment_.FastForwardBy(base::Minutes(4));
 
   // Create a Extension window, and set it as activated for `kExtensionId`.
   auto window3 = std::make_unique<aura::Window>(nullptr);
   window3->Init(ui::LAYER_NOT_DRAWN);
-  ModifyInstance(MuxId(profile(), kChromeAppId), window2.get(),
-                 kInactiveInstanceState);
-  ModifyInstance(MuxId(profile(), kExtensionId), window3.get(),
-                 kActiveInstanceState);
+  ModifyInstance(kChromeAppId, window2.get(), kInactiveInstanceState);
+  ModifyInstance(kExtensionId, window3.get(), kActiveInstanceState);
   task_environment_.FastForwardBy(base::Minutes(3));
 
   // Set the Extension window as inactived.
-  ModifyInstance(MuxId(profile(), kExtensionId), window3.get(),
-                 kInactiveInstanceState);
+  ModifyInstance(kExtensionId, window3.get(), kInactiveInstanceState);
 
   // Set time passed 2 hours to record the usage time AppKM.
   task_environment_.FastForwardBy(base::Minutes(108));
@@ -1757,9 +1750,8 @@ TEST_P(AppPlatformMetricsServiceTest, UsageTimeUkmForStandaloneChromeApps) {
 
   // Install Chrome apps (hosted apps) during the running time.
   std::string kChromeAppId1 = "bb";
-  InstallOneApp(MuxId(profile(), kChromeAppId1),
-                AppType::kStandaloneBrowserChromeApp, "BB", Readiness::kReady,
-                InstallSource::kChromeWebStore,
+  InstallOneApp(kChromeAppId1, AppType::kStandaloneBrowserChromeApp, "BB",
+                Readiness::kReady, InstallSource::kChromeWebStore,
                 /*is_platform_app=*/false, WindowMode::kBrowser);
 
   const base::UnguessableToken instance_id0 = base::UnguessableToken::Create();
@@ -1778,13 +1770,13 @@ TEST_P(AppPlatformMetricsServiceTest, UsageTimeUkmForStandaloneChromeApps) {
   // don't need to set the Lacros window as inactivated, because the activated
   // chrome app tab can set the Lacros window as inactivated. And when the
   // chrome app tabs are inactivated, the Lacros window can be set as activated.
-  ModifyInstance(instance_id1, MuxId(profile(), kChromeAppId1), window1.get(),
+  ModifyInstance(instance_id1, kChromeAppId1, window1.get(),
                  kActiveInstanceState);
   task_environment_.FastForwardBy(base::Minutes(4));
 
   // The chrome app tab is inactivated, so the Lacros window is set as activated
   // in code.
-  ModifyInstance(instance_id1, MuxId(profile(), kChromeAppId1), window1.get(),
+  ModifyInstance(instance_id1, kChromeAppId1, window1.get(),
                  kInactiveInstanceState);
   task_environment_.FastForwardBy(base::Minutes(5));
 
@@ -1795,12 +1787,12 @@ TEST_P(AppPlatformMetricsServiceTest, UsageTimeUkmForStandaloneChromeApps) {
   // Create a new window for `kChromeAppId`, and set it as activated.
   auto window2 = std::make_unique<aura::Window>(nullptr);
   window2->Init(ui::LAYER_NOT_DRAWN);
-  ModifyInstance(instance_id2, MuxId(profile(), kChromeAppId), window2.get(),
+  ModifyInstance(instance_id2, kChromeAppId, window2.get(),
                  kActiveInstanceState);
   task_environment_.FastForwardBy(base::Minutes(20));
 
   // Set the `kChromeAppId` window as inactivated.
-  ModifyInstance(instance_id2, MuxId(profile(), kChromeAppId), window2.get(),
+  ModifyInstance(instance_id2, kChromeAppId, window2.get(),
                  kInactiveInstanceState);
 
   // Set time passed 2 hours to record the usage time AppKM.
@@ -1882,13 +1874,11 @@ TEST_P(AppPlatformMetricsServiceTest, InstalledAppsUkm) {
   // Install Chrome apps (hosted apps) during the running time.
   std::string kChromeAppId1 = "bb";
   std::string kChromeAppId2 = "cc";
-  InstallOneApp(MuxId(profile(), kChromeAppId1),
-                AppType::kStandaloneBrowserChromeApp, "BB", Readiness::kReady,
-                InstallSource::kChromeWebStore,
+  InstallOneApp(kChromeAppId1, AppType::kStandaloneBrowserChromeApp, "BB",
+                Readiness::kReady, InstallSource::kChromeWebStore,
                 /*is_platform_app=*/false, WindowMode::kBrowser);
-  InstallOneApp(MuxId(profile(), kChromeAppId2),
-                AppType::kStandaloneBrowserChromeApp, "CC", Readiness::kReady,
-                InstallSource::kChromeWebStore,
+  InstallOneApp(kChromeAppId2, AppType::kStandaloneBrowserChromeApp, "CC",
+                Readiness::kReady, InstallSource::kChromeWebStore,
                 /*is_platform_app=*/false, WindowMode::kWindow);
 
   // Verify Chrome apps (hosted apps) installed during the running time.
@@ -1974,12 +1964,12 @@ TEST_P(AppPlatformMetricsServiceTest, LaunchApps) {
   VerifyAppLaunchPerAppTypeV2Histogram(1, AppTypeNameV2::kStandaloneBrowser);
 
   EXPECT_CALL(fake_standalone_browser_chrome_app,
-              Launch(/*app_id=*/MuxId(profile(), kChromeAppId), ui::EF_NONE,
+              Launch(/*app_id=*/kChromeAppId, ui::EF_NONE,
                      LaunchSource::kFromChromeInternal, _))
       .Times(1);
   proxy->Launch(
-      /*app_id=*/MuxId(profile(), kChromeAppId), ui::EF_NONE,
-      LaunchSource::kFromChromeInternal, nullptr);
+      /*app_id=*/kChromeAppId, ui::EF_NONE, LaunchSource::kFromChromeInternal,
+      nullptr);
   VerifyAppsLaunchUkm("app://" + std::string(kChromeAppId),
                       AppTypeName::kStandaloneBrowserChromeApp,
                       LaunchSource::kFromChromeInternal);
@@ -1991,23 +1981,21 @@ TEST_P(AppPlatformMetricsServiceTest, LaunchApps) {
   // Install Chrome apps (hosted apps) during the running time.
   std::string kChromeAppId1 = "bb";
   std::string kChromeAppId2 = "cc";
-  InstallOneApp(MuxId(profile(), kChromeAppId1),
-                AppType::kStandaloneBrowserChromeApp, "BB", Readiness::kReady,
-                InstallSource::kChromeWebStore,
+  InstallOneApp(kChromeAppId1, AppType::kStandaloneBrowserChromeApp, "BB",
+                Readiness::kReady, InstallSource::kChromeWebStore,
                 /*is_platform_app=*/false, WindowMode::kBrowser);
-  InstallOneApp(MuxId(profile(), kChromeAppId2),
-                AppType::kStandaloneBrowserChromeApp, "CC", Readiness::kReady,
-                InstallSource::kChromeWebStore,
+  InstallOneApp(kChromeAppId2, AppType::kStandaloneBrowserChromeApp, "CC",
+                Readiness::kReady, InstallSource::kChromeWebStore,
                 /*is_platform_app=*/false, WindowMode::kWindow);
 
   // Launch `kChromeAppId1`.
   EXPECT_CALL(fake_standalone_browser_chrome_app,
-              Launch(/*app_id=*/MuxId(profile(), kChromeAppId1), ui::EF_NONE,
+              Launch(/*app_id=*/kChromeAppId1, ui::EF_NONE,
                      LaunchSource::kFromChromeInternal, _))
       .Times(1);
   proxy->Launch(
-      /*app_id=*/MuxId(profile(), kChromeAppId1), ui::EF_NONE,
-      LaunchSource::kFromChromeInternal, nullptr);
+      /*app_id=*/kChromeAppId1, ui::EF_NONE, LaunchSource::kFromChromeInternal,
+      nullptr);
   // Verify `kChromeAppId1` launching as kStandaloneBrowser.
   VerifyAppsLaunchUkm("app://" + kChromeAppId1, AppTypeName::kStandaloneBrowser,
                       LaunchSource::kFromChromeInternal);
@@ -2018,12 +2006,12 @@ TEST_P(AppPlatformMetricsServiceTest, LaunchApps) {
 
   // Launch `kChromeAppId2` in a Lacros window tab.
   EXPECT_CALL(fake_standalone_browser_chrome_app,
-              Launch(/*app_id=*/MuxId(profile(), kChromeAppId2), ui::EF_NONE,
+              Launch(/*app_id=*/kChromeAppId2, ui::EF_NONE,
                      LaunchSource::kFromChromeInternal, _))
       .Times(1);
   proxy->Launch(
-      /*app_id=*/MuxId(profile(), kChromeAppId2), ui::EF_NONE,
-      LaunchSource::kFromChromeInternal, nullptr);
+      /*app_id=*/kChromeAppId2, ui::EF_NONE, LaunchSource::kFromChromeInternal,
+      nullptr);
   // Verify `kChromeAppId2` launching as kStandaloneBrowserChromeApp.
   VerifyAppsLaunchUkm("app://" + kChromeAppId2,
                       AppTypeName::kStandaloneBrowserChromeApp,
@@ -2035,12 +2023,12 @@ TEST_P(AppPlatformMetricsServiceTest, LaunchApps) {
       AppTypeNameV2::kStandaloneBrowserChromeAppWindow);
 
   EXPECT_CALL(fake_standalone_browser_extension,
-              Launch(/*app_id=*/MuxId(profile(), kExtensionId), ui::EF_NONE,
+              Launch(/*app_id=*/kExtensionId, ui::EF_NONE,
                      LaunchSource::kFromChromeInternal, _))
       .Times(1);
   proxy->Launch(
-      /*app_id=*/MuxId(profile(), kExtensionId), ui::EF_NONE,
-      LaunchSource::kFromChromeInternal, nullptr);
+      /*app_id=*/kExtensionId, ui::EF_NONE, LaunchSource::kFromChromeInternal,
+      nullptr);
   VerifyAppsLaunchUkm("app://" + std::string(kExtensionId),
                       AppTypeName::kStandaloneBrowserExtension,
                       LaunchSource::kFromChromeInternal);
@@ -2103,13 +2091,13 @@ TEST_P(AppPlatformMetricsServiceTest, UninstallAppUkm) {
                          UninstallSource::kAppList);
 
   proxy->UninstallSilently(
-      /*app_id=*/MuxId(profile(), kChromeAppId), UninstallSource::kAppList);
+      /*app_id=*/kChromeAppId, UninstallSource::kAppList);
   VerifyAppsUninstallUkm("app://" + std::string(kChromeAppId),
                          AppTypeName::kStandaloneBrowserChromeApp,
                          UninstallSource::kAppList);
 
   proxy->UninstallSilently(
-      /*app_id=*/MuxId(profile(), kExtensionId), UninstallSource::kAppList);
+      /*app_id=*/kExtensionId, UninstallSource::kAppList);
   VerifyAppsUninstallUkm("app://" + std::string(kExtensionId),
                          AppTypeName::kStandaloneBrowserExtension,
                          UninstallSource::kAppList);
@@ -2685,8 +2673,7 @@ TEST_P(AppPlatformInputMetricsTest, LacrosWindow) {
 }
 
 TEST_P(AppPlatformInputMetricsTest, StandaloneBrowserChromeApp) {
-  ModifyInstance(MuxId(profile(), kChromeAppId), window(),
-                 kActiveInstanceState);
+  ModifyInstance(kChromeAppId, window(), kActiveInstanceState);
   CreateInputEvent(InputEventSource::kKeyboard);
   app_platform_input_metrics()->OnTwoHours();
   VerifyUkm("app://" + std::string(kChromeAppId),
@@ -2695,8 +2682,7 @@ TEST_P(AppPlatformInputMetricsTest, StandaloneBrowserChromeApp) {
 }
 
 TEST_P(AppPlatformInputMetricsTest, StandaloneBrowserExtension) {
-  ModifyInstance(MuxId(profile(), kExtensionId), window(),
-                 kActiveInstanceState);
+  ModifyInstance(kExtensionId, window(), kActiveInstanceState);
   CreateInputEvent(InputEventSource::kMouse);
   app_platform_input_metrics()->OnTwoHours();
   VerifyUkm("app://" + std::string(kExtensionId),
@@ -2742,13 +2728,11 @@ TEST_P(AppPlatformInputMetricsTest, LacrosWindowAndWebAppAndChromeApp) {
 
   // Install a Chrome app (hosted app) during the running time.
   std::string kChromeAppId1 = "bb";
-  InstallOneApp(MuxId(profile(), kChromeAppId1),
-                AppType::kStandaloneBrowserChromeApp, "BB", Readiness::kReady,
-                InstallSource::kChromeWebStore,
+  InstallOneApp(kChromeAppId1, AppType::kStandaloneBrowserChromeApp, "BB",
+                Readiness::kReady, InstallSource::kChromeWebStore,
                 /*is_platform_app=*/false, WindowMode::kBrowser);
   // Set the Chrome app tab as activated.
-  ModifyInstance(instance_id2, MuxId(profile(), kChromeAppId1), window(),
-                 kActiveInstanceState);
+  ModifyInstance(instance_id2, kChromeAppId1, window(), kActiveInstanceState);
   ModifyInstance(instance_id1, web_app_id1, window(), kInactiveInstanceState);
   CreateInputEvent(InputEventSource::kStylus);
   app_platform_input_metrics()->OnTwoHours();
@@ -2758,8 +2742,7 @@ TEST_P(AppPlatformInputMetricsTest, LacrosWindowAndWebAppAndChromeApp) {
 
   // Set the Chrome app tab as inactivated, then the Lacros window should be set
   // as activated in code.
-  ModifyInstance(instance_id2, MuxId(profile(), kChromeAppId1), window(),
-                 kInactiveInstanceState);
+  ModifyInstance(instance_id2, kChromeAppId1, window(), kInactiveInstanceState);
   CreateInputEvent(InputEventSource::kKeyboard);
   app_platform_input_metrics()->OnTwoHours();
   // Verify 4 input metrics events are recorded.
@@ -2936,23 +2919,16 @@ class AppDiscoveryMetricsTest : public AppPlatformMetricsServiceTest {
     metrics::structured::Recorder::GetInstance()->SetUiTaskRunner(
         task_environment_.GetMainThreadTaskRunner());
 
+    std::vector<base::test::FeatureRef> enabled{
+        metrics::structured::kAppDiscoveryLogging,
+        metrics::structured::kEventSequenceLogging};
+    std::vector<base::test::FeatureRef> disabled;
     if (IsLacrosEnabled()) {
-      feature_list_.InitWithFeatures(
-          /*enabled_features=*/{ash::features::kLacrosSupport,
-                                ash::features::kLacrosPrimary,
-                                ash::features::kLacrosOnly,
-                                ash::features::kLacrosProfileMigrationForceOff,
-                                metrics::structured::kAppDiscoveryLogging,
-                                metrics::structured::kEventSequenceLogging},
-          {});
+      base::Extend(enabled, ash::standalone_browser::GetFeatureRefs());
     } else {
-      feature_list_.InitWithFeatures(
-          /*enabled_features=*/{metrics::structured::kAppDiscoveryLogging,
-                                metrics::structured::kEventSequenceLogging},
-          /*disabled_features=*/{ash::features::kLacrosSupport,
-                                 ash::features::kLacrosPrimary,
-                                 ash::features::kLacrosOnly});
+      base::Extend(disabled, ash::standalone_browser::GetFeatureRefs());
     }
+    feature_list_.InitWithFeatures(enabled, disabled);
 
     AppPlatformMetricsServiceTestBase::SetUp();
 
@@ -3328,17 +3304,10 @@ class AppPlatformMetricsServiceObserverTest
   void SetUp() override {
     if (IsLacrosEnabled()) {
       feature_list_.InitWithFeatures(
-          /*enabled_features=*/{ash::features::kLacrosSupport,
-                                ash::features::kLacrosPrimary,
-                                ash::features::kLacrosOnly,
-                                ash::features::kLacrosProfileMigrationForceOff},
-          {});
+          /*enabled_features=*/ash::standalone_browser::GetFeatureRefs(), {});
     } else {
       feature_list_.InitWithFeatures(
-          {},
-          /*disabled_features=*/{ash::features::kLacrosSupport,
-                                 ash::features::kLacrosPrimary,
-                                 ash::features::kLacrosOnly});
+          {}, /*disabled_features=*/ash::standalone_browser::GetFeatureRefs());
     }
 
     // Set up test user.

@@ -149,6 +149,17 @@ class ExtensionWebRequestEventRouter {
   };
   using AuthCallback = base::OnceCallback<void(AuthRequiredResponse)>;
 
+  // The type of listener removal.
+  enum class ListenerUpdateType {
+    // The listener was fully removed by the extension and the registration
+    // should be removed here.
+    kRemove,
+    // This is for a lazy listener where the "active" listener's process is shut
+    // down, but the listener should still be registered (and will be stored in
+    // `BrowserContextData::inactive_listeners`).
+    kDeactivate,
+  };
+
   static ExtensionWebRequestEventRouter* GetInstance();
 
   // Registers a rule registry. Pass null for |rules_registry| to unregister
@@ -318,11 +329,25 @@ class ExtensionWebRequestEventRouter {
       content::BrowserContext* browser_context,
       const std::string& event_name);
 
+  bool HasAnyExtraHeadersListenerForTesting(
+      content::BrowserContext* browser_context) {
+    return HasAnyExtraHeadersListenerImpl(browser_context);
+  }
+
+  void UpdateActiveListenerForTesting(content::BrowserContext* browser_context,
+                                      ListenerUpdateType update_type,
+                                      const ExtensionId& extension_id,
+                                      const std::string& sub_event_name,
+                                      int worker_thread_id,
+                                      int64_t service_worker_version_id) {
+    UpdateActiveListener(browser_context, update_type, extension_id,
+                         sub_event_name, worker_thread_id,
+                         service_worker_version_id);
+  }
+
  private:
   friend class WebRequestAPI;
   friend class base::NoDestructor<ExtensionWebRequestEventRouter>;
-  FRIEND_TEST_ALL_PREFIXES(ExtensionWebRequestTest, AddAndRemoveListeners);
-  FRIEND_TEST_ALL_PREFIXES(ExtensionWebRequestTest, BrowserContextShutdown);
 
   struct EventListener {
     struct ID {
@@ -398,33 +423,18 @@ class ExtensionWebRequestEventRouter {
     // events. Modified through `IncrementExtraHeadersListenerCount()` and
     // `DecrementExtraHeadersListenerCount()`.
     int extra_headers_count = 0;
-    // The corresponding incognito or on-the-record context for this
-    // BrowserContext. That is, if this context is incognito, `cross_context`
-    // will point to the original context; if this context is the original,
-    // `cross_context` will point to the incognito context (if any).
-    raw_ptr<content::BrowserContext> cross_context = nullptr;
+    // Maps each BrowserContext using the webview key to its respective rules
+    // registry. For non-webview contexts, the default value defined by
+    // `RulesRegistryService::kDefaultRulesRegistryID` is used.
+    std::map<int, scoped_refptr<WebRequestRulesRegistry>> rules_registries;
   };
 
   using DataMap = std::map<BrowserContextID, BrowserContextData>;
   using BlockedRequestMap = std::map<uint64_t, BlockedRequest>;
-  // Map of request_id -> bit vector of EventTypes already signaled
-  using SignaledRequestMap = std::map<uint64_t, int>;
-
-  // The type of listener removal.
-  enum class ListenerUpdateType {
-    // The listener was fully removed by the extension and the registration
-    // should be removed here.
-    kRemove,
-    // This is for a lazy listener where the "active" listener's process is shut
-    // down, but the listener should still be registered (and will be stored in
-    // `BrowserContextData::inactive_listeners`).
-    kDeactivate,
-  };
 
   ExtensionWebRequestEventRouter();
 
-  // Returns the EventListener with the given |id|, or nullptr. Must be called
-  // from the IO thread.
+  // Returns the EventListener with the given |id|, or nullptr.
   EventListener* FindEventListener(const EventListener::ID& id);
 
   // Returns the EventListener with the given |id| from |listeners|.
@@ -434,8 +444,8 @@ class ExtensionWebRequestEventRouter {
   // Updates the active listener registration indicated by the given criteria.
   // `update_type` indicates whether the listener is fully removed or if it's
   // a lazy listener that had its context shut down.
-  void UpdateActiveListener(ListenerUpdateType update_type,
-                            BrowserContextID browser_context_id,
+  void UpdateActiveListener(content::BrowserContext* browser_context,
+                            ListenerUpdateType update_type,
                             const ExtensionId& extension_id,
                             const std::string& sub_event_name,
                             int worker_thread_id,
@@ -572,8 +582,8 @@ class ExtensionWebRequestEventRouter {
   content::BrowserContext* GetCrossBrowserContext(
       content::BrowserContext* browser_context) const;
 
-  // Returns true if |request| was already signaled to some event handlers.
-  bool WasSignaled(const WebRequestInfo& request) const;
+  // Returns true if |request_id| was already signaled to some event handlers.
+  bool WasSignaled(uint64_t request_id) const;
 
   // Helper for |HasAnyExtraHeadersListener()|.
   bool HasAnyExtraHeadersListenerImpl(content::BrowserContext* browser_context);
@@ -584,16 +594,6 @@ class ExtensionWebRequestEventRouter {
   // A map of network requests that are waiting for at least one event handler
   // to respond.
   BlockedRequestMap blocked_requests_;
-
-  // A map of request ids to a bitvector indicating which events have been
-  // signaled and should not be sent again.
-  SignaledRequestMap signaled_requests_;
-
-  typedef std::pair<BrowserContextID, int> RulesRegistryKey;
-  // Maps each browser_context (and OTRBrowserContext) and a webview key to its
-  // respective rules registry.
-  std::map<RulesRegistryKey, scoped_refptr<extensions::WebRequestRulesRegistry>>
-      rules_registries_;
 };
 
 }  // namespace extensions

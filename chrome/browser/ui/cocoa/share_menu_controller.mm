@@ -29,10 +29,6 @@
 #include "ui/snapshot/snapshot.h"
 #include "ui/views/view.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 // Private method, used to identify instantiated services.
 @interface NSSharingService (ExposeName)
 - (id)name;

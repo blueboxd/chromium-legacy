@@ -69,6 +69,8 @@ class ExternalVkImageBackingFactoryDawnTest
 
     ExternalVkImageBackingFactoryTest::SetUp();
 
+    dawnProcSetProcs(&dawn::native::GetProcs());
+
     // Create a Dawn Vulkan device
     dawn_instance_.DiscoverDefaultPhysicalDevices();
 
@@ -81,15 +83,16 @@ class ExternalVkImageBackingFactoryDawnTest
                                          });
     ASSERT_NE(adapter_it, adapters.end());
 
-    DawnProcTable procs = dawn::native::GetProcs();
-    dawnProcSetProcs(&procs);
-
     // We need to request internal usage to be able to do operations with
     // internal methods that would need specific usages.
     wgpu::FeatureName dawn_internal_usage =
         wgpu::FeatureName::DawnInternalUsages;
     wgpu::DeviceDescriptor device_descriptor;
+#ifdef WGPU_BREAKING_CHANGE_COUNT_RENAME
+    device_descriptor.requiredFeatureCount = 1;
+#else
     device_descriptor.requiredFeaturesCount = 1;
+#endif
     device_descriptor.requiredFeatures = &dawn_internal_usage;
 
     dawn_device_ =

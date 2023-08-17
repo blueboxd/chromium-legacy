@@ -51,6 +51,7 @@
 <translation id="3650632991272923014"><ph name="USER_EMAIL1" /> notaði Chromium og skildi eftir bókamerki, aðgangsorð og aðrar stillingar í þessu tæki.</translation>
 <translation id="3661862315467204831">Opnaðu stillingar Chromium í iOS, ýttu svo á „Browser Default APP“ og veldu Chromium.</translation>
 <translation id="372658070733623520">Staðfestu að þetta sért þú til að nota og vista Chromium-gögn á Google-reikningnum þínum.</translation>
+<translation id="3780779443901618967">Varar þig við hættulegum vefsvæðum, jafnvel þeim sem Google hafði enga vitneskju um, með því að greina fleiri gögn frá vefsvæðum en hefðbundin vörn. Þú getur valið að sleppa Chromium-viðvörunum.</translation>
 <translation id="3805899903892079518">Chromium hefur ekki aðgang að myndunum þínum eða myndskeiðum. Veittu aðgang í iOS Settings &gt; Privacy &gt; Photos.</translation>
 <translation id="3827545470516145620">Þú er með staðlaða öryggisvörn í þessu tæki</translation>
 <translation id="3955621079070267756">Opnaðu Chromium í hvaða forriti sem er</translation>
@@ -94,6 +95,7 @@
 <translation id="632825460376924298">Leyfa innskráningu í Chromium</translation>
 <translation id="6337530241089703714">Veldu hvort þú vilt hreinsa gögn Chromium úr þessu tæki eða geyma þau</translation>
 <translation id="6424492062988593837">Chromium er nú enn betra! Ný útgáfa er í boði.</translation>
+<translation id="6563921047760808519">Nánar um <ph name="BEGIN_LINK" />hvernig Chromium heldur gögnunum þínum leyndum<ph name="END_LINK" /></translation>
 <translation id="6625409903340039086">Chromium styður nú notendareglur fyrir stýrða reikninginn þinn</translation>
 <translation id="6752854822223394465">Fyrirtækið þitt er að setja upp Chromium...</translation>
 <translation id="6820823224820483452">Chromium gat ekki athugað öll aðgangsorð. Reyndu aftur á morgun.</translation>
@@ -121,6 +123,7 @@
 <translation id="7859018312476869945">Þegar þú skrifar í veffangastiku eða leitarreit sendir Chromium það sem þú skrifar á sjálfgefna leitarvél til að fá betri tillögur. Slökkt er á þessu í huliðsstillingu.</translation>
 <translation id="786327964234957808">Þú ert að skipta um samstillingarreikning úr <ph name="USER_EMAIL1" /> yfir í <ph name="USER_EMAIL2" />. Chromium gögnin þín sem eru þegar til staðar eru í umsjón <ph name="DOMAIN" />. Þetta mun eyða gögnum af þessu tæki, en þau verða enn til staðar á <ph name="USER_EMAIL1" />.</translation>
 <translation id="7890287942691234100">Byrjaðu að nota Chromium skanna</translation>
+<translation id="7905064834449738336">Þegar þú notar aðgangsorð varar Chromium þig við ef það hefur verið birt á netinu. Meðan á þessu stendur eru aðgangsorðin þín og notandanöfnin dulkóðuð svo enginn geti lesið þau, þ.m.t. Google.</translation>
 <translation id="7928628054454574139">Opna Chromium hvenær sem þú ýtir á tengil í öðrum forritum</translation>
 <translation id="7931842119211730154">Læsa huliðsflipum um leið og þú lokar Chromium</translation>
 <translation id="7980860476903281594">Chromium deilir staðsetningunni þinni með vefsvæðum sem þú veitir heimild.</translation>

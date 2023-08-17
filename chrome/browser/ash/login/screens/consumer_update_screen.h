@@ -19,6 +19,7 @@
 #include "chrome/browser/ash/login/screens/error_screen.h"
 #include "chrome/browser/ash/login/version_updater/version_updater.h"
 #include "chromeos/dbus/power/power_manager_client.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace ash {
 
@@ -33,12 +34,25 @@ class ConsumerUpdateScreen : public BaseScreen,
   using TView = ConsumerUpdateScreenView;
 
   enum class Result {
+    BACK,
     UPDATED,
     SKIPPED,
     DECLINE_CELLULAR,
     UPDATE_NOT_REQUIRED,
     UPDATE_ERROR,
     NOT_APPLICABLE,
+  };
+
+  // This enum is tied directly to the OobeConsumerUpdateScreenSkippedReason UMA
+  // enum defined in //tools/metrics/histograms/enums.xml, and should always
+  // reflect it (do not change one without changing the other).  Entries should
+  // be never modified or deleted.  Only additions possible.
+  enum class OobeConsumerUpdateScreenSkippedReason {
+    kCriticalUpdateCompleted = 0,
+    kUpdateNotRequired = 1,
+    kUpdateError = 2,
+    kDeclineCellular = 3,
+    kMaxValue = kDeclineCellular,
   };
 
   using ScreenExitCallback = base::RepeatingCallback<void(Result result)>;
@@ -68,6 +82,31 @@ class ConsumerUpdateScreen : public BaseScreen,
 
   // PowerManagerClient::Observer:
   void PowerChanged(const power_manager::PowerSupplyProperties& proto) override;
+
+  VersionUpdater* get_version_updater_for_testing() {
+    return version_updater_.get();
+  }
+
+  void set_delay_for_delayed_timer_for_testing(base::TimeDelta delay) {
+    delay_error_message_ = delay;
+  }
+
+  void set_exit_callback_for_testing(ScreenExitCallback exit_callback) {
+    exit_callback_ = exit_callback;
+  }
+
+  void set_wait_before_reboot_time_for_testing(
+      base::TimeDelta wait_before_reboot_time) {
+    wait_before_reboot_time_ = wait_before_reboot_time;
+  }
+
+  base::OneShotTimer* get_error_message_timer_for_testing() {
+    return &error_message_timer_;
+  }
+
+  base::OneShotTimer* get_wait_reboot_timer_for_testing() {
+    return &wait_reboot_timer_;
+  }
 
  protected:
   // BaseScreen:
@@ -102,9 +141,12 @@ class ConsumerUpdateScreen : public BaseScreen,
   void DelaySkipButton();
   void SetSkipButton();
 
+  void RecordOobeConsumerUpdateScreenSkippedReasonHistogram(
+      OobeConsumerUpdateScreenSkippedReason reason);
+
   bool update_available = false;
 
-  bool checked_update_mandatory = false;
+  absl::optional<bool> is_mandatory_update_;
 
   // True if there was no notification about captive portal state for
   // the default network.
@@ -141,10 +183,12 @@ class ConsumerUpdateScreen : public BaseScreen,
   base::OneShotTimer delay_skip_button_timer_;
 
   // Delay to show the Skip button
-  base::TimeDelta delay_skip_button_time_ = base::Seconds(30);
+  base::TimeDelta delay_skip_button_time_ = base::Seconds(15);
 
   // Maximum time estimate to force update
   base::TimeDelta maximum_time_force_update_ = base::Minutes(5);
+
+  base::TimeTicks screen_shown_time_;
 
   // PowerManagerClient::Observer is used only when screen is shown.
   base::ScopedObservation<chromeos::PowerManagerClient,

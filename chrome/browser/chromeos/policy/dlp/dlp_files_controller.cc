@@ -11,7 +11,9 @@
 #include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "base/task/bind_post_task.h"
+#include "chrome/browser/chromeos/policy/dlp/dlp_files_utils.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_scoped_file_access_delegate.h"
+#include "chrome/browser/enterprise/data_controls/component.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chromeos/dbus/dlp/dlp_client.h"
@@ -103,32 +105,23 @@ bool IsInLocalFileSystem(const base::FilePath& file_path) {
   return false;
 }
 
-absl::optional<ino64_t> GetInodeValue(const base::FilePath& path) {
-  if (!IsInLocalFileSystem(path)) {
-    return absl::nullopt;
-  }
-
-  struct stat file_stats;
-  if (stat(path.value().c_str(), &file_stats) != 0) {
-    return absl::nullopt;
-  }
-  return file_stats.st_ino;
-}
-
 }  // namespace
 
 DlpFilesController::FileDaemonInfo::FileDaemonInfo(
     ino64_t inode,
+    time_t crtime,
     const base::FilePath& path,
     const std::string& source_url,
     const std::string& referrer_url)
     : inode(inode),
+      crtime(crtime),
       path(path),
       source_url(source_url),
       referrer_url(referrer_url) {}
 
 DlpFilesController::FileDaemonInfo::FileDaemonInfo(const FileDaemonInfo& o)
     : inode(o.inode),
+      crtime(o.crtime),
       path(o.path),
       source_url(o.source_url),
       referrer_url(o.referrer_url) {}
@@ -171,17 +164,20 @@ void DlpFilesController::RequestCopyAccess(
     return;
   }
 
+  ::dlp::DlpComponent proto =
+      dst_component ? dlp::MapPolicyComponentToProto(*dst_component)
+                    : ::dlp::DlpComponent::SYSTEM;
+
   ::dlp::RequestFileAccessRequest file_access_request;
   file_access_request.add_files_paths(source_file.path().value());
-  file_access_request.set_destination_url(destination.path().DirName().value());
+  file_access_request.set_destination_component(proto);
 
   if (!dst_component.has_value()) {
     // We allow internal copy, we still have to get the scopedFS
     // and we might need to copy the source URL information.
-    auto inode = GetInodeValue(source_file.path());
-    if (inode) {
+    if (IsInLocalFileSystem(source_file.path())) {
       ::dlp::GetFilesSourcesRequest request;
-      request.add_files_inodes(inode.value());
+      request.add_files_paths(source_file.path().value());
       chromeos::DlpClient::Get()->GetFilesSources(
           request,
           base::BindOnce(&GotFilesSourcesOfCopy, destination,

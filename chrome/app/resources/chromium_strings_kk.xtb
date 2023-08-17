@@ -74,7 +74,6 @@
 <translation id="2592940277904433508">Chromium-ді пайдалана беру</translation>
 <translation id="2648074677641340862">Орнату барысында операциялық жүйе қатесі орын алды. Chromium қайта жүктеңіз.</translation>
 <translation id="2661879430930417727">Құрылғыңызды басқа адамдар да пайдаланатын болса, достарыңыз және отбасыңыздың мүшелері интернетке бөлек кіріп, Chromium параметрлерін өздері қалағандай орната алады.</translation>
-<translation id="2669853942967761236">Осы мұрағат файлында зиянды бағдарлама жасырылуы мүмкін болғандықтан, Chromium оны бөгеді.</translation>
 <translation id="268602741124540128"><ph name="ACCOUNT_FIRST_NAME" />, Chromium браузеріне қош келдіңіз!</translation>
 <translation id="2711502716910134313">Chromium қойындысы</translation>
 <translation id="2718390899429598676">Қосымша қауіпсіздік үшін Chromium деректеріңізді шифрлайды.</translation>
@@ -272,6 +271,7 @@
 <translation id="6613594504749178791">Өзгертулеріңіз Chromium келесі рет қайта іске қосылғанда күшіне енеді.</translation>
 <translation id="665732753414869868">Chromium айналаңыздың 3D картасын жасау үшін камераны пайдалануға рұқсат сұрайды.</translation>
 <translation id="6663852025006259149">Сайттар сіз күткендей жұмыс істеуі мүмкін, бірақ сіз Chromium-нің барлық терезесін жапқаннан кейін сізді есте сақтамайды</translation>
+<translation id="6669284030132180248">Бетбелгілерді Google аккаунтыңызда да сақтасаңыз, Chromium-дe өнім бағаларын бақылап, баға төмендеген кезде, хабарландыру аласыз.</translation>
 <translation id="6676384891291319759">Интернетке кіру</translation>
 <translation id="668175097507315160">Кіру кезіндегі қате себебінен ChromiumOS деректеріңізді синхрондай алмады.</translation>
 <translation id="6709350901466051922">Chromium бұл сайт үшін микрофонды пайдалануға рұқсат сұрайды.</translation>
@@ -407,6 +407,5 @@ Chromium параметрлеріңізді қалпына келтіре алм
 <translation id="942598560705308788">Chromium басқаратын сертификаттар</translation>
 <translation id="965162752251293939">Chromium-ді кім пайдаланып жатыр?</translation>
 <translation id="967427899662692980">Chromium браузерінің ең күшті қорғанысын қолданыңыз</translation>
-<translation id="9792300276217204">Chromium браузерін жапқан кезде құрылғыңыздан сайт деректерін үнемі өшіру</translation>
 <translation id="985602178874221306">The Chromium Authors</translation>
 </translationbundle>

@@ -112,23 +112,6 @@ constexpr auto kChromeOSKeyboardsWithCapsLock =
         {0x046d, 0xb370}  // Logitech Signature K650
     });
 
-class StubKeyboardCapabilityDelegate : public KeyboardCapability::Delegate {
- public:
-  StubKeyboardCapabilityDelegate() = default;
-  StubKeyboardCapabilityDelegate(const StubKeyboardCapabilityDelegate&) =
-      delete;
-  StubKeyboardCapabilityDelegate& operator=(
-      const StubKeyboardCapabilityDelegate&) = delete;
-  ~StubKeyboardCapabilityDelegate() override = default;
-
-  void AddObserver(KeyboardCapability::Observer* observer) override {}
-  void RemoveObserver(KeyboardCapability::Observer* observer) override {}
-  bool TopRowKeysAreFKeys() const override { return false; }
-  void SetTopRowKeysAsFKeysEnabledForTesting(bool enabled) override {}
-  bool IsPrivacyScreenSupported() const override { return false; }
-  void SetPrivacyScreenSupportedForTesting(bool is_supported) override {}
-};
-
 absl::optional<KeyboardDevice> FindKeyboardWithId(int device_id) {
   const auto& keyboards =
       DeviceDataManager::GetInstance()->GetKeyboardDevices();
@@ -480,19 +463,16 @@ bool HasExternalKeyboardConnected() {
 
 }  // namespace
 
-KeyboardCapability::KeyboardCapability(std::unique_ptr<Delegate> delegate)
-    : delegate_(std::move(delegate)) {
+KeyboardCapability::KeyboardCapability() {
   scan_code_to_evdev_key_converter_ =
       base::BindRepeating(&ConvertScanCodeToEvdevKey);
   DeviceDataManager::GetInstance()->AddObserver(this);
 }
 
 KeyboardCapability::KeyboardCapability(
-    ScanCodeToEvdevKeyConverter scan_code_to_evdev_key_converter,
-    std::unique_ptr<Delegate> delegate)
+    ScanCodeToEvdevKeyConverter scan_code_to_evdev_key_converter)
     : scan_code_to_evdev_key_converter_(
-          std::move(scan_code_to_evdev_key_converter)),
-      delegate_(std::move(delegate)) {
+          std::move(scan_code_to_evdev_key_converter)) {
   DeviceDataManager::GetInstance()->AddObserver(this);
 }
 
@@ -509,8 +489,7 @@ KeyboardCapability::KeyboardInfo::~KeyboardInfo() = default;
 // static
 std::unique_ptr<KeyboardCapability>
 KeyboardCapability::CreateStubKeyboardCapability() {
-  return std::make_unique<KeyboardCapability>(
-      std::make_unique<StubKeyboardCapabilityDelegate>());
+  return std::make_unique<KeyboardCapability>();
 }
 
 // static
@@ -551,30 +530,6 @@ absl::optional<KeyboardCode> KeyboardCapability::ConvertToKeyboardCode(
     }
   }
   return absl::nullopt;
-}
-
-void KeyboardCapability::AddObserver(Observer* observer) {
-  delegate_->AddObserver(observer);
-}
-
-void KeyboardCapability::RemoveObserver(Observer* observer) {
-  delegate_->RemoveObserver(observer);
-}
-
-bool KeyboardCapability::TopRowKeysAreFKeys() const {
-  return delegate_->TopRowKeysAreFKeys();
-}
-
-void KeyboardCapability::SetTopRowKeysAsFKeysEnabledForTesting(
-    bool enabled) const {
-  CHECK_IS_TEST();
-  delegate_->SetTopRowKeysAsFKeysEnabledForTesting(enabled);  // IN-TEST
-}
-
-void KeyboardCapability::SetPrivacyScreenSupportedForTesting(
-    bool is_supported) const {
-  CHECK_IS_TEST();
-  delegate_->SetPrivacyScreenSupportedForTesting(is_supported);  // IN-TEST
 }
 
 // static
@@ -830,10 +785,12 @@ bool KeyboardCapability::HasGlobeKey(const KeyboardDevice& keyboard) const {
     return false;
   }
 
-  // TODO(dpad): This is not quite right, some external keyboards have it as
-  // well.
-  // Globe key only exists on drallion or wilco devices.
-  return keyboard_info->top_row_layout ==
+  // TODO(jimmyxgong): VKEY_MODECHANGE (globe key) for now we should assume
+  // can be available for external keyboards or Wilco/Drallion device. Will
+  // need a better way to determine if the key is available in non
+  // Wilco/Drallion keyboards.
+  return !IsInternalKeyboard(keyboard) ||
+         keyboard_info->top_row_layout ==
              KeyboardTopRowLayout::kKbdTopRowLayoutDrallion ||
          keyboard_info->top_row_layout ==
              KeyboardTopRowLayout::kKbdTopRowLayoutWilco;
@@ -909,22 +866,6 @@ bool KeyboardCapability::HasMediaKeysOnAnyKeyboard() const {
   // TODO(dpad): Many external keyboards do not have these keys, but currently
   // we do not have a good way to detect these situations.
   return HasExternalKeyboardConnected();
-}
-
-bool KeyboardCapability::HasPrivacyScreenKey(
-    const KeyboardDevice& keyboard) const {
-  return GetDeviceType(keyboard) == DeviceType::kDeviceInternalKeyboard &&
-         delegate_->IsPrivacyScreenSupported();
-}
-
-bool KeyboardCapability::HasPrivacyScreenKeyOnAnyKeyboard() const {
-  for (const ui::KeyboardDevice& keyboard :
-       ui::DeviceDataManager::GetInstance()->GetKeyboardDevices()) {
-    if (HasPrivacyScreenKey(keyboard)) {
-      return true;
-    }
-  }
-  return false;
 }
 
 const std::vector<TopRowActionKey>* KeyboardCapability::GetTopRowActionKeys(

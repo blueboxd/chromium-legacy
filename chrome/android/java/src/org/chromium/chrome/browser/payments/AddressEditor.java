@@ -38,7 +38,6 @@ import org.chromium.base.Callback;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.AddressValidationType;
 import org.chromium.chrome.browser.autofill.AutofillAddress;
-import org.chromium.chrome.browser.autofill.AutofillProfile;
 import org.chromium.chrome.browser.autofill.AutofillProfileBridge;
 import org.chromium.chrome.browser.autofill.AutofillProfileBridge.AutofillAddressUiComponent;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
@@ -49,6 +48,7 @@ import org.chromium.chrome.browser.autofill.editors.EditorDialogViewBinder;
 import org.chromium.chrome.browser.autofill.editors.EditorFieldValidator;
 import org.chromium.chrome.browser.autofill.editors.EditorProperties.FieldItem;
 import org.chromium.chrome.browser.autofill.editors.EditorProperties.ItemType;
+import org.chromium.components.autofill.AutofillProfile;
 import org.chromium.components.autofill.ServerFieldType;
 import org.chromium.payments.mojom.AddressErrors;
 import org.chromium.ui.modelutil.ListModel;
@@ -281,7 +281,12 @@ public class AddressEditor
                 mEditorModel, mEditorDialog, EditorDialogViewBinder::bindEditorDialogView);
 
         loadAdminAreasForCountry(mCountryField.get(VALUE));
-        mEditorModel.set(FORM_VALID, mAddressErrors == null || validateForm(mEditorModel));
+        boolean formValid = mAddressErrors == null;
+        if (!mAddressNew) {
+            // Form validation must be performed only for non-empty address profiles.
+            formValid |= validateForm(mEditorModel);
+        }
+        mEditorModel.set(FORM_VALID, formValid);
     }
 
     private void onDone() {

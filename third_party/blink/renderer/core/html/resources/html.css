@@ -1410,7 +1410,7 @@ dialog[open] {
     display: block;
 }
 
-dialog:modal {
+dialog:-internal-dialog-in-top-layer {
     /* https://html.spec.whatwg.org/multipage/rendering.html#flow-content-3 */
     position: fixed;
     overflow: auto;
@@ -1421,12 +1421,15 @@ dialog:modal {
     /* https://github.com/w3c/csswg-drafts/issues/6939#issuecomment-1016679588 */
     user-select: text;
     visibility: visible;
+}
+
+dialog:modal {
     overlay: auto !important;
 }
 
 /* TODO(foolip): In the Fullscreen spec, there's a ::backdrop block with the
    properties shared with :fullscreen::backdrop (see fullscreen.css). */
-dialog::backdrop {
+dialog:-internal-dialog-in-top-layer::backdrop {
     position: fixed;
     inset: 0;
     /* https://html.spec.whatwg.org/multipage/rendering.html#flow-content-3 */
@@ -1435,6 +1438,52 @@ dialog::backdrop {
 
 slot {
     display: contents;
+}
+
+[popover] {
+  position: fixed;
+  inset: 0;
+  width: fit-content;
+  height: fit-content;
+  margin: auto;
+  border: solid;
+  padding: 0.25em;
+  overflow: auto;
+  color: CanvasText;
+  background-color: Canvas;
+}
+
+/* This ensures that popovers get display:none when they are not open, and we
+   need to be careful not to affect `<dialog popover>` when open as a dialog. */
+[popover]:not(:popover-open):not(dialog[open]) {
+  display:none;
+}
+
+/* The UA stylesheet has a rule like dialog{display:none}, so <dialog popover>
+   needs this to be visible when it is open as a popover. */
+dialog:popover-open {
+  display:block;
+}
+
+/* Popovers using anchor positioning get their inset properties reset, to make
+ * it easier to position them. */
+[popover][anchor] {
+  inset:auto;
+}
+
+/* This rule matches popovers (dialog or not) that are currently open as a
+   popover. */
+[popover]:popover-open:not(dialog), dialog:popover-open:not([open]) {
+  overlay: auto !important;
+}
+
+[popover]:-internal-popover-in-top-layer::backdrop {
+  /* From the (modified) fullscreen spec: https://fullscreen.spec.whatwg.org/#user-agent-level-style-sheet-defaults: */
+  position: fixed;
+  inset: 0;
+  /* Specific to [popover]: */
+  pointer-events: none !important;
+  background-color: transparent;
 }
 
 /* page */

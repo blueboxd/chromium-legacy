@@ -212,10 +212,8 @@ base::trace_event::TraceConfig GetTracingConfig() {
 
 }  // namespace
 
-// static
 base::FilePath ArcGraphicsTracingHandler::GetModelPathFromTitle(
-    Profile* profile,
-    const std::string& title) {
+    std::string_view title) {
   constexpr size_t kMaxNameSize = 32;
   char normalized_name[kMaxNameSize];
   size_t index = 0;
@@ -231,10 +229,9 @@ base::FilePath ArcGraphicsTracingHandler::GetModelPathFromTitle(
       normalized_name[index++] = c;
   }
   normalized_name[index] = 0;
-  return file_manager::util::GetDownloadsFolderForProfile(profile).AppendASCII(
+  return GetDownloadsFolder().AppendASCII(
       base::StringPrintf("overview_tracing_%s_%" PRId64 ".json",
-                         normalized_name,
-                         (base::Time::Now() - base::Time()).InSeconds()));
+                         normalized_name, Now().since_origin().InSeconds()));
 }
 
 ArcGraphicsTracingHandler::ArcGraphicsTracingHandler()
@@ -288,7 +285,9 @@ void ArcGraphicsTracingHandler::OnWindowActivated(ActivationReason reason,
   arc_active_window_->AddPreTargetHandler(this);
 
   // Limit tracing by newly activated window.
-  tracing_time_min_ = TRACE_TIME_TICKS_NOW();
+  if (tracing_active_) {
+    tracing_time_min_ = SystemTicksNow();
+  }
 }
 
 void ArcGraphicsTracingHandler::OnWindowPropertyChanged(aura::Window* window,
@@ -359,7 +358,36 @@ void ArcGraphicsTracingHandler::DiscardActiveArcWindow() {
   arc_active_window_ = nullptr;
 }
 
-void ArcGraphicsTracingHandler::Activate() {
+base::Time ArcGraphicsTracingHandler::Now() {
+  return base::Time::Now();
+}
+
+void ArcGraphicsTracingHandler::StartTracingOnController(
+    const base::trace_event::TraceConfig& trace_config,
+    content::TracingController::StartTracingDoneCallback after_start) {
+  content::TracingController::GetInstance()->StartTracing(
+      trace_config, std::move(after_start));
+}
+
+void ArcGraphicsTracingHandler::StopTracingOnController(
+    content::TracingController::CompletionCallback after_stop) {
+  auto* const controller = content::TracingController::GetInstance();
+
+  if (!controller->IsTracing()) {
+    LOG(WARNING) << "TracingController has already stopped tracing";
+    return;
+  }
+
+  controller->StopTracing(
+      content::TracingController::CreateStringEndpoint(std::move(after_stop)));
+}
+
+base::FilePath ArcGraphicsTracingHandler::GetDownloadsFolder() {
+  return file_manager::util::GetDownloadsFolderForProfile(
+      Profile::FromWebUI(web_ui()));
+}
+
+void ArcGraphicsTracingHandler::ActivateWebUIWindow() {
   aura::Window* const window =
       web_ui()->GetWebContents()->GetTopLevelNativeWindow();
   if (!window) {
@@ -381,10 +409,10 @@ void ArcGraphicsTracingHandler::StartTracing() {
 
   // Timestamp and app information would be updated when |OnTracingStarted| is
   // called.
-  timestamp_ = base::Time::Now();
+  timestamp_ = Now();
   UpdateActiveArcWindowInfo();
 
-  content::TracingController::GetInstance()->StartTracing(
+  StartTracingOnController(
       GetTracingConfig(),
       base::BindOnce(&ArcGraphicsTracingHandler::OnTracingStarted,
                      weak_ptr_factory_.GetWeakPtr()));
@@ -396,25 +424,19 @@ void ArcGraphicsTracingHandler::StopTracing() {
   tracing_active_ = false;
   stop_tracing_timer_.Stop();
 
-  tracing_time_max_ = TRACE_TIME_TICKS_NOW();
+  tracing_time_max_ = SystemTicksNow();
 
   if (system_stat_collector_)
     system_stat_collector_->Stop();
 
-  content::TracingController* const controller =
-      content::TracingController::GetInstance();
-
-  if (!controller->IsTracing())
-    return;
-
-  controller->StopTracing(content::TracingController::CreateStringEndpoint(
+  StopTracingOnController(
       base::BindOnce(&ArcGraphicsTracingHandler::OnTracingStopped,
-                     weak_ptr_factory_.GetWeakPtr())));
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void ArcGraphicsTracingHandler::StopTracingAndActivate() {
   StopTracing();
-  Activate();
+  ActivateWebUIWindow();
 }
 
 void ArcGraphicsTracingHandler::SetStatus(const std::string& status) {
@@ -423,16 +445,20 @@ void ArcGraphicsTracingHandler::SetStatus(const std::string& status) {
                          base::Value(status.empty() ? "Idle" : status));
 }
 
+base::TimeTicks ArcGraphicsTracingHandler::SystemTicksNow() {
+  return TRACE_TIME_TICKS_NOW();
+}
+
 void ArcGraphicsTracingHandler::OnTracingStarted() {
   // This is an asynchronous call and it may arrive after tracing is actually
   // stopped.
   if (!tracing_active_)
     return;
 
-  timestamp_ = base::Time::Now();
+  timestamp_ = Now();
   UpdateActiveArcWindowInfo();
 
-  tracing_time_min_ = TRACE_TIME_TICKS_NOW();
+  tracing_time_min_ = SystemTicksNow();
   stop_tracing_timer_.Start(
       FROM_HERE, system_stat_collector_->max_interval(),
       base::BindOnce(&ArcGraphicsTracingHandler::StopTracingAndActivate,
@@ -444,9 +470,7 @@ void ArcGraphicsTracingHandler::OnTracingStopped(
   std::string string_data;
   string_data.swap(*trace_data);
 
-  Profile* const profile = Profile::FromWebUI(web_ui());
-  const base::FilePath model_path =
-      GetModelPathFromTitle(profile, active_task_title_);
+  const base::FilePath model_path = GetModelPathFromTitle(active_task_title_);
 
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},

@@ -9,10 +9,8 @@ import "mojo/public/mojom/base/string16.mojom";
 import "mojo/public/mojom/base/values.mojom";
 import "mojo/public/mojom/base/unguessable_token.mojom";
 import "printing/mojom/print.mojom";
-import "ui/gfx/geometry/mojom/geometry.mojom";
-
-[EnableIf=enable_tagged_pdf]
 import "ui/accessibility/mojom/ax_tree_update.mojom";
+import "ui/gfx/geometry/mojom/geometry.mojom";
 
 // Preview Ids, the id of the preview request and the print preview ui
 // associated with this request.
@@ -166,6 +164,9 @@ struct PrintParams {
   // Defaults to 1 if the feature is disabled, and some number greater
   // than 1 otherwise.  See printing::NupParameters for supported values.
   uint32 pages_per_sheet = 1;
+  // Whether tagged (accessible) PDF should be generated. No value assumes
+  // embedder choice provided by PrintRenderFrameHelper delegate.
+  bool? generate_tagged_pdf;
 };
 
 // Parameters for a print setting that has parameters for a print request and an
@@ -280,6 +281,11 @@ interface PrintPreviewUI {
   DidStartPreview(DidStartPreviewParams params, int32 request_id);
 };
 
+struct PrintWithParamsResultData {
+  DidPrintDocumentParams params;
+  ax.mojom.AXTreeUpdate accessibility_tree;
+};
+
 enum PrintFailureReason {
   kGeneralFailure,
   kInvalidPageRange,
@@ -287,7 +293,7 @@ enum PrintFailureReason {
 };
 
 union PrintWithParamsResult {
-  DidPrintDocumentParams params;
+  PrintWithParamsResultData data;
   PrintFailureReason failure_reason;
 };
 
@@ -425,9 +431,7 @@ interface PrintManagerHost {
   CheckForCancel(int32 preview_ui_id, int32 request_id) => (bool cancel);
 
   // Sends the accessibility tree corresponding to a document being
-  // printed, needed for a tagged (accessible) PDF. Note that
-  // enable_print_preview must be set to true as well, but Mojo cannot express
-  // that. Instead, this dependency is enforced by GN.
-  [EnableIf=enable_tagged_pdf]
+  // printed, needed for a tagged (accessible) PDF.
+  [EnableIf=enable_print_preview]
   SetAccessibilityTree(int32 cookie, ax.mojom.AXTreeUpdate accessibility_tree);
 };

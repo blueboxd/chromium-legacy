@@ -16,6 +16,7 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/to_vector.h"
 #include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/autofill/content/browser/form_forest.h"
@@ -31,6 +32,7 @@
 #include "content/public/test/test_renderer_host.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/variant.h"
 #include "third_party/blink/public/common/permissions_policy/origin_with_possible_wildcards.h"
 #include "third_party/blink/public/common/permissions_policy/permissions_policy.h"
 #include "third_party/blink/public/mojom/permissions_policy/permissions_policy.mojom-shared.h"
@@ -180,13 +182,6 @@ FormData WithValues(FormData& form, Profile profile = Profile(0)) {
 
 // Utility functions and constants.
 
-// Use strings for non-opaque origins and URLs because constructors must not be
-// called before the test is set up.
-const std::string kMainUrl("https://main.frame.com/");
-const std::string kIframeUrl("https://iframe.frame.com/");
-const std::string kOtherUrl("https://other.frame.com/");
-const url::Origin kOpaqueOrigin;
-
 url::Origin Origin(const GURL& url) {
   return url::Origin::Create(url);
 }
@@ -194,6 +189,13 @@ url::Origin Origin(const GURL& url) {
 url::Origin Origin(base::StringPiece url) {
   return Origin(GURL(url));
 }
+
+// Use strings for non-opaque origins and URLs because constructors must not be
+// called before the test is set up.
+const std::string kMainUrl("https://main.frame.com/");
+const std::string kIframeUrl("https://iframe.frame.com/");
+const std::string kOtherUrl("https://other.frame.com/");
+const url::Origin kOpaqueOrigin;
 
 LocalFrameToken Token(content::RenderFrameHost* rfh) {
   return LocalFrameToken(rfh->GetFrameToken().value());
@@ -265,10 +267,7 @@ std::vector<std::vector<T>> Permutations(const std::vector<T>& xs) {
 template <typename T>
 std::vector<std::vector<T>> FlattenedPermutations(
     const std::vector<std::vector<T>>& xs) {
-  std::vector<std::vector<T>> result;
-  base::ranges::transform(Permutations(xs), std::back_inserter(result),
-                          &Flattened<std::string>);
-  return result;
+  return base::test::ToVector(Permutations(xs), &Flattened<std::string>);
 }
 
 class MockContentAutofillDriver : public ContentAutofillDriver {
@@ -411,8 +410,6 @@ class FormForestTest : public content::RenderViewHostTestHarness {
         /*matches_opaque_src=*/false)};
   }
 
-  base::test::ScopedFeatureList feature_list_{
-      features::kAutofillSharedAutofill};
   test::AutofillUnitTestEnvironment autofill_test_environment_;
   TestAutofillClientInjector<TestContentAutofillClient>
       autofill_client_injector_;
@@ -1439,12 +1436,21 @@ class FormForestTestUnflatten : public FormForestTestWithMockedTree {
   // The subject of this test fixture.
   std::vector<FormData> GetRendererFormsOfBrowserForm(
       base::StringPiece form_name,
-      const url::Origin& triggered_origin,
-      const base::flat_map<FieldGlobalId, ServerFieldType>& field_type_map) {
+      const FormForest::SecurityOptions& security) {
     return flattened_forms_
         .GetRendererFormsOfBrowserForm(WithValues(GetFlattenedForm(form_name)),
-                                       triggered_origin, field_type_map)
+                                       security)
         .renderer_forms;
+  }
+
+  // This shorthand for GetRendererFormsOfBrowserForm() allows passing prvalues
+  // for `triggered_origin`, e.g. `Origin("...")`.
+  std::vector<FormData> GetRendererFormsOfBrowserForm(
+      base::StringPiece form_name,
+      const url::Origin& triggered_origin,
+      const base::flat_map<FieldGlobalId, ServerFieldType>& field_type_map) {
+    return GetRendererFormsOfBrowserForm(form_name,
+                                         {&triggered_origin, &field_type_map});
   }
 
   auto FieldTypeMap(base::StringPiece form_name) {
@@ -1536,6 +1542,24 @@ TEST_F(FormForestTestUnflatten, SameOriginPolicy) {
       WithoutValues(GetMockedForm("child1")),
       WithValues(GetMockedForm("child2"), Profile(2))};
   EXPECT_THAT(GetRendererFormsOfBrowserForm("main", Origin(kIframeUrl), {}),
+              UnorderedArrayEquals(expectation));
+}
+
+// Tests that (only) frames from the same origin are filled.
+TEST_F(FormForestTestUnflatten, SameOriginPolicyNoValuesErased) {
+  MockFormForest(
+      {.url = kMainUrl,
+       .forms = {
+           {.name = "main",
+            .frames = {{.url = kOtherUrl, .forms = {{.name = "child1"}}},
+                       {.url = kIframeUrl, .forms = {{.name = "child2"}}}}}}});
+  MockFlattening({{"main"}, {"child1"}, {"child2"}});
+  std::vector<FormData> expectation = {
+      WithValues(GetMockedForm("main"), Profile(0)),
+      WithValues(GetMockedForm("child1"), Profile(1)),
+      WithValues(GetMockedForm("child2"), Profile(2))};
+  EXPECT_THAT(GetRendererFormsOfBrowserForm(
+                  "main", FormForest::SecurityOptions::TrustAllOrigins()),
               UnorderedArrayEquals(expectation));
 }
 

@@ -342,25 +342,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Event.Latency.EndToEnd.Mouse" units="microseconds"
-    expires_after="2020-11-08">
-  <obsolete>
-    Removed in 2022-09. Replaced by EventLatency.Mouse*.TotalLatency metrics.
-  </obsolete>
-  <owner>nzolghadr@chromium.org</owner>
-  <owner>input-dev@chromium.org</owner>
-  <summary>
-    Time between the OS receiving a mouse event and the resulting GPU frame
-    swap. If no swap was induced by the event, no recording is made.
-
-    Warning: This metric may include reports from clients with low-resolution
-    clocks (i.e. on Windows, ref. |TimeTicks::IsHighResolution()|). Such reports
-    will cause this metric to have an abnormal distribution. When considering
-    revising this histogram, see UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES for the
-    solution.
-  </summary>
-</histogram>
-
 <histogram name="Event.Latency.EndToEnd.TouchpadPinch2" units="microseconds"
     expires_after="2023-12-24">
   <owner>nzolghadr@chromium.org</owner>
@@ -412,7 +393,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Event.Latency.OS2.{EventType}" units="ms"
-    expires_after="2023-08-14">
+    expires_after="2024-08-14">
   <owner>flackr@chromium.org</owner>
   <owner>joenotcharles@google.com</owner>
   <owner>input-dev@chromium.org</owner>
@@ -559,7 +540,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Event.Latency.ScrollBegin.Wheel.TimeToScrollUpdateSwapBegin4"
-    units="microseconds" expires_after="2023-12-04">
+    units="microseconds" expires_after="2024-02-04">
   <owner>flackr@chromium.org</owner>
   <summary>
     NOTE: This metric is deprecated in favor of
@@ -618,7 +599,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Event.Latency.ScrollUpdate.JankyDuration" units="ms"
-    expires_after="2023-12-10">
+    expires_after="2024-02-11">
   <owner>ddrone@google.com</owner>
   <owner>chrometto-team@google.com</owner>
   <summary>
@@ -629,7 +610,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Event.Latency.ScrollUpdate.JankyDurationPercentage" units="%"
-    expires_after="2023-12-04">
+    expires_after="2024-02-04">
   <owner>ddrone@google.com</owner>
   <owner>chrometto-team@google.com</owner>
   <summary>
@@ -855,7 +836,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Event.Latency.ScrollUpdate.Wheel.TimeToScrollUpdateSwapBegin4"
-    units="microseconds" expires_after="2023-12-04">
+    units="microseconds" expires_after="2024-02-04">
   <owner>flackr@chromium.org</owner>
   <summary>
     NOTE: This metric is deprecated in favor of

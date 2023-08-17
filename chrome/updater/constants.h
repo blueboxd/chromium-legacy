@@ -226,6 +226,7 @@ extern const char kDevOverrideKeyCrxVerifierFormat[];
 extern const char kDevOverrideKeyGroupPolicies[];
 extern const char kDevOverrideKeyOverinstallTimeout[];
 extern const char kDevOverrideKeyIdleCheckPeriodSeconds[];
+extern const char kDevOverrideKeyManagedDevice[];
 
 // Timing constants.
 // How long to wait for an application installer (such as chrome_installer.exe)
@@ -366,7 +367,7 @@ inline constexpr int kErrorDMRegistrationFailed = 33;
 inline constexpr int kErrorFailedToInstallLegacyUpdater = 34;
 
 // A Mojo remote was unexpectedly disconnected.
-inline constexpr int kErrorMojoDisconnect = 35;
+inline constexpr int kErrorIpcDisconnect = 35;
 
 // Failed to copy the updater binary.
 inline constexpr int kErrorFailedToCopyBinary = 36;

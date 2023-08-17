@@ -18,9 +18,6 @@ namespace safe_browsing {
 // for example to control how often collection should occur.
 BASE_DECLARE_FEATURE(kAdSamplerTriggerFeature);
 
-// Adds page load token to client safe browsing report.
-BASE_DECLARE_FEATURE(kAddPageLoadTokenToClientSafeBrowsingReport);
-
 // Enables logging new phishing prevention data.
 BASE_DECLARE_FEATURE(kAntiPhishingTelemetry);
 
@@ -45,9 +42,6 @@ const char kClientSideDetectionTagParamName[] = "reporter_omaha_tag";
 // Enables force request CSD-P ping when RT Lookup Response has FORCE_REQUEST in
 // the client_side_detection_type field
 BASE_DECLARE_FEATURE(kClientSideDetectionTypeForceRequest);
-
-// Enables serving the Android Protego allowlist through the component updater.
-BASE_DECLARE_FEATURE(kComponentUpdaterAndroidProtegoAllowlist);
 
 // Controls whether new deep scanning UX is enabled or not.
 BASE_DECLARE_FEATURE(kDeepScanningUpdatedUX);
@@ -169,10 +163,14 @@ BASE_DECLARE_FEATURE(kFileTypePoliciesTag);
 // `kFileTypePoliciesTag`.
 const char kFileTypePoliciesTagParamName[] = "policy_omaha_tag";
 
-// Enables the new text, layout, and icons on both the privacy guide and on the
-// security settings page. Also, this will only affect the safe browsing level
-// settings.
-BASE_DECLARE_FEATURE(kFriendlierSafeBrowsingSettings);
+// Enables the new text, layout, links, and icons on both the privacy guide
+// and on the security settings page for the enhanced protection security
+// option.
+BASE_DECLARE_FEATURE(kFriendlierSafeBrowsingSettingsEnhancedProtection);
+
+// Enables the new text and layout on both the privacy guide and on the
+// security settings page for the standard protection security option.
+BASE_DECLARE_FEATURE(kFriendlierSafeBrowsingSettingsStandardProtection);
 
 // Sends hash-prefix real-time lookup requests on navigations for Standard Safe
 // Browsing users instead of hash-prefix database lookups.
@@ -194,6 +192,11 @@ BASE_DECLARE_FEATURE(kHashRealTimeOverOhttp);
 // kHashPrefixRealTimeLookupsRelayUrl parameter, but it applies to the
 // kHashRealTimeOverOhttp feature.
 extern const base::FeatureParam<std::string> kHashRealTimeOverOhttpRelayUrl;
+
+// UX improvements to download warnings in the download bubble and
+// chrome://downloads page, respectively.
+BASE_DECLARE_FEATURE(kImprovedDownloadBubbleWarnings);
+BASE_DECLARE_FEATURE(kImprovedDownloadPageWarnings);
 
 // Enable logging of the account enhanced protection setting in Protego pings.
 BASE_DECLARE_FEATURE(kLogAccountEnhancedProtectionStateInProtegoPings);

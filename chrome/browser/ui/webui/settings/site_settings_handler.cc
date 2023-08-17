@@ -372,12 +372,16 @@ bool IsPatternValidForType(const std::string& pattern_string,
   return true;
 }
 
-void UpdateDataFromModel(SiteSettingsHandler::AllSitesMap* all_sites_map,
-                         std::map<url::Origin, int64_t>* origin_size_map,
-                         const url::Origin& origin,
-                         int64_t size) {
+void UpdateDataFromModel(
+    SiteSettingsHandler::AllSitesMap* all_sites_map,
+    std::map<url::Origin, int64_t>* origin_size_map,
+    const url::Origin& origin,
+    int64_t size,
+    absl::optional<GroupingKey> partition_grouping_key = absl::nullopt) {
   UpdateDataForOrigin(origin, size, origin_size_map);
-  InsertOriginIntoGroup(all_sites_map, origin);
+  InsertOriginIntoGroup(all_sites_map, origin,
+                        /*is_origin_with_cookies=*/false,
+                        partition_grouping_key);
 }
 
 void LogAllSitesAction(AllSitesAction2 action) {
@@ -801,6 +805,11 @@ void SiteSettingsHandler::RegisterMessages() {
       base::BindRepeating(&SiteSettingsHandler::HandleGetExceptionList,
                           base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
+      "getStorageAccessExceptionList",
+      base::BindRepeating(
+          &SiteSettingsHandler::HandleGetStorageAccessExceptionList,
+          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
       "getFileSystemGrants",
       base::BindRepeating(&SiteSettingsHandler::HandleGetFileSystemGrants,
                           base::Unretained(this)));
@@ -1006,6 +1015,8 @@ void SiteSettingsHandler::OnGetUsageInfo() {
     if (!entry.Matches(usage_origin)) {
       continue;
     }
+    // TODO(crbug.com/1468277): Step 5 - Check if the entry is backed by a
+    // StorageKey and count the size if the top-site matches too.
     size += entry.data_details->storage_size;
   }
 
@@ -1162,6 +1173,8 @@ void SiteSettingsHandler::HandleClearUnpartitionedUsage(
   RemoveNonTreeModelData(affected_origins);
 }
 
+// TODO(crbug.com/1468277): Step 5 - Handle clearing partitioned entries as
+// well where origin matches the top-site in the browsing data model.
 void SiteSettingsHandler::HandleClearPartitionedUsage(
     const base::Value::List& args) {
   CHECK_EQ(2U, args.size());
@@ -1633,10 +1646,7 @@ void SiteSettingsHandler::HandleRevokeFileSystemGrant(
   ChromeFileSystemAccessPermissionContext* permission_context =
       FileSystemAccessPermissionContextFactory::GetForProfile(profile_);
 
-  permission_context->RevokeGrant(
-      origin, file_path,
-      ChromeFileSystemAccessPermissionContext::PersistedPermissionOptions::
-          kUpdatePersistedPermission);
+  permission_context->RevokeGrant(origin, file_path);
 }
 
 void SiteSettingsHandler::HandleRevokeFileSystemGrants(
@@ -1656,9 +1666,7 @@ void SiteSettingsHandler::HandleRevokeFileSystemGrants(
   ChromeFileSystemAccessPermissionContext* permission_context =
       FileSystemAccessPermissionContextFactory::GetForProfile(profile_);
 
-  permission_context->RevokeGrants(
-      origin, ChromeFileSystemAccessPermissionContext::
-                  PersistedPermissionOptions::kUpdatePersistedPermission);
+  permission_context->RevokeGrants(origin);
 }
 
 void SiteSettingsHandler::HandleSetOriginPermissions(
@@ -2305,8 +2313,19 @@ void SiteSettingsHandler::GetOriginStorage(
                          },
                          [](const url::Origin& origin) { return origin; }},
         *entry.data_owner);
+
+    // If the storage is backed by a StorageKey we need to ensure the grouping
+    // key matches the top-site and doesn't default to the origin in the UI.
+    absl::optional<GroupingKey> partition_grouping_key = absl::nullopt;
+    const blink::StorageKey* storage_key =
+        absl::get_if<blink::StorageKey>(&entry.data_key.get());
+    if (storage_key != nullptr && storage_key->IsThirdPartyContext()) {
+      partition_grouping_key = GroupingKey::Create(
+          url::Origin::Create(GURL(storage_key->top_level_site().Serialize())));
+    }
     UpdateDataFromModel(all_sites_map, origin_size_map, origin,
-                        entry.data_details->storage_size);
+                        entry.data_details->storage_size,
+                        partition_grouping_key);
   }
 }
 
@@ -2461,7 +2480,7 @@ void SiteSettingsHandler::RemoveNonTreeModelData(
     }
   }
 
-  // Remove any Browsing Data Model data associated with the origins host.
+  // Remove any Browsing Data Model data associated with the origins.
   // TODO(crbug.com/1271155) - When the browsing data model supports all storage
   // types, re-work this handler to work directly with primary hosts as defined
   // by the model.
@@ -2471,8 +2490,13 @@ void SiteSettingsHandler::RemoveNonTreeModelData(
   // been created by permission info).
   if (browsing_data_model_) {
     for (const auto& origin : origins) {
-      browsing_data_model_->RemoveBrowsingData(origin.host(),
-                                               base::DoNothing());
+      browsing_data_model_->RemoveBrowsingData(origin, base::DoNothing());
+
+      // Also remove Browsing Data Model data associated with the origin's host.
+      if (origin.GetURL().SchemeIsHTTPOrHTTPS()) {
+        browsing_data_model_->RemoveBrowsingData(origin.host(),
+                                                 base::DoNothing());
+      }
     }
   }
 
@@ -2511,6 +2535,14 @@ void SiteSettingsHandler::SetModelsForTesting(
 
 void SiteSettingsHandler::ClearAllSitesMapForTesting() {
   all_sites_map_.clear();
+}
+
+CookiesTreeModel* SiteSettingsHandler::GetCookiesTreeModelForTesting() {
+  return cookies_tree_model_.get();
+}
+
+BrowsingDataModel* SiteSettingsHandler::GetBrowsingDataModelForTesting() {
+  return browsing_data_model_.get();
 }
 
 void SiteSettingsHandler::SendCookieSettingDescription() {
@@ -2555,12 +2587,13 @@ base::Value::List SiteSettingsHandler::PopulateFileSystemGrantData() {
 
   ChromeFileSystemAccessPermissionContext* permission_context =
       FileSystemAccessPermissionContextFactory::GetForProfile(profile_);
-  std::vector<url::Origin> origins_with_grants =
+  std::set<url::Origin> origins_with_grants =
       permission_context->GetOriginsWithGrants();
 
   for (auto& origin : origins_with_grants) {
     ChromeFileSystemAccessPermissionContext::Grants grantObj =
-        permission_context->GetPermissionGrants(origin);
+        permission_context->ConvertObjectsToGrants(
+            permission_context->GetGrantedObjects(origin));
     if (grantObj.file_read_grants.empty() &&
         grantObj.file_write_grants.empty() &&
         grantObj.directory_read_grants.empty() &&

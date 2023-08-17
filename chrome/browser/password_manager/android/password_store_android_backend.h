@@ -69,7 +69,11 @@ enum class PasswordStoreOperation {
   kDisableAutoSignInForOriginsAsync = 10,
   kClearAllLocalPasswords = 11,
 
-  kMaxValue = kClearAllLocalPasswords
+  // Operation that is non-modifying, but not safe to retry because it is
+  // user-visible.
+  kGetGroupedMatchingLoginsAsync = 12,
+
+  kMaxValue = kGetGroupedMatchingLoginsAsync,
 };
 
 // Android-specific password store backend that delegates every request to
@@ -191,7 +195,6 @@ class PasswordStoreAndroidBackend
       const base::RepeatingCallback<bool(const GURL&)>& origin_filter,
       base::OnceClosure completion) override;
   SmartBubbleStatsStore* GetSmartBubbleStatsStore() override;
-  FieldInfoStore* GetFieldInfoStore() override;
   std::unique_ptr<syncer::ProxyModelTypeControllerDelegate>
   CreateSyncControllerDelegate() override;
   void ClearAllLocalPasswords() override;
@@ -345,7 +348,7 @@ class PasswordStoreAndroidBackend
 
   raw_ptr<const syncer::SyncService> sync_service_ = nullptr;
 
-  base::raw_ptr<AffiliatedMatchHelper> affiliated_match_helper_;
+  raw_ptr<AffiliatedMatchHelper> affiliated_match_helper_;
 
   // Delegate to handle sync events.
   std::unique_ptr<PasswordSyncControllerDelegateAndroid>

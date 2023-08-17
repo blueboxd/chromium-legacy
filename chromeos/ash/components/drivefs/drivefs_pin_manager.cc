@@ -11,20 +11,17 @@
 
 #include "base/files/file_path.h"
 #include "base/functional/bind.h"
-#include "base/functional/callback_forward.h"
 #include "base/logging.h"
 #include "base/memory/raw_ref.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/no_destructor.h"
 #include "base/notreached.h"
-#include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "chromeos/ash/components/drivefs/mojom/drivefs.mojom.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "components/drive/file_errors.h"
-#include "third_party/cros_system_api/constants/cryptohome.h"
 
 namespace drivefs::pinning {
 namespace {
@@ -636,10 +633,12 @@ bool PinManager::Update(Files::value_type& entry,
 
 PinManager::PinManager(Path profile_path,
                        Path mount_path,
-                       mojom::DriveFs* const drivefs)
+                       mojom::DriveFs* const drivefs,
+                       int64_t queue_size)
     : profile_path_(std::move(profile_path)),
       mount_path_(std::move(mount_path)),
       drivefs_(drivefs),
+      queue_size_(queue_size),
       space_getter_(base::BindRepeating(&GetFreeSpace)) {
   DCHECK(drivefs_);
   ash::UserDataAuthClient::Get()->AddObserver(this);
@@ -1132,6 +1131,9 @@ void PinManager::StartPinning() {
     is_first_sync_ = false;
   }
 
+  base::UmaHistogramSparse("FileBrowser.GoogleDrive.BulkPinning.QueueSize",
+                           queue_size_);
+
   timer_ = base::ElapsedTimer();
   progress_.stage = Stage::kSyncing;
   NotifyProgress();
@@ -1200,7 +1202,7 @@ void PinManager::PinSomeFiles() {
     return NotifyProgress();
   }
 
-  while (progress_.syncing_files < kMaxQueueSize && !files_to_pin_.empty()) {
+  while (progress_.syncing_files < queue_size_ && !files_to_pin_.empty()) {
     const Id id = files_to_pin_.extract(files_to_pin_.begin()).value();
     const Files::iterator it = files_to_track_.find(id);
     DCHECK(it != files_to_track_.end()) << "Not tracked: " << id;

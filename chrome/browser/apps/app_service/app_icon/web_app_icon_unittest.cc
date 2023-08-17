@@ -17,7 +17,6 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/test/bind.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/test_future.h"
 #include "build/chromeos_buildflags.h"
 #include "cc/test/pixel_comparator.h"
@@ -62,6 +61,7 @@
 #include "chrome/browser/ash/arc/icon_decode_request.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/chrome_unscaled_resources.h"
+#include "chromeos/ash/components/standalone_browser/feature_refs.h"
 #include "components/services/app_service/public/cpp/icon_loader.h"
 #include "components/services/app_service/public/cpp/icon_types.h"
 #include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
@@ -72,17 +72,8 @@ namespace apps {
 
 class WebAppIconFactoryTest : public testing::Test {
  public:
-#if BUILDFLAG(IS_CHROMEOS_ASH)
   // TODO(crbug.com/1462253): Also test with Lacros flags enabled.
-  WebAppIconFactoryTest() {
-    scoped_feature_list_.InitWithFeatures(
-        {}, {ash::features::kLacrosSupport, ash::features::kLacrosPrimary,
-             ash::features::kLacrosOnly,
-             ash::features::kLacrosProfileMigrationForceOff});
-  }
-#else
   WebAppIconFactoryTest() = default;
-#endif
 
   ~WebAppIconFactoryTest() override = default;
 
@@ -278,7 +269,6 @@ class WebAppIconFactoryTest : public testing::Test {
   Profile* profile() { return profile_.get(); }
 
  private:
-  base::test::ScopedFeatureList scoped_feature_list_;
   content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<TestingProfile> profile_;
   raw_ptr<web_app::WebAppProvider> web_app_provider_;
@@ -897,8 +887,6 @@ class AppServiceWebAppIconTest : public WebAppIconFactoryTest {
  public:
   void SetUp() override {
     WebAppIconFactoryTest::SetUp();
-    scoped_feature_list_.InitAndEnableFeature(
-        apps::kUnifiedAppServiceIconLoading);
 
     proxy_ = AppServiceProxyFactory::GetForProfile(profile());
     fake_icon_loader_ = std::make_unique<apps::FakeIconLoader>(proxy_);
@@ -1005,7 +993,6 @@ class AppServiceWebAppIconTest : public WebAppIconFactoryTest {
   AppServiceProxy& app_service_proxy() { return *proxy_; }
 
  private:
-  base::test::ScopedFeatureList scoped_feature_list_;
   data_decoder::test::InProcessDataDecoder in_process_data_decoder_;
 
   raw_ptr<AppServiceProxy> proxy_;

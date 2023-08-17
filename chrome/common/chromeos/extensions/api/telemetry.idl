@@ -183,9 +183,9 @@ namespace os.telemetry {
 
   dictionary DisplayInfo {
     // Embedded display info.
-    EmbeddedDisplayInfo edpInfo;
+    EmbeddedDisplayInfo embeddedDisplay;
     // External display info.
-    ExternalDisplayInfo[] dpInfos;
+    ExternalDisplayInfo[] externalDisplays;
   };
 
   callback DisplayInfoCallback = void (DisplayInfo displayInfo);

@@ -5,19 +5,22 @@
 #ifndef CHROME_TEST_FUZZING_KOMBUCHA_IN_PROCESS_FUZZER_H_
 #define CHROME_TEST_FUZZING_KOMBUCHA_IN_PROCESS_FUZZER_H_
 
+#include "chrome/browser/ui/views/tabs/tab_group_header.h"
+
 #include <google/protobuf/descriptor.h>
 #include <stddef.h>
 #include <cstdint>
 #include "chrome/browser/ui/browser_element_identifiers.h"
 #include "chrome/browser/ui/toolbar/app_menu_model.h"
 #include "chrome/browser/ui/toolbar/bookmark_sub_menu_model.h"
+#include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/test/fuzzing/in_process_fuzzer.h"
 #include "chrome/test/fuzzing/kombucha_in_process_fuzzer.pb.h"
 #include "chrome/test/interaction/interaction_test_util_browser.h"
 #include "chrome/test/interaction/interactive_browser_test.h"
 #include "ui/base/interaction/element_identifier.h"
+#include "ui/base/interaction/element_tracker.h"
 #include "ui/base/interaction/interactive_test.h"
-
 class KombuchaInProcessFuzzer
     : virtual public InteractiveBrowserTestT<InProcessFuzzer> {
  public:
@@ -38,44 +41,6 @@ class KombuchaInProcessFuzzer
 
   FuzzCase current_fuzz_case_;
 
-  // Step could be a StepBuilder or a Multistep
-  // Returns step if the given target is visible
-  // Otherwise returns a Log statement
-  template <typename T>
-  auto CheckStep(ui::ElementIdentifier target, T step, std::string step_name) {
-    return Steps(IfElement(
-        target,
-        [](const ui::TrackedElement* element) { return element != nullptr; },
-        Steps(std::move(step), Log("[KOMB] Added ", step_name, " with target ",
-                                   target.GetName())),
-        Steps(Log("[KOMB] Failed to add step: ", step_name, ". ",
-                  target.GetName(), " was not visible"))));
-  }
-
-  // Used primarily for DragFromTo which requires two ElementIdentifiers
-  // Check for dest first. If there is no source, we convert to DragMouseTo
-  template <typename T>
-  auto CheckStep(ui::ElementIdentifier source,
-                 ui::ElementIdentifier dest,
-                 T step,
-                 std::string step_name) {
-    return Steps(IfElement(
-        dest,
-        [](const ui::TrackedElement* element) { return element != nullptr; },
-        Steps(IfElement(
-            source,
-            [](const ui::TrackedElement* element) {
-              return element != nullptr;
-            },
-            Steps(std::move(step), Log("[KOMB] Added ", step_name,
-                                       " with targets: ", dest.GetName(), " ",
-                                       source.GetName())),
-            Steps(DragMouseTo(dest),  // Dest but no source
-                  Log("Added DragMouseTo with target: ", dest.GetName())))),
-        Steps(Log("[KOMB] Failed to add step: ", step_name,
-                  " Dest:", dest.GetName(), " was not visible"))));
-  }
-
   // Custom Kombucha Verbs
   auto ShowBookmarksBar() {
     return Steps(PressButton(kAppMenuButtonElementId),
@@ -84,21 +49,63 @@ class KombuchaInProcessFuzzer
                  WaitForShow(kBookmarkBarElementId));
   }
   // Both ClickRight/ClickLeft are handled by ClickAt in protobuf file
-  auto ClickRight(ui::ElementIdentifier target) {
-    return Steps(MoveMouseTo(target), ClickMouse(ui_controls::RIGHT));
+  auto ClickRight(ElementSpecifier target) {
+    return Steps(MoveMouseTo(target), ClickMouse(ui_controls::RIGHT, true));
   }
-  auto ClickLeft(ui::ElementIdentifier target) {
-    return Steps(MoveMouseTo(target), ClickMouse(ui_controls::LEFT));
+  auto ClickLeft(ElementSpecifier target) {
+    return Steps(MoveMouseTo(target), ClickMouse(ui_controls::LEFT, true));
   }
-  auto DragFromTo(ui::ElementIdentifier source, ui::ElementIdentifier dest) {
+  auto DragFromTo(ElementSpecifier source, ElementSpecifier dest) {
     return Steps(MoveMouseTo(source), DragMouseTo(dest));
+  }
+
+  // Custom verbs copied from saved_tab_groups_interactive_uitest.cc to interact
+  // with tab groups
+  auto SaveGroupLeaveEditorBubbleOpen(tab_groups::TabGroupId group_id) {
+    return Steps(EnsureNotPresent(kTabGroupEditorBubbleId),
+                 ClickTabGroupHeader(group_id, true),
+                 WaitForShow(kTabGroupEditorBubbleId),
+                 PressButton(kTabGroupEditorBubbleSaveToggleId));
+  }
+
+  MultiStep ClickTab(int index, bool right_click) {
+    const char kTabToClick[] = "Tab to Click";
+    return Steps(
+        NameDescendantViewByType<Tab>(kBrowserViewElementId, kTabToClick,
+                                      index),
+        right_click ? ClickRight(kTabToClick) : ClickLeft(kTabToClick));
+  }
+
+  MultiStep ClickTabGroupHeader(tab_groups::TabGroupId group_id,
+                                bool right_click) {
+    const char kTabGroupToClick[] = "Tab group header to click";
+    return Steps(
+        WithView(kTabStripElementId,
+                 [](TabStrip* tab_strip) { tab_strip->StopAnimating(true); }),
+        NameDescendantView(
+            kBrowserViewElementId, kTabGroupToClick,
+            base::BindRepeating(
+                [](tab_groups::TabGroupId group_id, const views::View* view) {
+                  const TabGroupHeader* header =
+                      views::AsViewClass<TabGroupHeader>(view);
+                  if (!header) {
+                    return false;
+                  }
+                  return header->group().value() == group_id;
+                },
+                group_id)),
+        right_click ? ClickRight(kTabGroupToClick)
+                    : ClickLeft(kTabGroupToClick));
+  }
+
+  auto SaveGroupAndCloseEditorBubble(tab_groups::TabGroupId group_id) {
+    return Steps(SaveGroupLeaveEditorBubbleOpen(group_id), FlushEvents(),
+                 ClickTabGroupHeader(group_id, false));
   }
 
   // Enum descriptors for protobuf messages
   // Allows for a kombucha verb to function independent of what element
   // it's targeting
-  raw_ptr<const google::protobuf::EnumDescriptor> target_descriptor =
-      raw_ptr(test::fuzzing::ui_fuzzing::Target_descriptor());
   raw_ptr<const google::protobuf::EnumDescriptor> accelerator_descriptor =
       raw_ptr(test::fuzzing::ui_fuzzing::Accelerator_descriptor());
 

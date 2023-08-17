@@ -32,7 +32,9 @@
 #include "content/public/browser/certificate_request_result_type.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/commit_deferring_condition.h"
+#include "content/public/browser/file_system_access_permission_context.h"
 #include "content/public/browser/generated_code_cache_settings.h"
+#include "content/public/browser/interest_group_api_operation.h"
 #include "content/public/browser/interest_group_manager.h"
 #include "content/public/browser/login_delegate.h"
 #include "content/public/browser/mojo_binder_policy_map.h"
@@ -64,6 +66,8 @@
 #include "third_party/blink/public/common/permissions_policy/permissions_policy.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "third_party/blink/public/mojom/browsing_topics/browsing_topics.mojom-forward.h"
+#include "third_party/blink/public/mojom/file_system_access/file_system_access_cloud_identifier.mojom-forward.h"
+#include "third_party/blink/public/mojom/file_system_access/file_system_access_error.mojom-forward.h"
 #include "third_party/blink/public/mojom/manifest/manifest.mojom-forward.h"
 #include "third_party/blink/public/mojom/origin_trials/origin_trials_settings.mojom-forward.h"
 #include "ui/accessibility/ax_mode.h"
@@ -809,6 +813,10 @@ class CONTENT_EXPORT ContentBrowserClient {
   // loaded. This is called on the UI thread.
   virtual bool AllowSignedExchange(BrowserContext* context);
 
+  // Allows the embedder to control whether Compression Dictionary Transport
+  // feature can be used. This is called on the UI thread.
+  virtual bool AllowCompressionDictionaryTransport(BrowserContext* context);
+
   virtual bool IsDataSaverEnabled(BrowserContext* context);
 
   // Updates the given prefs for Service Worker and Shared Worker. The prefs
@@ -884,9 +892,7 @@ class CONTENT_EXPORT ContentBrowserClient {
   // "1812:e, 00001800-0000-1000-8000-00805f9b34fb:w, ignored:1, alsoignored."
   virtual std::string GetWebBluetoothBlocklist();
 
-  // The possible operations performable by parties related to the Interest
-  // Group API.
-  enum class InterestGroupApiOperation { kJoin, kLeave, kUpdate, kSell, kBuy };
+  using InterestGroupApiOperation = content::InterestGroupApiOperation;
 
   // Returns whether |api_origin| on |top_frame_origin| can perform
   // |operation| within the interest group API.
@@ -2428,9 +2434,10 @@ class CONTENT_EXPORT ContentBrowserClient {
   // status code.
   virtual bool HasErrorPage(int http_status_code);
 
-  // Creates a modal window that intermediates the exchange of ID tokens.
+  // Creates a controller that intermediates the exchange of ID tokens for the
+  // given |web_contents|.
   virtual std::unique_ptr<IdentityRequestDialogController>
-  CreateIdentityRequestDialogController();
+  CreateIdentityRequestDialogController(WebContents* web_contents);
 
   // Creates an mdoc provider to fetch mdocs from native apps.
   virtual std::unique_ptr<MDocProvider> CreateMDocProvider();
@@ -2507,11 +2514,6 @@ class CONTENT_EXPORT ContentBrowserClient {
       content::BrowserContext* browser_context,
       int32_t error_code);
 
-  // Handle a new-window/-tab request using an external implementation-defined
-  // handler, if appropriate. Returns true iff the request was handled.
-  virtual bool OpenExternally(const GURL& url,
-                              WindowOpenDisposition disposition);
-
   // Called when a `SharedStorageWorkletHost` is created for `rfh`.
   virtual void OnSharedStorageWorkletHostCreated(RenderFrameHost* rfh) {}
 
@@ -2576,6 +2578,20 @@ class CONTENT_EXPORT ContentBrowserClient {
       const net::SiteForCookies& site_for_cookies,
       const absl::optional<url::Origin>& top_frame_origin,
       const net::CookieSettingOverrides overrides);
+
+  // Callback will be called with either an error
+  // (!=`FileSystemAccessStatus::kOk`) or a list of cloud file handles as
+  // result.
+  using GetCloudIdentifiersCallback = base::OnceCallback<void(
+      blink::mojom::FileSystemAccessErrorPtr,
+      std::vector<blink::mojom::FileSystemAccessCloudIdentifierPtr>)>;
+
+  // Retrieve the identifiers the cloud storage providers use for a given
+  // file/directory.
+  virtual void GetCloudIdentifiers(
+      const storage::FileSystemURL& url,
+      FileSystemAccessPermissionContext::HandleType handle_type,
+      GetCloudIdentifiersCallback callback);
 };
 
 }  // namespace content

@@ -10,6 +10,7 @@ import("//build/config/android/jni.gni")
 import("//build/config/clang/clang.gni")
 import("//build/config/compiler/compiler.gni")
 import("//build/config/coverage/coverage.gni")
+import("//build/config/profiling/profiling.gni")
 import("//build/config/python.gni")
 import("//build/config/rts.gni")
 import("//build/config/sanitizers/sanitizers.gni")
@@ -165,7 +166,7 @@ if (enable_java_templates) {
 
         # The sources aren't compiled so don't check their dependencies.
         check_includes = false
-        script = "//base/android/jni_generator/jni_zero.py"
+        script = "//third_party/jni_zero/jni_zero.py"
         forward_variables_from(invoker,
                                [
                                  "deps",
@@ -277,7 +278,7 @@ if (enable_java_templates) {
   #
   # This target generates the native jni bindings for a set of .java files.
   #
-  # See base/android/jni_generator/jni_generator.py for more info about the
+  # See third_party/jni_zero/jni_generator.py for more info about the
   # format of generating JNI bindings.
   #
   # Variables
@@ -309,7 +310,7 @@ if (enable_java_templates) {
   #
   # This target generates the native jni bindings for a set of classes in a .jar.
   #
-  # See base/android/jni_generator/jni_generator.py for more info about the
+  # See third_party/jni_zero/jni_generator.py for more info about the
   # format of generating JNI bindings.
   #
   # Variables
@@ -2144,6 +2145,11 @@ if (enable_java_templates && is_android) {
       if (defined(testonly) && testonly) {
         defines += [ "_IS_FOR_TEST" ]
       }
+
+      if (defined(invoker.write_clang_profiling_data) &&
+          invoker.write_clang_profiling_data) {
+        defines += [ "_WRITE_CLANG_PROFILING_DATA" ]
+      }
     }
   }
 
@@ -2813,6 +2819,8 @@ if (enable_java_templates && is_android) {
         assertions_implicitly_enabled = _assertions_implicitly_enabled
         enable_multidex = _enable_multidex
         is_incremental_install = _incremental_apk
+        write_clang_profiling_data =
+            use_clang_coverage && _generate_native_libraries_java
         if (defined(invoker.build_config_include_product_version_resource) &&
             invoker.build_config_include_product_version_resource) {
           resources_version_variable =
@@ -4904,6 +4912,7 @@ if (enable_java_templates && is_android) {
         action_with_pydeps(_rewritten_jar_target_name) {
           script = "//build/android/gyp/trace_event_bytecode_rewriter.py"
           inputs = [
+            java_path_for_inputs,
             _rewriter_path,
             _build_config,
           ]
@@ -5160,8 +5169,10 @@ if (enable_java_templates && is_android) {
     _bundle_target_name = "${_target_name}__bundle"
     action_with_pydeps(_bundle_target_name) {
       script = "//build/android/gyp/create_app_bundle.py"
-      inputs = _all_module_zip_paths + _all_module_build_configs +
-               [ _BUNDLETOOL_JAR_PATH ]
+      inputs = _all_module_zip_paths + _all_module_build_configs + [
+                 _BUNDLETOOL_JAR_PATH,
+                 java_path_for_inputs,
+               ]
       outputs = [ _bundle_path ]
       deps = _all_create_module_targets + [ ":$_build_config_target" ]
       args = [
@@ -5392,6 +5403,7 @@ if (enable_java_templates && is_android) {
     action_with_pydeps("${_target_name}_apks") {
       script = "//build/android/gyp/create_app_bundle_apks.py"
       inputs = [
+        java_path_for_inputs,
         _bundle_path,
         _BUNDLETOOL_JAR_PATH,
       ]
@@ -5453,7 +5465,10 @@ if (enable_java_templates && is_android) {
       _name = get_path_info(invoker.bundle_path, "name")
       _output_path = "$_dir/$_name.minimal.apks"
       outputs = [ _output_path ]
-      inputs = [ invoker.bundle_path ]
+      inputs = [
+        invoker.bundle_path,
+        java_path_for_inputs,
+      ]
       args = [
         "--bundle",
         rebase_path(invoker.bundle_path, root_build_dir),

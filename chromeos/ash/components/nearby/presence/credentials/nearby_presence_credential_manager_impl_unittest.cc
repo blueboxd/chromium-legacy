@@ -9,15 +9,16 @@
 #include "base/test/bind.h"
 #include "base/test/gmock_callback_support.h"
 #include "base/test/gtest_util.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_callback.h"
 #include "base/test/task_environment.h"
 #include "base/time/clock.h"
 #include "chromeos/ash/components/nearby/common/scheduling/fake_nearby_scheduler_factory.h"
+#include "chromeos/ash/components/nearby/presence/conversions/proto_conversions.h"
 #include "chromeos/ash/components/nearby/presence/credentials/fake_local_device_data_provider.h"
 #include "chromeos/ash/components/nearby/presence/credentials/fake_nearby_presence_server_client.h"
 #include "chromeos/ash/components/nearby/presence/credentials/nearby_presence_credential_manager.h"
 #include "chromeos/ash/components/nearby/presence/credentials/prefs.h"
-#include "chromeos/ash/components/nearby/presence/credentials/proto_conversions.h"
 #include "chromeos/ash/services/nearby/public/cpp/fake_nearby_presence.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
@@ -39,6 +40,10 @@ const std::string kUserName = "Test Tester";
 const std::string kProfileUrl = "https://example.com";
 const std::string kDeviceId = "0123456789";
 const base::TimeDelta kServerResponseTimeout = base::Seconds(5);
+constexpr int kMaxUpdateCredentialRequestCount = 6;
+std::vector<base::TimeDelta> kUpdateCredentialCoolDownPeriods = {
+    base::Seconds(0), base::Seconds(15), base::Seconds(30), base::Minutes(1),
+    base::Minutes(2), base::Minutes(5),  base::Minutes(10)};
 constexpr int kServerCommunicationMaxAttempts = 5;
 const std::vector<uint8_t> kSecretId1 = {0x11, 0x11, 0x11, 0x11, 0x11, 0x11};
 const std::vector<uint8_t> kSecretId2 = {0x22, 0x22, 0x22, 0x22, 0x22, 0x22};
@@ -223,8 +228,30 @@ class NearbyPresenceCredentialManagerImplTest : public testing::Test {
         /*display_name=*/kUserName, /*image_url=*/kProfileUrl);
   }
 
-  void TriggerDailySync() {
+  void SetUpDailySync(bool have_credentials_changed,
+                      bool get_local_shared_credentials_success) {
     SimulateDeviceAlreadyRegistered();
+
+    // Simulate that the local credentials have not changed, which is expected
+    // to not trigger a local credential upload to the server.
+    fake_local_device_data_provider_->SetHaveSharedCredentialsChanged(
+        have_credentials_changed);
+
+    if (get_local_shared_credentials_success) {
+      // Simulate the local device credentials stored in the NP library and
+      // retrieved successfully.
+      fake_nearby_presence_.SetLocalSharedCredentialsResponse(
+          BuildSharedCredentials(), mojom::StatusCode::kOk);
+    } else {
+      // Simulate the local device credentials retrieved unsuccessfully.
+      fake_nearby_presence_.SetLocalSharedCredentialsResponse(
+          /*credentials=*/{}, mojom::StatusCode::kFailure);
+    }
+
+    // Simulate the remote device credentials being successfully set in the
+    // NP library.
+    fake_nearby_presence_.SetUpdateRemoteCredentialsStatus(
+        mojom::StatusCode::kOk);
 
     base::RunLoop update_local_device_metadata_run_loop;
     fake_nearby_presence_.SetUpdateLocalDeviceMetadataCallback(
@@ -242,10 +269,48 @@ class NearbyPresenceCredentialManagerImplTest : public testing::Test {
         scheduler_factory_.pref_name_to_periodic_instance()
             .find(prefs::kNearbyPresenceSchedulingCredentialDailySyncPrefName)
             ->second.fake_scheduler;
+  }
+
+  void TriggerDailySync(bool have_credentials_changed,
+                        bool get_local_shared_credentials_success) {
+    SetUpDailySync(have_credentials_changed,
+                   get_local_shared_credentials_success);
 
     // Simulate the scheduler notifying the CredentialManager that the task is
     // ready when it has network connectivity.
     daily_sync_scheduler_->InvokeRequestCallback();
+  }
+
+  void UpdateCredentialsDailySync() {
+    base::RunLoop get_local_creds_run_loop;
+    fake_local_device_data_provider_->SetHaveSharedCredentialsChangedCallback(
+        get_local_creds_run_loop.QuitClosure());
+
+    credential_manager_->UpdateCredentials();
+    daily_sync_scheduler_->InvokeRequestCallback();
+
+    // A second call to `UpdateCredentials()` is ignored since the first one is
+    // in progress.
+    credential_manager_->UpdateCredentials();
+
+    // Required to send messages across mojo pipe for saving remote device
+    // credentials.
+    base::RunLoop save_remote_creds_run_loop;
+    daily_sync_scheduler_->SetHandleResultCallback(
+        save_remote_creds_run_loop.QuitClosure());
+
+    get_local_creds_run_loop.Run();
+
+    // Expect no calls to trigger a credential upload, which is indicated by the
+    // creation of an on demand upload scheduler.
+    EXPECT_EQ(scheduler_factory_.pref_name_to_on_demand_instance().find(
+                  prefs::kNearbyPresenceSchedulingUploadPrefName),
+              scheduler_factory_.pref_name_to_on_demand_instance().end());
+
+    // Simulate a successful download of credentials from the server.
+    TriggerDownloadRemoteCredentialSuccess();
+
+    save_remote_creds_run_loop.Run();
   }
 
  protected:
@@ -264,6 +329,7 @@ class NearbyPresenceCredentialManagerImplTest : public testing::Test {
   FakeNearbyPresenceServerClient::Factory server_client_factory_;
   ash::nearby::FakeNearbySchedulerFactory scheduler_factory_;
   network::TestURLLoaderFactory test_url_loader_factory_;
+  base::HistogramTester histogram_tester_;
 };
 
 TEST_F(NearbyPresenceCredentialManagerImplTest, SetDeviceMetadata) {
@@ -319,6 +385,21 @@ TEST_F(NearbyPresenceCredentialManagerImplTest, RegistrationSuccess) {
   create_credential_manager_run_loop.Run();
   EXPECT_TRUE(credential_manager_);
   EXPECT_TRUE(credential_manager_->IsLocalDeviceRegistered());
+  histogram_tester_.ExpectBucketCount(
+      "Nearby.Presence.Credentials.Upload.Result", /*bucket: success=*/true, 1);
+  histogram_tester_.ExpectTotalCount(
+      "Nearby.Presence.Credentials.Upload.FailureReason", 0);
+  histogram_tester_.ExpectBucketCount(
+      "Nearby.Presence.Credentials.Upload.AttemptsNeededCount",
+      /*bucket: attempt_count=*/1, 1);
+  histogram_tester_.ExpectBucketCount(
+      "Nearby.Presence.Credentials.Download.Result", /*bucket: success=*/true,
+      1);
+  histogram_tester_.ExpectTotalCount(
+      "Nearby.Presence.Credentials.Download.FailureReason", 0);
+  histogram_tester_.ExpectBucketCount(
+      "Nearby.Presence.Credentials.Download.AttemptsNeededCount",
+      /*bucket: attempt_count=*/1, 1);
 }
 
 TEST_F(NearbyPresenceCredentialManagerImplTest, ServerRegistrationTimeout) {
@@ -407,6 +488,13 @@ TEST_F(NearbyPresenceCredentialManagerImplTest,
 
   create_credential_manager_run_loop.Run();
   EXPECT_FALSE(credential_manager_);
+  histogram_tester_.ExpectBucketCount(
+      "Nearby.Presence.Credentials.Upload.Result", /*bucket: success=*/false,
+      1);
+  histogram_tester_.ExpectBucketCount(
+      "Nearby.Presence.Credentials.Upload.FailureReason",
+      /*bucket: NearbyHttpResult::kTimeout*/
+      ash::nearby::NearbyHttpResult::kTimeout, 1);
 }
 
 TEST_F(NearbyPresenceCredentialManagerImplTest, UploadCredentialsFailure) {
@@ -440,6 +528,13 @@ TEST_F(NearbyPresenceCredentialManagerImplTest, UploadCredentialsFailure) {
 
   create_credential_manager_run_loop.Run();
   EXPECT_FALSE(credential_manager_);
+  histogram_tester_.ExpectBucketCount(
+      "Nearby.Presence.Credentials.Upload.Result", /*bucket: success=*/false,
+      1);
+  histogram_tester_.ExpectBucketCount(
+      "Nearby.Presence.Credentials.Upload.FailureReason",
+      /*bucket: NearbyHttpResult::kHttpErrorInternalServerError*/
+      ash::nearby::NearbyHttpResult::kHttpErrorInternalServerError, 1);
 }
 
 TEST_F(NearbyPresenceCredentialManagerImplTest, DownloadCredentialsFailure) {
@@ -476,6 +571,13 @@ TEST_F(NearbyPresenceCredentialManagerImplTest, DownloadCredentialsFailure) {
 
   create_credential_manager_run_loop.Run();
   EXPECT_FALSE(credential_manager_);
+  histogram_tester_.ExpectBucketCount(
+      "Nearby.Presence.Credentials.Download.Result", /*bucket: success=*/false,
+      1);
+  histogram_tester_.ExpectBucketCount(
+      "Nearby.Presence.Credentials.Download.FailureReason",
+      /*bucket: NearbyHttpResult::kHttpErrorInternalServerError*/
+      ash::nearby::NearbyHttpResult::kHttpErrorInternalServerError, 1);
 }
 
 TEST_F(NearbyPresenceCredentialManagerImplTest, DownloadCredentialsTimeout) {
@@ -510,6 +612,13 @@ TEST_F(NearbyPresenceCredentialManagerImplTest, DownloadCredentialsTimeout) {
 
   create_credential_manager_run_loop.Run();
   EXPECT_FALSE(credential_manager_);
+  histogram_tester_.ExpectBucketCount(
+      "Nearby.Presence.Credentials.Download.Result", /*bucket: success=*/false,
+      1);
+  histogram_tester_.ExpectBucketCount(
+      "Nearby.Presence.Credentials.Download.FailureReason",
+      /*bucket: NearbyHttpResult::kTimeout*/
+      ash::nearby::NearbyHttpResult::kTimeout, 1);
 }
 
 TEST_F(NearbyPresenceCredentialManagerImplTest,
@@ -549,19 +658,8 @@ TEST_F(NearbyPresenceCredentialManagerImplTest,
 
   // Simulate that the local credentials have changed, which is expected to
   // trigger a local credential upload to the server.
-  fake_local_device_data_provider_->SetHaveSharedCredentialsChanged(true);
-
-  // Simulate the local device credentials stored in the NP library and
-  // retrieved successfully.
-  fake_nearby_presence_.SetLocalSharedCredentialsResponse(
-      BuildSharedCredentials(), mojom::StatusCode::kOk);
-
-  // Simulate the remote device credentials being successfully set in the
-  // NP library.
-  fake_nearby_presence_.SetUpdateRemoteCredentialsStatus(
-      mojom::StatusCode::kOk);
-
-  TriggerDailySync();
+  TriggerDailySync(/*have_credentials_changed=*/true,
+                   /*get_local_shared_credentials_success=*/true);
 
   // Required to send messages across mojo pipe for saving remote device
   // credentials.
@@ -583,6 +681,21 @@ TEST_F(NearbyPresenceCredentialManagerImplTest,
   // Expect daily sync success, which only happens after credentials are
   // saved to the NP library.
   EXPECT_TRUE(daily_sync_scheduler_->handled_results().front());
+  histogram_tester_.ExpectBucketCount(
+      "Nearby.Presence.Credentials.Upload.Result", /*bucket: success=*/true, 1);
+  histogram_tester_.ExpectTotalCount(
+      "Nearby.Presence.Credentials.Upload.FailureReason", 0);
+  histogram_tester_.ExpectBucketCount(
+      "Nearby.Presence.Credentials.Upload.AttemptsNeededCount",
+      /*bucket: attempt_count=*/1, 1);
+  histogram_tester_.ExpectBucketCount(
+      "Nearby.Presence.Credentials.Download.Result", /*bucket: success=*/true,
+      1);
+  histogram_tester_.ExpectTotalCount(
+      "Nearby.Presence.Credentials.Download.FailureReason", 0);
+  histogram_tester_.ExpectBucketCount(
+      "Nearby.Presence.Credentials.Download.AttemptsNeededCount",
+      /*bucket: attempt_count=*/1, 1);
 }
 
 TEST_F(NearbyPresenceCredentialManagerImplTest,
@@ -591,21 +704,8 @@ TEST_F(NearbyPresenceCredentialManagerImplTest,
   fake_local_device_data_provider_->SetHaveSharedCredentialsChangedCallback(
       get_local_creds_run_loop.QuitClosure());
 
-  // Simulate that the local credentials have not changed, which is expected to
-  // not trigger a local credential upload to the server.
-  fake_local_device_data_provider_->SetHaveSharedCredentialsChanged(false);
-
-  // Simulate the local device credentials stored in the NP library and
-  // retrieved successfully.
-  fake_nearby_presence_.SetLocalSharedCredentialsResponse(
-      BuildSharedCredentials(), mojom::StatusCode::kOk);
-
-  // Simulate the remote device credentials being successfully set in the
-  // NP library.
-  fake_nearby_presence_.SetUpdateRemoteCredentialsStatus(
-      mojom::StatusCode::kOk);
-
-  TriggerDailySync();
+  TriggerDailySync(/*have_credentials_changed=*/false,
+                   /*get_local_shared_credentials_success=*/true);
 
   // Required to send messages across mojo pipe for saving remote device
   // credentials.
@@ -629,15 +729,26 @@ TEST_F(NearbyPresenceCredentialManagerImplTest,
   // Expect daily sync success, which only happens after credentials are
   // saved to the NP library.
   EXPECT_TRUE(daily_sync_scheduler_->handled_results().front());
+  histogram_tester_.ExpectTotalCount(
+      "Nearby.Presence.Credentials.Upload.Result", 0);
+  histogram_tester_.ExpectTotalCount(
+      "Nearby.Presence.Credentials.Upload.FailureReason", 0);
+  histogram_tester_.ExpectTotalCount(
+      "Nearby.Presence.Credentials.Upload.AttemptsNeededCount", 0);
+  histogram_tester_.ExpectBucketCount(
+      "Nearby.Presence.Credentials.Download.Result", /*bucket: success=*/true,
+      1);
+  histogram_tester_.ExpectTotalCount(
+      "Nearby.Presence.Credentials.Download.FailureReason", 0);
+  histogram_tester_.ExpectBucketCount(
+      "Nearby.Presence.Credentials.Download.AttemptsNeededCount",
+      /*bucket: attempt_count=*/1, 1);
 }
 
 TEST_F(NearbyPresenceCredentialManagerImplTest,
        DailySyncFailure_GetLocalCredentialFailure) {
-  // Simulate the local device credentials retrieved unsuccessfully.
-  fake_nearby_presence_.SetLocalSharedCredentialsResponse(
-      /*credentials=*/{}, mojom::StatusCode::kFailure);
-
-  TriggerDailySync();
+  TriggerDailySync(/*have_credentials_changed=*/false,
+                   /*get_local_shared_credentials_success=*/false);
 
   // Required because no way to inject a QuitClosure() into the
   // FakeLocalDeviceProvider, since it is unused in this flow.
@@ -659,16 +770,8 @@ TEST_F(NearbyPresenceCredentialManagerImplTest,
   fake_local_device_data_provider_->SetUpdatePersistedSharedCredentialsCallback(
       get_local_creds_run_loop.QuitClosure());
 
-  // Simulate that the local credentials have changed, which is expected to
-  // trigger a local credential upload to the server.
-  fake_local_device_data_provider_->SetHaveSharedCredentialsChanged(true);
-
-  // Simulate the local device credentials stored in the NP library and
-  // retrieved successfully.
-  fake_nearby_presence_.SetLocalSharedCredentialsResponse(
-      BuildSharedCredentials(), mojom::StatusCode::kOk);
-
-  TriggerDailySync();
+  TriggerDailySync(/*have_credentials_changed=*/true,
+                   /*get_local_shared_credentials_success=*/true);
   get_local_creds_run_loop.Run();
 
   // Simulate failure to upload credentials to the server.
@@ -683,6 +786,15 @@ TEST_F(NearbyPresenceCredentialManagerImplTest,
 
   // Expect daily sync failure, which also indicates exponential retries.
   EXPECT_FALSE(daily_sync_scheduler_->handled_results().front());
+  histogram_tester_.ExpectBucketCount(
+      "Nearby.Presence.Credentials.Upload.Result", /*bucket: success=*/false,
+      1);
+  histogram_tester_.ExpectBucketCount(
+      "Nearby.Presence.Credentials.Upload.FailureReason",
+      /*bucket: NearbyHttpResult::kHttpErrorInternalServerError*/
+      ash::nearby::NearbyHttpResult::kHttpErrorInternalServerError, 1);
+  histogram_tester_.ExpectTotalCount(
+      "Nearby.Presence.Credentials.Upload.AttemptsNeededCount", 0);
 }
 
 TEST_F(NearbyPresenceCredentialManagerImplTest,
@@ -691,21 +803,8 @@ TEST_F(NearbyPresenceCredentialManagerImplTest,
   fake_local_device_data_provider_->SetHaveSharedCredentialsChangedCallback(
       get_local_creds_run_loop.QuitClosure());
 
-  // Simulate that the local credentials have not changed, which is expected to
-  // not trigger a local credential upload to the server.
-  fake_local_device_data_provider_->SetHaveSharedCredentialsChanged(false);
-
-  // Simulate the local device credentials stored in the NP library and
-  // retrieved successfully.
-  fake_nearby_presence_.SetLocalSharedCredentialsResponse(
-      BuildSharedCredentials(), mojom::StatusCode::kOk);
-
-  // Simulate the remote device credentials being successfully set in the
-  // NP library.
-  fake_nearby_presence_.SetUpdateRemoteCredentialsStatus(
-      mojom::StatusCode::kOk);
-
-  TriggerDailySync();
+  TriggerDailySync(/*have_credentials_changed=*/false,
+                   /*get_local_shared_credentials_success=*/true);
 
   get_local_creds_run_loop.Run();
 
@@ -721,6 +820,15 @@ TEST_F(NearbyPresenceCredentialManagerImplTest,
           ash::nearby::NearbyHttpError::kInternalServerError);
 
   EXPECT_FALSE(daily_sync_scheduler_->handled_results().front());
+  histogram_tester_.ExpectBucketCount(
+      "Nearby.Presence.Credentials.Download.Result", /*bucket: success=*/false,
+      1);
+  histogram_tester_.ExpectBucketCount(
+      "Nearby.Presence.Credentials.Download.FailureReason",
+      /*bucket: NearbyHttpResult::kHttpErrorInternalServerError*/
+      ash::nearby::NearbyHttpResult::kHttpErrorInternalServerError, 1);
+  histogram_tester_.ExpectTotalCount(
+      "Nearby.Presence.Credentials.Download.AttemptsNeededCount", 0);
 }
 
 TEST_F(NearbyPresenceCredentialManagerImplTest,
@@ -729,21 +837,8 @@ TEST_F(NearbyPresenceCredentialManagerImplTest,
   fake_local_device_data_provider_->SetHaveSharedCredentialsChangedCallback(
       get_local_creds_run_loop.QuitClosure());
 
-  // Simulate that the local credentials have not changed, which is expected to
-  // not trigger a local credential upload to the server.
-  fake_local_device_data_provider_->SetHaveSharedCredentialsChanged(false);
-
-  // Simulate the local device credentials stored in the NP library and
-  // retrieved successfully.
-  fake_nearby_presence_.SetLocalSharedCredentialsResponse(
-      BuildSharedCredentials(), mojom::StatusCode::kOk);
-
-  // Simulate the remote device credentials being unsuccessfully set in the
-  // NP library.
-  fake_nearby_presence_.SetUpdateRemoteCredentialsStatus(
-      mojom::StatusCode::kFailure);
-
-  TriggerDailySync();
+  TriggerDailySync(/*have_credentials_changed=*/false,
+                   /*get_local_shared_credentials_success=*/true);
 
   // Required to send messages across mojo pipe for saving remote device
   // credentials.
@@ -753,11 +848,54 @@ TEST_F(NearbyPresenceCredentialManagerImplTest,
 
   get_local_creds_run_loop.Run();
 
+  // Simulate the remote device credentials being unsuccessfully set in the
+  // NP library.
+  fake_nearby_presence_.SetUpdateRemoteCredentialsStatus(
+      mojom::StatusCode::kFailure);
+
   // Simulate a successful download of credentials from the server.
   TriggerDownloadRemoteCredentialSuccess();
   save_remote_creds_run_loop.Run();
 
   EXPECT_FALSE(daily_sync_scheduler_->handled_results().front());
+}
+
+TEST_F(NearbyPresenceCredentialManagerImplTest,
+       DailySyncSuccess_TriggeredByUpdateCredentials) {
+  SetUpDailySync(/*have_credentials_changed=*/false,
+                 /*get_local_shared_credentials_success=*/true);
+  UpdateCredentialsDailySync();
+  EXPECT_TRUE(daily_sync_scheduler_->handled_results().front());
+  size_t expected_num_requests = 1;
+
+  for (int i = 1; i <= kMaxUpdateCredentialRequestCount; ++i) {
+    EXPECT_EQ(expected_num_requests,
+              daily_sync_scheduler_->num_immediate_requests());
+
+    // Once the cooloff period has passed, expect the number of requests to
+    // increase since the call to `UpdateCredentials()` is not ignored.
+    expected_num_requests++;
+    task_environment_.FastForwardBy(kUpdateCredentialCoolDownPeriods[i]);
+    UpdateCredentialsDailySync();
+    EXPECT_EQ(expected_num_requests,
+              daily_sync_scheduler_->num_immediate_requests());
+    EXPECT_TRUE(daily_sync_scheduler_->handled_results().front());
+  }
+
+  histogram_tester_.ExpectTotalCount(
+      "Nearby.Presence.Credentials.Upload.Result", 0);
+  histogram_tester_.ExpectTotalCount(
+      "Nearby.Presence.Credentials.Upload.FailureReason", 0);
+  histogram_tester_.ExpectTotalCount(
+      "Nearby.Presence.Credentials.Upload.AttemptsNeededCount", 0);
+  histogram_tester_.ExpectBucketCount(
+      "Nearby.Presence.Credentials.Download.Result", /*bucket: success=*/true,
+      7);
+  histogram_tester_.ExpectTotalCount(
+      "Nearby.Presence.Credentials.Download.FailureReason", 0);
+  histogram_tester_.ExpectBucketCount(
+      "Nearby.Presence.Credentials.Download.AttemptsNeededCount",
+      /*bucket: attempt_count=*/1, 7);
 }
 
 }  // namespace ash::nearby::presence

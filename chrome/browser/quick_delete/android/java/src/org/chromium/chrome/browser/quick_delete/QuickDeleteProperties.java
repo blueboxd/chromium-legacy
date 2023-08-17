@@ -14,6 +14,8 @@ import org.chromium.ui.modelutil.PropertyModel;
  * The class responsible for specifying the various quick delete MVC properties.
  */
 class QuickDeleteProperties {
+    public static final PropertyModel.WritableIntPropertyKey TIME_PERIOD =
+            new PropertyModel.WritableIntPropertyKey();
     public static final PropertyModel
             .WritableObjectPropertyKey<DomainVisitsData> DOMAIN_VISITED_DATA =
             new PropertyModel.WritableObjectPropertyKey<>();
@@ -23,10 +25,15 @@ class QuickDeleteProperties {
             new PropertyModel.WritableBooleanPropertyKey();
     public static final PropertyModel.WritableBooleanPropertyKey IS_SYNCING_HISTORY =
             new PropertyModel.WritableBooleanPropertyKey();
+    public static final PropertyModel.WritableBooleanPropertyKey IS_DOMAIN_VISITED_DATA_PENDING =
+            new PropertyModel.WritableBooleanPropertyKey();
 
     public static final PropertyModel.ReadableObjectPropertyKey<Context> CONTEXT =
             new PropertyModel.ReadableObjectPropertyKey();
+    public static final PropertyModel.ReadableObjectPropertyKey<Runnable> ON_MORE_OPTIONS_CLICKED =
+            new PropertyModel.ReadableObjectPropertyKey();
 
-    public static final PropertyKey[] ALL_KEYS = {
-            DOMAIN_VISITED_DATA, CLOSED_TABS_COUNT, IS_SIGNED_IN, IS_SYNCING_HISTORY, CONTEXT};
+    public static final PropertyKey[] ALL_KEYS = {TIME_PERIOD, DOMAIN_VISITED_DATA,
+            CLOSED_TABS_COUNT, IS_SIGNED_IN, IS_SYNCING_HISTORY, IS_DOMAIN_VISITED_DATA_PENDING,
+            CONTEXT, ON_MORE_OPTIONS_CLICKED};
 }

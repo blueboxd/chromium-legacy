@@ -464,6 +464,34 @@ class PageSpecificContentSettings
   // This method is called when audio or video capturing is started or finished.
   void OnCapturingStateChanged(ContentSettingsType type, bool is_capturing);
 
+  // Returns true if a page is currently using a feature gated behind `type`
+  // permission. Returns false otherwise.
+  bool IsInUse(ContentSettingsType type) { return in_use_.contains(type); }
+
+  // Returns a time of last usage of a feature gated behind `type` permission.
+  // Returns base::Time() if `type` was not used in the last 24 hours.
+  const base::Time GetLastUsedTime(ContentSettingsType type);
+
+  // This method is called when audio or video activity indicator is opened.
+  void OnActivityIndicatorBubbleOpened(ContentSettingsType type);
+
+  // This method is called when audio or video activity indicator is closed.
+  void OnActivityIndicatorBubbleClosed(ContentSettingsType type);
+
+  void set_media_stream_access_origin_for_testing(const GURL& url) {
+    media_stream_access_origin_ = url;
+  }
+
+  void set_last_used_time_for_testing(ContentSettingsType type,
+                                      base::Time time) {
+    last_used_time_[type] = time;
+  }
+
+  std::map<ContentSettingsType, base::OneShotTimer>&
+  get_media_blocked_indicator_timer_for_testing() {
+    return media_blocked_indicator_timer_;
+  }
+
  private:
   friend class content::PageUserData<PageSpecificContentSettings>;
 
@@ -481,6 +509,12 @@ class PageSpecificContentSettings
   // Updates `microphone_camera_state_` after audio/video is started/finished.
   void OnCapturingStateChangedInternal(ContentSettingsType type,
                                        bool is_capturing);
+
+  // This methods is called when a camera and/or mic blocked indicator is
+  // displayed.
+  void OnMediaBlockedIndicatorsShown(ContentSettingsType type);
+
+  void OnMediaBlockedIndicatorsDismiss(ContentSettingsType type);
 
   // content_settings::Observer implementation.
   void OnContentSettingChanged(const ContentSettingsPattern& primary_pattern,
@@ -575,6 +609,8 @@ class PageSpecificContentSettings
   // The origin of the media stream request. Note that we only support handling
   // settings for one request per tab. The latest request's origin will be
   // stored here. http://crbug.com/259794
+  // TODO(crbug.com/1467791): Remove `media_stream_access_origin_` and calculate
+  // a proper origin internaly.
   GURL media_stream_access_origin_;
 
   // The microphone and camera state at the last media stream request.
@@ -609,6 +645,14 @@ class PageSpecificContentSettings
   // Stores timers for delaying hiding an activity indicators.
   std::map<ContentSettingsType, base::OneShotTimer>
       indicators_hiding_delay_timer_;
+  // Stores last used time when a permission-gate feature is no longer in use.
+  std::map<ContentSettingsType, base::Time> last_used_time_;
+  // Stores `ContentSettingsType` that is currently used by a page.
+  std::set<ContentSettingsType> in_use_;
+
+  // A timer to removed a blocked media indicator.
+  std::map<ContentSettingsType, base::OneShotTimer>
+      media_blocked_indicator_timer_;
 
   // Observer to watch for content settings changed.
   base::ScopedObservation<HostContentSettingsMap, content_settings::Observer>

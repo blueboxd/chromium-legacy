@@ -55,7 +55,7 @@ class BrowsingDataModel {
     kFirstType = kTrustTokens,
     kLastType = kSharedDictionary,
     kExtendedDelegateRange =
-        64,  // This is needed to include delegate values when adding delegate
+        63,  // This is needed to include delegate values when adding delegate
              // browsing data to the model.
   };
   using StorageTypeSet = base::EnumSet<StorageType,
@@ -118,6 +118,9 @@ class BrowsingDataModel {
                           const DataKey& data_key,
                           const DataDetails& data_details);
   };
+
+  // Retrieves the host from the data owner.
+  static const std::string GetHost(const DataOwner& data_owner);
 
   // A delegate to handle non components/ data type retrieval and deletion.
   class Delegate {

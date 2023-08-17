@@ -290,6 +290,8 @@ void AddAppManagementStrings(content::WebUIDataSource* html_source) {
       {"appManagementStoragePermissionLabel", IDS_APP_MANAGEMENT_STORAGE},
       {"appManagementSubAppsListHeading",
        IDS_APP_MANAGEMENT_SUB_APPS_LIST_HEADING},
+      {"appManagementSubAppPermissionExplanation",
+       IDS_APP_MANAGEMENT_SUB_APP_PERMISSION_EXPLANATION},
       {"appManagementUninstallLabel", IDS_APP_MANAGEMENT_UNINSTALL_APP},
       {"close", IDS_CLOSE},
       {"fileHandlingOverflowDialogTitle",
@@ -491,7 +493,7 @@ mojom::SearchResultIcon AppsSection::GetSectionIcon() const {
   return mojom::SearchResultIcon::kAppsGrid;
 }
 
-std::string AppsSection::GetSectionPath() const {
+const char* AppsSection::GetSectionPath() const {
   return mojom::kAppsSectionPath;
 }
 

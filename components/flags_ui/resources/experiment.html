@@ -1,4 +1,8 @@
 <style>
+  :host {
+    display: block;
+  }
+
   .experiment {
     color: var(--secondary-color);
     line-height: 1.45;
@@ -91,7 +95,8 @@
     }
   }
 
-  textarea {
+  textarea,
+  input {
     background: var(--input-background);
     border-radius: 3px;
     box-sizing: border-box;
@@ -192,6 +197,7 @@
         <span class="description"></span> – <span class="platforms"></span>
       </p>
       <div class="textarea-container"></div>
+      <div class="input-container"></div>
       <a class="permalink" tabindex="7"></a>
     </div>
     <div class="flex experiment-actions"></div>

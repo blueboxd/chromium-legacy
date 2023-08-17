@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import './cart/cart_tile.js';
 import './header_tile.js';
 import './visit_tile.js';
 import './suggest_tile.js';
@@ -11,8 +12,10 @@ import {CrLazyRenderElement} from 'chrome://resources/cr_elements/cr_lazy_render
 import {assert} from 'chrome://resources/js/assert_ts.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
+import {Cart} from '../../../cart.mojom-webui.js';
 import {Cluster, InteractionState} from '../../../history_cluster_types.mojom-webui.js';
 import {I18nMixin, loadTimeData} from '../../../i18n_setup.js';
+import {NewTabPageProxy} from '../../../new_tab_page_proxy.js';
 import {InfoDialogElement} from '../../info_dialog';
 import {ModuleDescriptor} from '../../module_descriptor.js';
 
@@ -43,6 +46,12 @@ export class HistoryClustersModuleElement extends I18nMixin
     return {
       layoutType: Number,
 
+      /** The cart displayed by this element, could be null. */
+      cart: {
+        type: Object,
+        value: null,
+      },
+
       /** The cluster displayed by this element. */
       cluster: {
         type: Object,
@@ -50,21 +59,60 @@ export class HistoryClustersModuleElement extends I18nMixin
 
       format: {
         type: String,
-        value: 'narrow',
         reflectToAttribute: true,
       },
 
       imagesEnabled_: {
         type: Boolean,
-        value: () => loadTimeData.getBoolean('historyClustersImagesEnabled'),
+        value: true,
+        computed: `computeImagesEnabled_(cart)`,
+        reflectToAttribute: true,
+      },
+
+      showRelatedSearches: {
+        type: Boolean,
+        computed: `computeShowRelatedSearches()`,
         reflectToAttribute: true,
       },
     };
   }
 
+  cart: Cart|null;
   cluster: Cluster;
   format: string;
+  showRelatedSearches: boolean;
   private imagesEnabled_: boolean;
+  private setDisabledModulesListenerId_: number|null = null;
+
+  override connectedCallback() {
+    super.connectedCallback();
+
+    if (loadTimeData.getBoolean(
+            'modulesChromeCartInHistoryClustersModuleEnabled')) {
+      this.setDisabledModulesListenerId_ =
+          NewTabPageProxy.getInstance()
+              .callbackRouter.setDisabledModules.addListener(
+                  async (_: boolean, ids: string[]) => {
+                    if (ids.includes('chrome_cart')) {
+                      this.cart = null;
+                    } else if (!this.cart) {
+                      const {cart} =
+                          await HistoryClustersProxyImpl.getInstance()
+                              .handler.getCartForCluster(this.cluster);
+                      this.cart = cart;
+                    }
+                  });
+    }
+  }
+
+  override disconnectedCallback() {
+    super.disconnectedCallback();
+
+    if (this.setDisabledModulesListenerId_) {
+      NewTabPageProxy.getInstance().callbackRouter.removeListener(
+          this.setDisabledModulesListenerId_);
+    }
+  }
 
   private onDisableButtonClick_() {
     const disableEvent = new CustomEvent('disable-module', {
@@ -88,6 +136,11 @@ export class HistoryClustersModuleElement extends I18nMixin
       detail: {
         message: loadTimeData.getStringF(
             'dismissModuleToastMessage', this.cluster.label),
+        restoreCallback: () => {
+          HistoryClustersProxyImpl.getInstance()
+              .handler.updateClusterVisitsInteractionState(
+                  this.cluster.visits, InteractionState.kDefault);
+        },
       },
     }));
   }
@@ -101,6 +154,25 @@ export class HistoryClustersModuleElement extends I18nMixin
     HistoryClustersProxyImpl.getInstance().handler.showJourneysSidePanel(
         this.cluster.label.substring(1, this.cluster.label.length - 1));
   }
+
+  private shouldShowCartTile_(cart: Object): boolean {
+    return loadTimeData.getBoolean(
+               'modulesChromeCartInHistoryClustersModuleEnabled') &&
+        !!cart;
+  }
+
+  private computeImagesEnabled_(): boolean {
+    return loadTimeData.getBoolean('historyClustersImagesEnabled') ||
+        !!this.cart;
+  }
+
+  private computeShowRelatedSearches(): boolean {
+    return this.cluster.relatedSearches.length > 1;
+  }
+
+  private computeLabel_(): string {
+    return this.cluster.label.replace(/[“”]+/g, '');
+  }
 }
 
 customElements.define(
@@ -110,6 +182,13 @@ async function createElement(cluster: Cluster):
     Promise<HistoryClustersModuleElement> {
   const element = new HistoryClustersModuleElement();
   element.cluster = cluster;
+  if (loadTimeData.getBoolean(
+          'modulesChromeCartInHistoryClustersModuleEnabled')) {
+    const {cart} =
+        await HistoryClustersProxyImpl.getInstance().handler.getCartForCluster(
+            cluster);
+    element.cart = cart;
+  }
 
   return element;
 }

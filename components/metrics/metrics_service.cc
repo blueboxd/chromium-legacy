@@ -152,7 +152,6 @@
 #include "components/metrics/field_trials_provider.h"
 #include "components/metrics/metrics_features.h"
 #include "components/metrics/metrics_log.h"
-#include "components/metrics/metrics_log_manager.h"
 #include "components/metrics/metrics_log_uploader.h"
 #include "components/metrics/metrics_logs_event_manager.h"
 #include "components/metrics/metrics_pref_names.h"
@@ -487,8 +486,9 @@ void MetricsService::EnableRecording() {
   state_manager_->ForceClientIdCreation();
   client_->SetMetricsClientId(state_manager_->client_id());
 
-  if (!log_manager_.current_log())
+  if (!current_log_) {
     OpenNewLog();
+  }
 
   delegating_provider_.OnRecordingEnabled();
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -504,7 +504,7 @@ void MetricsService::EnableRecording() {
   // like field trials and hardware info is provided. If Chrome crashes
   // before this log is completed, the .pma file will have this system
   // profile.
-  RecordCurrentEnvironment(log_manager_.current_log(), /*complete=*/false);
+  RecordCurrentEnvironment(current_log_.get(), /*complete=*/false);
 
   base::RemoveActionCallback(action_callback_);
   action_callback_ = base::BindRepeating(&MetricsService::OnUserAction,
@@ -716,8 +716,9 @@ void MetricsService::UnsetUserLogStore() {
       /*required_flags=*/base::Histogram::kUmaTargetedHistogramFlag,
       &histogram_snapshot_manager);
 
-  // Release the current log and don't store it (i.e., we discard it).
-  log_manager_.ReleaseCurrentLog();
+  // Discard the current log and don't store it.
+  CHECK(current_log_);
+  current_log_.reset();
 
   log_store()->UnsetAlternateOngoingLogStore();
   RecordUserLogStoreState(kUnsetPreSendLogsState);
@@ -882,7 +883,7 @@ void MetricsService::InitializeMetricsState() {
 
 void MetricsService::OnUserAction(const std::string& action,
                                   base::TimeTicks action_time) {
-  log_manager_.current_log()->RecordUserAction(action, action_time);
+  current_log_->RecordUserAction(action, action_time);
   HandleIdleSinceLastTransmission(false);
 }
 
@@ -911,9 +912,9 @@ void MetricsService::GetUptimes(PrefService* pref,
 // Recording control methods
 
 void MetricsService::OpenNewLog(bool call_providers) {
-  DCHECK(!log_manager_.current_log());
+  CHECK(!current_log_);
 
-  log_manager_.BeginLoggingWithLog(CreateLog(MetricsLog::ONGOING_LOG));
+  current_log_ = CreateLog(MetricsLog::ONGOING_LOG);
   if (call_providers) {
     delegating_provider_.OnDidCreateMetricsLog();
   }
@@ -1043,8 +1044,9 @@ void MetricsService::CloseCurrentLog(
     bool async,
     MetricsLogsEventManager::CreateReason reason,
     base::OnceClosure log_stored_callback) {
-  if (!log_manager_.current_log())
+  if (!current_log_) {
     return;
+  }
 
   // If a persistent allocator is in use, update its internal histograms (such
   // as how much memory is being used) before reporting.
@@ -1057,8 +1059,7 @@ void MetricsService::CloseCurrentLog(
   // end of all log transmissions (initial log handles this separately).
   // RecordIncrementalStabilityElements only exists on the derived
   // MetricsLog class.
-  std::unique_ptr<MetricsLog> current_log = log_manager_.ReleaseCurrentLog();
-  DCHECK(current_log);
+  std::unique_ptr<MetricsLog> current_log(std::move(current_log_));
   RecordCurrentEnvironment(current_log.get(), /*complete=*/true);
   base::TimeDelta incremental_uptime;
   base::TimeDelta uptime;
@@ -1435,6 +1436,33 @@ void MetricsService::RecordCurrentEnvironment(MetricsLog* log, bool complete) {
 
   SetPersistentSystemProfile(serialized_proto, complete);
   client_->OnEnvironmentUpdate(&serialized_proto);
+
+  // The call to SetPersistentSystemProfile() above will have written the
+  // current system profile to persistent memory. Because it may span over
+  // multiple pages, it is possible that the system profile may become corrupted
+  // if only certain pages were flushed to disk. For example, say we overwrite
+  // the persistent memory's system profile with a newer one, and that it spans
+  // over two pages. Then, the OS flushes the second page, but not the first
+  // page. If the device is shut down unexpectedly, e.g. due to a power outage,
+  // then the first page will contain the beginning of the old system profile,
+  // while the second page will contain the ending of the new system profile,
+  // resulting in an unparsable system profile and rendering the whole file
+  // useless. So, manually schedule a flush every time we overwrite the system
+  // profile with a new one to ensure we don't ever get a corrupted one.
+  if (base::FeatureList::IsEnabled(
+          features::kFlushPersistentSystemProfileOnWrite)) {
+    base::ThreadPool::PostTask(
+        FROM_HERE, {base::TaskPriority::BEST_EFFORT, base::MayBlock()},
+        base::BindOnce([]() {
+          if (auto* allocator = base::GlobalHistogramAllocator::Get()) {
+            // Ideally, we'd just call Flush() with the |sync| parameter set to
+            // false on the main thread, but Windows does not support async
+            // flushing, so do this synchronously on a background thread
+            // instead.
+            allocator->memory_allocator()->Flush(/*sync=*/true);
+          }
+        }));
+  }
 }
 
 void MetricsService::PrepareProviderMetricsLogDone(

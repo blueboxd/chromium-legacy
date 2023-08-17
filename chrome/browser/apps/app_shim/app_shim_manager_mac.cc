@@ -46,6 +46,7 @@
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_navigator.h"
+#include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/profile_picker.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
@@ -53,13 +54,17 @@
 #include "chrome/browser/web_applications/os_integration/web_app_shortcut_mac.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
+#include "chrome/browser/web_applications/web_app_utils.h"
 #include "chrome/common/chrome_features.h"
+#include "chrome/services/mac_notifications/public/mojom/mac_notifications.mojom.h"
 #include "components/crash/core/common/crash_key.h"
 #include "components/crx_file/id_util.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "net/base/filename_util.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -464,6 +469,44 @@ void AppShimManager::UpdateAppBadge(
 
   profile_state->badge = badge;
   UpdateApplicationBadge(profile_state);
+}
+
+mojo::Remote<mac_notifications::mojom::MacNotificationProvider>
+AppShimManager::LaunchNotificationProvider(const web_app::AppId& app_id) {
+  CHECK(
+      base::FeatureList::IsEnabled(features::kAppShimNotificationAttribution));
+
+  mojo::Remote<mac_notifications::mojom::MacNotificationProvider> remote;
+  AppShimHost* shim = nullptr;
+
+  auto found_app = apps_.find(app_id);
+  if (found_app != apps_.end()) {
+    AppState* app_state = found_app->second.get();
+    CHECK(app_state->IsMultiProfile());
+    shim = app_state->multi_profile_host.get();
+  }
+
+  if (shim) {
+    shim->GetAppShim()->BindNotificationProvider(
+        remote.BindNewPipeAndPassReceiver());
+  } else {
+    // TODO(mek): Support launching a new app shim.
+    dummy_notification_provider_receivers_.Add(
+        this, remote.BindNewPipeAndPassReceiver());
+  }
+
+  return remote;
+}
+
+void AppShimManager::BindNotificationService(
+    mojo::PendingReceiver<mac_notifications::mojom::MacNotificationService>
+        service,
+    mojo::PendingRemote<mac_notifications::mojom::MacNotificationActionHandler>
+        handler) {
+  // Dummy MacNotificationProvider implementation. The notifications code that
+  // ends up calling LaunchNotificationProvider expects to always get a
+  // bound/connected MacNotificationProvider remote, so if we don't have an
+  // app shim process to connect to, instead a remote bound to this is returned.
 }
 
 void AppShimManager::UpdateApplicationBadge(ProfileState* profile_state) {
@@ -1187,6 +1230,33 @@ void AppShimManager::OnShimSelectedProfile(AppShimHost* host,
   LoadAndLaunchAppParams params;
   params.app_id = host->GetAppId();
   LoadAndLaunchApp(profile_path, params, base::DoNothing());
+}
+
+void AppShimManager::OnShimOpenedAppSettings(AppShimHost* host) {
+  // Retrieve the list of last-active profiles. If there are no last-active
+  // profiles (which is rare -- e.g, when the last-active profiles were
+  // removed), then use all profiles for which the app is installed.
+  std::set<base::FilePath> last_active_profile_paths =
+      AppShimRegistry::Get()->GetLastActiveProfilesForApp(host->GetAppId());
+  if (last_active_profile_paths.empty()) {
+    last_active_profile_paths =
+        AppShimRegistry::Get()->GetInstalledProfilesForApp(host->GetAppId());
+  }
+  if (last_active_profile_paths.empty()) {
+    return;
+  }
+  // Open settings in the first of these profiles.
+  LoadProfileAsync(
+      *last_active_profile_paths.begin(),
+      base::BindOnce(
+          [](const web_app::AppId& app_id, Profile* profile) {
+            if (profile) {
+              chrome::ShowWebAppSettings(
+                  profile, app_id,
+                  web_app::AppSettingsPageEntryPoint::kBrowserCommand);
+            }
+          },
+          host->GetAppId()));
 }
 
 void AppShimManager::OnShimOpenedUrls(AppShimHost* host,

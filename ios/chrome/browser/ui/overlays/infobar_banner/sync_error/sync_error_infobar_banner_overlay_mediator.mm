@@ -14,10 +14,6 @@
 #import "ios/chrome/browser/ui/overlays/overlay_request_mediator+subclassing.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 @interface SyncErrorInfobarBannerOverlayMediator ()
 // The sync error banner config from the request.
 @property(nonatomic, readonly) DefaultInfobarOverlayRequestConfig* config;
@@ -48,6 +44,13 @@
 #pragma mark - InfobarOverlayRequestMediator
 
 - (void)bannerInfobarButtonWasPressed:(UIButton*)sender {
+  // This can happen if the user quickly navigates to another website while the
+  // banner is still appearing, causing the banner to be triggered before being
+  // removed.
+  if (!self.syncErrorDelegate) {
+    return;
+  }
+
   self.syncErrorDelegate->Accept();
 
   [self dismissOverlay];

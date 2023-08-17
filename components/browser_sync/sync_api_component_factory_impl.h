@@ -37,6 +37,9 @@ class BookmarkSyncService;
 namespace power_bookmarks {
 class PowerBookmarkService;
 }
+namespace supervised_user {
+class SupervisedUserSettingsService;
+}  // namespace supervised_user
 
 namespace browser_sync {
 
@@ -60,7 +63,9 @@ class SyncApiComponentFactoryImpl : public syncer::SyncApiComponentFactory {
       sync_bookmarks::BookmarkSyncService*
           local_or_syncable_bookmark_sync_service,
       sync_bookmarks::BookmarkSyncService* account_bookmark_sync_service,
-      power_bookmarks::PowerBookmarkService* power_bookmark_service);
+      power_bookmarks::PowerBookmarkService* power_bookmark_service,
+      supervised_user::SupervisedUserSettingsService*
+          supervised_user_settings_service);
   SyncApiComponentFactoryImpl(const SyncApiComponentFactoryImpl&) = delete;
   SyncApiComponentFactoryImpl& operator=(const SyncApiComponentFactoryImpl&) =
       delete;
@@ -81,7 +86,6 @@ class SyncApiComponentFactoryImpl : public syncer::SyncApiComponentFactory {
       syncer::DataTypeManagerObserver* observer) override;
   std::unique_ptr<syncer::SyncEngine> CreateSyncEngine(
       const std::string& name,
-      invalidation::InvalidationService* invalidator,
       syncer::SyncInvalidationsService* sync_invalidation_service) override;
   void ClearAllTransportData() override;
 
@@ -125,6 +129,8 @@ class SyncApiComponentFactoryImpl : public syncer::SyncApiComponentFactory {
   const raw_ptr<sync_bookmarks::BookmarkSyncService>
       account_bookmark_sync_service_;
   const raw_ptr<power_bookmarks::PowerBookmarkService> power_bookmark_service_;
+  const raw_ptr<supervised_user::SupervisedUserSettingsService>
+      supervised_user_settings_service_;
 };
 
 }  // namespace browser_sync

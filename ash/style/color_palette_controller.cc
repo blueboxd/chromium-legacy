@@ -199,8 +199,8 @@ class ColorPaletteControllerImpl : public ColorPaletteController,
     pref_service->SetInteger(prefs::kDynamicColorColorScheme,
                              static_cast<int>(scheme));
     NotifyObservers(GetColorPaletteSeed(account_id));
-    base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
-        FROM_HERE, std::move(on_complete), base::Milliseconds(100));
+    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
+        FROM_HERE, std::move(on_complete));
   }
 
   void SetStaticColor(SkColor seed_color,
@@ -218,8 +218,8 @@ class ColorPaletteControllerImpl : public ColorPaletteController,
                              static_cast<int>(ColorScheme::kStatic));
     pref_service->SetUint64(prefs::kDynamicColorSeedColor, seed_color);
     NotifyObservers(GetColorPaletteSeed(account_id));
-    base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
-        FROM_HERE, std::move(on_complete), base::Milliseconds(100));
+    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
+        FROM_HERE, std::move(on_complete));
   }
 
   absl::optional<ColorPaletteSeed> GetColorPaletteSeed(
@@ -304,8 +304,10 @@ class ColorPaletteControllerImpl : public ColorPaletteController,
                 "Returning default color scheme.";
     // The preferred default color scheme for the time of day wallpaper instead
     // of tonal spot.
-    return features::IsTimeOfDayWallpaperEnabled() ? ColorScheme::kNeutral
-                                                   : ColorScheme::kTonalSpot;
+    return features::IsTimeOfDayWallpaperEnabled() &&
+                   wallpaper_controller_->IsTimeOfDayWallpaper()
+               ? ColorScheme::kNeutral
+               : ColorScheme::kTonalSpot;
   }
 
   absl::optional<SkColor> GetStaticColor(

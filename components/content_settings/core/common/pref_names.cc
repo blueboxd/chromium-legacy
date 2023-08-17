@@ -13,6 +13,8 @@ namespace prefs {
 // kBlockThirdPartyCookies but with a new UI.
 const char kCookieControlsMode[] = "profile.cookie_controls_mode";
 
+const char kBlockTruncatedCookies[] = "profile.cookie_block_truncated";
+
 // Version of the pattern format used to define content settings.
 const char kContentSettingsVersion[] = "profile.content_settings.pref_version";
 
@@ -154,9 +156,34 @@ const char kManagedMidiBlockedForUrls[] =
     "profile.managed_midi_blocked_for_urls";
 
 // Boolean indicating whether the quiet UI is enabled for notification
-// permission requests.
+// permission requests. This and kEnableNotificationCPSS can't both be true
+// at the same time.
 const char kEnableQuietNotificationPermissionUi[] =
     "profile.content_settings.enable_quiet_permission_ui.notifications";
+
+// Boolean indicating whether the quiet UI is enabled for geolocation
+// permission requests. This and kEnableGeolocationCPSS can't both be true at
+// the same time.
+const char kEnableQuietGeolocationPermissionUi[] =
+    "profile.content_settings.enable_quiet_permission_ui.geolocation";
+
+// Boolean indicating whether the users who have quiet notifications enabled
+// adaptively have to be migrated to CPSS.
+const char kDidMigrateAdaptiveNotifiationQuietingToCPSS[] =
+    "profile.content_settings.did_migrate_adaptive_notification_quieting_to_"
+    "cpss";
+
+// Boolean indicating whether CPSS is enabled for notification permissions.
+// This and kEnableQuietNotificationPermissionUi can't both be true at the same
+// time.
+const char kEnableNotificationCPSS[] =
+    "profile.content_settings.enable_cpss.notifications";
+
+// Boolean indicating whether CPSS is enabled for geolocation permissions.
+// This and kEnableQuietGeolocationPermissionUi can't both be true at the same
+// time.
+const char kEnableGeolocationCPSS[] =
+    "profile.content_settings.enable_cpss.geolocation";
 
 // Enum indicating by which method the quiet UI has been enabled for
 // notification permission requests. This is stored as of M88 and will be

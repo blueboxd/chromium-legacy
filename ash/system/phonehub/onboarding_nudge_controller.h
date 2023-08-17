@@ -44,6 +44,8 @@ class ASH_EXPORT OnboardingNudgeController
   //`kSyncedDevices`
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
 
+  static constexpr char kPhoneHubNudgeId[] = "PhoneHubNudge";
+
   // A time pref indicating the last time Phone Hub Nudge was shown.
   static constexpr char kPhoneHubNudgeLastShownTime[] =
       "ash.phone_hub_nudge_last_shown";
@@ -96,6 +98,8 @@ class ASH_EXPORT OnboardingNudgeController
 
   bool ShouldShowNudge();
 
+  bool is_nudge_clicked_ = false;
+  bool is_phone_hub_icon_clicked_ = false;
   raw_ptr<views::View, ExperimentalAsh> anchored_view_;
   base::RepeatingClosure stop_animation_callback_;
   base::RepeatingClosure start_animation_callback_;

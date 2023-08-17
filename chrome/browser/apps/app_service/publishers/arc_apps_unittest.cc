@@ -97,7 +97,7 @@ apps::IntentFilters CreateIntentFilters(
         authority, apps::PatternMatchType::kLiteral));
   }
   filter->conditions.push_back(std::make_unique<apps::Condition>(
-      apps::ConditionType::kHost, std::move(values)));
+      apps::ConditionType::kAuthority, std::move(values)));
 
   apps::ConditionValues values3;
   values3.push_back(std::make_unique<apps::ConditionValue>(
@@ -776,6 +776,7 @@ TEST_F(ArcAppsPublisherTest, OnlyValidFilterIsPublished) {
   EXPECT_EQ(published_filters.size(), 1u);
 
   apps::IntentFilterPtr expected_filter =
-      apps_util::MakeIntentFilterForUrlScope(kTestUrl);
+      apps_util::MakeIntentFilterForUrlScope(kTestUrl,
+                                             /*omit_port_for_testing=*/true);
   EXPECT_EQ(*published_filters[0], *expected_filter);
 }

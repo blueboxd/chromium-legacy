@@ -59,6 +59,11 @@ GPU_GLES2_EXPORT SkYUVAInfo::PlaneConfig ToSkYUVAPlaneConfig(
 GPU_GLES2_EXPORT SkYUVAInfo::Subsampling ToSkYUVASubsampling(
     viz::SharedImageFormat format);
 
+// Returns the closest SkColorType for a given multiplanar `format` with
+// external sampler.
+GPU_GLES2_EXPORT SkColorType
+ToClosestSkColorTypeExternalSampler(viz::SharedImageFormat format);
+
 // Following functions return the appropriate GL type/format for a
 // SharedImageFormat.
 // Return the GLFormatDesc when using external sampler for a given `format`.
@@ -68,19 +73,6 @@ ToGLFormatDescExternalSampler(viz::SharedImageFormat format);
 GPU_GLES2_EXPORT GLFormatDesc ToGLFormatDesc(viz::SharedImageFormat format,
                                              int plane_index,
                                              bool use_angle_rgbx_format);
-// Returns GL data type for given `format`.
-GPU_GLES2_EXPORT GLenum GLDataType(viz::SharedImageFormat format);
-// Returns GL data format for given `format`.
-GPU_GLES2_EXPORT GLenum GLDataFormat(viz::SharedImageFormat format,
-                                     int plane_index = 0);
-// Returns the GL format used internally for matching with the texture format
-// for a given `format`.
-GPU_GLES2_EXPORT GLenum GLInternalFormat(viz::SharedImageFormat format,
-                                         int plane_index = 0);
-// Returns texture storage format for given `format`.
-GPU_GLES2_EXPORT GLenum TextureStorageFormat(viz::SharedImageFormat format,
-                                             bool use_angle_rgbx_format,
-                                             int plane_index = 0);
 
 // Following functions return the appropriate Vulkan format for a
 // SharedImageFormat.
@@ -113,12 +105,8 @@ GPU_GLES2_EXPORT WGPUTextureFormat ToWGPUFormat(viz::SharedImageFormat format,
 // single-plane formats that are not legacy multiplanar, `is_yuv_plane`
 // indicates if the texture corresponds to a plane of a multi-planar image.
 wgpu::TextureUsage GetSupportedDawnTextureUsage(viz::SharedImageFormat format,
-                                                bool is_yuv_plane = false);
-
-// Same as GetSupportedDawnTextureUsage, except it casts from wgpu::TextureUsage
-// to WGPUTextureUsage instead.
-WGPUTextureUsage GetSupportedWGPUTextureUsage(viz::SharedImageFormat format,
-                                              bool is_yuv_plane = false);
+                                                bool is_yuv_plane = false,
+                                                bool is_dcomp_surface = false);
 
 // Following function return the appropriate Metal format for a
 // SharedImageFormat.
@@ -137,14 +125,16 @@ GPU_GLES2_EXPORT skgpu::graphite::TextureInfo GetGraphiteTextureInfo(
     viz::SharedImageFormat format,
     int plane_index = 0,
     bool is_yuv_plane = false,
-    bool mipmapped = false);
+    bool mipmapped = false,
+    bool scanout_dcomp_surface = false);
 
 #if BUILDFLAG(SKIA_USE_DAWN)
 GPU_GLES2_EXPORT skgpu::graphite::DawnTextureInfo GetGraphiteDawnTextureInfo(
     viz::SharedImageFormat format,
     int plane_index = 0,
     bool is_yuv_plane = false,
-    bool mipmapped = false);
+    bool mipmapped = false,
+    bool scanout_dcomp_surface = false);
 #endif
 
 #if BUILDFLAG(SKIA_USE_METAL)

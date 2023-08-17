@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/check.h"
+#include "base/check_deref.h"
 #include "base/command_line.h"
 #include "base/containers/contains.h"
 #include "base/containers/cxx20_erase.h"
@@ -30,6 +31,7 @@
 #include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/autofill/core/common/autofill_util.h"
 #include "components/autofill/core/common/mojom/autofill_types.mojom-shared.h"
+#include "components/plus_addresses/plus_address_service.h"
 #include "components/signin/public/base/signin_metrics.h"
 #include "components/strings/grit/components_strings.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
@@ -93,11 +95,8 @@ AutofillTriggerSource TriggerSourceFromSuggestionTriggerSource(
 }  // namespace
 
 AutofillExternalDelegate::AutofillExternalDelegate(
-    BrowserAutofillManager* manager,
-    AutofillDriver* driver)
-    : manager_(manager), driver_(driver) {
-  DCHECK(manager);
-}
+    BrowserAutofillManager* manager)
+    : manager_(CHECK_DEREF(manager)) {}
 
 AutofillExternalDelegate::~AutofillExternalDelegate() {
   if (deletion_callback_)
@@ -125,8 +124,9 @@ void AutofillExternalDelegate::OnSuggestionsReturned(
   if (field_id != query_field_.global_id())
     return;
 #if BUILDFLAG(IS_IOS)
-  if (!manager_->client()->IsLastQueriedField(field_id))
+  if (!manager_->client().IsLastQueriedField(field_id)) {
     return;
+  }
 #endif
 
   std::vector<Suggestion> suggestions(input_suggestions);
@@ -146,8 +146,12 @@ void AutofillExternalDelegate::OnSuggestionsReturned(
   // suggestions.
   has_autofill_suggestions_ = false;
   for (auto& suggestion : suggestions) {
+    // Virtual cards can appear on their own when filling the CVC for a card
+    // that a merchant has saved. This indicates there could be Autofill
+    // suggestions related to standalone CVC fields.
     if (suggestion.popup_item_id == PopupItemId::kAddressEntry ||
-        suggestion.popup_item_id == PopupItemId::kCreditCardEntry) {
+        suggestion.popup_item_id == PopupItemId::kCreditCardEntry ||
+        suggestion.popup_item_id == PopupItemId::kVirtualCreditCardEntry) {
       has_autofill_suggestions_ = true;
       break;
     }
@@ -171,16 +175,16 @@ void AutofillExternalDelegate::OnSuggestionsReturned(
   if (suggestions.empty()) {
     OnAutofillAvailabilityEvent(mojom::AutofillState::kNoSuggestions);
     // No suggestions, any popup currently showing is obsolete.
-    manager_->client()->HideAutofillPopup(PopupHidingReason::kNoSuggestions);
+    manager_->client().HideAutofillPopup(PopupHidingReason::kNoSuggestions);
     return;
   }
 
   // Send to display.
-  if (query_field_.is_focusable && driver_->CanShowAutofillUi()) {
+  if (query_field_.is_focusable && manager_->driver().CanShowAutofillUi()) {
     AutofillClient::PopupOpenArgs open_args(element_bounds_,
                                             query_field_.text_direction,
                                             suggestions, trigger_source);
-    manager_->client()->ShowAutofillPopup(open_args, GetWeakPtr());
+    manager_->client().ShowAutofillPopup(open_args, GetWeakPtr());
   }
 }
 
@@ -195,8 +199,8 @@ void AutofillExternalDelegate::OnAutofillAvailabilityEvent(
     const mojom::AutofillState state) {
   // Availability of suggestions should be communicated to Blink because
   // accessibility objects live in both the renderer and browser processes.
-  driver_->RendererShouldSetSuggestionAvailability(query_field_.global_id(),
-                                                   state);
+  manager_->driver().RendererShouldSetSuggestionAvailability(
+      query_field_.global_id(), state);
 }
 
 void AutofillExternalDelegate::SetCurrentDataListValues(
@@ -205,8 +209,8 @@ void AutofillExternalDelegate::SetCurrentDataListValues(
   data_list_values_ = data_list_values;
   data_list_labels_ = data_list_labels;
 
-  manager_->client()->UpdateAutofillPopupDataListValues(data_list_values,
-                                                        data_list_labels);
+  manager_->client().UpdateAutofillPopupDataListValues(data_list_values,
+                                                       data_list_labels);
 }
 
 void AutofillExternalDelegate::OnPopupShown() {
@@ -226,7 +230,7 @@ void AutofillExternalDelegate::OnPopupShown() {
 }
 
 void AutofillExternalDelegate::OnPopupHidden() {
-  driver_->PopupHidden();
+  manager_->driver().PopupHidden();
   manager_->DidHidePopup();
 }
 
@@ -245,7 +249,7 @@ void AutofillExternalDelegate::DidSelectSuggestion(
   switch (suggestion.popup_item_id) {
     case PopupItemId::kClearForm:
       if (base::FeatureList::IsEnabled(features::kAutofillUndo)) {
-        manager_->UndoAutofill(mojom::RendererFormDataAction::kPreview,
+        manager_->UndoAutofill(mojom::AutofillActionPersistence::kPreview,
                                query_form_, query_field_);
       }
       break;
@@ -259,12 +263,14 @@ void AutofillExternalDelegate::DidSelectSuggestion(
     case PopupItemId::kAutocompleteEntry:
     case PopupItemId::kIbanEntry:
     case PopupItemId::kMerchantPromoCodeEntry:
-      driver_->RendererShouldPreviewFieldWithValue(query_field_.global_id(),
-                                                   suggestion.main_text.value);
+    case PopupItemId::kFieldByFieldFilling:
+    case PopupItemId::kFillExistingPlusAddress:
+      manager_->driver().RendererShouldPreviewFieldWithValue(
+          query_field_.global_id(), suggestion.main_text.value);
       break;
     case PopupItemId::kVirtualCreditCardEntry:
       manager_->FillOrPreviewVirtualCardInformation(
-          mojom::RendererFormDataAction::kPreview, backend_id.value(),
+          mojom::AutofillActionPersistence::kPreview, backend_id.value(),
           query_form_, query_field_, AutofillTriggerSource::kKeyboardAccessory);
       break;
     default:
@@ -290,12 +296,12 @@ void AutofillExternalDelegate::DidAcceptSuggestion(
       // This serves as a clear form or undo autofill suggestion, depending on
       // the state of the feature `kAutofillUndo`.
       if (base::FeatureList::IsEnabled(features::kAutofillUndo)) {
-        manager_->UndoAutofill(mojom::RendererFormDataAction::kFill,
+        manager_->UndoAutofill(mojom::AutofillActionPersistence::kFill,
                                query_form_, query_field_);
       } else {
         // User selected 'Clear form'.
         AutofillMetrics::LogAutofillFormCleared();
-        driver_->RendererShouldClearFilledSection();
+        manager_->driver().RendererShouldClearFilledSection();
       }
       break;
     case PopupItemId::kPasswordEntry:
@@ -305,13 +311,17 @@ void AutofillExternalDelegate::DidAcceptSuggestion(
       NOTREACHED();  // Should be handled elsewhere.
       break;
     case PopupItemId::kDatalistEntry:
-      driver_->RendererShouldAcceptDataListSuggestion(
+      manager_->driver().RendererShouldAcceptDataListSuggestion(
+          query_field_.global_id(), suggestion.main_text.value);
+      break;
+    case PopupItemId::kFieldByFieldFilling:
+      manager_->driver().RendererShouldFillFieldWithValue(
           query_field_.global_id(), suggestion.main_text.value);
       break;
     case PopupItemId::kIbanEntry:
       // User selected an IBAN suggestion, and we should fill the unmasked IBAN
       // value.
-      driver_->RendererShouldFillFieldWithValue(
+      manager_->driver().RendererShouldFillFieldWithValue(
           query_field_.global_id(),
           suggestion.GetPayload<Suggestion::ValueToFill>().value());
       manager_->OnSingleFieldSuggestionSelected(suggestion.main_text.value,
@@ -324,14 +334,14 @@ void AutofillExternalDelegate::DidAcceptSuggestion(
     case PopupItemId::kMerchantPromoCodeEntry:
       // User selected an Autocomplete or Merchant Promo Code field, so we fill
       // directly.
-      driver_->RendererShouldFillFieldWithValue(query_field_.global_id(),
-                                                suggestion.main_text.value);
+      manager_->driver().RendererShouldFillFieldWithValue(
+          query_field_.global_id(), suggestion.main_text.value);
       manager_->OnSingleFieldSuggestionSelected(suggestion.main_text.value,
                                                 suggestion.popup_item_id,
                                                 query_form_, query_field_);
       break;
     case PopupItemId::kScanCreditCard:
-      manager_->client()->ScanCreditCard(
+      manager_->client().ScanCreditCard(
           base::BindOnce(&AutofillExternalDelegate::OnCreditCardScanned,
                          GetWeakPtr(), AutofillTriggerSource::kPopup));
       break;
@@ -351,7 +361,7 @@ void AutofillExternalDelegate::DidAcceptSuggestion(
       // case, the payload contains the backend id, which is a GUID that
       // identifies the actually chosen credit card.
       manager_->FillOrPreviewVirtualCardInformation(
-          mojom::RendererFormDataAction::kFill,
+          mojom::AutofillActionPersistence::kFill,
           suggestion.GetPayload<Suggestion::BackendId>().value(), query_form_,
           query_field_, AutofillTriggerSource::kPopup);
       break;
@@ -360,13 +370,28 @@ void AutofillExternalDelegate::DidAcceptSuggestion(
           suggestion.GetPayload<GURL>(), suggestion.main_text.value,
           suggestion.popup_item_id, query_form_, query_field_);
       break;
+    case PopupItemId::kFillExistingPlusAddress:
+      manager_->driver().RendererShouldFillFieldWithValue(
+          query_field_.global_id(), suggestion.main_text.value);
+      break;
+    case PopupItemId::kCreateNewPlusAddress: {
+      plus_addresses::PlusAddressService* plus_address_service =
+          manager_->client().GetPlusAddressService();
+      if (plus_address_service) {
+        plus_address_service->OfferPlusAddressCreation(
+            manager_->client().GetLastCommittedPrimaryMainFrameOrigin(),
+            base::BindOnce(&AutofillExternalDelegate::OnPlusAddressCreated,
+                           GetWeakPtr()));
+      }
+      break;
+    }
     default:
       if (suggestion.popup_item_id == PopupItemId::kAddressEntry ||
           suggestion.popup_item_id == PopupItemId::kCreditCardEntry ||
           suggestion.popup_item_id ==
               PopupItemId::kFillEverythingFromAddressProfile) {
         autofill_metrics::LogAutofillSuggestionAcceptedIndex(
-            position, popup_type_, manager_->client()->IsOffTheRecord());
+            position, popup_type_, manager_->client().IsOffTheRecord());
       }
       FillAutofillFormData(
           suggestion.popup_item_id,
@@ -386,7 +411,7 @@ void AutofillExternalDelegate::DidAcceptSuggestion(
     should_show_cards_from_account_option_ = false;
     manager_->RefetchCardsAndUpdatePopup(query_form_, query_field_);
   } else {
-    manager_->client()->HideAutofillPopup(PopupHidingReason::kAcceptSuggestion);
+    manager_->client().HideAutofillPopup(PopupHidingReason::kAcceptSuggestion);
   }
 }
 
@@ -419,11 +444,11 @@ bool AutofillExternalDelegate::RemoveSuggestion(
 }
 
 void AutofillExternalDelegate::DidEndTextFieldEditing() {
-  manager_->client()->HideAutofillPopup(PopupHidingReason::kEndEditing);
+  manager_->client().HideAutofillPopup(PopupHidingReason::kEndEditing);
 }
 
 void AutofillExternalDelegate::ClearPreviewedForm() {
-  driver_->RendererShouldClearPreviewedForm();
+  manager_->driver().RendererShouldClearPreviewedForm();
 }
 
 PopupType AutofillExternalDelegate::GetPopupType() const {
@@ -432,7 +457,7 @@ PopupType AutofillExternalDelegate::GetPopupType() const {
 
 absl::variant<AutofillDriver*, password_manager::PasswordManagerDriver*>
 AutofillExternalDelegate::GetDriver() {
-  return driver_.get();
+  return &manager_->driver();
 }
 
 int32_t AutofillExternalDelegate::GetWebContentsPopupControllerAxId() const {
@@ -446,8 +471,9 @@ void AutofillExternalDelegate::RegisterDeletionCallback(
 
 void AutofillExternalDelegate::Reset() {
   // We should not affect UI on the active page due to a prerendered page.
-  if (!manager_->driver()->IsPrerendering())
-    manager_->client()->HideAutofillPopup(PopupHidingReason::kNavigation);
+  if (!manager_->driver().IsPrerendering()) {
+    manager_->client().HideAutofillPopup(PopupHidingReason::kNavigation);
+  }
 }
 
 base::WeakPtr<AutofillExternalDelegate> AutofillExternalDelegate::GetWeakPtr() {
@@ -461,6 +487,12 @@ void AutofillExternalDelegate::OnCreditCardScanned(
                                    std::u16string(), trigger_source);
 }
 
+void AutofillExternalDelegate::OnPlusAddressCreated(
+    const std::string& plus_address) {
+  manager_->driver().RendererShouldFillFieldWithValue(
+      query_field_.global_id(), base::UTF8ToUTF16(plus_address));
+}
+
 void AutofillExternalDelegate::FillAutofillFormData(
     PopupItemId popup_item_id,
     Suggestion::BackendId backend_id,
@@ -471,13 +503,13 @@ void AutofillExternalDelegate::FillAutofillFormData(
     return;
   }
 
-  mojom::RendererFormDataAction renderer_action =
-      is_preview ? mojom::RendererFormDataAction::kPreview
-                 : mojom::RendererFormDataAction::kFill;
+  mojom::AutofillActionPersistence action_persistence =
+      is_preview ? mojom::AutofillActionPersistence::kPreview
+                 : mojom::AutofillActionPersistence::kFill;
 
-  DCHECK(driver_->RendererIsAvailable());
+  DCHECK(manager_->driver().RendererIsAvailable());
   // Fill the values for the whole form.
-  manager_->FillOrPreviewForm(renderer_action, query_form_, query_field_,
+  manager_->FillOrPreviewForm(action_persistence, query_form_, query_field_,
                               backend_id, trigger_source);
 }
 

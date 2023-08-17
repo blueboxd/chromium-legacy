@@ -92,6 +92,7 @@ dependencies = [
  "regex",
  "rstest",
  "rstest_reuse",
+ "rustc-demangle-capi",
  "rustversion",
  "semver",
  "serde",
@@ -179,7 +180,7 @@ dependencies = [
 
 [[package]]
 name = "font-types"
-version = "0.3.0"
+version = "0.3.4"
 
 [[package]]
 name = "getrandom"
@@ -329,7 +330,7 @@ dependencies = [
 
 [[package]]
 name = "read-fonts"
-version = "0.5.0"
+version = "0.10.0"
 dependencies = [
  "font-types",
 ]
@@ -394,6 +395,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "rustc-demangle"
+version = "0.1.23"
+
+[[package]]
+name = "rustc-demangle-capi"
+version = "0.1.0"
+dependencies = [
+ "rustc-demangle",
+]
+
+[[package]]
 name = "rustc_version"
 version = "0.4.0"
 dependencies = [
@@ -451,7 +463,7 @@ dependencies = [
 
 [[package]]
 name = "skrifa"
-version = "0.4.0"
+version = "0.9.0"
 dependencies = [
  "read-fonts",
 ]

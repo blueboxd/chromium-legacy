@@ -7,30 +7,14 @@
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "base/check.h"
 #include "base/notreached.h"
+#include "chrome/browser/apps/app_service/app_icon/app_icon_util.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/promise_apps/promise_app_update.h"
 #include "chrome/browser/ash/app_list/app_list_model_updater.h"
+#include "chrome/browser/ash/app_list/app_service/app_service_promise_app_context_menu.h"
 #include "chrome/browser/ash/app_list/chrome_app_list_item.h"
-
-namespace {
-
-// TODO(b/261907495): Update this method to return the appropriate icon effects
-// for each promise status. These icon effects are currently placeholders.
-apps::IconEffects GetIconEffectsForPromiseStatus(apps::PromiseStatus status) {
-  switch (status) {
-    case apps::PromiseStatus::kUnknown:
-      // Fallthrough.
-    case apps::PromiseStatus::kPending:
-      return apps::IconEffects::kPaused;
-    case apps::PromiseStatus::kInstalling:
-      return apps::IconEffects::kCrOsStandardMask;
-    case apps::PromiseStatus::kRemove:
-      NOTREACHED();
-      return apps::IconEffects::kNone;
-  }
-}
-}  // namespace
+#include "chrome/browser/ui/ash/shelf/shelf_controller_helper.h"
 
 // static
 const char AppServicePromiseAppItem::kItemType[] = "AppServicePromiseAppItem";
@@ -39,9 +23,14 @@ AppServicePromiseAppItem::AppServicePromiseAppItem(
     Profile* profile,
     AppListModelUpdater* model_updater,
     const apps::PromiseAppUpdate& update)
-    : ChromeAppListItem(profile, update.PackageId().ToString()) {
-  status_ = update.Status();
+    : ChromeAppListItem(profile, update.PackageId().ToString()),
+      package_id_(update.PackageId()) {
   InitializeItem(update);
+
+  SetPromisePackageId(update.PackageId().ToString());
+  SetAppStatus(
+      ShelfControllerHelper::ConvertPromiseStatusToAppStatus(update.Status()));
+  SetProgress(update.Progress().value_or(0));
 
   // Promise icons should not be synced as they are transient and only present
   // during app installations.
@@ -53,8 +42,12 @@ AppServicePromiseAppItem::AppServicePromiseAppItem(
   set_model_updater(model_updater);
 }
 
+void AppServicePromiseAppItem::ExecuteLaunchCommand(int event_flags) {
+  // Promise app items should not be launched.
+}
+
 void AppServicePromiseAppItem::Activate(int event_flags) {
-  base::DoNothing();
+  // Promise app items should not be activated.
 }
 
 const char* AppServicePromiseAppItem::GetItemType() const {
@@ -69,20 +62,21 @@ void AppServicePromiseAppItem::OnPromiseAppUpdate(
     SetName(update.Name().value());
   }
   if (update.ProgressChanged() && update.Progress().has_value()) {
-    progress_ = update.Progress();
+    SetProgress(update.Progress().value());
   }
   // Each status has its own set of visual effects.
   if (update.StatusChanged()) {
-    status_ = update.Status();
+    SetAppStatus(ShelfControllerHelper::ConvertPromiseStatusToAppStatus(
+        update.Status()));
     LoadIcon();
   }
 }
 
 void AppServicePromiseAppItem::LoadIcon() {
   apps::AppServiceProxyFactory::GetForProfile(profile())->LoadPromiseIcon(
-      apps::PackageId::FromString(id()).value(),
+      package_id_,
       ash::SharedAppListConfig::instance().default_grid_icon_dimension(),
-      GetIconEffectsForPromiseStatus(status_),
+      apps::GetPromiseIconEffectsForAppStatus(app_status()),
       base::BindOnce(&AppServicePromiseAppItem::OnLoadIcon,
                      weak_ptr_factory_.GetWeakPtr()));
 }
@@ -102,19 +96,20 @@ void AppServicePromiseAppItem::InitializeItem(
   CHECK(update.ShouldShow());
   SetName(update.Name().value());
   if (update.Progress().has_value()) {
-    progress_ = update.Progress();
+    SetProgress(update.Progress().value());
   }
-  // TODO(b/261907495): Consider adding new AppStatus values specific to promise
-  // apps and update them in OnPromiseAppUpdate.
-  SetAppStatus(ash::AppStatus::kReady);
+  SetAppStatus(
+      ShelfControllerHelper::ConvertPromiseStatusToAppStatus(update.Status()));
 }
 
 void AppServicePromiseAppItem::GetContextMenuModel(
     ash::AppListItemContext item_context,
     GetMenuModelCallback callback) {
-  // TODO(b/261907495): Create Promise App Context Menu.
+  context_menu_ = std::make_unique<AppServicePromiseAppContextMenu>(
+      this, profile(), package_id_, GetController(), item_context);
+  context_menu_->GetMenuModel(std::move(callback));
 }
 
 app_list::AppContextMenu* AppServicePromiseAppItem::GetAppContextMenu() {
-  return nullptr;
+  return context_menu_.get();
 }

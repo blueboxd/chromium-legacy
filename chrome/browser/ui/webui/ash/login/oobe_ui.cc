@@ -25,6 +25,7 @@
 #include "base/system/sys_info.h"
 #include "base/values.h"
 #include "build/branding_buildflags.h"
+#include "chrome/browser/ash/boot_times_recorder_tab_helper.h"
 #include "chrome/browser/ash/login/enrollment/auto_enrollment_check_screen_view.h"
 #include "chrome/browser/ash/login/enrollment/enrollment_screen_view.h"
 #include "chrome/browser/ash/login/quick_unlock/pin_backend.h"
@@ -93,6 +94,7 @@
 #include "chrome/browser/ui/webui/ash/login/os_trial_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/packaged_license_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/parental_handoff_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/password_selection_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/pin_setup_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/quick_start_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/recommend_apps_screen_handler.h"
@@ -297,6 +299,7 @@ void CreateAndAddOobeUIDataSource(Profile* profile,
   source->AddBoolean("isOobeLazyLoadingEnabled",
                      features::IsOobeLazyLoadingEnabled());
   // TODO (b/268463435) Cleanup OobeJelly
+  source->AddBoolean("isJellyEnabled", features::IsOobeJellyEnabled());
   source->AddBoolean("isOobeJellyEnabled", features::IsOobeJellyEnabled());
   source->AddBoolean("isOobeJellyModalEnabled",
                      features::IsOobeJellyModalEnabled());
@@ -333,6 +336,9 @@ void CreateAndAddOobeUIDataSource(Profile* profile,
 
   source->AddBoolean("isOobeSoftwareUpdateEnabled",
                      features::IsOobeSoftwareUpdateEnabled());
+
+  source->AddBoolean("isPasswordSelectionEnabledInOobe",
+                     features::IsPasswordSelectionEnabledInOobe());
 
   // Configure shared resources
   AddProductLogoResources(source);
@@ -520,6 +526,10 @@ void OobeUI::ConfigureOobeDisplay() {
 
   AddScreenHandler(std::make_unique<ThemeSelectionScreenHandler>());
 
+  if (features::IsPasswordSelectionEnabledInOobe()) {
+    AddScreenHandler(std::make_unique<PasswordSelectionScreenHandler>());
+  }
+
   if (features::IsOobeChoobeEnabled()) {
     AddScreenHandler(std::make_unique<ChoobeScreenHandler>());
   }
@@ -555,9 +565,12 @@ void OobeUI::ConfigureOobeDisplay() {
       profile,
       std::make_unique<AboutUIHTMLSource>(chrome::kChromeUITermsHost, profile));
 
-  // TabHelper is required for OOBE webui to make webview working on it.
   content::WebContents* contents = web_ui()->GetWebContents();
+
+  // TabHelper is required for OOBE webui to make webview working on it.
   extensions::TabHelper::CreateForWebContents(contents);
+
+  BootTimesRecorderTabHelper::MaybeCreateForWebContents(contents);
 
   if (ShouldUpScaleOobe())
     UpScaleOobe();
@@ -628,7 +641,8 @@ void OobeUI::BindInterface(
 void OobeUI::BindInterface(
     mojo::PendingReceiver<auth::mojom::AuthFactorConfig> receiver) {
   auth::BindToAuthFactorConfig(std::move(receiver),
-                               quick_unlock::QuickUnlockFactory::GetDelegate());
+                               quick_unlock::QuickUnlockFactory::GetDelegate(),
+                               g_browser_process->local_state());
 }
 
 void OobeUI::BindInterface(
@@ -637,7 +651,7 @@ void OobeUI::BindInterface(
   CHECK(pin_backend);
   auth::BindToPinFactorEditor(std::move(receiver),
                               quick_unlock::QuickUnlockFactory::GetDelegate(),
-                              *pin_backend);
+                              g_browser_process->local_state(), *pin_backend);
 }
 
 OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)

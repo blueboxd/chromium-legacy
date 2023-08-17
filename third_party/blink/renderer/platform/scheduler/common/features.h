@@ -109,24 +109,8 @@ PLATFORM_EXPORT extern const base::FeatureParam<
     CompositorTQPolicyDuringThreadedScroll>
     kCompositorTQPolicyDuringThreadedScroll;
 
-BASE_FEATURE(kRejectedPromisesPerWindowAgent,
-             "BlinkSchedulerRejectedPromisesPerWindowAgent",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 BASE_FEATURE(kMicrotaskQueuePerWindowAgent,
              "BlinkSchedulerMicroTaskQueuePerWindowAgent",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-BASE_FEATURE(kMicrotaskQueuePerPaintWorklet,
-             "BlinkSchedulerMicroTaskQueuePerPaintWorklet",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-BASE_FEATURE(kMicrotaskQueuePerAnimationWorklet,
-             "BlinkSchedulerMicroTaskQueuePerAnimationWorklet",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-BASE_FEATURE(kMicrotaskQueuePerAudioWorklet,
-             "BlinkSchedulerMicroTaskQueuePerAudioWorklet",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kMicrotaskQueuePerWorkerAgent,

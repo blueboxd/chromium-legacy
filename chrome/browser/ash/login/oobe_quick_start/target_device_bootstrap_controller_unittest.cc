@@ -22,19 +22,15 @@
 #include "chrome/browser/ash/login/oobe_quick_start/mock_second_device_auth_broker.h"
 #include "chrome/browser/ash/login/oobe_quick_start/oobe_quick_start_pref_names.h"
 #include "chrome/browser/ash/login/oobe_quick_start/second_device_auth_broker.h"
-#include "chrome/browser/nearby_sharing/fake_nearby_connections_manager.h"
+#include "chrome/browser/ash/nearby/fake_quick_start_connectivity_service.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
-#include "chromeos/ash/components/quick_start/fake_quick_start_decoder.h"
 #include "chromeos/ash/components/quick_start/quick_start_metrics.h"
 #include "chromeos/ash/components/quick_start/types.h"
-#include "chromeos/ash/services/nearby/public/mojom/quick_start_decoder.mojom.h"
-#include "chromeos/ash/services/nearby/public/mojom/quick_start_decoder_types.mojom-shared.h"
 #include "chromeos/ash/services/nearby/public/mojom/quick_start_decoder_types.mojom.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/test/browser_task_environment.h"
 #include "google_apis/gaia/google_service_auth_error.h"
-#include "mojo/public/cpp/bindings/shared_remote.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -58,6 +54,8 @@ constexpr char kWifiTransferResultHistogramName[] =
     "QuickStart.WifiTransferResult";
 constexpr char kWifiTransferResultFailureReasonHistogramName[] =
     "QuickStart.WifiTransferResult.FailureReason";
+constexpr char kGaiaTransferAttemptedName[] =
+    "QuickStart.GaiaTransferAttempted";
 
 class FakeObserver : public Observer {
  public:
@@ -119,16 +117,17 @@ class TargetDeviceBootstrapControllerTest : public testing::Test {
     auto fake_accessibility_manager =
         std::make_unique<FakeAccessibilityManagerWrapper>();
     fake_accessibility_manager_ = fake_accessibility_manager.get();
+    fake_quick_start_connectivity_service_ =
+        std::make_unique<FakeQuickStartConnectivityService>();
 
     bootstrap_controller_ = std::make_unique<TargetDeviceBootstrapController>(
         std::move(auth_broker), std::move(fake_accessibility_manager),
-        fake_nearby_connections_manager_.GetWeakPtr(),
-        mojo::SharedRemote<mojom::QuickStartDecoder>(
-            fake_quick_start_decoder_.GetRemote()));
+        fake_quick_start_connectivity_service_.get());
 
     std::unique_ptr<FakeTargetDeviceConnectionBroker>
         fake_target_device_connection_broker =
-            std::make_unique<FakeTargetDeviceConnectionBroker>();
+            std::make_unique<FakeTargetDeviceConnectionBroker>(
+                fake_quick_start_connectivity_service_.get());
     fake_target_device_connection_broker_ =
         fake_target_device_connection_broker.get();
     bootstrap_controller_->set_connection_broker_for_testing(
@@ -158,10 +157,10 @@ class TargetDeviceBootstrapControllerTest : public testing::Test {
   absl::optional<FidoAssertionInfo> assertion_info_;
   base::test::SingleThreadTaskEnvironment task_environment_;
   network::TestURLLoaderFactory test_factory_;
+  std::unique_ptr<FakeQuickStartConnectivityService>
+      fake_quick_start_connectivity_service_;
   raw_ptr<FakeTargetDeviceConnectionBroker, ExperimentalAsh>
       fake_target_device_connection_broker_;
-  FakeNearbyConnectionsManager fake_nearby_connections_manager_;
-  FakeQuickStartDecoder fake_quick_start_decoder_;
   std::unique_ptr<FakeObserver> fake_observer_;
   raw_ptr<MockAuthBroker> auth_broker_;
   raw_ptr<FakeAccessibilityManagerWrapper, ExperimentalAsh>
@@ -532,6 +531,7 @@ TEST_F(TargetDeviceBootstrapControllerTest,
       absl::holds_alternative<ErrorCode>(fake_observer_->last_status.payload));
   EXPECT_EQ(absl::get<ErrorCode>(fake_observer_->last_status.payload),
             ErrorCode::FETCHING_CHALLENGE_BYTES_FAILED);
+  histogram_tester_.ExpectBucketCount(kGaiaTransferAttemptedName, false, 1);
 }
 
 TEST_F(TargetDeviceBootstrapControllerTest,
@@ -558,6 +558,7 @@ TEST_F(TargetDeviceBootstrapControllerTest,
             Step::TRANSFERRED_GOOGLE_ACCOUNT_DETAILS);
   EXPECT_TRUE(absl::holds_alternative<FidoAssertionInfo>(
       fake_observer_->last_status.payload));
+  histogram_tester_.ExpectBucketCount(kGaiaTransferAttemptedName, true, 1);
 }
 
 TEST_F(TargetDeviceBootstrapControllerTest,
@@ -583,6 +584,7 @@ TEST_F(TargetDeviceBootstrapControllerTest,
   EXPECT_EQ(fake_observer_->last_status.step, Step::ERROR);
   EXPECT_EQ(absl::get<ErrorCode>(fake_observer_->last_status.payload),
             ErrorCode::GAIA_ASSERTION_NOT_RECEIVED);
+  histogram_tester_.ExpectBucketCount(kGaiaTransferAttemptedName, true, 1);
 }
 
 // Ensures that the discoverable name that is shown Chromebook (123) matches

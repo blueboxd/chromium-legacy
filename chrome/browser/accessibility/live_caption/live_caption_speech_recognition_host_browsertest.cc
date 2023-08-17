@@ -429,6 +429,53 @@ IN_PROC_BROWSER_TEST_F(LiveCaptionSpeechRecognitionHostTest, TranslationCache) {
   base::RunLoop().RunUntilIdle();
   ASSERT_EQ(14u, GetTranslationRequests().size());
   ASSERT_EQ("Amazing", GetTranslationRequests().back());
+
+  // Ensure that strings are cached without whitespace.
+  OnSpeechRecognitionRecognitionEvent(
+      frame_host, "Flying squirrels can glide up to 300 feet. Wow",
+      /* expected_success= */ true, /* is_final= */ false);
+  base::RunLoop().RunUntilIdle();
+  ASSERT_EQ(15u, GetTranslationRequests().size());
+  ASSERT_EQ("Flying squirrels can glide up to 300 feet. Wow",
+            GetTranslationRequests().back());
+  OnSpeechRecognitionRecognitionEvent(
+      frame_host, "Flying squirrels can glide up to 300 feet.\nThat's so far",
+      /* expected_success= */ true, /* is_final= */ false);
+  base::RunLoop().RunUntilIdle();
+  ASSERT_EQ(16u, GetTranslationRequests().size());
+  ASSERT_EQ("That's so far", GetTranslationRequests().back());
+}
+
+IN_PROC_BROWSER_TEST_F(LiveCaptionSpeechRecognitionHostTest,
+                       IdeographicTranslationCache) {
+  content::RenderFrameHost* frame_host = browser()
+                                             ->tab_strip_model()
+                                             ->GetActiveWebContents()
+                                             ->GetPrimaryMainFrame();
+  SetLiveCaptionEnabled(true);
+  SetLiveTranslateEnabled(true);
+
+  // Ensure that ideographic to non-ideographic translations are not cached.
+  browser()->profile()->GetPrefs()->SetString(prefs::kLiveCaptionLanguageCode,
+                                              "ja-JP");
+  CreateLiveCaptionSpeechRecognitionHost(frame_host);
+
+  OnSpeechRecognitionRecognitionEvent(frame_host,
+                                      "Tanuki are canids, similar to dogs but "
+                                      "with larger ears and tails. So cool",
+                                      /* expected_success= */ true,
+                                      /* is_final= */ false);
+  OnSpeechRecognitionRecognitionEvent(frame_host,
+                                      "Tanuki are canids, similar to dogs but "
+                                      "with larger ears and tails. So cool",
+                                      /* expected_success= */ true,
+                                      /* is_final= */ false);
+  base::RunLoop().RunUntilIdle();
+  ASSERT_EQ(2u, GetTranslationRequests().size());
+  ASSERT_EQ(
+      "Tanuki are canids, similar to dogs but with larger ears and tails. So "
+      "cool",
+      GetTranslationRequests().back());
 }
 
 }  // namespace captions

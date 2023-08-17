@@ -33,10 +33,6 @@
 // TODO(crbug.com/1383087): remove once the feature is fully launched.
 #import "ios/web/common/features.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 namespace chrome_test_util {
 
 namespace {
@@ -95,7 +91,7 @@ void SimulateAddAccountFromWeb() {
   id<ApplicationCommands, BrowserCommands> handler =
       chrome_test_util::HandlerForActiveBrowser();
   ShowSigninCommand* command = [[ShowSigninCommand alloc]
-      initWithOperation:AuthenticationOperationAddAccount
+      initWithOperation:AuthenticationOperation::kAddAccount
             accessPoint:signin_metrics::AccessPoint::ACCESS_POINT_UNKNOWN];
   UIViewController* baseViewController =
       GetForegroundActiveScene()
@@ -159,6 +155,16 @@ void CloseCurrentTab() {
     return;
   web_state_list->CloseWebStateAt(web_state_list->active_index(),
                                   WebStateList::CLOSE_USER_ACTION);
+}
+
+void PinCurrentTab() {
+  WebStateList* web_state_list = GetCurrentWebStateList();
+  if (!web_state_list ||
+      web_state_list->active_index() == WebStateList::kInvalidIndex) {
+    return;
+  }
+  web_state_list->SetWebStatePinnedAt(web_state_list->active_index(),
+                                      /*pinned =*/true);
 }
 
 void CloseTabAtIndex(NSUInteger index) {

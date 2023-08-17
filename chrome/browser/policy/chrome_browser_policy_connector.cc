@@ -10,6 +10,7 @@
 
 #include "base/check_is_test.h"
 #include "base/command_line.h"
+#include "base/files/file_util.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
 #include "base/path_service.h"
@@ -34,9 +35,11 @@
 #include "components/policy/core/common/policy_logger.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_namespace.h"
+#include "components/policy/core/common/policy_pref_names.h"
 #include "components/policy/core/common/policy_proto_decoders.h"
 #include "components/policy/core/common/policy_types.h"
 #include "components/policy/policy_constants.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/common/content_switches.h"
 #include "extensions/buildflags/buildflags.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -190,6 +193,24 @@ void ChromeBrowserPolicyConnector::SetLocalTestPolicyProviderForTesting(
   local_test_provider_ = provider;
 }
 
+void ChromeBrowserPolicyConnector::MaybeApplyLocalTestPolicies(
+    PrefService* local_state) {
+  std::string policies_to_apply = local_state->GetString(
+      policy::policy_prefs::kLocalTestPoliciesForNextStartup);
+  if (policies_to_apply.empty()) {
+    return;
+  }
+  for (policy::ConfigurationPolicyProvider* provider : GetPolicyProviders()) {
+    provider->set_active(false);
+  }
+  policy::LocalTestPolicyProvider* local_test_policy_provider =
+      static_cast<policy::LocalTestPolicyProvider*>(local_test_provider_);
+  local_test_policy_provider->set_active(true);
+  local_test_policy_provider->LoadJsonPolicies(policies_to_apply);
+  local_state->ClearPref(
+      policy::policy_prefs::kLocalTestPoliciesForNextStartup);
+}
+
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
 void ChromeBrowserPolicyConnector::InitCloudManagementController(
     PrefService* local_state,
@@ -255,6 +276,16 @@ ChromeBrowserPolicyConnector::CreatePolicyProviders() {
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   device_settings_ = std::make_unique<DeviceSettingsLacros>();
+  auto loader = std::make_unique<PolicyLoaderLacros>(
+      base::ThreadPool::CreateSequencedTaskRunner(
+          {base::MayBlock(), base::TaskPriority::BEST_EFFORT}),
+      PolicyPerProfileFilter::kFalse);
+  device_account_policy_loader_ = loader.get();
+  std::unique_ptr<AsyncPolicyProvider> ash_policy_provider =
+      std::make_unique<AsyncPolicyProvider>(GetSchemaRegistry(),
+                                            std::move(loader));
+  ash_policy_provider_ = ash_policy_provider.get();
+  providers.push_back(std::move(ash_policy_provider));
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
   std::unique_ptr<CommandLinePolicyProvider> command_line_provider =
@@ -302,17 +333,19 @@ ChromeBrowserPolicyConnector::CreatePlatformProvider() {
       new MacPreferences(), bundle_id);
   return std::make_unique<AsyncPolicyProvider>(GetSchemaRegistry(),
                                                std::move(loader));
-#elif BUILDFLAG(IS_CHROMEOS_LACROS)
-  auto loader = std::make_unique<PolicyLoaderLacros>(
-      base::ThreadPool::CreateSequencedTaskRunner(
-          {base::MayBlock(), base::TaskPriority::BEST_EFFORT}),
-      PolicyPerProfileFilter::kFalse);
-  device_account_policy_loader_ = loader.get();
-  return std::make_unique<AsyncPolicyProvider>(GetSchemaRegistry(),
-                                               std::move(loader));
 #elif BUILDFLAG(IS_POSIX) && !BUILDFLAG(IS_ANDROID)
   base::FilePath config_dir_path;
   if (base::PathService::Get(chrome::DIR_POLICY_FILES, &config_dir_path)) {
+#if BUILDFLAG(IS_CHROMEOS)
+    // If the folder containing the policy files doesn't exist, there's no need
+    // to have a provider for them. Note that in verified boot, the folder
+    // doesn't exist and there's no way for the user to create it.
+    // We don't do this for non-ChromeOS desktop platforms because there chrome
+    // should respect a local filesystem policy directory after it started.
+    if (!base::PathExists(config_dir_path)) {
+      return nullptr;
+    }
+#endif
     std::unique_ptr<AsyncPolicyLoader> loader(new ConfigDirPolicyLoader(
         base::ThreadPool::CreateSequencedTaskRunner(
             {base::MayBlock(), base::TaskPriority::BEST_EFFORT}),

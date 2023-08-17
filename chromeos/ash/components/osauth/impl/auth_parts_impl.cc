@@ -87,6 +87,12 @@ void AuthPartsImpl::SetAuthHub(std::unique_ptr<AuthHub> auth_hub) {
   auth_hub_ = std::move(auth_hub);
 }
 
+void AuthPartsImpl::SetAuthSessionStorage(
+    std::unique_ptr<AuthSessionStorage> auth_session_storage) {
+  CHECK(!session_storage_);
+  session_storage_ = std::move(auth_session_storage);
+}
+
 CryptohomeCore* AuthPartsImpl::GetCryptohomeCore() {
   CHECK(cryptohome_core_);
   return cryptohome_core_.get();
@@ -108,6 +114,10 @@ void AuthPartsImpl::RegisterEarlyLoginAuthPolicyConnector(
   early_login_policy_connector_ = std::move(connector);
   early_login_policy_connector_->SetLoginScreenAuthPolicyConnector(
       login_screen_policy_connector_.get());
+}
+
+void AuthPartsImpl::ReleaseEarlyLoginAuthPolicyConnector() {
+  early_login_policy_connector_.reset();
 }
 
 void AuthPartsImpl::SetProfilePrefsAuthPolicyConnector(

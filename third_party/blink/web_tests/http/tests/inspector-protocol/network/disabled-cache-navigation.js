@@ -13,8 +13,11 @@
       dp.Network.onceLoadingFinished()]
     );
     const response = responseReceived.params;
-    if (response.hasExtraInfo && responseReceivedExtraInfoEvents.length !== 1) {
-      testRunner.fail(`ResponseReceivedExtraInfo is missing`);
+    if (response.hasExtraInfo && responseReceivedExtraInfoEvents.length > 1) {
+      testRunner.fail(`More than one ResponseReceivedExtraInfo events received.`);
+    }
+    if (response.hasExtraInfo && !responseReceivedExtraInfoEvents.length) {
+      await dp.Network.onceResponseReceivedExtraInfo();
     }
     const [responseReceivedExtraInfo] = responseReceivedExtraInfoEvents;
     const content = (await dp.Network.getResponseBody({requestId: response.requestId})).result.body;
@@ -22,7 +25,7 @@
       testRunner.fail(`Invalid response: ${content}`);
     return {
       status: response.response.status,
-      extraInfoStatus: responseReceivedExtraInfo ? responseReceivedExtraInfo.params.statusCode : undefined,
+      extraInfoStatus: responseReceivedExtraInfo?.params.statusCode,
       content: content
     };
   }

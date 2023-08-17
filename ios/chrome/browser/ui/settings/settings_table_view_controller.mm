@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/settings/settings_table_view_controller.h"
 
+#import <MaterialComponents/MaterialSnackbar.h>
 #import <memory>
 
 #import "base/feature_list.h"
@@ -56,6 +57,7 @@
 #import "ios/chrome/browser/shared/model/browser/browser.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/shared/model/prefs/pref_names.h"
+#import "ios/chrome/browser/shared/model/utils/first_run_util.h"
 #import "ios/chrome/browser/shared/public/commands/application_commands.h"
 #import "ios/chrome/browser/shared/public/commands/command_dispatcher.h"
 #import "ios/chrome/browser/shared/public/commands/snackbar_commands.h"
@@ -75,6 +77,7 @@
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
+#import "ios/chrome/browser/signin/chrome_account_manager_service.h"
 #import "ios/chrome/browser/signin/chrome_account_manager_service_factory.h"
 #import "ios/chrome/browser/signin/chrome_account_manager_service_observer_bridge.h"
 #import "ios/chrome/browser/signin/identity_manager_factory.h"
@@ -82,6 +85,7 @@
 #import "ios/chrome/browser/sync/sync_observer_bridge.h"
 #import "ios/chrome/browser/sync/sync_service_factory.h"
 #import "ios/chrome/browser/tabs/inactive_tabs/features.h"
+#import "ios/chrome/browser/tabs/tab_pickup/features.h"
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_consumer.h"
 #import "ios/chrome/browser/ui/authentication/cells/table_view_account_item.h"
 #import "ios/chrome/browser/ui/authentication/cells/table_view_signin_promo_item.h"
@@ -92,6 +96,7 @@
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_feature.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_feature.h"
 #import "ios/chrome/browser/ui/settings/about_chrome_table_view_controller.h"
+#import "ios/chrome/browser/ui/settings/address_bar_preference/address_bar_preference_coordinator.h"
 #import "ios/chrome/browser/ui/settings/autofill/autofill_credit_card_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/autofill/autofill_profile_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/bandwidth/bandwidth_management_table_view_controller.h"
@@ -132,11 +137,13 @@
 #import "net/base/mac/url_conversions.h"
 #import "ui/base/l10n/l10n_util_mac.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 namespace {
+
+// The maximum number of time a "new" IPH badge is shown.
+const NSInteger kMaxShowCountNewIPHBadge = 3;
+// The amount of time an install is considered as fresh. Don't show the "new"
+// IPH badge on fresh installs.
+const base::TimeDelta kFreshInstallTimeDelta = base::Days(1);
 
 // Key used for storing NSUserDefault entry to keep track of the last timestamp
 // we've shown the default browser blue dot promo.
@@ -249,6 +256,7 @@ UIImage* GetBrandedGoogleServicesSymbol() {
   TableViewDetailIconItem* _voiceSearchDetailItem;
   TableViewDetailIconItem* _defaultSearchEngineItem;
   TableViewInfoButtonItem* _managedSearchEngineItem;
+  TableViewDetailIconItem* _addressBarPreferenceItem;
   TableViewDetailIconItem* _passwordsDetailItem;
   TableViewDetailIconItem* _autoFillProfileDetailItem;
   TableViewDetailIconItem* _autoFillCreditCardDetailItem;
@@ -260,10 +268,11 @@ UIImage* GetBrandedGoogleServicesSymbol() {
 
   // Tabs settings coordinator.
   TabsSettingsCoordinator* _tabsCoordinator;
+
+  // Address bar setting coordinator.
+  AddressBarPreferenceCoordinator* _addressBarPreferenceCoordinator;
 }
 
-// The item related to the switch for the bottom omnibox settings.
-@property(nonatomic, strong, readonly) TableViewSwitchItem* bottomOmniboxItem;
 // The item related to the switch for the show feed settings.
 @property(nonatomic, strong, readonly) TableViewSwitchItem* feedSettingsItem;
 // The item related to the enterprise managed show feed settings.
@@ -292,7 +301,6 @@ UIImage* GetBrandedGoogleServicesSymbol() {
 @end
 
 @implementation SettingsTableViewController
-@synthesize bottomOmniboxItem = _bottomOmniboxItem;
 @synthesize dispatcher = _dispatcher;
 @synthesize managedFeedSettingsItem = _managedFeedSettingsItem;
 @synthesize feedSettingsItem = _feedSettingsItem;
@@ -431,6 +439,11 @@ UIImage* GetBrandedGoogleServicesSymbol() {
   [super viewWillAppear:animated];
   // Update the `_safetyCheckItem` icon when returning to this view controller.
   [self updateSafetyCheckItemTrailingIcon];
+  if (IsBottomOmniboxSteadyStateEnabled()) {
+    // Update the address bar new IPH badge here as it depends on the number of
+    // time it's shown.
+    [self updateAddressBarNewIPHBadge];
+  }
 }
 
 #pragma mark SettingsRootTableViewController
@@ -456,6 +469,11 @@ UIImage* GetBrandedGoogleServicesSymbol() {
         toSectionWithIdentifier:SettingsSectionIdentifierDefaults];
   }
 
+  if (IsBottomOmniboxSteadyStateEnabled()) {
+    [model addItem:[self addressBarPreferenceItem]
+        toSectionWithIdentifier:SettingsSectionIdentifierDefaults];
+  }
+
   // Basics section
   [model addSectionWithIdentifier:SettingsSectionIdentifierBasics];
   [model addItem:[self passwordsDetailItem]
@@ -476,10 +494,6 @@ UIImage* GetBrandedGoogleServicesSymbol() {
   }
   [model addItem:[self voiceSearchDetailItem]
       toSectionWithIdentifier:SettingsSectionIdentifierAdvanced];
-  if (IsBottomOmniboxSteadyStateEnabled()) {
-    [model addItem:[self bottomOmniboxItem]
-        toSectionWithIdentifier:SettingsSectionIdentifierAdvanced];
-  };
   [model addItem:[self safetyCheckDetailItem]
       toSectionWithIdentifier:SettingsSectionIdentifierAdvanced];
   [model addItem:[self privacyDetailItem]
@@ -502,7 +516,7 @@ UIImage* GetBrandedGoogleServicesSymbol() {
     }
   }
 
-  if (IsInactiveTabsAvailable()) {
+  if (IsInactiveTabsAvailable() || IsTabPickupEnabled()) {
     [model addItem:[self tabsSettingsDetailItem]
         toSectionWithIdentifier:SettingsSectionIdentifierAdvanced];
 
@@ -606,17 +620,16 @@ UIImage* GetBrandedGoogleServicesSymbol() {
     // Create the sign-in promo mediator if it doesn't exist.
     if (!_signinPromoViewMediator) {
       _signinPromoViewMediator = [[SigninPromoViewMediator alloc]
-                initWithBrowser:_browser
-          accountManagerService:self.accountManagerService
-                    authService:AuthenticationServiceFactory::
-                                    GetForBrowserState(_browserState)
-                    prefService:_browserState->GetPrefs()
-                    syncService:SyncServiceFactory::GetForBrowserState(
-                                    _browserState)
-                    accessPoint:signin_metrics::AccessPoint::
-                                    ACCESS_POINT_SETTINGS
-                      presenter:self
-             baseViewController:self];
+          initWithAccountManagerService:self.accountManagerService
+                            authService:AuthenticationServiceFactory::
+                                            GetForBrowserState(_browserState)
+                            prefService:_browserState->GetPrefs()
+                            syncService:SyncServiceFactory::GetForBrowserState(
+                                            _browserState)
+                            accessPoint:signin_metrics::AccessPoint::
+                                            ACCESS_POINT_SETTINGS
+                              presenter:self
+                     baseViewController:self];
       _signinPromoViewMediator.consumer = self;
     }
     TableViewSigninPromoItem* signinPromoItem =
@@ -720,10 +733,10 @@ UIImage* GetBrandedGoogleServicesSymbol() {
       SyncServiceFactory::GetForBrowserState(_browserState);
   if (base::FeatureList::IsEnabled(
           syncer::kReplaceSyncPromosWithSignInPromos)) {
-    // TODO(crbug.com/1447012): Make detailText private when the feature is
+    // TODO(crbug.com/1447010): Make detailText private when the feature is
     // launched.
     signInTextItem.detailText =
-        l10n_util::GetNSString(IDS_IOS_IDENTITY_DISC_SIGNED_OUT_PROMO_LABEL);
+        l10n_util::GetNSString(IDS_IOS_IDENTITY_DISC_SIGN_IN_PROMO_LABEL);
   } else if (!HasManagedSyncDataType(syncService)) {
     signInTextItem.detailText =
         l10n_util::GetNSString(IDS_IOS_SIGN_IN_TO_CHROME_SETTING_SUBTITLE);
@@ -842,6 +855,22 @@ UIImage* GetBrandedGoogleServicesSymbol() {
   return _defaultSearchEngineItem;
 }
 
+- (TableViewItem*)addressBarPreferenceItem {
+  _addressBarPreferenceItem = [self
+           detailItemWithType:SettingsItemTypeAddressBar
+                         text:l10n_util::GetNSString(
+                                  IDS_IOS_ADDRESS_BAR_SETTING)
+                   detailText:[_bottomOmniboxEnabled value]
+                                  ? l10n_util::GetNSString(
+                                        IDS_IOS_BOTTOM_ADDRESS_BAR_OPTION)
+                                  : l10n_util::GetNSString(
+                                        IDS_IOS_TOP_ADDRESS_BAR_OPTION)
+                       symbol:DefaultSettingsRootSymbol(kGlobeAmericasSymbol)
+        symbolBackgroundColor:[UIColor colorNamed:kPurple500Color]
+      accessibilityIdentifier:kSettingsAddressBarCellId];
+  return _addressBarPreferenceItem;
+}
+
 - (TableViewInfoButtonItem*)managedSearchEngineItem {
   _managedSearchEngineItem =
       [self infoButtonWithType:SettingsItemTypeManagedDefaultSearchEngine
@@ -936,23 +965,6 @@ UIImage* GetBrandedGoogleServicesSymbol() {
           accessibilityIdentifier:kSettingsVoiceSearchCellId];
 
   return _voiceSearchDetailItem;
-}
-
-- (TableViewItem*)bottomOmniboxItem {
-  DCHECK(IsBottomOmniboxSteadyStateEnabled());
-  if (!_bottomOmniboxItem) {
-    _bottomOmniboxItem =
-        [self switchItemWithType:SettingsItemTypeBottomOmnibox
-                              // TODO(crbug.com/1430093): add title.
-                              title:@"Bottom Omnibox"
-                             // TODO(crbug.com/1430093): add symbol.
-                             symbol:DefaultSettingsRootSymbol(kDiscoverSymbol)
-              // TODO(crbug.com/1430093): change background color.
-              symbolBackgroundColor:[UIColor colorNamed:kGreen500Color]
-            accessibilityIdentifier:kSettingsBottomOmniboxCellId];
-    _bottomOmniboxItem.on = [_bottomOmniboxEnabled value];
-  }
-  return _bottomOmniboxItem;
 }
 
 - (SettingsCheckItem*)safetyCheckDetailItem {
@@ -1227,14 +1239,6 @@ UIImage* GetBrandedGoogleServicesSymbol() {
                       forControlEvents:UIControlEventValueChanged];
       break;
     }
-    case SettingsItemTypeBottomOmnibox: {
-      TableViewSwitchCell* switchCell =
-          base::mac::ObjCCastStrict<TableViewSwitchCell>(cell);
-      [switchCell.switchView addTarget:self
-                                action:@selector(bottomOmniboxSwitchToggled:)
-                      forControlEvents:UIControlEventValueChanged];
-      break;
-    }
     case SettingsItemTypeViewSource: {
 #if BUILDFLAG(CHROMIUM_BRANDING) && !defined(NDEBUG)
       TableViewSwitchCell* switchCell =
@@ -1390,6 +1394,13 @@ UIImage* GetBrandedGoogleServicesSymbol() {
       base::RecordAction(base::UserMetricsAction("EditSearchEngines"));
       controller = [[SearchEngineTableViewController alloc]
           initWithBrowserState:_browserState];
+      break;
+    case SettingsItemTypeAddressBar:
+      base::RecordAction(base::UserMetricsAction("Settings.AddressBar.Opened"));
+      [self showAddressBarPreferenceSetting];
+      // Sets the "new" IPH badge shown count to max so it's not shown again.
+      _browserState->GetPrefs()->SetInteger(
+          prefs::kAddressBarSettingsNewBadgeShownCount, INT_MAX);
       break;
     case SettingsItemTypePasswords:
       base::RecordAction(
@@ -1573,21 +1584,6 @@ UIImage* GetBrandedGoogleServicesSymbol() {
   [_articlesEnabled setValue:newSwitchValue];
 }
 
-- (void)bottomOmniboxSwitchToggled:(UISwitch*)sender {
-  DCHECK(IsBottomOmniboxSteadyStateEnabled());
-  NSIndexPath* switchPath = [self.tableViewModel
-      indexPathForItemType:SettingsItemTypeBottomOmnibox
-         sectionIdentifier:SettingsSectionIdentifierAdvanced];
-
-  TableViewSwitchItem* switchItem =
-      base::mac::ObjCCastStrict<TableViewSwitchItem>(
-          [self.tableViewModel itemAtIndexPath:switchPath]);
-
-  BOOL newSwitchValue = sender.isOn;
-  switchItem.on = newSwitchValue;
-  [_bottomOmniboxEnabled setValue:newSwitchValue];
-}
-
 #if BUILDFLAG(CHROMIUM_BRANDING) && !defined(NDEBUG)
 - (void)viewSourceSwitchToggled:(UISwitch*)sender {
   NSIndexPath* switchPath =
@@ -1629,7 +1625,17 @@ UIImage* GetBrandedGoogleServicesSymbol() {
   [_tabsCoordinator start];
 }
 
+- (void)showAddressBarPreferenceSetting {
+  _addressBarPreferenceCoordinator = [[AddressBarPreferenceCoordinator alloc]
+      initWithBaseNavigationController:self.navigationController
+                               browser:_browser];
+  [_addressBarPreferenceCoordinator start];
+}
+
 - (BOOL)shouldReplaceSyncSettingsWithAccountSettings {
+  // TODO(crbug.com/1462552): Remove usage of HasSyncConsent() after kSync
+  // users migrated to kSignin in phase 3. See ConsentLevel::kSync
+  // documentation for details.
   return base::FeatureList::IsEnabled(
              syncer::kReplaceSyncPromosWithSignInPromos) &&
          !SyncServiceFactory::GetForBrowserState(_browserState)
@@ -1638,6 +1644,9 @@ UIImage* GetBrandedGoogleServicesSymbol() {
 
 - (void)showGoogleSync {
   DCHECK(!_manageSyncSettingsCoordinator);
+  // TODO(crbug.com/1462552): Remove usage of HasSyncConsent() after kSync
+  // users migrated to kSignin in phase 3. See ConsentLevel::kSync
+  // documentation for details.
   SyncSettingsAccountState accountState =
       SyncServiceFactory::GetForBrowserState(_browserState)->HasSyncConsent()
           ? SyncSettingsAccountState::kSyncing
@@ -1911,7 +1920,7 @@ UIImage* GetBrandedGoogleServicesSymbol() {
           feature_engagement::kIPHiOSDefaultBrowserSettingsBadgeFeature,
           tracker, syncService)) {
     // Add the blue dot promo badge to the default browser row.
-    defaultBrowserCellItem.showNotificationDot = YES;
+    defaultBrowserCellItem.badgeType = BadgeType::kNotificationDot;
     self.showingDefaultBrowserNotificationDot = YES;
 
     // If we've only started showing the blue dot recently (<6 hours), don't
@@ -1924,6 +1933,36 @@ UIImage* GetBrandedGoogleServicesSymbol() {
       tracker->NotifyEvent(
           feature_engagement::events::kBlueDotPromoSettingsShownNewSession);
     }
+  }
+}
+
+// Add or remove the "new" IPH badge from the address bar settings row. The
+// badge is shown a maximum of `kMaxShowCountNewIPHBadge` times.
+- (void)updateAddressBarNewIPHBadge {
+  CHECK(IsBottomOmniboxSteadyStateEnabled());
+  CHECK(_addressBarPreferenceItem);
+
+  if (!_browserState) {
+    return;
+  }
+
+  PrefService* prefService = _browserState->GetPrefs();
+  NSInteger showCount =
+      prefService->GetInteger(prefs::kAddressBarSettingsNewBadgeShownCount);
+
+  BadgeType badgeType = BadgeType::kNone;
+
+  const BOOL isFreshInstall = IsFirstRunRecent(kFreshInstallTimeDelta);
+
+  if (!isFreshInstall && showCount < kMaxShowCountNewIPHBadge) {
+    badgeType = BadgeType::kNew;
+    prefService->SetInteger(prefs::kAddressBarSettingsNewBadgeShownCount,
+                            showCount + 1);
+  }
+
+  if (badgeType != _addressBarPreferenceItem.badgeType) {
+    _addressBarPreferenceItem.badgeType = badgeType;
+    [self reconfigureCellsForItems:@[ _addressBarPreferenceItem ]];
   }
 }
 
@@ -1969,20 +2008,26 @@ UIImage* GetBrandedGoogleServicesSymbol() {
   DCHECK(!self.isSigninInProgress);
   self.isSigninInProgress = YES;
   __weak __typeof(self) weakSelf = self;
-  // TODO(crbug.com/1447012): Show the SSO screen directly if there are no
-  // device-level accounts.
-  AuthenticationOperation operation =
-      base::FeatureList::IsEnabled(syncer::kReplaceSyncPromosWithSignInPromos)
-          ? AuthenticationOperationSigninOnly
-          : AuthenticationOperationSigninAndSync;
+  AuthenticationOperation operation = AuthenticationOperation::kSigninAndSync;
+  if (base::FeatureList::IsEnabled(
+          syncer::kReplaceSyncPromosWithSignInPromos)) {
+    // If there are 0 identities, kInstantSignin requires less taps.
+    operation =
+        ChromeAccountManagerServiceFactory::GetForBrowserState(_browserState)
+                ->HasIdentities()
+            ? AuthenticationOperation::kSigninOnly
+            : AuthenticationOperation::kInstantSignin;
+  }
+
   ShowSigninCommand* command = [[ShowSigninCommand alloc]
       initWithOperation:operation
                identity:identity
             accessPoint:signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS
             promoAction:promoAction
-               callback:^(BOOL success) {
+               callback:^(SigninCoordinatorResult result) {
+                 BOOL success = result == SigninCoordinatorResultSuccess;
                  if (completion)
-                   completion(success);
+                   completion(result);
                  [weakSelf didFinishSignin:success];
                }];
   [self.applicationCommandsHandler showSignin:command baseViewController:self];
@@ -2041,6 +2086,9 @@ UIImage* GetBrandedGoogleServicesSymbol() {
 
   [_tabsCoordinator stop];
   _tabsCoordinator = nil;
+
+  [_addressBarPreferenceCoordinator stop];
+  _addressBarPreferenceCoordinator = nil;
 
   // Stop observable prefs.
   [_showMemoryDebugToolsEnabled stop];
@@ -2188,6 +2236,12 @@ UIImage* GetBrandedGoogleServicesSymbol() {
         sectionForSectionIdentifier:SettingsSectionIdentifierAdvanced];
     [self.tableView reloadSections:[NSIndexSet indexSetWithIndex:index]
                   withRowAnimation:UITableViewRowAnimationAutomatic];
+  } else if (observableBoolean == _bottomOmniboxEnabled) {
+    _addressBarPreferenceItem.detailText =
+        [_bottomOmniboxEnabled value]
+            ? l10n_util::GetNSString(IDS_IOS_BOTTOM_ADDRESS_BAR_OPTION)
+            : l10n_util::GetNSString(IDS_IOS_TOP_ADDRESS_BAR_OPTION);
+    [self reconfigureCellsForItems:@[ _addressBarPreferenceItem ]];
   } else {
     NOTREACHED();
   }
@@ -2393,13 +2447,16 @@ UIImage* GetBrandedGoogleServicesSymbol() {
 }
 
 - (void)showSignOutToast {
-  [self.snackbarCommandsHandler
-      showSnackbarWithMessage:
-          l10n_util::GetNSString(
-              IDS_IOS_GOOGLE_ACCOUNT_SETTINGS_SIGN_OUT_SNACKBAR_MESSAGE)
-                   buttonText:nil
-                messageAction:nil
-             completionAction:nil];
+  syncer::SyncService* syncService =
+      SyncServiceFactory::GetForBrowserState(_browserState);
+  int message_id =
+      (IsSyncDisabledByPolicy(syncService) ||
+       HasManagedSyncDataType(syncService))
+          ? IDS_IOS_GOOGLE_ACCOUNT_SETTINGS_SIGN_OUT_SNACKBAR_MESSAGE_ENTERPRISE
+          : IDS_IOS_GOOGLE_ACCOUNT_SETTINGS_SIGN_OUT_SNACKBAR_MESSAGE;
+  MDCSnackbarMessage* message =
+      [MDCSnackbarMessage messageWithText:l10n_util::GetNSString(message_id)];
+  [self.snackbarCommandsHandler showSnackbarMessage:message bottomOffset:0];
 }
 
 #pragma mark - NotificationsSettingsObserverDelegate

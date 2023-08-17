@@ -11,6 +11,7 @@ declare_args() {
   # See //build/android/incremental_install/README.md for more details.
   incremental_install = false
 }
+
 declare_args() {
   # Java debug on Android. Having this on enables multidexing, and turning it
   # off will enable proguard.
@@ -55,6 +56,11 @@ if (is_android || is_chromeos) {
     enable_chrome_android_internal =
         build_with_chromium && checkout_src_internal && target_os == "android"
 
+    # Experimental new flag for the build system to automatically attempt to
+    # fix missing java deps. This should always be false on bots so they do not
+    # succeed when there are build errors. Devs can override this in args.gn.
+    auto_add_missing_java_deps = false
+
     # The default to use for android:minSdkVersion for targets that do
     # not explicitly set it.
     default_min_sdk_version = 24
@@ -96,7 +102,7 @@ if (is_android || is_chromeos) {
   }
 
   if (!defined(default_android_ndk_root)) {
-    default_android_ndk_root = "//third_party/android_toolchain"
+    default_android_ndk_root = "//third_party/android_toolchain/ndk"
     default_android_ndk_version = "r25c"
     default_android_ndk_major_version = 25
   } else {
@@ -368,6 +374,10 @@ if (is_android || is_chromeos) {
       "$android_ndk_root/prebuilt/$android_prebuilt_arch/gdbserver/gdbserver"
 
   android_sdk_tools_bundle_aapt2 = "${android_sdk_tools_bundle_aapt2_dir}/aapt2"
+
+  # Actions that use java should add this as an input so that they are rebuilt
+  # when the JDK changes.
+  java_path_for_inputs = "//third_party/jdk/current/bin/java.chromium"
 
   # Toolchain used to create native libraries for robolectric_binary() targets.
   robolectric_toolchain = "//build/toolchain/android:robolectric_$host_cpu"

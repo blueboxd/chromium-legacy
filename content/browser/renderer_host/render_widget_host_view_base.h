@@ -125,6 +125,21 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView {
   display::ScreenInfo GetScreenInfo() const override;
   display::ScreenInfos GetScreenInfos() const override;
 
+  // Identical to `CopyFromSurface()`, except that this method issues the
+  // `viz::CopyOutputRequest` against the exact `viz::Surface` currently
+  // embedded by this View, while `CopyFromSurface()` may return a copy of any
+  // Surface associated with this View, generated after the current Surface. The
+  // caller is responsible for making sure that the target Surface is embedded
+  // and available for copy when this API is called. This Surface can be removed
+  // from the UI after this call.
+  //
+  // TODO(https://crbug.com/1467314): merge this API into `CopyFromSurface()`,
+  // and enable it fully on Android.
+  virtual void CopyFromExactSurface(
+      const gfx::Rect& src_rect,
+      const gfx::Size& output_size,
+      base::OnceCallback<void(const SkBitmap&)> callback);
+
   // For HiDPI capture mode, allow applying a render scale multiplier
   // which modifies the effective device scale factor. Use a scale
   // of 1.0f (exactly) to disable the feature after it was used.
@@ -258,6 +273,11 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView {
   virtual void OnEditElementFocusedForStylusWriting(
       const gfx::Rect& focused_edit_bounds,
       const gfx::Rect& caret_bounds) {}
+
+  // Invalidates the `viz::SurfaceAllocationGroup` of this View. Also
+  // invalidates `viz::SurfaceId` of it. This should be used when no previous
+  // frame drawn by this view is preferred as a fallback.
+  virtual void InvalidateLocalSurfaceIdAndAllocationGroup() = 0;
 
   // This method will clear any cached fallback surface. For use in response to
   // a CommitPending where there is no content for TakeFallbackContentFrom.
@@ -408,10 +428,12 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView {
                                       const gfx::Rect& bounding_box,
                                       bool is_anchor_first);
 
-  // Updates the range of the marked text in an IME composition.
+  // Updates the range of the marked text in an IME composition, the visible
+  // line bounds, or both.
   virtual void ImeCompositionRangeChanged(
       const gfx::Range& range,
-      const std::vector<gfx::Rect>& character_bounds);
+      const absl::optional<std::vector<gfx::Rect>>& character_bounds,
+      const absl::optional<std::vector<gfx::Rect>>& line_bounds);
 
   //----------------------------------------------------------------------------
   // The following pure virtual methods are implemented by derived classes.

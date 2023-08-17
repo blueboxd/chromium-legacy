@@ -32,13 +32,15 @@ public class BookmarkUiPrefs {
 
     // This is persisted to preferences, entries shouldn't be reordered or removed.
     @IntDef({BookmarkRowSortOrder.CHRONOLOGICAL, BookmarkRowSortOrder.REVERSE_CHRONOLOGICAL,
-            BookmarkRowSortOrder.ALPHABETICAL, BookmarkRowSortOrder.REVERSE_ALPHABETICAL})
+            BookmarkRowSortOrder.ALPHABETICAL, BookmarkRowSortOrder.REVERSE_ALPHABETICAL,
+            BookmarkRowSortOrder.RECENTLY_USED})
     @Retention(RetentionPolicy.SOURCE)
     public @interface BookmarkRowSortOrder {
         int CHRONOLOGICAL = 0;
         int REVERSE_CHRONOLOGICAL = 1;
         int ALPHABETICAL = 2;
         int REVERSE_ALPHABETICAL = 3;
+        int RECENTLY_USED = 4;
     }
 
     /** Observer for changes to prefs. */
@@ -50,6 +52,20 @@ public class BookmarkUiPrefs {
         default void onBookmarkRowSortOrderChanged(@BookmarkRowSortOrder int sortOrder) {}
     }
 
+    private SharedPreferencesManager.Observer mPrefsObserver =
+            new SharedPreferencesManager.Observer() {
+                @Override
+                public void onPreferenceChanged(String key) {
+                    if (key.equals(ChromePreferenceKeys.BOOKMARKS_VISUALS_PREF)) {
+                        notifyObserversForDisplayPrefChange(
+                                mPrefsManager.readInt(ChromePreferenceKeys.BOOKMARKS_VISUALS_PREF));
+                    } else if (key.equals(ChromePreferenceKeys.BOOKMARKS_SORT_ORDER)) {
+                        notifyObserversForSortOrderChange(
+                                mPrefsManager.readInt(ChromePreferenceKeys.BOOKMARKS_SORT_ORDER));
+                    }
+                }
+            };
+
     private final SharedPreferencesManager mPrefsManager;
     private final ObserverList<Observer> mObservers = new ObserverList<>();
 
@@ -58,6 +74,7 @@ public class BookmarkUiPrefs {
      */
     public BookmarkUiPrefs(SharedPreferencesManager prefsManager) {
         mPrefsManager = prefsManager;
+        mPrefsManager.addObserver(mPrefsObserver);
     }
 
     /** Add the given observer to the list. */
@@ -88,6 +105,9 @@ public class BookmarkUiPrefs {
      */
     public void setBookmarkRowDisplayPref(@BookmarkRowDisplayPref int displayPref) {
         mPrefsManager.writeInt(ChromePreferenceKeys.BOOKMARKS_VISUALS_PREF, displayPref);
+    }
+
+    void notifyObserversForDisplayPrefChange(@BookmarkRowDisplayPref int displayPref) {
         for (Observer obs : mObservers) obs.onBookmarkRowDisplayPrefChanged(displayPref);
     }
 
@@ -100,6 +120,9 @@ public class BookmarkUiPrefs {
     /** Sets the order to sort bookmark rows. */
     public void setBookmarkRowSortOrder(@BookmarkRowSortOrder int sortOrder) {
         mPrefsManager.writeInt(ChromePreferenceKeys.BOOKMARKS_SORT_ORDER, sortOrder);
+    }
+
+    void notifyObserversForSortOrderChange(@BookmarkRowSortOrder int sortOrder) {
         for (Observer obs : mObservers) obs.onBookmarkRowSortOrderChanged(sortOrder);
     }
 

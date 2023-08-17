@@ -465,6 +465,7 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
   EXPECT_TRUE(BackgroundTracingManager::EmitNamedTrigger("upload_trigger"));
   background_tracing_helper.WaitForScenarioIdle();
 
+  background_tracing_helper.WaitForTraceReceived();
   EXPECT_TRUE(background_tracing_helper.trace_received());
 }
 
@@ -539,6 +540,7 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
   EXPECT_TRUE(BackgroundTracingManager::EmitNamedTrigger("upload_trigger"));
   background_tracing_helper.WaitForScenarioIdle();
 
+  background_tracing_helper.WaitForTraceReceived();
   EXPECT_TRUE(background_tracing_helper.trace_received());
   EXPECT_TRUE(background_tracing_helper.TraceHasMatchingString("{"));
   EXPECT_TRUE(background_tracing_helper.TraceHasMatchingString("src_file"));
@@ -1735,7 +1737,13 @@ IN_PROC_BROWSER_TEST_F(ProtoBackgroundTracingTest,
   background_tracing_helper.WaitForScenarioIdle();
 }
 
-IN_PROC_BROWSER_TEST_F(ProtoBackgroundTracingTest, ProtoTraceReceived) {
+// TODO(https://crbug.com/1472381): Flaky on Android
+#if BUILDFLAG(IS_ANDROID)
+#define MAYBE_ProtoTraceReceived DISABLED_ProtoTraceReceived
+#else
+#define MAYBE_ProtoTraceReceived ProtoTraceReceived
+#endif
+IN_PROC_BROWSER_TEST_F(ProtoBackgroundTracingTest, MAYBE_ProtoTraceReceived) {
   TestBackgroundTracingHelper background_tracing_helper;
 
   std::unique_ptr<BackgroundTracingConfig> config = CreatePreemptiveConfig();

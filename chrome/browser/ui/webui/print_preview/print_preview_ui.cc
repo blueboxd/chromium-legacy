@@ -25,8 +25,8 @@
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/enterprise/browser_management/management_service_factory.h"
 #include "chrome/browser/pdf/pdf_extension_util.h"
-#include "chrome/browser/policy/management_utils.h"
 #include "chrome/browser/printing/background_printing_manager.h"
 #include "chrome/browser/printing/pdf_nup_converter_client.h"
 #include "chrome/browser/printing/print_job_manager.h"
@@ -52,6 +52,7 @@
 #include "chrome/grit/pdf_resources_map.h"
 #include "chrome/grit/print_preview_resources.h"
 #include "chrome/grit/print_preview_resources_map.h"
+#include "components/policy/core/common/management/management_service.h"
 #include "components/prefs/pref_service.h"
 #include "components/printing/browser/print_composite_client.h"
 #include "components/printing/browser/print_manager_utils.h"
@@ -186,6 +187,7 @@ void AddPrintPreviewStrings(content::WebUIDataSource* source) {
     {"managedSettings", IDS_PRINT_PREVIEW_MANAGED_SETTINGS_TEXT},
     {"marginsLabel", IDS_PRINT_PREVIEW_MARGINS_LABEL},
     {"mediaSizeLabel", IDS_PRINT_PREVIEW_MEDIA_SIZE_LABEL},
+    {"mediaTypeLabel", IDS_PRINT_PREVIEW_MEDIA_TYPE_LABEL},
     {"minimumMargins", IDS_PRINT_PREVIEW_MINIMUM_MARGINS},
     {"moreOptionsLabel", IDS_MORE_OPTIONS_LABEL},
     {"newShowAdvancedOptions", IDS_PRINT_PREVIEW_NEW_SHOW_ADVANCED_OPTIONS},
@@ -327,8 +329,17 @@ void AddPrintPreviewFlags(content::WebUIDataSource* source, Profile* profile) {
   source->AddBoolean("useSystemDefaultPrinter", system_default_printer);
 #endif
 
-  source->AddBoolean("isEnterpriseManaged",
-                     policy::IsDeviceEnterpriseManaged());
+  source->AddBoolean(
+      "isEnterpriseManaged",
+      policy::ManagementServiceFactory::GetForPlatform()->IsManaged());
+
+#if BUILDFLAG(IS_CHROMEOS)
+  source->AddBoolean(
+      "isBorderlessPrintingEnabled",
+      base::FeatureList::IsEnabled(features::kEnableBorderlessPrinting));
+#else
+  source->AddBoolean("isBorderlessPrintingEnabled", false);
+#endif
 }
 
 void SetupPrintPreviewPlugin(content::WebUIDataSource* source) {

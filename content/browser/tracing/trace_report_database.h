@@ -53,6 +53,10 @@ class CONTENT_EXPORT TraceReportDatabase {
 
     // The total size in bytes taken by the report.
     uint64_t total_size;
+
+    // The reason for which a report was not uploaded even if the upload rules
+    // were met.
+    SkipUploadReason skip_reason = SkipUploadReason::kNoSkip;
   };
 
   // NewReport represents the metadata needed to create and add a new report
@@ -83,10 +87,6 @@ class CONTENT_EXPORT TraceReportDatabase {
 
     // The time at which the report was successfully uploaded to a server.
     base::Time upload_time;
-
-    // The reason for which a report was not uploaded even if the upload rules
-    // were met.
-    SkipUploadReason skip_reason;
   };
 
   TraceReportDatabase();
@@ -109,6 +109,12 @@ class CONTENT_EXPORT TraceReportDatabase {
   // Deletes all rows (traces) from the local_traces.
   bool DeleteAllTraces();
 
+  // Delete traces between the |start| and |end| dates inclusively.
+  bool DeleteTracesInDateRange(const base::Time start, const base::Time end);
+
+  // Delete all traces older than |age| from today.
+  bool DeleteTracesOlderThan(const base::TimeDelta age);
+
   bool UserRequestedUpload(base::Uuid uuid);
   bool UploadComplete(base::Uuid uuid, base::Time time);
   bool UploadSkipped(base::Uuid uuid);
@@ -116,11 +122,11 @@ class CONTENT_EXPORT TraceReportDatabase {
   // Get string if the current Trace exists.
   absl::optional<std::string> GetProtoValue(base::Uuid uuid);
 
-  // Uses ExecuteScriptForTesting for creation of the table.
-  bool EnsureTableCreatedForTesting();
-
   // Returns all the reports currently stored in the database.
   std::vector<ClientReport> GetAllReports();
+
+  // Returns the next report pending upload.
+  absl::optional<ClientReport> GetNextReportPendingUpload();
 
  private:
   bool EnsureTableCreated();

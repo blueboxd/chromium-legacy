@@ -8,6 +8,7 @@
 
 #include "ash/constants/ash_features.h"
 #include "ash/public/cpp/login_accelerators.h"
+#include "ash/public/cpp/wallpaper/wallpaper_controller.h"
 #include "base/check_deref.h"
 #include "base/containers/contains.h"
 #include "base/functional/bind.h"
@@ -47,7 +48,6 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/chrome_device_id_helper.h"
 #include "chrome/browser/ui/ash/auth/cryptohome_pin_engine.h"
-#include "chrome/browser/ui/ash/wallpaper_controller_client_impl.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/webui/ash/diagnostics_dialog.h"
 #include "chrome/browser/ui/webui/ash/login/family_link_notice_screen_handler.h"
@@ -65,6 +65,7 @@
 #include "chromeos/ash/components/attestation/attestation_flow_adaptive.h"
 #include "chromeos/ash/components/dbus/userdataauth/userdataauth_client.h"
 #include "chromeos/ash/components/login/auth/auth_performer.h"
+#include "chromeos/ash/components/osauth/public/auth_session_storage.h"
 #include "components/keep_alive_registry/keep_alive_types.h"
 #include "components/strings/grit/components_strings.h"
 #include "extensions/common/features/feature_session_type.h"
@@ -432,12 +433,14 @@ void LoginDisplayHostCommon::ShowAllowlistCheckFailedError() {
   gaia_screen->ShowAllowlistCheckFailedError();
 }
 
-void LoginDisplayHostCommon::LoadWallpaper(const AccountId& account_id) {
-  WallpaperControllerClientImpl::Get()->ShowUserWallpaper(account_id);
-}
-
-void LoginDisplayHostCommon::LoadSigninWallpaper() {
-  WallpaperControllerClientImpl::Get()->ShowSigninWallpaper();
+void LoginDisplayHostCommon::UpdateWallpaper(
+    const AccountId& prefilled_account) {
+  auto* wallpaper_controller = ash::WallpaperController::Get();
+  if (prefilled_account.is_valid()) {
+    wallpaper_controller->ShowUserWallpaper(prefilled_account);
+    return;
+  }
+  wallpaper_controller->ShowSigninWallpaper();
 }
 
 bool LoginDisplayHostCommon::IsUserAllowlisted(
@@ -511,7 +514,8 @@ bool LoginDisplayHostCommon::HandleAccelerator(LoginAcceleratorAction action) {
   }
 
   if (action == LoginAcceleratorAction::kCancelScreenAction) {
-    if (!GetOobeUI()) {
+    if (!GetOobeUI() || !GetLoginWindowWidget() ||
+        !GetLoginWindowWidget()->IsVisible()) {
       return false;
     }
     GetOobeUI()->GetCoreOobe()->ForwardCancel();
@@ -590,13 +594,25 @@ void LoginDisplayHostCommon::SetAuthSessionForOnboarding(
       RecoveryEligibilityScreen::ShouldSkipRecoverySetupBecauseOfPolicy()) {
     return;
   }
-
-  wizard_context_->extra_factors_auth_session =
-      std::make_unique<UserContext>(user_context);
+  if (ash::features::ShouldUseAuthSessionStorage()) {
+    wizard_context_->extra_factors_token = AuthSessionStorage::Get()->Store(
+        std::make_unique<UserContext>(user_context));
+  } else {
+    wizard_context_->extra_factors_auth_session =
+        std::make_unique<UserContext>(user_context);
+  }
 }
 
 void LoginDisplayHostCommon::ClearOnboardingAuthSession() {
-  wizard_context_->extra_factors_auth_session.reset();
+  if (ash::features::ShouldUseAuthSessionStorage()) {
+    if (wizard_context_->extra_factors_token.has_value()) {
+      AuthSessionStorage::Get()->Invalidate(
+          wizard_context_->extra_factors_token.value(), base::DoNothing());
+      wizard_context_->extra_factors_token = absl::nullopt;
+    }
+  } else {
+    wizard_context_->extra_factors_auth_session.reset();
+  }
 }
 
 void LoginDisplayHostCommon::StartEncryptionMigration(
@@ -722,15 +738,9 @@ void LoginDisplayHostCommon::OnStartSignInScreenCommon() {
 
 void LoginDisplayHostCommon::ShowGaiaDialogCommon(
     const AccountId& prefilled_account) {
-  if (prefilled_account.is_valid()) {
-    LoadWallpaper(prefilled_account);
-    if (GetExistingUserController()->IsSigninInProgress()) {
-      return;
-    }
-  } else {
-    LoadSigninWallpaper();
+  if (GetExistingUserController()->IsSigninInProgress()) {
+    return;
   }
-
   SetGaiaInputMethods(prefilled_account);
 
   if (!prefilled_account.is_valid()) {
@@ -753,19 +763,17 @@ LoginDisplayHostCommon::GetQuickStartBootstrapController() {
   CHECK(wizard_context_->quick_start_enabled);
   if (!bootstrap_controller_) {
     Profile* profile = ProfileManager::GetActiveUserProfile();
-    DCHECK(profile);
+    CHECK(profile);
 
     quick_start::QuickStartConnectivityService* service =
         quick_start::QuickStartConnectivityServiceFactory::GetForProfile(
             profile);
-    DCHECK(service);
+    CHECK(service);
 
     bootstrap_controller_ =
         std::make_unique<ash::quick_start::TargetDeviceBootstrapController>(
             CreateSecondDeviceAuthBroker(),
-            std::make_unique<AccessibilityManagerWrapper>(),
-            service->GetNearbyConnectionsManager(),
-            service->GetQuickStartDecoder());
+            std::make_unique<AccessibilityManagerWrapper>(), service);
   }
   return bootstrap_controller_->GetAsWeakPtrForClient();
 }

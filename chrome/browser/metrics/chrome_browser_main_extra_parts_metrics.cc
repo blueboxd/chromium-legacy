@@ -73,6 +73,7 @@
 #if defined(__arm__)
 #include <cpu-features.h>
 #endif
+#include "base/android/build_info.h"
 #include "chrome/browser/flags/android/chrome_session_state.h"
 #endif  // BUILDFLAG(IS_ANDROID)
 
@@ -889,7 +890,7 @@ void RecordAppCompatMetrics() {
 
 void RecordDisplayHDRStatus(const display::Display& display) {
   base::UmaHistogramBoolean("Hardware.Display.SupportsHDR",
-                            display.color_spaces().SupportsHDR());
+                            display.GetColorSpaces().SupportsHDR());
 }
 
 // Called on a background thread, with low priority to avoid slowing down
@@ -943,6 +944,51 @@ void RecordStartupMetrics() {
 }
 
 }  // namespace
+
+#if BUILDFLAG(IS_ANDROID)
+bool IsBundleForMixedDeviceAccordingToVersionCode(
+    const std::string& version_code) {
+  // Primary bitness of the bundle is encoded in the last digit of the version
+  // code. And the variant (package name) is encoded in the second to last.
+  //
+  // From build/util/android_chrome_version.py:
+  //       'arm': {
+  //          '32': 0,
+  //          '32_64': 1,
+  //          '64_32': 2,
+  //          '64_32_high': 3,
+  //          '64': 4,
+  //      },
+  //      'intel': {
+  //          '32': 6,
+  //          '32_64': 7,
+  //          '64_32': 8,
+  //          '64': 9,
+  //      },
+  //
+  //      _PACKAGE_NAMES = {
+  //          'CHROME': 0,
+  //          'CHROME_MODERN': 10,
+  //          'MONOCHROME': 20,
+  //          'TRICHROME': 30,
+  //          [...]
+
+  if (version_code.length() < 2) {
+    return false;
+  }
+
+  // '32' and '64' bundles go on 32bit-only and 64bit-only devices, so exclude
+  // them.
+  std::set<char> arch_codes_mixed = {'1', '2', '3', '7', '8'};
+  char arch_code = version_code.back();
+
+  // Only 'TRICHROME' supports 64-bit.
+  constexpr char kTriChromeVariant = '3';
+  char variant = version_code[version_code.length() - 2];
+
+  return arch_codes_mixed.count(arch_code) > 0 && variant == kTriChromeVariant;
+}
+#endif  // BUILDFLAG(IS_ANDROID)
 
 ChromeBrowserMainExtraPartsMetrics::ChromeBrowserMainExtraPartsMetrics()
     : display_count_(0) {}
@@ -1052,7 +1098,9 @@ void ChromeBrowserMainExtraPartsMetrics::PreBrowserStart() {
       (3.2 * 1024 < ram_mb && ram_mb < 6.5 * 1024) &&
       (chrome::android::GetMultipleUserProfilesState() ==
        chrome::android::MultipleUserProfilesState::kSingleProfile) &&
-      (cpu_abi_bitness_support == metrics::CpuAbiBitnessSupport::k32And64bit);
+      (cpu_abi_bitness_support == metrics::CpuAbiBitnessSupport::k32And64bit) &&
+      IsBundleForMixedDeviceAccordingToVersionCode(
+          base::android::BuildInfo::GetInstance()->package_version_code());
   if (is_device_of_interest) {
     uint32_t gws_experiment_id = 0;
     std::string trial_group;

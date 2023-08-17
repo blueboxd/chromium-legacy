@@ -221,11 +221,12 @@ void BrowsingDataRemoverImpl::RemoveWithFilterAndReply(
 }
 
 void BrowsingDataRemoverImpl::RemoveStorageBucketsAndReply(
+    const absl::optional<StoragePartitionConfig> storage_partition_config,
     const blink::StorageKey& storage_key,
     const std::set<std::string>& storage_buckets,
     base::OnceClosure callback) {
   DCHECK(callback);
-  GetStoragePartition(/*storage_partition_config=*/absl::nullopt)
+  GetStoragePartition(storage_partition_config)
       ->ClearDataForBuckets(
           storage_key, storage_buckets,
           base::BindPostTaskToCurrentDefault(
@@ -449,7 +450,12 @@ void BrowsingDataRemoverImpl::RemoveImpl(
     storage_partition_remove_mask |=
         StoragePartition::REMOVE_DATA_MASK_SHADER_CACHE;
   }
-  if (remove_mask & DATA_TYPE_MEDIA_LICENSES) {
+  if (remove_mask & DATA_TYPE_MEDIA_LICENSES ||
+      // TODO(crbug.com/1434517): For now, media licenses are part of the quota
+      // management system. If all DOM storage types are being removed, remove
+      // media licenses as well. When bug is resolved, this condition can be
+      // removed.
+      (remove_mask & DATA_TYPE_DOM_STORAGE) == DATA_TYPE_DOM_STORAGE) {
     storage_partition_remove_mask |=
         StoragePartition::REMOVE_DATA_MASK_MEDIA_LICENSES;
   }

@@ -9121,8 +9121,7 @@ TEST_F(WebFrameTest, PrintingBasic)
 
   WebLocalFrame* frame = web_view_helper.LocalMainFrame();
 
-  WebPrintParams print_params;
-  print_params.print_content_area_in_css_pixels.set_size(gfx::SizeF(500, 500));
+  WebPrintParams print_params((gfx::SizeF(500, 500)));
 
   uint32_t page_count = frame->PrintBegin(print_params, WebNode());
   EXPECT_EQ(1u, page_count);
@@ -11054,10 +11053,6 @@ TEST_P(WebFrameOverscrollTest, OverscrollBehaviorGoesToCompositor) {
 }
 
 TEST_P(WebFrameOverscrollTest, SubframeOverscrollBehaviorPreventsChaining) {
-  // This test fails without scroll unification (crbug.com/1222427).
-  if (!base::FeatureList::IsEnabled(::features::kScrollUnification))
-    return;
-
   RegisterMockedHttpURLLoad("overscroll/iframe-overscroll.html");
   RegisterMockedHttpURLLoad("overscroll/scrollable-iframe.html");
   frame_test_helpers::WebViewHelper web_view_helper;
@@ -13542,12 +13537,12 @@ TEST_F(WebFrameTest, AltTextOnAboutBlankPage) {
 }
 
 static void TestFramePrinting(WebLocalFrameImpl* frame) {
-  WebPrintParams print_params;
   gfx::Size page_size(500, 500);
-  print_params.print_content_area_in_css_pixels.set_size(gfx::SizeF(page_size));
+  WebPrintParams print_params((gfx::SizeF(page_size)));
   EXPECT_EQ(1u, frame->PrintBegin(print_params, WebNode()));
   cc::PaintRecorder recorder;
-  frame->PrintPagesForTesting(recorder.beginRecording(), page_size, page_size);
+  frame->PrintPagesForTesting(recorder.beginRecording(), print_params,
+                              page_size);
   frame->PrintEnd();
 }
 
@@ -13606,14 +13601,13 @@ void RecursiveCollectTextRunDOMNodeIds(
 std::vector<TextRunDOMNodeIdInfo> GetPrintedTextRunDOMNodeIds(
     WebLocalFrame* frame,
     const WebVector<uint32_t>* pages = nullptr) {
-  WebPrintParams print_params;
   gfx::Size page_size(500, 500);
-  print_params.print_content_area_in_css_pixels.set_size(gfx::SizeF(page_size));
+  WebPrintParams print_params((gfx::SizeF(page_size)));
 
   frame->PrintBegin(print_params, WebNode());
   cc::PaintRecorder recorder;
-  frame->PrintPagesForTesting(recorder.beginRecording(), page_size, page_size,
-                              pages);
+  frame->PrintPagesForTesting(recorder.beginRecording(), print_params,
+                              page_size, pages);
   frame->PrintEnd();
 
   cc::PaintRecord paint_record = recorder.finishRecordingAsPicture();
@@ -13805,12 +13799,18 @@ TEST_F(WebFrameSimTest, GetPageSizeType) {
   CSSStyleDeclaration* style_decl =
       To<CSSPageRule>(sheet->cssRules(ASSERT_NO_EXCEPTION)->item(0))->style();
 
+  // GetPageSizeType() requires layout to be up-to-date.
+  WebView().MainFrameWidget()->UpdateAllLifecyclePhases(
+      DocumentUpdateReason::kTest);
+
   // Initially empty @page rule.
   EXPECT_EQ(PageSizeType::kAuto, main_frame->GetPageSizeType(1));
 
   for (const auto& test : test_cases) {
     style_decl->setProperty(doc->GetExecutionContext(), "size", test.size, "",
                             ASSERT_NO_EXCEPTION);
+    WebView().MainFrameWidget()->UpdateAllLifecyclePhases(
+        DocumentUpdateReason::kTest);
     EXPECT_EQ(test.page_size_type, main_frame->GetPageSizeType(1));
   }
 }
@@ -13844,8 +13844,7 @@ TEST_F(WebFrameSimTest, PageOrientation) {
   RunPendingTasks();
 
   auto* frame = WebView().MainFrame()->ToWebLocalFrame();
-  WebPrintParams print_params;
-  print_params.print_content_area_in_css_pixels.set_size(gfx::SizeF(page_size));
+  WebPrintParams print_params((gfx::SizeF(page_size)));
   EXPECT_EQ(4u, frame->PrintBegin(print_params, WebNode()));
 
   WebPrintPageDescription description;
@@ -14455,8 +14454,6 @@ TEST_F(WebFrameTest, FrameOwnerColorScheme) {
 }
 
 TEST_F(WebFrameSimTest, RenderBlockingPromotesResource) {
-  ScopedBlockingAttributeForTest enabled_scope(true);
-
   SimRequest main_request("https://example.com/", "text/html");
   SimSubresourceRequest script_request("https://example.com/script.js",
                                        "text/javascript");

@@ -425,6 +425,16 @@ class IdlType(WithExtendedAttributes, WithDebugInfo):
         return False
 
     @property
+    def is_async_iterator(self):
+        """Returns True if this is an asynchronous iterator type."""
+        return False
+
+    @property
+    def is_sync_iterator(self):
+        """Returns True if this is a synchronous iterator type."""
+        return False
+
+    @property
     def is_typedef(self):
         """
         Returns True if this is a typedef.
@@ -847,6 +857,14 @@ class DefinitionType(IdlType, WithIdentifier):
     @property
     def is_callback_function(self):
         return self.type_definition_object.is_callback_function
+
+    @property
+    def is_async_iterator(self):
+        return self.type_definition_object.is_async_iterator
+
+    @property
+    def is_sync_iterator(self):
+        return self.type_definition_object.is_sync_iterator
 
     @property
     def type_definition_object(self):

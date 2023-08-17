@@ -28,10 +28,18 @@ class CORE_EXPORT DocumentPartRoot : public ScriptWrappable, public PartRoot {
   Document& GetDocument() const override {
     return root_container_->GetDocument();
   }
+  bool IsDocumentPartRoot() const override { return true; }
+  Node* FirstIncludedChildNode() const override {
+    return root_container_->firstChild();
+  }
+  Node* LastIncludedChildNode() const override {
+    return root_container_->lastChild();
+  }
+
   void Trace(Visitor*) const override;
 
   // PartRoot API
-  PartRootUnion* clone(ExceptionState&) const;
+  PartRootUnion* clone(ExceptionState&);
   ContainerNode* rootContainer() const override { return root_container_; }
 
  protected:

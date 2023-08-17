@@ -11,10 +11,11 @@
 #include "chrome/browser/ui/views/location_bar/omnibox_chip_button.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/interaction/interactive_browser_test.h"
-#include "components/permissions/features.h"
+#include "components/content_settings/core/common/features.h"
 #include "components/vector_icons/vector_icons.h"
 #include "content/public/test/browser_test.h"
 #include "net/dns/mock_host_resolver.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/interaction/interaction_test_util_views.h"
 
@@ -26,8 +27,8 @@ DEFINE_LOCAL_ELEMENT_IDENTIFIER_VALUE(kWebContentsElementId);
 class PermissionIndicatorsInteractiveUITest : public InteractiveBrowserTest {
  public:
   PermissionIndicatorsInteractiveUITest() {
-    scoped_feature_list_.InitWithFeatures(
-        {permissions::features::kImprovedSemanticsActivityIndicators}, {});
+    scoped_feature_list_.InitAndEnableFeature(
+        content_settings::features::kImprovedSemanticsActivityIndicators);
     https_server_ = std::make_unique<net::EmbeddedTestServer>(
         net::EmbeddedTestServer::TYPE_HTTPS);
   }
@@ -113,7 +114,9 @@ IN_PROC_BROWSER_TEST_F(PermissionIndicatorsInteractiveUITest,
       CheckViewProperty(
           ContentSettingImageView::kMediaActivityIndicatorElementId,
           &ContentSettingImageView::get_icon_for_testing,
-          &vector_icons::kVideocamIcon),
+          base::FeatureList::IsEnabled(features::kChromeRefresh2023)
+              ? &vector_icons::kVideocamChromeRefreshIcon
+              : &vector_icons::kVideocamIcon),
       // Permission is granted, there is no badge.
       CheckViewProperty(
           ContentSettingImageView::kMediaActivityIndicatorElementId,
@@ -139,7 +142,9 @@ IN_PROC_BROWSER_TEST_F(PermissionIndicatorsInteractiveUITest,
       CheckViewProperty(
           ContentSettingImageView::kMediaActivityIndicatorElementId,
           &ContentSettingImageView::get_icon_for_testing,
-          &vector_icons::kMicIcon),
+          base::FeatureList::IsEnabled(features::kChromeRefresh2023)
+              ? &vector_icons::kMicChromeRefreshIcon
+              : &vector_icons::kMicIcon),
       // Permission is granted, there is no badge.
       CheckViewProperty(
           ContentSettingImageView::kMediaActivityIndicatorElementId,
@@ -152,7 +157,9 @@ IN_PROC_BROWSER_TEST_F(PermissionIndicatorsInteractiveUITest,
       CheckViewProperty(
           ContentSettingImageView::kMediaActivityIndicatorElementId,
           &ContentSettingImageView::get_icon_for_testing,
-          &vector_icons::kVideocamIcon),
+          base::FeatureList::IsEnabled(features::kChromeRefresh2023)
+              ? &vector_icons::kVideocamChromeRefreshIcon
+              : &vector_icons::kVideocamIcon),
       // Permission is granted, there is no badge.
       CheckViewProperty(
           ContentSettingImageView::kMediaActivityIndicatorElementId,

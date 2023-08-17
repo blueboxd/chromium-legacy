@@ -1733,13 +1733,11 @@ void BrowserAccessibilityManager::BuildAXTreeHitTestCache() {
   // Use AXNodeID for this as nodes are unchanging with this cache.
   cached_node_rtree_ = std::make_unique<cc::RTree<ui::AXNodeID>>();
   cached_node_rtree_->Build(
-      storage,
-      [](const std::vector<const BrowserAccessibility*>& storage,
-         size_t index) {
+      storage.size(),
+      [&storage](size_t index) {
         return storage[index]->GetUnclippedRootFrameBoundsRect();
       },
-      [](const std::vector<const BrowserAccessibility*>& storage,
-         size_t index) { return storage[index]->GetId(); });
+      [&storage](size_t index) { return storage[index]->GetId(); });
 }
 
 void BrowserAccessibilityManager::BuildAXTreeHitTestCacheInternal(
@@ -1838,10 +1836,11 @@ void BrowserAccessibilityManager::CollectChangedNodesAndParentsForAtomicUpdate(
     // hypertext. Hypertext uses embedded object characters to represent
     // child objects, and the AXHyperText caches relevant object at
     // each embedded object character offset.
-    if (!changed_node->IsChildOfLeaf()) {
+    if (changed_node->data().role != ax::mojom::Role::kInlineTextBox) {
       BrowserAccessibility* parent_obj = GetFromAXNode(parent);
-      if (parent_obj)
+      if (parent_obj) {
         nodes_needing_update->insert(parent_obj->GetAXPlatformNode());
+      }
     }
 
     // When a node is editable, update the editable root too.

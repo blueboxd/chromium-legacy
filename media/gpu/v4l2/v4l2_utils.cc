@@ -24,29 +24,20 @@
 #include "media/gpu/macros.h"
 #include "ui/gfx/geometry/size.h"
 
-// TODO(b/255770680): Remove this once V4L2 header is updated.
-// https://patchwork.linuxtv.org/project/linux-media/patch/20210810220552.298140-2-daniel.almeida@collabora.com/
+// This has not been accepted upstream.
 #ifndef V4L2_PIX_FMT_AV1
 #define V4L2_PIX_FMT_AV1 v4l2_fourcc('A', 'V', '0', '1') /* AV1 */
 #endif
+// This has been upstreamed and backported for ChromeOS, but has not been
+// picked up by the Chromium sysroots.
 #ifndef V4L2_PIX_FMT_AV1_FRAME
 #define V4L2_PIX_FMT_AV1_FRAME v4l2_fourcc('A', 'V', '1', 'F')
-#endif
-
-// TODO(b/278157861): Remove this once ChromeOS V4L2 header is updated
-// Add it directly instead of including hevc-ctrls-upstream.h
-#ifndef V4L2_PIX_FMT_HEVC_SLICE
-#define V4L2_PIX_FMT_HEVC_SLICE \
-  v4l2_fourcc('S', '2', '6', '5') /* HEVC parsed slices */
 #endif
 
 #define MAKE_V4L2_CODEC_PAIR(codec, suffix) \
   std::make_pair(codec##_##suffix, codec)
 
 namespace media {
-
-// Numerical value of ioctl() OK return value;
-constexpr int kIoctlOk = 0;
 
 void RecordMediaIoctlUMA(MediaIoctlRequests function) {
   base::UmaHistogramEnumeration("Media.V4l2VideoDecoder.MediaIoctlError",
@@ -168,7 +159,8 @@ VideoCodecProfile V4L2ProfileToVideoCodecProfile(uint32_t v4l2_codec,
         case V4L2_MPEG_VIDEO_VP9_PROFILE_0:
           return VP9PROFILE_PROFILE0;
         case V4L2_MPEG_VIDEO_VP9_PROFILE_2:
-          return VP9PROFILE_PROFILE2;
+          // TODO(b/250698011): Support Profile 2 when launched
+          return VIDEO_CODEC_PROFILE_UNKNOWN;
       }
       break;
 #if BUILDFLAG(ENABLE_HEVC_PARSER_AND_HW_DECODER)

@@ -101,8 +101,7 @@ import java.util.concurrent.CountDownLatch;
 // clang-format off
 @CommandLineFlags.
     Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE, "force-fieldtrials=Study/Group"})
-@EnableFeatures({ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID,
-    ChromeFeatureList.START_SURFACE_ANDROID, ChromeFeatureList.INSTANT_START,
+@EnableFeatures({ChromeFeatureList.START_SURFACE_ANDROID, ChromeFeatureList.INSTANT_START,
     ChromeFeatureList.EMPTY_STATES})
 @Restriction({Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE,
     UiRestriction.RESTRICTION_TYPE_PHONE})
@@ -157,11 +156,9 @@ public class InstantStartTest {
      */
     @Test
     @SmallTest
-    @EnableFeatures({ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID + "<Study"})
     // clang-format off
     @Restriction({Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE})
-    @CommandLineFlags.Add({ChromeSwitches.DISABLE_NATIVE_INITIALIZATION,
-            "force-fieldtrial-params=Study.Group:thumbnail_aspect_ratio/2.0"})
+    @CommandLineFlags.Add({ChromeSwitches.DISABLE_NATIVE_INITIALIZATION})
     public void fetchThumbnailsPreNativeTest() {
         // clang-format on
         StartSurfaceTestUtils.startMainActivityFromLauncher(mActivityTestRule);
@@ -224,7 +221,6 @@ public class InstantStartTest {
     // clang-format off
     @EnableFeatures({ChromeFeatureList.START_SURFACE_RETURN_TIME + "<Study,",
             ChromeFeatureList.START_SURFACE_ANDROID + "<Study",
-            ChromeFeatureList.TAB_GRID_LAYOUT_ANDROID + "<Study",
             ChromeFeatureList.TAB_GROUPS_ANDROID,
             ChromeFeatureList.TAB_GROUPS_CONTINUATION_ANDROID + "<Study"})
     // TODO(https://crbug.com/1315676): Removes this test once the start surface refactoring is

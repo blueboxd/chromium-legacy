@@ -449,6 +449,19 @@ public class PageInfoViewTest {
     }
 
     /**
+     * Tests PageInfo on a website with cookie controls and permissions with User Bypass enabled.
+     */
+    @Test
+    @MediumTest
+    @Feature({"RenderTest"})
+    @Features.EnableFeatures(PageInfoFeatures.USER_BYPASS_UI_NAME)
+    public void testShowWithPermissionsAndCookieBlockingUserBypass() throws IOException {
+        addSomePermissions(mTestServerRule.getServer().getURL("/"));
+        loadUrlAndOpenPageInfo(mTestServerRule.getServer().getURL(sSimpleHtml));
+        mRenderTestRule.render(getPageInfoView(), "PageInfo_Permissions");
+    }
+
+    /**
      * Tests PageInfo on a website with default setting permissions.
      */
     @Test
@@ -556,7 +569,8 @@ public class PageInfoViewTest {
     @Test
     @MediumTest
     @Feature({"RenderTest"})
-    public void testShowCookiesSubpage() throws IOException {
+    @Features.DisableFeatures(PageInfoFeatures.USER_BYPASS_UI_NAME)
+    public void testShowCookiesSubpageUserBypassOff() throws IOException {
         setThirdPartyCookieBlocking(CookieControlsMode.BLOCK_THIRD_PARTY);
         loadUrlAndOpenPageInfo(mTestServerRule.getServer().getURL(sSimpleHtml));
         onView(withId(R.id.page_info_cookies_row)).perform(click());
@@ -567,7 +581,32 @@ public class PageInfoViewTest {
             assertTrue(UserPrefs.get(Profile.getLastUsedRegularProfile())
                                .getBoolean(IN_CONTEXT_COOKIE_CONTROLS_OPENED));
         });
-        mRenderTestRule.render(getPageInfoView(), "PageInfo_CookiesSubpage");
+        mRenderTestRule.render(getPageInfoView(), "PageInfo_CookiesSubpage_Flag_Off");
+    }
+
+    /**
+     * Tests the cookies page of the PageInfo UI with the Cookie Controls UI enabled.
+     */
+    @Test
+    @MediumTest
+    @Feature({"RenderTest"})
+    @Features.EnableFeatures(PageInfoFeatures.USER_BYPASS_UI_NAME)
+    public void testShowCookiesSubpageUserBypassOn() throws IOException {
+        setThirdPartyCookieBlocking(CookieControlsMode.BLOCK_THIRD_PARTY);
+        loadUrlAndOpenPageInfo(mTestServerRule.getServer().getURL(sSimpleHtml));
+        onView(withId(R.id.page_info_cookies_row)).perform(click());
+        onViewWaiting(allOf(
+                withText(containsString("Cookies and other site data are used")), isDisplayed()));
+        // Verify that the pref was recorded successfully.
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            assertTrue(UserPrefs.get(Profile.getLastUsedRegularProfile())
+                               .getBoolean(IN_CONTEXT_COOKIE_CONTROLS_OPENED));
+        });
+        mRenderTestRule.render(getPageInfoView(), "PageInfo_CookiesSubpage_Toggle_Off");
+        // Check that the cookie toggle is displayed and try clicking it.
+        onViewWaiting(allOf(withText(containsString("Third-party cookies")), isDisplayed()));
+        onView(withText(containsString("Third-party cookies"))).perform(click());
+        mRenderTestRule.render(getPageInfoView(), "PageInfo_CookiesSubpage_Toggle_On");
     }
 
     /**
@@ -641,8 +680,8 @@ public class PageInfoViewTest {
         // Check that cookies usage is displayed.
         onViewWaiting(allOf(withText(containsString("stored data")), isDisplayed()));
         // Check that the cookie toggle is displayed and try clicking it.
-        onViewWaiting(allOf(withText(containsString("Block third-party cookies")), isDisplayed()));
-        onView(withText(containsString("Block third-party cookies"))).perform(click());
+        onViewWaiting(allOf(withText(containsString("Third-party cookies")), isDisplayed()));
+        onView(withText(containsString("Third-party cookies"))).perform(click());
         // Clear cookies in page info.
         onView(withText(containsString("stored data"))).perform(click());
         onViewWaiting(allOf(withText("Delete"), isDisplayed()));

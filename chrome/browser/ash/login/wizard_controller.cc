@@ -28,7 +28,6 @@
 #include "base/json/json_string_value_serializer.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/metrics/histogram_functions.h"
 #include "base/no_destructor.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/single_thread_task_runner.h"
@@ -94,6 +93,7 @@
 #include "chrome/browser/ash/login/screens/network_screen.h"
 #include "chrome/browser/ash/login/screens/offline_login_screen.h"
 #include "chrome/browser/ash/login/screens/packaged_license_screen.h"
+#include "chrome/browser/ash/login/screens/password_selection_screen.h"
 #include "chrome/browser/ash/login/screens/pin_setup_screen.h"
 #include "chrome/browser/ash/login/screens/quick_start_screen.h"
 #include "chrome/browser/ash/login/screens/recommend_apps_screen.h"
@@ -180,6 +180,7 @@
 #include "chrome/browser/ui/webui/ash/login/os_trial_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/packaged_license_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/parental_handoff_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/password_selection_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/pin_setup_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/quick_start_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/recommend_apps_screen_handler.h"
@@ -215,12 +216,9 @@
 #include "chromeos/ash/components/timezone/timezone_request.h"
 #include "chromeos/ash/services/cros_healthd/private/cpp/dlc_utils.h"
 #include "chromeos/ash/services/rollback_network_config/public/mojom/rollback_network_config.mojom.h"
-#include "components/metrics/structured/neutrino_logging.h"
-#include "components/metrics/structured/neutrino_logging_util.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/session_manager/core/session_manager.h"
-#include "components/startup_metric_utils/browser/startup_metric_utils.h"
 #include "components/user_manager/known_user.h"
 #include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_names.h"
@@ -263,6 +261,7 @@ const StaticOobeScreenId kResumableOobeScreens[] = {
     AutoEnrollmentCheckScreenView::kScreenId,
     UserCreationView::kScreenId,
     AddChildScreenView::kScreenId,
+    ConsumerUpdateScreenView::kScreenId,
 };
 
 const StaticOobeScreenId kResumablePostLoginScreens[] = {
@@ -312,85 +311,6 @@ bool ShouldHideStatusArea(OobeScreenId screen_id) {
     }
   }
   return false;
-}
-
-struct Entry {
-  StaticOobeScreenId screen;
-  const char* uma_name;
-};
-
-// Some screens had multiple different names in the past (they have since been
-// unified). We need to always use the same name for UMA stats, though.
-constexpr const Entry kLegacyUmaOobeScreenNames[] = {
-    {EnrollmentScreenView::kScreenId, "enroll"},
-    {WelcomeView::kScreenId, "network"},
-    {TermsOfServiceScreenView::kScreenId, "tos"}};
-
-std::string GetLegacyUmaOobeScreenName(const OobeScreenId& screen_id) {
-  // Make sure to use initial UMA name if the name has changed.
-  std::string uma_name = screen_id.name;
-  for (const auto& entry : kLegacyUmaOobeScreenNames) {
-    if (entry.screen.AsId() == screen_id) {
-      uma_name = entry.uma_name;
-      break;
-    }
-  }
-  uma_name[0] = std::toupper(uma_name[0]);
-  return uma_name;
-}
-
-void RecordUMAHistogramForOOBEStepShownStatus(
-    OobeScreenId screen,
-    WizardController::ScreenShownStatus status) {
-  // Legacy histogram, requires old screen names.
-  std::string screen_name = GetLegacyUmaOobeScreenName(screen);
-  std::string histogram_name = "OOBE.StepShownStatus." + screen_name;
-  base::UmaHistogramEnumeration(histogram_name, status);
-}
-
-void RecordUMAHistogramForOOBEStepCompletionTime(OobeScreenId screen,
-                                                 const std::string& exit_reason,
-                                                 base::TimeDelta step_time) {
-  // Legacy histogram, requires old screen names.
-  std::string uma_name = GetLegacyUmaOobeScreenName(screen);
-  std::string histogram_name = "OOBE.StepCompletionTime." + uma_name;
-
-  base::UmaHistogramMediumTimes(histogram_name, step_time);
-
-  // Use for this histogram real screen names.
-  std::string screen_name = screen.name;
-  screen_name[0] = std::toupper(screen_name[0]);
-  std::string histogram_name_with_reason =
-      "OOBE.StepCompletionTimeByExitReason." + screen_name + "." + exit_reason;
-  base::UmaHistogramCustomTimes(histogram_name_with_reason, step_time,
-                                base::Milliseconds(10), base::Minutes(10), 100);
-}
-
-void RecordUMAHistogramForOOBECompletion(
-    WizardController::CompletedOobeFlowType flow_type) {
-  base::TimeTicks startup_time =
-      startup_metric_utils::GetCommon().MainEntryPointTicks();
-  if (startup_time.is_null()) {
-    return;
-  }
-  base::TimeDelta delta = base::TimeTicks::Now() - startup_time;
-
-  std::string type_string;
-  switch (flow_type) {
-    case WizardController::CompletedOobeFlowType::kAutoEnrollment:
-      type_string = "AutoEnrollment";
-      break;
-    case WizardController::CompletedOobeFlowType::kDemo:
-      type_string = "Demo";
-      break;
-    case WizardController::CompletedOobeFlowType::kRegular:
-      type_string = "Regular";
-      break;
-  }
-
-  std::string histogram_name = "OOBE.BootToOOBECompleted." + type_string;
-  base::UmaHistogramCustomTimes(histogram_name, delta, base::Milliseconds(10),
-                                base::Minutes(10), 100);
 }
 
 LoginDisplayHost* GetLoginDisplayHost() {
@@ -516,6 +436,15 @@ void WizardController::Init(OobeScreenId first_screen) {
       GetLocalState()->AddPrefInitObserver(
           base::BindOnce(&WizardController::OnLocalStateInitialized,
                          weak_factory_.GetWeakPtr()));
+    }
+  }
+
+  if (!oobe_complete) {
+    bool updated =
+        GetLocalState()->GetBoolean(prefs::kOobeConsumerUpdateCompleted) ||
+        GetLocalState()->GetBoolean(prefs::kOobeCriticalUpdateCompleted);
+    if (!updated) {
+      oobe_metrics_helper_.RecordChromeVersion();
     }
   }
 
@@ -957,6 +886,13 @@ WizardController::CreateScreens() {
                             weak_factory_.GetWeakPtr())));
   }
 
+  if (features::IsPasswordSelectionEnabledInOobe()) {
+    append(std::make_unique<PasswordSelectionScreen>(
+        oobe_ui->GetView<PasswordSelectionScreenHandler>()->AsWeakPtr(),
+        base::BindRepeating(&WizardController::OnPasswordSelectionScreenExit,
+                            weak_factory_.GetWeakPtr())));
+  }
+
   return result;
 }
 
@@ -1053,8 +989,13 @@ void WizardController::ShowConsumerUpdateScreen() {
   SetCurrentScreen(GetScreen(ConsumerUpdateScreenView::kScreenId));
 }
 
+void WizardController::ShowPasswordSelectionScreen() {
+  SetCurrentScreen(GetScreen(PasswordSelectionScreenView::kScreenId));
+}
+
 void WizardController::ShowEnrollmentScreen() {
   // Update the enrollment configuration and start the screen.
+  oobe_metrics_helper_.OnEnrollmentScreenShown();
   prescribed_enrollment_config_ =
       policy::EnrollmentConfig::GetPrescribedEnrollmentConfig();
   StartEnrollmentScreen(false);
@@ -1269,16 +1210,34 @@ void WizardController::OnUserCreationScreenExit(
   OnScreenExit(UserCreationView::kScreenId,
                UserCreationScreen::GetResultString(result));
   switch (result) {
+    case UserCreationScreen::Result::SIGNIN_SCHOOL:
     case UserCreationScreen::Result::SIGNIN_TRIAGE:
-      AdvanceToSigninScreen();
+      GetLocalState()->SetBoolean(prefs::kOobeIsConsumerSegment, true);
+      StartupUtils::SaveScreenAfterConsumerUpdate(GaiaView::kScreenId.name);
+      ShowConsumerUpdateScreen();
       break;
     case UserCreationScreen::Result::SIGNIN:
-    case UserCreationScreen::Result::SKIPPED:
-      if (features::IsOobeGaiaInfoScreenEnabled()) {
-        ShowGaiaInfoScreen();
+      if (features::IsOobeSoftwareUpdateEnabled()) {
+        if (features::IsOobeGaiaInfoScreenEnabled()) {
+          GetLocalState()->SetBoolean(prefs::kOobeIsConsumerSegment, true);
+          StartupUtils::SaveScreenAfterConsumerUpdate(
+              GaiaInfoScreenView::kScreenId.name);
+          ShowConsumerUpdateScreen();
+        } else {
+          GetLocalState()->SetBoolean(prefs::kOobeIsConsumerSegment, true);
+          StartupUtils::SaveScreenAfterConsumerUpdate(GaiaView::kScreenId.name);
+          ShowConsumerUpdateScreen();
+        }
       } else {
-        AdvanceToSigninScreen();
+        if (features::IsOobeGaiaInfoScreenEnabled()) {
+          ShowGaiaInfoScreen();
+        } else {
+          AdvanceToSigninScreen();
+        }
       }
+      break;
+    case UserCreationScreen::Result::SKIPPED:
+      AdvanceToSigninScreen();
       break;
     case UserCreationScreen::Result::CONTINUE_QUICK_START_FLOW:
       CHECK(wizard_context_->quick_start_enabled &&
@@ -1288,9 +1247,16 @@ void WizardController::OnUserCreationScreenExit(
       AdvanceToScreen(QuickStartView::kScreenId);
       break;
     case UserCreationScreen::Result::ADD_CHILD:
-      ShowAddChildScreen();
+      if (features::IsOobeSoftwareUpdateEnabled()) {
+        StartupUtils::SaveScreenAfterConsumerUpdate(
+            AddChildScreenView::kScreenId.name);
+        ShowConsumerUpdateScreen();
+      } else {
+        ShowAddChildScreen();
+      }
       break;
-    case UserCreationScreen::Result::ENTERPRISE_ENROLL:
+    case UserCreationScreen::Result::ENTERPRISE_ENROLL_TRIAGE:
+    case UserCreationScreen::Result::ENTERPRISE_ENROLL_SHORTCUT:
       ShowEnrollmentScreenIfEligible();
       break;
     case UserCreationScreen::Result::KIOSK_ENTERPRISE_ENROLL:
@@ -1308,8 +1274,41 @@ void WizardController::OnConsumerUpdateScreenExit(
     ConsumerUpdateScreen::Result result) {
   OnScreenExit(ConsumerUpdateScreenView::kScreenId,
                ConsumerUpdateScreen::GetResultString(result));
-  // ToDo(b/278855932) Implement the consumerUpdateScreenExit
-  NOTIMPLEMENTED();
+
+  if (result == ConsumerUpdateScreen::Result::BACK) {
+    AdvanceToScreen(UserCreationView::kScreenId);
+    return;
+  }
+
+  const std::string screen_name =
+      GetLocalState()->GetString(prefs::kOobeScreenAfterConsumerUpdate);
+  if (screen_name == GaiaView::kScreenId.name) {
+    AdvanceToSigninScreen();
+  } else {
+    AdvanceToScreen(PrefToScreenId(screen_name));
+  }
+}
+
+void WizardController::OnPasswordSelectionScreenExit(
+    PasswordSelectionScreen::Result result) {
+  OnScreenExit(PasswordSelectionScreenView::kScreenId,
+               PasswordSelectionScreen::GetResultString(result));
+  switch (result) {
+    case PasswordSelectionScreen::Result::NOT_APPLICABLE:
+      ShowAuthenticationSetupScreen();
+      return;
+    case PasswordSelectionScreen::Result::BACK: {
+      const bool did_go_back = MaybeSetToPreviousScreen();
+      DCHECK(did_go_back);
+      return;
+    }
+    case PasswordSelectionScreen::Result::LOCAL_PASSWORD:
+      // TODO(b/293295420): Go to the new local password screen.
+      return;
+    case PasswordSelectionScreen::Result::GAIA_PASSWORD:
+      AdvanceToSigninScreen();
+      return;
+  }
 }
 
 void WizardController::OnGaiaScreenExit(GaiaScreen::Result result) {
@@ -1750,8 +1749,7 @@ void WizardController::OnScreenExit(OobeScreenId screen,
   }
   DCHECK(current_screen_->screen_id() == screen);
 
-  RecordUMAHistogramForOOBEStepCompletionTime(
-      screen, exit_reason, base::TimeTicks::Now() - screen_show_times_[screen]);
+  oobe_metrics_helper_.OnScreenExited(screen, exit_reason);
 }
 
 void WizardController::AdvanceToSigninScreen() {
@@ -1944,9 +1942,10 @@ void WizardController::OnEnrollmentScreenExit(EnrollmentScreen::Result result) {
       // The following `PerformOOBECompletedAction()` call will occur in both
       // manual and auto enrollment. However, in the manual enrollment case,
       // `PerformOOBECompletedAction()` method would be already called before
-      // with `CompletedOobeFlowType::kRegular` argument. OOBECompletedActions
-      // are only performed in the first call.
-      PerformOOBECompletedActions(CompletedOobeFlowType::kAutoEnrollment);
+      // with `CompletedPreLoginOobeFlowType::kRegular` argument.
+      // OOBECompletedActions are only performed in the first call.
+      PerformOOBECompletedActions(
+          OobeMetricsHelper::CompletedPreLoginOobeFlowType::kAutoEnrollment);
       DCHECK(!prescribed_enrollment_config_.is_forced());
       ShowLoginScreen();
       break;
@@ -1970,9 +1969,10 @@ void WizardController::OnEnrollmentDone() {
   // The following `PerformOOBECompletedAction()` call will occur in both
   // manual and auto enrollment. However, in the manual enrollment case,
   // `PerformOOBECompletedAction()` method would be already called before
-  // with `CompletedOobeFlowType::kRegular` argument. OOBECompletedActions
-  // are only performed in the first call.
-  PerformOOBECompletedActions(CompletedOobeFlowType::kAutoEnrollment);
+  // with `CompletedPreLoginOobeFlowType::kRegular` argument.
+  // OOBECompletedActions are only performed in the first call.
+  PerformOOBECompletedActions(
+      OobeMetricsHelper::CompletedPreLoginOobeFlowType::kAutoEnrollment);
 
   // Restart to make the login page pick up the policy changes resulting from
   // enrollment recovery.  (Not pretty, but this codepath is rarely exercised.)
@@ -2070,7 +2070,8 @@ void WizardController::OnDemoSetupScreenExit(DemoSetupScreen::Result result) {
 
   switch (result) {
     case DemoSetupScreen::Result::COMPLETED:
-      PerformOOBECompletedActions(CompletedOobeFlowType::kDemo);
+      PerformOOBECompletedActions(
+          OobeMetricsHelper::CompletedPreLoginOobeFlowType::kDemo);
       SwitchWebUItoMojo();
       break;
     case DemoSetupScreen::Result::CANCELED:
@@ -2330,7 +2331,8 @@ void WizardController::OnDeviceDisabledChecked(bool device_disabled) {
             << prescribed_enrollment_config_.should_enroll();
     StartEnrollmentScreen(wizard_context_->enrollment_triggered_early);
   } else {
-    PerformOOBECompletedActions(CompletedOobeFlowType::kRegular);
+    PerformOOBECompletedActions(
+        OobeMetricsHelper::CompletedPreLoginOobeFlowType::kRegular);
     ShowPackagedLicenseScreen();
   }
 }
@@ -2396,13 +2398,10 @@ void WizardController::PerformPostNetworkScreenActions() {
   DelayNetworkCall(ServicesCustomizationDocument::GetInstance()
                        ->EnsureCustomizationAppliedClosure());
   GetAutoEnrollmentController()->Start();
-
-  // Triggers DLC installation here to ensure network availability
-  cros_healthd::internal::TriggerDlcInstall();
 }
 
 void WizardController::PerformOOBECompletedActions(
-    CompletedOobeFlowType flow_type) {
+    OobeMetricsHelper::CompletedPreLoginOobeFlowType flow_type) {
   // Avoid marking OOBE as completed multiple times if going from login screen
   // to enrollment screen (and back).
   if (oobe_marked_completed_) {
@@ -2410,7 +2409,10 @@ void WizardController::PerformOOBECompletedActions(
   }
 
   StartupUtils::MarkOobeCompleted();
-  RecordUMAHistogramForOOBECompletion(flow_type);
+  oobe_metrics_helper_.OnPreLoginOobeCompleted(flow_type);
+
+  // Triggers DLC installation once OOBE is complete.
+  cros_healthd::internal::TriggerDlcInstall();
 }
 
 void WizardController::SetCurrentScreen(BaseScreen* new_current) {
@@ -2428,8 +2430,9 @@ void WizardController::SetCurrentScreen(BaseScreen* new_current) {
       }
     }
 
-    RecordUMAHistogramForOOBEStepShownStatus(new_current->screen_id(),
-                                             ScreenShownStatus::kSkipped);
+    oobe_metrics_helper_.OnScreenShownStatusDetermined(
+        new_current->screen_id(),
+        OobeMetricsHelper::ScreenShownStatus::kSkipped);
     return;
   }
 
@@ -2455,9 +2458,6 @@ void WizardController::SetCurrentScreen(BaseScreen* new_current) {
     return;
   }
 
-  // Record show time for UMA.
-  screen_show_times_[new_current->screen_id()] = base::TimeTicks::Now();
-
   // First remember how far have we reached so that we can resume if needed.
   if (!demo_setup_controller_) {
     if (!wizard_context_->is_add_person_flow &&
@@ -2478,8 +2478,9 @@ void WizardController::SetCurrentScreen(BaseScreen* new_current) {
   }
 
   UpdateStatusAreaVisibilityForScreen(current_screen_->screen_id());
-  RecordUMAHistogramForOOBEStepShownStatus(current_screen_->screen_id(),
-                                           ScreenShownStatus::kShown);
+  oobe_metrics_helper_.OnScreenShownStatusDetermined(
+      current_screen_->screen_id(),
+      OobeMetricsHelper::ScreenShownStatus::kShown);
   current_screen_->Show(wizard_context_);
   NotifyScreenChanged();
 }
@@ -2654,6 +2655,10 @@ void WizardController::AdvanceToScreen(OobeScreenId screen_id) {
     ShowChoobeScreen();
   } else if (screen_id == AddChildScreenView::kScreenId) {
     ShowAddChildScreen();
+  } else if (screen_id == ConsumerUpdateScreenView::kScreenId) {
+    ShowConsumerUpdateScreen();
+  } else if (screen_id == PasswordSelectionScreenView::kScreenId) {
+    ShowPasswordSelectionScreen();
   } else if (screen_id == TpmErrorView::kScreenId ||
              screen_id == GaiaPasswordChangedView::kScreenId ||
              screen_id == FamilyLinkNoticeView::kScreenId ||
@@ -2957,6 +2962,9 @@ void WizardController::StartEnrollmentScreen(bool force_interactive) {
             ? policy::EnrollmentConfig::MODE_MANUAL
             : policy::EnrollmentConfig::MODE_MANUAL_REENROLLMENT;
   }
+
+  effective_config.enrollment_nudge_email =
+      GetScreen<GaiaScreen>()->EnrollmentNudgeEmail();
 
   EnrollmentScreen* screen = EnrollmentScreen::Get(screen_manager());
   screen->SetEnrollmentConfig(effective_config);

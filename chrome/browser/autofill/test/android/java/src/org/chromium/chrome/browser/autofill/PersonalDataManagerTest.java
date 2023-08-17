@@ -30,10 +30,13 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.HistogramWatcher;
 import org.chromium.chrome.browser.autofill.PersonalDataManager.CreditCard;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.test.ChromeBrowserTestRule;
 import org.chromium.chrome.test.util.browser.Features;
+import org.chromium.components.autofill.AutofillProfile;
+import org.chromium.components.autofill.VerificationStatus;
 import org.chromium.components.image_fetcher.test.TestImageFetcher;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.url.GURL;
@@ -900,8 +903,8 @@ public class PersonalDataManagerTest {
             throws TimeoutException {
         Context context = ContextUtils.getApplicationContext();
 
-        AutofillUiUtils.CardIconSpecs cardIconSpecs = AutofillUiUtils.CardIconSpecs.create(
-                ContextUtils.getApplicationContext(), AutofillUiUtils.CardIconSize.LARGE);
+        AutofillUiUtils.CardIconSpecs cardIconSpecs =
+                AutofillUiUtils.CardIconSpecs.create(context, AutofillUiUtils.CardIconSize.LARGE);
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             // The first call to get the custom icon only fetches and caches the icon. It returns
@@ -968,6 +971,47 @@ public class PersonalDataManagerTest {
             assertEquals(null,
                     AutofillUiUtils.getCardIcon(ContextUtils.getApplicationContext(), new GURL(""),
                             0, AutofillUiUtils.CardIconSize.LARGE, true));
+        });
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Autofill"})
+    public void
+    testGetCustomImageForAutofillSuggestionIfAvailable_recordImageFetchingResult_success()
+            throws TimeoutException {
+        GURL cardArtUrl = new GURL("http://google.com/test.png");
+        AutofillUiUtils.CardIconSpecs cardIconSpecs = AutofillUiUtils.CardIconSpecs.create(
+                ContextUtils.getApplicationContext(), AutofillUiUtils.CardIconSize.LARGE);
+
+        HistogramWatcher expectedHistogram =
+                HistogramWatcher.newSingleRecordWatcher("Autofill.ImageFetcher.Result", true);
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            PersonalDataManager.getInstance().getCustomImageForAutofillSuggestionIfAvailable(
+                    cardArtUrl, cardIconSpecs);
+            expectedHistogram.assertExpected();
+        });
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Autofill"})
+    public void
+    testGetCustomImageForAutofillSuggestionIfAvailable_recordImageFetchingResult_failure()
+            throws TimeoutException {
+        GURL cardArtUrl = new GURL("http://google.com/test.png");
+        AutofillUiUtils.CardIconSpecs cardIconSpecs = AutofillUiUtils.CardIconSpecs.create(
+                ContextUtils.getApplicationContext(), AutofillUiUtils.CardIconSize.LARGE);
+
+        HistogramWatcher expectedHistogram =
+                HistogramWatcher.newSingleRecordWatcher("Autofill.ImageFetcher.Result", false);
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            PersonalDataManager.getInstance().setImageFetcherForTesting(new TestImageFetcher(null));
+            PersonalDataManager.getInstance().getCustomImageForAutofillSuggestionIfAvailable(
+                    cardArtUrl, cardIconSpecs);
+            expectedHistogram.assertExpected();
         });
     }
 }

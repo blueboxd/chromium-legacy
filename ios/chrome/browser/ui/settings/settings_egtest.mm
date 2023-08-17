@@ -14,6 +14,7 @@
 #import "components/strings/grit/components_strings.h"
 #import "components/sync/base/features.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
+#import "ios/chrome/browser/signin/test_constants.h"
 #import "ios/chrome/browser/ui/authentication/signin/signin_constants.h"
 #import "ios/chrome/browser/ui/authentication/signin_matchers.h"
 #import "ios/chrome/browser/ui/settings/settings_app_interface.h"
@@ -29,10 +30,6 @@
 #import "net/test/embedded_test_server/embedded_test_server.h"
 #import "ui/base/l10n/l10n_util.h"
 #import "url/gurl.h"
-
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
 
 using chrome_test_util::ButtonWithAccessibilityLabelId;
 using chrome_test_util::ClearBrowsingDataButton;
@@ -400,9 +397,8 @@ id<GREYMatcher> ClearBrowsingDataCell() {
                   @"Settings should not register key commands when presented.");
 
   // Cancel the sign-in operation.
-  [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(
-                                   kWebSigninSkipButtonAccessibilityIdentifier)]
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          kFakeAuthCancelButtonIdentifier)]
       performAction:grey_tap()];
 
   // Wait for UI to finish closing the Sign-in screen.

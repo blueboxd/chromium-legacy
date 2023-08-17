@@ -42,16 +42,14 @@ class AccountSelectionViewAndroid : public AccountSelectionView {
       const base::android::JavaParamRef<jobject>& idp_config_url,
       const base::android::JavaParamRef<jobjectArray>& account_string_fields,
       const base::android::JavaParamRef<jobject>& account_picture_url,
-      const base::android::JavaParamRef<jobjectArray>& account_hints,
       bool is_sign_in);
   void OnDismiss(JNIEnv* env, jint dismiss_reason);
   void OnSignInToIdp(JNIEnv* env);
 
  private:
   // Returns either true if the java counterpart of this bridge is initialized
-  // successfully or false if the creation failed. This method will recreate the
-  // java object whenever Show() is called.
-  bool RecreateJavaObject();
+  // successfully or false if the creation failed.
+  bool MaybeCreateJavaObject();
 
   base::android::ScopedJavaGlobalRef<jobject> java_object_internal_;
 };

@@ -46,6 +46,7 @@ include_rules = [
   "+components/account_manager_core",
   "+components/app_restore",
   "+components/assist_ranker",
+  "+components/autofill/android",
   "+components/autofill/content/browser",
   "+components/autofill/content/common",
   "+components/autofill/core/browser",
@@ -335,6 +336,7 @@ include_rules = [
   "+components/subresource_filter/core/mojom",
   "+components/supervised_user/core/browser",
   "+components/supervised_user/core/common",
+  "+components/supervised_user/test_support",
   "+components/sync",
   "+components/sync_bookmarks",
   "+components/sync_device_info",
@@ -589,6 +591,7 @@ specific_include_rules = {
   "about_flags\.cc" : [
     "+mojo/core/embedder/features.h",
     "+pdf/pdf_features.h",
+    "+sandbox/policy/features.h",
   ],
   "dbus_memory_pressure_evaluator_linux(_unittest)?\.(cc|h)" : [
     "+dbus",

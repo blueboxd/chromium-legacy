@@ -64,7 +64,6 @@
 #include "components/autofill/core/browser/payments/payments_service_url.h"
 #include "components/autofill/core/browser/payments/payments_util.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
-#include "components/autofill/core/browser/sync_utils.h"
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
@@ -133,7 +132,7 @@
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS)
-#include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
+#include "ash/webui/settings/public/constants/routes.mojom.h"
 #endif
 
 #if BUILDFLAG(IS_LINUX) && !BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -240,7 +239,7 @@ void AddCommonStrings(content::WebUIDataSource* html_source, Profile* profile) {
       "isGuest",
 #if BUILDFLAG(IS_CHROMEOS_ASH)
       user_manager::UserManager::Get()->IsLoggedInAsGuest() ||
-          user_manager::UserManager::Get()->IsLoggedInAsPublicAccount());
+          user_manager::UserManager::Get()->IsLoggedInAsManagedGuestSession());
 #elif BUILDFLAG(IS_CHROMEOS_LACROS)
       chromeos::BrowserParamsProxy::Get()->SessionType() ==
               crosapi::mojom::SessionType::kPublicSession ||
@@ -313,6 +312,7 @@ void AddAboutStrings(content::WebUIDataSource* html_source, Profile* profile) {
     {"aboutProductLogoAlt", IDS_SHORT_PRODUCT_LOGO_ALT_TEXT},
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
     {"aboutReportAnIssue", IDS_SETTINGS_ABOUT_PAGE_REPORT_AN_ISSUE},
+    {"aboutPrivacyPolicy", IDS_SETTINGS_ABOUT_PAGE_PRIVACY_POLICY},
 #endif
     {"aboutRelaunch", IDS_SETTINGS_ABOUT_PAGE_RELAUNCH},
     {"aboutUpgradeCheckStarted", IDS_SETTINGS_ABOUT_UPGRADE_CHECK_STARTED},
@@ -391,6 +391,10 @@ void AddAppearanceStrings(content::WebUIDataSource* html_source,
     {"homeButtonDisabled", IDS_SETTINGS_HOME_BUTTON_DISABLED},
     {"themes", IDS_SETTINGS_THEMES},
     {"chromeColors", IDS_SETTINGS_CHROME_COLORS},
+    {"colorSchemeMode", IDS_SETTINGS_COLOR_SCHEME_MODE},
+    {"lightMode", IDS_NTP_CUSTOMIZE_CHROME_COLOR_SCHEME_MODE_LIGHT_LABEL},
+    {"darkMode", IDS_NTP_CUSTOMIZE_CHROME_COLOR_SCHEME_MODE_DARK_LABEL},
+    {"systemMode", IDS_NTP_CUSTOMIZE_CHROME_COLOR_SCHEME_MODE_SYSTEM_LABEL},
     {"showHomeButton", IDS_SETTINGS_SHOW_HOME_BUTTON},
     {"showBookmarksBar", IDS_SETTINGS_SHOW_BOOKMARKS_BAR},
     {"showHoverCardImages", IDS_SETTINGS_SHOW_HOVER_CARD_IMAGES},
@@ -888,11 +892,7 @@ void AddOnStartupStrings(content::WebUIDataSource* html_source) {
 bool IsFidoAuthenticationAvailable(autofill::PersonalDataManager* personal_data,
                                    content::WebContents* web_contents) {
   // Don't show toggle switch if user is unable to downstream cards.
-  if (personal_data->GetSyncSigninState() !=
-          autofill::AutofillSyncSigninState::
-              kSignedInAndWalletSyncTransportEnabled &&
-      personal_data->GetSyncSigninState() !=
-          autofill::AutofillSyncSigninState::kSignedInAndSyncFeatureEnabled) {
+  if (!personal_data->IsPaymentsDownloadActive()) {
     return false;
   }
 
@@ -924,6 +924,11 @@ bool CheckDeviceAuthAvailability(content::WebContents* web_contents) {
   }
 
   return autofill::IsDeviceAuthAvailable(client->GetDeviceAuthenticator());
+}
+
+bool CheckCvcStorageAvailability() {
+  return base::FeatureList::IsEnabled(
+      autofill::features::kAutofillEnableCvcStorageAndFilling);
 }
 
 void AddAutofillStrings(content::WebUIDataSource* html_source,
@@ -992,10 +997,20 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
     {"enableCreditCardFIDOAuthLabel", IDS_ENABLE_CREDIT_CARD_FIDO_AUTH_LABEL},
     {"enableCreditCardFIDOAuthSublabel",
      IDS_ENABLE_CREDIT_CARD_FIDO_AUTH_SUBLABEL},
+    {"enableCvcStorageLabel",
+     IDS_AUTOFILL_SETTINGS_PAGE_ENABLE_CVC_STORAGE_LABEL},
+    {"enableCvcStorageSublabel",
+     IDS_AUTOFILL_SETTINGS_PAGE_ENABLE_CVC_STORAGE_SUBLABEL},
+    {"enableCvcStorageDeleteDataSublabel",
+     IDS_AUTOFILL_SETTINGS_PAGE_ENABLE_CVC_STORAGE_WITH_DELETE_LINK_SUBLABEL},
     {"enableMandatoryAuthToggleLabel",
      IDS_AUTOFILL_SETTINGS_PAGE_ENABLE_PAYMENT_METHOD_MANDATORY_REAUTH_LABEL},
     {"enableMandatoryAuthToggleSublabel",
      IDS_AUTOFILL_SETTINGS_PAGE_ENABLE_PAYMENT_METHOD_MANDATORY_REAUTH_SUBLABEL},
+    {"bulkRemoveCvcConfirmationTitle",
+     IDS_AUTOFILL_SETTINGS_PAGE_BULK_REMOVE_CVC_TITLE},
+    {"bulkRemoveCvcConfirmationDescription",
+     IDS_AUTOFILL_SETTINGS_PAGE_BULK_REMOVE_CVC_DESCRIPTION},
     {"addresses", IDS_AUTOFILL_ADDRESSES},
     {"addressesTableAriaLabel", IDS_AUTOFILL_ADDRESSES_TABLE_ARIA_LABEL},
     {"addressesTitle", IDS_AUTOFILL_ADDRESSES_SETTINGS_TITLE},
@@ -1364,8 +1379,9 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
 
   bool is_guest_mode = false;
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  is_guest_mode = user_manager::UserManager::Get()->IsLoggedInAsGuest() ||
-                  user_manager::UserManager::Get()->IsLoggedInAsPublicAccount();
+  is_guest_mode =
+      user_manager::UserManager::Get()->IsLoggedInAsGuest() ||
+      user_manager::UserManager::Get()->IsLoggedInAsManagedGuestSession();
 #else   // !BUILDFLAG(IS_CHROMEOS_ASH)
   is_guest_mode = profile->IsOffTheRecord();
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
@@ -1386,6 +1402,13 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
 
   html_source->AddBoolean("deviceAuthAvailable",
                           CheckDeviceAuthAvailability(web_contents));
+
+  html_source->AddBoolean("cvcStorageAvailable", CheckCvcStorageAvailability());
+
+  html_source->AddBoolean(
+      "autofillEnablePaymentsMandatoryReauth",
+      base::FeatureList::IsEnabled(
+          autofill::features::kAutofillEnablePaymentsMandatoryReauth));
 
   html_source->AddBoolean(
       "fidoAuthenticationAvailableForAutofill",
@@ -1433,10 +1456,6 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
       "autofillAccountProfileStorage",
       base::FeatureList::IsEnabled(
           autofill::features::kAutofillAccountProfileStorage));
-
-  html_source->AddBoolean(
-      "syncEnableContactInfoDataType",
-      base::FeatureList::IsEnabled(syncer::kSyncEnableContactInfoDataType));
 
   html_source->AddBoolean(
       "syncEnableContactInfoDataTypeInTransportMode",
@@ -1678,8 +1697,14 @@ void AddPeopleStrings(content::WebUIDataSource* html_source, Profile* profile) {
     {"createShortcutSubtitle", IDS_SETTINGS_CREATE_SHORTCUT_SUBTITLE},
 
     // Color picker strings:
+    {"colorsContainerLabel", IDS_NTP_THEMES_CONTAINER_LABEL},
     {"colorPickerLabel", IDS_NTP_CUSTOMIZE_COLOR_PICKER_LABEL},
+    {"defaultColorName", IDS_NTP_CUSTOMIZE_DEFAULT_LABEL},
     {"defaultThemeLabel", IDS_NTP_CUSTOMIZE_DEFAULT_LABEL},
+    {"greyDefaultColorName", IDS_NTP_CUSTOMIZE_GREY_DEFAULT_LABEL},
+    {"mainColorName", IDS_NTP_CUSTOMIZE_MAIN_COLOR_LABEL},
+    {"managedColorsBody", IDS_NTP_THEME_MANAGED_DIALOG_BODY},
+    {"managedColorsTitle", IDS_NTP_THEME_MANAGED_DIALOG_TITLE},
     {"themesContainerLabel", IDS_SETTINGS_PICK_A_THEME_COLOR},
     {"thirdPartyThemeDescription", IDS_NTP_CUSTOMIZE_3PT_THEME_DESC},
     {"uninstallThirdPartyThemeButton", IDS_NTP_CUSTOMIZE_3PT_THEME_UNINSTALL},
@@ -1789,6 +1814,8 @@ void AddPrivacyStrings(content::WebUIDataSource* html_source,
      IDS_SETTINGS_SAFEBROWSING_ENABLE_REPORTING_DESC},
     {"safeBrowsingEnhanced", IDS_SETTINGS_SAFEBROWSING_ENHANCED},
     {"safeBrowsingEnhancedDesc", IDS_SETTINGS_SAFEBROWSING_ENHANCED_DESC},
+    {"safeBrowsingEnhancedDescUpdated",
+     IDS_SETTINGS_SAFEBROWSING_ENHANCED_DESC_UPDATED},
     {"safeBrowsingEnhancedExpandA11yLabel",
      IDS_SETTINGS_SAFEBROWSING_ENHANCED_EXPAND_ACCESSIBILITY_LABEL},
     {"safeBrowsingEnhancedBulOne",
@@ -1801,6 +1828,26 @@ void AddPrivacyStrings(content::WebUIDataSource* html_source,
      IDS_SETTINGS_SAFEBROWSING_ENHANCED_BULLET_FOUR},
     {"safeBrowsingEnhancedBulFive",
      IDS_SETTINGS_SAFEBROWSING_ENHANCED_BULLET_FIVE},
+    {"safeBrowsingEnhancedWhenOnLabel",
+     IDS_SETTINGS_SAFEBROWSING_ENHANCED_WHEN_ON_LABEL},
+    {"safeBrowsingEnhancedWhenOnBulOne",
+     IDS_SETTINGS_SAFEBROWSING_ENHANCED_WHEN_ON_BULLET_ONE},
+    {"safeBrowsingEnhancedWhenOnBulTwo",
+     IDS_SETTINGS_SAFEBROWSING_ENHANCED_WHEN_ON_BULLET_TWO},
+    {"safeBrowsingEnhancedWhenOnBulThree",
+     IDS_SETTINGS_SAFEBROWSING_ENHANCED_WHEN_ON_BULLET_THREE},
+    {"safeBrowsingEnhancedWhenOnBulFour",
+     IDS_SETTINGS_SAFEBROWSING_ENHANCED_WHEN_ON_BULLET_FOUR},
+    {"safeBrowsingEnhancedWhenOnBulFive",
+     IDS_SETTINGS_SAFEBROWSING_ENHANCED_WHEN_ON_BULLET_FIVE},
+    {"safeBrowsingEnhancedThingsToConsiderLabel",
+     IDS_SETTINGS_SAFEBROWSING_ENHANCED_THINGS_TO_CONSIDER_LABEL},
+    {"safeBrowsingEnhancedThingsToConsiderBulOne",
+     IDS_SETTINGS_SAFEBROWSING_ENHANCED_THINGS_TO_CONSIDER_BULLET_ONE},
+    {"safeBrowsingEnhancedThingsToConsiderBulTwo",
+     IDS_SETTINGS_SAFEBROWSING_ENHANCED_THINGS_TO_CONSIDER_BULLET_TWO},
+    {"safeBrowsingEnhancedThingsToConsiderBulThree",
+     IDS_SETTINGS_SAFEBROWSING_ENHANCED_THINGS_TO_CONSIDER_BULLET_THREE},
     {"safeBrowsingStandard", IDS_SETTINGS_SAFEBROWSING_STANDARD},
     {"safeBrowsingStandardDesc", IDS_SETTINGS_SAFEBROWSING_STANDARD_DESC},
     {"safeBrowsingStandardDescUpdated",
@@ -1815,6 +1862,8 @@ void AddPrivacyStrings(content::WebUIDataSource* html_source,
      IDS_SETTINGS_SAFEBROWSING_STANDARD_HELP_IMPROVE},
     {"safeBrowsingNone", IDS_SETTINGS_SAFEBROWSING_NONE},
     {"safeBrowsingNoneDesc", IDS_SETTINGS_SAFEBROWSING_NONE_DESC},
+    {"safeBrowsingNoneDescUpdated",
+     IDS_SETTINGS_SAFEBROWSING_NONE_DESC_UPDATED},
     {"safeBrowsingDisableDialog",
      IDS_SETTINGS_SAFEBROWSING_DISABLE_DIALOG_TITLE},
     {"safeBrowsingDisableDialogDesc",
@@ -1923,6 +1972,9 @@ void AddPrivacyStrings(content::WebUIDataSource* html_source,
   html_source->AddBoolean(
       "driveSuggestNoSetting",
       base::FeatureList::IsEnabled(omnibox::kDocumentProviderNoSetting));
+  html_source->AddBoolean("driveSuggestNoSyncRequirement",
+                          base::FeatureList::IsEnabled(
+                              omnibox::kDocumentProviderNoSyncRequirement));
 
   bool show_secure_dns = IsSecureDnsAvailable();
   bool link_secure_dns = ShouldLinkSecureDnsOsSettings();
@@ -1935,10 +1987,6 @@ void AddPrivacyStrings(content::WebUIDataSource* html_source,
       "chromeOSPrivacyAndSecuritySectionPath",
       chromeos::settings::mojom::kPrivacyAndSecuritySectionPath);
 #endif
-
-  html_source->AddBoolean(
-      "showHttpsOnlyModeSetting",
-      base::FeatureList::IsEnabled(features::kHttpsOnlyMode));
 
 #if BUILDFLAG(CHROME_ROOT_STORE_SUPPORTED)
   html_source->AddBoolean("showChromeRootStoreCertificates",
@@ -2331,6 +2379,8 @@ void AddPrivacyGuideStrings(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_PRIVACY_GUIDE_MSBB_FEATURE_DESCRIPTION1},
       {"privacyGuideMsbbFeatureDescription2",
        IDS_SETTINGS_PRIVACY_GUIDE_MSBB_FEATURE_DESCRIPTION2},
+      {"privacyGuideMsbbFeatureDescription3",
+       IDS_SETTINGS_PRIVACY_GUIDE_MSBB_FEATURE_DESCRIPTION3},
       {"privacyGuideMsbbPrivacyDescription1",
        IDS_SETTINGS_PRIVACY_GUIDE_MSBB_PRIVACY_DESCRIPTION1},
       {"privacyGuideMsbbPrivacyDescription2",
@@ -2379,6 +2429,14 @@ void AddPrivacyGuideStrings(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_PRIVACY_GUIDE_SAFE_BROWSING_CARD_STANDARD_PROTECTION_FEATURE_DESCRIPTION2},
       {"privacyGuideSafeBrowsingCardStandardProtectionPrivacyDescription1",
        IDS_SETTINGS_PRIVACY_GUIDE_SAFE_BROWSING_CARD_STANDARD_PROTECTION_PRIVACY_DESCRIPTION1},
+      {"privacyGuideSearchSuggestionsCardHeader",
+       IDS_SETTINGS_PRIVACY_GUIDE_SEARCH_SUGGESTIONS_CARD_HEADER},
+      {"privacyGuideSearchSuggestionsFeatureDescription1",
+       IDS_SETTINGS_PRIVACY_SEARCH_SUGGESTIONS_FEATURE_DESCRIPTION1},
+      {"privacyGuideSearchSuggestionsPrivacyDescription1",
+       IDS_SETTINGS_PRIVACY_SEARCH_SUGGESTIONS_PRIVACY_DESCRIPTION1},
+      {"privacyGuideSearchSuggestionsPrivacyDescription2",
+       IDS_SETTINGS_PRIVACY_SEARCH_SUGGESTIONS_PRIVACY_DESCRIPTION2},
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);
 }
@@ -2475,6 +2533,26 @@ void AddSafetyCheckStrings(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_SAFETY_CHECK_UNUSED_SITE_PERMISSIONS_SETTING_LABEL},
       {"safetyCheckUnusedSitePermissionsSettingSublabel",
        IDS_SETTINGS_SAFETY_CHECK_UNUSED_SITE_PERMISSIONS_SETTING_SUBLABEL},
+  };
+  html_source->AddLocalizedStrings(kLocalizedStrings);
+}
+
+void AddSafetyHubStrings(content::WebUIDataSource* html_source) {
+  static constexpr webui::LocalizedString kLocalizedStrings[] = {
+      {"safetyHub", IDS_SETTINGS_SAFETY_HUB},
+      {"safetyHubEntryPointNothingToDo",
+       IDS_SETTINGS_SAFETY_HUB_ENTRY_POINT_NOTHING_TO_DO},
+      {"safetyHubEntryPointButton", IDS_SETTINGS_SAFETY_HUB_ENTRY_POINT_BUTTON},
+      {"safetyHubPageCardSectionHeader",
+       IDS_SETTINGS_SAFETY_HUB_PAGE_CARD_SECTION_HEADER},
+      {"safetyHubPageModuleSectionHeader",
+       IDS_SETTINGS_SAFETY_HUB_PAGE_MODULE_SECTION_HEADER},
+      {"safetyHubPageUserEduSectionHeader",
+       IDS_SETTINGS_SAFETY_HUB_PAGE_USER_EDU_SECTION_HEADER},
+      {"safetyHubEmptyStateModuleHeader",
+       IDS_SETTINGS_SAFETY_HUB_EMPTY_STATE_MODULE_HEADER},
+      {"safetyHubEmptyStateModuleSubheader",
+       IDS_SETTINGS_SAFETY_HUB_EMPTY_STATE_MODULE_SUBHEADER},
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);
 }
@@ -2892,10 +2970,10 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
     {"siteSettingsCookieRemoveSite",
      IDS_SETTINGS_SITE_SETTINGS_COOKIE_REMOVE_SITE},
     {"siteSettingsDelete", IDS_SETTINGS_SITE_SETTINGS_DELETE},
-    {"siteSettingsClearAllStorageDialogTitle",
-     IDS_SETTINGS_SITE_SETTINGS_CLEAR_ALL_STORAGE_DIALOG_TITLE},
-    {"siteSettingsClearDisplayedStorageDialogTitle",
-     IDS_SETTINGS_SITE_SETTINGS_CLEAR_DISPLAYED_STORAGE_DIALOG_TITLE},
+    {"siteSettingsDeleteAllStorageDialogTitle",
+     IDS_SETTINGS_SITE_SETTINGS_DELETE_ALL_STORAGE_DIALOG_TITLE},
+    {"siteSettingsDeleteDisplayedStorageDialogTitle",
+     IDS_SETTINGS_SITE_SETTINGS_DELETE_DISPLAYED_STORAGE_DIALOG_TITLE},
     {"siteSettingsFirstPartySetsLearnMore",
      IDS_SETTINGS_SITE_SETTINGS_FIRST_PARTY_SETS_LEARN_MORE},
     {"siteSettingsFirstPartySetsLearnMoreAccessibility",
@@ -2904,18 +2982,18 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
      IDS_SETTINGS_SITE_SETTINGS_CLEAR_ALL_STORAGE_DESCRIPTION},
     {"siteSettingsClearDisplayedStorageDescription",
      IDS_SETTINGS_SITE_SETTINGS_CLEAR_DISPLAYED_STORAGE_DESCRIPTION},
-    {"siteSettingsClearAllStorageLabel",
-     IDS_SETTINGS_SITE_SETTINGS_CLEAR_ALL_STORAGE_LABEL},
-    {"siteSettingsClearDisplayedStorageLabel",
-     IDS_SETTINGS_SITE_SETTINGS_CLEAR_DISPLAYED_STORAGE_LABEL},
-    {"siteSettingsClearAllStorageConfirmation",
-     IDS_SETTINGS_SITE_SETTINGS_CLEAR_ALL_STORAGE_CONFIRMATION},
-    {"siteSettingsClearDisplayedStorageConfirmation",
-     IDS_SETTINGS_SITE_SETTINGS_CLEAR_DISPLAYED_STORAGE_CONFIRMATION},
-    {"siteSettingsClearAllStorageConfirmationInstalled",
-     IDS_SETTINGS_SITE_SETTINGS_CLEAR_ALL_STORAGE_CONFIRMATION_INSTALLED},
-    {"siteSettingsClearDisplayedStorageConfirmationInstalled",
-     IDS_SETTINGS_SITE_SETTINGS_CLEAR_DISPLAYED_STORAGE_CONFIRMATION_INSTALLED},
+    {"siteSettingsDeleteAllStorageLabel",
+     IDS_SETTINGS_SITE_SETTINGS_DELETE_ALL_STORAGE_LABEL},
+    {"siteSettingsDeleteDisplayedStorageLabel",
+     IDS_SETTINGS_SITE_SETTINGS_DELETE_DISPLAYED_STORAGE_LABEL},
+    {"siteSettingsDeleteAllStorageConfirmation",
+     IDS_SETTINGS_SITE_SETTINGS_DELETE_ALL_STORAGE_CONFIRMATION},
+    {"siteSettingsDeleteDisplayedStorageConfirmation",
+     IDS_SETTINGS_SITE_SETTINGS_DELETE_DISPLAYED_STORAGE_CONFIRMATION},
+    {"siteSettingsDeleteAllStorageConfirmationInstalled",
+     IDS_SETTINGS_SITE_SETTINGS_DELETE_ALL_STORAGE_CONFIRMATION_INSTALLED},
+    {"siteSettingsDeleteDisplayedStorageConfirmationInstalled",
+     IDS_SETTINGS_SITE_SETTINGS_DELETE_DISPLAYED_STORAGE_CONFIRMATION_INSTALLED},
     {"siteSettingsClearAllStorageSignOut",
      IDS_SETTINGS_SITE_SETTINGS_CLEAR_ALL_STORAGE_SIGN_OUT},
     {"siteSettingsClearDisplayedStorageSignOut",
@@ -2926,23 +3004,22 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
      IDS_SETTINGS_SITE_SETTINGS_FIRST_PARTY_SETS_MORE_ACTIONS_TITLE},
     {"firstPartySetsShowRelatedSitesButton",
      IDS_SETTINGS_SITE_SETTINGS_FIRST_PARTY_SETS_SHOW_RELATED_SITES_BUTTON},
-    {"firstPartySetsSiteClearStorageButton",
-     IDS_SETTINGS_SITE_SETTINGS_FIRST_PARTY_SETS_SITE_CLEAR_STORAGE_BUTTON},
+    {"firstPartySetsSiteDeleteStorageButton",
+     IDS_SETTINGS_SITE_SETTINGS_FIRST_PARTY_SETS_SITE_DELETE_STORAGE_BUTTON},
     {"siteSettingsSiteClearStorage",
      IDS_SETTINGS_SITE_SETTINGS_SITE_CLEAR_STORAGE},
     {"siteSettingsSiteClearStorageConfirmation",
      IDS_SETTINGS_SITE_SETTINGS_SITE_CLEAR_STORAGE_CONFIRMATION},
     {"siteSettingsSiteClearStorageConfirmationNew",
      IDS_SETTINGS_SITE_SETTINGS_SITE_CLEAR_STORAGE_CONFIRMATION_NEW},
-    {"siteSettingsSiteClearStorageDialogTitle",
-     IDS_SETTINGS_SITE_SETTINGS_SITE_CLEAR_STORAGE_DIALOG_TITLE},
+    {"siteSettingsSiteDeleteStorageDialogTitle",
+     IDS_SETTINGS_SITE_SETTINGS_SITE_DELETE_STORAGE_DIALOG_TITLE},
     {"siteSettingsSiteClearStorageSignOut",
      IDS_SETTINGS_SITE_SETTINGS_SITE_CLEAR_STORAGE_SIGN_OUT},
-    {"siteSettingsSiteClearStorageOfflineData",
-     IDS_SETTINGS_SITE_SETTINGS_SITE_CLEAR_STORAGE_OFFLINE_DATA},
+    {"siteSettingsSiteDeleteStorageOfflineData",
+     IDS_SETTINGS_SITE_SETTINGS_SITE_DELETE_STORAGE_OFFLINE_DATA},
     {"siteSettingsRemoveSiteAdPersonalization",
      IDS_SETTINGS_SITE_SETTINGS_REMOVE_SITE_AD_PERSONALIZATION},
-    {"siteSettingsSiteGroupDelete", IDS_SETTINGS_SITE_SETTINGS_GROUP_DELETE},
     {"siteSettingsSiteGroupDeleteOfflineData",
      IDS_SETTINGS_SITE_SETTINGS_SITE_GROUP_DELETE_OFFLINE_DATA},
     {"siteSettingsSiteResetAll", IDS_SETTINGS_SITE_SETTINGS_SITE_RESET_ALL},
@@ -3294,8 +3371,8 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
      IDS_SETTINGS_SITE_SETTINGS_PAGE_SITE_DATA_ALLOWED_SUB_LABEL},
     {"siteSettingsSiteDataBlockedSubLabel",
      IDS_SETTINGS_SITE_SETTINGS_PAGE_SITE_DATA_BLOCKED_SUB_LABEL},
-    {"siteSettingsSiteDataClearOnExitSubLabel",
-     IDS_SETTINGS_SITE_SETTINGS_PAGE_SITE_DATA_CLEAR_ON_EXIT_SUB_LABEL},
+    {"siteSettingsSiteDataDeleteOnExitSubLabel",
+     IDS_SETTINGS_SITE_SETTINGS_PAGE_SITE_DATA_DELETE_ON_EXIT_SUB_LABEL},
     {"siteSettingsAntiAbuse", IDS_SITE_SETTINGS_TYPE_ANTI_ABUSE},
     {"siteSettingsAntiAbuseDescription", IDS_SETTINGS_ANTI_ABUSE_DESCRIPTION},
     {"siteSettingsAntiAbuseEnabledSubLabel",
@@ -3377,6 +3454,10 @@ void AddStorageAccessStrings(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_STORAGE_ACCESS_ALLOWED_EXCEPTIONS},
       {"storageAccessBlockedExceptions",
        IDS_SETTINGS_STORAGE_ACCESS_BLOCKED_EXCEPTIONS},
+      {"storageAccessResetAll", IDS_SETTINGS_STORAGE_ACCESS_RESET_ALL},
+      {"storageAccessResetSite", IDS_SETTINGS_STORAGE_ACCESS_RESET_SITE},
+      {"storageAccessOpenExpand", IDS_SETTINGS_STORAGE_ACCESS_OPEN_EXPAND},
+      {"storageAccessCloseExpand", IDS_SETTINGS_STORAGE_ACCESS_CLOSE_EXPAND},
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);
 }
@@ -3408,8 +3489,8 @@ void AddSiteDataPageStrings(content::WebUIDataSource* html_source,
        IDS_SETTINGS_SITE_DATA_PAGE_CUSTOMIZED_BEHAVIOR_DESCRIPTION},
       {"siteDataPageAllowExceptionsSubHeading",
        IDS_SETTINGS_SITE_DATA_PAGE_ALLOW_EXCEPTIONS_SUB_HEADING},
-      {"siteDataPageClearOnExitExceptionsSubHeading",
-       IDS_SETTINGS_SITE_DATA_PAGE_CLEAR_ON_EXIT_EXCEPTIONS_SUB_HEADING},
+      {"siteDataPageDeleteOnExitExceptionsSubHeading",
+       IDS_SETTINGS_SITE_DATA_PAGE_DELETE_ON_EXIT_EXCEPTIONS_SUB_HEADING},
       {"siteDataPageBlockExceptionsSubHeading",
        IDS_SETTINGS_SITE_DATA_PAGE_BLOCK_EXCEPTIONS_SUB_HEADING},
       {"siteDataPageBlockConfirmDialogTitle",
@@ -3628,6 +3709,7 @@ void AddLocalizedStrings(content::WebUIDataSource* html_source,
   AddPrivacyGuideStrings(html_source);
   AddPrivacyStrings(html_source, profile);
   AddSafetyCheckStrings(html_source);
+  AddSafetyHubStrings(html_source);
   AddResetStrings(html_source, profile);
   AddSearchEnginesStrings(html_source);
   AddSearchInSettingsStrings(html_source);

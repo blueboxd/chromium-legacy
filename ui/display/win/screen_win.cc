@@ -14,6 +14,7 @@
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/ranges/algorithm.h"
 #include "base/trace_event/trace_event.h"
@@ -335,7 +336,7 @@ Display CreateDisplayFromDisplayInfo(
     display.set_color_depth(Display::kHDR10BitsPerPixel);
     display.set_depth_per_component(Display::kHDR10BitsPerComponent);
   }
-  display.set_color_spaces(color_spaces);
+  display.SetColorSpaces(color_spaces);
   return display;
 }
 
@@ -729,6 +730,13 @@ void ScreenWin::UpdateDisplayInfos() {
     g_instance->UpdateAllDisplaysAndNotify();
 }
 
+// static
+void ScreenWin::UpdateDisplayInfosIfNeeded() {
+  if (g_instance) {
+    g_instance->UpdateAllDisplaysIfPrimaryMonitorChanged();
+  }
+}
+
 HWND ScreenWin::GetHWNDFromNativeWindow(gfx::NativeWindow window) const {
   NOTREACHED();
   return nullptr;
@@ -856,6 +864,7 @@ void ScreenWin::UpdateFromDisplayInfos(
   std::vector<int64_t> internal_display_ids;
   SetInternalDisplayIds(internal_display_ids);
 
+  primary_monitor_ = MonitorFromWindow(nullptr, MONITOR_DEFAULTTOPRIMARY);
   screen_win_displays_ = DisplayInfosToScreenWinDisplays(
       display_infos, color_profile_reader_.get(), dxgi_info_.get());
   std::vector<Display> displays =
@@ -937,14 +946,16 @@ void ScreenWin::OnColorProfilesChanged() {
   // color profile was sRGB was indeed correct. Avoid doing an update in these
   // cases.
   if (base::ranges::any_of(displays_, [this](const auto& display) {
-        return display.color_spaces().GetRasterColorSpace() !=
+        return display.GetColorSpaces().GetRasterColorSpace() !=
                color_profile_reader_->GetDisplayColorSpace(display.id());
-      }))
+      })) {
     UpdateAllDisplaysAndNotify();
+  }
 }
 
 void ScreenWin::UpdateAllDisplaysAndNotify() {
   TRACE_EVENT0("ui", "ScreenWin::UpdateAllDisplaysAndNotify");
+  SCOPED_UMA_HISTOGRAM_TIMER("UI.ScreenWin.UpdateDisplaysTime");
 
   std::vector<Display> old_displays = std::move(displays_);
   UpdateFromDisplayInfos(GetDisplayInfosFromSystem());
@@ -952,6 +963,13 @@ void ScreenWin::UpdateAllDisplaysAndNotify() {
   // `displays_` to ensure there are no problems if reentrancy happens.
   std::vector<Display> displays_copy = displays_;
   change_notifier_.NotifyDisplaysChanged(old_displays, displays_copy);
+}
+
+void ScreenWin::UpdateAllDisplaysIfPrimaryMonitorChanged() {
+  HMONITOR monitor = MonitorFromWindow(nullptr, MONITOR_DEFAULTTOPRIMARY);
+  if (monitor != primary_monitor_) {
+    UpdateAllDisplaysAndNotify();
+  }
 }
 
 ScreenWinDisplay ScreenWin::GetScreenWinDisplayNearestHWND(HWND hwnd) const {

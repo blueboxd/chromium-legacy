@@ -44,6 +44,7 @@
 #include "net/http/http_network_session.h"
 #include "net/http/http_transaction_factory.h"
 #include "net/http/transport_security_state.h"
+#include "net/log/file_net_log_observer.h"
 #include "net/net_buildflags.h"
 #include "net/socket/client_socket_pool_manager.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -56,10 +57,12 @@
 #include "services/network/network_context.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/network_switches.h"
+#include "services/network/public/mojom/host_resolver.mojom.h"
 #include "services/network/public/mojom/net_log.mojom.h"
 #include "services/network/public/mojom/network_change_manager.mojom.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
+#include "services/network/public/mojom/system_dns_resolution.mojom.h"
 #include "services/network/test/fake_test_cert_verifier_params_factory.h"
 #include "services/network/test/test_network_context_client.h"
 #include "services/network/test/test_url_loader_client.h"
@@ -1076,11 +1079,17 @@ class NetworkServiceTestWithService : public testing::Test {
 
   ~NetworkServiceTestWithService() override = default;
 
+  virtual mojom::NetworkServiceParamsPtr GetParams() {
+    return mojom::NetworkServiceParams::New();
+  }
+
   void SetUp() override {
     test_server_.AddDefaultHandlers(base::FilePath(kServicesTestData));
     ASSERT_TRUE(test_server_.Start());
-    service_ = NetworkService::CreateForTesting();
-    service_->Bind(network_service_.BindNewPipeAndPassReceiver());
+    service_ = std::make_unique<NetworkService>(
+        nullptr, network_service_.BindNewPipeAndPassReceiver(),
+        /*delay_initialization_until_set_client=*/true);
+    service_->Initialize(GetParams());
   }
 
   void CreateNetworkContext() {
@@ -1168,7 +1177,8 @@ TEST_F(NetworkServiceTestWithService, StartsNetLog) {
   base::File log_file(log_path,
                       base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
   network_service_->StartNetLog(
-      std::move(log_file), net::NetLogCaptureMode::kDefault, std::move(dict));
+      std::move(log_file), net::FileNetLogObserver::kNoLimit,
+      net::NetLogCaptureMode::kDefault, std::move(dict));
   CreateNetworkContext();
   LoadURL(test_server()->GetURL("/echo"));
   EXPECT_EQ(net::OK, client()->completion_status().error_code);
@@ -1181,6 +1191,60 @@ TEST_F(NetworkServiceTestWithService, StartsNetLog) {
 
   base::Value::Dict log_dict = base::test::ParseJsonDictFromFile(log_path);
   ASSERT_EQ(*log_dict.FindStringByDottedPath("constants.amiatest"), "iamatest");
+}
+
+// Verifies that a passed net log file is successfully opened and sane data
+// written to it up until the max file size.
+TEST_F(NetworkServiceTestWithService, StartsNetLogBounded) {
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  base::FilePath log_dir = temp_dir.GetPath();
+  base::FilePath log_path =
+      log_dir.Append(FILE_PATH_LITERAL("test_log_bounded.json"));
+
+  // For testing, have a max log size of 1 MB. 1024*1024 == 2^20 == left shift
+  // by 20 bits
+  const uint64_t kMaxSizeBytes = 1 << 20;
+
+  base::Value::Dict dict;
+
+  base::File log_file(log_path,
+                      base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
+  network_service_->StartNetLog(std::move(log_file), kMaxSizeBytes,
+                                net::NetLogCaptureMode::kEverything,
+                                std::move(dict));
+  CreateNetworkContext();
+
+  // Through trial and error it was found that this looping navigation results
+  // in a ~2MB unbounded net-log file. Since our bounded net-log is limited to
+  // 1MB this is fine.
+
+  // This string is roughly 8KB;
+  const std::string kManyAs(8192, 'a');
+  for (int i = 0; i < 30; i++) {
+    LoadURL(test_server()->GetURL("/echo?" + kManyAs));
+    EXPECT_EQ(net::OK, client()->completion_status().error_code);
+  }
+
+  // |log_file| is closed on destruction of the NetworkService.
+  Shutdown();
+
+  // |log_file| is closed on another thread, so have to wait for that to happen.
+  task_environment_.RunUntilIdle();
+
+  base::Value::Dict log_dict = base::test::ParseJsonDictFromFile(log_path);
+
+  base::File log_file_read(log_path,
+                           base::File::FLAG_OPEN | base::File::FLAG_READ);
+  base::File::Info file_info;
+  log_file_read.GetInfo(&file_info);
+
+  // The max size is only a rough bound, so let's make sure the final file is
+  // within a reasonable range from our max. Let's say 10%.
+  const int64_t kMaxSizeUpper = kMaxSizeBytes * 1.1;
+  const int64_t kMaxSizeLower = kMaxSizeBytes * 0.9;
+  EXPECT_GT(file_info.size, kMaxSizeLower);
+  EXPECT_LT(file_info.size, kMaxSizeUpper);
 }
 
 // Verifies that raw headers are only reported if requested.
@@ -1653,6 +1717,96 @@ TEST_F(NetworkServiceNetworkDelegateTest, HandleClearSiteDataHeaders) {
     }
     clear_site_observer.ClearOnClearSiteDataCounter();
   }
+}
+
+class NetworkServiceTestWithSystemDnsResolver
+    : public NetworkServiceTestWithService {
+ public:
+  NetworkServiceTestWithSystemDnsResolver() = default;
+  NetworkServiceTestWithSystemDnsResolver(
+      const NetworkServiceTestWithSystemDnsResolver&) = delete;
+  NetworkServiceTestWithSystemDnsResolver& operator=(
+      const NetworkServiceTestWithSystemDnsResolver&) = delete;
+  ~NetworkServiceTestWithSystemDnsResolver() override = default;
+
+  mojom::NetworkServiceParamsPtr GetParams() override {
+    auto params = mojom::NetworkServiceParams::New();
+    params->system_dns_resolver =
+        system_dns_resolver_pending_receiver_.InitWithNewPipeAndPassRemote();
+    return params;
+  }
+
+ protected:
+  mojo::PendingReceiver<mojom::SystemDnsResolver>
+      system_dns_resolver_pending_receiver_;
+};
+
+class StubHostResolverClient : public mojom::ResolveHostClient {
+ public:
+  using ResolveHostCallback = base::OnceCallback<void(net::AddressList)>;
+
+  explicit StubHostResolverClient(
+      mojo::PendingReceiver<mojom::ResolveHostClient> receiver,
+      ResolveHostCallback resolve_host_callback)
+      : receiver_(this, std::move(receiver)),
+        resolve_host_callback_(std::move(resolve_host_callback)) {}
+
+  StubHostResolverClient(const StubHostResolverClient&) = delete;
+  StubHostResolverClient& operator=(const StubHostResolverClient&) = delete;
+  ~StubHostResolverClient() override = default;
+
+  void OnTextResults(const std::vector<std::string>& text_results) override {}
+  void OnHostnameResults(const std::vector<net::HostPortPair>& hosts) override {
+  }
+  void OnComplete(int result,
+                  const net::ResolveErrorInfo& resolve_error_info,
+                  const absl::optional<net::AddressList>& resolved_addresses,
+                  const absl::optional<net::HostResolverEndpointResults>&
+                      endpoint_results_with_metadata) override {
+    std::move(resolve_host_callback_)
+        .Run(resolved_addresses.value_or(net::AddressList()));
+  }
+
+ private:
+  mojo::Receiver<network::mojom::ResolveHostClient> receiver_;
+  ResolveHostCallback resolve_host_callback_;
+};
+
+TEST_F(NetworkServiceTestWithSystemDnsResolver,
+       HandlesDeadSystemDnsResolverService) {
+  CreateNetworkContext();
+
+  // Kill the SystemDnsResolver pipe.
+  system_dns_resolver_pending_receiver_.reset();
+
+  // Call ResolveHost() and force it to use the SYSTEM dns resolver without
+  // cache or DoH. This will attempt to call back into the SystemDnsResolver,
+  // whose pipe is dead.
+  network::mojom::ResolveHostParametersPtr parameters =
+      network::mojom::ResolveHostParameters::New();
+  parameters->initial_priority = net::RequestPriority::HIGHEST;
+  // Use the SYSTEM resolver, and don't allow the cache or attempt DoH.
+  parameters->source = net::HostResolverSource::SYSTEM;
+  parameters->cache_usage =
+      network::mojom::ResolveHostParameters::CacheUsage::DISALLOWED;
+  parameters->secure_dns_policy = network::mojom::SecureDnsPolicy::DISABLE;
+  mojo::PendingReceiver<network::mojom::ResolveHostClient> receiver;
+  network_context_->ResolveHost(
+      network::mojom::HostResolverHost::NewHostPortPair(
+          net::HostPortPair("hostname1", 80)),
+      net::NetworkAnonymizationKey::CreateTransient(), std::move(parameters),
+      receiver.InitWithNewPipeAndPassRemote());
+
+  // Wait until the ResolveHost() call is done and make sure it returns an empty
+  // AddressList.
+  base::RunLoop run_loop;
+  auto stub_host_resolver_client = std::make_unique<StubHostResolverClient>(
+      std::move(receiver),
+      base::BindLambdaForTesting([&run_loop](net::AddressList address_list) {
+        ASSERT_TRUE(address_list.empty());
+        run_loop.Quit();
+      }));
+  run_loop.Run();
 }
 
 }  // namespace

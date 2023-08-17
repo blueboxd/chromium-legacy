@@ -91,7 +91,6 @@ class FakePasswordStoreBackend : public PasswordStoreBackend {
       const base::RepeatingCallback<bool(const GURL&)>& origin_filter,
       base::OnceClosure completion) override;
   SmartBubbleStatsStore* GetSmartBubbleStatsStore() override;
-  FieldInfoStore* GetFieldInfoStore() override;
   std::unique_ptr<syncer::ProxyModelTypeControllerDelegate>
   CreateSyncControllerDelegate() override;
   void ClearAllLocalPasswords() override;
@@ -117,7 +116,7 @@ class FakePasswordStoreBackend : public PasswordStoreBackend {
   const IsAccountStore is_account_store_{false};
   const UpdateAlwaysSucceeds update_always_succeeds_{false};
 
-  base::raw_ptr<AffiliatedMatchHelper> match_helper_;
+  raw_ptr<AffiliatedMatchHelper> match_helper_;
   PasswordMap stored_passwords_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 };

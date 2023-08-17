@@ -98,6 +98,13 @@ BASE_FEATURE(kV8Turboshaft, "V8Turboshaft", base::FEATURE_DISABLED_BY_DEFAULT);
 // manually overridden; otherwise it defers to whatever the V8 default is.
 BASE_FEATURE(kV8Maglev, "V8Maglev", base::FEATURE_ENABLED_BY_DEFAULT);
 
+BASE_FEATURE(kV8MemoryReducer,
+             "V8MemoryReducer",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+const base::FeatureParam<int> kV8MemoryReducerGCCount{
+    &kV8MemoryReducer, "V8MemoryReducerGCCount", 3};
+
 // Enables MinorMC young generation garbage collector.
 BASE_FEATURE(kV8MinorMC, "V8MinorMC", base::FEATURE_DISABLED_BY_DEFAULT);
 BASE_FEATURE(kV8MinorMS, "V8MinorMS", base::FEATURE_DISABLED_BY_DEFAULT);
@@ -134,9 +141,9 @@ BASE_FEATURE(kV8TurboFastApiCalls,
 // Enables faster DOM methods for megamorphic ICs
 BASE_FEATURE(kV8MegaDomIC, "V8MegaDomIC", base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Schedules a single MemoryReducer GC.
-BASE_FEATURE(kV8MemoryReducerSingleGC,
-             "V8MemoryReducerSingleGC",
+// Avoids background threads for GC if isolate is in background.
+BASE_FEATURE(kV8SingleThreadedGCInBackground,
+             "V8SingleThreadedGCInBackground",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables slow histograms that provide detailed information at increased
@@ -177,6 +184,12 @@ BASE_FEATURE(kV8UseLibmTrigFunctions,
 // manually overridden.
 BASE_FEATURE(kV8IgnitionElideRedundantTdzChecks,
              "V8IgnitionElideRedundantTdzChecks",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+// The currently enabled fallback to the mid-tier register allocator for huge
+// Wasm functions. We want to remove this fallback in the future.
+BASE_FEATURE(kV8MidtierRegallocFallback,
+             "V8MidtierRegallocFallback",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 // JavaScript language features.

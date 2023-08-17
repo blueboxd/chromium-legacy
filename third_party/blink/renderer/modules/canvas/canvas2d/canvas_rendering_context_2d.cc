@@ -52,7 +52,6 @@
 #include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/css/css_property_value_set.h"
 #include "third_party/blink/renderer/core/css/parser/css_parser.h"
-#include "third_party/blink/renderer/core/css/properties/computed_style_utils.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 #include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
@@ -461,29 +460,8 @@ void CanvasRenderingContext2D::FlushCanvas(
   }
 }
 
-String CanvasRenderingContext2D::font() const {
-  if (!GetState().HasRealizedFont())
-    return kDefaultFont;
-
+void CanvasRenderingContext2D::WillUseCurrentFont() const {
   canvas()->GetDocument().GetCanvasFontCache()->WillUseCurrentFont();
-  StringBuilder serialized_font;
-  const FontDescription& font_description = GetState().GetFontDescription();
-
-  if (font_description.Style() == ItalicSlopeValue())
-    serialized_font.Append("italic ");
-  if (font_description.Weight() == BoldWeightValue())
-    serialized_font.Append("bold ");
-  if (font_description.VariantCaps() == FontDescription::kSmallCaps)
-    serialized_font.Append("small-caps ");
-
-  serialized_font.AppendNumber(font_description.ComputedSize());
-  serialized_font.Append("px ");
-
-  serialized_font.Append(
-      ComputedStyleUtils::ValueForFontFamily(font_description.Family())
-          ->CssText());
-
-  return serialized_font.ToString();
 }
 
 void CanvasRenderingContext2D::setFont(const String& new_font) {

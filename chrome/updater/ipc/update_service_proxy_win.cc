@@ -30,6 +30,7 @@
 #include "base/win/scoped_safearray.h"
 #include "chrome/updater/app/server/win/updater_idl.h"
 #include "chrome/updater/ipc/proxy_impl_base_win.h"
+#include "chrome/updater/ipc/update_service_proxy.h"
 #include "chrome/updater/registration_data.h"
 #include "chrome/updater/updater_scope.h"
 #include "chrome/updater/util/win_util.h"
@@ -46,8 +47,10 @@ using ICompleteStatusPtr = ::Microsoft::WRL::ComPtr<ICompleteStatus>;
 // object. The class has thread-affinity for the STA thread.
 class UpdaterObserver : public DYNAMICIIDSIMPL(IUpdaterObserver) {
  public:
-  UpdaterObserver(UpdateService::StateChangeCallback state_update_callback,
-                  UpdateService::Callback callback)
+  UpdaterObserver(
+      UpdateService::StateChangeCallback state_update_callback,
+      base::OnceCallback<void(base::expected<UpdateService::Result, RpcError>)>
+          callback)
       : state_update_callback_(state_update_callback),
         callback_(std::move(callback)) {}
   UpdaterObserver(const UpdaterObserver&) = delete;
@@ -56,7 +59,7 @@ class UpdaterObserver : public DYNAMICIIDSIMPL(IUpdaterObserver) {
   // Overrides for IUpdaterObserver. These functions are called on the STA
   // thread directly by the COM RPC runtime.
   IFACEMETHODIMP OnStateChange(IUpdateState* update_state) override {
-    CHECK_EQ(base::PlatformThreadRef(), com_thread_ref_);
+    CHECK_EQ(base::PlatformThread::CurrentRef(), com_thread_ref_);
     CHECK(update_state);
 
     if (!state_update_callback_) {
@@ -69,7 +72,7 @@ class UpdaterObserver : public DYNAMICIIDSIMPL(IUpdaterObserver) {
   }
 
   IFACEMETHODIMP OnComplete(ICompleteStatus* complete_status) override {
-    CHECK_EQ(base::PlatformThreadRef(), com_thread_ref_);
+    CHECK_EQ(base::PlatformThread::CurrentRef(), com_thread_ref_);
     CHECK(complete_status);
     result_ = QueryResult(complete_status);
     return S_OK;
@@ -78,8 +81,9 @@ class UpdaterObserver : public DYNAMICIIDSIMPL(IUpdaterObserver) {
   // Disconnects this observer from its subject and ensures the callbacks are
   // not posted after this function is called. Returns the completion callback
   // so that the owner of this object can take back the callback ownership.
-  UpdateService::Callback Disconnect() {
-    CHECK_EQ(base::PlatformThreadRef(), com_thread_ref_);
+  base::OnceCallback<void(base::expected<UpdateService::Result, RpcError>)>
+  Disconnect() {
+    CHECK_EQ(base::PlatformThread::CurrentRef(), com_thread_ref_);
     VLOG(2) << __func__;
     state_update_callback_.Reset();
     return std::move(callback_);
@@ -87,13 +91,13 @@ class UpdaterObserver : public DYNAMICIIDSIMPL(IUpdaterObserver) {
 
  private:
   ~UpdaterObserver() override {
-    CHECK_EQ(base::PlatformThreadRef(), com_thread_ref_);
+    CHECK_EQ(base::PlatformThread::CurrentRef(), com_thread_ref_);
     if (callback_)
       std::move(callback_).Run(result_);
   }
 
   UpdateService::UpdateState QueryUpdateState(IUpdateState* update_state) {
-    CHECK_EQ(base::PlatformThreadRef(), com_thread_ref_);
+    CHECK_EQ(base::PlatformThread::CurrentRef(), com_thread_ref_);
     CHECK(update_state);
 
     UpdateService::UpdateState update_service_state;
@@ -185,7 +189,7 @@ class UpdaterObserver : public DYNAMICIIDSIMPL(IUpdaterObserver) {
   }
 
   UpdateService::Result QueryResult(ICompleteStatus* complete_status) {
-    CHECK_EQ(base::PlatformThreadRef(), com_thread_ref_);
+    CHECK_EQ(base::PlatformThread::CurrentRef(), com_thread_ref_);
     CHECK(complete_status);
 
     LONG code = 0;
@@ -197,13 +201,15 @@ class UpdaterObserver : public DYNAMICIIDSIMPL(IUpdaterObserver) {
   }
 
   // The reference of the thread this object is bound to.
-  base::PlatformThreadRef com_thread_ref_;
+  const base::PlatformThreadRef com_thread_ref_ =
+      base::PlatformThread::CurrentRef();
 
   // Called by IUpdaterObserver::OnStateChange when update state changes occur.
   UpdateService::StateChangeCallback state_update_callback_;
 
   // Called by IUpdaterObserver::OnComplete when the COM RPC call is done.
-  UpdateService::Callback callback_;
+  base::OnceCallback<void(base::expected<UpdateService::Result, RpcError>)>
+      callback_;
 
   UpdateService::Result result_ = UpdateService::Result::kSuccess;
 };
@@ -212,8 +218,18 @@ class UpdaterObserver : public DYNAMICIIDSIMPL(IUpdaterObserver) {
 // object. The class has thread-affinity for the STA thread.
 class UpdaterCallback : public DYNAMICIIDSIMPL(IUpdaterCallback) {
  public:
-  explicit UpdaterCallback(base::OnceCallback<void(LONG)> callback)
+  explicit UpdaterCallback(
+      base::OnceCallback<void(base::expected<LONG, RpcError>)> callback)
       : callback_(std::move(callback)) {}
+  explicit UpdaterCallback(
+      base::OnceCallback<void(base::expected<int, RpcError>)> callback)
+      : callback_(base::BindOnce(
+            [](base::OnceCallback<void(base::expected<int, RpcError>)> callback,
+               base::expected<LONG, RpcError> result) {
+              std::move(callback).Run(
+                  result.transform([](LONG x) { return static_cast<int>(x); }));
+            },
+            std::move(callback))) {}
   UpdaterCallback(const UpdaterCallback&) = delete;
   UpdaterCallback& operator=(const UpdaterCallback&) = delete;
 
@@ -221,7 +237,7 @@ class UpdaterCallback : public DYNAMICIIDSIMPL(IUpdaterCallback) {
   // thread directly by the COM RPC runtime, and must be sequenced through
   // the task runner.
   IFACEMETHODIMP Run(LONG status_code) override {
-    CHECK_EQ(base::PlatformThreadRef(), com_thread_ref_);
+    CHECK_EQ(base::PlatformThread::CurrentRef(), com_thread_ref_);
     VLOG(2) << __func__;
     status_code_ = status_code;
     return S_OK;
@@ -230,23 +246,24 @@ class UpdaterCallback : public DYNAMICIIDSIMPL(IUpdaterCallback) {
   // Disconnects this observer from its subject and ensures the callbacks are
   // not posted after this function is called. Returns the completion callback
   // so that the owner of this object can take back the callback ownership.
-  base::OnceCallback<void(LONG)> Disconnect() {
-    CHECK_EQ(base::PlatformThreadRef(), com_thread_ref_);
+  base::OnceCallback<void(base::expected<LONG, RpcError>)> Disconnect() {
+    CHECK_EQ(base::PlatformThread::CurrentRef(), com_thread_ref_);
     VLOG(2) << __func__;
     return std::move(callback_);
   }
 
  private:
   ~UpdaterCallback() override {
-    CHECK_EQ(base::PlatformThreadRef(), com_thread_ref_);
+    CHECK_EQ(base::PlatformThread::CurrentRef(), com_thread_ref_);
     if (callback_)
-      std::move(callback_).Run(status_code_);
+      std::move(callback_).Run(base::ok(status_code_));
   }
 
   // The reference of the thread this object is bound to.
-  base::PlatformThreadRef com_thread_ref_;
+  const base::PlatformThreadRef com_thread_ref_ =
+      base::PlatformThread::CurrentRef();
 
-  base::OnceCallback<void(LONG)> callback_;
+  base::OnceCallback<void(base::expected<LONG, RpcError>)> callback_;
 
   LONG status_code_ = 0;
 };
@@ -257,7 +274,8 @@ class UpdaterAppStatesCallback
     : public DYNAMICIIDSIMPL(IUpdaterAppStatesCallback) {
  public:
   explicit UpdaterAppStatesCallback(
-      base::OnceCallback<void(const std::vector<UpdateService::AppState>&)>
+      base::OnceCallback<
+          void(base::expected<std::vector<UpdateService::AppState>, RpcError>)>
           callback)
       : callback_(std::move(callback)) {}
   UpdaterAppStatesCallback(const UpdaterAppStatesCallback&) = delete;
@@ -267,7 +285,7 @@ class UpdaterAppStatesCallback
   // thread directly by the COM RPC runtime, and must be sequenced through
   // the task runner.
   IFACEMETHODIMP Run(VARIANT updater_app_states) override {
-    CHECK_EQ(base::PlatformThreadRef(), com_thread_ref_);
+    CHECK_EQ(base::PlatformThread::CurrentRef(), com_thread_ref_);
     VLOG(2) << __func__;
 
     if (V_VT(&updater_app_states) != (VT_ARRAY | VT_DISPATCH)) {
@@ -307,16 +325,17 @@ class UpdaterAppStatesCallback
   // Disconnects this observer from its subject and ensures the callbacks are
   // not posted after this function is called. Returns the completion callback
   // so that the owner of this object can take back the callback ownership.
-  base::OnceCallback<void(const std::vector<UpdateService::AppState>&)>
+  base::OnceCallback<
+      void(base::expected<std::vector<UpdateService::AppState>, RpcError>)>
   Disconnect() {
-    CHECK_EQ(base::PlatformThreadRef(), com_thread_ref_);
+    CHECK_EQ(base::PlatformThread::CurrentRef(), com_thread_ref_);
     VLOG(2) << __func__;
     return std::move(callback_);
   }
 
  private:
   ~UpdaterAppStatesCallback() override {
-    CHECK_EQ(base::PlatformThreadRef(), com_thread_ref_);
+    CHECK_EQ(base::PlatformThread::CurrentRef(), com_thread_ref_);
     if (callback_) {
       std::move(callback_).Run(app_states_);
     }
@@ -374,9 +393,11 @@ class UpdaterAppStatesCallback
   }
 
   // The reference of the thread this object is bound to.
-  base::PlatformThreadRef com_thread_ref_;
+  const base::PlatformThreadRef com_thread_ref_ =
+      base::PlatformThread::CurrentRef();
 
-  base::OnceCallback<void(const std::vector<UpdateService::AppState>&)>
+  base::OnceCallback<void(
+      base::expected<std::vector<UpdateService::AppState>, RpcError>)>
       callback_;
 
   std::vector<UpdateService::AppState> app_states_;
@@ -384,46 +405,54 @@ class UpdaterAppStatesCallback
 
 }  // namespace
 
-class UpdateServiceProxyImpl
-    : public base::RefCountedThreadSafe<UpdateServiceProxyImpl>,
-      public ProxyImplBase<UpdateServiceProxyImpl,
+class UpdateServiceProxyImplImpl
+    : public base::RefCountedThreadSafe<UpdateServiceProxyImplImpl>,
+      public ProxyImplBase<UpdateServiceProxyImplImpl,
                            IUpdater,
                            __uuidof(IUpdaterUser),
                            __uuidof(IUpdaterSystem)> {
  public:
-  explicit UpdateServiceProxyImpl(UpdaterScope scope) : ProxyImplBase(scope) {}
+  explicit UpdateServiceProxyImplImpl(UpdaterScope scope)
+      : ProxyImplBase(scope) {}
 
   static auto GetClassGuid(UpdaterScope scope) {
     return IsSystemInstall(scope) ? __uuidof(UpdaterSystemClass)
                                   : __uuidof(UpdaterUserClass);
   }
 
-  void GetVersion(base::OnceCallback<void(const base::Version&)> callback) {
-    PostRPCTask(base::BindOnce(&UpdateServiceProxyImpl::GetVersionOnSTA, this,
-                               std::move(callback)));
-  }
-
-  void FetchPolicies(base::OnceCallback<void(int)> callback) {
-    PostRPCTask(base::BindOnce(&UpdateServiceProxyImpl::FetchPoliciesOnSTA,
+  void GetVersion(
+      base::OnceCallback<void(base::expected<base::Version, RpcError>)>
+          callback) {
+    PostRPCTask(base::BindOnce(&UpdateServiceProxyImplImpl::GetVersionOnSTA,
                                this, std::move(callback)));
   }
 
-  void RegisterApp(const RegistrationRequest& request,
-                   base::OnceCallback<void(int)> callback) {
-    PostRPCTask(base::BindOnce(&UpdateServiceProxyImpl::RegisterAppOnSTA, this,
-                               request, std::move(callback)));
+  void FetchPolicies(
+      base::OnceCallback<void(base::expected<int, RpcError>)> callback) {
+    PostRPCTask(base::BindOnce(&UpdateServiceProxyImplImpl::FetchPoliciesOnSTA,
+                               this, std::move(callback)));
+  }
+
+  void RegisterApp(
+      const RegistrationRequest& request,
+      base::OnceCallback<void(base::expected<int, RpcError>)> callback) {
+    PostRPCTask(base::BindOnce(&UpdateServiceProxyImplImpl::RegisterAppOnSTA,
+                               this, request, std::move(callback)));
   }
 
   void GetAppStates(
-      base::OnceCallback<void(const std::vector<UpdateService::AppState>&)>
+      base::OnceCallback<
+          void(base::expected<std::vector<UpdateService::AppState>, RpcError>)>
           callback) {
-    PostRPCTask(base::BindOnce(&UpdateServiceProxyImpl::GetAppStatesOnSTA, this,
-                               std::move(callback)));
+    PostRPCTask(base::BindOnce(&UpdateServiceProxyImplImpl::GetAppStatesOnSTA,
+                               this, std::move(callback)));
   }
 
-  void RunPeriodicTasks(base::OnceClosure callback) {
-    PostRPCTask(base::BindOnce(&UpdateServiceProxyImpl::RunPeriodicTasksOnSTA,
-                               this, std::move(callback)));
+  void RunPeriodicTasks(
+      base::OnceCallback<void(base::expected<int, RpcError>)> callback) {
+    PostRPCTask(
+        base::BindOnce(&UpdateServiceProxyImplImpl::RunPeriodicTasksOnSTA, this,
+                       std::move(callback)));
   }
 
   void CheckForUpdate(
@@ -431,106 +460,115 @@ class UpdateServiceProxyImpl
       UpdateService::Priority priority,
       UpdateService::PolicySameVersionUpdate policy_same_version_update,
       UpdateService::StateChangeCallback state_update,
-      UpdateService::Callback callback) {
-    PostRPCTask(base::BindOnce(
-        &UpdateServiceProxyImpl::CheckForUpdateOnSTA, this, app_id, priority,
-        policy_same_version_update, state_update, std::move(callback)));
+      base::OnceCallback<void(base::expected<UpdateService::Result, RpcError>)>
+          callback) {
+    PostRPCTask(base::BindOnce(&UpdateServiceProxyImplImpl::CheckForUpdateOnSTA,
+                               this, app_id, priority,
+                               policy_same_version_update, state_update,
+                               std::move(callback)));
   }
 
-  void Update(const std::string& app_id,
-              const std::string& install_data_index,
-              UpdateService::Priority priority,
-              UpdateService::PolicySameVersionUpdate policy_same_version_update,
-              UpdateService::StateChangeCallback state_update,
-              UpdateService::Callback callback) {
-    PostRPCTask(base::BindOnce(&UpdateServiceProxyImpl::UpdateOnSTA, this,
+  void Update(
+      const std::string& app_id,
+      const std::string& install_data_index,
+      UpdateService::Priority priority,
+      UpdateService::PolicySameVersionUpdate policy_same_version_update,
+      UpdateService::StateChangeCallback state_update,
+      base::OnceCallback<void(base::expected<UpdateService::Result, RpcError>)>
+          callback) {
+    PostRPCTask(base::BindOnce(&UpdateServiceProxyImplImpl::UpdateOnSTA, this,
                                app_id, install_data_index, priority,
                                policy_same_version_update, state_update,
                                std::move(callback)));
   }
 
-  void UpdateAll(UpdateService::StateChangeCallback state_update,
-                 UpdateService::Callback callback) {
-    PostRPCTask(base::BindOnce(&UpdateServiceProxyImpl::UpdateAllOnSTA, this,
-                               state_update, std::move(callback)));
+  void UpdateAll(
+      UpdateService::StateChangeCallback state_update,
+      base::OnceCallback<void(base::expected<UpdateService::Result, RpcError>)>
+          callback) {
+    PostRPCTask(base::BindOnce(&UpdateServiceProxyImplImpl::UpdateAllOnSTA,
+                               this, state_update, std::move(callback)));
   }
 
-  void Install(const RegistrationRequest& registration,
-               const std::string& client_install_data,
-               const std::string& install_data_index,
-               UpdateService::Priority priority,
-               UpdateService::StateChangeCallback state_update,
-               UpdateService::Callback callback) {
-    PostRPCTask(base::BindOnce(&UpdateServiceProxyImpl::InstallOnSTA, this,
+  void Install(
+      const RegistrationRequest& registration,
+      const std::string& client_install_data,
+      const std::string& install_data_index,
+      UpdateService::Priority priority,
+      UpdateService::StateChangeCallback state_update,
+      base::OnceCallback<void(base::expected<UpdateService::Result, RpcError>)>
+          callback) {
+    PostRPCTask(base::BindOnce(&UpdateServiceProxyImplImpl::InstallOnSTA, this,
                                registration, client_install_data,
                                install_data_index, priority, state_update,
                                std::move(callback)));
   }
 
   void CancelInstalls(const std::string& app_id) {
-    PostRPCTask(base::BindOnce(&UpdateServiceProxyImpl::CancelInstallsOnSTA,
+    PostRPCTask(base::BindOnce(&UpdateServiceProxyImplImpl::CancelInstallsOnSTA,
                                this, app_id));
   }
 
-  void RunInstaller(const std::string& app_id,
-                    const base::FilePath& installer_path,
-                    const std::string& install_args,
-                    const std::string& install_data,
-                    const std::string& install_settings,
-                    UpdateService::StateChangeCallback state_update,
-                    UpdateService::Callback callback) {
-    PostRPCTask(base::BindOnce(&UpdateServiceProxyImpl::RunInstallerOnSTA, this,
-                               app_id, installer_path, install_args,
+  void RunInstaller(
+      const std::string& app_id,
+      const base::FilePath& installer_path,
+      const std::string& install_args,
+      const std::string& install_data,
+      const std::string& install_settings,
+      UpdateService::StateChangeCallback state_update,
+      base::OnceCallback<void(base::expected<UpdateService::Result, RpcError>)>
+          callback) {
+    PostRPCTask(base::BindOnce(&UpdateServiceProxyImplImpl::RunInstallerOnSTA,
+                               this, app_id, installer_path, install_args,
                                install_data, install_settings, state_update,
                                std::move(callback)));
   }
 
  private:
-  friend class base::RefCountedThreadSafe<UpdateServiceProxyImpl>;
-  virtual ~UpdateServiceProxyImpl() = default;
+  friend class base::RefCountedThreadSafe<UpdateServiceProxyImplImpl>;
+  virtual ~UpdateServiceProxyImplImpl() = default;
 
   void GetVersionOnSTA(
-      base::OnceCallback<void(const base::Version&)> callback) {
+      base::OnceCallback<void(base::expected<base::Version, RpcError>)>
+          callback) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    if (!ConnectToServer()) {
-      std::move(callback).Run(base::Version());
+    if (HRESULT hr = ConnectToServer(); FAILED(hr)) {
+      std::move(callback).Run(base::unexpected(hr));
       return;
     }
     base::win::ScopedBstr version;
     if (HRESULT hr = get_interface()->GetVersion(version.Receive());
         FAILED(hr)) {
       VLOG(2) << "IUpdater::GetVersion failed: " << std::hex << hr;
-      std::move(callback).Run(base::Version());
+      std::move(callback).Run(base::unexpected(hr));
       return;
     }
     std::move(callback).Run(base::Version(base::WideToUTF8(version.Get())));
   }
 
-  void FetchPoliciesOnSTA(base::OnceCallback<void(int)> callback) {
+  void FetchPoliciesOnSTA(
+      base::OnceCallback<void(base::expected<int, RpcError>)> callback) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    if (!ConnectToServer()) {
-      std::move(callback).Run(hresult());
+    if (HRESULT hr = ConnectToServer(); FAILED(hr)) {
+      std::move(callback).Run(base::unexpected(hr));
       return;
     }
     auto callback_wrapper =
-        MakeComObjectOrCrash<UpdaterCallback>(base::BindOnce(
-            [](base::OnceCallback<void(int)> callback, LONG status_code) {
-              std::move(callback).Run(status_code);
-            },
-            std::move(callback)));
+        MakeComObjectOrCrash<UpdaterCallback>(std::move(callback));
     if (HRESULT hr = get_interface()->FetchPolicies(callback_wrapper.Get());
         FAILED(hr)) {
       VLOG(2) << "Failed to call IUpdater::FetchPolicies, " << std::hex << hr;
-      callback_wrapper->Disconnect().Run(hr);
+      callback_wrapper->Disconnect().Run(base::unexpected(hr));
       return;
     }
   }
 
-  void RegisterAppOnSTA(const RegistrationRequest& request,
-                        base::OnceCallback<void(int)> callback) {
+  void RegisterAppOnSTA(
+      const RegistrationRequest& request,
+      base::OnceCallback<void(base::expected<int, RpcError>)> callback) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    if (!ConnectToServer()) {
-      std::move(callback).Run(hresult());
+    if (HRESULT hr = ConnectToServer(); FAILED(hr)) {
+      std::move(callback).Run(base::unexpected(hr));
       return;
     }
     std::wstring app_id_w;
@@ -560,33 +598,30 @@ class UpdateServiceProxyImpl
           existence_checker_path_w = request.existence_checker_path.value();
           return true;
         }()) {
-      std::move(callback).Run(E_INVALIDARG);
+      std::move(callback).Run(base::ok(E_INVALIDARG));
       return;
     }
 
     auto callback_wrapper =
-        MakeComObjectOrCrash<UpdaterCallback>(base::BindOnce(
-            [](base::OnceCallback<void(int)> callback, LONG status_code) {
-              std::move(callback).Run(status_code);
-            },
-            std::move(callback)));
+        MakeComObjectOrCrash<UpdaterCallback>(std::move(callback));
     if (HRESULT hr = get_interface()->RegisterApp(
             app_id_w.c_str(), brand_code_w.c_str(), brand_path_w.c_str(),
             ap_w.c_str(), version_w.c_str(), existence_checker_path_w.c_str(),
             callback_wrapper.Get());
         FAILED(hr)) {
       VLOG(2) << "Failed to call IUpdater::RegisterApp" << std::hex << hr;
-      callback_wrapper->Disconnect().Run(hr);
+      callback_wrapper->Disconnect().Run(base::unexpected(hr));
       return;
     }
   }
 
   void GetAppStatesOnSTA(
-      base::OnceCallback<void(const std::vector<UpdateService::AppState>&)>
+      base::OnceCallback<
+          void(base::expected<std::vector<UpdateService::AppState>, RpcError>)>
           callback) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    if (!ConnectToServer()) {
-      std::move(callback).Run({});
+    if (HRESULT hr = ConnectToServer(); FAILED(hr)) {
+      std::move(callback).Run(base::unexpected(hr));
       return;
     }
     auto callback_wrapper =
@@ -594,25 +629,24 @@ class UpdateServiceProxyImpl
     if (HRESULT hr = get_interface()->GetAppStates(callback_wrapper.Get());
         FAILED(hr)) {
       VLOG(2) << "Failed to call IUpdater::GetAppStates, " << std::hex << hr;
-      callback_wrapper->Disconnect().Run({});
+      callback_wrapper->Disconnect().Run(base::unexpected(hr));
       return;
     }
   }
 
-  void RunPeriodicTasksOnSTA(base::OnceClosure callback) {
+  void RunPeriodicTasksOnSTA(
+      base::OnceCallback<void(base::expected<int, RpcError>)> callback) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    if (!ConnectToServer()) {
-      std::move(callback).Run();
+    if (HRESULT hr = ConnectToServer(); FAILED(hr)) {
+      std::move(callback).Run(base::unexpected(hr));
       return;
     }
-    auto callback_wrapper = MakeComObjectOrCrash<UpdaterCallback>(
-        base::BindOnce([](base::OnceClosure callback,
-                          LONG /*status_code*/) { std::move(callback).Run(); },
-                       std::move(callback)));
+    auto callback_wrapper =
+        MakeComObjectOrCrash<UpdaterCallback>(std::move(callback));
     if (HRESULT hr = get_interface()->RunPeriodicTasks(callback_wrapper.Get());
         FAILED(hr)) {
       VLOG(2) << "Failed to call IUpdater::RunPeriodicTasks" << std::hex << hr;
-      callback_wrapper->Disconnect().Run(hr);
+      callback_wrapper->Disconnect().Run(base::unexpected(hr));
       return;
     }
   }
@@ -622,10 +656,11 @@ class UpdateServiceProxyImpl
       UpdateService::Priority priority,
       UpdateService::PolicySameVersionUpdate policy_same_version_update,
       UpdateService::StateChangeCallback state_update,
-      UpdateService::Callback callback) {
+      base::OnceCallback<void(base::expected<UpdateService::Result, RpcError>)>
+          callback) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    if (!ConnectToServer()) {
-      std::move(callback).Run(UpdateService::Result::kServiceFailed);
+    if (HRESULT hr = ConnectToServer(); FAILED(hr)) {
+      std::move(callback).Run(base::unexpected(hr));
       return;
     }
     std::wstring app_id_w;
@@ -643,7 +678,7 @@ class UpdateServiceProxyImpl
         observer.Get());
     if (FAILED(hr)) {
       VLOG(2) << "Failed to call IUpdater::CheckForUpdate: " << std::hex << hr;
-      observer->Disconnect().Run(UpdateService::Result::kServiceFailed);
+      observer->Disconnect().Run(base::unexpected(hr));
       return;
     }
   }
@@ -654,10 +689,11 @@ class UpdateServiceProxyImpl
       UpdateService::Priority priority,
       UpdateService::PolicySameVersionUpdate policy_same_version_update,
       UpdateService::StateChangeCallback state_update,
-      UpdateService::Callback callback) {
+      base::OnceCallback<void(base::expected<UpdateService::Result, RpcError>)>
+          callback) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    if (!ConnectToServer()) {
-      std::move(callback).Run(UpdateService::Result::kServiceFailed);
+    if (HRESULT hr = ConnectToServer(); FAILED(hr)) {
+      std::move(callback).Run(base::unexpected(hr));
       return;
     }
     std::wstring app_id_w;
@@ -687,36 +723,40 @@ class UpdateServiceProxyImpl
         observer.Get());
     if (FAILED(hr)) {
       VLOG(2) << "Failed to call IUpdater::Update: " << std::hex << hr;
-      observer->Disconnect().Run(UpdateService::Result::kServiceFailed);
+      observer->Disconnect().Run(base::unexpected(hr));
       return;
     }
   }
 
-  void UpdateAllOnSTA(UpdateService::StateChangeCallback state_update,
-                      UpdateService::Callback callback) {
+  void UpdateAllOnSTA(
+      UpdateService::StateChangeCallback state_update,
+      base::OnceCallback<void(base::expected<UpdateService::Result, RpcError>)>
+          callback) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    if (!ConnectToServer()) {
-      std::move(callback).Run(UpdateService::Result::kServiceFailed);
+    if (HRESULT hr = ConnectToServer(); FAILED(hr)) {
+      std::move(callback).Run(base::unexpected(hr));
       return;
     }
     auto observer = MakeComObjectOrCrash<UpdaterObserver>(state_update,
                                                           std::move(callback));
     if (HRESULT hr = get_interface()->UpdateAll(observer.Get()); FAILED(hr)) {
       VLOG(2) << "Failed to call IUpdater::UpdateAll" << std::hex << hr;
-      observer->Disconnect().Run(UpdateService::Result::kServiceFailed);
+      observer->Disconnect().Run(base::unexpected(hr));
       return;
     }
   }
 
-  void InstallOnSTA(const RegistrationRequest& request,
-                    const std::string& client_install_data,
-                    const std::string& install_data_index,
-                    UpdateService::Priority priority,
-                    UpdateService::StateChangeCallback state_update,
-                    UpdateService::Callback callback) {
+  void InstallOnSTA(
+      const RegistrationRequest& request,
+      const std::string& client_install_data,
+      const std::string& install_data_index,
+      UpdateService::Priority priority,
+      UpdateService::StateChangeCallback state_update,
+      base::OnceCallback<void(base::expected<UpdateService::Result, RpcError>)>
+          callback) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    if (!ConnectToServer()) {
-      std::move(callback).Run(UpdateService::Result::kServiceFailed);
+    if (HRESULT hr = ConnectToServer(); FAILED(hr)) {
+      std::move(callback).Run(base::unexpected(hr));
       return;
     }
     std::wstring app_id_w;
@@ -770,14 +810,14 @@ class UpdateServiceProxyImpl
         static_cast<int>(priority), observer.Get());
     if (FAILED(hr)) {
       VLOG(2) << "Failed to call IUpdater::Install: " << std::hex << hr;
-      observer->Disconnect().Run(UpdateService::Result::kServiceFailed);
+      observer->Disconnect().Run(base::unexpected(hr));
       return;
     }
   }
 
   void CancelInstallsOnSTA(const std::string& app_id) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    if (!ConnectToServer()) {
+    if (FAILED(ConnectToServer())) {
       return;
     }
     if (HRESULT hr =
@@ -787,17 +827,19 @@ class UpdateServiceProxyImpl
     }
   }
 
-  void RunInstallerOnSTA(const std::string& app_id,
-                         const base::FilePath& installer_path,
-                         const std::string& install_args,
-                         const std::string& install_data,
-                         const std::string& install_settings,
-                         UpdateService::StateChangeCallback state_update,
-                         UpdateService::Callback callback) {
+  void RunInstallerOnSTA(
+      const std::string& app_id,
+      const base::FilePath& installer_path,
+      const std::string& install_args,
+      const std::string& install_data,
+      const std::string& install_settings,
+      UpdateService::StateChangeCallback state_update,
+      base::OnceCallback<void(base::expected<UpdateService::Result, RpcError>)>
+          callback) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     VLOG(1) << __func__;
-    if (!ConnectToServer()) {
-      std::move(callback).Run(UpdateService::Result::kServiceFailed);
+    if (HRESULT hr = ConnectToServer(); FAILED(hr)) {
+      std::move(callback).Run(base::unexpected(hr));
       return;
     }
     std::wstring app_id_w;
@@ -836,209 +878,145 @@ class UpdateServiceProxyImpl
       VLOG(2) << "IUpdater::OfflineInstall completed successfully.";
     } else {
       VLOG(2) << "Failed to call IUpdater::OfflineInstall: " << std::hex << hr;
-      observer->Disconnect().Run(UpdateService::Result::kServiceFailed);
+      observer->Disconnect().Run(base::unexpected(hr));
     }
   }
 };
 
-UpdateServiceProxy::UpdateServiceProxy(UpdaterScope updater_scope)
-    : impl_(base::MakeRefCounted<UpdateServiceProxyImpl>(updater_scope)) {}
+UpdateServiceProxyImpl::UpdateServiceProxyImpl(UpdaterScope updater_scope)
+    : impl_(base::MakeRefCounted<UpdateServiceProxyImplImpl>(updater_scope)) {}
 
-UpdateServiceProxy::~UpdateServiceProxy() {
+UpdateServiceProxyImpl::~UpdateServiceProxyImpl() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   VLOG(1) << __func__;
-  UpdateServiceProxyImpl::Destroy(impl_);
+  UpdateServiceProxyImplImpl::Destroy(impl_);
   CHECK_EQ(impl_, nullptr);
 }
 
-void UpdateServiceProxy::GetVersion(
-    base::OnceCallback<void(const base::Version&)> callback) {
+void UpdateServiceProxyImpl::GetVersion(
+    base::OnceCallback<void(base::expected<base::Version, RpcError>)>
+        callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   VLOG(1) << __func__;
-  impl_->GetVersion(base::BindPostTaskToCurrentDefault(base::BindOnce(
-      &UpdateServiceProxy::GetVersionDone, this, std::move(callback))));
+  impl_->GetVersion(base::BindPostTaskToCurrentDefault(std::move(callback)));
 }
 
-void UpdateServiceProxy::FetchPolicies(base::OnceCallback<void(int)> callback) {
+void UpdateServiceProxyImpl::FetchPolicies(
+    base::OnceCallback<void(base::expected<int, RpcError>)> callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   VLOG(1) << __func__;
-  impl_->FetchPolicies(base::BindPostTaskToCurrentDefault(base::BindOnce(
-      &UpdateServiceProxy::FetchPoliciesDone, this, std::move(callback))));
+  impl_->FetchPolicies(base::BindPostTaskToCurrentDefault(std::move(callback)));
 }
 
-void UpdateServiceProxy::RegisterApp(const RegistrationRequest& request,
-                                     base::OnceCallback<void(int)> callback) {
+void UpdateServiceProxyImpl::RegisterApp(
+    const RegistrationRequest& request,
+    base::OnceCallback<void(base::expected<int, RpcError>)> callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   VLOG(1) << __func__;
-  impl_->RegisterApp(request, base::BindPostTaskToCurrentDefault(base::BindOnce(
-                                  &UpdateServiceProxy::RegisterAppDone, this,
-                                  std::move(callback))));
+  impl_->RegisterApp(request,
+                     base::BindPostTaskToCurrentDefault(std::move(callback)));
 }
 
-void UpdateServiceProxy::GetAppStates(
-    base::OnceCallback<void(const std::vector<AppState>&)> callback) {
+void UpdateServiceProxyImpl::GetAppStates(
+    base::OnceCallback<void(base::expected<std::vector<UpdateService::AppState>,
+                                           RpcError>)> callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   VLOG(1) << __func__;
-  impl_->GetAppStates(base::BindPostTaskToCurrentDefault(base::BindOnce(
-      &UpdateServiceProxy::GetAppStatesDone, this, std::move(callback))));
+  impl_->GetAppStates(base::BindPostTaskToCurrentDefault(std::move(callback)));
 }
 
-void UpdateServiceProxy::RunPeriodicTasks(base::OnceClosure callback) {
+void UpdateServiceProxyImpl::RunPeriodicTasks(
+    base::OnceCallback<void(base::expected<int, RpcError>)> callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   VLOG(1) << __func__;
-  impl_->RunPeriodicTasks(base::BindPostTaskToCurrentDefault(base::BindOnce(
-      &UpdateServiceProxy::RunPeriodicTasksDone, this, std::move(callback))));
+  impl_->RunPeriodicTasks(
+      base::BindPostTaskToCurrentDefault(std::move(callback)));
 }
 
-void UpdateServiceProxy::CheckForUpdate(
+void UpdateServiceProxyImpl::CheckForUpdate(
     const std::string& app_id,
     UpdateService::Priority priority,
-    PolicySameVersionUpdate policy_same_version_update,
-    StateChangeCallback state_update,
-    Callback callback) {
+    UpdateService::PolicySameVersionUpdate policy_same_version_update,
+    UpdateService::StateChangeCallback state_update,
+    base::OnceCallback<void(base::expected<UpdateService::Result, RpcError>)>
+        callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   VLOG(1) << __func__;
   impl_->CheckForUpdate(
       app_id, priority, policy_same_version_update,
       base::BindPostTaskToCurrentDefault(state_update),
-      base::BindPostTaskToCurrentDefault(base::BindOnce(
-          &UpdateServiceProxy::CheckForUpdateDone, this, std::move(callback))));
+      base::BindPostTaskToCurrentDefault(std::move(callback)));
 }
 
-void UpdateServiceProxy::Update(
+void UpdateServiceProxyImpl::Update(
     const std::string& app_id,
     const std::string& install_data_index,
     UpdateService::Priority priority,
-    PolicySameVersionUpdate policy_same_version_update,
-    StateChangeCallback state_update,
-    Callback callback) {
+    UpdateService::PolicySameVersionUpdate policy_same_version_update,
+    UpdateService::StateChangeCallback state_update,
+    base::OnceCallback<void(base::expected<UpdateService::Result, RpcError>)>
+        callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   VLOG(1) << __func__;
-  impl_->Update(
-      app_id, install_data_index, priority, policy_same_version_update,
-      base::BindPostTaskToCurrentDefault(state_update),
-      base::BindPostTaskToCurrentDefault(base::BindOnce(
-          &UpdateServiceProxy::UpdateDone, this, std::move(callback))));
+  impl_->Update(app_id, install_data_index, priority,
+                policy_same_version_update,
+                base::BindPostTaskToCurrentDefault(state_update),
+                base::BindPostTaskToCurrentDefault(std::move(callback)));
 }
 
-void UpdateServiceProxy::UpdateAll(StateChangeCallback state_update,
-                                   Callback callback) {
+void UpdateServiceProxyImpl::UpdateAll(
+    UpdateService::StateChangeCallback state_update,
+    base::OnceCallback<void(base::expected<UpdateService::Result, RpcError>)>
+        callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   VLOG(1) << __func__;
-  impl_->UpdateAll(
-      base::BindPostTaskToCurrentDefault(state_update),
-      base::BindPostTaskToCurrentDefault(base::BindOnce(
-          &UpdateServiceProxy::UpdateAllDone, this, std::move(callback))));
+  impl_->UpdateAll(base::BindPostTaskToCurrentDefault(state_update),
+                   base::BindPostTaskToCurrentDefault(std::move(callback)));
 }
 
-void UpdateServiceProxy::Install(const RegistrationRequest& registration,
-                                 const std::string& client_install_data,
-                                 const std::string& install_data_index,
-                                 Priority priority,
-                                 StateChangeCallback state_update,
-                                 Callback callback) {
+void UpdateServiceProxyImpl::Install(
+    const RegistrationRequest& registration,
+    const std::string& client_install_data,
+    const std::string& install_data_index,
+    UpdateService::Priority priority,
+    UpdateService::StateChangeCallback state_update,
+    base::OnceCallback<void(base::expected<UpdateService::Result, RpcError>)>
+        callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   VLOG(1) << __func__;
-  impl_->Install(
-      registration, client_install_data, install_data_index, priority,
-      base::BindPostTaskToCurrentDefault(state_update),
-      base::BindPostTaskToCurrentDefault(base::BindOnce(
-          &UpdateServiceProxy::InstallDone, this, std::move(callback))));
+  impl_->Install(registration, client_install_data, install_data_index,
+                 priority, base::BindPostTaskToCurrentDefault(state_update),
+                 base::BindPostTaskToCurrentDefault(std::move(callback)));
 }
 
-void UpdateServiceProxy::CancelInstalls(const std::string& app_id) {
+void UpdateServiceProxyImpl::CancelInstalls(const std::string& app_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   VLOG(1) << __func__;
   impl_->CancelInstalls(app_id);
 }
 
-void UpdateServiceProxy::RunInstaller(const std::string& app_id,
-                                      const base::FilePath& installer_path,
-                                      const std::string& install_args,
-                                      const std::string& install_data,
-                                      const std::string& install_settings,
-                                      StateChangeCallback state_update,
-                                      Callback callback) {
+void UpdateServiceProxyImpl::RunInstaller(
+    const std::string& app_id,
+    const base::FilePath& installer_path,
+    const std::string& install_args,
+    const std::string& install_data,
+    const std::string& install_settings,
+    UpdateService::StateChangeCallback state_update,
+    base::OnceCallback<void(base::expected<UpdateService::Result, RpcError>)>
+        callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   VLOG(1) << __func__;
-  impl_->RunInstaller(
-      app_id, installer_path, install_args, install_data, install_settings,
-      base::BindPostTaskToCurrentDefault(state_update),
-      base::BindPostTaskToCurrentDefault(base::BindOnce(
-          &UpdateServiceProxy::RunInstallerDone, this, std::move(callback))));
-}
-
-void UpdateServiceProxy::GetVersionDone(
-    base::OnceCallback<void(const base::Version&)> callback,
-    const base::Version& version) {
-  VLOG(1) << __func__;
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  std::move(callback).Run(version);
-}
-
-void UpdateServiceProxy::FetchPoliciesDone(
-    base::OnceCallback<void(int)> callback,
-    int result) {
-  VLOG(1) << __func__;
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  std::move(callback).Run(result);
-}
-
-void UpdateServiceProxy::RegisterAppDone(base::OnceCallback<void(int)> callback,
-                                         int result) {
-  VLOG(1) << __func__;
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  std::move(callback).Run(result);
-}
-
-void UpdateServiceProxy::GetAppStatesDone(
-    base::OnceCallback<void(const std::vector<AppState>&)> callback,
-    const std::vector<AppState>& results) {
-  VLOG(1) << __func__;
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  std::move(callback).Run(results);
-}
-
-void UpdateServiceProxy::RunPeriodicTasksDone(base::OnceClosure callback) {
-  VLOG(1) << __func__;
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  std::move(callback).Run();
-}
-
-void UpdateServiceProxy::CheckForUpdateDone(Callback callback, Result result) {
-  VLOG(1) << __func__;
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  std::move(callback).Run(result);
-}
-
-void UpdateServiceProxy::UpdateDone(Callback callback, Result result) {
-  VLOG(1) << __func__;
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  std::move(callback).Run(result);
-}
-
-void UpdateServiceProxy::UpdateAllDone(Callback callback, Result result) {
-  VLOG(1) << __func__;
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  std::move(callback).Run(result);
-}
-
-void UpdateServiceProxy::InstallDone(Callback callback, Result result) {
-  VLOG(1) << __func__;
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  std::move(callback).Run(result);
-}
-
-void UpdateServiceProxy::RunInstallerDone(Callback callback, Result result) {
-  VLOG(1) << __func__;
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  std::move(callback).Run(result);
+  impl_->RunInstaller(app_id, installer_path, install_args, install_data,
+                      install_settings,
+                      base::BindPostTaskToCurrentDefault(state_update),
+                      base::BindPostTaskToCurrentDefault(std::move(callback)));
 }
 
 scoped_refptr<UpdateService> CreateUpdateServiceProxy(
     UpdaterScope updater_scope,
     const base::TimeDelta& /*get_version_timeout*/) {
-  return base::MakeRefCounted<UpdateServiceProxy>(updater_scope);
+  return base::MakeRefCounted<UpdateServiceProxy>(
+      base::MakeRefCounted<UpdateServiceProxyImpl>(updater_scope));
 }
 
 }  // namespace updater

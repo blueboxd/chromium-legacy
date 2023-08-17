@@ -19,15 +19,13 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cpu": "x86",
-              "gce": "1",
-              "kvm": "1",
-              "os": "Ubuntu-22.04",
-              "pool": "chrome.tests"
-            }
-          ],
+          "dimensions": {
+            "cpu": "x86",
+            "gce": "1",
+            "kvm": "1",
+            "os": "Ubuntu-22.04",
+            "pool": "chrome.tests"
+          },
           "idempotent": false,
           "io_timeout": 3600,
           "named_caches": [
@@ -37,11 +35,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "cros_vm"
-              }
-            ]
+            "60": {
+              "caches": "cros_vm"
+            }
           },
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 10
@@ -65,15 +61,13 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cpu": "x86",
-              "gce": "1",
-              "kvm": "1",
-              "os": "Ubuntu-22.04",
-              "pool": "chrome.tests"
-            }
-          ],
+          "dimensions": {
+            "cpu": "x86",
+            "gce": "1",
+            "kvm": "1",
+            "os": "Ubuntu-22.04",
+            "pool": "chrome.tests"
+          },
           "named_caches": [
             {
               "name": "cros_vm",
@@ -81,11 +75,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "cros_vm"
-              }
-            ]
+            "60": {
+              "caches": "cros_vm"
+            }
           },
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -100,15 +92,13 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cpu": "x86",
-              "gce": "1",
-              "kvm": "1",
-              "os": "Ubuntu-22.04",
-              "pool": "chrome.tests"
-            }
-          ],
+          "dimensions": {
+            "cpu": "x86",
+            "gce": "1",
+            "kvm": "1",
+            "os": "Ubuntu-22.04",
+            "pool": "chrome.tests"
+          },
           "named_caches": [
             {
               "name": "cros_vm",
@@ -116,11 +106,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "cros_vm"
-              }
-            ]
+            "60": {
+              "caches": "cros_vm"
+            }
           },
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -137,15 +125,13 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cpu": "x86",
-              "gce": "1",
-              "kvm": "1",
-              "os": "Ubuntu-22.04",
-              "pool": "chrome.tests"
-            }
-          ],
+          "dimensions": {
+            "cpu": "x86",
+            "gce": "1",
+            "kvm": "1",
+            "os": "Ubuntu-22.04",
+            "pool": "chrome.tests"
+          },
           "named_caches": [
             {
               "name": "cros_vm",
@@ -153,11 +139,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "cros_vm"
-              }
-            ]
+            "60": {
+              "caches": "cros_vm"
+            }
           },
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -172,15 +156,13 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cpu": "x86",
-              "gce": "1",
-              "kvm": "1",
-              "os": "Ubuntu-22.04",
-              "pool": "chrome.tests"
-            }
-          ],
+          "dimensions": {
+            "cpu": "x86",
+            "gce": "1",
+            "kvm": "1",
+            "os": "Ubuntu-22.04",
+            "pool": "chrome.tests"
+          },
           "named_caches": [
             {
               "name": "cros_vm",
@@ -188,11 +170,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "cros_vm"
-              }
-            ]
+            "60": {
+              "caches": "cros_vm"
+            }
           },
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -212,15 +192,13 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cpu": "x86",
-              "gce": "1",
-              "kvm": "1",
-              "os": "Ubuntu-22.04",
-              "pool": "chrome.tests"
-            }
-          ],
+          "dimensions": {
+            "cpu": "x86",
+            "gce": "1",
+            "kvm": "1",
+            "os": "Ubuntu-22.04",
+            "pool": "chrome.tests"
+          },
           "idempotent": false,
           "io_timeout": 3600,
           "named_caches": [
@@ -230,11 +208,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "cros_vm"
-              }
-            ]
+            "60": {
+              "caches": "cros_vm"
+            }
           },
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 10
@@ -246,19 +222,18 @@
         "args": [
           "--magic-vm-cache=magic_cros_vm_cache"
         ],
+        "ci_only": true,
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cpu": "x86",
-              "gce": "1",
-              "kvm": "1",
-              "os": "Ubuntu-22.04",
-              "pool": "chrome.tests"
-            }
-          ],
+          "dimensions": {
+            "cpu": "x86",
+            "gce": "1",
+            "kvm": "1",
+            "os": "Ubuntu-22.04",
+            "pool": "chrome.tests"
+          },
           "named_caches": [
             {
               "name": "cros_vm",
@@ -266,11 +241,40 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "cros_vm"
-              }
-            ]
+            "60": {
+              "caches": "cros_vm"
+            }
+          },
+          "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "chromeos_integration_tests",
+        "test_id_prefix": "ninja://chrome/test:chromeos_integration_tests/"
+      },
+      {
+        "args": [
+          "--magic-vm-cache=magic_cros_vm_cache"
+        ],
+        "merge": {
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "dimensions": {
+            "cpu": "x86",
+            "gce": "1",
+            "kvm": "1",
+            "os": "Ubuntu-22.04",
+            "pool": "chrome.tests"
+          },
+          "named_caches": [
+            {
+              "name": "cros_vm",
+              "path": "magic_cros_vm_cache"
+            }
+          ],
+          "optional_dimensions": {
+            "60": {
+              "caches": "cros_vm"
+            }
           },
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -290,15 +294,13 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cpu": "x86",
-              "gce": "1",
-              "kvm": "1",
-              "os": "Ubuntu-22.04",
-              "pool": "chrome.tests"
-            }
-          ],
+          "dimensions": {
+            "cpu": "x86",
+            "gce": "1",
+            "kvm": "1",
+            "os": "Ubuntu-22.04",
+            "pool": "chrome.tests"
+          },
           "idempotent": false,
           "named_caches": [
             {
@@ -307,11 +309,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "cros_vm"
-              }
-            ]
+            "60": {
+              "caches": "cros_vm"
+            }
           },
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -326,15 +326,13 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cpu": "x86",
-              "gce": "1",
-              "kvm": "1",
-              "os": "Ubuntu-22.04",
-              "pool": "chrome.tests"
-            }
-          ],
+          "dimensions": {
+            "cpu": "x86",
+            "gce": "1",
+            "kvm": "1",
+            "os": "Ubuntu-22.04",
+            "pool": "chrome.tests"
+          },
           "named_caches": [
             {
               "name": "cros_vm",
@@ -342,11 +340,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "cros_vm"
-              }
-            ]
+            "60": {
+              "caches": "cros_vm"
+            }
           },
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -368,15 +364,13 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cpu": "x86",
-              "gce": "1",
-              "kvm": "1",
-              "os": "Ubuntu-22.04",
-              "pool": "chrome.tests"
-            }
-          ],
+          "dimensions": {
+            "cpu": "x86",
+            "gce": "1",
+            "kvm": "1",
+            "os": "Ubuntu-22.04",
+            "pool": "chrome.tests"
+          },
           "named_caches": [
             {
               "name": "cros_vm",
@@ -384,11 +378,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "cros_vm"
-              }
-            ]
+            "60": {
+              "caches": "cros_vm"
+            }
           },
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -403,15 +395,13 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cpu": "x86",
-              "gce": "1",
-              "kvm": "1",
-              "os": "Ubuntu-22.04",
-              "pool": "chrome.tests"
-            }
-          ],
+          "dimensions": {
+            "cpu": "x86",
+            "gce": "1",
+            "kvm": "1",
+            "os": "Ubuntu-22.04",
+            "pool": "chrome.tests"
+          },
           "named_caches": [
             {
               "name": "cros_vm",
@@ -419,11 +409,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "cros_vm"
-              }
-            ]
+            "60": {
+              "caches": "cros_vm"
+            }
           },
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -438,15 +426,13 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cpu": "x86",
-              "gce": "1",
-              "kvm": "1",
-              "os": "Ubuntu-22.04",
-              "pool": "chrome.tests"
-            }
-          ],
+          "dimensions": {
+            "cpu": "x86",
+            "gce": "1",
+            "kvm": "1",
+            "os": "Ubuntu-22.04",
+            "pool": "chrome.tests"
+          },
           "named_caches": [
             {
               "name": "cros_vm",
@@ -454,11 +440,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "cros_vm"
-              }
-            ]
+            "60": {
+              "caches": "cros_vm"
+            }
           },
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -473,15 +457,13 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cpu": "x86",
-              "gce": "1",
-              "kvm": "1",
-              "os": "Ubuntu-22.04",
-              "pool": "chrome.tests"
-            }
-          ],
+          "dimensions": {
+            "cpu": "x86",
+            "gce": "1",
+            "kvm": "1",
+            "os": "Ubuntu-22.04",
+            "pool": "chrome.tests"
+          },
           "named_caches": [
             {
               "name": "cros_vm",
@@ -489,11 +471,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "cros_vm"
-              }
-            ]
+            "60": {
+              "caches": "cros_vm"
+            }
           },
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -508,15 +488,13 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cpu": "x86",
-              "gce": "1",
-              "kvm": "1",
-              "os": "Ubuntu-22.04",
-              "pool": "chrome.tests"
-            }
-          ],
+          "dimensions": {
+            "cpu": "x86",
+            "gce": "1",
+            "kvm": "1",
+            "os": "Ubuntu-22.04",
+            "pool": "chrome.tests"
+          },
           "named_caches": [
             {
               "name": "cros_vm",
@@ -524,11 +502,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "cros_vm"
-              }
-            ]
+            "60": {
+              "caches": "cros_vm"
+            }
           },
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -544,15 +520,13 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cpu": "x86",
-              "gce": "1",
-              "kvm": "1",
-              "os": "Ubuntu-22.04",
-              "pool": "chrome.tests"
-            }
-          ],
+          "dimensions": {
+            "cpu": "x86",
+            "gce": "1",
+            "kvm": "1",
+            "os": "Ubuntu-22.04",
+            "pool": "chrome.tests"
+          },
           "named_caches": [
             {
               "name": "cros_vm",
@@ -560,11 +534,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "cros_vm"
-              }
-            ]
+            "60": {
+              "caches": "cros_vm"
+            }
           },
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -579,15 +551,13 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cpu": "x86",
-              "gce": "1",
-              "kvm": "1",
-              "os": "Ubuntu-22.04",
-              "pool": "chrome.tests"
-            }
-          ],
+          "dimensions": {
+            "cpu": "x86",
+            "gce": "1",
+            "kvm": "1",
+            "os": "Ubuntu-22.04",
+            "pool": "chrome.tests"
+          },
           "named_caches": [
             {
               "name": "cros_vm",
@@ -595,11 +565,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "cros_vm"
-              }
-            ]
+            "60": {
+              "caches": "cros_vm"
+            }
           },
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -614,15 +582,13 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cpu": "x86",
-              "gce": "1",
-              "kvm": "1",
-              "os": "Ubuntu-22.04",
-              "pool": "chrome.tests"
-            }
-          ],
+          "dimensions": {
+            "cpu": "x86",
+            "gce": "1",
+            "kvm": "1",
+            "os": "Ubuntu-22.04",
+            "pool": "chrome.tests"
+          },
           "named_caches": [
             {
               "name": "cros_vm",
@@ -630,11 +596,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "cros_vm"
-              }
-            ]
+            "60": {
+              "caches": "cros_vm"
+            }
           },
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -663,15 +627,13 @@
               "revision": "git_revision:0f694cdc06ba054b9960aa1ae9766e45b53d02c1"
             }
           ],
-          "dimension_sets": [
-            {
-              "cpu": "x86",
-              "gce": "1",
-              "kvm": "1",
-              "os": "Ubuntu-22.04",
-              "pool": "chrome.tests"
-            }
-          ],
+          "dimensions": {
+            "cpu": "x86",
+            "gce": "1",
+            "kvm": "1",
+            "os": "Ubuntu-22.04",
+            "pool": "chrome.tests"
+          },
           "named_caches": [
             {
               "name": "cros_vm",
@@ -679,11 +641,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "cros_vm"
-              }
-            ]
+            "60": {
+              "caches": "cros_vm"
+            }
           },
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 3
@@ -700,15 +660,13 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cpu": "x86",
-              "gce": "1",
-              "kvm": "1",
-              "os": "Ubuntu-22.04",
-              "pool": "chrome.tests"
-            }
-          ],
+          "dimensions": {
+            "cpu": "x86",
+            "gce": "1",
+            "kvm": "1",
+            "os": "Ubuntu-22.04",
+            "pool": "chrome.tests"
+          },
           "named_caches": [
             {
               "name": "cros_vm",
@@ -716,11 +674,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "cros_vm"
-              }
-            ]
+            "60": {
+              "caches": "cros_vm"
+            }
           },
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -736,15 +692,13 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cpu": "x86",
-              "gce": "1",
-              "kvm": "1",
-              "os": "Ubuntu-22.04",
-              "pool": "chrome.tests"
-            }
-          ],
+          "dimensions": {
+            "cpu": "x86",
+            "gce": "1",
+            "kvm": "1",
+            "os": "Ubuntu-22.04",
+            "pool": "chrome.tests"
+          },
           "named_caches": [
             {
               "name": "cros_vm",
@@ -752,11 +706,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "cros_vm"
-              }
-            ]
+            "60": {
+              "caches": "cros_vm"
+            }
           },
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -771,15 +723,13 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cpu": "x86",
-              "gce": "1",
-              "kvm": "1",
-              "os": "Ubuntu-22.04",
-              "pool": "chrome.tests"
-            }
-          ],
+          "dimensions": {
+            "cpu": "x86",
+            "gce": "1",
+            "kvm": "1",
+            "os": "Ubuntu-22.04",
+            "pool": "chrome.tests"
+          },
           "named_caches": [
             {
               "name": "cros_vm",
@@ -787,11 +737,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "cros_vm"
-              }
-            ]
+            "60": {
+              "caches": "cros_vm"
+            }
           },
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -806,15 +754,13 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cpu": "x86",
-              "gce": "1",
-              "kvm": "1",
-              "os": "Ubuntu-22.04",
-              "pool": "chrome.tests"
-            }
-          ],
+          "dimensions": {
+            "cpu": "x86",
+            "gce": "1",
+            "kvm": "1",
+            "os": "Ubuntu-22.04",
+            "pool": "chrome.tests"
+          },
           "named_caches": [
             {
               "name": "cros_vm",
@@ -822,11 +768,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "cros_vm"
-              }
-            ]
+            "60": {
+              "caches": "cros_vm"
+            }
           },
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -843,15 +787,13 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cpu": "x86",
-              "gce": "1",
-              "kvm": "1",
-              "os": "Ubuntu-22.04",
-              "pool": "chrome.tests"
-            }
-          ],
+          "dimensions": {
+            "cpu": "x86",
+            "gce": "1",
+            "kvm": "1",
+            "os": "Ubuntu-22.04",
+            "pool": "chrome.tests"
+          },
           "named_caches": [
             {
               "name": "cros_vm",
@@ -859,11 +801,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "cros_vm"
-              }
-            ]
+            "60": {
+              "caches": "cros_vm"
+            }
           },
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -878,15 +818,13 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cpu": "x86",
-              "gce": "1",
-              "kvm": "1",
-              "os": "Ubuntu-22.04",
-              "pool": "chrome.tests"
-            }
-          ],
+          "dimensions": {
+            "cpu": "x86",
+            "gce": "1",
+            "kvm": "1",
+            "os": "Ubuntu-22.04",
+            "pool": "chrome.tests"
+          },
           "named_caches": [
             {
               "name": "cros_vm",
@@ -894,11 +832,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "cros_vm"
-              }
-            ]
+            "60": {
+              "caches": "cros_vm"
+            }
           },
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -913,15 +849,13 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cpu": "x86",
-              "gce": "1",
-              "kvm": "1",
-              "os": "Ubuntu-22.04",
-              "pool": "chrome.tests"
-            }
-          ],
+          "dimensions": {
+            "cpu": "x86",
+            "gce": "1",
+            "kvm": "1",
+            "os": "Ubuntu-22.04",
+            "pool": "chrome.tests"
+          },
           "named_caches": [
             {
               "name": "cros_vm",
@@ -929,11 +863,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "cros_vm"
-              }
-            ]
+            "60": {
+              "caches": "cros_vm"
+            }
           },
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -948,15 +880,13 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cpu": "x86",
-              "gce": "1",
-              "kvm": "1",
-              "os": "Ubuntu-22.04",
-              "pool": "chrome.tests"
-            }
-          ],
+          "dimensions": {
+            "cpu": "x86",
+            "gce": "1",
+            "kvm": "1",
+            "os": "Ubuntu-22.04",
+            "pool": "chrome.tests"
+          },
           "named_caches": [
             {
               "name": "cros_vm",
@@ -964,11 +894,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "cros_vm"
-              }
-            ]
+            "60": {
+              "caches": "cros_vm"
+            }
           },
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -991,15 +919,13 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cpu": "x86",
-              "gce": "1",
-              "kvm": "1",
-              "os": "Ubuntu-22.04",
-              "pool": "chrome.tests"
-            }
-          ],
+          "dimensions": {
+            "cpu": "x86",
+            "gce": "1",
+            "kvm": "1",
+            "os": "Ubuntu-22.04",
+            "pool": "chrome.tests"
+          },
           "named_caches": [
             {
               "name": "cros_vm",
@@ -1007,11 +933,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "cros_vm"
-              }
-            ]
+            "60": {
+              "caches": "cros_vm"
+            }
           },
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -1039,15 +963,13 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cpu": "x86",
-              "gce": "1",
-              "kvm": "1",
-              "os": "Ubuntu-22.04",
-              "pool": "chrome.tests"
-            }
-          ],
+          "dimensions": {
+            "cpu": "x86",
+            "gce": "1",
+            "kvm": "1",
+            "os": "Ubuntu-22.04",
+            "pool": "chrome.tests"
+          },
           "idempotent": false,
           "named_caches": [
             {
@@ -1056,11 +978,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "cros_vm"
-              }
-            ]
+            "60": {
+              "caches": "cros_vm"
+            }
           },
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 12
@@ -1086,15 +1006,13 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cpu": "x86",
-              "gce": "1",
-              "kvm": "1",
-              "os": "Ubuntu-22.04",
-              "pool": "chrome.tests"
-            }
-          ],
+          "dimensions": {
+            "cpu": "x86",
+            "gce": "1",
+            "kvm": "1",
+            "os": "Ubuntu-22.04",
+            "pool": "chrome.tests"
+          },
           "idempotent": false,
           "named_caches": [
             {
@@ -1103,11 +1021,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "cros_vm"
-              }
-            ]
+            "60": {
+              "caches": "cros_vm"
+            }
           },
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 24
@@ -1117,55 +1033,11 @@
     ]
   },
   "chromeos-betty-pi-arc-finch-smoke-chrome": {
-    "additional_compile_targets": [
-      "chromiumos_preflight"
-    ],
-    "gtest_tests": [
-      {
-        "args": [
-          "--magic-vm-cache=magic_cros_vm_cache"
-        ],
-        "merge": {
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "resultdb": {
-          "enable": true,
-          "has_native_resultdb_integration": true
-        },
-        "swarming": {
-          "dimension_sets": [
-            {
-              "cpu": "x86",
-              "gce": "1",
-              "kvm": "1",
-              "os": "Ubuntu-22.04",
-              "pool": "chrome.tests.finch"
-            }
-          ],
-          "idempotent": false,
-          "named_caches": [
-            {
-              "name": "cros_vm",
-              "path": "magic_cros_vm_cache"
-            }
-          ],
-          "optional_dimensions": {
-            "60": [
-              {
-                "caches": "cros_vm"
-              }
-            ]
-          },
-          "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
-        },
-        "test": "chrome_variations_tast_tests",
-        "test_id_prefix": "ninja://chromeos:chrome_variations_tast_tests/"
-      }
-    ],
     "isolated_scripts": [
       {
         "args": [
           "--target-platform=cros",
+          "--board=betty-pi-arc",
           "--magic-vm-cache=magic_cros_vm_cache",
           "--git-revision=${got_revision}"
         ],
@@ -1181,18 +1053,16 @@
         ],
         "resultdb": {
           "enable": true,
-          "result_format": "single"
+          "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cpu": "x86",
-              "gce": "1",
-              "kvm": "1",
-              "os": "Ubuntu-22.04",
-              "pool": "chrome.tests.finch"
-            }
-          ],
+          "dimensions": {
+            "cpu": "x86",
+            "gce": "1",
+            "kvm": "1",
+            "os": "Ubuntu-22.04",
+            "pool": "chrome.tests.finch"
+          },
           "named_caches": [
             {
               "name": "cros_vm",
@@ -1200,11 +1070,9 @@
             }
           ],
           "optional_dimensions": {
-            "60": [
-              {
-                "caches": "cros_vm"
-              }
-            ]
+            "60": {
+              "caches": "cros_vm"
+            }
           },
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -1222,10 +1090,10 @@
       {
         "autotest_name": "tast.chrome-from-gcs",
         "cros_board": "brya",
-        "cros_img": "brya-release/R117-15538.0.0",
+        "cros_img": "brya-release/R118-15574.0.0",
         "name": "chrome_all_tast_tests BRYA_RELEASE_LKGM",
         "shards": 10,
-        "tast_expr": "(\"group:mainline\" && \"dep:chrome\" && !informational)",
+        "tast_expr": "(\"group:mainline\" && \"dep:chrome\" && !\"dep:no_chrome_dcheck\" && !\"dep:lacros\" && !informational)",
         "test": "chrome_all_tast_tests",
         "test_id_prefix": "ninja://chromeos:chrome_all_tast_tests/",
         "test_level_retries": 2,
@@ -1235,11 +1103,11 @@
       {
         "autotest_name": "tast.chrome-from-gcs",
         "cros_board": "brya",
-        "cros_img": "brya-release/R117-15538.0.0",
+        "cros_img": "brya-release/R118-15574.0.0",
         "experiment_percentage": 100,
         "name": "chrome_criticalstaging_tast_tests BRYA_RELEASE_LKGM",
         "shards": 10,
-        "tast_expr": "(\"group:mainline\" && \"dep:chrome\" && informational && \"group:criticalstaging\")",
+        "tast_expr": "(\"group:mainline\" && \"dep:chrome\" && !\"dep:no_chrome_dcheck\" && !\"dep:lacros\" && informational && \"group:criticalstaging\")",
         "test": "chrome_criticalstaging_tast_tests",
         "test_id_prefix": "ninja://chromeos:chrome_criticalstaging_tast_tests/",
         "test_level_retries": 2,
@@ -1249,10 +1117,11 @@
       {
         "autotest_name": "tast.chrome-from-gcs",
         "cros_board": "brya",
-        "cros_img": "brya-release/R117-15538.0.0",
+        "cros_img": "brya-release/R118-15574.0.0",
         "experiment_percentage": 100,
         "name": "chrome_disabled_tast_tests BRYA_RELEASE_LKGM",
         "shards": 10,
+        "tast_expr": "(\"group:mainline\" && \"dep:chrome\" && !\"dep:no_chrome_dcheck\")",
         "test": "chrome_disabled_tast_tests",
         "test_id_prefix": "ninja://chromeos:chrome_disabled_tast_tests/",
         "test_level_retries": 1,
@@ -1271,10 +1140,10 @@
       {
         "autotest_name": "tast.chrome-from-gcs",
         "cros_board": "jacuzzi",
-        "cros_img": "jacuzzi-release/R117-15538.0.0",
+        "cros_img": "jacuzzi-release/R117-15564.0.0",
         "name": "chrome_all_tast_tests JACUZZI_RELEASE_CHROME_FROM_TLS_LKGM",
         "shards": 10,
-        "tast_expr": "(\"group:mainline\" && \"dep:chrome\" && !informational)",
+        "tast_expr": "(\"group:mainline\" && \"dep:chrome\" && !\"dep:no_chrome_dcheck\" && !\"dep:lacros\" && !informational)",
         "test": "chrome_all_tast_tests",
         "test_id_prefix": "ninja://chromeos:chrome_all_tast_tests/",
         "test_level_retries": 2,
@@ -1293,10 +1162,10 @@
       {
         "autotest_name": "tast.chrome-from-gcs",
         "cros_board": "octopus",
-        "cros_img": "octopus-release/R117-15538.0.0",
+        "cros_img": "octopus-release/R118-15574.0.0",
         "name": "chrome_all_tast_tests OCTOPUS_RELEASE_CHROME_FROM_TLS_LKGM",
         "shards": 10,
-        "tast_expr": "(\"group:mainline\" && \"dep:chrome\" && !informational)",
+        "tast_expr": "(\"group:mainline\" && \"dep:chrome\" && !\"dep:no_chrome_dcheck\" && !\"dep:lacros\" && !informational)",
         "test": "chrome_all_tast_tests",
         "test_id_prefix": "ninja://chromeos:chrome_all_tast_tests/",
         "test_level_retries": 2,
@@ -1317,10 +1186,10 @@
       {
         "autotest_name": "tast.chrome-from-gcs",
         "cros_board": "trogdor",
-        "cros_img": "trogdor-release/R117-15538.0.0",
+        "cros_img": "trogdor-release/R118-15574.0.0",
         "name": "chrome_all_tast_tests TROGDOR_RELEASE_LKGM",
         "shards": 10,
-        "tast_expr": "(\"group:mainline\" && \"dep:chrome\" && !informational)",
+        "tast_expr": "(\"group:mainline\" && \"dep:chrome\" && !\"dep:no_chrome_dcheck\" && !\"dep:lacros\" && !informational)",
         "test": "chrome_all_tast_tests",
         "test_id_prefix": "ninja://chromeos:chrome_all_tast_tests/",
         "test_level_retries": 2,
@@ -1339,10 +1208,10 @@
       {
         "autotest_name": "tast.chrome-from-gcs",
         "cros_board": "volteer",
-        "cros_img": "volteer-release/R117-15538.0.0",
+        "cros_img": "volteer-release/R118-15574.0.0",
         "name": "chrome_all_tast_tests VOLTEER_RELEASE_LKGM",
         "shards": 10,
-        "tast_expr": "(\"group:mainline\" && \"dep:chrome\" && !informational)",
+        "tast_expr": "(\"group:mainline\" && \"dep:chrome\" && !\"dep:no_chrome_dcheck\" && !\"dep:lacros\" && !informational)",
         "test": "chrome_all_tast_tests",
         "test_id_prefix": "ninja://chromeos:chrome_all_tast_tests/",
         "test_level_retries": 2,
@@ -1358,7 +1227,7 @@
     "skylab_tests": [
       {
         "cros_board": "octopus",
-        "cros_img": "octopus-release/R117-15511.0.0",
+        "cros_img": "octopus-release/R118-15574.0.0",
         "name": "lacros_fyi_tast_tests OCTOPUS_RELEASE_LKGM",
         "tast_expr": "(\"group:mainline\" && \"dep:lacros\" && !informational)",
         "test": "lacros_fyi_tast_tests",
@@ -1368,7 +1237,7 @@
       },
       {
         "cros_board": "octopus",
-        "cros_img": "octopus-release/R116-15501.0.0",
+        "cros_img": "octopus-release/R117-15563.0.0",
         "name": "lacros_fyi_tast_tests OCTOPUS_RELEASE_DEV",
         "tast_expr": "(\"group:mainline\" && \"dep:lacros\" && !informational)",
         "test": "lacros_fyi_tast_tests",
@@ -1378,7 +1247,7 @@
       },
       {
         "cros_board": "octopus",
-        "cros_img": "octopus-release/R115-15474.21.0",
+        "cros_img": "octopus-release/R116-15509.50.0",
         "name": "lacros_fyi_tast_tests OCTOPUS_RELEASE_BETA",
         "tast_expr": "(\"group:mainline\" && \"dep:lacros\" && !informational)",
         "test": "lacros_fyi_tast_tests",
@@ -1388,7 +1257,7 @@
       },
       {
         "cros_board": "octopus",
-        "cros_img": "octopus-release/R114-15437.57.0",
+        "cros_img": "octopus-release/R115-15474.70.0",
         "name": "lacros_fyi_tast_tests OCTOPUS_RELEASE_STABLE",
         "tast_expr": "(\"group:mainline\" && \"dep:lacros\" && !informational)",
         "test": "lacros_fyi_tast_tests",
@@ -1398,7 +1267,7 @@
       },
       {
         "cros_board": "octopus",
-        "cros_img": "octopus-release/R117-15511.0.0",
+        "cros_img": "octopus-release/R118-15574.0.0",
         "name": "ozone_unittests OCTOPUS_RELEASE_LKGM",
         "test": "ozone_unittests",
         "test_id_prefix": "ninja://ui/ozone:ozone_unittests/",
@@ -1407,7 +1276,7 @@
       },
       {
         "cros_board": "octopus",
-        "cros_img": "octopus-release/R116-15501.0.0",
+        "cros_img": "octopus-release/R117-15563.0.0",
         "name": "ozone_unittests OCTOPUS_RELEASE_DEV",
         "test": "ozone_unittests",
         "test_id_prefix": "ninja://ui/ozone:ozone_unittests/",
@@ -1416,7 +1285,7 @@
       },
       {
         "cros_board": "octopus",
-        "cros_img": "octopus-release/R115-15474.21.0",
+        "cros_img": "octopus-release/R116-15509.50.0",
         "name": "ozone_unittests OCTOPUS_RELEASE_BETA",
         "test": "ozone_unittests",
         "test_id_prefix": "ninja://ui/ozone:ozone_unittests/",
@@ -1425,7 +1294,7 @@
       },
       {
         "cros_board": "octopus",
-        "cros_img": "octopus-release/R114-15437.57.0",
+        "cros_img": "octopus-release/R115-15474.70.0",
         "name": "ozone_unittests OCTOPUS_RELEASE_STABLE",
         "test": "ozone_unittests",
         "test_id_prefix": "ninja://ui/ozone:ozone_unittests/",
@@ -1441,7 +1310,7 @@
     "skylab_tests": [
       {
         "cros_board": "hana",
-        "cros_img": "hana-release/R117-15511.0.0",
+        "cros_img": "hana-release/R118-15574.0.0",
         "name": "lacros_all_tast_tests HANA_RELEASE_LKGM",
         "tast_expr": "(\"group:mainline\" && \"dep:lacros\" && !informational)",
         "test": "lacros_all_tast_tests",
@@ -1451,7 +1320,7 @@
       },
       {
         "cros_board": "hana",
-        "cros_img": "hana-release/R116-15501.0.0",
+        "cros_img": "hana-release/R117-15563.0.0",
         "name": "lacros_all_tast_tests HANA_RELEASE_DEV",
         "tast_expr": "(\"group:mainline\" && \"dep:lacros\" && !informational)",
         "test": "lacros_all_tast_tests",
@@ -1461,7 +1330,7 @@
       },
       {
         "cros_board": "hana",
-        "cros_img": "hana-release/R115-15474.21.0",
+        "cros_img": "hana-release/R116-15509.50.0",
         "name": "lacros_all_tast_tests HANA_RELEASE_BETA",
         "tast_expr": "(\"group:mainline\" && \"dep:lacros\" && !informational)",
         "test": "lacros_all_tast_tests",
@@ -1471,7 +1340,7 @@
       },
       {
         "cros_board": "hana",
-        "cros_img": "hana-release/R114-15437.57.0",
+        "cros_img": "hana-release/R115-15474.70.0",
         "name": "lacros_all_tast_tests HANA_RELEASE_STABLE",
         "tast_expr": "(\"group:mainline\" && \"dep:lacros\" && !informational)",
         "test": "lacros_all_tast_tests",
@@ -1482,7 +1351,7 @@
       {
         "autotest_name": "tast.lacros-from-gcs",
         "cros_board": "strongbad",
-        "cros_img": "strongbad-release/R117-15538.0.0",
+        "cros_img": "strongbad-release/R118-15574.0.0",
         "name": "lacros_all_tast_tests STRONGBAD_RELEASE_LKGM",
         "tast_expr": "(\"group:mainline\" && \"dep:lacros\" && !informational)",
         "test": "lacros_all_tast_tests",
@@ -1492,7 +1361,7 @@
       },
       {
         "cros_board": "strongbad",
-        "cros_img": "strongbad-release/R116-15501.0.0",
+        "cros_img": "strongbad-release/R117-15563.0.0",
         "name": "lacros_all_tast_tests strongbad_RELEASE_DEV",
         "tast_expr": "(\"group:mainline\" && \"dep:lacros\" && !informational)",
         "test": "lacros_all_tast_tests",
@@ -1502,7 +1371,7 @@
       },
       {
         "cros_board": "strongbad",
-        "cros_img": "strongbad-release/R115-15474.21.0",
+        "cros_img": "strongbad-release/R116-15509.50.0",
         "name": "lacros_all_tast_tests STRONGBAD_RELEASE_BETA",
         "tast_expr": "(\"group:mainline\" && \"dep:lacros\" && !informational)",
         "test": "lacros_all_tast_tests",
@@ -1512,7 +1381,7 @@
       },
       {
         "cros_board": "strongbad",
-        "cros_img": "strongbad-release/R114-15437.57.0",
+        "cros_img": "strongbad-release/R115-15474.70.0",
         "name": "lacros_all_tast_tests STRONGBAD_RELEASE_STABLE",
         "tast_expr": "(\"group:mainline\" && \"dep:lacros\" && !informational)",
         "test": "lacros_all_tast_tests",
@@ -1522,7 +1391,7 @@
       },
       {
         "cros_board": "hana",
-        "cros_img": "hana-release/R117-15511.0.0",
+        "cros_img": "hana-release/R118-15574.0.0",
         "name": "ozone_unittests HANA_RELEASE_LKGM",
         "test": "ozone_unittests",
         "test_id_prefix": "ninja://ui/ozone:ozone_unittests/",
@@ -1531,7 +1400,7 @@
       },
       {
         "cros_board": "hana",
-        "cros_img": "hana-release/R116-15501.0.0",
+        "cros_img": "hana-release/R117-15563.0.0",
         "name": "ozone_unittests HANA_RELEASE_DEV",
         "test": "ozone_unittests",
         "test_id_prefix": "ninja://ui/ozone:ozone_unittests/",
@@ -1540,7 +1409,7 @@
       },
       {
         "cros_board": "hana",
-        "cros_img": "hana-release/R115-15474.21.0",
+        "cros_img": "hana-release/R116-15509.50.0",
         "name": "ozone_unittests HANA_RELEASE_BETA",
         "test": "ozone_unittests",
         "test_id_prefix": "ninja://ui/ozone:ozone_unittests/",
@@ -1549,7 +1418,7 @@
       },
       {
         "cros_board": "hana",
-        "cros_img": "hana-release/R114-15437.57.0",
+        "cros_img": "hana-release/R115-15474.70.0",
         "name": "ozone_unittests HANA_RELEASE_STABLE",
         "test": "ozone_unittests",
         "test_id_prefix": "ninja://ui/ozone:ozone_unittests/",
@@ -1559,7 +1428,7 @@
       {
         "autotest_name": "tast.lacros-from-gcs",
         "cros_board": "strongbad",
-        "cros_img": "strongbad-release/R117-15538.0.0",
+        "cros_img": "strongbad-release/R118-15574.0.0",
         "name": "ozone_unittests STRONGBAD_RELEASE_LKGM",
         "test": "ozone_unittests",
         "test_id_prefix": "ninja://ui/ozone:ozone_unittests/",
@@ -1568,7 +1437,7 @@
       },
       {
         "cros_board": "strongbad",
-        "cros_img": "strongbad-release/R116-15501.0.0",
+        "cros_img": "strongbad-release/R117-15563.0.0",
         "name": "ozone_unittests strongbad_RELEASE_DEV",
         "test": "ozone_unittests",
         "test_id_prefix": "ninja://ui/ozone:ozone_unittests/",
@@ -1577,7 +1446,7 @@
       },
       {
         "cros_board": "strongbad",
-        "cros_img": "strongbad-release/R115-15474.21.0",
+        "cros_img": "strongbad-release/R116-15509.50.0",
         "name": "ozone_unittests STRONGBAD_RELEASE_BETA",
         "test": "ozone_unittests",
         "test_id_prefix": "ninja://ui/ozone:ozone_unittests/",
@@ -1586,7 +1455,7 @@
       },
       {
         "cros_board": "strongbad",
-        "cros_img": "strongbad-release/R114-15437.57.0",
+        "cros_img": "strongbad-release/R115-15474.70.0",
         "name": "ozone_unittests STRONGBAD_RELEASE_STABLE",
         "test": "ozone_unittests",
         "test_id_prefix": "ninja://ui/ozone:ozone_unittests/",
@@ -1595,7 +1464,7 @@
       },
       {
         "cros_board": "hana",
-        "cros_img": "hana-release/R117-15511.0.0",
+        "cros_img": "hana-release/R118-15574.0.0",
         "name": "viz_unittests HANA_RELEASE_LKGM",
         "test": "viz_unittests",
         "test_id_prefix": "ninja://components/viz:viz_unittests/",
@@ -1604,7 +1473,7 @@
       },
       {
         "cros_board": "hana",
-        "cros_img": "hana-release/R116-15501.0.0",
+        "cros_img": "hana-release/R117-15563.0.0",
         "name": "viz_unittests HANA_RELEASE_DEV",
         "test": "viz_unittests",
         "test_id_prefix": "ninja://components/viz:viz_unittests/",
@@ -1613,7 +1482,7 @@
       },
       {
         "cros_board": "hana",
-        "cros_img": "hana-release/R115-15474.21.0",
+        "cros_img": "hana-release/R116-15509.50.0",
         "name": "viz_unittests HANA_RELEASE_BETA",
         "test": "viz_unittests",
         "test_id_prefix": "ninja://components/viz:viz_unittests/",
@@ -1622,7 +1491,7 @@
       },
       {
         "cros_board": "hana",
-        "cros_img": "hana-release/R114-15437.57.0",
+        "cros_img": "hana-release/R115-15474.70.0",
         "name": "viz_unittests HANA_RELEASE_STABLE",
         "test": "viz_unittests",
         "test_id_prefix": "ninja://components/viz:viz_unittests/",
@@ -1632,7 +1501,7 @@
       {
         "autotest_name": "tast.lacros-from-gcs",
         "cros_board": "strongbad",
-        "cros_img": "strongbad-release/R117-15538.0.0",
+        "cros_img": "strongbad-release/R118-15574.0.0",
         "name": "viz_unittests STRONGBAD_RELEASE_LKGM",
         "test": "viz_unittests",
         "test_id_prefix": "ninja://components/viz:viz_unittests/",
@@ -1641,7 +1510,7 @@
       },
       {
         "cros_board": "strongbad",
-        "cros_img": "strongbad-release/R116-15501.0.0",
+        "cros_img": "strongbad-release/R117-15563.0.0",
         "name": "viz_unittests strongbad_RELEASE_DEV",
         "test": "viz_unittests",
         "test_id_prefix": "ninja://components/viz:viz_unittests/",
@@ -1650,7 +1519,7 @@
       },
       {
         "cros_board": "strongbad",
-        "cros_img": "strongbad-release/R115-15474.21.0",
+        "cros_img": "strongbad-release/R116-15509.50.0",
         "name": "viz_unittests STRONGBAD_RELEASE_BETA",
         "test": "viz_unittests",
         "test_id_prefix": "ninja://components/viz:viz_unittests/",
@@ -1659,7 +1528,7 @@
       },
       {
         "cros_board": "strongbad",
-        "cros_img": "strongbad-release/R114-15437.57.0",
+        "cros_img": "strongbad-release/R115-15474.70.0",
         "name": "viz_unittests STRONGBAD_RELEASE_STABLE",
         "test": "viz_unittests",
         "test_id_prefix": "ninja://components/viz:viz_unittests/",

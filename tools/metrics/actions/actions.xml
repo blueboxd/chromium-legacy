@@ -627,6 +627,15 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="Accel_Enable_Dictation">
+  <owner>akihiroota@chromium.org</owner>
+  <owner>ash/accessibility/OWNERS</owner>
+  <description>
+    User enables Dictation by pressing the Dictation key (on supported keboards)
+    or presses the Search + D keyboard shortcut.
+  </description>
+</action>
+
 <action name="Accel_Exit_First_Q">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
@@ -6401,6 +6410,12 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="Commerce.AddToCart">
+  <owner>yuezhanggg@chromium.org</owner>
+  <owner>chrome-shopping@google.com</owner>
+  <description>Triggered when the user adds a product to cart.</description>
+</action>
+
 <action name="Commerce.PriceAlertsMessageCard.Dismissed">
   <owner>zhiyuancai@chromium.org</owner>
   <owner>chrome-shopping@google.com</owner>
@@ -6664,6 +6679,42 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Commerce.PriceTracking.ShoppingCollection.Created">
+  <owner>mdjones@chromium.org</owner>
+  <owner>chrome-shopping@google.com</owner>
+  <description>
+    Records when the shopping collection bookmark folder is created as the
+    result of a user bookmarking a product page.
+  </description>
+</action>
+
+<action name="Commerce.PriceTracking.ShoppingCollection.Deleted">
+  <owner>mdjones@chromium.org</owner>
+  <owner>chrome-shopping@google.com</owner>
+  <description>
+    Records when a user deletes the automatically created shopping collection
+    bookmark folder.
+  </description>
+</action>
+
+<action name="Commerce.PriceTracking.ShoppingCollection.NameChanged">
+  <owner>mdjones@chromium.org</owner>
+  <owner>chrome-shopping@google.com</owner>
+  <description>
+    Records when a user changes the name of the shopping collection bookmark
+    folder.
+  </description>
+</action>
+
+<action name="Commerce.PriceTracking.ShoppingCollection.ParentChanged">
+  <owner>mdjones@chromium.org</owner>
+  <owner>chrome-shopping@google.com</owner>
+  <description>
+    Records when a user changes the containing folder of the shopping collection
+    bookmark folder.
+  </description>
+</action>
+
 <action name="Commerce.PriceTracking.SidePanel.ClickedTrackedProduct">
   <owner>yuezhanggg@chromium.org</owner>
   <owner>chrome-shopping@google.com</owner>
@@ -6752,6 +6803,12 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Commerce.Purchase">
+  <owner>yuezhanggg@chromium.org</owner>
+  <owner>chrome-shopping@google.com</owner>
+  <description>Triggered when the user makes the purchase.</description>
+</action>
+
 <action name="Commerce.TabGridSwitched.HasPriceDrop">
   <owner>davidjm@chromium.org</owner>
   <owner>ayman@chromium.org</owner>
@@ -6774,6 +6831,18 @@ should be able to be added at any place in this file.
     previously known price is identified. This metric records when the user
     clicks the Tab Grid Card which does not contain a price drop.
   </description>
+</action>
+
+<action name="Commerce.VisitCart">
+  <owner>yuezhanggg@chromium.org</owner>
+  <owner>chrome-shopping@google.com</owner>
+  <description>Triggered when the user visits the cart page.</description>
+</action>
+
+<action name="Commerce.VisitCheckout">
+  <owner>yuezhanggg@chromium.org</owner>
+  <owner>chrome-shopping@google.com</owner>
+  <description>Triggered when ther user visits the checkout page.</description>
 </action>
 
 <action name="ConfirmNotToOrderSpringCharger">
@@ -7644,6 +7713,38 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="CookieControls.Bubble.AllowThirdPartyCookies">
+  <owner>boujane@google.com</owner>
+  <owner>sauski@google.com</owner>
+  <description>
+    ThirdParty cookies allowed from cookie controls bubble.
+  </description>
+</action>
+
+<action name="CookieControls.Bubble.BlockThirdPartyCookies">
+  <owner>boujane@google.com</owner>
+  <owner>sauski@google.com</owner>
+  <description>
+    ThirdParty cookies blocked from cookie controls bubble.
+  </description>
+</action>
+
+<action name="CookieControls.Bubble.CookiesAllowed.Opened">
+  <owner>kmg@google.com</owner>
+  <owner>sauski@google.com</owner>
+  <description>
+    Cookie controls bubble opened while third-party cookies are allowed.
+  </description>
+</action>
+
+<action name="CookieControls.Bubble.CookiesBlocked.Opened">
+  <owner>kmg@google.com</owner>
+  <owner>sauski@google.com</owner>
+  <description>
+    Cookie controls bubble opened while third-party cookies are blocked.
+  </description>
+</action>
+
 <action name="CookieControls.Bubble.CookiesInUse">
   <owner>dullweber@chromium.org</owner>
   <owner>huanzhong@chromium.org</owner>
@@ -7664,6 +7765,14 @@ should be able to be added at any place in this file.
   <owner>dullweber@chromium.org</owner>
   <owner>huanzhong@chromium.org</owner>
   <description>The cookie controls UI was opened.</description>
+</action>
+
+<action name="CookieControls.Bubble.SendFeedback">
+  <owner>boujane@google.com</owner>
+  <owner>sauski@google.com</owner>
+  <description>
+    Send Feedback triggered from cookie controls bubble.
+  </description>
 </action>
 
 <action name="CookieControls.Bubble.TooltipShown">
@@ -7687,6 +7796,47 @@ should be able to be added at any place in this file.
   <owner>huanzhong@chromium.org</owner>
   <description>
     Cookie blocking was enabled for a site through the cookie controls UI.
+  </description>
+</action>
+
+<action name="CookieControls.Bubble.UnknownState.Opened">
+  <owner>kmg@google.com</owner>
+  <owner>sauski@google.com</owner>
+  <description>
+    Cookie controls bubble opened for an error condition that shouldn't be
+    reached.
+  </description>
+</action>
+
+<action name="CookieControls.HighConfidence.Opened">
+  <owner>kmg@google.com</owner>
+  <owner>sauski@google.com</owner>
+  <description>
+    Cookie controls icon was clicked on for a high confidence page.
+  </description>
+</action>
+
+<action name="CookieControls.HighConfidence.Shown">
+  <owner>kmg@google.com</owner>
+  <owner>sauski@google.com</owner>
+  <description>
+    Cookie controls icon was shown for a high confidence page.
+  </description>
+</action>
+
+<action name="CookieControls.MediumConfidence.Opened">
+  <owner>kmg@google.com</owner>
+  <owner>sauski@google.com</owner>
+  <description>
+    Cookie controls icon was clicked on for a medium confidence page.
+  </description>
+</action>
+
+<action name="CookieControls.MediumConfidence.Shown">
+  <owner>kmg@google.com</owner>
+  <owner>sauski@google.com</owner>
+  <description>
+    Cookie controls icon was shown for a medium confidence page.
   </description>
 </action>
 
@@ -8154,6 +8304,16 @@ should be able to be added at any place in this file.
   <description>
     Recorded when exiting current Attract Loop by moving cursor, clicking mouse
     or pressing key.
+  </description>
+</action>
+
+<action name="DemoMode_Highlights_DetailsPage_Clicked">
+  <owner>llin@google.com</owner>
+  <owner>cros-demo-mode-eng@google.com</owner>
+  <description>
+    Recorded when a details page is clicked in the Highlights App. Only recorded
+    for versions of the Highlights App that have the UI concept of a
+    &quot;details&quot; page.
   </description>
 </action>
 
@@ -12655,12 +12815,29 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="IOSMagicStackShortcutsFreshSignal" not_user_triggered="true">
+  <owner>thegreenfrog@google.com</owner>
+  <owner>bling-team@google.com</owner>
+  <description>
+    Recorded when a valid user action related to Reading List, Bookmarks, Recent
+    Tabs, or History occurs.
+  </description>
+</action>
+
 <action name="IOSMobileReloadCrashedRenderer" not_user_triggered="true">
   <owner>thegreenfrog@google.com</owner>
   <owner>ajuma@google.com</owner>
   <description>
     Recorded when a user has switched back to a tab whose renderer needs to be
     reloaded due to a renderer crash on iOS.
+  </description>
+</action>
+
+<action name="IOSMostVisitedTopSitesChanged" not_user_triggered="true">
+  <owner>thegreenfrog@google.com</owner>
+  <owner>bwwilliams@google.com</owner>
+  <description>
+    Recorded when the top four most visited sites changes.
   </description>
 </action>
 
@@ -18338,6 +18515,22 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Mobile.OmniboxContextMenu.MoveAddressBarToBottom">
+  <owner>christianxu@google.com</owner>
+  <description>
+    User pressed 'Move Address Bar To Bottom' in the omnibox context menu (iOS
+    only).
+  </description>
+</action>
+
+<action name="Mobile.OmniboxContextMenu.MoveAddressBarToTop">
+  <owner>christianxu@google.com</owner>
+  <description>
+    User pressed 'Move Address Bar To Top' in the omnibox context menu (iOS
+    only).
+  </description>
+</action>
+
 <action name="Mobile.OmniboxContextMenu.SearchCopiedImage">
   <owner>rkgibson@google.com</owner>
   <owner>stkhapugin@google.com</owner>
@@ -19534,6 +19727,15 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="MobileFullscreenExitedManually">
+  <owner>ajuma@chromium.org</owner>
+  <owner>alionadangla@chromium.org</owner>
+  <description>
+    Reported when user taps on the collapsed toolbars to deploy it and exit
+    fullscreen mode. iOS only.
+  </description>
+</action>
+
 <action name="MobileGoogleServicesSettingsBack">
   <owner>gambard@chromium.org</owner>
   <owner>sczs@chromium.org</owner>
@@ -20341,6 +20543,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="MobileMenuPinTab">
+  <obsolete>Deprecated as of 2023-08</obsolete>
   <owner>ewannpv@chromium.org</owner>
   <owner>pakzhygitov@google.com</owner>
   <description>
@@ -20363,6 +20566,12 @@ should be able to be added at any place in this file.
   <obsolete>This menu item was never added to the app menu.</obsolete>
   <owner>aurimas@chromium.org</owner>
   <description>User pressed 'Quit' in the app menu.</description>
+</action>
+
+<action name="MobileMenuReadAloud">
+  <owner>basiaz@google.com</owner>
+  <owner>iwells@chromium.com</owner>
+  <description>User pressed 'Listen to this page' in the app menu.</description>
 </action>
 
 <action name="MobileMenuReadingList">
@@ -20492,6 +20701,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="MobileMenuUnpinTab">
+  <obsolete>Deprecated as of 2023-08</obsolete>
   <owner>ewannpv@chromium.org</owner>
   <owner>pakzhygitov@google.com</owner>
   <description>
@@ -21706,6 +21916,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="MobileSnackbarUndoPinAction">
+  <obsolete>Deprecated as of 2023-08</obsolete>
   <owner>ewannpv@chromium.org</owner>
   <owner>pakzhygitov@google.com</owner>
   <description>
@@ -21715,6 +21926,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="MobileSnackbarUndoUnpinAction">
+  <obsolete>Deprecated as of 2023-08</obsolete>
   <owner>ewannpv@chromium.org</owner>
   <owner>pakzhygitov@google.com</owner>
   <description>
@@ -22327,6 +22539,23 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="MobileTabPickupSettingsBack">
+  <owner>ewannpv@chromium.org</owner>
+  <owner>chromeleon@google.com</owner>
+  <description>
+    Reported when user goes back from Tab Pickup Settings UI to Tabs Settings
+    screen. iOS only.
+  </description>
+</action>
+
+<action name="MobileTabPickupSettingsClose">
+  <owner>ewannpv@chromium.org</owner>
+  <owner>chromeleon@google.com</owner>
+  <description>
+    Reported when Tab Pickup Settings UI was dismissed. iOS only.
+  </description>
+</action>
+
 <action name="MobileTabPinned">
   <owner>ewannpv@chromium.org</owner>
   <owner>pakzhygitov@google.com</owner>
@@ -22733,6 +22962,14 @@ should be able to be added at any place in this file.
   <description>
     The user tapped on the top toolbar's optional button acting as a new tab
     button.
+  </description>
+</action>
+
+<action name="MobileTopToolbarReadAloudButton">
+  <owner>basiaz@google.com</owner>
+  <owner>iwells@chromium.com</owner>
+  <description>
+    The user tapped on the top toolbar's read aloud button.
   </description>
 </action>
 
@@ -24651,6 +24888,14 @@ should be able to be added at any place in this file.
 <action name="OmniboxInputInProgress">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
+</action>
+
+<action name="Open_Sys_Internals">
+  <owner>yuholong@google.com</owner>
+  <owner>arcvm-eng@google.com</owner>
+  <description>
+    Number of times that chrome://sys-internals is accessed.
+  </description>
 </action>
 
 <action name="OpenActiveTabInPwaWindow">
@@ -27047,16 +27292,6 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
-<action name="PasswordManager_Disabled">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
-</action>
-
-<action name="PasswordManager_Enabled">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
-</action>
-
 <action name="PasswordManager_LoggedInWithNewPassword">
   <obsolete>
     Introduction of Manual Fallbacks broke recording of this action.
@@ -27091,16 +27326,6 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
-<action name="PasswordManager_LoginFollowingAutofill">
-  <owner>vabr@chromium.org</owner>
-  <owner>vasilii@chromium.org</owner>
-  <description>
-    The user logged in successfully with a credential originally filled by
-    Chrome, and either did not change the stored password at all, or authorized
-    Chrome to update it with the current password value.
-  </description>
-</action>
-
 <action name="PasswordManager_LoginPassed">
   <owner>vasilii@chromium.org</owner>
   <description>
@@ -27128,13 +27353,17 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="PasswordManager_RemovePasswordException">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>vasilii@chromium.org</owner>
+  <description>
+    The user deleted a blocklisted credential from within the Password Manager.
+  </description>
 </action>
 
 <action name="PasswordManager_RemoveSavedPassword">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <owner>vasilii@chromium.org</owner>
+  <description>
+    The user deleted a stored credential from within the Password Manager.
+  </description>
 </action>
 
 <action name="PasswordManager_ShowedHttpNotSecureExplanation">
@@ -27335,7 +27564,6 @@ should be able to be added at any place in this file.
 
 <action name="PaymentsUserAuthSuccessfulForMandatoryAuthToggle">
   <owner>koulvipul@google.com</owner>
-  <owner>vinnypersky@google.com</owner>
   <owner>sujiezhu@google.com</owner>
   <description>
     Recorded when user completes a successful auth after trying to change the
@@ -27345,7 +27573,6 @@ should be able to be added at any place in this file.
 
 <action name="PaymentsUserAuthSuccessfulToShowEditLocalCardDialog">
   <owner>koulvipul@google.com</owner>
-  <owner>vinnypersky@google.com</owner>
   <owner>sujiezhu@google.com</owner>
   <description>
     Recorded when user completes a successful auth after trying to edit a local
@@ -27356,7 +27583,6 @@ should be able to be added at any place in this file.
 
 <action name="PaymentsUserAuthTriggeredForMandatoryAuthToggle">
   <owner>koulvipul@google.com</owner>
-  <owner>vinnypersky@google.com</owner>
   <owner>sujiezhu@google.com</owner>
   <description>
     Recorded when user is asked for an auth after trying to change the mandatory
@@ -27366,7 +27592,6 @@ should be able to be added at any place in this file.
 
 <action name="PaymentsUserAuthTriggeredToShowEditLocalCardDialog">
   <owner>koulvipul@google.com</owner>
-  <owner>vinnypersky@google.com</owner>
   <owner>sujiezhu@google.com</owner>
   <description>
     Recorded when user is asked for an auth after trying to edit a local card
@@ -28328,6 +28553,15 @@ should be able to be added at any place in this file.
   <description>
     The plus icon shown in the omnibox when a site has passed the browser's PWA
     promotability checks.
+  </description>
+</action>
+
+<action name="QS_Subpage_Network_AddESim">
+  <owner>sylvieliu@google.com</owner>
+  <owner>cros-status-area-eng@google.com</owner>
+  <description>
+    User clicked on the Add ESim network entry in the quick settings network
+    subpage on ChromeOS.
   </description>
 </action>
 
@@ -29614,6 +29848,49 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Settings.AddressBar.Back">
+  <owner>christianxu@chromium.org</owner>
+  <owner>gambard@chromium.org</owner>
+  <description>
+    Reported when user clicks the back button on the Address Bar Settings. iOS
+    only.
+  </description>
+</action>
+
+<action name="Settings.AddressBar.BottomAddressBar">
+  <owner>christianxu@chromium.org</owner>
+  <owner>gambard@chromium.org</owner>
+  <description>
+    Reported when user selects bottom address bar in Address Bar Settings. iOS
+    only.
+  </description>
+</action>
+
+<action name="Settings.AddressBar.Dismissed">
+  <owner>christianxu@chromium.org</owner>
+  <owner>gambard@chromium.org</owner>
+  <description>
+    Reported when user dismisses the Address Bar Settings. iOS only.
+  </description>
+</action>
+
+<action name="Settings.AddressBar.Opened">
+  <owner>christianxu@chromium.org</owner>
+  <owner>gambard@chromium.org</owner>
+  <description>
+    Reported when user navigates to Address Bar Settings. iOS only.
+  </description>
+</action>
+
+<action name="Settings.AddressBar.TopAddressBar">
+  <owner>christianxu@chromium.org</owner>
+  <owner>gambard@chromium.org</owner>
+  <description>
+    Reported when user selects top address bar in Address Bar Settings. iOS
+    only.
+  </description>
+</action>
+
 <action name="Settings.Bandwidth">
   <owner>gambard@chromium.org</owner>
   <owner>sczs@chromium.org</owner>
@@ -29713,7 +29990,7 @@ should be able to be added at any place in this file.
 <action name="Settings.PrivacyGuide.BackClickCompletion">
   <owner>harrisonsean@chromium.org</owner>
   <owner>rainhard@chromium.org</owner>
-  <owner>chrome-friendly-settings@google.com</owner>
+  <owner>chrome-privacy-controls@google.com</owner>
   <description>
     User clicks the back button on the completion card in Privacy guide.
   </description>
@@ -29722,7 +29999,7 @@ should be able to be added at any place in this file.
 <action name="Settings.PrivacyGuide.BackClickCookies">
   <owner>harrisonsean@chromium.org</owner>
   <owner>rainhard@chromium.org</owner>
-  <owner>chrome-friendly-settings@google.com</owner>
+  <owner>chrome-privacy-controls@google.com</owner>
   <description>
     User clicks the back button on the cookies card in Privacy guide.
   </description>
@@ -29731,7 +30008,7 @@ should be able to be added at any place in this file.
 <action name="Settings.PrivacyGuide.BackClickHistorySync">
   <owner>harrisonsean@chromium.org</owner>
   <owner>rainhard@chromium.org</owner>
-  <owner>chrome-friendly-settings@google.com</owner>
+  <owner>chrome-privacy-controls@google.com</owner>
   <description>
     User clicks the back button on the history sync card in Privacy guide.
   </description>
@@ -29740,7 +30017,7 @@ should be able to be added at any place in this file.
 <action name="Settings.PrivacyGuide.BackClickMSBB">
   <owner>harrisonsean@chromium.org</owner>
   <owner>rainhard@chromium.org</owner>
-  <owner>chrome-friendly-settings@google.com</owner>
+  <owner>chrome-privacy-controls@google.com</owner>
   <description>
     User clicks the back button on the MSBB card in Privacy guide.
   </description>
@@ -29749,16 +30026,24 @@ should be able to be added at any place in this file.
 <action name="Settings.PrivacyGuide.BackClickSafeBrowsing">
   <owner>harrisonsean@chromium.org</owner>
   <owner>rainhard@chromium.org</owner>
-  <owner>chrome-friendly-settings@google.com</owner>
+  <owner>chrome-privacy-controls@google.com</owner>
   <description>
     User clicks the back button on the Safe Browsing card in Privacy guide.
+  </description>
+</action>
+
+<action name="Settings.PrivacyGuide.BackClickSearchSuggestions">
+  <owner>rainhard@chromium.org</owner>
+  <owner>chrome-privacy-controls@google.com</owner>
+  <description>
+    User clicks the back button on the search suggestions card in Privacy guide.
   </description>
 </action>
 
 <action name="Settings.PrivacyGuide.ChangeCookiesBlock3P">
   <owner>harrisonsean@chromium.org</owner>
   <owner>rainhard@chromium.org</owner>
-  <owner>chrome-friendly-settings@google.com</owner>
+  <owner>chrome-privacy-controls@google.com</owner>
   <description>
     User changes cookies to block 3rd party in Privacy guide.
   </description>
@@ -29767,7 +30052,7 @@ should be able to be added at any place in this file.
 <action name="Settings.PrivacyGuide.ChangeCookiesBlock3PIncognito">
   <owner>harrisonsean@chromium.org</owner>
   <owner>rainhard@chromium.org</owner>
-  <owner>chrome-friendly-settings@google.com</owner>
+  <owner>chrome-privacy-controls@google.com</owner>
   <description>
     User changes cookies to block 3rd party in Incognito in Privacy guide.
   </description>
@@ -29776,35 +30061,35 @@ should be able to be added at any place in this file.
 <action name="Settings.PrivacyGuide.ChangeHistorySyncOff">
   <owner>harrisonsean@chromium.org</owner>
   <owner>rainhard@chromium.org</owner>
-  <owner>chrome-friendly-settings@google.com</owner>
+  <owner>chrome-privacy-controls@google.com</owner>
   <description>User changes history sync to off in Privacy guide.</description>
 </action>
 
 <action name="Settings.PrivacyGuide.ChangeHistorySyncOn">
   <owner>harrisonsean@chromium.org</owner>
   <owner>rainhard@chromium.org</owner>
-  <owner>chrome-friendly-settings@google.com</owner>
+  <owner>chrome-privacy-controls@google.com</owner>
   <description>User changes history sync to on in Privacy guide.</description>
 </action>
 
 <action name="Settings.PrivacyGuide.ChangeMSBBOff">
   <owner>harrisonsean@chromium.org</owner>
   <owner>rainhard@chromium.org</owner>
-  <owner>chrome-friendly-settings@google.com</owner>
+  <owner>chrome-privacy-controls@google.com</owner>
   <description>User changes MSBB to off in Privacy guide.</description>
 </action>
 
 <action name="Settings.PrivacyGuide.ChangeMSBBOn">
   <owner>harrisonsean@chromium.org</owner>
   <owner>rainhard@chromium.org</owner>
-  <owner>chrome-friendly-settings@google.com</owner>
+  <owner>chrome-privacy-controls@google.com</owner>
   <description>User changes MSBB to on in Privacy guide.</description>
 </action>
 
 <action name="Settings.PrivacyGuide.ChangeSafeBrowsingEnhanced">
   <owner>harrisonsean@chromium.org</owner>
   <owner>rainhard@chromium.org</owner>
-  <owner>chrome-friendly-settings@google.com</owner>
+  <owner>chrome-privacy-controls@google.com</owner>
   <description>
     User changes Safe Browsing to enhanced in Privacy guide.
   </description>
@@ -29813,16 +30098,32 @@ should be able to be added at any place in this file.
 <action name="Settings.PrivacyGuide.ChangeSafeBrowsingStandard">
   <owner>harrisonsean@chromium.org</owner>
   <owner>rainhard@chromium.org</owner>
-  <owner>chrome-friendly-settings@google.com</owner>
+  <owner>chrome-privacy-controls@google.com</owner>
   <description>
     User changes Safe Browsing to standard in Privacy guide.
+  </description>
+</action>
+
+<action name="Settings.PrivacyGuide.ChangeSearchSuggestionsOff">
+  <owner>rainhard@chromium.org</owner>
+  <owner>chrome-privacy-controls@google.com</owner>
+  <description>
+    User changes Search Suggestions to off in Privacy guide.
+  </description>
+</action>
+
+<action name="Settings.PrivacyGuide.ChangeSearchSuggestionsOn">
+  <owner>rainhard@chromium.org</owner>
+  <owner>chrome-privacy-controls@google.com</owner>
+  <description>
+    User changes Search Suggestions to on in Privacy guide.
   </description>
 </action>
 
 <action name="Settings.PrivacyGuide.CompletionPSClick">
   <owner>harrisonsean@chromium.org</owner>
   <owner>rainhard@chromium.org</owner>
-  <owner>chrome-friendly-settings@google.com</owner>
+  <owner>chrome-privacy-controls@google.com</owner>
   <description>
     User clicks on the Privacy Sandbox link on the completion step of Privacy
     guide.
@@ -29832,7 +30133,7 @@ should be able to be added at any place in this file.
 <action name="Settings.PrivacyGuide.CompletionSWAAClick">
   <owner>harrisonsean@chromium.org</owner>
   <owner>rainhard@chromium.org</owner>
-  <owner>chrome-friendly-settings@google.com</owner>
+  <owner>chrome-privacy-controls@google.com</owner>
   <description>
     User clicks on the sWAA link on the completion step of Privacy guide.
   </description>
@@ -29841,7 +30142,7 @@ should be able to be added at any place in this file.
 <action name="Settings.PrivacyGuide.NextClickCompletion">
   <owner>harrisonsean@chromium.org</owner>
   <owner>rainhard@chromium.org</owner>
-  <owner>chrome-friendly-settings@google.com</owner>
+  <owner>chrome-privacy-controls@google.com</owner>
   <description>
     User clicks the next button on the completion card in Privacy guide.
   </description>
@@ -29850,7 +30151,7 @@ should be able to be added at any place in this file.
 <action name="Settings.PrivacyGuide.NextClickCookies">
   <owner>harrisonsean@chromium.org</owner>
   <owner>rainhard@chromium.org</owner>
-  <owner>chrome-friendly-settings@google.com</owner>
+  <owner>chrome-privacy-controls@google.com</owner>
   <description>
     User clicks the next button on the cookies card in Privacy guide.
   </description>
@@ -29859,7 +30160,7 @@ should be able to be added at any place in this file.
 <action name="Settings.PrivacyGuide.NextClickHistorySync">
   <owner>harrisonsean@chromium.org</owner>
   <owner>rainhard@chromium.org</owner>
-  <owner>chrome-friendly-settings@google.com</owner>
+  <owner>chrome-privacy-controls@google.com</owner>
   <description>
     User clicks the next button on the history sync card in Privacy guide.
   </description>
@@ -29868,7 +30169,7 @@ should be able to be added at any place in this file.
 <action name="Settings.PrivacyGuide.NextClickMSBB">
   <owner>harrisonsean@chromium.org</owner>
   <owner>rainhard@chromium.org</owner>
-  <owner>chrome-friendly-settings@google.com</owner>
+  <owner>chrome-privacy-controls@google.com</owner>
   <description>
     User clicks the next button on the msbb card in Privacy guide.
   </description>
@@ -29877,16 +30178,24 @@ should be able to be added at any place in this file.
 <action name="Settings.PrivacyGuide.NextClickSafeBrowsing">
   <owner>harrisonsean@chromium.org</owner>
   <owner>rainhard@chromium.org</owner>
-  <owner>chrome-friendly-settings@google.com</owner>
+  <owner>chrome-privacy-controls@google.com</owner>
   <description>
     User clicks the next button on the Safe Browsing card in Privacy guide.
+  </description>
+</action>
+
+<action name="Settings.PrivacyGuide.NextClickSearchSuggestions">
+  <owner>rainhard@chromium.org</owner>
+  <owner>chrome-privacy-controls@google.com</owner>
+  <description>
+    User clicks the next button on the search suggestions card in Privacy guide.
   </description>
 </action>
 
 <action name="Settings.PrivacyGuide.NextClickWelcome">
   <owner>harrisonsean@chromium.org</owner>
   <owner>rainhard@chromium.org</owner>
-  <owner>chrome-friendly-settings@google.com</owner>
+  <owner>chrome-privacy-controls@google.com</owner>
   <description>
     User clicks the next button on the welcome card in Privacy guide.
   </description>
@@ -29895,7 +30204,7 @@ should be able to be added at any place in this file.
 <action name="Settings.PrivacyGuide.StartPrivacySettings">
   <owner>harrisonsean@chromium.org</owner>
   <owner>rainhard@chromium.org</owner>
-  <owner>chrome-friendly-settings@google.com</owner>
+  <owner>chrome-privacy-controls@google.com</owner>
   <description>
     User starts the Privacy guide via the link row in settings privacy section.
   </description>
@@ -29904,7 +30213,7 @@ should be able to be added at any place in this file.
 <action name="Settings.PrivacyGuide.StartPromo">
   <owner>harrisonsean@chromium.org</owner>
   <owner>rainhard@chromium.org</owner>
-  <owner>chrome-friendly-settings@google.com</owner>
+  <owner>chrome-privacy-controls@google.com</owner>
   <description>User starts the Privacy guide via the promo.</description>
 </action>
 
@@ -30589,6 +30898,14 @@ should be able to be added at any place in this file.
   <owner>lpromero@chromium.org</owner>
   <description>
     Reported when user navigates to Inactive Tabs Settings. iOS only.
+  </description>
+</action>
+
+<action name="Settings.Tabs.TabPickup">
+  <owner>ewannpv@chromium.org</owner>
+  <owner>chromeleon@chromium.org</owner>
+  <description>
+    Reported when user navigates to Tab Pickup Tabs Settings. iOS only.
   </description>
 </action>
 
@@ -38507,6 +38824,7 @@ should be able to be added at any place in this file.
       label="For ContextualSearchWebSearch feature."/>
   <suffix name="ContextualSuggestions"
       label="For ContextualSuggestions feature."/>
+  <suffix name="CookieControls" label="For CookieControls feature."/>
   <suffix name="Crow" label="For Crow feature."/>
   <suffix name="DataSaverDetail" label="For DataSaverDetail feature."/>
   <suffix name="DataSaverMilestonePromo"
@@ -38514,6 +38832,8 @@ should be able to be added at any place in this file.
   <suffix name="DataSaverPreview" label="For DataSaverPreview feature."/>
   <suffix name="DefaultSiteView" label="For DefaultSiteView feature."/>
   <suffix name="DesktopCustomizeChrome" label="For Customize Chrome feature."/>
+  <suffix name="DesktopCustomizeChromeRefresh"
+      label="For Customize Chrome refresh feature."/>
   <suffix name="DesktopPwaInstall" label="For desktop PWA install icon."/>
   <suffix name="DesktopSharedHighlighting"
       label="For DesktopSharedHighlighting feature."/>
@@ -38616,6 +38936,8 @@ should be able to be added at any place in this file.
   <suffix name="iOSPromoPostRestore" label="For iOSPromoPostRestore feature"/>
   <suffix name="iOSPromoPostRestoreDefaultBrowser"
       label="For iOSPromoPostRestoreDefaultBrowser feature"/>
+  <suffix name="iOSPromoSearchPasswordsWidget"
+      label="For iOSPromoSearchPasswordsWidget feature"/>
   <suffix name="iOSPromoWhatsNew" label="For iOSPromoWhatsNew feature"/>
   <suffix name="iOSShareToolbarItemFeature"
       label="For iOSShareToolbarItemFeature feature"/>
@@ -38708,6 +39030,28 @@ should be able to be added at any place in this file.
   <suffix name="RequestDesktopSiteOptIn"
       label="For the RequestDesktopSiteOptIn feature."/>
   <suffix name="RestoreTabsOnFRE" label="For the RestoreTabsOnFRE feature."/>
+  <suffix name="ScalableIphHelpAppBasedEight"
+      label="For a variant of Scalable Iph feature."/>
+  <suffix name="ScalableIphHelpAppBasedFive"
+      label="For a variant of Scalable Iph feature."/>
+  <suffix name="ScalableIphHelpAppBasedFour"
+      label="For a variant of Scalable Iph feature."/>
+  <suffix name="ScalableIphHelpAppBasedNine"
+      label="For a variant of Scalable Iph feature."/>
+  <suffix name="ScalableIphHelpAppBasedNudge"
+      label="For a variant of Scalable Iph feature."/>
+  <suffix name="ScalableIphHelpAppBasedOne"
+      label="For a variant of Scalable Iph feature."/>
+  <suffix name="ScalableIphHelpAppBasedSeven"
+      label="For a variant of Scalable Iph feature."/>
+  <suffix name="ScalableIphHelpAppBasedSix"
+      label="For a variant of Scalable Iph feature."/>
+  <suffix name="ScalableIphHelpAppBasedTen"
+      label="For a variant of Scalable Iph feature."/>
+  <suffix name="ScalableIphHelpAppBasedThree"
+      label="For a variant of Scalable Iph feature."/>
+  <suffix name="ScalableIphHelpAppBasedTwo"
+      label="For a variant of Scalable Iph feature."/>
   <suffix name="ScalableIphTimerBasedEight"
       label="For a variant of Scalable Iph feature."/>
   <suffix name="ScalableIphTimerBasedFive"
@@ -38727,6 +39071,26 @@ should be able to be added at any place in this file.
   <suffix name="ScalableIphTimerBasedThree"
       label="For a variant of Scalable Iph feature."/>
   <suffix name="ScalableIphTimerBasedTwo"
+      label="For a variant of Scalable Iph feature."/>
+  <suffix name="ScalableIphUnlockedBasedEight"
+      label="For a variant of Scalable Iph feature."/>
+  <suffix name="ScalableIphUnlockedBasedFive"
+      label="For a variant of Scalable Iph feature."/>
+  <suffix name="ScalableIphUnlockedBasedFour"
+      label="For a variant of Scalable Iph feature."/>
+  <suffix name="ScalableIphUnlockedBasedNine"
+      label="For a variant of Scalable Iph feature."/>
+  <suffix name="ScalableIphUnlockedBasedOne"
+      label="For a variant of Scalable Iph feature."/>
+  <suffix name="ScalableIphUnlockedBasedSeven"
+      label="For a variant of Scalable Iph feature."/>
+  <suffix name="ScalableIphUnlockedBasedSix"
+      label="For a variant of Scalable Iph feature."/>
+  <suffix name="ScalableIphUnlockedBasedTen"
+      label="For a variant of Scalable Iph feature."/>
+  <suffix name="ScalableIphUnlockedBasedThree"
+      label="For a variant of Scalable Iph feature."/>
+  <suffix name="ScalableIphUnlockedBasedTwo"
       label="For a variant of Scalable Iph feature."/>
   <suffix name="SharedHighlightingBuilder"
       label="For SharedHighlightingBuilder feature."/>
@@ -39193,9 +39557,45 @@ should be able to be added at any place in this file.
 </action-suffix>
 
 <action-suffix separator="_" ordering="suffix">
+  <suffix name="AppsButton" label="Apps pillar page button"/>
+  <suffix name="ChromeOSButton" label="ChromeOS pillar page button"/>
+  <suffix name="PerformanceButton" label="Performance pillar page button"/>
+  <affected-action name="DemoMode_Highlights_HomePage_Click"/>
+</action-suffix>
+
+<action-suffix separator="_" ordering="suffix">
   <suffix name="NextButton" label="next button in pillar pages"/>
   <suffix name="PreviousButton" label="previous button in pillar pages"/>
   <affected-action name="DemoMode_Highlights_PillarPage_Click"/>
+</action-suffix>
+
+<action-suffix separator="_" ordering="suffix">
+  <suffix name="AdobeButton" label="Adobe details page button"/>
+  <suffix name="BatteryButton" label="Battery details page button"/>
+  <suffix name="ComparisonButton" label="Comparison details page button"/>
+  <suffix name="DisplayEntertainmentButton"
+      label="Display (Entertainment) details page button"/>
+  <suffix name="DisplayPerformanceButton"
+      label="Display (Performance) details page button"/>
+  <suffix name="EntertainmentAppsButton"
+      label="Entertainment Apps details page button"/>
+  <suffix name="GoogleAppsButton" label="Google Apps details page button"/>
+  <suffix name="LumaFusionButton" label="LumaFusion details page button"/>
+  <suffix name="MessagingButton" label="Messaging details page button"/>
+  <suffix name="MobileGamingButton" label="Mobile Gaming details page button"/>
+  <suffix name="MS365AppsButton" label="MS365 Apps details page button"/>
+  <suffix name="MSOfficeButton" label="MSOffice details page button"/>
+  <suffix name="MSOneDrive" label="MSOneDrive details page button (obsolete)"/>
+  <suffix name="NearbyShareButton" label="Nearby Share details page button"/>
+  <suffix name="OfflineModeButton" label="Offline Mode details page button"/>
+  <suffix name="PCConsoleGamingButton"
+      label="PC/Console Gaming details page button"/>
+  <suffix name="PhotosButton" label="Photos details page button"/>
+  <suffix name="ProcessorButton" label="Processor details page button"/>
+  <suffix name="StorageButton" label="Storage details page button"/>
+  <suffix name="SwitchingButton" label="Switching details page button"/>
+  <suffix name="VideoCallButton" label="Video Call details page button"/>
+  <affected-action name="DemoMode_Highlights_DetailsPage_Clicked"/>
 </action-suffix>
 
 </actions>

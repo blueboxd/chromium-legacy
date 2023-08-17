@@ -54,6 +54,7 @@ import {ConnectionStateType, DeviceStateType, IPConfigType, NetworkType, OncSour
 import {afterNextRender, flush, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {assertExists, castExists} from '../assert_extras.js';
+import {isRevampWayfindingEnabled} from '../common/load_time_booleans.js';
 import {Constructor} from '../common/types.js';
 import {DeepLinkingMixin, DeepLinkingMixinInterface} from '../deep_linking_mixin.js';
 import {recordSettingChange} from '../metrics_recorder.js';
@@ -316,6 +317,13 @@ class SettingsInternetDetailPageElement extends
         notify: true,
       },
 
+      isRevampWayfindingEnabled_: {
+        type: Boolean,
+        value: () => {
+          return isRevampWayfindingEnabled();
+        },
+      },
+
       advancedExpanded_: Boolean,
 
       networkExpanded_: Boolean,
@@ -390,6 +398,7 @@ class SettingsInternetDetailPageElement extends
   private isApnRevampEnabled_: boolean;
   private isPasspointEnabled_: boolean;
   private isPasspointSettingsEnabled_: boolean;
+  private isRevampWayfindingEnabled_: boolean;
   private isSecondaryUser_: boolean;
   private isTrafficCountersEnabled_: boolean;
   private isWifiSyncEnabled_: boolean;
@@ -711,7 +720,7 @@ class SettingsInternetDetailPageElement extends
     this.ipAddress_ = (ipv4 && ipv4.ipAddress) || '';
 
     // Update the detail page title.
-    const networkName = OncMojo.getNetworkName(this.managedProperties_);
+    const networkName = OncMojo.getNetworkNameUnsafe(this.managedProperties_);
     (this.parentNode as OsSettingsSubpageElement).pageTitle = networkName;
     flush();
 
@@ -1652,7 +1661,7 @@ class SettingsInternetDetailPageElement extends
       detail: {
         guid: this.guid,
         type: OncMojo.getNetworkTypeString(this.managedProperties_.type),
-        name: OncMojo.getNetworkName(this.managedProperties_),
+        name: OncMojo.getNetworkNameUnsafe(this.managedProperties_),
       },
     });
     this.dispatchEvent(showConfigEvent);
@@ -1716,7 +1725,8 @@ class SettingsInternetDetailPageElement extends
     }
     const config = this.getDefaultConfigProperties_();
     const apn = event.detail;
-    config.typeConfig.cellular = {apn, roaming: undefined};
+    config.typeConfig
+        .cellular = {apn, roaming: undefined, textMessageAllowState: undefined};
     this.setMojoNetworkProperties_(config);
   }
 

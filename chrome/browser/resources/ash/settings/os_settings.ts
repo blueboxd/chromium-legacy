@@ -54,8 +54,6 @@ import './os_apps_page/android_apps_subpage.js';
 import './os_apps_page/app_notifications_page/app_notifications_subpage.js';
 import './os_apps_page/app_management_page/app_management_cros_shared_style.css.js';
 import './os_apps_page/app_management_page/app_management_cros_shared_vars.css.js';
-import './os_apps_page/app_management_page/supported_links_overlapping_apps_dialog.js';
-import './os_apps_page/app_management_page/supported_links_dialog.js';
 import './os_apps_page/app_notifications_page/mojo_interface_provider.js';
 import './os_apps_page/os_apps_page.js';
 import './os_bluetooth_page/os_bluetooth_devices_subpage.js';
@@ -95,23 +93,39 @@ export {LifetimeBrowserProxyImpl} from '/shared/settings/lifetime_browser_proxy.
 export {ProfileInfoBrowserProxy, ProfileInfoBrowserProxyImpl} from '/shared/settings/people_page/profile_info_browser_proxy.js';
 export {PageStatus, StatusAction, StoredAccount, SyncBrowserProxy, SyncBrowserProxyImpl, SyncPrefs, SyncStatus} from '/shared/settings/people_page/sync_browser_proxy.js';
 export {PrivacyPageBrowserProxyImpl, SecureDnsMode, SecureDnsUiManagementMode} from '/shared/settings/privacy_page/privacy_page_browser_proxy.js';
+export {AppManagementFileHandlingItemElement} from 'chrome://resources/cr_components/app_management/file_handling_item.js';
+export {AppManagementSupportedLinksItemElement} from 'chrome://resources/cr_components/app_management/supported_links_item.js';
+export {AppManagementToggleRowElement} from 'chrome://resources/cr_components/app_management/toggle_row.js';
 export {LocalizedLinkElement} from 'chrome://resources/cr_components/localized_link/localized_link.js';
 export {SettingsPrefsElement} from 'chrome://resources/cr_components/settings_prefs/prefs.js';
 export {CrSettingsPrefs} from 'chrome://resources/cr_components/settings_prefs/prefs_types.js';
+export {CrActionMenuElement} from 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.js';
 export {CrButtonElement} from 'chrome://resources/cr_elements/cr_button/cr_button.js';
 export {CrCheckboxElement} from 'chrome://resources/cr_elements/cr_checkbox/cr_checkbox.js';
 export {CrDialogElement} from 'chrome://resources/cr_elements/cr_dialog/cr_dialog.js';
+export {CrDrawerElement} from 'chrome://resources/cr_elements/cr_drawer/cr_drawer.js';
 export {CrIconButtonElement} from 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.js';
 export {CrInputElement} from 'chrome://resources/cr_elements/cr_input/cr_input.js';
+export {CrLinkRowElement} from 'chrome://resources/cr_elements/cr_link_row/cr_link_row.js';
+export {CrRadioButtonElement} from 'chrome://resources/cr_elements/cr_radio_button/cr_radio_button.js';
+export {CrRadioGroupElement} from 'chrome://resources/cr_elements/cr_radio_group/cr_radio_group.js';
 export {CrSearchableDropDownElement} from 'chrome://resources/cr_elements/cr_searchable_drop_down/cr_searchable_drop_down.js';
+export {CrTextareaElement} from 'chrome://resources/cr_elements/cr_textarea/cr_textarea.js';
 export {CrToastElement} from 'chrome://resources/cr_elements/cr_toast/cr_toast.js';
 export {CrToggleElement} from 'chrome://resources/cr_elements/cr_toggle/cr_toggle.js';
+export {CrToolbarSearchFieldElement} from 'chrome://resources/cr_elements/cr_toolbar/cr_toolbar_search_field.js';
+export {CrPolicyIndicatorElement} from 'chrome://resources/cr_elements/policy/cr_policy_indicator.js';
 export {OpenWindowProxyImpl} from 'chrome://resources/js/open_window_proxy.js';
+export {IronCollapseElement} from 'chrome://resources/polymer/v3_0/iron-collapse/iron-collapse.js';
+export {IronListElement} from 'chrome://resources/polymer/v3_0/iron-list/iron-list.js';
+export {IronSelectorElement} from 'chrome://resources/polymer/v3_0/iron-selector/iron-selector.js';
+export {LacrosExtensionControlBrowserProxy, LacrosExtensionControlBrowserProxyImpl} from './common/lacros_extension_control_browser_proxy.js';
+export {LacrosExtensionControlledIndicatorElement} from './common/lacros_extension_controlled_indicator.js';
 export {SettingsAudioElement} from './device_page/audio.js';
 export {setCrosAudioConfigForTesting} from './device_page/cros_audio_config.js';
 export {DevicePageBrowserProxy, DevicePageBrowserProxyImpl, IdleBehavior, LidClosedBehavior, NoteAppInfo, NoteAppLockScreenSupport, setDisplayApiForTesting, StorageSpaceState} from './device_page/device_page_browser_proxy.js';
 export * as fakeCrosAudioConfig from './device_page/fake_cros_audio_config.js';
-export {fakeGraphicsTablets, fakeKeyboards, fakeKeyboards2, fakeMice, fakeMice2, fakePointingSticks, fakePointingSticks2, fakeStyluses, fakeTouchpads, fakeTouchpads2} from './device_page/fake_input_device_data.js';
+export {fakeGraphicsTabletButtonActions, fakeGraphicsTablets, fakeKeyboards, fakeKeyboards2, fakeMice, fakeMice2, fakeMouseButtonActions, fakePointingSticks, fakePointingSticks2, fakeStyluses, fakeTouchpads, fakeTouchpads2} from './device_page/fake_input_device_data.js';
 export {FakeInputDeviceSettingsProvider} from './device_page/fake_input_device_settings_provider.js';
 export {SettingsGraphicsTabletSubpageElement} from './device_page/graphics_tablet_subpage.js';
 export {getInputDeviceSettingsProvider, setInputDeviceSettingsProviderForTesting, setupFakeInputDeviceSettingsProvider} from './device_page/input_device_mojo_interface_provider.js';
@@ -156,7 +170,6 @@ export {NearbyShareHighVisibilityPageElement} from './nearby_share_page/nearby_s
 export {getReceiveManager, observeReceiveManager, setReceiveManagerForTesting} from './nearby_share_page/nearby_share_receive_manager.js';
 export {dataUsageStringToEnum, NearbyShareDataUsage} from './nearby_share_page/types.js';
 export {ChromeVoxSubpageBrowserProxy, ChromeVoxSubpageBrowserProxyImpl} from './os_a11y_page/chromevox_subpage_browser_proxy.js';
-export {ManageA11ySubpageBrowserProxy, ManageA11ySubpageBrowserProxyImpl} from './os_a11y_page/manage_a11y_subpage_browser_proxy.js';
 export {OsSettingsA11yPageElement} from './os_a11y_page/os_a11y_page.js';
 export {OsA11yPageBrowserProxy, OsA11yPageBrowserProxyImpl} from './os_a11y_page/os_a11y_page_browser_proxy.js';
 export {SelectToSpeakSubpageBrowserProxy, SelectToSpeakSubpageBrowserProxyImpl} from './os_a11y_page/select_to_speak_subpage_browser_proxy.js';
@@ -179,6 +192,7 @@ export {FastPairSavedDevice, FastPairSavedDevicesOptInStatus} from './os_bluetoo
 export {GoogleDriveBrowserProxy, GoogleDrivePageCallbackRouter, GoogleDrivePageHandlerRemote, GoogleDrivePageRemote, Stage} from './os_files_page/google_drive_browser_proxy.js';
 export {ConfirmationDialogType, SettingsGoogleDriveSubpageElement} from './os_files_page/google_drive_subpage.js';
 export {OneDriveBrowserProxy, OneDrivePageCallbackRouter, OneDrivePageHandlerRemote, OneDrivePageRemote} from './os_files_page/one_drive_browser_proxy.js';
+export {OsSettingsLanguagesSectionElement} from './os_languages_page/os_languages_section.js';
 export {createPageAvailability as createPageAvailabilityForTesting, OsPageAvailability} from './os_page_availability.js';
 export {OsSettingsPeoplePageElement} from './os_people_page/os_people_page.js';
 export {MetricsConsentBrowserProxy, MetricsConsentBrowserProxyImpl, MetricsConsentState} from './os_privacy_page/metrics_consent_browser_proxy.js';
@@ -186,11 +200,13 @@ export {OsSettingsPrivacyPageElement} from './os_privacy_page/os_privacy_page.js
 export {DataAccessPolicyState, PeripheralDataAccessBrowserProxy, PeripheralDataAccessBrowserProxyImpl} from './os_privacy_page/peripheral_data_access_browser_proxy.js';
 export {OsResetBrowserProxyImpl} from './os_reset_page/os_reset_browser_proxy.js';
 export {OsSettingsSearchPageElement} from './os_search_page/os_search_page.js';
+export {SettingsSearchAndAssistantCardElement} from './os_search_page/search_and_assistant_card.js';
 export {SearchEngine, SearchEnginesBrowserProxy, SearchEnginesBrowserProxyImpl, SearchEnginesInfo} from './os_search_page/search_engines_browser_proxy.js';
 export {OsSettingsMainElement} from './os_settings_main/os_settings_main.js';
 export {OsSettingsMenuElement} from './os_settings_menu/os_settings_menu.js';
 export {SettingsCardElement} from './os_settings_page/settings_card.js';
 export {SettingsIdleLoadElement} from './os_settings_page/settings_idle_load.js';
+export {OsSettingsRoutes} from './os_settings_routes.js';
 export {OsSettingsSearchBoxElement} from './os_settings_search_box/os_settings_search_box.js';
 export {OsSettingsSearchBoxBrowserProxyImpl} from './os_settings_search_box/os_settings_search_box_browser_proxy.js';
 export {OsSettingsHatsBrowserProxy, OsSettingsHatsBrowserProxyImpl} from './os_settings_ui/os_settings_hats_browser_proxy.js';
@@ -203,6 +219,7 @@ export {createRouter as createRouterForTesting, Route, Router, routes} from './r
 export {getPersonalizationSearchHandler, setPersonalizationSearchHandlerForTesting} from './search/personalization_search_handler.js';
 export {getSettingsSearchHandler, setSettingsSearchHandlerForTesting} from './search/settings_search_handler.js';
 export {SettingsSchedulerSliderElement} from './settings_scheduler_slider/settings_scheduler_slider.js';
+export {SettingsSystemPreferencesPageElement} from './system_preferences_page/system_preferences_page.js';
 
 // TODO(b/257329722) After the Jelly experiment is launched, add the CSS link
 // element directly to the HTML.

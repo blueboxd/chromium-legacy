@@ -54,12 +54,7 @@ GPUCanvasContext::GPUCanvasContext(
     CanvasRenderingContextHost* host,
     const CanvasContextCreationAttributesCore& attrs)
     : CanvasRenderingContext(host, attrs, CanvasRenderingAPI::kWebgpu) {
-  // Set the default values of the member corresponding to
-  // GPUCanvasContext.[[texture_descriptor]] in the WebGPU spec.
   texture_descriptor_ = {};
-  texture_descriptor_.dimension = WGPUTextureDimension_2D;
-  texture_descriptor_.mipLevelCount = 1;
-  texture_descriptor_.sampleCount = 1;
 }
 
 GPUCanvasContext::~GPUCanvasContext() {
@@ -372,6 +367,15 @@ void GPUCanvasContext::configure(const GPUCanvasConfiguration* descriptor,
   // canvas is "configured" and calls to getNextTexture() will return GPUTexture
   // objects (valid or invalid) and not throw.
   configured_ = true;
+
+  // Set the default values of the member corresponding to
+  // GPUCanvasContext.[[texture_descriptor]] in the WebGPU spec.
+  texture_descriptor_ = {};
+  texture_descriptor_.dimension = WGPUTextureDimension_2D;
+  texture_descriptor_.mipLevelCount = 1;
+  texture_descriptor_.sampleCount = 1;
+
+  // Set the values from the configuration descriptor
   texture_descriptor_.format = AsDawnEnum(descriptor->format());
   texture_descriptor_.usage =
       AsDawnFlags<WGPUTextureUsage>(descriptor->usage());
@@ -480,6 +484,10 @@ void GPUCanvasContext::configure(const GPUCanvasConfiguration* descriptor,
     // In cases where a copy is necessary the swap buffers will always use the
     // preferred canvas format.
     swap_texture_descriptor_.format = GPU::preferred_canvas_format();
+
+    // The swap buffer texture doesn't need any view formats.
+    swap_texture_descriptor_.viewFormats = nullptr;
+    swap_texture_descriptor_.viewFormatCount = 0;
   }
 
   alpha_mode_ = descriptor->alphaMode().AsEnum();
@@ -827,9 +835,8 @@ scoped_refptr<StaticBitmapImage> GPUCanvasContext::SnapshotInternal(
     const WGPUTexture& texture,
     const gfx::Size& size) const {
   const auto canvas_context_color = CanvasRenderingContextSkColorInfo();
-  const auto info = SkImageInfo::Make(size.width(), size.height(),
-                                      canvas_context_color.colorType(),
-                                      canvas_context_color.alphaType());
+  const auto info =
+      SkImageInfo::Make(gfx::SizeToSkISize(size), canvas_context_color);
   // We tag the SharedImage inside the WebGPUImageProvider with display usage
   // since there are uncommon paths which may use this snapshot for compositing.
   // These paths are usually related to either printing or either video and

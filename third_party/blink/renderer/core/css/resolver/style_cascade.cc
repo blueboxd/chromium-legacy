@@ -539,21 +539,6 @@ void StyleCascade::ApplyWideOverlapping(CascadeResolver& resolver) {
       maybe_skip(GetCSSPropertyBaselineSource(), *priority);
     }
   }
-
-  if (!RuntimeEnabledFeatures::CSSWhiteSpaceShorthandEnabled()) {
-    // TODO(crbug.com/1417543): `white-space` will become a shorthand in the
-    // future - in order to mitigate the forward compat risk, skip the
-    // `text-wrap` longhand.
-    const CSSProperty& white_space = GetCSSPropertyWhiteSpace();
-    DCHECK(white_space.IsLonghand());
-    if (!resolver.filter_.Rejects(white_space)) {
-      if (const CascadePriority* priority =
-              map_.Find(white_space.GetCSSPropertyName())) {
-        LookupAndApply(white_space, resolver);
-        maybe_skip(GetCSSPropertyTextWrap(), *priority);
-      }
-    }
-  }
 }
 
 // Go through all properties that were found during the analyze phase
@@ -1071,7 +1056,20 @@ const CSSValue* StyleCascade::ResolvePendingSubstitution(
     }
   }
 
-  NOTREACHED();
+  // Useful for debugging crashes.
+  StringBuilder builder;
+  builder.Append(property.GetPropertyName());
+  builder.Append(":");
+  for (unsigned i = 0; i < parsed_properties_count; ++i) {
+    const CSSProperty& longhand = CSSProperty::Get(parsed_properties[i].Id());
+    builder.Append(" ");
+    builder.Append(longhand.GetPropertyName());
+  }
+  builder.Append(" (from ");
+  builder.Append(value.CustomCSSText());
+  builder.Append(")");
+
+  NOTREACHED() << builder.ToString();
   return cssvalue::CSSUnsetValue::Create();
 }
 

@@ -72,7 +72,6 @@ A webhelyek és alkalmazások számára már megadott engedélyek erre a fiókra
 <translation id="2592940277904433508">A Chromium használatának folytatása</translation>
 <translation id="2648074677641340862">Az operációs rendszer hibát jelzett a telepítés során. Kérjük, töltse le újra a Chromiumot.</translation>
 <translation id="2661879430930417727">Ha megoszt egy eszközt, ismerősei és családtagjai külön fiókokban internetezve a saját kívánságaik szerint állíthatják be a Chromiumot.</translation>
-<translation id="2669853942967761236">A Chromium letiltotta ezt az archívumfájlt, mert rosszindulatú programot rejthet</translation>
 <translation id="268602741124540128">Üdvözli a Chromium, kedves <ph name="ACCOUNT_FIRST_NAME" />!</translation>
 <translation id="2711502716910134313">Chromium lap</translation>
 <translation id="2718390899429598676">A nagyobb biztonság érdekében a Chromium titkosítja az Ön adatait.</translation>
@@ -270,6 +269,7 @@ A webhelyek és alkalmazások számára már megadott engedélyek erre a fiókra
 <translation id="6613594504749178791">Módosításai a Chromium újraindítása után lépnek érvénybe.</translation>
 <translation id="665732753414869868">A Chromiumnak kamerahasználati engedélyre van szüksége, hogy 3D-s térképet készíthessen az Ön környezetéről</translation>
 <translation id="6663852025006259149">A webhelyek valószínűleg a várt módon fognak működni, de nem fognak emlékezni az Ön tevékenységeire, miután bezárta az összes Chromium-ablakot.</translation>
+<translation id="6669284030132180248">Ha Google-fiókjába is menti könyvjelzőit, a Chromiumban nyomon követheti a termékek árait, és értesítést kaphat, amikor az árak csökkennek.</translation>
 <translation id="6676384891291319759">Internetelérés</translation>
 <translation id="668175097507315160">A ChromiumOS egy bejelentkezési hiba miatt nem tudta szinkronizálni az adatokat.</translation>
 <translation id="6709350901466051922">A Chromiumnak mikrofonhasználati engedélyre van szüksége ehhez a webhelyhez</translation>
@@ -404,6 +404,5 @@ A Chromium nem tudja visszaállítani a beállításait.</translation>
 <translation id="942598560705308788">A Chromium által kezelt tanúsítványok</translation>
 <translation id="965162752251293939">Ki használja a Chromiumot?</translation>
 <translation id="967427899662692980">Állítsa be a Chromium legerősebb védelmét</translation>
-<translation id="9792300276217204">Mindig törölje a webhelyadatokat az eszközről a Chromium bezárásakor</translation>
 <translation id="985602178874221306">A Chromium szerzői</translation>
 </translationbundle>

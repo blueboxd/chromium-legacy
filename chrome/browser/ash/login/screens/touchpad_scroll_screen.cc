@@ -47,6 +47,13 @@ void RecordSettingChangedMetric(bool initial_value, bool current_value) {
   base::UmaHistogramBoolean("OOBE.CHOOBE.SettingChanged.Touchpad-scroll",
                             initial_value != current_value);
 }
+
+bool CheckNoTouchpadDeviceExist() {
+  const auto touchpads =
+      InputDeviceSettingsController::Get()->GetConnectedTouchpads();
+  return touchpads.empty();
+}
+
 }  // namespace
 
 // static
@@ -74,16 +81,20 @@ bool TouchpadScrollScreen::ShouldBeSkipped(const WizardContext& context) const {
     return true;
   }
 
-  if (chrome_user_manager_util::IsPublicSessionOrEphemeralLogin()) {
+  if (chrome_user_manager_util::IsManagedGuestSessionOrEphemeralLogin()) {
+    return true;
+  }
+
+  if (CheckNoTouchpadDeviceExist()) {
     return true;
   }
 
   if (features::IsOobeTouchpadScrollEnabled()) {
     auto* choobe_controller =
         WizardController::default_controller()->choobe_flow_controller();
-    if (choobe_controller) {
-      return choobe_controller->ShouldScreenBeSkipped(
-          TouchpadScrollScreenView::kScreenId);
+    if (choobe_controller && choobe_controller->ShouldScreenBeSkipped(
+                                 TouchpadScrollScreenView::kScreenId)) {
+      return true;
     }
   }
 

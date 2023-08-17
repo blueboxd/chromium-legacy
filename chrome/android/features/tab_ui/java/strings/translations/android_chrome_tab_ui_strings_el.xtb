@@ -3,7 +3,6 @@
 <translationbundle lang="el">
 <translation id="1075622780330595106"><ph name="NUMBER_OF_TABS" /> από τις καρτέλες σας δεν έχουν χρησιμοποιηθεί πρόσφατα. Κλείσιμο αυτών των καρτελών;</translation>
 <translation id="125153950246128346">Πατήστε για να δείτε μια άλλη καρτέλα</translation>
-<translation id="1455506303394048917">Η δραστηριότητά σας σε αυτές τις καρτέλες ανώνυμης περιήγησης θα διαγραφεί από αυτήν τη συσκευή</translation>
 <translation id="1499635324672558517">Θέλετε να κλείσετε όλες τις καρτέλες ανώνυμης περιήγησης;</translation>
 <translation id="1657719826150349398">Μετακίνηση καρτέλας κάτω</translation>
 <translation id="1869137256605757565">{TABS_COUNT,plural, =1{<ph name="TABS_COUNT_ONE" /> καρτέλα}other{<ph name="TABS_COUNT_MANY" /> καρτέλες}}</translation>
@@ -37,7 +36,6 @@
 <translation id="4133493477912226187"><ph name="NUMBER_OF_TABS" /> καρτέλες φαίνονται σχετικές. Να γίνει ομαδοποίηση;</translation>
 <translation id="4212246570487010370">Συνέχεια περιήγησης</translation>
 <translation id="4648718555153979859">Οι καρτέλες σας ομαδοποιούνται εδώ</translation>
-<translation id="4763557557015254160">{INCOGNITO_TABS_COUNT,plural, =0{Μπορείτε να βρείτε τις κλειστές καρτέλες σας στις Πρόσφατες καρτέλες στο κύριο μενού του Chrome.}=1{Μπορείτε να βρείτε τις κλειστές καρτέλες σας στις Πρόσφατες καρτέλες στο κύριο μενού του Chrome. Η καρτέλα ανώνυμης περιήγησης δεν θα είναι διαθέσιμη.}other{Μπορείτε να βρείτε τις κλειστές καρτέλες σας στις Πρόσφατες καρτέλες στο κύριο μενού του Chrome. Οι # καρτέλες ανώνυμης περιήγησης δεν θα είναι διαθέσιμες.}}</translation>
 <translation id="4788280460033928884">{REVIEWS,plural, =1{(<ph name="REVIEWS_COUNT_ONE" /> κριτική)}other{(<ph name="REVIEWS_COUNT_MANY" /> κριτικές)}}</translation>
 <translation id="4850886885716139402">Προβολή</translation>
 <translation id="4870911314065352661">Θέλετε να κλείσετε όλες τις καρτέλες;</translation>
@@ -63,10 +61,12 @@
 <translation id="6228793724645064692">(αξιολόγηση καταστήματος)</translation>
 <translation id="6333260925957816943">Πληροφορίες για αυτό το κατάστημα</translation>
 <translation id="639823877092900621">{TABS_COUNT,plural, =1{Κατάργηση ομαδοποίησης <ph name="TABS_COUNT_ONE" /> επιλεγμένης καρτέλας}other{Κατάργηση ομαδοποίησης <ph name="TABS_COUNT_MANY" /> επιλεγμένων καρτελών}}</translation>
+<translation id="6421412308143682486">{INCOGNITO_TABS_COUNT,plural, =1{Μπορείτε να βρείτε τις κλειστές καρτέλες σας στις Πρόσφατες καρτέλες στο κύριο μενού του Chrome. Η καρτέλα ανώνυμης περιήγησης δεν θα είναι διαθέσιμη.}other{Μπορείτε να βρείτε τις κλειστές καρτέλες σας στις Πρόσφατες καρτέλες στο κύριο μενού του Chrome. Οι # καρτέλες ανώνυμης περιήγησης δεν θα είναι διαθέσιμες.}}</translation>
 <translation id="6422650314852876533">{TABS_COUNT,plural, =1{<ph name="TABS_COUNT_ONE" /> καρτέλα}other{<ph name="TABS_COUNT_MANY" /> καρτέλες}}</translation>
 <translation id="6549021453810473782">Προβολή πληροφοριών καταστήματος</translation>
 <translation id="6562820390860419811">Μετακίνηση καρτέλας αριστερά</translation>
 <translation id="6615455863669487791">Εμφάνιση</translation>
+<translation id="661742612106409204">Μπορείτε να βρείτε τις κλειστές καρτέλες σας στις Πρόσφατες καρτέλες στο κύριο μενού του Chrome.</translation>
 <translation id="6840760312327750441">Για την ομαδοποίηση καρτελών, αγγίξτε παρατεταμένα μια καρτέλα. Έπειτα, σύρετέ τη πάνω σε μια άλλη καρτέλα.</translation>
 <translation id="6856809498882026482">Απόκρυψη λειτουργίας πολλαπλής επιλογής</translation>
 <translation id="7100731960740376323">{TABS_COUNT,plural, =1{Κοινοποίηση καρτέλας}other{Κοινοποίηση καρτελών}}</translation>

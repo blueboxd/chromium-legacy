@@ -29,6 +29,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/css_import_rule.h"
+#include "third_party/blink/renderer/core/css/css_keyframes_rule.h"
 #include "third_party/blink/renderer/core/css/css_layer_block_rule.h"
 #include "third_party/blink/renderer/core/css/css_rule_list.h"
 #include "third_party/blink/renderer/core/css/css_selector.h"
@@ -163,6 +164,8 @@ class CORE_EXPORT InspectorCSSAgent final
           protocol::Array<protocol::CSS::InheritedPseudoElementMatches>>*,
       protocol::Maybe<protocol::Array<protocol::CSS::CSSKeyframesRule>>*,
       protocol::Maybe<protocol::Array<protocol::CSS::CSSPositionFallbackRule>>*,
+      protocol::Maybe<protocol::Array<protocol::CSS::CSSPropertyRule>>*,
+      protocol::Maybe<protocol::Array<protocol::CSS::CSSPropertyRegistration>>*,
       protocol::Maybe<int>*) override;
   protocol::Response getInlineStylesForNode(
       int node_id,
@@ -330,10 +333,21 @@ class CORE_EXPORT InspectorCSSAgent final
   std::unique_ptr<protocol::Array<protocol::CSS::CSSPositionFallbackRule>>
   PositionFallbackRulesForNode(Element* element);
 
+  std::pair<
+      std::unique_ptr<protocol::Array<protocol::CSS::CSSPropertyRule>>,
+      std::unique_ptr<protocol::Array<protocol::CSS::CSSPropertyRegistration>>>
+  CustomPropertiesForNode(Element* element);
+
   // If the |animating_element| is a pseudo element, then |element| is a
   // reference to its originating DOM element.
   std::unique_ptr<protocol::Array<protocol::CSS::CSSKeyframesRule>>
   AnimationsForNode(Element* element, Element* animating_element);
+  CSSKeyframesRule* FindKeyframesRuleFromUAViewTransitionStylesheet(
+      Element* element,
+      StyleRuleKeyframes* keyframes_style_rule);
+  CSSKeyframesRule* FindCSSOMWrapperForKeyframesRule(
+      Element* element,
+      StyleRuleKeyframes* keyframes_style_rule);
 
   void CollectPlatformFontsForLayoutObject(
       LayoutObject*,
@@ -437,6 +451,9 @@ class CORE_EXPORT InspectorCSSAgent final
   Member<StyleRuleUsageTracker> tracker_;
 
   Member<CSSStyleSheet> inspector_user_agent_style_sheet_;
+  // This is cached to track when the ViewTransition UA stylesheet changes
+  // and a new binding is required to an InspectorStyleSheet.
+  Member<CSSStyleSheet> user_agent_view_transition_style_sheet_;
 
   int resource_content_loader_client_id_;
   InspectorAgentState::Boolean enable_requested_;

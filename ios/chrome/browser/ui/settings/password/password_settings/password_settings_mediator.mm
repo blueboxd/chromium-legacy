@@ -25,10 +25,6 @@
 #import "ios/chrome/browser/ui/settings/utils/pref_backed_boolean.h"
 #import "ios/chrome/common/ui/reauthentication/reauthentication_protocol.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 using password_manager::prefs::kCredentialsEnableService;
 
 @interface PasswordSettingsMediator () <BooleanObserver,
@@ -312,6 +308,9 @@ using password_manager::prefs::kCredentialsEnableService;
 }
 
 - (PasswordSettingsAccountStorageState)computeAccountStorageState {
+  // TODO(crbug.com/1462858): Delete the usage of IsSyncFeatureEnabled() after
+  // Phase 2 on iOS is launched. See ConsentLevel::kSync documentation for
+  // details.
   if (_syncService->GetAccountInfo().IsEmpty() ||
       _syncService->IsSyncFeatureEnabled() ||
       base::FeatureList::IsEnabled(

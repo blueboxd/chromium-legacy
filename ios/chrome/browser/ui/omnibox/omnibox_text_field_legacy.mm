@@ -39,10 +39,6 @@
 #import "ui/gfx/ios/NSString+CrStringDrawing.h"
 #import "ui/gfx/scoped_cg_context_save_gstate_mac.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 namespace {
 
 // When rendering the same string in a UITextField and a UILabel with the same
@@ -154,11 +150,9 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
 }
 
 - (void)insertTextWhileEditing:(NSString*)text {
-  // This method should only be called while editing.
-  DCHECK([self isFirstResponder]);
-
-  if ([self markedTextRange] != nil)
+  if ([self markedTextRange] != nil) {
     [self unmarkText];
+  }
 
   NSRange selectedNSRange = [self selectedNSRange];
   if (!self.delegate || [self.delegate textField:self

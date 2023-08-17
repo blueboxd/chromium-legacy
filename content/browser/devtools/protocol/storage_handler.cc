@@ -541,12 +541,12 @@ Response StorageHandler::GetStorageKeyForFrame(
     return Response::InvalidParams("Frame tree node for given frame not found");
   }
   RenderFrameHostImpl* rfh = node->current_frame_host();
-  if (rfh->storage_key().origin().opaque()) {
+  if (rfh->GetStorageKey().origin().opaque()) {
     return Response::ServerError(
         "Frame corresponds to an opaque origin and its storage key cannot be "
         "serialized");
   }
-  *serialized_storage_key = rfh->storage_key().Serialize();
+  *serialized_storage_key = rfh->GetStorageKey().Serialize();
   return Response::Success();
 }
 
@@ -1668,6 +1668,9 @@ ToSourceRegistrationResult(StoreSourceResult result) {
   switch (result) {
     case StoreSourceResult::kSuccess:
       return Storage::AttributionReportingSourceRegistrationResultEnum::Success;
+    // This is temporarily being shown as an internal error, will be surfaced
+    // as the source-registration-parsing level after refactoring.
+    case StoreSourceResult::kEventReportWindowsInvalidStartTime:
     case StoreSourceResult::kInternalError:
       return Storage::AttributionReportingSourceRegistrationResultEnum::
           InternalError;
@@ -1698,6 +1701,9 @@ ToSourceRegistrationResult(StoreSourceResult result) {
     case StoreSourceResult::kReportingOriginsPerSiteLimitReached:
       return Storage::AttributionReportingSourceRegistrationResultEnum::
           ReportingOriginsPerSiteLimitReached;
+    case StoreSourceResult::kExceedsMaxChannelCapacity:
+      return Storage::AttributionReportingSourceRegistrationResultEnum::
+          ExceedsMaxChannelCapacity;
   }
 }
 

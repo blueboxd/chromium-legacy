@@ -24,10 +24,11 @@ if (is_nacl) {
   assert(false, "Unknown CPU: $current_cpu")
 }
 
-if (use_partition_alloc_as_malloc_default) {
-  _default_allocator = "partition"
-} else {
-  _default_allocator = "none"
+declare_args() {
+  # Causes all the allocations to be routed via allocator_shim.cc. Usually,
+  # the allocator shim will, in turn, route them to Partition Alloc, but
+  # other allocators are also supported by the allocator shim.
+  use_allocator_shim = use_allocator_shim_default
 }
 
 declare_args() {
@@ -62,14 +63,10 @@ declare_args() {
   # PartitionAlloc.
   partition_alloc_optimized_debug = true
 
-  # PartitionAlloc-Everywhere (PA-E).
-  use_partition_alloc_as_malloc =
-      use_partition_alloc && use_partition_alloc_as_malloc_default
-}
-
-declare_args() {
-  # Causes all the allocations to be routed via allocator_shim.cc.
-  use_allocator_shim = use_allocator_shim_default
+  # PartitionAlloc-Everywhere (PA-E). Causes allocator_shim.cc to route
+  # calls to PartitionAlloc, rather than some other platform allocator.
+  use_partition_alloc_as_malloc = use_partition_alloc && use_allocator_shim &&
+                                  use_partition_alloc_as_malloc_default
 }
 
 assert(!use_allocator_shim || (is_android || is_apple || is_chromeos ||
@@ -128,6 +125,10 @@ assert(!enable_pointer_compression_support || glue_core_pools,
        "Pointer compression relies on core pools being contiguous.")
 
 declare_args() {
+  # Make explicit calls to ASAN at runtime, e.g. to mark quarrantined memory
+  # as poisoned. Allows ASAN to tell if a particular memory error is protected
+  # by BRP in its reports.
+  #
   # The implementation of ASan BRP is purpose-built to inspect Chromium
   # internals and is entangled with `//base` s.t. it cannot be used
   # outside of Chromium.
@@ -167,6 +168,8 @@ declare_args() {
   # scripts to pass command line arguments.
   enable_backup_ref_ptr_feature_flag = false
 
+  # Build support for Dangling Ptr Detection (DPD) via BackupRefPtr (BRP),
+  # making the raw_ptr<T> implementation to RawPtrBackupRefImpl if active.
   enable_dangling_raw_ptr_checks =
       enable_dangling_raw_ptr_checks_default && enable_backup_ref_ptr_support
 
@@ -198,9 +201,9 @@ declare_args() {
   enable_shadow_metadata = false
 
   if (is_apple) {
-    # use_blink currently assumes mach absolute ticks (eg, to ensure trace
-    # events cohere).
-    partition_alloc_enable_mach_absolute_time_ticks = is_mac || use_blink
+    # TODO(crbug.com/1414153): this should be removed once the use of mach
+    # absolute time ticks is successfully launched on iOS.
+    partition_alloc_enable_mach_absolute_time_ticks = true
   }
 }
 

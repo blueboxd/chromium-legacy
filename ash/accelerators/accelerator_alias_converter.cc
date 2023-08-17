@@ -7,6 +7,8 @@
 #include <vector>
 
 #include "ash/constants/ash_features.h"
+#include "ash/constants/ash_pref_names.h"
+#include "ash/display/privacy_screen_controller.h"
 #include "ash/shell.h"
 #include "ash/system/input_device_settings/input_device_settings_controller_impl.h"
 #include "base/containers/fixed_flat_map.h"
@@ -14,6 +16,7 @@
 #include "base/functional/bind.h"
 #include "base/functional/callback_forward.h"
 #include "base/notreached.h"
+#include "components/prefs/pref_service.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/events/ash/keyboard_capability.h"
@@ -164,6 +167,19 @@ bool MetaFKeyRewritesAreSuppressed(const ui::InputDevice& keyboard) {
   return settings->suppress_meta_fkey_rewrites;
 }
 
+bool AreTopRowFKeys(const ui::InputDevice& keyboard) {
+  if (!features::IsInputDeviceSettingsSplitEnabled()) {
+    PrefService* pref_service =
+        Shell::Get()->session_controller()->GetActivePrefService();
+    return pref_service && pref_service->GetBoolean(prefs::kSendFunctionKeys);
+  }
+
+  const auto* settings =
+      Shell::Get()->input_device_settings_controller()->GetKeyboardSettings(
+          keyboard.id);
+  return settings && settings->top_row_are_fkeys;
+}
+
 bool ShouldShowExternalTopRowActionKeyAlias(
     const ui::KeyboardDevice& keyboard,
     ui::TopRowActionKey action_key,
@@ -304,16 +320,6 @@ AcceleratorAliasConverter::CreateFunctionKeyAliases(
     return {};
   }
 
-  const bool top_row_are_fkeys = [&]() -> bool {
-    if (features::IsInputDeviceSettingsSplitEnabled()) {
-      const auto* settings =
-          Shell::Get()->input_device_settings_controller()->GetKeyboardSettings(
-              keyboard.id);
-      return settings && settings->top_row_are_fkeys;
-    }
-    return Shell::Get()->keyboard_capability()->TopRowKeysAreFKeys();
-  }();
-
   // Attempt to get the corresponding `ui::TopRowActionKey` for the given F-Key.
   absl::optional<ui::TopRowActionKey> action_key =
       Shell::Get()->keyboard_capability()->GetCorrespondingActionKeyForFKey(
@@ -329,6 +335,7 @@ AcceleratorAliasConverter::CreateFunctionKeyAliases(
     return {};
   }
 
+  const bool top_row_are_fkeys = AreTopRowFKeys(keyboard);
   if (IsChromeOSKeyboard(keyboard)) {
     // If `priority_keyboard` is a ChromeOS keyboard, the UI should show the
     // corresponding action key, the the F-Key glyph.
@@ -367,15 +374,6 @@ absl::optional<ui::Accelerator> AcceleratorAliasConverter::CreateTopRowAliases(
     return {};
   }
 
-  const bool top_row_are_fkeys = [&]() -> bool {
-    if (features::IsInputDeviceSettingsSplitEnabled()) {
-      const auto* settings =
-          Shell::Get()->input_device_settings_controller()->GetKeyboardSettings(
-              keyboard.id);
-      return settings && settings->top_row_are_fkeys;
-    }
-    return Shell::Get()->keyboard_capability()->TopRowKeysAreFKeys();
-  }();
   absl::optional<ui::KeyboardCode> function_key =
       Shell::Get()->keyboard_capability()->GetCorrespondingFunctionKey(
           keyboard, *action_key);
@@ -383,6 +381,7 @@ absl::optional<ui::Accelerator> AcceleratorAliasConverter::CreateTopRowAliases(
     return {};
   }
 
+  const bool top_row_are_fkeys = AreTopRowFKeys(keyboard);
   if (IsChromeOSKeyboard(keyboard)) {
     // If its a ChromeOS Keyboard, the UI should show the Action Key glyph. If
     // `top_row_are_fkeys` is true, Search must be added so convert the "F-Key"
@@ -441,6 +440,11 @@ std::vector<ui::Accelerator> AcceleratorAliasConverter::CreateSixPackAliases(
   const ui::KeyboardCode accel_key_code = accelerator.key_code();
   const ui::mojom::SixPackShortcutModifier six_pack_shortcut_modifier =
       GetSixPackShortcutModifier(accel_key_code, device_id);
+
+  if (six_pack_shortcut_modifier == ui::mojom::SixPackShortcutModifier::kNone) {
+    return std::vector<ui::Accelerator>();
+  }
+
   int modifiers;
   ui::KeyboardCode key_code;
   if (six_pack_shortcut_modifier ==
@@ -550,8 +554,15 @@ AcceleratorAliasConverter::FilterAliasBySupportedKeys(
     }
 
     if (accelerator.key_code() == ui::VKEY_PRIVACY_SCREEN_TOGGLE) {
-      if (keyboard_capability->HasPrivacyScreenKeyOnAnyKeyboard()) {
-        filtered_accelerators.push_back(accelerator);
+      if (Shell::Get()->privacy_screen_controller()->IsSupported()) {
+        for (const ui::KeyboardDevice& keyboard :
+             ui::DeviceDataManager::GetInstance()->GetKeyboardDevices()) {
+          if (keyboard_capability->GetDeviceType(keyboard) ==
+              ui::KeyboardCapability::DeviceType::kDeviceInternalKeyboard) {
+            filtered_accelerators.push_back(accelerator);
+            break;
+          }
+        }
       }
       continue;
     }

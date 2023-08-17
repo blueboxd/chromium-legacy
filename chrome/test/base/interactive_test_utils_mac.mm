@@ -7,20 +7,16 @@
 #include <Carbon/Carbon.h>
 #import <Cocoa/Cocoa.h>
 
+#include "base/apple/scoped_objc_class_swizzler.h"
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
-#include "base/mac/scoped_objc_class_swizzler.h"
 #include "base/run_loop.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/chrome_browser_application_mac.h"
 #import "ui/base/test/windowed_nsnotification_observer.h"
 #include "ui/events/cocoa/cocoa_event_utils.h"
 #include "ui/events/event_constants.h"
-
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
 
 @interface NSApplication (Private)
 // (Apparently) forces the application to activate itself.

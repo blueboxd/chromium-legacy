@@ -122,6 +122,7 @@ VISIT_PROTO_FIELDS(const sync_pb::AppListSpecifics& proto) {
   VISIT(item_ordinal);
   VISIT(item_pin_ordinal);
   VISIT(is_user_pinned);
+  VISIT(promise_package_id);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::AppNotificationSettings& proto) {
@@ -536,6 +537,7 @@ VISIT_PROTO_FIELDS(const sync_pb::PhoneAsASecurityKeySpecificFields& proto) {
   VISIT_BYTES(contact_id);
   VISIT(id);
   VISIT_BYTES(peer_public_key_x962);
+  VISIT_BYTES(google_credential_id);
   // |secret| is deliberately omitted to avoid including sensitive information
   // in debugging output, which might be included in bug reports etc.
 }
@@ -569,6 +571,7 @@ VISIT_PROTO_FIELDS(const sync_pb::EntityMetadata& proto) {
   VISIT(specifics_hash);
   VISIT(base_specifics_hash);
   VISIT(possibly_trimmed_base_specifics);
+  VISIT(deleted_by_version);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::EntitySpecifics& proto) {
@@ -694,7 +697,6 @@ VISIT_PROTO_FIELDS(
   VISIT(sender_info);
   VISIT(encrypted_password_sharing_invitation_data);
   VISIT(client_only_unencrypted_data);
-  VISIT(encrypted_key_for_recipient);
   VISIT(recipient_key_version);
 }
 
@@ -910,7 +912,6 @@ VISIT_PROTO_FIELDS(
   VISIT(recipient_user_id);
   VISIT(encrypted_password_sharing_invitation_data);
   VISIT(client_only_unencrypted_data);
-  VISIT(encrypted_key_for_recipient);
   VISIT(recipient_key_version);
   VISIT(sender_key_version);
 }
@@ -1211,10 +1212,6 @@ VISIT_PROTO_FIELDS(
     const sync_pb::SharingMessageSpecifics::ChannelConfiguration& proto) {
   VISIT(fcm);
   VISIT_BYTES(server);
-}
-
-VISIT_PROTO_FIELDS(const sync_pb::SharingSymmetricKey& proto) {
-  VISIT_BYTES(key_value);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::SyncCycleCompletedEventInfo& proto) {
@@ -1608,6 +1605,7 @@ VISIT_PROTO_FIELDS(const sync_pb::WorkspaceDeskSpecifics::App& proto) {
   VISIT_ENUM(disposition);
   VISIT(app_name);
   VISIT(title);
+  VISIT(override_url);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::WorkspaceDeskSpecifics::AppOneOf& proto) {

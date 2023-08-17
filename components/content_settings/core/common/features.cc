@@ -32,6 +32,10 @@ BASE_FEATURE(kSafetyCheckUnusedSitePermissions,
              "SafetyCheckUnusedSitePermissions",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+BASE_FEATURE(kActiveContentSettingExpiry,
+             "ActiveContentSettingExpiry",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 const base::FeatureParam<base::TimeDelta>
     kSafetyCheckUnusedSitePermissionsRepeatedUpdateInterval{
         &kSafetyCheckUnusedSitePermissions,
@@ -59,6 +63,14 @@ BASE_FEATURE(kUserBypassUI, "UserBypassUI", base::FEATURE_DISABLED_BY_DEFAULT);
 
 const base::FeatureParam<base::TimeDelta> kUserBypassUIExceptionExpiration{
     &kUserBypassUI, "expiration", base::Days(90)};
+
+BASE_FEATURE(kImprovedSemanticsActivityIndicators,
+             "ImprovedSemanticsActivityIndicators",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kThirdPartyCookieDeprecationCookieSettings,
+             "ThirdPartyCookieDeprecationCookieSettings",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 }  // namespace features
 }  // namespace content_settings

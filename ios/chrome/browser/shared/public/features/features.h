@@ -152,12 +152,6 @@ BASE_DECLARE_FEATURE(kEnableShortenedPasswordAutoFillInstruction);
 // Feature flag to enable Apple Calendar event in experience kit.
 BASE_DECLARE_FEATURE(kEnableExpKitAppleCalendar);
 
-// When enabled sort tab by last usage in the TabGrid.
-BASE_DECLARE_FEATURE(kTabGridRecencySort);
-
-// Whether the tab grid tabs should be sorted by recency.
-bool IsTabGridSortedByRecency();
-
 // When enabled uses new transitions in the TabGrid.
 BASE_DECLARE_FEATURE(kTabGridNewTransitions);
 
@@ -199,6 +193,15 @@ BASE_DECLARE_FEATURE(kNewNTPOmniboxLayout);
 // Feature flag to move the steady-state (unfocused) omnibox to the bottom.
 BASE_DECLARE_FEATURE(kBottomOmniboxSteadyState);
 
+// Feature param under kBottomOmniboxDefaultSetting to select the default
+// setting.
+extern const char kBottomOmniboxDefaultSettingParam[];
+extern const char kBottomOmniboxDefaultSettingParamTop[];
+extern const char kBottomOmniboxDefaultSettingParamBottom[];
+extern const char kBottomOmniboxDefaultSettingParamSafariSwitcher[];
+// Feature flag to change the default position of the omnibox.
+BASE_DECLARE_FEATURE(kBottomOmniboxDefaultSetting);
+
 // Returns true if `kBottomOmniboxSteadyState` feature flag is enabled and the
 // current device is a phone. This checks that the flag is enabled, not that the
 // omnibox is currently at the bottom.
@@ -217,10 +220,9 @@ BASE_DECLARE_FEATURE(kHideSettingsSyncPromo);
 // promo.
 BASE_DECLARE_FEATURE(kDefaultBrowserTriggerCriteriaExperiment);
 
-// Param for default browser promo trigger criteria experiment representing
-// whether promos should be displayed on omnbibox copy-paste event or on chrome
-// launch by default.
-extern const char kDefaultBrowserTriggerOnOmniboxCopyPaste[];
+// Feature flag to show default browser full-screen promo on omnbibox copy-paste
+// event.
+BASE_DECLARE_FEATURE(kFullScreenPromoOnOmniboxCopyPaste);
 
 // Feature flag to try using the page theme color in the toolbar
 BASE_DECLARE_FEATURE(kThemeColorInToolbar);
@@ -230,5 +232,9 @@ BASE_DECLARE_FEATURE(kTabGridRefactoring);
 
 // Whether the Safety Check module should be shown in the Magic Stack.
 bool IsSafetyCheckMagicStackEnabled();
+
+// Kill switch to control the blocking of the simultaneous cell selection in
+// ChromeTableViewController.
+BASE_DECLARE_FEATURE(kBlockSimultaneousCellSelectionKillSwitch);
 
 #endif  // IOS_CHROME_BROWSER_SHARED_PUBLIC_FEATURES_FEATURES_H_

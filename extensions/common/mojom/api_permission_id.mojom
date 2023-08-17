@@ -69,7 +69,7 @@ enum APIPermissionID {
   kDeclarativeContent = 43,
   kDeclarativeWebRequest = 44,
   kDesktopCapture = 45,
-  kDesktopCapturePrivate = 46,
+  kDeleted_DesktopCapturePrivate = 46,
   kDeveloperPrivate = 47,
   kDevtools = 48,
   kDns = 49,
@@ -275,6 +275,8 @@ enum APIPermissionID {
   kChromeOSEvents = 248,
   kChromeOSAttachedDeviceInfo = 249,
   kReadingList = 250,
+  kImageLoaderPrivate = 251,
+  kAccessibilityServicePrivate = 252,
 
   // Add new entries at the end of the enum and be sure to update the
   // "ExtensionPermission3" enum in tools/metrics/histograms/enums.xml

@@ -149,7 +149,7 @@ void NtpBackgroundService::FetchCollectionInfo() {
   request.add_filtering_label(base::StrCat(
       {kFilteringLabel, ".M", version_info::GetMajorVersionNumber()}));
   // Add filtering for Panorama feature.
-  if (base::FeatureList::IsEnabled(ntp_features::kCustomizeChromeSidePanel)) {
+  if (base::FeatureList::IsEnabled(features::kCustomizeChromeSidePanel)) {
     request.add_filtering_label(base::StrCat({kFilteringLabel, ".panorama"}));
   }
   if (features::IsChromeWebuiRefresh2023()) {
@@ -200,12 +200,52 @@ void NtpBackgroundService::OnCollectionInfoFetchComplete(
     return;
   }
 
-  for (int i = 0; i < collections_response.collections_size(); ++i) {
-    collection_info_.push_back(
-        CollectionInfo::CreateFromProto(collections_response.collections(i)));
+  if (base::FeatureList::IsEnabled(
+          ntp_features::kNtpBackgroundImageErrorDetection)) {
+    const auto collection_fetch_complete_closure = base::BarrierClosure(
+        collections_response.collections_size(),
+        base::BindOnce(&NtpBackgroundService::NotifyObservers,
+                       base::Unretained(this), FetchComplete::COLLECTION_INFO));
+    for (int i = 0; i < collections_response.collections_size(); ++i) {
+      ntp::background::Collection collection =
+          collections_response.collections(i);
+      if (collection.preview_size() <= 0 ||
+          !collection.preview(0).has_image_url()) {
+        // If the collection has no preview image set server-side, we don't pass
+        // its info to the renderer. Otherwise, users will be shown a broken
+        // preview image.
+        //
+        // This code block is rarely executed as the review process for adding a
+        // collection requires adding a preview image and verifying that it
+        // shows on the frontend.
+        collection_fetch_complete_closure.Run();
+        return;
+      }
+      const GURL preview_image_url = AddOptionsToImageURL(
+          collection.preview(0).image_url(), thumbnail_image_options_);
+      VerifyImageURL(
+          preview_image_url,
+          base::BindOnce(
+              &NtpBackgroundService::OnCollectionPreviewURLHeadersReceived,
+              base::Unretained(this), collection_fetch_complete_closure,
+              collection, preview_image_url));
+    }
+  } else {
+    for (int i = 0; i < collections_response.collections_size(); ++i) {
+      ntp::background::Collection collection =
+          collections_response.collections(i);
+      if (collection.preview_size() > 0 &&
+          collection.preview(0).has_image_url()) {
+        collection_info_.push_back(CollectionInfo::CreateFromProto(
+            collection, /*preview_image_url=*/AddOptionsToImageURL(
+                collection.preview(0).image_url(), thumbnail_image_options_)));
+      } else {
+        collection_info_.push_back(CollectionInfo::CreateFromProto(
+            collection, /*preview_image_url=*/absl::nullopt));
+      }
+    }
+    NotifyObservers(FetchComplete::COLLECTION_INFO);
   }
-
-  NotifyObservers(FetchComplete::COLLECTION_INFO);
 }
 
 void NtpBackgroundService::FetchCollectionImageInfo(
@@ -226,8 +266,8 @@ void NtpBackgroundService::FetchCollectionImageInfo(
 }
 
 void NtpBackgroundService::OnCollectionImageInfoFetchComplete(
-    const ntp::background::GetImagesInCollectionResponse images_response,
-    const ErrorType error_type) {
+    ntp::background::GetImagesInCollectionResponse images_response,
+    ErrorType error_type) {
   collection_images_.clear();
 
   if (error_type == ErrorType::NET_ERROR) {
@@ -276,7 +316,6 @@ void NtpBackgroundService::OnCollectionImageInfoFetchComplete(
           AddOptionsToImageURL(image.image_url(), thumbnail_image_options_)));
     }
     NotifyObservers(FetchComplete::COLLECTION_IMAGE_INFO);
-    requested_collection_id_.clear();
   }
 }
 
@@ -296,7 +335,8 @@ void NtpBackgroundService::VerifyImageURL(
             "resource is reachable."
           trigger:
             "When the user has a non-uploaded background image set and "
-            "opens the New Tab Page, or when a user clicks a theme "
+            "opens the New Tab Page, clicks the customize (pencil) icon "
+            "on the New Tab page, or clicks a theme "
             "collection on the New Tab Page."
           data:
             "The HTTP headers for a NTP background image."
@@ -309,7 +349,7 @@ void NtpBackgroundService::VerifyImageURL(
           user_data {
             type: NONE
           }
-          last_reviewed: "2023-06-14"
+          last_reviewed: "2023-07-13"
         }
         policy {
           cookies_allowed: NO
@@ -400,6 +440,82 @@ void NtpBackgroundService::OnCollectionImageURLHeadersReceived(
         NtpImageType::kCollectionImages);
   }
   std::move(collection_urls_verification_complete_closure).Run();
+}
+
+void NtpBackgroundService::OnCollectionPreviewURLHeadersReceived(
+    base::OnceClosure collection_fetch_complete_closure,
+    ntp::background::Collection collection,
+    const GURL& preview_image_url,
+    int headers_response_code) {
+  if (headers_response_code == net::HTTP_OK) {
+    collection_info_.push_back(
+        CollectionInfo::CreateFromProto(collection, preview_image_url));
+    std::move(collection_fetch_complete_closure).Run();
+    return;
+  }
+
+  FetchCollectionImageInfoInternal(
+      collection.collection_id(),
+      base::BindOnce(
+          &NtpBackgroundService::OnFetchReplacementPreviewInfoComplete,
+          base::Unretained(this), std::move(collection_fetch_complete_closure),
+          collection));
+}
+
+void NtpBackgroundService::OnFetchReplacementPreviewInfoComplete(
+    base::OnceClosure collection_fetch_complete_closure,
+    ntp::background::Collection collection,
+    ntp::background::GetImagesInCollectionResponse images_response,
+    ErrorType error_type) {
+  if (error_type != ErrorType::NONE || images_response.images_size() == 0) {
+    std::move(collection_fetch_complete_closure).Run();
+    return;
+  }
+  // Attempt to find an image URL in the collection that works. We start with
+  // the first image's index, and increment, if needed, in the callback
+  // |OnReplacementCollectionPreviewURLHeadersReceived|.
+  const int replacement_preview_index = 0;
+  const GURL replacement_preview_image_url = AddOptionsToImageURL(
+      images_response.images(replacement_preview_index).image_url(),
+      thumbnail_image_options_);
+  VerifyImageURL(
+      replacement_preview_image_url,
+      base::BindOnce(&NtpBackgroundService::
+                         OnReplacementCollectionPreviewURLHeadersReceived,
+                     base::Unretained(this),
+                     std::move(collection_fetch_complete_closure), collection,
+                     images_response, replacement_preview_index,
+                     replacement_preview_image_url));
+}
+
+void NtpBackgroundService::OnReplacementCollectionPreviewURLHeadersReceived(
+    base::OnceClosure collection_fetch_complete_closure,
+    ntp::background::Collection collection,
+    ntp::background::GetImagesInCollectionResponse images_response,
+    int replacement_preview_index,
+    const GURL& preview_image_url,
+    int headers_response_code) {
+  if (headers_response_code == net::HTTP_OK) {
+    collection_info_.push_back(
+        CollectionInfo::CreateFromProto(collection, preview_image_url));
+    std::move(collection_fetch_complete_closure).Run();
+  } else if (replacement_preview_index == images_response.images_size() - 1) {
+    // Every image in the collection has a broken image URL.
+    std::move(collection_fetch_complete_closure).Run();
+  } else {
+    replacement_preview_index++;
+    const GURL replacement_preview_url = AddOptionsToImageURL(
+        images_response.images(replacement_preview_index).image_url(),
+        thumbnail_image_options_);
+    VerifyImageURL(
+        replacement_preview_url,
+        base::BindOnce(&NtpBackgroundService::
+                           OnReplacementCollectionPreviewURLHeadersReceived,
+                       base::Unretained(this),
+                       std::move(collection_fetch_complete_closure), collection,
+                       images_response, replacement_preview_index,
+                       replacement_preview_url));
+  }
 }
 
 void NtpBackgroundService::FetchNextCollectionImage(
@@ -695,6 +811,7 @@ void NtpBackgroundService::NotifyObservers(FetchComplete fetch_complete) {
         observer.OnCollectionInfoAvailable();
         break;
       case FetchComplete::COLLECTION_IMAGE_INFO:
+        requested_collection_id_.clear();
         observer.OnCollectionImagesAvailable();
         break;
       case FetchComplete::NEXT_IMAGE_INFO:

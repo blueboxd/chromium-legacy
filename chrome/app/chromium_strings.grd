@@ -692,11 +692,9 @@ Permissions you've already given to websites and apps may apply to this account.
                        desc="Subpage summary of warning for Deep Scanning.">
         Chromium recommends scanning this file because it may be dangerous
       </message>
-
-      <!-- Tailored Warning in Download Bubble Items -->
-      <message name="IDS_DOWNLOAD_BUBBLE_SUBPAGE_SUMMARY_SUSPICIOUS_ARCHIVE"
-               desc="Subpage summary for suspicious archive warning.">
-        Chromium blocked this archive file because it may hide malware
+      <message name="IDS_DOWNLOAD_BUBBLE_SUBPAGE_SUMMARY_WARNING_BLOCKED_LEARN_MORE_LINK"
+               desc="Text for the link to the help page about why Chromium blocks some downloaded files. This string will be embedded in a longer sentence that makes up the whole label.">
+        Chromium blocks some downloads
       </message>
 
       <!-- Download Shelf Items -->
@@ -1466,18 +1464,20 @@ Permissions you've already given to websites and apps may apply to this account.
         Share a Chromium tab
       </message>
       <!-- Idle timeout bubble. -->
-      <message name="IDS_IDLE_BUBBLE_TITLE_CLOSE" desc="Title of a bubble that informs the user that Chrome closed automatically, because they were away from the computer for X minutes.">
-        Chromium was automatically closed
-      </message>
-      <message name="IDS_IDLE_BUBBLE_BODY_CLOSE_AND_CLEAR" desc="Body of a bubble that informs the user that Chromium closed + cleared data automatically, because they were away from the computer for X minutes.">
-        Your organization closes Chromium when it isn't used for <ph name="TIMEOUT_DURATION">$1<ex>30 minutes</ex></ph>. Browsing data was deleted. This could include history, autofill, and downloads.
-      </message>
-      <message name="IDS_IDLE_BUBBLE_BODY_CLEAR" desc="Body of a bubble that informs the user that Chromium cleared data automatically, because they were away from the computer for X minutes.">
-        Your organization deletes Chromium data when it isn't used for <ph name="TIMEOUT_DURATION">$1<ex>30 minutes</ex></ph>. This could include history, autofill, and downloads.
-      </message>
-      <message name="IDS_IDLE_BUBBLE_BODY_CLOSE" desc="Body of a bubble that informs the user that Chromium closed automatically, because they were away from the computer for X minutes.">
-        Your organization closes Chromium when it isn't used for <ph name="TIMEOUT_DURATION">$1<ex>30 minutes</ex></ph>.
-      </message>
+      <if expr="toolkit_views">
+        <message name="IDS_IDLE_BUBBLE_TITLE_CLOSE" desc="Title of a bubble that informs the user that Chrome closed automatically, because they were away from the computer for X minutes.">
+          Chromium was automatically closed
+        </message>
+        <message name="IDS_IDLE_BUBBLE_BODY_CLOSE_AND_CLEAR" desc="Body of a bubble that informs the user that Chromium closed + cleared data automatically, because they were away from the computer for X minutes.">
+          Your organization closes Chromium when it isn't used for <ph name="TIMEOUT_DURATION">$1<ex>30 minutes</ex></ph>. Browsing data was deleted. This could include history, autofill, and downloads.
+        </message>
+        <message name="IDS_IDLE_BUBBLE_BODY_CLEAR" desc="Body of a bubble that informs the user that Chromium cleared data automatically, because they were away from the computer for X minutes.">
+          Your organization deletes Chromium data when it isn't used for <ph name="TIMEOUT_DURATION">$1<ex>30 minutes</ex></ph>. This could include history, autofill, and downloads.
+        </message>
+        <message name="IDS_IDLE_BUBBLE_BODY_CLOSE" desc="Body of a bubble that informs the user that Chromium closed automatically, because they were away from the computer for X minutes.">
+          Your organization closes Chromium when it isn't used for <ph name="TIMEOUT_DURATION">$1<ex>30 minutes</ex></ph>.
+        </message>
+      </if>
       <!-- Idle timeout dialog. -->
       <if expr="not is_android and not is_chromeos">
         <message name="IDS_IDLE_TIMEOUT_CLOSE_TITLE" desc="Title of the Idle Timeout dialog, warning the user that their windows are about to close.">
@@ -1597,6 +1597,17 @@ Permissions you've already given to websites and apps may apply to this account.
             Do more with Chromium
           </message>
         </if>
+
+        <!-- Default Browser Promo -->
+        <message name="IDS_FRE_DEFAULT_BROWSER_TITLE" desc="Title for the page that prompts user to set Chromium as their default browser in the first run experience.">
+          Set Chromium as your default browser
+        </message>
+        <message name="IDS_FRE_DEFAULT_BROWSER_SUBTITLE_NEW" desc="Subtitle for the page that prompts user to set Chromium as their default browser in the first run experience.">
+          Use Chromium anytime you click links in messages, documents, and other apps
+        </message>
+        <message name="IDS_FRE_DEFAULT_BROWSER_ILLUSTRATION_ALT_TEXT" desc="Alt text for the illustration in the page that prompts user to set Chromium as their default browser.">
+          Chromium logo inside a computer screen.
+        </message>
 
         <!-- Profile switch IPH -->
         <message name="IDS_PROFILE_SWITCH_PROMO" desc="Text of the In-Product-Help bubble for profile switching.">

@@ -4,7 +4,6 @@
 
 #include "content/public/browser/clear_site_data_utils.h"
 
-#include "base/feature_list.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_forward.h"
 #include "base/memory/raw_ptr.h"
@@ -17,7 +16,6 @@
 #include "content/public/browser/browsing_data_filter_builder.h"
 #include "content/public/browser/browsing_data_remover.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/content_features.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "third_party/blink/public/common/storage_key/storage_key.h"
 
@@ -112,7 +110,9 @@ class SiteDataClearer : public BrowsingDataRemover::Observer {
       // For storage buckets, no mask is being passed per se. Therefore, when
       // the storage buckets are successfully removed, the `failed_data_types`
       // arg should be set to 0 to align with existing behaviour in this class.
+      // TODO(zelin): Pass down storage partition and replace nullopt.
       remover_->RemoveStorageBucketsAndReply(
+          absl::nullopt,
           storage_key_.value_or(blink::StorageKey::CreateFirstParty(origin_)),
           storage_buckets_to_remove_,
           base::BindOnce(&SiteDataClearer::OnBrowsingDataRemoverDone,
@@ -148,9 +148,7 @@ class SiteDataClearer : public BrowsingDataRemover::Observer {
     }
 
     // We clear client hints for both cookie and cache clears.
-    if (base::FeatureList::IsEnabled(
-            features::kClearSiteDataClientHintsSupport) &&
-        clear_site_data_types_.HasAny({ClearSiteDataType::kCookies,
+    if (clear_site_data_types_.HasAny({ClearSiteDataType::kCookies,
                                        ClearSiteDataType::kCache,
                                        ClearSiteDataType::kClientHints})) {
       pending_task_count_++;

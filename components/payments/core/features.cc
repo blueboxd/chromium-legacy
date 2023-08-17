@@ -25,7 +25,7 @@ BASE_FEATURE(kWebPaymentsJustInTimePaymentApp,
 
 BASE_FEATURE(kAppStoreBilling,
              "AppStoreBilling",
-#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_CHROMEOS)
              base::FEATURE_ENABLED_BY_DEFAULT
 #else
              base::FEATURE_DISABLED_BY_DEFAULT
@@ -68,6 +68,10 @@ BASE_FEATURE(kPaymentHandlerWindowInTaskManager,
              "PaymentHandlerWindowInTaskManager",
              base::FEATURE_ENABLED_BY_DEFAULT);
 #endif
+
+BASE_FEATURE(kPaymentHandlerAlwaysRefreshIcon,
+             "PaymentHandlerAlwaysRefreshIcon",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 }  // namespace features
 }  // namespace payments

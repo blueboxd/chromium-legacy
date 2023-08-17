@@ -17,6 +17,8 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "components/content_settings/core/browser/content_settings_uma_util.h"
+#include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/content_settings/core/common/features.h"
 #include "components/permissions/constants.h"
@@ -263,14 +265,40 @@ void RecordEngagementMetric(const std::vector<PermissionRequest*>& requests,
   base::UmaHistogramPercentageObsoleteDoNotUse(name, engagement_score);
 }
 
+// Records in a UMA histogram whether we should expect to see an event in UKM,
+// to allow for evaluating if the current constraints on UKM recording work well
+// in practice.
+void RecordUmaForWhetherRevocationUkmWasRecorded(
+    ContentSettingsType permission_type,
+    bool has_source_id) {
+  if (permission_type == ContentSettingsType::NOTIFICATIONS) {
+    base::UmaHistogramBoolean(
+        "Permissions.Revocation.Notifications.DidRecordUkm", has_source_id);
+  }
+}
+
+// Records in a UMA histogram whether we should expect to see an event in UKM,
+// to allow for evaluating if the current constraints on UKM recording work well
+// in practice.
+void RecordUmaForWhetherUsageUkmWasRecorded(ContentSettingsType permission_type,
+                                            bool has_source_id) {
+  if (permission_type == ContentSettingsType::NOTIFICATIONS) {
+    base::UmaHistogramBoolean("Permissions.Usage.Notifications.DidRecordUkm",
+                              has_source_id);
+  }
+}
+
 void RecordPermissionUsageUkm(ContentSettingsType permission_type,
                               absl::optional<ukm::SourceId> source_id) {
+  RecordUmaForWhetherUsageUkmWasRecorded(permission_type,
+                                         source_id.has_value());
   if (!source_id.has_value())
     return;
 
   ukm::builders::PermissionUsage builder(source_id.value());
   builder.SetPermissionType(static_cast<int64_t>(
-      ContentSettingTypeToHistogramValue(permission_type)));
+      content_settings_uma_util::ContentSettingTypeToHistogramValue(
+          permission_type)));
   builder.Record(ukm::UkmRecorder::Get());
 }
 
@@ -295,6 +323,11 @@ void RecordPermissionActionUkm(
     PredictionRequestFeatures::ActionCounts actions_counts,
     absl::optional<bool> prediction_decision_held_back,
     absl::optional<ukm::SourceId> source_id) {
+  if (action == PermissionAction::REVOKED) {
+    RecordUmaForWhetherRevocationUkmWasRecorded(permission,
+                                                source_id.has_value());
+  }
+
   // Only record the permission change if the origin is in the history.
   if (!source_id.has_value())
     return;
@@ -308,8 +341,9 @@ void RecordPermissionActionUkm(
   ukm::builders::Permission builder(source_id.value());
   builder.SetAction(static_cast<int64_t>(action))
       .SetGesture(static_cast<int64_t>(gesture_type))
-      .SetPermissionType(
-          static_cast<int64_t>(ContentSettingTypeToHistogramValue(permission)))
+      .SetPermissionType(static_cast<int64_t>(
+          content_settings_uma_util::ContentSettingTypeToHistogramValue(
+              permission)))
       .SetPriorDismissals(std::min(kPriorCountCap, dismiss_count))
       .SetPriorIgnores(std::min(kPriorCountCap, ignore_count))
       .SetSource(static_cast<int64_t>(source_ui))
@@ -630,29 +664,29 @@ void PermissionUmaUtil::RecordEmbargoPromptSuppression(
 }
 
 void PermissionUmaUtil::RecordEmbargoPromptSuppressionFromSource(
-    PermissionStatusSource source) {
+    content::PermissionStatusSource source) {
   // Explicitly switch to ensure that any new
   // PermissionStatusSource values are dealt with appropriately.
   switch (source) {
-    case PermissionStatusSource::MULTIPLE_DISMISSALS:
+    case content::PermissionStatusSource::MULTIPLE_DISMISSALS:
       PermissionUmaUtil::RecordEmbargoPromptSuppression(
           PermissionEmbargoStatus::REPEATED_DISMISSALS);
       break;
-    case PermissionStatusSource::MULTIPLE_IGNORES:
+    case content::PermissionStatusSource::MULTIPLE_IGNORES:
       PermissionUmaUtil::RecordEmbargoPromptSuppression(
           PermissionEmbargoStatus::REPEATED_IGNORES);
       break;
-    case PermissionStatusSource::RECENT_DISPLAY:
+    case content::PermissionStatusSource::RECENT_DISPLAY:
       PermissionUmaUtil::RecordEmbargoPromptSuppression(
           PermissionEmbargoStatus::RECENT_DISPLAY);
       break;
-    case PermissionStatusSource::UNSPECIFIED:
-    case PermissionStatusSource::KILL_SWITCH:
-    case PermissionStatusSource::INSECURE_ORIGIN:
-    case PermissionStatusSource::FEATURE_POLICY:
-    case PermissionStatusSource::VIRTUAL_URL_DIFFERENT_ORIGIN:
-    case PermissionStatusSource::PORTAL:
-    case PermissionStatusSource::FENCED_FRAME:
+    case content::PermissionStatusSource::UNSPECIFIED:
+    case content::PermissionStatusSource::KILL_SWITCH:
+    case content::PermissionStatusSource::INSECURE_ORIGIN:
+    case content::PermissionStatusSource::FEATURE_POLICY:
+    case content::PermissionStatusSource::VIRTUAL_URL_DIFFERENT_ORIGIN:
+    case content::PermissionStatusSource::PORTAL:
+    case content::PermissionStatusSource::FENCED_FRAME:
       // The permission wasn't under embargo, so don't record anything. We may
       // embargo it later.
       break;
@@ -1373,6 +1407,9 @@ void PermissionUmaUtil::RecordPageInfoPermissionChange(
                setting_after == ContentSetting::CONTENT_SETTING_DEFAULT) {
       base::UmaHistogramEnumeration(histogram_name,
                                     PermissionChangeAction::RESET_FROM_ALLOWED);
+    } else if (setting_after == ContentSetting::CONTENT_SETTING_ALLOW) {
+      base::UmaHistogramEnumeration(
+          histogram_name, PermissionChangeAction::REMEMBER_CHECKBOX_TOGGLED);
     } else {
       NOTREACHED();
     }

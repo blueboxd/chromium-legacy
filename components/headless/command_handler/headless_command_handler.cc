@@ -143,6 +143,10 @@ bool GetCommandDictAndOutputPaths(base::Value::Dict* commands,
                    << " is deprecated, use --" << switches::kNoPDFHeaderFooter;
     }
 
+    if (command_line->HasSwitch(switches::kDisablePDFTagging)) {
+      params.Set("disablePDFTagging", true);
+    }
+
     commands->Set("printToPDF", std::move(params));
   }
 
@@ -334,7 +338,7 @@ void HeadlessCommandHandler::DocumentOnLoadCompletedInPrimaryMainFrame() {
   if (!GetCommandDictAndOutputPaths(&commands, &pdf_file_path_,
                                     &screenshot_file_path_) ||
       commands.empty()) {
-    Done();
+    PostDone();
     return;
   }
 
@@ -387,9 +391,7 @@ void HeadlessCommandHandler::OnCommandsResult(base::Value::Dict result) {
   }
 
   if (!write_file_tasks_in_flight_) {
-    content::GetUIThreadTaskRunner({})->PostTask(
-        FROM_HERE,
-        base::BindOnce(&HeadlessCommandHandler::Done, base::Unretained(this)));
+    PostDone();
   }
 }
 
@@ -418,6 +420,12 @@ void HeadlessCommandHandler::OnWriteFileDone(bool success) {
   if (!--write_file_tasks_in_flight_) {
     Done();
   }
+}
+
+void HeadlessCommandHandler::PostDone() {
+  content::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE,
+      base::BindOnce(&HeadlessCommandHandler::Done, base::Unretained(this)));
 }
 
 void HeadlessCommandHandler::Done() {

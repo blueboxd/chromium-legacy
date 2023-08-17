@@ -94,9 +94,16 @@ std::string DisplaySetDifference(
 // The test comparing expected vs reached keyed services for the given profile.
 void TestKeyedProfileServicesActives(
     Profile* profile,
-    const std::set<std::string>& expected_active_services_names) {
+    const std::set<std::string>& expected_active_services_names,
+    bool force_create_services = false) {
   const std::vector<KeyedServiceBaseFactory*> keyedServiceFactories =
       GetKeyedServiceBaseFactories();
+
+  if (force_create_services) {
+    for (KeyedServiceBaseFactory* factory : keyedServiceFactories) {
+      factory->CreateServiceNowForTesting(profile);
+    }
+  }
 
   std::set<std::string> active_services_names;
   for (KeyedServiceBaseFactory* factory : keyedServiceFactories) {
@@ -216,6 +223,7 @@ IN_PROC_BROWSER_TEST_F(ProfileKeyedServiceBrowserTest,
     "CookieSettings",
     "ExtensionSystem",
     "ExtensionURLLoaderFactory::BrowserContextShutdownNotifierFactory",
+    "FederatedIdentityPermissionContext",
     "FeedbackPrivateAPI",
     "FileSystemAccessPermissionContext",
     "GeneratedPrefs",
@@ -381,6 +389,7 @@ IN_PROC_BROWSER_TEST_F(ProfileKeyedServiceBrowserTest,
     "ExtensionURLLoaderFactory::BrowserContextShutdownNotifierFactory",
     "ExtensionWebUIOverrideRegistrar",
     "FaviconService",
+    "FederatedIdentityPermissionContext",
     "FeedbackPrivateAPI",
     "FileSystemAccessPermissionContext",
     "FirstPartySetsPolicyService",
@@ -541,4 +550,89 @@ IN_PROC_BROWSER_TEST_F(ProfileKeyedServiceBrowserTest,
   ASSERT_FALSE(guest_profile->IsOffTheRecord());
   ASSERT_TRUE(guest_profile->IsGuestSession());
   TestKeyedProfileServicesActives(guest_profile, guest_active_services);
+}
+
+IN_PROC_BROWSER_TEST_F(ProfileKeyedServiceBrowserTest,
+                       SystemProfileParent_ServicesThatCanBeCreated) {
+  Profile* system_profile =
+      CreateProfileAndWaitForAllTasks(ProfileManager::GetSystemProfilePath());
+  ASSERT_FALSE(system_profile->IsOffTheRecord());
+  ASSERT_TRUE(system_profile->IsSystemProfile());
+
+  // clang-format off
+  std::set<std::string> exepcted_created_services_names = {
+    // in components:
+    // There is no control over the creation based on the Profile types in
+    // components/. These services are not created for the System Profile by
+    // default, however their creation is still possible.
+    "AutocompleteControllerEmitter",
+    "AutofillInternalsService",
+    "CanMakePaymentQuery",
+    "LocalPresentationManager",
+    "MediaRouter",
+    "OmniboxInputWatcher",
+    "OmniboxSuggestionsWatcher",
+    "PasswordChangeSuccessTracker",
+    "PasswordManagerInternalsService",
+    "PasswordRequirementsServiceFactory",
+    "PolicyBlocklist",
+    "PolicyClipboardRestriction",
+    "SafeSearch",
+    "WebDataService",
+
+    // in chrome: using `BrowserContextKeyedServiceShutdownNotifierFactory`:
+    // which does not yet have an implementation using `ProfileSelections`.
+    "GalleryWatchManager",
+    "MediaFileSystemRegistry",
+    "NotificationDisplayService",
+    "PermissionsUpdaterShutdownFactory",
+    "PluginInfoHostImpl",
+    "TurnSyncOnHelperShutdownNotifier",
+  };
+  // clang-format on
+
+  TestKeyedProfileServicesActives(system_profile,
+                                  exepcted_created_services_names,
+                                  /*force_create_services=*/true);
+}
+
+IN_PROC_BROWSER_TEST_F(ProfileKeyedServiceBrowserTest,
+                       SystemProfileOTR_ServicesThatCanBeCreated) {
+  Profile* system_profile =
+      CreateProfileAndWaitForAllTasks(ProfileManager::GetSystemProfilePath());
+  ASSERT_TRUE(system_profile->HasAnyOffTheRecordProfile());
+  Profile* system_profile_otr = system_profile->GetPrimaryOTRProfile(false);
+  ASSERT_TRUE(system_profile_otr->IsOffTheRecord());
+  ASSERT_TRUE(system_profile_otr->IsSystemProfile());
+
+  // clang-format off
+  std::set<std::string> exepcted_created_services_names = {
+    // in components:
+    // There is no control over the creation based on the Profile types in
+    // components/. These services are not created for the System Profile by
+    // default, however their creation is still possible.
+    "AutocompleteControllerEmitter",
+    "CanMakePaymentQuery",
+    "MediaRouter",
+    "OmniboxInputWatcher",
+    "OmniboxSuggestionsWatcher",
+    "PasswordChangeSuccessTracker",
+    "PolicyBlocklist",
+    "PolicyClipboardRestriction",
+    "SafeSearch",
+
+    // in chrome: using `BrowserContextKeyedServiceShutdownNotifierFactory`:
+    // which does not yet have an implementation using `ProfileSelections`.
+    "GalleryWatchManager",
+    "MediaFileSystemRegistry",
+    "NotificationDisplayService",
+    "PermissionsUpdaterShutdownFactory",
+    "PluginInfoHostImpl",
+    "TurnSyncOnHelperShutdownNotifier",
+  };
+  // clang-format on
+
+  TestKeyedProfileServicesActives(system_profile_otr,
+                                  exepcted_created_services_names,
+                                  /*force_create_services=*/true);
 }

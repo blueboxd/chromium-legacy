@@ -212,7 +212,11 @@ GrContextType ParseGrContextType(const base::CommandLine* command_line) {
     }
 #endif  // BUILDFLAG(SKIA_USE_DAWN)
 #if BUILDFLAG(SKIA_USE_METAL)
-    if (value == switches::kSkiaGraphiteBackendMetal) {
+    if (
+#if BUILDFLAG(IS_IOS)
+        value.empty() ||
+#endif  // BUILDFLAG(IS_IOS)
+        value == switches::kSkiaGraphiteBackendMetal) {
       return GrContextType::kGraphiteMetal;
     }
 #endif  // BUILDFLAG(SKIA_USE_METAL)
@@ -311,10 +315,6 @@ WebGPUPowerPreference ParseWebGPUPowerPreference(
 }
 
 bool MSAAIsSlow(const GpuDriverBugWorkarounds& workarounds) {
-  // The logic below assumes that msaa_is_slow is a superset of
-  // msaa_is_slow_2
-  CHECK(!workarounds.msaa_is_slow_2 || workarounds.msaa_is_slow);
-
   // Only query the kEnableMSAAOnNewIntelGPUs feature flag if the host device
   // is affected by the experiment (i.e. is a new Intel GPU).
   // This is to avoid activating the experiment on hosts that are irrelevant

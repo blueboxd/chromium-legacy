@@ -10,22 +10,16 @@
 #include <utility>
 #include <vector>
 
-#include "base/containers/cxx20_erase_vector.h"
 #include "base/functional/bind.h"
-#include "base/functional/callback_helpers.h"
 #include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
-#include "base/ranges/algorithm.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/string_piece.h"
-#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "components/safe_browsing/core/common/features.h"
 #include "content/public/browser/browser_context.h"
-#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -37,7 +31,6 @@
 #include "extensions/browser/api/web_request/web_request_proxying_url_loader_factory.h"
 #include "extensions/browser/api/web_request/web_request_proxying_websocket.h"
 #include "extensions/browser/api/web_request/web_request_proxying_webtransport.h"
-#include "extensions/browser/api/web_request/web_request_resource_type.h"
 #include "extensions/browser/browser_frame_context_data.h"
 #include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_navigation_ui_data.h"
@@ -55,19 +48,14 @@
 #include "extensions/common/extension_features.h"
 #include "extensions/common/features/feature.h"
 #include "extensions/common/features/feature_provider.h"
-#include "extensions/common/mojom/event_dispatcher.mojom.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/url_pattern.h"
-#include "extensions/strings/grit/extensions_strings.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/auth.h"
-#include "net/base/net_errors.h"
 #include "net/cookies/site_for_cookies.h"
 #include "net/http/http_util.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
-#include "services/network/public/mojom/fetch_api.mojom-shared.h"
 #include "services/network/public/mojom/web_transport.mojom.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
 using content::BrowserThread;
@@ -337,10 +325,11 @@ void WebRequestAPI::OnListenerRemoved(const EventListenerInfo& details) {
     // registration shared for both the on- and off-the-record contexts, so we
     // use the original context (associated with this KeyedService) to remove
     // the listener from both contexts.
+    // Note that we unwrap the raw_ptr BrowserContext instance using
+    // raw_ptr::get() so we truly have a raw pointer to bind into the callback.
     remove_listener = base::BindOnce(
-        &ExtensionWebRequestEventRouter::RemoveLazyListener,
-        base::Unretained(ExtensionWebRequestEventRouter::GetInstance()),
-        browser_context_, details.extension_id, sub_event_name);
+        &WebRequestAPI::RemoveLazyListener, weak_factory_.GetWeakPtr(),
+        browser_context_.get(), details.extension_id, sub_event_name);
   } else {
     // This was an active listener registration.
     auto update_type =
@@ -354,14 +343,13 @@ void WebRequestAPI::OnListenerRemoved(const EventListenerInfo& details) {
           ExtensionWebRequestEventRouter::ListenerUpdateType::kDeactivate;
     }
 
+    // Note that we unwrap the raw_ptr BrowserContext instance using
+    // raw_ptr::get() so we truly have a raw pointer to bind into the callback.
     remove_listener = base::BindOnce(
-        &ExtensionWebRequestEventRouter::UpdateActiveListener,
-        base::Unretained(ExtensionWebRequestEventRouter::GetInstance()),
-        update_type,
-        ExtensionWebRequestEventRouter::GetBrowserContextID(
-            details.browser_context.get()),
-        details.extension_id, sub_event_name, details.worker_thread_id,
-        details.service_worker_version_id);
+        &WebRequestAPI::UpdateActiveListener, weak_factory_.GetWeakPtr(),
+        base::UnsafeDanglingUntriaged(details.browser_context.get()),
+        update_type, details.extension_id, sub_event_name,
+        details.worker_thread_id, details.service_worker_version_id);
   }
 
   // This PostTask is necessary even though we are already on the UI thread to
@@ -594,6 +582,31 @@ void WebRequestAPI::OnExtensionUnloaded(
     --web_request_extension_count_;
     UpdateMayHaveProxies();
   }
+}
+
+void WebRequestAPI::UpdateActiveListener(
+    content::BrowserContext* browser_context,
+    ExtensionWebRequestEventRouter::ListenerUpdateType update_type,
+    const ExtensionId& extension_id,
+    const std::string& sub_event_name,
+    int worker_thread_id,
+    int64_t service_worker_version_id) {
+  if (!ExtensionsBrowserClient::Get()->IsValidContext(browser_context)) {
+    return;
+  }
+  ExtensionWebRequestEventRouter::GetInstance()->UpdateActiveListener(
+      browser_context, update_type, extension_id, sub_event_name,
+      worker_thread_id, service_worker_version_id);
+}
+
+void WebRequestAPI::RemoveLazyListener(content::BrowserContext* browser_context,
+                                       const ExtensionId& extension_id,
+                                       const std::string& sub_event_name) {
+  if (!ExtensionsBrowserClient::Get()->IsValidContext(browser_context)) {
+    return;
+  }
+  ExtensionWebRequestEventRouter::GetInstance()->RemoveLazyListener(
+      browser_context, extension_id, sub_event_name);
 }
 
 // Special QuotaLimitHeuristic for WebRequestHandlerBehaviorChangedFunction.

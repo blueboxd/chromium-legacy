@@ -51,10 +51,7 @@
 #import "ios/chrome/grit/ios_strings.h"
 #import "net/base/mac/url_conversions.h"
 #import "ui/base/l10n/l10n_util.h"
-
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
+#import "ui/strings/grit/ui_strings.h"
 
 namespace {
 
@@ -131,11 +128,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
     _personalDataManager->AddObserver(_observer.get());
   }
   return self;
-}
-
-- (void)dealloc {
-  // TODO(crbug.com/1454777)
-  DUMP_WILL_BE_CHECK(_settingsAreDismissed);
 }
 
 - (void)viewDidLoad {
@@ -293,7 +285,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (void)settingsWillBeDismissed {
   DCHECK(!_settingsAreDismissed);
 
+  [self stopAutofillProfileEditCoordinator];
   _personalDataManager->RemoveObserver(_observer.get());
+  [self dismissDeletionSheet];
 
   // Remove observer bridges.
   _observer.reset();
@@ -335,20 +329,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 // Override.
 - (void)deleteItems:(NSArray<NSIndexPath*>*)indexPaths {
-  if (base::FeatureList::IsEnabled(
-          autofill::features::kAutofillAccountProfilesUnionView)) {
     [self showDeletionConfirmationForIndexPaths:indexPaths];
-  } else {
-    // If there are no index paths, return early. This can happen if the user
-    // presses the Delete button twice in quick succession.
-    if (![indexPaths count]) {
-      return;
-    }
-    [self willDeleteItemsAtIndexPaths:indexPaths];
-    // TODO(crbug.com/650390) Generalize removing empty sections
-    [self
-        removeSectionIfEmptyForSectionWithIdentifier:SectionIdentifierProfiles];
-  }
 }
 
 #pragma mark - UITableViewDelegate
@@ -575,11 +556,20 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (void)autofillProfileEditCoordinatorTableViewControllerDidFinish:
     (AutofillProfileEditCoordinator*)coordinator {
   DCHECK_EQ(self.autofillProfileEditCoordinator, coordinator);
-  self.autofillProfileEditCoordinator.delegate = nil;
-  self.autofillProfileEditCoordinator = nil;
+  [self stopAutofillProfileEditCoordinator];
 }
 
 #pragma mark - Private
+- (void)dismissDeletionSheet {
+  [self.deletionSheetCoordinator stop];
+  self.deletionSheetCoordinator = nil;
+}
+
+- (void)stopAutofillProfileEditCoordinator {
+  self.autofillProfileEditCoordinator.delegate = nil;
+  [self.autofillProfileEditCoordinator stop];
+  self.autofillProfileEditCoordinator = nil;
+}
 
 // Removes the item from the personal data manager model.
 - (void)willDeleteItemsAtIndexPaths:(NSArray*)indexPaths {
@@ -713,8 +703,15 @@ typedef NS_ENUM(NSInteger, ItemType) {
                   // TODO(crbug.com/650390) Generalize removing empty sections
                   [weakSelf removeSectionIfEmptyForSectionWithIdentifier:
                                 SectionIdentifierProfiles];
+                  [weakSelf dismissDeletionSheet];
                 }
                  style:UIAlertActionStyleDestructive];
+  [self.deletionSheetCoordinator
+      addItemWithTitle:l10n_util::GetNSString(IDS_APP_CANCEL)
+                action:^{
+                  [weakSelf dismissDeletionSheet];
+                }
+                 style:UIAlertActionStyleCancel];
   [self.deletionSheetCoordinator start];
 }
 
@@ -770,7 +767,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   return IsEligibleForMigrationToAccount(*_personalDataManager, profile) &&
          base::FeatureList::IsEnabled(
              syncer::kSyncEnableContactInfoDataTypeInTransportMode) &&
-         self.userEmail != nil && IsMinimumAddress(profile);
+         self.userEmail != nil;
 }
 
 @end

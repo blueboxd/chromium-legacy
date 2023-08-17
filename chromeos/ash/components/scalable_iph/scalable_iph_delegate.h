@@ -20,12 +20,27 @@ namespace scalable_iph {
 // - Observe events in Ash, e.g. Network state change, etc.
 class ScalableIphDelegate {
  public:
+  enum class SessionState { kUnknownInitialValue, kActive, kLocked, kOther };
+
   // Observer for observing events in Ash.
   class Observer : public base::CheckedObserver {
    public:
     virtual void OnConnectionChanged(bool online) {}
 
-    // TODO(b/283863495): Add device unlock event.
+    // Called when `SessionState` is changed.
+    virtual void OnSessionStateChanged(SessionState session_state) {}
+
+    // Called when the device does not enables lock screen, and every time the
+    // system resumes from suspension.
+    virtual void OnSuspendDoneWithoutLockScreen() {}
+
+    // Called when the visibility of an app list has changed.
+    virtual void OnAppListVisibilityChanged(bool shown) {}
+
+    // Called when there is a change in whether there is a saved printer or not.
+    // This method is called only if there is a change in a value. Initial value
+    // is expected to be `false`.
+    virtual void OnHasSavedPrintersChanged(bool has_saved_printers) {}
   };
 
   // Have a virtual destructor as we can put `ScalableIphDelegate` in
@@ -51,6 +66,13 @@ class ScalableIphDelegate {
 
   enum class BubbleIcon {
     kNoIcon,
+    kChromeIcon,
+    kPlayStoreIcon,
+    kGoogleDocsIcon,
+    kGooglePhotosIcon,
+    kPrintJobsIcon,
+    kYouTubeIcon,
+    kLastIcon = kYouTubeIcon,
   };
 
   struct BubbleParams {
@@ -63,6 +85,7 @@ class ScalableIphDelegate {
     std::string text;
     BubbleIcon icon = BubbleIcon::kNoIcon;
     Button button;
+    std::string anchor_view_app_id;
 
     bool operator==(const BubbleParams& params) const = default;
   };

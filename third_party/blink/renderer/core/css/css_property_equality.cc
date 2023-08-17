@@ -838,8 +838,6 @@ bool CSSPropertyEquality::PropertiesEqual(const PropertyHandle& property,
       return a.GetTransformOrigin().Y() == b.GetTransformOrigin().Y();
     case CSSPropertyID::kWebkitTransformOriginZ:
       return a.GetTransformOrigin().Z() == b.GetTransformOrigin().Z();
-    case CSSPropertyID::kWhiteSpace:
-      return a.WhiteSpace() == b.WhiteSpace();
     case CSSPropertyID::kWhiteSpaceCollapse:
       return a.GetWhiteSpaceCollapse() == b.GetWhiteSpaceCollapse();
     case CSSPropertyID::kWidows:
@@ -1217,7 +1215,7 @@ bool CSSPropertyEquality::PropertiesEqual(const PropertyHandle& property,
     case CSSPropertyID::kWebkitMaskPosition:
     case CSSPropertyID::kWebkitMaskRepeat:
     case CSSPropertyID::kWebkitTextStroke:
-    case CSSPropertyID::kAlternativeWhiteSpace:
+    case CSSPropertyID::kWhiteSpace:
       NOTREACHED() << property.GetCSSPropertyName().ToAtomicString().Ascii();
       return true;
 
@@ -1251,10 +1249,10 @@ bool CSSPropertyEquality::PropertiesEqual(const PropertyHandle& property,
     case CSSPropertyID::kToggleGroup:
     case CSSPropertyID::kToggleRoot:
     case CSSPropertyID::kToggleTrigger:
+    case CSSPropertyID::kTransitionBehavior:
     case CSSPropertyID::kTransitionDelay:
     case CSSPropertyID::kTransitionDuration:
     case CSSPropertyID::kTransitionProperty:
-    case CSSPropertyID::kTransitionAnimationType:
     case CSSPropertyID::kTransitionTimingFunction:
     case CSSPropertyID::kUnicodeBidi:
     case CSSPropertyID::kWebkitWritingMode:
@@ -1274,6 +1272,7 @@ bool CSSPropertyEquality::PropertiesEqual(const PropertyHandle& property,
     case CSSPropertyID::kInherits:
     case CSSPropertyID::kInitialValue:
     case CSSPropertyID::kLineGapOverride:
+    case CSSPropertyID::kNavigationTrigger:
     case CSSPropertyID::kNegative:
     case CSSPropertyID::kOverrideColors:
     case CSSPropertyID::kPad:

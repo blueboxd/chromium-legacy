@@ -8,6 +8,7 @@
 #include "base/feature_list.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/test_with_browser_view.h"
 #include "chrome/browser/ui/views/frame/toolbar_button_provider.h"
@@ -61,6 +62,7 @@ class MockCookieControlsContentView : public CookieControlsContentView {
               (override));
   MOCK_METHOD(void, SetToggleIsOn, (bool), (override));
   MOCK_METHOD(void, SetToggleIcon, (const gfx::VectorIcon&), (override));
+  MOCK_METHOD(void, SetToggleLabel, (const std::u16string&), (override));
   MOCK_METHOD(void, SetFeedbackSectionVisibility, (bool), (override));
 };
 
@@ -70,12 +72,10 @@ class CookieControlsBubbleCoordinatorTest : public TestWithBrowserView {
     TestWithBrowserView::SetUp();
 
     controller_ = std::make_unique<content_settings::CookieControlsController>(
-        CookieSettingsFactory::GetForProfile(browser()->profile()), nullptr);
+        CookieSettingsFactory::GetForProfile(browser()->profile()), nullptr,
+        HostContentSettingsMapFactory::GetForProfile(browser()->profile()));
 
-    PageActionIconView* button =
-        browser_view()->toolbar_button_provider()->GetPageActionIconView(
-            PageActionIconType::kCookieControls);
-    coordinator_ = std::make_unique<CookieControlsBubbleCoordinator>(button);
+    coordinator_ = std::make_unique<CookieControlsBubbleCoordinator>();
 
     AddTab(browser(), GURL("http://a.com"));
   }
@@ -138,7 +138,8 @@ class CookieControlsBubbleViewControllerTest
     empty_reloading_view_ = std::make_unique<views::View>();
 
     controller_ = std::make_unique<content_settings::CookieControlsController>(
-        CookieSettingsFactory::GetForProfile(browser()->profile()), nullptr);
+        CookieSettingsFactory::GetForProfile(browser()->profile()), nullptr,
+        HostContentSettingsMapFactory::GetForProfile(browser()->profile()));
 
     ON_CALL(*mock_bubble_view(), GetContentView())
         .WillByDefault(testing::Return(mock_content_view()));
@@ -185,6 +186,8 @@ class CookieControlsBubbleViewControllerTest
 };
 
 TEST_P(CookieControlsBubbleViewControllerTest, ThirdPartyCookiesBlocked) {
+  const int kAllowedSitesCount = 2;
+  const int kBlockedSitesCount = 3;
   EXPECT_CALL(*mock_bubble_view(),
               UpdateTitle(l10n_util::GetStringUTF16(
                   IDS_COOKIE_CONTROLS_BUBBLE_COOKIES_BLOCKED_TITLE)));
@@ -199,6 +202,10 @@ TEST_P(CookieControlsBubbleViewControllerTest, ThirdPartyCookiesBlocked) {
                   : IDS_COOKIE_CONTROLS_BUBBLE_SITE_NOT_WORKING_DESCRIPTION_PERMANENT)));
   EXPECT_CALL(*mock_content_view(), SetFeedbackSectionVisibility(false));
   EXPECT_CALL(*mock_content_view(), SetToggleIsOn(false));
+  EXPECT_CALL(
+      *mock_content_view(),
+      SetToggleLabel(l10n_util::GetPluralStringFUTF16(
+          IDS_COOKIE_CONTROLS_BUBBLE_BLOCKED_SITES_COUNT, kBlockedSitesCount)));
   EXPECT_CALL(*mock_content_view(), SetToggleIcon(testing::Field(
                                         &gfx::VectorIcon::name,
                                         features::IsChromeRefresh2023()
@@ -208,10 +215,14 @@ TEST_P(CookieControlsBubbleViewControllerTest, ThirdPartyCookiesBlocked) {
   view_controller()->OnStatusChanged(CookieControlsStatus::kEnabled,
                                      CookieControlsEnforcement::kNoEnforcement,
                                      base::Time());
+  view_controller()->OnSitesCountChanged(kAllowedSitesCount,
+                                         kBlockedSitesCount);
 }
 
 TEST_P(CookieControlsBubbleViewControllerTest,
        ThirdPartyCookiesAllowedPermanent) {
+  const int kAllowedSitesCount = 2;
+  const int kBlockedSitesCount = 3;
   EXPECT_CALL(*mock_bubble_view(),
               UpdateTitle(l10n_util::GetStringUTF16(
                   IDS_COOKIE_CONTROLS_BUBBLE_COOKIES_ALLOWED_TITLE)));
@@ -224,6 +235,10 @@ TEST_P(CookieControlsBubbleViewControllerTest,
               IDS_COOKIE_CONTROLS_BUBBLE_PERMANENT_ALLOWED_DESCRIPTION)));
   EXPECT_CALL(*mock_content_view(), SetFeedbackSectionVisibility(true));
   EXPECT_CALL(*mock_content_view(), SetToggleIsOn(true));
+  EXPECT_CALL(
+      *mock_content_view(),
+      SetToggleLabel(l10n_util::GetPluralStringFUTF16(
+          IDS_COOKIE_CONTROLS_BUBBLE_ALLOWED_SITES_COUNT, kAllowedSitesCount)));
   EXPECT_CALL(*mock_content_view(),
               SetToggleIcon(testing::Field(&gfx::VectorIcon::name,
                                            features::IsChromeRefresh2023()
@@ -233,11 +248,15 @@ TEST_P(CookieControlsBubbleViewControllerTest,
   view_controller()->OnStatusChanged(CookieControlsStatus::kDisabledForSite,
                                      CookieControlsEnforcement::kNoEnforcement,
                                      base::Time());
+  view_controller()->OnSitesCountChanged(kAllowedSitesCount,
+                                         kBlockedSitesCount);
 }
 
 TEST_P(CookieControlsBubbleViewControllerTest,
        ThirdPartyCookiesAllowedTemporary) {
   const int kDaysToExpiration = 30;
+  const int kAllowedSitesCount = 2;
+  const int kBlockedSitesCount = 3;
   EXPECT_CALL(*mock_bubble_view(),
               UpdateTitle(l10n_util::GetStringUTF16(
                   IDS_COOKIE_CONTROLS_BUBBLE_COOKIES_ALLOWED_TITLE)));
@@ -251,6 +270,10 @@ TEST_P(CookieControlsBubbleViewControllerTest,
               IDS_COOKIE_CONTROLS_BUBBLE_BLOCKING_RESTART_DESCRIPTION_TODAY)));
   EXPECT_CALL(*mock_content_view(), SetFeedbackSectionVisibility(true));
   EXPECT_CALL(*mock_content_view(), SetToggleIsOn(true));
+  EXPECT_CALL(
+      *mock_content_view(),
+      SetToggleLabel(l10n_util::GetPluralStringFUTF16(
+          IDS_COOKIE_CONTROLS_BUBBLE_ALLOWED_SITES_COUNT, kAllowedSitesCount)));
   EXPECT_CALL(*mock_content_view(),
               SetToggleIcon(testing::Field(&gfx::VectorIcon::name,
                                            features::IsChromeRefresh2023()
@@ -261,6 +284,8 @@ TEST_P(CookieControlsBubbleViewControllerTest,
       CookieControlsStatus::kDisabledForSite,
       CookieControlsEnforcement::kNoEnforcement,
       base::Time::Now() + base::Days(kDaysToExpiration));
+  view_controller()->OnSitesCountChanged(kAllowedSitesCount,
+                                         kBlockedSitesCount);
 }
 
 // TODO(crbug.com/1446230): Add tests for enforced cookie controls.
@@ -274,14 +299,11 @@ class CookieControlsBubbleViewImplTest : public TestWithBrowserView {
     AddTab(browser(), url);
     auto* web_contents = browser()->tab_strip_model()->GetActiveWebContents();
 
-    PageActionIconView* button =
-        browser_view()->toolbar_button_provider()->GetPageActionIconView(
-            PageActionIconType::kCookieControls);
-
     controller_ = std::make_unique<content_settings::CookieControlsController>(
-        CookieSettingsFactory::GetForProfile(browser()->profile()), nullptr);
+        CookieSettingsFactory::GetForProfile(browser()->profile()), nullptr,
+        HostContentSettingsMapFactory::GetForProfile(browser()->profile()));
 
-    coordinator_ = std::make_unique<CookieControlsBubbleCoordinator>(button);
+    coordinator_ = std::make_unique<CookieControlsBubbleCoordinator>();
     coordinator_->ShowBubble(web_contents, controller_.get());
   }
 

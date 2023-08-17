@@ -257,6 +257,7 @@ AutocompleteMatch::AutocompleteMatch(const AutocompleteMatch& match)
     : provider(match.provider),
       relevance(match.relevance),
       typed_count(match.typed_count),
+      fuzzy_match_penalty(match.fuzzy_match_penalty),
       deletable(match.deletable),
       fill_into_edit(match.fill_into_edit),
       additional_text(match.additional_text),
@@ -317,6 +318,7 @@ AutocompleteMatch& AutocompleteMatch::operator=(
   provider = std::move(match.provider);
   relevance = std::move(match.relevance);
   typed_count = std::move(match.typed_count);
+  fuzzy_match_penalty = std::move(match.fuzzy_match_penalty);
   deletable = std::move(match.deletable);
   fill_into_edit = std::move(match.fill_into_edit);
   additional_text = std::move(match.additional_text);
@@ -386,6 +388,7 @@ AutocompleteMatch& AutocompleteMatch::operator=(
   provider = match.provider;
   relevance = match.relevance;
   typed_count = match.typed_count;
+  fuzzy_match_penalty = match.fuzzy_match_penalty;
   deletable = match.deletable;
   fill_into_edit = match.fill_into_edit;
   additional_text = match.additional_text;
@@ -789,6 +792,11 @@ bool AutocompleteMatch::IsSearchType(Type type) {
          type == AutocompleteMatchType::SEARCH_OTHER_ENGINE ||
          type == AutocompleteMatchType::CALCULATOR ||
          type == AutocompleteMatchType::VOICE_SUGGEST ||
+#if BUILDFLAG(IS_ANDROID)
+         // iOS tests fail if Clipboard searches are annotated as searches.
+         type == AutocompleteMatchType::CLIPBOARD_TEXT ||
+         type == AutocompleteMatchType::CLIPBOARD_IMAGE ||
+#endif
          IsSpecializedSearchType(type);
 }
 
@@ -1021,6 +1029,11 @@ void AutocompleteMatch::LogSearchEngineUsed(
             : SEARCH_ENGINE_OTHER;
     UMA_HISTOGRAM_ENUMERATION("Omnibox.SearchEngineType", search_engine_type,
                               SEARCH_ENGINE_MAX);
+    if (template_url->created_by_policy()) {
+      UMA_HISTOGRAM_ENUMERATION(
+          "Omnibox.SearchEngineType.SetByEnterprisePolicy", search_engine_type,
+          SEARCH_ENGINE_MAX);
+    }
   }
 }
 

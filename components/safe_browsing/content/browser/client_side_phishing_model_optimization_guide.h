@@ -57,7 +57,8 @@ class ClientSidePhishingModelOptimizationGuide
   // optimization_guide::OptimizationTargetModelObserver implementation
   void OnModelUpdated(
       optimization_guide::proto::OptimizationTarget optimization_target,
-      const optimization_guide::ModelInfo& model_info) override;
+      base::optional_ref<const optimization_guide::ModelInfo> model_info)
+      override;
 
   // Enhanced Safe Browsing users receive an additional image embedding model to
   // be attached to CSD-Phishing ping to better train the models.
@@ -88,8 +89,6 @@ class ClientSidePhishingModelOptimizationGuide
   const base::File& GetVisualTfLiteModel() const;
 
   const base::File& GetImageEmbeddingModel() const;
-
-  bool HasImageEmbeddingModel();
 
   bool IsModelMetadataImageEmbeddingVersionMatching();
 

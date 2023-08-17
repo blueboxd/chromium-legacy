@@ -14,6 +14,7 @@ namespace prefs {
 // names.
 
 extern const char kCookieControlsMode[];
+extern const char kBlockTruncatedCookies[];
 
 extern const char kContentSettingsVersion[];
 extern const char kContentSettingsWindowLastTabIndex[];
@@ -85,6 +86,10 @@ extern const char kManagedMidiAllowedForUrls[];
 extern const char kManagedMidiBlockedForUrls[];
 
 extern const char kEnableQuietNotificationPermissionUi[];
+extern const char kEnableQuietGeolocationPermissionUi[];
+extern const char kDidMigrateAdaptiveNotifiationQuietingToCPSS[];
+extern const char kEnableNotificationCPSS[];
+extern const char kEnableGeolocationCPSS[];
 extern const char kQuietNotificationPermissionUiEnablingMethod[];
 extern const char kQuietNotificationPermissionUiDisabledTime[];
 

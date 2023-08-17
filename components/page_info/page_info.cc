@@ -14,20 +14,19 @@
 
 #include "base/feature_list.h"
 #include "base/i18n/time_formatting.h"
-#include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/user_metrics.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "components/browsing_data/content/browsing_data_helper.h"
-#include "components/browsing_data/content/local_storage_helper.h"
+#include "components/browsing_data/core/features.h"
 #include "components/content_settings/browser/page_specific_content_settings.h"
 #include "components/content_settings/browser/ui/cookie_controls_controller.h"
 #include "components/content_settings/core/browser/content_settings_registry.h"
+#include "components/content_settings/core/browser/content_settings_uma_util.h"
 #include "components/content_settings/core/browser/content_settings_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
@@ -35,7 +34,7 @@
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/content_settings/core/common/content_settings_utils.h"
-#include "components/page_info/core/features.h"
+#include "components/content_settings/core/common/features.h"
 #include "components/page_info/page_info_delegate.h"
 #include "components/page_info/page_info_ui.h"
 #include "components/permissions/features.h"
@@ -45,7 +44,6 @@
 #include "components/permissions/permission_manager.h"
 #include "components/permissions/permission_recovery_success_rate_tracker.h"
 #include "components/permissions/permission_request_manager.h"
-#include "components/permissions/permission_result.h"
 #include "components/permissions/permission_uma_util.h"
 #include "components/permissions/permission_util.h"
 #include "components/permissions/permissions_client.h"
@@ -56,9 +54,7 @@
 #include "components/safe_browsing/core/browser/password_protection/metrics_util.h"
 #include "components/safe_browsing/core/common/proto/csd.pb.h"
 #include "components/security_interstitials/content/stateful_ssl_host_state_delegate.h"
-#include "components/signin/public/identity_manager/account_info.h"
 #include "components/ssl_errors/error_info.h"
-#include "components/strings/grit/components_chromium_strings.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
 #include "components/url_formatter/elide_url.h"
@@ -67,6 +63,7 @@
 #include "content/public/browser/permission_controller.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/url_constants.h"
+#include "net/base/schemeful_site.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/cert/x509_certificate.h"
 #include "net/ssl/ssl_cipher_suite_names.h"
@@ -74,6 +71,7 @@
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/boringssl/src/include/openssl/ssl.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/origin.h"
@@ -81,6 +79,7 @@
 #if BUILDFLAG(IS_ANDROID)
 #include "components/browser_ui/util/android/url_constants.h"
 #include "components/resources/android/theme_resources.h"
+#include "components/strings/grit/components_chromium_strings.h"
 #endif
 
 using base::ASCIIToUTF16;
@@ -274,7 +273,7 @@ PageInfo::PageInfo(std::unique_ptr<PageInfoDelegate> delegate,
     observation_.Observe(controller_.get());
     old_observation_.Observe(controller_.get());
 
-    // TODO(crbug.com/1430440): SetCookiesInfo is called twice, once from here
+    // TODO(crbug.com/1430440): SetCookieInfo is called twice, once from here
     // and once from InitializeUiState. This should be cleaned up.
     controller_->Update(web_contents);
   }
@@ -586,14 +585,14 @@ void PageInfo::OnSitePermissionChanged(
 
   // Count how often a permission for a specific content type is changed using
   // the Page Info UI.
-  RecordContentSettingsHistogram("WebsiteSettings.OriginInfo.PermissionChanged",
-                                 type);
+  content_settings_uma_util::RecordContentSettingsHistogram(
+      "WebsiteSettings.OriginInfo.PermissionChanged", type);
 
   if (setting == ContentSetting::CONTENT_SETTING_ALLOW) {
-    RecordContentSettingsHistogram(
+    content_settings_uma_util::RecordContentSettingsHistogram(
         "WebsiteSettings.OriginInfo.PermissionChanged.Allowed", type);
   } else if (setting == ContentSetting::CONTENT_SETTING_BLOCK) {
-    RecordContentSettingsHistogram(
+    content_settings_uma_util::RecordContentSettingsHistogram(
         "WebsiteSettings.OriginInfo.PermissionChanged.Blocked", type);
   }
 
@@ -664,7 +663,16 @@ void PageInfo::OnSitePermissionChanged(
   Constraints constraints;
   if (is_one_time) {
     constraints.set_session_model(content_settings::SessionModel::OneTime);
+    if (base::FeatureList::IsEnabled(
+            content_settings::features::kActiveContentSettingExpiry)) {
+      constraints.set_lifetime(permissions::kOneTimePermissionMaximumLifetime);
+    }
   }
+  if (type == ContentSettingsType::STORAGE_ACCESS) {
+    constraints.set_lifetime(
+        blink::features::kStorageAccessAPIExplicitPermissionLifetime.Get());
+  }
+
   map->SetNarrowestContentSetting(primary_url, site_url_, type, setting,
                                   constraints);
 
@@ -1164,6 +1172,15 @@ void PageInfo::PopulatePermissionInfo(PermissionInfo& permission_info,
   permission_info.is_one_time = (info.metadata.session_model() ==
                                  content_settings::SessionModel::OneTime);
 
+  auto* page_specific_content_settings = GetPageSpecificContentSettings();
+  if (page_specific_content_settings && setting == CONTENT_SETTING_ALLOW) {
+    permission_info.is_in_use =
+        page_specific_content_settings->IsInUse(permission_info.type);
+
+    permission_info.last_used =
+        page_specific_content_settings->GetLastUsedTime(permission_info.type);
+  }
+
   if (info.primary_pattern == ContentSettingsPattern::Wildcard() &&
       info.secondary_pattern == ContentSettingsPattern::Wildcard()) {
     permission_info.default_setting = permission_info.setting;
@@ -1180,31 +1197,32 @@ void PageInfo::PopulatePermissionInfo(PermissionInfo& permission_info,
       permission_info.setting == CONTENT_SETTING_DEFAULT &&
       permission_info.source ==
           content_settings::SettingSource::SETTING_SOURCE_USER) {
-    permissions::PermissionResult permission_result(
-        CONTENT_SETTING_DEFAULT,
-        permissions::PermissionStatusSource::UNSPECIFIED);
+    content::PermissionResult permission_result(
+        PermissionStatus::ASK, content::PermissionStatusSource::UNSPECIFIED);
     if (permissions::PermissionUtil::IsPermission(permission_info.type)) {
       permission_result = delegate_->GetPermissionResult(
           permissions::PermissionUtil::ContentSettingTypeToPermissionType(
               permission_info.type),
-          url::Origin::Create(site_url_));
+          url::Origin::Create(site_url_), permission_info.requesting_origin);
     } else if (permission_info.type ==
                ContentSettingsType::FEDERATED_IDENTITY_API) {
-      absl::optional<permissions::PermissionResult> embargo_result =
+      absl::optional<content::PermissionResult> embargo_result =
           delegate_->GetPermissionDecisionAutoblocker()->GetEmbargoResult(
               site_url_, permission_info.type);
       if (embargo_result) {
-        permission_result = *embargo_result;
+        permission_result = embargo_result.value();
       }
     }
 
     // If under embargo, update |permission_info| to reflect that.
-    if (permission_result.content_setting == CONTENT_SETTING_BLOCK &&
+    if (permission_result.status == PermissionStatus::DENIED &&
         (permission_result.source ==
-             permissions::PermissionStatusSource::MULTIPLE_DISMISSALS ||
+             content::PermissionStatusSource::MULTIPLE_DISMISSALS ||
          permission_result.source ==
-             permissions::PermissionStatusSource::MULTIPLE_IGNORES)) {
-      permission_info.setting = permission_result.content_setting;
+             content::PermissionStatusSource::MULTIPLE_IGNORES)) {
+      permission_info.setting =
+          permissions::PermissionUtil::PermissionStatusToContentSetting(
+              permission_result.status);
     }
   }
 }
@@ -1320,50 +1338,23 @@ void PageInfo::PresentSitePermissions() {
             permissions::features::kPermissionStorageAccessAPI)) {
       continue;
     }
-    for (auto& setting : content_settings->GetSettingsForOneType(type)) {
-      // Skip default setting.
-      if (setting.primary_pattern == ContentSettingsPattern::Wildcard() &&
-          setting.secondary_pattern == ContentSettingsPattern::Wildcard()) {
-        continue;
-      }
-      // Settings that specify two origins shouldn't have wildcards for either
-      // pattern.
-      DCHECK_NE(setting.primary_pattern, ContentSettingsPattern::Wildcard())
-          << "type: " << static_cast<int>(type);
-      DCHECK_NE(setting.secondary_pattern, ContentSettingsPattern::Wildcard())
-          << "type: " << static_cast<int>(type);
 
-      if (!setting.secondary_pattern.Matches(site_url_)) {
-        continue;  // Skip unrelated settings.
-      }
+    for (auto& requester : GetTwoSitePermissionRequesters(type)) {
+      PermissionInfo permission_info;
+      permission_info.type = type;
+      permission_info.requesting_origin =
+          url::Origin::Create(requester.GetURL());
+      content_settings::SettingInfo info;
+      ContentSetting setting = content_settings->GetContentSetting(
+          requester.GetURL(), site_url_, permission_info.type, &info);
+
       if (type == ContentSettingsType::STORAGE_ACCESS) {
-        if (setting.primary_pattern.Matches(site_url_)) {
-          continue;  // Skip first-party settings.
-        }
-        if (setting.metadata.session_model() ==
+        if (info.metadata.session_model() ==
             content_settings::SessionModel::NonRestorableUserSession) {
           continue;  // Skip auto-granted settings.
         }
       }
-      PermissionInfo permission_info;
-      permission_info.type = type;
-      GURL requesting_url = setting.primary_pattern.ToRepresentativeUrl();
-      if (!requesting_url.is_valid()) {
-        NOTREACHED() << "Invalid pattern for embedded permission: " +
-                            setting.primary_pattern.ToString();
-        continue;
-      }
-      permission_info.requesting_origin = url::Origin::Create(requesting_url);
-      content_settings::SettingInfo setting_info = {
-          .source = HostContentSettingsMap::GetSettingSourceFromProviderName(
-              setting.source),
-          .primary_pattern = setting.primary_pattern,
-          .secondary_pattern = setting.secondary_pattern,
-          .metadata = setting.metadata,
-      };
-      PopulatePermissionInfo(
-          permission_info, content_settings, setting_info,
-          content_settings::ValueToContentSetting(setting.setting_value));
+      PopulatePermissionInfo(permission_info, content_settings, info, setting);
       if (ShouldShowPermission(permission_info)) {
         permission_info_list.push_back(permission_info);
       }
@@ -1389,11 +1380,56 @@ void PageInfo::PresentSitePermissions() {
                          std::move(chosen_object_info_list));
 }
 
+std::set<net::SchemefulSite> PageInfo::GetTwoSitePermissionRequesters(
+    ContentSettingsType type) {
+  auto* pscs = GetPageSpecificContentSettings();
+  auto* map = GetContentSettings();
+  std::set<net::SchemefulSite> requesters;
+  // Collect sites that have tried to request a permission.
+  for (auto& [requester, allowed] : pscs->GetTwoSiteRequests(type)) {
+    requesters.insert(requester);
+  }
+  // Collect sites that were previously granted a permission
+  for (auto& setting : map->GetSettingsForOneType(type)) {
+    if (setting.primary_pattern == ContentSettingsPattern::Wildcard() &&
+        setting.secondary_pattern == ContentSettingsPattern::Wildcard()) {
+      continue;  // Skip default setting.
+    }
+    // Settings that specify two origins shouldn't have wildcards for either
+    // pattern.
+    DCHECK_NE(setting.primary_pattern, ContentSettingsPattern::Wildcard())
+        << "type: " << static_cast<int>(type);
+    DCHECK_NE(setting.secondary_pattern, ContentSettingsPattern::Wildcard())
+        << "type: " << static_cast<int>(type);
+
+    if (!setting.secondary_pattern.Matches(site_url_)) {
+      continue;  // Skip unrelated settings.
+    }
+    if (type == ContentSettingsType::STORAGE_ACCESS) {
+      if (setting.primary_pattern.Matches(site_url_)) {
+        continue;  // Skip first-party settings.
+      }
+      if (setting.metadata.session_model() ==
+          content_settings::SessionModel::NonRestorableUserSession) {
+        continue;  // Skip auto-granted settings.
+      }
+    }
+    GURL requesting_url = setting.primary_pattern.ToRepresentativeUrl();
+    requesters.insert(net::SchemefulSite(requesting_url));
+  }
+  return requesters;
+}
+
 void PageInfo::PresentSiteDataInternal(base::OnceClosure done) {
   // Since this is called asynchronously, the associated `WebContents` object
   // might no longer be available.
   if (!web_contents_ || web_contents_->IsBeingDestroyed())
     return;
+
+  // Presenting site data is only needed if `PageInfoUI` is available.
+  if (!ui_) {
+    return;
+  }
 
   PageInfoUI::CookiesNewInfo cookies_info;
   cookies_info.allowed_sites_count = GetSitesWithAllowedCookiesAccessCount();
@@ -1429,9 +1465,15 @@ void PageInfo::PresentSiteDataInternal(base::OnceClosure done) {
 void PageInfo::PresentSiteData(base::OnceClosure done) {
   auto* settings = GetPageSpecificContentSettings();
   if (settings) {
-    settings->allowed_local_shared_objects().UpdateIgnoredEmptyStorageKeys(
-        base::BindOnce(&PageInfo::PresentSiteDataInternal,
-                       weak_factory_.GetWeakPtr(), std::move(done)));
+    if (base::FeatureList::IsEnabled(
+            browsing_data::features::kMigrateStorageToBDM) &&
+        weak_factory_.GetWeakPtr()) {
+      PresentSiteDataInternal(std::move(done));
+    } else {
+      settings->allowed_local_shared_objects().UpdateIgnoredEmptyStorageKeys(
+          base::BindOnce(&PageInfo::PresentSiteDataInternal,
+                         weak_factory_.GetWeakPtr(), std::move(done)));
+    }
   }
 }
 
@@ -1631,9 +1673,9 @@ int PageInfo::GetThirdPartySitesWithBlockedCookiesAccessCount(
   auto* settings = GetPageSpecificContentSettings();
   if (!settings)
     return 0;
-  return settings->blocked_local_shared_objects().GetHostCount() -
-         settings->blocked_local_shared_objects().GetHostCountForDomain(
-             site_url);
+  return browsing_data::GetUniqueThirdPartyCookiesHostCount(
+      site_url, settings->blocked_local_shared_objects(),
+      *(settings->blocked_browsing_data_model()));
 }
 
 int PageInfo::GetFirstPartyBlockedCookiesCount(const GURL& site_url) {

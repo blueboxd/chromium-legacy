@@ -45,7 +45,6 @@ void InitAutofillSyncBridgesOnDBSequence(
     scoped_refptr<base::SequencedTaskRunner> db_task_runner,
     const scoped_refptr<autofill::AutofillWebDataService>& autofill_web_data,
     const std::string& app_locale,
-    bool enable_contact_info_sync,
     autofill::AutofillWebDataBackend* autofill_backend) {
   DCHECK(db_task_runner->RunsTasksInCurrentSequence());
 
@@ -53,10 +52,8 @@ void InitAutofillSyncBridgesOnDBSequence(
       autofill_web_data.get(), autofill_backend);
   autofill::AutofillProfileSyncBridge::CreateForWebDataServiceAndBackend(
       app_locale, autofill_backend, autofill_web_data.get());
-  if (enable_contact_info_sync) {
-    autofill::ContactInfoSyncBridge::CreateForWebDataServiceAndBackend(
-        autofill_backend, autofill_web_data.get());
-  }
+  autofill::ContactInfoSyncBridge::CreateForWebDataServiceAndBackend(
+      autofill_backend, autofill_web_data.get());
 }
 
 void InitWalletSyncBridgesOnDBSequence(
@@ -154,10 +151,9 @@ WebDataServiceWrapper::WebDataServiceWrapper(
       base::BindOnce(show_error_callback, ERROR_LOADING_PAYMENT_MANIFEST));
 #endif
 
-  profile_autofill_web_data_->GetAutofillBackend(base::BindOnce(
-      &InitAutofillSyncBridgesOnDBSequence, db_task_runner,
-      profile_autofill_web_data_, application_locale,
-      base::FeatureList::IsEnabled(syncer::kSyncEnableContactInfoDataType)));
+  profile_autofill_web_data_->GetAutofillBackend(
+      base::BindOnce(&InitAutofillSyncBridgesOnDBSequence, db_task_runner,
+                     profile_autofill_web_data_, application_locale));
   profile_autofill_web_data_->GetAutofillBackend(
       base::BindOnce(&InitWalletSyncBridgesOnDBSequence, db_task_runner,
                      profile_autofill_web_data_, application_locale));
@@ -169,20 +165,20 @@ WebDataServiceWrapper::WebDataServiceWrapper(
         base::BindOnce(&InitWalletUsageDataSyncBridgeOnDBSequence,
                        db_task_runner, profile_autofill_web_data_));
   }
-  if (base::FeatureList::IsEnabled(
-          autofill::features::kAutofillEnableCvcStorageAndFilling) &&
-      base::FeatureList::IsEnabled(syncer::kSyncAutofillWalletCredentialData)) {
+  if (base::FeatureList::IsEnabled(syncer::kSyncAutofillWalletCredentialData)) {
     profile_autofill_web_data_->GetAutofillBackend(
         base::BindOnce(&InitWalletCredentialSyncBridgeOnDBSequence,
                        db_task_runner, profile_autofill_web_data_));
   }
 
   base::FilePath account_storage_path;
-#if BUILDFLAG(IS_ANDROID) || !BUILDFLAG(USE_BLINK)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
+  // On Android and iOS, the account storage is persisted on disk.
   account_storage_path = context_path.Append(kAccountWebDataFilename);
 #else
+  // On other (desktop) platforms, the account storage is in-memory.
   account_storage_path = base::FilePath(WebDatabase::kInMemoryPath);
-#endif  // BUILDFLAG(IS_ANDROID) || !BUILDFLAG(USE_BLINK)
+#endif  // BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
   account_database_ = base::MakeRefCounted<WebDatabaseService>(
       account_storage_path, ui_task_runner, db_task_runner);
   account_database_->AddTable(std::make_unique<autofill::AutofillTable>());
@@ -204,9 +200,7 @@ WebDataServiceWrapper::WebDataServiceWrapper(
         base::BindOnce(&InitWalletUsageDataSyncBridgeOnDBSequence,
                        db_task_runner, account_autofill_web_data_));
   }
-  if (base::FeatureList::IsEnabled(
-          autofill::features::kAutofillEnableCvcStorageAndFilling) &&
-      base::FeatureList::IsEnabled(syncer::kSyncAutofillWalletCredentialData)) {
+  if (base::FeatureList::IsEnabled(syncer::kSyncAutofillWalletCredentialData)) {
     account_autofill_web_data_->GetAutofillBackend(
         base::BindOnce(&InitWalletCredentialSyncBridgeOnDBSequence,
                        db_task_runner, account_autofill_web_data_));

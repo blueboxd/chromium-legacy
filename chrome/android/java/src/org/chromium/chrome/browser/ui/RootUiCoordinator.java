@@ -92,7 +92,7 @@ import org.chromium.chrome.browser.messages.MessagesResourceMapperInitializer;
 import org.chromium.chrome.browser.omnibox.OmniboxFocusReason;
 import org.chromium.chrome.browser.omnibox.geo.GeolocationHeader;
 import org.chromium.chrome.browser.omnibox.suggestions.action.OmniboxActionDelegateImpl;
-import org.chromium.chrome.browser.omnibox.suggestions.base.HistoryClustersProcessor.OpenHistoryClustersDelegate;
+import org.chromium.chrome.browser.omnibox.suggestions.history_clusters.HistoryClustersProcessor.OpenHistoryClustersDelegate;
 import org.chromium.chrome.browser.omnibox.voice.VoiceRecognitionHandler;
 import org.chromium.chrome.browser.omnibox.voice.VoiceRecognitionHandler.VoiceInteractionSource;
 import org.chromium.chrome.browser.paint_preview.DemoPaintPreview;
@@ -101,7 +101,10 @@ import org.chromium.chrome.browser.password_manager.PasswordManagerLauncher;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.price_tracking.PriceTrackingButtonController;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.quick_delete.QuickDeleteController;
+import org.chromium.chrome.browser.quick_delete.QuickDeleteDelegateImpl;
 import org.chromium.chrome.browser.readaloud.ReadAloudController;
+import org.chromium.chrome.browser.readaloud.ReadAloudToolbarButtonController;
 import org.chromium.chrome.browser.recent_tabs.RestoreTabsFeatureHelper;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.segmentation_platform.ContextualPageActionController;
@@ -155,6 +158,7 @@ import org.chromium.components.browser_ui.bottomsheet.BottomSheetObserver;
 import org.chromium.components.browser_ui.bottomsheet.EmptyBottomSheetObserver;
 import org.chromium.components.browser_ui.bottomsheet.ExpandedSheetHelper;
 import org.chromium.components.browser_ui.bottomsheet.ManagedBottomSheetController;
+import org.chromium.components.browser_ui.util.ComposedBrowserControlsVisibilityDelegate;
 import org.chromium.components.browser_ui.widget.MenuOrKeyboardActionController;
 import org.chromium.components.browser_ui.widget.gesture.BackPressHandler;
 import org.chromium.components.browser_ui.widget.scrim.ScrimCoordinator;
@@ -323,6 +327,7 @@ public class RootUiCoordinator
             new OneshotSupplierImpl<>();
     private FoldTransitionController mFoldTransitionController;
     private RestoreTabsFeatureHelper mRestoreTabsFeatureHelper;
+    private ComposedBrowserControlsVisibilityDelegate mAppBrowserControlsVisibilityDelegate;
 
     /**
      * Create a new {@link RootUiCoordinator} for the given activity.
@@ -788,6 +793,7 @@ public class RootUiCoordinator
             };
             mMessageContainerCoordinator.addObserver(mMessageContainerObserver);
             mMessageDispatcher = MessagesFactory.createMessageDispatcher(container,
+                    mMessageContainerCoordinator::getMessageTopOffset,
                     mMessageContainerCoordinator::getMessageMaxTranslation,
                     new ChromeMessageAutodismissDurationProvider(),
                     mWindowAndroid::startAnimationOverContent, mWindowAndroid);
@@ -819,8 +825,10 @@ public class RootUiCoordinator
         }
 
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.READALOUD)) {
-            ReadAloudController controller = new ReadAloudController(
-                    mProfileSupplier, mTabModelSelectorSupplier.get().getModel(false));
+            ViewStub miniPlayerStub = mActivity.findViewById(R.id.readaloud_mini_player_stub);
+            ReadAloudController controller = new ReadAloudController(mActivity, mProfileSupplier,
+                    mTabModelSelectorSupplier.get().getModel(false), miniPlayerStub,
+                    getBottomSheetController());
             mReadAloudControllerSupplier.set(controller);
         }
     }
@@ -1137,6 +1145,11 @@ public class RootUiCoordinator
                             mModalDialogManagerSupplier.get(),
                             AppCompatResources.getDrawable(
                                     mActivity, R.drawable.ic_mobile_friendly));
+            ReadAloudToolbarButtonController readAloudButtonController =
+                    new ReadAloudToolbarButtonController(mActivity, mActivityTabProvider,
+                            AppCompatResources.getDrawable(mActivity, R.drawable.ic_play_circle),
+                            mReadAloudControllerSupplier, trackerSupplier);
+
             ShareButtonController shareButtonController = new ShareButtonController(mActivity,
                     AppCompatResources.getDrawable(
                             mActivity, R.drawable.ic_toolbar_share_offset_24dp),
@@ -1199,6 +1212,8 @@ public class RootUiCoordinator
                     AdaptiveToolbarButtonVariant.PRICE_TRACKING, priceTrackingButtonController);
             adaptiveToolbarButtonController.addButtonVariant(
                     AdaptiveToolbarButtonVariant.READER_MODE, readerModeToolbarButtonController);
+            adaptiveToolbarButtonController.addButtonVariant(
+                    AdaptiveToolbarButtonVariant.READ_ALOUD, readAloudButtonController);
             mContextualPageActionController = new ContextualPageActionController(mProfileSupplier,
                     mActivityTabProvider, adaptiveToolbarButtonController,
                     ()
@@ -1238,7 +1253,13 @@ public class RootUiCoordinator
                                 mModalDialogManagerSupplier, /*managePasskeys=*/false);
                     },
                     // Open History Clusters UI for Query:
-                    openHistoryClustersDelegate);
+                    openHistoryClustersDelegate,
+                    // Open Quick Delete Dialog callback:
+                    () -> {
+                        new QuickDeleteController(mActivity, new QuickDeleteDelegateImpl(),
+                                mModalDialogManagerSupplier.get(), mSnackbarManagerSupplier.get(),
+                                mLayoutManager, mTabModelSelectorSupplier.get());
+                    });
 
             mToolbarManager = new ToolbarManager(mActivity, mBrowserControlsManager,
                     mFullscreenManager, toolbarContainer, mCompositorViewHolderSupplier.get(),
@@ -1482,8 +1503,15 @@ public class RootUiCoordinator
                     view.findViewById(R.id.bottom_sheet_snackbar_container), mWindowAndroid);
         };
 
-        Supplier<OverlayPanelManager> panelManagerSupplier = ()
-                -> mCompositorViewHolderSupplier.get().getLayoutManager().getOverlayPanelManager();
+        Supplier<OverlayPanelManager> panelManagerSupplier = () -> {
+            if (mCompositorViewHolderSupplier.get() != null
+                    && mCompositorViewHolderSupplier.get().getLayoutManager() != null) {
+                return mCompositorViewHolderSupplier.get()
+                        .getLayoutManager()
+                        .getOverlayPanelManager();
+            }
+            return null;
+        };
 
         // TODO(1094000): Initialize after inflation so we don't need to pass in view suppliers.
         mBottomSheetController = BottomSheetControllerFactory.createBottomSheetController(
@@ -1548,6 +1576,16 @@ public class RootUiCoordinator
      */
     public @Nullable FindToolbarManager getFindToolbarManager() {
         return mFindToolbarManager;
+    }
+
+    /**
+     * @return {@link ComposedBrowserControlsVisibilityDelegate} object for tabbed activity.
+     */
+    public ComposedBrowserControlsVisibilityDelegate getAppBrowserControlsVisibilityDelegate() {
+        if (mAppBrowserControlsVisibilityDelegate == null) {
+            mAppBrowserControlsVisibilityDelegate = new ComposedBrowserControlsVisibilityDelegate();
+        }
+        return mAppBrowserControlsVisibilityDelegate;
     }
 
     /**

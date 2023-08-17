@@ -18,12 +18,12 @@
 
 #include "components/password_manager/core/browser/affiliation/affiliated_match_helper.h"
 #include "components/password_manager/core/browser/affiliation/affiliation_utils.h"
+#include "components/password_manager/core/browser/features/password_features.h"
 #include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/browser/password_store_backend.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
 #include "components/password_manager/core/browser/psl_matching_helper.h"
-#include "components/password_manager/core/common/password_manager_features.h"
 #include "url/origin.h"
 
 namespace password_manager {
@@ -33,11 +33,6 @@ namespace {
 using LoginsResult = std::vector<std::unique_ptr<PasswordForm>>;
 using LoginsResultOrError =
     absl::variant<LoginsResult, PasswordStoreBackendError>;
-
-void operator|=(absl::optional<PasswordForm::MatchType>& lhs,
-                PasswordForm::MatchType rhs) {
-  lhs = lhs.has_value() ? (lhs.value() | rhs) : rhs;
-}
 
 bool FormSupportsPSL(const PasswordFormDigest& digest) {
   return digest.scheme == PasswordForm::Scheme::kHtml &&
@@ -50,6 +45,13 @@ bool IsExtendedPublicSuffixDomainMatch(
     const base::flat_set<std::string>& psl_extensions) {
   if (!url1.is_valid() || !url2.is_valid()) {
     return false;
+  }
+
+  // Always return true if the feature to use extension list is disabled since
+  // the normal PSL check had already passed inside GetMatchResult.
+  if (!base::FeatureList::IsEnabled(
+          features::kUseExtensionListForPSLMatching)) {
+    return true;
   }
 
   std::string domain1(
@@ -119,7 +121,8 @@ class GetLoginsHelper : public base::RefCounted<GetLoginsHelper> {
  public:
   GetLoginsHelper(PasswordFormDigest requested_digest,
                   PasswordStoreBackend* backend)
-      : requested_digest_(std::move(requested_digest)), backend_(backend) {}
+      : requested_digest_(std::move(requested_digest)),
+        backend_(backend->AsWeakPtr()) {}
 
   void Init(AffiliatedMatchHelper* affiliated_match_helper,
             LoginsOrErrorReply callback);
@@ -154,7 +157,7 @@ class GetLoginsHelper : public base::RefCounted<GetLoginsHelper> {
   // The group realms for 'requested_digest_'.
   base::flat_set<std::string> group_;
 
-  raw_ptr<PasswordStoreBackend, AcrossTasksDanglingUntriaged> backend_;
+  base::WeakPtr<PasswordStoreBackend> backend_;
 };
 
 void GetLoginsHelper::Init(AffiliatedMatchHelper* affiliated_match_helper,
@@ -193,6 +196,9 @@ void GetLoginsHelper::Init(AffiliatedMatchHelper* affiliated_match_helper,
 void GetLoginsHelper::OnPSLExtensionsReceived(
     base::RepeatingCallback<void(LoginsResultOrError)> forms_received_callback,
     const base::flat_set<std::string>& psl_extensions) {
+  if (!backend_) {
+    return;
+  }
   backend_->FillMatchingLoginsAsync(
       base::BindOnce(&ProccessExactAndPSLForms, requested_digest_,
                      psl_extensions)
@@ -204,6 +210,10 @@ void GetLoginsHelper::HandleAffiliationsAndGroupsReceived(
     base::RepeatingCallback<void(LoginsResultOrError)> forms_received_callback,
     std::vector<std::string> affiliated_realms,
     std::vector<std::string> grouped_realms) {
+  if (!backend_) {
+    return;
+  }
+
   affiliations_ = base::flat_set<std::string>(
       std::make_move_iterator(affiliated_realms.begin()),
       std::make_move_iterator(affiliated_realms.end()));

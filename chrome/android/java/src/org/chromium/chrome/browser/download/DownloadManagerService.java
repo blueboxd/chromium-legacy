@@ -488,12 +488,10 @@ public class DownloadManagerService implements DownloadController.Observer,
                                 ChromeFeatureList.DOWNLOAD_OFFLINE_CONTENT_PROVIDER)
                         && (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q);
                 if (!success && shouldAddCompletedDownload) {
-                    // TODO(https://crbug.com/783819): Migrate mReferrer and mOriginalUrl to GURL
-                    long systemDownloadId =
-                            DownloadManagerBridge.addCompletedDownload(info.getFileName(),
-                                    info.getDescription(), info.getMimeType(), info.getFilePath(),
-                                    info.getBytesReceived(), info.getOriginalUrl().getSpec(),
-                                    info.getReferrer().getSpec(), info.getDownloadGuid());
+                    long systemDownloadId = DownloadManagerBridge.addCompletedDownload(
+                            info.getFileName(), info.getDescription(), info.getMimeType(),
+                            info.getFilePath(), info.getBytesReceived(), info.getOriginalUrl(),
+                            info.getReferrer(), info.getDownloadGuid());
                     success = systemDownloadId != DownloadConstants.INVALID_DOWNLOAD_ID;
                     if (success) item.setSystemDownloadId(systemDownloadId);
                 }
@@ -1574,16 +1572,10 @@ public class DownloadManagerService implements DownloadController.Observer,
         assert count >= 0;
         SharedPreferences.Editor editor = sharedPrefs.edit();
         editor.remove(name);
-        if (isAutoRetryOnly) {
-            RecordHistogram.recordSparseHistogram(
-                    "MobileDownload.ResumptionsCount.Automatic", count);
-        } else {
-            RecordHistogram.recordSparseHistogram("MobileDownload.ResumptionsCount.Manual", count);
+        if (!isAutoRetryOnly) {
             name = getDownloadRetryCountSharedPrefName(downloadGuid, false, true);
             count = sharedPrefs.getInt(name, 0);
             assert count >= 0;
-            RecordHistogram.recordSparseHistogram(
-                    "MobileDownload.ResumptionsCount.Total", Math.min(count, 500));
             editor.remove(name);
         }
         editor.apply();

@@ -123,10 +123,12 @@ WindowCycleView::WindowCycleView(aura::Window* root_window,
   // and clip animations.
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
-  layer()->SetBackgroundBlur(ColorProvider::kBackgroundBlurSigma);
-  layer()->SetBackdropFilterQuality(ColorProvider::kBackgroundBlurQuality);
   layer()->SetName("WindowCycleView");
   layer()->SetMasksToBounds(true);
+  if (features::IsBackgroundBlurEnabled()) {
+    layer()->SetBackgroundBlur(ColorProvider::kBackgroundBlurSigma);
+    layer()->SetBackdropFilterQuality(ColorProvider::kBackgroundBlurQuality);
+  }
 
   const bool is_jellyroll_enabled = chromeos::features::IsJellyrollEnabled();
   SetBackground(views::CreateThemedRoundedRectBackground(
@@ -182,6 +184,7 @@ WindowCycleView::WindowCycleView(aura::Window* root_window,
     // Configure the focus ring for the tab slider selector view.
     views::FocusRing::Install(tab_slider_selector_view);
     auto* focus_ring = views::FocusRing::Get(tab_slider_selector_view);
+    focus_ring->SetOutsetFocusRingDisabled(true);
     focus_ring->SetColorId(is_jellyroll_enabled ? cros_tokens::kCrosSysFocusRing
                                                 : static_cast<ui::ColorId>(
                                                       ui::kColorAshFocusRing));

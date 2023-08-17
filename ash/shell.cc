@@ -68,7 +68,6 @@
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/drag_drop/drag_drop_controller.h"
 #include "ash/events/event_rewriter_controller_impl.h"
-#include "ash/events/keyboard_capability_delegate_impl.h"
 #include "ash/fast_ink/laser/laser_pointer_controller.h"
 #include "ash/focus_cycler.h"
 #include "ash/frame/non_client_frame_view_ash.h"
@@ -135,6 +134,7 @@
 #include "ash/system/diagnostics/diagnostics_log_controller.h"
 #include "ash/system/federated/federated_service_controller_impl.h"
 #include "ash/system/firmware_update/firmware_update_notification_controller.h"
+#include "ash/system/focus_mode/focus_mode_controller.h"
 #include "ash/system/geolocation/geolocation_controller.h"
 #include "ash/system/hotspot/hotspot_icon_animation.h"
 #include "ash/system/hotspot/hotspot_info_cache.h"
@@ -201,7 +201,7 @@
 #include "ash/wm/multitask_menu_nudge_delegate_ash.h"
 #include "ash/wm/native_cursor_manager_ash.h"
 #include "ash/wm/overview/overview_controller.h"
-#include "ash/wm/raster_scale_controller.h"
+#include "ash/wm/raster_scale/raster_scale_controller.h"
 #include "ash/wm/resize_shadow_controller.h"
 #include "ash/wm/screen_pinning_controller.h"
 #include "ash/wm/snap_group/snap_group_controller.h"
@@ -699,7 +699,6 @@ Shell::~Shell() {
 
   // Observes `SessionController` and must be destroyed before it.
   privacy_hub_controller_.reset();
-  microphone_privacy_switch_controller_.reset();
 
   for (auto& observer : shell_observers_) {
     observer.OnShellDestroying();
@@ -892,6 +891,10 @@ Shell::~Shell() {
   // Should be destroyed after Shelf and |system_notification_controller_|.
   system_tray_model_.reset();
   system_sounds_delegate_.reset();
+
+  // This must be destroyed before `message_center_controller_` in order to
+  // restore the original settings if a focus session was active.
+  focus_mode_controller_.reset();
 
   // MultiDisplayMetricsController has a dependency on `mru_window_tracker_`.
   multi_display_metrics_controller_.reset();
@@ -1137,8 +1140,7 @@ void Shell::Init(
   message_center_ash_impl_ = std::make_unique<MessageCenterAshImpl>();
 
   // Initialized early since it is used by some other objects.
-  keyboard_capability_ = std::make_unique<ui::KeyboardCapability>(
-      std::make_unique<KeyboardCapabilityDelegateImpl>());
+  keyboard_capability_ = std::make_unique<ui::KeyboardCapability>();
 
   // These controllers call Shell::Get() in their constructors, so they cannot
   // be in the member initialization list.
@@ -1209,6 +1211,10 @@ void Shell::Init(
 
   capture_mode_controller_ = std::make_unique<CaptureModeController>(
       shell_delegate_->CreateCaptureModeDelegate());
+
+  if (features::IsFocusModeEnabled()) {
+    focus_mode_controller_ = std::make_unique<FocusModeController>();
+  }
 
   if (features::IsGameDashboardEnabled()) {
     game_dashboard_controller_ = std::make_unique<GameDashboardController>(
@@ -1559,18 +1565,11 @@ void Shell::Init(
     system_sounds_delegate_->Init();
   }
 
+  // One of the subcontrollers accesses the SystemNotificationController.
   system_notification_controller_ =
       std::make_unique<SystemNotificationController>();
 
-  if (features::IsCrosPrivacyHubEnabled()) {
-    // One of the subcontrollers accesses the SystemNotificationController.
-    privacy_hub_controller_ = std::make_unique<PrivacyHubController>();
-  } else if (features::IsMicMuteNotificationsEnabled()) {
-    // TODO(b/264388354) Until PrivacyHub is enabled for all keep this around
-    // for the already existing microphone notifications to continue working.
-    microphone_privacy_switch_controller_ =
-        std::make_unique<MicrophonePrivacySwitchController>();
-  }
+  privacy_hub_controller_ = PrivacyHubController::CreatePrivacyHubController();
 
   // WmModeController should be created before initializing the window tree
   // hosts, since the latter will initialize the shelf on each display, which

@@ -5,9 +5,11 @@
 #include "chrome/browser/ui/webui/ash/cloud_upload/one_drive_upload_handler.h"
 
 #include "base/check_op.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/files/file.h"
 #include "base/functional/bind.h"
 #include "base/i18n/message_formatter.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/timer/elapsed_timer.h"
 #include "chrome/browser/ash/file_manager/copy_or_move_io_task.h"
@@ -18,6 +20,7 @@
 #include "chrome/browser/ash/file_system_provider/provided_file_system_info.h"
 #include "chrome/browser/ash/file_system_provider/service.h"
 #include "chrome/browser/ui/webui/ash/cloud_upload/cloud_upload_util.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -113,30 +116,24 @@ void OneDriveUploadHandler::Run(UploadCallback callback) {
   io_task_controller_->AddObserver(this);
 
   // Destination url.
-  ProviderId provider_id = ProviderId::CreateFromExtensionId(
-      file_manager::file_tasks::GetODFSExtensionId(profile_));
-  Service* service = Service::Get(profile_);
-  std::vector<ProvidedFileSystemInfo> file_systems =
-      service->GetProvidedFileSystemInfoList(provider_id);
-  // One and only one filesystem should be mounted for the ODFS extension.
-  if (file_systems.size() != 1u) {
-    if (file_systems.empty()) {
-      LOG(ERROR) << "No file systems found for the ODFS Extension";
-    } else {
-      LOG(ERROR) << "Multiple file systems found for the ODFS Extension";
-    }
+  auto odfs_info = GetODFSInfo(profile_);
+  if (!odfs_info) {
+    // TODO(b/293363474): Remove when the underlying cause is diagnosed.
+    base::debug::DumpWithoutCrashing(FROM_HERE);
     OnEndUpload(base::unexpected(GetGenericErrorMessage()),
                 OfficeFilesUploadResult::kFileSystemNotFound);
     return;
   }
-  destination_folder_path_ = file_systems[0].mount_path();
+  destination_folder_path_ = odfs_info->mount_path();
   FileSystemURL destination_folder_url = FilePathToFileSystemURL(
       profile_, file_system_context_, destination_folder_path_);
   // TODO (b/243095484) Define error behavior.
   if (!destination_folder_url.is_valid()) {
     LOG(ERROR) << "Unable to generate destination folder ODFS URL";
+    // TODO(b/293363474): Remove when the underlying cause is diagnosed.
+    base::debug::DumpWithoutCrashing(FROM_HERE);
     OnEndUpload(base::unexpected(GetGenericErrorMessage()),
-                OfficeFilesUploadResult::kFileSystemNotFound);
+                OfficeFilesUploadResult::kDestinationUrlError);
     return;
   }
 
@@ -158,6 +155,10 @@ void OneDriveUploadHandler::OnEndUpload(
     base::expected<storage::FileSystemURL, std::string> url_or_error,
     OfficeFilesUploadResult result_metric) {
   UMA_HISTOGRAM_ENUMERATION(kUploadResultMetricName, result_metric);
+  if (result_metric != OfficeFilesUploadResult::kSuccess) {
+    UMA_HISTOGRAM_ENUMERATION(kOneDriveTaskResultMetricName,
+                              OfficeTaskResult::kFailedToUpload);
+  }
   // Resolve notifications.
   if (notification_manager_) {
     if (url_or_error.has_value()) {
@@ -233,15 +234,15 @@ void OneDriveUploadHandler::OnGetReauthenticationRequired(
 }
 
 void OneDriveUploadHandler::ShowAccessDeniedError() {
-  absl::optional<file_system_provider::ProvidedFileSystemInterface*>
-      file_system = GetODFS(profile_);
-  if (!file_system.has_value()) {
+  file_system_provider::ProvidedFileSystemInterface* file_system =
+      GetODFS(profile_);
+  if (!file_system) {
     OnEndUpload(base::unexpected(GetGenericErrorMessage()),
                 OfficeFilesUploadResult::kCloudAuthError);
     return;
   }
   GetODFSMetadata(
-      file_system.value(),
+      file_system,
       base::BindOnce(&OneDriveUploadHandler::OnGetReauthenticationRequired,
                      this));
 }
@@ -252,16 +253,10 @@ void OneDriveUploadHandler::ShowIOTaskError(
   std::string error_message;
   bool copy = status.type == file_manager::io_task::OperationType::kCopy;
 
-  base::File::Error file_error = base::File::FILE_ERROR_FAILED;
   // TODO(b/242685536) Find most relevant error in a multi-file upload when
   // support for multi-files is added.
-  // Find the first not base::File::Error::FILE_OK.
-  if (status.sources.size() > 0 && status.sources[0].error.has_value() &&
-      status.sources[0].error.value() != base::File::Error::FILE_OK) {
-    file_error = status.sources[0].error.value();
-  } else if (status.outputs.size() > 0 && status.outputs[0].error.has_value()) {
-    file_error = status.outputs[0].error.value();
-  }
+  base::File::Error file_error =
+      GetFirstTaskError(status).value_or(base::File::FILE_ERROR_FAILED);
 
   switch (file_error) {
     case base::File::FILE_ERROR_ACCESS_DENIED:
@@ -300,6 +295,9 @@ void OneDriveUploadHandler::ShowIOTaskError(
       error_message = GetGenericErrorMessage();
   }
 
+  base::UmaHistogramExactLinear(
+      copy ? kOneDriveCopyErrorMetricName : kOneDriveMoveErrorMetricName,
+      -file_error, -base::File::FILE_ERROR_MAX);
   OnEndUpload(base::unexpected(error_message), upload_result);
 }
 

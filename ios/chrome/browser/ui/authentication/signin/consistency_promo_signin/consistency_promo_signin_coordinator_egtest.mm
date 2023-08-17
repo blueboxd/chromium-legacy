@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #import "base/test/ios/wait_util.h"
+#import "components/sync/base/features.h"
 #import "ios/chrome/browser/shared/model/prefs/pref_names.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/signin/fake_system_identity.h"
@@ -19,10 +20,6 @@
 #import "ios/testing/earl_grey/earl_grey_test.h"
 #import "net/base/mac/url_conversions.h"
 #import "net/test/embedded_test_server/embedded_test_server.h"
-
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
 
 // ConsistencyPromoSigninCoordinator EarlGrey tests.
 // Note: Since those tests are not using real identities, it is not possible
@@ -51,6 +48,10 @@
   if ([self isRunningTest:@selector
             (testRemoveLastIdentityWithSigninErrorDialogAutomaticDismiss)]) {
     config.features_disabled.push_back(kConsistencyNewAccountInterface);
+  }
+  if ([self isRunningTest:@selector(testFromSettings)]) {
+    config.features_enabled.push_back(
+        syncer::kReplaceSyncPromosWithSignInPromos);
   }
   return config;
 }
@@ -198,6 +199,21 @@
       selectElementWithMatcher:chrome_test_util::WebSigninSkipButtonMatcher()]
       performAction:grey_tap()];
   [SigninEarlGreyUI verifyWebSigninIsVisible:NO];
+}
+
+// Tests that the bottom sheet doesn't wait for the cookies when being triggered
+// from the settings.
+- (void)testFromSettings {
+  FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
+  [SigninEarlGrey addFakeIdentity:fakeIdentity];
+  [ChromeEarlGreyUI openSettingsMenu];
+  [ChromeEarlGreyUI
+      tapSettingsMenuButton:chrome_test_util::SettingsSignInRowMatcher()];
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::
+                                          WebSigninPrimaryButtonMatcher()]
+      performAction:grey_tap()];
+  [SigninEarlGreyUI verifyWebSigninIsVisible:NO];
+  [SigninEarlGrey verifySignedInWithFakeIdentity:fakeIdentity];
 }
 
 @end

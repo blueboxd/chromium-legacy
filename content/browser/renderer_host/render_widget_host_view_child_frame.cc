@@ -705,6 +705,10 @@ const viz::LocalSurfaceId& RenderWidgetHostViewChildFrame::GetLocalSurfaceId()
 
 void RenderWidgetHostViewChildFrame::NotifyHitTestRegionUpdated(
     const viz::AggregatedHitTestRegion& region) {
+  if (selection_controller_client_) {
+    selection_controller_client_->OnHitTestRegionUpdated();
+  }
+
   absl::optional<gfx::RectF> screen_rect =
       region.transform.InverseMapRect(gfx::RectF(region.rect));
   if (!screen_rect) {
@@ -806,6 +810,12 @@ gfx::PointF RenderWidgetHostViewChildFrame::TransformRootPointToViewCoordSpace(
 
 bool RenderWidgetHostViewChildFrame::IsRenderWidgetHostViewChildFrame() {
   return true;
+}
+
+void RenderWidgetHostViewChildFrame::
+    InvalidateLocalSurfaceIdAndAllocationGroup() {
+  // This should only be handled by the top frame.
+  NOTREACHED();
 }
 
 #if BUILDFLAG(IS_MAC)

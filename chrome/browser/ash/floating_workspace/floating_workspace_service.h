@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_ASH_FLOATING_WORKSPACE_FLOATING_WORKSPACE_SERVICE_H_
 
 #include <memory>
+#include <string>
 #include "ash/public/cpp/desk_template.h"
 #include "base/callback_list.h"
 #include "base/memory/raw_ptr.h"
@@ -37,6 +38,7 @@ namespace ash {
 extern const char kNotificationForNoNetworkConnection[];
 extern const char kNotificationForSyncErrorOrTimeOut[];
 extern const char kNotificationForRestoreAfterError[];
+extern const char kNotificationForProgressStatus[];
 
 // The restore from error notification button index.
 enum class RestoreFromErrorNotificationButtonIndex {
@@ -50,6 +52,7 @@ enum class FloatingWorkspaceServiceNotificationType {
   kNoNetworkConnection,
   kSyncErrorOrTimeOut,
   kRestoreAfterError,
+  kProgressStatus,
 };
 
 // A keyed service to support floating workspace. Note that a periodical
@@ -85,6 +88,7 @@ class FloatingWorkspaceService : public KeyedService,
 
   // syncer::SyncServiceObserver overrides:
   void OnStateChanged(syncer::SyncService* sync) override;
+  void OnSyncShutdown(syncer::SyncService* sync) override;
 
   // message_center::NotificationObserver overrides:
   void Click(const absl::optional<int>& button_index,
@@ -122,6 +126,13 @@ class FloatingWorkspaceService : public KeyedService,
   void StartCaptureAndUploadActiveDesk();
   void StopCaptureAndUploadActiveDesk();
 
+  // Start and stop the progress bar notification.
+  void MaybeStartProgressBarNotification();
+  void StopProgressBarNotification();
+
+  // Handles the updating of progress bar notification.
+  void HandleProgressBarStatus();
+
   // Get latest Floating Workspace Template from DeskSyncBridge.
   const DeskTemplate* GetLatestFloatingWorkspaceTemplate();
 
@@ -137,7 +148,8 @@ class FloatingWorkspaceService : public KeyedService,
   // Launch downloaded floating workspace desk when all conditions are met.
   // Virtual for testing.
   virtual void LaunchFloatingWorkspaceTemplate(
-      const DeskTemplate* desk_template);
+      const DeskTemplate* desk_template,
+      bool launch_on_active_desk);
 
   // Return the desk client to be used, in test it will return a mocked one.
   virtual DesksClient* GetDesksClient();
@@ -148,7 +160,10 @@ class FloatingWorkspaceService : public KeyedService,
   bool IsCurrentDeskSameAsPrevious(DeskTemplate* current_desk_template) const;
 
   // Handles the recording of the error for template launch.
-  void HandleTemplateUploadErrors(DesksClient::DeskActionError error);
+  void HandleTemplateLaunchErrors(DesksClient::DeskActionError error);
+
+  // Handles the recording of the error for template capture.
+  void HandleTemplateCaptureErrors(DesksClient::DeskActionError error);
 
   // Callback function that is run after a floating workspace template
   // is downloaded and launched.
@@ -191,6 +206,10 @@ class FloatingWorkspaceService : public KeyedService,
   // template associated with the current user, which we want to keep.
   void DoGarbageCollection(const DeskTemplate* exclude_template);
 
+  // Close desks that were already open on current device.
+  void RemoveAllPreviousDesksExceptActiveDesk(
+      const base::Uuid& exclude_desk_uuid);
+
   const raw_ptr<Profile, ExperimentalAsh> profile_;
 
   const floating_workspace_util::FloatingWorkspaceVersion version_;
@@ -212,6 +231,10 @@ class FloatingWorkspaceService : public KeyedService,
   // Timer used to wait for internet connection after service initialization.
   base::OneShotTimer connection_timer_;
 
+  // Timer used to periodically update the progress status bar based on time
+  // from the 2 seconds after login to 15 seconds max wait time.
+  base::RepeatingTimer progress_timer_;
+
   // Convenience pointer to desks_storage::DeskSyncService. Guaranteed to be not
   // null for the duration of `this`.
   raw_ptr<desks_storage::DeskSyncService> desk_sync_service_ = nullptr;
@@ -223,6 +246,7 @@ class FloatingWorkspaceService : public KeyedService,
   absl::optional<base::Uuid> floating_workspace_uuid_;
 
   std::unique_ptr<message_center::Notification> notification_;
+  std::string progress_notification_id_;
 
   // Weak pointer factory used to provide references to this service.
   base::WeakPtrFactory<FloatingWorkspaceService> weak_pointer_factory_{this};

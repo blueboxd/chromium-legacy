@@ -185,6 +185,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   void UnlockKeyboard() override;
   bool IsKeyboardLocked() override;
   base::flat_map<std::string, std::string> GetKeyboardLayoutMap() override;
+  void InvalidateLocalSurfaceIdAndAllocationGroup() override;
   void ClearFallbackSurfaceForCommitPending() override;
   void ResetFallbackToFirstNavigationSurface() override;
   bool RequestRepaintForTesting() override;
@@ -291,12 +292,19 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
       const gfx::Range& range,
       const std::u16string& active_composition_text,
       bool is_composition_committed) override;
+#endif
 
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_CHROMEOS_ASH)
   // Returns the editing context of the active web content.
-  // This is currently used by TSF to  to fetch the URL of the active web
-  // content.
+  // This is currently used by TSF and ChromeOS to fetch the URL of the active
+  // web content.
   // https://docs.microsoft.com/en-us/windows/win32/tsf/predefined-properties
   ui::TextInputClient::EditingContext GetTextEditingContext() override;
+#endif
+
+#if BUILDFLAG(IS_WIN)
+  // Notify TSF (via text store) when URL of the frame in focus changes.
+  void NotifyOnFrameFocusChanged() override;
 #endif
 
   // Overridden from display::DisplayObserver:

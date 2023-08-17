@@ -11,7 +11,6 @@
 #import "base/strings/sys_string_conversions.h"
 #import "base/strings/utf_string_conversions.h"
 #import "base/test/ios/wait_util.h"
-#import "base/time/time.h"
 #import "components/keyed_service/core/service_access_type.h"
 #import "components/password_manager/core/browser/password_form.h"
 #import "components/password_manager/core/browser/password_store_consumer.h"
@@ -29,10 +28,6 @@
 #import "ios/chrome/test/app/password_test_util.h"
 #import "url/gurl.h"
 #import "url/origin.h"
-
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
 
 using chrome_test_util::
     SetUpAndReturnMockReauthenticationModuleForPasswordManager;
@@ -158,6 +153,14 @@ bool ClearPasswordStore() {
 static std::unique_ptr<ScopedPasswordSettingsReauthModuleOverride>
     _scopedReauthOverride;
 
+// Helper for accessing the scoped override's module.
++ (MockReauthenticationModule*)mockModule {
+  DCHECK(_scopedReauthOverride);
+
+  return base::mac::ObjCCastStrict<MockReauthenticationModule>(
+      _scopedReauthOverride->module);
+}
+
 + (void)setUpMockReauthenticationModule {
   _scopedReauthOverride =
       SetUpAndReturnMockReauthenticationModuleForPasswordManager();
@@ -169,21 +172,21 @@ static std::unique_ptr<ScopedPasswordSettingsReauthModuleOverride>
 
 + (void)mockReauthenticationModuleExpectedResult:
     (ReauthenticationResult)expectedResult {
-  DCHECK(_scopedReauthOverride);
-
-  MockReauthenticationModule* mockModule =
-      base::mac::ObjCCastStrict<MockReauthenticationModule>(
-          _scopedReauthOverride->module);
-  mockModule.expectedResult = expectedResult;
+  [self mockModule].expectedResult = expectedResult;
 }
 
 + (void)mockReauthenticationModuleCanAttempt:(BOOL)canAttempt {
   DCHECK(_scopedReauthOverride);
 
-  MockReauthenticationModule* mockModule =
-      base::mac::ObjCCastStrict<MockReauthenticationModule>(
-          _scopedReauthOverride->module);
-  mockModule.canAttempt = canAttempt;
+  [self mockModule].canAttempt = canAttempt;
+}
+
++ (void)mockReauthenticationModuleShouldReturnSynchronously:(BOOL)returnSync {
+  [self mockModule].shouldReturnSynchronously = returnSync;
+}
+
++ (void)mockReauthenticationModuleReturnMockedResult {
+  [[self mockModule] returnMockedReathenticationResult];
 }
 
 + (void)dismissSnackBar {

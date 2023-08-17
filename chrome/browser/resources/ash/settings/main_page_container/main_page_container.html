@@ -165,8 +165,7 @@
         if="[[shouldStampPage_(pageAvailability, Section.kPeople)]]"
         restamp>
       <page-displayer section="[[Section.kPeople]]">
-        <os-settings-people-page prefs="{{prefs}}"
-            page-availability="[[pageAvailability]]">
+        <os-settings-people-page prefs="{{prefs}}">
         </os-settings-people-page>
       </page-displayer>
     </template>
@@ -225,6 +224,14 @@
       <page-displayer section="[[Section.kAccessibility]]">
         <os-settings-a11y-page prefs="{{prefs}}">
         </os-settings-a11y-page>
+      </page-displayer>
+    </template>
+    <template is="dom-if"
+        if="[[shouldStampPage_(pageAvailability, Section.kSystemPreferences)]]"
+        restamp>
+      <page-displayer section="[[Section.kSystemPreferences]]">
+        <settings-system-preferences-page prefs="{{prefs}}">
+        </settings-system-preferences-page>
       </page-displayer>
     </template>
 </div>

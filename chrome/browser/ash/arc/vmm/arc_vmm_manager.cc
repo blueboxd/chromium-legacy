@@ -186,12 +186,10 @@ void ArcVmmManager::SetSwapState(SwapState state) {
 bool ArcVmmManager::IsSwapped() const {
   // Currently ArcVmmManager assume after set vmm swap enabled, the system
   // under the "swapped" state.
-  // After vmm swap enable, it's expected create the staging memory but NOT
-  // means it will be swapped out to the disk. When the vm is swapping to the
-  // disk, the class will receive the signal from the concierge.
-  return last_swapping_state_from_signal_.has_value() &&
-         last_swapping_state_from_signal_.value() ==
-             vm_tools::concierge::SWAPPING_IN;
+  // In the future, is should be replaced by real swap state from the concierge,
+  // because only the memory swapped and has been written to the disk can be
+  // assumed as "swapped".
+  return latest_swap_state_ != SwapState::DISABLE;
 }
 
 void ArcVmmManager::AddObserver(Observer* observer) {
@@ -213,7 +211,6 @@ void ArcVmmManager::OnVmSwapping(
   if (signal.name() != kArcVmName) {
     return;
   }
-  last_swapping_state_from_signal_ = signal.state();
   if (signal.state() == vm_tools::concierge::SWAPPING_OUT) {
     VLOG(1) << "ArcVm swapping out.";
     for (auto& observer : observer_list_) {
@@ -247,7 +244,9 @@ void ArcVmmManager::SendSwapRequest(
       base::BindOnce(
           [](vm_tools::concierge::SwapOperation op, base::OnceClosure cb,
              absl::optional<vm_tools::concierge::SwapVmResponse> response) {
-            if (!response->success()) {
+            if (!response.has_value()) {
+              LOG(ERROR) << "Failed to receive SwapVm response.";
+            } else if (!response->success()) {
               LOG(ERROR) << "Failed to send request: "
                          << vm_tools::concierge::SwapOperation_Name(op)
                          << ". Reason: " << response->failure_reason();
@@ -295,7 +294,9 @@ void ArcVmmManager::SendAggressiveBalloonRequest(
           [](bool enabled, base::OnceClosure cb,
              absl::optional<vm_tools::concierge::AggressiveBalloonResponse>
                  response) {
-            if (!response->success()) {
+            if (!response.has_value()) {
+              LOG(ERROR) << "Failed to receive aggressive ballon response.";
+            } else if (!response->success()) {
               LOG(ERROR) << "Failed to send aggressive balloon request: "
                          << enabled
                          << ". Reason: " << response->failure_reason();

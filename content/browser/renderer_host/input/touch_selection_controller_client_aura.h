@@ -61,13 +61,15 @@ class CONTENT_EXPORT TouchSelectionControllerClientAura
   // selection events. (http://crbug.com/548245)
   virtual bool HandleContextMenu(const ContextMenuParams& params);
 
-  void UpdateClientSelectionBounds(const gfx::SelectionBound& start,
-                                   const gfx::SelectionBound& end);
+  virtual void UpdateClientSelectionBounds(const gfx::SelectionBound& start,
+                                           const gfx::SelectionBound& end);
 
   // TouchSelectionControllerClientManager.
   void DidStopFlinging() override;
   void OnSwipeToMoveCursorBegin() override;
   void OnSwipeToMoveCursorEnd() override;
+  void OnClientHitTestRegionUpdated(
+      ui::TouchSelectionControllerClient* client) override;
   void UpdateClientSelectionBounds(
       const gfx::SelectionBound& start,
       const gfx::SelectionBound& end,

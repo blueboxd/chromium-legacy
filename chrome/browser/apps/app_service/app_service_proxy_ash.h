@@ -178,6 +178,12 @@ class AppServiceProxyAsh : public AppServiceProxyBase,
   // May return a nullptr if this cache doesn't exist.
   apps::ShortcutRegistryCache* ShortcutRegistryCache();
 
+  // Launches shortcut with `id` in it's parent app. `display_id` contains the
+  // id of the display from which the shortcut will be launched.
+  // display::kInvalidDisplayId means that the default display for new windows
+  // will be used. See `display::Screen` for details.
+  void LaunchShortcut(const ShortcutId& id, int64_t display_id);
+
  private:
   // For access to Initialize.
   friend class AppServiceProxyFactory;
@@ -326,6 +332,8 @@ class AppServiceProxyAsh : public AppServiceProxyBase,
       const apps::IntentFilterPtr& filter,
       const apps::AppUpdate& update) override;
 
+  ShortcutPublisher* GetShortcutPublisher(AppType app_type);
+
   raw_ptr<SubscriberCrosapi, ExperimentalAsh> crosapi_subscriber_ = nullptr;
 
   std::unique_ptr<PublisherHost> publisher_host_;
@@ -373,6 +381,10 @@ class AppServiceProxyAsh : public AppServiceProxyBase,
   base::ScopedObservation<apps::InstanceRegistry,
                           apps::InstanceRegistry::Observer>
       instance_registry_observer_{this};
+
+  base::ScopedObservation<apps::AppRegistryCache,
+                          apps::AppRegistryCache::Observer>
+      app_registry_cache_observer_{this};
 
   // A list to record outstanding launch callbacks. When the first member
   // returns true, the second member should be run and the pair can be removed

@@ -5,11 +5,11 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_SHARED_IMAGE_IOSURFACE_IMAGE_BACKING_H_
 #define GPU_COMMAND_BUFFER_SERVICE_SHARED_IMAGE_IOSURFACE_IMAGE_BACKING_H_
 
-#include "base/mac/scoped_nsobject.h"
+#include "base/apple/scoped_nsobject.h"
 #include "base/memory/raw_ptr.h"
 #include "build/build_config.h"
-#include "gpu/command_buffer/service/shared_image/gl_texture_image_backing_helper.h"
 #include "gpu/command_buffer/service/shared_image/shared_image_backing.h"
+#include "gpu/command_buffer/service/texture_manager.h"
 #include "gpu/gpu_gles2_export.h"
 #include "ui/gl/buildflags.h"
 #include "ui/gl/gl_context.h"
@@ -89,8 +89,7 @@ struct IOSurfaceBackingEGLState : base::RefCounted<IOSurfaceBackingEGLState> {
   ~IOSurfaceBackingEGLState();
 };
 
-// Representation of a GLTextureImageBacking or
-// GLTextureImageBackingPassthrough as a GL TexturePassthrough.
+// Representation of an IOSurfaceImageBacking as a GL TexturePassthrough.
 class GLTextureIOSurfaceRepresentation
     : public GLTexturePassthroughImageRepresentation {
  public:
@@ -112,7 +111,6 @@ class GLTextureIOSurfaceRepresentation
   GLenum mode_ = 0;
 };
 
-// Skia Ganesh representation for both GLTextureImageBackingHelper.
 class SkiaIOSurfaceRepresentation : public SkiaGaneshImageRepresentation {
  public:
   SkiaIOSurfaceRepresentation(
@@ -296,6 +294,7 @@ class GPU_GLES2_EXPORT IOSurfaceImageBacking
   void SetPurgeable(bool purgeable) override;
   bool IsPurgeable() const override;
   void Update(std::unique_ptr<gfx::GpuFence> in_fence) override;
+  gfx::GpuMemoryBufferHandle GetGpuMemoryBufferHandle() override;
 
   // IOSurfaceBackingEGLState::Client:
   bool IOSurfaceBackingEGLStateBeginAccess(IOSurfaceBackingEGLState* egl_state,

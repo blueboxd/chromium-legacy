@@ -46,11 +46,11 @@ class TestDisplayDamageTracker : public DisplayDamageTracker {
   void SurfaceDamagedForTest(const SurfaceId& surface_id,
                              const BeginFrameAck& ack,
                              bool display_damaged,
-                             bool is_actively_scrolling = false) {
+                             bool is_handling_interaction = false) {
     if (display_damaged)
       undrawn_surfaces_.insert(surface_id);
     ProcessSurfaceDamage(surface_id, ack, display_damaged,
-                         is_actively_scrolling);
+                         is_handling_interaction);
   }
   void ClearUndrawnSurfaces() { undrawn_surfaces_.clear(); }
   void SetRootFrameMissingForTest(bool missing) {
@@ -1000,9 +1000,9 @@ TEST_F(ImmediateInteractiveDrawTest, DoNotWaitWhenInteracting) {
   BeginFrameAck ack = AckForCurrentBeginFrame();
   ack.has_damage = true;
   bool display_damaged = true;
-  bool is_actively_scrolling = true;
+  bool is_handling_interaction = true;
   damage_tracker_->SurfaceDamagedForTest(sid1, ack, display_damaged,
-                                         is_actively_scrolling);
+                                         is_handling_interaction);
 
   // Despite the fact that we have pending surfaces, we should still be
   // scheduled to draw immediately.
@@ -1030,14 +1030,98 @@ TEST_F(ImmediateInteractiveDrawTest, WaitWhenNotInteracting) {
   BeginFrameAck ack = AckForCurrentBeginFrame();
   ack.has_damage = true;
   bool display_damaged = true;
-  bool is_actively_scrolling = false;
+  bool is_handling_interaction = false;
   damage_tracker_->SurfaceDamagedForTest(sid1, ack, display_damaged,
-                                         is_actively_scrolling);
+                                         is_handling_interaction);
 
   // Since the damage was not related to active scrolling, we should not be
   // attempting to draw immediately.
   EXPECT_TRUE(scheduler_->has_pending_surfaces());
   EXPECT_LT(base::TimeTicks(),
+            scheduler_->DesiredBeginFrameDeadlineTimeForTest());
+}
+
+TEST_F(ImmediateInteractiveDrawTest, ResetScrollingBitAfterDrawAndSwap) {
+  SurfaceId root_surface_id(
+      kArbitraryFrameSinkId,
+      LocalSurfaceId(1, base::UnguessableToken::Create()));
+  SurfaceId sid1(kArbitraryFrameSinkId,
+                 LocalSurfaceId(2, base::UnguessableToken::Create()));
+  SurfaceId sid2(kArbitraryFrameSinkId,
+                 LocalSurfaceId(3, base::UnguessableToken::Create()));
+
+  scheduler_->SetVisible(true);
+  SetNewRootSurface(root_surface_id);
+  EXPECT_EQ(BeginFrameAck(), client_.last_begin_frame_ack());
+
+  AdvanceTimeAndBeginFrameForTest({sid1, sid2});
+  EXPECT_EQ(BeginFrameAck(), client_.last_begin_frame_ack());
+
+  BeginFrameAck ack = AckForCurrentBeginFrame();
+  ack.has_damage = true;
+  bool display_damaged = true;
+  bool is_handling_interaction = true;
+  damage_tracker_->SurfaceDamagedForTest(sid1, ack, display_damaged,
+                                         is_handling_interaction);
+
+  // Despite the fact that we have pending surfaces, we should still be
+  // scheduled to draw immediately.
+  EXPECT_TRUE(scheduler_->has_pending_surfaces());
+  EXPECT_EQ(base::TimeTicks(),
+            scheduler_->DesiredBeginFrameDeadlineTimeForTest());
+
+  // Trigger a draw and swap. This should reset the bit (even if the draw and
+  // swap fails).
+  client().SetNextDrawAndSwapFails();
+  AdvanceTimeAndBeginFrameForTest({root_surface_id, sid1, sid2});
+
+  is_handling_interaction = false;
+  damage_tracker_->SurfaceDamagedForTest(sid1, ack, display_damaged,
+                                         is_handling_interaction);
+  EXPECT_TRUE(scheduler_->has_pending_surfaces());
+  EXPECT_NE(base::TimeTicks(),
+            scheduler_->DesiredBeginFrameDeadlineTimeForTest());
+}
+
+TEST_F(ImmediateInteractiveDrawTest, ResetScrollingBitOnFrameFinished) {
+  SurfaceId root_surface_id(
+      kArbitraryFrameSinkId,
+      LocalSurfaceId(1, base::UnguessableToken::Create()));
+  SurfaceId sid1(kArbitraryFrameSinkId,
+                 LocalSurfaceId(2, base::UnguessableToken::Create()));
+  SurfaceId sid2(kArbitraryFrameSinkId,
+                 LocalSurfaceId(3, base::UnguessableToken::Create()));
+
+  scheduler_->SetVisible(true);
+  SetNewRootSurface(root_surface_id);
+  EXPECT_EQ(BeginFrameAck(), client_.last_begin_frame_ack());
+
+  AdvanceTimeAndBeginFrameForTest({sid1, sid2});
+  EXPECT_EQ(BeginFrameAck(), client_.last_begin_frame_ack());
+
+  BeginFrameAck ack = AckForCurrentBeginFrame();
+  ack.has_damage = true;
+  bool display_damaged = true;
+  bool is_handling_interaction = true;
+  damage_tracker_->SurfaceDamagedForTest(sid1, ack, display_damaged,
+                                         is_handling_interaction);
+
+  // Despite the fact that we have pending surfaces, we should still be
+  // scheduled to draw immediately.
+  EXPECT_TRUE(scheduler_->has_pending_surfaces());
+  EXPECT_EQ(base::TimeTicks(),
+            scheduler_->DesiredBeginFrameDeadlineTimeForTest());
+
+  // Trigger a new frame. This should reset the bit even though, in this case,
+  // we will not even attempt to draw.
+  scheduler_->SetVisible(false);
+  AdvanceTimeAndBeginFrameForTest({root_surface_id, sid1, sid2});
+
+  is_handling_interaction = false;
+  damage_tracker_->SurfaceDamagedForTest(sid1, ack, display_damaged,
+                                         is_handling_interaction);
+  EXPECT_TRUE(scheduler_->has_pending_surfaces());
+  EXPECT_NE(base::TimeTicks(),
             scheduler_->DesiredBeginFrameDeadlineTimeForTest());
 }
 

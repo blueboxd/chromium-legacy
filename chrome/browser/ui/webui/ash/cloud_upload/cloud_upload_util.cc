@@ -5,7 +5,6 @@
 #include "chrome/browser/ui/webui/ash/cloud_upload/cloud_upload_util.h"
 #include "base/files/file_path.h"
 #include "base/functional/bind.h"
-#include "chrome/browser/ash/file_manager/file_tasks.h"
 #include "chrome/browser/ash/file_manager/fileapi_util.h"
 #include "chrome/browser/ash/file_manager/io_task.h"
 #include "chrome/browser/ash/file_manager/volume.h"
@@ -14,6 +13,7 @@
 #include "chrome/browser/ash/file_system_provider/service.h"
 #include "chrome/browser/ui/webui/ash/cloud_upload/cloud_upload_dialog.h"
 #include "chrome/common/extensions/api/file_system_provider_capabilities/file_system_provider_capabilities_handler.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -108,8 +108,8 @@ UploadType GetUploadType(Profile* profile,
 
 absl::optional<ProvidedFileSystemInfo> GetODFSInfo(Profile* profile) {
   Service* service = Service::Get(profile);
-  ProviderId provider_id = ProviderId::CreateFromExtensionId(
-      file_manager::file_tasks::GetODFSExtensionId(profile));
+  ProviderId provider_id =
+      ProviderId::CreateFromExtensionId(extension_misc::kODFSExtensionId);
   auto odfs_infos = service->GetProvidedFileSystemInfoList(provider_id);
 
   if (odfs_infos.size() == 0) {
@@ -125,17 +125,16 @@ absl::optional<ProvidedFileSystemInfo> GetODFSInfo(Profile* profile) {
   return odfs_infos[0];
 }
 
-absl::optional<ProvidedFileSystemInterface*> GetODFS(Profile* profile) {
+ProvidedFileSystemInterface* GetODFS(Profile* profile) {
   Service* service = Service::Get(profile);
-  ProviderId provider_id = ProviderId::CreateFromExtensionId(
-      file_manager::file_tasks::GetODFSExtensionId(profile));
+  ProviderId provider_id =
+      ProviderId::CreateFromExtensionId(extension_misc::kODFSExtensionId);
   auto odfs_info = GetODFSInfo(profile);
-  if (!odfs_info.has_value()) {
-    return absl::nullopt;
+  if (!odfs_info) {
+    return nullptr;
   }
-  auto* file_system =
-      service->GetProvidedFileSystem(provider_id, odfs_info->file_system_id());
-  return file_system;
+  return service->GetProvidedFileSystem(provider_id,
+                                        odfs_info->file_system_id());
 }
 
 // Convert |actions| to |ODFSMetadata| and pass the result to |callback|.
@@ -167,6 +166,18 @@ void GetODFSMetadata(ProvidedFileSystemInterface* file_system,
   file_system->GetActions(
       {base::FilePath(cloud_upload::kODFSMetadataQueryPath)},
       base::BindOnce(&OnODFSMetadataActions, std::move(callback)));
+}
+
+absl::optional<base::File::Error> GetFirstTaskError(
+    const ::file_manager::io_task::ProgressStatus& status) {
+  for (const auto* entries : {&status.sources, &status.outputs}) {
+    for (const ::file_manager::io_task::EntryStatus& entry : *entries) {
+      if (entry.error && *entry.error != base::File::Error::FILE_OK) {
+        return entry.error;
+      }
+    }
+  }
+  return absl::nullopt;
 }
 
 }  // namespace ash::cloud_upload

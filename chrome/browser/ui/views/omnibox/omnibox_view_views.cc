@@ -174,8 +174,6 @@ OmniboxViewViews::OmniboxViewViews(std::unique_ptr<OmniboxClient> client,
                                    const gfx::FontList& font_list)
     : OmniboxView(std::move(client)),
       popup_window_mode_(popup_window_mode),
-      popup_is_webui_(
-          base::FeatureList::IsEnabled(omnibox::kWebUIOmniboxPopup)),
       location_bar_view_(location_bar_view),
       latency_histogram_state_(NOT_ACTIVE),
       friendly_suggestion_text_prefix_length_(0) {
@@ -232,7 +230,7 @@ void OmniboxViewViews::Init() {
   }
 
   if (location_bar_view_) {
-    if (popup_is_webui_) {
+    if (base::FeatureList::IsEnabled(omnibox::kWebUIOmniboxPopup)) {
       popup_view_ = std::make_unique<OmniboxPopupViewWebUI>(
           /*omnibox_view=*/this, controller(), location_bar_view_);
     } else {
@@ -632,9 +630,8 @@ void OmniboxViewViews::OnThemeChanged() {
   views::Textfield::OnThemeChanged();
 
   bool gm3_text_color_enabled =
-      features::GetChromeRefresh2023Level() ==
-          features::ChromeRefresh2023Level::kLevel2 ||
-      base::FeatureList::IsEnabled(omnibox::kOmniboxSteadyStateTextColor);
+      omnibox::IsOmniboxCr23CustomizeGuardedFeatureEnabled(
+          omnibox::kOmniboxSteadyStateTextColor);
 
   set_placeholder_text_color(GetColorProvider()->GetColor(
       gm3_text_color_enabled ? kColorOmniboxText : kColorOmniboxTextDimmed));

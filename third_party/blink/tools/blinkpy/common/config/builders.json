@@ -1,13 +1,19 @@
 {
     "Linux Tests": {
         "main": "chromium.linux",
-        "port_name": "linux-trusty",
-        "specifiers": ["Trusty", "Release"]
+        "port_name": "linux",
+        "specifiers": ["Linux", "Release"]
     },
     "Linux Tests (dbg)(1)": {
         "main": "chromium.linux",
-        "port_name": "linux-trusty",
-        "specifiers": ["Trusty", "Debug"]
+        "port_name": "linux",
+        "specifiers": ["Linux", "Debug"],
+        "steps": {
+            "webdriver_tests_suite": {
+                "uses_wptrunner": true,
+                "product": "chrome"
+            }
+        }
     },
     "Mac10.15 Tests": {
         "main": "chromium.mac",
@@ -52,8 +58,8 @@
     },
     "linux-wpt-fyi-rel": {
         "main": "chromium.fyi",
-        "port_name": "linux-trusty",
-        "specifiers": ["Trusty", "Release"],
+        "port_name": "linux",
+        "specifiers": ["Linux", "Release"],
         "is_try_builder": true,
         "steps": {
             "wpt_tests_suite (with patch)": {
@@ -64,8 +70,8 @@
     },
     "linux-wpt-content-shell-fyi-rel": {
         "main": "chromium.fyi",
-        "port_name": "linux-trusty",
-        "specifiers": ["Trusty", "Release"],
+        "port_name": "linux",
+        "specifiers": ["Linux", "Release"],
         "is_try_builder": true,
         "steps": {
             "wpt_tests_suite (with patch)": {
@@ -171,9 +177,8 @@
     },
     "linux-blink-rel": {
         "main": "tryserver.blink",
-        "port_name": "linux-trusty",
-        "specifiers": ["Trusty", "Release"],
-        "has_webdriver_tests": true,
+        "port_name": "linux",
+        "specifiers": ["Linux", "Release"],
         "steps": {
             "blink_web_tests (with patch)": {},
             "blink_wpt_tests (with patch)": {},
@@ -191,6 +196,10 @@
             },
             "not_site_per_process_blink_wpt_tests (with patch)": {
                 "flag_specific": "disable-site-isolation-trials"
+            },
+            "webdriver_tests_suite (with patch)": {
+                "uses_wptrunner": true,
+                "product": "chrome"
             }
         },
         "is_try_builder": true
@@ -287,9 +296,8 @@
     },
     "linux-rel": {
         "main": "tryserver.chromium.linux",
-        "port_name": "linux-trusty",
-        "specifiers": ["Trusty", "Release"],
-        "has_webdriver_tests": true,
+        "port_name": "linux",
+        "specifiers": ["Linux", "Release"],
         "steps": {
             "blink_web_tests (with patch)": {},
             "blink_wpt_tests (with patch)": {},

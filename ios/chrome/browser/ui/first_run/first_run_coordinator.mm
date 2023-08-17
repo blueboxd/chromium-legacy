@@ -25,10 +25,6 @@
 #import "ios/chrome/browser/ui/screen/screen_type.h"
 #import "ios/public/provider/chrome/browser/signin/choice_api.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 @interface FirstRunCoordinator () <FirstRunScreenDelegate,
                                    HistorySyncCoordinatorDelegate>
 
@@ -94,11 +90,6 @@
   [super stop];
 }
 
-- (void)dealloc {
-  // TODO(crbug.com/1454777)
-  DUMP_WILL_BE_CHECK(!_navigationController);
-}
-
 #pragma mark - FirstRunScreenDelegate
 
 - (void)screenWillFinishPresenting {
@@ -144,7 +135,8 @@
           initWithBaseNavigationController:self.navigationController
                                    browser:self.browser
                                   delegate:self
-                                  firstRun:YES];
+                                  firstRun:YES
+                             showUserEmail:NO];
     case kTangibleSync:
       return [[TangibleSyncScreenCoordinator alloc]
           initWithBaseNavigationController:self.navigationController
@@ -175,7 +167,8 @@
 #pragma mark - HistorySyncCoordinatorDelegate
 
 - (void)closeHistorySyncCoordinator:
-    (HistorySyncCoordinator*)historySyncCoordinator {
+            (HistorySyncCoordinator*)historySyncCoordinator
+                     declinedByUser:(BOOL)declined {
   CHECK_EQ(self.childCoordinator, historySyncCoordinator);
   [self screenWillFinishPresenting];
 }

@@ -8,32 +8,16 @@
 #include "chrome/browser/predictors/predictors_features.h"
 #include "chrome/browser/prefetch/prefetch_prefs.h"
 #include "chrome/browser/profiles/profile.h"
+#include "third_party/blink/public/common/features.h"
 
 namespace predictors {
 
-BASE_FEATURE(kSpeculativePreconnectFeature,
-             "SpeculativePreconnect",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-// Returns whether the speculative preconnect feature is enabled.
-bool IsPreconnectFeatureEnabled() {
-  return base::FeatureList::IsEnabled(kSpeculativePreconnectFeature);
-}
-
 bool IsLoadingPredictorEnabled(Profile* profile) {
   // Disabled for off-the-record. Policy choice, not a technical limitation.
-  if (!profile || profile->IsOffTheRecord())
-    return false;
-
-  // Run the Loading Predictor only if the preconnect feature is turned on,
-  // otherwise the predictor will be no-op.
-  return IsPreconnectFeatureEnabled();
+  return profile && !profile->IsOffTheRecord();
 }
 
 bool IsPreconnectAllowed(Profile* profile) {
-  if (!IsPreconnectFeatureEnabled())
-    return false;
-
   // Checks that the preconnect is allowed by user settings.
   return profile && profile->GetPrefs() &&
          (prefetch::IsSomePreloadingEnabled(*profile->GetPrefs()) ==
@@ -60,6 +44,10 @@ LoadingPredictorConfig::LoadingPredictorConfig()
       max_hosts_to_track(base::GetFieldTrialParamByFeatureAsInt(
           features::kLoadingPredictorTableConfig,
           "max_hosts_to_track",
+          100)),
+      max_hosts_to_track_for_lcpp(base::GetFieldTrialParamByFeatureAsInt(
+          blink::features::kLCPCriticalPathPredictor,
+          "lcpp_max_hosts_to_track",
           100)),
       max_origins_per_entry(base::GetFieldTrialParamByFeatureAsInt(
           features::kLoadingPredictorTableConfig,

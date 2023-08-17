@@ -31,8 +31,9 @@ bool Animation::ScrollAnimationsEnabledBySystem() {
   id value = nil;
   value = [NSUserDefaults.standardUserDefaults
       objectForKey:@"NSScrollAnimationEnabled"];
-  if (value)
+  if (value) {
     enabled = [value boolValue];
+  }
   return enabled;
 }
 
@@ -51,4 +52,4 @@ void Animation::UpdatePrefersReducedMotion() {
   }
 }
 
-} // namespace gfx
+}  // namespace gfx

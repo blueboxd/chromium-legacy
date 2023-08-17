@@ -26,11 +26,13 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
 #include "base/time/time.h"
+#include "base/types/cxx23_to_underlying.h"
 #include "chrome/browser/ash/accessibility/magnification_manager.h"
 #include "chrome/browser/ash/base/locale_util.h"
 #include "chrome/browser/ash/child_accounts/parent_access_code/parent_access_service.h"
 #include "chrome/browser/ash/crosapi/browser_util.h"
 #include "chrome/browser/ash/drive/file_system_util.h"
+#include "chrome/browser/ash/input_method/editor_consent_store.h"
 #include "chrome/browser/ash/input_method/input_method_persistence.h"
 #include "chrome/browser/ash/input_method/input_method_syncer.h"
 #include "chrome/browser/ash/login/hid_detection_revamp_field_trial.h"
@@ -278,6 +280,7 @@ void Preferences::RegisterProfilePrefs(
   // Do not sync kDriveFsBulkPinningEnabled as this maintains files that are
   // locally pinned to this device and should not sync the state across multiple
   // devices.
+  registry->RegisterBooleanPref(drive::prefs::kDriveFsBulkPinningVisible, true);
   registry->RegisterBooleanPref(drive::prefs::kDriveFsBulkPinningEnabled,
                                 false);
   // We don't sync ::prefs::kLanguageCurrentInputMethod and PreviousInputMethod
@@ -294,10 +297,15 @@ void Preferences::RegisterProfilePrefs(
   registry->RegisterBooleanPref(prefs::kAssistPredictiveWritingEnabled, true);
   registry->RegisterBooleanPref(prefs::kEmojiSuggestionEnabled, true);
   registry->RegisterBooleanPref(prefs::kEmojiSuggestionEnterpriseAllowed, true);
+  registry->RegisterBooleanPref(prefs::kOrcaEnabled, false);
   registry->RegisterBooleanPref(
       prefs::kManagedPhysicalKeyboardAutocorrectAllowed, true);
   registry->RegisterBooleanPref(
       prefs::kManagedPhysicalKeyboardPredictiveWritingAllowed, true);
+  registry->RegisterIntegerPref(
+      prefs::kOrcaConsentStatus,
+      base::to_underlying(input_method::ConsentStatus::kUnset));
+  registry->RegisterIntegerPref(prefs::kOrcaConsentWindowDismissCount, 0);
   registry->RegisterBooleanPref(prefs::kEmojiPickerGifSupportEnabled, true);
   registry->RegisterDictionaryPref(
       ::prefs::kLanguageInputMethodSpecificSettings);
@@ -483,10 +491,10 @@ void Preferences::RegisterProfilePrefs(
 
   registry->RegisterBooleanPref(::prefs::kHatsPeripheralsIsSelected, false);
 
-  registry->RegisterBooleanPref(::prefs::kHatsPrivacyHubBaselineIsSelected,
+  registry->RegisterBooleanPref(::prefs::kHatsPrivacyHubPostLaunchIsSelected,
                                 false);
 
-  registry->RegisterInt64Pref(::prefs::kHatsPrivacyHubBaselineCycleEndTs, 0);
+  registry->RegisterInt64Pref(::prefs::kHatsPrivacyHubPostLaunchCycleEndTs, 0);
 
   // Personalization HaTS survey prefs for avatar, screensaver, and wallpaper
   // features.
@@ -1116,7 +1124,7 @@ void Preferences::ApplyPreferences(ApplyReason reason,
       split_values = base::SplitString(value, ",", base::TRIM_WHITESPACE,
                                        base::SPLIT_WANT_ALL);
     }
-    ime_state_->SetEnabledExtensionImes(&split_values);
+    ime_state_->SetEnabledExtensionImes(split_values);
   }
 
   if (pref_name == ::prefs::kLanguageImeMenuActivated &&

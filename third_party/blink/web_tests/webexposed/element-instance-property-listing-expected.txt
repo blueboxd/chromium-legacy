@@ -575,6 +575,12 @@ html element embed
     property src
     property type
     property width
+html element fencedframe
+    property allow
+    property config
+    property height
+    property sandbox
+    property width
 html element fieldset
     property checkValidity
     property disabled
@@ -666,6 +672,7 @@ html element hr
     property size
     property width
 html element html
+    property blocking
     property version
 html element i
 html element iframe
@@ -673,6 +680,7 @@ html element iframe
     property allow
     property allowFullscreen
     property allowPaymentRequest
+    property browsingTopics
     property contentDocument
     property contentWindow
     property credentialless
@@ -986,7 +994,7 @@ html element select
     property validity
     property value
     property willValidate
-html element selectmenu
+html element selectlist
     property checkValidity
     property disabled
     property form

@@ -173,6 +173,9 @@ import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.common.ContentSwitches;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.net.test.util.TestWebServer;
+import org.chromium.ui.modaldialog.ModalDialogManager;
+import org.chromium.ui.modaldialog.ModalDialogProperties;
+import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.mojom.WindowOpenDisposition;
 import org.chromium.ui.test.util.BlankUiTestActivity;
 import org.chromium.ui.test.util.DeviceRestriction;
@@ -278,8 +281,6 @@ public class CustomTabActivityTest {
         SharedPreferencesManager.getInstance().removeKey(
                 ChromePreferenceKeys.CUSTOM_TABS_LAST_CLOSE_TIMESTAMP);
 
-        stopAndShutdownEmbeddedTestServer();
-
         // finish() is called on a non-UI thread by the testing harness. Must hide the menu
         // first, otherwise the UI is manipulated on a non-UI thread.
         TestThreadUtils.runOnUiThreadBlocking(() -> {
@@ -294,18 +295,6 @@ public class CustomTabActivityTest {
         if (mConnectionToCleanup != null) {
             CustomTabsTestUtils.cleanupSessions(mConnectionToCleanup);
         }
-    }
-
-    private void stopAndShutdownEmbeddedTestServer() {
-        if (mTestServer != null) {
-            mTestServer.stopAndDestroyServer();
-            mTestServer = null;
-        }
-    }
-
-    private TestWebServer createTestWebServer() throws Exception {
-        stopAndShutdownEmbeddedTestServer();
-        return TestWebServer.start();
     }
 
     private CustomTabActivity getActivity() {
@@ -673,7 +662,7 @@ public class CustomTabActivityTest {
         Intent intent = createMinimalCustomTabIntent();
 
         Bitmap expectedIcon = createVectorDrawableBitmap(R.drawable.ic_credit_card_black, 77, 48);
-        PendingIntent pi = CustomTabsIntentTestUtils.addActionButtonToIntent(
+        CustomTabsIntentTestUtils.addActionButtonToIntent(
                 intent, expectedIcon, "Good test", sIdToIncrement++);
 
         // Create a RemoteViews. The layout used here is pretty much arbitrary, but with the
@@ -1013,7 +1002,7 @@ public class CustomTabActivityTest {
     @Test
     @SmallTest
     public void testToolbarTitleOnlyStateWithProperTitle() throws Exception {
-        TestWebServer webServer = createTestWebServer();
+        TestWebServer webServer = TestWebServer.start();
         final String url = webServer.setResponse("/test.html", ONLOAD_TITLE_CHANGE, null);
         hideDomainAndEnsureTitleIsSet(url, false, "nytimes.com");
         webServer.shutdown();
@@ -1025,7 +1014,7 @@ public class CustomTabActivityTest {
     @Test
     @SmallTest
     public void testToolbarTitleOnlyStateWithProperTitleHiddenTab() throws Exception {
-        TestWebServer webServer = createTestWebServer();
+        TestWebServer webServer = TestWebServer.start();
         final String url = webServer.setResponse("/test.html", ONLOAD_TITLE_CHANGE, null);
         hideDomainAndEnsureTitleIsSet(url, true, "nytimes.com");
         webServer.shutdown();
@@ -1037,7 +1026,7 @@ public class CustomTabActivityTest {
     @Test
     @SmallTest
     public void testToolbarTitleOnlyStateWithDelayedTitle() throws Exception {
-        TestWebServer webServer = createTestWebServer();
+        TestWebServer webServer = TestWebServer.start();
         final String url = webServer.setResponse("/test.html", DELAYED_TITLE_CHANGE, null);
         hideDomainAndEnsureTitleIsSet(url, false, "nytimes.com");
         webServer.shutdown();
@@ -1297,7 +1286,7 @@ public class CustomTabActivityTest {
         Assert.assertFalse(tab.canGoForward());
         Assert.assertFalse(tab.canGoBack());
 
-        // TODO(ahemery):
+        // TODO(https://crbug.com/1467857):
         // Fragment misses will trigger two history entries
         // - url#speculated and url#actual are both inserted
         // This should ideally not be the case.
@@ -1746,7 +1735,7 @@ public class CustomTabActivityTest {
     @DisabledTest(message = "https://crbug.com/1238931")
     public void
     testMayLaunchUrlAddsClientDataHeader() throws Exception {
-        TestWebServer webServer = createTestWebServer();
+        TestWebServer webServer = TestWebServer.start();
         webServer.setServerHost("www.google.com");
         final String expectedHeader = "test-header";
         String url = webServer.setResponse("/ok.html", "<html>ok</html>", null);
@@ -2051,7 +2040,7 @@ public class CustomTabActivityTest {
     }
 
     private void doOpaqueOriginTest(boolean enabled, boolean prefetch) throws Exception {
-        TestWebServer webServer = createTestWebServer();
+        TestWebServer webServer = TestWebServer.start();
         String url = webServer.setResponse("/ok.html", "<html>ok</html>", null);
         CustomTabsConnection connection = CustomTabsTestUtils.warmUpAndWait();
         Context context = getInstrumentation().getTargetContext().getApplicationContext();
@@ -2437,6 +2426,122 @@ public class CustomTabActivityTest {
                     mIntentCaptor.getValue().getStringExtra(
                             IntentHandler.EXTRA_CALLING_ACTIVITY_PACKAGE));
         });
+    }
+
+    @Test
+    @SmallTest
+    public void testAppMenuDoesNotShowReadAloud() {
+        // TODO(b/292134067): Update when Read Aloud supports Custom Tabs.
+        mCustomTabActivityTestRule.startCustomTabActivityWithIntent(createMinimalCustomTabIntent());
+        openAppMenuAndAssertMenuShown();
+        Assert.assertNull(
+                mCustomTabActivityTestRule.getActivity().findViewById(R.id.readaloud_menu_id));
+    }
+
+    @Test
+    @SmallTest
+    public void testNavigationDismissTabModalDialog() {
+        Context context = getInstrumentation().getTargetContext().getApplicationContext();
+        Intent intent = CustomTabsIntentTestUtils.createMinimalCustomTabIntent(context, mTestPage);
+        mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
+        final Tab tab = mCustomTabActivityTestRule.getActivity().getActivityTab();
+
+        ModalDialogManager dialogManager =
+                mCustomTabActivityTestRule.getActivity().getModalDialogManagerSupplier().get();
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            PropertyModel dialog =
+                    new PropertyModel.Builder(ModalDialogProperties.ALL_KEYS)
+                            .with(ModalDialogProperties.TITLE, "test")
+                            .with(ModalDialogProperties.POSITIVE_BUTTON_TEXT,
+                                    context.getString(R.string.delete))
+                            .with(ModalDialogProperties.NEGATIVE_BUTTON_TEXT,
+                                    context.getString(R.string.cancel))
+                            .with(ModalDialogProperties.CONTROLLER,
+                                    new ModalDialogProperties.Controller() {
+                                        @Override
+                                        public void onClick(PropertyModel model, int buttonType) {}
+
+                                        @Override
+                                        public void onDismiss(
+                                                PropertyModel model, int dismissalCause) {}
+                                    })
+                            .build();
+
+            dialogManager.showDialog(dialog, ModalDialogManager.ModalDialogType.TAB);
+        });
+
+        CriteriaHelper.pollUiThread(() -> dialogManager.isShowing());
+
+        TestThreadUtils.runOnUiThreadBlocking(
+                (Runnable) () -> tab.loadUrl(new LoadUrlParams(mTestPage2)));
+        ChromeTabUtils.waitForTabPageLoaded(tab, mTestPage2);
+
+        Assert.assertTrue(tab.canGoBack());
+        Assert.assertFalse(tab.canGoForward());
+
+        CriteriaHelper.pollUiThread(() -> !dialogManager.isShowing());
+    }
+
+    @Test
+    @SmallTest
+    @Features.DisableFeatures(ChromeFeatureList.BACK_GESTURE_REFACTOR)
+    public void testBackPressDismissTabModalDialog() {
+        Context context = getInstrumentation().getTargetContext().getApplicationContext();
+        Intent intent = CustomTabsIntentTestUtils.createMinimalCustomTabIntent(context, mTestPage);
+        mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
+        final Tab tab = mCustomTabActivityTestRule.getActivity().getActivityTab();
+
+        ModalDialogManager dialogManager =
+                mCustomTabActivityTestRule.getActivity().getModalDialogManagerSupplier().get();
+
+        TestThreadUtils.runOnUiThreadBlocking(
+                (Runnable) () -> tab.loadUrl(new LoadUrlParams(mTestPage2)));
+        ChromeTabUtils.waitForTabPageLoaded(tab, mTestPage2);
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            PropertyModel dialog =
+                    new PropertyModel.Builder(ModalDialogProperties.ALL_KEYS)
+                            .with(ModalDialogProperties.TITLE, "test")
+                            .with(ModalDialogProperties.POSITIVE_BUTTON_TEXT,
+                                    context.getString(R.string.delete))
+                            .with(ModalDialogProperties.NEGATIVE_BUTTON_TEXT,
+                                    context.getString(R.string.cancel))
+                            .with(ModalDialogProperties.CONTROLLER,
+                                    new ModalDialogProperties.Controller() {
+                                        @Override
+                                        public void onClick(PropertyModel model, int buttonType) {}
+
+                                        @Override
+                                        public void onDismiss(
+                                                PropertyModel model, int dismissalCause) {}
+                                    })
+                            .build();
+
+            dialogManager.showDialog(dialog, ModalDialogManager.ModalDialogType.TAB);
+        });
+        CriteriaHelper.pollUiThread(() -> dialogManager.isShowing(), "Dialog should be displayed");
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mCustomTabActivityTestRule.getActivity().getOnBackPressedDispatcher().onBackPressed();
+        });
+
+        Assert.assertTrue("Should be able to navigate back after navigation", tab.canGoBack());
+        Assert.assertFalse("Should be unable to navigate forward", tab.canGoForward());
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            Criteria.checkThat("Tab should not be navigated when dialog is dismissed",
+                    ChromeTabUtils.getUrlStringOnUiThread(getActivity().getActivityTab()),
+                    is(mTestPage2));
+        });
+
+        CriteriaHelper.pollUiThread(
+                () -> !dialogManager.isShowing(), "Dialog should be dismissed by back press");
+    }
+
+    @Test
+    @SmallTest
+    @Features.EnableFeatures(ChromeFeatureList.BACK_GESTURE_REFACTOR)
+    public void testBackPressDismissTabModalDialog_BackGestureRefactor() {
+        testBackPressDismissTabModalDialog();
     }
 
     private void rotateCustomTabActivity(CustomTabActivity activity, int orientation) {

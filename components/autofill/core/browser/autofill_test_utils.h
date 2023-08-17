@@ -101,6 +101,8 @@ std::unique_ptr<PrefService> PrefServiceForTesting(
 // for building up more complex test forms. Another version of the function is
 // provided in case the caller wants the vector of expected field `types`. Use
 // `unique_id` optionally ensure that each form has its own signature.
+[[nodiscard]] FormData CreateTestAddressFormData(
+    const char* unique_id = nullptr);
 void CreateTestAddressFormData(FormData* form, const char* unique_id = nullptr);
 void CreateTestAddressFormData(FormData* form,
                                std::vector<ServerFieldTypeSet>* types,
@@ -140,14 +142,14 @@ void SetProfileCategory(
 std::string GetStrippedValue(const char* value);
 
 // Returns an IBAN full of dummy info.
-IBAN GetIBAN();
+Iban GetIban();
 
 // Returns an IBAN full of dummy info, different to the above.
-IBAN GetIBAN2();
+Iban GetIban2();
 
 // Returns an IBAN full of dummy info, different to the above and without
 // nickname.
-IBAN GetIBANWithoutNickname();
+Iban GetIbanWithoutNickname();
 
 // Returns a credit card full of dummy info.
 CreditCard GetCreditCard();

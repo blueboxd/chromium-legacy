@@ -14,18 +14,17 @@ source_set("tab_grid") {
     "tab_grid_mediator.mm",
   ]
 
-  configs += [ "//build/config/compiler:enable_arc" ]
-
   deps = [
     ":tab_grid_metrics",
     ":tab_grid_page_mutator",
     ":tab_grid_paging",
     ":tab_grid_ui",
     "//base",
-    "//base/ios",
     "//components/bookmarks/browser",
+    "//components/prefs/ios",
     "//components/search_engines",
     "//components/strings",
+    "//components/supervised_user/core/common",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/bookmarks",
     "//ios/chrome/browser/bring_android_tabs",
@@ -57,6 +56,7 @@ source_set("tab_grid") {
     "//ios/chrome/browser/synced_sessions",
     "//ios/chrome/browser/tabs:features",
     "//ios/chrome/browser/tabs/inactive_tabs:features",
+    "//ios/chrome/browser/ui/authentication/history_sync",
     "//ios/chrome/browser/ui/bookmarks",
     "//ios/chrome/browser/ui/bookmarks:utils",
     "//ios/chrome/browser/ui/bring_android_tabs",
@@ -90,7 +90,6 @@ source_set("tab_grid") {
 }
 
 source_set("tab_grid_metrics") {
-  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "tab_grid_metrics.h",
     "tab_grid_metrics.mm",
@@ -99,7 +98,6 @@ source_set("tab_grid_metrics") {
 }
 
 source_set("tab_grid_page_mutator") {
-  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [ "tab_grid_page_mutator.h" ]
   deps = [ "//base" ]
 }
@@ -107,14 +105,10 @@ source_set("tab_grid_page_mutator") {
 source_set("tab_collection_commands") {
   sources = [ "tab_collection_commands.h" ]
 
-  configs += [ "//build/config/compiler:enable_arc" ]
-
   deps = [ "//base" ]
 }
 
 source_set("tab_grid_ui_constants") {
-  configs += [ "//build/config/compiler:enable_arc" ]
-
   sources = [
     "tab_grid_constants.h",
     "tab_grid_constants.mm",
@@ -129,21 +123,19 @@ source_set("tab_grid_ui_constants") {
 source_set("tab_grid_paging") {
   sources = [ "tab_grid_paging.h" ]
   deps = [ "//base" ]
-  configs += [ "//build/config/compiler:enable_arc" ]
 }
 
 source_set("tab_grid_ui") {
   sources = [
     "disabled_tab_view_controller.h",
     "disabled_tab_view_controller.mm",
+    "tab_grid_consumer.h",
     "tab_grid_empty_state_view.h",
     "tab_grid_empty_state_view.mm",
     "tab_grid_mutator.h",
     "tab_grid_view_controller.h",
     "tab_grid_view_controller.mm",
   ]
-
-  configs += [ "//build/config/compiler:enable_arc" ]
 
   deps = [
     ":tab_collection_commands",
@@ -155,6 +147,7 @@ source_set("tab_grid_ui") {
     "resources:tab_grid_incognito_tabs_empty",
     "resources:tab_grid_regular_tabs_empty",
     "//base",
+    "//components/supervised_user/core/common:features",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/crash_report",
     "//ios/chrome/browser/default_browser:utils",
@@ -170,6 +163,8 @@ source_set("tab_grid_ui") {
     "//ios/chrome/browser/ui/menu",
     "//ios/chrome/browser/ui/recent_tabs:recent_tabs_ui",
     "//ios/chrome/browser/ui/tab_switcher",
+    "//ios/chrome/browser/ui/tab_switcher/tab_grid/grid",
+    "//ios/chrome/browser/ui/tab_switcher/tab_grid/grid:grid_consumer",
     "//ios/chrome/browser/ui/tab_switcher/tab_grid/pinned_tabs",
     "//ios/chrome/browser/ui/tab_switcher/tab_grid/pinned_tabs:constants",
     "//ios/chrome/browser/ui/tab_switcher/tab_grid/pinned_tabs:pinned_tabs_ui",
@@ -185,7 +180,6 @@ source_set("tab_grid_ui") {
 }
 
 source_set("unit_tests") {
-  configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
     "tab_grid_coordinator_unittest.mm",
@@ -225,10 +219,7 @@ source_set("unit_tests") {
 }
 
 source_set("eg2_tests") {
-  configs += [
-    "//build/config/compiler:enable_arc",
-    "//build/config/ios:xctest_config",
-  ]
+  configs += [ "//build/config/ios:xctest_config" ]
   testonly = true
   sources = [
     "tab_grid_egtest.mm",

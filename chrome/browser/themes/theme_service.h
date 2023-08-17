@@ -21,6 +21,7 @@
 #include "components/supervised_user/core/common/buildflags.h"
 #include "extensions/buildflags/buildflags.h"
 #include "extensions/common/extension_id.h"
+#include "ui/base/mojom/themes.mojom.h"
 #include "ui/base/theme_provider.h"
 #include "ui/color/system_theme.h"
 
@@ -56,16 +57,6 @@ class ThemeService : public KeyedService, public BrowserThemeProviderDelegate {
     kSystem = 0,
     kLight = 1,
     kDark = 2,
-  };
-
-  // This is stored as an integer in the profile prefs, so entries should not be
-  // renumbered and numeric values should never be reused.
-  enum class BrowserColorVariant {
-    kSystem = 0,
-    kTonalSpot = 1,
-    kNeutral = 2,
-    kVibrant = 3,
-    kExpressive = 4,
   };
 
   // This class keeps track of the number of existing |ThemeReinstaller|
@@ -120,6 +111,13 @@ class ThemeService : public KeyedService, public BrowserThemeProviderDelegate {
 
   // Reset the theme to default.
   virtual void UseDefaultTheme();
+
+  // Toggle whether the browser follows its own theme or from the OS. For now,
+  // this is distinct from the ui::SystemTheme.
+  virtual void UseDeviceTheme(bool follow);
+
+  // Returns true if the browser should follow the OS theme.
+  virtual bool UsingDeviceTheme() const;
 
   // Set the current theme to the system theme. On some platforms, the system
   // theme is the default theme.
@@ -206,18 +204,21 @@ class ThemeService : public KeyedService, public BrowserThemeProviderDelegate {
   virtual absl::optional<SkColor> GetUserColor() const;
 
   // Sets/gets the browser kSchemeVariant preference.
-  void SetBrowserColorVariant(BrowserColorVariant color_variant);
-  virtual BrowserColorVariant GetBrowserColorVariant() const;
+  void SetBrowserColorVariant(ui::mojom::BrowserColorVariant color_variant);
+  virtual ui::mojom::BrowserColorVariant GetBrowserColorVariant() const;
 
   // Convenience method that allows setting both the kUserColor and
   // kSchemeVariant before propagating theme update notifications.
   virtual void SetUserColorAndBrowserColorVariant(
       SkColor user_color,
-      BrowserColorVariant color_variant);
+      ui::mojom::BrowserColorVariant color_variant);
 
   // Sets/gets the browser grayscale theme preference.
   virtual void SetIsGrayscale(bool is_grayscale);
   virtual bool GetIsGrayscale() const;
+
+  // Returns true if the current theme is the "baseline" blue theme.
+  virtual bool GetIsBaseline() const;
 
   // Returns |ThemeService::ThemeReinstaller| for the current theme.
   std::unique_ptr<ThemeService::ThemeReinstaller>
@@ -357,6 +358,13 @@ class ThemeService : public KeyedService, public BrowserThemeProviderDelegate {
 
   // The number of infobars currently displayed.
   int number_of_reinstallers_ = 0;
+
+  // Configuring ThemeService into a desired theme state may involve the
+  // configuration of multiple theme prefs. However updating a single theme pref
+  // may result in requests to propagate theme update notifications. This flag
+  // is used to avoid propagating updates until all theme prefs have been set
+  // to their desired values.
+  bool should_suppress_theme_updates_ = false;
 
   // Declared before |theme_syncable_service_|, because ThemeSyncableService
   // removes itself from the |observers_| list on destruction.

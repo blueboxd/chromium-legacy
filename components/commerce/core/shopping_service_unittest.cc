@@ -5,6 +5,7 @@
 #include "components/commerce/core/shopping_service.h"
 #include "base/functional/bind.h"
 #include "base/run_loop.h"
+#include "base/uuid.h"
 #include "base/values.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_node.h"
@@ -513,18 +514,18 @@ TEST_F(ShoppingServiceTest, TestGetUpdatedProductInfoForBookmarks) {
   opt_guide_->AddOnDemandShoppingResponse(
       GURL(kProductUrl), OptimizationGuideDecision::kTrue, updated_meta);
 
-  std::vector<int64_t> bookmark_ids;
-  bookmark_ids.push_back(product1->id());
-  int expected_calls = bookmark_ids.size();
+  std::vector<base::Uuid> bookmark_uuids;
+  bookmark_uuids.push_back(product1->uuid());
+  int expected_calls = bookmark_uuids.size();
 
   base::RunLoop run_loop;
 
   auto callback = base::BindRepeating(
       [](bookmarks::BookmarkModel* model, int* call_count,
-         base::RunLoop* run_loop, const int64_t id, const GURL& url,
+         base::RunLoop* run_loop, const base::Uuid& uuid, const GURL& url,
          absl::optional<ProductInfo> info) {
         const bookmarks::BookmarkNode* node =
-            bookmarks::GetBookmarkNodeByID(model, id);
+            bookmarks::GetBookmarkNodeByUuid(model, uuid);
         EXPECT_EQ(url.spec(), node->url().spec());
 
         (*call_count)--;
@@ -533,7 +534,8 @@ TEST_F(ShoppingServiceTest, TestGetUpdatedProductInfoForBookmarks) {
       },
       bookmark_model_.get(), &expected_calls, &run_loop);
 
-  shopping_service_->GetUpdatedProductInfoForBookmarks(bookmark_ids, callback);
+  shopping_service_->GetUpdatedProductInfoForBookmarks(bookmark_uuids,
+                                                       callback);
   run_loop.Run();
 
   EXPECT_EQ(0, expected_calls);
@@ -959,6 +961,52 @@ TEST_F(ShoppingServiceTest, TestPriceInsightsInfoResponse_EmptyClusterId) {
              const absl::optional<PriceInsightsInfo>& info) {
             ASSERT_EQ(kPriceInsightsUrl, url.spec());
             ASSERT_FALSE(info.has_value());
+
+            run_loop->Quit();
+          },
+          &run_loop));
+  run_loop.Run();
+}
+
+TEST_F(ShoppingServiceTest, TestPriceInsightsInfoResponse_EmptyRange) {
+  test_features_.InitAndEnableFeature(kPriceInsights);
+
+  std::vector<std::tuple<std::string, int64_t>> history_prices;
+  history_prices.emplace_back("2021-01-01", 100);
+  history_prices.emplace_back("2021-01-02", 200);
+
+  OptimizationMetadata meta = opt_guide_->BuildPriceInsightsResponse(
+      kClusterId, "", 0, 0, kCurrencyCode, kAttributes, history_prices, "",
+      PriceBucket::kHighPrice, true);
+
+  opt_guide_->SetResponse(GURL(kPriceInsightsUrl),
+                          OptimizationType::PRICE_INSIGHTS,
+                          OptimizationGuideDecision::kTrue, meta);
+
+  base::RunLoop run_loop;
+  shopping_service_->GetPriceInsightsInfoForUrl(
+      GURL(kPriceInsightsUrl),
+      base::BindOnce(
+          [](base::RunLoop* run_loop, const GURL& url,
+             const absl::optional<PriceInsightsInfo>& info) {
+            ASSERT_EQ(kPriceInsightsUrl, url.spec());
+            ASSERT_TRUE(info.has_value());
+
+            ASSERT_EQ(kClusterId, info->product_cluster_id);
+            ASSERT_EQ(kCurrencyCode, info->currency_code);
+            ASSERT_EQ(absl::nullopt, info->typical_low_price_micros);
+            ASSERT_EQ(absl::nullopt, info->typical_high_price_micros);
+            ASSERT_EQ(kAttributes, info->catalog_attributes);
+            ASSERT_EQ(2, (int)(info->catalog_history_prices.size()));
+            ASSERT_EQ("2021-01-01",
+                      std::get<0>(info->catalog_history_prices[0]));
+            ASSERT_EQ("2021-01-02",
+                      std::get<0>(info->catalog_history_prices[1]));
+            ASSERT_EQ(100, std::get<1>(info->catalog_history_prices[0]));
+            ASSERT_EQ(200, std::get<1>(info->catalog_history_prices[1]));
+            ASSERT_EQ(absl::nullopt, info->jackpot_url);
+            ASSERT_EQ(PriceBucket::kHighPrice, info->price_bucket);
+            ASSERT_EQ(true, info->has_multiple_catalogs);
 
             run_loop->Quit();
           },

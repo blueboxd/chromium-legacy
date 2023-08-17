@@ -89,10 +89,6 @@ tests that use the app interface.
 
 #import "ios/testing/earl_grey/earl_grey_test.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 GREY_STUB_CLASS_IN_APP_MAIN_QUEUE(MyTestAppInterface)
 
 ```
@@ -110,7 +106,6 @@ correctly build the test module. The skeleton of the target:
 ```
 source_set("eg2_tests") {
   configs += [
-    "//build/config/compiler:enable_arc",
     "//build/config/ios:xctest_config",
   ]
   testonly = true

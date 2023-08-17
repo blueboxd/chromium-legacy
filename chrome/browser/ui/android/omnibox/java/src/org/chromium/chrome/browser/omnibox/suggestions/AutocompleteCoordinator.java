@@ -32,7 +32,6 @@ import org.chromium.chrome.browser.omnibox.suggestions.SuggestionListViewBinder.
 import org.chromium.chrome.browser.omnibox.suggestions.answer.AnswerSuggestionViewBinder;
 import org.chromium.chrome.browser.omnibox.suggestions.base.BaseSuggestionView;
 import org.chromium.chrome.browser.omnibox.suggestions.base.BaseSuggestionViewBinder;
-import org.chromium.chrome.browser.omnibox.suggestions.base.HistoryClustersProcessor.OpenHistoryClustersDelegate;
 import org.chromium.chrome.browser.omnibox.suggestions.basic.BasicSuggestionProcessor.BookmarkState;
 import org.chromium.chrome.browser.omnibox.suggestions.basic.SuggestionViewViewBinder;
 import org.chromium.chrome.browser.omnibox.suggestions.carousel.BaseCarouselSuggestionItemViewBuilder;
@@ -44,6 +43,7 @@ import org.chromium.chrome.browser.omnibox.suggestions.editurl.EditUrlSuggestion
 import org.chromium.chrome.browser.omnibox.suggestions.entity.EntitySuggestionViewBinder;
 import org.chromium.chrome.browser.omnibox.suggestions.header.HeaderView;
 import org.chromium.chrome.browser.omnibox.suggestions.header.HeaderViewBinder;
+import org.chromium.chrome.browser.omnibox.suggestions.history_clusters.HistoryClustersProcessor.OpenHistoryClustersDelegate;
 import org.chromium.chrome.browser.omnibox.suggestions.tail.TailSuggestionView;
 import org.chromium.chrome.browser.omnibox.suggestions.tail.TailSuggestionViewBinder;
 import org.chromium.chrome.browser.omnibox.voice.VoiceRecognitionHandler;
@@ -225,7 +225,7 @@ public class AutocompleteCoordinator implements UrlFocusChangeListener, UrlTextC
         adapter.registerType(
             OmniboxSuggestionUiType.ENTITY_SUGGESTION,
             parent -> new BaseSuggestionView<View>(
-                parent.getContext(), R.layout.omnibox_entity_suggestion),
+                parent.getContext(), R.layout.omnibox_basic_suggestion),
             new BaseSuggestionViewBinder<View>(EntitySuggestionViewBinder::bind));
 
         adapter.registerType(

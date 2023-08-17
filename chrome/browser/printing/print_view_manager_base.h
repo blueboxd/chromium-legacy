@@ -25,6 +25,7 @@
 #include "components/printing/common/print.mojom-forward.h"
 #include "components/services/print_compositor/public/mojom/print_compositor.mojom.h"
 #include "printing/buildflags/buildflags.h"
+#include "ui/accessibility/ax_tree_update_forward.h"
 
 #if BUILDFLAG(ENABLE_OOP_PRINTING)
 #include "chrome/browser/printing/print_backend_service_manager.h"
@@ -33,10 +34,6 @@
 #if BUILDFLAG(ENABLE_PRINT_CONTENT_ANALYSIS)
 #include "chrome/browser/enterprise/connectors/analysis/content_analysis_delegate.h"
 #endif  // BUILDFLAG(ENABLE_PRINT_CONTENT_ANALYSIS)
-
-#if BUILDFLAG(ENABLE_TAGGED_PDF)
-#include "ui/accessibility/ax_tree_update_forward.h"
-#endif
 
 namespace base {
 class RefCountedMemory;
@@ -59,15 +56,14 @@ class PrintViewManagerBase : public PrintManager, public PrintJob::Observer {
     virtual void OnScriptedPrint() {}
 
     // This method is never called unless `ENABLE_PRINT_PREVIEW`.
-    virtual void OnPrintPreview(const content::RenderFrameHost* rfh) {}
-
-    // This method is never called unless `ENABLE_PRINT_PREVIEW`.
     virtual void OnPrintPreviewDone() {}
 
     // This method is never called unless `ENABLE_OOP_PRINTING`.
     virtual void OnRegisterSystemPrintClient(bool succeeded) {}
 
     virtual void OnDidPrintDocument() {}
+
+    virtual void OnReleasePrintJob() {}
   };
 
   PrintViewManagerBase(const PrintViewManagerBase&) = delete;
@@ -125,16 +121,14 @@ class PrintViewManagerBase : public PrintManager, public PrintJob::Observer {
   void DidGetPrintedPagesCount(int32_t cookie, uint32_t number_pages) override;
   void DidPrintDocument(mojom::DidPrintDocumentParamsPtr params,
                         DidPrintDocumentCallback callback) override;
-#if BUILDFLAG(ENABLE_TAGGED_PDF)
-  void SetAccessibilityTree(
-      int32_t cookie,
-      const ui::AXTreeUpdate& accessibility_tree) override;
-#endif
   void GetDefaultPrintSettings(
       GetDefaultPrintSettingsCallback callback) override;
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
   void UpdatePrintSettings(base::Value::Dict job_settings,
                            UpdatePrintSettingsCallback callback) override;
+  void SetAccessibilityTree(
+      int32_t cookie,
+      const ui::AXTreeUpdate& accessibility_tree) override;
 #endif
   void IsPrintingEnabled(IsPrintingEnabledCallback callback) override;
   void ScriptedPrint(mojom::ScriptedPrintParamsPtr params,
@@ -225,6 +219,16 @@ class PrintViewManagerBase : public PrintManager, public PrintJob::Observer {
       mojom::PrintCompositor::Status status,
       base::ReadOnlySharedMemoryRegion page_region);
 
+  // Helper method bound to `content_analysis_before_printing_document_` when
+  // content analysis should happen right before the document is to be printed.
+  // This method is virtual for testing purposes.
+  virtual void ContentAnalysisBeforePrintingDocument(
+      enterprise_connectors::ContentAnalysisDelegate::Data scanning_data,
+      scoped_refptr<base::RefCountedMemory> print_data,
+      const gfx::Size& page_size,
+      const gfx::Rect& content_area,
+      const gfx::Point& offsets);
+
   // Helper method to set `analyzing_content_` in child classes.
   void set_analyzing_content(bool analyzing);
 #endif  // BUILDFLAG(ENABLE_PRINT_CONTENT_ANALYSIS)
@@ -282,19 +286,19 @@ class PrintViewManagerBase : public PrintManager, public PrintJob::Observer {
   // Helpers for PrintForPrintPreview();
   void OnPrintSettingsDone(scoped_refptr<base::RefCountedMemory> print_data,
                            uint32_t page_count,
+#if BUILDFLAG(ENABLE_PRINT_CONTENT_ANALYSIS)
+                           bool show_system_dialog,
+#endif
                            PrinterHandler::PrintCallback callback,
                            std::unique_ptr<PrinterQuery> printer_query);
 
   void StartLocalPrintJob(scoped_refptr<base::RefCountedMemory> print_data,
                           uint32_t page_count,
+#if BUILDFLAG(ENABLE_PRINT_CONTENT_ANALYSIS)
+                          bool show_system_dialog,
+#endif
                           int cookie,
                           PrinterHandler::PrintCallback callback);
-
-  // Runs `callback` with `params` to reply to UpdatePrintSettings().
-  void UpdatePrintSettingsReply(
-      mojom::PrintManagerHost::UpdatePrintSettingsCallback callback,
-      mojom::PrintPagesParamsPtr params,
-      bool canceled);
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 
   // Runs `callback` with `params` to reply to GetDefaultPrintSettings().
@@ -369,6 +373,17 @@ class PrintViewManagerBase : public PrintManager, public PrintJob::Observer {
       mojom::ScriptedPrintParamsPtr params,
       ScriptedPrintCallback callback,
       bool allowed);
+
+  // Helper method called after a verdict has been obtained from scanning
+  // to-be-printed content, right before the actual `print_job_` starts.
+  // Printing will proceed only if `allowed` is set to true, otherwise the print
+  // job will be cancelled.
+  void CompletePrintDocumentAfterContentAnalysis(
+      scoped_refptr<base::RefCountedMemory> print_data,
+      const gfx::Size& page_size,
+      const gfx::Rect& content_area,
+      const gfx::Point& offsets,
+      bool allowed);
 #endif  // BUILDFLAG(ENABLE_PRINT_CONTENT_ANALYSIS)
 
   // The current RFH that is printing with a system printing dialog.
@@ -396,6 +411,15 @@ class PrintViewManagerBase : public PrintManager, public PrintJob::Observer {
 #if BUILDFLAG(ENABLE_PRINT_CONTENT_ANALYSIS)
   // Indicates that the page/document is currently undergoing content analysis.
   bool analyzing_content_ = false;
+
+  // Called by `PrintDocument` to insert content analysis logic before key
+  // printing steps like `PrintJob::StartPrinting`.
+  using PrintDocumentCallback =
+      base::OnceCallback<void(scoped_refptr<base::RefCountedMemory> print_data,
+                              const gfx::Size& page_size,
+                              const gfx::Rect& content_area,
+                              const gfx::Point& offsets)>;
+  PrintDocumentCallback content_analysis_before_printing_document_;
 #endif  // BUILDFLAG(ENABLE_PRINT_CONTENT_ANALYSIS)
 
   const scoped_refptr<PrintQueriesQueue> queue_;

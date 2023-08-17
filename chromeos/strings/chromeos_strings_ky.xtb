@@ -15,7 +15,6 @@
 <translation id="1075811647922107217">Барактын өлчөмү</translation>
 <translation id="1082009148392559545">Көшөгө жүктөлүп алынууда</translation>
 <translation id="1094693127011229778">IP дареги жеткиликсиз</translation>
-<translation id="1113892970288677790">Санат ишин жана сүрөттөрдү тандаңыз</translation>
 <translation id="1118572504348554005">Бузулууларды аныктап оңдоо жана сиз кабарлаган башка маселелерди чечүү үчүн бул форма аркылуу тапшырылган маалымат өнөктөштөрүбүз менен бөлүшүлүшү мүмкүн. Сырсөздөр сыяктуу купуя маалыматты жазбаңыз.</translation>
 <translation id="1119447706177454957">Ички ката</translation>
 <translation id="1124772482545689468">Колдонуучу</translation>
@@ -183,6 +182,7 @@
 <translation id="225692081236532131">Жандыруу абалы</translation>
 <translation id="2271469253353559191">Караңгы теманын графиги</translation>
 <translation id="2276999893457278469">Пайдалуу материалдар</translation>
+<translation id="2279051792571591988">Демейкилерди калыбына келтирүү</translation>
 <translation id="2287186687001756809">Сүрөт жок. Сүрөттөрдү кошуу үчүн төмөнкү жерге өтүңүз: <ph name="LINK" /></translation>
 <translation id="2307344026739914387">Учурдагы жуп ачкычты колдонуу</translation>
 <translation id="2320295602967756579">Жарык теманы иштетүү</translation>
@@ -224,6 +224,7 @@
 <translation id="2620436844016719705">Система</translation>
 <translation id="2638662041295312666">Аккаунтка кирүү сүрөтү</translation>
 <translation id="2640549051766135490"><ph name="TITLE" /> <ph name="DESC" /> альбому тандалды</translation>
+<translation id="2652403576514495859">текстти айтып терүүнү иштетүү же өчүрүү/күйгүзүү</translation>
 <translation id="267442004702508783">жаңылоо</translation>
 <translation id="268270014981824665">баскычтопту күңүрттөтүү</translation>
 <translation id="2712812801627182647">TLS аутентификация ачкычы</translation>
@@ -331,7 +332,6 @@
 <translation id="361575905210396100">Пикириңиз үчүн рахмат</translation>
 <translation id="3632579075709132555">Купуялык экранын өчүрүү/күйгүзүү</translation>
 <translation id="3651050199673793219">Температураны өлчөө бирдигин тандоо</translation>
-<translation id="3663574643422533538"><ph name="PRODUCT_NAME" /> өзгөчө сүрөттөрүн тандаңыз</translation>
 <translation id="3668449597372804501">Булут тушкагазы</translation>
 <translation id="3689839747745352263"><ph name="TEST_NAME" /> сыноосу</translation>
 <translation id="370665806235115550">Жүктөлүүдө…</translation>
@@ -589,6 +589,7 @@
 <translation id="5620281292257375798">Ички колдонуу үчүн</translation>
 <translation id="5649768706273821470">Угуу</translation>
 <translation id="5655283760733841251">Баскычтоптун жарыктыгын көбөйтүү</translation>
+<translation id="5655296450510165335">Түзмөктү каттоо</translation>
 <translation id="5655776422854483175">Басып чыгаруу тапшырмалары жок</translation>
 <translation id="5659593005791499971">Электрондук почта</translation>
 <translation id="5662240986744577912">купуялык экранын өчүрүү/күйгүзүү</translation>
@@ -644,6 +645,7 @@
 <translation id="6061772781719867950">HTTP сурамдары орундалган жок</translation>
 <translation id="6073292342939316679">баскычтоптун жарыктыгын азайтуу</translation>
 <translation id="6075872808778243331">(Android) HTTP күтүү убакыты</translation>
+<translation id="6078323886959318429">Кыска жол кошуу</translation>
 <translation id="6104112872696127344">Скандоо токтотулду</translation>
 <translation id="6106186594183574873">Бүтүрүү үчүн эски сырсөзүңүздү киргизиңиз</translation>
 <translation id="6108689792487843350">Шлюз жеткиликсиз</translation>
@@ -799,10 +801,10 @@
 <translation id="7297226631177386107">HTTPS вебсайттарына тармактык коргоо аркылуу туташпай жатат</translation>
 <translation id="7297726121602187087">Күңүрт жашыл</translation>
 <translation id="7302860742311162920">ICCID</translation>
-<translation id="7305236594389852547">текстти айтып терүүнү өчүрүү/күйгүзүү</translation>
 <translation id="7305884605064981971">EDGE</translation>
 <translation id="7308203371573257315">Chromebook'тун Жардам форумундагы адистерден сураңыз</translation>
 <translation id="7311368985037279727">баскычтоптун түсү</translation>
+<translation id="7317831949569936035">Окуу жайын каттоо</translation>
 <translation id="7319430975418800333">A3</translation>
 <translation id="7343581795491695942"><ph name="QUERY_TEXT" />; <ph name="RESULT_TEXT" />; Google Издөөдөгү натыйжаларды көрүү үчүн Издөө жана Боштук баскычтарын басыңыз.</translation>
 <translation id="7343649194310845056">Тармак түзмөктөрү</translation>
@@ -814,6 +816,7 @@
 <translation id="7397270852490618635">Жарык теманы өчүрүү</translation>
 <translation id="741244894080940828">которуу</translation>
 <translation id="7415801143053185905">HTTP күтүү убакыты өтө жогору</translation>
+<translation id="7425178841057519191">{NUM_ROOL_APPS,plural,offset:2 =1{Администраторуңуз <ph name="APP_NAME_1" /> колдонмосун сиз тутумга кирген сайын автоматтык түрдө ачыла тургандай кылып тууралады.}=2{Администраторуңуз <ph name="APP_NAME_1" /> жана <ph name="APP_NAME_2" /> колдонмолорун сиз тутумга кирген сайын автоматтык түрдө ачыла тургандай кылып тууралады.}=3{Администраторуңуз <ph name="APP_NAME_1" />, <ph name="APP_NAME_2" /> жана <ph name="APP_NAME_3" /> колдонмолорун сиз тутумга кирген сайын автоматтык түрдө ачыла тургандай кылып тууралады.}other{Администраторуңуз <ph name="APP_NAME_1" />, <ph name="APP_NAME_2" /> жана дагы # колдонмону сиз тутумга кирген сайын автоматтык түрдө ачыла тургандай кылып тууралады.}}</translation>
 <translation id="7427315641433634153">MSCHAP</translation>
 <translation id="7458970041932198923">Аватарларды көрүү жана коюу үчүн тармакка туташып, баракты кайра жүктөңүз.</translation>
 <translation id="7469648432129124067">Портал аныкталды</translation>
@@ -1012,6 +1015,7 @@
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8987565828374052507">{NUMBER_OF_PAGES,plural, =0{Скандоо}=1{{NUMBER_OF_PAGES} бетти скандоо}other{{NUMBER_OF_PAGES} бетти скандоо}}</translation>
 <translation id="8997710128084572139">Түзмөктүн батареясынын деңгээли: <ph name="BATTERY_PERCENTAGE" />%.</translation>
+<translation id="8998156756248178381">{NUM_ROOL_APPS,plural, =1{<ph name="APP_NAME_1" /> автоматтык түрдө ачылды}other{# колдонмо автоматтык түрдө ачылды}}</translation>
 <translation id="8998289560386111590">Түзмөгүңүздө жеткиликтүү эмес</translation>
 <translation id="9003704114456258138">Жыштык</translation>
 <translation id="9024331582947483881">толук экран</translation>

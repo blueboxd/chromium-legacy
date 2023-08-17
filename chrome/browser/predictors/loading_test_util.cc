@@ -178,6 +178,7 @@ PreconnectPrediction CreatePreconnectPrediction(
 void PopulateTestConfig(LoadingPredictorConfig* config, bool small_db) {
   if (small_db) {
     config->max_hosts_to_track = 2;
+    config->max_hosts_to_track_for_lcpp = 2;
     config->max_origins_per_entry = 5;
     config->max_consecutive_misses = 2;
     config->max_redirect_consecutive_misses = 2;
@@ -252,8 +253,6 @@ std::ostream& operator<<(std::ostream& os, const PageRequestSummary& summary) {
      << std::endl;
   for (const auto& pair : summary.origins)
     os << "\t\t" << pair.first << ":" << pair.second << std::endl;
-  os << "\t\t"
-     << "lcp_element_locator: " << summary.lcp_element_locator;
   return os;
 }
 
@@ -298,8 +297,7 @@ bool operator==(const RedirectStat& lhs, const RedirectStat& rhs) {
 bool operator==(const PageRequestSummary& lhs, const PageRequestSummary& rhs) {
   return lhs.main_frame_url == rhs.main_frame_url &&
          lhs.initial_url == rhs.initial_url && lhs.origins == rhs.origins &&
-         lhs.subresource_urls == rhs.subresource_urls &&
-         lhs.lcp_element_locator == rhs.lcp_element_locator;
+         lhs.subresource_urls == rhs.subresource_urls;
 }
 
 bool operator==(const OriginRequestSummary& lhs,

@@ -50,6 +50,8 @@
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/gpu/GrYUVABackendTextures.h"
 #include "third_party/skia/include/gpu/ganesh/SkImageGanesh.h"
+#include "third_party/skia/include/gpu/ganesh/gl/GrGLBackendSurface.h"
+#include "third_party/skia/include/gpu/gl/GrGLTypes.h"
 #include "third_party/skia/include/gpu/graphite/Image.h"
 #include "third_party/skia/include/gpu/graphite/Recorder.h"
 #include "third_party/skia/include/gpu/graphite/YUVABackendTextures.h"
@@ -379,7 +381,7 @@ void SkiaOutputSurfaceImpl::Reshape(const ReshapeParams& params) {
          params.alpha_type == kOpaque_SkAlphaType);
 
   size_ = params.size;
-  format_ = GetSharedImageFormat(params.format);
+  format_ = GetSinglePlaneSharedImageFormat(params.format);
   alpha_type_ = params.alpha_type;
 
   const auto format_index = static_cast<int>(params.format);
@@ -610,7 +612,9 @@ void SkiaOutputSurfaceImpl::MakePromiseSkImageSinglePlane(
   CHECK(format.is_single_plane() || format.PrefersExternalSampler());
   FulfillForPlane* fulfill = new FulfillForPlane(image_context);
   SkColorType color_type =
-      ToClosestSkColorType(/*gpu_compositing=*/true, format);
+      format.PrefersExternalSampler()
+          ? gpu::ToClosestSkColorTypeExternalSampler(format)
+          : ToClosestSkColorType(/*gpu_compositing=*/true, format);
   if (graphite_recorder_) {
     skgpu::graphite::TextureInfo texture_info = gpu::GetGraphiteTextureInfo(
         dependency_->gr_context_type(), format, /*plane_index=*/0,
@@ -822,7 +826,7 @@ SkCanvas* SkiaOutputSurfaceImpl::BeginPaintRenderPass(
                           kPremul_SkAlphaType, color_space);
     skgpu::graphite::TextureInfo texture_info = gpu::GetGraphiteTextureInfo(
         dependency_->gr_context_type(), format, /*plane_index=*/0,
-        /*is_yuv_plane=*/false, mipmap);
+        /*is_yuv_plane=*/false, mipmap, scanout_dcomp_surface);
     if (!texture_info.isValid()) {
       DLOG(ERROR) << "BeginPaintRenderPass: invalid Graphite TextureInfo";
       return nullptr;
@@ -1167,9 +1171,9 @@ SkiaOutputSurfaceImpl::CreateGrSurfaceCharacterizationRenderPass(
     DCHECK_EQ(dependency_->gr_context_type(), gpu::GrContextType::kGL);
     // For overlay, IOSurface will be used, and we may need using
     // GL_TEXTURE_RECTANGLE_ARB as texture target.
-    backend_format =
-        GrBackendFormat::MakeGL(backend_format.asGLFormatEnum(),
-                                gpu::GetPlatformSpecificTextureTarget());
+    backend_format = GrBackendFormats::MakeGL(
+        GrBackendFormats::AsGLFormatEnum(backend_format),
+        gpu::GetPlatformSpecificTextureTarget());
   }
 #endif
   auto image_info =
@@ -1214,8 +1218,9 @@ SkiaOutputSurfaceImpl::CreateGrSurfaceCharacterizationCurrentFrame(
   DCHECK_EQ(dependency_->gr_context_type(), gpu::GrContextType::kGL);
   // For root rander pass, IOSurface will be used, and we may need using
   // GL_TEXTURE_RECTANGLE_ARB as texture target.
-  backend_format = GrBackendFormat::MakeGL(
-      backend_format.asGLFormatEnum(), gpu::GetPlatformSpecificTextureTarget());
+  backend_format =
+      GrBackendFormats::MakeGL(GrBackendFormats::AsGLFormatEnum(backend_format),
+                               gpu::GetPlatformSpecificTextureTarget());
 #endif
   DCHECK(backend_format.isValid())
       << "GrBackendFormat is invalid for color_type: " << color_type;
@@ -1251,8 +1256,8 @@ SkiaOutputSurfaceImpl::CreateGrSurfaceCharacterizationCurrentFrame(
       << "\n  backend_format.isValid()=" << backend_format.isValid()
       << "\n  backend_format.backend()="
       << static_cast<int>(backend_format.backend())
-      << "\n  backend_format.asGLFormat()="
-      << static_cast<int>(backend_format.asGLFormat())
+      << "\n  GrBackendFormats::AsGLFormat(backend_format)="
+      << static_cast<int>(GrBackendFormats::AsGLFormat(backend_format))
 #if BUILDFLAG(ENABLE_VULKAN)
       << "\n  backend_format.asVkFormat()="
       << static_cast<int>(backend_format.asVkFormat(&vk_format))
@@ -1471,7 +1476,7 @@ GrBackendFormat SkiaOutputSurfaceImpl::GetGrBackendFormatForTexture(
         impl_on_gpu_->GetFeatureInfo(), gl_storage_internal_format,
         gr_context_thread_safe_);
 
-    return GrBackendFormat::MakeGL(texture_storage_format, gl_texture_target);
+    return GrBackendFormats::MakeGL(texture_storage_format, gl_texture_target);
   }
 }
 

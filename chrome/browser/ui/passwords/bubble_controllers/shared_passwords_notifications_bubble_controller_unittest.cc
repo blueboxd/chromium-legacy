@@ -4,10 +4,12 @@
 
 #include "chrome/browser/ui/passwords/bubble_controllers/shared_passwords_notifications_bubble_controller.h"
 
+#include "base/test/metrics/histogram_tester.h"
 #include "chrome/browser/password_manager/password_manager_test_util.h"
 #include "chrome/browser/ui/passwords/passwords_model_delegate_mock.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/password_manager/core/browser/password_form.h"
+#include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/test_password_store.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_renderer_host.h"
@@ -15,7 +17,10 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using base::Bucket;
 using password_manager::PasswordForm;
+using password_manager::metrics_util::
+    SharedPasswordsNotificationBubbleInteractions;
 using testing::Each;
 using testing::Field;
 using testing::Return;
@@ -35,6 +40,7 @@ std::unique_ptr<PasswordForm> CreateUnnoitifiedSharedPasswordForm(
   shared_credentials->match_type = PasswordForm::MatchType::kExact;
   shared_credentials->type = PasswordForm::Type::kReceivedViaSharing;
   shared_credentials->sharing_notification_displayed = false;
+  shared_credentials->sender_name = u"Sender Name";
   return shared_credentials;
 }
 
@@ -92,6 +98,7 @@ class SharedPasswordsNotificationBubbleControllerTest : public ::testing::Test {
   current_forms() {
     return current_forms_;
   }
+  base::HistogramTester& histogram_tester() { return histogram_tester_; }
 
  private:
   content::BrowserTaskEnvironment task_environment_;
@@ -102,10 +109,14 @@ class SharedPasswordsNotificationBubbleControllerTest : public ::testing::Test {
   TestingProfile profile_;
   std::unique_ptr<content::WebContents> test_web_contents_;
   scoped_refptr<password_manager::TestPasswordStore> store_;
+  base::HistogramTester histogram_tester_;
 };
 
 TEST_F(SharedPasswordsNotificationBubbleControllerTest, HasTitle) {
   EXPECT_FALSE(controller()->GetTitle().empty());
+  histogram_tester().ExpectUniqueSample(
+      "PasswordManager.SharedPasswordsNotificationBubble.UserAction",
+      SharedPasswordsNotificationBubbleInteractions::kNotificationDisplayed, 1);
 }
 
 TEST_F(SharedPasswordsNotificationBubbleControllerTest,
@@ -118,6 +129,15 @@ TEST_F(SharedPasswordsNotificationBubbleControllerTest,
 
   EXPECT_THAT(store().stored_passwords().at(GURL(kUrl).spec()),
               Each(Field(&PasswordForm::sharing_notification_displayed, true)));
+  EXPECT_THAT(
+      histogram_tester().GetAllSamples(
+          "PasswordManager.SharedPasswordsNotificationBubble.UserAction"),
+      BucketsAre(Bucket(SharedPasswordsNotificationBubbleInteractions::
+                            kNotificationDisplayed,
+                        1),
+                 Bucket(SharedPasswordsNotificationBubbleInteractions::
+                            kManagePasswordsButtonClicked,
+                        1)));
 }
 
 TEST_F(SharedPasswordsNotificationBubbleControllerTest,
@@ -130,4 +150,54 @@ TEST_F(SharedPasswordsNotificationBubbleControllerTest,
 
   EXPECT_THAT(store().stored_passwords().at(GURL(kUrl).spec()),
               Each(Field(&PasswordForm::sharing_notification_displayed, true)));
+  EXPECT_THAT(
+      histogram_tester().GetAllSamples(
+          "PasswordManager.SharedPasswordsNotificationBubble.UserAction"),
+      BucketsAre(Bucket(SharedPasswordsNotificationBubbleInteractions::
+                            kNotificationDisplayed,
+                        1),
+                 Bucket(SharedPasswordsNotificationBubbleInteractions::
+                            kGotItButtonClicked,
+                        1)));
+}
+
+TEST_F(SharedPasswordsNotificationBubbleControllerTest,
+       ShouldMarkCredentialsAsNotifiedUponClickingCloseBubble) {
+  SetupSharedCredentialsInStore();
+
+  controller()->OnCloseBubbleClicked();
+
+  RunUntilIdle();
+
+  EXPECT_THAT(store().stored_passwords().at(GURL(kUrl).spec()),
+              Each(Field(&PasswordForm::sharing_notification_displayed, true)));
+  EXPECT_THAT(
+      histogram_tester().GetAllSamples(
+          "PasswordManager.SharedPasswordsNotificationBubble.UserAction"),
+      BucketsAre(Bucket(SharedPasswordsNotificationBubbleInteractions::
+                            kNotificationDisplayed,
+                        1),
+                 Bucket(SharedPasswordsNotificationBubbleInteractions::
+                            kCloseButtonClicked,
+                        1)));
+}
+
+TEST_F(SharedPasswordsNotificationBubbleControllerTest,
+       ShouldComputeNotificationBodyTextForSingleSharedCredential) {
+  current_forms().push_back(CreateUnnoitifiedSharedPasswordForm(u"username1"));
+
+  EXPECT_NE(std::u16string(), controller()->GetNotificationBody());
+  // For single shared credential, sender name is displayed in the notification.
+  EXPECT_NE(gfx::Range(), controller()->GetSenderNameRange());
+}
+
+TEST_F(SharedPasswordsNotificationBubbleControllerTest,
+       ShouldComputeNotificationBodyTextForMultipleSharedCredential) {
+  current_forms().push_back(CreateUnnoitifiedSharedPasswordForm(u"username1"));
+  current_forms().push_back(CreateUnnoitifiedSharedPasswordForm(u"username2"));
+
+  EXPECT_NE(std::u16string(), controller()->GetNotificationBody());
+  // For multiple shared credentials, sender name is *not* displayed in the
+  // notification.
+  EXPECT_EQ(gfx::Range(), controller()->GetSenderNameRange());
 }

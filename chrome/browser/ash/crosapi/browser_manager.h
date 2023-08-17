@@ -163,6 +163,12 @@ class BrowserManager : public session_manager::SessionManagerObserver,
   // Returns true if crosapi interface supports NewWindowForDetachingTab API.
   bool NewWindowForDetachingTabSupported() const;
 
+  // NOTE on callbacks:
+  // An action's callback (e.g. the last parameter to NewWindowForDetachingTab
+  // below) will never be invoked with a CreationResult value of
+  // kBrowserShutdown. In the case of a Lacros shutdown (rather than system
+  // shutdown), BrowserManager will try to perform the action again later.
+
   using NewWindowForDetachingTabCallback =
       base::OnceCallback<void(crosapi::mojom::CreationResult,
                               const std::string&)>;
@@ -360,11 +366,6 @@ class BrowserManager : public session_manager::SessionManagerObserver,
   enum class LacrosLaunchMode {
     // Indicates that Lacros is disabled.
     kLacrosDisabled = 0,
-    // Indicates that Lacros and Ash are both enabled and accessible by the
-    // user.
-    kSideBySide = 1,
-    // Similar to kSideBySide but Lacros is the primary browser.
-    kLacrosPrimary = 2,
     // Lacros is the only browser and Ash is disabled.
     kLacrosOnly = 3,
 
@@ -377,34 +378,15 @@ class BrowserManager : public session_manager::SessionManagerObserver,
   enum class LacrosLaunchModeAndSource {
     // Either set by user or system/flags, indicates that Lacros is disabled.
     kPossiblySetByUserLacrosDisabled = 0,
-    // Either set by user or system/flags, indicates that Lacros and Ash are
-    // both
-    // enabled and accessible by the user.
-    kPossiblySetByUserSideBySide = 1,
-    // Either set by user or system/flags, indicates that Lacros is the primary
-    // (but not only) browser.
-    kPossiblySetByUserLacrosPrimary = 2,
     // Either set by user or system/flags, Lacros is the only browser and Ash is
     // disabled.
     kPossiblySetByUserLacrosOnly = 3,
     // Enforced by the user, indicates that Lacros is disabled.
     kForcedByUserLacrosDisabled = 4 + kPossiblySetByUserLacrosDisabled,
-    // Enforced by the user, indicates that Lacros and Ash are both enabled and
-    // accessible by the user.
-    kForcedByUserSideBySide = 4 + kPossiblySetByUserSideBySide,
-    // Enforced by the user, indicates that Lacros is the primary (but not only)
-    // browser.
-    kForcedByUserLacrosPrimary = 4 + kPossiblySetByUserLacrosPrimary,
     // Enforced by the user, Lacros is the only browser and Ash is disabled.
     kForcedByUserLacrosOnly = 4 + kPossiblySetByUserLacrosOnly,
     // Enforced by policy, indicates that Lacros is disabled.
     kForcedByPolicyLacrosDisabled = 8 + kPossiblySetByUserLacrosDisabled,
-    // Enforced by policy, indicates that Lacros and Ash are both enabled and
-    // accessible by the user.
-    kForcedByPolicySideBySide = 8 + kPossiblySetByUserSideBySide,
-    // Enforced by policy, indicates that Lacros is the primary (but not only)
-    // browser.
-    kForcedByPolicyLacrosPrimary = 8 + kPossiblySetByUserLacrosPrimary,
     // Enforced by policy, Lacros is the only browser and Ash is disabled.
     kForcedByPolicyLacrosOnly = 8 + kPossiblySetByUserLacrosOnly,
 
@@ -538,6 +520,8 @@ class BrowserManager : public session_manager::SessionManagerObserver,
   //   (and Lacros started if necessary).
   // - Otherwise, the action is cancelled.
   void PerformOrEnqueue(std::unique_ptr<BrowserAction> action);
+
+  void OnActionPerformed(std::unique_ptr<BrowserAction> action, bool retry);
 
   // Remembers the launch mode of Lacros.
   void RecordLacrosLaunchMode();
@@ -717,14 +701,12 @@ class BrowserManager : public session_manager::SessionManagerObserver,
   // multiple events will get de-duped on the server side.
   void OnDailyLaunchModeTimer();
 
+  void PerformAction(std::unique_ptr<BrowserAction> action);
+
   // NOTE: The state is exposed to tests via autotest_private.
   State state_ = State::NOT_INITIALIZED;
 
   std::unique_ptr<crosapi::BrowserLoader> browser_loader_;
-
-  // May be null in tests.
-  const raw_ptr<ComponentUpdateService, ExperimentalAsh>
-      component_update_service_;
 
   // Delegate handling various concerns regarding the version service.
   std::unique_ptr<BrowserVersionServiceAsh::Delegate> version_service_delegate_;
@@ -785,6 +767,10 @@ class BrowserManager : public session_manager::SessionManagerObserver,
   // This value is used for resource sharing feature where ash deletes cached
   // shared resource file after ash is rebooted.
   bool is_initial_lacros_launch_after_reboot_ = true;
+
+  // Whether a shutdown request was received while Lacros was in prelaunched
+  // state.
+  bool shutdown_requested_while_prelaunched_ = false;
 
   // Used to pass ash-chrome specific flags/configurations to lacros-chrome.
   std::unique_ptr<EnvironmentProvider> environment_provider_;

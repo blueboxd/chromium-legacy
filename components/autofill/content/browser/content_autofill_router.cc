@@ -70,7 +70,6 @@ void ContentAutofillRouter::SetLastQueriedSource(
     ContentAutofillDriver* source) {
   if (last_queried_source_ && last_queried_source_ != source) {
     last_queried_source_->UnsetKeyPressHandlerCallback();
-    last_queried_source_->SetShouldSuppressKeyboardCallback(false);
   }
   last_queried_source_ = source;
 }
@@ -107,17 +106,6 @@ void ContentAutofillRouter::UnsetKeyPressHandler(
     return;
 
   callback(last_queried_source_);
-}
-
-void ContentAutofillRouter::SetShouldSuppressKeyboard(
-    ContentAutofillDriver* source,
-    bool suppress,
-    void (*callback)(ContentAutofillDriver* target, bool suppress)) {
-  // TODO(crbug.com/1247698): Double check if this could happen.
-  if (!last_queried_source_)
-    return;
-
-  callback(last_queried_source_, suppress);
 }
 
 // Routing of events called by the renderer:
@@ -441,7 +429,7 @@ void ContentAutofillRouter::DidEndTextFieldEditing(
   ForEachFrame(form_forest_, callback);
 }
 
-void ContentAutofillRouter::SelectOrSelectMenuFieldOptionsDidChange(
+void ContentAutofillRouter::SelectOrSelectListFieldOptionsDidChange(
     ContentAutofillDriver* source,
     FormData form,
     void (*callback)(ContentAutofillDriver* target, const FormData& form)) {
@@ -499,16 +487,16 @@ void ContentAutofillRouter::OnContextMenuShownInField(
 
 std::vector<FieldGlobalId> ContentAutofillRouter::FillOrPreviewForm(
     ContentAutofillDriver* source,
-    mojom::RendererFormDataAction action,
+    mojom::AutofillActionPersistence action_persistence,
     const FormData& data,
     const url::Origin& triggered_origin,
     const base::flat_map<FieldGlobalId, ServerFieldType>& field_type_map,
     void (*callback)(ContentAutofillDriver* target,
-                     mojom::RendererFormDataAction action,
+                     mojom::AutofillActionPersistence action_persistence,
                      const FormData& form)) {
   internal::FormForest::RendererForms renderer_forms =
-      form_forest_.GetRendererFormsOfBrowserForm(data, triggered_origin,
-                                                 field_type_map);
+      form_forest_.GetRendererFormsOfBrowserForm(
+          data, {&triggered_origin, &field_type_map});
   for (const FormData& renderer_form : renderer_forms.renderer_forms) {
     // Sending empty fill data to the renderer is semantically a no-op but
     // causes some further mojo calls.
@@ -517,26 +505,26 @@ std::vector<FieldGlobalId> ContentAutofillRouter::FillOrPreviewForm(
       continue;
     }
     if (auto* target = DriverOfFrame(renderer_form.host_frame))
-      callback(target, action, renderer_form);
+      callback(target, action_persistence, renderer_form);
   }
   return renderer_forms.safe_fields;
 }
 
 void ContentAutofillRouter::UndoAutofill(
     ContentAutofillDriver* source,
-    mojom::RendererFormDataAction renderer_action,
+    mojom::AutofillActionPersistence action_persistence,
     const FormData& data,
     const url::Origin& triggered_origin,
     const base::flat_map<FieldGlobalId, ServerFieldType>& field_type_map,
     void (*callback)(ContentAutofillDriver* target,
                      const FormData& form,
-                     mojom::RendererFormDataAction renderer_action)) {
+                     mojom::AutofillActionPersistence action_persistence)) {
   internal::FormForest::RendererForms renderer_forms =
-      form_forest_.GetRendererFormsOfBrowserForm(data, triggered_origin,
-                                                 field_type_map);
+      form_forest_.GetRendererFormsOfBrowserForm(
+          data, {&triggered_origin, &field_type_map});
   for (const FormData& renderer_form : renderer_forms.renderer_forms) {
     if (auto* target = DriverOfFrame(renderer_form.host_frame)) {
-      callback(target, renderer_form, renderer_action);
+      callback(target, renderer_form, action_persistence);
     }
   }
 }
@@ -565,7 +553,8 @@ void ContentAutofillRouter::SendAutofillTypePredictionsToRenderer(
     // the renderer form's frame in |renderer_fdps|.
     internal::FormForest::RendererForms renderer_forms =
         form_forest_.GetRendererFormsOfBrowserForm(
-            browser_fdp.data, browser_fdp.data.main_frame_origin, {});
+            browser_fdp.data,
+            {&browser_fdp.data.main_frame_origin, /*field_type_map=*/nullptr});
     for (FormData& renderer_form : renderer_forms.renderer_forms) {
       LocalFrameToken frame = renderer_form.host_frame;
       FormDataPredictions renderer_fdp;
@@ -676,6 +665,15 @@ void ContentAutofillRouter::RendererShouldSetSuggestionAvailability(
   if (auto* target = DriverOfFrame(field.frame_token)) {
     callback(target, field.renderer_id, state);
   }
+}
+
+std::vector<FormData> ContentAutofillRouter::GetRendererForms(
+    const FormData& browser_form) const {
+  return form_forest_
+      .GetRendererFormsOfBrowserForm(
+          browser_form,
+          internal::FormForest::SecurityOptions::TrustAllOrigins())
+      .renderer_forms;
 }
 
 }  // namespace autofill

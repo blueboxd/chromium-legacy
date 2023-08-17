@@ -382,6 +382,9 @@
   <message name="IDS_FILE_BROWSER_TASK_OPEN" desc="Title of the action to open (and possibly edit) a file.">
     Open
   </message>
+  <message name="IDS_FILE_BROWSER_TASK_OPEN_GDRIVE" desc="Title of the action to open a file in Google Drive.">
+    Google Drive
+  </message>
   <message name="IDS_FILE_BROWSER_TASK_OPEN_GDOC" desc="Title of the action to open a Google Docs document.">
     Google Docs
   </message>
@@ -561,10 +564,10 @@
     Manage Parallels Desktop sharing
   </message>
   <message name="IDS_FILE_BROWSER_SHARE_WITH_BRUSCHETTA_BUTTON_LABEL" desc="Label for menu that will share a folder with the VM type codenamed Bruschetta.">
-    Share with Bruschetta
+    Share with <ph name="VM_NAME">$1<ex>MyVm</ex></ph>
   </message>
   <message name="IDS_FILE_BROWSER_MANAGE_BRUSCHETTA_SHARING_BUTTON_LABEL" desc="Label for menu that will take users to the settings page where they can manage which files and folders are shared with the VM type codenamed Bruschetta.">
-    Manage Bruschetta sharing
+    Manage <ph name="VM_NAME">$1<ex>MyVm</ex></ph> sharing
   </message>
   <message name="IDS_FILE_BROWSER_UNABLE_TO_OPEN_WITH_PLUGIN_VM_DIRECTORY_NOT_SHARED_MESSAGE" desc="Body of the dialog shown to users when they try to open a file with an application in a virtual machine, but the file is not in a directory shared into the VM.">
     To open files with <ph name="APP_NAME">$1<ex>Paint (Windows)</ex></ph>, first move them to the Windows files folder.
@@ -655,9 +658,6 @@
   <message name="IDS_FILE_BROWSER_EMPTY_TRASH_UNEXPECTED_ERROR" desc="File manager error whilst emptying trash">
     Failed to empty the trash.
   </message>
-  <message name="IDS_FILE_BROWSER_COPY_UNEXPECTED_ERROR" desc="File Manager error message.">
-    Copy operation failed, unexpected error: <ph name="ERROR_MESSAGE">$1<ex>Could not copy</ex></ph>
-  </message>
   <message name="IDS_FILE_BROWSER_FILE_COPIED" desc="File Manager status message. 'Item' is used here as a generic term for file or directory.">
     <ph name="FILE_NAME">$1<ex>big.xz</ex></ph> copied.
   </message>
@@ -698,10 +698,10 @@
     Whoops, <ph name="FILE_NAME">$1<ex>movie.avi</ex></ph> no longer exists.
   </message>
   <message name="IDS_FILE_BROWSER_MOVE_FILESYSTEM_ERROR" desc="File Manager error message.">
-    Move failed. <ph name="ERROR_MESSAGE">$1<ex>An error occurred (code: ABORT)</ex></ph>
+    Can't move file. <ph name="ERROR_MESSAGE">$1<ex>An error occurred (code: ABORT)</ex></ph>
   </message>
-  <message name="IDS_FILE_BROWSER_MOVE_UNEXPECTED_ERROR" desc="File Manager error message.">
-    Move failed, unexpected error: <ph name="ERROR_MESSAGE">$1<ex>Could not move</ex></ph>
+  <message name="IDS_FILE_BROWSER_MOVE_IN_USE_ERROR" desc="File Manager error message shown when a move operation of a file failed because the file is in use.">
+    Can't move file. File is in use.
   </message>
   <message name="IDS_FILE_BROWSER_ZIP_FILE_NAME" desc="File Manager status message.">
     Zipping <ph name="FILE_NAME">$1<ex>movie.avi</ex></ph>...
@@ -714,9 +714,6 @@
   </message>
   <message name="IDS_FILE_BROWSER_ZIP_FILESYSTEM_ERROR" desc="File Manager error message.">
     Zipping failed. <ph name="ERROR_MESSAGE">$1<ex>An error occurred (code: ABORT)</ex></ph>
-  </message>
-  <message name="IDS_FILE_BROWSER_ZIP_UNEXPECTED_ERROR" desc="File Manager error message.">
-    Zipping failed, unexpected error: <ph name="ERROR_MESSAGE">$1<ex>Could not zip</ex></ph>
   </message>
   <message name="IDS_FILE_BROWSER_SYNC_FILE_NAME" desc="File Manager status message.">
     Syncing <ph name="FILE_NAME">$1<ex>movie.avi</ex></ph>...
@@ -753,6 +750,9 @@
   </message>
   <message name="IDS_FILE_BROWSER_DELETE_ERROR" desc="Message informing about error while deleting an item or items.">
     An error occurred. Some items may not have been deleted.
+  </message>
+  <message name="IDS_FILE_BROWSER_DELETE_IN_USE_ERROR" desc="File Manager error message shown when a delete operation of an item failed because the item is in use.">
+    Can't delete. Item is in use.
   </message>
   <message name="IDS_FILE_BROWSER_RESTORING_FROM_TRASH_FILE_NAME" desc="File Manager status message shown when restoring items from trash / recycle bin.">
     Restoring "<ph name="FILENAME">$1<ex>photo.jpg</ex></ph>"
@@ -1398,19 +1398,19 @@
     <ph name="NUMBER_OF_ITEMS">$1<ex>3</ex></ph> folders shared with Parallels Desktop
   </message>
   <message name="IDS_FILE_BROWSER_SHARE_ROOT_FOLDER_WITH_BRUSCHETTA_TITLE" desc="Message title shown when a user shares the root of a volume such as 'My files' with the VM type codenamed Bruschetta.">
-    Share folder with Bruschetta
+    Share folder with <ph name="VM_NAME">$1<ex>MyVm</ex></ph>
   </message>
   <message name="IDS_FILE_BROWSER_SHARE_ROOT_FOLDER_WITH_BRUSCHETTA" desc="Confirmation message shown when a user shares the root of a volume such as 'My files' with the VM type codenamed Bruschetta" >
-    Give Bruschetta permission to access files in the <ph name="FOLDER_NAME">$1<ex>Downloads</ex></ph> folder
+    Give <ph name="VM_NAME">$1<ex>MyVm</ex></ph> permission to access files in the <ph name="FOLDER_NAME">$1<ex>Downloads</ex></ph> folder
   </message>
   <message name="IDS_FILE_BROWSER_SHARE_ROOT_FOLDER_WITH_BRUSCHETTA_DRIVE" desc="Confirmation message shown when a user shares the root of a Drive volume (My Drive, Team Drives, Computers) with the VM type codenamed Bruschetta.">
-    Give Bruschetta permission to access files in your Google Drive. Changes will sync to your other devices.
+    Give <ph name="VM_NAME">$1<ex>MyVm</ex></ph> permission to access files in your Google Drive. Changes will sync to your other devices.
   </message>
   <message name="IDS_FILE_BROWSER_FOLDER_SHARED_WITH_BRUSCHETTA" desc="Confirmation message shown when a user shares a folder with the VM type codenamed Bruschetta.">
-    1 folder shared with Bruschetta
+    1 folder shared with <ph name="VM_NAME">$1<ex>MyVm</ex></ph>
   </message>
   <message name="IDS_FILE_BROWSER_FOLDER_SHARED_WITH_BRUSCHETTA_PLURAL" desc="Confirmation message shown when a user shares more than 1 folder with the VM type codenamed Bruscheta.">
-    <ph name="NUMBER_OF_ITEMS">$1<ex>3</ex></ph> folders shared with Bruschetta
+    <ph name="NUMBER_OF_ITEMS">$1<ex>3</ex></ph> folders shared with <ph name="VM_NAME">$1<ex>MyVm</ex></ph>
   </message>
   <message name="IDS_FILE_BROWSER_MESSAGE_FOLDER_SHARED_WITH_CROSTINI" desc="Message shown in FilesApp message bar when a user has shared a folder with the crostini container.">
     This folder is shared with Linux

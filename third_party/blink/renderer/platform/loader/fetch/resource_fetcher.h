@@ -254,9 +254,7 @@ class PLATFORM_EXPORT ResourceFetcher
   void HandleLoaderFinish(Resource*,
                           base::TimeTicks finish_time,
                           LoaderFinishType,
-                          uint32_t inflight_keepalive_bytes,
-                          bool pervasive_payload_requested,
-                          int64_t bytes_fetched);
+                          uint32_t inflight_keepalive_bytes);
   void HandleLoaderError(Resource*,
                          base::TimeTicks finish_time,
                          const ResourceError&,
@@ -362,6 +360,8 @@ class PLATFORM_EXPORT ResourceFetcher
   void SetResourceCache(
       mojo::PendingRemote<mojom::blink::ResourceCache> remote);
 
+  void RecordLCPPSubresourceMetrics();
+
  private:
   friend class ResourceCacheValidationSuppressor;
   enum class StopFetchingTarget {
@@ -372,7 +372,8 @@ class PLATFORM_EXPORT ResourceFetcher
   bool StartLoad(Resource*,
                  ResourceRequestBody,
                  ImageLoadBlockingPolicy,
-                 RenderBlockingBehavior);
+                 RenderBlockingBehavior,
+                 absl::optional<mojom::blink::WebFeature> count_orb_block_as);
 
   void InitializeRevalidation(ResourceRequest&, Resource*);
   // When |security_origin| of the ResourceLoaderOptions is not a nullptr, it'll
@@ -651,6 +652,10 @@ class PLATFORM_EXPORT ResourceFetcher
 
   // Area (in pixels) below which an image is considered "small"
   uint32_t small_image_max_size_ = 0;
+
+  // Number of images that have had their priority boosted based on LCPP
+  // signals.
+  uint32_t potentially_lcp_resource_priority_boosts_ = 0;
 };
 
 class ResourceCacheValidationSuppressor {

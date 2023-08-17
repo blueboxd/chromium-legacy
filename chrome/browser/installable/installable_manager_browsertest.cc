@@ -145,6 +145,7 @@ class CallbackTester {
     errors_ = data.errors;
     manifest_url_ = *data.manifest_url;
     manifest_ = data.manifest->Clone();
+    metadata_ = data.web_page_metadata->Clone();
     primary_icon_url_ = *data.primary_icon_url;
     if (data.primary_icon)
       primary_icon_ = std::make_unique<SkBitmap>(*data.primary_icon);
@@ -161,6 +162,7 @@ class CallbackTester {
     DCHECK(manifest_);
     return *manifest_;
   }
+  const mojom::WebPageMetadata& metadata() const { return *metadata_; }
   const GURL& primary_icon_url() const { return primary_icon_url_; }
   const SkBitmap* primary_icon() const { return primary_icon_.get(); }
   bool has_maskable_primary_icon() const { return has_maskable_primary_icon_; }
@@ -172,6 +174,7 @@ class CallbackTester {
   std::vector<InstallableStatusCode> errors_;
   GURL manifest_url_;
   blink::mojom::ManifestPtr manifest_ = blink::mojom::Manifest::New();
+  mojom::WebPageMetadataPtr metadata_ = mojom::WebPageMetadata::New();
   GURL primary_icon_url_;
   std::unique_ptr<SkBitmap> primary_icon_;
   bool has_maskable_primary_icon_;
@@ -247,7 +250,9 @@ class InstallableManagerBrowserTest : public PlatformBrowserTest {
  public:
   InstallableManagerBrowserTest()
       : disable_banner_trigger_(&test::g_disable_banner_triggering_for_testing,
-                                true) {}
+                                true),
+        scoped_min_favicon_size_(&test::g_minimum_favicon_size_for_testing,
+                                 32) {}
 
   void SetUpOnMainThread() override {
     embedded_test_server()->ServeFilesFromSourceDirectory(
@@ -261,6 +266,26 @@ class InstallableManagerBrowserTest : public PlatformBrowserTest {
       const std::string& manifest_url) {
     return "/banners/manifest_test_page.html?manifest=" +
            embedded_test_server()->GetURL(manifest_url).spec();
+  }
+
+  std::string GetURLOfPageWitTags(const std::string& base_page,
+                                  std::map<std::string, std::string> tags) {
+    std::string test_url = base_page + "?";
+    for (const auto& [key, value] : tags) {
+      test_url.append("&" + key + "=" + value);
+    }
+    return test_url;
+  }
+
+  std::string GetURLOfPageWithManifestAndTags(
+      const std::string& manifest_url,
+      std::map<std::string, std::string> tags) {
+    std::string test_url =
+        "/banners/manifest_test_page.html?manifest=" + manifest_url;
+    for (const auto& [key, value] : tags) {
+      test_url.append("&" + key + "=" + value);
+    }
+    return test_url;
   }
 
   void NavigateAndMaybeWaitForWorker(const std::string& path,
@@ -330,6 +355,8 @@ class InstallableManagerBrowserTest : public PlatformBrowserTest {
  private:
   // Disable the banners in the browser so it won't interfere with the test.
   base::AutoReset<bool> disable_banner_trigger_;
+  // Set a min favicon size for testing.
+  base::AutoReset<int> scoped_min_favicon_size_;
 };
 
 enum class CheckOfflineCapabilityMode { NONE = 0, WARN_ONLY = 1, ENFORCE = 2 };
@@ -579,6 +606,59 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
   EXPECT_FALSE(tester->valid_manifest());
   EXPECT_TRUE(tester->worker_check_passed());
   EXPECT_EQ(std::vector<InstallableStatusCode>{}, tester->errors());
+}
+
+IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest, FetchWebPageMetaData) {
+  InstallableParams params;
+  params.check_eligibility = true;
+  params.fetch_metadata = true;
+
+  const std::map<std::string, std::string> meta_tags = {
+      {"application-name", "Test App Name"}, {"description", "description"}};
+
+  // Test fetch web page metadata.
+  {
+    base::RunLoop run_loop;
+    std::unique_ptr<CallbackTester> tester(
+        new CallbackTester(run_loop.QuitClosure()));
+
+    NavigateAndRunInstallableManager(
+        tester.get(), params,
+        GetURLOfPageWitTags("/banners/manifest_test_page.html", meta_tags));
+
+    run_loop.Run();
+
+    EXPECT_FALSE(blink::IsEmptyManifest(tester->manifest()));
+    EXPECT_FALSE(tester->manifest_url().is_empty());
+
+    EXPECT_EQ(u"Test App Name", tester->metadata().application_name);
+    EXPECT_EQ(u"description", tester->metadata().description);
+
+    EXPECT_TRUE(tester->primary_icon_url().is_empty());
+    EXPECT_EQ(nullptr, tester->primary_icon());
+    EXPECT_EQ(std::vector<InstallableStatusCode>{}, tester->errors());
+  }
+
+  // Test fetch web page metadata when no manifest.
+  {
+    base::RunLoop run_loop;
+    std::unique_ptr<CallbackTester> tester(
+        new CallbackTester(run_loop.QuitClosure()));
+
+    NavigateAndRunInstallableManager(
+        tester.get(), params,
+        GetURLOfPageWitTags("/banners/no_manifest_test_page.html", meta_tags));
+
+    run_loop.Run();
+
+    EXPECT_FALSE(tester->metadata().application_name.empty());
+
+    EXPECT_TRUE(blink::IsEmptyManifest(tester->manifest()));
+    EXPECT_TRUE(tester->manifest_url().is_empty());
+
+    EXPECT_EQ(std::vector<InstallableStatusCode>{NO_MANIFEST},
+              tester->errors());
+  }
 }
 
 IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest,
@@ -961,6 +1041,84 @@ IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest, CheckMaskableIcon) {
     EXPECT_FALSE(tester->valid_manifest());
     EXPECT_TRUE(tester->worker_check_passed());
     EXPECT_EQ(std::vector<InstallableStatusCode>{}, tester->errors());
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(InstallableManagerBrowserTest, CheckFavicon) {
+  // Checks that InstallableManager chooses the correct primary icon when
+  // fetching favicon.
+
+  InstallableParams installableParams = GetPrimaryIconPreferMaskableParams();
+  installableParams.fetch_favicon = true;
+
+  // Checks that favicon is fetched when no other icon provided.
+  {
+    base::RunLoop run_loop;
+    std::unique_ptr<CallbackTester> tester(
+        new CallbackTester(run_loop.QuitClosure()));
+
+    NavigateAndRunInstallableManager(
+        tester.get(), installableParams,
+        GetURLOfPageWithManifestAndTags(
+            "/banners/manifest_no_icon.json",
+            {{"icon", "/banners/256x256-red.png"}}));
+    run_loop.Run();
+
+    EXPECT_FALSE(blink::IsEmptyManifest(tester->manifest()));
+    EXPECT_FALSE(tester->manifest_url().is_empty());
+
+    EXPECT_EQ(tester->primary_icon_url(),
+              embedded_test_server()->GetURL("/banners/256x256-red.png"));
+    EXPECT_NE(nullptr, tester->primary_icon());
+    EXPECT_FALSE(tester->has_maskable_primary_icon());
+  }
+
+  // Checks NOT fetching favicon when there is a manifest icon.
+  {
+    base::RunLoop run_loop;
+    std::unique_ptr<CallbackTester> tester(
+        new CallbackTester(run_loop.QuitClosure()));
+
+    NavigateAndRunInstallableManager(
+        tester.get(), installableParams,
+        GetURLOfPageWithManifestAndTags(
+            "/banners/manifest_one_icon.json",
+            {{"icon", "/banners/256x256-red.png"}}));
+    run_loop.Run();
+
+    EXPECT_FALSE(blink::IsEmptyManifest(tester->manifest()));
+    EXPECT_FALSE(tester->manifest_url().is_empty());
+
+    EXPECT_EQ(tester->primary_icon_url(),
+              embedded_test_server()->GetURL("/banners/image-512px.png"));
+    EXPECT_NE(nullptr, tester->primary_icon());
+    EXPECT_FALSE(tester->has_maskable_primary_icon());
+  }
+
+  // Checks that we do not use favicon smaller than min size.
+  {
+    // Set a large min size so the icon will not be big enough.
+    base::AutoReset<int> scoped_min_favicon_size(
+        &test::g_minimum_favicon_size_for_testing, 1000);
+
+    base::RunLoop run_loop;
+    std::unique_ptr<CallbackTester> tester(
+        new CallbackTester(run_loop.QuitClosure()));
+
+    NavigateAndRunInstallableManager(
+        tester.get(), installableParams,
+        GetURLOfPageWithManifestAndTags(
+            "/banners/manifest_no_icon.json",
+            {{"icon", "/banners/256x256-red.png"}}));
+
+    run_loop.Run();
+
+    EXPECT_FALSE(blink::IsEmptyManifest(tester->manifest()));
+    EXPECT_FALSE(tester->manifest_url().is_empty());
+
+    EXPECT_TRUE(tester->primary_icon_url().is_empty());
+    EXPECT_EQ(nullptr, tester->primary_icon());
+    EXPECT_FALSE(tester->has_maskable_primary_icon());
   }
 }
 

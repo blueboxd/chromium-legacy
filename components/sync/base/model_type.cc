@@ -8,22 +8,21 @@
 
 #include <ostream>
 
+#include "base/containers/fixed_flat_map.h"
 #include "base/logging.h"
 #include "base/notreached.h"
-#include "base/ranges/algorithm.h"
-#include "base/strings/string_split.h"
 #include "base/values.h"
 #include "components/sync/protocol/entity_specifics.pb.h"
 
 namespace syncer {
 
+namespace {
+
 struct ModelTypeInfo {
   const ModelType model_type;
-  // Model Type notification string.
-  // This needs to match the corresponding proto message name in sync.proto. It
-  // is also used to identify the model type in the SyncModelType
-  // histogram_suffix in histograms.xml. Must always be kept in sync.
-  const char* const notification_type;
+  // Used to identify the model type in the SyncModelType histogram_suffix in
+  // histograms.xml. Must always be kept in sync.
+  const char* const histogram_suffix;
   // Root tag for Model Type
   // This should be the same as the model type but all lowercase.
   const char* const lowercase_root_tag;
@@ -40,6 +39,7 @@ struct ModelTypeInfo {
 
 // Below struct entries are in the same order as their definition in the
 // ModelType enum. When making changes to this list, don't forget to
+//  - update kSpecificsFieldNumberToModelTypeMap below,
 //  - update the ModelType enum,
 //  - update the SyncModelTypes enum in enums.xml, and
 //  - update the SyncModelType histogram suffix in histograms.xml.
@@ -217,6 +217,87 @@ static_assert(49 == syncer::GetNumModelTypes(),
               "When adding a new type, update enum SyncModelTypes in enums.xml "
               "and suffix SyncModelType in histograms.xml.");
 
+// kSpecificsFieldNumberToModelTypeMap must exactly match the kModelTypeInfoMap,
+// but PROXY_TABS does not have a ModelType. So we skipped it and thus expect
+// size to be (syncer::GetNumModelTypes()-1).
+//
+// NOTE: size here acts as a static assert on the constraint above.
+using kSpecificsFieldNumberToModelTypeMap =
+    base::fixed_flat_map<int, ModelType, syncer::GetNumModelTypes() - 1>;
+
+constexpr kSpecificsFieldNumberToModelTypeMap
+    specifics_field_number2model_type = base::MakeFixedFlatMap<int, ModelType>({
+        {-1, UNSPECIFIED},
+        {sync_pb::EntitySpecifics::kBookmarkFieldNumber, BOOKMARKS},
+        {sync_pb::EntitySpecifics::kPreferenceFieldNumber, PREFERENCES},
+        {sync_pb::EntitySpecifics::kPasswordFieldNumber, PASSWORDS},
+        {sync_pb::EntitySpecifics::kAutofillProfileFieldNumber,
+         AUTOFILL_PROFILE},
+        {sync_pb::EntitySpecifics::kAutofillFieldNumber, AUTOFILL},
+        {sync_pb::EntitySpecifics::kAutofillWalletCredentialFieldNumber,
+         AUTOFILL_WALLET_CREDENTIAL},
+        {sync_pb::EntitySpecifics::kAutofillWalletFieldNumber,
+         AUTOFILL_WALLET_DATA},
+        {sync_pb::EntitySpecifics::kWalletMetadataFieldNumber,
+         AUTOFILL_WALLET_METADATA},
+        {sync_pb::EntitySpecifics::kAutofillOfferFieldNumber,
+         AUTOFILL_WALLET_OFFER},
+        {sync_pb::EntitySpecifics::kAutofillWalletUsageFieldNumber,
+         AUTOFILL_WALLET_USAGE},
+        {sync_pb::EntitySpecifics::kThemeFieldNumber, THEMES},
+        {sync_pb::EntitySpecifics::kTypedUrlFieldNumber, TYPED_URLS},
+        {sync_pb::EntitySpecifics::kExtensionFieldNumber, EXTENSIONS},
+        {sync_pb::EntitySpecifics::kSearchEngineFieldNumber, SEARCH_ENGINES},
+        {sync_pb::EntitySpecifics::kSessionFieldNumber, SESSIONS},
+        {sync_pb::EntitySpecifics::kAppFieldNumber, APPS},
+        {sync_pb::EntitySpecifics::kAppSettingFieldNumber, APP_SETTINGS},
+        {sync_pb::EntitySpecifics::kExtensionSettingFieldNumber,
+         EXTENSION_SETTINGS},
+        {sync_pb::EntitySpecifics::kHistoryDeleteDirectiveFieldNumber,
+         HISTORY_DELETE_DIRECTIVES},
+        {sync_pb::EntitySpecifics::kDictionaryFieldNumber, DICTIONARY},
+        {sync_pb::EntitySpecifics::kDeviceInfoFieldNumber, DEVICE_INFO},
+        {sync_pb::EntitySpecifics::kPriorityPreferenceFieldNumber,
+         PRIORITY_PREFERENCES},
+        {sync_pb::EntitySpecifics::kManagedUserSettingFieldNumber,
+         SUPERVISED_USER_SETTINGS},
+        {sync_pb::EntitySpecifics::kAppListFieldNumber, APP_LIST},
+        {sync_pb::EntitySpecifics::kArcPackageFieldNumber, ARC_PACKAGE},
+        {sync_pb::EntitySpecifics::kPrinterFieldNumber, PRINTERS},
+        {sync_pb::EntitySpecifics::kReadingListFieldNumber, READING_LIST},
+        {sync_pb::EntitySpecifics::kUserEventFieldNumber, USER_EVENTS},
+        {sync_pb::EntitySpecifics::kUserConsentFieldNumber, USER_CONSENTS},
+        {sync_pb::EntitySpecifics::kSegmentationFieldNumber, SEGMENTATION},
+        {sync_pb::EntitySpecifics::kSendTabToSelfFieldNumber, SEND_TAB_TO_SELF},
+        {sync_pb::EntitySpecifics::kSecurityEventFieldNumber, SECURITY_EVENTS},
+        {sync_pb::EntitySpecifics::kWifiConfigurationFieldNumber,
+         WIFI_CONFIGURATIONS},
+        {sync_pb::EntitySpecifics::kWebAppFieldNumber, WEB_APPS},
+        {sync_pb::EntitySpecifics::kOsPreferenceFieldNumber, OS_PREFERENCES},
+        {sync_pb::EntitySpecifics::kOsPriorityPreferenceFieldNumber,
+         OS_PRIORITY_PREFERENCES},
+        {sync_pb::EntitySpecifics::kSharingMessageFieldNumber, SHARING_MESSAGE},
+        {sync_pb::EntitySpecifics::kWorkspaceDeskFieldNumber, WORKSPACE_DESK},
+        {sync_pb::EntitySpecifics::kHistoryFieldNumber, HISTORY},
+        {sync_pb::EntitySpecifics::kPrintersAuthorizationServerFieldNumber,
+         PRINTERS_AUTHORIZATION_SERVERS},
+        {sync_pb::EntitySpecifics::kContactInfoFieldNumber, CONTACT_INFO},
+        {sync_pb::EntitySpecifics::kSavedTabGroupFieldNumber, SAVED_TAB_GROUP},
+        {sync_pb::EntitySpecifics::kPowerBookmarkFieldNumber, POWER_BOOKMARK},
+        {sync_pb::EntitySpecifics::kWebauthnCredentialFieldNumber,
+         WEBAUTHN_CREDENTIAL},
+        {sync_pb::EntitySpecifics::
+             kIncomingPasswordSharingInvitationFieldNumber,
+         INCOMING_PASSWORD_SHARING_INVITATION},
+        {sync_pb::EntitySpecifics::
+             kOutgoingPasswordSharingInvitationFieldNumber,
+         OUTGOING_PASSWORD_SHARING_INVITATION},
+        // ---- Control Types ----
+        {sync_pb::EntitySpecifics::kNigoriFieldNumber, NIGORI},
+    });
+
+}  // namespace
+
 void AddDefaultFieldValue(ModelType type, sync_pb::EntitySpecifics* specifics) {
   switch (type) {
     case UNSPECIFIED:
@@ -372,12 +453,10 @@ void AddDefaultFieldValue(ModelType type, sync_pb::EntitySpecifics* specifics) {
 }
 
 ModelType GetModelTypeFromSpecificsFieldNumber(int field_number) {
-  ModelTypeSet protocol_types = ProtocolTypes();
-  for (ModelType type : protocol_types) {
-    if (GetSpecificsFieldNumberFromModelType(type) == field_number)
-      return type;
-  }
-  return UNSPECIFIED;
+  kSpecificsFieldNumberToModelTypeMap::const_iterator it =
+      specifics_field_number2model_type.find(field_number);
+  return (it == specifics_field_number2model_type.end() ? UNSPECIFIED
+                                                        : it->second);
 }
 
 int GetSpecificsFieldNumberFromModelType(ModelType model_type) {
@@ -543,9 +622,7 @@ const char* ModelTypeToDebugString(ModelType model_type) {
 }
 
 const char* ModelTypeToHistogramSuffix(ModelType model_type) {
-  // We use the same string that is used for notification types because they
-  // satisfy all we need (being stable and explanatory).
-  return kModelTypeInfoMap[model_type].notification_type;
+  return kModelTypeInfoMap[model_type].histogram_suffix;
 }
 
 ModelTypeForHistograms ModelTypeHistogramValue(ModelType model_type) {
@@ -595,30 +672,6 @@ std::string ModelTypeToProtocolRootTag(ModelType model_type) {
 
 const char* GetModelTypeLowerCaseRootTag(ModelType model_type) {
   return kModelTypeInfoMap[model_type].lowercase_root_tag;
-}
-
-bool RealModelTypeToNotificationType(ModelType model_type,
-                                     std::string* notification_type) {
-  if (ProtocolTypes().Has(model_type)) {
-    *notification_type = kModelTypeInfoMap[model_type].notification_type;
-    return true;
-  }
-  notification_type->clear();
-  return false;
-}
-
-bool NotificationTypeToRealModelType(const std::string& notification_type,
-                                     ModelType* model_type) {
-  auto* iter = base::ranges::find(kModelTypeInfoMap, notification_type,
-                                  &ModelTypeInfo::notification_type);
-  if (iter == std::end(kModelTypeInfoMap)) {
-    return false;
-  }
-  if (!IsRealDataType(iter->model_type)) {
-    return false;
-  }
-  *model_type = iter->model_type;
-  return true;
 }
 
 bool IsRealDataType(ModelType model_type) {

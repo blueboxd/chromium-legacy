@@ -54,6 +54,7 @@ namespace ash {
   E_CPONLY(kColorAshIconColorSecondaryBackground) \
   /* Colors for Bar Chart within System Info Answer Cards in the Launcher. */ \
   E_CPONLY(kColorAshSystemInfoBarChartColorForeground) \
+  E_CPONLY(kColorAshSystemInfoBarChartWarningColorForeground) \
   E_CPONLY(kColorAshSystemInfoBarChartColorBackground) \
   /* The default color for button labels. */ \
   E_CPONLY(kColorAshButtonLabelColor) \
@@ -137,7 +138,9 @@ namespace ash {
   /* Color for the stroke on the window header view */ \
   E_CPONLY(kColorAshWindowHeaderStrokeColor) \
   /* Color for the 6+ scrollable list view on the login screen */ \
-  E_CPONLY(kColorAshLoginScrollableUserListBackground)
+  E_CPONLY(kColorAshLoginScrollableUserListBackground) \
+  /* Color for the resize shadow */ \
+  E_CPONLY(kColorAshResizeShadowColor)
 
 #include "ui/color/color_id_macros.inc"
 

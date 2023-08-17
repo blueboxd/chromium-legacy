@@ -8,12 +8,9 @@
 #import <AppKit/AppKit.h>
 
 #import "components/remote_cocoa/app_shim/bridged_content_view.h"
+#import "components/remote_cocoa/app_shim/native_widget_mac_nswindow.h"
 #include "components/remote_cocoa/app_shim/remote_cocoa_app_shim_export.h"
 #include "components/remote_cocoa/common/native_widget_ns_window.mojom-shared.h"
-
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
 
 @class ClearTitlebarViewController;
 @class ImmersiveModeMapper;
@@ -33,8 +30,8 @@ REMOTE_COCOA_APP_SHIM_EXPORT bool IsNSToolbarFullScreenWindow(NSWindow* window);
 
 class REMOTE_COCOA_APP_SHIM_EXPORT ImmersiveModeController {
  public:
-  explicit ImmersiveModeController(NSWindow* browser_window,
-                                   NSWindow* overlay_window);
+  explicit ImmersiveModeController(NativeWidgetMacNSWindow* browser_window,
+                                   NativeWidgetMacNSWindow* overlay_window);
   virtual ~ImmersiveModeController();
 
   virtual void Enable();
@@ -119,21 +116,13 @@ class REMOTE_COCOA_APP_SHIM_EXPORT ImmersiveModeController {
   // complete.
   bool fullscreen_transition_complete_ = false;
 
-  NSWindow* __weak browser_window_;
-  NSWindow* __weak overlay_window_;
+  NativeWidgetMacNSWindow* __weak browser_window_;
+  NativeWidgetMacNSWindow* __weak overlay_window_;
   BridgedContentView* __weak overlay_content_view_;
 
   // A controller for top chrome.
   ImmersiveModeTitlebarViewController* __strong
       immersive_mode_titlebar_view_controller_;
-
-  // A controller that keeps a small portion (0.5px) of the fullscreen AppKit
-  // NSWindow on screen.
-  // This controller is used as a workaround for an AppKit bug that displays a
-  // black bar when changing a NSTitlebarAccessoryViewController's
-  // fullScreenMinHeight from zero to non-zero.
-  // TODO(https://crbug.com/1369643): Remove when fixed by Apple.
-  NSTitlebarAccessoryViewController* __strong thin_titlebar_view_controller_;
 
   ImmersiveModeMapper* __strong immersive_mode_mapper_;
   ImmersiveModeTitlebarObserver* __strong immersive_mode_titlebar_observer_;

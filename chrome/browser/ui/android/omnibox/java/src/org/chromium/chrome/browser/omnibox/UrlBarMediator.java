@@ -61,6 +61,7 @@ class UrlBarMediator implements UrlBar.UrlBarTextContextMenuDelegate, UrlBar.Url
         mModel.set(UrlBarProperties.SHOW_CURSOR, false);
         mModel.set(UrlBarProperties.TEXT_CONTEXT_MENU_DELEGATE, this);
         mModel.set(UrlBarProperties.URL_TEXT_CHANGE_LISTENER, this);
+        mModel.set(UrlBarProperties.HAS_URL_SUGGESTIONS, false);
         setBrandedColorScheme(BrandedColorScheme.APP_DEFAULT);
     }
 
@@ -315,6 +316,11 @@ class UrlBarMediator implements UrlBar.UrlBarTextContextMenuDelegate, UrlBar.Url
 
         String stringToPaste = sanitizeTextForPaste(builder.toString());
         return stringToPaste;
+    }
+
+    /** @param hasSuggestions Whether suggestions are showing in the URL bar. */
+    public void onUrlBarSuggestionsChanged(boolean hasSuggestions) {
+        mModel.set(UrlBarProperties.HAS_URL_SUGGESTIONS, hasSuggestions);
     }
 
     @VisibleForTesting

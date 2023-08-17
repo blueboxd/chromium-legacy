@@ -12,16 +12,15 @@
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/incognito/incognito_grid_mediator.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/toolbars/tab_grid_bottom_toolbar.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_grid/toolbars/tab_grid_new_tab_button.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/toolbars/tab_grid_top_toolbar.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/ios_chrome_scoped_testing_local_state.h"
 #import "ios/web/public/test/web_task_environment.h"
 #import "testing/platform_test.h"
+#import "third_party/ocmock/OCMock/OCMock.h"
+#import "third_party/ocmock/gtest_support.h"
 #import "ui/base/l10n/l10n_util.h"
-
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
 
 namespace {
 
@@ -125,6 +124,38 @@ TEST_F(TabGridViewControllerTest, CanPerform_OpenTabsActions) {
   }
 }
 
+// Checks that opening regular tabs can't be performed when disabled.
+TEST_F(TabGridViewControllerTest, CantPerform_OpenRegularTab_WhenDisabled) {
+  InitializeViewController(TabGridPageConfiguration::kIncognitoPageOnly);
+
+  EXPECT_FALSE(CanPerform(@"keyCommand_openNewRegularTab"));
+
+  // Verify that incognito tabs can still be opened as a sanity check.
+  EXPECT_TRUE(CanPerform(@"keyCommand_openNewIncognitoTab"));
+}
+
+// Checks that opening incognito tabs can't be performed when disabled.
+TEST_F(TabGridViewControllerTest, CantPerform_OpenIncognitoTab_WhenDisabled) {
+  InitializeViewController(TabGridPageConfiguration::kIncognitoPageDisabled);
+
+  EXPECT_FALSE(CanPerform(@"keyCommand_openNewIncognitoTab"));
+
+  // Verify that regular tabs can still be opened as a sanity check.
+  EXPECT_TRUE(CanPerform(@"keyCommand_openNewRegularTab"));
+}
+
+// Checks that opening a tab on the current page can't be performed if the page
+// is disabled.
+TEST_F(TabGridViewControllerTest,
+       CantPerform_OpenTab_OnCurrentPage_WhenDisabled) {
+  InitializeViewController(TabGridPageConfiguration::kIncognitoPageDisabled);
+
+  [view_controller_ setCurrentPageAndPageControl:TabGridPageIncognitoTabs
+                                        animated:NO];
+
+  EXPECT_FALSE(CanPerform(@"keyCommand_openNewTab"));
+}
+
 // Checks that TabGridViewController implements the following actions.
 TEST_F(TabGridViewControllerTest, ImplementsActions) {
   // Load the view.
@@ -184,6 +215,9 @@ TEST_F(TabGridViewControllerTest, CanPerform_CloseAllAndUndo) {
   EXPECT_FALSE(CanPerform(@"keyCommand_closeAll"));
   EXPECT_FALSE(CanPerform(@"keyCommand_undo"));
 
+  // Load the view and notify its content will appear. This sets data sources
+  // for the different grids and loads their initial snapshots.
+  [view_controller_ view];
   [view_controller_ contentWillAppearAnimated:NO];
 
   EXPECT_FALSE(CanPerform(@"keyCommand_closeAll"));
@@ -191,6 +225,9 @@ TEST_F(TabGridViewControllerTest, CanPerform_CloseAllAndUndo) {
   IncognitoGridMediator* incognitoMediator = [[IncognitoGridMediator alloc]
       initWithConsumer:view_controller_.incognitoTabsConsumer];
   [incognitoMediator setBrowser:browser_.get()];
+  // TODO(crbug.com/1457146): The consumer should be incognito tabs view
+  // controller.
+  incognitoMediator.gridConsumer = view_controller_;
   view_controller_.incognitoTabsDelegate = incognitoMediator;
   [view_controller_.incognitoTabsDelegate addNewItem];
   EXPECT_TRUE(CanPerform(@"keyCommand_closeAll"));
@@ -208,6 +245,87 @@ TEST_F(TabGridViewControllerTest, CanPerform_CloseAllAndUndo) {
 // Checks that the ESC keyboard shortcut is always possible.
 TEST_F(TabGridViewControllerTest, CanPerform_Close) {
   EXPECT_TRUE(CanPerform(@"keyCommand_close"));
+}
+
+// Checks that opening a new incognito tab from the toolbar is skipped if not
+// allowed.
+TEST_F(TabGridViewControllerTest,
+       OpenNewTabInIncognitoPageFromToolbar_SkipIfNotAllowed) {
+  InitializeViewController(TabGridPageConfiguration::kIncognitoPageDisabled);
+  // Set the delegate as a strict mock to make sur that -showActiveTabInPage
+  // isn't called to open a tab when opening isn't allowed on the page.
+  view_controller_.tabPresentationDelegate =
+      OCMStrictProtocolMock(@protocol(TabPresentationDelegate));
+  [view_controller_ setCurrentPageAndPageControl:TabGridPageIncognitoTabs
+                                        animated:NO];
+
+  // Emulate tapping one the new tab button by using the actions wrangler
+  // interface that would normally be called by the tap action target.
+  [view_controller_ newTabButtonTapped:nil];
+
+  EXPECT_OCMOCK_VERIFY(view_controller_.tabPresentationDelegate);
+}
+
+// Checks that opening a new incognito tab from the toolbar is done when
+// allowed.
+TEST_F(TabGridViewControllerTest,
+       OpenNewTabInIncognitoPageFromToolbar_OpenIfAllowed) {
+  // Test from the incognito page.
+  TabGridPage page = TabGridPageIncognitoTabs;
+
+  InitializeViewController(TabGridPageConfiguration::kAllPagesEnabled);
+  [view_controller_ setCurrentPageAndPageControl:page animated:NO];
+
+  view_controller_.tabPresentationDelegate =
+      OCMStrictProtocolMock(@protocol(TabPresentationDelegate));
+  OCMExpect([view_controller_.tabPresentationDelegate showActiveTabInPage:page
+                                                             focusOmnibox:NO]);
+
+  // Emulate tapping one the new tab button by using the actions wrangler
+  // interface that would normally be called by the tap action target.
+  [view_controller_ newTabButtonTapped:nil];
+
+  EXPECT_OCMOCK_VERIFY(view_controller_.tabPresentationDelegate);
+}
+
+// Checks that opening a new regular tab from the toolbar is skipped if not
+// allowed.
+TEST_F(TabGridViewControllerTest,
+       OpenNewTabInRegularPageFromToolbar_SkipIfNotAllowed) {
+  InitializeViewController(TabGridPageConfiguration::kIncognitoPageOnly);
+  // Set the delegate as a strict mock to make sur that -showActiveTabInPage
+  // isn't called to open a tab when opening isn't allowed on the page.
+  view_controller_.tabPresentationDelegate =
+      OCMStrictProtocolMock(@protocol(TabPresentationDelegate));
+  [view_controller_ setCurrentPageAndPageControl:TabGridPageRegularTabs
+                                        animated:NO];
+
+  // Emulate tapping one the new tab button by using the actions wrangler
+  // interface that would normally be called by the tap action target.
+  [view_controller_ newTabButtonTapped:nil];
+
+  EXPECT_OCMOCK_VERIFY(view_controller_.tabPresentationDelegate);
+}
+
+// Checks that opening a new regular tab from the toolbar is done when allowed.
+TEST_F(TabGridViewControllerTest,
+       OpenNewTabInRegularPageFromToolbar_OpenIfAllowed) {
+  // Test from the incognito page.
+  TabGridPage page = TabGridPageRegularTabs;
+
+  InitializeViewController(TabGridPageConfiguration::kAllPagesEnabled);
+  [view_controller_ setCurrentPageAndPageControl:page animated:NO];
+
+  view_controller_.tabPresentationDelegate =
+      OCMStrictProtocolMock(@protocol(TabPresentationDelegate));
+  OCMExpect([view_controller_.tabPresentationDelegate showActiveTabInPage:page
+                                                             focusOmnibox:NO]);
+
+  // Emulate tapping one the new tab button by using the actions wrangler
+  // interface that would normally be called by the tap action target.
+  [view_controller_ newTabButtonTapped:nil];
+
+  EXPECT_OCMOCK_VERIFY(view_controller_.tabPresentationDelegate);
 }
 
 }  // namespace

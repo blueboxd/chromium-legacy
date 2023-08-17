@@ -54,6 +54,8 @@ source_set("chromeos") {
     "arc/start_smart_selection_action_menu.h",
     "enterprise/incognito_navigation_throttle.cc",
     "enterprise/incognito_navigation_throttle.h",
+    "extensions/accessibility_service_private.cc",
+    "extensions/accessibility_service_private.h",
     "extensions/contact_center_insights/contact_center_insights_extension_manager.cc",
     "extensions/contact_center_insights/contact_center_insights_extension_manager.h",
     "extensions/device_local_account_external_policy_loader.cc",
@@ -159,6 +161,8 @@ source_set("chromeos") {
     "reporting/metric_default_utils.h",
     "reporting/metric_reporting_manager_delegate_base.cc",
     "reporting/metric_reporting_manager_delegate_base.h",
+    "reporting/metric_reporting_prefs.cc",
+    "reporting/metric_reporting_prefs.h",
     "reporting/network/network_bandwidth_sampler.cc",
     "reporting/network/network_bandwidth_sampler.h",
     "reporting/user_reporting_settings.cc",
@@ -414,29 +418,38 @@ static_library("test_support") {
     "extensions/login_screen/login/cleanup/mock_cleanup_handler.h",
     "policy/dlp/dialogs/mock_dlp_warn_notifier.cc",
     "policy/dlp/dialogs/mock_dlp_warn_notifier.h",
-    "policy/dlp/dlp_content_manager_test_helper.cc",
-    "policy/dlp/dlp_content_manager_test_helper.h",
-    "policy/dlp/dlp_reporting_manager_test_helper.cc",
-    "policy/dlp/dlp_reporting_manager_test_helper.h",
-    "policy/dlp/dlp_rules_manager_test_utils.cc",
-    "policy/dlp/dlp_rules_manager_test_utils.h",
-    "policy/dlp/mock_dlp_content_manager.cc",
-    "policy/dlp/mock_dlp_content_manager.h",
-    "policy/dlp/mock_dlp_content_observer.cc",
-    "policy/dlp/mock_dlp_content_observer.h",
-    "policy/dlp/mock_dlp_rules_manager.cc",
-    "policy/dlp/mock_dlp_rules_manager.h",
+    "policy/dlp/test/dlp_content_manager_test_helper.cc",
+    "policy/dlp/test/dlp_content_manager_test_helper.h",
+    "policy/dlp/test/dlp_files_test_base.cc",
+    "policy/dlp/test/dlp_files_test_base.h",
+    "policy/dlp/test/dlp_reporting_manager_test_helper.cc",
+    "policy/dlp/test/dlp_reporting_manager_test_helper.h",
+    "policy/dlp/test/dlp_rules_manager_test_utils.cc",
+    "policy/dlp/test/dlp_rules_manager_test_utils.h",
+    "policy/dlp/test/mock_dlp_content_manager.cc",
+    "policy/dlp/test/mock_dlp_content_manager.h",
+    "policy/dlp/test/mock_dlp_content_observer.cc",
+    "policy/dlp/test/mock_dlp_content_observer.h",
+    "policy/dlp/test/mock_dlp_rules_manager.cc",
+    "policy/dlp/test/mock_dlp_rules_manager.h",
   ]
   public_deps = [
     ":chromeos",
     "//base",
     "//build:chromeos_buildflags",
+    "//chrome/test:test_support",
+    "//content/test:test_support",
     "//crypto:test_support",
     "//testing/gmock",
     "//testing/gtest",
     "//ui/views",
     "//url",
   ]
+
+  if (is_chromeos_ash) {
+    public_deps += [ "//chrome/browser/ash:test_support" ]
+  }
+
   deps = [
     ":dlp_policy_event_proto",
     "//components/reporting/client:test_support",
@@ -452,6 +465,7 @@ source_set("unit_tests") {
 
   sources = [
     "app_mode/chrome_kiosk_external_loader_broker_unittest.cc",
+    "app_mode/kiosk_app_service_launcher_unittest.cc",
     "app_mode/kiosk_browser_session_unittest.cc",
     "app_mode/kiosk_policies_unittest.cc",
     "arc/arc_external_protocol_dialog_unittest.cc",
@@ -496,6 +510,7 @@ source_set("unit_tests") {
     "//chrome/app:generated_resources",
     "//chrome/browser",
     "//chrome/browser:browser_process",
+    "//chrome/browser/apps/app_service:test_support",
     "//chrome/browser/enterprise/data_controls:data_controls",
     "//chrome/browser/extensions",
     "//chrome/browser/profiles:profile",
@@ -557,7 +572,6 @@ source_set("unit_tests") {
   if (is_chromeos_ash) {
     sources += [
       "app_mode/chrome_kiosk_app_launcher_unittest.cc",
-      "app_mode/kiosk_app_service_launcher_unittest.cc",
       "extensions/login_screen/login/cleanup/extension_cleanup_handler_unittest.cc",
       "extensions/login_screen/login/cleanup/lacros_cleanup_handler_unittest.cc",
       "extensions/login_screen/login/cleanup/print_jobs_cleanup_handler_unittest.cc",
@@ -570,7 +584,6 @@ source_set("unit_tests") {
     deps += [
       "//ash:test_support",
       "//ash/constants",
-      "//chrome/browser/apps/app_service:test_support",
       "//chrome/browser/ash",
       "//chrome/browser/ash:test_support",
       "//chrome/browser/ash/crosapi",

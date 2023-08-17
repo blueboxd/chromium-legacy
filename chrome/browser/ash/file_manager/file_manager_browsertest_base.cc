@@ -57,6 +57,9 @@
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/browser_app_launcher.h"
 #include "chrome/browser/ash/app_list/search/chrome_search_result.h"
+#include "chrome/browser/ash/app_list/search/local_image_search/local_image_search_service.h"
+#include "chrome/browser/ash/app_list/search/local_image_search/local_image_search_service_factory.h"
+#include "chrome/browser/ash/app_list/search/search_features.h"
 #include "chrome/browser/ash/arc/fileapi/arc_documents_provider_util.h"
 #include "chrome/browser/ash/arc/fileapi/arc_media_view_util.h"
 #include "chrome/browser/ash/base/locale_util.h"
@@ -1085,6 +1088,10 @@ class DownloadsTestVolume : public LocalTestVolume {
   // rolled out.
   base::FilePath base_path() const { return root_path().Append("Downloads"); }
 
+  base::FilePath GetFilePath(const std::string relative_path) const {
+    return base_path().Append(relative_path);
+  }
+
   bool Mount(Profile* profile) override {
     if (!CreateRootDirectory(profile)) {
       return false;
@@ -1095,7 +1102,7 @@ class DownloadsTestVolume : public LocalTestVolume {
   }
 
   void CreateEntry(const AddEntriesMessage::TestEntryInfo& entry) override {
-    base::FilePath target_path = base_path().Append(entry.target_path);
+    base::FilePath target_path = GetFilePath(entry.target_path);
     CreateEntryImpl(entry, target_path);
   }
 
@@ -1521,6 +1528,13 @@ class DriveFsTestVolume : public TestVolume {
                               metadata.value().stable_id);
     auto& drivefs_delegate = fake_drivefs_helper_->fake_drivefs().delegate();
     drivefs_delegate->OnFilesChanged(std::move(file_changes));
+  }
+
+  void SetPooledStorageQuotaUsage(int64_t used_user_bytes,
+                                  int64_t total_user_bytes,
+                                  bool organization_limit_exceeded) {
+    fake_drivefs_helper_->fake_drivefs().SetPooledStorageQuotaUsage(
+        used_user_bytes, total_user_bytes, organization_limit_exceeded);
   }
 
  private:
@@ -2198,6 +2212,16 @@ void FileManagerBrowserTestBase::SetUpCommandLine(
     disabled_features.push_back(ash::features::kFilesSearchV2);
   }
 
+  if (options.enable_image_content_search) {
+    enabled_features.push_back(search_features::kLauncherImageSearch);
+    enabled_features.push_back(search_features::kLauncherImageSearchIca);
+    enabled_features.push_back(search_features::kLauncherImageSearchOcr);
+  } else {
+    disabled_features.push_back(search_features::kLauncherImageSearch);
+    disabled_features.push_back(search_features::kLauncherImageSearchIca);
+    disabled_features.push_back(search_features::kLauncherImageSearchOcr);
+  }
+
   if (options.enable_os_feedback) {
     enabled_features.push_back(ash::features::kOsFeedback);
   } else {
@@ -2230,6 +2254,14 @@ void FileManagerBrowserTestBase::SetUpCommandLine(
     enabled_features.push_back(chromeos::features::kJelly);
   } else {
     disabled_features.push_back(chromeos::features::kJelly);
+  }
+
+  if (options.enable_cros_components) {
+    enabled_features.push_back(chromeos::features::kCrosComponents);
+    DCHECK(options.enable_jellybean)
+        << "Cannot enable cros-components without jellybean";
+  } else {
+    disabled_features.push_back(chromeos::features::kCrosComponents);
   }
 
   if (options.feature_ids.size() > 0) {
@@ -3673,6 +3705,23 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
     return;
   }
 
+  if (name == "setPooledStorageQuotaUsage") {
+    absl::optional<int64_t> used_user_bytes = value.FindInt("usedUserBytes");
+    ASSERT_TRUE(used_user_bytes.has_value())
+        << "Need usedUserBytes to set pooled storage quota used";
+    absl::optional<int64_t> total_user_bytes = value.FindInt("totalUserBytes");
+    ASSERT_TRUE(total_user_bytes.has_value())
+        << "Need totalUserBytes to set pooled storage quota used";
+    absl::optional<bool> organization_limit_exceeded =
+        value.FindBool("organizationLimitExceeded");
+    ASSERT_TRUE(organization_limit_exceeded.has_value())
+        << "Need organizationLimitExceeded to set pooled storage quota used";
+    drive_volume_->SetPooledStorageQuotaUsage(
+        used_user_bytes.value(), total_user_bytes.value(),
+        organization_limit_exceeded.value());
+    return;
+  }
+
   if (name == "sendDriveCloudDeleteEvent") {
     const std::string* path = value.FindString("path");
     ASSERT_TRUE(path) << "No supplied path to sendDriveFilesChangedEvent";
@@ -3685,10 +3734,32 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
     return;
   }
 
+  if (name == "isCrosComponents") {
+    *output = options.enable_cros_components ? "true" : "false";
+    return;
+  }
+
   if (name == "setDeviceOffline") {
     ash::ShillServiceClient::Get()->GetTestInterface()->ClearServices();
     content::NetworkConnectionChangeSimulator().SetConnectionType(
         network::mojom::ConnectionType::CONNECTION_NONE);
+    return;
+  }
+
+  if (name == "setupImageTerms") {
+    const std::string* path = value.FindString("path");
+    ASSERT_TRUE(path) << "Missing file path for setupImageTerms";
+    const std::string* terms = value.FindString("terms");
+    ASSERT_TRUE(terms) << "Missing terms for setupImageTerms";
+
+    base::FilePath file_path = local_volume_->GetFilePath(*path);
+    std::vector<std::string> tokens = base::SplitString(
+        *terms, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+    std::set<std::string> unique_terms(tokens.begin(), tokens.end());
+    app_list::ImageInfo image_info(unique_terms, file_path, base::Time::Now(),
+                                   false);
+    app_list::LocalImageSearchServiceFactory::GetForBrowserContext(profile())
+        ->Insert(image_info);
     return;
   }
 

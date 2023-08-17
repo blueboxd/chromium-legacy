@@ -15,7 +15,6 @@
 <translation id="1075811647922107217">పేజీ సైజ్‌</translation>
 <translation id="1082009148392559545">స్క్రీన్ సేవర్‌ను డౌన్‌లోడ్ చేస్తోంది</translation>
 <translation id="1094693127011229778">IP అడ్రస్ అందుబాటులో లేదు</translation>
-<translation id="1113892970288677790">నిర్వహిత ఆర్ట్‌వర్క్, ఇమేజ్‌లను ఎంచుకోండి</translation>
 <translation id="1118572504348554005">ఈ ఫారమ్ ద్వారా మీరు సబ్‌మిట్ చేసిన ఫీడ్‌బ్యాక్‌ను మా పార్ట్‌నర్‌లతో షేర్ చేసే అవకాశం ఉంది. బగ్‌లను, ఇతర సమస్యలను పరిష్కరించడానికి మీ ఫీడ్‌బ్యాక్ ఉపయోగపడవచ్చు. పాస్‌వర్డ్‌ల వంటి గోప్యమైన సమాచారాన్ని ఇవ్వకండి.</translation>
 <translation id="1119447706177454957">అంతర్గత ఎర్రర్</translation>
 <translation id="1124772482545689468">వినియోగదారు</translation>
@@ -183,6 +182,7 @@
 <translation id="225692081236532131">క్రియాశీలత స్థితి</translation>
 <translation id="2271469253353559191">డార్క్ మోడ్ షెడ్యూల్</translation>
 <translation id="2276999893457278469">టాప్ సహాయక కంటెంట్</translation>
+<translation id="2279051792571591988">ఆటోమేటిక్ సెట్టింగ్‌లను రీస్టోర్ చేయండి</translation>
 <translation id="2287186687001756809">ఇమేజ్ అందుబాటులో లేదు. ఫోటోలను జోడించడానికి, <ph name="LINK" />కు వెళ్లండి</translation>
 <translation id="2307344026739914387">ప్రస్తుత కీపెయిర్‌ను ఉపయోగించండి</translation>
 <translation id="2320295602967756579">లేత రంగు రూపాన్ని ఎనేబుల్ చేయండి</translation>
@@ -224,6 +224,7 @@
 <translation id="2620436844016719705">సిస్టమ్</translation>
 <translation id="2638662041295312666">సైన్ ఇన్ ఇమేజ్</translation>
 <translation id="2640549051766135490"><ph name="TITLE" /> <ph name="DESC" /> ఆల్బమ్ ఎంచుకోబడింది</translation>
+<translation id="2652403576514495859">డిక్టేషన్‌‌ను ఎనేబుల్ చేయండి లేదా టోగుల్ చేయండి</translation>
 <translation id="267442004702508783">రిఫ్రెష్ చేస్తుంది</translation>
 <translation id="268270014981824665">కీబోర్డ్ బ్రైట్‌నెస్ తక్కువగా ఉంది</translation>
 <translation id="2712812801627182647">TLS ప్రామాణీకరణ కీ</translation>
@@ -331,7 +332,6 @@
 <translation id="361575905210396100">మీ ఫీడ్‌బ్యాక్‌ను తెలిపినందుకు ధన్యవాదాలు</translation>
 <translation id="3632579075709132555">గోప్యతా స్క్రీన్ టోగుల్</translation>
 <translation id="3651050199673793219">ఉష్ణోగ్రత యూనిట్‌ను ఎంచుకోండి</translation>
-<translation id="3663574643422533538"><ph name="PRODUCT_NAME" />‌కు మాత్రమే అందుబాటులో ఉండే పోస్టర్ ఇమేజ్‌ను ఎంచుకోండి</translation>
 <translation id="3668449597372804501">క్లౌడ్ ఫ్లో వాల్‌పేపర్</translation>
 <translation id="3689839747745352263"><ph name="TEST_NAME" /> పరీక్ష</translation>
 <translation id="370665806235115550">లోడ్ అవుతోంది...</translation>
@@ -589,6 +589,7 @@
 <translation id="5620281292257375798">అంతర్గతం మాత్రమే</translation>
 <translation id="5649768706273821470">వినండి</translation>
 <translation id="5655283760733841251">కీబోర్డ్ బ్రైట్‌నెస్‌ను పెంచండి</translation>
+<translation id="5655296450510165335">పరికర ఎన్‌రోల్‌మెంట్</translation>
 <translation id="5655776422854483175">ప్రింట్ టాస్క్‌లు ఏవీ లేవు</translation>
 <translation id="5659593005791499971">ఈమెయిల్‌</translation>
 <translation id="5662240986744577912">గోప్యతా స్క్రీన్‌ను టోగుల్ చేస్తుంది</translation>
@@ -644,6 +645,7 @@
 <translation id="6061772781719867950">విఫలమైన HTTP రిక్వెస్ట్‌లు</translation>
 <translation id="6073292342939316679">కీబోర్డ్ బ్రైట్‌నెస్‌ను తగ్గిస్తుంది</translation>
 <translation id="6075872808778243331">(Android) HTTP ప్రతిస్పందన సమయం</translation>
+<translation id="6078323886959318429">షార్ట్‌కట్‌ను జోడించండి</translation>
 <translation id="6104112872696127344">స్కానింగ్ రద్దు చేయబడింది</translation>
 <translation id="6106186594183574873">దీనిని ముగించడానికి, మీ పాత పాస్‌వర్డ్‌ను నమోదు చేయండి</translation>
 <translation id="6108689792487843350">గేట్‌వే అందుబాటులో లేదు</translation>
@@ -777,7 +779,7 @@
 <translation id="7134436342991564651">{0,plural, =1{సర్వర్ పేరు}other{సర్వర్‌ల పేరు}}</translation>
 <translation id="7135814714616751706">షార్ట్‌కట్‌ల కోసం సెర్చ్ చేయండి</translation>
 <translation id="7143207342074048698">కనెక్ట్ అవుతో.</translation>
-<translation id="7144878232160441200">మళ్ళీ ప్రయత్నించు</translation>
+<translation id="7144878232160441200">మళ్లీ ట్రై చేయండి</translation>
 <translation id="714876143603641390">LAN కనెక్టివిటీ</translation>
 <translation id="7154020516215182599">మీ ఫీడ్‌బ్యాక్‌ను షేర్ చేయండి లేదా మీ సమస్యను వివరించండి. అవసరమైతే, మీ సమస్య ఎలా ఏర్పడింది అనే దానిని దశల వారిగా చేర్చండి.</translation>
 <translation id="7155171745945906037">కెమెరా లేదా ఫైల్‌లో ఉన్న ఫోటో</translation>
@@ -799,10 +801,10 @@
 <translation id="7297226631177386107">HTTPS వెబ్‌సైట్‌లకు ఫైర్‌వాల్ ద్వారా కనెక్ట్ చేయడం సాధ్యపడదు</translation>
 <translation id="7297726121602187087">ముదురు ఆకుపచ్చ రంగు</translation>
 <translation id="7302860742311162920">ICCID</translation>
-<translation id="7305236594389852547">డిక్టేషన్‌ను టోగుల్ చేస్తుంది</translation>
 <translation id="7305884605064981971">EDGE</translation>
 <translation id="7308203371573257315">Chromebook సహాయ ఫోరమ్‌లో నిపుణులను సహాయం అడగండి</translation>
 <translation id="7311368985037279727">కీబోర్డ్ రంగు</translation>
+<translation id="7317831949569936035">స్కూల్ ఎన్‌రోల్‌మెంట్</translation>
 <translation id="7319430975418800333">A3</translation>
 <translation id="7343581795491695942"><ph name="QUERY_TEXT" />; <ph name="RESULT_TEXT" />; Google Searchలో ఫలితాన్ని చూడటానికి 'Search + Space'ను నొక్కండి.</translation>
 <translation id="7343649194310845056">నెట్‌వర్క్ పరికరాలు</translation>
@@ -814,6 +816,7 @@
 <translation id="7397270852490618635">లేత రంగు రూపాన్ని ఆఫ్ చేయండి</translation>
 <translation id="741244894080940828">మార్పిడి</translation>
 <translation id="7415801143053185905">అత్యధిక HTTPS ప్రతిస్పందన సమయం</translation>
+<translation id="7425178841057519191">{NUM_ROOL_APPS,plural,offset:2 =1{మీ అడ్మినిస్ట్రేటర్, మీరు లాగిన్ చేసిన ప్రతిసారీ <ph name="APP_NAME_1" /> ఆటోమేటిక్‌గా ఆన్ అయ్యేలా సెట్ చేశారు.}=2{మీ అడ్మినిస్ట్రేటర్, మీరు లాగిన్ చేసిన ప్రతిసారీ <ph name="APP_NAME_1" />, <ph name="APP_NAME_2" /> ఆటోమేటిక్‌గా ఆన్ అయ్యేలా సెట్ చేశారు.}=3{మీ అడ్మినిస్ట్రేటర్, మీరు లాగిన్ చేసిన ప్రతిసారీ <ph name="APP_NAME_1" />, <ph name="APP_NAME_2" />, ఇంకా <ph name="APP_NAME_3" /> ఆటోమేటిక్‌గా ఆన్ అయ్యేలా సెట్ చేశారు.}other{మీ అడ్మినిస్ట్రేటర్, మీరు లాగిన్ చేసిన ప్రతిసారీ <ph name="APP_NAME_1" />, <ph name="APP_NAME_2" />‌తో పాటు, ఇంకా # ఇతర యాప్‌లు ఆటోమేటిక్‌గా ఆన్ అయ్యేలా సెట్ చేశారు.}}</translation>
 <translation id="7427315641433634153">MSCHAP</translation>
 <translation id="7458970041932198923">అవతార్‌లను చూసి, వాటిని సెట్ చేయడానికి దయచేసి నెట్‌వర్క్‌కు కనెక్ట్ చేసి, పేజీని రీలోడ్ చేయండి.</translation>
 <translation id="7469648432129124067">పోర్టల్ గుర్తించబడింది</translation>
@@ -1012,6 +1015,7 @@
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8987565828374052507">{NUMBER_OF_PAGES,plural, =0{స్కాన్ చేయండి}=1{{NUMBER_OF_PAGES} పేజీని స్కాన్ చేయండి}other{{NUMBER_OF_PAGES} పేజీని స్కాన్ చేయండి}}</translation>
 <translation id="8997710128084572139">పరికరంలో <ph name="BATTERY_PERCENTAGE" />% బ్యాటరీ ఉంది.</translation>
+<translation id="8998156756248178381">{NUM_ROOL_APPS,plural, =1{<ph name="APP_NAME_1" /> ఆటోమేటిక్‌గా ప్రారంభించబడింది}other{# యాప్‌లు ఆటోమేటిక్‌గా ప్రారంభించబడ్డాయి}}</translation>
 <translation id="8998289560386111590">ఈ మోడ్ మీ పరికరంలో అందుబాటులో లేదు</translation>
 <translation id="9003704114456258138">పౌనఃపున్యం</translation>
 <translation id="9024331582947483881">ఫుల్-స్క్రీన్‌</translation>
@@ -1035,6 +1039,7 @@
 <translation id="9122602430962285795">తిరిగి కనెక్ట్ చేయడానికి, సెట్టింగ్‌లకు వెళ్లండి</translation>
 <translation id="9126720536733509015">పలు పేజీలను ఒక PDFగా సేవ్ చేయండి</translation>
 <translation id="9133104754938025929">బ్యాటరీని ఆదా చేయడానికి, స్క్రీన్ సేవర్ ఛార్జింగ్ సమయంలో మాత్రమే పని చేస్తుంది.</translation>
+<translation id="9133772297793293778">మీ కీబోర్డ్‌లో 1-4 మోడిఫయర్‌లు, 1 ఇతర కీని నొక్కండి. ఎడిటింగ్ మోడ్ నుండి ఎగ్జిట్ అవ్వడానికి, alt + esc నొక్కండి.</translation>
 <translation id="9137526406337347448">Google సేవలు</translation>
 <translation id="9138630967333032450">ఎడమ వైపు షిఫ్ట్</translation>
 <translation id="9143347780818904997"><ph name="MINUTES" /> నిమిషాల కోసం</translation>

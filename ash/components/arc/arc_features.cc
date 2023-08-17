@@ -12,7 +12,7 @@ namespace arc {
 // action to start it later in an on-demand manner.
 BASE_FEATURE(kArcOnDemandFeature,
              "ArcOnDemand",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Controls ACTION_BOOT_COMPLETED broadcast for third party applications on ARC.
 // When disabled, third party apps will not receive this broadcast.
@@ -366,6 +366,9 @@ const base::FeatureParam<int> kVmmSwapOutTimeIntervalSecond{
 // Controls the time interval of ARC silence. The default value is 15 minutes.
 const base::FeatureParam<int> kVmmSwapArcSilenceIntervalSecond{
     &kVmmSwapPolicy, "arc_silence_interval_sec", 60 * 15};
+
+// When enabled, ARC uses XDG-based Wayland protocols.
+BASE_FEATURE(kXdgMode, "ArcXdgMode", base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Controls the feature to delay low memory kills of high priority apps when the
 // memory pressure is below foreground.

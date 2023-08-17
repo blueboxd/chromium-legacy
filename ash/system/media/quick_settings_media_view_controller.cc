@@ -78,7 +78,7 @@ QuickSettingsMediaViewController::ShowMediaItem(
   auto media_item_ui = std::make_unique<global_media_controls::MediaItemUIView>(
       id, item,
       MediaNotificationProvider::Get()->BuildFooterView(
-          item,
+          id, item,
           global_media_controls::GlobalMediaControlsEntryPoint::kSystemTray),
       MediaNotificationProvider::Get()->BuildDeviceSelectorView(
           id, item,
@@ -133,6 +133,10 @@ void QuickSettingsMediaViewController::SetShowMediaView(bool show_media_view) {
 
 void QuickSettingsMediaViewController::UpdateMediaItemOrder() {
   media_view_->UpdateItemOrder(media_item_manager_->GetActiveItemIds());
+}
+
+int QuickSettingsMediaViewController::GetMediaViewHeight() {
+  return media_view_->GetMediaViewHeight();
 }
 
 }  // namespace ash

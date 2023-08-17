@@ -30,6 +30,7 @@
 #include "chrome/browser/ui/managed_ui.h"
 #include "chrome/browser/ui/passwords/ui_utils.h"
 #include "chrome/browser/ui/ui_features.h"
+#include "chrome/browser/ui/webui/cr_components/customize_color_scheme_mode/customize_color_scheme_mode_handler.h"
 #include "chrome/browser/ui/webui/extension_control_handler.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
 #include "chrome/browser/ui/webui/managed_ui_handler.h"
@@ -142,7 +143,9 @@
 #include "components/user_manager/user.h"
 #include "ui/base/ui_base_features.h"
 #else  // !BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/search/background/ntp_custom_background_service_factory.h"
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
+#include "chrome/browser/ui/webui/cr_components/theme_color_picker/theme_color_picker_handler.h"
 #include "chrome/browser/ui/webui/customize_themes/chrome_customize_themes_handler.h"
 #include "chrome/browser/ui/webui/settings/captions_handler.h"
 #include "chrome/browser/ui/webui/settings/settings_default_browser_handler.h"
@@ -319,6 +322,9 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
       !chrome::ShouldDisplayManagedUi(profile) && !profile->IsChild();
   html_source->AddBoolean("showPrivacyGuide", show_privacy_guide);
 
+  html_source->AddBoolean("enablePrivacyGuide3", base::FeatureList::IsEnabled(
+                                                     features::kPrivacyGuide3));
+
   html_source->AddBoolean(
       "enableExtendedSettingsDescriptions",
       base::FeatureList::IsEnabled(features::kExtendedSettingsDescriptions));
@@ -331,12 +337,18 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
       "enableEsbCollapse",
       safe_browsing::kEsbIphBubbleAndCollapseSettingsEnableCollapse.Get());
 
-  html_source->AddBoolean("enableFriendlierSafeBrowsingSettings",
-                          base::FeatureList::IsEnabled(
-                              safe_browsing::kFriendlierSafeBrowsingSettings));
+  html_source->AddBoolean(
+      "enableFriendlierSafeBrowsingSettings",
+      base::FeatureList::IsEnabled(
+          safe_browsing::kFriendlierSafeBrowsingSettingsEnhancedProtection) &&
+          base::FeatureList::IsEnabled(
+              safe_browsing::
+                  kFriendlierSafeBrowsingSettingsStandardProtection));
 
-  html_source->AddBoolean("downloadBubbleEnabled",
-                          download::IsDownloadBubbleEnabled(profile));
+  html_source->AddBoolean(
+      "downloadBubblePartialViewControlledByPref",
+      download::IsDownloadBubbleEnabled(profile) &&
+          download::IsDownloadBubblePartialViewControlledByPref());
 
 #if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN)
   html_source->AddBoolean(
@@ -478,6 +490,11 @@ SettingsUI::SettingsUI(content::WebUI* web_ui)
   html_source->AddBoolean("enableSafetyHub",
                           base::FeatureList::IsEnabled(features::kSafetyHub));
 
+  html_source->AddBoolean("is3pcdCookieSettingsRedesignEnabled",
+                          base::FeatureList::IsEnabled(
+                              content_settings::features::
+                                  kThirdPartyCookieDeprecationCookieSettings));
+
   // Performance
   AddSettingsPageUIHandler(std::make_unique<PerformanceHandler>());
   html_source->AddBoolean(
@@ -563,6 +580,17 @@ void SettingsUI::BindInterface(
   }
   customize_themes_factory_receiver_.Bind(std::move(pending_receiver));
 }
+
+void SettingsUI::BindInterface(
+    mojo::PendingReceiver<
+        theme_color_picker::mojom::ThemeColorPickerHandlerFactory>
+        pending_receiver) {
+  if (theme_color_picker_handler_factory_receiver_.is_bound()) {
+    theme_color_picker_handler_factory_receiver_.reset();
+  }
+  theme_color_picker_handler_factory_receiver_.Bind(
+      std::move(pending_receiver));
+}
 #endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 
 void SettingsUI::BindInterface(
@@ -600,6 +628,18 @@ void SettingsUI::CreateCustomizeThemesHandler(
       std::move(pending_client), std::move(pending_handler),
       web_ui()->GetWebContents(), Profile::FromWebUI(web_ui()));
 }
+
+void SettingsUI::CreateThemeColorPickerHandler(
+    mojo::PendingReceiver<theme_color_picker::mojom::ThemeColorPickerHandler>
+        handler,
+    mojo::PendingRemote<theme_color_picker::mojom::ThemeColorPickerClient>
+        client) {
+  theme_color_picker_handler_ = std::make_unique<ThemeColorPickerHandler>(
+      std::move(handler), std::move(client),
+      NtpCustomBackgroundServiceFactory::GetForProfile(
+          Profile::FromWebUI(web_ui())),
+      web_ui()->GetWebContents());
+}
 #endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 
 void SettingsUI::CreateHelpBubbleHandler(
@@ -608,6 +648,29 @@ void SettingsUI::CreateHelpBubbleHandler(
   help_bubble_handler_ = std::make_unique<user_education::HelpBubbleHandler>(
       std::move(handler), std::move(client), this,
       std::vector<ui::ElementIdentifier>{kEnhancedProtectionSettingElementId});
+}
+
+void SettingsUI::CreateCustomizeColorSchemeModeHandler(
+    mojo::PendingRemote<
+        customize_color_scheme_mode::mojom::CustomizeColorSchemeModeClient>
+        client,
+    mojo::PendingReceiver<
+        customize_color_scheme_mode::mojom::CustomizeColorSchemeModeHandler>
+        handler) {
+  customize_color_scheme_mode_handler_ =
+      std::make_unique<CustomizeColorSchemeModeHandler>(
+          std::move(client), std::move(handler), Profile::FromWebUI(web_ui()));
+}
+
+void SettingsUI::BindInterface(
+    mojo::PendingReceiver<customize_color_scheme_mode::mojom::
+                              CustomizeColorSchemeModeHandlerFactory>
+        pending_receiver) {
+  if (customize_color_scheme_mode_handler_factory_receiver_.is_bound()) {
+    customize_color_scheme_mode_handler_factory_receiver_.reset();
+  }
+  customize_color_scheme_mode_handler_factory_receiver_.Bind(
+      std::move(pending_receiver));
 }
 
 WEB_UI_CONTROLLER_TYPE_IMPL(SettingsUI)

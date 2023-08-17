@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/memory/raw_ptr.h"
+#include "extensions/common/extension_id.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "url/origin.h"
@@ -133,13 +134,6 @@ class ExtensionContextMenuModel : public ui::SimpleMenuModel,
   void CreatePageAccessItems(const Extension* extension,
                              content::WebContents* web_contents);
 
-  // Returns true if the given page access command is enabled in the menu.
-  bool IsPageAccessCommandEnabled(const Extension& extension,
-                                  int command_id) const;
-
-  void HandlePageAccessCommand(int command_id,
-                               const Extension* extension) const;
-
   // Gets the extension we are displaying the menu for. Returns NULL if the
   // extension has been uninstalled and no longer exists.
   const Extension* GetExtension() const;
@@ -151,7 +145,7 @@ class ExtensionContextMenuModel : public ui::SimpleMenuModel,
   void AppendExtensionItems();
 
   // A copy of the extension's id.
-  std::string extension_id_;
+  ExtensionId extension_id_;
 
   // Whether the menu is for a component extension.
   bool is_component_;

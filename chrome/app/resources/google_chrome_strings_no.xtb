@@ -33,7 +33,6 @@
 <translation id="1587223624401073077">Google Chrome bruker kameraet ditt.</translation>
 <translation id="1587325591171447154"><ph name="FILE_NAME" /> er farlig, så Chrome har blokkert den.</translation>
 <translation id="1597911401261118146">For å sjekke om passordene dine er trygge mot databrudd og andre sikkerhetsproblemer, <ph name="BEGIN_LINK" />logg på Chrome<ph name="END_LINK" />.</translation>
-<translation id="1599904803480101533">Chrome har blokkert denne arkivfilen fordi den kan inneholde skadelig programvare</translation>
 <translation id="1619887657840448962">For å gjøre Chrome tryggere har vi slått av følgende utvidelse som ikke finnes i <ph name="IDS_EXTENSION_WEB_STORE_TITLE" />, og som kan ha blitt lagt til uten at du vet det.</translation>
 <translation id="1627304841979541023"><ph name="BEGIN_BOLD" />Slik kan du administrere dataene dine:<ph name="END_BOLD" /> For å beskytte personvernet ditt sletter vi automatisk interessene dine som er eldre enn fire uker. Når du fortsetter å surfe, kan det hende at interesser havner på listen igjen. Alternativt kan du fjerne interesse du ikke vil at Chrome skal vurdere.</translation>
 <translation id="1628000112320670027">Få hjelp med Chrome</translation>
@@ -129,6 +128,7 @@
 <translation id="3140883423282498090">Endringene dine trer i kraft neste gang du starter Google Chrome.</translation>
 <translation id="3149510190863420837">Chrome-apper</translation>
 <translation id="3169523567916669830">Underveis i prøveprosjektene kan du se og fjerne interesseemnene som nettsteder bruker for å vise deg annonser. Chrome anslår interessene dine basert på den nylige nettleserloggen din.</translation>
+<translation id="3226612997184048185">Hvis du også lagrer bokmerkene i Google-kontoen din, kan du spore produktpriser i Chrome og bli varslet om avslag</translation>
 <translation id="3245429137663807393">Hvis du også deler Chrome-bruksrapporter, inneholder disse rapportene nettadressene du besøker</translation>
 <translation id="3282568296779691940">Logg på Chrome</translation>
 <translation id="3286538390144397061">Start på nytt nå</translation>
@@ -147,7 +147,6 @@
 <translation id="3533694711092285624">Ingen lagrede passord. Chrome kan sjekke passordene dine når du lagrer dem.</translation>
 <translation id="3541482654983822893">Chrome kan ikke sjekke passordene dine. Prøv på nytt når det har gått 24 timer.</translation>
 <translation id="3576528680708590453">Systemadministratoren din har konfigurert at Google Chrome skal åpne <ph name="TARGET_URL_HOSTNAME" /> i en annen nettleser.</translation>
-<translation id="3579965087968408543">Slett alltid nettstedsdata fra enheten når du lukker Chrome</translation>
 <translation id="3582972582564653026">Synkroniser og gi Chrome et personlig preg på alle enhetene dine</translation>
 <translation id="3596080736082218006">{COUNT,plural, =0{Administratoren din krever at du starter Chrome på nytt for å ta i bruk en oppdatering}=1{Administratoren din krever at du starter Chrome på nytt for å ta i bruk en oppdatering. Inkognitovinduet ditt blir ikke gjenåpnet.}other{Administratoren din krever at du starter Chrome på nytt for å ta i bruk en oppdatering. De # inkognitovinduene dine blir ikke gjenåpnet.}}</translation>
 <translation id="3622797965165704966">Nå er det enklere å bruke Chrome med Google-kontoen din og på datamaskiner du deler med andre.</translation>
@@ -215,6 +214,7 @@
 <translation id="4873783916118289636">Gjennomgå viktige personvern- og sikkerhetskontroller i Chrome</translation>
 <translation id="4891791193823137474">La Google Chrome kjøre i bakgrunnen</translation>
 <translation id="4895437082222824641">Åpne linken i en ny &amp;fane i Chrome</translation>
+<translation id="492720062778050435">Chrome anbefaler at du går gjennom denne utvidelsen</translation>
 <translation id="4953650215774548573">Bruk Google Chrome som standard nettleser</translation>
 <translation id="495931528404527476">I Chrome</translation>
 <translation id="4969674060580488087">ChromeOS Flex kunne ikke synkronisere dataene dine. Dette skyldes at påloggingsopplysningene for kontoen din er utdaterte.</translation>
@@ -238,7 +238,6 @@
 <translation id="5394833366792865639">Del en Chrome-fane</translation>
 <translation id="5412485296464121825">Nettsteder kan lagre informasjon om interessene dine i Chrome. Hvis du for eksempel besøker et nettsted for å kjøpe maratonsko, kan det hende nettstedet definerer interessen din som maratonløp. Hvis du senere besøker et annet nettsted for å melde deg på et løp, kan dette nettstedet vise deg en annonse for løpesko basert på interessene dine.</translation>
 <translation id="5430073640787465221">Innstillingsfilen er skadet eller ugyldig. Google Chrome kan ikke gjenopprette innstillingene dine.</translation>
-<translation id="5521146392841465297">Chrome anbefaler at du går gjennom denne utvidelsen.</translation>
 <translation id="5524761631371622910">Når prøveprosjekter er påslått, og hvis Chrome har plassert deg tilfeldig i et aktivt prøveprosjekt, påvirker nettleserloggen din annonsene du ser, og interessene som er anslått nedenfor. For å beskytte personvernet ditt sletter Chrome interessene dine på rullerende basis hver måned.</translation>
 <translation id="5530733413481476019">Gjør Chrome raskere</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-Inn)</translation>
@@ -247,6 +246,7 @@
 <translation id="5686916850681061684">Tilpass og kontroller Google Chrome. Det er noe du må se på – klikk for mer informasjon.</translation>
 <translation id="5690427481109656848">Google LLC</translation>
 <translation id="570005089986962444">Når dette er på, frigjør Chrome minne fra inaktive faner. Dette gir aktive faner og andre apper flere datamaskinressurser og holder Chrome rask. De inaktive fanene dine blir automatisk aktive igjen når du går tilbake til dem.</translation>
+<translation id="5709557627224531708">Angi Chrome som standardnettleser</translation>
 <translation id="5727531838415286053">Hvis Chrome har plassert deg tilfeldig i et aktivt prøveprosjekt, påvirker nettleserloggen din annonsene du ser, og interessene som er anslått nedenfor. For å beskytte personvernet ditt sletter Chrome interessene dine på rullerende basis hver måned. Interessene fornyes med mindre du fjerner dem.</translation>
 <translation id="5736850870166430177">Hvis nettsteder prøver å stjele passordet ditt, eller når du laster ned skadelige filer, kan Chrome også sende nettadresser, inkludert deler av sideinnholdet, til Safe Browsing</translation>
 <translation id="5756509061973259733">Det finnes allerede en Chrome-profil med denne kontoen på denne enheten</translation>

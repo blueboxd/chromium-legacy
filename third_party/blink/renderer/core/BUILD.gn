@@ -72,6 +72,7 @@ import("//third_party/blink/renderer/core/timing/build.gni")
 import("//third_party/blink/renderer/core/trustedtypes/build.gni")
 import("//third_party/blink/renderer/core/typed_arrays/build.gni")
 import("//third_party/blink/renderer/core/url/build.gni")
+import("//third_party/blink/renderer/core/url_pattern/build.gni")
 import("//third_party/blink/renderer/core/view_transition/build.gni")
 import("//third_party/blink/renderer/core/workers/build.gni")
 import("//third_party/blink/renderer/core/xml/build.gni")
@@ -374,7 +375,6 @@ component("core") {
 
   if (is_mac) {
     deps += [ "//ui/base/mojom" ]
-    configs += [ "//build/config/compiler:enable_arc" ]
   }
 
   if (enable_printing) {
@@ -501,6 +501,8 @@ source_set("testing") {
     "testing/fake_remote_frame_host.h",
     "testing/fake_remote_main_frame_host.cc",
     "testing/fake_remote_main_frame_host.h",
+    "testing/file_backed_blob_factory_test_helper.cc",
+    "testing/file_backed_blob_factory_test_helper.h",
     "testing/garbage_collected_script_wrappable.cc",
     "testing/garbage_collected_script_wrappable.h",
     "testing/gc_object_liveness_observer.h",
@@ -1409,6 +1411,7 @@ source_set("unit_tests") {
   sources += rebase_path(blink_core_tests_trustedtypes, "", "trustedtypes")
   sources += rebase_path(blink_core_tests_typed_arrays, "", "typed_arrays")
   sources += rebase_path(blink_core_tests_url, "", "url")
+  sources += rebase_path(blink_core_tests_url_pattern, "", "url_pattern")
   sources += rebase_path(blink_core_tests_workers, "", "workers")
   sources += rebase_path(blink_core_tests_xml, "", "xml")
   sources += rebase_path(blink_core_tests_xmlhttprequest, "", "xmlhttprequest")
@@ -1418,10 +1421,6 @@ source_set("unit_tests") {
     "//third_party/blink/renderer:config",
     "//third_party/blink/renderer:inside_blink",
   ]
-
-  if (is_apple) {
-    configs += [ "//build/config/compiler:enable_arc" ]
-  }
 
   deps = [
     ":core",

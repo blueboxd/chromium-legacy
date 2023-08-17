@@ -344,6 +344,8 @@ void LocalFrameView::Trace(Visitor* visitor) const {
   visitor->Trace(fullscreen_video_elements_);
   visitor->Trace(pending_transform_updates_);
   visitor->Trace(pending_opacity_updates_);
+  visitor->Trace(pending_sticky_updates_);
+  visitor->Trace(pending_snap_updates_);
   visitor->Trace(disconnected_elements_with_remembered_size_);
 }
 
@@ -929,10 +931,6 @@ void LocalFrameView::SetNeedsPaintPropertyUpdate() {
     layout_view->SetNeedsPaintPropertyUpdate();
 }
 
-gfx::SizeF LocalFrameView::ViewportSizeForViewportUnits() const {
-  return LargeViewportSizeForViewportUnits();
-}
-
 gfx::SizeF LocalFrameView::SmallViewportSizeForViewportUnits() const {
   float zoom = 1;
   if (!frame_->GetDocument() || !frame_->GetDocument()->Printing())
@@ -982,9 +980,16 @@ gfx::SizeF LocalFrameView::LargeViewportSizeForViewportUnits() const {
 }
 
 gfx::SizeF LocalFrameView::ViewportSizeForMediaQueries() const {
+  if (!frame_->GetDocument()) {
+    return gfx::SizeF(layout_size_);
+  }
+  if (frame_->GetDocument()->Printing()) {
+    if (const LayoutView* layout_view = GetLayoutView()) {
+      return layout_view->DefaultPageAreaSize();
+    }
+  }
   gfx::SizeF viewport_size(layout_size_);
-  if (!frame_->GetDocument() || !frame_->GetDocument()->Printing())
-    viewport_size.Scale(1 / GetFrame().PageZoomFactor());
+  viewport_size.Scale(1 / GetFrame().PageZoomFactor());
   return viewport_size;
 }
 
@@ -1744,7 +1749,11 @@ void LocalFrameView::PerformPostLayoutTasks(bool visual_viewport_size_changed) {
 
   UpdateDocumentAnnotatedRegions();
 
-  GetLayoutView()->Layer()->UpdateLayerPositionsAfterLayout();
+  if (RuntimeEnabledFeatures::LayoutNewStickyLogicEnabled()) {
+    ExecutePendingStickyUpdates();
+  } else {
+    GetLayoutView()->Layer()->UpdateLayerPositionsAfterLayout();
+  }
   frame_->Selection().DidLayout();
 
   FontFaceSetDocument::DidLayout(*document);
@@ -2213,7 +2222,7 @@ bool LocalFrameView::UpdateLifecyclePhases(
 
   absl::optional<base::AutoReset<bool>> force_debug_info;
   if (reason == DocumentUpdateReason::kTest)
-    force_debug_info.emplace(&layer_debug_info_enabled_, true);
+    force_debug_info.emplace(&paint_debug_info_enabled_, true);
 
   // Run the lifecycle updates.
   UpdateLifecyclePhasesInternal(target_state);
@@ -2226,6 +2235,10 @@ bool LocalFrameView::UpdateLifecyclePhases(
       for (auto& observer : lifecycle_observers)
         observer->DidFinishLifecycleUpdate(frame_view);
     });
+    if (frame_->GetWidgetForLocalRoot() &&
+        base::FeatureList::IsEnabled(features::kReportVisibleLineBounds)) {
+      frame_->GetWidgetForLocalRoot()->UpdateLineBounds();
+    }
   }
 
   // Hit testing metrics include the entire time processing a document update
@@ -2536,7 +2549,11 @@ bool LocalFrameView::RunStyleAndLayoutLifecyclePhases(
     frame_view.PerformScrollAnchoringAdjustments();
   });
 
-  frame_->GetDocument()->PerformScrollSnappingTasks();
+  if (RuntimeEnabledFeatures::LayoutNewSnapLogicEnabled()) {
+    ExecutePendingSnapUpdates();
+  } else {
+    frame_->GetDocument()->PerformScrollSnappingTasks();
+  }
 
   EnqueueScrollEvents();
 
@@ -2750,8 +2767,10 @@ void LocalFrameView::RunPaintLifecyclePhase(PaintBenchmarkMode benchmark_mode) {
     }
   }
 
-  if (paint_artifact_compositor_)
+  if (!RuntimeEnabledFeatures::SimplifiedClearPropertyTreeChangeEnabled() &&
+      paint_artifact_compositor_) {
     paint_artifact_compositor_->ClearPropertyTreeChangedState();
+  }
 
   if (GetPage())
     GetPage()->Animator().ReportFrameAnimations(GetCompositorAnimationHost());
@@ -2839,7 +2858,7 @@ bool LocalFrameView::PaintTree(PaintBenchmarkMode benchmark_mode) {
   CullRectUpdater(*layout_view->Layer()).Update();
 
   bool debug_info_newly_enabled =
-      UpdateLayerDebugInfoEnabled() && PaintDebugInfoEnabled();
+      UpdatePaintDebugInfoEnabled() && PaintDebugInfoEnabled();
 
   paint_frame_count_++;
   ForAllNonThrottledLocalFrameViews(
@@ -2996,7 +3015,7 @@ void LocalFrameView::PushPaintArtifactToCompositor(bool repainted) {
   }
 
   paint_artifact_compositor_->SetLayerDebugInfoEnabled(
-      layer_debug_info_enabled_);
+      paint_debug_info_enabled_);
 
   PaintArtifactCompositor::ViewportProperties viewport_properties;
   if (const auto& viewport = page->GetVisualViewport();
@@ -3258,53 +3277,96 @@ void LocalFrameView::DisableAutoSizeMode() {
   auto_size_info_.Clear();
 }
 
-void LocalFrameView::ForceLayoutForPagination(const gfx::SizeF& page_size,
-                                              float maximum_shrink_factor) {
-  // Dumping externalRepresentation(m_frame->layoutObject()).ascii() is a good
-  // trick to see the state of things before and after the layout
-  if (LayoutView* layout_view = GetLayoutView()) {
-    layout_view->SetPageSize(
-        {LayoutUnit(page_size.width()), LayoutUnit(page_size.height())});
-    layout_view->SetNeedsLayoutAndIntrinsicWidthsRecalcAndFullPaintInvalidation(
-        layout_invalidation_reason::kPrintingChanged);
-    frame_->GetDocument()->UpdateStyleAndLayout(
-        DocumentUpdateReason::kPrinting);
+void LocalFrameView::ForceLayoutForPagination(float maximum_shrink_factor) {
+  LayoutView* layout_view = GetLayoutView();
+  if (!layout_view) {
+    return;
+  }
 
-    // If we don't fit in the given page width, we'll lay out again. If we don't
-    // fit in the page width when shrunk, we will lay out at maximum shrink and
-    // clip extra content.
-    // FIXME: We are assuming a shrink-to-fit printing implementation.  A
-    // cropping implementation should not do this!
-    bool horizontal_writing_mode =
-        layout_view->StyleRef().IsHorizontalWritingMode();
-    PhysicalRect document_rect(layout_view->DocumentRect());
-    LayoutUnit doc_logical_width = horizontal_writing_mode
-                                       ? document_rect.Width()
-                                       : document_rect.Height();
-    float page_logical_width =
-        horizontal_writing_mode ? page_size.width() : page_size.height();
-    if (doc_logical_width > page_logical_width) {
-      // ResizePageRectsKeepingRatio would truncate the expected page size,
-      // while we want it rounded -- so make sure it's rounded here.
-      gfx::SizeF expected_page_size(
-          std::min<float>(document_rect.Width().Round(),
-                          page_size.width() * maximum_shrink_factor),
-          std::min<float>(document_rect.Height().Round(),
-                          page_size.height() * maximum_shrink_factor));
-      gfx::SizeF max_page_size = frame_->ResizePageRectsKeepingRatio(
-          /* aspect_ratio */ page_size, expected_page_size);
-      layout_view->SetPageSize({LayoutUnit(max_page_size.width()),
-                                LayoutUnit(max_page_size.height())});
+  layout_view->SetPageScaleFactor(1.0);
+
+  // Set up the initial containing block size for pagination. This is defined as
+  // the page area size of the *first* page. [1] The size of the first page may
+  // not be fully known yet, e.g. if the first page is named [2] and given a
+  // specific size. Page names are resolved during layout. For now, set an
+  // initial containing block size based on the information that's currently
+  // available. If this turns out to be wrong, we need to set a new size and lay
+  // out again. See below.
+  //
+  // [1] https://www.w3.org/TR/css-page-3/#page-model
+  // [2] https://www.w3.org/TR/css-page-3/#using-named-pages
+  PhysicalSize initial_containing_block_size =
+      layout_view->PageAreaSize(/* page_index */ 0u,
+                                /* page_name */ AtomicString());
+  layout_view->SetInitialContainingBlockSizeForPagination(
+      initial_containing_block_size);
+
+  layout_view->SetNeedsLayoutAndIntrinsicWidthsRecalcAndFullPaintInvalidation(
+      layout_invalidation_reason::kPrintingChanged);
+  frame_->GetDocument()->UpdateStyleAndLayout(DocumentUpdateReason::kPrinting);
+
+  const auto& first_page = To<NGPhysicalBoxFragment>(
+      *layout_view->GetPhysicalFragment(0)->Children()[0]);
+  if (const AtomicString& page_name = first_page.PageName()) {
+    PhysicalSize new_size =
+        layout_view->PageAreaSize(/* page_index */ 0u, page_name);
+    if (new_size != initial_containing_block_size) {
+      // If the first page was named (this isn't something we can detect without
+      // laying out first), and the size of the first page is different from
+      // what we got above, the initial containing block used was wrong (which
+      // affects e.g. elements with viewport units). Set a new size and lay out
+      // again.
+      layout_view->SetInitialContainingBlockSizeForPagination(new_size);
+
+      // Make sure that everything that should respond to an initial containing
+      // block change actually responds (elements using viewport units, for
+      // instance).
+      frame_->GetDocument()->LayoutViewportWasResized();
+
       layout_view
           ->SetNeedsLayoutAndIntrinsicWidthsRecalcAndFullPaintInvalidation(
               layout_invalidation_reason::kPrintingChanged);
       frame_->GetDocument()->UpdateStyleAndLayout(
           DocumentUpdateReason::kPrinting);
-
-      AdjustViewSize();
-      UpdateStyleAndLayout();
-      return;
     }
+  }
+
+  // If we don't fit in the given page width, we'll lay out again. If we don't
+  // fit in the page width when shrunk, we will lay out at maximum shrink and
+  // clip extra content.
+  // FIXME: We are assuming a shrink-to-fit printing implementation. A cropping
+  // implementation should not do this!
+  float overall_scale_factor = 1.0;
+  for (const NGLink& link : layout_view->GetPhysicalFragment(0)->Children()) {
+    const auto& page = To<NGPhysicalBoxFragment>(*link);
+    // Check the inline axis overflow on each individual page, to find the
+    // largest relative overflow.
+    float page_scale_factor;
+    if (layout_view->StyleRef().IsHorizontalWritingMode()) {
+      page_scale_factor =
+          page.LayoutOverflow().Width().ToFloat() / page.Size().width.ToFloat();
+    } else {
+      page_scale_factor = page.LayoutOverflow().Height().ToFloat() /
+                          page.Size().height.ToFloat();
+    }
+    overall_scale_factor = std::max(overall_scale_factor, page_scale_factor);
+    if (overall_scale_factor >= maximum_shrink_factor) {
+      overall_scale_factor = maximum_shrink_factor;
+      break;
+    }
+  }
+
+  if (overall_scale_factor > 1.0) {
+    // Re-layout and apply the same scale factor to all pages.
+    //
+    // Note that we deliberately don't set a new initial containing block size
+    // here. But should we? EdgeHTML does it. Gecko doesn't. WebKit is buggy
+    // (uses the initial block based on the browser frame size).
+    layout_view->SetPageScaleFactor(overall_scale_factor);
+    layout_view->SetNeedsLayoutAndIntrinsicWidthsRecalcAndFullPaintInvalidation(
+        layout_invalidation_reason::kPrintingChanged);
+    frame_->GetDocument()->UpdateStyleAndLayout(
+        DocumentUpdateReason::kPrinting);
   }
 
   if (TextAutosizer* text_autosizer = frame_->GetDocument()->GetTextAutosizer())
@@ -4747,17 +4809,18 @@ LocalFrameView::DisallowLayoutInvalidationScope::
 
 #endif
 
-bool LocalFrameView::UpdateLayerDebugInfoEnabled() {
+bool LocalFrameView::UpdatePaintDebugInfoEnabled() {
   DCHECK(frame_->IsLocalRoot());
 #if DCHECK_IS_ON()
-  DCHECK(layer_debug_info_enabled_);
+  DCHECK(paint_debug_info_enabled_);
 #else
   bool should_enable =
       cc::frame_viewer_instrumentation::IsTracingLayerTreeSnapshots() ||
+      RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled() ||
       WebTestSupport::IsRunningWebTest() ||
       CoreProbeSink::HasAgentsGlobal(CoreProbeSink::kInspectorLayerTreeAgent);
-  if (should_enable != layer_debug_info_enabled_) {
-    layer_debug_info_enabled_ = should_enable;
+  if (should_enable != paint_debug_info_enabled_) {
+    paint_debug_info_enabled_ = should_enable;
     SetPaintArtifactCompositorNeedsUpdate();
     return true;
   }
@@ -5056,6 +5119,52 @@ void LocalFrameView::RemoveAllPendingUpdates() {
       object->SetNeedsPaintPropertyUpdate();
     }
     pending_transform_updates_->clear();
+  }
+}
+
+void LocalFrameView::AddPendingStickyUpdate(PaintLayerScrollableArea* object) {
+  if (!pending_sticky_updates_) {
+    pending_sticky_updates_ =
+        MakeGarbageCollected<HeapHashSet<Member<PaintLayerScrollableArea>>>();
+  }
+  pending_sticky_updates_->insert(object);
+}
+
+void LocalFrameView::ExecutePendingStickyUpdates() {
+  if (pending_sticky_updates_) {
+    // Iteration order of the scrollable-areas doesn't matter as
+    // sticky-positioned objects are contained within each scrollable-area.
+    for (PaintLayerScrollableArea* scrollable_area : *pending_sticky_updates_) {
+      scrollable_area->UpdateAllStickyConstraints();
+    }
+    pending_sticky_updates_->clear();
+  }
+}
+
+void LocalFrameView::AddPendingSnapUpdate(PaintLayerScrollableArea* object) {
+  if (!pending_snap_updates_) {
+    pending_snap_updates_ =
+        MakeGarbageCollected<HeapHashSet<Member<PaintLayerScrollableArea>>>();
+  }
+  pending_snap_updates_->insert(object);
+}
+
+void LocalFrameView::RemovePendingSnapUpdate(PaintLayerScrollableArea* object) {
+  if (pending_snap_updates_) {
+    pending_snap_updates_->erase(object);
+  }
+}
+
+void LocalFrameView::ExecutePendingSnapUpdates() {
+  if (pending_snap_updates_) {
+    // Iteration order of the objects doesn't matter as the snap-areas are
+    // contained within each scroll-container.
+    for (PaintLayerScrollableArea* scrollable_area : *pending_snap_updates_) {
+      auto* snap_container = scrollable_area->GetLayoutBox();
+      DCHECK(snap_container->IsScrollContainer());
+      SnapCoordinator::UpdateSnapContainerData(*snap_container);
+    }
+    pending_snap_updates_->clear();
   }
 }
 

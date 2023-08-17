@@ -153,8 +153,7 @@ class AccountSelectionBridge implements AccountSelectionComponent.Delegate {
             // optimization to avoid needing multiple JNI getters on the Account class on for each
             // field.
             AccountSelectionBridgeJni.get().onAccountSelected(mNativeView, idpConfigUrl,
-                    account.getStringFields(), account.getPictureUrl(), account.getLoginHints(),
-                    account.isSignIn());
+                    account.getStringFields(), account.getPictureUrl(), account.isSignIn());
         }
     }
 
@@ -165,11 +164,15 @@ class AccountSelectionBridge implements AccountSelectionComponent.Delegate {
         }
     }
 
+    @Override
+    public void onModalDialogClosed() {
+        mAccountSelectionComponent.onModalDialogClosed();
+    }
+
     @NativeMethods
     interface Natives {
         void onAccountSelected(long nativeAccountSelectionViewAndroid, GURL idpConfigUrl,
-                String[] accountFields, GURL accountPictureUrl, String[] accountHints,
-                boolean isSignedIn);
+                String[] accountFields, GURL accountPictureUrl, boolean isSignedIn);
         void onDismiss(long nativeAccountSelectionViewAndroid,
                 @IdentityRequestDialogDismissReason int dismissReason);
         void onSignInToIdp(long nativeAccountSelectionViewAndroid);

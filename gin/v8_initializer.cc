@@ -291,6 +291,10 @@ void SetFlags(IsolateHolder::ScriptMode mode,
   SetV8FlagsIfOverridden(features::kV8MegaDomIC, "--mega-dom-ic",
                          "--no-mega-dom-ic");
   SetV8FlagsIfOverridden(features::kV8Maglev, "--maglev", "--no-maglev");
+  if (base::FeatureList::IsEnabled(features::kV8MemoryReducer)) {
+    SetV8FlagsFormatted("--memory-reducer-gc-count=%i",
+                        features::kV8MemoryReducerGCCount.Get());
+  }
   SetV8FlagsIfOverridden(features::kV8MinorMC, "--minor-ms", "--no-minor-ms");
   SetV8FlagsIfOverridden(features::kV8MinorMS, "--minor-ms", "--no-minor-ms");
   SetV8FlagsIfOverridden(features::kV8Sparkplug, "--sparkplug",
@@ -310,9 +314,12 @@ void SetFlags(IsolateHolder::ScriptMode mode,
                          "--no-write-protect-code-memory");
   SetV8FlagsIfOverridden(features::kV8SlowHistograms, "--slow-histograms",
                          "--no-slow-histograms");
-  SetV8FlagsIfOverridden(features::kV8MemoryReducerSingleGC,
-                         "--memory-reducer-single-gc",
-                         "--no-memory-reducer-single-gc");
+  SetV8FlagsIfOverridden(features::kV8SingleThreadedGCInBackground,
+                         "--single-threaded-gc-in-background",
+                         "--no-single-threaded-gc-in-background");
+  SetV8FlagsIfOverridden(features::kV8MidtierRegallocFallback,
+                         "--turbo-use-mid-tier-regalloc-for-huge-functions",
+                         "--no-turbo-use-mid-tier-regalloc-for-huge-functions");
 
   if (base::FeatureList::IsEnabled(features::kV8ConcurrentSparkplug)) {
     if (int max_threads = features::kV8ConcurrentSparkplugMaxThreads.Get()) {

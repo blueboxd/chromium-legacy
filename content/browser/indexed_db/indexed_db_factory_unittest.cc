@@ -39,14 +39,13 @@
 #include "content/browser/indexed_db/indexed_db_leveldb_env.h"
 #include "content/browser/indexed_db/indexed_db_pre_close_task_queue.h"
 #include "content/browser/indexed_db/indexed_db_transaction.h"
-#include "content/browser/indexed_db/mock_indexed_db_callbacks.h"
 #include "content/browser/indexed_db/mock_indexed_db_database_callbacks.h"
+#include "content/browser/indexed_db/mock_indexed_db_factory_client.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "net/base/features.h"
 #include "storage/browser/test/mock_quota_manager_proxy.h"
 #include "storage/browser/test/mock_special_storage_policy.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/common/indexeddb/web_idb_types.h"
 #include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
 #include "url/gurl.h"
@@ -56,13 +55,6 @@ using blink::IndexedDBDatabaseMetadata;
 using url::Origin;
 
 namespace content {
-
-namespace {
-
-void CreateAndBindTransactionPlaceholder(
-    base::WeakPtr<IndexedDBTransaction> transaction) {}
-
-}  // namespace
 
 class IndexedDBFactoryTest : public testing::Test {
  public:
@@ -104,10 +96,10 @@ class IndexedDBFactoryTest : public testing::Test {
       }
       // All leveldb databases are closed, and they can be deleted.
       for (auto bucket_locator : context_->GetAllBuckets()) {
-        bool success = false;
-        storage::mojom::IndexedDBControlAsyncWaiter waiter(context_.get());
-        waiter.DeleteForStorageKey(bucket_locator.storage_key, &success);
-        EXPECT_TRUE(success);
+        base::test::TestFuture<bool> success;
+        context_->DeleteForStorageKey(bucket_locator.storage_key,
+                                      success.GetCallback());
+        EXPECT_TRUE(success.Get());
       }
     }
     IndexedDBClassFactory::Get()->SetLevelDBFactoryForTesting(nullptr);
@@ -154,18 +146,16 @@ class IndexedDBFactoryTest : public testing::Test {
     auto db_callbacks = base::MakeRefCounted<MockIndexedDBDatabaseCallbacks>();
     const int64_t transaction_id = 1;
 
-    mock_callbacks_ = std::make_unique<MockIndexedDBCallbacks>();
-    auto create_transaction_callback =
-        base::BindOnce(&CreateAndBindTransactionPlaceholder);
+    mock_factory_client_ = std::make_unique<MockIndexedDBFactoryClient>();
     auto connection = std::make_unique<IndexedDBPendingConnection>(
-        std::make_unique<ThunkCallbacks>(*mock_callbacks_), db_callbacks,
-        transaction_id, IndexedDBDatabaseMetadata::NO_VERSION,
-        std::move(create_transaction_callback));
+        std::make_unique<ThunkFactoryClient>(*mock_factory_client_),
+        db_callbacks, transaction_id, IndexedDBDatabaseMetadata::NO_VERSION,
+        base::DoNothing());
 
     // Do the first half of the upgrade, and request the upgrade from renderer.
     {
       base::RunLoop loop;
-      mock_callbacks_->CallOnUpgradeNeeded(
+      mock_factory_client_->CallOnUpgradeNeeded(
           base::BindLambdaForTesting([&]() { loop.Quit(); }));
       factory()->Open(name, std::move(connection), bucket_locator,
                       context()->GetDataPath(bucket_locator),
@@ -173,25 +163,25 @@ class IndexedDBFactoryTest : public testing::Test {
       loop.Run();
     }
 
-    EXPECT_TRUE(mock_callbacks_->upgrade_called());
-    EXPECT_TRUE(mock_callbacks_->connection());
-    EXPECT_TRUE(mock_callbacks_->connection()->database());
-    if (!mock_callbacks_->connection()) {
+    EXPECT_TRUE(mock_factory_client_->upgrade_called());
+    EXPECT_TRUE(mock_factory_client_->connection());
+    EXPECT_TRUE(mock_factory_client_->connection()->database());
+    if (!mock_factory_client_->connection()) {
       return {nullptr, nullptr};
     }
 
     // Finish the upgrade by committing the transaction.
     {
       base::RunLoop loop;
-      mock_callbacks_->CallOnDBSuccess(
+      mock_factory_client_->CallOnDBSuccess(
           base::BindLambdaForTesting([&]() { loop.Quit(); }));
-      mock_callbacks_->connection()
+      mock_factory_client_->connection()
           ->transactions()
           .find(transaction_id)
           ->second->SetCommitFlag();
       loop.Run();
     }
-    return {mock_callbacks_->TakeConnection(), db_callbacks};
+    return {mock_factory_client_->TakeConnection(), db_callbacks};
   }
 
   void RunPostedTasks() {
@@ -242,7 +232,7 @@ class IndexedDBFactoryTest : public testing::Test {
   scoped_refptr<storage::MockQuotaManager> quota_manager_;
   scoped_refptr<storage::MockQuotaManagerProxy> quota_manager_proxy_;
   scoped_refptr<IndexedDBContextImpl> context_;
-  std::unique_ptr<MockIndexedDBCallbacks> mock_callbacks_;
+  std::unique_ptr<MockIndexedDBFactoryClient> mock_factory_client_;
 };
 
 class IndexedDBFactoryTestWithMockTime : public IndexedDBFactoryTest {
@@ -371,9 +361,10 @@ TEST_P(IndexedDBFactoryTestWithStoragePartitioning,
   EXPECT_TRUE(bucket_state5_handle.IsHeld()) << s.ToString();
   EXPECT_TRUE(s.ok()) << s.ToString();
 
-  std::vector<storage::mojom::StorageUsageInfoPtr> infos;
-  storage::mojom::IndexedDBControlAsyncWaiter sync_control(context());
-  sync_control.GetUsage(&infos);
+  base::test::TestFuture<std::vector<storage::mojom::StorageUsageInfoPtr>>
+      infos_future;
+  context()->GetUsage(infos_future.GetCallback());
+  auto infos = infos_future.Take();
 
   int64_t bucket_size_1 =
       filesystem_proxy->ComputeDirectorySize(file_1.DirName());
@@ -747,16 +738,14 @@ TEST_F(IndexedDBFactoryTest, ContextDestructionClosesConnections) {
   auto bucket_locator = storage::BucketLocator();
   bucket_locator.storage_key = storage_key;
 
-  auto callbacks = std::make_unique<MockIndexedDBCallbacks>();
+  auto callbacks = std::make_unique<MockIndexedDBFactoryClient>();
   auto db_callbacks = base::MakeRefCounted<MockIndexedDBDatabaseCallbacks>();
 
   const int64_t transaction_id = 1;
-  auto create_transaction_callback =
-      base::BindOnce(&CreateAndBindTransactionPlaceholder);
   auto connection = std::make_unique<IndexedDBPendingConnection>(
-      std::make_unique<ThunkCallbacks>(*callbacks), db_callbacks,
+      std::make_unique<ThunkFactoryClient>(*callbacks), db_callbacks,
       transaction_id, IndexedDBDatabaseMetadata::DEFAULT_VERSION,
-      std::move(create_transaction_callback));
+      base::DoNothing());
   factory()->Open(u"db", std::move(connection), bucket_locator,
                   context()->GetDataPath(bucket_locator),
                   CreateTestClientStateWrapper());
@@ -818,16 +807,14 @@ TEST_F(IndexedDBFactoryTest, ConnectionForceClose) {
   auto bucket_locator = storage::BucketLocator();
   bucket_locator.storage_key = storage_key;
 
-  auto callbacks = std::make_unique<MockIndexedDBCallbacks>();
+  auto callbacks = std::make_unique<MockIndexedDBFactoryClient>();
   auto db_callbacks = base::MakeRefCounted<MockIndexedDBDatabaseCallbacks>();
 
   const int64_t transaction_id = 1;
-  auto create_transaction_callback =
-      base::BindOnce(&CreateAndBindTransactionPlaceholder);
   auto connection = std::make_unique<IndexedDBPendingConnection>(
-      std::make_unique<ThunkCallbacks>(*callbacks), db_callbacks,
+      std::make_unique<ThunkFactoryClient>(*callbacks), db_callbacks,
       transaction_id, IndexedDBDatabaseMetadata::DEFAULT_VERSION,
-      std::move(create_transaction_callback));
+      base::DoNothing());
   factory()->Open(u"db", std::move(connection), bucket_locator,
                   context()->GetDataPath(bucket_locator),
                   CreateTestClientStateWrapper());
@@ -856,18 +843,15 @@ TEST_F(IndexedDBFactoryTest, DatabaseForceCloseDuringUpgrade) {
   auto db_callbacks = base::MakeRefCounted<MockIndexedDBDatabaseCallbacks>();
 
   const int64_t transaction_id = 1;
-  auto create_transaction_callback =
-      base::BindOnce(&CreateAndBindTransactionPlaceholder);
-  mock_callbacks_ = std::make_unique<MockIndexedDBCallbacks>();
+  mock_factory_client_ = std::make_unique<MockIndexedDBFactoryClient>();
   auto connection = std::make_unique<IndexedDBPendingConnection>(
-      std::make_unique<ThunkCallbacks>(*mock_callbacks_), db_callbacks,
-      transaction_id, IndexedDBDatabaseMetadata::NO_VERSION,
-      std::move(create_transaction_callback));
+      std::make_unique<ThunkFactoryClient>(*mock_factory_client_), db_callbacks,
+      transaction_id, IndexedDBDatabaseMetadata::NO_VERSION, base::DoNothing());
 
   // Do the first half of the upgrade, and request the upgrade from renderer.
   {
     base::RunLoop loop;
-    mock_callbacks_->CallOnUpgradeNeeded(
+    mock_factory_client_->CallOnUpgradeNeeded(
         base::BindLambdaForTesting([&]() { loop.Quit(); }));
     factory()->Open(u"db", std::move(connection), bucket_locator,
                     context()->GetDataPath(bucket_locator),
@@ -875,11 +859,11 @@ TEST_F(IndexedDBFactoryTest, DatabaseForceCloseDuringUpgrade) {
     loop.Run();
   }
 
-  EXPECT_TRUE(mock_callbacks_->upgrade_called());
-  ASSERT_TRUE(mock_callbacks_->connection());
-  ASSERT_TRUE(mock_callbacks_->connection()->database());
+  EXPECT_TRUE(mock_factory_client_->upgrade_called());
+  ASSERT_TRUE(mock_factory_client_->connection());
+  ASSERT_TRUE(mock_factory_client_->connection()->database());
 
-  mock_callbacks_->connection()->database()->ForceCloseAndRunTasks();
+  mock_factory_client_->connection()->database()->ForceCloseAndRunTasks();
 
   EXPECT_TRUE(db_callbacks->forced_close_called());
   // Since there are no more references the factory should be closing.
@@ -897,18 +881,15 @@ TEST_F(IndexedDBFactoryTest, ConnectionCloseDuringUpgrade) {
   auto db_callbacks = base::MakeRefCounted<MockIndexedDBDatabaseCallbacks>();
 
   const int64_t transaction_id = 1;
-  auto create_transaction_callback =
-      base::BindOnce(&CreateAndBindTransactionPlaceholder);
-  mock_callbacks_ = std::make_unique<MockIndexedDBCallbacks>();
+  mock_factory_client_ = std::make_unique<MockIndexedDBFactoryClient>();
   auto connection = std::make_unique<IndexedDBPendingConnection>(
-      std::make_unique<ThunkCallbacks>(*mock_callbacks_), db_callbacks,
-      transaction_id, IndexedDBDatabaseMetadata::NO_VERSION,
-      std::move(create_transaction_callback));
+      std::make_unique<ThunkFactoryClient>(*mock_factory_client_), db_callbacks,
+      transaction_id, IndexedDBDatabaseMetadata::NO_VERSION, base::DoNothing());
 
   // Do the first half of the upgrade, and request the upgrade from renderer.
   {
     base::RunLoop loop;
-    mock_callbacks_->CallOnUpgradeNeeded(
+    mock_factory_client_->CallOnUpgradeNeeded(
         base::BindLambdaForTesting([&]() { loop.Quit(); }));
     factory()->Open(u"db", std::move(connection), bucket_locator,
                     context()->GetDataPath(bucket_locator),
@@ -916,11 +897,11 @@ TEST_F(IndexedDBFactoryTest, ConnectionCloseDuringUpgrade) {
     loop.Run();
   }
 
-  EXPECT_TRUE(mock_callbacks_->upgrade_called());
-  ASSERT_TRUE(mock_callbacks_->connection());
+  EXPECT_TRUE(mock_factory_client_->upgrade_called());
+  ASSERT_TRUE(mock_factory_client_->connection());
 
   // Close the connection.
-  mock_callbacks_->connection()->AbortTransactionsAndClose(
+  mock_factory_client_->connection()->AbortTransactionsAndClose(
       IndexedDBConnection::CloseErrorHandling::kAbortAllReturnLastError);
 
   // Since there are no more references the factory should be closing.
@@ -952,7 +933,7 @@ TEST_F(IndexedDBFactoryTest, DatabaseForceCloseWithFullConnection) {
 TEST_F(IndexedDBFactoryTest, DeleteDatabase) {
   SetupContext();
 
-  auto callbacks = std::make_unique<MockIndexedDBCallbacks>(
+  auto callbacks = std::make_unique<MockIndexedDBFactoryClient>(
       /*expect_connection=*/false);
 
   const blink::StorageKey storage_key =
@@ -991,7 +972,7 @@ TEST_F(IndexedDBFactoryTest, DeleteDatabaseWithForceClose) {
           run_loop.Quit();
       }));
 
-  auto callbacks = std::make_unique<MockIndexedDBCallbacks>(
+  auto callbacks = std::make_unique<MockIndexedDBFactoryClient>(
       /*expect_connection=*/false);
 
   factory()->DeleteDatabase(name, std::move(callbacks), bucket_locator,
@@ -1059,13 +1040,14 @@ TEST_F(IndexedDBFactoryTest, GetDatabaseNames_ExistingFactory) {
   EXPECT_FALSE(factory()->GetBucketFactory(bucket_locator.id)->IsClosing());
 }
 
-class LookingForQuotaErrorMockCallbacks : public IndexedDBCallbacks {
+class LookingForQuotaErrorMockCallbacks : public IndexedDBFactoryClient {
  public:
   LookingForQuotaErrorMockCallbacks()
-      : IndexedDBCallbacks(nullptr,
-                           absl::nullopt,
-                           mojo::NullAssociatedRemote(),
-                           base::SequencedTaskRunner::GetCurrentDefault()) {}
+      : IndexedDBFactoryClient(nullptr,
+                               absl::nullopt,
+                               mojo::NullAssociatedRemote(),
+                               base::SequencedTaskRunner::GetCurrentDefault()) {
+  }
   ~LookingForQuotaErrorMockCallbacks() override = default;
 
   LookingForQuotaErrorMockCallbacks(const LookingForQuotaErrorMockCallbacks&) =
@@ -1100,12 +1082,10 @@ TEST_F(IndexedDBFactoryTest, QuotaErrorOnDiskFull) {
   auto bucket_locator = storage::BucketLocator();
   bucket_locator.storage_key = storage_key;
   const std::u16string name(u"name");
-  auto create_transaction_callback =
-      base::BindOnce(&CreateAndBindTransactionPlaceholder);
   auto connection = std::make_unique<IndexedDBPendingConnection>(
-      std::make_unique<ThunkCallbacks>(*callbacks), dummy_database_callbacks,
-      /*transaction_id=*/1, /*version=*/1,
-      std::move(create_transaction_callback));
+      std::make_unique<ThunkFactoryClient>(*callbacks),
+      dummy_database_callbacks,
+      /*transaction_id=*/1, /*version=*/1, base::DoNothing());
   factory()->Open(name, std::move(connection), bucket_locator,
                   context()->GetDataPath(bucket_locator),
                   CreateTestClientStateWrapper());
@@ -1139,9 +1119,9 @@ TEST_F(IndexedDBFactoryTest, NotifyQuotaOnDatabaseError) {
   EXPECT_EQ(1, quota_manager()->write_error_tracker().begin()->second);
 }
 
-class ErrorCallbacks : public MockIndexedDBCallbacks {
+class ErrorCallbacks : public MockIndexedDBFactoryClient {
  public:
-  ErrorCallbacks() : MockIndexedDBCallbacks(false) {}
+  ErrorCallbacks() : MockIndexedDBFactoryClient(false) {}
   ~ErrorCallbacks() override = default;
 
   ErrorCallbacks(const ErrorCallbacks&) = delete;
@@ -1172,36 +1152,34 @@ TEST_F(IndexedDBFactoryTest, DatabaseFailedOpen) {
   // Open at version 2.
   {
     const int64_t db_version = 2;
-    auto create_transaction_callback =
-        base::BindOnce(&CreateAndBindTransactionPlaceholder);
 
-    mock_callbacks_ = std::make_unique<MockIndexedDBCallbacks>();
+    mock_factory_client_ = std::make_unique<MockIndexedDBFactoryClient>();
     auto connection = std::make_unique<IndexedDBPendingConnection>(
-        std::make_unique<ThunkCallbacks>(*mock_callbacks_), db_callbacks,
-        transaction_id, db_version, std::move(create_transaction_callback));
+        std::make_unique<ThunkFactoryClient>(*mock_factory_client_),
+        db_callbacks, transaction_id, db_version, base::DoNothing());
     {
       base::RunLoop loop;
-      mock_callbacks_->CallOnUpgradeNeeded(
+      mock_factory_client_->CallOnUpgradeNeeded(
           base::BindLambdaForTesting([&]() { loop.Quit(); }));
       factory()->Open(db_name, std::move(connection), bucket_locator,
                       context()->GetDataPath(bucket_locator),
                       CreateTestClientStateWrapper());
       loop.Run();
     }
-    EXPECT_TRUE(mock_callbacks_->upgrade_called());
+    EXPECT_TRUE(mock_factory_client_->upgrade_called());
     EXPECT_TRUE(factory()->IsDatabaseOpen(bucket_locator, db_name));
   }
 
   // Finish connecting, then close the connection.
   {
     base::RunLoop loop;
-    mock_callbacks_->CallOnDBSuccess(
+    mock_factory_client_->CallOnDBSuccess(
         base::BindLambdaForTesting([&]() { loop.Quit(); }));
-    EXPECT_TRUE(mock_callbacks_->connection());
-    mock_callbacks_->connection()->database()->Commit(
-        mock_callbacks_->connection()->GetTransaction(transaction_id));
+    EXPECT_TRUE(mock_factory_client_->connection());
+    mock_factory_client_->connection()->database()->Commit(
+        mock_factory_client_->connection()->GetTransaction(transaction_id));
     loop.Run();
-    mock_callbacks_->connection()->AbortTransactionsAndClose(
+    mock_factory_client_->connection()->AbortTransactionsAndClose(
         IndexedDBConnection::CloseErrorHandling::kAbortAllReturnLastError);
     RunPostedTasks();
     EXPECT_FALSE(factory()->IsDatabaseOpen(bucket_locator, db_name));
@@ -1210,11 +1188,9 @@ TEST_F(IndexedDBFactoryTest, DatabaseFailedOpen) {
   // Open at version < 2, which will fail.
   {
     const int64_t db_version = 1;
-    auto create_transaction_callback =
-        base::BindOnce(&CreateAndBindTransactionPlaceholder);
     auto connection = std::make_unique<IndexedDBPendingConnection>(
-        std::make_unique<ThunkCallbacks>(*failed_open_callbacks), db_callbacks2,
-        transaction_id, db_version, std::move(create_transaction_callback));
+        std::make_unique<ThunkFactoryClient>(*failed_open_callbacks),
+        db_callbacks2, transaction_id, db_version, base::DoNothing());
     factory()->Open(db_name, std::move(connection), bucket_locator,
                     context()->GetDataPath(bucket_locator),
                     CreateTestClientStateWrapper());
@@ -1227,7 +1203,7 @@ TEST_F(IndexedDBFactoryTest, DatabaseFailedOpen) {
 
 namespace {
 
-class DataLossCallbacks final : public MockIndexedDBCallbacks {
+class DataLossCallbacks final : public MockIndexedDBFactoryClient {
  public:
   ~DataLossCallbacks() final = default;
 
@@ -1241,8 +1217,8 @@ class DataLossCallbacks final : public MockIndexedDBCallbacks {
                        const IndexedDBDatabaseMetadata& metadata,
                        const IndexedDBDataLossInfo& data_loss) final {
     data_loss_ = data_loss.status;
-    MockIndexedDBCallbacks::OnUpgradeNeeded(old_version, std::move(connection),
-                                            metadata, data_loss);
+    MockIndexedDBFactoryClient::OnUpgradeNeeded(
+        old_version, std::move(connection), metadata, data_loss);
   }
 
  private:
@@ -1259,12 +1235,10 @@ TEST_F(IndexedDBFactoryTest, DataFormatVersion) {
     const int64_t transaction_id = 1;
     auto callbacks = std::make_unique<DataLossCallbacks>();
     auto db_callbacks = base::MakeRefCounted<MockIndexedDBDatabaseCallbacks>();
-    auto create_transaction_callback =
-        base::BindOnce(&CreateAndBindTransactionPlaceholder);
     auto pending_connection = std::make_unique<IndexedDBPendingConnection>(
-        std::make_unique<ThunkCallbacks>(*callbacks), db_callbacks,
+        std::make_unique<ThunkFactoryClient>(*callbacks), db_callbacks,
         transaction_id,
-        /*version=*/1, std::move(create_transaction_callback));
+        /*version=*/1, base::DoNothing());
 
     {
       base::RunLoop loop;

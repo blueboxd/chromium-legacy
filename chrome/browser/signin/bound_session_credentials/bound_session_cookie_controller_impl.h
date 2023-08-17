@@ -14,24 +14,29 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/signin/bound_session_credentials/bound_session_refresh_cookie_fetcher.h"
+#include "content/public/browser/storage_partition.h"
+#include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "url/gurl.h"
 
 namespace unexportable_keys {
 class UnexportableKeyService;
 }  // namespace unexportable_keys
 
-class SigninClient;
+namespace content {
+class StoragePartition;
+}
+
 class BoundSessionCookieObserver;
 class SessionBindingHelper;
+class WaitForNetworkCallbackHelper;
 
 class BoundSessionCookieControllerImpl : public BoundSessionCookieController {
  public:
   BoundSessionCookieControllerImpl(
       unexportable_keys::UnexportableKeyService& key_service,
-      SigninClient* client,
-      const GURL& url,
-      const std::vector<std::string>& cookie_names,
-      base::span<const uint8_t> wrapped_key,
+      content::StoragePartition* storage_partition,
+      bound_session_credentials::RegistrationParams registration_params,
+      const base::flat_set<std::string>& cookie_names,
       Delegate* delegate);
 
   void Initialize() override;
@@ -53,15 +58,15 @@ class BoundSessionCookieControllerImpl : public BoundSessionCookieController {
   // `BoundSessionRefreshCookieFetcher`.
   using RefreshCookieFetcherFactoryForTesting =
       base::RepeatingCallback<std::unique_ptr<BoundSessionRefreshCookieFetcher>(
-          SigninClient* client,
+          network::mojom::CookieManager* cookie_manager,
           const GURL& url,
-          const std::string& cookie_name)>;
+          base::flat_set<std::string> cookie_names)>;
 
   std::unique_ptr<BoundSessionRefreshCookieFetcher> CreateRefreshCookieFetcher()
       const;
   void CreateBoundCookiesObservers();
 
-  bool IsCookieFresh();
+  bool AreAllCookiesFresh();
   void MaybeRefreshCookie();
   void SetCookieExpirationTimeAndNotify(const std::string& cookie_name,
                                         base::Time expiration_time);
@@ -77,15 +82,18 @@ class BoundSessionCookieControllerImpl : public BoundSessionCookieController {
   }
 
   const raw_ref<unexportable_keys::UnexportableKeyService> key_service_;
-  const raw_ptr<SigninClient> client_;
+  const raw_ptr<content::StoragePartition> storage_partition_;
   std::vector<std::unique_ptr<BoundSessionCookieObserver>>
       bound_cookies_observers_;
+
+  std::unique_ptr<WaitForNetworkCallbackHelper>
+      wait_for_network_callback_helper_;
+  std::unique_ptr<SessionBindingHelper> session_binding_helper_;
   std::unique_ptr<BoundSessionRefreshCookieFetcher> refresh_cookie_fetcher_;
+
   std::vector<base::OnceClosure> resume_blocked_requests_;
   // Used to schedule preemptive cookie refresh.
   base::OneShotTimer cookie_refresh_timer_;
-
-  std::unique_ptr<SessionBindingHelper> session_binding_helper_;
 
   RefreshCookieFetcherFactoryForTesting
       refresh_cookie_fetcher_factory_for_testing_;

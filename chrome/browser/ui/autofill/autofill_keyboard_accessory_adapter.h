@@ -79,7 +79,7 @@ class AutofillKeyboardAccessoryAdapter : public AutofillPopupView,
 
  private:
   // AutofillPopupView:
-  void Show(AutoselectFirstSuggestion autoselect_first_suggestion) override;
+  bool Show(AutoselectFirstSuggestion autoselect_first_suggestion) override;
   void Hide() override;
   bool HandleKeyPressEvent(
       const content::NativeWebKeyboardEvent& event) override;
@@ -105,7 +105,7 @@ class AutofillKeyboardAccessoryAdapter : public AutofillPopupView,
   PopupType GetPopupType() const override;
   AutofillSuggestionTriggerSource GetAutofillSuggestionTriggerSource()
       const override;
-
+  bool ShouldIgnoreMouseObservedOutsideItemBoundsCheck() const override;
   void Hide(PopupHidingReason reason) override;
   void ViewDestroyed() override;
   gfx::NativeView container_view() const override;

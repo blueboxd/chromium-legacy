@@ -45,7 +45,8 @@ NetworkLocationProvider::NetworkLocationProvider(
     GeolocationManager* geolocation_manager,
     const scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
     const std::string& api_key,
-    PositionCache* position_cache)
+    PositionCache* position_cache,
+    base::RepeatingClosure internals_updated_closure)
     : wifi_data_update_callback_(
           base::BindRepeating(&NetworkLocationProvider::OnWifiDataUpdate,
                               base::Unretained(this))),
@@ -57,8 +58,10 @@ NetworkLocationProvider::NetworkLocationProvider(
           std::move(url_loader_factory),
           api_key,
           base::BindRepeating(&NetworkLocationProvider::OnLocationResponse,
-                              base::Unretained(this)))) {
+                              base::Unretained(this)))),
+      internals_updated_closure_(std::move(internals_updated_closure)) {
   DCHECK(position_cache_);
+  CHECK(internals_updated_closure_);
 #if BUILDFLAG(IS_APPLE)
   DCHECK(geolocation_manager);
   geolocation_manager_ = geolocation_manager;
@@ -84,7 +87,24 @@ NetworkLocationProvider::~NetworkLocationProvider() {
 
 void NetworkLocationProvider::FillDiagnostics(
     mojom::GeolocationDiagnostics& diagnostics) {
-  diagnostics.provider_state = state_;
+  if (IsStarted()) {
+    if (high_accuracy_) {
+      diagnostics.provider_state =
+          mojom::GeolocationDiagnostics::ProviderState::kHighAccuracy;
+    } else {
+      diagnostics.provider_state =
+          mojom::GeolocationDiagnostics::ProviderState::kLowAccuracy;
+    }
+#if BUILDFLAG(IS_APPLE)
+    if (!is_system_permission_granted_) {
+      diagnostics.provider_state = mojom::GeolocationDiagnostics::
+          ProviderState::kBlockedBySystemPermission;
+    }
+#endif  // BUILDFLAG(IS_APPLE)
+  } else {
+    diagnostics.provider_state =
+        mojom::GeolocationDiagnostics::ProviderState::kStopped;
+  }
   diagnostics.network_location_diagnostics =
       mojom::NetworkLocationDiagnostics::New();
   base::ranges::transform(
@@ -106,8 +126,10 @@ void NetworkLocationProvider::SetUpdateCallback(
 void NetworkLocationProvider::OnPermissionGranted() {
   const bool was_permission_granted = is_permission_granted_;
   is_permission_granted_ = true;
-  if (!was_permission_granted && IsStarted())
+  if (!was_permission_granted && IsStarted()) {
     RequestPosition();
+    internals_updated_closure_.Run();
+  }
 }
 
 #if BUILDFLAG(IS_APPLE)
@@ -128,6 +150,7 @@ void NetworkLocationProvider::OnSystemPermissionUpdated(
     wifi_data_provider_handle_->ForceRescan();
     OnWifiDataUpdate();
   }
+  internals_updated_closure_.Run();
 }
 #endif
 
@@ -170,6 +193,8 @@ void NetworkLocationProvider::OnWifiDataUpdate() {
       << is_wifi_data_complete_ << " delayed=" << delayed;
   if (is_wifi_data_complete_ || delayed)
     RequestPosition();
+
+  internals_updated_closure_.Run();
 }
 
 void NetworkLocationProvider::OnLocationResponse(
@@ -188,21 +213,14 @@ void NetworkLocationProvider::OnLocationResponse(
   if (!location_provider_update_callback_.is_null()) {
     location_provider_update_callback_.Run(this, std::move(result));
   }
+  internals_updated_closure_.Run();
 }
 
 void NetworkLocationProvider::StartProvider(bool high_accuracy) {
   GEOLOCATION_LOG(DEBUG) << "Start provider: high_accuracy=" << high_accuracy;
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  state_ = high_accuracy
-               ? mojom::GeolocationDiagnostics::ProviderState::kHighAccuracy
-               : mojom::GeolocationDiagnostics::ProviderState::kLowAccuracy;
-#if BUILDFLAG(IS_MAC)
-  if (!is_system_permission_granted_) {
-    state_ = mojom::GeolocationDiagnostics::ProviderState::
-        kBlockedBySystemPermission;
-  }
-#endif  // BUILDFLAG(IS_MAC)
+  high_accuracy_ = high_accuracy;
 
   if (IsStarted())
     return;
@@ -225,7 +243,6 @@ void NetworkLocationProvider::StopProvider() {
   GEOLOCATION_LOG(DEBUG) << "Stop provider";
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(IsStarted());
-  state_ = mojom::GeolocationDiagnostics::ProviderState::kStopped;
   wifi_data_provider_handle_ = nullptr;
   weak_factory_.InvalidateWeakPtrs();
 }

@@ -15,6 +15,7 @@
 #include "ash/user_education/user_education_feature_controller.h"
 #include "ash/user_education/user_education_util.h"
 #include "ash/user_education/welcome_tour/welcome_tour_controller.h"
+#include "ash/user_education/welcome_tour/welcome_tour_prefs.h"
 #include "base/check_op.h"
 #include "components/account_id/account_id.h"
 #include "components/user_education/common/tutorial_description.h"
@@ -65,10 +66,25 @@ UserEducationController* UserEducationController::Get() {
   return g_instance;
 }
 
+// static
+void UserEducationController::RegisterProfilePrefs(
+    PrefRegistrySimple* registry) {
+  welcome_tour_prefs::RegisterProfilePrefs(registry);
+}
+
 absl::optional<ui::ElementIdentifier>
 UserEducationController::GetElementIdentifierForAppId(
     const std::string& app_id) const {
   return delegate_->GetElementIdentifierForAppId(app_id);
+}
+
+const absl::optional<bool>& UserEducationController::IsNewUser(
+    UserEducationPrivateApiKey) const {
+  // NOTE: User education in Ash is currently only supported for the primary
+  // user profile. This is a self-imposed restriction.
+  auto account_id = Shell::Get()->session_controller()->GetActiveAccountId();
+  CHECK(user_education_util::IsPrimaryAccountId(account_id));
+  return delegate_->IsNewUser(account_id);
 }
 
 void UserEducationController::LaunchSystemWebAppAsync(

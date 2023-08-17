@@ -17,6 +17,7 @@
 #include "base/task/thread_pool.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/time/time.h"
+#include "chrome/browser/companion/core/companion_metrics_logger.h"
 #include "chrome/browser/companion/visual_search/features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/companion/visual_search.mojom.h"
@@ -50,6 +51,15 @@ base::FilePath model_file_path() {
       .AppendASCII("test-model-quantized.tflite");
 }
 
+base::FilePath invalid_file_path() {
+  base::FilePath source_root_dir;
+  base::PathService::Get(base::DIR_SOURCE_ROOT, &source_root_dir);
+  return source_root_dir.AppendASCII("chrome")
+      .AppendASCII("test")
+      .AppendASCII("data")
+      .AppendASCII("invalid-path");
+}
+
 const SkBitmap create_bitmap(int width, int height, int r, int g, int b) {
   SkBitmap bitmap;
   bitmap.allocN32Pixels(width, height);
@@ -81,15 +91,20 @@ class VisualSearchClassifierHostTest : public ChromeRenderViewHostTestHarness {
   }
 
   void SetModelPath() {
-    base::FilePath test_data_dir;
-    base::PathService::Get(base::DIR_SOURCE_ROOT, &test_data_dir);
-
-    base::flat_set<base::FilePath> additional_files;
-    additional_files.insert(model_file_path());
-
     model_info_ = optimization_guide::TestModelInfoBuilder()
                       .SetModelFilePath(model_file_path())
-                      .SetAdditionalFiles(additional_files)
+                      .SetVersion(123)
+                      .Build();
+
+    service_->OnModelUpdated(
+        optimization_guide::proto::OptimizationTarget::
+            OPTIMIZATION_TARGET_VISUAL_SEARCH_CLASSIFICATION,
+        *model_info_);
+  }
+
+  void SetInvalidModelPath() {
+    model_info_ = optimization_guide::TestModelInfoBuilder()
+                      .SetModelFilePath(invalid_file_path())
                       .SetVersion(123)
                       .Build();
 
@@ -119,7 +134,8 @@ class VisualSearchClassifierHostTest : public ChromeRenderViewHostTestHarness {
 TEST_F(VisualSearchClassifierHostTest, StartClassification) {
   SetModelPath();
   VisualSearchClassifierHost::ResultCallback callback =
-      base::BindOnce([](std::vector<std::string> results) {});
+      base::BindOnce([](const std::vector<std::string> results,
+                        const VisualSuggestionsMetrics stats) {});
   visual_search_host_->StartClassification(
       web_contents()->GetPrimaryMainFrame(), url_, std::move(callback));
   base::RunLoop().RunUntilIdle();
@@ -141,7 +157,8 @@ TEST_F(VisualSearchClassifierHostTest, StartClassification_WithOverride) {
   base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
       switches::kVisualSearchConfigForCompanion, config_string);
   VisualSearchClassifierHost::ResultCallback callback =
-      base::BindOnce([](std::vector<std::string> results) {});
+      base::BindOnce([](const std::vector<std::string> results,
+                        const VisualSuggestionsMetrics stats) {});
   visual_search_host_->StartClassification(
       web_contents()->GetPrimaryMainFrame(), url_, std::move(callback));
   base::RunLoop().RunUntilIdle();
@@ -159,7 +176,8 @@ TEST_F(VisualSearchClassifierHostTest, StartClassification_WithOverride) {
 
 TEST_F(VisualSearchClassifierHostTest, StartClassification_NoModelSet) {
   VisualSearchClassifierHost::ResultCallback callback =
-      base::BindOnce([](std::vector<std::string> results) {});
+      base::BindOnce([](const std::vector<std::string> results,
+                        const VisualSuggestionsMetrics stats) {});
   visual_search_host_->StartClassification(
       web_contents()->GetPrimaryMainFrame(), url_, std::move(callback));
   base::RunLoop().RunUntilIdle();
@@ -176,10 +194,35 @@ TEST_F(VisualSearchClassifierHostTest, StartClassification_NoModelSet) {
       "Companion.VisualQuery.ClassificationLatency", 0);
 }
 
+TEST_F(VisualSearchClassifierHostTest, StartClassification_WithInvalidModel) {
+  SetInvalidModelPath();
+  VisualSearchClassifierHost::ResultCallback callback =
+      base::BindOnce([](const std::vector<std::string> results,
+                        const VisualSuggestionsMetrics stats) {});
+  visual_search_host_->StartClassification(
+      web_contents()->GetPrimaryMainFrame(), url_, std::move(callback));
+  base::RunLoop().RunUntilIdle();
+
+  // We expect empty result right away since we don't have a good model.
+  EXPECT_EQ(visual_search_host_->GetVisualResult(url_).value().second.size(),
+            0U);
+
+  // ModelFileSuccess is never called because the |OnModelUpdate| is never
+  // called because file path is not valid.
+  histogram_tester_.ExpectBucketCount(
+      "Companion.VisualQuery.ClassificationInitStatus",
+      companion::visual_search::InitStatus::kFetchModel, 1);
+  histogram_tester_.ExpectTotalCount(
+      "Companion.VisualQuery.ClassifierInitializationLatency", 0);
+  histogram_tester_.ExpectTotalCount(
+      "Companion.VisualQuery.ClassificationLatency", 0);
+}
+
 TEST_F(VisualSearchClassifierHostTest, StartClassification_WithCancellation) {
   SetModelPath();
   VisualSearchClassifierHost::ResultCallback callback =
-      base::BindOnce([](std::vector<std::string> results) {});
+      base::BindOnce([](const std::vector<std::string> results,
+                        const VisualSuggestionsMetrics stats) {});
   visual_search_host_->StartClassification(
       web_contents()->GetPrimaryMainFrame(), url_, std::move(callback));
   GURL url("https://foo.bar");
@@ -199,8 +242,11 @@ TEST_F(VisualSearchClassifierHostTest, StartClassification_WithCancellation) {
 
 TEST_F(VisualSearchClassifierHostTest, HandleClassification) {
   SetModelPath();
-  VisualSearchClassifierHost::ResultCallback callback = base::BindOnce(
-      [](std::vector<std::string> results) { EXPECT_EQ(results.size(), 1U); });
+  VisualSearchClassifierHost::ResultCallback callback =
+      base::BindOnce([](const std::vector<std::string> results,
+                        const VisualSuggestionsMetrics stats) {
+        EXPECT_EQ(results.size(), 1U);
+      });
   visual_search_host_->StartClassification(
       web_contents()->GetPrimaryMainFrame(), url_, std::move(callback));
   std::vector<mojom::VisualSearchSuggestionPtr> results;
@@ -208,8 +254,15 @@ TEST_F(VisualSearchClassifierHostTest, HandleClassification) {
   results.emplace_back(mojom::VisualSearchSuggestion::New(result));
 
   base::RunLoop().RunUntilIdle();
-  visual_search_host_->HandleClassification(std::move(results));
+  mojom::ClassificationStatsPtr stats =
+      mojom::ClassificationStats::New(mojom::ClassificationStats());
+  visual_search_host_->HandleClassification(std::move(results),
+                                            std::move(stats));
   base::RunLoop().RunUntilIdle();
+
+  // We expect last result to have size of 1 for given url.
+  EXPECT_EQ(visual_search_host_->GetVisualResult(url_).value().second.size(),
+            1U);
 
   histogram_tester_.ExpectBucketCount(
       "Companion.VisualQuery.ClassifierModelAvailable", true, 1);

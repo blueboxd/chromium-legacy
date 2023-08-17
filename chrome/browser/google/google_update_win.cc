@@ -102,16 +102,17 @@ GoogleUpdateErrorCode CanUpdateCurrentChrome(
     const base::FilePath& chrome_exe_path,
     bool system_level_install) {
   DCHECK_NE(InstallUtil::IsPerUserInstall(), system_level_install);
-  base::FilePath user_exe_path = installer::GetChromeInstallPath(false);
-  base::FilePath machine_exe_path = installer::GetChromeInstallPath(true);
-  if (!base::FilePath::CompareEqualIgnoreCase(chrome_exe_path.value(),
-                                        user_exe_path.value()) &&
-      !base::FilePath::CompareEqualIgnoreCase(chrome_exe_path.value(),
-                                        machine_exe_path.value())) {
-    return CANNOT_UPGRADE_CHROME_IN_THIS_DIRECTORY;
-  }
 
-  return GOOGLE_UPDATE_NO_ERROR;
+  // The currently-running browser can only be updated by Google Update if it
+  // is running from the same directory as the currently-installed browser
+  // being managed by Google Update at the desired install level.
+  const base::FilePath install_dir =
+      installer::GetInstalledDirectory(system_level_install);
+  return (!install_dir.empty() &&
+          base::FilePath::CompareEqualIgnoreCase(chrome_exe_path.value(),
+                                                 install_dir.value()))
+             ? GOOGLE_UPDATE_NO_ERROR
+             : CANNOT_UPGRADE_CHROME_IN_THIS_DIRECTORY;
 }
 
 // Explicitly allow the Google Update service to impersonate the client since
@@ -922,10 +923,10 @@ void UpdateCheckDriver::OnUpgradeError(UpdateCheckResult check_result,
     return;
   }
 
-  std::u16string html_error_msg = base::StringPrintf(
-      u"%d: <a href='%ls0x%X' target=_blank>0x%X</a>", update_state_.error_code,
-      base::UTF8ToWide(chrome::kUpgradeHelpCenterBaseURL).c_str(),
-      update_state_.hresult, update_state_.hresult);
+  std::u16string html_error_msg = base::UTF8ToUTF16(base::StringPrintf(
+      "%d: <a href='%s%#lX' target=_blank>%#lX</a>", update_state_.error_code,
+      chrome::kUpgradeHelpCenterBaseURL, update_state_.hresult,
+      update_state_.hresult));
   if (update_state_.installer_exit_code) {
     html_error_msg +=
         u": " + base::NumberToString16(*update_state_.installer_exit_code);

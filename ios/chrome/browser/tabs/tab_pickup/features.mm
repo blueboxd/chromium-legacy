@@ -7,14 +7,17 @@
 #import "base/metrics/field_trial_params.h"
 #import "base/strings/string_number_conversions.h"
 #import "base/time/time.h"
-
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
+#import "components/prefs/pref_service.h"
+#import "ios/chrome/browser/shared/model/application_context/application_context.h"
+#import "ios/chrome/browser/shared/model/prefs/pref_names.h"
 
 BASE_FEATURE(kTabPickupThreshold,
              "TabPickupThreshold",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kTabPickupMinimumDelay,
+             "TabPickupMinimumDelay",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 const char kTabPickupThresholdParameterName[] = "variant";
 const char kTabPickupThresholdTenMinutesParam[] =
@@ -25,6 +28,11 @@ const char kTabPickupThresholdTwoHoursParam[] =
 
 bool IsTabPickupEnabled() {
   return base::FeatureList::IsEnabled(kTabPickupThreshold);
+}
+
+bool IsTabPickupMinimumDelayEnabled() {
+  CHECK(IsTabPickupEnabled());
+  return base::FeatureList::IsEnabled(kTabPickupMinimumDelay);
 }
 
 const base::TimeDelta TabPickupTimeThreshold() {
@@ -38,4 +46,10 @@ const base::TimeDelta TabPickupTimeThreshold() {
     return base::Hours(2);
   }
   return base::Minutes(10);
+}
+
+bool IsTabPickupDisabledByUser() {
+  CHECK(IsTabPickupEnabled());
+  return !GetApplicationContext()->GetLocalState()->GetBoolean(
+      prefs::kTabPickupEnabled);
 }

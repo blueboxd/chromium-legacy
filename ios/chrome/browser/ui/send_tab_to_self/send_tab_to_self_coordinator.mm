@@ -40,6 +40,7 @@
 #import "ios/chrome/browser/signin/system_identity.h"
 #import "ios/chrome/browser/sync/send_tab_to_self_sync_service_factory.h"
 #import "ios/chrome/browser/sync/sync_service_factory.h"
+#import "ios/chrome/browser/ui/authentication/signin/signin_constants.h"
 #import "ios/chrome/browser/ui/authentication/signin_presenter.h"
 #import "ios/chrome/browser/ui/infobars/presentation/infobar_modal_positioner.h"
 #import "ios/chrome/browser/ui/send_tab_to_self/send_tab_to_self_modal_delegate.h"
@@ -48,10 +49,6 @@
 #import "ios/chrome/grit/ios_strings.h"
 #import "third_party/abseil-cpp/absl/types/optional.h"
 #import "ui/base/l10n/l10n_util.h"
-
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
 
 namespace {
 
@@ -340,11 +337,13 @@ void OpenManageDevicesTab(CommandDispatcher* dispatcher) {
           send_tab_to_self::SendingEvent::kShowSigninPromo);
 
       __weak __typeof(self) weakSelf = self;
-      ShowSigninCommandCompletionCallback callback = ^(BOOL succeeded) {
-        [weakSelf onSigninComplete:succeeded];
-      };
+      ShowSigninCommandCompletionCallback callback =
+          ^(SigninCoordinatorResult result) {
+            BOOL succeeded = result == SigninCoordinatorResultSuccess;
+            [weakSelf onSigninComplete:succeeded];
+          };
       ShowSigninCommand* command = [[ShowSigninCommand alloc]
-          initWithOperation:AuthenticationOperationSigninOnly
+          initWithOperation:AuthenticationOperation::kSigninOnly
                    identity:nil
                 accessPoint:signin_metrics::AccessPoint::
                                 ACCESS_POINT_SEND_TAB_TO_SELF_PROMO

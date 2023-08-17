@@ -39,6 +39,7 @@
 <translation id="2767464022270041271">Nu există parole salvate. Managerul de parole Google îți poate verifica parolele atunci când le salvezi.</translation>
 <translation id="2840432500933227975">Deschide Setările Chrome în iOS, apoi atinge Aplicația browser prestabilită și selectează Chrome.</translation>
 <translation id="2869959624320573933">Conectează-te la Chrome</translation>
+<translation id="2876628302275096482">Află mai multe despre <ph name="BEGIN_LINK" />cum îți păstrează Chrome datele private<ph name="END_LINK" /></translation>
 <translation id="2957447865124070833">Selectează <ph name="BEGIN_BOLD" />Chrome<ph name="END_BOLD" /></translation>
 <translation id="3030414234702425231">Deoarece te deconectezi de la un cont gestionat de <ph name="SIGNOUT_MANAGED_DOMAIN" />, datele tale Chrome de pe acest dispozitiv vor fi șterse. Datele tale vor rămâne în Contul Google.</translation>
 <translation id="3167189358072330585">Contul nu funcționează pe Google Chrome. Contactează administratorul domeniului sau folosește un Cont Google obișnuit pentru a te conecta.</translation>
@@ -79,10 +80,12 @@
 <translation id="5162467219239570114">Chrome nu este actualizat. Dacă nu este disponibilă nicio actualizare în <ph name="BEGIN_LINK" />App Store<ph name="END_LINK" />, e posibil ca dispozitivul tău să nu mai accepte versiuni noi de Chrome.</translation>
 <translation id="5389212809648216794">Google Chrome nu poate folosi camera foto, deoarece este folosită de o altă aplicație</translation>
 <translation id="5395376160638294582">Asigură-te că poți folosi oricând datele Chrome din Contul Google</translation>
+<translation id="5439191312780166229">Te avertizează cu privire la site-uri periculoase, chiar și cele pe care Google nu le cunoștea înainte, analizând mai multe date din site-uri decât Protecția standard. Poți să omiți avertismentele din Chrome.</translation>
 <translation id="5460571915754665838">4. Selectează Chrome.</translation>
 <translation id="5492504007368565877">Managerul de parole Google nu îți poate verifica parolele.</translation>
 <translation id="5527026824954593399">Atinge Vezi pe Google Maps în Chrome.</translation>
 <translation id="5552137475244467770">Chrome compară periodic parolele tale cu cele din listele publicate online. Când face acest lucru, parolele și numele tale de utilizator sunt criptate, astfel încât să nu fie descifrate de nimeni, nici măcar de Google.</translation>
+<translation id="5554520618550346933">Când folosești o parolă, Chrome te avertizează dacă a fost publicată online. Când face acest lucru, parolele și numele tale de utilizator sunt criptate, astfel încât să nu fie descifrate de nimeni, nici măcar de Google.</translation>
 <translation id="5639704535586432836">Deschide Setări &gt; Confidențialitate &gt; Cameră foto &gt; Google Chrome și activează camera foto.</translation>
 <translation id="5642200033778930880">Google Chrome nu poate folosi camera foto în modul Vizualizare împărțită</translation>
 <translation id="5661521615548540542">Managerul de parole Google nu a putut verifica toate parolele. Încearcă din nou mai târziu.</translation>
@@ -148,6 +151,7 @@
 <translation id="8765470054473112089">Când introduci text în bara de adrese sau în caseta de căutare, Chrome trimite ceea ce introduci la motorul de căutare prestabilit, pentru a primi sugestii mai bune. Această opțiune este dezactivată în modul incognito.</translation>
 <translation id="8772179140489533211">Afișează solicitări pentru conectarea la Chrome.</translation>
 <translation id="8788269841521769222">Nu va trebui să reții această parolă. Ea se va salva în Managerul de parole Google pentru <ph name="EMAIL" /></translation>
+<translation id="8808828119384186784">Setări Chrome</translation>
 <translation id="8857676124663337448">Managerul de parole Google nu a putut verifica toate parolele. Încearcă din nou mâine.</translation>
 <translation id="8897749957032330183">Parolele sunt salvate în Managerul de parole Google pe acest dispozitiv.</translation>
 <translation id="8969290730818637510">Când opțiunea este activă

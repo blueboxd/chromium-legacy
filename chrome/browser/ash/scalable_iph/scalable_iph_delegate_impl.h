@@ -7,9 +7,18 @@
 
 #include <memory>
 
+#include "ash/public/cpp/app_list/app_list_controller.h"
+#include "ash/public/cpp/app_list/app_list_controller_observer.h"
+#include "ash/public/cpp/session/session_observer.h"
+#include "ash/session/session_controller_impl.h"
+#include "ash/shell.h"
+#include "ash/shell_observer.h"
+#include "base/scoped_observation.h"
+#include "chrome/browser/ash/printing/synced_printers_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/ash/components/scalable_iph/iph_session.h"
 #include "chromeos/ash/components/scalable_iph/scalable_iph_delegate.h"
+#include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/services/network_config/public/cpp/cros_network_config_observer.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -20,7 +29,12 @@ namespace ash {
 
 class ScalableIphDelegateImpl
     : public scalable_iph::ScalableIphDelegate,
-      public chromeos::network_config::CrosNetworkConfigObserver {
+      public chromeos::network_config::CrosNetworkConfigObserver,
+      public ShellObserver,
+      public SessionObserver,
+      public chromeos::PowerManagerClient::Observer,
+      public AppListControllerObserver,
+      public SyncedPrintersManager::Observer {
  public:
   explicit ScalableIphDelegateImpl(Profile* profile);
   ~ScalableIphDelegateImpl() override;
@@ -46,18 +60,39 @@ class ScalableIphDelegateImpl
       std::vector<chromeos::network_config::mojom::NetworkStatePropertiesPtr>
           networks) override;
 
+  // ShellObserver:
+  void OnShellDestroying() override;
+
+  // SessionObserver:
+  void OnSessionStateChanged(session_manager::SessionState state) override;
+
+  // chromeos::PowerManagerClient::Observer:
+  void SuspendDone(base::TimeDelta sleep_duration) override;
+
+  // AppListControllerObserver:
+  void OnAppListVisibilityChanged(bool shown, int64_t display_id) override;
+
+  // SyncedPrintersManager::Observer
+  void OnSavedPrintersChanged() override;
+
  private:
   void SetHasOnlineNetwork(bool has_online_network);
   void QueryOnlineNetworkState();
   void OnNetworkStateList(
       std::vector<chromeos::network_config::mojom::NetworkStatePropertiesPtr>
           networks);
+  void NotifySessionStateChanged(
+      ::scalable_iph::ScalableIphDelegate::SessionState session_state);
+  void NotifySuspendDoneWithoutLockScreen();
+  void MaybeNotifyHasSavedPrinters();
   void OnNudgeButtonClicked(const std::string& bubble_id,
-                            scalable_iph::ActionType action_type);
+                            scalable_iph::ScalableIphDelegate::Action action);
   void OnNudgeDismissed(const std::string& bubble_id);
 
   raw_ptr<Profile> profile_;
+  raw_ptr<SyncedPrintersManager> synced_printers_manager_;
   bool has_online_network_ = false;
+  bool has_saved_printers_ = false;
 
   std::unique_ptr<scalable_iph::IphSession> bubble_iph_session_;
   std::string bubble_id_;
@@ -68,6 +103,17 @@ class ScalableIphDelegateImpl
       receiver_cros_network_config_observer_{this};
 
   base::ObserverList<scalable_iph::ScalableIphDelegate::Observer> observers_;
+  base::ScopedObservation<Shell, ShellObserver> shell_observer_{this};
+  base::ScopedObservation<SessionControllerImpl, SessionObserver>
+      session_observer_{this};
+  base::ScopedObservation<chromeos::PowerManagerClient,
+                          chromeos::PowerManagerClient::Observer>
+      power_manager_client_observer_{this};
+  base::ScopedObservation<AppListController, AppListControllerObserver>
+      app_list_controller_observer_{this};
+  base::ScopedObservation<SyncedPrintersManager,
+                          SyncedPrintersManager::Observer>
+      synced_printers_manager_observer_{this};
 
   base::WeakPtrFactory<ScalableIphDelegateImpl> weak_ptr_factory_{this};
 };

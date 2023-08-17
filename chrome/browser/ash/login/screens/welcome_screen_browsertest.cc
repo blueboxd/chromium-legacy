@@ -50,6 +50,7 @@
 #include "components/language/core/browser/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/test/browser_test.h"
+#include "extensions/common/extension_id.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/accessibility/accessibility_features.h"
@@ -102,19 +103,19 @@ const char kSetAvailableVoices[] = R"(
         ]);
       };)";
 
-const char kChromeVoxHintLaptopSpokenString[] =
-    "Do you want to activate ChromeVox, the built-in screen reader for "
-    "ChromeOS? If so, press the space bar.";
-
 const char kChromeVoxHintLaptopSpokenStringImproved[] =
     "The screen reader on ChromeOS, ChromeVox, is primarily used by "
-    "people with blindness and low vision. Press the space bar to turn on "
+    "people with blindness or low vision to read text displayed on the screen "
+    "with a speech synthesizer or braille display. Press the space bar to turn "
+    "on "
     "ChromeVox. When ChromeVox is activated, you’ll go through a quick "
     "tour.";
 
 const char kChromeVoxHintTabletSpokenStringImproved[] =
     "The screen reader on ChromeOS, ChromeVox, is primarily used by "
-    "people with blindness and low vision. Press and hold both volume keys "
+    "people with blindness or low vision to read text displayed on the screen "
+    "with a speech synthesizer or braille display. Press and hold both volume "
+    "keys "
     "for five seconds to turn on ChromeVox. When ChromeVox is activated, "
     "you’ll go through a quick tour.";
 
@@ -281,7 +282,7 @@ IN_PROC_BROWSER_TEST_F(WelcomeScreenBrowserTest,
   test::OobeJS().TapOnPath(
       {"connect", "welcomeScreen", "languageSelectionButton"});
 
-  std::string extension_id_prefix =
+  extensions::ExtensionId extension_id_prefix =
       std::string("_comp_ime_") + extension_ime_util::kXkbExtensionId;
 
   test::OobeJS().SelectElementInPath(extension_id_prefix + "xkb:us:intl:eng",
@@ -790,7 +791,7 @@ IN_PROC_BROWSER_TEST_F(WelcomeScreenChromeVoxHintTest, DISABLED_LaptopClick) {
   // A consistency check to ensure we stop idle detection after the hint is
   // given.
   ASSERT_TRUE(IdleDetectionCancelledForTesting());
-  monitor.ExpectSpeech(kChromeVoxHintLaptopSpokenString);
+  monitor.ExpectSpeech(kChromeVoxHintLaptopSpokenStringImproved);
   monitor.Call([this]() {
     ASSERT_FALSE(AccessibilityManager::Get()->IsSpokenFeedbackEnabled());
     WaitForChromeVoxHintDialogToOpen();
@@ -818,7 +819,7 @@ IN_PROC_BROWSER_TEST_F(WelcomeScreenChromeVoxHintTest, LaptopSpaceBar) {
   test::SpeechMonitor monitor;
   test::OobeJS().ExpectAttributeEQ("open", kChromeVoxHintDialog, false);
   GiveChromeVoxHintForTesting();
-  monitor.ExpectSpeech(kChromeVoxHintLaptopSpokenString);
+  monitor.ExpectSpeech(kChromeVoxHintLaptopSpokenStringImproved);
   monitor.Call([this]() {
     ASSERT_FALSE(AccessibilityManager::Get()->IsSpokenFeedbackEnabled());
     WaitForChromeVoxHintDialogToOpen();
@@ -847,9 +848,7 @@ IN_PROC_BROWSER_TEST_F(WelcomeScreenChromeVoxHintTest, Tablet) {
   ShellTestApi().SetTabletModeEnabledForTest(true);
   test::SpeechMonitor monitor;
   GiveChromeVoxHintForTesting();
-  monitor.ExpectSpeech(
-      "Do you want to activate ChromeVox, the built-in screen reader for "
-      "ChromeOS? If so, press and hold both volume keys for five seconds.");
+  monitor.ExpectSpeech(kChromeVoxHintTabletSpokenStringImproved);
   monitor.Replay();
   WaitForSpokenSuccessMetric();
 }
@@ -886,7 +885,7 @@ IN_PROC_BROWSER_TEST_F(WelcomeScreenChromeVoxHintTest, DISABLED_VoicesChanged) {
     window.speechSynthesis.dispatchEvent(new Event('voiceschanged'));
     )";
   test::ExecuteOobeJS(load_english_voice);
-  monitor.ExpectSpeech(kChromeVoxHintLaptopSpokenString);
+  monitor.ExpectSpeech(kChromeVoxHintLaptopSpokenStringImproved);
   monitor.Replay();
   WaitForSpokenSuccessMetric();
 }

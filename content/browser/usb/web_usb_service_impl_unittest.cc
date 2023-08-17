@@ -122,6 +122,7 @@ class WebUsbServiceImplBaseTest : public testing::Test {
 
     // For tests, all devices are permitted by default.
     ON_CALL(delegate(), HasDevicePermission).WillByDefault(Return(true));
+    ON_CALL(delegate(), PageMayUseUsb).WillByDefault(Return(true));
 
     // Forward calls to the fake device manager.
     ON_CALL(delegate(), GetDevices)
@@ -176,7 +177,7 @@ class WebUsbServiceImplBaseTest : public testing::Test {
             embedded_worker_test_helper_->PrepareRegistrationAndVersion(
                 scope, worker_url);
         worker_version_ = pair.second;
-        auto* embedded_worker = worker_version_->GetEmbeddedWorkerForTesting();
+        auto* embedded_worker = worker_version_->embedded_worker();
         embedded_worker_test_helper_->StartWorker(
             embedded_worker,
             embedded_worker_test_helper_->CreateStartParams(pair.second));

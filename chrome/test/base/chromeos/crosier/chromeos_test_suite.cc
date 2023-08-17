@@ -5,9 +5,12 @@
 #include "chrome/test/base/chromeos/crosier/chromeos_test_suite.h"
 
 #include "build/chromeos_buildflags.h"
+#include "ui/events/test/event_generator.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/test/ui_controls_ash.h"
+#include "base/command_line.h"
+#include "content/public/common/content_switches.h"
 #elif BUILDFLAG(IS_CHROMEOS_LACROS)
 #include "base/check.h"
 #include "base/files/file_util.h"
@@ -21,8 +24,12 @@ ChromeOSTestSuite::~ChromeOSTestSuite() = default;
 
 void ChromeOSTestSuite::Initialize() {
   content::ContentTestSuiteBase::Initialize();
+  // chromeos_integration_tests must use functions in ui_controls.h.
+  ui::test::EventGenerator::BanEventGenerator();
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   ash::test::EnableUIControlsAsh();
+  base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
+  cmdline->AppendSwitch(switches::kDisableMojoBroker);
 #elif BUILDFLAG(IS_CHROMEOS_LACROS)
   // The lacros binary receives certain paths from ash very early in startup.
   // Simulate that behavior here. See chrome_paths_lacros.cc for details. The

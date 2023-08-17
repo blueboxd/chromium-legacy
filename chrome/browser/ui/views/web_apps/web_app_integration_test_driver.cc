@@ -68,6 +68,7 @@
 #include "chrome/browser/ui/views/web_apps/frame_toolbar/window_controls_overlay_toggle_button.h"
 #include "chrome/browser/ui/views/web_apps/pwa_confirmation_bubble_view.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
+#include "chrome/browser/ui/web_applications/sub_apps_install_dialog_controller.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
 #include "chrome/browser/ui/web_applications/web_app_dialog_utils.h"
 #include "chrome/browser/ui/web_applications/web_app_launch_utils.h"
@@ -152,12 +153,13 @@
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/constants/ash_features.h"
+#include "chromeos/ash/components/standalone_browser/feature_refs.h"
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "base/test/test_future.h"
 #include "base/version.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_lacros.h"
-#include "chromeos/crosapi/mojom/test_controller.mojom-test-utils.h"
 #include "chromeos/crosapi/mojom/test_controller.mojom.h"
 #include "chromeos/lacros/lacros_service.h"
 #include "chromeos/lacros/lacros_test_helper.h"
@@ -333,7 +335,7 @@ base::flat_map<Site, SiteConfig> g_site_configs = {
           "/webapps_integration/standalone/not_start_url/basic.html",
       .relative_manifest_id =
           "webapps_integration/standalone/not_start_url/basic.html",
-      .app_name = "Site A",
+      .app_name = "Not Start URL",
       .wco_not_enabled_title = u"Not Start URL",
       .icon_color = SK_ColorGREEN}},
     {Site::kScreenshots,
@@ -670,11 +672,11 @@ void WaitForAndAcceptInstallDialogForSite(InstallableSite site) {
 // earlier tests.
 void ReinitializeAppService(Profile* profile) {
   if (chromeos::IsAshVersionAtLeastForTesting(base::Version({108, 0, 5354}))) {
-    crosapi::mojom::TestControllerAsyncWaiter(
-        chromeos::LacrosService::Get()
-            ->GetRemote<crosapi::mojom::TestController>()
-            .get())
-        .ReinitializeAppService();
+    base::test::TestFuture<void> future;
+    chromeos::LacrosService::Get()
+        ->GetRemote<crosapi::mojom::TestController>()
+        ->ReinitializeAppService(future.GetCallback());
+    ASSERT_TRUE(future.Wait());
 
     apps::AppServiceProxyFactory::GetForProfile(profile)
         ->ReinitializeForTesting(profile);
@@ -1287,6 +1289,14 @@ void WebAppIntegrationTestDriver::InstallSubApp(
   if (!BeforeStateChangeAction(__FUNCTION__)) {
     return;
   }
+
+  auto dialog_action =
+      SubAppsInstallDialogController::SetAutomaticActionForTesting(
+          (option == SubAppInstallDialogOptions::kUserDeny)
+              ? SubAppsInstallDialogController::DialogActionForTesting::kCancel
+              : SubAppsInstallDialogController::DialogActionForTesting::
+                    kAccept);
+
   MaybeNavigateTabbedBrowserInScope(parentapp);
   content::WebContents* web_contents = GetCurrentTab(browser());
 
@@ -1308,7 +1318,6 @@ void WebAppIntegrationTestDriver::InstallSubApp(
   base::Value::Dict expected_output;
   expected_output.Set(sub_url, "success");
   EXPECT_EQ(expected_output, add_result);
-  // TODO: Use |option| after the dialog was implemented.
   AfterStateChangeAction();
 }
 
@@ -4416,11 +4425,7 @@ WebAppIntegrationTest::WebAppIntegrationTest() : helper_(this) {
   enabled_features.push_back(features::kDesktopPWAsTabStripSettings);
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   // TODO(crbug.com/1462253): Also test with Lacros flags enabled.
-  std::vector<base::test::FeatureRef> lacros_flags = {
-      ash::features::kLacrosSupport, ash::features::kLacrosPrimary,
-      ash::features::kLacrosOnly,
-      ash::features::kLacrosProfileMigrationForceOff};
-  base::Extend(disabled_features, lacros_flags);
+  base::Extend(disabled_features, ash::standalone_browser::GetFeatureRefs());
 #endif
 #if BUILDFLAG(IS_CHROMEOS)
   // TODO(crbug.com/1357905): Update test driver to work with new UI.
@@ -4435,6 +4440,13 @@ WebAppIntegrationTest::~WebAppIntegrationTest() = default;
 
 void WebAppIntegrationTest::SetUp() {
   helper_.SetUp();
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  StartUniqueAshChrome(
+      /*enabled_features=*/{}, /*disabled_features=*/{},
+      /*additional_cmdline_switches=*/{},
+      "crbug/1466885 switch to shared ash when WebAppIntegrationTest issue is "
+      "fixed");
+#endif
   InProcessBrowserTest::SetUp();
 }
 

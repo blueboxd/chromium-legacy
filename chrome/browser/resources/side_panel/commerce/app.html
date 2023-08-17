@@ -14,6 +14,8 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    margin: 0;
+    padding: 0;
   }
 
   .panel-subtitle {
@@ -60,7 +62,7 @@
 
 <div id="insightsContainer">
   <div class="section" id="titleSection">
-    <div class="panel-title">[[productInfo.clusterTitle]]</div>
+    <h1 class="panel-title">[[productInfo.clusterTitle]]</h1>
     <div id="priceRange" class="panel-subtitle"
         hidden="[[!priceInsightsInfo.typicalLowPrice.length]]">
       [[getRangeDescription_(priceInsightsInfo)]]
@@ -95,7 +97,7 @@
     <div class="divider"></div>
     <price-tracking-section id="priceTrackingSection"
         product-info="[[productInfo]]"
-        product-insight-info="[[priceInsightsInfo]]">
+        price-insights-info="[[priceInsightsInfo]]">
     </price-tracking-section>
   </template>
 </div>

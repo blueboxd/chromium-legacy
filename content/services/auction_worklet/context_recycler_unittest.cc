@@ -20,6 +20,7 @@
 #include "content/services/auction_worklet/public/mojom/bidder_worklet.mojom.h"
 #include "content/services/auction_worklet/public/mojom/private_aggregation_request.mojom.h"
 #include "content/services/auction_worklet/register_ad_beacon_bindings.h"
+#include "content/services/auction_worklet/register_ad_macro_bindings.h"
 #include "content/services/auction_worklet/report_bindings.h"
 #include "content/services/auction_worklet/set_bid_bindings.h"
 #include "content/services/auction_worklet/set_priority_bindings.h"
@@ -324,7 +325,7 @@ TEST_F(ContextRecyclerTest, SetBidBindings) {
     params->ads.value().emplace_back(GURL("https://example.com/ad1"),
                                      absl::nullopt);
     context_recycler.set_bid_bindings()->ReInitialize(
-        base::TimeTicks::Now(), time_limit_.get(),
+        base::TimeTicks::Now(),
         /*has_top_level_seller_origin=*/false, params.get(),
         /*per_buyer_currency=*/absl::nullopt,
         /*is_ad_excluded=*/ignore_arg_return_false,
@@ -361,7 +362,7 @@ TEST_F(ContextRecyclerTest, SetBidBindings) {
                                      absl::nullopt);
 
     context_recycler.set_bid_bindings()->ReInitialize(
-        base::TimeTicks::Now(), time_limit_.get(),
+        base::TimeTicks::Now(),
         /*has_top_level_seller_origin=*/false, params.get(),
         /*per_buyer_currency=*/absl::nullopt,
         /*is_ad_excluded=*/ignore_arg_return_false,
@@ -402,7 +403,7 @@ TEST_F(ContextRecyclerTest, SetBidBindings) {
         GURL("https://example.com/portion2"), absl::nullopt);
 
     context_recycler.set_bid_bindings()->ReInitialize(
-        base::TimeTicks::Now(), time_limit_.get(),
+        base::TimeTicks::Now(),
         /*has_top_level_seller_origin=*/true, params.get(),
         /*per_buyer_currency=*/absl::nullopt,
         /*is_ad_excluded=*/ignore_arg_return_false,
@@ -443,7 +444,7 @@ TEST_F(ContextRecyclerTest, SetBidBindings) {
         GURL("https://example.com/portion5"), absl::nullopt);
 
     context_recycler.set_bid_bindings()->ReInitialize(
-        base::TimeTicks::Now(), time_limit_.get(),
+        base::TimeTicks::Now(),
         /*has_top_level_seller_origin=*/true, params.get(),
         /*per_buyer_currency=*/absl::nullopt,
         /*is_ad_excluded=*/ignore_arg_return_false,
@@ -497,7 +498,7 @@ TEST_F(ContextRecyclerTest, SetBidBindings) {
         GURL("https://example.com/portion8"), absl::nullopt);
 
     context_recycler.set_bid_bindings()->ReInitialize(
-        base::TimeTicks::Now(), time_limit_.get(),
+        base::TimeTicks::Now(),
         /*has_top_level_seller_origin=*/false, params.get(),
         /*per_buyer_currency=*/absl::nullopt,
         /*is_ad_excluded=*/ignore_arg_return_false,
@@ -539,7 +540,7 @@ TEST_F(ContextRecyclerTest, SetBidBindings) {
                                      absl::nullopt);
 
     context_recycler.set_bid_bindings()->ReInitialize(
-        base::TimeTicks::Now(), time_limit_.get(),
+        base::TimeTicks::Now(),
         /*has_top_level_seller_origin=*/false, params.get(),
         /*per_buyer_currency=*/absl::nullopt,
         /*is_ad_excluded=*/matches_ad1,
@@ -572,7 +573,7 @@ TEST_F(ContextRecyclerTest, SetBidBindings) {
                                      absl::nullopt);
 
     context_recycler.set_bid_bindings()->ReInitialize(
-        base::TimeTicks::Now(), time_limit_.get(),
+        base::TimeTicks::Now(),
         /*has_top_level_seller_origin=*/false, params.get(),
         /*per_buyer_currency=*/absl::nullopt,
         /*is_ad_excluded=*/matches_ad1,
@@ -607,7 +608,7 @@ TEST_F(ContextRecyclerTest, SetBidBindings) {
                                      absl::nullopt);
 
     context_recycler.set_bid_bindings()->ReInitialize(
-        base::TimeTicks::Now(), time_limit_.get(),
+        base::TimeTicks::Now(),
         /*has_top_level_seller_origin=*/false, params.get(),
         blink::AdCurrency::From("USD"),
         /*is_ad_excluded=*/matches_ad1,
@@ -644,7 +645,7 @@ TEST_F(ContextRecyclerTest, SetBidBindings) {
                                      absl::nullopt);
 
     context_recycler.set_bid_bindings()->ReInitialize(
-        base::TimeTicks::Now(), time_limit_.get(),
+        base::TimeTicks::Now(),
         /*has_top_level_seller_origin=*/false, params.get(),
         blink::AdCurrency::From("CAD"),
         /*is_ad_excluded=*/matches_ad1,
@@ -679,7 +680,7 @@ TEST_F(ContextRecyclerTest, SetBidBindings) {
                                      absl::nullopt);
 
     context_recycler.set_bid_bindings()->ReInitialize(
-        base::TimeTicks::Now(), time_limit_.get(),
+        base::TimeTicks::Now(),
         /*has_top_level_seller_origin=*/false, params.get(),
         blink::AdCurrency::From("CAD"),
         /*is_ad_excluded=*/matches_ad1,
@@ -733,7 +734,8 @@ TEST_F(ContextRecyclerTest, SetPriorityBindings) {
     EXPECT_THAT(
         error_msgs,
         ElementsAre("https://example.org/script.js:3 Uncaught TypeError: "
-                    "setPriority requires 1 double parameter."));
+                    "setPriority(): Converting argument 'priority' to a Number "
+                    "did not produce a finite double."));
   }
 
   {
@@ -969,6 +971,12 @@ TEST_F(ContextRecyclerTest, SharedStorageMethods) {
       auction_worklet::TestAuctionSharedStorageHost::RequestType;
   using Request = auction_worklet::TestAuctionSharedStorageHost::Request;
 
+  const std::string kInvalidValue(
+      static_cast<size_t>(
+          blink::features::kMaxSharedStorageStringLength.Get()) +
+          1,
+      '*');
+
   const char kScript[] = R"(
     function testSet(...args) {
       sharedStorage.set(...args);
@@ -1112,8 +1120,8 @@ TEST_F(ContextRecyclerTest, SharedStorageMethods) {
     EXPECT_THAT(
         error_msgs,
         ElementsAre(
-            "https://example.org/script.js:3 Uncaught TypeError: Missing or "
-            "invalid \"key\" argument in sharedStorage.set()."));
+            "https://example.org/script.js:3 Uncaught TypeError: "
+            "sharedStorage.set(): at least 2 argument(s) are required."));
   }
 
   {
@@ -1126,8 +1134,8 @@ TEST_F(ContextRecyclerTest, SharedStorageMethods) {
     EXPECT_THAT(
         error_msgs,
         ElementsAre(
-            "https://example.org/script.js:3 Uncaught TypeError: Missing or "
-            "invalid \"value\" argument in sharedStorage.set()."));
+            "https://example.org/script.js:3 Uncaught TypeError: "
+            "sharedStorage.set(): at least 2 argument(s) are required."));
   }
 
   {
@@ -1142,7 +1150,56 @@ TEST_F(ContextRecyclerTest, SharedStorageMethods) {
     EXPECT_THAT(
         error_msgs,
         ElementsAre("https://example.org/script.js:3 Uncaught TypeError: "
-                    "Invalid \"options\" argument in sharedStorage.set()."));
+                    "sharedStorage.set 'options' argument "
+                    "Value passed as dictionary is neither object, null, nor "
+                    "undefined."));
+  }
+
+  {
+    ContextRecyclerScope scope(context_recycler);
+    std::vector<std::string> error_msgs;
+
+    Run(scope, script, "testSet", error_msgs, /*args=*/
+        std::vector<v8::Local<v8::Value>>(
+            {gin::ConvertToV8(helper_->isolate(), std::string("")),
+             gin::ConvertToV8(helper_->isolate(), std::string("b"))}));
+    EXPECT_THAT(
+        error_msgs,
+        ElementsAre("https://example.org/script.js:3 Uncaught TypeError: "
+                    "Invalid 'key' argument in sharedStorage.set()."));
+  }
+
+  {
+    ContextRecyclerScope scope(context_recycler);
+    std::vector<std::string> error_msgs;
+
+    Run(scope, script, "testSet", error_msgs, /*args=*/
+        std::vector<v8::Local<v8::Value>>(
+            {gin::ConvertToV8(helper_->isolate(), std::string("a")),
+             gin::ConvertToV8(helper_->isolate(), kInvalidValue)}));
+    EXPECT_THAT(
+        error_msgs,
+        ElementsAre("https://example.org/script.js:3 Uncaught TypeError: "
+                    "Invalid 'value' argument in sharedStorage.set()."));
+  }
+
+  // This shows that if there is a semantic error in argument 0 and a type error
+  // in argument 2 the type error is what's reported.
+  {
+    ContextRecyclerScope scope(context_recycler);
+    std::vector<std::string> error_msgs;
+
+    Run(scope, script, "testSet", error_msgs, /*args=*/
+        std::vector<v8::Local<v8::Value>>(
+            {gin::ConvertToV8(helper_->isolate(), std::string("")),
+             gin::ConvertToV8(helper_->isolate(), std::string("b")),
+             gin::ConvertToV8(helper_->isolate(), true)}));
+    EXPECT_THAT(
+        error_msgs,
+        ElementsAre("https://example.org/script.js:3 Uncaught TypeError: "
+                    "sharedStorage.set 'options' argument "
+                    "Value passed as dictionary is neither object, null, nor "
+                    "undefined."));
   }
 
   {
@@ -1154,8 +1211,8 @@ TEST_F(ContextRecyclerTest, SharedStorageMethods) {
     EXPECT_THAT(
         error_msgs,
         ElementsAre(
-            "https://example.org/script.js:7 Uncaught TypeError: Missing or "
-            "invalid \"key\" argument in sharedStorage.append()."));
+            "https://example.org/script.js:7 Uncaught TypeError: "
+            "sharedStorage.append(): at least 2 argument(s) are required."));
   }
 
   {
@@ -1168,8 +1225,36 @@ TEST_F(ContextRecyclerTest, SharedStorageMethods) {
     EXPECT_THAT(
         error_msgs,
         ElementsAre(
-            "https://example.org/script.js:7 Uncaught TypeError: Missing or "
-            "invalid \"value\" argument in sharedStorage.append()."));
+            "https://example.org/script.js:7 Uncaught TypeError: "
+            "sharedStorage.append(): at least 2 argument(s) are required."));
+  }
+
+  {
+    ContextRecyclerScope scope(context_recycler);
+    std::vector<std::string> error_msgs;
+
+    Run(scope, script, "testAppend", error_msgs, /*args=*/
+        std::vector<v8::Local<v8::Value>>(
+            {gin::ConvertToV8(helper_->isolate(), std::string("")),
+             gin::ConvertToV8(helper_->isolate(), std::string("b"))}));
+    EXPECT_THAT(
+        error_msgs,
+        ElementsAre("https://example.org/script.js:7 Uncaught TypeError: "
+                    "Invalid 'key' argument in sharedStorage.append()."));
+  }
+
+  {
+    ContextRecyclerScope scope(context_recycler);
+    std::vector<std::string> error_msgs;
+
+    Run(scope, script, "testAppend", error_msgs, /*args=*/
+        std::vector<v8::Local<v8::Value>>(
+            {gin::ConvertToV8(helper_->isolate(), std::string("a")),
+             gin::ConvertToV8(helper_->isolate(), kInvalidValue)}));
+    EXPECT_THAT(
+        error_msgs,
+        ElementsAre("https://example.org/script.js:7 Uncaught TypeError: "
+                    "Invalid 'value' argument in sharedStorage.append()."));
   }
 
   {
@@ -1181,8 +1266,21 @@ TEST_F(ContextRecyclerTest, SharedStorageMethods) {
     EXPECT_THAT(
         error_msgs,
         ElementsAre(
-            "https://example.org/script.js:11 Uncaught TypeError: Missing or "
-            "invalid \"key\" argument in sharedStorage.delete()."));
+            "https://example.org/script.js:11 Uncaught TypeError: "
+            "sharedStorage.delete(): at least 1 argument(s) are required."));
+  }
+
+  {
+    ContextRecyclerScope scope(context_recycler);
+    std::vector<std::string> error_msgs;
+
+    Run(scope, script, "testDelete", error_msgs, /*args=*/
+        std::vector<v8::Local<v8::Value>>(
+            {gin::ConvertToV8(helper_->isolate(), std::string(""))}));
+    EXPECT_THAT(
+        error_msgs,
+        ElementsAre("https://example.org/script.js:11 Uncaught TypeError: "
+                    "Invalid 'key' argument in sharedStorage.delete()."));
   }
 }
 
@@ -1540,10 +1638,9 @@ TEST_F(ContextRecyclerPrivateAggregationEnabledTest,
 
     Run(scope, script, "test", error_msgs,
         gin::ConvertToV8(helper_->isolate(), dict));
-    EXPECT_THAT(
-        error_msgs,
-        ElementsAre("https://example.org/script.js:8 Uncaught TypeError: "
-                    "bucket must be a BigInt."));
+    EXPECT_THAT(error_msgs,
+                ElementsAre("https://example.org/script.js:8 Uncaught "
+                            "TypeError: Cannot convert 123 to a BigInt."));
 
     EXPECT_TRUE(context_recycler.private_aggregation_bindings()
                     ->TakePrivateAggregationRequests()
@@ -1604,9 +1701,9 @@ TEST_F(ContextRecyclerPrivateAggregationEnabledTest,
         gin::ConvertToV8(helper_->isolate(), dict));
     EXPECT_THAT(
         error_msgs,
-        ElementsAre(
-            "https://example.org/script.js:8 Uncaught TypeError: "
-            "Invalid or missing bucket in contributeToHistogram argument."));
+        ElementsAre("https://example.org/script.js:8 Uncaught TypeError: "
+                    "privateAggregation.contributeToHistogram() 'contribution' "
+                    "argument: Required field 'bucket' is undefined."));
 
     EXPECT_TRUE(context_recycler.private_aggregation_bindings()
                     ->TakePrivateAggregationRequests()
@@ -1625,9 +1722,9 @@ TEST_F(ContextRecyclerPrivateAggregationEnabledTest,
         gin::ConvertToV8(helper_->isolate(), dict));
     EXPECT_THAT(
         error_msgs,
-        ElementsAre(
-            "https://example.org/script.js:8 Uncaught TypeError: "
-            "Invalid or missing value in contributeToHistogram argument."));
+        ElementsAre("https://example.org/script.js:8 Uncaught TypeError: "
+                    "privateAggregation.contributeToHistogram() 'contribution' "
+                    "argument: Required field 'value' is undefined."));
 
     EXPECT_TRUE(context_recycler.private_aggregation_bindings()
                     ->TakePrivateAggregationRequests()
@@ -1801,10 +1898,9 @@ TEST_F(ContextRecyclerPrivateAggregationEnabledTest,
     std::vector<std::string> error_msgs;
 
     Run(scope, script, "enableDebugMode", error_msgs, WrapDebugKey(1234));
-    EXPECT_THAT(
-        error_msgs,
-        ElementsAre("https://example.org/script.js:21 Uncaught TypeError: "
-                    "debugKey must be a BigInt."));
+    EXPECT_THAT(error_msgs,
+                ElementsAre("https://example.org/script.js:21 Uncaught "
+                            "TypeError: Cannot convert 1234 to a BigInt."));
 
     EXPECT_TRUE(context_recycler.private_aggregation_bindings()
                     ->TakePrivateAggregationRequests()
@@ -1821,8 +1917,10 @@ TEST_F(ContextRecyclerPrivateAggregationEnabledTest,
         gin::ConvertToV8(helper_->isolate(), 1234));
     EXPECT_THAT(
         error_msgs,
-        ElementsAre("https://example.org/script.js:21 Uncaught TypeError: "
-                    "Invalid argument in enableDebugMode."));
+        ElementsAre(
+            "https://example.org/script.js:21 Uncaught TypeError: "
+            "privateAggregation.enableDebugMode() 'options' argument: Value "
+            "passed as dictionary is neither object, null, nor undefined."));
 
     EXPECT_TRUE(context_recycler.private_aggregation_bindings()
                     ->TakePrivateAggregationRequests()
@@ -2117,10 +2215,9 @@ TEST_F(ContextRecyclerPrivateAggregationExtensionsEnabledTest,
         gin::ConvertToV8(helper_->isolate(), dict));
     EXPECT_THAT(
         error_msgs,
-        ElementsAre(
-            "https://example.org/script.js:37 Uncaught TypeError: "
-            "contributeToHistogramOnEvent requires 2 parameters, with first "
-            "parameter being a string and second parameter being an object."));
+        ElementsAre("https://example.org/script.js:37 Uncaught TypeError: "
+                    "privateAggregation.contributeToHistogramOnEvent(): at "
+                    "least 2 argument(s) are required."));
 
     EXPECT_TRUE(context_recycler.private_aggregation_bindings()
                     ->TakePrivateAggregationRequests()
@@ -2139,10 +2236,9 @@ TEST_F(ContextRecyclerPrivateAggregationExtensionsEnabledTest,
         gin::ConvertToV8(helper_->isolate(), dict));
     EXPECT_THAT(
         error_msgs,
-        ElementsAre(
-            "https://example.org/script.js:41 Uncaught TypeError: "
-            "contributeToHistogramOnEvent requires 2 parameters, with first "
-            "parameter being a string and second parameter being an object."));
+        ElementsAre("https://example.org/script.js:41 Uncaught TypeError: "
+                    "privateAggregation.contributeToHistogramOnEvent(): at "
+                    "least 2 argument(s) are required."));
 
     EXPECT_TRUE(context_recycler.private_aggregation_bindings()
                     ->TakePrivateAggregationRequests()
@@ -2162,10 +2258,10 @@ TEST_F(ContextRecyclerPrivateAggregationExtensionsEnabledTest,
         gin::ConvertToV8(helper_->isolate(), dict));
     EXPECT_THAT(
         error_msgs,
-        ElementsAre(
-            "https://example.org/script.js:48 Uncaught TypeError: "
-            "contributeToHistogramOnEvent requires 2 parameters, with first "
-            "parameter being a string and second parameter being an object."));
+        ElementsAre("https://example.org/script.js:48 Uncaught TypeError: "
+                    "privateAggregation.contributeToHistogramOnEvent() "
+                    "'contribution' argument: Value passed as dictionary is "
+                    "neither object, null, nor undefined."));
 
     EXPECT_TRUE(context_recycler.private_aggregation_bindings()
                     ->TakePrivateAggregationRequests()
@@ -2475,9 +2571,12 @@ TEST_F(ContextRecyclerPrivateAggregationExtensionsEnabledTest,
 
     Run(scope, script, "test", error_msgs,
         gin::ConvertToV8(helper_->isolate(), dict));
-    EXPECT_THAT(error_msgs,
-                ElementsAre("https://example.org/script.js:12 Uncaught "
-                            "TypeError: Invalid bucket dictionary."));
+    EXPECT_THAT(
+        error_msgs,
+        ElementsAre(
+            "https://example.org/script.js:12 Uncaught TypeError: "
+            "privateAggregation.contributeToHistogramOnEvent() 'contribution' "
+            "argument: Required field 'baseValue' is undefined."));
 
     EXPECT_TRUE(context_recycler.private_aggregation_bindings()
                     ->TakePrivateAggregationRequests()
@@ -2508,7 +2607,8 @@ TEST_F(ContextRecyclerPrivateAggregationExtensionsEnabledTest,
                     .empty());
   }
 
-  // Invalid bucket dictionary, whose scale is not a Number.
+  // Invalid bucket dictionary, whose scale is not a Number. That's fine since
+  // A string can get turned into a number.
   {
     ContextRecyclerScope scope(context_recycler);
     std::vector<std::string> error_msgs;
@@ -2524,9 +2624,35 @@ TEST_F(ContextRecyclerPrivateAggregationExtensionsEnabledTest,
 
     Run(scope, script, "test", error_msgs,
         gin::ConvertToV8(helper_->isolate(), dict));
-    EXPECT_THAT(error_msgs,
-                ElementsAre("https://example.org/script.js:12 Uncaught "
-                            "TypeError: Invalid bucket dictionary."));
+    EXPECT_THAT(error_msgs, ElementsAre());
+
+    EXPECT_FALSE(context_recycler.private_aggregation_bindings()
+                     ->TakePrivateAggregationRequests()
+                     .empty());
+  }
+
+  // Invalid bucket dictionary, whose scale is a BigInt. That fails since
+  // A BigInt isn't going to turn into a Number.
+  {
+    ContextRecyclerScope scope(context_recycler);
+    std::vector<std::string> error_msgs;
+
+    gin::Dictionary bucket_dict =
+        gin::Dictionary::CreateEmpty(helper_->isolate());
+    bucket_dict.Set("baseValue", std::string("winning-bid"));
+    v8::Local<v8::Value> big_int_val = v8::BigInt::New(helper_->isolate(), 255);
+    bucket_dict.Set("scale", big_int_val);
+
+    gin::Dictionary dict = gin::Dictionary::CreateEmpty(helper_->isolate());
+    dict.Set("bucket", bucket_dict);
+    dict.Set("value", 1);
+
+    Run(scope, script, "test", error_msgs,
+        gin::ConvertToV8(helper_->isolate(), dict));
+    EXPECT_THAT(
+        error_msgs,
+        ElementsAre("https://example.org/script.js:12 Uncaught TypeError: "
+                    "Cannot convert a BigInt value to a number."));
 
     EXPECT_TRUE(context_recycler.private_aggregation_bindings()
                     ->TakePrivateAggregationRequests()
@@ -2549,9 +2675,12 @@ TEST_F(ContextRecyclerPrivateAggregationExtensionsEnabledTest,
 
     Run(scope, script, "test", error_msgs,
         gin::ConvertToV8(helper_->isolate(), dict));
-    EXPECT_THAT(error_msgs,
-                ElementsAre("https://example.org/script.js:12 Uncaught "
-                            "TypeError: Invalid bucket dictionary."));
+    EXPECT_THAT(
+        error_msgs,
+        ElementsAre("https://example.org/script.js:12 Uncaught TypeError: "
+                    "privateAggregation.contributeToHistogramOnEvent() "
+                    "'contribution' argument: Converting field 'scale' to a "
+                    "Number did not produce a finite double."));
 
     EXPECT_TRUE(context_recycler.private_aggregation_bindings()
                     ->TakePrivateAggregationRequests()
@@ -2574,9 +2703,12 @@ TEST_F(ContextRecyclerPrivateAggregationExtensionsEnabledTest,
 
     Run(scope, script, "test", error_msgs,
         gin::ConvertToV8(helper_->isolate(), dict));
-    EXPECT_THAT(error_msgs,
-                ElementsAre("https://example.org/script.js:12 Uncaught "
-                            "TypeError: Invalid bucket dictionary."));
+    EXPECT_THAT(
+        error_msgs,
+        ElementsAre("https://example.org/script.js:12 Uncaught TypeError: "
+                    "privateAggregation.contributeToHistogramOnEvent() "
+                    "'contribution' argument: Converting field 'scale' to a "
+                    "Number did not produce a finite double."));
 
     EXPECT_TRUE(context_recycler.private_aggregation_bindings()
                     ->TakePrivateAggregationRequests()
@@ -2662,9 +2794,12 @@ TEST_F(ContextRecyclerPrivateAggregationExtensionsEnabledTest,
 
     Run(scope, script, "test", error_msgs,
         gin::ConvertToV8(helper_->isolate(), dict));
-    EXPECT_THAT(error_msgs,
-                ElementsAre("https://example.org/script.js:12 Uncaught "
-                            "TypeError: Invalid value dictionary."));
+    EXPECT_THAT(
+        error_msgs,
+        ElementsAre(
+            "https://example.org/script.js:12 Uncaught TypeError: "
+            "privateAggregation.contributeToHistogramOnEvent() 'contribution' "
+            "argument: Required field 'baseValue' is undefined."));
 
     EXPECT_TRUE(context_recycler.private_aggregation_bindings()
                     ->TakePrivateAggregationRequests()
@@ -2685,14 +2820,14 @@ TEST_F(ContextRecyclerPrivateAggregationExtensionsEnabledTest,
     EXPECT_THAT(
         error_msgs,
         ElementsAre("https://example.org/script.js:12 Uncaught TypeError: "
-                    "Bucket must be a BigInt or a dictionary."));
+                    "Cannot convert 12.3 to a BigInt."));
 
     EXPECT_TRUE(context_recycler.private_aggregation_bindings()
                     ->TakePrivateAggregationRequests()
                     .empty());
   }
 
-  // Non Number or dictionary value
+  // Non Number or dictionary value. That's fine, because JavaScript.
   {
     ContextRecyclerScope scope(context_recycler);
     std::vector<std::string> error_msgs;
@@ -2703,10 +2838,29 @@ TEST_F(ContextRecyclerPrivateAggregationExtensionsEnabledTest,
 
     Run(scope, script, "test", error_msgs,
         gin::ConvertToV8(helper_->isolate(), dict));
+    EXPECT_THAT(error_msgs, ElementsAre());
+
+    EXPECT_FALSE(context_recycler.private_aggregation_bindings()
+                     ->TakePrivateAggregationRequests()
+                     .empty());
+  }
+
+  // A BigInt value however will not get turned into a number.
+  {
+    ContextRecyclerScope scope(context_recycler);
+    std::vector<std::string> error_msgs;
+
+    gin::Dictionary dict = gin::Dictionary::CreateEmpty(helper_->isolate());
+    dict.Set("bucket", std::string("123"));
+    v8::Local<v8::Value> big_int_val = v8::BigInt::New(helper_->isolate(), 1);
+    dict.Set("value", big_int_val);
+
+    Run(scope, script, "test", error_msgs,
+        gin::ConvertToV8(helper_->isolate(), dict));
     EXPECT_THAT(
         error_msgs,
         ElementsAre("https://example.org/script.js:12 Uncaught TypeError: "
-                    "Value must be a Number or a dictionary."));
+                    "Cannot convert a BigInt value to a number."));
 
     EXPECT_TRUE(context_recycler.private_aggregation_bindings()
                     ->TakePrivateAggregationRequests()
@@ -2769,8 +2923,27 @@ TEST_F(ContextRecyclerPrivateAggregationExtensionsEnabledTest,
         error_msgs,
         ElementsAre(
             "https://example.org/script.js:12 Uncaught TypeError: "
-            "Invalid or missing bucket in contributeToHistogramOnEvent's "
-            "argument."));
+            "privateAggregation.contributeToHistogramOnEvent() 'contribution' "
+            "argument: Required field 'bucket' is undefined."));
+
+    EXPECT_TRUE(context_recycler.private_aggregation_bindings()
+                    ->TakePrivateAggregationRequests()
+                    .empty());
+  }
+
+  // Missing value, but bucket being wrong type is noticed first.
+  {
+    ContextRecyclerScope scope(context_recycler);
+    std::vector<std::string> error_msgs;
+
+    gin::Dictionary dict = gin::Dictionary::CreateEmpty(helper_->isolate());
+    dict.Set("bucket", 123);
+
+    Run(scope, script, "test", error_msgs,
+        gin::ConvertToV8(helper_->isolate(), dict));
+    EXPECT_THAT(error_msgs,
+                ElementsAre("https://example.org/script.js:12 Uncaught "
+                            "TypeError: Cannot convert 123 to a BigInt."));
 
     EXPECT_TRUE(context_recycler.private_aggregation_bindings()
                     ->TakePrivateAggregationRequests()
@@ -2783,7 +2956,7 @@ TEST_F(ContextRecyclerPrivateAggregationExtensionsEnabledTest,
     std::vector<std::string> error_msgs;
 
     gin::Dictionary dict = gin::Dictionary::CreateEmpty(helper_->isolate());
-    dict.Set("bucket", 123);
+    dict.Set("bucket", std::string("123"));
 
     Run(scope, script, "test", error_msgs,
         gin::ConvertToV8(helper_->isolate(), dict));
@@ -2791,8 +2964,8 @@ TEST_F(ContextRecyclerPrivateAggregationExtensionsEnabledTest,
         error_msgs,
         ElementsAre(
             "https://example.org/script.js:12 Uncaught TypeError: "
-            "Invalid or missing value in contributeToHistogramOnEvent's "
-            "argument."));
+            "privateAggregation.contributeToHistogramOnEvent() 'contribution' "
+            "argument: Required field 'value' is undefined."));
 
     EXPECT_TRUE(context_recycler.private_aggregation_bindings()
                     ->TakePrivateAggregationRequests()
@@ -2993,6 +3166,55 @@ TEST_F(ContextRecyclerPrivateAggregationOnlyFledgeExtensionsDisabledTest,
         context_recycler.private_aggregation_bindings()
             ->TakePrivateAggregationRequests();
     ASSERT_EQ(pa_requests.size(), 1u);
+  }
+}
+
+class ContextRecyclerAdMacroReportingEnabledTest : public ContextRecyclerTest {
+ public:
+  ContextRecyclerAdMacroReportingEnabledTest() {
+    scoped_feature_list_.InitAndEnableFeature(
+        blink::features::kAdAuctionReportingWithMacroApi);
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+// Exercise RegisterAdMacroBindings, and make sure they reset properly.
+TEST_F(ContextRecyclerAdMacroReportingEnabledTest, RegisterAdMacroBindings) {
+  const char kScript[] = R"(
+    function test(prefix) {
+      registerAdMacro(prefix + "_name", prefix + "_value");
+    }
+  )";
+
+  v8::Local<v8::UnboundScript> script = Compile(kScript);
+  ASSERT_FALSE(script.IsEmpty());
+
+  ContextRecycler context_recycler(helper_.get());
+  {
+    ContextRecyclerScope scope(context_recycler);  // Initialize context
+    context_recycler.AddRegisterAdMacroBindings();
+  }
+
+  {
+    ContextRecyclerScope scope(context_recycler);
+    std::vector<std::string> error_msgs;
+    Run(scope, script, "test", error_msgs,
+        gin::ConvertToV8(helper_->isolate(), std::string("first")));
+    EXPECT_THAT(error_msgs, ElementsAre());
+    EXPECT_THAT(context_recycler.register_ad_macro_bindings()->TakeAdMacroMap(),
+                ElementsAre(Pair("first_name", "first_value")));
+  }
+
+  {
+    ContextRecyclerScope scope(context_recycler);
+    std::vector<std::string> error_msgs;
+    Run(scope, script, "test", error_msgs,
+        gin::ConvertToV8(helper_->isolate(), std::string("second")));
+    EXPECT_THAT(error_msgs, ElementsAre());
+    EXPECT_THAT(context_recycler.register_ad_macro_bindings()->TakeAdMacroMap(),
+                ElementsAre(Pair("second_name", "second_value")));
   }
 }
 

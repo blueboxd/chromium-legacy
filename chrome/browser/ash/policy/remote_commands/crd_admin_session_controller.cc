@@ -7,6 +7,7 @@
 #include <iomanip>
 #include <ostream>
 #include <string>
+#include <utility>
 
 #include "base/functional/bind.h"
 #include "base/functional/callback_forward.h"
@@ -14,9 +15,11 @@
 #include "base/time/time.h"
 #include "chrome/browser/ash/policy/remote_commands/crd_logging.h"
 #include "chrome/browser/ash/policy/remote_commands/crd_remote_command_utils.h"
-#include "chrome/browser/ash/policy/remote_commands/device_command_start_crd_session_job.h"
+#include "chrome/common/pref_names.h"
+#include "components/prefs/pref_registry_simple.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "remoting/host/chromeos/features.h"
 #include "remoting/host/chromeos/remote_support_host_ash.h"
 #include "remoting/host/chromeos/remoting_service.h"
 #include "remoting/host/chromeos/session_id.h"
@@ -26,11 +29,11 @@
 
 namespace policy {
 
-using AccessCodeCallback = DeviceCommandStartCrdSessionJob::AccessCodeCallback;
-using ErrorCallback = DeviceCommandStartCrdSessionJob::ErrorCallback;
-using SessionEndCallback = DeviceCommandStartCrdSessionJob::SessionEndCallback;
-using SessionParameters =
-    DeviceCommandStartCrdSessionJob::Delegate::SessionParameters;
+using AccessCodeCallback = StartCrdSessionJobDelegate::AccessCodeCallback;
+using ErrorCallback = StartCrdSessionJobDelegate::ErrorCallback;
+using SessionEndCallback = StartCrdSessionJobDelegate::SessionEndCallback;
+using SessionParameters = StartCrdSessionJobDelegate::SessionParameters;
+using remoting::features::kEnableCrdAdminRemoteAccessV2;
 
 namespace {
 
@@ -247,6 +250,7 @@ class CrdAdminSessionController::CrdHostSession {
   }
 
   void TryToReconnect(base::OnceClosure done_callback) {
+    CRD_DVLOG(3) << "Trying to reconnect to previous CRD session (if any)";
     remoting_service_->GetReconnectableSessionId(
         base::BindOnce(&CrdHostSession::ReconnectToSession,
                        weak_factory_.GetWeakPtr())
@@ -256,7 +260,7 @@ class CrdAdminSessionController::CrdHostSession {
  private:
   void ReconnectToSession(absl::optional<remoting::SessionId> id) {
     if (id.has_value()) {
-      CRD_LOG(INFO) << "Resuming CRD session";
+      CRD_LOG(INFO) << "Attempting to resume reconnectable session";
 
       remoting_service_->ReconnectToSession(
           id.value(),
@@ -294,6 +298,18 @@ CrdAdminSessionController::CrdAdminSessionController(
 
 CrdAdminSessionController::~CrdAdminSessionController() = default;
 
+void CrdAdminSessionController::Init(base::OnceClosure done_callback) {
+  if (base::FeatureList::IsEnabled(kEnableCrdAdminRemoteAccessV2)) {
+    TryToReconnect(std::move(done_callback));
+  } else {
+    std::move(done_callback).Run();
+  }
+}
+
+StartCrdSessionJobDelegate& CrdAdminSessionController::GetDelegate() {
+  return *this;
+}
+
 bool CrdAdminSessionController::HasActiveSession() const {
   return active_session_ != nullptr;
 }
@@ -323,6 +339,12 @@ void CrdAdminSessionController::StartCrdHostAndGetCode(
       std::move(error_callback), std::move(session_finished_callback));
 
   active_session_->Start(parameters);
+}
+
+// static
+void CrdAdminSessionController::RegisterLocalStatePrefs(
+    PrefRegistrySimple* registry) {
+  registry->RegisterBooleanPref(prefs::kRemoteAdminWasPresent, false);
 }
 
 }  // namespace policy

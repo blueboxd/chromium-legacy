@@ -50,6 +50,7 @@
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_test_util.h"
+#include "chrome/browser/search_engine_choice/search_engine_choice_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -78,6 +79,7 @@
 #include "components/feature_engagement/public/feature_list.h"
 #include "components/google/core/common/google_util.h"
 #include "components/os_crypt/sync/os_crypt_mocker.h"
+#include "components/signin/public/base/signin_switches.h"
 #include "content/public/browser/browser_main_parts.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/common/content_paths.h"
@@ -147,7 +149,9 @@
 #include "base/environment.h"
 #include "base/files/file_path_watcher.h"
 #include "base/process/launch.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/uuid.h"
+#include "base/version.h"
 #include "chrome/browser/lacros/cert/cert_db_initializer_factory.h"
 #include "components/account_manager_core/chromeos/account_manager.h"
 #include "components/account_manager_core/chromeos/account_manager_facade_factory.h"  // nogncheck
@@ -307,6 +311,27 @@ FakeAccountManagerUI* InProcessBrowserTest::GetFakeAccountManagerUI() const {
   return static_cast<FakeAccountManagerUI*>(
       MaybeGetAshAccountManagerUIForTests());
 }
+
+base::Version InProcessBrowserTest::GetAshChromeVersion() {
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  base::FilePath ash_chrome_path =
+      command_line->GetSwitchValuePath("ash-chrome-path");
+  CHECK(!ash_chrome_path.empty());
+  base::CommandLine invoker(ash_chrome_path);
+  invoker.AppendSwitch(switches::kVersion);
+  std::string output;
+  base::ScopedAllowBlockingForTesting blocking;
+  CHECK(base::GetAppOutput(invoker, &output));
+  std::vector<std::string> tokens = base::SplitString(
+      output, " ", base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
+  CHECK_GT(tokens.size(), 1U);
+  // We assume Chrome version is always at the second last position.
+  base::Version version(tokens[tokens.size() - 2]);
+  CHECK(version.IsValid()) << "Can not find "
+                           << "chrome version in string: " << output;
+  return version;
+}
+
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
 void InProcessBrowserTest::Initialize() {
@@ -497,6 +522,16 @@ void InProcessBrowserTest::SetUp() {
   // profile on browser start, which is unexpected by mosts tests. Tests which
   // expect this can allow the prompt as desired.
   PrivacySandboxService::SetPromptDisabledForTests(true);
+
+  // The Search Engine Choice service may attempt to show a modal dialog to the
+  // profile on browser start, which is unexpected by mosts tests. Tests which
+  // expect this can allow the prompt as desired.
+#if BUILDFLAG(ENABLE_SEARCH_ENGINE_CHOICE)
+  if (base::FeatureList::IsEnabled(switches::kSearchEngineChoice)) {
+    SearchEngineChoiceService::SetDialogDisabledForTests(
+        /*dialog_disabled=*/true);
+  }
+#endif
 
   EnsureBrowserContextKeyedServiceFactoriesForTestingBuilt();
 

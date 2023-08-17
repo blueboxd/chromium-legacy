@@ -122,7 +122,6 @@
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/os_crypt/sync/os_crypt_mocker.h"
 #include "components/password_manager/core/browser/features/password_features.h"
-#include "components/password_manager/core/browser/mock_field_info_store.h"
 #include "components/password_manager/core/browser/mock_password_store_interface.h"
 #include "components/password_manager/core/browser/mock_smart_bubble_stats_store.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
@@ -143,6 +142,7 @@
 #include "components/site_engagement/content/site_engagement_service.h"
 #include "components/site_isolation/pref_names.h"
 #include "components/ukm/test_ukm_recorder.h"
+#include "content/public/browser/background_tracing_manager.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/browsing_data_filter_builder.h"
@@ -684,17 +684,11 @@ class RemovePasswordsTester {
     return &mock_smart_bubble_stats_store_;
   }
 
-  password_manager::MockFieldInfoStore* mock_field_info_store() {
-    return &mock_field_info_store_;
-  }
-
  private:
   raw_ptr<password_manager::MockPasswordStoreInterface> profile_store_;
   raw_ptr<password_manager::MockPasswordStoreInterface> account_store_;
   testing::NiceMock<password_manager::MockSmartBubbleStatsStore>
       mock_smart_bubble_stats_store_;
-  testing::NiceMock<password_manager::MockFieldInfoStore>
-      mock_field_info_store_;
 };
 
 class RemoveDIPSEventsTester {
@@ -1239,14 +1233,17 @@ class ChromeBrowsingDataRemoverDelegateTest : public testing::Test {
     // Make sure the Network Service is started before making a NetworkContext.
     content::GetNetworkService();
     task_environment_.RunUntilIdle();
+    background_tracing_manager_ =
+        content::BackgroundTracingManager::CreateInstance();
 
     // This needs to be done after the test constructor, so that subclasses
     // that initialize a ScopedFeatureList in their constructors can do so
     // before the code below potentially kicks off tasks on other threads that
     // check if a feature is enabled, to avoid tsan data races.
+    CHECK(temp_dir_.CreateUniqueTempDir());
     profile_manager_ = std::make_unique<TestingProfileManager>(
         TestingBrowserProcess::GetGlobal());
-    CHECK(profile_manager_->SetUp());
+    CHECK(profile_manager_->SetUp(temp_dir_.GetPath()));
     profile_ = profile_manager_->CreateTestingProfile(
         "test_profile",
         {{StatefulSSLHostStateDelegateFactory::GetInstance(),
@@ -1332,6 +1329,8 @@ class ChromeBrowsingDataRemoverDelegateTest : public testing::Test {
     // the message loop is cleared out, before destroying the threads and loop.
     // Otherwise we leak memory.
     profile_manager_.reset();
+
+    background_tracing_manager_.reset();
     base::RunLoop().RunUntilIdle();
 
     TestingBrowserProcess::GetGlobal()->SetLocalState(nullptr);
@@ -1441,11 +1440,15 @@ class ChromeBrowsingDataRemoverDelegateTest : public testing::Test {
   // Cached pointer to BrowsingDataRemover for access to testing methods.
   raw_ptr<content::BrowsingDataRemover> remover_;
 
+  std::unique_ptr<content::BackgroundTracingManager>
+      background_tracing_manager_;
+
 #if BUILDFLAG(ENABLE_NACL)
   ScopedNaClBrowserDelegate nacl_browser_delegate_;
 #endif  // BUILDFLAG(ENABLE_NACL)
   content::BrowserTaskEnvironment task_environment_{
       base::test::TaskEnvironment::TimeSource::MOCK_TIME};
+  base::ScopedTempDir temp_dir_;
   std::unique_ptr<network::NetworkContext> network_context_;
   std::unique_ptr<TestingProfileManager> profile_manager_;
   raw_ptr<TestingProfile> profile_;  // Owned by `profile_manager_`.
@@ -1619,6 +1622,8 @@ class IsolatedWebAppChromeBrowsingDataRemoverDelegateTest
   }
 
  protected:
+  content::BrowsingDataRemover::DataType DATA_TYPE_COOKIES =
+      content::BrowsingDataRemover::DATA_TYPE_COOKIES;
   content::BrowsingDataRemover::DataType DATA_TYPE_INDEXED_DB =
       content::BrowsingDataRemover::DATA_TYPE_INDEXED_DB;
   content::BrowsingDataRemover::DataType DATA_TYPE_ON_STORAGE_PARTITION =
@@ -1755,16 +1760,37 @@ TEST_F(IsolatedWebAppChromeBrowsingDataRemoverDelegateTest,
   auto filter_builder = BrowsingDataFilterBuilder::Create(
       BrowsingDataFilterBuilder::Mode::kDelete);
   filter_builder->AddOrigin(iwa_url_info1.origin());
-  std::vector<RemovalInfo> removal_tasks =
-      ClearDataAndWait(base::Time(), base::Time::Max(), DATA_TYPE_INDEXED_DB,
-                       std::move(filter_builder));
+  std::vector<RemovalInfo> removal_tasks = ClearDataAndWait(
+      base::Time(), base::Time::Max(), DATA_TYPE_SITE_DATA & ~DATA_TYPE_COOKIES,
+      std::move(filter_builder));
 
   EXPECT_THAT(
       removal_tasks,
       UnorderedElementsAre(
-          RemovalInfo{DATA_TYPE_INDEXED_DB},
-          RemovalInfo{DATA_TYPE_INDEXED_DB,
+          RemovalInfo{DATA_TYPE_SITE_DATA & ~DATA_TYPE_COOKIES},
+          RemovalInfo{DATA_TYPE_SITE_DATA & DATA_TYPE_ON_STORAGE_PARTITION,
                       iwa_url_info1.storage_partition_config(GetProfile())}));
+}
+
+TEST_F(IsolatedWebAppChromeBrowsingDataRemoverDelegateTest, AppCookiesDeleted) {
+  const GURL iwa_url(
+      "isolated-app://"
+      "berugqztij5biqquuk3mfwpsaibuegaqcitgfchwuosuofdjabzqaaic");
+  web_app::IsolatedWebAppUrlInfo iwa_url_info = InstallIsolatedWebApp(iwa_url);
+
+  auto filter_builder = BrowsingDataFilterBuilder::Create(
+      BrowsingDataFilterBuilder::Mode::kDelete);
+  filter_builder->AddOrigin(iwa_url_info.origin());
+  std::vector<RemovalInfo> removal_tasks = ClearDataAndWait(
+      base::Time(), base::Time::Max(),
+      constants::DATA_TYPE_ISOLATED_WEB_APP_COOKIES, std::move(filter_builder));
+
+  EXPECT_THAT(
+      removal_tasks,
+      UnorderedElementsAre(
+          RemovalInfo{constants::DATA_TYPE_ISOLATED_WEB_APP_COOKIES},
+          RemovalInfo{DATA_TYPE_COOKIES,
+                      iwa_url_info.storage_partition_config(GetProfile())}));
 }
 
 TEST_F(IsolatedWebAppChromeBrowsingDataRemoverDelegateTest,
@@ -2605,19 +2631,11 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, RemovePasswordStatistics) {
 
   ON_CALL(*tester.profile_store(), GetSmartBubbleStatsStore)
       .WillByDefault(Return(tester.mock_smart_bubble_stats_store()));
-  ON_CALL(*tester.profile_store(), GetFieldInfoStore)
-      .WillByDefault(Return(tester.mock_field_info_store()));
   EXPECT_CALL(
       *tester.mock_smart_bubble_stats_store(),
       RemoveStatisticsByOriginAndTime(ProbablySameFilter(empty_filter),
                                       base::Time(), base::Time::Max(), _))
       .WillOnce(testing::WithArg<3>([](base::OnceClosure completion) {
-        base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
-            FROM_HERE, std::move(completion));
-      }));
-  EXPECT_CALL(*tester.mock_field_info_store(),
-              RemoveFieldInfoByTime(base::Time(), base::Time::Max(), _))
-      .WillOnce(testing::WithArg<2>([](base::OnceClosure completion) {
         base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
             FROM_HERE, std::move(completion));
       }));
@@ -3154,6 +3172,7 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, RemoveFederatedContentSettings) {
                 host_content_settings_map->GetContentSetting(
                     rp_url, rp_embedder_url,
                     ContentSettingsType::FEDERATED_IDENTITY_API));
+      federated_context.Shutdown();
     }
 
     BlockUntilBrowsingDataRemoved(AnHourAgo(), base::Time::Max(),
@@ -3175,6 +3194,7 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, RemoveFederatedContentSettings) {
                 host_content_settings_map->GetContentSetting(
                     rp_url, rp_embedder_url,
                     ContentSettingsType::FEDERATED_IDENTITY_API));
+      federated_context.Shutdown();
     }
   }
 }
@@ -3230,13 +3250,13 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, RemoveFledgeJoinSettings) {
 
   EXPECT_FALSE(privacy_sandbox_settings->IsFledgeAllowed(
       url::Origin::Create(GURL("https://www.example.com")), auction_party,
-      content::ContentBrowserClient::InterestGroupApiOperation::kJoin));
+      content::InterestGroupApiOperation::kJoin));
   EXPECT_FALSE(privacy_sandbox_settings->IsFledgeAllowed(
       url::Origin::Create(GURL("https://another-example.com")), auction_party,
-      content::ContentBrowserClient::InterestGroupApiOperation::kJoin));
+      content::InterestGroupApiOperation::kJoin));
   EXPECT_FALSE(privacy_sandbox_settings->IsFledgeAllowed(
       url::Origin::Create(GURL("http://different-example.com")), auction_party,
-      content::ContentBrowserClient::InterestGroupApiOperation::kJoin));
+      content::InterestGroupApiOperation::kJoin));
 
   // Apply a deletion targeting the second setting.
   BlockUntilBrowsingDataRemoved(setting_time_two - base::Seconds(1),
@@ -3245,13 +3265,13 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, RemoveFledgeJoinSettings) {
 
   EXPECT_FALSE(privacy_sandbox_settings->IsFledgeAllowed(
       url::Origin::Create(GURL("https://www.example.com")), auction_party,
-      content::ContentBrowserClient::InterestGroupApiOperation::kJoin));
+      content::InterestGroupApiOperation::kJoin));
   EXPECT_TRUE(privacy_sandbox_settings->IsFledgeAllowed(
       url::Origin::Create(GURL("https://another-example.com")), auction_party,
-      content::ContentBrowserClient::InterestGroupApiOperation::kJoin));
+      content::InterestGroupApiOperation::kJoin));
   EXPECT_FALSE(privacy_sandbox_settings->IsFledgeAllowed(
       url::Origin::Create(GURL("http://different-example.com")), auction_party,
-      content::ContentBrowserClient::InterestGroupApiOperation::kJoin));
+      content::InterestGroupApiOperation::kJoin));
 
   // Apply a deletion targeting the remaining settings.
   BlockUntilBrowsingDataRemoved(setting_time_one, setting_time_three,
@@ -3259,13 +3279,13 @@ TEST_F(ChromeBrowsingDataRemoverDelegateTest, RemoveFledgeJoinSettings) {
 
   EXPECT_TRUE(privacy_sandbox_settings->IsFledgeAllowed(
       url::Origin::Create(GURL("https://www.example.com")), auction_party,
-      content::ContentBrowserClient::InterestGroupApiOperation::kJoin));
+      content::InterestGroupApiOperation::kJoin));
   EXPECT_TRUE(privacy_sandbox_settings->IsFledgeAllowed(
       url::Origin::Create(GURL("https://another-example.com")), auction_party,
-      content::ContentBrowserClient::InterestGroupApiOperation::kJoin));
+      content::InterestGroupApiOperation::kJoin));
   EXPECT_TRUE(privacy_sandbox_settings->IsFledgeAllowed(
       url::Origin::Create(GURL("http://different-example.com")), auction_party,
-      content::ContentBrowserClient::InterestGroupApiOperation::kJoin));
+      content::InterestGroupApiOperation::kJoin));
 }
 
 TEST_F(ChromeBrowsingDataRemoverDelegateTest, RemoveTopicSettings) {

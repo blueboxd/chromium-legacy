@@ -7,7 +7,9 @@
 #include <memory>
 
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser_element_identifiers.h"
 #include "chrome/browser/ui/views/location_bar/old_cookie_controls_bubble_view.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/content_settings/browser/ui/cookie_controls_controller.h"
@@ -19,9 +21,6 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/vector_icons.h"
 #include "ui/views/view_class_properties.h"
-
-DEFINE_CLASS_ELEMENT_IDENTIFIER_VALUE(OldCookieControlsIconView,
-                                      kCookieControlsIcon);
 
 OldCookieControlsIconView::OldCookieControlsIconView(
     IconLabelBubbleView::Delegate* icon_label_bubble_delegate,
@@ -35,7 +34,7 @@ OldCookieControlsIconView::OldCookieControlsIconView(
   SetAccessibilityProperties(
       /*role*/ absl::nullopt,
       l10n_util::GetStringUTF16(IDS_COOKIE_CONTROLS_TOOLTIP));
-  SetProperty(views::kElementIdentifierKey, kCookieControlsIcon);
+  SetProperty(views::kElementIdentifierKey, kCookieControlsIconElementId);
 }
 
 OldCookieControlsIconView::~OldCookieControlsIconView() = default;
@@ -51,7 +50,8 @@ void OldCookieControlsIconView::UpdateImpl() {
               CookieSettingsFactory::GetForProfile(profile),
               profile->IsOffTheRecord() ? CookieSettingsFactory::GetForProfile(
                                               profile->GetOriginalProfile())
-                                        : nullptr);
+                                        : nullptr,
+              HostContentSettingsMapFactory::GetForProfile(profile));
       old_controller_observation_.Observe(controller_.get());
     }
     controller_->Update(web_contents);

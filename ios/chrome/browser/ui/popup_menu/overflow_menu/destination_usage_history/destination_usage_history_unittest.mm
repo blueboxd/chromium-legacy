@@ -19,10 +19,6 @@
 #import "ios/chrome/browser/ui/popup_menu/overflow_menu/overflow_menu_swift.h"
 #import "testing/platform_test.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 namespace {
 
 // The number of destinations immediately visible in the carousel when the
@@ -120,10 +116,6 @@ class DestinationUsageHistoryTest : public PlatformTest {
 
     // Set the passed in `stored_history`.
     base::Value::Dict history = stored_history.Clone();
-
-    // Set the passed in `stored_ranking`.
-    base::Value::List ranking = stored_ranking.Clone();
-    history.Set("ranking", std::move(ranking));
 
     prefs_->SetDict(prefs::kOverflowMenuDestinationUsageHistory,
                     std::move(history));
@@ -452,10 +444,31 @@ TEST_F(DestinationUsageHistoryTest, DeletesExpiredUsageData) {
   ScopedDictPrefUpdate update(prefs_.get(),
                               prefs::kOverflowMenuDestinationUsageHistory);
 
-  // Has one entry for ranking, and one entry for today's seeded history.
-  EXPECT_EQ(update->size(), (size_t)2);
+  // Has one entry for today's seeded history.
+  EXPECT_EQ(update->size(), (size_t)1);
   EXPECT_NE(update->Find(base::NumberToString(TodaysDay().InDays())), nullptr);
   EXPECT_EQ(update->Find(base::NumberToString(recently_expired_day.InDays())),
             nullptr);
   EXPECT_EQ(update->Find(base::NumberToString(expired_day.InDays())), nullptr);
+}
+
+TEST_F(DestinationUsageHistoryTest, ClearsUsageData) {
+  base::Value::Dict history;
+
+  // Usage data for yesterday.
+  base::TimeDelta day = TodaysDay() - base::Days(1);
+  base::Value::Dict day_history;
+  day_history.Set(overflow_menu::StringNameForDestination(
+                      overflow_menu::Destination::Bookmarks),
+                  1);
+  history.Set(base::NumberToString(day.InDays()), std::move(day_history));
+
+  DestinationRanking ranking;
+  InitializeDestinationUsageHistoryWithData(ranking, history, {});
+
+  [destination_usage_history_ clearStoredClickData];
+
+  const base::Value::Dict& new_history =
+      prefs_->GetDict(prefs::kOverflowMenuDestinationUsageHistory);
+  EXPECT_EQ(new_history.size(), 0u);
 }

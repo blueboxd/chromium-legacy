@@ -68,10 +68,6 @@
 #import "services/metrics/public/cpp/ukm_builders.h"
 #import "url/gurl.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 using web::NavigationManager;
 using web::NavigationManagerImpl;
 using web::WebState;
@@ -406,7 +402,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
         @"microphoneCaptureState" : @"webViewMicrophoneCaptureStateDidChange",
       }];
 
-  if (web::features::IsFullscreenAPIEnabled()) {
+  if (web::GetWebClient()->EnableFullscreenAPI()) {
     [observers addEntriesFromDictionary:@{
       @"fullscreenState" : @"fullscreenStateDidChange"
     }];

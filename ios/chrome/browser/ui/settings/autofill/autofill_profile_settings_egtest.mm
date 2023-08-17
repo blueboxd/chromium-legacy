@@ -25,10 +25,6 @@
 #import "ui/base/l10n/l10n_util.h"
 #import "ui/strings/grit/ui_strings.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 using chrome_test_util::ButtonWithAccessibilityLabel;
 using chrome_test_util::ButtonWithAccessibilityLabelId;
 using chrome_test_util::NavigationBarDoneButton;
@@ -147,33 +143,14 @@ id<GREYMatcher> MigrateToAccountButton() {
 - (AppLaunchConfiguration)appConfigurationForTestCase {
   AppLaunchConfiguration config;
 
-  if ([self isRunningTest:@selector(testConfirmationShownOnDeletion)] ||
-      [self isRunningTest:@selector(testConfirmationShownOnSwipeToDelete)] ||
-      [self isRunningTest:@selector(testCountrySelection)] ||
-      [self isRunningTest:@selector(testRequiredFields)] ||
-      [self isRunningTest:@selector(testAutoScrollInCountrySelector)] ||
-      [self isRunningTest:@selector(testDoneButtonByRequirementsOfCountries)] ||
-      [self isRunningTest:@selector(testFooterWithMultipleErrors)]) {
-    config.features_enabled.push_back(
-        autofill::features::kAutofillAccountProfilesUnionView);
-  }
-
-  if ([self isRunningTest:@selector(testMigrateToAccount)]) {
-    config.features_enabled.push_back(
-        autofill::features::kAutofillAccountProfilesUnionView);
+  if ([self isRunningTest:@selector(testMigrateToAccount)] ||
+      [self isRunningTest:@selector(testIncompleteProfileMigrateToAccount)]) {
     config.features_enabled.push_back(
         autofill::features::kAutofillAccountProfileStorage);
     config.features_enabled.push_back(
         autofill::features::kAutofillRequireNameForProfileImport);
     config.features_enabled.push_back(
         syncer::kSyncEnableContactInfoDataTypeInTransportMode);
-  }
-
-  // Either the test is a duplicate or incompatible with the feature.
-  if ([self isRunningTest:@selector(testAutofillProfileEditing)] ||
-      [self isRunningTest:@selector(testDeletionOfAddressProfile)]) {
-    config.features_disabled.push_back(
-        autofill::features::kAutofillAccountProfilesUnionView);
   }
 
   return config;
@@ -275,42 +252,6 @@ id<GREYMatcher> MigrateToAccountButton() {
   [self exitSettingsMenu];
 }
 
-// Test that editing country names is followed by validating the value and
-// replacing it with a canonical one.
-- (void)testAutofillProfileEditing {
-  [AutofillAppInterface saveExampleProfile];
-  [self openEditProfile:kProfileLabel];
-
-  // Keep editing the Country field and verify that validation works.
-  for (const UserTypedCountryExpectedResultPair& expectation : kCountryTests) {
-    // Switch on edit mode.
-    [[EarlGrey selectElementWithMatcher:NavigationBarEditButton()]
-        performAction:grey_tap()];
-
-    // Replace the text field with the user-version of the country.
-    [[EarlGrey
-        selectElementWithMatcher:chrome_test_util::TextFieldForCellWithLabelId(
-                                     IDS_IOS_AUTOFILL_COUNTRY)]
-        performAction:grey_replaceText(expectation.user_typed_country)];
-
-    // Switch off edit mode.
-    [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
-        performAction:grey_tap()];
-
-    // Verify that the country value was changed to canonical.
-    [[EarlGrey
-        selectElementWithMatcher:chrome_test_util::TextFieldForCellWithLabelId(
-                                     IDS_IOS_AUTOFILL_COUNTRY)]
-        assertWithMatcher:grey_text(expectation.expected_result)];
-  }
-
-  // Go back to the list view page.
-  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton(0)]
-      performAction:grey_tap()];
-
-  [self exitSettingsMenu];
-}
-
 // Test that the page for viewing Autofill profile details is accessible.
 - (void)testAccessibilityOnAutofillProfileViewPage {
   [AutofillAppInterface saveExampleProfile];
@@ -387,28 +328,6 @@ id<GREYMatcher> MigrateToAccountButton() {
       assertWithMatcher:grey_notNil()];
 
   [self exitSettingsMenu];
-}
-
-// Checks that the autofill profile is deleted when the deletion is initiated.
-- (void)testDeletionOfAddressProfile {
-  [AutofillAppInterface saveExampleProfile];
-  [self openProfileListInEditMode];
-
-  [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityLabel(
-                                   [AutofillAppInterface exampleProfileName])]
-      performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::
-                                          SettingsBottomToolbarDeleteButton()]
-      performAction:grey_tap()];
-
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::
-                                          SettingsBottomToolbarDeleteButton()]
-      assertWithMatcher:grey_nil()];
-  // If the done button in the nav bar is enabled it is no longer in edit
-  // mode.
-  [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
-      assertWithMatcher:grey_sufficientlyVisible()];
 }
 
 // Checks that the confirmation action sheet is shown when an autofill profile
@@ -737,6 +656,94 @@ id<GREYMatcher> MigrateToAccountButton() {
 
   [[EarlGrey selectElementWithMatcher:MigrateToAccountButton()]
       performAction:grey_tap()];
+  // Wait for the snackbar to appear.
+  id<GREYMatcher> snackbar_matcher =
+      grey_accessibilityID(@"MDCSnackbarMessageTitleAutomationIdentifier");
+  ConditionBlock wait_for_appearance = ^{
+    NSError* error = nil;
+    [[EarlGrey selectElementWithMatcher:snackbar_matcher]
+        assertWithMatcher:grey_notNil()
+                    error:&error];
+    return error == nil;
+  };
+  GREYAssert(base::test::ios::WaitUntilConditionOrTimeout(
+                 kSnackbarAppearanceTimeout, wait_for_appearance),
+             @"Snackbar did not appear.");
+
+  // Wait for the snackbar to disappear.
+  ConditionBlock wait_for_disappearance = ^{
+    NSError* error = nil;
+    [[EarlGrey selectElementWithMatcher:snackbar_matcher]
+        assertWithMatcher:grey_nil()
+                    error:&error];
+    return error == nil;
+  };
+  GREYAssert(base::test::ios::WaitUntilConditionOrTimeout(
+                 kSnackbarDisappearanceTimeout, wait_for_disappearance),
+             @"Snackbar did not disappear.");
+
+  // Go back to the list view page.
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton(0)]
+      performAction:grey_tap()];
+  // Open the profile view.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityLabel(kProfileLabel)]
+      performAction:grey_tap()];
+
+  id<GREYMatcher> accountProfileFooterMatcher =
+      grey_text(l10n_util::GetNSStringF(
+          IDS_IOS_SETTINGS_AUTOFILL_ACCOUNT_ADDRESS_FOOTER_TEXT,
+          u"foo1@gmail.com"));
+
+  // Switch on edit mode to make sure the page has opened.
+  [[EarlGrey selectElementWithMatcher:NavigationBarEditButton()]
+      performAction:grey_tap()];
+
+  [[EarlGrey selectElementWithMatcher:accountProfileFooterMatcher]
+      assertWithMatcher:grey_sufficientlyVisible()];
+  [SigninEarlGrey signOut];
+}
+
+// Tests that a local incomplete profile can be migrated to account after
+// editing the profile.
+- (void)testIncompleteProfileMigrateToAccount {
+  [SigninEarlGreyUI signinWithFakeIdentity:[FakeSystemIdentity fakeIdentity1]
+                                enableSync:NO];
+  [AutofillAppInterface saveExampleProfile];
+
+  [self openEditProfile:kProfileLabel];
+  // Switch on edit mode.
+  [[EarlGrey selectElementWithMatcher:NavigationBarEditButton()]
+      performAction:grey_tap()];
+
+  // Change text of city to empty.
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::TextFieldForCellWithLabelId(
+                                   IDS_IOS_AUTOFILL_CITY)]
+      performAction:grey_replaceText(@"")];
+
+  // Save the profile.
+  [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
+      performAction:grey_tap()];
+
+  if ([ChromeEarlGrey isIPadIdiom]) {
+    // Scroll to the bottom for ipad.
+    [self scrollDownWithMatcher:grey_accessibilityID(
+                                    kAutofillProfileEditTableViewId)];
+  }
+
+  [[EarlGrey selectElementWithMatcher:MigrateToAccountButton()]
+      performAction:grey_tap()];
+
+  // Change text of city to empty.
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::TextFieldForCellWithLabelId(
+                                   IDS_IOS_AUTOFILL_CITY)]
+      performAction:grey_replaceText(@"New York")];
+
+  // Save the profile.
+  [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
+      performAction:grey_tap()];
+
   // Wait for the snackbar to appear.
   id<GREYMatcher> snackbar_matcher =
       grey_accessibilityID(@"MDCSnackbarMessageTitleAutomationIdentifier");

@@ -26,10 +26,6 @@
 #include "device/fido/strings/grit/fido_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 namespace device::fido::mac {
 
 using base::ScopedCFTypeRef;
@@ -160,10 +156,7 @@ GetAssertionOperation::ResponseForCredential(const Credential& credential,
                                              FidoTransportProtocol::kInternal);
   response.credential = PublicKeyCredentialDescriptor(
       CredentialType::kPublicKey, credential.credential_id);
-  if (has_uv) {
-    response.user_entity =
-        credential.metadata.ToPublicKeyCredentialUserEntity();
-  }
+  response.user_entity = credential.metadata.ToPublicKeyCredentialUserEntity();
   return response;
 }
 

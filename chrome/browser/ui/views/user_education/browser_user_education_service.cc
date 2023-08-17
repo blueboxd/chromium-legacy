@@ -9,6 +9,8 @@
 #include <vector>
 
 #include "base/functional/bind.h"
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -24,9 +26,11 @@
 #include "chrome/browser/ui/performance_controls/performance_controls_metrics.h"
 #include "chrome/browser/ui/tabs/tab_group_model.h"
 #include "chrome/browser/ui/toolbar/app_menu_model.h"
+#include "chrome/browser/ui/user_education/show_promo_in_page.h"
 #include "chrome/browser/ui/user_education/user_education_service_factory.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/location_bar/cookie_controls/cookie_controls_icon_view.h"
 #include "chrome/browser/ui/views/toolbar/browser_app_menu_button.h"
 #include "chrome/browser/ui/views/web_apps/pwa_confirmation_bubble_view.h"
 #include "chrome/browser/ui/webui/new_tab_page/new_tab_page_ui.h"
@@ -57,6 +61,7 @@
 #include "ui/base/interaction/element_tracker.h"
 #include "ui/base/interaction/framework_specific_implementation.h"
 #include "ui/base/interaction/interaction_sequence.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/color/color_id.h"
 #include "ui/views/interaction/element_tracker_views.h"
 #include "ui/views/view.h"
@@ -257,6 +262,16 @@ void MaybeRegisterChromeFeaturePromos(
                     IDS_AUTOFILL_IPH_EXTERNAL_ACCOUNT_PROFILE_SUGGESTION)
                     .SetBubbleArrow(HelpBubbleArrow::kLeftCenter)));
 
+  // kIPHAutofillVirtualCardCVCSuggestionFeature:
+  registry.RegisterFeature(std::move(
+      FeaturePromoSpecification::CreateForToastPromo(
+          feature_engagement::kIPHAutofillVirtualCardCVCSuggestionFeature,
+          kAutofillCreditCardSuggestionEntryElementId,
+          IDS_AUTOFILL_VIRTUAL_CARD_STANDALONE_CVC_SUGGESTION_IPH_BUBBLE_LABEL,
+          IDS_AUTOFILL_VIRTUAL_CARD_STANDALONE_CVC_SUGGESTION_IPH_BUBBLE_LABEL_SCREENREADER,
+          FeaturePromoSpecification::AcceleratorInfo())
+          .SetBubbleArrow(HelpBubbleArrow::kLeftCenter)));
+
   // kIPHAutofillVirtualCardSuggestionFeature:
   registry.RegisterFeature(std::move(
       FeaturePromoSpecification::CreateForLegacyPromo(
@@ -329,6 +344,32 @@ void MaybeRegisterChromeFeaturePromos(
           .SetBubbleIcon(&vector_icons::kLightbulbOutlineIcon)
           .SetCustomActionIsDefault(true)
           .SetCustomActionDismissText(IDS_PROMO_SNOOZE_BUTTON)));
+
+  // kIPHDesktopCustomizeChromeRefreshFeature:
+  registry.RegisterFeature(std::move(
+      FeaturePromoSpecification::CreateForCustomAction(
+          feature_engagement::kIPHDesktopCustomizeChromeRefreshFeature,
+          kTopContainerElementId, IDS_IPH_CUSTOMIZE_CHROME_REFRESH_BODY,
+          IDS_IPH_CUSTOMIZE_CHROME_REFRESH_CUSTOM_ACTION,
+          base::BindRepeating(
+              [](ui::ElementContext ctx,
+                 user_education::FeaturePromoHandle promo_handle) {
+                auto* browser = chrome::FindBrowserWithUiElementContext(ctx);
+                if (!browser) {
+                  return;
+                }
+                ShowPromoInPage::Params params;
+                params.bubble_anchor_id =
+                    NewTabPageUI::kCustomizeChromeButtonElementId;
+                params.bubble_arrow =
+                    user_education::HelpBubbleArrow::kBottomRight;
+                params.bubble_text = l10n_util::GetStringUTF16(
+                    IDS_IPH_CUSTOMIZE_CHROME_REFRESH_POINTER_BODY);
+                ShowPromoInPage::Start(browser, std::move(params));
+              }))
+          .SetBubbleArrow(HelpBubbleArrow::kNone)
+          .SetCustomActionIsDefault(false)
+          .SetCustomActionDismissText(IDS_PROMO_DISMISS_BUTTON)));
 
   // kIPHExtensionsMenuFeature:
   registry.RegisterFeature(std::move(
@@ -428,6 +469,30 @@ void MaybeRegisterChromeFeaturePromos(
       IDS_PROFILE_SWITCH_PROMO_SCREENREADER,
       FeaturePromoSpecification::AcceleratorInfo()));
 #endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
+
+  // kIPHCookieControlsFeature:
+  registry.RegisterFeature(std::move(
+      FeaturePromoSpecification::CreateForCustomAction(
+          feature_engagement::kIPHCookieControlsFeature,
+          kCookieControlsIconElementId, IDS_COOKIE_CONTROLS_PROMO_TEXT,
+          IDS_COOKIE_CONTROLS_PROMO_SEE_HOW_BUTTON_TEXT,
+          base::BindRepeating(
+              [](ui::ElementContext ctx,
+                 user_education::FeaturePromoHandle promo_handle) {
+                auto* cookie_controls_icon_view =
+                    views::ElementTrackerViews::GetInstance()
+                        ->GetFirstMatchingViewAs<CookieControlsIconView>(
+                            kCookieControlsIconElementId, ctx);
+                if (cookie_controls_icon_view != nullptr) {
+                  cookie_controls_icon_view->ShowCookieControlsBubble();
+                }
+              }))
+          .SetBubbleTitleText(IDS_COOKIE_CONTROLS_PROMO_TITLE)
+          .SetBubbleArrow(HelpBubbleArrow::kTopRight)
+          .SetBubbleIcon(&vector_icons::kLightbulbOutlineIcon)
+          .SetCustomActionIsDefault(true)
+          .SetCustomActionDismissText(
+              IDS_COOKIE_CONTROLS_PROMO_CLOSE_BUTTON_TEXT)));
 
   // kIPHReadingListDiscoveryFeature:
   registry.RegisterFeature(FeaturePromoSpecification::CreateForLegacyPromo(
@@ -673,8 +738,9 @@ void MaybeRegisterChromeTutorials(
           HiddenStep::WaitForHidden(kChromeThemeBackElementName),
 
           // Completion of the tutorial.
-          BubbleStep(kTopContainerElementId)
+          BubbleStep(NewTabPageUI::kCustomizeChromeButtonElementId)
               .SetBubbleTitleText(IDS_TUTORIAL_GENERIC_SUCCESS_TITLE)
+              .SetBubbleArrow(HelpBubbleArrow::kBottomRight)
               .SetBubbleBodyText(IDS_TUTORIAL_CUSTOMIZE_CHROME_SUCCESS_BODY)
               .InAnyContext()));
 
@@ -763,6 +829,21 @@ void MaybeRegisterChromeTutorials(
           TutorialDescription::BubbleStep(kAppMenuButtonElementId)
               .SetBubbleBodyText(IDS_TUTORIAL_PASSWORD_MANAGER_OPEN_APP_MENU)
               .SetBubbleArrow(HelpBubbleArrow::kTopRight),
+
+          // Wait for one of the next elements so the If step can check
+          // for the optional element.
+          TutorialDescription::WaitForAnyOf(
+              AppMenuModel::kPasswordAndAutofillMenuItem)
+              .Or(AppMenuModel::kPasswordManagerMenuItem),
+
+          TutorialDescription::If(AppMenuModel::kPasswordAndAutofillMenuItem)
+              .Then(
+                  // Bubble step - Passwords and Autofill sub menu item
+                  TutorialDescription::BubbleStep(
+                      AppMenuModel::kPasswordAndAutofillMenuItem)
+                      .SetBubbleBodyText(
+                          IDS_TUTORIAL_PASSWORD_MANAGER_CLICK_PASSWORDS_MENU)
+                      .SetBubbleArrow(HelpBubbleArrow::kRightCenter)),
 
           // Bubble step - "Password Manager" menu item
           TutorialDescription::BubbleStep(

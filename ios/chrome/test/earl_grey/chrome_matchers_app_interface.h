@@ -35,6 +35,14 @@
 // and accessibility trait UIAccessibilityTraitButton.
 + (id<GREYMatcher>)buttonWithAccessibilityLabelID:(int)messageID;
 
+// Matcher for context menu items with accessibility label
+// corresponding to `label`.
++ (id<GREYMatcher>)contextMenuItemWithAccessibilityLabel:(NSString*)label;
+
+// Matcher for context menu items with accessibility label
+// corresponding to `messageID`.
++ (id<GREYMatcher>)contextMenuItemWithAccessibilityLabelID:(int)messageID;
+
 // Matcher for element with an image corresponding to `image`.
 + (id<GREYMatcher>)imageViewWithImage:(UIImage*)image;
 
@@ -303,6 +311,10 @@
 // Returns matcher for the Inactive Tabs Settings button on the Tabs Settings
 // screen.
 + (id<GREYMatcher>)inactiveTabsSettingsButton;
+
+// Returns matcher for the Tab Pickup Settings button on the Tabs Settings
+// screen.
++ (id<GREYMatcher>)tabPickupSettingsButton;
 
 // Returns matcher for the Tabs Settings button on the main Settings screen.
 + (id<GREYMatcher>)tabsSettingsButton;

@@ -308,6 +308,9 @@ id<GREYAction> grey_longPressWithDuration(base::TimeDelta duration);
 // Closes the current tab and waits for the UI to complete.
 - (void)closeCurrentTab;
 
+// Pins the current tab and waits for the UI to complete.
+- (void)pinCurrentTab;
+
 // Opens a new incognito tab and waits for the new tab animation to complete.
 - (void)openNewIncognitoTab;
 
@@ -630,16 +633,6 @@ id<GREYAction> grey_longPressWithDuration(base::TimeDelta duration);
 // `ForceRelaunchByKilling.
 - (void)clearAllWebStateBrowsingData:(AppLaunchConfiguration)config;
 
-#pragma mark - Bookmarks Utilities (EG2)
-
-// Waits for the bookmark internal state to be done loading.
-// If the condition is not met within a timeout a GREYAssert is induced.
-- (void)waitForBookmarksToFinishLoading;
-
-// Clears bookmarks if any bookmark still presents. A GREYAssert is induced if
-// bookmarks can not be cleared.
-- (void)clearBookmarks;
-
 #pragma mark - URL Utilities (EG2)
 
 // Returns the title string to be used for a page with `URL` if that page
@@ -729,8 +722,11 @@ id<GREYAction> grey_longPressWithDuration(base::TimeDelta duration);
 // Returns whether UIButtonConfiguration changes are enabled.
 - (BOOL)isUIButtonConfigurationEnabled;
 
-// Returns whether TabGrid is sorted by recency (#tab-grid-recency-sort).
-- (BOOL)isSortingTabsByRecency;
+// Returns whether the bottom omnibox steady state feature is enabled.
+- (BOOL)isBottomOmniboxSteadyStateEnabled;
+
+// Returns whether the unfocused omnibox is at the bottom.
+- (BOOL)isUnfocusedOmniboxAtBottom;
 
 #pragma mark - ContentSettings
 
@@ -773,11 +769,21 @@ id<GREYAction> grey_longPressWithDuration(base::TimeDelta duration);
 - (int)localStateIntegerPref:(const std::string&)prefName;
 - (std::string)localStateStringPref:(const std::string&)prefName;
 
-// Sets the integer values for the local state pref with `prefName`. `value`
+// Sets the integer value for the local state pref with `prefName`. `value`
 // can be either a casted enum or any other numerical value. Local State
 // contains the preferences that are shared between all browser states.
 - (void)setIntegerValue:(int)value
       forLocalStatePref:(const std::string&)prefName;
+
+// Sets the time value for the local state pref with `prefName`. `value` Local
+// State contains the preferences that are shared between all browser states.
+- (void)setTimeValue:(base::Time)value
+    forLocalStatePref:(const std::string&)prefName;
+
+// Sets the string value for the local state pref with `prefName`. `value` Local
+// State contains the preferences that are shared between all browser states.
+- (void)setStringValue:(const std::string&)value
+     forLocalStatePref:(const std::string&)prefName;
 
 // Gets the value of a user pref in the original browser state.
 - (bool)userBooleanPref:(const std::string&)prefName;

@@ -11,6 +11,7 @@
 #import "ios/chrome/browser/overlays/public/overlay_presentation_context.h"
 #import "ios/chrome/browser/prerender/prerender_service.h"
 #import "ios/chrome/browser/prerender/prerender_service_factory.h"
+#import "ios/chrome/browser/segmentation_platform/segmentation_platform_service_factory.h"
 #import "ios/chrome/browser/shared/model/browser/browser.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_list.h"
@@ -35,10 +36,6 @@
 #import "ios/chrome/browser/ui/toolbar/toolbar_coordinatee.h"
 #import "ios/chrome/browser/ui/toolbar/toolbar_mediator.h"
 #import "ios/components/webui/web_ui_url_constants.h"
-
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
 
 @interface ToolbarCoordinator () <PrimaryToolbarViewControllerDelegate,
                                   ToolbarCommands,
@@ -89,6 +86,10 @@
         [[PrimaryToolbarCoordinator alloc] initWithBrowser:browser];
     _secondaryToolbarCoordinator =
         [[SecondaryToolbarCoordinator alloc] initWithBrowser:browser];
+
+    [self.browser->GetCommandDispatcher()
+        startDispatchingToTarget:self
+                     forProtocol:@protocol(ToolbarCommands)];
   }
   return self;
 }
@@ -104,18 +105,23 @@
   Browser* browser = self.browser;
   [browser->GetCommandDispatcher()
       startDispatchingToTarget:self
-                   forProtocol:@protocol(ToolbarCommands)];
-  [browser->GetCommandDispatcher()
-      startDispatchingToTarget:self
                    forProtocol:@protocol(FakeboxFocuser)];
 
   PrefService* prefs =
       ChromeBrowserState::FromBrowserState(browser->GetBrowserState())
           ->GetPrefs();
+  segmentation_platform::DeviceSwitcherResultDispatcher* deviceSwitcherResult =
+      nullptr;
+  if (!browser->GetBrowserState()->IsOffTheRecord()) {
+    deviceSwitcherResult =
+        segmentation_platform::SegmentationPlatformServiceFactory::
+            GetDispatcherForBrowserState(browser->GetBrowserState());
+  }
   self.toolbarMediator = [[ToolbarMediator alloc]
       initWithWebStateList:browser->GetWebStateList()
                isIncognito:browser->GetBrowserState()->IsOffTheRecord()];
   self.toolbarMediator.delegate = self;
+  self.toolbarMediator.deviceSwitcherResultDispatcher = deviceSwitcherResult;
   self.toolbarMediator.prefService = prefs;
 
   self.locationBarCoordinator =
@@ -160,13 +166,28 @@
     return;
   }
   [super stop];
+  _prerenderService = nullptr;
+  self.orchestrator.editViewAnimatee = nil;
+  self.orchestrator.locationBarAnimatee = nil;
+  self.orchestrator = nil;
+
+  [self.primaryToolbarCoordinator stop];
+  self.primaryToolbarCoordinator.viewControllerDelegate = nil;
+  self.primaryToolbarCoordinator = nil;
+
+  [self.secondaryToolbarCoordinator stop];
+  self.secondaryToolbarCoordinator = nil;
+
+  [self.locationBarCoordinator stop];
+  self.locationBarCoordinator.popupPresenterDelegate = nil;
+  self.locationBarCoordinator = nil;
 
   [self.toolbarMediator disconnect];
+  self.toolbarMediator.omniboxConsumer = nil;
+  self.toolbarMediator.delegate = nil;
+  self.toolbarMediator.prefService = nullptr;
+  self.toolbarMediator.deviceSwitcherResultDispatcher = nullptr;
   self.toolbarMediator = nil;
-  [self.locationBarCoordinator stop];
-  self.locationBarCoordinator = nil;
-  [self.primaryToolbarCoordinator stop];
-  [self.secondaryToolbarCoordinator stop];
 
   [self.browser->GetCommandDispatcher() stopDispatchingToTarget:self];
   _prerenderService = nullptr;
@@ -202,7 +223,9 @@
       !webState->GetLastCommittedURL().SchemeIs(kChromeUIScheme);
 
   if (self.isLoadingPrerenderer && isToolbarLoading) {
-    [self.primaryToolbarCoordinator showPrerenderingAnimation];
+    for (id<ToolbarCoordinatee> coordinator in self.coordinators) {
+      [coordinator showPrerenderingAnimation];
+    }
   }
 
   id<FindInPageCommands> findInPageCommandsHandler = HandlerForProtocol(
@@ -321,7 +344,8 @@
       self.secondaryToolbarViewController.view.intrinsicContentSize.height;
   if (_omniboxPosition == ToolbarType::kSecondary) {
     CHECK(IsBottomOmniboxSteadyStateEnabled());
-    height += kSecondaryToolbarOmniboxHeight;
+    height += ToolbarExpandedHeight(
+        self.traitEnvironment.traitCollection.preferredContentSizeCategory);
   }
   return height;
 }
@@ -477,6 +501,18 @@
 - (void)triggerToolbarSlideInAnimation {
   for (id<ToolbarCommands> coordinator in self.coordinators) {
     [coordinator triggerToolbarSlideInAnimation];
+  }
+}
+
+- (void)setTabGridButtonIPHHighlighted:(BOOL)iphHighlighted {
+  for (id<ToolbarCommands> coordinator in self.coordinators) {
+    [coordinator setTabGridButtonIPHHighlighted:iphHighlighted];
+  }
+}
+
+- (void)setNewTabButtonIPHHighlighted:(BOOL)iphHighlighted {
+  for (id<ToolbarCommands> coordinator in self.coordinators) {
+    [coordinator setNewTabButtonIPHHighlighted:iphHighlighted];
   }
 }
 

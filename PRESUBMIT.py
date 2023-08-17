@@ -425,6 +425,14 @@ _BANNED_OBJC_FUNCTIONS : Sequence[BanRule] = (
       ),
       True,
     ),
+    BanRule(
+      'This file requires ARC support.',
+      (
+        'ARC compilation is default in Chromium; do not add boilerplate to ',
+        'files that require ARC.',
+      ),
+      True,
+    ),
 )
 
 _BANNED_IOS_OBJC_FUNCTIONS = (
@@ -697,10 +705,6 @@ _BANNED_CPP_FUNCTIONS : Sequence[BanRule] = (
       [
         # Abseil's benchmarks never linked into chrome.
         'third_party/abseil-cpp/.*_benchmark.cc',
-
-        # TODO(b/283522287): MediaPipe is not built into chrome, but will be.
-        # This needs to be fixed first.
-        'third_party/mediapipe/src/.*',
       ],
     ),
     BanRule(
@@ -736,6 +740,15 @@ _BANNED_CPP_FUNCTIONS : Sequence[BanRule] = (
       [_THIRD_PARTY_EXCEPT_BLINK],  # Don't warn in third_party folders.
     ),
     BanRule(
+      r'/#include <(cctype|ctype\.h|cwctype|wctype.h)>',
+      (
+        '<cctype>/<ctype.h>/<cwctype>/<wctype.h> are banned. Use',
+        '"third_party/abseil-cpp/absl/strings/ascii.h" instead.',
+      ),
+      True,
+      [_THIRD_PARTY_EXCEPT_BLINK],  # Not an error in third_party folders.
+    ),
+    BanRule(
       r'/\bstd::shared_ptr\b',
       (
         'std::shared_ptr is banned. Use scoped_refptr instead.',
@@ -748,6 +761,7 @@ _BANNED_CPP_FUNCTIONS : Sequence[BanRule] = (
        '^third_party/blink/renderer/bindings/core/v8/' +
          'v8_wasm_response_extensions.cc',
        '^gin/array_buffer\.(cc|h)',
+       '^gin/per_isolate_data\.(cc|h)',
        '^chrome/services/sharing/nearby/',
        # Needed for interop with third-party library libunwindstack.
        '^base/profiler/libunwindstack_unwinder_android\.(cc|h)',
@@ -1672,7 +1686,6 @@ _ANDROID_SPECIFIC_PYDEPS_FILES = [
 _GENERIC_PYDEPS_FILES = [
     'android_webview/test/components/run_webview_component_smoketest.pydeps',
     'android_webview/tools/run_cts.pydeps',
-    'base/android/jni_generator/jni_zero.pydeps',
     'build/android/apk_operations.pydeps',
     'build/android/devil_chromium.pydeps',
     'build/android/gyp/aar.pydeps',
@@ -1755,6 +1768,7 @@ _GENERIC_PYDEPS_FILES = [
     'third_party/blink/renderer/bindings/scripts/validate_web_idl.pydeps',
     'third_party/blink/tools/blinkpy/web_tests/merge_results.pydeps',
     'third_party/blink/tools/merge_web_test_results.pydeps',
+    'third_party/jni_zero/jni_zero.pydeps',
     'tools/binary_size/sizes.pydeps',
     'tools/binary_size/supersize.pydeps',
     'tools/perf/process_perf_results.pydeps',
@@ -6082,7 +6096,7 @@ def CheckStrings(input_api, output_api):
         if sha1_path not in new_or_added_paths:
             missing_sha1.append(sha1_path)
         elif not _CheckValidSha1(sha1_path):
-          invalid_sha1.append(sha1_path)
+            invalid_sha1.append(sha1_path)
 
     def _CheckScreenshotModified(screenshots_dir, message_id):
         sha1_path = input_api.os_path.join(screenshots_dir,
@@ -6090,16 +6104,12 @@ def CheckStrings(input_api, output_api):
         if sha1_path not in new_or_added_paths:
             missing_sha1_modified.append(sha1_path)
         elif not _CheckValidSha1(sha1_path):
-          invalid_sha1.append(sha1_path)
+            invalid_sha1.append(sha1_path)
 
     def _CheckValidSha1(sha1_path):
-      return sha1_pattern.search(
-          next(
-                "\n".join(f.NewContents())
-                for f in input_api.AffectedFiles()
-                if f.LocalPath() == sha1_path
-          )
-      )
+        return sha1_pattern.search(
+            next("\n".join(f.NewContents()) for f in input_api.AffectedFiles()
+                 if f.LocalPath() == sha1_path))
 
     def _CheckScreenshotRemoved(screenshots_dir, message_id):
         sha1_path = input_api.os_path.join(screenshots_dir,
@@ -6943,7 +6953,7 @@ def CheckLibcxxRevisionsMatch(input_api, output_api):
     """Check to make sure the libc++ version matches across deps files."""
     # Disable check for changes to sub-repositories.
     if input_api.PresubmitLocalPath() != input_api.change.RepositoryRoot():
-      return []
+        return []
 
     DEPS_FILES = [ 'DEPS', 'buildtools/deps_revisions.gni' ]
 

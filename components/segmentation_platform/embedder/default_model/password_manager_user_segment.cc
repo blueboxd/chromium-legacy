@@ -11,6 +11,7 @@
 #include "components/segmentation_platform/internal/metadata/metadata_writer.h"
 #include "components/segmentation_platform/public/config.h"
 #include "components/segmentation_platform/public/constants.h"
+#include "components/segmentation_platform/public/features.h"
 #include "components/segmentation_platform/public/proto/aggregation.pb.h"
 #include "components/segmentation_platform/public/proto/model_metadata.pb.h"
 
@@ -135,11 +136,16 @@ constexpr std::array<MetadataWriter::UMAFeature, 7>
 
 // static
 std::unique_ptr<Config> PasswordManagerUserModel::GetConfig() {
+  if (!base::FeatureList::IsEnabled(
+          features::kSegmentationPlatformPasswordManagerUser)) {
+    return nullptr;
+  }
   auto config = std::make_unique<Config>();
   config->segmentation_key = kPasswordManagerUserKey;
   config->segmentation_uma_name = kPasswordManagerUserUmaName;
   config->AddSegmentId(kPasswordManagerUserSegmentId,
                        std::make_unique<PasswordManagerUserModel>());
+  config->auto_execute_and_cache = true;
   config->is_boolean_segment = true;
 
   return config;

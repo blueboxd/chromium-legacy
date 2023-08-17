@@ -13,6 +13,7 @@
 #include "ash/public/cpp/esim_manager.h"
 #include "ash/public/cpp/hotspot_config_service.h"
 #include "ash/public/cpp/network_config_service.h"
+#include "ash/webui/common/trusted_types_util.h"
 #include "ash/webui/personalization_app/search/search.mojom.h"
 #include "ash/webui/personalization_app/search/search_handler.h"
 #include "base/metrics/histogram_functions.h"
@@ -22,6 +23,7 @@
 #include "chrome/browser/ash/system_web_apps/apps/personalization_app/personalization_app_manager.h"
 #include "chrome/browser/ash/system_web_apps/apps/personalization_app/personalization_app_manager_factory.h"
 #include "chrome/browser/ash/system_web_apps/apps/personalization_app/personalization_app_utils.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/nearby_sharing/contacts/nearby_share_contact_manager.h"
 #include "chrome/browser/nearby_sharing/nearby_receive_manager.h"
 #include "chrome/browser/nearby_sharing/nearby_share_settings.h"
@@ -105,13 +107,13 @@ OSSettingsUI::OSSettingsUI(content::WebUI* web_ui)
       html_source,
       base::make_span(kOsSettingsResources, kOsSettingsResourcesSize),
       IDR_OS_SETTINGS_OS_SETTINGS_HTML);
+  ash::EnableTrustedTypesCSP(html_source);
 
 #if !BUILDFLAG(OPTIMIZE_WEBUI)
   html_source->AddResourcePaths(
       base::make_span(kSettingsSharedResources, kSettingsSharedResourcesSize));
 #endif
 
-  html_source->DisableTrustedTypesCSP();
   html_source->OverrideContentSecurityPolicy(
       network::mojom::CSPDirectiveName::WorkerSrc,
       "worker-src blob: chrome://resources 'self';");
@@ -268,18 +270,6 @@ void OSSettingsUI::BindInterface(
 }
 
 void OSSettingsUI::BindInterface(
-    mojo::PendingReceiver<auth::mojom::AuthFactorConfig> receiver) {
-  auth::BindToAuthFactorConfig(std::move(receiver),
-                               quick_unlock::QuickUnlockFactory::GetDelegate());
-}
-
-void OSSettingsUI::BindInterface(
-    mojo::PendingReceiver<auth::mojom::RecoveryFactorEditor> receiver) {
-  auth::BindToRecoveryFactorEditor(
-      std::move(receiver), quick_unlock::QuickUnlockFactory::GetDelegate());
-}
-
-void OSSettingsUI::BindInterface(
     mojo::PendingReceiver<color_change_listener::mojom::PageHandler> receiver) {
   if (!chromeos::features::IsJellyEnabled()) {
     mojo::ReportBadMessage(
@@ -291,18 +281,33 @@ void OSSettingsUI::BindInterface(
 }
 
 void OSSettingsUI::BindInterface(
+    mojo::PendingReceiver<auth::mojom::AuthFactorConfig> receiver) {
+  auth::BindToAuthFactorConfig(std::move(receiver),
+                               quick_unlock::QuickUnlockFactory::GetDelegate(),
+                               g_browser_process->local_state());
+}
+
+void OSSettingsUI::BindInterface(
+    mojo::PendingReceiver<auth::mojom::RecoveryFactorEditor> receiver) {
+  auth::BindToRecoveryFactorEditor(
+      std::move(receiver), quick_unlock::QuickUnlockFactory::GetDelegate(),
+      g_browser_process->local_state());
+}
+
+void OSSettingsUI::BindInterface(
     mojo::PendingReceiver<auth::mojom::PinFactorEditor> receiver) {
   auto* pin_backend = quick_unlock::PinBackend::GetInstance();
   CHECK(pin_backend);
   auth::BindToPinFactorEditor(std::move(receiver),
                               quick_unlock::QuickUnlockFactory::GetDelegate(),
-                              *pin_backend);
+                              g_browser_process->local_state(), *pin_backend);
 }
 
 void OSSettingsUI::BindInterface(
     mojo::PendingReceiver<auth::mojom::PasswordFactorEditor> receiver) {
   auth::BindToPasswordFactorEditor(
-      std::move(receiver), quick_unlock::QuickUnlockFactory::GetDelegate());
+      std::move(receiver), quick_unlock::QuickUnlockFactory::GetDelegate(),
+      g_browser_process->local_state());
 }
 
 void OSSettingsUI::BindInterface(

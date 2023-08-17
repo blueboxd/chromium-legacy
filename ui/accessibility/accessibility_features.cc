@@ -138,7 +138,7 @@ bool IsDictationOfflineAvailable() {
 
 BASE_FEATURE(kExperimentalAccessibilityChromeVoxOobeDialogImprovements,
              "ExperimentalAccessibilityChromeVoxOobeDialogImprovements",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 bool IsExperimentalAccessibilityChromeVoxOobeDialogImprovementsEnabled() {
   return base::FeatureList::IsEnabled(
@@ -181,6 +181,15 @@ bool IsAccessibilityChromeVoxPageMigrationEnabled() {
       ::features::kAccessibilityChromeVoxPageMigration);
 }
 
+BASE_FEATURE(kAccessibilityDictationKeyboardImprovements,
+             "AccessibilityDictationKeyboardImprovements",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+bool IsAccessibilityDictationKeyboardImprovementsEnabled() {
+  return base::FeatureList::IsEnabled(
+      ::features::kAccessibilityDictationKeyboardImprovements);
+}
+
 BASE_FEATURE(kAccessibilitySelectToSpeakPrefsMigration,
              "AccessibilitySelectToSpeakPrefsMigration",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -206,6 +215,15 @@ BASE_FEATURE(kAccessibilityAcceleratorNotificationsTimeout,
 bool IsAccessibilityAcceleratorNotificationsTimeoutEnabled() {
   return base::FeatureList::IsEnabled(
       ::features::kAccessibilityAcceleratorNotificationsTimeout);
+}
+
+BASE_FEATURE(kAccessibilityGameFaceIntegration,
+             "AccessibilityGameFaceIntegration",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+bool IsAccessibilityGameFaceIntegrationEnabled() {
+  return base::FeatureList::IsEnabled(
+      ::features::kAccessibilityGameFaceIntegration);
 }
 
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)

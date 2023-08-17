@@ -15,7 +15,6 @@
 <translation id="1075811647922107217">Ukuran halaman</translation>
 <translation id="1082009148392559545">Mendownload screensaver</translation>
 <translation id="1094693127011229778">Alamat IP tidak tersedia</translation>
-<translation id="1113892970288677790">Pilih karya seni dan gambar pilihan</translation>
 <translation id="1118572504348554005">Kami mungkin membagikan masukan yang dikirim melalui formulir ini kepada partner kami untuk memecahkan masalah bug dan masalah lain yang Anda laporkan kepada kami. Jangan sertakan informasi sensitif seperti sandi.</translation>
 <translation id="1119447706177454957">Kesalahan internal</translation>
 <translation id="1124772482545689468">Pengguna</translation>
@@ -183,6 +182,7 @@
 <translation id="225692081236532131">Status aktivasi</translation>
 <translation id="2271469253353559191">Jadwal mode gelap</translation>
 <translation id="2276999893457278469">Konten bantuan teratas</translation>
+<translation id="2279051792571591988">Pulihkan default</translation>
 <translation id="2287186687001756809">Foto tidak tersedia. Untuk menambahkan foto, buka <ph name="LINK" /></translation>
 <translation id="2307344026739914387">Gunakan pasangan kunci saat ini</translation>
 <translation id="2320295602967756579">Aktifkan tema terang</translation>
@@ -224,6 +224,7 @@
 <translation id="2620436844016719705">Sistem</translation>
 <translation id="2638662041295312666">Gambar login</translation>
 <translation id="2640549051766135490">Album <ph name="TITLE" /> <ph name="DESC" /> dipilih</translation>
+<translation id="2652403576514495859">aktifkan atau alihkan dikte</translation>
 <translation id="267442004702508783">menyegarkan halaman</translation>
 <translation id="268270014981824665">redupkan keyboard</translation>
 <translation id="2712812801627182647">Kunci autentikasi TLS</translation>
@@ -331,7 +332,6 @@
 <translation id="361575905210396100">Terima kasih atas masukan Anda</translation>
 <translation id="3632579075709132555">Beralih layar privasi</translation>
 <translation id="3651050199673793219">Pilih satuan suhu</translation>
-<translation id="3663574643422533538">Pilih karya seni <ph name="PRODUCT_NAME" /> eksklusif</translation>
 <translation id="3668449597372804501">Wallpaper Aliran awan</translation>
 <translation id="3689839747745352263">Uji <ph name="TEST_NAME" /></translation>
 <translation id="370665806235115550">Memuat...</translation>
@@ -464,7 +464,7 @@
 <translation id="4691278870498629773">Dihentikan - Tidak ada baki</translation>
 <translation id="469379815867856270">Kekuatan Sinyal</translation>
 <translation id="4731797938093519117">Akses orang tua</translation>
-<translation id="473775607612524610">Perbarui</translation>
+<translation id="473775607612524610">Update</translation>
 <translation id="4771607256327216405">cerahkan keyboard</translation>
 <translation id="4773299976671772492">Dihentikan</translation>
 <translation id="4782311465517282004">Dapatkan definisi, terjemahan, atau konversi unit saat Anda mengklik kanan atau menyentuh lama teks</translation>
@@ -589,6 +589,7 @@
 <translation id="5620281292257375798">Khusus internal</translation>
 <translation id="5649768706273821470">Dengar</translation>
 <translation id="5655283760733841251">Tingkatkan kecerahan keyboard</translation>
+<translation id="5655296450510165335">Pendaftaran perangkat</translation>
 <translation id="5655776422854483175">Tidak ada tugas pencetakan</translation>
 <translation id="5659593005791499971">Email</translation>
 <translation id="5662240986744577912">aktifkan/nonaktifkan layar privasi</translation>
@@ -644,6 +645,7 @@
 <translation id="6061772781719867950">Permintaan HTTPS gagal</translation>
 <translation id="6073292342939316679">kurangi kecerahan keyboard</translation>
 <translation id="6075872808778243331">(Android) Latensi HTTP</translation>
+<translation id="6078323886959318429">Tambahkan pintasan</translation>
 <translation id="6104112872696127344">Pemindaian telah dibatalkan</translation>
 <translation id="6106186594183574873">Untuk menyelesaikan, masukkan sandi yang lama</translation>
 <translation id="6108689792487843350">Gateway tidak dapat dijangkau</translation>
@@ -799,10 +801,10 @@
 <translation id="7297226631177386107">Tidak dapat terhubung melewati firewall ke situs HTTPS</translation>
 <translation id="7297726121602187087">Hijau tua</translation>
 <translation id="7302860742311162920">ICCID</translation>
-<translation id="7305236594389852547">aktifkan/nonaktifkan dikte</translation>
 <translation id="7305884605064981971">EDGE</translation>
 <translation id="7308203371573257315">Tanya pakar di forum bantuan Chromebook</translation>
 <translation id="7311368985037279727">warna keyboard</translation>
+<translation id="7317831949569936035">Pendaftaran sekolah</translation>
 <translation id="7319430975418800333">A3</translation>
 <translation id="7343581795491695942"><ph name="QUERY_TEXT" />; <ph name="RESULT_TEXT" />; Tekan tombol Penelusuran dan Spasi untuk melihat hasil di Google Penelusuran.</translation>
 <translation id="7343649194310845056">Perangkat Jaringan</translation>
@@ -814,6 +816,7 @@
 <translation id="7397270852490618635">Nonaktifkan tema terang</translation>
 <translation id="741244894080940828">konversi</translation>
 <translation id="7415801143053185905">Latensi HTTP sangat tinggi</translation>
+<translation id="7425178841057519191">{NUM_ROOL_APPS,plural,offset:2 =1{Administrator telah menyetel <ph name="APP_NAME_1" /> agar dimulai secara otomatis setiap kali Anda login.}=2{Administrator telah menyetel <ph name="APP_NAME_1" /> dan <ph name="APP_NAME_2" /> agar dimulai secara otomatis setiap kali Anda login.}=3{Administrator telah menyetel <ph name="APP_NAME_1" />, <ph name="APP_NAME_2" />, dan <ph name="APP_NAME_3" /> agar dimulai secara otomatis setiap kali Anda login.}other{Administrator telah menyetel <ph name="APP_NAME_1" />, <ph name="APP_NAME_2" />, dan # aplikasi lainnya agar dimulai secara otomatis setiap kali Anda login.}}</translation>
 <translation id="7427315641433634153">MSCHAP</translation>
 <translation id="7458970041932198923">Hubungkan ke jaringan dan muat ulang halaman untuk melihat dan menyetel avatar.</translation>
 <translation id="7469648432129124067">Portal terdeteksi</translation>
@@ -920,7 +923,7 @@
 <translation id="8318753676953949627">Tidak Ada Gambar</translation>
 <translation id="8329018942023753850">aplikasi kalkulator</translation>
 <translation id="8336739000755212683">Ubah gambar akun perangkat</translation>
-<translation id="8347227221149377169">Pekerjaan cetak</translation>
+<translation id="8347227221149377169">Pencetakan</translation>
 <translation id="8351855506390808906">Titik sentuh konfigurasi tombol</translation>
 <translation id="8352772353338965963">Tambahkan akun ke fitur masuk banyak akun. Semua akun yang masuk dapat diakses tanpa menggunakan sandi, sebaiknya hanya gunakan akun ini dengan akun tepercaya.</translation>
 <translation id="8364946094152050673">Server nama kosong</translation>
@@ -1012,6 +1015,7 @@
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8987565828374052507">{NUMBER_OF_PAGES,plural, =0{Pindai}=1{Pindai halaman {NUMBER_OF_PAGES}}other{Pindai halaman {NUMBER_OF_PAGES}}}</translation>
 <translation id="8997710128084572139">Perangkat memiliki <ph name="BATTERY_PERCENTAGE" />% daya baterai.</translation>
+<translation id="8998156756248178381">{NUM_ROOL_APPS,plural, =1{<ph name="APP_NAME_1" /> dimulai secara otomatis}other{# aplikasi dimulai secara otomatis}}</translation>
 <translation id="8998289560386111590">Tidak tersedia di perangkat Anda</translation>
 <translation id="9003704114456258138">Frekuensi</translation>
 <translation id="9024331582947483881">layar penuh</translation>

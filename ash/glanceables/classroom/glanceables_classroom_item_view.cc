@@ -6,6 +6,8 @@
 
 #include <algorithm>
 #include <memory>
+#include <string>
+#include <vector>
 
 #include "ash/glanceables/classroom/glanceables_classroom_client.h"
 #include "ash/glanceables/classroom/glanceables_classroom_types.h"
@@ -22,6 +24,7 @@
 #include "base/functional/callback_forward.h"
 #include "base/i18n/time_formatting.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "base/types/cxx23_to_underlying.h"
@@ -30,9 +33,12 @@
 #include "ui/base/models/image_model.h"
 #include "ui/chromeos/styles/cros_tokens_color_mappings.h"
 #include "ui/gfx/geometry/insets.h"
+#include "ui/gfx/geometry/rounded_corners_f.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/button.h"
+#include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
@@ -42,12 +48,14 @@
 #include "ui/views/layout/layout_types.h"
 #include "ui/views/metadata/view_factory_internal.h"
 #include "ui/views/view_class_properties.h"
+#include "ui/views/view_utils.h"
 
 namespace ash {
 namespace {
 
 // Styles for the whole `GlanceablesClassroomItemView`.
 constexpr int kBackgroundRadius = 4;
+constexpr int kLargeBackgroundRadius = 16;
 constexpr auto kInteriorMargin = gfx::Insets::VH(8, 0);
 
 // Styles for the icon view.
@@ -176,7 +184,8 @@ std::unique_ptr<views::BoxLayoutView> BuildAssignmentTitleLabels(
 }
 
 std::unique_ptr<views::BoxLayoutView> BuildDueLabels(
-    const GlanceablesClassroomAssignment* assignment) {
+    const std::u16string& due_date,
+    const std::u16string& due_time) {
   const auto* const typography_provider = TypographyProvider::Get();
 
   return views::Builder<views::BoxLayoutView>()
@@ -185,7 +194,7 @@ std::unique_ptr<views::BoxLayoutView> BuildDueLabels(
       .SetCrossAxisAlignment(views::BoxLayout::CrossAxisAlignment::kEnd)
       .SetProperty(views::kMarginsKey, kDueLabelsMargin)
       .AddChild(views::Builder<views::Label>()
-                    .SetText(GetFormattedDueDate(assignment->due.value()))
+                    .SetText(due_date)
                     .SetID(base::to_underlying(
                         GlanceablesViewId::kClassroomItemDueDateLabel))
                     .SetEnabledColorId(cros_tokens::kCrosSysOnSurfaceVariant)
@@ -194,7 +203,7 @@ std::unique_ptr<views::BoxLayoutView> BuildDueLabels(
                     .SetLineHeight(typography_provider->ResolveLineHeight(
                         TypographyToken::kCrosAnnotation1)))
       .AddChild(views::Builder<views::Label>()
-                    .SetText(GetFormattedDueTime(assignment->due.value()))
+                    .SetText(due_time)
                     .SetID(base::to_underlying(
                         GlanceablesViewId::kClassroomItemDueTimeLabel))
                     .SetEnabledColorId(cros_tokens::kCrosSysOnSurfaceVariant)
@@ -205,11 +214,24 @@ std::unique_ptr<views::BoxLayoutView> BuildDueLabels(
       .Build();
 }
 
+// Returns rounded corners used for the item view. A larger radius is used for
+// top corners when the item is the first in the list. A larger radius is used
+// for bottom corners when the item is last in the list.
+gfx::RoundedCornersF GetRoundedCorners(size_t index, size_t last_index) {
+  size_t top_radius = (index == 0) ? kLargeBackgroundRadius : kBackgroundRadius;
+  size_t bottom_radius =
+      (index == last_index) ? kLargeBackgroundRadius : kBackgroundRadius;
+  return gfx::RoundedCornersF(top_radius, top_radius, bottom_radius,
+                              bottom_radius);
+}
+
 }  // namespace
 
 GlanceablesClassroomItemView::GlanceablesClassroomItemView(
     const GlanceablesClassroomAssignment* assignment,
-    base::RepeatingClosure pressed_callback)
+    base::RepeatingClosure pressed_callback,
+    size_t item_index,
+    size_t last_item_index)
     : views::Button(std::move(pressed_callback)) {
   CHECK(assignment);
 
@@ -217,19 +239,66 @@ GlanceablesClassroomItemView::GlanceablesClassroomItemView(
   layout->SetCrossAxisAlignment(views::LayoutAlignment::kStart);
   layout->SetInteriorMargin(kInteriorMargin);
 
-  // TODO(b/283370862): update accessible name.
-  SetAccessibleName(base::UTF8ToUTF16(assignment->course_work_title));
+  const gfx::RoundedCornersF corner_radii =
+      GetRoundedCorners(item_index, last_item_index);
   SetBackground(views::CreateThemedRoundedRectBackground(
-      cros_tokens::kCrosSysSystemOnBase, kBackgroundRadius));
+      cros_tokens::kCrosSysSystemOnBase, corner_radii,
+      /*for_border_thickness=*/0));
+
+  std::vector<std::u16string> a11y_description_parts{
+      base::UTF8ToUTF16(assignment->course_title)};
 
   AddChildView(BuildIcon());
   AddChildView(BuildAssignmentTitleLabels(assignment));
   if (assignment->due.has_value()) {
-    AddChildView(BuildDueLabels(assignment));
+    const auto due_date = GetFormattedDueDate(assignment->due.value());
+    const auto due_time = GetFormattedDueTime(assignment->due.value());
+    AddChildView(BuildDueLabels(due_date, due_time));
+
+    a11y_description_parts.push_back(l10n_util::GetStringFUTF16(
+        IDS_GLANCEABLES_CLASSROOM_ASSIGNMENT_DUE_ACCESSIBLE_DESCRIPTION,
+        due_time.empty() ? due_date
+                         : base::JoinString({due_date, due_time}, u", ")));
   }
+
+  if (assignment->submissions_state.has_value()) {
+    a11y_description_parts.push_back(l10n_util::GetStringFUTF16(
+        IDS_GLANCEABLES_CLASSROOM_ASSIGNMENT_SUBMISSIONS_STATE_ACCESSIBLE_DESCRIPTION,
+        base::NumberToString16(assignment->submissions_state->number_turned_in),
+        base::NumberToString16(assignment->submissions_state->total_count),
+        base::NumberToString16(assignment->submissions_state->number_graded)));
+  }
+
+  SetAccessibleRole(ax::mojom::Role::kListItem);
+  GetViewAccessibility().OverrideIsLeaf(true);
+  SetAccessibleName(base::UTF8ToUTF16(assignment->course_work_title));
+  SetAccessibleDescription(base::JoinString(a11y_description_parts, u", "));
+
+  views::FocusRing::Install(this);
+  views::FocusRing* const focus_ring = views::FocusRing::Get(this);
+  focus_ring->SetColorId(cros_tokens::kCrosSysFocusRing);
+  views::HighlightPathGenerator::Install(
+      this, std::make_unique<views::RoundRectHighlightPathGenerator>(
+                gfx::Insets(), corner_radii));
+
+  // Prevent the layout manager from setting the focus ring to a default hidden
+  // visibility.
+  layout->SetChildViewIgnoredByLayout(focus_ring, true);
 }
 
 GlanceablesClassroomItemView::~GlanceablesClassroomItemView() = default;
+
+void GlanceablesClassroomItemView::GetAccessibleNodeData(
+    ui::AXNodeData* node_data) {
+  views::Button::GetAccessibleNodeData(node_data);
+
+  node_data->SetDefaultActionVerb(ax::mojom::DefaultActionVerb::kClick);
+}
+
+void GlanceablesClassroomItemView::Layout() {
+  views::Button::Layout();
+  views::FocusRing::Get(this)->Layout();
+}
 
 BEGIN_METADATA(GlanceablesClassroomItemView, views::View)
 END_METADATA

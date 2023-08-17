@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/containers/flat_set.h"
 #include "base/time/time.h"
 #include "base/uuid.h"
 #include "components/attribution_reporting/aggregatable_dedup_key.h"
@@ -16,6 +17,7 @@
 #include "components/attribution_reporting/aggregatable_values.h"
 #include "components/attribution_reporting/aggregation_keys.h"
 #include "components/attribution_reporting/destination_set.h"
+#include "components/attribution_reporting/event_report_windows.h"
 #include "components/attribution_reporting/event_trigger_data.h"
 #include "components/attribution_reporting/filters.h"
 #include "components/attribution_reporting/os_registration.h"
@@ -76,6 +78,31 @@ bool StructTraits<attribution_reporting::mojom::FilterDataDataView,
 }
 
 // static
+bool StructTraits<attribution_reporting::mojom::FilterConfigDataView,
+                  attribution_reporting::FilterConfig>::
+    Read(attribution_reporting::mojom::FilterConfigDataView data,
+         attribution_reporting::FilterConfig* out) {
+  attribution_reporting::FilterValues filter_values;
+  if (!data.ReadFilterValues(&filter_values)) {
+    return false;
+  }
+
+  absl::optional<base::TimeDelta> lookback_window;
+  if (!data.ReadLookbackWindow(&lookback_window)) {
+    return false;
+  }
+
+  auto config = attribution_reporting::FilterConfig::Create(
+      std::move(filter_values), lookback_window);
+  if (!config.has_value()) {
+    return false;
+  }
+  *out = std::move(config.value());
+
+  return true;
+}
+
+// static
 bool StructTraits<attribution_reporting::mojom::AggregationKeysDataView,
                   attribution_reporting::AggregationKeys>::
     Read(attribution_reporting::mojom::AggregationKeysDataView data,
@@ -116,6 +143,31 @@ bool StructTraits<attribution_reporting::mojom::DestinationSetDataView,
 }
 
 // static
+bool StructTraits<attribution_reporting::mojom::EventReportWindowsDataView,
+                  attribution_reporting::EventReportWindows>::
+    Read(attribution_reporting::mojom::EventReportWindowsDataView data,
+         attribution_reporting::EventReportWindows* out) {
+  base::TimeDelta start_time;
+  if (!data.ReadStartTime(&start_time)) {
+    return false;
+  }
+
+  std::vector<base::TimeDelta> end_times;
+  if (!data.ReadEndTimes(&end_times)) {
+    return false;
+  }
+
+  auto event_report_windows = attribution_reporting::EventReportWindows::Create(
+      start_time, std::move(end_times));
+  if (!event_report_windows.has_value()) {
+    return false;
+  }
+
+  *out = std::move(*event_report_windows);
+  return true;
+}
+
+// static
 bool StructTraits<attribution_reporting::mojom::SourceRegistrationDataView,
                   attribution_reporting::SourceRegistration>::
     Read(attribution_reporting::mojom::SourceRegistrationDataView data,
@@ -136,6 +188,10 @@ bool StructTraits<attribution_reporting::mojom::SourceRegistrationDataView,
     return false;
   }
 
+  if (!data.ReadEventReportWindows(&out->event_report_windows)) {
+    return false;
+  }
+
   if (!data.ReadDebugKey(&out->debug_key)) {
     return false;
   }
@@ -149,6 +205,10 @@ bool StructTraits<attribution_reporting::mojom::SourceRegistrationDataView,
   }
 
   out->source_event_id = data.source_event_id();
+  out->max_event_level_reports =
+      data.max_event_level_reports() == -1
+          ? absl::nullopt
+          : absl::make_optional(data.max_event_level_reports());
   out->priority = data.priority();
   out->debug_reporting = data.debug_reporting();
   return true;

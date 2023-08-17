@@ -4,14 +4,18 @@
 
 #import "ios/chrome/browser/ui/settings/password/password_sharing/recipient_info.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
+#import "base/strings/sys_string_conversions.h"
+#import "components/password_manager/core/browser/sharing/recipients_fetcher.h"
 
-@implementation RecipientInfo
+@implementation RecipientInfoForIOSDisplay
 
-- (instancetype)init {
+- (instancetype)initWithRecipientInfo:
+    (const password_manager::RecipientInfo&)recipient {
   self = [super init];
+  if (self) {
+    _fullName = base::SysUTF8ToNSString(recipient.user_name);
+    _email = base::SysUTF8ToNSString(recipient.email);
+  }
   return self;
 }
 

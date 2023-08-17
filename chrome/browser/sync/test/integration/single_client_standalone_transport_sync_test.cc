@@ -19,6 +19,8 @@
 #include "components/sync/base/model_type.h"
 #include "components/sync/service/glue/sync_transport_data_prefs.h"
 #include "components/sync/service/sync_service_impl.h"
+#include "components/sync/test/fake_server_nigori_helper.h"
+#include "components/sync/test/nigori_test_utils.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/test_launcher.h"
 
@@ -288,13 +290,24 @@ class SingleClientStandaloneTransportWithReplaceSyncWithSigninSyncTest
  public:
   SingleClientStandaloneTransportWithReplaceSyncWithSigninSyncTest() {
     override_features_.InitWithFeatures(
-        /*enabled_features=*/{syncer::kSyncEnableHistoryDataType,
-                              syncer::kEnablePreferencesAccountStorage,
-                              syncer::kReplaceSyncPromosWithSignInPromos},
+        /*enabled_features=*/
+        {syncer::kSyncEnableHistoryDataType,
+         syncer::kEnablePreferencesAccountStorage,
+         syncer::kSyncEnableContactInfoDataTypeInTransportMode,
+         syncer::kSyncEnableContactInfoDataTypeForCustomPassphraseUsers,
+         syncer::kReplaceSyncPromosWithSignInPromos},
         /*disabled_features=*/{});
   }
   ~SingleClientStandaloneTransportWithReplaceSyncWithSigninSyncTest() override =
       default;
+
+  bool WaitForPassphraseRequired() {
+    return PassphraseRequiredChecker(GetSyncService(0)).Wait();
+  }
+
+  bool WaitForPassphraseAccepted() {
+    return PassphraseAcceptedChecker(GetSyncService(0)).Wait();
+  }
 
  private:
   base::test::ScopedFeatureList override_features_;
@@ -335,6 +348,110 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_TRUE(GetSyncService(0)->GetActiveDataTypes().Has(syncer::PREFERENCES));
   EXPECT_TRUE(GetSyncService(0)->GetActiveDataTypes().Has(
       syncer::PRIORITY_PREFERENCES));
+
+  EXPECT_TRUE(GetSyncService(0)->GetActiveDataTypes().Has(
+      syncer::AUTOFILL_WALLET_DATA));
+  EXPECT_TRUE(
+      GetSyncService(0)->GetActiveDataTypes().Has(syncer::CONTACT_INFO));
+}
+
+IN_PROC_BROWSER_TEST_F(
+    SingleClientStandaloneTransportWithReplaceSyncWithSigninSyncTest,
+    PRE_DataTypesEnabledInTransportModeWithCustomPassphrase) {
+  // There's a custom passphrase on the server.
+  const syncer::KeyParamsForTesting kKeyParams =
+      syncer::Pbkdf2PassphraseKeyParamsForTesting("hunter2");
+  SetNigoriInFakeServer(BuildCustomPassphraseNigoriSpecifics(kKeyParams),
+                        GetFakeServer());
+
+  ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
+  // Sign in, without turning on Sync-the-feature.
+  ASSERT_TRUE(GetClient(0)->SignInPrimaryAccount());
+  ASSERT_FALSE(GetSyncService(0)->IsSyncFeatureEnabled());
+
+  // Opt in to history and tabs.
+  GetSyncService(0)->GetUserSettings()->SetSelectedType(
+      syncer::UserSelectableType::kHistory, true);
+  GetSyncService(0)->GetUserSettings()->SetSelectedType(
+      syncer::UserSelectableType::kTabs, true);
+  // Preferences are opted-into by default.
+  ASSERT_TRUE(GetSyncService(0)->GetUserSettings()->GetSelectedTypes().Has(
+      syncer::UserSelectableType::kPreferences));
+
+  ASSERT_TRUE(WaitForPassphraseRequired());
+  ASSERT_TRUE(GetSyncService(0)->GetUserSettings()->SetDecryptionPassphrase(
+      kKeyParams.password));
+  ASSERT_TRUE(WaitForPassphraseAccepted());
+
+  ASSERT_TRUE(GetClient(0)->AwaitSyncTransportActive());
+  ASSERT_EQ(syncer::SyncService::TransportState::ACTIVE,
+            GetSyncService(0)->GetTransportState());
+
+  // With a custom passphrase, the actual HISTORY types are not supported.
+  EXPECT_FALSE(GetSyncService(0)->GetActiveDataTypes().Has(syncer::HISTORY));
+  EXPECT_FALSE(GetSyncService(0)->GetActiveDataTypes().Has(
+      syncer::HISTORY_DELETE_DIRECTIVES));
+  EXPECT_FALSE(
+      GetSyncService(0)->GetActiveDataTypes().Has(syncer::USER_EVENTS));
+  // But SESSIONS aka Open Tabs still works.
+  EXPECT_TRUE(GetSyncService(0)->GetActiveDataTypes().Has(syncer::SESSIONS));
+  EXPECT_TRUE(GetSyncService(0)->GetActiveDataTypes().Has(syncer::PROXY_TABS));
+
+  // With `kReplaceSyncPromosWithSignInPromos`, both PREFERENCES and
+  // PRIORITY_PREFERENCES should be enabled in transport mode.
+  EXPECT_TRUE(GetSyncService(0)->GetActiveDataTypes().Has(syncer::PREFERENCES));
+  EXPECT_TRUE(GetSyncService(0)->GetActiveDataTypes().Has(
+      syncer::PRIORITY_PREFERENCES));
+
+  // CONTACT_INFO should be disabled by default for explicit-passphrase users.
+  EXPECT_FALSE(
+      GetSyncService(0)->GetActiveDataTypes().Has(syncer::CONTACT_INFO));
+  // AUTOFILL_WALLET_DATA should be disabled when CONTACT_INFO is disabled.
+  // TODO(crbug.com/1435431): It shouldn't be disabled once kPayments is
+  // decoupled from kAutofill.
+  EXPECT_FALSE(GetSyncService(0)->GetActiveDataTypes().Has(
+      syncer::AUTOFILL_WALLET_DATA));
+
+  // Enabling kAutofill to enable CONTACT_INFO.
+  GetSyncService(0)->GetUserSettings()->SetSelectedType(
+      syncer::UserSelectableType::kAutofill, true);
+  // TODO(crbug.com/1435431): This should be removed once kPayments is decoupled
+  // from kAutofill.
+  GetSyncService(0)->GetUserSettings()->SetSelectedType(
+      syncer::UserSelectableType::kPayments, true);
+
+  ASSERT_NE(syncer::SyncService::TransportState::ACTIVE,
+            GetSyncService(0)->GetTransportState());
+  ASSERT_TRUE(GetClient(0)->AwaitSyncTransportActive());
+
+  // CONTACT_INFO and AUTOFILL_WALLET_DATA should be enabled.
+  EXPECT_TRUE(
+      GetSyncService(0)->GetActiveDataTypes().Has(syncer::CONTACT_INFO));
+  // TODO(crbug.com/1435431): This should be removed once kPayments is decoupled
+  // from kAutofill.
+  EXPECT_TRUE(GetSyncService(0)->GetActiveDataTypes().Has(
+      syncer::AUTOFILL_WALLET_DATA));
+}
+
+// Tests that a custom passphrase user's opt-in to kAutofill (which happened in
+// the PRE_ test) survives a browser restart.
+IN_PROC_BROWSER_TEST_F(
+    SingleClientStandaloneTransportWithReplaceSyncWithSigninSyncTest,
+    DataTypesEnabledInTransportModeWithCustomPassphrase) {
+  ASSERT_TRUE(SetupClients());
+
+  ASSERT_FALSE(GetSyncService(0)->IsSyncFeatureEnabled());
+  ASSERT_TRUE(GetClient(0)->AwaitSyncTransportActive());
+  ASSERT_EQ(syncer::SyncService::TransportState::ACTIVE,
+            GetSyncService(0)->GetTransportState());
+
+  // CONTACT_INFO and AUTOFILL_WALLET_DATA should be enabled after restarting.
+  EXPECT_TRUE(
+      GetSyncService(0)->GetActiveDataTypes().Has(syncer::CONTACT_INFO));
+  // TODO(crbug.com/1435431): This should be removed once kPayments is decoupled
+  // from kAutofill.
+  EXPECT_TRUE(GetSyncService(0)->GetActiveDataTypes().Has(
+      syncer::AUTOFILL_WALLET_DATA));
 }
 
 class SingleClientStandaloneTransportWithoutReplaceSyncWithSigninSyncTest
@@ -416,7 +533,6 @@ class SingleClientStandaloneTransportReplaceSyncWithSigninMigrationSyncTest
          syncer::kReadingListEnableDualReadingListModel,
          syncer::kReadingListEnableSyncTransportModeUponSignIn,
          password_manager::features::kEnablePasswordsAccountStorage,
-         syncer::kSyncEnableContactInfoDataType,
          syncer::kSyncEnableContactInfoDataTypeInTransportMode,
          syncer::kEnablePreferencesAccountStorage},
         /*disabled_features=*/{});

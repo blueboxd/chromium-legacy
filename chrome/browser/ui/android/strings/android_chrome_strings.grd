@@ -204,6 +204,11 @@ CHAR_LIMIT guidelines:
     <messages fallback_to_english="true">
       <!-- NOTE: Generic strings used across multiple features belong in //components/browser_ui/strings/android. -->
 
+       <!-- Cookie Controls -->
+      <message name="IDS_COOKIE_CONTROLS_IPH_MESSAGE" desc="In-context Product Help - Appears right under the page info icon to highlight the Cookie Controls entrypoint.">
+        Site not working? Third-party cookies are blocked
+      </message>
+
       <!-- Main Preferences -->
       <message name="IDS_PREFS_SECTION_BASICS" desc='Title of "Basics" section of preferences. [CHAR_LIMIT=32]'>
         Basics
@@ -551,6 +556,10 @@ CHAR_LIMIT guidelines:
       <message name="IDS_AUTOFILL_CARD_EDITOR_VIRTUAL_CARD_TURN_OFF_BUTTON_LABEL" desc="Label shown on the button that the user clicks on to unenroll from virtual cards.">
         Turn off
       </message>
+      <!-- TODO(crbug.com/1425882): Use finalized string.-->
+      <message translateable="false" name="IDS_AUTOFILL_OPTIONS_TITLE" desc="Description below switch toggling the use of third-party autofill in Chrome." formatter_data="android_java">
+        Autofill Options
+      </message>
 
        <!-- Payment Request section preview strings -->
        <message name="IDS_PAYMENT_REQUEST_PAYMENT_METHODS_PREVIEW" desc="This is a snippet of a payment method a user has saved to Chrome, plus an indication of the number of additional payment methods the user has saved.
@@ -576,11 +585,11 @@ CHAR_LIMIT guidelines:
       </message>
 
       <!-- Password Manager -->
-      <message name="IDS_PASSWORD_SETTINGS_TITLE" desc="Title for the settings screen with saved passwords and the header for the list of saved passwords in that screen. [CHAR_LIMIT=32]">
+      <message name="IDS_PASSWORD_LIST_TITLE" desc="Title for a list of saved passwords, e.g. the list of passwords displayed in Chrome > Settings > Password Manager. [CHAR_LIMIT=32]">
         Passwords
       </message>
-      <message name="IDS_PASSWORD_SETTINGS_TITLE_GPM" desc="Title for the settings menu item leading to the Password Manager UI surface. This allows users to e.g. manage their saved passwords, toggle saving and auto-sign-in on/off, etc. The NEW label is displayed until the user clicks on this menu item at least once. [CHAR_LIMIT=32]">
-        Password Manager <ph name="BEGIN_NEW">&lt;new&gt;</ph>New<ph name="END_NEW">&lt;/new&gt;</ph>
+      <message name="IDS_PASSWORD_MANAGER_SETTINGS_TITLE" desc="Title for the settings menu item leading to the Password Manager UI surface. This allows users to e.g. manage their saved passwords, toggle saving and auto-sign-in on/off, etc. [CHAR_LIMIT=32]">
+        Password Manager
       </message>
       <message name="IDS_PASSWORD_SETTINGS_SAVE_PASSWORDS" desc="Title for the checkbox toggling whether passwords are saved or not. [CHAR_LIMIT=32]">
         Save passwords
@@ -593,6 +602,12 @@ CHAR_LIMIT guidelines:
       </message>
       <message name="IDS_PASSWORDS_LEAK_DETECTION_SWITCH_TITLE" desc="Title for the switch toggling whether Chrome should check that entered credentials have been part of a leak.">
         Warn you if passwords are exposed in a data breach
+      </message>
+      <message name="IDS_PASSWORDS_LEAK_DETECTION_SWITCH_TITLE_UPDATED" desc="Title for the switch toggling whether Chrome should check that entered credentials have been part of a leak.">
+        Warn you if a password was compromised in a data breach
+      </message>
+      <message name="IDS_PASSWORDS_LEAK_DETECTION_SWITCH_SUMMARY" desc="Summary for the switch toggling whether Chrome should check that entered credentials have been part of a leak.">
+        When you use a password, Chrome warns you if it has been published online. When doing this, your passwords and usernames are encrypted, so they can’t be read by anyone, including Google.
       </message>
       <message name="IDS_PASSWORDS_CHECK_TITLE" desc="Title for the check passwords button which allows to check whether the user's passwords have been compromised.">
         Check passwords
@@ -733,7 +748,7 @@ CHAR_LIMIT guidelines:
         We’re changing how passwords are saved on this device
       </message>
       <message name="IDS_PASSWORD_MIGRATION_WARNING_SUBTITLE" desc="The subtitle of the password migration warning sheet." formatter_data="android_java">
-        Your lists of saved passwords for Chrome and Chrome <ph name="ERROR_DESCRIPTION">%1$s<ex>Dev</ex></ph> will merge after version 121. You’ll be able to autofill all your saved passwords on both apps.
+        Right now, passwords saved on this device cannot be used across Chrome channels. After Chrome 121, passwords saved on your device for Chrome and <ph name="CHROME_CHANNEL">%1$s<ex>Chrome Dev</ex></ph> will be merged and can be used in both apps.
       </message>
       <message name="IDS_PASSWORD_MIGRATION_WARNING_ACKNOWLEDGE" desc="The text on the button that acknowledges the password migration warning.">
         Got it
@@ -757,7 +772,7 @@ CHAR_LIMIT guidelines:
         Export &amp; delete passwords saved to this device
       </message>
       <message name="IDS_PASSWORD_MIGRATION_WARNING_PASSWORD_EXPORT_SUBTITLE" desc="The subtitle that explaint the password export option in the password migration warning sheet.">
-        All passwords will be downloaded on your device and removed from Chrome <ph name="CHROME_CHANNEL">%1$s<ex>Dev</ex></ph>
+        All passwords will be downloaded on your device and removed from <ph name="CHROME_CHANNEL">%1$s<ex>Chrome Dev</ex></ph>
       </message>
       <message name="IDS_PASSWORD_MIGRATION_WARNING_NEXT" desc="The text for the next button in the password migration warning sheet. It starts one of the flows offered on the sheet.">
         Next
@@ -768,11 +783,26 @@ CHAR_LIMIT guidelines:
       <message name="IDS_EXPORTED_PASSWORDS_DELETION_DIALOG_TITLE" desc="The title of the dialog that offers to delete passwords from Google Password Manager." formatter_data="android_java">
         Delete passwords from Google Password Manager?
       </message>
+      <message name="IDS_EXPORTED_PASSWORDS_DELETION_IN_PROGRESS_TITLE" desc="The title of the progress bar that is visible while the passwords are being deleted." formatter_data="android_java">
+        Deleting
+      </message>
+      <message name="IDS_PASSWORDS_EXPORT_IN_PROGRESS_TITLE" desc="The title of the progress bar that is visible while the passwords are being exported." formatter_data="android_java">
+        Exporting
+      </message>
       <message name="IDS_EXPORTED_PASSWORDS_DELETION_DIALOG_TEXT" desc="The text that describes the option to delete the passwords that were just exported." formatter_data="android_java">
-        Your passwords will be deleted from Google Password Manager for Chrome <ph name="CHROME_CHANNEL">%1$s<ex>Dev</ex></ph>. You will keep the passwords file you just downloaded.
+        Your passwords will be deleted from Google Password Manager for <ph name="CHROME_CHANNEL">%1$s<ex>Chrome Dev</ex></ph>. You will keep the passwords file you just downloaded.
       </message>
       <message name="IDS_EXPORTED_PASSWORDS_DELETE_BUTTON" desc="The text on the button that confirms the action of deleting the passwords that were exported." formatter_data="android_java">
         Delete passwords
+      </message>
+      <message name="IDS_CHROME_CHANNEL_NAME_CANARY" desc="The Chrome channel name for canary channel">
+        Chrome Canary
+      </message>
+      <message name="IDS_CHROME_CHANNEL_NAME_DEV" desc="The Chrome channel name for dev channel">
+        Chrome Dev
+      </message>
+      <message name="IDS_CHROME_CHANNEL_NAME_BETA" desc="The Chrome channel name for beta channel">
+        Chrome Beta
       </message>
 
       <!-- Lock Screen Fragment -->
@@ -1697,6 +1727,9 @@ Your Google account may have other forms of browsing history like searches and a
       <message name="IDS_SAFE_BROWSING_STANDARD_PROTECTION_SUMMARY" desc="Summary for Safe Browsing standard protection mode.">
         Standard protection against websites, downloads, and extensions that are known to be dangerous.
       </message>
+      <message name="IDS_SAFE_BROWSING_STANDARD_PROTECTION_SUMMARY_UPDATED" desc="Summary for Safe Browsing standard protection mode.">
+        Protects against sites, downloads, and extensions that are known to be dangerous. If a page does something suspicious, URLs and bits of page content are sent to Google Safe Browsing.
+      </message>
       <message name="IDS_SAFE_BROWSING_NO_PROTECTION_TITLE" desc="Title for Safe Browsing no protection mode. [CHAR_LIMIT=32]">
         No protection (not recommended)
       </message>
@@ -1728,6 +1761,9 @@ Your Google account may have other forms of browsing history like searches and a
       <message name="IDS_SAFE_BROWSING_STANDARD_PROTECTION_SUBTITLE" desc="Subtitle for Safe Browsing standard protection mode.">
         Standard protection:
       </message>
+      <message name="IDS_SAFE_BROWSING_STANDARD_PROTECTION_SUBTITLE_UPDATED" desc="Subtitle for Safe Browsing standard protection mode.">
+        Standard protection
+      </message>
       <message name="IDS_SAFE_BROWSING_STANDARD_PROTECTION_BULLET_ONE" desc="First bullet point under the Safe Browsing standard protection mode.">
         Detects and warns you about dangerous events when they happen.
       </message>
@@ -1736,6 +1772,9 @@ Your Google account may have other forms of browsing history like searches and a
       </message>
       <message name="IDS_SAFE_BROWSING_STANDARD_PROTECTION_EXTENDED_REPORTING_TITLE" desc="Title for Safe Browsing extended reporting.">
         Help improve security on the web
+      </message>
+      <message name="IDS_SAFE_BROWSING_STANDARD_PROTECTION_EXTENDED_REPORTING_TITLE_UPDATED" desc="Title for Safe Browsing extended reporting.">
+        Help improve security on the web for everyone
       </message>
       <message name="IDS_SAFE_BROWSING_STANDARD_PROTECTION_EXTENDED_REPORTING_SUMMARY" desc="Summary for Safe Browsing extended reporting.">
         Sends URLs of some pages you visit, limited system information, and some page content to Google, to help discover new threats and protect everyone on the web.
@@ -2430,6 +2469,10 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
         Translate…
       </message>
 
+      <message name="IDS_MENU_LISTEN_TO_THIS_PAGE" desc="Menu item for making the browser read out the page's text in spoken audio form. [CHAR_LIMIT=27]">
+        Listen to this page
+      </message>
+
       <message name="IDS_MENU_PRINT" desc="Menu item for printing the current page. [CHAR_LIMIT=27]">
         Print…
       </message>
@@ -2870,7 +2913,7 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
         {FILE_COUNT, plural, =1 {# Page} other {# Pages}}
       </message>
       <message name="IDS_DOWNLOAD_PAGE" desc="Download this page.">
-        Download page
+        Download this page
       </message>
       <message name="IDS_DOWNLOAD_MANAGER_NO_DOWNLOADS" desc="Text appearing on an empty tab that indicates that downloaded files appear on this tab.">
         Files that you download appear here
@@ -2925,6 +2968,9 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       </message>
       <message name="IDS_DOWNLOAD_MANAGER_EXPLORE_OFFLINE" desc="Tab text for the offline content in download home which contains recommended offline content for the user.">
         Explore Offline
+      </message>
+      <message name="IDS_DOWNLOAD_FILE_TYPE_NOT_SUPPORTED" desc="Error message shown to user when a file can't de downloaded due to it's file format (e.g. .pdf, .docx, .apk).">
+        Cannot download file. File format not supported.
       </message>
 
       <!-- Browsing History UI -->
@@ -3143,6 +3189,12 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       </message>
       <message name="IDS_SIGNIN_ACCOUNT_PICKER_DIALOG_TITLE" desc="The title for the dialog that shows the list of accounts on the device and asks the user to select one of these accounts. [CHAR_LIMIT=27]">
         Choose an account
+      </message>
+      <message name="IDS_SIGNIN_ACCOUNT_PICKER_DESCRIPTION_WITH_EMAIL" is_accessibility_with_no_ui="true" desc="The content description for the account picker. Opens the 'Choose an account' dialog.">
+        Choose an account. Currently selected <ph name="EMAIL">%1$s<ex>john.doe@example.com</ex></ph>.
+      </message>
+      <message name="IDS_SIGNIN_ACCOUNT_PICKER_DESCRIPTION" is_accessibility_with_no_ui="true" desc="The content description for the account picker. Opens the 'Choose an account' dialog. Used when the user's email cannot be displayed.">
+        Choose an account.
       </message>
       <message name="IDS_SIGNIN_ACCOUNT_PICKER_BOTTOM_SHEET_TITLE_FOR_SEND_TAB_TO_SELF" desc="The title for the bottom sheet that shows the list of accounts on the device and asks the user to select one of these accounts, when send-tab-to-self triggered the UI. [CHAR_LIMIT=27]">
         Sign in to Chrome
@@ -3529,7 +3581,7 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
         New tab
       </message>
       <message name="IDS_ADAPTIVE_TOOLBAR_BUTTON_PREFERENCE_SHARE" desc="Title name for the share option in the preference.">
-        Share
+        Share this page
       </message>
       <message name="IDS_ADAPTIVE_TOOLBAR_BUTTON_PREFERENCE_VOICE_SEARCH" desc="Title name for the voice search option in the preference.">
         Voice search
@@ -3539,6 +3591,9 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       </message>
       <message name="IDS_ADAPTIVE_TOOLBAR_BUTTON_PREFERENCE_TRANSLATE" desc="Title name for the translate option in the preference.">
         Translate
+      </message>
+      <message name="IDS_ADAPTIVE_TOOLBAR_BUTTON_PREFERENCE_READ_ALOUD" desc="Title name for the read aloud option in the preference.">
+        Listen to this page
       </message>
       <message name="IDS_ADAPTIVE_TOOLBAR_BUTTON_PREFERENCE_BASED_ON_YOUR_USAGE" desc="Title name for the based on your usage option in the preference.">
         Based on your usage
@@ -3564,10 +3619,13 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       <message name="IDS_ADAPTIVE_TOOLBAR_BUTTON_TRANSLATE_IPH" desc="An in-product-help message for the voice search button.">
         Quickly translate this page. To edit this shortcut, touch and hold.
       </message>
+      <message name="IDS_ADAPTIVE_TOOLBAR_BUTTON_READ_ALOUD_IPH" desc="An in-product-help message for the Listen to this page button.">
+       Listen to this page. To edit this shortcut, touch and hold.
+       </message>
       <message name="IDS_ADAPTIVE_TOOLBAR_BUTTON_NEW_TAB_IPH_SETTINGS" desc="An in-product-help message for the new tab button referring to toolbar settings.">
         Quickly open a new tab. To edit this shortcut, go to Settings.
       </message>
-        <message name="IDS_ADAPTIVE_TOOLBAR_BUTTON_SHARE_IPH_SETTINGS" desc="An in-product-help message for the share button referring to toolbar settings.">
+      <message name="IDS_ADAPTIVE_TOOLBAR_BUTTON_SHARE_IPH_SETTINGS" desc="An in-product-help message for the share button referring to toolbar settings.">
         Quickly share this page. To edit this shortcut, go to Settings.
       </message>
       <message name="IDS_ADAPTIVE_TOOLBAR_BUTTON_VOICE_SEARCH_IPH_SETTINGS" desc="An in-product-help message for the voice search button referring to toolbar settings.">
@@ -3886,6 +3944,9 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       <message name="IDS_SORT_BY_OLDEST"  desc="Option in the bookmarks manager to sort by newest. [CHAR_LIMIT=24]">
         Sort by oldest
       </message>
+      <message name="IDS_SORT_BY_LAST_OPENED"  desc="Option in the bookmarks manager to sort by last opened. [CHAR_LIMIT=24]">
+        Sort by last opened
+      </message>
       <message name="IDS_SORT_BY_ALPHA"  desc="Option in the bookmarks manager to sort alphabetically. A and Z should be substituted with the first/last letter in the localized language. [CHAR_LIMIT=24]">
         Sort by A to Z
       </message>
@@ -3900,6 +3961,15 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       </message>
       <message name="IDS_CREATE_NEW_FOLDER"  desc="Option in the bookmarks manager to show the create a new folder in the current context. [CHAR_LIMIT=24]">
         Create new folder
+      </message>
+      <message name="IDS_FOLDER_PICKER_ROOT"  desc="Toolbar title for when the user is selecting a folder and the current selected folder is the root.">
+        Move to\u2026
+      </message>
+      <message name="IDS_FOLDER_PICKER_MOVE_HERE"  desc="Button the user clicks to move the given bookmark (or folder) to the selected folder.">
+        Move here
+      </message>
+      <message name="IDS_FOLDER_PICKER_CANCEL"  desc="Button the user clicks to cancel the move action.">
+        Cancel
       </message>
 
       <!-- Read later strings -->
@@ -4097,10 +4167,10 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
         Signed out. Opens dialog to sign in and turn on sync.
       </message>
       <message name="IDS_ACCESSIBILITY_TOOLBAR_BTN_HOME" desc="Content description for the home button.">
-        Home
+        Open the home page
       </message>
       <message name="IDS_ACCESSIBILITY_BTN_REFRESH" desc="Content description for the refresh page button.">
-        Refresh page
+        Reload this page
       </message>
       <message name="IDS_ACCESSIBILITY_BTN_STOP_LOADING" desc="Content description for the stop loading page button.">
         Stop page loading
@@ -4335,6 +4405,12 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       </message>
       <message name="IDS_PAGE_INSIGHTS_SHEET_CLOSED" desc="Accessibility string read when the page insights sheet is closed.">
         Page insights bottom sheet is closed
+      </message>
+      <message name="IDS_PAGE_INSIGHTS_HUB_TITLE_TEXT" desc="The title of Page Insights Sheet.">
+        Related Insights
+      </message>
+      <message name="IDS_PAGE_INSIGHTS_BACK_BUTTON_DESCRIPTION" desc="The content description of back button in page insights sheet.">
+        Page insights back button
       </message>
 
       <!-- WebFeed -->
@@ -5604,7 +5680,7 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
         chrome_stylized_highlight_
       </message>
       <message name="IDS_CONTENT_CREATION_NOTE_TEMPLATE_SELECTED" desc="Announcment string for accessibility when selected template changes.">
-        <ph name="TEMPLATE_TITLE">%1$s<ex>Classic</ex> template selected</ph>
+        <ph name="TEMPLATE_TITLE">%1$s<ex>Classic</ex></ph> template selected
       </message>
       <message name="IDS_CONTENT_CREATION_NOTE_DIALOG_DESCRIPTION" desc="Accessibility information for note template picking dialog.">
         Select a template for your highlight.
@@ -5718,28 +5794,64 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       </message>
 
        <!-- Quick Delete strings -->
-      <message name="IDS_QUICK_DELETE_DIALOG_TITLE" desc="Title of the dialog when asking users to confirm deleting the last 15 minutes of browsing data.">
+      <message name="IDS_QUICK_DELETE_DIALOG_TITLE" desc="Title of the dialog when asking users to confirm deleting browsing data.">
         Clear browsing data
       </message>
-      <message name="IDS_QUICK_DELETE_DIALOG_TABS_CLOSED_TEXT" desc="Text indicating that the tabs which a user recently used to visit a website within 15 minutes would be closed.">
+      <message name="IDS_QUICK_DELETE_DIALOG_TABS_CLOSED_TEXT" desc="Text indicating that the tabs which a user recently used to visit a website within the specified time range would be closed.">
         {NUM_TABS, plural, =1 {1 tab on this device} other {# tabs on this device}}
       </message>
-      <message name="IDS_QUICK_DELETE_DIALOG_BROWSING_HISTORY_DOMAIN_COUNT_TEXT" desc="This text would start by mentioning the last visited domain, and, then followed by showing the count of other unique domains that the user has visited. For example: if a user visits/revisits facebook.com, followed by figma.com, within the last 15 minutes then this text would say 'figma.com + 1 site'.">
+      <message name="IDS_QUICK_DELETE_DIALOG_ZERO_TABS_CLOSED_ALL_TIME_TEXT" desc="Text indicating that no tabs would be closed.">
+        No tabs on this device
+      </message>
+      <message name="IDS_QUICK_DELETE_DIALOG_ZERO_TABS_CLOSED_TEXT" desc="Text indicating that no tabs within the specified time range would be closed.">
+        No tabs from the <ph name="TIME_PERIOD">%1$s<ex>last 15 minutes</ex></ph>
+      </message>
+      <message name="IDS_QUICK_DELETE_DIALOG_BROWSING_HISTORY_DOMAIN_COUNT_TEXT" desc="This text would start by mentioning the last visited domain, and, then followed by showing the count of other unique domains that the user has visited. For example: if a user visits/revisits facebook.com, followed by figma.com, within the specified time range, then this text would say 'figma.com + 1 site'.">
         {DOMAIN_COUNT, plural,
           =1 {+ 1 site}
           other {+ # sites}}
       </message>
-      <message name="IDS_QUICK_DELETE_DIALOG_BROWSING_HISTORY_SECONDARY_TEXT" desc="Secondary text for browsing history item for syncing users, indicating that there could be more domains on other devices that the user has visited within 15 minutes, which would be deleted from history.">
+      <message name="IDS_QUICK_DELETE_DIALOG_ZERO_BROWSING_HISTORY_DOMAIN_COUNT_ALL_TIME_TEXT" desc="Text indicating that no websites were visited from the beginning of time.">
+        No sites
+      </message>
+      <message name="IDS_QUICK_DELETE_DIALOG_ZERO_BROWSING_HISTORY_DOMAIN_COUNT_TEXT" desc="Text indicating that no websites were visited within the specified time range.">
+        No sites from the <ph name="TIME_PERIOD">%1$s<ex>last 15 minutes</ex></ph>
+      </message>
+      <message name="IDS_QUICK_DELETE_DIALOG_BROWSING_HISTORY_SECONDARY_TEXT" desc="Secondary text for browsing history item for syncing users, indicating that there could be more domains on other devices that the user has visited within the specified time range, which would be deleted from history.">
         More on synced devices
       </message>
       <message name="IDS_QUICK_DELETE_DIALOG_COOKIES_CACHE_AND_OTHER_SITE_DATA_TEXT" desc="Text indicating that browsing data like cookies, cache, and other site data would be deleted.">
         Cookies, cache, and other site data
       </message>
-      <message name="IDS_QUICK_DELETE_DIALOG_SEARCH_HISTORY_DISAMBIGUATION_TEXT" desc="Text for signed in users only in the Quick Delete dialog, that is shown when the user clicks on 'Delete last 15 minutes' option in the three dots menu, informing signed in users that search history and other forms of Activity saved in their Google account will not be deleted.">
+      <message name="IDS_QUICK_DELETE_DIALOG_SEARCH_HISTORY_DISAMBIGUATION_TEXT" desc="Text for signed in users only in the Quick Delete dialog, that is shown when the user clicks on 'Clear browsing data' option in the three dots menu, informing signed in users that search history and other forms of Activity saved in their Google account will not be deleted.">
         <ph name="BEGIN_LINK1">&lt;link1&gt;</ph>Search history<ph name="END_LINK1">&lt;/link1&gt;</ph> and <ph name="BEGIN_LINK2">&lt;link2&gt;</ph>other forms of activity<ph name="END_LINK2">&lt;/link2&gt;</ph> may be saved in your Google Account
       </message>
-      <message name="IDS_QUICK_DELETE_SNACKBAR_MESSAGE" desc="Text inside the snackbar which is shown once the user confirms deletion via the 'Delete last 15 minutes' option present inside the three dots menu.">
+      <message name="IDS_QUICK_DELETE_DIALOG_MORE_OPTIONS_BUTTON_TEXT" desc="Text inside the more options button which redirects users to the advanced page of 'Clear Browsing Data' where the users can customize more deletion options.">
+        More options
+      </message>
+      <message name="IDS_QUICK_DELETE_DIALOG_DATA_PENDING" desc="Text that is shown when data in the dialog is being fetched.">
+        Calculating...
+      </message>
+      <message name="IDS_QUICK_DELETE_SNACKBAR_MESSAGE" desc="Text inside the snackbar which is shown once the user confirms deletion via the 'Clear browsing data' option present inside the three dots menu.">
+        <ph name="TIME_PERIOD">%1$s<ex>Last 15 minutes</ex></ph> deleted
+      </message>
+      <message name="IDS_QUICK_DELETE_SNACKBAR_ALL_TIME_MESSAGE" desc="Text inside the snackbar which is shown once the user confirms deletion via the 'Clear browsing data' option present inside the three dots menu.">
         Deleted
+      </message>
+      <message name="IDS_QUICK_DELETE_TIME_PERIOD_15_MINUTES" desc="The option to delete browsing data from the last 15 minutes.">
+        last 15 minutes
+      </message>
+      <message name="IDS_QUICK_DELETE_TIME_PERIOD_HOUR" desc="The option to delete browsing data from the last hour.">
+        last hour
+      </message>
+      <message name="IDS_QUICK_DELETE_TIME_PERIOD_24_HOURS" desc="The option to delete browsing data from the last 24 hours.">
+        last 24 hours
+      </message>
+      <message name="IDS_QUICK_DELETE_TIME_PERIOD_7_DAYS" desc="The option to delete browsing data from the last seven days.">
+        last 7 days
+      </message>
+      <message name="IDS_QUICK_DELETE_TIME_PERIOD_FOUR_WEEKS" desc="The option to delete browsing data from the last 4 weeks.">
+        last 4 weeks
       </message>
 
       <!-- Password generation bottom sheet -->
@@ -5763,6 +5875,44 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       </message>
       <message name="IDS_PASSWORD_GENERATION_BOTTOM_SHEET_DISMISS_BUTTON" desc="Appears on the button, which reflects that the user has rejected the proposed generated password and decided to continue with creating their own password.">
         Create my own
+      </message>
+      <message name="IDS_PLEASE_WAIT_PROGRESS_MESSAGE" desc='Message on the progress dialog used when waiting for an operation to complete.'>
+        Please wait…
+      </message>
+
+      <!-- Read Aloud ("Listen to this page") player strings -->
+      <message name="IDS_READALOUD_CLOSE_PLAYER_BUTTON_CONTENT_DESCRIPTION" desc="Accessibility string for the button that closes the 'Listen to this page' player.">
+        Tap to close “Listen to this page”.
+      </message>
+      <message name="IDS_READALOUD_PLAYER_NAME" desc="Name of the Read Aloud player for accessiblity.">
+        “Listen to this page” player.
+      </message>
+      <message name="IDS_READALOUD_PLAYER_OPENED_AT_FULL_HEIGHT" desc="Accessibility string spoken when the 'Listen to this page' player bottom sheet expands to its full height.">
+        “Listen to this page” player opened at full height.
+      </message>
+      <message name="IDS_READALOUD_PLAYER_MINIMIZED" desc="Accessibility string spoken when the 'Listen to this page' player bottom sheet shrinks to its minimized height.">
+        “Listen to this page” player minimized.
+      </message>
+      <message name="IDS_READALOUD_CHROME_NOW_PLAYING" desc="Text in 'Listen to this page' player appearing before the title of the currently playing page.">
+        Chrome now playing
+      </message>
+      <message name="IDS_READALOUD_REPLAY" desc="Accessibility string for the button that rewinds 'Listen to this page' playback by the specified number of seconds.">
+        Back <ph name="NUMBER_OF_SECONDS">%1$s<ex>10</ex></ph> seconds
+      </message>
+      <message name="IDS_READALOUD_FORWARD" desc="Accessibility string for the button that seeks 'Listen to this page' playback forward by the specified number of seconds.">
+        Forward <ph name="NUMBER_OF_SECONDS">%1$s<ex>30</ex></ph> seconds
+      </message>
+      <message name="IDS_READALOUD_PLAY" desc="Accessibility string for the 'Listen to this page' play button.">
+        Play
+      </message>
+      <message name="IDS_READALOUD_PAUSE" desc="Accessibility string for the 'Listen to this page' pause button.">
+        Pause
+      </message>
+      <message name="IDS_READALOUD_SPEED_MENU_BUTTON" desc="Accessibility string for the 'Listen to this page' playback speed menu button.">
+        Playback speed: <ph name="PLAYBACK_SPEED">%1$s<ex>1.0</ex></ph>. Click to change.
+      </message>
+      <message name="IDS_READALOUD_OPTIONS_MENU_BUTTON" desc="Accessibility string for the 'Listen to this page' options menu button.">
+        More options
       </message>
     </messages>
   </release>

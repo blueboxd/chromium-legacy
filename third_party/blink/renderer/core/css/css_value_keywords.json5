@@ -799,6 +799,7 @@
     //
     "break-all",
     "keep-all",
+    "auto-phrase",
 
     //
     // word-wrap
@@ -1688,7 +1689,15 @@
     "root",
     "nearest",
 
-    // transition-animation-type
-    "discrete",
+    // transition-behavior
+    "allow-discrete",
+
+    // (inverted-colors:) media feature
+    "inverted",
+    // none
+
+    // navigation-trigger
+    "cross-document-same-origin",
+    // none
   ],
 }

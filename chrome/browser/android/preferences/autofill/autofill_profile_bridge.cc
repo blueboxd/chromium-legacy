@@ -8,6 +8,7 @@
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/functional/bind.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/autofill/android/jni_headers/AutofillProfileBridge_jni.h"
 #include "chrome/browser/browser_process.h"

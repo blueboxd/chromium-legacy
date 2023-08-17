@@ -23,7 +23,7 @@ namespace ntp_features {
 BASE_DECLARE_FEATURE(kConfirmSuggestionRemovals);
 BASE_DECLARE_FEATURE(kCacheOneGoogleBar);
 BASE_DECLARE_FEATURE(kCustomizeChromeColorExtraction);
-BASE_DECLARE_FEATURE(kCustomizeChromeSidePanel);
+BASE_DECLARE_FEATURE(kCustomizeChromeSidePanelExtensionsCard);
 BASE_DECLARE_FEATURE(kCwsDarkLogo);
 BASE_DECLARE_FEATURE(kDismissPromos);
 BASE_DECLARE_FEATURE(kIframeOneGoogleBar);
@@ -37,6 +37,7 @@ BASE_DECLARE_FEATURE(kNtpAlphaBackgroundCollections);
 BASE_DECLARE_FEATURE(kNtpBackgroundImageErrorDetection);
 BASE_DECLARE_FEATURE(kNtpChromeCartModule);
 BASE_DECLARE_FEATURE(kNtpDriveModule);
+BASE_DECLARE_FEATURE(kNtpDriveModuleSegmentation);
 #if !defined(OFFICIAL_BUILD)
 BASE_DECLARE_FEATURE(kNtpDummyModules);
 #endif
@@ -63,6 +64,7 @@ BASE_DECLARE_FEATURE(kNtpPhotosModuleSplitSvgOptInArtWork);
 BASE_DECLARE_FEATURE(kNtpFeedModule);
 BASE_DECLARE_FEATURE(kNtpOneGoogleBar);
 BASE_DECLARE_FEATURE(kNtpRealboxLensSearch);
+BASE_DECLARE_FEATURE(kNtpLensDirectUpload);
 BASE_DECLARE_FEATURE(kNtpRecipeTasksModule);
 BASE_DECLARE_FEATURE(kNtpRemoveScrim);
 BASE_DECLARE_FEATURE(kNtpSafeBrowsingModule);
@@ -77,12 +79,16 @@ BASE_DECLARE_FEATURE(kNtpHistoryClustersModuleCategories);
 BASE_DECLARE_FEATURE(kNtpHistoryClustersModuleLoad);
 BASE_DECLARE_FEATURE(kNtpHistoryClustersModuleMaxClusters);
 BASE_DECLARE_FEATURE(kNtpHistoryClustersModuleSuggestionChipHeader);
+BASE_DECLARE_FEATURE(kNtpHistoryClustersModuleDiscounts);
 BASE_DECLARE_FEATURE(kNtpHistoryClustersModuleTextOnly);
 BASE_DECLARE_FEATURE(kNtpModulesHeaderIcon);
 BASE_DECLARE_FEATURE(kNtpChromeCartInHistoryClusterModule);
 BASE_DECLARE_FEATURE(kNtpHistoryClustersModuleUseModelRanking);
 BASE_DECLARE_FEATURE(kNtpChromeCartHistoryClusterCoexist);
 BASE_DECLARE_FEATURE(kNtpHistoryClustersModuleFetchClustersUntilExhausted);
+BASE_DECLARE_FEATURE(kNtpHistoryClustersModuleIncludeSyncedVisits);
+BASE_DECLARE_FEATURE(kNtpHistoryClustersModuleEnableContentClustering);
+BASE_DECLARE_FEATURE(kNtpHistoryClustersModuleDiscounts);
 
 // Parameter for controlling the luminosity difference for NTP elements on light
 // backgrounds.

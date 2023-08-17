@@ -152,6 +152,9 @@ extern const char kDownloadInterruptedLearnMoreURL[];
 // The URL for the "Learn more" page for download scanning.
 extern const char kDownloadScanningLearnMoreURL[];
 
+// The URL for the "Learn more" page for blocked downloads.
+extern const char kDownloadBlockedLearnMoreURL[];
+
 // "Learn more" URL for the Settings API, NTP bubble and other settings bubbles
 // showing which extension is controlling them.
 extern const char kExtensionControlledSettingLearnMoreURL[];
@@ -404,6 +407,9 @@ extern const char kLinuxAppsLearnMoreURL[];
 
 // The URL for the "Learn more" link for natural scrolling on ChromeOS.
 extern const char kNaturalScrollHelpURL[];
+
+// The URL for the "Learn more" link for scrolling acceleration on ChromeOS.
+extern const char kScrollAccelerationHelpURL[];
 
 // The URL for the "Learn more" link for touchpad haptic feedback on Chrome OS.
 extern const char kHapticFeedbackHelpURL[];

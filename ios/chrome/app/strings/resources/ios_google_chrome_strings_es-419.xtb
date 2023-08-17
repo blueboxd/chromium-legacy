@@ -39,6 +39,7 @@
 <translation id="2767464022270041271">No hay contraseñas guardadas. El Administrador de contraseñas de Google puede revisar tus contraseñas cuando las guardas.</translation>
 <translation id="2840432500933227975">Abre la Configuración de Chrome en iOS, presiona "Navegador predeterminado" y selecciona Chrome.</translation>
 <translation id="2869959624320573933">Acceder a Chrome</translation>
+<translation id="2876628302275096482">Más información sobre <ph name="BEGIN_LINK" />cómo Chrome mantiene la privacidad de tus datos<ph name="END_LINK" /></translation>
 <translation id="2957447865124070833">Selecciona <ph name="BEGIN_BOLD" />Chrome<ph name="END_BOLD" />.</translation>
 <translation id="3030414234702425231">Como estás saliendo de una cuenta que administra <ph name="SIGNOUT_MANAGED_DOMAIN" />, tus datos de Chrome se borrarán de este dispositivo, pero permanecerán en tu Cuenta de Google.</translation>
 <translation id="3167189358072330585">Tu cuenta no funciona en Google Chrome. Comunícate con tu administrador de dominio o utiliza una cuenta común de Google para acceder.</translation>
@@ -79,10 +80,12 @@
 <translation id="5162467219239570114">Chrome no está actualizado. Si no hay actualizaciones disponibles en <ph name="BEGIN_LINK" />App Store<ph name="END_LINK" />, es posible que tu dispositivo no sea compatible con nuevas versiones de Chrome.</translation>
 <translation id="5389212809648216794">Google Chrome no puede utilizar tu cámara porque la está usando otra aplicación</translation>
 <translation id="5395376160638294582">Asegúrate de que siempre puedas usar los datos de Chrome en tu Cuenta de Google</translation>
+<translation id="5439191312780166229">Analiza más datos de los sitios que la protección estándar para advertirte sobre sitios peligrosos, incluso sobre los que Google no conocía. Puedes omitir las advertencias de Chrome.</translation>
 <translation id="5460571915754665838">4. Selecciona Chrome.</translation>
 <translation id="5492504007368565877">El Administrador de contraseñas de Google no puede revisar las contraseñas.</translation>
 <translation id="5527026824954593399">Presiona "Ver con Google Maps en Chrome".</translation>
 <translation id="5552137475244467770">Chrome revisa tus contraseñas de forma periódica para comprobar si aparecen en listas que se hayan publicado en línea. Durante esta acción, se encriptan tus contraseñas y nombres de usuario para que nadie, ni siquiera Google, pueda leer esta información.</translation>
+<translation id="5554520618550346933">Cuando usas una contraseña, Chrome te advierte si se publicó en línea. Cuando lo haces, se encriptan tus contraseñas y nombres de usuario para que nadie, ni siquiera Google, pueda leer esta información.</translation>
 <translation id="5639704535586432836">Abre Configuración &gt; Privacidad &gt; Cámara &gt; Google Chrome y activa la cámara.</translation>
 <translation id="5642200033778930880">Google Chrome no puede usar tu cámara en el modo de vista dividida</translation>
 <translation id="5661521615548540542">El Administrador de contraseñas de Google no pudo revisar todas las contraseñas. Vuelve a intentarlo más tarde.</translation>
@@ -148,6 +151,7 @@
 <translation id="8765470054473112089">Cuando escribes en la barra de direcciones o en el cuadro de búsqueda, Chrome envía lo que escribes a tu motor de búsqueda predeterminado para obtener mejores sugerencias. Esta función está desactivada en el modo Incógnito.</translation>
 <translation id="8772179140489533211">Muestra mensajes para acceder a Chrome.</translation>
 <translation id="8788269841521769222">No es necesario que recuerdes esta contraseña. Se guardará en el Administrador de contraseñas de Google de <ph name="EMAIL" />.</translation>
+<translation id="8808828119384186784">Configuración de Chrome</translation>
 <translation id="8857676124663337448">El Administrador de contraseñas de Google no pudo revisar todas las contraseñas. Vuelve a intentarlo mañana.</translation>
 <translation id="8897749957032330183">Las contraseñas se guardan en el Administrador de contraseñas de Google en este dispositivo.</translation>
 <translation id="8969290730818637510">Cuando se activa:

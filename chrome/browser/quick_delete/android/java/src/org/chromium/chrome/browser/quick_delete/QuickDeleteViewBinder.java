@@ -13,7 +13,9 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.VisibleForTesting;
 
+import org.chromium.chrome.browser.browsing_data.TimePeriod;
 import org.chromium.chrome.browser.quick_delete.QuickDeleteDelegate.DomainVisitsData;
 import org.chromium.components.browser_ui.widget.text.TemplatePreservingTextView;
 import org.chromium.components.browser_ui.widget.text.TextViewWithCompoundDrawables;
@@ -23,25 +25,34 @@ import org.chromium.ui.widget.TextViewWithClickableSpans;
 
 /**
  * The {@View} binder class for the quick delete MVC.
- *
- * TODO(crbug.com/1412087): Follow-up on not hiding the rows when the corresponding data is not
- * there. Instead update the strings according to go/qd-strings.
  */
 class QuickDeleteViewBinder {
     public static void bind(PropertyModel model, View quickDeleteView, PropertyKey propertyKey) {
         if (QuickDeleteProperties.DOMAIN_VISITED_DATA == propertyKey) {
             assert model.get(QuickDeleteProperties.DOMAIN_VISITED_DATA) != null;
             updateBrowsingHistoryRow(model.get(QuickDeleteProperties.CONTEXT), quickDeleteView,
-                    model.get(QuickDeleteProperties.DOMAIN_VISITED_DATA));
-        } else if (QuickDeleteProperties.CLOSED_TABS_COUNT == propertyKey) {
+                    model.get(QuickDeleteProperties.DOMAIN_VISITED_DATA),
+                    model.get(QuickDeleteProperties.TIME_PERIOD));
+        } else if (QuickDeleteProperties.CLOSED_TABS_COUNT == propertyKey
+                || QuickDeleteProperties.TIME_PERIOD == propertyKey) {
             updateClosedTabsCount(model.get(QuickDeleteProperties.CONTEXT), quickDeleteView,
-                    model.get(QuickDeleteProperties.CLOSED_TABS_COUNT));
+                    model.get(QuickDeleteProperties.CLOSED_TABS_COUNT),
+                    model.get(QuickDeleteProperties.TIME_PERIOD));
         } else if (QuickDeleteProperties.IS_SIGNED_IN == propertyKey) {
             updateSearchHistoryVisibility(
                     quickDeleteView, model.get(QuickDeleteProperties.IS_SIGNED_IN));
         } else if (QuickDeleteProperties.IS_SYNCING_HISTORY == propertyKey) {
             updateBrowsingHistorySubtitleVisibility(
                     quickDeleteView, model.get(QuickDeleteProperties.IS_SYNCING_HISTORY));
+        } else if (QuickDeleteProperties.IS_DOMAIN_VISITED_DATA_PENDING == propertyKey) {
+            updateBrowsingHistoryRowIfPending(model.get(QuickDeleteProperties.CONTEXT),
+                    quickDeleteView,
+                    model.get(QuickDeleteProperties.IS_DOMAIN_VISITED_DATA_PENDING));
+        } else if (QuickDeleteProperties.ON_MORE_OPTIONS_CLICKED == propertyKey) {
+            Runnable runnable = model.get(QuickDeleteProperties.ON_MORE_OPTIONS_CLICKED);
+            assert runnable != null : "More options runnable can't be null.";
+            quickDeleteView.findViewById(R.id.quick_delete_more_options)
+                    .setOnClickListener(view -> runnable.run());
         }
     }
 
@@ -61,19 +72,41 @@ class QuickDeleteViewBinder {
         subtitle.setVisibility((isVisible) ? VISIBLE : GONE);
     }
 
+    private static void updateBrowsingHistoryRowIfPending(
+            @NonNull Context context, @NonNull View quickDeleteView, boolean isPending) {
+        if (!isPending) return;
+        ViewGroup quickDeleteHistoryRow =
+                quickDeleteView.findViewById(R.id.quick_delete_history_row);
+        TemplatePreservingTextView title =
+                quickDeleteHistoryRow.findViewById(R.id.quick_delete_history_row_title);
+        title.setTemplate(null);
+        title.setText(context.getString(R.string.quick_delete_dialog_data_pending));
+        quickDeleteHistoryRow.setVisibility(VISIBLE);
+    }
+
     private static void updateBrowsingHistoryRow(@NonNull Context context,
-            @NonNull View quickDeleteView, @NonNull DomainVisitsData domainVisitsData) {
-        boolean isVisible = domainVisitsData.mDomainsCount >= 1;
+            @NonNull View quickDeleteView, @NonNull DomainVisitsData domainVisitsData,
+            @TimePeriod int timePeriod) {
+        String browsingHistoryRowTitleTemplate = null;
+        int domainsCount = domainVisitsData.mDomainsCount;
         ViewGroup historyRow = quickDeleteView.findViewById(R.id.quick_delete_history_row);
         TemplatePreservingTextView title =
                 historyRow.findViewById(R.id.quick_delete_history_row_title);
-        historyRow.setVisibility(isVisible ? VISIBLE : GONE);
 
-        if (!isVisible) {
+        if (domainsCount == 0) {
+            title.setTemplate(browsingHistoryRowTitleTemplate);
+
+            if (timePeriod == TimePeriod.ALL_TIME) {
+                title.setText(context.getString(
+                        R.string.quick_delete_dialog_zero_browsing_history_domain_count_all_time_text));
+            } else {
+                title.setText(context.getString(
+                        R.string.quick_delete_dialog_zero_browsing_history_domain_count_text,
+                        getTimePeriodString(context, timePeriod)));
+            }
             return;
         }
 
-        int domainsCount = domainVisitsData.mDomainsCount;
         // Subtract 1 from the domainsCount to not count the lastVisitedDomain twice.
         domainsCount--;
 
@@ -82,23 +115,49 @@ class QuickDeleteViewBinder {
             String domainCountText = context.getResources().getQuantityString(
                     R.plurals.quick_delete_dialog_browsing_history_domain_count_text, domainsCount,
                     domainsCount);
-            String browsingHistoryRowTitleTemplate = "%s " + domainCountText;
-            title.setTemplate(browsingHistoryRowTitleTemplate);
+            browsingHistoryRowTitleTemplate = "%s " + domainCountText;
         }
 
+        title.setTemplate(browsingHistoryRowTitleTemplate);
         title.setText(domainVisitsData.mLastVisitedDomain);
     }
 
-    private static void updateClosedTabsCount(
-            @NonNull Context context, @NonNull View quickDeleteView, int tabsCount) {
+    private static void updateClosedTabsCount(@NonNull Context context,
+            @NonNull View quickDeleteView, int tabsCount, @TimePeriod int timePeriod) {
         TextViewWithCompoundDrawables quickDeleteTabsCloseRow =
                 quickDeleteView.findViewById(R.id.quick_delete_tabs_close_row);
+
         if (tabsCount > 0) {
             String tabDescription = context.getResources().getQuantityString(
                     R.plurals.quick_delete_dialog_tabs_closed_text, tabsCount, tabsCount);
             quickDeleteTabsCloseRow.setText(tabDescription);
         } else {
-            quickDeleteTabsCloseRow.setVisibility(GONE);
+            if (timePeriod == TimePeriod.ALL_TIME) {
+                quickDeleteTabsCloseRow.setText(context.getString(
+                        R.string.quick_delete_dialog_zero_tabs_closed_all_time_text));
+            } else {
+                quickDeleteTabsCloseRow.setText(
+                        context.getString(R.string.quick_delete_dialog_zero_tabs_closed_text,
+                                getTimePeriodString(context, timePeriod)));
+            }
+        }
+    }
+
+    @VisibleForTesting
+    static String getTimePeriodString(Context context, @TimePeriod int timePeriod) {
+        switch (timePeriod) {
+            case TimePeriod.LAST_15_MINUTES:
+                return context.getString(R.string.quick_delete_time_period_15_minutes);
+            case TimePeriod.LAST_HOUR:
+                return context.getString(R.string.quick_delete_time_period_hour);
+            case TimePeriod.LAST_DAY:
+                return context.getString(R.string.quick_delete_time_period_24_hours);
+            case TimePeriod.LAST_WEEK:
+                return context.getString(R.string.quick_delete_time_period_7_days);
+            case TimePeriod.FOUR_WEEKS:
+                return context.getString(R.string.quick_delete_time_period_four_weeks);
+            default:
+                throw new IllegalStateException("Unexpected value: " + timePeriod);
         }
     }
 }

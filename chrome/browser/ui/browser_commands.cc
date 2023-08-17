@@ -97,6 +97,8 @@
 #include "chrome/browser/ui/tabs/tab_strip_user_gesture_details.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
+#include "chrome/browser/ui/web_applications/web_app_launch_utils.h"
+#include "chrome/browser/ui/web_applications/web_app_tabbed_utils.h"
 #include "chrome/browser/upgrade_detector/upgrade_detector.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
@@ -194,6 +196,11 @@
 
 #if BUILDFLAG(ENABLE_RLZ)
 #include "components/rlz/rlz_tracker.h"  // nogncheck
+#endif
+
+#if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
+#include "chrome/browser/accessibility/ax_screen_ai_annotator.h"
+#include "chrome/browser/accessibility/ax_screen_ai_annotator_factory.h"
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -394,7 +401,8 @@ void RecordReloadWithCookieBlocking(const Browser* browser,
       content_settings::PageSpecificContentSettings::GetForFrame(
           web_contents->GetPrimaryMainFrame());
   bool cookies_blocked =
-      pscs->blocked_local_shared_objects().GetObjectCount() > 0;
+      pscs && (pscs->blocked_local_shared_objects().GetObjectCount() > 0 ||
+               pscs->blocked_browsing_data_model()->size() > 0U);
 
   ukm::SourceId source_id =
       web_contents->GetPrimaryMainFrame()->GetPageUkmSourceId();
@@ -402,8 +410,8 @@ void RecordReloadWithCookieBlocking(const Browser* browser,
   ukm::builders::ThirdPartyCookies_BreakageIndicator(source_id)
       .SetBreakageIndicatorType(static_cast<int>(
           net::cookie_util::BreakageIndicatorType::USER_RELOAD))
-      .Set3PCBlocked(cookies_blocked)
-      .Set3PCBlockedInSettings(cookies_blocked_in_settings)
+      .SetTPCBlocked(cookies_blocked)
+      .SetTPCBlockedInSettings(cookies_blocked_in_settings)
       .Record(ukm::UkmRecorder::Get());
 }
 
@@ -1033,6 +1041,13 @@ void MoveActiveTabToNewWindow(Browser* browser) {
 }
 bool CanMoveTabsToNewWindow(Browser* browser,
                             const std::vector<int>& tab_indices) {
+  if (browser->is_type_app()) {
+    for (int index : tab_indices) {
+      if (web_app::IsPinnedHomeTab(browser->tab_strip_model(), index)) {
+        return false;
+      }
+    }
+  }
   return browser->tab_strip_model()->count() >
          static_cast<int>(tab_indices.size());
 }
@@ -1043,8 +1058,17 @@ void MoveTabsToNewWindow(Browser* browser,
   if (tab_indices.empty())
     return;
 
-  Browser* new_browser =
-      Browser::Create(Browser::CreateParams(browser->profile(), true));
+  Browser* new_browser;
+  if (browser->is_type_app() && browser->app_controller()->has_tab_strip()) {
+    new_browser = Browser::Create(Browser::CreateParams::CreateForApp(
+        browser->app_name(), browser->is_trusted_source(), gfx::Rect(),
+        browser->profile(), true));
+    web_app::MaybeAddPinnedHomeTab(new_browser,
+                                   new_browser->app_controller()->app_id());
+  } else {
+    new_browser =
+        Browser::Create(Browser::CreateParams(browser->profile(), true));
+  }
 
   if (group.has_value()) {
     SavedTabGroupKeyedService* const service =
@@ -1404,7 +1428,7 @@ void SaveCreditCard(Browser* browser) {
   controller->ReshowBubble();
 }
 
-void SaveIBAN(Browser* browser) {
+void SaveIban(Browser* browser) {
   WebContents* web_contents =
       browser->tab_strip_model()->GetActiveWebContents();
   autofill::IbanBubbleControllerImpl* controller =
@@ -2103,8 +2127,16 @@ void UnfollowSite(content::WebContents* web_contents) {
 }
 
 #if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
-void RunScreenAIVisualAnnotation(Browser* browser) {
-  browser->RunScreenAIAnnotator();
+void RunScreenAILayoutExtraction(Browser* browser) {
+  content::WebContents* web_contents =
+      browser->tab_strip_model()->GetActiveWebContents();
+  if (!web_contents) {
+    return;
+  }
+
+  screen_ai::AXScreenAIAnnotatorFactory::GetForBrowserContext(
+      browser->profile())
+      ->AnnotateScreenshot(web_contents);
 }
 #endif  // BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
 
@@ -2117,13 +2149,19 @@ void ExecLensRegionSearch(Browser* browser) {
   GURL url = contents->GetController().GetLastCommittedEntry()->GetURL();
 
   if (lens::IsRegionSearchEnabled(browser, profile, service, url)) {
+    const bool is_google_dsp = search::DefaultSearchProviderIsGoogle(profile);
+    const lens::AmbientSearchEntryPoint entry_point =
+        is_google_dsp ? lens::AmbientSearchEntryPoint::
+                            CONTEXT_MENU_SEARCH_REGION_WITH_GOOGLE_LENS
+                      : lens::AmbientSearchEntryPoint::
+                            CONTEXT_MENU_SEARCH_REGION_WITH_WEB;
     auto lens_region_search_controller_data =
         std::make_unique<lens::LensRegionSearchControllerData>();
     lens_region_search_controller_data->lens_region_search_controller =
         std::make_unique<lens::LensRegionSearchController>(browser);
     lens_region_search_controller_data->lens_region_search_controller->Start(
         contents, lens::features::IsLensFullscreenSearchEnabled(),
-        search::DefaultSearchProviderIsGoogle(profile));
+        is_google_dsp, entry_point);
     browser->SetUserData(lens::LensRegionSearchControllerData::kDataKey,
                          std::move(lens_region_search_controller_data));
   }

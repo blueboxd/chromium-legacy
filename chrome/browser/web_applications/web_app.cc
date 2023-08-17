@@ -262,18 +262,11 @@ base::Value OptTabStripToDebugValue(
   }
 
   base::Value::Dict result;
-  if (absl::holds_alternative<TabStrip::Visibility>(
-          tab_strip->new_tab_button)) {
-    result.Set("new_tab_button", base::ToString(absl::get<TabStrip::Visibility>(
-                                     tab_strip->new_tab_button)));
-  } else {
-    base::Value::Dict new_tab_button_json;
-    new_tab_button_json.Set(
-        "url", base::ToString(absl::get<blink::Manifest::NewTabButtonParams>(
-                                  tab_strip->new_tab_button)
-                                  .url.value_or(GURL(""))));
-    result.Set("new_tab_button", std::move(new_tab_button_json));
-  }
+
+  base::Value::Dict new_tab_button_json;
+  new_tab_button_json.Set(
+      "url", base::ToString(tab_strip->new_tab_button.url.value_or(GURL(""))));
+  result.Set("new_tab_button", std::move(new_tab_button_json));
 
   if (absl::holds_alternative<TabStrip::Visibility>(tab_strip->home_tab)) {
     result.Set(
@@ -690,9 +683,10 @@ void WebApp::SetIsolationData(IsolationData isolation_data) {
   isolation_data_ = isolation_data;
 }
 
-void WebApp::SetIsDefaultAppForSupportedLinks(
-    bool is_default_app_for_supported_links) {
-  is_default_app_for_supported_links_ = is_default_app_for_supported_links;
+void WebApp::SetIsUserSelectedAppForSupportedLinks(
+    bool is_user_selected_app_for_capturing_links) {
+  is_user_selected_app_for_capturing_links_ =
+      is_user_selected_app_for_capturing_links;
 }
 
 void WebApp::AddPlaceholderInfoToManagementExternalConfigMap(
@@ -967,7 +961,7 @@ bool WebApp::operator==(const WebApp& other) const {
         app.always_show_toolbar_in_fullscreen_,
         app.current_os_integration_states_,
         app.isolation_data_,
-        app.is_default_app_for_supported_links_
+        app.is_user_selected_app_for_capturing_links_
         // clang-format on
     );
   };
@@ -1178,8 +1172,8 @@ base::Value WebApp::AsDebugValueWithOnlyPlatformAgnosticFields() const {
 
   root.Set("isolation_data", OptionalAsDebugValue(isolation_data_));
 
-  root.Set("is_default_app_for_supported_links",
-           is_default_app_for_supported_links_);
+  root.Set("is_user_selected_app_for_capturing_links",
+           is_user_selected_app_for_capturing_links_);
 
   return base::Value(std::move(root));
 }

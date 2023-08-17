@@ -171,13 +171,6 @@ class ContentAutofillRouter {
   void UnsetKeyPressHandler(ContentAutofillDriver* source,
                             void (*callback)(ContentAutofillDriver* target));
 
-  // Sets the suppress state in the driver that last called
-  // AskForValuesToFill(), that is, |last_queried_source_|.
-  void SetShouldSuppressKeyboard(ContentAutofillDriver* source,
-                                 bool suppress,
-                                 void (*callback)(ContentAutofillDriver* target,
-                                                  bool suppress));
-
   // Routing of events called by the renderer:
   void SetFormToBeProbablySubmitted(
       ContentAutofillDriver* source,
@@ -262,7 +255,7 @@ class ContentAutofillRouter {
       void (*callback)(ContentAutofillDriver* target));
   void DidEndTextFieldEditing(ContentAutofillDriver* source,
                               void (*callback)(ContentAutofillDriver* target));
-  void SelectOrSelectMenuFieldOptionsDidChange(
+  void SelectOrSelectListFieldOptionsDidChange(
       ContentAutofillDriver* source,
       FormData form,
       void (*callback)(ContentAutofillDriver* target, const FormData& form));
@@ -288,22 +281,22 @@ class ContentAutofillRouter {
   // Routing of events called by the browser:
   std::vector<FieldGlobalId> FillOrPreviewForm(
       ContentAutofillDriver* source,
-      mojom::RendererFormDataAction action,
+      mojom::AutofillActionPersistence action_persistence,
       const FormData& data,
       const url::Origin& triggered_origin,
       const base::flat_map<FieldGlobalId, ServerFieldType>& field_type_map,
       void (*callback)(ContentAutofillDriver* target,
-                       mojom::RendererFormDataAction action,
+                       mojom::AutofillActionPersistence action_persistence,
                        const FormData& form));
   void UndoAutofill(
       ContentAutofillDriver* source,
-      mojom::RendererFormDataAction renderer_action,
+      mojom::AutofillActionPersistence action_persistence,
       const FormData& data,
       const url::Origin& triggered_origin,
       const base::flat_map<FieldGlobalId, ServerFieldType>& field_type_map,
       void (*callback)(ContentAutofillDriver* target,
                        const FormData& form,
-                       mojom::RendererFormDataAction renderer_action));
+                       mojom::AutofillActionPersistence action_persistence));
   void SendAutofillTypePredictionsToRenderer(
       ContentAutofillDriver* source,
       const std::vector<FormDataPredictions>& type_predictions,
@@ -356,6 +349,13 @@ class ContentAutofillRouter {
                        const FieldRendererId& field,
                        const mojom::AutofillState state));
 
+  // Returns the underlying renderer forms of `browser_form`.
+  // Note that this function is intended for use outside of the `autofill`
+  // component to ensure compatibility with callers whose concept of a form
+  // does not include frame-transcending forms. It returns the constituent
+  // renderer forms regardless of their frames' origins and the field types.
+  std::vector<FormData> GetRendererForms(const FormData& browser_form) const;
+
  private:
   friend class ContentAutofillRouterTestApi;
 
@@ -376,8 +376,7 @@ class ContentAutofillRouter {
 
   // The driver that triggered the last AskForValuesToFill() call.
   // Update with SetLastQueriedSource().
-  raw_ptr<ContentAutofillDriver, DanglingUntriaged> last_queried_source_ =
-      nullptr;
+  raw_ptr<ContentAutofillDriver> last_queried_source_ = nullptr;
   // The driver to which the last AskForValuesToFill() call was routed.
   // Update with SetLastQueriedTarget().
   raw_ptr<ContentAutofillDriver> last_queried_target_ = nullptr;

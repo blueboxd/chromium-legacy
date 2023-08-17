@@ -1,8 +1,10 @@
 // Copyright 2023 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import {FakeInputDeviceSettingsProvider, fakeTouchpads, Router, routes, setInputDeviceSettingsProviderForTesting, SettingsDropdownMenuElement, SettingsPerDeviceTouchpadSubsectionElement, SettingsSliderElement, SettingsToggleButtonElement, SimulateRightClickModifier} from 'chrome://os-settings/os_settings.js';
-import {CrToggleElement} from 'chrome://resources/cr_elements/cr_toggle/cr_toggle.js';
+
+import 'chrome://os-settings/os_settings.js';
+
+import {CrToggleElement, FakeInputDeviceSettingsProvider, fakeTouchpads, Router, routes, setInputDeviceSettingsProviderForTesting, SettingsDropdownMenuElement, SettingsPerDeviceTouchpadSubsectionElement, SettingsSliderElement, SettingsToggleButtonElement, SimulateRightClickModifier} from 'chrome://os-settings/os_settings.js';
 import {assert} from 'chrome://resources/js/assert_ts.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {pressAndReleaseKeyOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
@@ -27,7 +29,7 @@ suite('<settings-per-device-touchpad-subsection>', () => {
         document.createElement('settings-per-device-touchpad-subsection');
     assert(subsection);
     subsection.set('touchpad', {...fakeTouchpads[0]});
-    subsection.set('allowScrollSettings_', true);
+    subsection.set('allowTouchpadScrollSettings_', true);
     document.body.appendChild(subsection);
     await flushTasks();
   });
@@ -211,7 +213,7 @@ suite('<settings-per-device-touchpad-subsection>', () => {
         subsection.get('reverseScrollValue'));
 
     subsection.set('touchpad', fakeTouchpads[1]);
-    subsection.set('allowScrollSettings_', false);
+    subsection.set('allowTouchpadScrollSettings_', false);
 
     await flushTasks();
     enableTapToClickButton =

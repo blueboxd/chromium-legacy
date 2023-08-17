@@ -43,6 +43,7 @@ class PrefService;
 @protocol PriceNotificationsCommands;
 class PromosManager;
 class ReadingListBrowserAgent;
+class ReadingListModel;
 @protocol TextZoomCommands;
 class WebNavigationBrowserAgent;
 class WebStateList;
@@ -52,7 +53,7 @@ class WebStateList;
 @interface OverflowMenuMediator : NSObject <BrowserContainerConsumer>
 
 // The data model for the overflow menu.
-@property(nonatomic, readonly) OverflowMenuModel* overflowMenuModel;
+@property(nonatomic, weak) OverflowMenuModel* model;
 
 // The WebStateList that this mediator listens for any changes on the current
 // WebState.
@@ -89,6 +90,9 @@ class WebStateList;
     bookmarks::BookmarkModel* localOrSyncableBookmarkModel;
 @property(nonatomic, assign) bookmarks::BookmarkModel* accountBookmarkModel;
 
+// Readinglist model to know if model has finished loading.
+@property(nonatomic, assign) ReadingListModel* readingListModel;
+
 // Pref service to retrieve browser state preference values.
 @property(nonatomic, assign) PrefService* browserStatePrefs;
 
@@ -111,10 +115,6 @@ class WebStateList;
 // The FollowBrowserAgent used to manage web channels subscriptions.
 @property(nonatomic, assign) FollowBrowserAgent* followBrowserAgent;
 
-// The number of destinations immediately visible to the user when opening the
-// new overflow menu (i.e. the number of "above-the-fold" destinations).
-@property(nonatomic, assign) int visibleDestinationsCount;
-
 // The Sync Service that provides the status of Sync.
 @property(nonatomic, assign) syncer::SyncService* syncService;
 
@@ -127,12 +127,6 @@ class WebStateList;
 
 // The ReadingListBrowserAgent used to add urls to reading list.
 @property(nonatomic, assign) ReadingListBrowserAgent* readingListBrowserAgent;
-
-// Updates the pin state of the tab corresponding to the given `webState` in
-// `webStateList`.
-+ (void)setTabPinned:(BOOL)pinned
-            webState:(web::WebState*)webState
-        webStateList:(WebStateList*)webStateList;
 
 // Disconnect the mediator.
 - (void)disconnect;

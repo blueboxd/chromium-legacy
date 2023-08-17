@@ -16,8 +16,26 @@ constexpr auto kContentsInsets = gfx::Insets::VH(kContentsVerticalInset, 16);
 // The padding vertically separating the Ctrl+V label from the contents view.
 constexpr int kCtrlVLabelPadding = 6;
 
-// The size of the `DeleteButton`.
-constexpr int kDeleteButtonSizeDip = 16;
+// The corner radius for the footer content v2 background.
+constexpr int kFooterContentV2BackgroundCornerRadius = 8;
+
+// The child spacing for footer content v2.
+constexpr int kFooterContentV2ChildSpacing = 6;
+
+// The icon size for footer content v2.
+constexpr int kFooterContentV2IconSize = 20;
+
+// The inline icon size for footer content v2.
+constexpr int kFooterContentV2InlineIconSize = 16;
+
+// The insets for footer content v2.
+constexpr auto kFooterContentV2Insets = gfx::Insets(8);
+
+// The margins for footer content v2.
+constexpr auto kFooterContentV2Margins = gfx::Insets::TLBR(8, 12, 12, 12);
+
+// The size of the `DeleteButton` icon.
+constexpr int kDeleteButtonIconSize = 20;
 
 // The maximum number of lines allotted to a text item's label when the
 // clipboard history refresh is enabled.
@@ -59,6 +77,10 @@ constexpr auto kIconMargins = gfx::Insets::TLBR(0, 0, 0, 12);
 
 // The thickness of the image border.
 constexpr int kImageBorderThickness = 1;
+
+// TODO(http://b/267694412): Demystify this magic constant.
+// The margins for inline icons.
+constexpr auto kInlineIconMargins = gfx::Insets::TLBR(2, 4, 0, 0);
 
 }  // namespace ash::ClipboardHistoryViews
 

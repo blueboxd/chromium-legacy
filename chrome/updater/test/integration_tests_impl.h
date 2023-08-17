@@ -81,6 +81,9 @@ void ExitTestMode(UpdaterScope scope);
 // Sets the external constants for group policies.
 void SetGroupPolicies(const base::Value::Dict& values);
 
+// Sets whether the machine is in managed state.
+void SetMachineManaged(bool is_managed_device);
+
 // Expects to find no crashes. If there are any crashes, causes the test to
 // fail. Copies any crashes found to the isolate directory.
 void ExpectNoCrashes(UpdaterScope scope);
@@ -197,7 +200,9 @@ void ExpectAppVersion(UpdaterScope scope,
                       const std::string& app_id,
                       const base::Version& version);
 
-void RegisterApp(UpdaterScope scope, const std::string& app_id);
+void RegisterApp(UpdaterScope scope,
+                 const std::string& app_id,
+                 const base::Version& version);
 
 [[nodiscard]] bool WaitForUpdaterExit(UpdaterScope scope);
 
@@ -251,6 +256,14 @@ void ExpectUpdateSequence(UpdaterScope scope,
                           const base::Version& from_version,
                           const base::Version& to_version);
 
+void ExpectUpdateSequenceBadHash(UpdaterScope scope,
+                                 ScopedServer* test_server,
+                                 const std::string& app_id,
+                                 const std::string& install_data_index,
+                                 UpdateService::Priority priority,
+                                 const base::Version& from_version,
+                                 const base::Version& to_version);
+
 void ExpectInstallSequence(UpdaterScope scope,
                            ScopedServer* test_server,
                            const std::string& app_id,
@@ -258,6 +271,16 @@ void ExpectInstallSequence(UpdaterScope scope,
                            UpdateService::Priority priority,
                            const base::Version& from_version,
                            const base::Version& to_version);
+
+#if BUILDFLAG(IS_WIN)
+void ExpectAppRollbackUpdateSequence(UpdaterScope scope,
+                                     ScopedServer* test_server,
+                                     const std::string& app_id,
+                                     bool allow_rollback,
+                                     const std::string& target_version_prefix,
+                                     const base::Version& from_version,
+                                     const base::Version& to_version);
+#endif  // BUILDFLAG(IS_WIN)
 
 void StressUpdateService(UpdaterScope scope);
 
@@ -280,7 +303,9 @@ void ExpectLastChecked(UpdaterScope scope);
 
 void ExpectLastStarted(UpdaterScope scope);
 
-void InstallApp(UpdaterScope scope, const std::string& app_id);
+void InstallApp(UpdaterScope scope,
+                const std::string& app_id,
+                const base::Version& version);
 
 void UninstallApp(UpdaterScope scope, const std::string& app_id);
 

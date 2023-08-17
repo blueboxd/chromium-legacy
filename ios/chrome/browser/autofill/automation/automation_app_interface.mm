@@ -18,10 +18,6 @@
 #import "ios/web/public/js_messaging/web_frames_manager.h"
 #import "ios/web/public/web_state.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 using autofill::PersonalDataManager;
 using autofill::PersonalDataManagerFactory;
 
@@ -137,7 +133,7 @@ NSError* PrepareAutofillProfileWithValues(
       PersonalDataManagerFactory::GetForBrowserState(browser_state);
   personal_data_manager->ClearAllLocalData();
   personal_data_manager->AddCreditCard(credit_card);
-  personal_data_manager->SaveImportedProfile(profile);
+  personal_data_manager->AddProfile(profile);
 
   return nil;
 }

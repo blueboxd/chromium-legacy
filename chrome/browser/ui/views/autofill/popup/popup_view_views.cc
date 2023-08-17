@@ -125,12 +125,16 @@ void PopupViewViews::GetAccessibleNodeData(ui::AXNodeData* node_data) {
       l10n_util::GetStringUTF16(IDS_AUTOFILL_POPUP_ACCESSIBLE_NODE_DATA));
 }
 
-void PopupViewViews::Show(
+bool PopupViewViews::Show(
     AutoselectFirstSuggestion autoselect_first_suggestion) {
   NotifyAccessibilityEvent(ax::mojom::Event::kExpandedChanged, true);
-  if (DoShow() && autoselect_first_suggestion) {
+  if (!DoShow()) {
+    return false;
+  }
+  if (autoselect_first_suggestion) {
     SetSelectedCell(CellIndex{0u, PopupRowView::CellType::kContent});
   }
+  return true;
 }
 
 void PopupViewViews::Hide() {
@@ -353,6 +357,8 @@ void PopupViewViews::OnWidgetVisibilityChanged(views::Widget* widget,
   // session and has a limit for how many times it can be shown at most in a
   // period of time.
   browser->window()->MaybeShowFeaturePromo(
+      feature_engagement::kIPHAutofillVirtualCardCVCSuggestionFeature);
+  browser->window()->MaybeShowFeaturePromo(
       feature_engagement::kIPHAutofillVirtualCardSuggestionFeature);
   browser->window()->MaybeShowFeaturePromo(
       feature_engagement::kIPHAutofillExternalAccountProfileSuggestionFeature);
@@ -433,8 +439,11 @@ void PopupViewViews::CreateChildViews() {
           // set them earlier to make sure the elements are discoverable later
           // during popup's visibility change and the promo bubble showing.
           if (feature_for_iph ==
-              feature_engagement::kIPHAutofillVirtualCardSuggestionFeature
-                  .name) {
+                  feature_engagement::kIPHAutofillVirtualCardSuggestionFeature
+                      .name ||
+              feature_for_iph ==
+                  feature_engagement::
+                      kIPHAutofillVirtualCardCVCSuggestionFeature.name) {
             row_view->SetProperty(views::kElementIdentifierKey,
                                   kAutofillCreditCardSuggestionEntryElementId);
           }

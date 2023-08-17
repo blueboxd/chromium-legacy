@@ -31,8 +31,17 @@ declare namespace chrome {
     let lineSpacing: number;
     let letterSpacing: number;
 
+    // Enum values for various visual theme changes.
+    let standardLineSpacing: number;
+    let looseLineSpacing: number;
+    let veryLooseLineSpacing: number;
+
     // Whether the WebUI toolbar feature flag is enabled.
     let isWebUIToolbarVisible: boolean;
+
+    // Indicates if select-to-distill works on the web page. Used to
+    // determine which empty state to display.
+    let isSelectable: boolean;
 
     // Returns a list of AXNodeIDs corresponding to the unignored children of
     // the AXNode for the provided AXNodeID. If there is a selection contained
@@ -78,9 +87,14 @@ declare namespace chrome {
     // the link's corresponding AXNode in the main pane.
     function onLinkClicked(nodeId: number): void;
 
-    // Returns true if select-to-distill works on the web page. Used to
-    // determine which empty state to display.
-    function isSelectable(): boolean;
+    // Called when the line spacing is changed via the webui toolbar.
+    function onStandardLineSpacing(): void;
+    function onLooseLineSpacing(): void;
+    function onVeryLooseLineSpacing(): void;
+
+    // Returns the actual spacing value to use based on the given lineSpacing
+    // category.
+    function getLineSpacingValue(lineSpacing: number): number;
 
     // Called when a user makes a selection change. AnchorNodeID and
     // focusAXNodeID are AXNodeIDs which identify the anchor and focus AXNodes

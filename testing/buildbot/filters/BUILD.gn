@@ -141,6 +141,7 @@ source_set("content_browsertests_filters") {
     "//testing/buildbot/filters/android.pie_arm64.content_browsertests_coverage.filter",
     "//testing/buildbot/filters/cast-linux.content_browsertests.filter",
     "//testing/buildbot/filters/chromium.webrtc.fyi.android.tests.dbg.content_browsertests.filter",
+    "//testing/buildbot/filters/fuchsia.coverage.content_browsertests.filter",
     "//testing/buildbot/filters/linux-lacros.content_browsertests.filter",
     "//testing/buildbot/filters/site_isolation_android.content_browsertests.filter",
     "//testing/buildbot/filters/vulkan.content_browsertests.filter",
@@ -347,7 +348,6 @@ source_set("net_unittests_filters") {
     "//testing/buildbot/filters/android.emulator.net_unittests.filter",
     "//testing/buildbot/filters/android.emulator_10.net_unittests.filter",
     "//testing/buildbot/filters/android.emulator_l.net_unittests.filter",
-    "//testing/buildbot/filters/android.emulator_k.net_unittests.filter",
     "//testing/buildbot/filters/fuchsia.net_unittests.filter",
   ]
 }

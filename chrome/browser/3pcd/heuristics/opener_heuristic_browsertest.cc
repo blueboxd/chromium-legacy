@@ -214,8 +214,16 @@ IN_PROC_BROWSER_TEST_F(OpenerHeuristicBrowserTest,
   ASSERT_TRUE(popup_tab_helper->popup_observer_for_testing());
 }
 
+// TODO(https://crbug.com/1469394): Flaky on android.
+#if BUILDFLAG(IS_ANDROID)
+#define MAYBE_PopupsWithoutOpenerDoNotHavePopupState \
+  DISABLED_PopupsWithoutOpenerDoNotHavePopupState
+#else
+#define MAYBE_PopupsWithoutOpenerDoNotHavePopupState \
+  PopupsWithoutOpenerDoNotHavePopupState
+#endif
 IN_PROC_BROWSER_TEST_F(OpenerHeuristicBrowserTest,
-                       PopupsWithoutOpenerDoNotHavePopupState) {
+                       MAYBE_PopupsWithoutOpenerDoNotHavePopupState) {
   WebContents* web_contents = GetActiveWebContents();
   GURL popup_url = embedded_test_server()->GetURL("a.test", "/title1.html");
 
@@ -231,7 +239,14 @@ IN_PROC_BROWSER_TEST_F(OpenerHeuristicBrowserTest,
   ASSERT_FALSE(popup_tab_helper->popup_observer_for_testing());
 }
 
-IN_PROC_BROWSER_TEST_F(OpenerHeuristicBrowserTest, NewTabsDoNotHavePopupState) {
+// TODO(crbug.com/1469394): Flaky on android.
+#if BUILDFLAG(IS_ANDROID)
+#define MAYBE_NewTabsDoNotHavePopupState DISABLED_NewTabsDoNotHavePopupState
+#else
+#define MAYBE_NewTabsDoNotHavePopupState NewTabsDoNotHavePopupState
+#endif
+IN_PROC_BROWSER_TEST_F(OpenerHeuristicBrowserTest,
+                       MAYBE_NewTabsDoNotHavePopupState) {
   WebContents* web_contents = GetActiveWebContents();
   GURL popup_url = embedded_test_server()->GetURL("a.test", "/title1.html");
 
@@ -391,7 +406,9 @@ IN_PROC_BROWSER_TEST_F(OpenerHeuristicBrowserTest, PopupInteraction) {
             final_url);
   // The time between *popup_url* committing and the click.
   EXPECT_EQ(entries[0].metrics["SecondsSinceCommitted"],
-            BucketizeSecondsSinceCommitted(base::Minutes(2)));
+            Bucketize3PCDHeuristicTimeDelta(
+                base::Minutes(2), base::Minutes(3),
+                base::BindRepeating(&base::TimeDelta::InSeconds)));
   // The user clicked on *final_url*, which was the third URL.
   EXPECT_EQ(entries[0].metrics["UrlIndex"], 3);
 }
@@ -449,7 +466,9 @@ IN_PROC_BROWSER_TEST_F(OpenerHeuristicBrowserTest,
             popup_url);
   // The uncommitted navigation was ignored. UrlIndex is still 1.
   EXPECT_EQ(entries[0].metrics["SecondsSinceCommitted"],
-            BucketizeSecondsSinceCommitted(base::Minutes(2)));
+            Bucketize3PCDHeuristicTimeDelta(
+                base::Minutes(2), base::Minutes(3),
+                base::BindRepeating(&base::TimeDelta::InSeconds)));
   EXPECT_EQ(entries[0].metrics["UrlIndex"], 1);
 }
 

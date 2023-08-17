@@ -119,7 +119,6 @@ FakeChromeUserManager::AddUserWithAffiliationAndTypeAndProfile(
               IDR_LOGIN_DEFAULT_USER)),
       user_manager::User::USER_IMAGE_PROFILE, false);
   users_.push_back(user);
-  ProfileHelper::Get()->SetProfileToUserMappingForTesting(user);
 
   if (profile) {
     ProfileHelper::Get()->SetUserToProfileMappingForTesting(user, profile);
@@ -180,7 +179,6 @@ user_manager::User* FakeChromeUserManager::AddPublicAccountUser(
               IDR_LOGIN_DEFAULT_USER)),
       user_manager::User::USER_IMAGE_PROFILE, false);
   users_.push_back(user);
-  ProfileHelper::Get()->SetProfileToUserMappingForTesting(user);
   return user;
 }
 
@@ -265,7 +263,6 @@ void FakeChromeUserManager::RemoveUserFromList(const AccountId& account_id) {
   if (wallpaper_client) {
     wallpaper_client->RemoveUserWallpaper(account_id, base::DoNothing());
   }
-  ProfileHelper::Get()->RemoveUserFromListForTesting(account_id);
 
   const user_manager::UserList::iterator it =
       base::ranges::find(users_, account_id, &user_manager::User::GetAccountId);
@@ -493,7 +490,12 @@ std::u16string FakeChromeUserManager::GetUserDisplayName(
 void FakeChromeUserManager::SaveUserDisplayEmail(
     const AccountId& account_id,
     const std::string& display_email) {
-  NOTREACHED();
+  user_manager::User* user = FindUserAndModify(account_id);
+  if (!user) {
+    LOG(ERROR) << "User not found: " << account_id.GetUserEmail();
+    return;
+  }
+  user->set_display_email(display_email);
 }
 
 void FakeChromeUserManager::SaveUserType(const user_manager::User* user) {
@@ -532,7 +534,7 @@ bool FakeChromeUserManager::IsLoggedInAsChildUser() const {
   return current_user_child_;
 }
 
-bool FakeChromeUserManager::IsLoggedInAsPublicAccount() const {
+bool FakeChromeUserManager::IsLoggedInAsManagedGuestSession() const {
   const user_manager::User* active_user = GetActiveUser();
   return active_user
              ? active_user->GetType() == user_manager::USER_TYPE_PUBLIC_ACCOUNT

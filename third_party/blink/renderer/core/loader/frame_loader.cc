@@ -127,6 +127,7 @@
 #include "third_party/blink/renderer/platform/network/mime/mime_type_registry.h"
 #include "third_party/blink/renderer/platform/network/network_utils.h"
 #include "third_party/blink/renderer/platform/runtime_feature_state/runtime_feature_state_override_context.h"
+#include "third_party/blink/renderer/platform/scheduler/main_thread/frame_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
@@ -373,13 +374,19 @@ void FrameLoader::DispatchUnloadEventAndFillOldDocumentInfoIfNeeded(
   // frame needs should fill in the info.
   OldDocumentInfoForCommit* old_document_info =
       ScopedOldDocumentInfoForCommitCapturer::CurrentInfo();
-  if (!old_document_info || !will_commit_new_document_in_this_frame) {
+  if (!old_document_info || !will_commit_new_document_in_this_frame ||
+      !GetDocumentLoader()) {
     frame_->GetDocument()->DispatchUnloadEvents(nullptr);
     return;
   }
   old_document_info->history_item = GetDocumentLoader()->GetHistoryItem();
   old_document_info->had_sticky_activation_before_navigation =
       frame_->HadStickyUserActivationBeforeNavigation();
+  if (auto* scheduler = static_cast<scheduler::FrameSchedulerImpl*>(
+          frame_->GetFrameScheduler())) {
+    old_document_info->frame_scheduler_unreported_task_time =
+        scheduler->unreported_task_time();
+  }
 
   frame_->GetDocument()->DispatchUnloadEvents(
       &old_document_info->unload_timing_info);
@@ -467,15 +474,6 @@ void FrameLoader::DidFinishNavigation(NavigationFinishState state) {
   Frame* parent = frame_->Tree().Parent();
   if (parent)
     parent->CheckCompleted();
-}
-
-Frame* FrameLoader::Opener() {
-  return frame_->Opener();
-}
-
-void FrameLoader::SetOpener(LocalFrame* opener) {
-  // If the frame is already detached, the opener has already been cleared.
-  frame_->SetOpener(opener);
 }
 
 bool FrameLoader::AllowPlugins() {

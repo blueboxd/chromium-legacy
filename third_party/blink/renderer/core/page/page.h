@@ -42,7 +42,7 @@
 #include "third_party/blink/public/platform/scheduler/web_scoped_virtual_time_pauser.h"
 #include "third_party/blink/public/web/web_lifecycle_update.h"
 #include "third_party/blink/public/web/web_window_features.h"
-#include "third_party/blink/renderer/bindings/core/v8/v8_compile_hints.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_compile_hints_producer.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/vision_deficiency.h"
 #include "third_party/blink/renderer/core/frame/deprecation/deprecation.h"
@@ -56,7 +56,6 @@
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/scheduler/public/agent_group_scheduler.h"
-#include "third_party/blink/renderer/platform/scheduler/public/page_lifecycle_state.h"
 #include "third_party/blink/renderer/platform/scheduler/public/page_scheduler.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
@@ -423,8 +422,9 @@ class CORE_EXPORT Page final : public GarbageCollected<Page>,
     return fenced_frame_mode_;
   }
 
-  V8CrowdsourcedCompileHintsProducer& GetV8CrowdsourcedCompileHintsProducer() {
-    return *v8_compile_hints_;
+  v8_compile_hints::V8CrowdsourcedCompileHintsProducer&
+  GetV8CrowdsourcedCompileHintsProducer() {
+    return *v8_compile_hints_producer_;
   }
 
   // Returns the token uniquely identifying the browsing context group this page
@@ -590,7 +590,8 @@ class CORE_EXPORT Page final : public GarbageCollected<Page>,
 
   WebScopedVirtualTimePauser history_navigation_virtual_time_pauser_;
 
-  Member<V8CrowdsourcedCompileHintsProducer> v8_compile_hints_;
+  Member<v8_compile_hints::V8CrowdsourcedCompileHintsProducer>
+      v8_compile_hints_producer_;
 
   // The information determining the browsing context group this page lives in.
   BrowsingContextGroupInfo browsing_context_group_info_;

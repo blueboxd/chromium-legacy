@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/side_panel/read_anything/read_anything_untrusted_page_handler.h"
 
+#include <algorithm>
 #include <string>
 #include <utility>
 #include <vector>
@@ -12,6 +13,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/views/side_panel/read_anything/read_anything_controller.h"
+#include "chrome/browser/ui/webui/side_panel/read_anything/read_anything_prefs.h"
 #include "content/public/browser/web_ui.h"
 #include "ui/accessibility/accessibility_features.h"
 #include "ui/accessibility/ax_action_data.h"
@@ -91,6 +93,34 @@ void ReadAnythingUntrustedPageHandler::TreeRemoved(ui::AXTreeID ax_tree_id) {
 
 void ReadAnythingUntrustedPageHandler::OnCopy() {
   web_contents()->Copy();
+}
+
+void ReadAnythingUntrustedPageHandler::OnLineSpaceChange(
+    read_anything::mojom::LineSpacing line_spacing) {
+  browser_->profile()->GetPrefs()->SetInteger(
+      prefs::kAccessibilityReadAnythingLineSpacing,
+      static_cast<size_t>(line_spacing));
+}
+
+void ReadAnythingUntrustedPageHandler::OnLetterSpaceChange(
+    read_anything::mojom::LetterSpacing letter_spacing) {
+  browser_->profile()->GetPrefs()->SetInteger(
+      prefs::kAccessibilityReadAnythingLetterSpacing,
+      static_cast<size_t>(letter_spacing));
+}
+void ReadAnythingUntrustedPageHandler::OnFontChange(const std::string& font) {
+  browser_->profile()->GetPrefs()->SetString(
+      prefs::kAccessibilityReadAnythingFontName, font);
+}
+void ReadAnythingUntrustedPageHandler::OnFontSizeChange(double font_size) {
+  double saved_font_size = std::min(font_size, kReadAnythingMaximumFontScale);
+  browser_->profile()->GetPrefs()->SetDouble(
+      prefs::kAccessibilityReadAnythingFontScale, saved_font_size);
+}
+void ReadAnythingUntrustedPageHandler::OnColorChange(
+    read_anything::mojom::Colors color) {
+  browser_->profile()->GetPrefs()->SetInteger(
+      prefs::kAccessibilityReadAnythingColorInfo, static_cast<size_t>(color));
 }
 
 void ReadAnythingUntrustedPageHandler::OnLinkClicked(

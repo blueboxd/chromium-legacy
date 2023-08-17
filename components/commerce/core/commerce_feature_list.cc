@@ -48,6 +48,7 @@ const CountryLocaleMap& GetAllowedCountryToLocaleMap() {
     map[&kCommerceMerchantViewerRegionLaunched] = {{"us", {"en-us"}}};
     map[&kCommercePriceTrackingRegionLaunched] = {{"us", {"en-us"}}};
     map[&kPriceInsightsRegionLaunched] = {{"us", {"en-us"}}};
+    map[&kShowDiscountOnNavigationRegionLaunched] = {{"us", {"en-us"}}};
 
     return map;
   }());
@@ -180,8 +181,20 @@ const char kPriceInsightsShowFeedbackParam[] = "price-insights-show-feedback";
 const base::FeatureParam<bool> kPriceInsightsShowFeedback{
     &commerce::kPriceInsights, kPriceInsightsShowFeedbackParam, false};
 
+// Discount on navigation
+BASE_FEATURE(kShowDiscountOnNavigation,
+             "ShowDiscountOnNavigation",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kShowDiscountOnNavigationRegionLaunched,
+             "ShowDiscountOnNavigationRegionLaunched",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 const base::FeatureParam<bool> kDeleteAllMerchantsOnClearBrowsingHistory{
     &kCommerceMerchantViewer, "delete_all_merchants_on_clear_history", false};
+
+BASE_FEATURE(kShoppingCollection,
+             "ShoppingCollection",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kShoppingList, "ShoppingList", base::FEATURE_DISABLED_BY_DEFAULT);
 #if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || \

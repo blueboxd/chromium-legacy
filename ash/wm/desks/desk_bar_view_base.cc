@@ -6,6 +6,7 @@
 
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/public/cpp/saved_desk_delegate.h"
+#include "ash/public/cpp/shelf_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/style/color_provider.h"
 #include "ash/public/cpp/window_properties.h"
@@ -33,6 +34,7 @@
 #include "ash/wm/work_area_insets.h"
 #include "base/check.h"
 #include "base/functional/bind.h"
+#include "base/i18n/rtl.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/notreached.h"
 #include "base/uuid.h"
@@ -251,6 +253,8 @@ class DeskBarScrollViewLayout : public views::LayoutManager {
   // TODO(conniekxu): After CrOS Next is launched, remove function
   // `LayoutInternal`, and move this to Layout.
   void LayoutInternalCrOSNext(views::View* host) {
+    TRACE_EVENT0("ui", "DeskBarScrollViewLayout::LayoutInternalCrOSNext");
+
     const gfx::Rect scroll_bounds = bar_view_->scroll_view_->bounds();
 
     auto* new_desk_button_label = bar_view_->new_desk_button_label();
@@ -479,8 +483,10 @@ DeskBarViewBase::DeskBarViewBase(aura::Window* root, Type type)
 
   const bool is_jellyroll_enabled = chromeos::features::IsJellyrollEnabled();
 
-  if (is_jellyroll_enabled || type_ == Type::kDeskButton) {
+  if (features::IsBackgroundBlurEnabled() &&
+      (is_jellyroll_enabled || type_ == Type::kDeskButton)) {
     layer()->SetBackgroundBlur(ColorProvider::kBackgroundBlurSigma);
+    layer()->SetBackdropFilterQuality(ColorProvider::kBackgroundBlurQuality);
   }
 
   const float corner_radius = type_ == Type::kOverview
@@ -729,6 +735,8 @@ std::unique_ptr<views::Widget> DeskBarViewBase::CreateDeskWidget(
 }
 
 void DeskBarViewBase::Layout() {
+  TRACE_EVENT0("ui", "DeskBarViewBase::Layout");
+
   if (is_bounds_animation_on_going_) {
     return;
   }
@@ -740,22 +748,26 @@ void DeskBarViewBase::Layout() {
   }
 
   // Refresh bounds as preferred. This is needed for dynamic width for the bar.
+  // TODO(b/293658108): Move dynamic width update out of `Layout`.
   gfx::Size preferred_size = CalculatePreferredSize();
   gfx::Rect new_bounds = GetAvailableBounds();
-  switch (Shelf::ForWindow(root_)->alignment()) {
+  ShelfAlignment shelf_alignment = Shelf::ForWindow(root_)->alignment();
+  switch (shelf_alignment) {
     case ShelfAlignment::kBottom:
       new_bounds.ClampToCenteredSize(preferred_size);
       break;
     case ShelfAlignment::kLeft:
-      new_bounds.set_size(preferred_size);
-      break;
     case ShelfAlignment::kRight:
-      new_bounds.set_origin({new_bounds.right() - preferred_size.width(),
-                             new_bounds.bottom() - preferred_size.height()});
-      new_bounds.set_size(preferred_size);
+      if ((shelf_alignment == ShelfAlignment::kRight) == base::i18n::IsRTL()) {
+        new_bounds.set_size(preferred_size);
+      } else {
+        new_bounds.set_origin({new_bounds.right() - preferred_size.width(),
+                               new_bounds.bottom() - preferred_size.height()});
+        new_bounds.set_size(preferred_size);
+      }
       break;
-    default:
-      NOTREACHED();
+    case ShelfAlignment::kBottomLocked:
+      return;
   }
   SetBoundsRect(new_bounds);
 
@@ -897,9 +909,10 @@ void DeskBarViewBase::OnNewDeskButtonPressed(
     return;
   }
 
-  if (type_ == Type::kDeskButton) {
-    base::UmaHistogramBoolean(kDeskBarNewDeskHistogramName, true);
-  }
+  base::UmaHistogramBoolean(type_ == Type::kDeskButton
+                                ? kDeskButtonDeskBarNewDeskHistogramName
+                                : kOverviewDeskBarNewDeskHistogramName,
+                            true);
 
   controller->NewDesk(desks_creation_removal_source);
   NudgeDeskName(mini_views_.size() - 1);
@@ -1018,8 +1031,6 @@ void DeskBarViewBase::UpdateLibraryButtonVisibility() {
             expanded_state_library_button_->GetInnerButton());
       }
     }
-  } else {
-    // TODO(b/277988182): Add support for desk button desk bar.
   }
 
   const int begin_x = GetFirstMiniViewXOffset();
@@ -1351,9 +1362,10 @@ void DeskBarViewBase::EndDragDesk(DeskMiniView* mini_view, bool end_by_user) {
   CHECK_EQ(mini_view, drag_view_);
   CHECK(!mini_view->is_animating_to_remove());
 
-  if (type_ == Type::kDeskButton) {
-    base::UmaHistogramBoolean(kDeskBarReorderDeskHistogramName, true);
-  }
+  base::UmaHistogramBoolean(type_ == Type::kDeskButton
+                                ? kDeskButtonDeskBarReorderDeskHistogramName
+                                : kOverviewDeskBarReorderDeskHistogramName,
+                            true);
 
   // Update default desk names after dropping.
   Shell::Get()->desks_controller()->UpdateDesksDefaultNames();
@@ -1387,7 +1399,7 @@ void DeskBarViewBase::FinalizeDragDesk() {
   drag_proxy_.reset();
 }
 
-void DeskBarViewBase::OnDeskAdded(const Desk* desk) {
+void DeskBarViewBase::OnDeskAdded(const Desk* desk, bool from_undo) {
   DeskNameView::CommitChanges(GetWidget());
 
   if (chromeos::features::IsJellyrollEnabled()) {
@@ -1437,8 +1449,6 @@ void DeskBarViewBase::OnDeskRemoved(const Desk* desk) {
       highlight_controller->OnViewDestroyingOrDisabling(
           (*iter)->desk_preview());
     }
-  } else {
-    // TODO(b/277988182): Add support for desk button desk bar.
   }
 
   if (chromeos::features::IsJellyrollEnabled()) {
@@ -1521,6 +1531,8 @@ void DeskBarViewBase::OnDeskNameChanged(const Desk* desk,
 
 void DeskBarViewBase::UpdateNewMiniViews(bool initializing_bar_view,
                                          bool expanding_bar_view) {
+  TRACE_EVENT0("ui", "DeskBarViewBase::UpdateNewMiniViews");
+
   const auto& desks = DesksController::Get()->desks();
   if (initializing_bar_view) {
     UpdateDeskButtonsVisibility();
@@ -1800,9 +1812,10 @@ void DeskBarViewBase::OnLibraryButtonPressed() {
   }
   RecordLoadSavedDeskLibraryHistogram();
 
-  if (type_ == Type::kDeskButton) {
-    base::UmaHistogramBoolean(kDeskBarOpenLibraryHistogramName, true);
-  }
+  base::UmaHistogramBoolean(type_ == Type::kDeskButton
+                                ? kDeskButtonDeskBarOpenLibraryHistogramName
+                                : kOverviewDeskBarOpenLibraryHistogramName,
+                            true);
 
   if (IsDeskNameBeingModified()) {
     DeskNameView::CommitChanges(GetWidget());

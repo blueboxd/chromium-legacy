@@ -226,7 +226,7 @@ void EnsurePageAccessedStorage(content::WebContents* web_contents) {
 }  // namespace
 
 using browsing_data_model_test_util::ValidateBrowsingDataEntries;
-using browsing_data_model_test_util::ValidateBrowsingDataEntriesIgnoreUsage;
+using browsing_data_model_test_util::ValidateBrowsingDataEntriesNonZeroUsage;
 using OperationResult = storage::SharedStorageDatabase::OperationResult;
 using browsing_data_test_util::HasDataForType;
 using browsing_data_test_util::SetDataForType;
@@ -772,7 +772,7 @@ IN_PROC_BROWSER_TEST_P(BrowsingDataModelBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_P(BrowsingDataModelBrowserTest,
-                       QuotaManagedDataHandledCorrectly) {
+                       QuotaStorageHandledCorrectly) {
   ASSERT_TRUE(ui_test_utils::NavigateToURL(
       browser(),
       https_test_server()->GetURL(kTestHost, "/browsing_data/site_data.html")));
@@ -782,15 +782,16 @@ IN_PROC_BROWSER_TEST_P(BrowsingDataModelBrowserTest,
   ValidateBrowsingDataEntries(browsing_data_model.get(), {});
   ASSERT_EQ(browsing_data_model->size(), 0u);
 
-  std::vector<std::string> quota_managed_data_types = {
+  std::vector<std::string> quota_storage_data_types = {
       "ServiceWorker", "IndexedDb", "FileSystem", "WebSql"};
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
-  quota_managed_data_types.push_back("MediaLicense");
+  quota_storage_data_types.push_back("MediaLicense");
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
-  for (auto data_type : quota_managed_data_types) {
+  for (auto data_type : quota_storage_data_types) {
     SetDataForType(data_type, web_contents());
+    ASSERT_TRUE(HasDataForType(data_type, web_contents()));
 
     // Ensure that quota data is fetched
     browsing_data_model = BuildBrowsingDataModel();
@@ -800,13 +801,24 @@ IN_PROC_BROWSER_TEST_P(BrowsingDataModelBrowserTest,
       // Validate that quota data is fetched to browsing data model.
       url::Origin testOrigin = https_test_server()->GetOrigin(kTestHost);
       auto data_key = blink::StorageKey::CreateFirstParty(testOrigin);
-      ValidateBrowsingDataEntriesIgnoreUsage(
-          browsing_data_model.get(),
-          {{kTestHost,
-            data_key,
-            {{BrowsingDataModel::StorageType::kQuotaStorage},
-             /*storage_size=*/0,
-             /*cookie_count=*/0}}});
+      if (data_type == "MediaLicense") {
+        ValidateBrowsingDataEntries(
+            browsing_data_model.get(),
+            {{kTestHost,
+              data_key,
+              {{BrowsingDataModel::StorageType::kQuotaStorage},
+               /*storage_size=*/0,
+               /*cookie_count=*/0}}});
+      } else {
+        ValidateBrowsingDataEntriesNonZeroUsage(
+            browsing_data_model.get(),
+            {{kTestHost,
+              data_key,
+              {{BrowsingDataModel::StorageType::kQuotaStorage},
+               /*storage_size=*/0,
+               /*cookie_count=*/0}}});
+      }
+
       ASSERT_EQ(browsing_data_model->size(), 1u);
 
       // Remove quota entry.
@@ -869,7 +881,7 @@ IN_PROC_BROWSER_TEST_P(BrowsingDataModelBrowserTest,
   // Validate that local storage is fetched to browsing data model.
   url::Origin testOrigin = https_test_server()->GetOrigin(kTestHost);
   auto data_key = blink::StorageKey::CreateFirstParty(testOrigin);
-  ValidateBrowsingDataEntriesIgnoreUsage(
+  ValidateBrowsingDataEntries(
       browsing_data_model.get(),
       {{kTestHost,
         data_key,
@@ -985,27 +997,33 @@ IN_PROC_BROWSER_TEST_P(BrowsingDataModelBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_P(BrowsingDataModelBrowserTest,
-                       QuotaManagedDataAccessReportedCorrectly) {
-  ASSERT_TRUE(ui_test_utils::NavigateToURL(
-      browser(),
-      https_test_server()->GetURL(kTestHost, "/browsing_data/site_data.html")));
+                       QuotaStorageAccessReportedCorrectly) {
+  // TODO(crbug.com/1442473): Investigate and include remaining quota storage
+  // data types ["ServiceWorker"].
+  std::vector<std::string> quota_storage_data_types = {"IndexedDb",
+                                                       "FileSystem", "WebSql"};
 
-  auto* content_settings =
-      content_settings::PageSpecificContentSettings::GetForFrame(
-          web_contents()->GetPrimaryMainFrame());
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
+  quota_storage_data_types.push_back("MediaLicense");
+#endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
-  // Validate that the allowed browsing data model is empty.
-  auto* allowed_browsing_data_model =
-      content_settings->allowed_browsing_data_model();
-  ValidateBrowsingDataEntries(allowed_browsing_data_model, {});
-  ASSERT_EQ(allowed_browsing_data_model->size(), 0u);
+  for (auto data_type : quota_storage_data_types) {
+    // Re-Navigate to the page for every data type, to prevent any cached data
+    // access results from impacting whether access is reported or not.
+    ASSERT_TRUE(ui_test_utils::NavigateToURL(
+        browser(), https_test_server()->GetURL(
+                       kTestHost, "/browsing_data/site_data.html")));
 
-  // TODO(crbug.com/1442473): Investigate and include remaining quota managed
-  // data types ["ServiceWorker", "MediaLicense"].
-  std::string quota_managed_data_types[] = {"IndexedDb", "FileSystem",
-                                            "WebSql"};
+    auto* content_settings =
+        content_settings::PageSpecificContentSettings::GetForFrame(
+            web_contents()->GetPrimaryMainFrame());
 
-  for (auto data_type : quota_managed_data_types) {
+    // Validate that the allowed browsing data model is empty.
+    auto* allowed_browsing_data_model =
+        content_settings->allowed_browsing_data_model();
+    ValidateBrowsingDataEntries(allowed_browsing_data_model, {});
+    ASSERT_EQ(allowed_browsing_data_model->size(), 0u);
+
     SetDataForType(data_type, web_contents());
     if (GetParam()) {
       WaitForModelUpdate(allowed_browsing_data_model, /*expected_size=*/1);
@@ -1179,7 +1197,7 @@ IN_PROC_BROWSER_TEST_P(BrowsingDataModelBrowserTest,
   url::Origin testOrigin = https_test_server()->GetOrigin(kTestHost);
   auto isolation_key = net::SharedDictionaryIsolationKey(
       testOrigin, net::SchemefulSite(testOrigin));
-  ValidateBrowsingDataEntriesIgnoreUsage(
+  ValidateBrowsingDataEntriesNonZeroUsage(
       browsing_data_model.get(),
       {{kTestHost,
         isolation_key,

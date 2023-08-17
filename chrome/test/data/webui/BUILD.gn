@@ -29,6 +29,7 @@ source_set("browser_tests") {
     # are migrated from old js2gtest '*_browsertest.js' files.
     "access_code_cast/access_code_cast_browsertest.cc",
     "bookmarks/bookmarks_browsertest.cc",
+    "chrome_timeticks_browsertest.cc",
     "cr_components/cr_components_browsertest.cc",
     "cr_elements/cr_elements_browsertest.cc",
     "css/css_browsertest.cc",
@@ -37,8 +38,10 @@ source_set("browser_tests") {
     "history/history_ui_browsertest.cc",
     "js/js_browsertest.cc",
     "metrics_internals/metrics_internals_browsertest.cc",
+    "new_tab_page/new_tab_page_a11y_browsertest.cc",
     "new_tab_page/new_tab_page_browsertest.cc",
     "password_manager/password_manager_browsertest.cc",
+    "privacy_sandbox/privacy_sandbox_dialog_browsertest.cc",
     "settings/settings_browsertest.cc",
     "side_panel/bookmarks/sp_bookmarks_browsertest.cc",
     "side_panel/commerce/commerce_browsertest.cc",
@@ -46,8 +49,13 @@ source_set("browser_tests") {
     "side_panel/read_anything/read_anything_browsertest.cc",
     "side_panel/user_notes/user_notes_browsertest.cc",
     "tab_search/tab_search_browsertest.cc",
+    "usb_internals/usb_internals_browsertest.cc",
     "whats_new/whats_new_browsertest.cc",
   ]
+
+  if (is_chrome_branded) {
+    sources += [ "media_router/cast_feedback_ui_browsertest.cc" ]
+  }
 
   if (enable_dice_support) {
     sources += [ "welcome/welcome_browsertest.cc" ]
@@ -61,9 +69,38 @@ source_set("browser_tests") {
     sources += [ "tab_strip/tab_strip_browsertest.cc" ]
   }
 
+  if (!is_chromeos_ash) {
+    sources += [
+      "intro/intro_browsertest.cc",
+      "signin/profile_picker_browsertest.cc",
+      "signin/signin_browsertest.cc",
+    ]
+  }
+
+  if (is_chromeos_ash || is_win || is_mac) {
+    sources += [ "inline_login/inline_login_browsertest.cc" ]
+  }
+
+  if (enable_dice_support || is_chromeos_ash) {
+    sources += [ "gaia_auth_host/gaia_auth_host_browsertest.cc" ]
+  }
+
+  if (is_win || is_mac || is_linux || is_chromeos) {
+    sources += [ "discards/discards_browsertest.cc" ]
+  }
+
+  if (is_win || is_mac || is_linux || is_fuchsia) {
+    sources += [ "app_settings/app_settings_browsertest.cc" ]
+  }
+
+  if (is_win || is_mac || is_linux) {
+    sources += [ "app_home/app_home_browsertest.cc" ]
+  }
+
   defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
 
   deps = [
+    "//build/config/coverage:buildflags",
     "//chrome/browser/media/router/discovery/access_code:access_code_cast_feature",
     "//chrome/test:test_support",
     "//components/bookmarks/browser:browser",
@@ -73,7 +110,10 @@ source_set("browser_tests") {
     "//components/history/core/common:common",
     "//components/history_clusters/core:core",
     "//components/password_manager/content/common:common",
+    "//components/performance_manager:performance_manager",
     "//components/power_bookmarks/core:features",
+    "//components/privacy_sandbox:features",
+    "//components/safe_browsing/core/common:common",
     "//components/search:search",
     "//components/user_notes:features",
   ]
@@ -91,8 +131,8 @@ source_set("interactive_ui_tests") {
     "history/history_focus_test.cc",
     "new_tab_page/new_tab_page_focus_test.cc",
     "password_manager/password_manager_focus_test.cc",
+    "settings/settings_focus_test.cc",
     "side_panel/bookmarks/sp_bookmarks_focus_test.cc",
-    "side_panel/customize_chrome/customize_chrome_focus_test.cc",
     "tab_search/tab_search_focus_test.cc",
   ]
 
@@ -113,14 +153,11 @@ source_set("interactive_ui_tests") {
   ]
 }
 
-if (include_js_tests) {
+if (include_js2gtest_tests) {
   js2gtest("interactive_ui_tests_js_webui") {
     test_type = "webui"
 
-    sources = [
-      "settings/cr_settings_interactive_ui_tests.js",
-      "support_tool/support_tool_interactive_ui_test.js",
-    ]
+    sources = [ "support_tool/support_tool_interactive_ui_test.js" ]
 
     if (is_chromeos_ash) {
       sources += [ "cr_focus_row_behavior_interactive_test.js" ]
@@ -150,18 +187,13 @@ if (include_js_tests) {
       "../../../browser/ui/webui/sync_internals/sync_internals_browsertest.js",
       "assertions.js",
       "async_gen.js",
-      "chrome_timeticks_browsertest.js",
       "commander/commander_browsertest.js",
       "histograms/histograms_internals_ui_browsertest.js",
       "invalidations/about_invalidations_browsertest.js",
       "js2gtest_browsertest.js",
       "media_internals/media_internals_ui_browsertest.js",
       "net_internals/net_internals_browsertest.js",
-      "privacy_sandbox/privacy_sandbox_dialog_browsertest.js",
       "sandboxstatus_browsertest.js",
-      "settings/cr_settings_browsertest.js",
-      "settings/privacy_sandbox_browsertest.js",
-      "settings/settings_idle_load_browsertest.js",
     ]
 
     gen_include_files = [
@@ -178,18 +210,9 @@ if (include_js_tests) {
       "//skia",
     ]
 
-    if (is_chrome_branded) {
-      sources += [ "media_router/cast_feedback_ui_browsertest.js" ]
-    }
-
     if (use_nss_certs) {
       deps +=
           [ "//ui/webui/resources/cr_components/certificate_manager:build_ts" ]
-    }
-
-    if (is_chromeos_ash || is_win || is_mac) {
-      sources += [ "inline_login/inline_login_browsertest.js" ]
-      deps += [ "//build:chromeos_buildflags" ]
     }
 
     if (is_chromeos_ash) {
@@ -219,15 +242,6 @@ if (include_js_tests) {
         "js/i18n_process_test.js",
         "settings/chromeos/os_settings_browsertest.js",
       ]
-    } else {
-      sources += [
-        "intro/intro_browsertest.js",
-        "signin/signin_browsertest.js",
-      ]
-    }
-
-    if (enable_dice_support || is_chromeos_ash) {
-      sources += [ "gaia_auth_host/gaia_auth_host_browsertest.js" ]
     }
 
     if (enable_webui_certificate_viewer) {
@@ -274,8 +288,6 @@ if (include_js_tests) {
       "location_internals/location_internals_browsertest.js",
       "media/media_engagement_browsertest.js",
       "media/media_history_webui_browsertest.js",
-      "metrics_reporter/metrics_reporter_browsertest.js",
-      "usb_internals/usb_internals_browsertest.js",
     ]
     if (is_chromeos_ash) {
       sources += [
@@ -293,15 +305,6 @@ if (include_js_tests) {
     }
     if (!is_chromeos_lacros) {
       sources += [ "bluetooth_internals/bluetooth_internals_browsertest.js" ]
-    }
-    if (is_win || is_mac || is_linux || is_fuchsia) {
-      sources += [ "app_settings/app_settings_browsertest.js" ]
-    }
-    if (is_win || is_mac || is_linux) {
-      sources += [ "app_home/app_home_browsertest.js" ]
-    }
-    if (is_win || is_mac || is_linux || is_chromeos) {
-      sources += [ "discards/discards_browsertest.js" ]
     }
     defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
   }
@@ -477,7 +480,6 @@ generate_grd("build_grd") {
     "js:build_grdp",
     "location_internals:build_grdp",
     "metrics_internals:build_grdp",
-    "metrics_reporter:build_grdp",
     "mojo:build_grdp",
     "net_internals:build_grdp",
     "new_tab_page:build_grdp",
@@ -506,7 +508,6 @@ generate_grd("build_grd") {
     "$target_gen_dir/js/resources.grdp",
     "$target_gen_dir/location_internals/resources.grdp",
     "$target_gen_dir/metrics_internals/resources.grdp",
-    "$target_gen_dir/metrics_reporter/resources.grdp",
     "$target_gen_dir/mocha_resources.grdp",
     "$target_gen_dir/mojo/resources.grdp",
     "$target_gen_dir/net_internals/resources.grdp",

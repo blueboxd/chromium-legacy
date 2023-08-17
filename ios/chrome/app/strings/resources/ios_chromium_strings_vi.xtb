@@ -51,6 +51,7 @@
 <translation id="3650632991272923014"><ph name="USER_EMAIL1" /> đã dùng Chromium và lưu lại dấu trang, mật khẩu cũng như các chế độ cài đặt khác trên thiết bị này.</translation>
 <translation id="3661862315467204831">Mở phần Cài đặt Chromium trong iOS, sau đó nhấn vào "Ứng dụng trình duyệt mặc định" và chọn Chromium.</translation>
 <translation id="372658070733623520">Để sử dụng và lưu dữ liệu Chromium trong Tài khoản Google, hãy xác minh danh tính của bạn.</translation>
+<translation id="3780779443901618967">Cảnh báo cho bạn về các trang web nguy hiểm, kể cả trang web mà Google chưa từng biết, bằng cách phân tích nhiều dữ liệu trên các trang web hơn so với chế độ bảo vệ tiêu chuẩn. Bạn có thể chọn bỏ qua cảnh báo của Chromium.</translation>
 <translation id="3805899903892079518">Chromium không có quyền truy cập ảnh hoặc video của bạn. Hãy cho phép truy cập Cài đặt iOS &gt; Bảo mật &gt; Ảnh.</translation>
 <translation id="3827545470516145620">Bạn đang sử dụng biện pháp bảo mật tiêu chuẩn trên thiết bị này</translation>
 <translation id="3955621079070267756">Mở Chromium từ ứng dụng bất kỳ</translation>
@@ -94,6 +95,7 @@
 <translation id="632825460376924298">Cho phép đăng nhập vào Chromium</translation>
 <translation id="6337530241089703714">Chọn xem bạn muốn xóa dữ liệu của mình trên Chromium khỏi thiết bị này hay giữ lại dữ liệu đó</translation>
 <translation id="6424492062988593837">Chromium được cải tiến hơn! Đã có phiên bản mới.</translation>
+<translation id="6563921047760808519">Tìm hiểu thêm về <ph name="BEGIN_LINK" />cách Chromium bảo mật dữ liệu của bạn<ph name="END_LINK" /></translation>
 <translation id="6625409903340039086">Chromium giờ đây hỗ trợ chính sách người dùng cho tài khoản được quản lý</translation>
 <translation id="6752854822223394465">Tổ chức của bạn đang thiết lập Chromium...</translation>
 <translation id="6820823224820483452">Chromium không thể kiểm tra một số mật khẩu. Hãy thử lại vào ngày mai.</translation>
@@ -121,6 +123,7 @@
 <translation id="7859018312476869945">Khi bạn nhập vào thanh địa chỉ hoặc hộp tìm kiếm, Chromium sẽ gửi nội dung bạn nhập đến công cụ tìm kiếm mặc định để đề xuất cho bạn cụm từ phù hợp hơn. Tính năng này bị tắt trong chế độ Ẩn danh.</translation>
 <translation id="786327964234957808">Bạn đang chuyển các tài khoản đồng bộ hóa từ <ph name="USER_EMAIL1" /> về <ph name="USER_EMAIL2" />. Dữ liệu Chromium hiện có của bạn do <ph name="DOMAIN" /> quản lý. Thao tác này sẽ xóa dữ liệu của bạn khỏi thiết bị này nhưng dữ liệu đó sẽ vẫn còn trong <ph name="USER_EMAIL1" />.</translation>
 <translation id="7890287942691234100">Bắt đầu dùng trình quét của Chromium</translation>
+<translation id="7905064834449738336">Khi bạn dùng một mật khẩu đã bị công khai trên mạng, Chromium sẽ cảnh báo cho bạn. Trong quá trình này, mật khẩu và tên người dùng của bạn được mã hoá nên không ai đọc được, kể cả Google.</translation>
 <translation id="7928628054454574139">Mở Chromium bất cứ khi nào bạn nhấn vào đường liên kết trong các ứng dụng khác</translation>
 <translation id="7931842119211730154">Khóa các thẻ Ẩn danh khi bạn đóng Chromium</translation>
 <translation id="7980860476903281594">Chromium chia sẻ thông tin vị trí của bạn với những trang web mà bạn cho phép.</translation>

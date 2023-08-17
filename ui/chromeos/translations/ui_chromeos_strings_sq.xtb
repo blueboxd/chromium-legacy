@@ -114,7 +114,6 @@
 <translation id="1920798810075583923">Shalqi</translation>
 <translation id="1924372192547904021"><ph name="DRIVE_NAME" /> u formatua</translation>
 <translation id="1931134289871235022">Sllovakisht</translation>
-<translation id="1933345018156373194">Zhvendosja dështoi, gabim i papritur: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="1936717151811561466">Finlandisht</translation>
 <translation id="1942765061641586207">Rezolucioni i imazhit</translation>
 <translation id="1972984168337863910">Zgjero panelet e komenteve të skedarëve</translation>
@@ -166,7 +165,6 @@
 <translation id="2312704192806647271">{COUNT,plural, =1{Një shtesë me ID-në <ph name="BEGIN_LIST" /><ph name="END_LIST" /> nuk mund të lokalizohet. Kontakto me administratorin tënd.}other{Shtesat me ID-të <ph name="BEGIN_LIST" /><ph name="END_LIST" /> nuk mund të lokalizohen. Kontakto me administratorin tënd.}}</translation>
 <translation id="2325650632570794183">Ky lloj skedari nuk mbështetet. Vizito Dyqanin e uebit të Chrome për të gjetur një aplikacion që mund të hapë këtë lloj skedari.</translation>
 <translation id="2326539130272988168">Bullgarisht</translation>
-<translation id="2337715497728194187">Ndaj me Bruschetta</translation>
 <translation id="233822363739146957">Nuk ka hapësirë ruajtëse të mjaftueshme për të sinkronizuar të gjithë skedarët e tu</translation>
 <translation id="23721837607121582">Shkarko profilin e celularit, rrjeti <ph name="NETWORK_INDEX" /> nga <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" /></translation>
 <translation id="2377319039870049694">Kalo te pamja e listës</translation>
@@ -197,7 +195,6 @@
 <translation id="2544853746127077729">Certifikata e vërtetimit u refuzua nga rrjeti</translation>
 <translation id="255937426064304553">Amerikane ndërkombëtare</translation>
 <translation id="2563185590376525700">Bretkosa</translation>
-<translation id="2574327434504608656">1 dosje është ndarë me Bruschetta</translation>
 <translation id="2578394532502990878">Tamilisht fonetike</translation>
 <translation id="2579959351793446050">Odiaisht</translation>
 <translation id="2587195714949534472">Po përgatitet për të sinkronizuar <ph name="FILE_NAME" />...</translation>
@@ -297,7 +294,6 @@
 <translation id="3408072735282270043">Aktivizo <ph name="NETWORK_NAME" /></translation>
 <translation id="3408236822532681288">Gjermanisht (Gjermani) me tastierë Neo 2</translation>
 <translation id="3414856743105198592">Formatimi i medias së çmontueshme do të spastrojë të gjitha të dhënat. Dëshiron të vazhdosh?</translation>
-<translation id="3435143625481187092">Jepi leje Bruschetta që të ketë qasje te skedarët në dosjen <ph name="FOLDER_NAME" /></translation>
 <translation id="3437801641691368414">Ora e krijimit</translation>
 <translation id="343907260260897561">Kamerë e çastit</translation>
 <translation id="3455931012307786678">Estonisht</translation>
@@ -385,7 +381,6 @@
 <translation id="4159731583141908892"><ph name="FILE_NAME" /> është zhvendosur.</translation>
 <translation id="4176286497474237543">Boshatise koshin tani</translation>
 <translation id="4179621117429069925">Ky artikull është te koshi</translation>
-<translation id="4181839429935094755"><ph name="NUMBER_OF_ITEMS" /> dosje u ndanë me Bruschetta</translation>
 <translation id="4186579485882418952">Aktivizo jashtë linje</translation>
 <translation id="4193154014135846272">Dokument i Google</translation>
 <translation id="4197674956721858839">Përzgjedhja e ngjeshjes</translation>
@@ -452,7 +447,6 @@
 <translation id="4646813851450205600">Çekisht me tastierë Qwerty</translation>
 <translation id="4656777537938206294">Bëji skedarët të disponueshëm jashtë linje</translation>
 <translation id="4658782175094886150">Person në dëborë</translation>
-<translation id="466782788172479199">Jepi leje Bruschetta që të ketë qasje te skedarët në "Diskun tënd të Google". Ndryshimet do të sinkronizohen në pajisjet e tua të tjera.</translation>
 <translation id="4669606053856530811">Anëtarët e "<ph name="SOURCE_NAME" />" do të humbin qasjen në rast se këta artikuj nuk ndahen me ta.</translation>
 <translation id="467809019005607715">Google Slides</translation>
 <translation id="4690246192099372265">Suedisht</translation>
@@ -503,7 +497,6 @@
 <translation id="4969785127455456148">Albumi</translation>
 <translation id="4972330214479971536">Konfigurimi i sinkronizimit të skedarëve nuk mund të përfundonte</translation>
 <translation id="4973523518332075481">Përdor një emër që është <ph name="MAX_LENGTH" /> karaktere i gjatë ose më pak</translation>
-<translation id="4973970068702235170">Ngjeshja dështoi, gabim i papritur: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="4984616446166309645">Japonisht</translation>
 <translation id="4987699874727873250">Anglisht (Indi)</translation>
 <translation id="4988205478593450158">Je i sigurt se dëshiron të fshish "<ph name="FILE_NAME" />"?</translation>
@@ -563,7 +556,6 @@
 <translation id="5323213332664049067">Tastiera amerikano-latine</translation>
 <translation id="5330145655348521461">Këta skedarë u hapën në një desktop tjetër. Lëviz te <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />) për ta parë.</translation>
 <translation id="5330512191124428349">Merr informacione</translation>
-<translation id="5344246330454251646">Menaxho ndarjen për Bruschetta</translation>
 <translation id="535792325654997756">Person me mace</translation>
 <translation id="5358764674931277">Shpejtësia e kuadrove</translation>
 <translation id="5363339716524495120">Gjuha e hyrjes është kinezisht</translation>
@@ -639,7 +631,6 @@
 <translation id="5896749729057314184">Rrjeti <ph name="NETWORK_INDEX" /> nga <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, i paaktivizuar, fuqia e sinjalit <ph name="SIGNAL_STRENGTH" />%, detajet</translation>
 <translation id="5911887972742538906">Ndodhi një gabim gjatë instalimit të aplikacionit tënd për Linux.</translation>
 <translation id="5912396950572065471">Formati</translation>
-<translation id="5913638992615760742">Operacioni i kopjimit dështoi, gabim i papritur: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="5918480239180455431">Ofrohet një veçori e re për kërkimin</translation>
 <translation id="5926082595146149752">Holandisht (Holandë) me tastierë amerikane ndërkombëtare për PC</translation>
 <translation id="5932901536148835538">Chromebit</translation>
@@ -647,7 +638,6 @@
 <translation id="5955954492236143329"><ph name="NUMBER_OF_ITEMS" /> artikuj</translation>
 <translation id="5957366693331451795">Pajisjet Chromebox</translation>
 <translation id="5982621672636444458">Opsionet e renditjes</translation>
-<translation id="6007237601604674381">Lëvizja dështoi. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="6011074160056912900">Rrjeti i eternetit</translation>
 <translation id="60357267506638014">Tastierë çeke QWERTY</translation>
 <translation id="603895874132768835">Nuk do të mund ta përdorësh këtë rrjet derisa të konfigurosh një kod të ri PIN</translation>
@@ -731,7 +721,6 @@
 <translation id="6710213216561001401">Prapa</translation>
 <translation id="6732801395666424405">Certifikatat nuk janë ngarkuar</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />]</translation>
-<translation id="6740270213273127264">Ndaje dosjen me Bruschetta</translation>
 <translation id="6750737795876287924">Direktoria aktuale</translation>
 <translation id="6751256176799620176">U zgjodh 1 dosje</translation>
 <translation id="6755827872271341378">Pajisja Chrome OS Flex</translation>

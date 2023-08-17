@@ -122,7 +122,7 @@ class MockDelegate : public MetricReportingManager::Delegate {
 
   ~MockDelegate() override = default;
 
-  MOCK_METHOD(bool, IsAffiliated, (Profile * profile), (const, override));
+  MOCK_METHOD(bool, IsUserAffiliated, (Profile & profile), (const, override));
 
   MOCK_METHOD(bool, IsDeprovisioned, (), (const, override));
 
@@ -246,15 +246,22 @@ const MetricReportingSettingData app_event_settings = {
 const MetricReportingSettingData device_activity_telemetry_settings = {
     ::ash::kDeviceActivityHeartbeatEnabled, false,
     ::ash::kDeviceActivityHeartbeatCollectionRateMs, 1};
+const MetricReportingSettingData runtime_counters_telemetry_settings = {
+    ::ash::kDeviceReportRuntimeCounters, false,
+    ::ash::kDeviceReportRuntimeCountersCheckingRateMs, 1};
 
 struct MetricReportingManagerTestCase {
   std::string test_name;
   std::vector<base::test::FeatureRef> enabled_features;
   std::vector<base::test::FeatureRef> disabled_features;
+  // Is the user affiliated.
   bool is_affiliated;
   MetricReportingSettingData setting_data;
   bool has_init_delay;
+  // Count of initialized components before login.
   int expected_count_before_login;
+  // Count of initialized components after login. This count is cumulative,
+  // which means that it also includes the count before login.
   int expected_count_after_login;
 };
 
@@ -356,7 +363,7 @@ TEST_F(MetricReportingManagerTest, InitiallyDeprovisioned) {
   int observer_manager_count = 0;
 
   ON_CALL(*mock_delegate_, IsDeprovisioned).WillByDefault(Return(true));
-  ON_CALL(*mock_delegate_, IsAffiliated).WillByDefault(Return(true));
+  ON_CALL(*mock_delegate_, IsUserAffiliated).WillByDefault(Return(true));
   ON_CALL(*mock_delegate_, IsAppServiceAvailableForProfile)
       .WillByDefault(Return(true));
 
@@ -401,7 +408,7 @@ TEST_P(MetricReportingManagerInfoTest, Default) {
 
   auto* const mock_delegate_ptr = mock_delegate_.get();
   int collector_count = 0;
-  ON_CALL(*mock_delegate_ptr, IsAffiliated)
+  ON_CALL(*mock_delegate_ptr, IsUserAffiliated)
       .WillByDefault(Return(test_case.is_affiliated));
   ON_CALL(*mock_delegate_ptr,
           CreateOneShotCollector(
@@ -486,7 +493,7 @@ TEST_P(MetricReportingManagerEventTest, Default) {
       std::make_unique<test::FakeReportingSettings>();
   auto* const mock_delegate_ptr = mock_delegate_.get();
   int observer_manager_count = 0;
-  ON_CALL(*mock_delegate_ptr, IsAffiliated)
+  ON_CALL(*mock_delegate_ptr, IsUserAffiliated)
       .WillByDefault(Return(test_case.is_affiliated));
   ON_CALL(*mock_delegate_ptr, IsAppServiceAvailableForProfile)
       .WillByDefault(Return(true));
@@ -546,7 +553,7 @@ TEST_F(MetricReportingManagerEventTest,
       std::make_unique<test::FakeReportingSettings>();
   auto* const mock_delegate_ptr = mock_delegate_.get();
   int observer_manager_count = 0;
-  ON_CALL(*mock_delegate_ptr, IsAffiliated).WillByDefault(Return(true));
+  ON_CALL(*mock_delegate_ptr, IsUserAffiliated).WillByDefault(Return(true));
   ON_CALL(*mock_delegate_ptr, IsAppServiceAvailableForProfile)
       .WillByDefault(Return(false));
   ON_CALL(
@@ -675,7 +682,7 @@ TEST_P(MetricReportingManagerPeripheralTest, Default) {
       std::make_unique<test::FakeReportingSettings>();
   auto* const mock_delegate_ptr = mock_delegate_.get();
   int observer_manager_count = 0;
-  ON_CALL(*mock_delegate_ptr, IsAffiliated)
+  ON_CALL(*mock_delegate_ptr, IsUserAffiliated)
       .WillByDefault(Return(test_case.is_affiliated));
 
   // Mock app service unavailability to eliminate noise.
@@ -772,7 +779,7 @@ TEST_P(MetricReportingManagerTelemetryTest, Default) {
   const auto upload_delay = mock_delegate_->GetInitialUploadDelay();
   auto* const mock_delegate_ptr = mock_delegate_.get();
   int collector_count = 0;
-  ON_CALL(*mock_delegate_ptr, IsAffiliated)
+  ON_CALL(*mock_delegate_ptr, IsUserAffiliated)
       .WillByDefault(Return(test_case.is_affiliated));
   // Mock app service unavailability to eliminate noise.
   ON_CALL(*mock_delegate_ptr, IsAppServiceAvailableForProfile)
@@ -876,7 +883,35 @@ INSTANTIATE_TEST_SUITE_P(
           /*is_affiliated=*/true, device_activity_telemetry_settings,
           /*has_init_delay=*/true,
           /*expected_count_before_login=*/0,
-          /*expected_count_after_login=*/1}}),
+          /*expected_count_after_login=*/1},
+         {"RuntimeCountersTelemetry_Unaffiliated_FeatureEnabled",
+          /*enabled_features=*/{kEnableRuntimeCounters},
+          /*disabled_features=*/{},
+          /*is_affiliated=*/false, runtime_counters_telemetry_settings,
+          /*has_init_delay=*/true,
+          /*expected_count_before_login=*/1,
+          /*expected_count_after_login=*/1},
+         {"RuntimeCountersTelemetry_Unaffiliated_FeatureUnchanged",
+          /*enabled_features=*/{},
+          /*disabled_features=*/{},
+          /*is_affiliated=*/false, runtime_counters_telemetry_settings,
+          /*has_init_delay=*/true,
+          /*expected_count_before_login=*/0,
+          /*expected_count_after_login=*/0},
+         {"RuntimeCountersTelemetry_Default_FeatureEnabled",
+          /*enabled_features=*/{kEnableRuntimeCounters},
+          /*disabled_features=*/{},
+          /*is_affiliated=*/true, runtime_counters_telemetry_settings,
+          /*has_init_delay=*/true,
+          /*expected_count_before_login=*/1,
+          /*expected_count_after_login=*/1},
+         {"RuntimeCountersTelemetry_Default_FeatureUnchanged",
+          /*enabled_features=*/{},
+          /*disabled_features=*/{},
+          /*is_affiliated=*/true, runtime_counters_telemetry_settings,
+          /*has_init_delay=*/true,
+          /*expected_count_before_login=*/0,
+          /*expected_count_after_login=*/0}}),
     [](const testing::TestParamInfo<
         MetricReportingManagerTelemetryTest::ParamType>& info) {
       return info.param.test_name;
@@ -970,7 +1005,7 @@ TEST_P(EventDrivenTelemetryCollectorPoolTest,
                                         base::Value(std::move(telemetry_list)));
 
   ON_CALL(*mock_delegate_, IsDeprovisioned).WillByDefault(Return(false));
-  ON_CALL(*mock_delegate_, IsAffiliated).WillByDefault(Return(true));
+  ON_CALL(*mock_delegate_, IsUserAffiliated).WillByDefault(Return(true));
   ON_CALL(*mock_delegate_, IsAppServiceAvailableForProfile)
       .WillByDefault(Return(false));
 

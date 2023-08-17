@@ -146,14 +146,6 @@ component("fido") {
       "device_public_key_extension.h",
       "device_response_converter.cc",
       "device_response_converter.h",
-      "enclave/enclave_authenticator.cc",
-      "enclave/enclave_authenticator.h",
-      "enclave/enclave_discovery.cc",
-      "enclave/enclave_discovery.h",
-      "enclave/enclave_http_client.cc",
-      "enclave/enclave_http_client.h",
-      "enclave/enclave_protocol_utils.cc",
-      "enclave/enclave_protocol_utils.h",
       "fido_authenticator.cc",
       "fido_authenticator.h",
       "fido_device.cc",
@@ -259,10 +251,7 @@ component("fido") {
       "LocalAuthentication.framework",
       "Security.framework",
     ]
-    weak_frameworks = [
-      "AuthenticationServices.framework",
-    ]
-    configs += [ "//build/config/compiler:enable_arc" ]
+    weak_frameworks = [ "AuthenticationServices.framework" ]
 
     deps += [ "//build:branding_buildflags" ]
   }
@@ -300,6 +289,19 @@ component("fido") {
       "//chromeos/dbus/u2f",
       "//chromeos/dbus/u2f:u2f_proto",
       "//dbus",
+    ]
+  }
+
+  if (!is_chromeos && !is_android) {
+    sources += [
+      "enclave/enclave_authenticator.cc",
+      "enclave/enclave_authenticator.h",
+      "enclave/enclave_discovery.cc",
+      "enclave/enclave_discovery.h",
+      "enclave/enclave_http_client.cc",
+      "enclave/enclave_http_client.h",
+      "enclave/enclave_protocol_utils.cc",
+      "enclave/enclave_protocol_utils.h",
     ]
   }
 }
@@ -473,8 +475,6 @@ source_set("test_support") {
       "mac/scoped_touch_id_test_environment.h",
       "mac/scoped_touch_id_test_environment.mm",
     ]
-
-    configs += [ "//build/config/compiler:enable_arc" ]
   }
 }
 
@@ -494,7 +494,6 @@ if (is_mac) {
       "//base",
       "//device/fido",
     ]
-    configs += [ "//build/config/compiler:enable_arc" ]
   }
 }
 
@@ -509,6 +508,7 @@ if (is_win || is_linux || is_mac) {
       ":fido",
       "//base",
       "//components/cbor",
+      "//components/device_event_log",
       "//components/sync/protocol:protocol",
       "//mojo/public/cpp/bindings",
       "//net",

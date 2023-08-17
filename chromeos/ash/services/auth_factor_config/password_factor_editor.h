@@ -38,11 +38,12 @@ class PasswordFactorEditor : public mojom::PasswordFactorEditor {
  private:
   void OnPasswordConfigured(
       base::OnceCallback<void(mojom::ConfigureResult)> callback,
+      const std::string& auth_token,
       std::unique_ptr<UserContext> context,
       absl::optional<AuthenticationError> error);
 
-  base::raw_ptr<AuthFactorConfig> auth_factor_config_;
-  base::raw_ptr<QuickUnlockStorageDelegate> quick_unlock_storage_;
+  raw_ptr<AuthFactorConfig> auth_factor_config_;
+  raw_ptr<QuickUnlockStorageDelegate> quick_unlock_storage_;
   mojo::ReceiverSet<mojom::PasswordFactorEditor> receivers_;
   AuthFactorEditor auth_factor_editor_;
   base::WeakPtrFactory<PasswordFactorEditor> weak_factory_{this};

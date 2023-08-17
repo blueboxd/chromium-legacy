@@ -29,10 +29,6 @@
 #import "ios/chrome/common/ui/util/ui_util.h"
 #import "ui/base/device_form_factor.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 namespace {
 const CGFloat kRotationInRadians = 5.0 / 180 * M_PI;
 // Scale factor for the animation, must be < 1.
@@ -108,6 +104,26 @@ const CGFloat kFullscreenProgressFullyExpanded = 1.0;
                            options:UIViewAnimationCurveEaseOut
                         animations:animations
                         completion:nil];
+}
+
+- (void)setTabGridButtonIPHHighlighted:(BOOL)iphHighlighted {
+  self.view.tabGridButton.iphHighlighted = iphHighlighted;
+}
+
+- (void)setNewTabButtonIPHHighlighted:(BOOL)iphHighlighted {
+  self.view.openNewTabButton.iphHighlighted = iphHighlighted;
+}
+
+- (void)showPrerenderingAnimation {
+  __weak __typeof__(self) weakSelf = self;
+  [self.view.progressBar setProgress:0];
+  if (self.hasOmnibox) {
+    [self.view.progressBar setHidden:NO
+                            animated:YES
+                          completion:^(BOOL finished) {
+                            [weakSelf stopProgressBar];
+                          }];
+  }
 }
 
 - (BOOL)hasOmnibox {
@@ -371,6 +387,7 @@ const CGFloat kFullscreenProgressFullyExpanded = 1.0;
 }
 
 - (void)collapsedToolbarButtonTapped {
+  base::RecordAction(base::UserMetricsAction("MobileFullscreenExitedManually"));
   [self exitFullscreen];
 }
 

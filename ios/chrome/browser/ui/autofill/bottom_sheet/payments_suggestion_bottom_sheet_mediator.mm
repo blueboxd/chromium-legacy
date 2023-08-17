@@ -7,8 +7,10 @@
 #import "base/memory/raw_ptr.h"
 #import "base/strings/sys_string_conversions.h"
 #import "components/autofill/core/browser/personal_data_manager.h"
+#import "components/autofill/core/browser/personal_data_manager_observer.h"
 #import "components/autofill/ios/browser/credit_card_util.h"
 #import "components/autofill/ios/browser/form_suggestion.h"
+#import "components/autofill/ios/browser/personal_data_manager_observer_bridge.h"
 #import "components/autofill/ios/form_util/form_activity_params.h"
 #import "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/autofill/bottom_sheet/autofill_bottom_sheet_java_script_feature.h"
@@ -21,14 +23,11 @@
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_list_observer_bridge.h"
 #import "ios/chrome/browser/ui/autofill/bottom_sheet/payments_suggestion_bottom_sheet_consumer.h"
 #import "ios/chrome/browser/ui/autofill/bottom_sheet/payments_suggestion_bottom_sheet_data.h"
+#import "ios/chrome/grit/ios_strings.h"
 #import "ios/web/public/js_messaging/web_frames_manager.h"
 #import "ios/web/public/web_state_observer_bridge.h"
 #import "ui/base/l10n/l10n_util.h"
 #import "ui/base/resource/resource_bundle.h"
-
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
 
 // Structure which contains all the required information to display about a
 // credit card.
@@ -41,6 +40,7 @@
 @property(nonatomic, strong) NSString* cardNameAndLastFourDigits;
 @property(nonatomic, strong) NSString* cardDetails;
 @property(nonatomic, strong) NSString* backendIdentifier;
+@property(nonatomic, strong) NSString* accessibleCardName;
 @property(nonatomic, strong) UIImage* icon;
 
 @end
@@ -53,32 +53,108 @@
     self.cardNameAndLastFourDigits =
         base::SysUTF16ToNSString(creditCard->CardNameAndLastFourDigits());
     self.cardDetails = base::SysUTF16ToNSString(
-        (creditCard->record_type() == autofill::CreditCard::VIRTUAL_CARD)
+        (creditCard->record_type() ==
+         autofill::CreditCard::RecordType::kVirtualCard)
             ? l10n_util::GetStringUTF16(
                   IDS_AUTOFILL_VIRTUAL_CARD_SUGGESTION_OPTION_VALUE)
             : creditCard->AbbreviatedExpirationDateForDisplay(
                   /* with_prefix=*/false));
+    self.accessibleCardName = [self accessibleCardName:creditCard];
     self.backendIdentifier = base::SysUTF8ToNSString(creditCard->guid());
-    self.icon = icon;
+
+    if (icon.size.width > 0.0 && icon.size.width < 40.0 && icon.scale > 1.0) {
+      // If the icon is smaller than desired, but is scaled, reduce the scale
+      // (to a minimum of 1.0) in order to attempt to achieve the desired size.
+      self.icon = [UIImage
+          imageWithCGImage:[icon CGImage]
+                     scale:MAX((icon.scale * icon.size.width / 40.0), 1.0)
+               orientation:(icon.imageOrientation)];
+    } else {
+      self.icon = icon;
+    }
   }
   return self;
 }
 
+#pragma mark - Private
+
+- (NSString*)accessibleCardName:(const autofill::CreditCard*)creditCard {
+  // Get the card name. Prepend the card type if the card name doesn't already
+  // start with the card type.
+  NSString* cardType = base::SysUTF16ToNSString(
+      creditCard->GetRawInfo(autofill::CREDIT_CARD_TYPE));
+  NSString* cardAccessibleName =
+      base::SysUTF16ToNSString(creditCard->CardNameForAutofillDisplay());
+  if (![cardAccessibleName hasPrefix:cardType]) {
+    // If the card name doesn't already start with the card type, add the card
+    // type at the beginning of the card name.
+    cardAccessibleName =
+        [@[ cardType, cardAccessibleName ] componentsJoinedByString:@" "];
+  }
+
+  // Split the last 4 digits, so that they are pronounced separately. For
+  // example, "1215" will become "1 2 1 5" and will read "one two one five"
+  // instead of "one thousand two hundred and fifteen".
+  NSString* cardLastDigits =
+      base::SysUTF16ToNSString(creditCard->LastFourDigits());
+  cardLastDigits = [@[
+    [cardLastDigits substringWithRange:NSMakeRange(0, 1)],
+    [cardLastDigits substringWithRange:NSMakeRange(1, 1)],
+    [cardLastDigits substringWithRange:NSMakeRange(2, 1)],
+    [cardLastDigits substringWithRange:NSMakeRange(3, 1)]
+  ] componentsJoinedByString:@" "];
+
+  // Add mention that the credit card ends with the last 4 digits.
+  cardAccessibleName = base::SysUTF16ToNSString(
+      l10n_util::GetStringFUTF16(IDS_IOS_PAYMENT_BOTTOM_SHEET_CARD_DESCRIPTION,
+                                 base::SysNSStringToUTF16(cardAccessibleName),
+                                 base::SysNSStringToUTF16(cardLastDigits)));
+
+  // Either prepend that the card is a virtual card OR append the expiration
+  // date.
+  if (creditCard->record_type() ==
+      autofill::CreditCard::RecordType::kVirtualCard) {
+    cardAccessibleName = [@[ self.cardDetails, cardAccessibleName ]
+        componentsJoinedByString:@" "];
+  } else {
+    cardAccessibleName = base::SysUTF16ToNSString(l10n_util::GetStringFUTF16(
+        IDS_AUTOFILL_CREDIT_CARD_TWO_LINE_LABEL_FROM_NAME,
+        base::SysNSStringToUTF16(cardAccessibleName),
+        base::SysNSStringToUTF16(self.cardDetails)));
+  }
+
+  return cardAccessibleName;
+}
+
 @end
 
-@interface PaymentsSuggestionBottomSheetMediator () <CRWWebStateObserver,
-                                                     WebStateListObserving>
+@interface PaymentsSuggestionBottomSheetMediator () <
+    CRWWebStateObserver,
+    PersonalDataManagerObserver,
+    WebStateListObserving>
 
 @end
 
 @implementation PaymentsSuggestionBottomSheetMediator {
   // The WebStateList observed by this mediator and the observer bridge.
   raw_ptr<WebStateList> _webStateList;
-  std::unique_ptr<web::WebStateObserverBridge> _observer;
-  std::unique_ptr<ActiveWebStateObservationForwarder> _forwarder;
+  std::unique_ptr<web::WebStateObserverBridge> _webStateObserver;
+  std::unique_ptr<ActiveWebStateObservationForwarder>
+      _activeWebStateObservationForwarder;
 
   // Personal Data Manager from which we can get Credit Card information.
   raw_ptr<autofill::PersonalDataManager> _personalDataManager;
+
+  // C++ to ObjC bridge for PersonalDataManagerObserver.
+  std::unique_ptr<autofill::PersonalDataManagerObserverBridge>
+      _personalDataManagerObserver;
+
+  // Scoped observer used to track registration of the
+  // PersonalDataManagerObserverBridge.
+  std::unique_ptr<
+      base::ScopedObservation<autofill::PersonalDataManager,
+                              autofill::PersonalDataManagerObserver>>
+      _scopedPersonalDataManagerObservation;
 
   // Whether the field that triggered the bottom sheet will need to refocus when
   // the bottom sheet is dismissed. Default is true.
@@ -103,21 +179,40 @@
     _params = params;
     _hasCreditCards = NO;
     _webStateList = webStateList;
-    _personalDataManager = personalDataManager;
+    if (personalDataManager) {
+      _personalDataManager = personalDataManager;
+      _personalDataManagerObserver.reset(
+          new autofill::PersonalDataManagerObserverBridge(self));
+      _scopedPersonalDataManagerObservation = std::make_unique<
+          base::ScopedObservation<autofill::PersonalDataManager,
+                                  autofill::PersonalDataManagerObserver>>(
+          _personalDataManagerObserver.get());
+      _scopedPersonalDataManagerObservation->Observe(_personalDataManager);
+    }
 
     // Create and register the observers.
-    _observer = std::make_unique<web::WebStateObserverBridge>(self);
-    _forwarder = std::make_unique<ActiveWebStateObservationForwarder>(
-        webStateList, _observer.get());
+    _webStateObserver = std::make_unique<web::WebStateObserverBridge>(self);
+    _activeWebStateObservationForwarder =
+        std::make_unique<ActiveWebStateObservationForwarder>(
+            webStateList, _webStateObserver.get());
   }
   return self;
 }
 
 #pragma mark - Public
 
+- (void)dealloc {
+  [self disconnect];
+}
+
 - (void)disconnect {
-  _forwarder = nullptr;
-  _observer = nullptr;
+  if (_personalDataManager && _personalDataManagerObserver.get()) {
+    _personalDataManager->RemoveObserver(_personalDataManagerObserver.get());
+    _personalDataManagerObserver.reset();
+  }
+  _scopedPersonalDataManagerObservation.reset();
+  _activeWebStateObservationForwarder = nullptr;
+  _webStateObserver = nullptr;
   _webStateList = nullptr;
 }
 
@@ -210,50 +305,32 @@
   }
 }
 
+#pragma mark - PersonalDataManagerObserver
+
+- (void)onPersonalDataChanged {
+  DCHECK(_personalDataManager);
+
+  // Refresh the data in the consumer
+  if (self.consumer) {
+    [self setConsumer:self.consumer];
+  }
+}
+
 #pragma mark - WebStateListObserving
 
 - (void)didChangeWebStateList:(WebStateList*)webStateList
                        change:(const WebStateListChange&)change
                        status:(const WebStateListStatus&)status {
   DCHECK_EQ(_webStateList, webStateList);
-  switch (change.type()) {
-    case WebStateListChange::Type::kStatusOnly:
-      // TODO(crbug.com/1442546): Move the implementation from
-      // webStateList:didChangeActiveWebState:oldWebState:atIndex:reason to
-      // here. Note that here is reachable only when `reason` ==
-      // ActiveWebStateChangeReason::Activated.
-      break;
-    case WebStateListChange::Type::kDetach:
-      // Do nothing when a WebState is detached.
-      break;
-    case WebStateListChange::Type::kMove:
-      // Do nothing when a WebState is moved.
-      break;
-    case WebStateListChange::Type::kReplace: {
-      if (status.index == webStateList->active_index()) {
-        [self onWebStateChange];
-      }
-      break;
-    }
-    case WebStateListChange::Type::kInsert:
-      // Do nothing when a new WebState is inserted.
-      break;
+  if (status.active_web_state_change()) {
+    [self onWebStateChange];
   }
-}
-
-- (void)webStateList:(WebStateList*)webStateList
-    didChangeActiveWebState:(web::WebState*)newWebState
-                oldWebState:(web::WebState*)oldWebState
-                    atIndex:(int)atIndex
-                     reason:(ActiveWebStateChangeReason)reason {
-  DCHECK_EQ(_webStateList, webStateList);
-  [self onWebStateChange];
 }
 
 - (void)webStateListDestroyed:(WebStateList*)webStateList {
   DCHECK_EQ(webStateList, _webStateList);
-  _forwarder = nullptr;
-  _observer = nullptr;
+  _activeWebStateObservationForwarder = nullptr;
+  _webStateObserver = nullptr;
   _webStateList = nullptr;
   [self onWebStateChange];
 }

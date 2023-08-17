@@ -6,6 +6,7 @@
 
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
+#include "ash/webui/settings/public/constants/routes.mojom-forward.h"
 #include "base/feature_list.h"
 #include "base/no_destructor.h"
 #include "base/strings/utf_string_conversions.h"
@@ -14,7 +15,6 @@
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
 #include "chrome/browser/ui/webui/settings/ash/os_settings_features_util.h"
 #include "chrome/browser/ui/webui/settings/ash/search/search_tag_registry.h"
-#include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom-forward.h"
 #include "chrome/browser/ui/webui/settings/languages_handler.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/url_constants.h"
@@ -165,10 +165,12 @@ void AddSmartInputsStrings(content::WebUIDataSource* html_source,
       {"smartInputsTitle", IDS_SETTINGS_SUGGESTIONS_TITLE},
       {"emojiSuggestionTitle", IDS_SETTINGS_SUGGESTIONS_EMOJI_SUGGESTION_TITLE},
       {"emojiSuggestionDescription",
-       IDS_SETTINGS_SUGGESTIONS_EMOJI_SUGGESTION_DESCRIPTION},
-  };
+       IDS_SETTINGS_SUGGESTIONS_EMOJI_SUGGESTION_DESCRIPTION}};
   html_source->AddLocalizedStrings(kLocalizedStrings);
 
+  // TODO: b/294962917 - Hook up with the EditorSwitch component instead of
+  // hard-coding "false".
+  html_source->AddBoolean("allowOrca", false);
   html_source->AddBoolean("allowEmojiSuggestion", is_emoji_suggestion_allowed);
 }
 
@@ -610,7 +612,7 @@ mojom::SearchResultIcon LanguagesSection::GetSectionIcon() const {
   return mojom::SearchResultIcon::kGlobe;
 }
 
-std::string LanguagesSection::GetSectionPath() const {
+const char* LanguagesSection::GetSectionPath() const {
   return mojom::kLanguagesAndInputSectionPath;
 }
 

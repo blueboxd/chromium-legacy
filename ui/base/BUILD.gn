@@ -62,6 +62,7 @@ component("ui_data_pack") {
   public_deps = [
     "//base",
     "//build:chromeos_buildflags",
+    "//third_party/abseil-cpp:absl",
   ]
 
   deps = [
@@ -319,6 +320,8 @@ component("base") {
       "cocoa/controls/button_utils.mm",
       "cocoa/controls/textfield_utils.h",
       "cocoa/controls/textfield_utils.mm",
+      "cocoa/cursor_accessibility_scale_factor_observer.h",
+      "cocoa/cursor_accessibility_scale_factor_observer.mm",
       "cocoa/cursor_utils.h",
       "cocoa/cursor_utils.mm",
       "cocoa/defaults_utils.h",
@@ -478,10 +481,6 @@ component("base") {
     "//build/config/compiler:prevent_unsafe_narrowing",
     "//build/config/compiler:wexit_time_destructors",
   ]
-
-  if (is_apple) {
-    configs += [ "//build/config/compiler:enable_arc" ]
-  }
 
   defines = [ "IS_UI_BASE_IMPL" ]
 
@@ -669,7 +668,6 @@ component("base") {
 
 if (is_ios) {
   source_set("l10n_util_ios") {
-    configs += [ "//build/config/compiler:enable_arc" ]
     sources = [
       "l10n/l10n_util_ios.h",
       "l10n/l10n_util_ios.mm",
@@ -792,10 +790,6 @@ static_library("test_support") {
     "test/idle_test_utils.cc",
     "test/idle_test_utils.h",
   ]
-
-  if (is_apple) {
-    configs += [ "//build/config/compiler:enable_arc" ]
-  }
 
   if (is_mac) {
     sources += [
@@ -1087,10 +1081,6 @@ test("ui_base_unittests") {
     sources += [ "user_activity/user_activity_detector_unittest.cc" ]
   }
 
-  if (is_apple) {
-    configs += [ "//build/config/compiler:enable_arc" ]
-  }
-
   if (is_mac) {
     sources += [
       "accelerators/platform_accelerator_cocoa_unittest.mm",
@@ -1190,6 +1180,7 @@ test("ui_base_unittests") {
         "ime/ash/typing_session_manager_unittest.cc",
       ]
       deps += [
+        "//ash/constants",
         "//build:branding_buildflags",
         "//ui/base/ime/ash",
         "//ui/base/ime/ash:typing_session_manager",

@@ -43,7 +43,6 @@ group("all_fuzzer_tests") {
 }
 
 source_set("test_support") {
-  configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
     "ios_chrome_scoped_testing_chrome_browser_state_manager.h",
@@ -69,6 +68,7 @@ source_set("test_support") {
     "//components/prefs",
     "//components/prefs:test_support",
     "//components/safe_browsing/core/common",
+    "//components/variations/service",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/content_settings",
     "//ios/chrome/browser/policy:policy",
@@ -95,10 +95,7 @@ source_set("test_support") {
 }
 
 source_set("eg_test_support+eg2") {
-  configs += [
-    "//build/config/compiler:enable_arc",
-    "//build/config/ios:xctest_config",
-  ]
+  configs += [ "//build/config/ios:xctest_config" ]
   testonly = true
   sources = [
     "scoped_eg_synchronization_disabler.h",
@@ -123,7 +120,6 @@ source_set("block_cleanup_test") {
     "//base",
     "//testing/gtest",
   ]
-  configs += [ "//build/config/compiler:enable_arc" ]
 }
 
 source_set("ios_chrome_unit_test_suite") {
@@ -151,7 +147,6 @@ source_set("ios_chrome_unit_test_suite") {
     "//ui/base",
     "//url",
   ]
-  configs += [ "//build/config/compiler:enable_arc" ]
 }
 
 source_set("run_all_unittests") {
@@ -245,6 +240,7 @@ test("ios_chrome_unittests") {
     "//ios/chrome/browser/overscroll_actions:unit_tests",
     "//ios/chrome/browser/passwords:unit_tests",
     "//ios/chrome/browser/permissions:unit_tests",
+    "//ios/chrome/browser/photos:unit_tests",
     "//ios/chrome/browser/policy:unit_tests",
     "//ios/chrome/browser/prerender:unit_tests",
     "//ios/chrome/browser/promos_manager:unit_tests",
@@ -339,6 +335,7 @@ test("ios_chrome_unittests") {
     "//ios/chrome/browser/ui/main:unit_tests",
     "//ios/chrome/browser/ui/main_content:unit_tests",
     "//ios/chrome/browser/ui/menu:unit_tests",
+    "//ios/chrome/browser/ui/mini_map:unit_tests",
     "//ios/chrome/browser/ui/ntp:unit_tests",
     "//ios/chrome/browser/ui/ntp/metrics:unit_tests",
     "//ios/chrome/browser/ui/omnibox:unit_tests",
@@ -408,6 +405,8 @@ test("ios_chrome_unittests") {
     "//ios/chrome/browser/ui/start_surface:unit_tests",
     "//ios/chrome/browser/ui/tab_switcher/tab_grid:unit_tests",
     "//ios/chrome/browser/ui/tab_switcher/tab_grid/grid:unit_tests",
+    "//ios/chrome/browser/ui/tab_switcher/tab_grid/grid/incognito:unit_tests",
+    "//ios/chrome/browser/ui/tab_switcher/tab_grid/grid/regular:unit_tests",
     "//ios/chrome/browser/ui/tab_switcher/tab_grid/pinned_tabs/tests:unit_tests",
     "//ios/chrome/browser/ui/tab_switcher/tab_grid/suggested_actions:unit_tests",
     "//ios/chrome/browser/ui/tabs:unit_tests",

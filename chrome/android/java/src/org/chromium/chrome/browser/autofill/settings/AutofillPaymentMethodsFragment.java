@@ -23,6 +23,7 @@ import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceScreen;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.AutofillEditorBase;
 import org.chromium.chrome.browser.autofill.AutofillUiUtils;
@@ -36,6 +37,7 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.payments.ServiceWorkerPaymentAppBridge;
 import org.chromium.chrome.browser.settings.ChromeManagedPreferenceDelegate;
 import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
+import org.chromium.components.autofill.MandatoryReauthAuthenticationFlowEvent;
 import org.chromium.components.autofill.VirtualCardEnrollmentState;
 import org.chromium.components.browser_ui.settings.ChromeSwitchPreference;
 import org.chromium.components.browser_ui.settings.SettingsLauncher;
@@ -49,8 +51,18 @@ import org.chromium.components.payments.AndroidPaymentAppFactory;
 public class AutofillPaymentMethodsFragment
         extends PreferenceFragmentCompat implements PersonalDataManager.PersonalDataManagerObserver,
                                                     FragmentHelpAndFeedbackLauncher {
+    // The Fido pref is used as a key on the settings toggle. This key helps in the retrieval of the
+    // Fido toggle during tests.
+    static final String PREF_FIDO = "fido";
     static final String PREF_MANDATORY_REAUTH = "mandatory_reauth";
     private static final String PREF_PAYMENT_APPS = "payment_apps";
+
+    static final String MANDATORY_REAUTH_EDIT_CARD_HISTOGRAM =
+            "Autofill.PaymentMethods.MandatoryReauth.AuthEvent.SettingsPage.EditCard";
+    static final String MANDATORY_REAUTH_OPT_IN_HISTOGRAM =
+            "Autofill.PaymentMethods.MandatoryReauth.OptChangeEvent.SettingsPage.OptIn";
+    static final String MANDATORY_REAUTH_OPT_OUT_HISTOGRAM =
+            "Autofill.PaymentMethods.MandatoryReauth.OptChangeEvent.SettingsPage.OptOut";
 
     private HelpAndFeedbackLauncher mHelpAndFeedbackLauncher;
 
@@ -124,11 +136,14 @@ public class AutofillPaymentMethodsFragment
         getPreferenceScreen().addPreference(autofillSwitch);
 
         if (isBiometricAvailable()
-                && PersonalDataManager.getInstance().isFidoAuthenticationAvailable()) {
+                && PersonalDataManager.getInstance().isFidoAuthenticationAvailable()
+                && !ChromeFeatureList.isEnabled(
+                        ChromeFeatureList.AUTOFILL_ENABLE_PAYMENTS_MANDATORY_REAUTH)) {
             ChromeSwitchPreference fidoAuthSwitch =
                     new ChromeSwitchPreference(getStyledContext(), null);
             fidoAuthSwitch.setTitle(R.string.enable_credit_card_fido_auth_label);
             fidoAuthSwitch.setSummary(R.string.enable_credit_card_fido_auth_sublabel);
+            fidoAuthSwitch.setKey(PREF_FIDO);
             fidoAuthSwitch.setChecked(PersonalDataManager.isAutofillCreditCardFidoAuthEnabled());
             fidoAuthSwitch.setOnPreferenceChangeListener((preference, newValue) -> {
                 PersonalDataManager.setAutofillCreditCardFidoAuthEnabled((boolean) newValue);
@@ -299,6 +314,11 @@ public class AutofillPaymentMethodsFragment
         ChromeSwitchPreference mandatoryReauthSwitch = (ChromeSwitchPreference) preference;
         // If the user preference update is successful, toggle the switch to the success state.
         boolean userIntendedState = !mandatoryReauthSwitch.isChecked();
+        String histogramName = userIntendedState ? MANDATORY_REAUTH_OPT_IN_HISTOGRAM
+                                                 : MANDATORY_REAUTH_OPT_OUT_HISTOGRAM;
+        RecordHistogram.recordEnumeratedHistogram(histogramName,
+                MandatoryReauthAuthenticationFlowEvent.FLOW_STARTED,
+                MandatoryReauthAuthenticationFlowEvent.MAX_VALUE + 1);
         // We require user authentication every time user tries to change this
         // preference. Set useLastValidAuth=false to skip the grace period.
         mReauthenticatorBridge.reauthenticate(success -> {
@@ -310,6 +330,13 @@ public class AutofillPaymentMethodsFragment
                 // When the preference is updated, the page is expected to refresh and show the
                 // updated preference. Fallback if the page does not load.
                 mandatoryReauthSwitch.setChecked(userIntendedState);
+                RecordHistogram.recordEnumeratedHistogram(histogramName,
+                        MandatoryReauthAuthenticationFlowEvent.FLOW_SUCCEEDED,
+                        MandatoryReauthAuthenticationFlowEvent.MAX_VALUE + 1);
+            } else {
+                RecordHistogram.recordEnumeratedHistogram(histogramName,
+                        MandatoryReauthAuthenticationFlowEvent.FLOW_FAILED,
+                        MandatoryReauthAuthenticationFlowEvent.MAX_VALUE + 1);
             }
         }, /*useLastValidAuth=*/false);
         // Returning false here holds the toggle to still display the old value while
@@ -337,13 +364,22 @@ public class AutofillPaymentMethodsFragment
         // mReauthenticatorBridge should be initiated already when determining whether to show the
         // mandatory reauth toggle.
         assert mReauthenticatorBridge != null;
-
+        RecordHistogram.recordEnumeratedHistogram(MANDATORY_REAUTH_EDIT_CARD_HISTOGRAM,
+                MandatoryReauthAuthenticationFlowEvent.FLOW_STARTED,
+                MandatoryReauthAuthenticationFlowEvent.MAX_VALUE + 1);
         // When mandatory reauth is enabled, offer device authentication challenge.
         mReauthenticatorBridge.reauthenticate(success -> {
             // If authentication is successful, manually trigger the local card edit page. Else,
             // stay on this page.
             if (success) {
+                RecordHistogram.recordEnumeratedHistogram(MANDATORY_REAUTH_EDIT_CARD_HISTOGRAM,
+                        MandatoryReauthAuthenticationFlowEvent.FLOW_SUCCEEDED,
+                        MandatoryReauthAuthenticationFlowEvent.MAX_VALUE + 1);
                 showLocalCardEditPage(preference);
+            } else {
+                RecordHistogram.recordEnumeratedHistogram(MANDATORY_REAUTH_EDIT_CARD_HISTOGRAM,
+                        MandatoryReauthAuthenticationFlowEvent.FLOW_FAILED,
+                        MandatoryReauthAuthenticationFlowEvent.MAX_VALUE + 1);
             }
         }, /*useLastValidAuth=*/false);
         return true;

@@ -52,10 +52,6 @@ BASE_FEATURE(kSyncSegmentationDataType,
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 #if BUILDFLAG(IS_CHROMEOS)
-BASE_FEATURE(kSyncSettingsShowLacrosSideBySideWarning,
-             "SyncSettingsShowLacrosSideBySideWarning",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 BASE_FEATURE(kSyncChromeOSExplicitPassphraseSharing,
              "SyncChromeOSExplicitPassphraseSharing",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -79,14 +75,6 @@ BASE_FEATURE(kSkipInvalidationOptimizationsWhenDeviceInfoUpdated,
 
 BASE_FEATURE(kSyncEnableHistoryDataType,
              "SyncEnableHistoryDataType",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-BASE_FEATURE(kSyncEnableContactInfoDataType,
-             "SyncEnableContactInfoDataType",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-BASE_FEATURE(kSyncEnableContactInfoDataTypeEarlyReturnNoDatabase,
-             "SyncEnableContactInfoDataTypeEarlyReturnNoDatabase",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kSyncEnableContactInfoDataTypeInTransportMode,
@@ -179,6 +167,14 @@ BASE_FEATURE(kSyncEnableWalletMetadataInTransportMode,
 
 BASE_FEATURE(kSyncEnableWalletOfferInTransportMode,
              "SyncEnableWalletOfferInTransportMode",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kSyncEntityMetadataRecordDeletedByVersionOnLocalDeletion,
+             "SyncEntityMetadataRecordDeletedByVersionOnLocalDeletion",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kSyncPasswordCleanUpAccidentalBatchDeletions,
+             "SyncPasswordCleanUpAccidentalBatchDeletions",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 }  // namespace syncer

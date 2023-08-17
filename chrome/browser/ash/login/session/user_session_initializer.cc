@@ -43,6 +43,7 @@
 #include "chrome/browser/scalable_iph/scalable_iph_factory.h"
 #include "chrome/browser/screen_ai/screen_ai_dlc_installer.h"
 #include "chrome/browser/ui/ash/calendar/calendar_keyed_service_factory.h"
+#include "chrome/browser/ui/ash/clipboard_history_url_title_fetcher_impl.h"
 #include "chrome/browser/ui/ash/clipboard_image_model_factory_impl.h"
 #include "chrome/browser/ui/ash/glanceables/chrome_glanceables_delegate.h"
 #include "chrome/browser/ui/ash/glanceables/glanceables_keyed_service_factory.h"
@@ -224,6 +225,12 @@ void UserSessionInitializer::InitializeCRLSetFetcher() {
 void UserSessionInitializer::InitializePrimaryProfileServices(
     Profile* profile,
     const user_manager::User* user) {
+  // We should call this method at most once, when a user logs in. Logging out
+  // kills the chrome process.
+  static int call_count = 0;
+  ++call_count;
+  CHECK_EQ(call_count, 1);
+
   lock_screen_apps::StateController::Get()->SetPrimaryProfile(profile);
 
   if (user->GetType() == user_manager::USER_TYPE_REGULAR) {
@@ -243,11 +250,13 @@ void UserSessionInitializer::InitializePrimaryProfileServices(
   if (crostini_manager)
     crostini_manager->MaybeUpdateCrostini();
 
+  clipboard_history_url_title_fetcher_impl_ =
+      std::make_unique<ClipboardHistoryUrlTitleFetcherImpl>();
   clipboard_image_model_factory_impl_ =
       std::make_unique<ClipboardImageModelFactoryImpl>(profile);
 
   if (captions::IsLiveCaptionFeatureSupported() &&
-      base::FeatureList::IsEnabled(features::kSystemLiveCaption)) {
+      features::IsSystemLiveCaptionEnabled()) {
     SystemLiveCaptionServiceFactory::GetInstance()->GetForProfile(profile);
   }
 
@@ -271,6 +280,10 @@ void UserSessionInitializer::OnUserSessionStarted(bool is_primary_user) {
   // created one per user in a multiprofile session.
   CalendarKeyedServiceFactory::GetInstance()->GetService(profile);
 
+  // Ensure that the `GlanceablesKeyedService` for `profile` is created. It is
+  // created one per user in a multiprofile session.
+  GlanceablesKeyedServiceFactory::GetInstance()->GetService(profile);
+
   screen_ai::dlc_installer::ManageInstallation(
       g_browser_process->local_state());
 
@@ -281,11 +294,6 @@ void UserSessionInitializer::OnUserSessionStarted(bool is_primary_user) {
       // Must be called after CalenderKeyedServiceFactory is initialized.
       ChromeGlanceablesDelegate::Get()->OnPrimaryUserSessionStarted(profile);
     }
-
-    // Ensure that the `GlanceablesKeyedService` for `primary_profile_` is
-    // created.
-    GlanceablesKeyedServiceFactory::GetInstance()->GetService(primary_profile_);
-
     // Ensure that PhoneHubManager and EcheAppManager are created for the
     // primary profile.
     phonehub::PhoneHubManagerFactory::GetForProfile(profile);

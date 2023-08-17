@@ -10,12 +10,7 @@
 #import "ios/chrome/app/tests_hook.h"
 #import "ios/chrome/browser/shared/model/application_context/application_context.h"
 #import "ios/chrome/browser/shared/model/paths/paths.h"
-#import "ios/chrome/browser/ui/ntp/new_tab_page_field_trial.h"
 #import "ios/chrome/browser/variations/ios_chrome_variations_seed_store.h"
-
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
 
 void IOSChromeFieldTrials::OnVariationsSetupComplete() {
   // Persistent histograms must be enabled ASAP, but depends on Features.
@@ -41,8 +36,4 @@ void IOSChromeFieldTrials::SetUpClientSideFieldTrials(
   if (tests_hook::DisableClientSideFieldTrials()) {
     return;
   }
-
-  new_tab_page_field_trial::Create(entropy_providers.low_entropy(),
-                                   feature_list,
-                                   GetApplicationContext()->GetLocalState());
 }

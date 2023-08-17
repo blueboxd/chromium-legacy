@@ -305,7 +305,6 @@ component("base") {
     "containers/small_map.h",
     "containers/span.h",
     "containers/stack.h",
-    "containers/stack_container.h",
     "containers/unique_ptr_adapters.h",
     "containers/util.h",
     "containers/vector_buffer.h",
@@ -403,6 +402,10 @@ component("base") {
     "location.h",
     "logging.cc",
     "logging.h",
+    "macros/concat.h",
+    "macros/if.h",
+    "macros/remove_parens.h",
+    "macros/uniquify.h",
     "memory/aligned_memory.cc",
     "memory/aligned_memory.h",
     "memory/free_deleter.h",
@@ -927,6 +930,7 @@ component("base") {
     "types/cxx23_to_underlying.h",
     "types/expected.h",
     "types/expected_internal.h",
+    "types/expected_macros.h",
     "types/id_type.h",
     "types/optional_ref.h",
     "types/optional_util.h",
@@ -1114,7 +1118,7 @@ component("base") {
 
   if (use_allocator_shim) {
     if (is_apple) {
-      sources += [ "allocator/early_zone_registration_mac.h" ]
+      sources += [ "allocator/early_zone_registration_apple.h" ]
     }
   }
 
@@ -1124,6 +1128,9 @@ component("base") {
       "test/clang_profiling.cc",
       "test/clang_profiling.h",
     ]
+    if (is_android) {
+      sources += [ "test/clang_profiling_android.cc" ]
+    }
   }
 
   # Allow more direct string conversions on platforms with native utf8
@@ -1196,8 +1203,6 @@ component("base") {
       "android/reached_addresses_bitset.h",
       "android/reached_code_profiler.cc",
       "android/reached_code_profiler.h",
-      "android/remove_stale_data.cc",
-      "android/remove_stale_data.h",
       "android/scoped_hardware_buffer_fence_sync.cc",
       "android/scoped_hardware_buffer_fence_sync.h",
       "android/scoped_hardware_buffer_handle.cc",
@@ -1943,16 +1948,20 @@ component("base") {
       "apple/bridging.h",
       "apple/bundle_locations.h",
       "apple/bundle_locations.mm",
+      "apple/call_with_eh_frame.cc",
+      "apple/call_with_eh_frame.h",
+      "apple/call_with_eh_frame_asm.S",
+      "apple/dispatch_source_mach.cc",
+      "apple/dispatch_source_mach.h",
       "apple/owned_objc.h",
       "apple/owned_objc.mm",
-      "file_version_info_mac.h",
-      "file_version_info_mac.mm",
-      "files/file_util_mac.mm",
-      "mac/call_with_eh_frame.cc",
-      "mac/call_with_eh_frame.h",
-      "mac/call_with_eh_frame_asm.S",
-      "mac/dispatch_source_mach.cc",
-      "mac/dispatch_source_mach.h",
+      "apple/scoped_cffiledescriptorref.h",
+      "apple/scoped_nsobject.h",
+      "apple/scoped_objc_class_swizzler.h",
+      "apple/scoped_objc_class_swizzler.mm",
+      "file_version_info_apple.h",
+      "file_version_info_apple.mm",
+      "files/file_util_apple.mm",
       "mac/foundation_util.h",
       "mac/foundation_util.mm",
       "mac/mac_logging.h",
@@ -1965,22 +1974,19 @@ component("base") {
       "mac/scoped_mach_vm.h",
       "mac/scoped_nsautorelease_pool.cc",
       "mac/scoped_nsautorelease_pool.h",
-      "mac/scoped_nsobject.h",
-      "mac/scoped_objc_class_swizzler.h",
-      "mac/scoped_objc_class_swizzler.mm",
       "mac/scoped_typeref.h",
-      "memory/platform_shared_memory_mapper_mac.cc",
-      "memory/platform_shared_memory_region_mac.cc",
+      "memory/platform_shared_memory_mapper_apple.cc",
+      "memory/platform_shared_memory_region_apple.cc",
       "message_loop/message_pump_mac.h",
       "message_loop/message_pump_mac.mm",
       "process/process_metrics_apple.cc",
-      "profiler/module_cache_mac.cc",
-      "strings/sys_string_conversions_mac.mm",
-      "synchronization/waitable_event_mac.cc",
+      "profiler/module_cache_apple.cc",
+      "strings/sys_string_conversions_apple.mm",
+      "synchronization/waitable_event_apple.cc",
       "system/sys_info_apple.mm",
-      "threading/platform_thread_mac.mm",
       "threading/atomic.c",
-      "time/time_mac.mm",
+      "threading/platform_thread_apple.mm",
+      "time/time_apple.mm",
     ]
     frameworks += [
       "CoreFoundation.framework",
@@ -1989,7 +1995,6 @@ component("base") {
       "Foundation.framework",
       "Security.framework",
     ]
-    configs += [ "//build/config/compiler:enable_arc" ]
   }
 
   # Desktop Mac.
@@ -2008,6 +2013,7 @@ component("base") {
       "mac/close_nocancel.cc",
       "mac/launch_application.h",
       "mac/launch_application.mm",
+      "mac/launch_services_spi.h",
       "mac/launchd.cc",
       "mac/launchd.h",
       "mac/mac_util.h",
@@ -2019,7 +2025,6 @@ component("base") {
       "mac/scoped_aedesc.h",
       "mac/scoped_authorizationref.h",
       "mac/scoped_authorizationref.mm",
-      "mac/scoped_cffiledescriptorref.h",
       "mac/scoped_cftyperef.h",
       "mac/scoped_dispatch_object.h",
       "mac/scoped_ionotificationportref.h",
@@ -2060,9 +2065,7 @@ component("base") {
       "time/time_exploded_posix.cc",
     ]
 
-    libs += [
-      "bsm",
-    ]
+    libs += [ "bsm" ]
     frameworks += [
       "ApplicationServices.framework",
       "AppKit.framework",
@@ -2078,6 +2081,18 @@ component("base") {
       "base_paths_ios.h",
       "base_paths_ios.mm",
       "critical_closure_internal_ios.mm",
+      "ios/block_types.h",
+      "ios/crb_protocol_observers.h",
+      "ios/crb_protocol_observers.mm",
+      "ios/device_util.h",
+      "ios/device_util.mm",
+      "ios/ios_util.h",
+      "ios/ios_util.mm",
+      "ios/ns_error_util.h",
+      "ios/ns_error_util.mm",
+      "ios/ns_range.h",
+      "ios/scoped_critical_action.h",
+      "ios/scoped_critical_action.mm",
       "native_library_ios.mm",
       "power_monitor/power_monitor_device_source_ios.mm",
       "process/process_metrics_ios.cc",
@@ -2091,6 +2106,7 @@ component("base") {
         "files/file_path_watcher_kqueue.cc",
         "files/file_path_watcher_kqueue.h",
         "files/file_path_watcher_mac.cc",
+        "ios/sim_header_shims.h",
         "mac/mach_port_rendezvous.cc",
         "mac/mach_port_rendezvous.h",
         "process/kill_mac.cc",
@@ -2113,9 +2129,6 @@ component("base") {
         "process/process_stubs.cc",
       ]
     }
-
-    public_deps += [ "//base/ios" ]
-    allow_circular_includes_from = [ "//base/ios" ]
 
     if (is_cronet_build) {
       sources += [
@@ -2152,7 +2165,10 @@ component("base") {
       sources += [ "time/time_exploded_ios.cc" ]
     }
 
-    frameworks += [ "UIKit.framework" ]
+    frameworks += [
+      "Foundation.framework",
+      "UIKit.framework",
+    ]
   }
 
   # Linux.
@@ -2536,6 +2552,7 @@ buildflag_header("tracing_buildflags") {
   flags = [
     "ENABLE_BASE_TRACING=$enable_base_tracing",
     "USE_PERFETTO_CLIENT_LIBRARY=$use_perfetto_client_library",
+    "USE_PERFETTO_TRACE_PROCESSOR=$use_perfetto_trace_processor",
     "OPTIONAL_TRACE_EVENTS_ENABLED=$optional_trace_events_enabled",
   ]
 }
@@ -2675,32 +2692,26 @@ component("i18n") {
   if (is_mac) {
     frameworks = [ "CoreFoundation.framework" ]
   }
-
-  if (is_ios) {
-    deps += [ "//base/ios" ]
-    allow_circular_includes_from = [ "//base/ios" ]
-  }
 }
 
 test("base_perftests") {
   sources = [
     "hash/hash_perftest.cc",
+    "json/json_perftest.cc",
     "message_loop/message_pump_perftest.cc",
     "observer_list_perftest.cc",
     "rand_util_perftest.cc",
     "strings/string_util_perftest.cc",
     "substring_set_matcher/substring_set_matcher_perftest.cc",
+    "synchronization/lock_perftest.cc",
+    "synchronization/waitable_event_perftest.cc",
     "task/job_perftest.cc",
     "task/sequence_manager/sequence_manager_perftest.cc",
     "task/thread_pool/thread_pool_perftest.cc",
     "threading/counter_perftest.cc",
     "threading/thread_local_storage_perftest.cc",
-
-    # "test/run_all_unittests.cc",
-    "json/json_perftest.cc",
-    "synchronization/lock_perftest.cc",
-    "synchronization/waitable_event_perftest.cc",
     "threading/thread_perftest.cc",
+    "types/expected_macros_perftest.cc",
   ]
 
   deps = [
@@ -2710,6 +2721,7 @@ test("base_perftests") {
     "//base/test:test_support_perf",
     "//testing/gtest",
     "//testing/perf",
+    "//third_party/google_benchmark",
   ]
 
   if (use_partition_alloc) {
@@ -2938,7 +2950,11 @@ if (is_ios) {
 if (is_apple) {
   source_set("base_unittests_noarc") {
     testonly = true
-    sources = [ "mac/scoped_nsobject_unittest.mm" ]
+    sources = [ "apple/scoped_nsobject_unittest.mm" ]
+
+    # Do not compile with ARC because this target has tests for code that does
+    # not compile with ARC.
+    configs -= [ "//build/config/compiler:enable_arc" ]
     deps = [
       ":base",
       "//base/test:test_support",
@@ -3102,7 +3118,6 @@ test("base_unittests") {
     "containers/lru_cache_unittest.cc",
     "containers/small_map_unittest.cc",
     "containers/span_unittest.cc",
-    "containers/stack_container_unittest.cc",
     "containers/unique_ptr_adapters_unittest.cc",
     "containers/vector_buffer_unittest.cc",
     "cpu_unittest.cc",
@@ -3272,7 +3287,7 @@ test("base_unittests") {
     "strings/stringize_macros_unittest.cc",
     "strings/stringprintf_unittest.cc",
     "strings/sys_string_conversions_unittest.cc",
-    "strings/to_string_test.cc",
+    "strings/to_string_unittest.cc",
     "strings/utf_offset_string_conversions_unittest.cc",
     "strings/utf_string_conversion_utils_unittest.cc",
     "strings/utf_string_conversions_unittest.cc",
@@ -3341,6 +3356,7 @@ test("base_unittests") {
     "task/thread_pool_unittest.cc",
     "template_util_unittest.cc",
     "test/gmock_callback_support_unittest.cc",
+    "test/gmock_expected_support_unittest.cc",
     "test/gmock_move_support_unittest.cc",
     "test/gtest_links_unittest.cc",
     "test/gtest_tags_unittest.cc",
@@ -3367,6 +3383,7 @@ test("base_unittests") {
     "test/test_pending_task_unittest.cc",
     "test/test_proto_loader_unittest.cc",
     "test/test_waitable_event_unittest.cc",
+    "test/to_vector_unittest.cc",
     "third_party/dynamic_annotations/dynamic_annotations_compiletest.cc",
     "thread_annotations_unittest.cc",
     "threading/hang_watcher_unittest.cc",
@@ -3400,6 +3417,7 @@ test("base_unittests") {
     "traits_bag_unittest.cc",
     "tuple_unittest.cc",
     "types/cxx23_to_underlying_unittest.cc",
+    "types/expected_macros_unittest.cc",
     "types/expected_unittest.cc",
     "types/id_type_unittest.cc",
     "types/optional_ref_unittest.cc",
@@ -3407,7 +3425,7 @@ test("base_unittests") {
     "types/optional_util_unittest.cc",
     "types/pass_key_unittest.cc",
     "types/strong_alias_unittest.cc",
-    "types/supports_ostream_operator_test.cc",
+    "types/supports_ostream_operator_unittest.cc",
     "types/token_type_unittest.cc",
     "types/variant_util_unittest.cc",
     "unguessable_token_unittest.cc",
@@ -3692,34 +3710,35 @@ test("base_unittests") {
   if (is_apple) {
     sources += [
       "apple/backup_util_unittest.mm",
-      "mac/bind_objc_block_unittest_arc.mm",
-      "mac/foundation_util_unittest.mm",
-      "strings/sys_string_conversions_mac_unittest.mm",
+      "apple/bind_objc_block_unittest.mm",
+      "apple/dispatch_source_mach_unittest.cc",
+      "apple/foundation_util_unittest.mm",
+      "strings/sys_string_conversions_apple_unittest.mm",
     ]
-    configs += [ "//build/config/compiler:enable_arc" ]
   }
 
   if (is_apple && enable_mach_absolute_time_ticks) {
-    sources += [ "time/time_mac_unittest.mm" ]
+    sources += [ "time/time_apple_unittest.mm" ]
   }
 
   if (is_mac) {
     sources += [
       "allocator/partition_allocator/shim/allocator_interception_mac_unittest.mm",
       "allocator/partition_allocator/shim/malloc_zone_functions_mac_unittest.cc",
+      "apple/call_with_eh_frame_unittest.mm",
+      "apple/scoped_objc_class_swizzler_unittest.mm",
       "enterprise_util_mac_unittest.mm",
-      "mac/call_with_eh_frame_unittest.mm",
-      "mac/dispatch_source_mach_unittest.cc",
+      "mac/launch_application_unittest.mm",
       "mac/mac_util_unittest.mm",
       "mac/mach_port_rendezvous_unittest.cc",
       "mac/scoped_mach_vm_unittest.cc",
-      "mac/scoped_objc_class_swizzler_unittest.mm",
       "mac/scoped_sending_event_unittest.mm",
       "message_loop/message_pump_mac_unittest.mm",
       "power_monitor/thermal_state_observer_mac_unittest.mm",
       "process/memory_unittest_mac.h",
       "process/memory_unittest_mac.mm",
     ]
+    data_deps += [ "//base/mac:launch_application_test_helper" ]
   }
 
   if (is_ios) {
@@ -3728,8 +3747,6 @@ test("base_unittests") {
       "ios/device_util_unittest.mm",
       "ios/scoped_critical_action_unittest.mm",
     ]
-
-    deps += [ "//base/ios" ]
 
     bundle_deps = [ ":base_test_proto_bundle_data" ]
 
@@ -3785,10 +3802,11 @@ test("base_unittests") {
       "allocator/partition_allocator/partition_alloc_base/bits_pa_unittest.cc",
       "allocator/partition_allocator/partition_alloc_base/component_export_pa_unittest.cc",
       "allocator/partition_allocator/partition_alloc_base/cpu_pa_unittest.cc",
-      "allocator/partition_allocator/partition_alloc_base/cxx17_backports_pa_unittest.cc",
       "allocator/partition_allocator/partition_alloc_base/logging_pa_unittest.cc",
       "allocator/partition_allocator/partition_alloc_base/rand_util_pa_unittest.cc",
       "allocator/partition_allocator/partition_alloc_base/scoped_clear_last_error_pa_unittest.cc",
+      "allocator/partition_allocator/partition_alloc_base/strings/cstring_builder_pa_unittest.cc",
+      "allocator/partition_allocator/partition_alloc_base/strings/safe_sprintf_pa_unittest.cc",
       "allocator/partition_allocator/partition_alloc_base/strings/stringprintf_pa_unittest.cc",
       "allocator/partition_allocator/partition_alloc_base/thread_annotations_pa_unittest.cc",
       "allocator/partition_allocator/partition_alloc_unittest.cc",
@@ -4149,6 +4167,12 @@ if (is_android || is_robolectric) {
       "android/java/src/org/chromium/base/task/TaskRunnerImpl.java",
     ]
 
+    if (use_clang_profiling) {
+      sources += [
+        "test/android/javatests/src/org/chromium/base/test/ClangProfiler.java",
+      ]
+    }
+
     public_deps = [
       ":android_runtime_jni_headers",
       ":android_runtime_unchecked_jni_headers",
@@ -4381,6 +4405,14 @@ if (is_android) {
       "android/java/src/org/chromium/base/task/UiThreadTaskExecutor.java",
     ]
 
+    if (use_clang_profiling) {
+      sources += [
+        "test/android/javatests/src/org/chromium/base/test/ClangProfiler.java",
+      ]
+    } else {
+      sources += [ "test/android/javatests/src/stub/org/chromium/base/test/ClangProfiler.java" ]
+    }
+
     if (!is_cronet_build) {
       sources += [ "android/java/src/org/chromium/base/IntentUtils.java" ]
     }
@@ -4553,7 +4585,9 @@ if (is_android) {
       "test/android/javatests/src/org/chromium/base/test/util/DisabledTest.java",
       "test/android/javatests/src/org/chromium/base/test/util/DoNotBatch.java",
       "test/android/javatests/src/org/chromium/base/test/util/DoNotRevive.java",
+      "test/android/javatests/src/org/chromium/base/test/util/DumpThreadsOnFailureRule.java",
       "test/android/javatests/src/org/chromium/base/test/util/EnormousTest.java",
+      "test/android/javatests/src/org/chromium/base/test/util/EspressoIdleTimeoutRule.java",
       "test/android/javatests/src/org/chromium/base/test/util/Feature.java",
       "test/android/javatests/src/org/chromium/base/test/util/Features.java",
       "test/android/javatests/src/org/chromium/base/test/util/FeaturesBase.java",
@@ -4632,6 +4666,8 @@ if (is_android) {
       "test/android/junit/src/org/chromium/base/task/test/CustomShadowAsyncTask.java",
       "test/android/junit/src/org/chromium/base/task/test/PausedExecutorTestRule.java",
       "test/android/junit/src/org/chromium/base/task/test/ShadowPostTask.java",
+      "test/android/junit/src/org/chromium/base/test/BaseRobolectricAndroidConfigurer.java",
+      "test/android/junit/src/org/chromium/base/test/BaseRobolectricTestRule.java",
       "test/android/junit/src/org/chromium/base/test/BaseRobolectricTestRunner.java",
       "test/android/junit/src/org/chromium/base/test/ShadowBuildInfo.java",
       "test/android/junit/src/org/chromium/base/test/util/TestRunnerTestRule.java",
@@ -4641,10 +4677,13 @@ if (is_android) {
     # jar_excluded_patterns.
     srcjar_deps = [ "//build/android:native_libraries_gen" ]
 
+    annotation_processor_deps =
+        [ "//third_party/android_deps:auto_service_processor" ]
     deps = [
       ":base_java",
       ":base_java_test_support",
       "//testing/android/junit:junit_test_support",
+      "//third_party/android_deps:com_google_auto_service_auto_service_annotations_java",
       "//third_party/androidx:androidx_test_core_java",
       "//third_party/androidx:androidx_test_monitor_java",
       "//third_party/hamcrest:hamcrest_java",
@@ -4711,7 +4750,9 @@ if (is_android) {
       ":base_java_test_support",
       ":base_java_test_support_uncommon",
       ":base_junit_test_support",
+      "//base:jni_java",
       "//base/test:test_support_java",
+      "//third_party/android_deps:guava_android_java",
       "//third_party/androidx:androidx_annotation_annotation_java",
       "//third_party/androidx:androidx_test_core_java",
       "//third_party/androidx:androidx_test_runner_java",
@@ -4922,8 +4963,7 @@ source_set("partition_alloc_test_support") {
     sources += [ "allocator/partition_allocator/partition_alloc_base/threading/platform_thread_win_for_testing.cc" ]
   }
   if (is_apple) {
-    sources += [ "allocator/partition_allocator/partition_alloc_base/threading/platform_thread_mac_for_testing.mm" ]
-    configs += [ "//build/config/compiler:enable_arc" ]
+    sources += [ "allocator/partition_allocator/partition_alloc_base/threading/platform_thread_apple_for_testing.mm" ]
   }
   if (is_linux || is_chromeos) {
     sources += [ "allocator/partition_allocator/partition_alloc_base/threading/platform_thread_linux_for_testing.cc" ]

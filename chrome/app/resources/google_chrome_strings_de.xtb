@@ -34,7 +34,6 @@
 <translation id="1587223624401073077">Google Chrome verwendet deine Kamera.</translation>
 <translation id="1587325591171447154"><ph name="FILE_NAME" /> ist schädlich und wurde daher von Chrome blockiert.</translation>
 <translation id="1597911401261118146">Wenn du prüfen möchtest, ob deine Passwörter von Datenpannen und anderen Sicherheitsproblemen betroffen sind, <ph name="BEGIN_LINK" />melde dich in Chrome an<ph name="END_LINK" />.</translation>
-<translation id="1599904803480101533">Chrome hat diese Archivdatei blockiert, da sie möglicherweise Malware enthält</translation>
 <translation id="1619887657840448962">Um Chrome sicherer zu machen, haben wir die folgende Erweiterung deaktiviert. Sie ist nicht im <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> aufgeführt und wurde möglicherweise ohne dein Wissen hinzugefügt.</translation>
 <translation id="1627304841979541023"><ph name="BEGIN_BOLD" />So kannst du deine Daten verwalten<ph name="END_BOLD" />: Zum Schutz deiner Daten löschen wir automatisch deine Interessen, die älter als vier Wochen sind. Je nach deinen Browsingaktivitäten können die Interessen wieder in der Liste erscheinen. Du kannst jedoch Interessen entfernen, die Chrome nicht berücksichtigen soll.</translation>
 <translation id="1628000112320670027">Hilfe für Chrome aufrufen</translation>
@@ -79,6 +78,7 @@
 <translation id="235650106824528204">Alle Chrome-Daten, die während der Nutzung dieses Profils erstellt werden, wie Lesezeichen, Verlauf, Passwörter und andere Einstellungen, können vom Administrator des Arbeitsprofils entfernt werden. <ph name="LEARN_MORE" /></translation>
 <translation id="2359808026110333948">Weiter</translation>
 <translation id="2401189691232800402">Chrome OS-System</translation>
+<translation id="2409816192575564775">{NUM_DEVICES,plural, =0{Auf 1 HID-Gerät wurde von mindestens einer Chrome-Erweiterung zugegriffen}=1{Auf 1 HID-Gerät wird von mindestens einer Chrome-Erweiterung zugegriffen}other{Auf # HID-Geräte wird von mindestens einer Chrome-Erweiterung zugegriffen}}</translation>
 <translation id="2424440923901031101">Diese Erweiterung verstößt gegen die Chrome Web Store-Richtlinien und ist möglicherweise nicht sicher. Entferne sie aus Chrome, damit sie deine Daten auf von dir besuchten Websites nicht mehr abrufen oder ändern kann, auch nicht deine personenbezogenen Daten.</translation>
 <translation id="2467438592969358367">Google Chrome möchte deine Passwörter exportieren. Wenn du dies zulassen möchtest, gib dein Windows-Passwort ein.</translation>
 <translation id="2472092250898121027">Diese Erweiterung enthält Malware und ist nicht sicher. Entferne sie aus Chrome, damit sie deine Daten auf von dir besuchten Websites nicht mehr abrufen oder ändern kann, auch nicht deine personenbezogenen Daten.</translation>
@@ -129,6 +129,7 @@
 <translation id="3140883423282498090">Deine Änderungen werden beim nächsten Neustart von Google Chrome wirksam.</translation>
 <translation id="3149510190863420837">Chrome-Apps</translation>
 <translation id="3169523567916669830">Während die Tests laufen, kannst du Angaben zu Interessengebieten sehen und entfernen, die von Websites verwendet werden, um dir relevante Werbung anzuzeigen. Chromium nutzt zur Ermittlung deiner Interessengebiete deinen aktuellen Browserverlauf.</translation>
+<translation id="3226612997184048185">Wenn du auch deine Lesezeichen in deinem Google-Konto speicherst, kannst du Produktpreise in Chrome beobachten und dich benachrichtigen lassen, wenn der Preis sinkt</translation>
 <translation id="3245429137663807393">Wenn du Chrome-Nutzungsberichte teilst, enthalten diese Berichte die von dir aufgerufenen URLs</translation>
 <translation id="3282568296779691940">In Chrome anmelden</translation>
 <translation id="3286538390144397061">Jetzt neu starten</translation>
@@ -147,7 +148,6 @@
 <translation id="3533694711092285624">Keine gespeicherten Passwörter. Chrome kann deine Passwörter prüfen, wenn du sie speicherst.</translation>
 <translation id="3541482654983822893">Chrome kann deine Passwörter nicht prüfen. Bitte versuche es in 24 Stunden noch einmal.</translation>
 <translation id="3576528680708590453">Dein Systemadministrator hat Google Chrome so konfiguriert, dass <ph name="TARGET_URL_HOSTNAME" /> in einem alternativen Browser geöffnet wird.</translation>
-<translation id="3579965087968408543">Beim Schließen von Chrome immer die Websitedaten von deinem Gerät löschen</translation>
 <translation id="3582972582564653026">Chrome auf allen deinen Geräten synchronisieren und personalisieren</translation>
 <translation id="3596080736082218006">{COUNT,plural, =0{Laut deinem Administrator musst du Chrome neu starten, um ein Update durchzuführen}=1{Laut deinem Administrator musst du Chrome neu starten, um ein Update durchzuführen. Dein Inkognitofenster wird nicht wieder geöffnet.}other{Laut deinem Administrator musst du Chrome neu starten, um ein Update durchzuführen. Deine # Inkognitofenster werden nicht wieder geöffnet.}}</translation>
 <translation id="3622797965165704966">Du kannst Chrome jetzt noch einfacher mit deinem Google-Konto und auf gemeinsam genutzten Computern verwenden.</translation>
@@ -215,6 +215,7 @@
 <translation id="4873783916118289636">Hiermit kannst du dir die wichtigsten Datenschutz- und Sicherheitseinstellungen in Chrome ansehen</translation>
 <translation id="4891791193823137474">Google Chrome im Hintergrund ausführen</translation>
 <translation id="4895437082222824641">Link in neuem Chrome-Tab öffnen</translation>
+<translation id="492720062778050435">Chrome empfiehlt, diese Erweiterung zu überprüfen</translation>
 <translation id="4953650215774548573">Google Chrome als Standardbrowser festlegen</translation>
 <translation id="495931528404527476">In Chrome</translation>
 <translation id="4969674060580488087">Chrome OS Flex konnte deine Daten nicht synchronisieren, da deine Anmeldedaten für das Konto nicht mehr aktuell sind.</translation>
@@ -238,7 +239,6 @@
 <translation id="5394833366792865639">Chrome-Tab freigeben</translation>
 <translation id="5412485296464121825">Websites können Daten zu deinen Interessen bei Chrome speichern. Wenn du beispielsweise im Internet Schuhe für einen Marathon kaufst, definiert die Website möglicherweise Marathons als eines deiner Interessen. Wenn du dann später eine andere Website besuchst, um dich für ein Wettrennen anzumelden, kann dir auf Grundlage deiner Interessen Werbung zu Laufschuhen angezeigt werden.</translation>
 <translation id="5430073640787465221">Deine Einstellungsdatei ist beschädigt oder ungültig. Google Chrome kann deine Einstellungen nicht wiederherstellen.</translation>
-<translation id="5521146392841465297">Chrome empfiehlt, diese Erweiterung zu überprüfen.</translation>
 <translation id="5524761631371622910">Wenn Tests aktiviert sind und Chrome dich zufällig für einen aktiven Test angemeldet hat, hat dein Browserverlauf Einfluss auf die unten stehenden, geschätzten Interessen und darauf, welche Werbung dir gezeigt wird. Zum Schutz deiner Daten löscht Chrome jeden Monat fortlaufend deine Interessen.</translation>
 <translation id="5530733413481476019">Chrome noch schneller machen</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
@@ -247,6 +247,7 @@
 <translation id="5686916850681061684">Du kannst Google Chrome anpassen und Einstellungen festlegen. Etwas erfordert deine Aufmerksamkeit – klicke hier, um mehr zu erfahren.</translation>
 <translation id="5690427481109656848">Google LLC</translation>
 <translation id="570005089986962444">Wenn diese Option aktiviert ist, gibt Chrome von inaktiven Tabs belegten Arbeitsspeicher frei. Dadurch können aktive Tabs und andere Apps auf mehr Ressourcen zugreifen und Chrome bleibt schnell. Deine inaktiven Tabs werden automatisch wieder aktiviert, sobald du sie aufrufst.</translation>
+<translation id="5709557627224531708">Chrome als Standardbrowser festlegen</translation>
 <translation id="5727531838415286053">Wenn Chrome dich zufällig für einen aktiven Test angemeldet hat, hat dein Browserverlauf Einfluss auf die unten stehenden, geschätzten Interessen und darauf, welche Werbung dir gezeigt wird. Zum Schutz deiner Daten löscht Chrome jeden Monat fortlaufend deine Interessen. Solange du deine Interessen nicht entfernst, werden sie aktualisiert.</translation>
 <translation id="5736850870166430177">Wenn eine Website versucht, dein Passwort zu stehlen, oder wenn du eine schädliche Datei herunterlädst, kann Chrome auch URLs, einschließlich Teile von Seiteninhalten, an Safe Browsing senden</translation>
 <translation id="5756509061973259733">Ein Chrome-Profil mit diesem Konto ist auf diesem Gerät bereits vorhanden</translation>
@@ -332,6 +333,7 @@ Berechtigungen, die du Websites und Apps bereits gewährt hast, gelten mögliche
 <translation id="7398801000654795464">Du warst in Chrome als <ph name="USER_EMAIL_ADDRESS" /> angemeldet. Melde dich bitte wieder mit demselben Konto an.</translation>
 <translation id="7410958280246779049">Chrome hat diese Datei blockiert, weil sie gefährlich ist</translation>
 <translation id="7412494426921990001">Klicke auf das Chrome-Menü</translation>
+<translation id="742463671275348370">{NUM_DEVICES,plural, =0{Auf 1 USB-Gerät wurde von mindestens einer Chrome-Erweiterung zugegriffen}=1{Auf 1 USB-Gerät wird von mindestens einer Chrome-Erweiterung zugegriffen}other{Auf # USB-Geräte wird von mindestens einer Chrome-Erweiterung zugegriffen}}</translation>
 <translation id="7426611252293106642">Google Chrome funktioniert unter Umständen nicht ordnungsgemäß, da es unter dieser Linux-Distribution nicht mehr unterstützt wird</translation>
 <translation id="7449333426561673451">{COUNT,plural, =1{Deine Organisation hat festgelegt, dass Chrome automatisch geschlossen wird, wenn der Browser eine Minute lang nicht verwendet wird.}other{Deine Organisation hat festgelegt, dass Chrome automatisch geschlossen wird, wenn der Browser # Minuten lang nicht verwendet wird.}}</translation>
 <translation id="7452987490177144319">{COUNT,plural, =1{Deine Organisation löscht Browserdaten automatisch, wenn Chrome eine Minute lang nicht verwendet wird. Dazu können der Verlauf, Autofill-Daten und Downloads gehören. Deine Tabs bleiben dabei geöffnet.}other{Deine Organisation löscht Browserdaten automatisch, wenn Chrome # Minuten lang nicht verwendet wird. Dazu können der Verlauf, Autofill-Daten und Downloads gehören. Deine Tabs bleiben dabei geöffnet.}}</translation>

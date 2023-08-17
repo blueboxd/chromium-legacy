@@ -7,12 +7,14 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/signin/chrome_signin_client_factory.h"
 #include "chrome/browser/signin/chrome_signin_client_test_util.h"
 #include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
+#include "chrome/browser/sync/sync_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/test_browser_window.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -24,6 +26,7 @@
 #include "components/prefs/testing_pref_store.h"
 #include "components/safe_browsing/core/common/features.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
+#include "components/sync/test/test_sync_service.h"
 #include "components/sync_preferences/pref_model_associator_client.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
@@ -103,6 +106,8 @@ class ChromeTailoredSecurityServiceTest : public testing::Test {
     identity_test_env_adaptor_ =
         std::make_unique<IdentityTestEnvironmentProfileAdaptor>(profile_);
     GetIdentityTestEnv()->SetTestURLLoaderFactory(&test_url_loader_factory_);
+    // TODO(crbug.com/1466447): `ConsentLevel::kSync` is deprecated and should
+    // be removed. See `ConsentLevel::kSync` documentation for details.
     GetIdentityTestEnv()->MakePrimaryAccountAvailable(
         "test@foo.com", signin::ConsentLevel::kSync);
     prefs_ = profile_->GetTestingPrefService();
@@ -124,6 +129,12 @@ class ChromeTailoredSecurityServiceTest : public testing::Test {
         ChromeSigninClientFactory::GetInstance(),
         base::BindRepeating(&BuildChromeSigninClientWithURLLoader,
                             &test_url_loader_factory_));
+    factories.emplace_back(
+        SyncServiceFactory::GetInstance(),
+        base::BindRepeating(
+            [](content::BrowserContext*) -> std::unique_ptr<KeyedService> {
+              return std::make_unique<syncer::TestSyncService>();
+            }));
     return factories;
   }
 
@@ -192,6 +203,8 @@ class ChromeTailoredSecurityServiceTest : public testing::Test {
     profile_ = nullptr;
     profile_manager_.DeleteTestingProfile("primary_account");
   }
+
+  base::test::ScopedFeatureList scoped_feature_list_;
 
  private:
   // Must be declared before anything that may make use of the
@@ -360,6 +373,33 @@ TEST_F(ChromeTailoredSecurityServiceTest,
   tailored_security_service()->MaybeNotifySyncUser(kTailoredSecurityDisabled,
                                                    base::Time::Now());
   EXPECT_TRUE(IsEnhancedProtectionEnabled(*prefs()));
+}
+
+TEST_F(ChromeTailoredSecurityServiceTest,
+       WhenRetryDisabledOnSuccessDoesNotUpdateRetryStatePref) {
+  scoped_feature_list_.InitAndDisableFeature(
+      kTailoredSecurityRetryForSyncUsers);
+  {
+    SetSafeBrowsingState(prefs(), SafeBrowsingState::STANDARD_PROTECTION);
+    auto original_value =
+        prefs()->GetInteger(prefs::kTailoredSecuritySyncFlowRetryState);
+    tailored_security_service()->MaybeNotifySyncUser(kTailoredSecurityEnabled,
+                                                     base::Time::Now());
+    EXPECT_EQ(prefs()->GetInteger(prefs::kTailoredSecuritySyncFlowRetryState),
+              original_value);
+  }
+}
+
+TEST_F(ChromeTailoredSecurityServiceTest,
+       WhenRetryEnabledOnSuccessStoresNoRetryNeeded) {
+  scoped_feature_list_.InitAndEnableFeature(kTailoredSecurityRetryForSyncUsers);
+  {
+    SetSafeBrowsingState(prefs(), SafeBrowsingState::STANDARD_PROTECTION);
+    tailored_security_service()->MaybeNotifySyncUser(kTailoredSecurityEnabled,
+                                                     base::Time::Now());
+    EXPECT_EQ(prefs()->GetInteger(prefs::kTailoredSecuritySyncFlowRetryState),
+              TailoredSecurityRetryState::NO_RETRY_NEEDED);
+  }
 }
 
 }  // namespace safe_browsing

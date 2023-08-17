@@ -84,6 +84,7 @@
 #include "chromeos/ui/wm/desks/chromeos_desks_histogram_enums.h"
 #include "chromeos/ui/wm/window_util.h"
 #include "components/prefs/pref_service.h"
+#include "ui/accessibility/accessibility_features.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/base/emoji/emoji_panel_helper.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -96,8 +97,8 @@
 #include "ui/display/screen.h"
 #include "ui/display/util/display_util.h"
 #include "ui/gfx/geometry/point.h"
+#include "ui/strings/grit/ui_strings.h"
 #include "ui/views/widget/widget.h"
-#include "ui/views/window/frame_caption_button.h"
 #include "ui/wm/core/window_animations.h"
 #include "ui/wm/core/window_util.h"
 
@@ -495,7 +496,7 @@ bool CanLock() {
 
 bool CanGroupOrUngroupWindows() {
   aura::Window::Windows window_pair = GetTargetWindowPairForSnapGroup();
-  if (!Shell::Get()->snap_group_controller() || window_pair.size() != 2) {
+  if (!SnapGroupController::Get() || window_pair.size() != 2) {
     return false;
   }
 
@@ -512,8 +513,7 @@ bool CanGroupOrUngroupWindows() {
 }
 
 void GroupOrUngroupWindowsInSnapGroup() {
-  SnapGroupController* snap_group_controller =
-      Shell::Get()->snap_group_controller();
+  SnapGroupController* snap_group_controller = SnapGroupController::Get();
   CHECK(snap_group_controller);
   aura::Window::Windows window_pair = GetTargetWindowPairForSnapGroup();
   if (window_pair.size() != 2) {
@@ -532,7 +532,6 @@ void GroupOrUngroupWindowsInSnapGroup() {
          window2_state_type == WindowStateType::kPrimarySnapped));
 
   // TODO(michelefan): Trigger a11y alert if there are no eligible windows.
-
   if (!snap_group_controller->AreWindowsInSnapGroup(window1, window2)) {
     snap_group_controller->AddSnapGroup(window1, window2);
     CHECK(snap_group_controller->AreWindowsInSnapGroup(window1, window2));
@@ -543,24 +542,7 @@ void GroupOrUngroupWindowsInSnapGroup() {
 }
 
 bool CanMinimizeSnapGroupWindows() {
-  return Shell::Get()->snap_group_controller();
-}
-
-void MinimizeWindowsInSnapGroup() {
-  aura::Window* top_window = GetTargetWindow();
-  SnapGroupController* snap_group_controller =
-      Shell::Get()->snap_group_controller();
-  if (!top_window || !snap_group_controller) {
-    return;
-  }
-
-  SnapGroup* snap_group =
-      snap_group_controller->GetSnapGroupForGivenWindow(top_window);
-  if (!snap_group) {
-    return;
-  }
-
-  snap_group->MinimizeWindows();
+  return SnapGroupController::Get();
 }
 
 bool CanMinimizeTopWindowOnBack() {
@@ -595,7 +577,11 @@ bool CanSwapPrimaryDisplay() {
   return display::Screen::GetScreen()->GetNumDisplays() > 1;
 }
 
-bool CanToggleDictation() {
+bool CanEnableOrToggleDictation() {
+  if (::features::IsAccessibilityDictationKeyboardImprovementsEnabled()) {
+    return true;
+  }
+
   return Shell::Get()->accessibility_controller()->dictation().enabled();
 }
 
@@ -650,6 +636,7 @@ bool CanToggleOverview() {
 }
 
 bool CanTogglePrivacyScreen() {
+  CHECK(Shell::HasInstance());
   return Shell::Get()->privacy_screen_controller()->IsSupported();
 }
 
@@ -1085,6 +1072,7 @@ void RotateScreen() {
     Shell::Get()->accessibility_controller()->ShowConfirmationDialog(
         l10n_util::GetStringUTF16(IDS_ASH_ROTATE_SCREEN_TITLE),
         l10n_util::GetStringUTF16(IDS_ASH_ROTATE_SCREEN_BODY),
+        l10n_util::GetStringUTF16(IDS_APP_CANCEL),
         base::BindOnce(&OnRotationDialogAccepted),
         base::BindOnce(&OnRotationDialogCancelled),
         /*on_close_callback=*/base::DoNothing());
@@ -1312,8 +1300,8 @@ void ToggleClipboardHistory(bool is_plain_text_paste) {
       is_plain_text_paste);
 }
 
-void ToggleDictation() {
-  Shell::Get()->accessibility_controller()->ToggleDictationFromSource(
+void EnableOrToggleDictation() {
+  Shell::Get()->accessibility_controller()->EnableOrToggleDictationFromSource(
       DictationToggleSource::kKeyboard);
 }
 
@@ -1343,7 +1331,7 @@ void ToggleDockedMagnifier() {
     accessibility_controller->ShowConfirmationDialog(
         l10n_util::GetStringUTF16(IDS_ASH_DOCKED_MAGNIFIER_TITLE),
         l10n_util::GetStringUTF16(IDS_ASH_DOCKED_MAGNIFIER_BODY),
-        base::BindOnce([]() {
+        l10n_util::GetStringUTF16(IDS_APP_CANCEL), base::BindOnce([]() {
           Shell::Get()
               ->accessibility_controller()
               ->docked_magnifier()
@@ -1412,7 +1400,7 @@ void ToggleFullscreenMagnifier() {
     accessibility_controller->ShowConfirmationDialog(
         l10n_util::GetStringUTF16(IDS_ASH_SCREEN_MAGNIFIER_TITLE),
         l10n_util::GetStringUTF16(IDS_ASH_SCREEN_MAGNIFIER_BODY),
-        base::BindOnce([]() {
+        l10n_util::GetStringUTF16(IDS_APP_CANCEL), base::BindOnce([]() {
           Shell::Get()
               ->accessibility_controller()
               ->fullscreen_magnifier()
@@ -1458,7 +1446,7 @@ void ToggleHighContrast() {
     controller->ShowConfirmationDialog(
         l10n_util::GetStringUTF16(IDS_ASH_HIGH_CONTRAST_TITLE),
         l10n_util::GetStringUTF16(IDS_ASH_HIGH_CONTRAST_BODY),
-        base::BindOnce([]() {
+        l10n_util::GetStringUTF16(IDS_APP_CANCEL), base::BindOnce([]() {
           Shell::Get()
               ->accessibility_controller()
               ->high_contrast()
@@ -1545,6 +1533,21 @@ bool ToggleMinimized() {
   }
   window_state->Minimize();
   return true;
+}
+
+void ToggleSnapGroupsMinimize() {
+  SnapGroupController* snap_group_controller = SnapGroupController::Get();
+  if (!snap_group_controller) {
+    return;
+  }
+
+  SnapGroup* topmost_snap_group = snap_group_controller->GetTopmostSnapGroup();
+  if (!topmost_snap_group) {
+    snap_group_controller->RestoreTopmostSnapGroup();
+    return;
+  }
+
+  snap_group_controller->MinimizeTopMostSnapGroup();
 }
 
 void ToggleResizeLockMenu() {

@@ -24,6 +24,7 @@
 #include "chrome/browser/webauthn/observable_authenticator_list.h"
 #include "content/public/browser/authenticator_request_client_delegate.h"
 #include "content/public/browser/global_routing_id.h"
+#include "device/fido/cable/cable_discovery_data.h"
 #include "device/fido/cable/v2_constants.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/fido_request_handler_base.h"
@@ -137,8 +138,14 @@ class AuthenticatorRequestDialogModel {
     // available credential and choosing one from a list of multiple options.
     kSelectAccount,
     kSelectSingleAccount,
+
+    // TODO(crbug.com/1459273): Remove after new passkey selection UI launches.
     kPreSelectAccount,
     kPreSelectSingleAccount,
+
+    // kSelectPriorityPasskey lets the user confirm a single "priority"
+    // mechanism.
+    kSelectPriorityMechanism,
 
     // Attestation permission requests.
     kAttestationPermissionRequest,
@@ -221,46 +228,6 @@ class AuthenticatorRequestDialogModel {
     std::u16string description;
     const raw_ref<const gfx::VectorIcon> icon;
     const base::RepeatingClosure callback;
-  };
-
-  // PairedPhone represents a paired caBLEv2 device.
-  struct PairedPhone {
-    // Indicates the source of the pairing information.
-    enum class PairingSource {
-      kQR,
-      kSyncDeviceInfo,
-    };
-
-    PairedPhone() = delete;
-    PairedPhone(const PairedPhone&);
-    PairedPhone(
-        PairingSource paired_source,
-        const std::string& name,
-        size_t contact_id,
-        const std::array<uint8_t, device::kP256X962Length> public_key_x962,
-        base::Time last_updated);
-    ~PairedPhone();
-
-    PairedPhone& operator=(const PairedPhone&);
-
-    static bool CompareByName(const PairedPhone& a, const PairedPhone& b);
-
-    // pairing_source indicates the source of this pairing. Pairings from sync
-    // device info also sync their passkey metadata to Chrome, so they should be
-    // the ones dispatched to when preselecting one such credential.
-    PairingSource pairing_source;
-    // name is the human-friendly name of the phone. It may be unreasonably
-    // long, however, and should be elided to fit within UIs.
-    std::string name;
-    // contact_id is an ID that can be passed to the FidoDiscoveryFactory's
-    // |get_cable_contact_callback| callback in order to trigger a notification
-    // to this phone.
-    size_t contact_id;
-    // public_key_x962 is the phone's public key.
-    std::array<uint8_t, device::kP256X962Length> public_key_x962;
-    // last_updated is the timestamp for the phone's last sync, or null if the
-    // PairingSource is not kSyncDeviceInfo.
-    base::Time last_updated;
   };
 
   // CableUIType enumerates the different types of caBLE UI that we've ended
@@ -552,6 +519,9 @@ class AuthenticatorRequestDialogModel {
   void SetSelectedAuthenticatorForTesting(AuthenticatorReference authenticator);
 
   virtual base::span<const Mechanism> mechanisms() const;
+  absl::optional<int> priority_mechanism_index() const {
+    return priority_mechanism_index_;
+  }
 
   // Contacts the "priority" paired phone. This is only valid to call when there
   // is a single phone paired.
@@ -624,10 +594,15 @@ class AuthenticatorRequestDialogModel {
     return transport_availability_.resident_key_requirement;
   }
 
+  void set_is_non_webauthn_request(bool is_non_webauthn_request) {
+    is_non_webauthn_request_ = is_non_webauthn_request;
+  }
+
   void set_cable_transport_info(
       absl::optional<bool> extension_is_v2,
-      std::vector<PairedPhone> paired_phones,
-      base::RepeatingCallback<void(size_t)> contact_phone_callback,
+      std::vector<std::unique_ptr<device::cablev2::Pairing>> paired_phones,
+      base::RepeatingCallback<void(std::unique_ptr<device::cablev2::Pairing>)>
+          contact_phone_callback,
       const absl::optional<std::string>& cable_qr_string);
 
   bool win_native_api_enabled() const {
@@ -651,6 +626,13 @@ class AuthenticatorRequestDialogModel {
   }
 
   bool offer_try_again_in_ui() const { return offer_try_again_in_ui_; }
+
+#if BUILDFLAG(IS_MAC)
+  void RecordMacOsStartedHistogram();
+  void RecordMacOsSuccessHistogram(device::FidoRequestType,
+                                   device::AuthenticatorType);
+  void set_is_active_profile_authenticator_user(bool);
+#endif
 
   base::WeakPtr<AuthenticatorRequestDialogModel> GetWeakPtr();
 
@@ -726,9 +708,9 @@ class AuthenticatorRequestDialogModel {
 
   void ContactNextPhoneByName(const std::string& name);
 
-  // Returns a phone that has been paired through Chrome Sync, or absl::nullopt
-  // if there isn't one.
-  absl::optional<PairedPhone> GetPrioritySyncedPhone() const;
+  // Returns the index (into `paired_phones_`) of a phone that has been paired
+  // through Chrome Sync, or absl::nullopt if there isn't one.
+  absl::optional<size_t> GetPrioritySyncedPhoneIndex() const;
 
   // PopulateMechanisms fills in |mechanisms_|.
   void PopulateMechanisms();
@@ -748,6 +730,10 @@ class AuthenticatorRequestDialogModel {
 
   // The current step of the request UX flow that is currently shown.
   Step current_step_ = Step::kNotStarted;
+
+  // is_non_webauthn_request_ is true if the current request came from Secure
+  // Payment Confirmation, or from credit-card autofill.
+  bool is_non_webauthn_request_ = false;
 
   // started_ records whether |StartFlow| has been called.
   bool started_ = false;
@@ -825,15 +811,16 @@ class AuthenticatorRequestDialogModel {
 
   // paired_phones_ contains details of caBLEv2-paired phones from both Sync and
   // QR-based pairing. The entries are sorted by name.
-  std::vector<PairedPhone> paired_phones_;
+  std::vector<std::unique_ptr<device::cablev2::Pairing>> paired_phones_;
 
   // paired_phones_contacted_ is the same length as |paired_phones_| and
   // contains true whenever the corresponding phone as already been contacted.
   std::vector<bool> paired_phones_contacted_;
 
-  // contact_phone_callback can be run with a |PairedPhone::contact_id| in order
-  // to contact the indicated phone.
-  base::RepeatingCallback<void(size_t)> contact_phone_callback_;
+  // contact_phone_callback can be run with a pairing in order to contact the
+  // indicated phone.
+  base::RepeatingCallback<void(std::unique_ptr<device::cablev2::Pairing>)>
+      contact_phone_callback_;
 
   // cable_device_ready_ is true if a CTAP-level request has been sent to a
   // caBLE device. At this point we assume that any transport errors are
@@ -855,6 +842,18 @@ class AuthenticatorRequestDialogModel {
   // For MakeCredential requests, the PublicKeyCredentialUserEntity associated
   // with the request.
   device::PublicKeyCredentialUserEntity user_entity_;
+
+#if BUILDFLAG(IS_MAC)
+  // did_record_macos_start_histogram_ is set to true if a histogram record of
+  // starting the current request was made. Any later successful completion will
+  // only be recorded if a start event was recorded first.
+  bool did_record_macos_start_histogram_ = false;
+
+  // is_active_profile_authenticator_user_ is true if the current profile has
+  // recently used the platform authenticator on macOS that saves credentials
+  // into the profile.
+  bool is_active_profile_authenticator_user_ = false;
+#endif
 
   base::WeakPtrFactory<AuthenticatorRequestDialogModel> weak_factory_{this};
 };

@@ -34,6 +34,11 @@ BASE_FEATURE(kAcceleratedStaticBitmapImageSerialization,
              "AcceleratedStaticBitmapImageSerialization",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+// Enable the Protected Audience's reporting with ad macro API.
+BASE_FEATURE(kAdAuctionReportingWithMacroApi,
+             "AdAuctionReportingWithMacroApi",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
 // See https://github.com/WICG/turtledove/blob/main/FLEDGE.md
 // Changes default Permissions Policy for features join-ad-interest-group and
 // run-ad-auction to a more restricted EnableForSelf.
@@ -284,7 +289,7 @@ const base::FeatureParam<int> kBoostImagePriorityImageSize{&kBoostImagePriority,
 // Number of medium-priority requests to allow in tight-mode independent of the
 // total number of outstanding requests.
 const base::FeatureParam<int> kBoostImagePriorityTightMediumLimit{
-    &kBoostImagePriority, "tight_medium_limit", 1};
+    &kBoostImagePriority, "tight_medium_limit", 2};
 
 // https://github.com/patcg-individual-drafts/topics
 // Kill switch for the Topics API.
@@ -334,9 +339,9 @@ const base::FeatureParam<int> kBrowsingTopicsUseRandomTopicProbabilityPercent{
 // using that new epoch's topics. The time chosen is a per-site random point in
 // time between [calculation time, calculation time + max duration).
 const base::FeatureParam<base::TimeDelta>
-    kBrowsingTopicsMaxEpochIntroductionDelay{
-        &kBrowsingTopicsParameters,
-        "browsing_topics_max_epoch_introduction_delay", base::Days(2)};
+    kBrowsingTopicsMaxEpochIntroductionDelay{&kBrowsingTopicsParameters,
+                                             "max_epoch_introduction_delay",
+                                             base::Days(2)};
 // How many epochs (weeks) of API usage data (i.e. topics observations) will be
 // based off for the filtering of topics for a calling context.
 const base::FeatureParam<int>
@@ -374,7 +379,7 @@ const base::FeatureParam<int> kBrowsingTopicsTaxonomyVersion{
 // Comma separated Topic IDs to be blocked. Descendant topics of each blocked
 // topic will be blocked as well.
 const base::FeatureParam<std::string> kBrowsingTopicsDisabledTopicsList{
-    &kBrowsingTopicsParameters, "browsing_topics_disabled_topics_list", ""};
+    &kBrowsingTopicsParameters, "disabled_topics_list", ""};
 
 // Enables the deprecatedBrowsingTopics XHR attribute. For this feature to take
 // effect, the main Topics feature has to be enabled first (i.e.
@@ -411,6 +416,12 @@ BASE_FEATURE(kCacheStorageCodeCacheHintHeader,
              base::FEATURE_DISABLED_BY_DEFAULT);
 const base::FeatureParam<std::string> kCacheStorageCodeCacheHintHeaderName{
     &kCacheStorageCodeCacheHintHeader, "name", "x-CacheStorageCodeCacheHint"};
+
+// Modifies the logic in `blink::CanChangeToUrlForHistoryApi()` to be more
+// spec-compliant.
+BASE_FEATURE(kCanChangeToUrlForHistoryApiUpdate,
+             "CanChangeToUrlForHistoryApiUpdate",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(
     kCanvas2DHibernation,
@@ -578,7 +589,7 @@ BASE_FEATURE(kDecodeLossyWebPImagesToYUV,
 // Has no effect unless viewport handling is enabled.
 BASE_FEATURE(kDefaultViewportIsDeviceWidth,
              "DefaultViewportIsDeviceWidth",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kDelayAsyncScriptExecution,
              "DelayAsyncScriptExecution",
@@ -732,6 +743,20 @@ BASE_FEATURE(kEventTimingReportAllEarlyEntriesOnPaintedPresentation,
              "EventTimingReportAllEarlyEntriesOnPaintedPresentation",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Enables unload handler deprecation via Permissions-Policy.
+// https://crbug.com/1324111
+BASE_FEATURE(kDeprecateUnload,
+             "DeprecateUnload",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+// If < 100, each user experiences the deprecation on this % of origins.
+// Which origins varies per user.
+const base::FeatureParam<int> kDeprecateUnloadPercent{&kDeprecateUnload,
+                                                      "rollout_percent", 100};
+// This buckets users, with users in each bucket having a consistent experience
+// of the unload deprecation rollout.
+const base::FeatureParam<int> kDeprecateUnloadBucket{&kDeprecateUnload,
+                                                     "rollout_bucket", 0};
+
 // Controls whether LCP calculations should exclude low-entropy images. If
 // enabled, then the associated parameter sets the cutoff, expressed as the
 // minimum number of bits of encoded image data used to encode each rendered
@@ -778,6 +803,10 @@ BASE_FEATURE(kFilteringScrollPrediction,
 #endif
 );
 
+BASE_FEATURE(kFixGestureScrollQueuingBug,
+             "FixGestureScrollQueuingBug",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // See https://github.com/WICG/turtledove/blob/main/FLEDGE.md
 // Enables FLEDGE implementation. See https://crbug.com/1186444.
 BASE_FEATURE(kFledge, "Fledge", base::FEATURE_DISABLED_BY_DEFAULT);
@@ -796,6 +825,10 @@ BASE_FEATURE(kFledgeConsiderKAnonymity,
              base::FEATURE_DISABLED_BY_DEFAULT);
 BASE_FEATURE(kFledgeEnforceKAnonymity,
              "FledgeEnforceKAnonymity",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kFledgePassKAnonStatusToReportWin,
+             "FledgePassKAnonStatusToReportWin",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kFledgePassRecencyToGenerateBid,
@@ -999,6 +1032,16 @@ BASE_FEATURE(kLCPCriticalPathPredictor,
              "LCPCriticalPathPredictor",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+const base::FeatureParam<bool> kLCPCriticalPathPredictorDryRun{
+    &kLCPCriticalPathPredictor, "lcpp_dry_run", false};
+
+const base::FeatureParam<int> kLCPCriticalPathPredictorMaxElementLocatorLength{
+    &kLCPCriticalPathPredictor, "lcpp_max_element_locator_length", 1024};
+
+BASE_FEATURE(kLCPScriptObserver,
+             "LCPScriptObserver",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enables reporting as LCP of the time the first frame of a video was painted.
 BASE_FEATURE(kLCPVideoFirstFrame,
              "LCPVideoFirstFrame",
@@ -1013,6 +1056,8 @@ BASE_FEATURE(kLightweightNoStatePrefetch,
              base::FEATURE_DISABLED_BY_DEFAULT
 #endif
 );
+
+BASE_FEATURE(kLinkPreview, "LinkPreview", base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Makes network loading tasks unfreezable so that they can be processed while
 // the page is frozen.
@@ -1255,6 +1300,10 @@ BASE_FEATURE(kPrefetchPrivacyChanges,
              "PrefetchPrivacyChanges",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+BASE_FEATURE(kPreloadingHeuristicsMLModel,
+             "PreloadingHeuristicsMLModel",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kPrerender2InNewTab,
              "Prerender2InNewTab",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -1349,6 +1398,10 @@ const base::FeatureParam<int> kProduceCompileHintsOnIdleDelayParam{
 const base::FeatureParam<double> kProduceCompileHintsNoiseLevel{
     &kProduceCompileHints, "noise probability", 0.5};
 
+BASE_FEATURE(kQueueBlockingGestureScrolls,
+             "QueueBlockingGestureScrolls",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kQuoteEmptySecChUaStringHeadersConsistently,
              "QuoteEmptySecChUaStringHeadersConsistently",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -1407,6 +1460,10 @@ const base::FeatureParam<int> kMaxFCPDelayMsForRenderBlockingFonts(
     &features::kRenderBlockingFonts,
     "max-fcp-delay",
     100);
+
+BASE_FEATURE(kReportVisibleLineBounds,
+             "ReportVisibleLineBounds",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kResamplingInputEvents,
              "ResamplingInputEvents",
@@ -1553,9 +1610,9 @@ const base::FeatureParam<int>
         &kSharedStorageSelectURLLimit,
         "SharedStorageSelectURLBitBudgetPerOriginPerPageLoad", 6};
 
-BASE_FEATURE(kSharedStorageAPIM117,
-             "SharedStorageAPIM117",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+BASE_FEATURE(kSharedStorageAPIM118,
+             "SharedStorageAPIM118",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kSimulateClickOnAXFocus,
              "SimulateClickOnAXFocus",
@@ -1655,6 +1712,10 @@ const base::FeatureParam<int>
 const base::FeatureParam<bool> kSpeculativeServiceWorkerWarmUpOnVisible{
     &kSpeculativeServiceWorkerWarmUp, "sw_warm_up_on_visible", true};
 
+// Warms up service workers when the anchor is inserted into DOM.
+const base::FeatureParam<bool> kSpeculativeServiceWorkerWarmUpOnInsertedIntoDom{
+    &kSpeculativeServiceWorkerWarmUp, "sw_warm_up_on_inserted_into_dom", false};
+
 // Warms up service workers when a pointerover event is triggered on an anchor.
 const base::FeatureParam<bool> kSpeculativeServiceWorkerWarmUpOnPointerover{
     &kSpeculativeServiceWorkerWarmUp, "sw_warm_up_on_pointerover", true};
@@ -1708,11 +1769,11 @@ const base::FeatureParam<base::TimeDelta>
 
 BASE_FEATURE(kStylusPointerAdjustment,
              "StylusPointerAdjustment",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kStylusRichGestures,
              "StylusRichGestures",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // TODO(mahesh.ma): Enable for supported Android versions once feature is ready.
 BASE_FEATURE(kStylusWritingToInput,
@@ -1725,6 +1786,10 @@ BASE_FEATURE(kSystemColorChooser,
 
 BASE_FEATURE(kTextCodecCJKEnabled,
              "TextCodecCJKEnabled",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kGb18030_2022Enabled,
+             "Gb18030_2022Enabled",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kThreadedBodyLoader,
@@ -1767,7 +1832,7 @@ BASE_FEATURE(kUACHOverrideBlank,
 
 BASE_FEATURE(kURLSetPortCheckOverflow,
              "URLSetPortCheckOverflow",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kUseBlinkSchedulerTaskRunnerWithCustomDeleter,
              "UseBlinkSchedulerTaskRunnerWithCustomDeleter",
@@ -2016,6 +2081,11 @@ bool IsThrottleDisplayNoneAndVisibilityHiddenCrossOriginIframesEnabled() {
 
 bool ParkableStringsUseSnappy() {
   return base::FeatureList::IsEnabled(kUseSnappyForParkableStrings);
+}
+
+bool IsKeepAliveInBrowserMigrationEnabled() {
+  return base::FeatureList::IsEnabled(kKeepAliveInBrowserMigration) ||
+         base::FeatureList::IsEnabled(kFetchLaterAPI);
 }
 
 }  // namespace features

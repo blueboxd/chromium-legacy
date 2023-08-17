@@ -233,9 +233,17 @@ void WaylandWindow::OnPointerFocusChanged(bool focused) {
   // Whenever the window gets the pointer focus back, the cursor shape must be
   // updated. Otherwise, it is invalidated upon wl_pointer::leave and is not
   // restored by the Wayland compositor.
+#if BUILDFLAG(IS_LINUX)
+  if (focused && async_cursor_) {
+    async_cursor_->AddCursorLoadedCallback(
+        base::BindOnce(&WaylandWindow::OnCursorLoaded,
+                       weak_ptr_factory_.GetWeakPtr(), async_cursor_));
+  }
+#else
   if (focused && cursor_) {
     UpdateCursorShape(cursor_);
   }
+#endif
 }
 
 bool WaylandWindow::HasPointerFocus() const {
@@ -482,11 +490,24 @@ bool WaylandWindow::ShouldUseNativeFrame() const {
 void WaylandWindow::SetCursor(scoped_refptr<PlatformCursor> platform_cursor) {
   DCHECK(platform_cursor);
 
+#if BUILDFLAG(IS_LINUX)
+  auto async_cursor = WaylandAsyncCursor::FromPlatformCursor(platform_cursor);
+
+  if (async_cursor_ == async_cursor) {
+    return;
+  }
+
+  async_cursor_ = async_cursor;
+  async_cursor->AddCursorLoadedCallback(
+      base::BindOnce(&WaylandWindow::OnCursorLoaded,
+                     weak_ptr_factory_.GetWeakPtr(), async_cursor));
+#else
   if (cursor_ == platform_cursor) {
     return;
   }
 
   UpdateCursorShape(BitmapCursor::FromPlatformCursor(platform_cursor));
+#endif
 }
 
 void WaylandWindow::MoveCursorTo(const gfx::Point& location) {
@@ -622,6 +643,47 @@ EventTargeter* WaylandWindow::GetEventTargeter() {
 void WaylandWindow::HandleSurfaceConfigure(uint32_t serial) {
   NOTREACHED()
       << "Only shell surfaces must receive HandleSurfaceConfigure calls.";
+}
+
+std::string WaylandWindow::WindowStates::ToString() const {
+  std::string states = "";
+  if (is_maximized) {
+    states += "maximized ";
+  }
+  if (is_fullscreen) {
+    states += "fullscreen ";
+  }
+  if (is_activated) {
+    states += "activated ";
+  }
+  if (states.empty()) {
+    states = "<default>";
+  } else {
+    base::TrimString(states, " ", &states);
+  }
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
+  states += "; tiled_edges: ";
+  std::string tiled = "";
+  if (tiled_edges.left) {
+    tiled += "left ";
+  }
+  if (tiled_edges.right) {
+    tiled += "right ";
+  }
+  if (tiled_edges.top) {
+    tiled += "top ";
+  }
+  if (tiled_edges.bottom) {
+    tiled += "bottom ";
+  }
+  if (tiled.empty()) {
+    tiled = "<none>";
+  } else {
+    base::TrimString(tiled, " ", &tiled);
+  }
+  states += tiled;
+#endif
+  return states;
 }
 
 void WaylandWindow::HandleToplevelConfigure(int32_t widht,
@@ -1049,10 +1111,19 @@ void WaylandWindow::UpdateCursorShape(scoped_refptr<BitmapCursor> cursor) {
         cursor->bitmaps(), hotspot_in_dips,
         std::ceil(cursor->cursor_image_scale_factor()));
   }
-  // The new cursor needs to be stored last to avoid deleting the old cursor
-  // while it's still in use.
+#if !BUILDFLAG(IS_LINUX)
   cursor_ = cursor;
+#endif
 }
+
+#if BUILDFLAG(IS_LINUX)
+void WaylandWindow::OnCursorLoaded(scoped_refptr<WaylandAsyncCursor> cursor,
+                                   scoped_refptr<BitmapCursor> bitmap_cursor) {
+  if (HasPointerFocus() && async_cursor_ == cursor && bitmap_cursor) {
+    UpdateCursorShape(bitmap_cursor);
+  }
+}
+#endif
 
 void WaylandWindow::ProcessPendingConfigureState(uint32_t serial) {
   // For values not specified in pending_configure_state_, use the latest

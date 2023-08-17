@@ -11,6 +11,7 @@
 #import "base/metrics/user_metrics.h"
 #import "base/metrics/user_metrics_action.h"
 #import "base/scoped_multi_source_observation.h"
+#import "ios/chrome/browser/default_browser/utils.h"
 #import "ios/chrome/browser/drag_and_drop/drag_item_util.h"
 #import "ios/chrome/browser/main/browser_util.h"
 #import "ios/chrome/browser/shared/model/browser/browser.h"
@@ -30,10 +31,6 @@
 #import "ios/web/public/web_state.h"
 #import "ios/web/public/web_state_observer_bridge.h"
 #import "net/base/mac/url_conversions.h"
-
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
 
 using PinnedState = WebStateSearchCriteria::PinnedState;
 
@@ -174,12 +171,9 @@ NSArray<TabSwitcherItem*>* CreatePinnedTabConsumerItems(
         [self changePinnedStateForWebState:selectionOnlyChange
                                                .selected_web_state()
                                    atIndex:status.index];
-        return;
+        break;
       }
-      // TODO(crbug.com/1442546): Move the implementation from
-      // webStateList:didChangeActiveWebState:oldWebState:atIndex:reason: to
-      // here. Note that here is reachable only when `reason` ==
-      // ActiveWebStateChangeReason::Activated in didChangeActiveWebState:.
+      // The activation is handled after this switch statement.
       break;
     }
     case WebStateListChange::Type::kDetach:
@@ -205,7 +199,7 @@ NSArray<TabSwitcherItem*>* CreatePinnedTabConsumerItems(
     }
     case WebStateListChange::Type::kReplace: {
       if (!webStateList->IsWebStatePinnedAt(status.index)) {
-        return;
+        break;
       }
 
       const WebStateListChangeReplace& replaceChange =
@@ -229,7 +223,7 @@ NSArray<TabSwitcherItem*>* CreatePinnedTabConsumerItems(
                                  WebStateSearchCriteria{
                                      .pinned_state = PinnedState::kPinned,
                                  })];
-        return;
+        break;
       }
 
       const WebStateListChangeInsert& insertChange =
@@ -249,32 +243,23 @@ NSArray<TabSwitcherItem*>* CreatePinnedTabConsumerItems(
       break;
     }
   }
-}
 
-- (void)webStateList:(WebStateList*)webStateList
-    didChangeActiveWebState:(web::WebState*)newWebState
-                oldWebState:(web::WebState*)oldWebState
-                    atIndex:(int)atIndex
-                     reason:(ActiveWebStateChangeReason)reason {
-  DCHECK_EQ(_webStateList, webStateList);
+  if (status.active_web_state_change()) {
+    // If the selected index changes as a result of the last webstate being
+    // detached, the active index will be kInvalidIndex.
+    if (webStateList->active_index() == WebStateList::kInvalidIndex) {
+      [self.consumer selectItemWithID:nil];
+      return;
+    }
 
-  if (webStateList->IsBatchInProgress()) {
-    return;
+    if (!webStateList->IsWebStatePinnedAt(webStateList->active_index())) {
+      [self.consumer selectItemWithID:nil];
+      return;
+    }
+
+    [self.consumer
+        selectItemWithID:status.new_active_web_state->GetStableIdentifier()];
   }
-
-  // If the selected index changes as a result of the last webstate being
-  // detached, atIndex will be kInvalidIndex.
-  if (atIndex == WebStateList::kInvalidIndex) {
-    [self.consumer selectItemWithID:nil];
-    return;
-  }
-
-  if (!webStateList->IsWebStatePinnedAt(atIndex)) {
-    [self.consumer selectItemWithID:nil];
-    return;
-  }
-
-  [self.consumer selectItemWithID:newWebState->GetStableIdentifier()];
 }
 
 - (void)webStateListWillBeginBatchOperation:(WebStateList*)webStateList {
@@ -347,6 +332,8 @@ NSArray<TabSwitcherItem*>* CreatePinnedTabConsumerItems(
   }
 
   itemWebStateList->ActivateWebStateAt(index);
+
+  LogPinnedTabsUsedForDefaultBrowserPromo();
 }
 
 - (void)closeItemWithID:(NSString*)itemID {
@@ -441,6 +428,16 @@ NSArray<TabSwitcherItem*>* CreatePinnedTabConsumerItems(
       int tabIndex = SetWebStatePinnedState(self.webStateList, tabInfo.tabID,
                                             /*pin_state=*/YES);
       if (tabIndex == WebStateList::kInvalidIndex) {
+        BrowserList* browserList =
+            BrowserListFactory::GetForBrowserState(self.browserState);
+        BrowserAndIndex tabBrowserAndIndex = FindBrowserAndIndex(
+            tabInfo.tabID, browserList->AllRegularBrowsers());
+        if (!tabBrowserAndIndex.browser) {
+          // This could happen if the tab is deleted during a drag-and-drop
+          // action.
+          return;
+        }
+
         // Move tab across Browsers.
         base::UmaHistogramEnumeration(kUmaPinnedViewDragOrigin,
                                       DragItemOrigin::kOtherBrwoser);

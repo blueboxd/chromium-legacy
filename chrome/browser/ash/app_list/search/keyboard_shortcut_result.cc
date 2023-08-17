@@ -9,13 +9,18 @@
 #include "ash/accelerators/keyboard_code_util.h"
 #include "ash/constants/ash_features.h"
 #include "ash/public/cpp/app_list/internal_app_id_constants.h"
+#include "ash/public/mojom/accelerator_info.mojom-shared.h"
 #include "ash/shortcut_viewer/keyboard_shortcut_viewer_metadata.h"
 #include "ash/shortcut_viewer/strings/grit/shortcut_viewer_strings.h"
+#include "ash/strings/grit/ash_strings.h"
 #include "ash/webui/shortcut_customization_ui/backend/search/search.mojom.h"
+#include "base/containers/fixed_flat_map.h"
 #include "base/i18n/rtl.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_piece_forward.h"
 #include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/ash/app_list/search/common/icon_constants.h"
@@ -95,6 +100,35 @@ absl::optional<IconCode> KeyboardShortcutResult::GetIconCodeFromKeyboardCode(
   }
 }
 
+absl::optional<ash::SearchResultTextItem::IconCode>
+KeyboardShortcutResult::GetIconCodeByKeyString(base::StringPiece16 key_string) {
+  static constexpr auto kIconCodes =
+      base::MakeFixedFlatMap<base::StringPiece16, IconCode>(
+          {{u"BrowserBack", IconCode::kKeyboardShortcutBrowserBack},
+           {u"BrowserForward", IconCode::kKeyboardShortcutBrowserForward},
+           {u"BrowserRefresh", IconCode::kKeyboardShortcutBrowserRefresh},
+           {u"ZoomToggle", IconCode::kKeyboardShortcutZoom},
+           {u"LaunchApplication1", IconCode::kKeyboardShortcutMediaLaunchApp1},
+           {u"BrightnessDown", IconCode::kKeyboardShortcutBrightnessDown},
+           {u"BrightnessUp", IconCode::kKeyboardShortcutBrightnessUp},
+           {u"AudioVolumeMute", IconCode::kKeyboardShortcutVolumeMute},
+           {u"AudioVolumeDown", IconCode::kKeyboardShortcutVolumeDown},
+           {u"AudioVolumeUp", IconCode::kKeyboardShortcutVolumeUp},
+           {u"ArrowUp", IconCode::kKeyboardShortcutUp},
+           {u"ArrowDown", IconCode::kKeyboardShortcutDown},
+           {u"ArrowLeft", IconCode::kKeyboardShortcutLeft},
+           {u"ArrowRight", IconCode::kKeyboardShortcutRight},
+           {u"PrivacyScreenToggle",
+            IconCode::kKeyboardShortcutPrivacyScreenToggle},
+           {u"PrintScreen", IconCode::kKeyboardShortcutSnapshot}});
+
+  auto* it = kIconCodes.find(key_string);
+  if (it == kIconCodes.end()) {
+    return absl::nullopt;
+  }
+  return it->second;
+}
+
 TextVector KeyboardShortcutResult::CreateTextVectorFromTemplateString(
     const std::u16string& template_string,
     const std::vector<std::u16string>& replacement_strings,
@@ -166,8 +200,11 @@ void KeyboardShortcutResult::PopulateTextVector(
   CHECK(text_vector);
 
   std::vector<KeyboardCode> key_codes;
-  // Insert keys by the order of CTRL, ALT, SHIFT, SEARCH, and then key, to be
-  // consistent with existing hardcoded shortcuts search.
+  // Insert keys by the order of SEARCH, CTRL, ALT, SHIFT, and then key, to be
+  // consistent with the shortcuts app.
+  if (accelerator.IsCmdDown()) {
+    key_codes.push_back(KeyboardCode::VKEY_COMMAND);
+  }
   if (accelerator.IsCtrlDown()) {
     key_codes.push_back(KeyboardCode::VKEY_CONTROL);
   }
@@ -177,17 +214,9 @@ void KeyboardShortcutResult::PopulateTextVector(
   if (accelerator.IsShiftDown()) {
     key_codes.push_back(KeyboardCode::VKEY_SHIFT);
   }
-  if (accelerator.IsCmdDown()) {
-    key_codes.push_back(KeyboardCode::VKEY_COMMAND);
-  }
   key_codes.push_back(accelerator.key_code());
 
-  int counter = 0;
   for (auto key_code : key_codes) {
-    if (++counter > 1) {
-      // Add a + between two keys.
-      text_vector->push_back(CreateStringTextItem(u" + "));
-    }
     const absl::optional<IconCode> icon_code =
         GetIconCodeFromKeyboardCode(key_code);
     if (icon_code) {
@@ -198,8 +227,45 @@ void KeyboardShortcutResult::PopulateTextVector(
       // KeyboardCode does not have a corresponding IconCode. The
       // key text will be styled to look like an icon ("iconified
       // text").
-      text_vector->push_back(
-          CreateIconifiedTextTextItem(ash::GetStringForKeyboardCode(key_code)));
+      //
+      // All keys including modifiers should be displayed in lower case.
+      text_vector->push_back(CreateIconifiedTextTextItem(
+          base::ToLowerASCII(ash::GetStringForKeyboardCode(key_code))));
+    }
+  }
+}
+
+// Example shortcuts:
+//   Title: Highlight next item on shelf
+//   Parts:
+//     type: kModifier,  text: alt
+//     type: kModifier,  text: shift
+//     type: kKey,       text: l
+//     type: kPlainText, text:  then
+//     type: kKey,       text: tab
+//     type: kPlainText, text:  or
+//     type: kKey,       text: ArrowRight
+//
+void KeyboardShortcutResult::PopulateTextVectorWithTextParts(
+    TextVector* text_vector,
+    const std::vector<ash::mojom::TextAcceleratorPartPtr>& accelerator_parts) {
+  for (auto& part : accelerator_parts) {
+    switch (part->type) {
+      case ash::mojom::TextAcceleratorPartType::kPlainText:
+      case ash::mojom::TextAcceleratorPartType::kDelimiter:
+        text_vector->push_back(CreateStringTextItem(part->text));
+        break;
+      case ash::mojom::TextAcceleratorPartType::kKey:
+      case ash::mojom::TextAcceleratorPartType::kModifier:
+        const auto icon_code = GetIconCodeByKeyString(part->text);
+        if (icon_code) {
+          text_vector->push_back(CreateIconCodeTextItem(icon_code.value()));
+        } else {
+          // All keys including modifiers should be displayed in lower case.
+          text_vector->push_back(
+              CreateIconifiedTextTextItem(base::ToLowerASCII(part->text)));
+        }
+        break;
     }
   }
 }
@@ -324,7 +390,11 @@ KeyboardShortcutResult::KeyboardShortcutResult(
     Profile* profile,
     const ash::shortcut_customization::mojom::SearchResultPtr& search_result)
     : profile_(profile) {
-  // TODO(xiangdongkong): implement set_id.
+  // The ID needs to be unique among all results. The action is an ID uniquely
+  // mapped to an accelerator action.
+  set_id(base::StrCat(
+      {kKeyboardShortcutScheme,
+       base::NumberToString(search_result->accelerator_layout_info->action)}));
   set_relevance(search_result->relevance_score);
   SetTitle(search_result->accelerator_layout_info->description);
   SetResultType(ResultType::kKeyboardShortcut);
@@ -333,9 +403,9 @@ KeyboardShortcutResult::KeyboardShortcutResult(
   SetCategory(Category::kHelp);
   UpdateIcon();
 
-  // Set the details to the display name of the Keyboard Shortcut Viewer app.
+  // Set the details to the display name of the Keyboard Shortcuts app.
   std::u16string sanitized_name = base::CollapseWhitespace(
-      l10n_util::GetStringUTF16(IDS_INTERNAL_APP_KEYBOARD_SHORTCUT_VIEWER),
+      l10n_util::GetStringUTF16(IDS_ASH_SHORTCUT_CUSTOMIZATION_APP_TITLE),
       true);
   base::i18n::SanitizeUserSuppliedString(&sanitized_name);
   SetDetails(sanitized_name);
@@ -358,17 +428,7 @@ KeyboardShortcutResult::KeyboardShortcutResult(
     } else {
       ash::mojom::TextAcceleratorPropertiesPtr& text_accelerator =
           accelerator_info->layout_properties->get_text_accelerator();
-      // Example:
-      //  press
-      //  ctrl
-      //  shift
-      //   and click a link
-      //
-      // TODO(xiangdongkong): Generate text vector. For now, just show the
-      // shortcut text.
-      for (auto& part : text_accelerator->parts) {
-        text_vector.push_back(CreateStringTextItem(part->text));
-      }
+      PopulateTextVectorWithTextParts(&text_vector, text_accelerator->parts);
     }
   }
 

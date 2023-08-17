@@ -25,19 +25,19 @@
 
 namespace ui {
 
-#if BUILDFLAG(IS_APPLE)
-NativeTheme::ExtraParams::ExtraParams() : scrollbar_extra() {
-  memset(this, 0, sizeof(*this));
-}
-#else
-NativeTheme::ExtraParams::ExtraParams() {
-  memset(this, 0, sizeof(*this));
-}
-#endif
+NativeTheme::MenuListExtraParams::MenuListExtraParams() = default;
+NativeTheme::TextFieldExtraParams::TextFieldExtraParams() = default;
 
-NativeTheme::ExtraParams::ExtraParams(const ExtraParams& other) {
-  memcpy(this, &other, sizeof(*this));
-}
+NativeTheme::MenuListExtraParams::MenuListExtraParams(
+    const NativeTheme::MenuListExtraParams&) = default;
+
+NativeTheme::TextFieldExtraParams::TextFieldExtraParams(
+    const NativeTheme::TextFieldExtraParams&) = default;
+
+NativeTheme::MenuListExtraParams& NativeTheme::MenuListExtraParams::operator=(
+    const NativeTheme::MenuListExtraParams&) = default;
+NativeTheme::TextFieldExtraParams& NativeTheme::TextFieldExtraParams::operator=(
+    const NativeTheme::TextFieldExtraParams&) = default;
 
 #if !BUILDFLAG(IS_WIN) && !BUILDFLAG(IS_APPLE)
 // static
@@ -146,6 +146,7 @@ NativeTheme::NativeTheme(bool should_use_dark_colors,
       system_theme_(system_theme),
       forced_colors_(IsForcedHighContrast()),
       prefers_reduced_transparency_(false),
+      inverted_colors_(false),
       preferred_color_scheme_(CalculatePreferredColorScheme()),
       preferred_contrast_(CalculatePreferredContrast()) {}
 
@@ -183,6 +184,10 @@ NativeTheme::PreferredColorScheme NativeTheme::GetPreferredColorScheme() const {
 
 bool NativeTheme::GetPrefersReducedTransparency() const {
   return prefers_reduced_transparency_;
+}
+
+bool NativeTheme::GetInvertedColors() const {
+  return inverted_colors_;
 }
 
 NativeTheme::PreferredContrast NativeTheme::GetPreferredContrast() const {
@@ -288,6 +293,7 @@ void NativeTheme::ColorSchemeNativeThemeObserver::OnNativeThemeUpdated(
   PreferredColorScheme preferred_color_scheme =
       observed_theme->GetPreferredColorScheme();
   PreferredContrast preferred_contrast = observed_theme->GetPreferredContrast();
+  bool inverted_colors = observed_theme->GetInvertedColors();
   bool notify_observers = false;
 
   if (theme_to_update_->ShouldUseDarkColors() != should_use_dark_colors) {
@@ -310,6 +316,10 @@ void NativeTheme::ColorSchemeNativeThemeObserver::OnNativeThemeUpdated(
       prefers_reduced_transparency) {
     theme_to_update_->set_prefers_reduced_transparency(
         prefers_reduced_transparency);
+    notify_observers = true;
+  }
+  if (theme_to_update_->GetInvertedColors() != inverted_colors) {
+    theme_to_update_->set_inverted_colors(inverted_colors);
     notify_observers = true;
   }
 

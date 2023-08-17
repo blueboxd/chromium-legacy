@@ -189,6 +189,7 @@
   E_CPONLY(kColorSysStateHoverBrightBlendProtection) \
   E_CPONLY(kColorSysStateOnHeaderHover) \
   E_CPONLY(kColorSysStateHeaderHover) \
+  E_CPONLY(kColorSysStateHeaderHoverInactive) \
   E_CPONLY(kColorSysStateHeaderSelect) \
   /* Effects. */ \
   E_CPONLY(kColorSysShadow) \
@@ -245,7 +246,6 @@
   E_CPONLY(kColorBubbleBorder) \
   E_CPONLY(kColorBubbleBorderShadowLarge) \
   E_CPONLY(kColorBubbleBorderShadowSmall) \
-  E_CPONLY(kColorBubbleBorderWhenShadowPresent) \
   E_CPONLY(kColorBubbleFooterBackground) \
   E_CPONLY(kColorBubbleFooterBorder) \
   E_CPONLY(kColorButtonFeatureAttentionHighlight) \
@@ -290,11 +290,33 @@
   E_CPONLY(kColorDropdownForegroundSelected) \
   E_CPONLY(kColorFocusableBorderFocused) \
   E_CPONLY(kColorFocusableBorderUnfocused) \
+  /* These colors correspond to the system colors defined in */ \
+  /* ui::NativeTheme::SystemThemeColor. They are used to support the */ \
+  /* platform agnostic forced colors mode. */ \
+  E_CPONLY(kColorForcedBtnFace) \
+  E_CPONLY(kColorForcedBtnText) \
+  E_CPONLY(kColorForcedGrayText) \
+  E_CPONLY(kColorForcedHighlight) \
+  E_CPONLY(kColorForcedHighlightText) \
+  E_CPONLY(kColorForcedHotlight) \
+  E_CPONLY(kColorForcedMenuHilight) \
+  E_CPONLY(kColorForcedScrollbar) \
+  E_CPONLY(kColorForcedWindow) \
+  E_CPONLY(kColorForcedWindowText) \
   E_CPONLY(kColorFrameActive) \
   E_CPONLY(kColorFrameActiveUnthemed) \
+  E_CPONLY(kColorFrameCaptionButtonUnfocused) \
   E_CPONLY(kColorFrameInactive) \
   E_CPONLY(kColorHelpIconActive) \
   E_CPONLY(kColorHelpIconInactive) \
+  /* These should be refactored into chrome_color_id or removed once the */ \
+  /* history clusters side panel is refactored to use shadow parts. */ \
+  E_CPONLY(kColorHistoryClustersSidePanelDivider) \
+  E_CPONLY(kColorHistoryClustersSidePanelDialogBackground) \
+  E_CPONLY(kColorHistoryClustersSidePanelDialogDivider) \
+  E_CPONLY(kColorHistoryClustersSidePanelDialogPrimaryForeground) \
+  E_CPONLY(kColorHistoryClustersSidePanelDialogSecondaryForeground) \
+  E_CPONLY(kColorHistoryClustersSidePanelCardSecondaryForeground) \
   E_CPONLY(kColorIcon) \
   E_CPONLY(kColorIconDisabled) \
   E_CPONLY(kColorIconSecondary) \
@@ -443,8 +465,15 @@
   E_CPONLY(kColorTextfieldOutline) \
   E_CPONLY(kColorTextfieldOutlineDisabled) \
   E_CPONLY(kColorTextfieldOutlineInvalid) \
+  E_CPONLY(kColorThemeColorPickerCheckmarkBackground) \
+  E_CPONLY(kColorThemeColorPickerCheckmarkForeground) \
+  E_CPONLY(kColorThemeColorPickerCustomColorIconBackground) \
+  E_CPONLY(kColorThemeColorPickerOptionBackground) \
   E_CPONLY(kColorThrobber) \
   E_CPONLY(kColorThrobberPreconnect) \
+  E_CPONLY(kColorToastBackground) \
+  E_CPONLY(kColorToastButton) \
+  E_CPONLY(kColorToastForeground) \
   E_CPONLY(kColorToggleButtonHover) \
   E_CPONLY(kColorToggleButtonPressed) \
   E_CPONLY(kColorToggleButtonShadow) \
@@ -505,12 +534,17 @@
   E_CPONLY(kColorAshSystemUIMenuItemBackgroundSelected) \
   E_CPONLY(kColorAshSystemUIMenuSeparator) \
   \
+  /* TODO(b/291622042): Delete these colors when Jelly is launched */ \
   E_CPONLY(kColorHighlightBorderBorder1) \
   E_CPONLY(kColorHighlightBorderBorder2) \
   E_CPONLY(kColorHighlightBorderBorder3) \
   E_CPONLY(kColorHighlightBorderHighlight1) \
   E_CPONLY(kColorHighlightBorderHighlight2) \
   E_CPONLY(kColorHighlightBorderHighlight3) \
+  \
+  E_CPONLY(kColorCrosSystemHighlight) \
+  E_CPONLY(kColorCrosSystemHighlightBorder) \
+  E_CPONLY(kColorCrosSystemHighlightBorder1) \
   \
   E_CPONLY(kColorNativeColor1) \
   E_CPONLY(kColorNativeColor1Shade1) \

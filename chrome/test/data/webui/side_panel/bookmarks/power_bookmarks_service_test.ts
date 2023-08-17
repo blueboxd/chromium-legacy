@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'chrome://webui-test/mojo_webui_test_support.js';
 import 'chrome://bookmarks-side-panel.top-chrome/power_bookmarks_list.js';
 
 import {BookmarksApiProxyImpl} from 'chrome://bookmarks-side-panel.top-chrome/bookmarks_api_proxy.js';
@@ -215,6 +214,15 @@ suite('SidePanelPowerBookmarksServiceTest', () => {
   test('FiltersBySearchQuery', () => {
     const searchBookmarks = service.filterBookmarks(undefined, 0, 'http', []);
     assertEquals(searchBookmarks.length, 3);
+  });
+
+  test('FiltersByFolderAndSearchQuery', () => {
+    const folder = service.findBookmarkWithId('5');
+    const primaryList = service.filterBookmarks(folder, 0, 'http', []);
+    const secondaryList =
+        service.filterBookmarks(undefined, 0, 'http', [], folder);
+    assertEquals(primaryList.length, 1);
+    assertEquals(secondaryList.length, 2);
   });
 
   test('FiltersByPriceTracking', () => {

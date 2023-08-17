@@ -6,19 +6,15 @@
 
 #import <Cocoa/Cocoa.h>
 
+#import "base/apple/scoped_objc_class_swizzler.h"
 #import "base/mac/foundation_util.h"
-#import "base/mac/scoped_objc_class_swizzler.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
-using base::mac::ScopedObjCClassSwizzler;
+using base::apple::ScopedObjCClassSwizzler;
 
 namespace {
 
 NSWindow* g_fake_focused_window = nil;
-base::mac::ScopedObjCClassSwizzler* g_order_out_swizzler = nullptr;
+base::apple::ScopedObjCClassSwizzler* g_order_out_swizzler = nullptr;
 
 void SetFocus(NSWindow* window) {
   g_fake_focused_window = window;

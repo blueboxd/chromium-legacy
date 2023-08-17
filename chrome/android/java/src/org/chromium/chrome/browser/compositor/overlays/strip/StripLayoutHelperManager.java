@@ -10,6 +10,7 @@ import android.graphics.Bitmap;
 import android.graphics.RectF;
 import android.os.Handler;
 import android.os.SystemClock;
+import android.view.MotionEvent;
 import android.view.View;
 
 import androidx.annotation.ColorInt;
@@ -27,8 +28,8 @@ import org.chromium.chrome.browser.compositor.layouts.LayoutUpdateHost;
 import org.chromium.chrome.browser.compositor.layouts.components.CompositorButton;
 import org.chromium.chrome.browser.compositor.layouts.components.CompositorButton.CompositorOnClickHandler;
 import org.chromium.chrome.browser.compositor.layouts.components.TintedCompositorButton;
-import org.chromium.chrome.browser.compositor.layouts.eventfilter.AreaGestureEventFilter;
-import org.chromium.chrome.browser.compositor.layouts.eventfilter.GestureHandler;
+import org.chromium.chrome.browser.compositor.layouts.eventfilter.AreaMotionEventFilter;
+import org.chromium.chrome.browser.compositor.layouts.eventfilter.MotionEventHandler;
 import org.chromium.chrome.browser.compositor.scene_layer.TabStripSceneLayer;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.layouts.EventFilter;
@@ -79,13 +80,18 @@ public class StripLayoutHelperManager implements SceneOverlay, PauseResumeWithNa
         public final int incognitoCount;
         public final int standardActiveIndex;
         public final int incognitoActiveIndex;
+        public final boolean createdStandardTabOnStartup;
+        public final boolean createdIncognitoTabOnStartup;
 
         public TabModelStartupInfo(int standardCount, int incognitoCount, int standardActiveIndex,
-                int incognitoActiveIndex) {
+                int incognitoActiveIndex, boolean createdStandardTabOnStartup,
+                boolean createdIncognitoTabOnStartup) {
             this.standardCount = standardCount;
             this.incognitoCount = incognitoCount;
             this.standardActiveIndex = standardActiveIndex;
             this.incognitoActiveIndex = incognitoActiveIndex;
+            this.createdStandardTabOnStartup = createdStandardTabOnStartup;
+            this.createdIncognitoTabOnStartup = createdIncognitoTabOnStartup;
         }
     }
 
@@ -116,7 +122,7 @@ public class StripLayoutHelperManager implements SceneOverlay, PauseResumeWithNa
     private final LayoutUpdateHost mUpdateHost;
 
     // Event Filters
-    private final AreaGestureEventFilter mEventFilter;
+    private final AreaMotionEventFilter mEventFilter;
 
     // Internal state
     private boolean mIsIncognito;
@@ -160,7 +166,7 @@ public class StripLayoutHelperManager implements SceneOverlay, PauseResumeWithNa
     private final String mDefaultTitle;
     private final Supplier<LayerTitleCache> mLayerTitleCacheSupplier;
 
-    private class TabStripEventHandler implements GestureHandler {
+    private class TabStripEventHandler implements MotionEventHandler {
         @Override
         public void onDown(float x, float y, boolean fromMouse, int buttons) {
             if (mModelSelectorButton.onDown(x, y)) return;
@@ -207,6 +213,21 @@ public class StripLayoutHelperManager implements SceneOverlay, PauseResumeWithNa
         @Override
         public void onPinch(float x0, float y0, float x1, float y1, boolean firstEvent) {
             // Not implemented.
+        }
+
+        @Override
+        public void onHoverEnter(float x, float y) {
+            getActiveStripLayoutHelper().onHoverEnter(x, y);
+        }
+
+        @Override
+        public void onHoverMove(float x, float y) {
+            getActiveStripLayoutHelper().onHoverMove(x, y);
+        }
+
+        @Override
+        public void onHoverExit() {
+            getActiveStripLayoutHelper().onHoverExit();
         }
 
         private long time() {
@@ -272,7 +293,7 @@ public class StripLayoutHelperManager implements SceneOverlay, PauseResumeWithNa
         mLifecycleDispatcher.register(this);
         mDefaultTitle = context.getString(R.string.tab_loading_default_title);
         mEventFilter =
-                new AreaGestureEventFilter(context, mTabStripEventHandler, null, false, false);
+                new AreaMotionEventFilter(context, mTabStripEventHandler, null, false, false);
 
         CompositorOnClickHandler selectorClickHandler = new CompositorOnClickHandler() {
             @Override
@@ -382,9 +403,9 @@ public class StripLayoutHelperManager implements SceneOverlay, PauseResumeWithNa
 
     private void setTabModelStartupInfo(TabModelStartupInfo startupInfo) {
         mNormalHelper.setTabModelStartupInfo(startupInfo.standardCount,
-                startupInfo.standardActiveIndex - startupInfo.incognitoCount);
-        mIncognitoHelper.setTabModelStartupInfo(
-                startupInfo.incognitoCount, startupInfo.incognitoActiveIndex);
+                startupInfo.standardActiveIndex, startupInfo.createdStandardTabOnStartup);
+        mIncognitoHelper.setTabModelStartupInfo(startupInfo.incognitoCount,
+                startupInfo.incognitoActiveIndex, startupInfo.createdIncognitoTabOnStartup);
     }
 
     // Incognito button for Tab Strip Redesign.
@@ -456,9 +477,12 @@ public class StripLayoutHelperManager implements SceneOverlay, PauseResumeWithNa
         Tab selectedTab = mTabModelSelector.getCurrentModel().getTabAt(
                 mTabModelSelector.getCurrentModel().index());
         int selectedTabId = selectedTab == null ? TabModel.INVALID_TAB_INDEX : selectedTab.getId();
+        int hoveredTabId = getActiveStripLayoutHelper().getLastHoveredTab() == null
+                ? TabModel.INVALID_TAB_INDEX
+                : getActiveStripLayoutHelper().getLastHoveredTab().getId();
         mTabStripTreeProvider.pushAndUpdateStrip(this, mLayerTitleCacheSupplier.get(),
                 resourceManager, getActiveStripLayoutHelper().getStripLayoutTabsToRender(), yOffset,
-                selectedTabId);
+                selectedTabId, hoveredTabId);
         return mTabStripTreeProvider;
     }
 
@@ -893,5 +917,19 @@ public class StripLayoutHelperManager implements SceneOverlay, PauseResumeWithNa
 
     private StripLayoutHelper getInactiveStripLayoutHelper() {
         return mIsIncognito ? mNormalHelper : mIncognitoHelper;
+    }
+
+    void simulateHoverEventForTesting(int event, float x, float y) {
+        if (event == MotionEvent.ACTION_HOVER_ENTER) {
+            mTabStripEventHandler.onHoverEnter(x, y);
+        } else if (event == MotionEvent.ACTION_HOVER_MOVE) {
+            mTabStripEventHandler.onHoverMove(x, y);
+        } else if (event == MotionEvent.ACTION_HOVER_EXIT) {
+            mTabStripEventHandler.onHoverExit();
+        }
+    }
+
+    void setTabStripTreeProviderForTesting(TabStripSceneLayer tabStripTreeProvider) {
+        mTabStripTreeProvider = tabStripTreeProvider;
     }
 }

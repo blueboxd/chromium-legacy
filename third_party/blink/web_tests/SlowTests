@@ -430,7 +430,6 @@ crbug.com/866850 [ Linux ] virtual/gpu/fast/canvas/canvas-blending-pattern-over-
 crbug.com/866850 [ Linux ] virtual/gpu/fast/canvas/canvas-blending-pattern-over-pattern.html [ Slow ]
 crbug.com/866850 [ Mac ] virtual/gpu/fast/canvas/canvas-blending-pattern-over-pattern.html [ Slow ]
 crbug.com/866850 [ Linux ] virtual/gpu/fast/canvas/canvas-shadow-source-in.html [ Slow ]
-crbug.com/866850 [ Mac ] virtual/gpu/fast/canvas/canvas-shadow-source-in.html [ Slow ]
 crbug.com/866850 [ Linux ] virtual/gpu/fast/canvas/OffscreenCanvas-filter.html [ Slow ]
 crbug.com/866850 [ Mac10.15 Release ] virtual/gpu/fast/canvas/OffscreenCanvas-filter.html [ Slow ]
 crbug.com/866850 [ Mac11 Release ] virtual/gpu/fast/canvas/OffscreenCanvas-filter.html [ Slow ]
@@ -575,7 +574,6 @@ crbug.com/874695 fast/forms/color/* [ Slow ]
 crbug.com/874695 fast/forms/color-scheme/* [ Slow ]
 crbug.com/874695 [ Release ] fast/forms/number/number-spinbutton-gets-disabled-or-readonly.html [ Slow ]
 crbug.com/874695 fast/forms/select/input-select-after-resize.html [ Slow ]
-crbug.com/874695 fast/history/history-back-twice-with-subframes-assert.html [ Slow ]
 crbug.com/874695 fast/media/mq-color-gamut-picture.html [ Slow ]
 crbug.com/874695 [ Linux ] fast/peerconnection/RTCPeerConnection-many.html [ Slow ]
 crbug.com/874695 [ Mac10.15 Release ] fast/peerconnection/RTCPeerConnection-many.html [ Slow ]
@@ -793,7 +791,6 @@ crbug.com/874695 [ Mac12-arm64 Release ] virtual/threaded/http/tests/devtools/tr
 crbug.com/874695 [ Mac13 ] virtual/threaded/http/tests/devtools/tracing/timeline-paint/paint-profiler-update.js [ Slow ]
 crbug.com/874695 [ Mac13-arm64 ] virtual/threaded/http/tests/devtools/tracing/timeline-paint/paint-profiler-update.js [ Slow ]
 crbug.com/874695 [ Release Win ] virtual/threaded/http/tests/devtools/tracing/timeline-paint/paint-profiler-update.js [ Slow ]
-crbug.com/874695 virtual/threaded/http/tests/devtools/tracing/timeline-script-parse.js [ Slow ]
 crbug.com/874695 [ Debug Linux ] virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchpad-zoom-in-slow.html [ Slow ]
 crbug.com/874695 [ Release ] virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchpad-zoom-in-slow.html [ Slow ]
 crbug.com/874695 [ Linux Release ] virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen-zoom-in-slow-desktop.html [ Slow ]
@@ -1415,14 +1412,6 @@ crbug.com/1255482 external/wpt/css/css-fonts/crash-large-grapheme-cluster.html [
 
 crbug.com/1298800 http/tests/misc/drag-bookmark.html [ Slow ]
 
-crbug.com/1314927 external/wpt/IndexedDB/idbobjectstore_batchGetAll_largeValue.tentative.any.worker.html [ Slow ]
-crbug.com/1314927 [ Linux ] external/wpt/IndexedDB/idbobjectstore_batchGetAll_largeValue.tentative.any.html [ Slow ]
-crbug.com/1314927 [ Mac10.15 Release ] external/wpt/IndexedDB/idbobjectstore_batchGetAll_largeValue.tentative.any.html [ Slow ]
-crbug.com/1314927 [ Mac11 Release ] external/wpt/IndexedDB/idbobjectstore_batchGetAll_largeValue.tentative.any.html [ Slow ]
-crbug.com/1314927 [ Mac12 ] external/wpt/IndexedDB/idbobjectstore_batchGetAll_largeValue.tentative.any.html [ Slow ]
-crbug.com/1314927 [ Mac12-arm64 Release ] external/wpt/IndexedDB/idbobjectstore_batchGetAll_largeValue.tentative.any.html [ Slow ]
-crbug.com/1314927 [ Release Win ] external/wpt/IndexedDB/idbobjectstore_batchGetAll_largeValue.tentative.any.html [ Slow ]
-
 crbug.com/1327869 css3/calc/simple-calcs-prefixed.html [ Slow ]
 
 crbug.com/1228246 http/tests/inspector-protocol/network/same-site-issue-warn-cookie-strict-subresource-context-downgrade.js [ Slow ]
@@ -1472,10 +1461,10 @@ crbug.com/1293315 external/wpt/scroll-to-text-fragment/force-load-at-top.html [ 
 
 crbug.com/1410608 http/tests/inspector-protocol/storage/dom-storage-set-items-by-storage-key.js [ Slow ]
 
-crbug.com/1372747 [ Win ] http/tests/uri/css-href.php [ Slow ]
 
 crbug.com/1376679 [ Mac12 Release ] virtual/threaded/external/wpt/scroll-animations/css/scroll-timeline-dynamic.tentative.html [ Slow ]
 crbug.com/1450858 virtual/threaded/external/wpt/scroll-animations/css/animation-timeline-view-functional-notation.tentative.html [ Slow ]
+crbug.com/1450858 virtual/threaded-prefer-compositing/external/wpt/scroll-animations/css/animation-timeline-view-functional-notation.tentative.html [ Slow ]
 
 crbug.com/1366717 http/tests/inspector-protocol/storage/indexed-db-set-items-by-storage-key.js [ Slow ]
 
@@ -1538,3 +1527,5 @@ crbug.com/1459575 webexposed/global-interface-listing-dedicated-worker.html [ Sl
 
 crbug.com/1456739 [ Linux Release ] virtual/private-aggregation-developer-mode/wpt_internal/private-aggregation/protected-audience-sends-report.https.html [ Slow ]
 
+crbug.com/1455258 external/wpt/IndexedDB/large-requests-abort.html [ Slow ]
+crbug.com/1466727 external/wpt/IndexedDB/transaction-abort-generator-revert.html [ Slow ]

@@ -9,6 +9,7 @@
 #include "ash/public/cpp/network_config_service.h"
 #include "ash/webui/network_ui/network_health_resource_provider.h"
 #include "ash/webui/network_ui/traffic_counters_resource_provider.h"
+#include "ash/webui/settings/public/constants/routes.mojom.h"
 #include "base/containers/contains.h"
 #include "base/functional/bind.h"
 #include "base/metrics/histogram_functions.h"
@@ -18,7 +19,6 @@
 #include "chrome/browser/ui/webui/extension_control_handler.h"
 #include "chrome/browser/ui/webui/settings/ash/internet_handler.h"
 #include "chrome/browser/ui/webui/settings/ash/search/search_tag_registry.h"
-#include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/url_constants.h"
@@ -715,7 +715,10 @@ InternetSection::InternetSection(Profile* profile,
 InternetSection::~InternetSection() = default;
 
 void InternetSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
-  static constexpr webui::LocalizedString kLocalizedStrings[] = {
+  const bool isRevampEnabled =
+      ash::features::IsOsSettingsRevampWayfindingEnabled();
+
+  webui::LocalizedString kLocalizedStrings[] = {
       {"deviceInfoPopupMenuItemTitle",
        IDS_SETTINGS_DEVICE_INFO_POPUP_MENU_ITEM_TITLE},
       {"deviceInfoPopupEidLabel", IDS_SETTINGS_DEVICE_INFO_EID_LABEL},
@@ -749,7 +752,9 @@ void InternetSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_INTERNET_TOGGLE_WIFI_ACCESSIBILITY_LABEL},
       {"knownNetworksAll", IDS_SETTINGS_INTERNET_KNOWN_NETWORKS_ALL},
       {"knownNetworksButton", IDS_SETTINGS_INTERNET_KNOWN_NETWORKS_BUTTON},
-      {"knownNetworksMessage", IDS_SETTINGS_INTERNET_KNOWN_NETWORKS_MESSAGE},
+      {"knownNetworksMessage",
+       isRevampEnabled ? IDS_OS_SETTINGS_REVAMP_INTERNET_KNOWN_NETWORKS_MESSAGE
+                       : IDS_SETTINGS_INTERNET_KNOWN_NETWORKS_MESSAGE},
       {"knownNetworksPreferred",
        IDS_SETTINGS_INTERNET_KNOWN_NETWORKS_PREFFERED},
       {"knownNetworksMenuAddPreferred",
@@ -806,6 +811,8 @@ void InternetSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
       {"networkMeteredDesc", IDS_SETTINGS_INTERNET_NETWORK_METERED_DESC},
       {"networkNameserversLearnMore", IDS_LEARN_MORE},
       {"networkPrefer", IDS_SETTINGS_INTERNET_NETWORK_PREFER},
+      {"networkPreferDescription",
+       IDS_OS_SETTINGS_REVAMP_INTERNET_NETWORK_PREFER_DESCRIPTION},
       {"networkPrimaryUserControlled",
        IDS_SETTINGS_INTERNET_NETWORK_PRIMARY_USER_CONTROLLED},
       {"networkA11yManagedByAdministrator",
@@ -840,7 +847,9 @@ void InternetSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
       {"networkSectionProxyExpandA11yLabel",
        IDS_SETTINGS_INTERNET_NETWORK_SECTION_PROXY_ACCESSIBILITY_LABEL},
       {"networkShared", IDS_SETTINGS_INTERNET_NETWORK_SHARED},
-      {"networkSharedOwner", IDS_SETTINGS_INTERNET_NETWORK_SHARED_OWNER},
+      {"networkSharedOwner",
+       isRevampEnabled ? IDS_OS_SETTINGS_REVAMP_INTERNET_NETWORK_SHARED_OWNER
+                       : IDS_SETTINGS_INTERNET_NETWORK_SHARED_OWNER},
       {"networkSharedNotOwner", IDS_SETTINGS_INTERNET_NETWORK_SHARED_NOT_OWNER},
       {"networkVpnBuiltin", IDS_NETWORK_TYPE_VPN_BUILTIN},
       {"networkOutOfRange", IDS_SETTINGS_INTERNET_WIFI_NETWORK_OUT_OF_RANGE},
@@ -1156,7 +1165,7 @@ mojom::SearchResultIcon InternetSection::GetSectionIcon() const {
   return mojom::SearchResultIcon::kWifi;
 }
 
-std::string InternetSection::GetSectionPath() const {
+const char* InternetSection::GetSectionPath() const {
   return mojom::kNetworkSectionPath;
 }
 

@@ -288,9 +288,6 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(
 
   cursor_manager_ = std::make_unique<CursorManager>(this);
 
-  SetOverscrollControllerEnabled(
-      base::FeatureList::IsEnabled(features::kOverscrollHistoryNavigation));
-
   selection_controller_client_ =
       std::make_unique<TouchSelectionControllerClientAura>(this);
   CreateSelectionController();
@@ -1179,7 +1176,7 @@ void RenderWidgetHostViewAura::ProcessAckedTouchEvent(
       DCHECK(!sent_ack);
       window_host->dispatcher()->ProcessedTouchEvent(
           touch.event.unique_touch_event_id, window_, result,
-          InputEventResultStateIsSetNonBlocking(ack_result));
+          InputEventResultStateIsSetBlocking(ack_result));
       if (touch.event.touch_start_or_first_touch_move &&
           result == ui::ER_HANDLED && host()->delegate() &&
           host()->delegate()->GetInputEventRouter()) {
@@ -1883,7 +1880,9 @@ void RenderWidgetHostViewAura::SetActiveCompositionForAccessibility(
     }
   }
 }
+#endif
 
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_CHROMEOS_ASH)
 ui::TextInputClient::EditingContext
 RenderWidgetHostViewAura::GetTextEditingContext() {
   ui::TextInputClient::EditingContext editing_context;
@@ -1900,6 +1899,14 @@ RenderWidgetHostViewAura::GetTextEditingContext() {
   if (frame)
     editing_context.page_url = frame->GetLastCommittedURL();
   return editing_context;
+}
+#endif
+
+#if BUILDFLAG(IS_WIN)
+void RenderWidgetHostViewAura::NotifyOnFrameFocusChanged() {
+  if (GetInputMethod()) {
+    GetInputMethod()->OnUrlChanged();
+  }
 }
 #endif
 
@@ -2990,6 +2997,10 @@ void RenderWidgetHostViewAura::TransferTouches(
 void RenderWidgetHostViewAura::SetLastPointerType(
     ui::EventPointerType last_pointer_type) {
   last_pointer_type_ = last_pointer_type;
+}
+
+void RenderWidgetHostViewAura::InvalidateLocalSurfaceIdAndAllocationGroup() {
+  window_->InvalidateLocalSurfaceId(/*also_invalidate_allocation_group=*/true);
 }
 
 void RenderWidgetHostViewAura::InvalidateLocalSurfaceIdOnEviction() {

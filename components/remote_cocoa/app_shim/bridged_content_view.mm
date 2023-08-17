@@ -35,10 +35,6 @@
 #import "ui/gfx/mac/coordinate_conversion.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 namespace {
 
 NSString* const kFullKeyboardAccessChangedNotification =
@@ -560,9 +556,9 @@ ui::TextEditCommand GetTextEditCommandForMenuAction(SEL action) {
     int flags = ui::EF_NONE;
     if ([_keyDownEvent isARepeat])
       flags |= ui::EF_IS_REPEAT;
-    ui::KeyEvent charEvent([text characterAtIndex:0],
-                           ui::KeyboardCodeFromNSEvent(_keyDownEvent),
-                           ui::DomCodeFromNSEvent(_keyDownEvent), flags);
+    ui::KeyEvent charEvent = ui::KeyEvent::FromCharacter(
+        [text characterAtIndex:0], ui::KeyboardCodeFromNSEvent(_keyDownEvent),
+        ui::DomCodeFromNSEvent(_keyDownEvent), flags);
     [self handleKeyEvent:&charEvent];
     _hasUnhandledKeyDownEvent = NO;
     if (charEvent.handled())

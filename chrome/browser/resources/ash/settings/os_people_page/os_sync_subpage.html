@@ -72,14 +72,6 @@
   </div>
 </div>
 
-<!-- TODO(crbug.com/1231500): Remove this warning after Lacros side-by-side
-  rollout stage. -->
-<template is="dom-if" if="[[shouldShowLacrosSideBySideWarning_()]]">
-  <div class="cr-row first cr-padded-text">
-    $i18n{syncSettingsLacrosSideBySideWarning}
-  </div>
-</template>
-
 <template is="dom-if" if="[[showExistingPassphraseBelowAccount_]]"
     on-dom-change="focusPassphraseInput_">
   <div id="existingPassphrase" class="list-frame">
@@ -124,7 +116,7 @@
   <div id="[[pageStatusEnum_.CONFIGURE]]"
       hidden$="[[!isStatus_(pageStatusEnum_.CONFIGURE, pageStatus_)]]">
     <div id="other-sync-items" class="list-frame">
-      <cr-link-row id="sync-advanced-row"
+      <cr-link-row id="syncAdvancedRow"
           label="[[getSyncAdvancedTitle_()]]"
           role-description="$i18n{subpageArrowRoleDescription}"
           on-click="onSyncAdvancedClick_">

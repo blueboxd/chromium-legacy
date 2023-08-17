@@ -119,7 +119,8 @@ const viz::FrameSinkId& DelegatedFrameHostAndroid::GetFrameSinkId() const {
 void DelegatedFrameHostAndroid::CopyFromCompositingSurface(
     const gfx::Rect& src_subrect,
     const gfx::Size& output_size,
-    base::OnceCallback<void(const SkBitmap&)> callback) {
+    base::OnceCallback<void(const SkBitmap&)> callback,
+    bool capture_exact_surface_id) {
   DCHECK(CanCopyFromCompositingSurface());
 
   const viz::SurfaceId surface_id(frame_sink_id_, local_surface_id_);
@@ -162,7 +163,8 @@ void DelegatedFrameHostAndroid::CopyFromCompositingSurface(
         gfx::Vector2d(output_size.width(), output_size.height()));
   }
 
-  host_frame_sink_manager_->RequestCopyOfOutput(surface_id, std::move(request));
+  host_frame_sink_manager_->RequestCopyOfOutput(surface_id, std::move(request),
+                                                capture_exact_surface_id);
 }
 
 bool DelegatedFrameHostAndroid::CanCopyFromCompositingSurface() const {
@@ -476,16 +478,15 @@ void DelegatedFrameHostAndroid::TakeFallbackContentFrom(
   if (HasFallbackSurface() || !other->HasPrimarySurface())
     return;
 
-  const viz::SurfaceId& other_primary = other->content_layer_->surface_id();
-  const absl::optional<viz::SurfaceId>& other_fallback =
-      other->content_layer_->oldest_acceptable_fallback();
-  viz::SurfaceId desired_fallback;
-  if (!other->HasFallbackSurface() ||
-      !other_primary.IsSameOrNewerThan(*other_fallback)) {
-    desired_fallback = other_primary.ToSmallestId();
-  } else {
-    desired_fallback = *other_fallback;
-  }
+  // If we explicitly tell a BFCached View and its `DelegatedFrameHostAndroid`
+  // to use a specific fallback, discard the preserved fallback for BFCache.
+  // During the BFCache activation (`EmbedSurface`) we will be using the primary
+  // surface's smallest ID as the fallback.
+  bfcache_fallback_ =
+      viz::ParentLocalSurfaceIdAllocator::InvalidLocalSurfaceId();
+
+  // TODO(https://crbug.com/1471665): Investigate why on Android we use the
+  // primary ID unconditionally, which is different on `DelegatedFrameHost`.
   content_layer_->SetOldestAcceptableFallback(
       other->content_layer_->surface_id().ToSmallestId());
 }

@@ -17,6 +17,7 @@
 #import "ios/chrome/browser/shared/model/browser/browser.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/shared/model/prefs/pref_names.h"
+#import "ios/chrome/browser/shared/public/features/system_flags.h"
 #import "ios/chrome/browser/signin/authentication_service.h"
 #import "ios/chrome/browser/signin/authentication_service_factory.h"
 #import "ios/chrome/browser/signin/chrome_account_manager_service.h"
@@ -27,10 +28,6 @@
 #import "ios/chrome/browser/ui/authentication/signin/signin_constants.h"
 #import "ios/chrome/browser/ui/authentication/signin/user_signin/user_signin_constants.h"
 #import "net/base/network_change_notifier.h"
-
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
 
 namespace {
 
@@ -142,8 +139,10 @@ bool ShouldPresentUserSigninUpgrade(ChromeBrowserState* browser_state,
     return false;
 
   // Used for testing purposes only.
-  if (signin::ForceStartupSigninPromo())
+  if (signin::ForceStartupSigninPromo() ||
+      experimental_flags::AlwaysDisplayUpgradePromo()) {
     return true;
+  }
 
   // Show the promo at most every two major versions.
   NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];

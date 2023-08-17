@@ -12,13 +12,10 @@
 #import "ios/chrome/browser/passwords/ios_chrome_password_check_manager.h"
 #import "ios/chrome/browser/passwords/ios_chrome_password_check_manager_factory.h"
 #import "ios/chrome/browser/safety_check/ios_chrome_safety_check_manager.h"
+#import "ios/chrome/browser/shared/model/application_context/application_context.h"
 #import "ios/chrome/browser/shared/model/browser_state/browser_state_otr_helper.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
-
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
 
 // static
 IOSChromeSafetyCheckManager*
@@ -57,7 +54,7 @@ IOSChromeSafetyCheckManagerFactory::BuildServiceInstanceFor(
       base::SequencedTaskRunner::GetCurrentDefault();
 
   return std::make_unique<IOSChromeSafetyCheckManager>(
-      browser_state->GetPrefs(),
+      browser_state->GetPrefs(), GetApplicationContext()->GetLocalState(),
       IOSChromePasswordCheckManagerFactory::GetForBrowserState(browser_state),
       task_runner);
 }

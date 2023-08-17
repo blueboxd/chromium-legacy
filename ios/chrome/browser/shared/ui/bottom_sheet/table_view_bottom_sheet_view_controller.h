@@ -18,6 +18,9 @@
 // Performs the expand bottom sheet animation.
 - (void)expand:(NSInteger)numberOfRows;
 
+// Request to relaod data from the table view's data source.
+- (void)reloadTableViewData;
+
 // Returns the estimated height of the bottom sheet.
 - (CGFloat)bottomSheetEstimatedHeight;
 
@@ -27,21 +30,17 @@
 // Returns the currently selected row.
 - (NSInteger)selectedRow;
 
-// Return the height of the table view.
-- (CGFloat)tableViewHeight;
+// Returns the height of the table view content size.
+- (CGFloat)tableViewContentSizeHeight;
+
+// Returns the width of the table view.
+- (CGFloat)tableViewWidth;
 
 // Select the first row in the table view.
 - (void)selectFirstRow;
 
 // Returns the initial height of the bottom sheet while showing a single row.
 - (CGFloat)initialHeight;
-
-// Returns the desired height for the bottom sheet (can be larger than the
-// screen).
-- (CGFloat)fullHeight:(NSInteger)numberOfRows;
-
-// Enables scrolling of the table view.
-- (void)setTableViewScrollEnabled:(BOOL)enabled;
 
 // Returns the initial number of cells the user sees.
 - (CGFloat)initialNumberOfVisibleCells;

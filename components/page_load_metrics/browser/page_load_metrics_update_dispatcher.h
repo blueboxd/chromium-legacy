@@ -224,6 +224,23 @@ class PageLoadMetricsUpdateDispatcher {
     return responsiveness_metrics_normalization_
         .GetNormalizedResponsivenessMetrics();
   }
+
+  const NormalizedResponsivenessMetrics&
+  soft_navigation_interval_normalized_responsiveness_metrics() const {
+    return soft_navigation_interval_responsiveness_metrics_normalization_
+        .GetNormalizedResponsivenessMetrics();
+  }
+
+  const NormalizedCLSData& soft_navigation_interval_normalized_layout_shift()
+      const {
+    return soft_nav_interval_layout_shift_normalization_.normalized_cls_data();
+  }
+
+  void ResetSoftNavigationIntervalNormalizedResponsivenessMetrics() {
+    soft_navigation_interval_responsiveness_metrics_normalization_
+        .ClearAllUserInteractionLatencies();
+  }
+
   const PageRenderData& main_frame_render_data() const {
     return main_frame_render_data_;
   }
@@ -242,6 +259,14 @@ class PageLoadMetricsUpdateDispatcher {
         page_render_data_.layout_shift_score;
     layout_shift_normalization_for_bfcache_.ClearAllLayoutShifts();
   }
+
+  void ResetSoftNavigationIntervalLayoutShift() {
+    soft_nav_interval_render_data_.layout_shift_score = 0;
+    soft_nav_interval_render_data_.layout_shift_score_before_input_or_scroll =
+        0;
+    soft_nav_interval_layout_shift_normalization_.ClearAllLayoutShifts();
+  }
+
   // Ensures all pending updates will get dispatched.
   void FlushPendingTimingUpdates();
 
@@ -267,6 +292,12 @@ class PageLoadMetricsUpdateDispatcher {
 
   void UpdateSoftNavigation(
       const mojom::SoftNavigationMetrics& soft_navigation_metrics);
+
+  void UpdateSoftNavigationIntervalResponsivenessMetrics(
+      const mojom::InputTiming& input_timing_delta);
+
+  void UpdateSoftNavigationIntervalLayoutShift(
+      const mojom::FrameRenderDataUpdate& render_data);
 
   void UpdatePageInputTiming(const mojom::InputTiming& input_timing_delta);
 
@@ -342,6 +373,8 @@ class PageLoadMetricsUpdateDispatcher {
   PageRenderData page_render_data_;
   PageRenderData main_frame_render_data_;
 
+  PageRenderData soft_nav_interval_render_data_;
+
   // The last main frame intersection rects dispatched to page load metrics
   // observers.
   std::map<FrameTreeNodeId, gfx::Rect> main_frame_intersection_rects_;
@@ -351,6 +384,8 @@ class PageLoadMetricsUpdateDispatcher {
   absl::optional<gfx::Rect> main_frame_viewport_rect_;
 
   LayoutShiftNormalization layout_shift_normalization_;
+  LayoutShiftNormalization soft_nav_interval_layout_shift_normalization_;
+
   // Layout shift normalization data for bfcache which needs to be reset each
   // time the page enters the BackForward cache.
   LayoutShiftNormalization layout_shift_normalization_for_bfcache_;
@@ -370,6 +405,14 @@ class PageLoadMetricsUpdateDispatcher {
   // calculate a few normalized responsiveness metrics. It will be reset every
   // time the page enters bfcache.
   ResponsivenessMetricsNormalization responsiveness_metrics_normalization_;
+
+  // Keeps track of user interaction latencies on main frame for soft
+  // navigation intervals. A soft navigation interval is either the
+  // interval from page load start to 1st soft navigation, or an interval
+  // between 2 soft navigations, or the interval from the last soft navigation
+  // to the page load end.
+  ResponsivenessMetricsNormalization
+      soft_navigation_interval_responsiveness_metrics_normalization_;
 };
 
 }  // namespace page_load_metrics

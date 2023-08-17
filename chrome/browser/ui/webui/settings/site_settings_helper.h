@@ -41,14 +41,14 @@ namespace site_settings {
 struct SiteExceptionInfo {
   ContentSetting content_setting;
   bool is_embargoed;
-  // TODO(http://b/288405540): Add expiration for exception.
+  base::Time expiration;
 };
 
 struct StorageAccessEmbeddingException {
   ContentSettingsPattern secondary_pattern;
   bool is_incognito;
   bool is_embargoed;
-  // TODO(http://b/288405540): Add expiration for exception.
+  base::Time expiration;
 };
 
 // Maps from a pair(secondary pattern, incognito)  to a setting and if it's
@@ -75,6 +75,7 @@ using ChooserExceptionDetails = std::set<std::tuple<GURL, std::string, bool>>;
 // TODO(crbug.com/1373962): Prefix the types related to the File System Access
 // API so that their relation to the file system is more apparent.
 constexpr char kChooserType[] = "chooserType";
+constexpr char kCloseDescription[] = "closeDescription";
 constexpr char kDisabled[] = "disabled";
 constexpr char kDisplayName[] = "displayName";
 constexpr char kDescription[] = "description";
@@ -90,6 +91,7 @@ constexpr char kIsEmbargoed[] = "isEmbargoed";
 constexpr char kIsWritable[] = "isWritable";
 constexpr char kNotificationInfoString[] = "notificationInfoString";
 constexpr char kObject[] = "object";
+constexpr char kOpenDescription[] = "openDescription";
 constexpr char kOrigin[] = "origin";
 constexpr char kOriginForFavicon[] = "originForFavicon";
 constexpr char kPermissions[] = "permissions";
@@ -143,6 +145,18 @@ base::Value::Dict GetFileSystemExceptionForPage(
     bool incognito,
     bool is_embargoed = false);
 
+// Calculates the number of days between now and `expiration_timestamp`,
+// timestamp of when a setting is going to expire, and returns the appropriate
+// string for display in site settings. Only looks at the date between now and
+// `expiration_timestamp` i.e. doesn't take into account time.
+
+// E.g. current time 03/07 18:00. If expiration is in:
+//   03/07 01:00 then, time diff is 17h, and returns 0.
+//   04/07 19:00 then, time diff is 23h, but returns 1.
+//   05/07 19:00 then, time diff is 47h, and returns 2.
+//   05/07 17:00 then, time diff is 49h, and returns 2.
+std::u16string GetExpirationDescription(const base::Time& expiration_timestamp);
+
 // Helper function to construct a dictionary for a storage access exceptions
 // grouped by origin.
 base::Value::Dict GetStorageAccessExceptionForPage(
@@ -161,6 +175,7 @@ base::Value::Dict GetExceptionForPage(
     const std::string& display_name,
     const ContentSetting& setting,
     const std::string& provider_name,
+    const base::Time& expiration,
     bool incognito,
     bool is_embargoed = false);
 

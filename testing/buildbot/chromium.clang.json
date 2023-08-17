@@ -13,11 +13,9 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-22.04"
-            }
-          ],
+          "dimensions": {
+            "os": "Ubuntu-22.04"
+          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "base_unittests",
@@ -35,12 +33,10 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Windows-10-19045"
-            }
-          ],
+          "dimensions": {
+            "cpu": "x86-64",
+            "os": "Windows-10-19045"
+          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "base_unittests",
@@ -58,12 +54,10 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Windows-10-19045"
-            }
-          ],
+          "dimensions": {
+            "cpu": "x86-64",
+            "os": "Windows-10-19045"
+          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "base_unittests",
@@ -96,15 +90,13 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "device_os": "PQ3A.190801.002",
-              "device_os_flavor": "google",
-              "device_os_type": "userdebug",
-              "device_type": "walleye",
-              "os": "Android"
-            }
-          ],
+          "dimensions": {
+            "device_os": "PQ3A.190801.002",
+            "device_os_flavor": "google",
+            "device_os_type": "userdebug",
+            "device_type": "walleye",
+            "os": "Android"
+          },
           "output_links": [
             {
               "link": [
@@ -156,12 +148,10 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Ubuntu-22.04"
-            }
-          ],
+          "dimensions": {
+            "cpu": "x86-64",
+            "os": "Ubuntu-22.04"
+          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://chrome/test:chrome_sizes/"
@@ -192,14 +182,12 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "device_os": "MMB29Q",
-              "device_os_type": "userdebug",
-              "device_type": "bullhead",
-              "os": "Android"
-            }
-          ],
+          "dimensions": {
+            "device_os": "MMB29Q",
+            "device_os_type": "userdebug",
+            "device_type": "bullhead",
+            "os": "Android"
+          },
           "output_links": [
             {
               "link": [
@@ -241,12 +229,10 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Ubuntu-22.04"
-            }
-          ],
+          "dimensions": {
+            "cpu": "x86-64",
+            "os": "Ubuntu-22.04"
+          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://chrome/test:chrome_sizes/"
@@ -273,12 +259,10 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "kvm": "1",
-              "os": "Ubuntu-22.04"
-            }
-          ],
+          "dimensions": {
+            "kvm": "1",
+            "os": "Ubuntu-22.04"
+          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "base_unittests",
@@ -297,12 +281,10 @@
         },
         "name": "angle_unittests",
         "swarming": {
-          "dimension_sets": [
-            {
-              "kvm": "1",
-              "os": "Ubuntu-22.04"
-            }
-          ],
+          "dimensions": {
+            "kvm": "1",
+            "os": "Ubuntu-22.04"
+          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://third_party/angle/src/tests:angle_unittests/"
@@ -313,7 +295,6 @@
           "--write-run-histories-to=${ISOLATED_OUTDIR}/run_histories.json",
           "--platform=fuchsia"
         ],
-        "check_flakiness_for_new_tests": false,
         "isolate_name": "blink_web_tests",
         "merge": {
           "args": [
@@ -323,16 +304,15 @@
         },
         "name": "blink_web_tests",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "results_handler": "layout tests",
         "swarming": {
-          "dimension_sets": [
-            {
-              "kvm": "1",
-              "os": "Ubuntu-22.04"
-            }
-          ],
+          "dimensions": {
+            "kvm": "1",
+            "os": "Ubuntu-22.04"
+          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://:blink_web_tests/"
@@ -343,7 +323,6 @@
           "--write-run-histories-to=${ISOLATED_OUTDIR}/run_histories.json",
           "--platform=fuchsia"
         ],
-        "check_flakiness_for_new_tests": false,
         "isolate_name": "blink_wpt_tests",
         "merge": {
           "args": [
@@ -353,16 +332,15 @@
         },
         "name": "blink_wpt_tests",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "results_handler": "layout tests",
         "swarming": {
-          "dimension_sets": [
-            {
-              "kvm": "1",
-              "os": "Ubuntu-22.04"
-            }
-          ],
+          "dimensions": {
+            "kvm": "1",
+            "os": "Ubuntu-22.04"
+          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://:blink_wpt_tests/"
@@ -376,13 +354,11 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cpu": "arm64",
-              "inside_docker": "1",
-              "os": "Ubuntu-22.04|Ubuntu-20.04"
-            }
-          ],
+          "dimensions": {
+            "cpu": "arm64",
+            "inside_docker": "1",
+            "os": "Ubuntu-22.04|Ubuntu-20.04"
+          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "base_unittests",
@@ -401,13 +377,11 @@
         },
         "name": "angle_unittests",
         "swarming": {
-          "dimension_sets": [
-            {
-              "cpu": "arm64",
-              "inside_docker": "1",
-              "os": "Ubuntu-22.04|Ubuntu-20.04"
-            }
-          ],
+          "dimensions": {
+            "cpu": "arm64",
+            "inside_docker": "1",
+            "os": "Ubuntu-22.04|Ubuntu-20.04"
+          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://third_party/angle/src/tests:angle_unittests/"
@@ -423,13 +397,11 @@
         },
         "name": "fuchsia_sizes",
         "swarming": {
-          "dimension_sets": [
-            {
-              "cpu": "arm64",
-              "inside_docker": "1",
-              "os": "Ubuntu-22.04|Ubuntu-20.04"
-            }
-          ],
+          "dimensions": {
+            "cpu": "arm64",
+            "inside_docker": "1",
+            "os": "Ubuntu-22.04|Ubuntu-20.04"
+          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://tools/fuchsia/size_tests:fuchsia_sizes/"
@@ -446,11 +418,9 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-22.04"
-            }
-          ],
+          "dimensions": {
+            "os": "Ubuntu-22.04"
+          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "base_unittests",
@@ -469,11 +439,9 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-22.04"
-            }
-          ],
+          "dimensions": {
+            "os": "Ubuntu-22.04"
+          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://chrome/test:chrome_sizes/"
@@ -496,11 +464,9 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-22.04"
-            }
-          ],
+          "dimensions": {
+            "os": "Ubuntu-22.04"
+          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://chrome/test:chrome_sizes/"
@@ -520,11 +486,9 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-22.04"
-            }
-          ],
+          "dimensions": {
+            "os": "Ubuntu-22.04"
+          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "base_unittests",
@@ -548,11 +512,9 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-22.04"
-            }
-          ],
+          "dimensions": {
+            "os": "Ubuntu-22.04"
+          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://chrome/test:chrome_sizes/"
@@ -569,11 +531,9 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-20.04"
-            }
-          ],
+          "dimensions": {
+            "os": "Ubuntu-20.04"
+          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "base_unittests",
@@ -592,11 +552,9 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-20.04"
-            }
-          ],
+          "dimensions": {
+            "os": "Ubuntu-20.04"
+          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://chrome/test:chrome_sizes/"
@@ -613,12 +571,10 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-22.04",
-              "pool": "chrome.tests"
-            }
-          ],
+          "dimensions": {
+            "os": "Ubuntu-22.04",
+            "pool": "chrome.tests"
+          },
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "base_unittests",
@@ -637,12 +593,10 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-22.04",
-              "pool": "chrome.tests"
-            }
-          ],
+          "dimensions": {
+            "os": "Ubuntu-22.04",
+            "pool": "chrome.tests"
+          },
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://chrome/test:chrome_sizes/"
@@ -659,11 +613,9 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-22.04"
-            }
-          ],
+          "dimensions": {
+            "os": "Ubuntu-22.04"
+          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "base_unittests",
@@ -681,11 +633,9 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-22.04"
-            }
-          ],
+          "dimensions": {
+            "os": "Ubuntu-22.04"
+          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "base_unittests",
@@ -704,11 +654,9 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-22.04"
-            }
-          ],
+          "dimensions": {
+            "os": "Ubuntu-22.04"
+          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://chrome/test:chrome_sizes/"
@@ -725,11 +673,9 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-22.04"
-            }
-          ],
+          "dimensions": {
+            "os": "Ubuntu-22.04"
+          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "base_unittests",
@@ -748,11 +694,9 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "os": "Ubuntu-22.04"
-            }
-          ],
+          "dimensions": {
+            "os": "Ubuntu-22.04"
+          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://chrome/test:chrome_sizes/"
@@ -769,12 +713,10 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Mac-12"
-            }
-          ],
+          "dimensions": {
+            "cpu": "x86-64",
+            "os": "Mac-12"
+          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "base_unittests",
@@ -792,12 +734,10 @@
           "enable": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Mac-12"
-            }
-          ],
+          "dimensions": {
+            "cpu": "x86-64",
+            "os": "Mac-12"
+          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://:blink_python_tests/"
@@ -807,7 +747,6 @@
           "--num-retries=3",
           "--write-run-histories-to=${ISOLATED_OUTDIR}/run_histories.json"
         ],
-        "check_flakiness_for_new_tests": false,
         "isolate_name": "blink_web_tests",
         "merge": {
           "args": [
@@ -817,16 +756,15 @@
         },
         "name": "blink_web_tests",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "results_handler": "layout tests",
         "swarming": {
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Mac-12"
-            }
-          ],
+          "dimensions": {
+            "cpu": "x86-64",
+            "os": "Mac-12"
+          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 5
         },
@@ -837,7 +775,6 @@
           "--num-retries=3",
           "--write-run-histories-to=${ISOLATED_OUTDIR}/run_histories.json"
         ],
-        "check_flakiness_for_new_tests": false,
         "isolate_name": "blink_wpt_tests",
         "merge": {
           "args": [
@@ -847,16 +784,15 @@
         },
         "name": "blink_wpt_tests",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "results_handler": "layout tests",
         "swarming": {
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Mac-12"
-            }
-          ],
+          "dimensions": {
+            "cpu": "x86-64",
+            "os": "Mac-12"
+          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 7
         },
@@ -873,12 +809,10 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Mac-12"
-            }
-          ],
+          "dimensions": {
+            "cpu": "x86-64",
+            "os": "Mac-12"
+          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://chrome/test:chrome_sizes/"
@@ -887,7 +821,6 @@
         "args": [
           "--test-type=integration"
         ],
-        "check_flakiness_for_new_tests": false,
         "isolate_name": "chromedriver_py_tests",
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
@@ -897,12 +830,10 @@
           "enable": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Mac-12"
-            }
-          ],
+          "dimensions": {
+            "cpu": "x86-64",
+            "os": "Mac-12"
+          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://chrome/test/chromedriver:chromedriver_py_tests/"
@@ -914,12 +845,10 @@
         },
         "name": "chromedriver_replay_unittests",
         "swarming": {
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Mac-12"
-            }
-          ],
+          "dimensions": {
+            "cpu": "x86-64",
+            "os": "Mac-12"
+          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://chrome/test/chromedriver:chromedriver_replay_unittests/"
@@ -937,12 +866,10 @@
         },
         "name": "components_perftests",
         "swarming": {
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Mac-12"
-            }
-          ],
+          "dimensions": {
+            "cpu": "x86-64",
+            "os": "Mac-12"
+          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://components:components_perftests/"
@@ -958,12 +885,10 @@
           "result_format": "single"
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Mac-12"
-            }
-          ],
+          "dimensions": {
+            "cpu": "x86-64",
+            "os": "Mac-12"
+          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://content/shell:content_shell_crash_test/"
@@ -979,12 +904,10 @@
           "result_format": "single"
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Mac-12"
-            }
-          ],
+          "dimensions": {
+            "cpu": "x86-64",
+            "os": "Mac-12"
+          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://third_party/flatbuffers:flatbuffers_unittests/"
@@ -999,12 +922,10 @@
           "enable": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Mac-12"
-            }
-          ],
+          "dimensions": {
+            "cpu": "x86-64",
+            "os": "Mac-12"
+          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://tools/grit:grit_python_unittests/"
@@ -1016,12 +937,10 @@
         },
         "name": "mac_signing_tests",
         "swarming": {
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Mac-12"
-            }
-          ],
+          "dimensions": {
+            "cpu": "x86-64",
+            "os": "Mac-12"
+          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://chrome/installer/mac:mac_signing_tests/"
@@ -1036,12 +955,10 @@
           "enable": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Mac-12"
-            }
-          ],
+          "dimensions": {
+            "cpu": "x86-64",
+            "os": "Mac-12"
+          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://mojo/public/tools:mojo_python_unittests/"
@@ -1056,12 +973,10 @@
           "enable": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Mac-12"
-            }
-          ],
+          "dimensions": {
+            "cpu": "x86-64",
+            "os": "Mac-12"
+          },
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -1080,12 +995,10 @@
           "enable": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Mac-12"
-            }
-          ],
+          "dimensions": {
+            "cpu": "x86-64",
+            "os": "Mac-12"
+          },
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 12
@@ -1106,12 +1019,10 @@
           "enable": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Mac-12"
-            }
-          ],
+          "dimensions": {
+            "cpu": "x86-64",
+            "os": "Mac-12"
+          },
           "idempotent": false,
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 8
@@ -1131,12 +1042,10 @@
         },
         "name": "views_perftests",
         "swarming": {
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Mac-12"
-            }
-          ],
+          "dimensions": {
+            "cpu": "x86-64",
+            "os": "Mac-12"
+          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ui/views:views_perftests/"
@@ -1161,12 +1070,10 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Mac-12"
-            }
-          ],
+          "dimensions": {
+            "cpu": "x86-64",
+            "os": "Mac-12"
+          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "base_unittests",
@@ -1184,13 +1091,11 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Mac-12",
-              "pool": "chrome.tests"
-            }
-          ],
+          "dimensions": {
+            "cpu": "x86-64",
+            "os": "Mac-12",
+            "pool": "chrome.tests"
+          },
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "base_unittests",
@@ -1208,13 +1113,11 @@
           "enable": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Mac-12",
-              "pool": "chrome.tests"
-            }
-          ],
+          "dimensions": {
+            "cpu": "x86-64",
+            "os": "Mac-12",
+            "pool": "chrome.tests"
+          },
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://:blink_python_tests/"
@@ -1224,7 +1127,6 @@
           "--num-retries=3",
           "--write-run-histories-to=${ISOLATED_OUTDIR}/run_histories.json"
         ],
-        "check_flakiness_for_new_tests": false,
         "isolate_name": "blink_web_tests",
         "merge": {
           "args": [
@@ -1234,17 +1136,16 @@
         },
         "name": "blink_web_tests",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "results_handler": "layout tests",
         "swarming": {
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Mac-12",
-              "pool": "chrome.tests"
-            }
-          ],
+          "dimensions": {
+            "cpu": "x86-64",
+            "os": "Mac-12",
+            "pool": "chrome.tests"
+          },
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 5
         },
@@ -1255,7 +1156,6 @@
           "--num-retries=3",
           "--write-run-histories-to=${ISOLATED_OUTDIR}/run_histories.json"
         ],
-        "check_flakiness_for_new_tests": false,
         "isolate_name": "blink_wpt_tests",
         "merge": {
           "args": [
@@ -1265,17 +1165,16 @@
         },
         "name": "blink_wpt_tests",
         "resultdb": {
-          "enable": true
+          "enable": true,
+          "has_native_resultdb_integration": true
         },
         "results_handler": "layout tests",
         "swarming": {
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Mac-12",
-              "pool": "chrome.tests"
-            }
-          ],
+          "dimensions": {
+            "cpu": "x86-64",
+            "os": "Mac-12",
+            "pool": "chrome.tests"
+          },
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 7
         },
@@ -1292,13 +1191,11 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Mac-12",
-              "pool": "chrome.tests"
-            }
-          ],
+          "dimensions": {
+            "cpu": "x86-64",
+            "os": "Mac-12",
+            "pool": "chrome.tests"
+          },
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://chrome/test:chrome_sizes/"
@@ -1307,7 +1204,6 @@
         "args": [
           "--test-type=integration"
         ],
-        "check_flakiness_for_new_tests": false,
         "isolate_name": "chromedriver_py_tests",
         "merge": {
           "script": "//testing/merge_scripts/standard_isolated_script_merge.py"
@@ -1317,13 +1213,11 @@
           "enable": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Mac-12",
-              "pool": "chrome.tests"
-            }
-          ],
+          "dimensions": {
+            "cpu": "x86-64",
+            "os": "Mac-12",
+            "pool": "chrome.tests"
+          },
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://chrome/test/chromedriver:chromedriver_py_tests/"
@@ -1335,13 +1229,11 @@
         },
         "name": "chromedriver_replay_unittests",
         "swarming": {
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Mac-12",
-              "pool": "chrome.tests"
-            }
-          ],
+          "dimensions": {
+            "cpu": "x86-64",
+            "os": "Mac-12",
+            "pool": "chrome.tests"
+          },
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://chrome/test/chromedriver:chromedriver_replay_unittests/"
@@ -1359,13 +1251,11 @@
         },
         "name": "components_perftests",
         "swarming": {
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Mac-12",
-              "pool": "chrome.tests"
-            }
-          ],
+          "dimensions": {
+            "cpu": "x86-64",
+            "os": "Mac-12",
+            "pool": "chrome.tests"
+          },
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://components:components_perftests/"
@@ -1381,13 +1271,11 @@
           "result_format": "single"
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Mac-12",
-              "pool": "chrome.tests"
-            }
-          ],
+          "dimensions": {
+            "cpu": "x86-64",
+            "os": "Mac-12",
+            "pool": "chrome.tests"
+          },
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://content/shell:content_shell_crash_test/"
@@ -1403,13 +1291,11 @@
           "result_format": "single"
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Mac-12",
-              "pool": "chrome.tests"
-            }
-          ],
+          "dimensions": {
+            "cpu": "x86-64",
+            "os": "Mac-12",
+            "pool": "chrome.tests"
+          },
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://third_party/flatbuffers:flatbuffers_unittests/"
@@ -1424,13 +1310,11 @@
           "enable": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Mac-12",
-              "pool": "chrome.tests"
-            }
-          ],
+          "dimensions": {
+            "cpu": "x86-64",
+            "os": "Mac-12",
+            "pool": "chrome.tests"
+          },
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://tools/grit:grit_python_unittests/"
@@ -1442,13 +1326,11 @@
         },
         "name": "mac_signing_tests",
         "swarming": {
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Mac-12",
-              "pool": "chrome.tests"
-            }
-          ],
+          "dimensions": {
+            "cpu": "x86-64",
+            "os": "Mac-12",
+            "pool": "chrome.tests"
+          },
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://chrome/installer/mac:mac_signing_tests/"
@@ -1463,13 +1345,11 @@
           "enable": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Mac-12",
-              "pool": "chrome.tests"
-            }
-          ],
+          "dimensions": {
+            "cpu": "x86-64",
+            "os": "Mac-12",
+            "pool": "chrome.tests"
+          },
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://mojo/public/tools:mojo_python_unittests/"
@@ -1484,13 +1364,11 @@
           "enable": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Mac-12",
-              "pool": "chrome.tests"
-            }
-          ],
+          "dimensions": {
+            "cpu": "x86-64",
+            "os": "Mac-12",
+            "pool": "chrome.tests"
+          },
           "idempotent": false,
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
@@ -1509,13 +1387,11 @@
           "enable": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Mac-12",
-              "pool": "chrome.tests"
-            }
-          ],
+          "dimensions": {
+            "cpu": "x86-64",
+            "os": "Mac-12",
+            "pool": "chrome.tests"
+          },
           "idempotent": false,
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 12
@@ -1536,13 +1412,11 @@
           "enable": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Mac-12",
-              "pool": "chrome.tests"
-            }
-          ],
+          "dimensions": {
+            "cpu": "x86-64",
+            "os": "Mac-12",
+            "pool": "chrome.tests"
+          },
           "idempotent": false,
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com",
           "shards": 8
@@ -1562,13 +1436,11 @@
         },
         "name": "views_perftests",
         "swarming": {
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Mac-12",
-              "pool": "chrome.tests"
-            }
-          ],
+          "dimensions": {
+            "cpu": "x86-64",
+            "os": "Mac-12",
+            "pool": "chrome.tests"
+          },
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://ui/views:views_perftests/"
@@ -1585,11 +1457,9 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "os": "Windows-10-19045"
-            }
-          ],
+          "dimensions": {
+            "os": "Windows-10-19045"
+          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "base_unittests",
@@ -1608,11 +1478,9 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "os": "Windows-10-19045"
-            }
-          ],
+          "dimensions": {
+            "os": "Windows-10-19045"
+          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://chrome/test:chrome_sizes/"
@@ -1624,12 +1492,10 @@
         },
         "name": "mini_installer_tests",
         "swarming": {
-          "dimension_sets": [
-            {
-              "integrity": "high",
-              "os": "Windows-10-19045"
-            }
-          ],
+          "dimensions": {
+            "integrity": "high",
+            "os": "Windows-10-19045"
+          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://chrome/test/mini_installer:mini_installer_tests/"
@@ -1642,11 +1508,9 @@
         },
         "name": "polymer_tools_python_unittests",
         "swarming": {
-          "dimension_sets": [
-            {
-              "os": "Windows-10-19045"
-            }
-          ],
+          "dimensions": {
+            "os": "Windows-10-19045"
+          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://tools/polymer:polymer_tools_python_unittests/"
@@ -1663,11 +1527,9 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "os": "Windows-10-19045"
-            }
-          ],
+          "dimensions": {
+            "os": "Windows-10-19045"
+          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "base_unittests",
@@ -1686,11 +1548,9 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "os": "Windows-10-19045"
-            }
-          ],
+          "dimensions": {
+            "os": "Windows-10-19045"
+          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://chrome/test:chrome_sizes/"
@@ -1707,11 +1567,9 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "os": "Windows-10-19045"
-            }
-          ],
+          "dimensions": {
+            "os": "Windows-10-19045"
+          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "base_unittests",
@@ -1730,11 +1588,9 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "os": "Windows-10-19045"
-            }
-          ],
+          "dimensions": {
+            "os": "Windows-10-19045"
+          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://chrome/test:chrome_sizes/"
@@ -1746,12 +1602,10 @@
         },
         "name": "mini_installer_tests",
         "swarming": {
-          "dimension_sets": [
-            {
-              "integrity": "high",
-              "os": "Windows-10-19045"
-            }
-          ],
+          "dimensions": {
+            "integrity": "high",
+            "os": "Windows-10-19045"
+          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://chrome/test/mini_installer:mini_installer_tests/"
@@ -1764,11 +1618,9 @@
         },
         "name": "polymer_tools_python_unittests",
         "swarming": {
-          "dimension_sets": [
-            {
-              "os": "Windows-10-19045"
-            }
-          ],
+          "dimensions": {
+            "os": "Windows-10-19045"
+          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://tools/polymer:polymer_tools_python_unittests/"
@@ -1785,12 +1637,10 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Windows-10-19045"
-            }
-          ],
+          "dimensions": {
+            "cpu": "x86-64",
+            "os": "Windows-10-19045"
+          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "base_unittests",
@@ -1809,12 +1659,10 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Windows-10-19045"
-            }
-          ],
+          "dimensions": {
+            "cpu": "x86-64",
+            "os": "Windows-10-19045"
+          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://chrome/test:chrome_sizes/"
@@ -1826,13 +1674,11 @@
         },
         "name": "mini_installer_tests",
         "swarming": {
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "integrity": "high",
-              "os": "Windows-10-19045"
-            }
-          ],
+          "dimensions": {
+            "cpu": "x86-64",
+            "integrity": "high",
+            "os": "Windows-10-19045"
+          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://chrome/test/mini_installer:mini_installer_tests/"
@@ -1845,12 +1691,10 @@
         },
         "name": "polymer_tools_python_unittests",
         "swarming": {
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Windows-10-19045"
-            }
-          ],
+          "dimensions": {
+            "cpu": "x86-64",
+            "os": "Windows-10-19045"
+          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://tools/polymer:polymer_tools_python_unittests/"
@@ -1867,12 +1711,10 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Windows-10-19045"
-            }
-          ],
+          "dimensions": {
+            "cpu": "x86-64",
+            "os": "Windows-10-19045"
+          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "base_unittests",
@@ -1891,12 +1733,10 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Windows-10-19045"
-            }
-          ],
+          "dimensions": {
+            "cpu": "x86-64",
+            "os": "Windows-10-19045"
+          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://chrome/test:chrome_sizes/"
@@ -1908,13 +1748,11 @@
         },
         "name": "mini_installer_tests",
         "swarming": {
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "integrity": "high",
-              "os": "Windows-10-19045"
-            }
-          ],
+          "dimensions": {
+            "cpu": "x86-64",
+            "integrity": "high",
+            "os": "Windows-10-19045"
+          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://chrome/test/mini_installer:mini_installer_tests/"
@@ -1927,12 +1765,10 @@
         },
         "name": "polymer_tools_python_unittests",
         "swarming": {
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Windows-10-19045"
-            }
-          ],
+          "dimensions": {
+            "cpu": "x86-64",
+            "os": "Windows-10-19045"
+          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://tools/polymer:polymer_tools_python_unittests/"
@@ -1949,12 +1785,10 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Windows-10-19045"
-            }
-          ],
+          "dimensions": {
+            "cpu": "x86-64",
+            "os": "Windows-10-19045"
+          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "base_unittests",
@@ -1973,12 +1807,10 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Windows-10-19045"
-            }
-          ],
+          "dimensions": {
+            "cpu": "x86-64",
+            "os": "Windows-10-19045"
+          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://chrome/test:chrome_sizes/"
@@ -1990,13 +1822,11 @@
         },
         "name": "mini_installer_tests",
         "swarming": {
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "integrity": "high",
-              "os": "Windows-10-19045"
-            }
-          ],
+          "dimensions": {
+            "cpu": "x86-64",
+            "integrity": "high",
+            "os": "Windows-10-19045"
+          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://chrome/test/mini_installer:mini_installer_tests/"
@@ -2009,12 +1839,10 @@
         },
         "name": "polymer_tools_python_unittests",
         "swarming": {
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Windows-10-19045"
-            }
-          ],
+          "dimensions": {
+            "cpu": "x86-64",
+            "os": "Windows-10-19045"
+          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://tools/polymer:polymer_tools_python_unittests/"
@@ -2031,12 +1859,10 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Windows-10-19045"
-            }
-          ],
+          "dimensions": {
+            "cpu": "x86-64",
+            "os": "Windows-10-19045"
+          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "base_unittests",
@@ -2064,12 +1890,10 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "os": "Windows-10",
-              "pool": "chrome.tests"
-            }
-          ],
+          "dimensions": {
+            "os": "Windows-10",
+            "pool": "chrome.tests"
+          },
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "base_unittests",
@@ -2088,12 +1912,10 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "os": "Windows-10",
-              "pool": "chrome.tests"
-            }
-          ],
+          "dimensions": {
+            "os": "Windows-10",
+            "pool": "chrome.tests"
+          },
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://chrome/test:chrome_sizes/"
@@ -2105,13 +1927,11 @@
         },
         "name": "mini_installer_tests",
         "swarming": {
-          "dimension_sets": [
-            {
-              "integrity": "high",
-              "os": "Windows-10",
-              "pool": "chrome.tests"
-            }
-          ],
+          "dimensions": {
+            "integrity": "high",
+            "os": "Windows-10",
+            "pool": "chrome.tests"
+          },
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://chrome/test/mini_installer:mini_installer_tests/"
@@ -2124,12 +1944,10 @@
         },
         "name": "polymer_tools_python_unittests",
         "swarming": {
-          "dimension_sets": [
-            {
-              "os": "Windows-10",
-              "pool": "chrome.tests"
-            }
-          ],
+          "dimensions": {
+            "os": "Windows-10",
+            "pool": "chrome.tests"
+          },
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://tools/polymer:polymer_tools_python_unittests/"
@@ -2146,12 +1964,10 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "os": "Windows-10",
-              "pool": "chrome.tests"
-            }
-          ],
+          "dimensions": {
+            "os": "Windows-10",
+            "pool": "chrome.tests"
+          },
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "base_unittests",
@@ -2170,12 +1986,10 @@
           "has_native_resultdb_integration": true
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "os": "Windows-10",
-              "pool": "chrome.tests"
-            }
-          ],
+          "dimensions": {
+            "os": "Windows-10",
+            "pool": "chrome.tests"
+          },
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://chrome/test:chrome_sizes/"
@@ -2187,13 +2001,11 @@
         },
         "name": "mini_installer_tests",
         "swarming": {
-          "dimension_sets": [
-            {
-              "integrity": "high",
-              "os": "Windows-10",
-              "pool": "chrome.tests"
-            }
-          ],
+          "dimensions": {
+            "integrity": "high",
+            "os": "Windows-10",
+            "pool": "chrome.tests"
+          },
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://chrome/test/mini_installer:mini_installer_tests/"
@@ -2206,12 +2018,10 @@
         },
         "name": "polymer_tools_python_unittests",
         "swarming": {
-          "dimension_sets": [
-            {
-              "os": "Windows-10",
-              "pool": "chrome.tests"
-            }
-          ],
+          "dimensions": {
+            "os": "Windows-10",
+            "pool": "chrome.tests"
+          },
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test_id_prefix": "ninja://tools/polymer:polymer_tools_python_unittests/"
@@ -2232,7 +2042,7 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
-          "14c18",
+          "15a5209g",
           "--xctest"
         ],
         "isolate_name": "base_unittests",
@@ -2252,15 +2062,13 @@
               "revision": "git_revision:59ddedfe3849abf560cbe0b41bb8e431041cd2bb"
             }
           ],
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "os": "Mac-13"
-            }
-          ],
+          "dimensions": {
+            "cpu": "x86-64",
+            "os": "Mac-13.4"
+          },
           "named_caches": [
             {
-              "name": "xcode_ios_14c18",
+              "name": "xcode_ios_15a5209g",
               "path": "Xcode.app"
             },
             {
@@ -2302,7 +2110,7 @@
           "--out-dir",
           "${ISOLATED_OUTDIR}",
           "--xcode-build-version",
-          "14c18",
+          "15a5209g",
           "--xctest"
         ],
         "isolate_name": "base_unittests",
@@ -2322,17 +2130,15 @@
               "revision": "git_revision:59ddedfe3849abf560cbe0b41bb8e431041cd2bb"
             }
           ],
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "device": "iPhone9,1",
-              "os": "Mac-13"
-            }
-          ],
+          "dimensions": {
+            "cpu": "x86-64",
+            "device": "iPhone9,1",
+            "os": "Mac-13.4"
+          },
           "expiration": 21600,
           "named_caches": [
             {
-              "name": "xcode_ios_14c18",
+              "name": "xcode_ios_15a5209g",
               "path": "Xcode.app"
             }
           ],
@@ -2353,11 +2159,9 @@
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "swarming": {
-          "dimension_sets": [
-            {
-              "os": "Windows-10-19045"
-            }
-          ],
+          "dimensions": {
+            "os": "Windows-10-19045"
+          },
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "base_unittests",

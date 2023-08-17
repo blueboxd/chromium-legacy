@@ -58,7 +58,6 @@
 #include "components/password_manager/content/browser/password_manager_log_router_factory.h"
 #include "components/password_manager/content/browser/password_requirements_service_factory.h"
 #include "components/password_manager/core/browser/browser_save_password_progress_logger.h"
-#include "components/password_manager/core/browser/field_info_manager.h"
 #include "components/password_manager/core/browser/hsts_query.h"
 #include "components/password_manager/core/browser/http_auth_manager.h"
 #include "components/password_manager/core/browser/http_auth_manager_impl.h"
@@ -112,6 +111,7 @@
 #endif
 
 #if BUILDFLAG(IS_ANDROID)
+#include "base/android/build_info.h"
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/autofill/manual_filling_controller.h"
 #include "chrome/browser/password_manager/android/account_chooser_dialog_android.h"
@@ -147,10 +147,14 @@
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
 #include "chrome/browser/signin/dice_web_signin_interceptor_factory.h"
+#endif
+
+#if BUILDFLAG(ENABLE_DICE_SUPPORT) || BUILDFLAG(IS_CHROMEOS_LACROS)
 #include "chrome/browser/ui/browser.h"
 #endif
 
 #if BUILDFLAG(IS_ANDROID)
+using base::android::BuildInfo;
 using password_manager::CredentialCache;
 #endif
 
@@ -256,6 +260,11 @@ bool ChromePasswordManagerClient::IsFillingEnabled(const GURL& url) const {
 }
 
 bool ChromePasswordManagerClient::IsAutoSignInEnabled() const {
+#if BUILDFLAG(IS_ANDROID)
+  if (BuildInfo::GetInstance()->is_automotive()) {
+    return false;
+  }
+#endif
   PasswordManagerSettingsService* settings_service =
       PasswordManagerSettingsServiceFactory::GetForProfile(profile_);
   return settings_service->IsSettingEnabled(
@@ -415,16 +424,14 @@ void ChromePasswordManagerClient::ShowKeyboardReplacingSurface(
     return;
   }
 
-  content::RenderWidgetHost* render_widget_host =
-      static_cast<password_manager::ContentPasswordManagerDriver*>(driver)
-          ->render_frame_host()
-          ->GetRenderWidgetHost();
+  password_manager::ContentPasswordManagerDriver* content_driver =
+      static_cast<password_manager::ContentPasswordManagerDriver*>(driver);
 
   if (GetOrCreateCredManController()->Show(
           GetWebAuthnCredManDelegateForDriver(driver),
           std::make_unique<password_manager::PasswordCredentialFillerImpl>(
               driver->AsWeakPtr(), submission_readiness_params),
-          render_widget_host, is_webauthn_form)) {
+          base::AsWeakPtr(content_driver), is_webauthn_form)) {
     return;
   }
   auto* webauthn_delegate = GetWebAuthnCredentialsDelegateForDriver(driver);
@@ -449,7 +456,7 @@ void ChromePasswordManagerClient::ShowKeyboardReplacingSurface(
               driver->GetLastCommittedURL().DeprecatedGetOriginAsURL()))
           .GetCredentials(),
       passkeys, std::move(ttf_controller_autofill_delegate),
-      render_widget_host);
+      base::AsWeakPtr(content_driver));
 }
 #endif
 
@@ -639,12 +646,12 @@ void ChromePasswordManagerClient::NotifyUserCredentialsWereLeaked(
 void ChromePasswordManagerClient::TriggerReauthForPrimaryAccount(
     signin_metrics::ReauthAccessPoint access_point,
     base::OnceCallback<void(ReauthSucceeded)> reauth_callback) {
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+#if BUILDFLAG(ENABLE_DICE_SUPPORT) || BUILDFLAG(IS_CHROMEOS_LACROS)
   account_storage_auth_helper_.TriggerOptInReauth(access_point,
                                                   std::move(reauth_callback));
 #else
   std::move(reauth_callback).Run(ReauthSucceeded(false));
-#endif
+#endif  // BUILDFLAG(ENABLE_DICE_SUPPORT) || BUILDFLAG(IS_CHROMEOS_LACROS)
 }
 
 void ChromePasswordManagerClient::TriggerSignIn(
@@ -928,6 +935,10 @@ signin::IdentityManager* ChromePasswordManagerClient::GetIdentityManager() {
   return IdentityManagerFactory::GetForProfile(profile_->GetOriginalProfile());
 }
 
+FieldInfoManager* ChromePasswordManagerClient::GetFieldInfoManager() const {
+  return FieldInfoManagerFactory::GetForProfile(profile_);
+}
+
 scoped_refptr<network::SharedURLLoaderFactory>
 ChromePasswordManagerClient::GetURLLoaderFactory() {
   return profile_->GetDefaultStoragePartition()
@@ -978,10 +989,6 @@ bool ChromePasswordManagerClient::IsNewTabPage() const {
   return origin ==
              GURL(chrome::kChromeUINewTabPageURL).DeprecatedGetOriginAsURL() ||
          origin == GURL(chrome::kChromeUINewTabURL).DeprecatedGetOriginAsURL();
-}
-
-FieldInfoManager* ChromePasswordManagerClient::GetFieldInfoManager() const {
-  return FieldInfoManagerFactory::GetForBrowserContext(profile_);
 }
 
 password_manager::WebAuthnCredentialsDelegate*
@@ -1315,6 +1322,12 @@ ChromePasswordManagerClient::ChromePasswordManagerClient(
           this,
           base::BindRepeating(&GetSyncServiceForProfile, profile_),
           DiceWebSigninInterceptorFactory::GetForProfile(profile_)),
+#else
+      credentials_filter_(
+          this,
+          base::BindRepeating(&GetSyncServiceForProfile, profile_)),
+#endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
+#if BUILDFLAG(ENABLE_DICE_SUPPORT) || BUILDFLAG(IS_CHROMEOS_LACROS)
       account_storage_auth_helper_(
           IdentityManagerFactory::GetForProfile(profile_),
           &password_feature_manager_,
@@ -1325,11 +1338,7 @@ ChromePasswordManagerClient::ChromePasswordManagerClient(
                 return browser ? browser->signin_view_controller() : nullptr;
               },
               web_contents)),
-#else
-      credentials_filter_(
-          this,
-          base::BindRepeating(&GetSyncServiceForProfile, profile_)),
-#endif
+#endif  // BUILDFLAG(ENABLE_DICE_SUPPORT) || BUILDFLAG(IS_CHROMEOS_LACROS)
       helper_(this) {
   ContentPasswordManagerDriverFactory::CreateForWebContents(web_contents, this,
                                                             autofill_client);
@@ -1369,11 +1378,6 @@ void ChromePasswordManagerClient::PrimaryPageChanged(content::Page& page) {
   content_credential_manager_.DisconnectBinding();
 
 #if BUILDFLAG(IS_ANDROID)
-  // This unblocklisted info is only used after form submission to determine
-  // whether to record PasswordManager.SaveUIDismissalReasonAfterUnblacklisting.
-  // Therefore it is sufficient to save it only once on navigation and not
-  // every time the user changes the UI toggle.
-  password_manager_.MarkWasUnblocklistedInFormManagers(&credential_cache_);
   credential_cache_.ClearCredentials();
 #endif  // BUILDFLAG(IS_ANDROID)
 

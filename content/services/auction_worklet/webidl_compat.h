@@ -5,6 +5,7 @@
 #ifndef CONTENT_SERVICES_AUCTION_WORKLET_WEBIDL_COMPAT_H_
 #define CONTENT_SERVICES_AUCTION_WORKLET_WEBIDL_COMPAT_H_
 
+#include <initializer_list>
 #include <string>
 #include <string_view>
 #include <vector>
@@ -102,8 +103,10 @@ class CONTENT_EXPORT IdlConvert {
     // the status is not a success.
     std::string ConvertToErrorString(v8::Isolate* isolate) const;
 
-    // TODO(morlovich): Add a raise exception if needed helper, similar to how
-    // SetBidBindings propagates it.
+    // Propagates any error to v8, raising exceptions if needed. This is
+    // intended to be called from method bindings to propagate the failures in
+    // type-checking their arguments up to the caller.
+    void PropagateErrorsToV8(AuctionV8Helper* v8_helper);
 
     const Exception& GetException() const {
       DCHECK_EQ(type(), Type::kException);
@@ -145,6 +148,35 @@ class CONTENT_EXPORT IdlConvert {
                         v8::Local<v8::Value> value,
                         std::string& out);
 
+  // For values that should be converted to WebIDL "DOMString" type, with the
+  // destination using 16-bit strings.
+  static Status Convert(v8::Isolate* isolate,
+                        std::string_view error_prefix,
+                        std::initializer_list<std::string_view> error_subject,
+                        v8::Local<v8::Value> value,
+                        std::u16string& out);
+
+  // For values that should be converted to WebIDL "bigint" type.
+  static Status Convert(v8::Isolate* isolate,
+                        std::string_view error_prefix,
+                        std::initializer_list<std::string_view> error_subject,
+                        v8::Local<v8::Value> value,
+                        v8::Local<v8::BigInt>& out);
+
+  // For values that should be converted to WebIDL "long" type.
+  static Status Convert(v8::Isolate* isolate,
+                        std::string_view error_prefix,
+                        std::initializer_list<std::string_view> error_subject,
+                        v8::Local<v8::Value> value,
+                        int32_t& out);
+
+  // For values that should be converted to WebIDL "(bigint or long)" type.
+  static Status Convert(v8::Isolate* isolate,
+                        std::string_view error_prefix,
+                        std::initializer_list<std::string_view> error_subject,
+                        v8::Local<v8::Value> value,
+                        absl::variant<int32_t, v8::Local<v8::BigInt>>& out);
+
   // For values that should be converted to WebIDL "any" type.
   // This just passes the incoming value through, and is here for benefit of
   // DictConverter; it should not be used directly.
@@ -154,7 +186,6 @@ class CONTENT_EXPORT IdlConvert {
                         v8::Local<v8::Value> value,
                         v8::Local<v8::Value>& out);
 
- private:
   // Makes a failure result based on state of `catcher`. If nothing is set on
   // `catcher`, will report a conversion failure.
   static Status MakeConversionFailure(
@@ -163,6 +194,16 @@ class CONTENT_EXPORT IdlConvert {
       std::initializer_list<std::string_view> error_subject,
       std::string_view type_name);
 };
+
+// Tries to convert to WebIDL Record<DOMString, USVString>.
+// `time_limit_scope` must have a non-null time limit.
+CONTENT_EXPORT IdlConvert::Status ConvertRecord(
+    AuctionV8Helper* v8_helper,
+    AuctionV8Helper::TimeLimitScope& time_limit_scope,
+    std::string_view error_prefix,
+    std::initializer_list<std::string_view> error_subject,
+    v8::Local<v8::Value> value,
+    std::vector<std::pair<std::string, std::string>>& out);
 
 // DictConverter helps convert a v8::Value that's supposed to be a WebIDL
 // dictionary to C++ values one field at a time, following the appropriate
@@ -222,7 +263,7 @@ class CONTENT_EXPORT DictConverter {
 
     status_ = IdlConvert::Convert(v8_helper_->isolate(), error_prefix_,
                                   {"field '", field, "'"}, val, out);
-    return !is_failed();
+    return is_success();
   }
 
   template <typename T>
@@ -244,7 +285,7 @@ class CONTENT_EXPORT DictConverter {
     out.emplace();
     status_ = IdlConvert::Convert(v8_helper_->isolate(), error_prefix_,
                                   {"field '", field, "'"}, val, out.value());
-    return !is_failed();
+    return is_success();
   }
 
   // Gets an optional sequence field `field`. If the field exists,
@@ -253,14 +294,26 @@ class CONTENT_EXPORT DictConverter {
   // `item_callback` is expected to typecheck its input and return true/false as
   // appropriate.
   //
-  // The conversion routine can use PropagateErrorsFrom() to forward errors to
-  // `this` from a different converter.
+  // The conversion routine can use SetStatus() to forward errors to `this` from
+  // a different converter.
   bool GetOptionalSequence(
       std::string_view field,
       base::OnceClosure exists_callback,
       base::RepeatingCallback<bool(v8::Local<v8::Value>)> item_callback);
 
   std::string ErrorMessage() const;
+
+  // Returns conversion status. This clears any remembered errors.
+  IdlConvert::Status TakeStatus() { return std::move(status_); }
+
+  // Overrides status information with `status`.
+  // `this` should not be in a failed state. The intent is to forward conversion
+  // success/failure from recursive conversions.
+  void SetStatus(IdlConvert::Status status);
+
+  bool is_failed() const { return !is_success(); }
+
+  bool is_success() const { return status_.is_success(); }
 
   // This is non-empty only when an exception specifically got thrown by
   // something invoked during conversion; not for any errors synthesized here.
@@ -269,11 +322,6 @@ class CONTENT_EXPORT DictConverter {
   // Returns true if conversion failed because execution timeout has been
   // reached.
   bool FailureIsTimeout() const;
-
-  // Moves over error information from `other_converter`; requires the
-  // converter to be in failed state and `this` not to be. `other_converter`'s
-  // error status will be cleared.
-  void PropagateErrorsFrom(DictConverter& other_converter);
 
  private:
   // This can mark failure.
@@ -289,10 +337,6 @@ class CONTENT_EXPORT DictConverter {
   void MarkFailedWithException(const v8::TryCatch& catcher);
   void MarkFailedIter(std::string_view field, const v8::TryCatch& catcher);
 
-  bool is_failed() const {
-    return status_.type() != IdlConvert::Status::Type::kSuccess;
-  }
-
   raw_ptr<AuctionV8Helper> v8_helper_;
   std::string error_prefix_;
   v8::Local<v8::Object> object_;  // Can be empty if undefined/null.
@@ -301,6 +345,48 @@ class CONTENT_EXPORT DictConverter {
   // fast after that. This is needed because user-provided custom type coercions
   // can have side effects, so we should not run them when the process already
   // failed.
+  IdlConvert::Status status_;
+};
+
+// ArgsConverter helps convert argument lists, one argument at a time.
+class CONTENT_EXPORT ArgsConverter {
+ public:
+  // This checks that there are at least `min_required_args` arguments.
+  //
+  // `v8_helper` and `args` are expected to outlast `this`, and be non-null.
+  ArgsConverter(AuctionV8Helper* v8_helper,
+                AuctionV8Helper::TimeLimitScope& time_limit_scope,
+                std::string error_prefix,
+                const v8::FunctionCallbackInfo<v8::Value>* args,
+                int min_required_args);
+  ~ArgsConverter();
+
+  template <typename T>
+  bool ConvertArg(int pos, std::string_view arg_name, T& out) {
+    if (is_failed()) {
+      return false;
+    }
+    status_ =
+        IdlConvert::Convert(v8_helper_->isolate(), error_prefix_,
+                            {"argument '", arg_name, "'"}, (*args_)[pos], out);
+    return is_success();
+  }
+
+  IdlConvert::Status TakeStatus() { return std::move(status_); }
+
+  // Overrides status information with `status`.
+  // `this` should not be in a failed state. The intent is to forward conversion
+  // success/failure from recursive conversions.
+  void SetStatus(IdlConvert::Status status);
+
+  bool is_failed() const { return !is_success(); }
+
+  bool is_success() const { return status_.is_success(); }
+
+ private:
+  raw_ptr<AuctionV8Helper> v8_helper_;
+  std::string error_prefix_;
+  const raw_ref<const v8::FunctionCallbackInfo<v8::Value>> args_;
   IdlConvert::Status status_;
 };
 

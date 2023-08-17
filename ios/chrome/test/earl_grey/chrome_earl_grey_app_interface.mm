@@ -58,7 +58,6 @@
 #import "ios/chrome/browser/ui/popup_menu/overflow_menu/feature_flags.h"
 #import "ios/chrome/browser/unified_consent/unified_consent_service_factory.h"
 #import "ios/chrome/browser/web/web_navigation_browser_agent.h"
-#import "ios/chrome/test/app/bookmarks_test_util.h"
 #import "ios/chrome/test/app/browsing_data_test_util.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/app/navigation_test_util.h"
@@ -92,10 +91,6 @@
 // To get access to UseSessionSerializationOptimizations().
 // TODO(crbug.com/1383087): remove once the feature is fully launched.
 #import "ios/web/common/features.h"
-
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
 
 using base::test::ios::kWaitForActionTimeout;
 using base::test::ios::kWaitForJSCompletionTimeout;
@@ -325,6 +320,10 @@ NSString* SerializedValue(const base::Value* value) {
 
 + (void)closeCurrentTab {
   chrome_test_util::CloseCurrentTab();
+}
+
++ (void)pinCurrentTab {
+  chrome_test_util::PinCurrentTab();
 }
 
 + (void)openNewIncognitoTab {
@@ -783,28 +782,6 @@ NSString* SerializedValue(const base::Value* value) {
   }
 }
 
-#pragma mark - Bookmarks Utilities (EG2)
-
-+ (NSError*)waitForBookmarksToFinishinLoading {
-  bool success = WaitUntilConditionOrTimeout(kWaitForActionTimeout, ^{
-    return chrome_test_util::BookmarksLoaded();
-  });
-  if (!success) {
-    return testing::NSErrorWithLocalizedDescription(
-        @"Bookmark model did not load");
-  }
-  return nil;
-}
-
-+ (NSError*)clearBookmarks {
-  bool success = chrome_test_util::ClearBookmarks();
-  if (!success) {
-    return testing::NSErrorWithLocalizedDescription(
-        @"Not all bookmarks were removed.");
-  }
-  return nil;
-}
-
 #pragma mark - URL Utilities (EG2)
 
 + (NSString*)displayTitleForURL:(NSString*)URL {
@@ -1199,8 +1176,8 @@ NSString* SerializedValue(const base::Value* value) {
   return IsUIButtonConfigurationEnabled();
 }
 
-+ (BOOL)isSortingTabsByRecency {
-  return IsTabGridSortedByRecency();
++ (BOOL)isBottomOmniboxSteadyStateEnabled {
+  return IsBottomOmniboxSteadyStateEnabled();
 }
 
 #pragma mark - ContentSettings
@@ -1222,6 +1199,13 @@ NSString* SerializedValue(const base::Value* value) {
       chrome_test_util::GetOriginalBrowserState())
       ->SetDefaultContentSetting(ContentSettingsType::REQUEST_DESKTOP_SITE,
                                  CONTENT_SETTING_BLOCK);
+}
+
++ (void)setContentSetting:(ContentSetting)setting
+    forContentSettingsType:(ContentSettingsType)type {
+  ios::HostContentSettingsMapFactory::GetForBrowserState(
+      chrome_test_util::GetOriginalBrowserState())
+      ->SetDefaultContentSetting(type, setting);
 }
 
 #pragma mark - Default Utilities (EG2)
@@ -1247,6 +1231,19 @@ NSString* SerializedValue(const base::Value* value) {
   std::string path = base::SysNSStringToUTF8(prefName);
   PrefService* prefService = GetApplicationContext()->GetLocalState();
   prefService->SetInteger(path, value);
+}
+
++ (void)setTimeValue:(base::Time)value forLocalStatePref:(NSString*)prefName {
+  std::string path = base::SysNSStringToUTF8(prefName);
+  PrefService* prefService = GetApplicationContext()->GetLocalState();
+  prefService->SetTime(path, value);
+}
+
++ (void)setStringValue:(NSString*)value forLocalStatePref:(NSString*)prefName {
+  std::string UTF8Value = base::SysNSStringToUTF8(value);
+  std::string path = base::SysNSStringToUTF8(prefName);
+  PrefService* prefService = GetApplicationContext()->GetLocalState();
+  prefService->SetString(path, UTF8Value);
 }
 
 + (NSString*)userPrefValue:(NSString*)prefName {

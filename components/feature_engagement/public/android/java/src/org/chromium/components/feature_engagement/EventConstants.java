@@ -171,6 +171,10 @@ public final class EventConstants {
     /** The keyboard accessory was swiped to reveal more suggestions. */
     public static final String KEYBOARD_ACCESSORY_BAR_SWIPED = "keyboard_accessory_bar_swiped";
 
+    /** The keyboard accessory was used to fill virtual card CVC data into a form. */
+    public static final String KEYBOARD_ACCESSORY_VIRTUAL_CARD_CVC_AUTOFILLED =
+            "autofill_virtual_card_cvc_suggestion_accepted";
+
     /** User has finished drop-to-merge to create a group. */
     public static final String TAB_DRAG_AND_DROP_TO_GROUP = "tab_drag_and_drop_to_group";
 
@@ -264,6 +268,10 @@ public final class EventConstants {
     /** AdaptiveButtonInTopToolbarCustomization translate events. */
     public static final String ADAPTIVE_TOOLBAR_CUSTOMIZATION_TRANSLATE_OPENED =
             "adaptive_toolbar_customization_translate_opened";
+
+    /** AdaptiveButtonInTopToolbarCustomization read aloud events. */
+    public static final String ADAPTIVE_TOOLBAR_CUSTOMIZATION_READ_ALOUD_CLICKED =
+            "adaptive_toolbar_customization_read_aloud_clicked";
 
     /** AdaptiveButtonInTopToolbarCustomization add to bookmarks events. */
     public static final String ADAPTIVE_TOOLBAR_CUSTOMIZATION_ADD_TO_BOOKMARKS_OPENED =

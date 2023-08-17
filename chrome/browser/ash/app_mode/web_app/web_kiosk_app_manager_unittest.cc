@@ -10,7 +10,6 @@
 #include <memory>
 #include <vector>
 
-#include "base/test/repeating_test_future.h"
 #include "base/test/test_future.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
@@ -94,14 +93,14 @@ class FakeKioskAppManagerObserver : public KioskAppManagerObserver {
 
   // `KioskAppManagerObserver` implementation:
   void OnKioskAppDataChanged(const std::string& app_id) override {
-    change_waiter_.AddValue(app_id);
+    change_waiter_.SetValue(app_id);
   }
 
-  void WaitForAppDataChange() { change_waiter_.Take(); }
-  bool HasAppDataChange() const { return !change_waiter_.IsEmpty(); }
+  void WaitForAppDataChange() { std::ignore = change_waiter_.Take(); }
+  bool HasAppDataChange() const { return change_waiter_.IsReady(); }
 
  private:
-  base::test::RepeatingTestFuture<std::string> change_waiter_;
+  base::test::TestFuture<std::string> change_waiter_;
 };
 
 }  // namespace
@@ -116,7 +115,7 @@ class WebKioskAppManagerTest : public BrowserWithTestWindowTest {
     app_service_test_.SetUp(profile());
     app_service_ = apps::AppServiceProxyFactory::GetForProfile(profile());
 
-    // |WebKioskAppUpdateObserver| requires WebAppProvider to be ready before it
+    // `WebKioskAppUpdateObserver` requires WebAppProvider to be ready before it
     // is created.
     fake_web_app_provider_ = web_app::FakeWebAppProvider::Get(profile());
     web_app::test::AwaitStartWebAppProviderAndSubsystems(profile());

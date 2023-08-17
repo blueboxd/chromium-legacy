@@ -9,16 +9,12 @@
 #import "components/remote_cocoa/app_shim/bridged_content_view.h"
 #include "components/remote_cocoa/app_shim/immersive_mode_controller.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 namespace remote_cocoa {
 
 ImmersiveModeTabbedController::ImmersiveModeTabbedController(
-    NSWindow* browser_window,
-    NSWindow* overlay_window,
-    NSWindow* tab_window)
+    NativeWidgetMacNSWindow* browser_window,
+    NativeWidgetMacNSWindow* overlay_window,
+    NativeWidgetMacNSWindow* tab_window)
     : ImmersiveModeController(browser_window, overlay_window) {
   tab_window_ = tab_window;
 

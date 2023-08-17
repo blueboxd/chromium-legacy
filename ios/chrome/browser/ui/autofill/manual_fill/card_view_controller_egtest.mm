@@ -18,10 +18,6 @@
 #import "net/test/embedded_test_server/embedded_test_server.h"
 #import "url/gurl.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 using base::test::ios::kWaitForActionTimeout;
 using chrome_test_util::CancelButton;
 using chrome_test_util::ManualFallbackAddCreditCardsMatcher;
@@ -474,10 +470,6 @@ BOOL WaitForKeyboardToAppear() {
 // Tests that after switching fields the content size of the table view didn't
 // grow.
 - (void)testCreditCardControllerKeepsRightSize {
-  // TODO(crbug.com/1454907): Failing on iOS17.
-  if (@available(iOS 17.0, *)) {
-    XCTSkip(@"FirstResponder.inputView is buggy on iOS17 as of beta 3.");
-  }
   [AutofillAppInterface saveLocalCreditCard];
 
   // Bring up the keyboard.

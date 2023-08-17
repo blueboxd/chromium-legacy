@@ -79,7 +79,6 @@ test("device_unittests") {
       "bluetooth/test/mock_bluetooth_central_manager_mac.h",
       "bluetooth/test/mock_bluetooth_central_manager_mac.mm",
     ]
-    configs += [ "//build/config/compiler:enable_arc" ]
   }
 
   if (is_mac) {
@@ -201,6 +200,10 @@ test("device_unittests") {
       "//services/data_decoder/public/cpp:test_support",
     ]
 
+    if (is_chromeos_lacros) {
+      deps += [ "//chromeos/startup" ]
+    }
+
     if (is_mac) {
       data_deps += [ "fido/strings:fido_test_strings" ]
     }
@@ -300,6 +303,7 @@ test("device_unittests") {
       "bluetooth/floss/floss_admin_client_unittest.cc",
       "bluetooth/floss/floss_advertiser_client_unittest.cc",
       "bluetooth/floss/floss_battery_manager_client_unittest.cc",
+      "bluetooth/floss/floss_bluetooth_telephony_client_unittest.cc",
       "bluetooth/floss/floss_dbus_client_unittest.cc",
       "bluetooth/floss/floss_gatt_manager_client_unittest.cc",
       "bluetooth/floss/floss_lescan_client_unittest.cc",

@@ -35,7 +35,6 @@
 <translation id="1587223624401073077">Google Chrome 正在使用您的相機。</translation>
 <translation id="1587325591171447154"><ph name="FILE_NAME" /> 不安全，因此 Chrome 已封鎖此檔案。</translation>
 <translation id="1597911401261118146">如要檢查密碼是否安全，且未受資料外洩或其他安全性問題影響，請<ph name="BEGIN_LINK" />登入 Chrome<ph name="END_LINK" />。</translation>
-<translation id="1599904803480101533">由於此封存檔案可能隱藏惡意軟件，因此 Chrome 已封鎖此封存檔案</translation>
 <translation id="1619887657840448962">為鞏固 Chrome 的安全性，我們已將未列在 <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> 中的擴充功能停用，因為它們可能在您不知情的情況下加入瀏覽器。</translation>
 <translation id="1627304841979541023"><ph name="BEGIN_BOLD" />您可如何管理資料：<ph name="END_BOLD" />為保障您的私隱，我們會自動刪除超過 4 星期的興趣。按瀏覽內容而定，某個主題可能會再次在您的興趣清單中顯示。您亦可移除不希望 Chrome 列在興趣清單中的項目。</translation>
 <translation id="1628000112320670027">取得 Chrome 相關說明</translation>
@@ -133,6 +132,7 @@
 <translation id="3140883423282498090">您的變更將於下次重新啟動 Google Chrome 時生效。</translation>
 <translation id="3149510190863420837">Chrome 應用程式</translation>
 <translation id="3169523567916669830">在試用期間，您可以查看及移除網站用來向您顯示廣告的感興趣主題。Chrome 會根據您最近的瀏覽記錄，推測您感興趣的主題。</translation>
+<translation id="3226612997184048185">如果一併將書籤儲存在 Google 帳戶中，便可以在 Chrome 中追蹤產品價格，並在降價時收到通知</translation>
 <translation id="3245429137663807393">如果您同時分享 Chrome 使用情況報告，這些報告將會包含您瀏覽的網址</translation>
 <translation id="3282568296779691940">登入 Chrome</translation>
 <translation id="3286538390144397061">立即重新啟動</translation>
@@ -151,7 +151,6 @@
 <translation id="3533694711092285624">沒有已儲存的密碼。儲存密碼時，Chrome 可檢查您的密碼。</translation>
 <translation id="3541482654983822893">Chrome 無法檢查密碼，請於 24 小時後再試一次。</translation>
 <translation id="3576528680708590453">系統管理員已設定 Google Chrome 開啟替代瀏覽器來存取 <ph name="TARGET_URL_HOSTNAME" />。</translation>
-<translation id="3579965087968408543">在 Chrome 關閉後一律清除裝置上的網站資料</translation>
 <translation id="3582972582564653026">在不同裝置上同步和設定個人化的 Chrome</translation>
 <translation id="3596080736082218006">{COUNT,plural, =0{管理員要求您重新啟動 Chrome，以套用更新}=1{管理員要求您重新啟動 Chrome，以套用更新。您的無痕式視窗不會重新開啟。}other{管理員要求您重新啟動 Chrome，以套用更新。您的 # 個無痕式視窗不會重新開啟。}}</translation>
 <translation id="3622797965165704966">無論是登入 Google 帳戶使用 Chrome，還是以 Google 帳戶使用共用電腦，現在都更輕而易舉。</translation>
@@ -219,6 +218,7 @@
 <translation id="4873783916118289636">查看 Chrome 中重要的私隱和安全控制項</translation>
 <translation id="4891791193823137474">讓 Google Chrome 在背景執行</translation>
 <translation id="4895437082222824641">在 Chrome 新分頁中開啟連結(&amp;T)</translation>
+<translation id="492720062778050435">Chrome 建議你檢查此擴充程式</translation>
 <translation id="4953650215774548573">將 Google Chrome 設為預設瀏覽器</translation>
 <translation id="495931528404527476">在 Chrome 中</translation>
 <translation id="4969674060580488087">您的帳戶登入詳情已過時，因此 ChromeOS Flex 無法同步處理您的資料。</translation>
@@ -246,7 +246,6 @@
 <translation id="5430073640787465221">您的偏好設定檔已損毀或無效。
 
 Google Chrome 無法復原您的設定。</translation>
-<translation id="5521146392841465297">Chrome 建議你檢查這項擴充功能。</translation>
 <translation id="5524761631371622910">在試用期間，如果 Chrome 隨機將您加入試用行列，您的瀏覽記錄會影響所看到的廣告，以及系統推測的以下興趣。為保障您的私隱，Chrome 每個月都會自動刪除您的興趣。</translation>
 <translation id="5530733413481476019">加快 Chrome 的運作速度</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
@@ -255,6 +254,7 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="5686916850681061684">自訂及控制 Google Chrome。重要注意事項 - 按這裡瞭解詳情。</translation>
 <translation id="5690427481109656848">Google LLC</translation>
 <translation id="570005089986962444">開啟時，Chrome 會從閒置分頁釋出記憶體，為使用中的分頁和其他應用程式提供更多電腦資源，同時保持 Chrome 的運作速度。閒置分頁會在您使用時自動恢復為「使用中」狀態。</translation>
+<translation id="5709557627224531708">將 Chrome 設為預設瀏覽器</translation>
 <translation id="5727531838415286053">如果 Chrome 隨機將您加入啟用的試用功能中，您的瀏覽紀錄會影響系統顯示的廣告，以及以下推測的興趣。為保障您的私隱，Chrome 每個月都會自動刪除您的興趣。除非您移除興趣，否則系統會重新整理興趣。</translation>
 <translation id="5736850870166430177">如果有網站試圖盜取您的密碼，或當您下載有害檔案時，Chrome 亦可能將網址 (包括部分網頁內容) 傳送至「安全瀏覽」功能</translation>
 <translation id="5756509061973259733">此裝置上已有此帳戶的 Chrome 設定檔</translation>

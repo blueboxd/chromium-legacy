@@ -27,11 +27,6 @@ const char kAutofillAccountProfilesStorageName[] =
 const char kAutofillAccountProfilesStorageDescription[] =
     "When enabled, the profiles would be saved to the Google Account";
 
-const char kAutofillAccountProfilesUnionViewName[] =
-    "Enable compatibility with GAS";
-const char kAutofillAccountProfilesUnionViewDescription[] =
-    "When enabled, the GAS profiles would start up showing in settings";
-
 const char kAutofillBrandingIOSName[] = "Autofill Branding on iOS";
 const char kAutofillBrandingIOSDescription[] =
     "Adds the Chrome logo in the form input suggestions bar. If select "
@@ -203,6 +198,13 @@ const char kAutofillUseTwoDotsForLastFourDigitsDescription[] =
     "When enabled, Autofill surfaces will show two '•' characters instead of "
     "four when displaying the last four digits of a card number";
 
+const char kBottomOmniboxDefaultSettingName[] =
+    "Bottom Omnibox Default Setting";
+const char kBottomOmniboxDefaultSettingDescription[] =
+    "Changes the default setting of the omnibox position. If the user "
+    "hasn't already changed the setting, changes the omnibox position to top "
+    "or bottom of the screen on iPhone. The default is top omnibox.";
+
 const char kBottomOmniboxSteadyStateName[] = "Bottom Omnibox (Steady)";
 const char kBottomOmniboxSteadyStateDescription[] =
     "Move the omnibox to the bottom in steady state";
@@ -243,11 +245,21 @@ extern const char kPhoneNumberDescription[] =
     "When enabled, one tapping or long pressing on a phone number will trigger "
     "the phone number experience.";
 
+const char kMeasurementsName[] = "Measurements experience enable";
+const char kMeasurementsDescription[] =
+    "When enabled, one tapping or long pressing on a measurement will trigger "
+    "the measurement conversion experience.";
+
 extern const char kEnableExpKitTextClassifierName[] =
     "Text Classifier in Experience Kit";
 extern const char kEnableExpKitTextClassifierDescription[] =
     "When enabled, Experience Kit will use Text Classifier library in "
     "entity detection where possible.";
+
+const char kEnableFamilyLinkControlsName[] = "Family Link parental controls";
+const char kEnableFamilyLinkControlsDescription[] =
+    "Enables parental controls from Family Link on supervised accounts "
+    "signed-in to Chrome.";
 
 extern const char kOneTapForMapsName[] = "Enable one Tap Experience for Maps";
 extern const char kOneTapForMapsDescription[] =
@@ -308,12 +320,6 @@ const char kDefaultBrowserTriggerCriteriaExperimentDescription[] =
     "When enabled, default browser promo will be displayed to user without "
     "matching all the trigger criteria.";
 
-const char kDefaultBrowserTriggerOnOmniboxCopyPasteName[] =
-    "Trigger promo on omnibox copy-paste";
-const char kDefaultBrowserTriggerOnOmniboxCopyPasteDescription[] =
-    "When enabled promo will be displayed on omnibox copy-paste event instead "
-    "of on chrome launch";
-
 const char kDefaultBrowserVideoPromoName[] =
     "Enable default browser video promo";
 const char kDefaultBrowserVideoPromoDescription[] =
@@ -324,6 +330,10 @@ const char kDetectMainThreadFreezeName[] = "Detect freeze in the main thread.";
 const char kDetectMainThreadFreezeDescription[] =
     "A crash report will be uploaded if the main thread is frozen more than "
     "the time specified by this flag.";
+
+const char kDiscoverFeedSportCardName[] = "Sport card in Discover feed";
+const char kDiscoverFeedSportCardDescription[] =
+    "Enables the live sport card in the NTP's Discover feed";
 
 const char kEnableDiscoverFeedTopSyncPromoName[] =
     "Enables the top of feed sync promo.";
@@ -336,11 +346,20 @@ const char kEnableFeedHeaderSettingsName[] =
 const char kEnableFeedHeaderSettingsDescription[] =
     "When enabled, some UI elements of the feed header can be modified.";
 
-const char kEnableFriendlierSafeBrowsingSettingsName[] =
-    "Enable Friendlier Safe Browsing Settings";
-const char kEnableFriendlierSafeBrowsingSettingsDescription[] =
-    "Updates the text, layout, and icons on both the privacy guide and the "
-    "security settings page.";
+const char kEnableFriendlierSafeBrowsingSettingsEnhancedProtectionName[] =
+    "Enable friendlier safe browsing settings enhanced protection";
+const char
+    kEnableFriendlierSafeBrowsingSettingsEnhancedProtectionDescription[] =
+        "Updates the text, layout, icons, and links on both the privacy guide "
+        "and the security settings page.";
+
+const char kEnableFriendlierSafeBrowsingSettingsStandardProtectionName[] =
+    "Enable Friendlier Safe Browsing Settings for standard protection";
+const char
+    kEnableFriendlierSafeBrowsingSettingsStandardProtectionDescription[] =
+        "Updates the text and layout on both the privacy guide and the "
+        "security "
+        "settings page.";
 
 const char kEditPasswordsInSettingsName[] = "Edit passwords in settings";
 const char kEditPasswordsInSettingsDescription[] =
@@ -385,10 +404,6 @@ const char kEnableDiscoverFeedDiscoFeedEndpointName[] =
 const char kEnableDiscoverFeedDiscoFeedEndpointDescription[] =
     "Enable using the discofeed endpoint for the discover feed.";
 
-const char kTileAblationName[] = "Enables tile ablation";
-const char kTileAblationDescription[] =
-    "Hides the shortcuts and most visited tiles on the NTP for new users.";
-
 const char kEnableFeedAblationName[] = "Enables Feed Ablation";
 const char kEnableFeedAblationDescription[] =
     "If Enabled the Feed will be removed from the NTP";
@@ -422,12 +437,6 @@ const char kEnableFollowManagementInstantReloadDescription[] =
 const char kEnableFollowUIUpdateName[] = "Enable the Follow UI Update";
 const char kEnableFollowUIUpdateDescription[] =
     "Enable Follow UI Update for the Feed.";
-
-const char kPasswordsGroupingName[] =
-    "Enable password grouping for the Password Manager";
-const char kPasswordsGroupingDescription[] =
-    "Group passwords into the same affiliated group in the Password Manager "
-    "for the Saved Passwords section";
 
 const char kEnablePreferencesAccountStorageName[] =
     "Enable the account data storage for preferences for syncing users";
@@ -471,10 +480,17 @@ const char kEnableUIButtonConfigurationName[] =
 const char kEnableUIButtonConfigurationDescription[] =
     "Enable UIButtonConfiguration usage for UIButtons.";
 
-const char kEnableUserPolicyName[] = "Enable user policies";
-const char kEnableUserPolicyDescription[] =
-    "Enable the fetch and application of user policies when synced with a "
-    "managed account";
+const char kEnableUserPolicyForSigninAndNoSyncConsentLevelName[] =
+    "Enable user policies when signed-in only without sync";
+const char kEnableUserPolicyForSigninAndNoSyncConsentLevelDescription[] =
+    "Enable the fetch and application of user policies when signed-in only with"
+    "a managed account, excluding signed-in+sync.";
+
+const char kEnableUserPolicyForSigninOrSyncConsentLevelName[] =
+    "Enable user policies when signed-in only or signed-in+sync";
+const char kEnableUserPolicyForSigninOrSyncConsentLevelDescription[] =
+    "Enable the fetch and application of user policies when signed-in only or "
+    "signed-in+sync with a managed account.";
 
 const char kEnableVariationsGoogleGroupFilteringName[] =
     "Enables filtering experiments by Google group membership";
@@ -482,6 +498,11 @@ const char kEnableVariationsGoogleGroupFilteringDescription[] =
     "Enables filtering of experiments by Google group membership. This feature "
     "is experimental and is used only for dogfooding, and only for users who "
     "are signed in and have Chrome Sync enabled.";
+
+const char kEnableWebChannelsName[] = "Enable WebFeed";
+const char kEnableWebChannelsDescription[] =
+    "Enable folowing content from web and display Following feed on NTP based "
+    "on sites that users followed.";
 
 const char kTailoredSecurityIntegrationName[] =
     "Enable Tailored Security Integration";
@@ -517,6 +538,12 @@ const char kForceStartupSigninPromoDescription[] =
     "When enabled, the startup sign-in promo is always displayed when starting "
     "Chrome.";
 
+const char kFullScreenPromoOnOmniboxCopyPasteName[] =
+    "Trigger Default Browser full-screen promo on omnibox copy-paste";
+const char kFullScreenPromoOnOmniboxCopyPasteDescription[] =
+    "When enabled full-screen promo will be displayed on omnibox copy-paste "
+    "event";
+
 const char kFullscreenPromosManagerSkipInternalLimitsName[] =
     "Fullscreen Promos Manager (Skip internal Impression Limits)";
 const char kFullscreenPromosManagerSkipInternalLimitsDescription[] =
@@ -528,13 +555,9 @@ const char kFullscreenSmoothScrollingDescription[] =
     "When enabled, the web view's insets are updated for scoll events. If "
     "disabled, the the web view's frame are updated.";
 
-extern const char kHideContentSuggestionTilesName[] =
-    "Hide content suggestions tiles";
-extern const char kHideContentSuggestionTilesDescription[] =
+const char kHideContentSuggestionTilesName[] = "Hide content suggestions tiles";
+const char kHideContentSuggestionTilesDescription[] =
     "Hides content suggestions tiles from the new tab page.";
-
-const char kHttpsOnlyModeName[] = "HTTPS-Only Mode Setting";
-const char kHttpsOnlyModeDescription[] = "Enables the HTTPS-Only Mode setting";
 
 const char kIncognitoNtpRevampName[] = "Revamped Incognito New Tab Page";
 const char kIncognitoNtpRevampDescription[] =
@@ -584,8 +607,16 @@ const char kIOSNewPostRestoreExperienceDescription[] =
 
 const char kIOSPasswordAuthOnEntryName[] = "Password Manager Auth on Entry";
 const char kIOSPasswordAuthOnEntryDescription[] =
-    "Requires Biometric Authentication before showing saved credentials in "
-    "Password Manager.";
+    "Requires Local Authentication before showing saved credentials in "
+    "the Password Manager Main Page. Ignored if 'Password Manager Auth on "
+    "Entry V2' is enabled.";
+
+const char kIOSPasswordAuthOnEntryV2Name[] =
+    "Password Manager Auth on Entry V2";
+const char kIOSPasswordAuthOnEntryV2Description[] =
+    "Requires Local Authentication before showing saved credentials in "
+    "Password Manager subpages. Supersedes `Password Manager Auth on Entry` if "
+    "enabled.";
 
 const char kIOSPasswordCheckupName[] = "Password Checkup";
 const char kIOSPasswordCheckupDescription[] =
@@ -836,7 +867,7 @@ const char kOmniboxZeroSuggestPrefetchingOnWebDescription[] =
 const char kOnlyAccessClipboardAsyncName[] =
     "Only access the clipboard asynchronously";
 const char kOnlyAccessClipboardAsyncDescription[] =
-    "Only accesses the clipboard asnchronously.";
+    "Only accesses the clipboard asynchronously.";
 
 const char kOptimizationGuideDebugLogsName[] =
     "Enable optimization guide debug logs";
@@ -933,6 +964,11 @@ const char kSafetyCheckMagicStackDescription[] =
 const char kScreenTimeIntegrationName[] = "Enables ScreenTime Integration";
 const char kScreenTimeIntegrationDescription[] =
     "Enables integration with ScreenTime in iOS 14.0 and above.";
+
+const char kSegmentationPlatformIosModuleRankerName[] =
+    "Enable Magic Stack Segmentation Ranking";
+const char kSegmentationPlatformIosModuleRankerDescription[] =
+    "Enables the Segmentation platform to rank Magic Stack modules";
 
 const char kSendTabToSelfSigninPromoName[] = "Send tab to self sign-in promo";
 const char kSendTabToSelfSigninPromoDescription[] =
@@ -1068,10 +1104,6 @@ const char kEnableSessionSerializationOptimizationsDescription[] =
     "and the ability to load only the minimum amount of data when restoring "
     "the session from disk.";
 
-const char kTabGridRecencySortName[] = "Change TabGrid sorting";
-const char kTabGridRecencySortDescription[] =
-    "When enabled, the tabs in the Tab Grid are sorted differently.";
-
 const char kTabGridRefactoringName[] = "Enable tab grid refactoring";
 const char kTabGridRefactoringDescription[] =
     "When enabled, the Tab Grid use the refactored version, it should not have "
@@ -1088,6 +1120,12 @@ const char kTabInactivityThresholdDescription[] =
     "and set aside in the Inactive Tabs section of the TabGrid."
     "IMPORTANT: If you ever used the in-app settings for Inactive Tabs, this "
     "flag is never read again.";
+
+const char kTabPickupMinimumDelayName[] =
+    "Add delay between tab pickup banners";
+const char kTabPickupMinimumDelayDescription[] =
+    "When enabled, adds a 2h delay between the presentation of two tab pickup "
+    "banners.";
 
 const char kTabPickupThresholdName[] = "Enable and change tab pickup threshold";
 const char kTabPickupThresholdDescription[] =

@@ -40,6 +40,7 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
+import org.chromium.chrome.browser.tabmodel.TabList;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
@@ -122,14 +123,16 @@ class MultiInstanceManagerApi31 extends MultiInstanceManager implements Activity
     protected void moveTabToOtherWindow(Tab tab) {
         TargetSelectorCoordinator.showDialog(mActivity, mModalDialogManagerSupplier.get(),
                 new LargeIconBridge(getProfile()),
-                (instanceInfo) -> moveTabAction(instanceInfo, tab), getInstanceInfo());
+                (instanceInfo)
+                        -> moveTabAction(instanceInfo, tab, TabList.INVALID_TAB_INDEX),
+                getInstanceInfo());
     }
 
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
-    void moveTabAction(InstanceInfo info, Tab tab) {
+    void moveTabAction(InstanceInfo info, Tab tab, int tabAtIndex) {
         Activity targetActivity = getActivityById(info.instanceId);
         if (targetActivity != null) {
-            reparentTabToRunningActivity((ChromeTabbedActivity) targetActivity, tab);
+            reparentTabToRunningActivity((ChromeTabbedActivity) targetActivity, tab, tabAtIndex);
         } else {
             moveAndReparentTabToNewWindow(tab, info.instanceId, /*preferNew=*/false,
                     /*openAdjacently=*/true, /*addTrustedIntentExtras=*/true);
@@ -142,11 +145,13 @@ class MultiInstanceManagerApi31 extends MultiInstanceManager implements Activity
         onMultiInstanceModeStarted();
         Intent intent = MultiWindowUtils.createNewWindowIntent(
                 mActivity, instanceId, preferNew, openAdjacently, addTrustedIntentExtras);
-        ReparentingTask.from(tab).begin(mActivity, intent,
+        beginReparenting(tab, intent,
                 mMultiWindowModeStateDispatcher.getOpenInOtherWindowActivityOptions(), null);
     }
 
-    private void reparentTabToRunningActivity(ChromeTabbedActivity targetActivity, Tab tab) {
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    void reparentTabToRunningActivity(
+            ChromeTabbedActivity targetActivity, Tab tab, int tabAtIndex) {
         assert targetActivity != null;
         Intent intent = new Intent();
         Context appContext = ContextUtils.getApplicationContext();
@@ -156,7 +161,10 @@ class MultiInstanceManagerApi31 extends MultiInstanceManager implements Activity
         onMultiInstanceModeStarted();
         RecordUserAction.record("MobileMenuMoveToOtherWindow");
 
-        ReparentingTask.from(tab).setupIntent(mActivity, intent, null);
+        if (tabAtIndex != TabList.INVALID_TAB_INDEX) {
+            intent.putExtra(IntentHandler.EXTRA_TAB_INDEX, tabAtIndex);
+        }
+        setupIntentForReparenting(tab, intent, null);
 
         targetActivity.onNewIntent(intent);
         bringTaskForeground(targetActivity.getTaskId());
@@ -390,7 +398,8 @@ class MultiInstanceManagerApi31 extends MultiInstanceManager implements Activity
         return results;
     }
 
-    private static Activity getActivityById(int id) {
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    static Activity getActivityById(int id) {
         TabWindowManager windowManager = TabWindowManagerSingleton.getInstance();
         for (Activity activity : getAllRunningActivities()) {
             if (id == windowManager.getIndexForWindow(activity)) return activity;
@@ -618,9 +627,21 @@ class MultiInstanceManagerApi31 extends MultiInstanceManager implements Activity
         if (activity != null) activity.finishAndRemoveTask();
     }
 
-    private void bringTaskForeground(int taskId) {
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    void bringTaskForeground(int taskId) {
         ActivityManager am = (ActivityManager) mActivity.getSystemService(Context.ACTIVITY_SERVICE);
         am.moveTaskToFront(taskId, 0);
+    }
+
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    void setupIntentForReparenting(Tab tab, Intent intent, Runnable finalizeCallback) {
+        ReparentingTask.from(tab).setupIntent(mActivity, intent, finalizeCallback);
+    }
+
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    void beginReparenting(
+            Tab tab, Intent intent, Bundle startActivityOptions, Runnable finalizeCallback) {
+        ReparentingTask.from(tab).begin(mActivity, intent, startActivityOptions, finalizeCallback);
     }
 
     private Profile getProfile() {
@@ -732,15 +753,16 @@ class MultiInstanceManagerApi31 extends MultiInstanceManager implements Activity
      * Move the specified tab to the current instance of the ChromeTabbedActivity window.
      * @param activity Activity of the Chrome Window in which the tab is to be moved.
      * @param tab Tab that is to be moved to the current instance.
+     * @param atIndex Tab position index in the destination window instance.
      */
     @Override
-    public void moveTabToWindow(Activity activity, Tab tab) {
+    public void moveTabToWindow(Activity activity, Tab tab, int atIndex) {
         if (!ChromeFeatureList.sTabDragDropAndroid.isEnabled()) return;
 
         // Get the current instance and move tab there.
         InstanceInfo info = getInstanceInfoFor(activity);
         if (info != null) {
-            moveTabAction(info, tab);
+            moveTabAction(info, tab, atIndex);
         } else {
             Log.w(TAG, "DnD: InstanceInfo of Chrome Window not found.");
         }

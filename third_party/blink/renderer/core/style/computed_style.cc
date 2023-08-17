@@ -77,7 +77,7 @@
 #include "third_party/blink/renderer/core/style/style_ray.h"
 #include "third_party/blink/renderer/core/svg/svg_element.h"
 #include "third_party/blink/renderer/core/svg/svg_geometry_element.h"
-#include "third_party/blink/renderer/core/svg/svg_length_context.h"
+#include "third_party/blink/renderer/core/svg/svg_length_functions.h"
 #include "third_party/blink/renderer/platform/fonts/font.h"
 #include "third_party/blink/renderer/platform/fonts/font_selector.h"
 #include "third_party/blink/renderer/platform/geometry/length_functions.h"
@@ -214,16 +214,28 @@ PositionFallbackStyleCache& ComputedStyle::EnsurePositionFallbackStyleCache(
   return *cached_data_->position_fallback_styles_;
 }
 
-ALWAYS_INLINE ComputedStyle::ComputedStyle()
-    : ComputedStyleBase(), RefCounted<ComputedStyle>() {}
+ALWAYS_INLINE ComputedStyle::ComputedStyle() : RefCounted<ComputedStyle>() {}
 
-ALWAYS_INLINE ComputedStyle::ComputedStyle(const ComputedStyle& o)
-    : ComputedStyleBase(o), RefCounted<ComputedStyle>() {}
+ALWAYS_INLINE ComputedStyle::ComputedStyle(const ComputedStyle& initial_style)
+    : ComputedStyleBase(initial_style), RefCounted<ComputedStyle>() {}
+
+ALWAYS_INLINE ComputedStyle::ComputedStyle(const ComputedStyle& initial_style,
+                                           const ComputedStyle& parent_style,
+                                           ComputedStyleAccessFlags& access)
+    : ComputedStyleBase(initial_style, parent_style, access),
+      RefCounted<ComputedStyle>() {}
 
 ALWAYS_INLINE ComputedStyle::ComputedStyle(PassKey key) : ComputedStyle() {}
 
-ALWAYS_INLINE ComputedStyle::ComputedStyle(PassKey key, const ComputedStyle& o)
-    : ComputedStyle(o) {}
+ALWAYS_INLINE ComputedStyle::ComputedStyle(PassKey key,
+                                           const ComputedStyle& initial_style)
+    : ComputedStyle(initial_style) {}
+
+ALWAYS_INLINE ComputedStyle::ComputedStyle(PassKey key,
+                                           const ComputedStyle& initial_style,
+                                           const ComputedStyle& parent_style,
+                                           ComputedStyleAccessFlags& access)
+    : ComputedStyle(initial_style, parent_style, access) {}
 
 static bool PseudoElementStylesEqual(const ComputedStyle& old_style,
                                      const ComputedStyle& new_style) {
@@ -1413,8 +1425,7 @@ gfx::RectF GetReferenceBox(const LayoutBox* box, CoordBox coord_box) {
     if (const LayoutBlock* containing_block = box->ContainingBlock()) {
       // In SVG contexts, all values behave as view-box.
       if (box->IsSVG()) {
-        return gfx::RectF(
-            SVGLengthContext(To<SVGElement>(box->GetNode())).ResolveViewport());
+        return gfx::RectF(SVGViewportResolver(*box).ResolveViewport());
       }
       // https://drafts.csswg.org/css-box-4/#typedef-coord-box
       switch (coord_box) {
@@ -2603,6 +2614,30 @@ bool ComputedStyle::IsRenderedInTopLayer(const Element& element) const {
 ComputedStyleBuilder::ComputedStyleBuilder(const ComputedStyle& style) {
   style_ = base::AdoptRef(new ComputedStyle(style));
   SetStyleBase(*style_);
+}
+
+ComputedStyleBuilder::ComputedStyleBuilder(
+    const ComputedStyle& initial_style,
+    const ComputedStyle& parent_style,
+    IsAtShadowBoundary is_at_shadow_boundary) {
+  style_ = base::AdoptRef(new ComputedStyle(initial_style, parent_style,
+                                            GetAccessFlagsForConstructor()));
+  SetStyleBase(*style_);
+
+  // Even if surrounding content is user-editable, shadow DOM should act as a
+  // single unit, and not necessarily be editable
+  if (is_at_shadow_boundary == kAtShadowBoundary) {
+    SetUserModify(initial_style.UserModify());
+  }
+
+  // TODO(crbug.com/1410068): Once `user-select` isn't inherited, we should
+  // get rid of following if-statement.
+  if (parent_style.UserSelect() == EUserSelect::kContain) {
+    SetUserSelect(EUserSelect::kAuto);  // FIXME(sesse): Is this right?
+  }
+
+  // TODO(sesse): Why do we do this?
+  SetBaseTextDecorationData(parent_style.AppliedTextDecorationData());
 }
 
 scoped_refptr<const ComputedStyle> ComputedStyleBuilder::CloneStyle() const {

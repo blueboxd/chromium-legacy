@@ -21,7 +21,6 @@
 #import "ios/chrome/browser/net/crurl.h"
 #import "ios/chrome/browser/policy/policy_util.h"
 #import "ios/chrome/browser/search_engines/template_url_service_factory.h"
-#import "ios/chrome/browser/shared/coordinator/default_browser_promo/non_modal_default_browser_promo_scheduler_scene_agent.h"
 #import "ios/chrome/browser/shared/coordinator/layout_guide/layout_guide_util.h"
 #import "ios/chrome/browser/shared/coordinator/scene/scene_state_browser_agent.h"
 #import "ios/chrome/browser/shared/model/browser/browser.h"
@@ -51,10 +50,6 @@
 #import "ios/chrome/browser/ui/sharing/sharing_params.h"
 #import "services/network/public/cpp/shared_url_loader_factory.h"
 #import "ui/base/device_form_factor.h"
-
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
 
 @interface OmniboxPopupCoordinator () <OmniboxPopupMediatorProtocolProvider,
                                        OmniboxPopupMediatorSharingDelegate> {
@@ -161,15 +156,14 @@
   self.mediator.applicationCommandsHandler = HandlerForProtocol(
       self.browser->GetCommandDispatcher(), ApplicationCommands);
   self.mediator.incognito = isIncognito;
-  SceneState* sceneState =
+  self.mediator.sceneState =
       SceneStateBrowserAgent::FromBrowser(self.browser)->GetSceneState();
-  self.mediator.promoScheduler = [NonModalDefaultBrowserPromoSchedulerSceneAgent
-      agentFromScene:sceneState];
   self.mediator.presenter = [[OmniboxPopupPresenter alloc]
       initWithPopupPresenterDelegate:self.presenterDelegate
                  popupViewController:self.popupViewController
                    layoutGuideCenter:LayoutGuideCenterForBrowser(self.browser)
                            incognito:isIncognito];
+  self.mediator.prefService = self.browser->GetBrowserState()->GetPrefs();
 
   _popupView->SetMediator(self.mediator);
 
@@ -180,6 +174,7 @@
 
 - (void)stop {
   [self.sharingCoordinator stop];
+  self.sharingCoordinator = nil;
   _popupView.reset();
 }
 

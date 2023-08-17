@@ -56,6 +56,9 @@ inline constexpr char kDownloadBubbleEnabled[] = "download_bubble_enabled";
 // A boolean specifying whether the partial download bubble (which shows up
 // automatically when downloads are complete) should be enabled. True (partial
 // bubble will show automatically) by default.
+// The following two prefs are ignored on ChromeOS Lacros if SysUI integration
+// is enabled.
+// TODO(chlily): Clean them up once SysUI integration is enabled by default.
 inline constexpr char kDownloadBubblePartialViewEnabled[] =
     "download_bubble.partial_view_enabled";
 
@@ -89,8 +92,22 @@ inline constexpr char kHomePageIsNewTabPage[] = "homepage_is_newtabpage";
 // This is the URL of the page to load when opening new tabs.
 inline constexpr char kHomePage[] = "homepage";
 
-// A boolean specifying whether HTTPS-Only Mode is enabled.
+// A boolean specifying whether HTTPS-Only Mode is enabled by the user.
 inline constexpr char kHttpsOnlyModeEnabled[] = "https_only_mode_enabled";
+
+// A boolean specifying whether HTTPS-Only Mode is automatically enabled by
+// heuristics. Can only be set to true if this pref or kHttpsOnlyModeEnabled has
+// never been set before (true or false). If kHttpsOnlyModeEnabled is modified,
+// this will be set to false, disabling automatic enabling of HTTPS-First Mode
+// forever for this profile.
+inline constexpr char kHttpsOnlyModeAutoEnabled[] =
+    "https_only_mode_auto_enabled";
+
+// A dictionary containing information about HTTPS Upgrade failures in the
+// recent days. Failure entries are stored in a list with a timestamp. Old
+// entries are evicted from the list and new entries are added when a new HTTPS
+// Upgrade fallback happens.
+inline constexpr char kHttpsUpgradeFallbacks[] = "https_upgrade_fallbacks";
 
 // Stores information about the important sites dialog, including the time and
 // frequency it has been ignored.
@@ -613,10 +630,6 @@ inline constexpr char kLastSessionLength[] = "session.last_session_length";
 // honored for public accounts.
 inline constexpr char kTermsOfServiceURL[] = "terms_of_service.url";
 
-// TODO(b/285556135): Remove this pref together with AttestationEnabledForUser
-// Indicates whether the remote attestation is enabled for the user.
-inline constexpr char kAttestationEnabled[] = "attestation.enabled";
-
 // A boolean pref recording whether user has dismissed the multiprofile
 // introduction dialog show.
 inline constexpr char kMultiProfileNeverShowIntro[] =
@@ -864,14 +877,14 @@ inline constexpr char kHatsGeneralCameraIsSelected[] =
     "hats_general_camera_is_selected";
 
 // A boolean pref. Indicated if the device is selected for the Privacy Hub
-// baseline survey.
-inline constexpr char kHatsPrivacyHubBaselineIsSelected[] =
-    "hats_privacy_hub_baseline_is_selected";
+// post launch survey.
+inline constexpr char kHatsPrivacyHubPostLaunchIsSelected[] =
+    "hats_privacy_hub_postlaunch_is_selected";
 
 // An int64 pref. This is the timestamp, microseconds after epoch, that
-// indicated the end of the most recent Privacy Hub baseline cycle.
-inline constexpr char kHatsPrivacyHubBaselineCycleEndTs[] =
-    "hats_privacy_hub_baseline_end_timestamp";
+// indicated the end of the most recent Privacy Hub post launch cycle.
+inline constexpr char kHatsPrivacyHubPostLaunchCycleEndTs[] =
+    "hats_privacy_hub_postlaunch_end_timestamp";
 
 // A boolean pref. Indicated if the device is selected for the Borealis games
 // survey.
@@ -1226,8 +1239,8 @@ inline constexpr char kHatsOsSettingsSearchSurveyIsSelected[] =
 inline constexpr char kTotalUniqueOsSettingsChanged[] =
     "settings.total_unique_os_settings_changed";
 
-// A boolean representing whether the user has used settings after at least 7
-// days have passed since the user completed OOBE.
+// A boolean representing whether the user has changed a unique Setting after at
+// least 7 days have passed since the user completed OOBE.
 inline constexpr char kHasResetFirst7DaysSettingsUsedCount[] =
     "settings.has_reset_first_seven_days_settings_used_count";
 
@@ -1235,13 +1248,19 @@ inline constexpr char kHasResetFirst7DaysSettingsUsedCount[] =
 // for UMA at least one time in the lifetime of the device.
 //
 // If the value is true, the user has revoked consent for recording their
-// metrics at least once in the device's lifetime. This is the final value of
-// this pref, ie. once the pref is set to true, the value will never change
-// again. Even if the user grants consent again, we will not record their metric
-// in the histogram
-// "ChromeOS.Settings.NumUniqueSettingsChanged.DeviceLifetime.{Time}".
+// metrics at least once in the device's lifetime AND has made a change to
+// Settings when the consent was revoked. This is the final value of this pref,
+// ie. once the pref is set to true, the value will never change again. Even if
+// the user grants consent again, we will not record their metric in the
+// histogram
+// "ChromeOS.Settings.NumUniqueSettingsChanged.DeviceLifetime2.{Time}".
 const char kHasEverRevokedMetricsConsent[] =
     "settings.has_ever_revoked_metrics_consent";
+
+// A boolean to store that an admin user accessed the host device remotely when
+// no user was present at the device. This boolean enables the device to display
+// a notification to the local user when the session was terminated.
+inline constexpr char kRemoteAdminWasPresent[] = "remote_admin_was_present";
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_CHROMEOS)
@@ -1330,6 +1349,10 @@ inline constexpr char kUserColor[] = "browser.theme.user_color";
 extern inline constexpr char kBrowserColorVariant[] =
     "browser.theme.color_variant";
 
+// Boolean pref tracking whether chrome follows the system's color theme.
+extern inline constexpr char kBrowserFollowsSystemThemeColors[] =
+    "browser.theme.follows_system_colors";
+
 // Boolean pref tracking whether the grayscale theme has been enabled.
 inline constexpr char kGrayscaleThemeEnabled[] = "browser.theme.is_grayscale";
 
@@ -1391,6 +1414,12 @@ inline constexpr char kAccessibilityImageLabelsOnlyOnWifi[] =
 // A boolean pref which determines whether focus highlighting is enabled.
 inline constexpr char kAccessibilityFocusHighlightEnabled[] =
     "settings.a11y.focus_highlight";
+#endif
+
+#if defined(USE_AURA)
+// Whether horizontal overscroll will trigger history navigation.
+inline constexpr char kOverscrollHistoryNavigationEnabled[] =
+    "settings.a11y.overscroll_history_navigation";
 #endif
 
 // Whether the PDF OCR feature is set to be always active. The PDF OCR feature
@@ -1909,6 +1938,12 @@ inline constexpr char kProfileCreatedByVersion[] = "profile.created_by_version";
 // them.
 inline constexpr char kProfileAttributes[] = "profile.info_cache";
 
+// A list of the profiles that is ordered based on the user preferences. It is
+// stored using the storage key of each profile which is unique. The order can
+// be seen and modified on the profile picker using the drag and drop
+// functionality.
+inline constexpr char kProfilesOrder[] = "profile.profiles_order";
+
 // A list of profile paths that should be deleted on shutdown. The deletion does
 // not happen if the browser crashes, so we remove the profile on next start.
 inline constexpr char kProfilesDeleted[] = "profiles.profiles_deleted";
@@ -2112,14 +2147,6 @@ inline constexpr char kLastKnownIntranetRedirectOrigin[] =
 inline constexpr char kDNSInterceptionChecksEnabled[] =
     "browser.dns_interception_checks_enabled";
 
-// An enum value of how the browser was shut down (see browser_shutdown.h).
-inline constexpr char kShutdownType[] = "shutdown.type";
-// Number of processes that were open when the user shut down.
-inline constexpr char kShutdownNumProcesses[] = "shutdown.num_processes";
-// Number of processes that were shut down using the slow path.
-inline constexpr char kShutdownNumProcessesSlow[] =
-    "shutdown.num_processes_slow";
-
 // Whether to restart the current Chrome session automatically as the last thing
 // before shutting everything down.
 inline constexpr char kRestartLastSessionOnShutdown[] =
@@ -2197,6 +2224,10 @@ inline constexpr char kNtpModulesFreVisible[] = "NewTabPage.ModulesFreVisible";
 inline constexpr char kNtpPromoBlocklist[] = "ntp.promo_blocklist";
 // Whether the promo is visible.
 inline constexpr char kNtpPromoVisible[] = "ntp.promo_visible";
+// Number of times the seed color has been changed via the Customize Chrome
+// panel across NTP tabs. Incremented at most once per NTP tab.
+inline constexpr char kSeedColorChangeCount[] =
+    "colorpicker.SeedColorChangeCount";
 #endif  // BUILDFLAG(IS_ANDROID)
 
 // Which page should be visible on the new tab page v4
@@ -2365,13 +2396,14 @@ inline constexpr char kMediaStorageIdSalt[] = "media.storage_id_salt";
 // Mapping of origin to their origin id (UnguessableToken). Origin IDs are only
 // stored for origins using MediaFoundation-based CDMs.
 inline constexpr char kMediaCdmOriginData[] = "media.cdm.origin_data";
+#endif  // BUILDFLAG(IS_WIN)
 
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX)
 // A boolean pref to determine whether or not the network service is running
 // sandboxed.
 inline constexpr char kNetworkServiceSandboxEnabled[] =
     "net.network_service_sandbox";
-
-#endif  // BUILDFLAG(IS_WIN)
+#endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX)
 
 // The last used printer and its settings.
 inline constexpr char kPrintPreviewStickySettings[] =
@@ -3672,9 +3704,8 @@ inline constexpr char kShowCaretBrowsingDialog[] =
 // LacrosAvailability policy and can have one of the following values:
 // 0: User choice (default value).
 // 1: Lacros is disallowed.
-// 2: Lacros is enabled but not the pimary browser.
-// 3: Lacros is enabled as the primary browser.
 // 4: Lacros is the only available browser.
+// Values 2 and 3 were removed and should not be reused.
 inline constexpr char kLacrosLaunchSwitch[] = "lacros_launch_switch";
 
 // Enum pref indicating which Lacros browser to launch: rootfs or stateful. It
@@ -3923,6 +3954,10 @@ inline constexpr char kHttpsUpgradesEnabled[] =
 // Whether the hovercard image previews is enabled
 inline constexpr char kHoverCardImagesEnabled[] =
     "browser.hovercard.image_previews_enabled";
+
+// Boolean that specifies whether Compression Dictionary Transport is enabled.
+inline constexpr char kCompressionDictionaryTransportEnabled[] =
+    "net.compression_dictionary_transport_enabled";
 
 }  // namespace prefs
 

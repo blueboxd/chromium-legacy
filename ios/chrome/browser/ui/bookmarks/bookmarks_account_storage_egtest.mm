@@ -25,10 +25,6 @@
 #import "ios/testing/earl_grey/earl_grey_test.h"
 #import "net/test/embedded_test_server/embedded_test_server.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 using chrome_test_util::BookmarksHomeDoneButton;
 using chrome_test_util::BookmarksNavigationBarBackButton;
 using chrome_test_util::IdentityCellMatcherForEmail;
@@ -51,14 +47,14 @@ using chrome_test_util::SecondarySignInButton;
 
 - (void)setUp {
   [super setUp];
-  [ChromeEarlGrey waitForBookmarksToFinishLoading];
-  [ChromeEarlGrey clearBookmarks];
+  [BookmarkEarlGrey waitForBookmarkModelsLoaded];
+  [BookmarkEarlGrey clearBookmarks];
 }
 
 // Tear down called once per test.
 - (void)tearDown {
   [super tearDown];
-  [ChromeEarlGrey clearBookmarks];
+  [BookmarkEarlGrey clearBookmarks];
   [BookmarkEarlGrey clearBookmarksPositionCache];
 }
 
@@ -75,7 +71,7 @@ using chrome_test_util::SecondarySignInButton;
   [ChromeEarlGrey loadURL:bookmarkURL];
   [[EarlGrey selectElementWithMatcher:OmniboxText(expectedURLContent)]
       assertWithMatcher:grey_notNil()];
-  [BookmarkEarlGrey waitForBookmarkModelLoaded];
+  [BookmarkEarlGrey waitForBookmarkModelsLoaded];
   [BookmarkEarlGreyUI bookmarkCurrentTabWithTitle:bookmarkTitle];
   // Sign-in+sync with identity.
   FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];

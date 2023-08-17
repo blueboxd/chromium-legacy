@@ -13,9 +13,9 @@
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "components/permissions/permission_request.h"
-#include "components/permissions/permission_result.h"
 #include "components/permissions/prediction_service/prediction_service_messages.pb.h"
 #include "components/permissions/request_type.h"
+#include "content/public/browser/permission_result.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/permissions_policy/permissions_policy_feature.mojom-forward.h"
 
@@ -266,14 +266,20 @@ enum class OneTimePermissionEvent {
 
   // Recorded when a one time grant expires because all tabs are either closed
   // or discarded.
-
   ALL_TABS_CLOSED_OR_DISCARDED = 2,
 
   // Recorded when a one time grant expires because the permission was unused in
   // the background.
   EXPIRED_IN_BACKGROUND = 3,
 
-  kMaxValue = EXPIRED_IN_BACKGROUND
+  // Revoked because of the maximum one time permission lifetime
+  // `kOneTimePermissionMaximumLifetime`
+  EXPIRED_AFTER_MAXIMUM_LIFETIME = 4,
+
+  // Recorded when a one time grant expires because the device was suspended.
+  EXPIRED_ON_SUSPEND = 5,
+
+  kMaxValue = EXPIRED_ON_SUSPEND
 };
 
 enum class PermissionAutoRevocationHistory {
@@ -375,8 +381,13 @@ enum class PermissionChangeAction {
   // CONTENT_SETTING_DEFAULT.
   RESET_FROM_DENIED = 3,
 
+  // For one time grantable permissions, the user can toggle a remember checkbox
+  // in the secondary page info page which toggles grants between permanent
+  // grant and one time grant.
+  REMEMBER_CHECKBOX_TOGGLED = 4,
+
   // Always keep at the end.
-  kMaxValue = RESET_FROM_DENIED
+  kMaxValue = REMEMBER_CHECKBOX_TOGGLED
 };
 
 // The reason the permission action `PermissionAction::IGNORED` was triggered.
@@ -472,7 +483,7 @@ class PermissionUmaUtil {
       PermissionEmbargoStatus embargo_status);
 
   static void RecordEmbargoPromptSuppressionFromSource(
-      PermissionStatusSource source);
+      content::PermissionStatusSource source);
 
   static void RecordEmbargoStatus(PermissionEmbargoStatus embargo_status);
 

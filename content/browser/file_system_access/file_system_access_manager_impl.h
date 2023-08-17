@@ -23,6 +23,7 @@
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/file_system_access/file_system_access.pb.h"
 #include "content/browser/file_system_access/file_system_access_lock_manager.h"
+#include "content/browser/file_system_access/file_system_access_watcher_manager.h"
 #include "content/browser/file_system_access/file_system_chooser.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/file_system_access_entry_factory.h"
@@ -42,6 +43,7 @@
 #include "third_party/blink/public/mojom/file_system_access/file_system_access_file_delegate_host.mojom.h"
 #include "third_party/blink/public/mojom/file_system_access/file_system_access_file_writer.mojom.h"
 #include "third_party/blink/public/mojom/file_system_access/file_system_access_manager.mojom.h"
+#include "third_party/blink/public/mojom/file_system_access/file_system_access_observer_host.mojom.h"
 #include "third_party/blink/public/mojom/permissions/permission_status.mojom.h"
 
 namespace blink {
@@ -126,7 +128,6 @@ class CONTENT_EXPORT FileSystemAccessManagerImpl
   // blink::mojom::FileSystemAccessManager:
   void GetSandboxedFileSystem(GetSandboxedFileSystemCallback callback) override;
   void ChooseEntries(blink::mojom::FilePickerOptionsPtr options,
-                     blink::mojom::CommonFilePickerOptionsPtr common_options,
                      ChooseEntriesCallback callback) override;
   void GetFileHandleFromToken(
       mojo::PendingRemote<blink::mojom::FileSystemAccessTransferToken> token,
@@ -140,6 +141,9 @@ class CONTENT_EXPORT FileSystemAccessManagerImpl
       mojo::PendingRemote<blink::mojom::FileSystemAccessDataTransferToken>
           token,
       GetEntryFromDataTransferTokenCallback token_resolved_callback) override;
+  void BindObserverHost(
+      mojo::PendingReceiver<blink::mojom::FileSystemAccessObserverHost>
+          host_receiver) override;
 
   // storage::mojom::FileSystemAccessContext:
   void SerializeHandle(
@@ -288,6 +292,11 @@ class CONTENT_EXPORT FileSystemAccessManagerImpl
     return permission_context_;
   }
 
+  FileSystemAccessWatcherManager& watcher_manager() {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    return watcher_manager_;
+  }
+
   bool is_off_the_record() const { return off_the_record_; }
 
   void SetPermissionContextForTesting(
@@ -415,16 +424,13 @@ class CONTENT_EXPORT FileSystemAccessManagerImpl
   void ResolveDefaultDirectory(
       const BindingContext& context,
       blink::mojom::FilePickerOptionsPtr options,
-      blink::mojom::CommonFilePickerOptionsPtr common_options,
       ChooseEntriesCallback callback,
-      FileSystemAccessTransferTokenImpl* resolved_starting_directory_token);
-  void SetDefaultPathAndShowPicker(
-      const BindingContext& context,
-      blink::mojom::FilePickerOptionsPtr options,
-      blink::mojom::CommonFilePickerOptionsPtr common_options,
-      base::FilePath default_directory,
-      ChooseEntriesCallback callback,
-      bool default_directory_exists);
+      FileSystemAccessTransferTokenImpl* resolved_directory_token);
+  void SetDefaultPathAndShowPicker(const BindingContext& context,
+                                   blink::mojom::FilePickerOptionsPtr options,
+                                   base::FilePath default_directory,
+                                   ChooseEntriesCallback callback,
+                                   bool default_directory_exists);
   void DidOpenSandboxedFileSystem(const BindingContext& binding_context,
                                   GetSandboxedFileSystemCallback callback,
                                   const storage::FileSystemURL& root,
@@ -577,6 +583,9 @@ class CONTENT_EXPORT FileSystemAccessManagerImpl
   std::unique_ptr<FileSystemAccessLockManager> lock_manager_
       GUARDED_BY_CONTEXT(sequence_checker_);
 
+  FileSystemAccessWatcherManager watcher_manager_
+      GUARDED_BY_CONTEXT(sequence_checker_);
+
   // All the receivers for file and directory handles that have references to
   // them.
   mojo::UniqueReceiverSet<blink::mojom::FileSystemAccessFileHandle>
@@ -620,19 +629,6 @@ class CONTENT_EXPORT FileSystemAccessManagerImpl
 
   absl::optional<FileSystemChooser::ResultEntry>
       auto_file_picker_result_for_test_ GUARDED_BY_CONTEXT(sequence_checker_);
-
-  // TODO(https://crbug.com/1396116): Remove this hack when removing the
-  // `kFileSystemURLComparatorsTreatOpaqueOriginAsNoOrigin` feature flag.
-  //
-  // A StorageKey containing an arbitrary, unique, randomly-generated opaque
-  // origin. ChromeOS file system backends run security checks on the assumption
-  // that all FileSystemURLs of non-sandboxed file systems must have an opaque
-  // origin. Using a default-constructed StorageKey will create a random nonce,
-  // making origin comparison checks between two FileSystemURLs with
-  // default-constructed StorageKeys fail. Always using this StorageKey ensures
-  // that FileSystemURL::operator== will always return true for two
-  // FileSystemURLs which point to the same file.
-  blink::StorageKey opaque_origin_for_non_sandboxed_filesystemurls_;
 
   base::WeakPtrFactory<FileSystemAccessManagerImpl> weak_factory_
       GUARDED_BY_CONTEXT(sequence_checker_){this};

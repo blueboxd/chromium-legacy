@@ -82,9 +82,11 @@ void DisplayDamageTracker::DisplayResized() {
 void DisplayDamageTracker::ProcessSurfaceDamage(const SurfaceId& surface_id,
                                                 const BeginFrameAck& ack,
                                                 bool display_damaged,
-                                                bool is_actively_scrolling) {
+                                                bool is_handling_interaction) {
   TRACE_EVENT1("viz", "DisplayDamageTracker::SurfaceDamaged", "surface_id",
                surface_id.ToString());
+
+  has_surface_damage_due_to_interaction_ |= is_handling_interaction;
 
   if (surface_id == root_surface_id_)
     expecting_root_surface_damage_because_of_resize_ = false;
@@ -100,7 +102,6 @@ void DisplayDamageTracker::ProcessSurfaceDamage(const SurfaceId& surface_id,
     if (it != surface_states_.end() &&
         !it->second.last_ack.frame_id.IsNextInSequenceTo(ack.frame_id)) {
       it->second.last_ack = ack;
-      it->second.last_is_actively_scrolling = is_actively_scrolling;
     } else {
       valid_ack = false;
     }
@@ -159,13 +160,14 @@ bool DisplayDamageTracker::HasPendingSurfaces(
   return false;
 }
 
-bool DisplayDamageTracker::HasDamageDueToActiveScroller() {
-  for (auto& entry : surface_states_) {
-    if (entry.second.last_is_actively_scrolling) {
-      return true;
-    }
-  }
-  return false;
+bool DisplayDamageTracker::HasDamageDueToInteraction() {
+  return has_surface_damage_due_to_interaction_;
+}
+
+void DisplayDamageTracker::DidFinishFrame() {
+  // We need to unset this bit otherwise we will continue to draw immediately
+  // even when we have no new damage from an active scroller.
+  has_surface_damage_due_to_interaction_ = false;
 }
 
 void DisplayDamageTracker::OnSurfaceMarkedForDestruction(
@@ -180,7 +182,7 @@ void DisplayDamageTracker::OnSurfaceMarkedForDestruction(
 
 bool DisplayDamageTracker::OnSurfaceDamaged(const SurfaceId& surface_id,
                                             const BeginFrameAck& ack,
-                                            bool is_actively_scrolling) {
+                                            bool is_handling_interaction) {
   bool display_damaged = false;
   if (ack.has_damage) {
     display_damaged =
@@ -195,7 +197,8 @@ bool DisplayDamageTracker::OnSurfaceDamaged(const SurfaceId& surface_id,
   if (surface_id == root_surface_id_)
     UpdateRootFrameMissing();
 
-  ProcessSurfaceDamage(surface_id, ack, display_damaged, is_actively_scrolling);
+  ProcessSurfaceDamage(surface_id, ack, display_damaged,
+                       is_handling_interaction);
 
   return display_damaged;
 }

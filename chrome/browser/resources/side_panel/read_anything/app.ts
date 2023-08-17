@@ -7,6 +7,7 @@ import '//resources/cr_elements/cr_hidden_style.css.js';
 import '../strings.m.js';
 import './read_anything_toolbar.js';
 
+import {ColorChangeUpdater} from '//resources/cr_components/color_change_listener/colors_css_updater.js';
 import {WebUiListenerMixin} from '//resources/cr_elements/web_ui_listener_mixin.js';
 import {assert} from '//resources/js/assert_ts.js';
 import {rgbToSkColor, skColorToRgba} from '//resources/js/color_utils.js';
@@ -22,6 +23,8 @@ interface LinkColor {
   default: string;
   visited: string;
 }
+// TODO(crbug.com/1465029): Remove colors defined here once the Views toolbar is
+// removed.
 const style = getComputedStyle(document.body);
 const darkThemeBackgroundSkColor =
     rgbToSkColor(style.getPropertyValue('--google-grey-900-rgb'));
@@ -121,8 +124,6 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
   // Defines the valid font names that can be passed to front-end and maps
   // them to a corresponding class style in app.html. Must stay in-sync with
   // the names set in read_anything_font_model.cc.
-  // TODO(1266555): The displayed names of the fonts should be messages that
-  //                will be translated to other languages.
   private defaultFontName_: string = 'sans-serif';
   private validFontNames_: Array<{name: string, css: string}> = [
     {name: 'Poppins', css: 'Poppins'},
@@ -149,6 +150,13 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
   // If the WebUI toolbar should be shown. This happens when the WebUI feature
   // flag is enabled.
   private isWebUIToolbarVisible_: boolean;
+
+  constructor() {
+    super();
+    if (chrome.readingMode && chrome.readingMode.isWebUIToolbarVisible) {
+      ColorChangeUpdater.forDocument().start();
+    }
+  }
 
   override connectedCallback() {
     super.connectedCallback();
@@ -256,7 +264,7 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
   }
 
   showEmpty() {
-    if (chrome.readingMode.isSelectable()) {
+    if (chrome.readingMode.isSelectable) {
       this.emptyStateHeading_ = loadTimeData.getString('emptyStateHeader');
     } else {
       this.emptyStateHeading_ = loadTimeData.getString('notSelectableHeader');
@@ -342,11 +350,18 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
     startElement.scrollIntoViewIfNeeded();
   }
 
-  private validatedFontName_(): string {
+  // TODO(b/1465029): Once the IsReadAnythingWebUIEnabled flag is removed
+  // this should be renamed to just validatedFontName_ and the current
+  // validatedFontName_ method can be removed.
+  private validatedFontNameFromName_(fontName: string): string {
     // Validate that the given font name is a valid choice, or use the default.
-    const validFontName = this.validFontNames_.find(
-        (f: {name: string}) => f.name === chrome.readingMode.fontName);
+    const validFontName =
+        this.validFontNames_.find((f: {name: string}) => f.name === fontName);
     return validFontName ? validFontName.css : this.defaultFontName_;
+  }
+
+  private validatedFontName_(): string {
+    return this.validatedFontNameFromName_(chrome.readingMode.fontName);
   }
 
   private getLinkColor_(backgroundSkColor: SkColor): LinkColor {
@@ -366,6 +381,15 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
                     defaultThemeEmptyStateBodyColor;
   }
 
+  // TODO(crbug.com/1465029): This method should be renamed to
+  // getEmptyStateBodyColor_() and replace the one above once we've removed the
+  // Views toolbar.
+  private getEmptyStateBodyColorFromWebUi_(colorSuffix: string): string {
+    const isDark = colorSuffix.includes('dark');
+    return isDark ? darkThemeEmptyStateBodyColor :
+                    defaultThemeEmptyStateBodyColor;
+  }
+
   private getSelectionColor_(backgroundSkColor: SkColor): string {
     switch (backgroundSkColor.value) {
       case darkThemeBackgroundSkColor.value:
@@ -377,6 +401,56 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
     }
   }
 
+  updateLineSpacing(newLineHeight: number) {
+    this.updateStyles({
+      '--line-height': newLineHeight,
+    });
+  }
+
+  updateLetterSpacing(newLetterSpacing: string) {
+    this.updateStyles({
+      '--letter-spacing': newLetterSpacing + 'em',
+    });
+  }
+
+  updateFont(fontName: string) {
+    const validatedFontName = this.validatedFontNameFromName_(fontName);
+    this.updateStyles({
+      '--font-family': validatedFontName,
+    });
+
+    // Also update the font on the toolbar itself with the validated font name.
+    // TODO(crbug.com/1465029): Ensure the toolbar font is persisted to prefs.
+    const shadowRoot = this.shadowRoot;
+    assert(shadowRoot);
+    const toolbar = shadowRoot.getElementById('toolbar');
+    if (toolbar) {
+      toolbar.style.fontFamily = validatedFontName;
+    }
+  }
+
+  // TODO(crbug.com/1465029): This method should be renamed to updateTheme()
+  // and replace the one below once we've removed the Views toolbar.
+  updateThemeFromWebUi(colorSuffix: string) {
+    const emptyStateBodyColor = colorSuffix ?
+        this.getEmptyStateBodyColorFromWebUi_(colorSuffix) :
+        'var(--color-side-panel-card-secondary-foreground)';
+    this.updateStyles({
+      '--background-color':
+          `var(--color-read-anything-background${colorSuffix})`,
+      '--foreground-color':
+          `var(--color-read-anything-foreground${colorSuffix})`,
+      '--sp-empty-state-heading-color':
+          `var(--color-read-anything-foreground${colorSuffix})`,
+      '--sp-empty-state-body-color': emptyStateBodyColor,
+      '--selection-color':
+          `var(--color-read-anything-text-selection${colorSuffix})`,
+      '--link-color': `var(--color-read-anything-link-default${colorSuffix})`,
+      '--visited-link-color':
+          `var(--color-read-anything-link-visited${colorSuffix})`,
+    });
+  }
+
   updateTheme() {
     const foregroundColor:
         SkColor = {value: chrome.readingMode.foregroundColor};
@@ -385,6 +459,7 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
     const linkColor = this.getLinkColor_(backgroundColor);
 
     this.updateStyles({
+      '--background-color': skColorToRgba(backgroundColor),
       '--font-family': this.validatedFontName_(),
       '--font-size': chrome.readingMode.fontSize + 'em',
       '--foreground-color': skColorToRgba(foregroundColor),
@@ -397,7 +472,9 @@ export class ReadAnythingElement extends ReadAnythingElementBase {
           this.getEmptyStateBodyColor_(backgroundColor),
       '--visited-link-color': linkColor.visited,
     });
-    document.body.style.background = skColorToRgba(backgroundColor);
+    if (!chrome.readingMode.isWebUIToolbarVisible) {
+      document.body.style.background = skColorToRgba(backgroundColor);
+    }
   }
 }
 

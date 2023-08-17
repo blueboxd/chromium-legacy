@@ -13,8 +13,8 @@
 #include "build/chromeos_buildflags.h"
 #include "media/base/encoder_status.h"
 #include "media/base/video_codecs.h"
+#include "media/base/video_encoder_metrics_provider.h"
 #include "media/base/video_frame.h"
-#include "media/mojo/clients/mojo_video_encoder_metrics_provider.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
@@ -209,7 +209,6 @@ bool H264Encoder::ConfigureEncoder(const gfx::Size& size) {
   DCHECK_EQ(AUTO_REF_PIC_COUNT, init_params.iNumRefFrame);
   DCHECK(!init_params.bSimulcastAVC);
 
-  init_params.uiIntraPeriod = 100;  // Same as for VpxEncoder.
   init_params.iPicWidth = size.width();
   init_params.iPicHeight = size.height();
 

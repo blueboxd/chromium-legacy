@@ -12,6 +12,7 @@
 #import "base/timer/timer.h"
 #import "base/values.h"
 #import "components/prefs/pref_service.h"
+#import "ios/chrome/app/startup/app_launch_metrics.h"
 #import "ios/chrome/browser/push_notification/push_notification_client_manager.h"
 #import "ios/chrome/browser/push_notification/push_notification_configuration.h"
 #import "ios/chrome/browser/push_notification/push_notification_delegate.h"
@@ -21,10 +22,6 @@
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state_manager.h"
 #import "ios/chrome/browser/shared/model/prefs/pref_names.h"
-
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
 
 namespace {
 // The time range's expected min and max values for custom histograms.
@@ -112,6 +109,8 @@ GaiaIdToPushNotificationPreferenceMapFromCache(
   if (completionHandler) {
     completionHandler();
   }
+  base::UmaHistogramEnumeration(kAppLaunchSource,
+                                AppLaunchSource::NOTIFICATION);
 }
 
 - (void)userNotificationCenter:(UNUserNotificationCenter*)center
@@ -133,6 +132,8 @@ GaiaIdToPushNotificationPreferenceMapFromCache(
   if (completionHandler) {
     completionHandler(UNNotificationPresentationOptionBanner);
   }
+  base::UmaHistogramEnumeration(kAppLaunchSource,
+                                AppLaunchSource::NOTIFICATION);
 }
 
 #pragma mark - PushNotificationDelegate

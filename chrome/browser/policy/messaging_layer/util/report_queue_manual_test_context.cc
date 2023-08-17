@@ -25,6 +25,7 @@ ReportQueueManualTestContext::ReportQueueManualTestContext(
     uint64_t number_of_messages_to_enqueue,
     Destination destination,
     Priority priority,
+    EventType event_type,
     CompletionCallback completion_cb,
     scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner,
     BuildReportQueueCallback queue_builder)
@@ -34,6 +35,7 @@ ReportQueueManualTestContext::ReportQueueManualTestContext(
       number_of_messages_to_enqueue_(number_of_messages_to_enqueue),
       destination_(destination),
       priority_(priority),
+      event_type_(event_type),
       queue_builder_(std::move(queue_builder)),
       report_queue_(std::unique_ptr<ReportQueue, base::OnTaskRunnerDeleter>(
           nullptr,
@@ -65,7 +67,7 @@ void ReportQueueManualTestContext::OnStart() {
 
   auto config_result =
       ReportQueueConfiguration::Create(
-          {.event_type = EventType::kDevice, .destination = destination_})
+          {.event_type = event_type_, .destination = destination_})
           .Build();
   if (!config_result.ok()) {
     Complete(config_result.status());
@@ -73,7 +75,7 @@ void ReportQueueManualTestContext::OnStart() {
   }
 
   // Build queue by configuration.
-  DCHECK(queue_builder_) << "Can be only called once";
+  CHECK(queue_builder_) << "Can be only called once";
   auto report_queue_result =
       std::move(queue_builder_).Run(std::move(config_result.ValueOrDie()));
   if (!report_queue_result.ok()) {

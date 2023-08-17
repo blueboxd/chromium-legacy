@@ -154,7 +154,7 @@ void DisplayOverlayController::RemoveOverlayIfAny() {
   auto* shell_surface_base =
       exo::GetShellSurfaceBaseForWindow(touch_injector_->window());
   if (shell_surface_base && shell_surface_base->HasOverlay()) {
-    // Call |RemoveInputMenuView| explicitly to make sure UMA stats is updated.
+    // Call `RemoveInputMenuView` explicitly to make sure UMA stats is updated.
     RemoveInputMenuView();
 
     shell_surface_base->RemoveOverlay();
@@ -225,7 +225,7 @@ void DisplayOverlayController::AddMenuEntryView(views::Widget* overlay_widget) {
     return;
   }
   DCHECK(overlay_widget);
-  // Create and position entry point for |InputMenuView|.
+  // Create and position entry point for `InputMenuView`.
   menu_entry_ = MenuEntryView::Show(
       base::BindRepeating(&DisplayOverlayController::OnMenuEntryPressed,
                           base::Unretained(this)),
@@ -499,11 +499,11 @@ void DisplayOverlayController::SetDisplayMode(DisplayMode mode) {
 void DisplayOverlayController::TurnFlag(ash::ArcGameControlsFlag flag,
                                         bool turn_on) {
   auto* window = touch_injector_->window();
-  ash::ArcGameControlsFlag flags =
+  const ash::ArcGameControlsFlag flags =
       window->GetProperty(ash::kArcGameControlsFlagsKey);
-  window->SetProperty(ash::kArcGameControlsFlagsKey,
-                      static_cast<ash::ArcGameControlsFlag>(
-                          turn_on ? (flags | flag) : (flags & ~flag)));
+  window->SetProperty(
+      ash::kArcGameControlsFlagsKey,
+      ash::game_dashboard_utils::UpdateFlag(flags, flag, turn_on));
 }
 
 absl::optional<gfx::Rect>
@@ -517,8 +517,9 @@ DisplayOverlayController::GetOverlayMenuEntryBounds() {
 
 void DisplayOverlayController::AddEditMessage(const base::StringPiece& message,
                                               MessageType message_type) {
+  // No need to show edit message for Beta version.
   // There is no instance for unittest.
-  if (!ash::Shell::HasInstance()) {
+  if (IsBeta() || !ash::Shell::HasInstance()) {
     return;
   }
 
@@ -640,6 +641,10 @@ void DisplayOverlayController::RemoveTouchInjectorObserver(
 }
 
 void DisplayOverlayController::AddButtonOptionsMenuWidget(Action* action) {
+  if (!IsBeta()) {
+    return;
+  }
+
   if (button_options_widget_) {
     auto* menu = static_cast<ButtonOptionsMenu*>(
         button_options_widget_->GetContentsView());
@@ -741,13 +746,93 @@ void DisplayOverlayController::UpdateEditingListWidgetBounds() {
   if (!editing_list_widget_) {
     return;
   }
-
-  auto origin = touch_injector_->content_bounds().origin();
-  origin.Offset(24, 24);
+  if (!editing_list_origin_.has_value()) {
+    editing_list_origin_ = touch_injector_->content_bounds().origin();
+    editing_list_origin_.value().Offset(24, 24);
+  }
   auto* list_view = editing_list_widget_->GetContentsView();
+  if (!list_view) {
+    LOG(ERROR) << "Editing list widget has no editing list view";
+    return;
+  }
+
   UpdateWidgetBoundsInRootWindow(
       editing_list_widget_.get(),
-      gfx::Rect(origin, list_view->GetPreferredSize()));
+      gfx::Rect(editing_list_origin_.value(), list_view->GetPreferredSize()));
+}
+
+void DisplayOverlayController::UpdateEditingListWidgetPosition(
+    const gfx::Vector2d& reposition_delta) {
+  if (!editing_list_widget_ || !editing_list_origin_.has_value()) {
+    return;
+  }
+  auto* list_view = editing_list_widget_->GetContentsView();
+  if (!list_view) {
+    LOG(ERROR) << "Editing list widget has no editing list view";
+    return;
+  }
+
+  editing_list_origin_ = editing_list_origin_.value() + reposition_delta;
+  SetMagneticPosition();
+  UpdateWidgetBoundsInRootWindow(
+      editing_list_widget_.get(),
+      gfx::Rect(editing_list_origin_.value(), list_view->GetPreferredSize()));
+}
+
+void DisplayOverlayController::SetMagneticPosition() {
+  if (!editing_list_origin_.has_value()) {
+    return;
+  }
+
+  auto app_window_bounds = touch_injector_->content_bounds();
+  auto list_preferred_size =
+      editing_list_widget_->GetContentsView()->GetPreferredSize();
+  // Editing list is partially outside the app:
+  if (editing_list_origin_.value().x() < app_window_bounds.x()) {
+    // Set the editing list at the top right if it's partially outside to the
+    // right.
+    editing_list_origin_.value().set_x(app_window_bounds.x() -
+                                       list_preferred_size.width());
+    editing_list_origin_.value().set_y(app_window_bounds.y());
+    return;
+  } else if (editing_list_origin_.value().x() + list_preferred_size.width() >
+             app_window_bounds.right()) {
+    // Set the editing list at the top left if it's partially outside to the
+    // left.
+    editing_list_origin_.value().set_x(app_window_bounds.right());
+    editing_list_origin_.value().set_y(app_window_bounds.y());
+    return;
+  }
+
+  auto app_window_center = app_window_bounds.CenterPoint();
+  // Editing list is within the app:
+  if (editing_list_origin_.value().x() + list_preferred_size.width() / 2 <
+      app_window_center.x()) {
+    // Set the editing list to the left if it's closer to the left.
+    editing_list_origin_.value().set_x(app_window_bounds.x());
+  } else {
+    // Set the editing list to the right if it's closer to the right.
+    editing_list_origin_.value().set_x(app_window_bounds.right() -
+                                       list_preferred_size.width());
+  }
+  if (editing_list_origin_.value().y() + list_preferred_size.height() / 2 <
+      app_window_center.y()) {
+    // Set the editing list to the top if it's closer to the top.
+    editing_list_origin_.value().set_y(app_window_bounds.y());
+  } else {
+    // Set the editing list to the bottom if it's closer to the bottom.
+    editing_list_origin_.value().set_y(app_window_bounds.bottom() -
+                                       list_preferred_size.height());
+  }
+}
+
+gfx::Rect DisplayOverlayController::GetEditingListWidgetBoundsInRootWindow() {
+  if (!editing_list_origin_.has_value()) {
+    return gfx::Rect();
+  }
+  auto root_bounds =
+      touch_injector_->window()->GetRootWindow()->GetBoundsInScreen();
+  return root_bounds - editing_list_origin_.value().OffsetFromOrigin();
 }
 
 void DisplayOverlayController::UpdateWidgetBoundsInRootWindow(
@@ -828,7 +913,8 @@ void DisplayOverlayController::OnWindowPropertyChanged(aura::Window* window,
       bool is_showing_menu = ash::game_dashboard_utils::IsFlagSet(
           flags, ash::ArcGameControlsFlag::kMenu);
       // Save the menu states upon menu closing.
-      if (IsFlagChanged(flags, old_flags, ash::ArcGameControlsFlag::kMenu) &&
+      if (ash::game_dashboard_utils::IsFlagChanged(
+              flags, old_flags, ash::ArcGameControlsFlag::kMenu) &&
           !is_showing_menu) {
         touch_injector_->OnInputMenuViewRemoved();
       }

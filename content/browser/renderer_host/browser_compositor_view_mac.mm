@@ -26,10 +26,6 @@
 #include "ui/gfx/geometry/dip_util.h"
 #include "ui/gfx/geometry/size_conversions.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 namespace content {
 
 namespace {
@@ -411,6 +407,11 @@ ui::Compositor* BrowserCompositorMac::GetCompositor() const {
   if (recyclable_compositor_)
     return recyclable_compositor_->compositor();
   return nullptr;
+}
+
+void BrowserCompositorMac::InvalidateSurfaceAllocationGroup() {
+  dfh_local_surface_id_allocator_.Invalidate(
+      /*also_invalidate_allocation_group=*/true);
 }
 
 cc::DeadlinePolicy BrowserCompositorMac::GetDeadlinePolicy(

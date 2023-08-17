@@ -96,7 +96,6 @@ enum NonConfigurableActions {
   kBrowserBottomPage,
   kBrowserTopPage,
   kBrowserNextPane,
-  kBrowserRightClick,
   kBrowserAutoComplete,
   kBrowserStopDragTab,
   kBrowserSelectNextTab,
@@ -194,6 +193,10 @@ class TextAcceleratorPart : public mojom::TextAcceleratorPart {
   TextAcceleratorPart(const TextAcceleratorPart&);
   TextAcceleratorPart& operator=(const TextAcceleratorPart&);
   ~TextAcceleratorPart();
+
+  // If the part is a keycode, we store it so that we will always have a way
+  // to get the accurate localized key string to display.
+  absl::optional<ui::KeyboardCode> keycode;
 };
 
 // Contains info related to a non-configurable accelerator. A non-configurable
@@ -237,8 +240,34 @@ std::u16string GetKeyDisplay(ui::KeyboardCode key_code);
 // A fixed set of accelerators that should not have a layout. This is used for
 // integrity check to make sure when a new accelerator is added, either it has
 // been added to `kAcceleratorLayouts` or here.
-constexpr auto kAcceleratorsWithoutLayout =
+constexpr auto kAshAcceleratorsWithoutLayout =
     base::MakeFixedFlatSet<AcceleratorAction>({
+        AcceleratorAction::kCycleBackwardMru,
+        AcceleratorAction::kCycleForwardMru,
+        AcceleratorAction::kDisableCapsLock,
+        AcceleratorAction::kFocusCameraPreview,
+        AcceleratorAction::kFocusNextPane,
+        AcceleratorAction::kLaunchApp0,
+        AcceleratorAction::kLaunchApp1,
+        AcceleratorAction::kLaunchApp2,
+        AcceleratorAction::kLaunchApp3,
+        AcceleratorAction::kLaunchApp4,
+        AcceleratorAction::kLaunchApp5,
+        AcceleratorAction::kLaunchApp6,
+        AcceleratorAction::kLaunchApp7,
+        AcceleratorAction::kLockPressed,
+        AcceleratorAction::kLockReleased,
+        AcceleratorAction::kMediaRewind,
+        AcceleratorAction::kMediaStop,
+        AcceleratorAction::kNewIncognitoWindow,
+        AcceleratorAction::kNewTab,
+        AcceleratorAction::kNewWindow,
+        AcceleratorAction::kPasteClipboardHistoryPlainText,
+        AcceleratorAction::kPowerPressed,
+        AcceleratorAction::kPowerReleased,
+        AcceleratorAction::kPrintUiHierarchies,
+        AcceleratorAction::kRestoreTab,
+        AcceleratorAction::kRotateWindow,
         AcceleratorAction::kToggleProjectorMarker,
         AcceleratorAction::kToggleWifi,
         AcceleratorAction::kTouchHudClear,
@@ -326,15 +355,15 @@ constexpr AcceleratorLayoutDetails kAcceleratorLayouts[] = {
      IDS_ASH_ACCELERATOR_DESCRIPTION_SWITCH_TO_NEXT_USER,
      mojom::AcceleratorCategory::kGeneral,
      mojom::AcceleratorSubcategory::kGeneralControls,
-     /*locked=*/false, mojom::AcceleratorLayoutStyle::kDefault,
+     /*locked=*/true, mojom::AcceleratorLayoutStyle::kDefault,
      mojom::AcceleratorSource::kAsh},
     {AcceleratorAction::kSwitchToPreviousUser,
      IDS_ASH_ACCELERATOR_DESCRIPTION_SWITCH_TO_PREVIOUS_USER,
      mojom::AcceleratorCategory::kGeneral,
      mojom::AcceleratorSubcategory::kGeneralControls,
-     /*locked=*/false, mojom::AcceleratorLayoutStyle::kDefault,
+     /*locked=*/true, mojom::AcceleratorLayoutStyle::kDefault,
      mojom::AcceleratorSource::kAsh},
-    {AcceleratorAction::kToggleDictation,
+    {AcceleratorAction::kEnableOrToggleDictation,
      IDS_ASH_ACCELERATOR_DESCRIPTION_TOGGLE_DICTATION,
      mojom::AcceleratorCategory::kGeneral,
      mojom::AcceleratorSubcategory::kGeneralControls,
@@ -504,12 +533,6 @@ constexpr AcceleratorLayoutDetails kAcceleratorLayouts[] = {
      mojom::AcceleratorSubcategory::kInputs,
      /*locked=*/false, mojom::AcceleratorLayoutStyle::kDefault,
      mojom::AcceleratorSource::kAsh},
-    {NonConfigurableActions::kBrowserRightClick,
-     IDS_BROWSER_ACCELERATOR_DESCRIPTION_RIGHT_CLICK,
-     mojom::AcceleratorCategory::kDevice,
-     mojom::AcceleratorSubcategory::kInputs,
-     /*locked=*/true, mojom::AcceleratorLayoutStyle::kText,
-     mojom::AcceleratorSource::kAmbient},
     {AcceleratorAction::kShowStylusTools,
      IDS_ASH_ACCELERATOR_DESCRIPTION_SHOW_STYLUS_TOOLS,
      mojom::AcceleratorCategory::kDevice,
@@ -935,7 +958,7 @@ constexpr AcceleratorLayoutDetails kAcceleratorLayouts[] = {
      IDS_ASH_ACCELERATOR_DESCRIPTION_SHOW_EMOJI_PICKER,
      mojom::AcceleratorCategory::kText,
      mojom::AcceleratorSubcategory::kTextEditing,
-     /*locked=*/true, mojom::AcceleratorLayoutStyle::kDefault,
+     /*locked=*/false, mojom::AcceleratorLayoutStyle::kDefault,
      mojom::AcceleratorSource::kAsh},
     {NonConfigurableActions::kAmbientCopy,
      IDS_AMBIENT_ACCELERATOR_DESCRIPTION_COPY,

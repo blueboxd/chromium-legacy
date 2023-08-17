@@ -20,18 +20,13 @@ constexpr int kChromeRefreshSeparatorHorizontalMargin = 2;
 // TODO (crbug.com/1451400): This constant should be in LayoutConstants.
 constexpr int kChromeRefreshSeparatorHeight = 16;
 
-// TODO (crbug.com/1451400): This constant should be in LayoutConstants.
-constexpr int kChromeRefreshTabHeight = 34;
-
-// TODO (crbug.com/1451400): This constant should be in LayoutConstants.
-// Size in dips of the extension of the frame grab area into inactive tabs.
-// The value of 6 matches the value in GM2 (for non-touch - touch was 7).
-constexpr int kChromeRefreshDragHandleExtension = 6;
+// The padding from the top of the tab to the content area.
+constexpr int kChromeRefreshTabVerticalPadding = 6;
+constexpr int kChromeRefreshTabHorizontalPadding = 8;
 
 class GM2TabStyle : public TabStyle {
  public:
   ~GM2TabStyle() override = default;
-  int GetHeight() const override;
   int GetStandardWidth() const override;
   int GetPinnedWidth() const override;
   int GetMinimumActiveWidth() const override;
@@ -39,12 +34,14 @@ class GM2TabStyle : public TabStyle {
   int GetTabOverlap() const override;
   gfx::Size GetSeparatorSize() const override;
   gfx::Insets GetSeparatorMargins() const override;
+  int GetSeparatorCornerRadius() const override;
   int GetDragHandleExtension(int height) const override;
   gfx::Size GetPreviewImageSize() const override;
   int GetTopCornerRadius() const override;
   int GetBottomCornerRadius() const override;
   SkColor GetTabBackgroundColor(
       TabSelectionState state,
+      bool hovered,
       bool frame_active,
       const ui::ColorProvider& color_provider) const override;
   float GetSelectedTabOpacity() const override;
@@ -53,15 +50,16 @@ class GM2TabStyle : public TabStyle {
 class ChromeRefresh2023TabStyle : public GM2TabStyle {
  public:
   ~ChromeRefresh2023TabStyle() override = default;
-  int GetHeight() const override;
   int GetTopCornerRadius() const override;
   int GetBottomCornerRadius() const override;
   int GetTabOverlap() const override;
   gfx::Size GetSeparatorSize() const override;
   gfx::Insets GetSeparatorMargins() const override;
+  int GetSeparatorCornerRadius() const override;
   int GetDragHandleExtension(int height) const override;
   SkColor GetTabBackgroundColor(
       TabSelectionState state,
+      bool hovered,
       bool frame_active,
       const ui::ColorProvider& color_provider) const override;
   gfx::Insets GetContentsInsets() const override;
@@ -70,10 +68,6 @@ class ChromeRefresh2023TabStyle : public GM2TabStyle {
 }  // namespace
 
 TabStyle::~TabStyle() = default;
-
-int GM2TabStyle::GetHeight() const {
-  return GetLayoutConstant(TAB_HEIGHT);
-}
 
 int GM2TabStyle::GetStandardWidth() const {
   // The standard tab width is 240 DIP including both separators.
@@ -142,6 +136,10 @@ gfx::Insets GM2TabStyle::GetSeparatorMargins() const {
                            GetSeparatorSize().width() * -1);
 }
 
+int GM2TabStyle::GetSeparatorCornerRadius() const {
+  return 0;
+}
+
 gfx::Size GM2TabStyle::GetPreviewImageSize() const {
   constexpr float kTabHoverCardPreviewImageAspectRatio = 16.0f / 9.0f;
   const int width = GetStandardWidth();
@@ -165,6 +163,7 @@ gfx::Insets GM2TabStyle::GetContentsInsets() const {
 
 SkColor GM2TabStyle::GetTabBackgroundColor(
     const TabSelectionState state,
+    bool hovered,
     const bool frame_active,
     const ui::ColorProvider& color_provider) const {
   const SkColor active_color = color_provider.GetColor(
@@ -174,6 +173,10 @@ SkColor GM2TabStyle::GetTabBackgroundColor(
       frame_active ? kColorTabBackgroundInactiveFrameActive
                    : kColorTabBackgroundInactiveFrameInactive);
 
+  if (hovered) {
+    return active_color;
+  }
+
   switch (state) {
     case TabStyle::TabSelectionState::kActive:
       return active_color;
@@ -182,8 +185,6 @@ SkColor GM2TabStyle::GetTabBackgroundColor(
       // selected states having their own color ids even in GM2.
       return color_utils::AlphaBlend(active_color, inactive_color,
                                      GetSelectedTabOpacity());
-    case TabStyle::TabSelectionState::kHovered:
-      return active_color;
     case TabStyle::TabSelectionState::kInactive:
       return inactive_color;
     default:
@@ -193,10 +194,6 @@ SkColor GM2TabStyle::GetTabBackgroundColor(
 
 float GM2TabStyle::GetSelectedTabOpacity() const {
   return kDefaultSelectedTabOpacity;
-}
-
-int ChromeRefresh2023TabStyle::GetHeight() const {
-  return kChromeRefreshTabHeight;
 }
 
 int ChromeRefresh2023TabStyle::GetTopCornerRadius() const {
@@ -221,38 +218,55 @@ gfx::Size ChromeRefresh2023TabStyle::GetSeparatorSize() const {
 }
 
 gfx::Insets ChromeRefresh2023TabStyle::GetContentsInsets() const {
-  return gfx::Insets::TLBR(6, GetBottomCornerRadius() + 8, 12,
-                           GetBottomCornerRadius() + 8);
+  return gfx::Insets::TLBR(
+      kChromeRefreshTabVerticalPadding,
+      GetBottomCornerRadius() + kChromeRefreshTabHorizontalPadding,
+      kChromeRefreshTabVerticalPadding + GetLayoutConstant(TAB_STRIP_PADDING),
+      GetBottomCornerRadius() + kChromeRefreshTabHorizontalPadding);
 }
 
 gfx::Insets ChromeRefresh2023TabStyle::GetSeparatorMargins() const {
-  return gfx::Insets::TLBR(0, kChromeRefreshSeparatorHorizontalMargin, 6,
+  return gfx::Insets::TLBR(0, kChromeRefreshSeparatorHorizontalMargin,
+                           GetLayoutConstant(TAB_STRIP_PADDING),
                            kChromeRefreshSeparatorHorizontalMargin);
 }
 
+int ChromeRefresh2023TabStyle::GetSeparatorCornerRadius() const {
+  return GetSeparatorSize().width() / 2;
+}
+
 int ChromeRefresh2023TabStyle::GetDragHandleExtension(int height) const {
-  return kChromeRefreshDragHandleExtension;
+  return 6;
 }
 
 SkColor ChromeRefresh2023TabStyle::GetTabBackgroundColor(
     const TabSelectionState state,
+    const bool hovered,
     const bool frame_active,
     const ui::ColorProvider& color_provider) const {
   switch (state) {
-    case TabStyle::TabSelectionState::kSelected:
-      return frame_active ? color_provider.GetColor(
-                                kColorTabBackgroundSelectedFrameActive)
-                          : color_provider.GetColor(
-                                kColorTabBackgroundSelectedFrameInactive);
-    case TabStyle::TabSelectionState::kHovered:
-      return frame_active
-                 ? color_provider.GetColor(kColorTabBackgroundHoverFrameActive)
-                 : color_provider.GetColor(
-                       kColorTabBackgroundHoverFrameInactive);
-    case TabStyle::TabSelectionState::kActive:
-    case TabStyle::TabSelectionState::kInactive:
-      return GM2TabStyle::GetTabBackgroundColor(state, frame_active,
-                                                color_provider);
+    case TabStyle::TabSelectionState::kActive: {
+      constexpr ui::ColorId kActiveColorIds[2] = {
+          kColorTabBackgroundActiveFrameInactive,
+          kColorTabBackgroundActiveFrameActive};
+      return color_provider.GetColor(kActiveColorIds[frame_active]);
+    }
+    case TabStyle::TabSelectionState::kSelected: {
+      constexpr ui::ColorId kSelectedColorIds[2][2] = {
+          {kColorTabBackgroundSelectedFrameInactive,
+           kColorTabBackgroundSelectedFrameActive},
+          {kColorTabBackgroundSelectedHoverFrameInactive,
+           kColorTabBackgroundSelectedHoverFrameActive}};
+      return color_provider.GetColor(kSelectedColorIds[hovered][frame_active]);
+    }
+    case TabStyle::TabSelectionState::kInactive: {
+      constexpr ui::ColorId kInactiveColorIds[2][2] = {
+          {kColorTabBackgroundInactiveFrameInactive,
+           kColorTabBackgroundInactiveFrameActive},
+          {kColorTabBackgroundInactiveHoverFrameInactive,
+           kColorTabBackgroundInactiveHoverFrameActive}};
+      return color_provider.GetColor(kInactiveColorIds[hovered][frame_active]);
+    }
     default:
       NOTREACHED_NORETURN();
   }

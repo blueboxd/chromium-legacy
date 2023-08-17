@@ -17,6 +17,7 @@
 #import "ios/chrome/browser/shared/model/prefs/pref_names.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/signin/fake_system_identity.h"
+#import "ios/chrome/browser/signin/test_constants.h"
 #import "ios/chrome/browser/ui/authentication/signin/signin_constants.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_constants.h"
@@ -35,6 +36,7 @@
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
+#import "ios/testing/earl_grey/app_launch_manager.h"
 #import "ios/testing/earl_grey/earl_grey_test.h"
 #import "net/base/mac/url_conversions.h"
 #import "net/test/embedded_test_server/embedded_test_server.h"
@@ -42,10 +44,6 @@
 #import "net/test/embedded_test_server/http_response.h"
 #import "ui/base/l10n/l10n_util.h"
 #import "ui/strings/grit/ui_strings.h"
-
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
 
 namespace {
 
@@ -216,9 +214,9 @@ void TapMoreButtonIfVisible() {
   const GURL pageURL = self.testServer->GetURL(kPageURL);
 
   // Open in new tab.
-  [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
-                                   IDS_IOS_CONTENT_CONTEXT_OPENLINKNEWTAB)]
+  [[EarlGrey selectElementWithMatcher:
+                 chrome_test_util::ContextMenuItemWithAccessibilityLabelId(
+                     IDS_IOS_CONTENT_CONTEXT_OPENLINKNEWTAB)]
       performAction:grey_tap()];
 
   // Check a new page in normal model is opened.
@@ -276,9 +274,9 @@ void TapMoreButtonIfVisible() {
   NSString* pageTitle = base::SysUTF8ToNSString(kPageTitle);
 
   // Tap on remove.
-  [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
-                                   IDS_IOS_CONTENT_SUGGESTIONS_REMOVE)]
+  [[EarlGrey selectElementWithMatcher:
+                 chrome_test_util::ContextMenuItemWithAccessibilityLabelId(
+                     IDS_IOS_CONTENT_SUGGESTIONS_REMOVE)]
       performAction:grey_tap()];
 
   // Check the tile is removed.
@@ -445,14 +443,12 @@ void TapMoreButtonIfVisible() {
   // Tap the signin item.
   TapView(set_up_list::kSignInItemID);
   // Verify the signin screen appears.
-  [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(
-                                   kWebSigninSkipButtonAccessibilityIdentifier)]
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          kFakeAuthCancelButtonIdentifier)]
       assertWithMatcher:grey_sufficientlyVisible()];
   // Dismiss the signin view.
-  [[EarlGrey
-      selectElementWithMatcher:grey_accessibilityID(
-                                   kWebSigninSkipButtonAccessibilityIdentifier)]
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          kFakeAuthCancelButtonIdentifier)]
       performAction:grey_tap()];
   // Verify the signin item is complete.
   GREYAssertTrue([NewTabPageAppInterface setUpListItemSignInSyncIsComplete],
@@ -544,13 +540,15 @@ void TapMoreButtonIfVisible() {
 
   // Tap the signin item.
   TapView(set_up_list::kSignInItemID);
-  // Verify the signin screen appears.
+
+  // The signin screen should appear. Tap it.
   [[EarlGrey
       selectElementWithMatcher:
           grey_accessibilityID(kWebSigninPrimaryButtonAccessibilityIdentifier)]
-      assertWithMatcher:grey_sufficientlyVisible()];
-  // TODO(crbug.com/1447012): Support testing the "Continue as..." button
-  // upstream, to verify the setup list item disappears.
+      performAction:grey_tap()];
+
+  GREYAssertTrue([NewTabPageAppInterface setUpListItemSignInSyncIsComplete],
+                 @"SetUpList item SignIn not completed.");
 }
 
 // Tests that the signin and sync screens can be dismissed by a swipe.
@@ -571,7 +569,9 @@ void TapMoreButtonIfVisible() {
   // Verify that the signin screen is gone.
   [[EarlGrey selectElementWithMatcher:signinView] assertWithMatcher:grey_nil()];
 
-  [self prepareToTestSetUpList];
+  [ChromeEarlGrey closeAllTabs];
+  [ChromeEarlGrey openNewTab];
+
   // Tap the signin item.
   TapView(set_up_list::kSignInItemID);
   // Verify the signin screen appears.
@@ -658,7 +658,7 @@ void TapMoreButtonIfVisible() {
     return error == nil;
   };
   GREYAssert(
-      base::test::ios::WaitUntilConditionOrTimeout(base::Seconds(1), condition),
+      base::test::ios::WaitUntilConditionOrTimeout(base::Seconds(2), condition),
       @"Timeout waiting for the Magic Stack to scroll to next module expired.");
 
   if (![ChromeEarlGrey isIPadIdiom]) {
@@ -696,8 +696,9 @@ void TapMoreButtonIfVisible() {
   [ChromeEarlGrey resetDataForLocalStatePref:
                       prefs::kIosCredentialProviderPromoLastActionTaken];
   [NewTabPageAppInterface resetSetUpListPrefs];
-  [ChromeEarlGrey closeAllTabs];
-  [ChromeEarlGrey openNewTab];
+  AppLaunchConfiguration config = self.appConfigurationForTestCase;
+  config.relaunch_policy = ForceRelaunchByCleanShutdown;
+  [[AppLaunchManager sharedManager] ensureAppLaunchedWithConfiguration:config];
   ScrollToSetUpList();
 
   // SetUpList is visible
@@ -711,8 +712,9 @@ void TapMoreButtonIfVisible() {
   [ChromeEarlGrey resetDataForLocalStatePref:
                       prefs::kIosCredentialProviderPromoLastActionTaken];
   [NewTabPageAppInterface resetSetUpListPrefs];
-  [ChromeEarlGrey closeAllTabs];
-  [ChromeEarlGrey openNewTab];
+  AppLaunchConfiguration config = self.appConfigurationForTestCase;
+  config.relaunch_policy = ForceRelaunchByCleanShutdown;
+  [[AppLaunchManager sharedManager] ensureAppLaunchedWithConfiguration:config];
 }
 
 // Setup a most visited tile, and open the context menu by long pressing on it.

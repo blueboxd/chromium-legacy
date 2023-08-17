@@ -5,10 +5,12 @@
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_mediator.h"
 
 #import "base/debug/dump_without_crashing.h"
+#import "base/feature_list.h"
 #import "base/metrics/user_metrics.h"
 #import "base/metrics/user_metrics_action.h"
 #import "base/notreached.h"
 #import "components/sessions/core/tab_restore_service.h"
+#import "components/sync/base/features.h"
 #import "components/sync/service/sync_service.h"
 #import "components/sync/service/sync_user_settings.h"
 #import "components/sync_sessions/open_tabs_ui_delegate.h"
@@ -28,19 +30,24 @@
 #import "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_consumer.h"
 #import "ios/chrome/browser/ui/recent_tabs/sessions_sync_user_state.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_consumer.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_toolbars_mutator.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_grid/toolbars/tab_grid_toolbars_configuration.h"
 #import "ios/chrome/common/ui/favicon/favicon_constants.h"
 #import "url/gurl.h"
-
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
 
 namespace {
 
 // Returns whether the user needs to enter a passphrase or enable sync to make
 // tab sync work.
 bool UserActionIsRequiredToHaveTabSyncWork(syncer::SyncService* sync_service) {
-  if (!sync_service->IsSyncFeatureEnabled()) {
+  if (!sync_service->GetDisableReasons().Empty()) {
+    return true;
+  }
+
+  if (!sync_service->IsSyncFeatureEnabled() &&
+      !base::FeatureList::IsEnabled(
+          syncer::kReplaceSyncPromosWithSignInPromos)) {
     return true;
   }
 
@@ -251,7 +258,13 @@ bool UserActionIsRequiredToHaveTabSyncWork(syncer::SyncService* sync_service) {
 
 // Returns whether this profile has any foreign sessions to sync.
 - (SessionsSyncUserState)userSignedInState {
-  if (!_identityManager->HasPrimaryAccount(signin::ConsentLevel::kSync)) {
+  const auto requiredConsent =
+      base::FeatureList::IsEnabled(syncer::kReplaceSyncPromosWithSignInPromos)
+          ? signin::ConsentLevel::kSignin
+          : signin::ConsentLevel::kSync;
+  if (!_identityManager->HasPrimaryAccount(requiredConsent)) {
+    // This returns "signed out" when the user is signed-in non-syncing and
+    // kReplaceSyncPromosWithSignInPromos is off. That's a pre-existing issue.
     return SessionsSyncUserState::USER_SIGNED_OUT;
   }
 
@@ -272,13 +285,25 @@ bool UserActionIsRequiredToHaveTabSyncWork(syncer::SyncService* sync_service) {
              : SessionsSyncUserState::USER_SIGNED_IN_SYNC_ON_NO_SESSIONS;
 }
 
+// Creates and send a tab grid toolbar configuration with button that should be
+// displayed when recent grid is selected.
+- (void)configureToolbarsButtons {
+  TabGridToolbarsConfiguration* toolbarsConfiguration =
+      [[TabGridToolbarsConfiguration alloc] init];
+  toolbarsConfiguration.doneButton = YES;
+  toolbarsConfiguration.searchButton = YES;
+  [self.toolbarsMutator setToolbarConfiguration:toolbarsConfiguration];
+}
+
 #pragma mark - RecentTabsTableViewControllerDelegate
 
 - (void)refreshSessionsView {
-  // This method is called from two places: 1) when this mediator observes a
-  // change in the synced session state, and 2) when the UI layer recognizes
-  // that the signin process has completed. The latter call is necessary because
-  // it can happen much more immediately than the former call.
+  // This method is called from three places: 1) when this mediator observes a
+  // change in the synced session state,  2) when the UI layer recognizes
+  // that the signin process has completed, and 3) when the history & tabs sync
+  // opt-in screen is dismissed.
+  // The 2 latter calls are necessary because they can happen much more
+  // immediately than the former call.
   [self.consumer refreshUserState:[self userSignedInState]];
 }
 
@@ -289,6 +314,10 @@ bool UserActionIsRequiredToHaveTabSyncWork(syncer::SyncService* sync_service) {
     base::RecordAction(
         base::UserMetricsAction("MobileTabGridSelectRemotePanel"));
     LogLikelyInterestedDefaultBrowserUserActivity(DefaultPromoTypeAllTabs);
+
+    [self configureToolbarsButtons];
+    [self.gridConsumer setItemsCanBeRestored:NO];
+    [self.gridConsumer setItemsCanBeClosed:NO];
   }
   // TODO(crbug.com/1457146): Implement.
 }

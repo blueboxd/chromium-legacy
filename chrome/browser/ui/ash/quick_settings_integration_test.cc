@@ -4,60 +4,34 @@
 
 #include "ash/ash_element_identifiers.h"
 #include "ash/constants/ash_features.h"
-#include "ash/root_window_controller.h"
-#include "ash/shelf/shelf.h"
 #include "ash/shell.h"
-#include "ash/system/status_area_widget.h"
-#include "ash/wm/desks/desks_util.h"
-#include "base/functional/bind.h"
+#include "ash/system/model/enterprise_domain_model.h"
+#include "ash/system/model/system_tray_model.h"
+#include "base/test/gtest_tags.h"
 #include "base/test/scoped_feature_list.h"
-#include "chrome/browser/ash/system_web_apps/system_web_app_manager.h"
-#include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/webui_url_constants.h"
-#include "chrome/test/interaction/interactive_browser_test.h"
-#include "content/public/test/browser_test.h"
-#include "ui/aura/window.h"
+#include "chrome/test/base/chromeos/crosier/interactive_ash_test.h"
 #include "ui/base/interaction/element_identifier.h"
-#include "ui/views/interaction/element_tracker_views.h"
-#include "ui/views/widget/widget.h"
 
 namespace ash {
 namespace {
 
-class QuickSettingsIntegrationTest : public InteractiveBrowserTest {
+EnterpriseDomainModel* GetEnterpriseDomainModel() {
+  return Shell::Get()->system_tray_model()->enterprise_domain();
+}
+
+class QuickSettingsIntegrationTest : public InteractiveAshTest {
  public:
   QuickSettingsIntegrationTest() {
     feature_list_.InitAndEnableFeature(features::kQsRevamp);
-
-    // This test suite does not require a browser window.
-    set_launch_browser_for_testing(nullptr);
-
-    // Use the per-display root window as the context for all widgets.
-    views::ElementTrackerViews::SetContextOverrideCallback(
-        base::BindRepeating([](views::Widget* widget) {
-          return ui::ElementContext(widget->GetNativeWindow()->GetRootWindow());
-        }));
   }
 
-  // InteractiveBrowserTest:
+  // InteractiveAshTest:
   void SetUpOnMainThread() override {
-    InteractiveBrowserTest::SetUpOnMainThread();
+    InteractiveAshTest::SetUpOnMainThread();
 
     // Ensure the OS Settings system web app (SWA) is installed.
-    Profile* profile = ProfileManager::GetActiveUserProfile();
-    CHECK(profile);
-    SystemWebAppManager::GetForTest(profile)->InstallSystemAppsForTesting();
-  }
-
-  void TearDownOnMainThread() override {
-    // Clean up any browsers we opened (including the SWA browser) otherwise
-    // the test may hang on shutdown.
-    // TODO(b/292067979): Find a better way to work around this issue.
-    for (Browser* browser : *BrowserList::GetInstance()) {
-      CloseBrowserSynchronously(browser);
-    }
-    InteractiveBrowserTest::TearDownOnMainThread();
+    InstallSystemApps();
   }
 
  private:
@@ -65,10 +39,10 @@ class QuickSettingsIntegrationTest : public InteractiveBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(QuickSettingsIntegrationTest, OpenOsSettings) {
-  // Kombucha requires a context widget to synthesize clicks.
-  views::Widget* status_area_widget =
-      Shell::GetPrimaryRootWindowController()->shelf()->GetStatusAreaWidget();
-  SetContextWidget(status_area_widget);
+  base::AddFeatureIdTagToTestResult(
+      "screenplay-0a165660-211a-4bb6-9843-a1b1d55c8694");
+
+  SetupContextWidget();
 
   DEFINE_LOCAL_ELEMENT_IDENTIFIER_VALUE(kOsSettingsElementId);
 
@@ -85,6 +59,34 @@ IN_PROC_BROWSER_TEST_F(QuickSettingsIntegrationTest, OpenOsSettings) {
       Log("Verifying that OS Settings loads"),
       WaitForWebContentsReady(kOsSettingsElementId,
                               GURL(chrome::kChromeUIOSSettingsURL)));
+}
+
+IN_PROC_BROWSER_TEST_F(QuickSettingsIntegrationTest, ManagedDeviceInfo) {
+  base::AddFeatureIdTagToTestResult(
+      "screenplay-3d8236e6-8c42-428c-87e6-9c9e3bac7ddb");
+
+  SetupContextWidget();
+
+  // Simulate enterprise information being available.
+  GetEnterpriseDomainModel()->SetDeviceEnterpriseInfo(
+      DeviceEnterpriseInfo{"example.com", /*active_directory_managed=*/false,
+                           ManagementDeviceMode::kChromeEnterprise});
+
+  DEFINE_LOCAL_ELEMENT_IDENTIFIER_VALUE(kManagementElementId);
+
+  RunTestSequence(Log("Opening quick settings bubble"),
+                  PressButton(kUnifiedSystemTrayElementId),
+                  WaitForShow(kQuickSettingsViewElementId),
+
+                  Log("Pressing enterprise managed view"),
+                  InstrumentNextTab(kManagementElementId, AnyBrowser()),
+                  PressButton(kEnterpriseManagedView),
+
+                  Log("Waiting for chrome://management to load"),
+                  WaitForWebContentsReady(kManagementElementId,
+                                          GURL("chrome://management")),
+
+                  Log("Test complete"));
 }
 
 }  // namespace

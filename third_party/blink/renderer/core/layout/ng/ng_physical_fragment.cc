@@ -33,7 +33,7 @@ struct SameSizeAsNGPhysicalFragment
   Member<void*> layout_object;
   PhysicalSize size;
   unsigned flags;
-  Member<void*> members[2];
+  Member<void*> members[3];
 };
 
 ASSERT_SIZE(NGPhysicalFragment, SameSizeAsNGPhysicalFragment);
@@ -350,6 +350,13 @@ NGPhysicalFragment::NGPhysicalFragment(NGFragmentBuilder* builder,
       has_out_of_flow_fragment_child_(builder->HasOutOfFlowFragmentChild()),
       has_out_of_flow_in_fragmentainer_subtree_(
           builder->HasOutOfFlowInFragmentainerSubtree()),
+      propagated_data_((builder->sticky_descendants_ || builder->snap_areas_ ||
+                        builder->scroll_start_targets_)
+                           ? MakeGarbageCollected<PropagatedData>(
+                                 builder->sticky_descendants_,
+                                 builder->snap_areas_,
+                                 builder->scroll_start_targets_)
+                           : nullptr),
       break_token_(std::move(builder->break_token_)),
       oof_data_(builder->oof_positioned_descendants_.empty() &&
                         !builder->AnchorQuery() &&
@@ -438,6 +445,7 @@ NGPhysicalFragment::NGPhysicalFragment(const NGPhysicalFragment& other)
       has_out_of_flow_in_fragmentainer_subtree_(
           other.has_out_of_flow_in_fragmentainer_subtree_),
       base_direction_(other.base_direction_),
+      propagated_data_(other.propagated_data_),
       break_token_(other.break_token_),
       oof_data_(other.oof_data_ ? other.CloneOutOfFlowData() : nullptr) {
   CHECK(layout_object_);
@@ -658,16 +666,6 @@ void NGPhysicalFragment::AdjustScrollableOverflowForPropagation(
   }
 }
 
-TouchAction NGPhysicalFragment::EffectiveAllowedTouchAction() const {
-  DCHECK(layout_object_);
-  return layout_object_->EffectiveAllowedTouchAction();
-}
-
-bool NGPhysicalFragment::InsideBlockingWheelEventHandler() const {
-  DCHECK(layout_object_);
-  return layout_object_->InsideBlockingWheelEventHandler();
-}
-
 LogicalRect NGPhysicalFragment::ConvertChildToLogical(
     const PhysicalRect& physical_rect) const {
   return WritingModeConverter(Style().GetWritingDirection(), Size())
@@ -736,6 +734,7 @@ void NGPhysicalFragment::Trace(Visitor* visitor) const {
 
 void NGPhysicalFragment::TraceAfterDispatch(Visitor* visitor) const {
   visitor->Trace(layout_object_);
+  visitor->Trace(propagated_data_);
   visitor->Trace(break_token_);
   visitor->Trace(oof_data_);
 }

@@ -41,7 +41,7 @@ void AndroidMetricsProvider::ProvidePreviousSessionData(
 
   metrics::AndroidMetricsHelper::GetInstance()->EmitHistograms(
       local_state_,
-      /*current_session=*/false);
+      /*on_did_create_metrics_log=*/false);
 }
 
 void AndroidMetricsProvider::OnDidCreateMetricsLog() {
@@ -60,7 +60,7 @@ void AndroidMetricsProvider::OnDidCreateMetricsLog() {
 
   metrics::AndroidMetricsHelper::GetInstance()->EmitHistograms(
       local_state_,
-      /*current_session=*/true);
+      /*on_did_create_metrics_log=*/true);
 }
 
 // static
@@ -71,7 +71,8 @@ void AndroidMetricsProvider::RegisterPrefs(PrefRegistrySimple* registry) {
 
 // static
 void AndroidMetricsProvider::ResetGlobalStateForTesting() {
-  metrics::AndroidMetricsHelper::GetInstance()->ResetForTesting();  // IN-TEST
+  metrics::AndroidMetricsHelper::ResetGlobalStateForTesting();
+  local_state_saved_ = false;
 }
 
 }  // namespace android_webview

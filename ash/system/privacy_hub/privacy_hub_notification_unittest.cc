@@ -6,13 +6,15 @@
 
 #include <memory>
 
-#include "ash/public/cpp/sensor_disabled_notification_delegate.h"
+#include "ash/capture_mode/capture_mode_test_util.h"
+#include "ash/capture_mode/capture_mode_types.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/system/privacy_hub/privacy_hub_notification_controller.h"
+#include "ash/system/privacy_hub/sensor_disabled_notification_delegate.h"
 #include "ash/test/ash_test_base.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/test/bind.h"
 #include "base/test/gtest_util.h"
-#include "privacy_hub_notification.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/message_center/message_center.h"
@@ -93,7 +95,9 @@ class PrivacyHubNotificationTest : public AshTestBase {
   PrivacyHubNotification& notification() { return *notification_; }
 
   FakeSensorDisabledNotificationDelegate& sensor_delegate() {
-    return sensor_delegate_;
+    return static_cast<FakeSensorDisabledNotificationDelegate&>(
+        *PrivacyHubNotificationController::Get()
+             ->sensor_disabled_notification_delegate());
   }
 
   // testing::Test
@@ -116,9 +120,17 @@ class PrivacyHubNotificationTest : public AshTestBase {
                 IDS_PRIVACY_HUB_MICROPHONE_AND_CAMERA_OFF_NOTIFICATION_MESSAGE_WITH_TWO_APP_NAMES},
             base::MakeRefCounted<PrivacyHubNotificationClickDelegate>(
                 base::DoNothing())});
+
+    // Set up the fake SensorDisabledNotificationDelegate.
+    scoped_delegate_ =
+        std::make_unique<ScopedSensorDisabledNotificationDelegateForTest>(
+            std::make_unique<FakeSensorDisabledNotificationDelegate>());
   }
   // testing::Test
   void TearDown() override {
+    // We need to destroy the delegate while the Ash still exists.
+    scoped_delegate_.reset();
+
     notification_.reset();
     AshTestBase::TearDown();
   }
@@ -129,7 +141,8 @@ class PrivacyHubNotificationTest : public AshTestBase {
   }
 
  private:
-  FakeSensorDisabledNotificationDelegate sensor_delegate_;
+  std::unique_ptr<ScopedSensorDisabledNotificationDelegateForTest>
+      scoped_delegate_;
   std::unique_ptr<PrivacyHubNotification> notification_;
 };
 
@@ -309,6 +322,78 @@ TEST_F(PrivacyHubNotificationTest, WithApps) {
           IDS_PRIVACY_HUB_MICROPHONE_AND_CAMERA_OFF_NOTIFICATION_MESSAGE_WITH_TWO_APP_NAMES,
           app1, app3),
       notification_ptr->message());
+}
+
+TEST_F(PrivacyHubNotificationTest, NotificationMessageForLongAppNames) {
+  const std::u16string long_app_name =
+      u"0123456789012345678901234567890123456789012345678901234567";
+  sensor_delegate().LaunchApp(long_app_name);
+  notification().Show();
+
+  message_center::Notification* notification_ptr = GetNotification();
+  ASSERT_TRUE(notification_ptr);
+  const std::u16string first_message = notification_ptr->message();
+  EXPECT_EQ(first_message.size(), 150u);
+
+  sensor_delegate().CloseApp(long_app_name);
+
+  // Generate a notification that should now exceed the max length.
+  sensor_delegate().LaunchApp(long_app_name + u'1');
+  notification().Show();
+
+  notification_ptr = GetNotification();
+  ASSERT_TRUE(notification_ptr);
+  // The new notification should also be at most 150 characters long.
+  EXPECT_LE(notification_ptr->message().size(), 150u);
+  // It shouldn't be identical to the old message even with the same length.
+  EXPECT_NE(first_message, notification_ptr->message());
+}
+
+TEST_F(PrivacyHubNotificationTest, NotificationForScreenCaptureWithMicrophone) {
+  // Launch an app.
+  const std::u16string app_1 = u"App1";
+  sensor_delegate().LaunchApp(app_1);
+  notification().Show();
+
+  // Shall be a notification with 1 app name.
+  message_center::Notification* privacy_hub_notification = GetNotification();
+  ASSERT_TRUE(privacy_hub_notification);
+  EXPECT_EQ(
+      privacy_hub_notification->message(),
+      l10n_util::GetStringFUTF16(
+          IDS_PRIVACY_HUB_MICROPHONE_AND_CAMERA_OFF_NOTIFICATION_MESSAGE_WITH_ONE_APP_NAME,
+          app_1));
+
+  // Start screen capture with audio from microphone.
+  auto* controller = StartCaptureSession(CaptureModeSource::kFullscreen,
+                                         CaptureModeType::kVideo);
+  controller->SetAudioRecordingMode(AudioRecordingMode::kMicrophone);
+  controller->StartVideoRecordingImmediatelyForTesting();
+  notification().Update();
+
+  // Shall be a notification with 2 app names.
+  const std::u16string screenCaptureTitle =
+      l10n_util::GetStringUTF16(IDS_ASH_SCREEN_CAPTURE_DISPLAY_SOURCE);
+  privacy_hub_notification = GetNotification();
+  ASSERT_TRUE(privacy_hub_notification);
+  EXPECT_EQ(
+      l10n_util::GetStringFUTF16(
+          IDS_PRIVACY_HUB_MICROPHONE_AND_CAMERA_OFF_NOTIFICATION_MESSAGE_WITH_TWO_APP_NAMES,
+          app_1, screenCaptureTitle),
+      privacy_hub_notification->message());
+
+  // Stop screen capture.
+  controller->EndVideoRecording(EndRecordingReason::kStopRecordingButton);
+  notification().Update();
+
+  // Shall be a notification with 1 app name.
+  privacy_hub_notification = GetNotification();
+  ASSERT_TRUE(privacy_hub_notification);
+  EXPECT_EQ(
+      l10n_util::GetStringFUTF16(
+          IDS_PRIVACY_HUB_MICROPHONE_AND_CAMERA_OFF_NOTIFICATION_MESSAGE_WITH_ONE_APP_NAME,
+          app_1),
+      privacy_hub_notification->message());
 }
 
 }  // namespace ash

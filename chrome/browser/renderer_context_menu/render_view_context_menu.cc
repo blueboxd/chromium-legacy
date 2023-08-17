@@ -249,6 +249,8 @@
 #endif  // BUILDFLAG(ENABLE_PRINTING)
 
 #if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
+#include "chrome/browser/accessibility/ax_screen_ai_annotator.h"
+#include "chrome/browser/accessibility/ax_screen_ai_annotator_factory.h"
 #include "chrome/browser/screen_ai/screen_ai_install_state.h"
 #endif
 
@@ -283,6 +285,7 @@
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/constants/ash_features.h"
 #include "ash/public/cpp/clipboard_history_controller.h"
+#include "ash/webui/settings/public/constants/routes.mojom.h"
 #include "ash/webui/system_apps/public/system_web_app_type.h"
 #include "chrome/browser/ash/arc/arc_util.h"
 #include "chrome/browser/ash/arc/intent_helper/arc_intent_helper_mojo_ash.h"
@@ -292,7 +295,6 @@
 #include "chrome/browser/ui/ash/system_web_apps/system_web_app_ui_utils.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/browser/ui/webui/ash/system_web_dialog_delegate.h"
-#include "chrome/browser/ui/webui/settings/chromeos/constants/routes.mojom.h"
 #include "chromeos/crosapi/mojom/clipboard_history.mojom.h"
 #include "ui/aura/window.h"
 #endif
@@ -477,7 +479,7 @@ const std::map<int, int>& GetIdcToUmaMap(UmaEnumIdLookupType type) {
        {IDC_CONTENT_CONTEXT_OPEN_IN_READING_MODE, 118},
        {IDC_FOLLOW, 119},
        {IDC_UNFOLLOW, 120},
-       {IDC_CONTENT_CONTEXT_AUTOFILL_CUSTOM_FIRST, 121},
+       // Removed: {IDC_CONTENT_CONTEXT_AUTOFILL_CUSTOM_FIRST, 121},
        {IDC_CONTENT_CONTEXT_PARTIAL_TRANSLATE, 123},
        {IDC_CONTENT_CONTEXT_ADD_A_NOTE, 124},
        {IDC_LIVE_CAPTION, 125},
@@ -491,13 +493,14 @@ const std::map<int, int>& GetIdcToUmaMap(UmaEnumIdLookupType type) {
        {IDC_CONTENT_CONTEXT_SAVEPLUGINAS, 133},
        {IDC_CONTENT_CONTEXT_AUTOFILL_FALLBACK_AUTOCOMPLETE_UNRECOGNIZED, 134},
        {IDC_CONTENT_CONTEXT_SEARCHWEBFORNEWTAB, 135},
+       {IDC_CONTENT_CONTEXT_RUN_LAYOUT_EXTRACTION, 137},
        // To add new items:
        //   - Add one more line above this comment block, using the UMA value
        //     from the line below this comment block.
        //   - Increment the UMA value in that latter line.
        //   - Add the new item to the RenderViewContextMenuItem enum in
        //     tools/metrics/histograms/enums.xml.
-       {0, 136}});
+       {0, 138}});
 
   // These UMA values are for the the ContextMenuOptionDesktop enum, used for
   // the ContextMenu.SelectedOptionDesktop histograms.
@@ -572,11 +575,6 @@ int CollapseCommandsForUMA(int id) {
   if (id >= IDC_OPEN_LINK_IN_PROFILE_FIRST &&
       id <= IDC_OPEN_LINK_IN_PROFILE_LAST) {
     return IDC_OPEN_LINK_IN_PROFILE_FIRST;
-  }
-
-  if (id >= IDC_CONTENT_CONTEXT_AUTOFILL_CUSTOM_FIRST &&
-      id <= IDC_CONTENT_CONTEXT_AUTOFILL_CUSTOM_LAST) {
-    return IDC_CONTENT_CONTEXT_AUTOFILL_CUSTOM_FIRST;
   }
 
   return id;
@@ -1149,6 +1147,11 @@ void RenderViewContextMenu::InitMenu() {
     AppendPdfOcrItems();
     VLOG(2) << "Appended PDF OCR Items";
   }
+
+  if (features::IsLayoutExtractionEnabled()) {
+    AppendLayoutExtractionItem();
+    VLOG(2) << "Appended Layout Extraction Item";
+  }
 #endif  // BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
 
   if (content_type_->SupportsGroup(
@@ -1549,12 +1552,16 @@ void RenderViewContextMenu::AppendLinkItems() {
     absl::optional<ash::SystemWebAppType> link_system_app_type =
         GetLinkSystemAppType(profile, params_.link_url);
 
-    // Links to system web app can't be opened in incognito / off-the-record.
-    show_open_link_off_the_record = !link_system_app_type;
+    // true if the link points to a WebUI page, including SWA.
+    const bool link_to_webui = content::HasWebUIScheme(params_.link_url);
+
+    // Opening a WebUI page in an incognito window makes little sense, so we
+    // don't show the item.
+    show_open_link_off_the_record = !link_to_webui;
 
     // Basically, we don't show "Open link in new tab" and "Open link in new
-    // window" items inside SWAs/SystemWebDialogs if that link is to SWAs
-    if ((system_app_ || in_system_web_dialog) && link_system_app_type) {
+    // window" items inside SWAs/SystemWebDialogs if that link is to WebUI.
+    if ((system_app_ || in_system_web_dialog) && link_to_webui) {
       // We don't show "Open in new tab" if the current app doesn't have a tab
       // strip.
       //
@@ -2092,6 +2099,12 @@ void RenderViewContextMenu::AppendPdfOcrItems() {
   observers_.AddObserver(pdf_ocr_submenu_model_observer_.get());
   pdf_ocr_submenu_model_observer_->InitMenu(params_);
 }
+
+void RenderViewContextMenu::AppendLayoutExtractionItem() {
+  menu_model_.AddSeparator(ui::NORMAL_SEPARATOR);
+  menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_RUN_LAYOUT_EXTRACTION,
+                                  IDS_CONTENT_CONTEXT_RUN_LAYOUT_EXTRACTION);
+}
 #endif  // BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
 
 void RenderViewContextMenu::AppendRotationItems() {
@@ -2201,7 +2214,7 @@ void RenderViewContextMenu::AppendSpellingAndSearchSuggestionItems() {
     }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-    if (ash::features::IsOrcaEnabled()) {
+    if (chromeos::features::IsOrcaEnabled()) {
       render_separator = true;
       menu_model_.AddItem(IDC_CONTENT_CONTEXT_ORCA, kContentContextOrca);
     }
@@ -2715,6 +2728,11 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
       return !!(params_.media_flags &
                 ContextMenuData::kMediaCanPictureInPicture);
 
+#if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
+    case IDC_CONTENT_CONTEXT_RUN_LAYOUT_EXTRACTION:
+      return true;
+#endif
+
     case IDC_CONTENT_CONTEXT_EMOJI:
       return params_.is_editable;
 
@@ -2752,7 +2770,7 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     case IDC_CONTENT_CONTEXT_ORCA:
-      return ash::features::IsOrcaEnabled() && params_.is_editable;
+      return chromeos::features::IsOrcaEnabled() && params_.is_editable;
 #endif
 
     case IDC_FOLLOW:
@@ -3088,6 +3106,12 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       source_web_contents_->ReloadFocusedFrame();
       break;
 
+#if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
+    case IDC_CONTENT_CONTEXT_RUN_LAYOUT_EXTRACTION:
+      ExecRunLayoutExtraction();
+      break;
+#endif  // BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
+
     case IDC_CONTENT_CONTEXT_VIEWFRAMESOURCE:
       if (GetRenderFrameHost())
         GetRenderFrameHost()->ViewSource();
@@ -3212,7 +3236,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     case IDC_CONTENT_CONTEXT_ORCA: {
-      CHECK(ash::features::IsOrcaEnabled());
+      CHECK(chromeos::features::IsOrcaEnabled());
       ash::input_method::EditorMediator::Get()->HandleTrigger();
       break;
     }
@@ -3985,10 +4009,23 @@ void RenderViewContextMenu::ExecRegionSearch(
     lens_region_search_controller_ =
         std::make_unique<lens::LensRegionSearchController>(browser);
   }
+  const lens::AmbientSearchEntryPoint entry_point =
+      is_google_default_search_provider
+          ? lens::AmbientSearchEntryPoint::
+                CONTEXT_MENU_SEARCH_REGION_WITH_GOOGLE_LENS
+          : lens::AmbientSearchEntryPoint::CONTEXT_MENU_SEARCH_REGION_WITH_WEB;
   lens_region_search_controller_->Start(web_contents, use_fullscreen_capture,
-                                        is_google_default_search_provider);
+                                        is_google_default_search_provider,
+                                        entry_point);
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 }
+
+#if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
+void RenderViewContextMenu::ExecRunLayoutExtraction() {
+  screen_ai::AXScreenAIAnnotatorFactory::GetForBrowserContext(GetProfile())
+      ->AnnotateScreenshot(source_web_contents_);
+}
+#endif
 
 void RenderViewContextMenu::ExecSearchWebForImage(bool is_image_translate) {
   CoreTabHelper* core_tab_helper =

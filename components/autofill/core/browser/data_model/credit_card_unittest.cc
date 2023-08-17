@@ -36,10 +36,11 @@ using base::UTF8ToUTF16;
 
 namespace autofill {
 
-const CreditCard::RecordType LOCAL_CARD = CreditCard::LOCAL_CARD;
+const CreditCard::RecordType LOCAL_CARD = CreditCard::RecordType::kLocalCard;
 const CreditCard::RecordType MASKED_SERVER_CARD =
-    CreditCard::MASKED_SERVER_CARD;
-const CreditCard::RecordType FULL_SERVER_CARD = CreditCard::FULL_SERVER_CARD;
+    CreditCard::RecordType::kMaskedServerCard;
+const CreditCard::RecordType FULL_SERVER_CARD =
+    CreditCard::RecordType::kFullServerCard;
 
 namespace {
 
@@ -96,8 +97,8 @@ TEST(CreditCardTest, GetObfuscatedStringForCardDigits) {
       std::u16string() + base::i18n::kLeftToRightEmbeddingMark +
       CreditCard::GetMidlineEllipsisDots(4) + digits +
       base::i18n::kPopDirectionalFormatting;
-  EXPECT_EQ(expected, internal::GetObfuscatedStringForCardDigits(
-                          digits, /*obfuscation_length=*/4));
+  EXPECT_EQ(expected, CreditCard::GetObfuscatedStringForCardDigits(
+                          /*obfuscation_length=*/4, digits));
 }
 
 // Tests credit card summary string generation.  This test simulates a variety
@@ -773,8 +774,10 @@ TEST_P(IsLocalOrServerDuplicateOfTest, IsLocalOrServerDuplicateOf) {
       test_case.second_card_exp_mo, test_case.second_card_exp_yr,
       test_case.second_billing_address_id);
 
-  if (test_case.second_card_record_type == CreditCard::MASKED_SERVER_CARD)
+  if (test_case.second_card_record_type ==
+      CreditCard::RecordType::kMaskedServerCard) {
     b.SetNetworkForMaskedCard(test_case.second_card_issuer_network);
+  }
 
   EXPECT_EQ(test_case.is_local_or_server_duplicate,
             a.IsLocalOrServerDuplicateOf(b))
@@ -836,18 +839,18 @@ TEST(CreditCardTest, MatchingCardDetails) {
   EXPECT_TRUE(b.MatchingCardDetails(a));
 
   // Cards with the same number are the same.
-  a.set_record_type(CreditCard::LOCAL_CARD);
+  a.set_record_type(CreditCard::RecordType::kLocalCard);
   a.SetRawInfo(CREDIT_CARD_NUMBER, u"4111111111111111");
-  b.set_record_type(CreditCard::LOCAL_CARD);
+  b.set_record_type(CreditCard::RecordType::kLocalCard);
   b.SetRawInfo(CREDIT_CARD_NUMBER, u"4111111111111111");
   EXPECT_TRUE(a.MatchingCardDetails(b));
   EXPECT_TRUE(b.MatchingCardDetails(a));
 
   // Local cards with different overall numbers shouldn't match even if the last
   // four digits are the same.
-  a.set_record_type(CreditCard::LOCAL_CARD);
+  a.set_record_type(CreditCard::RecordType::kLocalCard);
   a.SetRawInfo(CREDIT_CARD_NUMBER, u"4111111111111111");
-  b.set_record_type(CreditCard::LOCAL_CARD);
+  b.set_record_type(CreditCard::RecordType::kLocalCard);
   b.SetRawInfo(CREDIT_CARD_NUMBER, u"4111222222221111");
   EXPECT_FALSE(a.MatchingCardDetails(b));
   EXPECT_FALSE(b.MatchingCardDetails(a));
@@ -855,38 +858,38 @@ TEST(CreditCardTest, MatchingCardDetails) {
   // When one card is a full server card, the other is a local card, and the
   // cards have different overall numbers but the same last four digits, they
   // should not match.
-  a.set_record_type(CreditCard::FULL_SERVER_CARD);
+  a.set_record_type(CreditCard::RecordType::kFullServerCard);
   a.SetRawInfo(CREDIT_CARD_NUMBER, u"4111111111111111");
-  b.set_record_type(CreditCard::LOCAL_CARD);
+  b.set_record_type(CreditCard::RecordType::kLocalCard);
   b.SetRawInfo(CREDIT_CARD_NUMBER, u"4111222222221111");
   EXPECT_FALSE(a.MatchingCardDetails(b));
   EXPECT_FALSE(b.MatchingCardDetails(a));
 
   // When one card is a masked server card, the other is a local card, and the
   // cards have the same last four digits, they should match.
-  a.set_record_type(CreditCard::MASKED_SERVER_CARD);
+  a.set_record_type(CreditCard::RecordType::kMaskedServerCard);
   a.SetRawInfo(CREDIT_CARD_NUMBER, u"4111111111111111");
-  b.set_record_type(CreditCard::LOCAL_CARD);
+  b.set_record_type(CreditCard::RecordType::kLocalCard);
   b.SetRawInfo(CREDIT_CARD_NUMBER, u"4331111111111111");
   EXPECT_TRUE(a.MatchingCardDetails(b));
   EXPECT_TRUE(b.MatchingCardDetails(a));
 
   // When one card is a masked server card, the other is a full server card, and
   // the cards have the same last four digits, they should match.
-  a.set_record_type(CreditCard::MASKED_SERVER_CARD);
+  a.set_record_type(CreditCard::RecordType::kMaskedServerCard);
   a.SetRawInfo(CREDIT_CARD_NUMBER, u"4111111111111111");
-  b.set_record_type(CreditCard::FULL_SERVER_CARD);
+  b.set_record_type(CreditCard::RecordType::kFullServerCard);
   b.SetRawInfo(CREDIT_CARD_NUMBER, u"4331111111111111");
   EXPECT_TRUE(a.MatchingCardDetails(b));
   EXPECT_TRUE(b.MatchingCardDetails(a));
 
   // If one card is masked, then partial or missing expiration date information
   // should not prevent the function from returning true.
-  a.set_record_type(CreditCard::MASKED_SERVER_CARD);
+  a.set_record_type(CreditCard::RecordType::kMaskedServerCard);
   a.SetRawInfo(CREDIT_CARD_NUMBER, u"4111111111111111");
   a.SetRawInfo(CREDIT_CARD_EXP_MONTH, u"01");
   a.SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, u"2025");
-  b.set_record_type(CreditCard::LOCAL_CARD);
+  b.set_record_type(CreditCard::RecordType::kLocalCard);
   b.SetRawInfo(CREDIT_CARD_NUMBER, u"4111111111111111");
   b.SetRawInfo(CREDIT_CARD_EXP_MONTH, u"");
   b.SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, u"");
@@ -895,11 +898,11 @@ TEST(CreditCardTest, MatchingCardDetails) {
 
   // If one card is masked, then non-matching expiration months should cause the
   // function to return false.
-  a.set_record_type(CreditCard::MASKED_SERVER_CARD);
+  a.set_record_type(CreditCard::RecordType::kMaskedServerCard);
   a.SetRawInfo(CREDIT_CARD_NUMBER, u"4111111111111111");
   a.SetRawInfo(CREDIT_CARD_EXP_MONTH, u"01");
   a.SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, u"");
-  b.set_record_type(CreditCard::LOCAL_CARD);
+  b.set_record_type(CreditCard::RecordType::kLocalCard);
   b.SetRawInfo(CREDIT_CARD_NUMBER, u"4111111111111111");
   b.SetRawInfo(CREDIT_CARD_EXP_MONTH, u"03");
   b.SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, u"");
@@ -908,11 +911,11 @@ TEST(CreditCardTest, MatchingCardDetails) {
 
   // If one card is masked, then non-matching expiration years should cause the
   // function to return false.
-  a.set_record_type(CreditCard::MASKED_SERVER_CARD);
+  a.set_record_type(CreditCard::RecordType::kMaskedServerCard);
   a.SetRawInfo(CREDIT_CARD_NUMBER, u"4111111111111111");
   a.SetRawInfo(CREDIT_CARD_EXP_MONTH, u"");
   a.SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, u"2025");
-  b.set_record_type(CreditCard::LOCAL_CARD);
+  b.set_record_type(CreditCard::RecordType::kLocalCard);
   b.SetRawInfo(CREDIT_CARD_NUMBER, u"4111111111111111");
   b.SetRawInfo(CREDIT_CARD_EXP_MONTH, u"");
   b.SetRawInfo(CREDIT_CARD_EXP_4_DIGIT_YEAR, u"2026");
@@ -1539,40 +1542,9 @@ TEST(CreditCardTest, CreditCardType) {
 TEST(CreditCardTest, CreditCardVerificationCode) {
   CreditCard card(base::Uuid::GenerateRandomV4().AsLowercaseString(),
                   "https://www.example.com/");
-
-  // CVC for generic network is 3 digit string with number characters.
   card.SetRawInfo(CREDIT_CARD_VERIFICATION_CODE, u"999");
   EXPECT_EQ(u"999", card.GetRawInfo(CREDIT_CARD_VERIFICATION_CODE));
   EXPECT_EQ(u"999", card.cvc());
-
-  // These should fail, and preserve the previous value. CVC for generic network
-  // is 3 digit string with number characters.
-  card.SetRawInfo(CREDIT_CARD_VERIFICATION_CODE, u"0");
-  EXPECT_EQ(u"999", card.GetRawInfo(CREDIT_CARD_VERIFICATION_CODE));
-  EXPECT_EQ(u"999", card.cvc());
-
-  card.SetRawInfo(CREDIT_CARD_VERIFICATION_CODE, u"1");
-  EXPECT_EQ(u"999", card.GetRawInfo(CREDIT_CARD_VERIFICATION_CODE));
-  EXPECT_EQ(u"999", card.cvc());
-
-  card.SetRawInfo(CREDIT_CARD_VERIFICATION_CODE, u"9999");
-  EXPECT_EQ(u"999", card.GetRawInfo(CREDIT_CARD_VERIFICATION_CODE));
-  EXPECT_EQ(u"999", card.cvc());
-
-  card.SetRawInfo(CREDIT_CARD_VERIFICATION_CODE, u"12345");
-  EXPECT_EQ(u"999", card.GetRawInfo(CREDIT_CARD_VERIFICATION_CODE));
-  EXPECT_EQ(u"999", card.cvc());
-
-  card.SetRawInfo(CREDIT_CARD_VERIFICATION_CODE, u"ab15");
-  EXPECT_EQ(u"999", card.GetRawInfo(CREDIT_CARD_VERIFICATION_CODE));
-  EXPECT_EQ(u"999", card.cvc());
-
-  // 15-digit Amex card number.
-  card.SetRawInfo(CREDIT_CARD_NUMBER, u"378282246310005");
-  // CVC for Amex network is 4 digit string with number characters.
-  card.SetRawInfo(CREDIT_CARD_VERIFICATION_CODE, u"9999");
-  EXPECT_EQ(u"9999", card.GetRawInfo(CREDIT_CARD_VERIFICATION_CODE));
-  EXPECT_EQ(u"9999", card.cvc());
 }
 
 // Tests that the card in only deletable if it is expired before the threshold.
@@ -1666,8 +1638,8 @@ const CreditCardMatchingTypesCase kCreditCardMatchingTypesTestCases[] = {
      "2020",
      MASKED_SERVER_CARD,
      {CREDIT_CARD_NUMBER}},
-    {"4111111111111111", "01", "2020", CreditCard::MASKED_SERVER_CARD,
-     ServerFieldTypeSet()},
+    {"4111111111111111", "01", "2020",
+     CreditCard::RecordType::kMaskedServerCard, ServerFieldTypeSet()},
     // Same value will not match a local card or full server card since we
     // have the full number for those. However the full number will.
     {"1881", "01", "2020", LOCAL_CARD, ServerFieldTypeSet()},
@@ -2091,27 +2063,27 @@ TEST(CreditCardTest, LastFourDigits) {
   CreditCard card(base::Uuid::GenerateRandomV4().AsLowercaseString(),
                   "https://www.example.com/");
   ASSERT_EQ(std::u16string(), card.LastFourDigits());
-  ASSERT_EQ(internal::GetObfuscatedStringForCardDigits(
-                std::u16string(), /*obfuscation_length=*/4),
+  ASSERT_EQ(CreditCard::GetObfuscatedStringForCardDigits(
+                /*obfuscation_length=*/4, std::u16string()),
             card.ObfuscatedNumberWithVisibleLastFourDigits());
 
   test::SetCreditCardInfo(&card, "Baby Face Nelson", "5212341234123489", "01",
                           "2010", "1");
   ASSERT_EQ(u"3489", card.LastFourDigits());
-  ASSERT_EQ(internal::GetObfuscatedStringForCardDigits(
-                u"3489", /*obfuscation_length=*/4),
+  ASSERT_EQ(CreditCard::GetObfuscatedStringForCardDigits(
+                /*obfuscation_length=*/4, u"3489"),
             card.ObfuscatedNumberWithVisibleLastFourDigits());
 
   card.SetRawInfo(CREDIT_CARD_NUMBER, u"3489");
   ASSERT_EQ(u"3489", card.LastFourDigits());
-  ASSERT_EQ(internal::GetObfuscatedStringForCardDigits(
-                u"3489", /*obfuscation_length=*/4),
+  ASSERT_EQ(CreditCard::GetObfuscatedStringForCardDigits(
+                /*obfuscation_length=*/4, u"3489"),
             card.ObfuscatedNumberWithVisibleLastFourDigits());
 
   card.SetRawInfo(CREDIT_CARD_NUMBER, u"489");
   ASSERT_EQ(u"489", card.LastFourDigits());
-  ASSERT_EQ(internal::GetObfuscatedStringForCardDigits(
-                u"489", /*obfuscation_length=*/4),
+  ASSERT_EQ(CreditCard::GetObfuscatedStringForCardDigits(
+                /*obfuscation_length=*/4, u"489"),
             card.ObfuscatedNumberWithVisibleLastFourDigits());
 }
 
@@ -2219,41 +2191,44 @@ INSTANTIATE_TEST_SUITE_P(
     ShouldUpdateExpirationTest,
     testing::Values(
         // Cards that expired last year should always be updated.
-        ShouldUpdateExpirationTestCase{true, -kOneYear, CreditCard::LOCAL_CARD},
         ShouldUpdateExpirationTestCase{true, -kOneYear,
-                                       CreditCard::FULL_SERVER_CARD},
+                                       CreditCard::RecordType::kLocalCard},
         ShouldUpdateExpirationTestCase{true, -kOneYear,
-                                       CreditCard::MASKED_SERVER_CARD},
+                                       CreditCard::RecordType::kFullServerCard},
+        ShouldUpdateExpirationTestCase{
+            true, -kOneYear, CreditCard::RecordType::kMaskedServerCard},
 
         // Cards that expired last month should always be updated.
         ShouldUpdateExpirationTestCase{true, -kOneMonth,
-                                       CreditCard::LOCAL_CARD},
+                                       CreditCard::RecordType::kLocalCard},
         ShouldUpdateExpirationTestCase{true, -kOneMonth,
-                                       CreditCard::FULL_SERVER_CARD},
-        ShouldUpdateExpirationTestCase{true, -kOneMonth,
-                                       CreditCard::MASKED_SERVER_CARD},
+                                       CreditCard::RecordType::kFullServerCard},
+        ShouldUpdateExpirationTestCase{
+            true, -kOneMonth, CreditCard::RecordType::kMaskedServerCard},
 
         // Cards that expire this month should not be updated.
-        ShouldUpdateExpirationTestCase{false, kCurrent, CreditCard::LOCAL_CARD},
         ShouldUpdateExpirationTestCase{false, kCurrent,
-                                       CreditCard::FULL_SERVER_CARD},
+                                       CreditCard::RecordType::kLocalCard},
         ShouldUpdateExpirationTestCase{false, kCurrent,
-                                       CreditCard::MASKED_SERVER_CARD},
+                                       CreditCard::RecordType::kFullServerCard},
+        ShouldUpdateExpirationTestCase{
+            false, kCurrent, CreditCard::RecordType::kMaskedServerCard},
 
         // Cards that expire next month should not be updated.
         ShouldUpdateExpirationTestCase{false, kOneMonth,
-                                       CreditCard::LOCAL_CARD},
+                                       CreditCard::RecordType::kLocalCard},
+        ShouldUpdateExpirationTestCase{
+            false, kOneMonth, CreditCard::RecordType::kMaskedServerCard},
         ShouldUpdateExpirationTestCase{false, kOneMonth,
-                                       CreditCard::MASKED_SERVER_CARD},
-        ShouldUpdateExpirationTestCase{false, kOneMonth,
-                                       CreditCard::FULL_SERVER_CARD},
+                                       CreditCard::RecordType::kFullServerCard},
 
         // Cards that expire next year should not be updated.
-        ShouldUpdateExpirationTestCase{false, kOneYear, CreditCard::LOCAL_CARD},
         ShouldUpdateExpirationTestCase{false, kOneYear,
-                                       CreditCard::MASKED_SERVER_CARD},
-        ShouldUpdateExpirationTestCase{false, kOneYear,
-                                       CreditCard::FULL_SERVER_CARD}));
+                                       CreditCard::RecordType::kLocalCard},
+        ShouldUpdateExpirationTestCase{
+            false, kOneYear, CreditCard::RecordType::kMaskedServerCard},
+        ShouldUpdateExpirationTestCase{
+            false, kOneYear, CreditCard::RecordType::kFullServerCard}));
 
 #if BUILDFLAG(IS_ANDROID)
 TEST(CreditCardTestForKeyboardAccessory, GetObfuscatedStringForCardDigits) {
@@ -2263,8 +2238,8 @@ TEST(CreditCardTestForKeyboardAccessory, GetObfuscatedStringForCardDigits) {
       CreditCard::GetMidlineEllipsisDots(2) + digits +
       base::i18n::kPopDirectionalFormatting;
 
-  EXPECT_EQ(expected, internal::GetObfuscatedStringForCardDigits(
-                          digits, /*obfuscation_length=*/2));
+  EXPECT_EQ(expected, CreditCard::GetObfuscatedStringForCardDigits(
+                          /*obfuscation_length=*/2, digits));
 }
 #endif  // BUILDFLAG(IS_ANDROID)
 

@@ -12,7 +12,6 @@ group("signin") {
 
 # Contains public headers.
 source_set("signin_headers") {
-  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "signin_completion_info.h",
     "signin_coordinator.h",
@@ -28,14 +27,12 @@ source_set("signin_headers") {
 }
 
 source_set("signin_protected") {
-  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [ "signin_coordinator+protected.h" ]
   deps = [ ":signin_headers" ]
 }
 
 # Contains sign-in implementation.
 source_set("signin_impl") {
-  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "signin_completion_info.mm",
     "signin_coordinator.mm",
@@ -57,6 +54,7 @@ source_set("signin_impl") {
     "//ios/chrome/browser/shared/model/browser",
     "//ios/chrome/browser/shared/model/prefs:pref_names",
     "//ios/chrome/browser/shared/public/features",
+    "//ios/chrome/browser/shared/public/features:system_flags",
     "//ios/chrome/browser/signin",
     "//ios/chrome/browser/signin:system_identity",
     "//ios/chrome/browser/sync",
@@ -64,6 +62,7 @@ source_set("signin_impl") {
     "//ios/chrome/browser/ui/authentication/signin/advanced_settings_signin",
     "//ios/chrome/browser/ui/authentication/signin/consistency_promo_signin",
     "//ios/chrome/browser/ui/authentication/signin/forced_signin",
+    "//ios/chrome/browser/ui/authentication/signin/instant_signin",
     "//ios/chrome/browser/ui/authentication/signin/trusted_vault_reauthentication",
     "//ios/chrome/browser/ui/authentication/signin/two_screens_signin",
     "//ios/chrome/browser/ui/authentication/signin/user_signin",
@@ -72,15 +71,17 @@ source_set("signin_impl") {
 }
 
 source_set("signin_screen_provider") {
-  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "signin_screen_provider.h",
     "signin_screen_provider.mm",
     "signin_sync_screen_provider.h",
     "signin_sync_screen_provider.mm",
+    "uno_signin_screen_provider.h",
+    "uno_signin_screen_provider.mm",
   ]
   deps = [
     "//base",
+    "//components/sync/base:features",
     "//ios/chrome/browser/ui/first_run:field_trial",
     "//ios/chrome/browser/ui/screen:screen_provider",
     "//ios/chrome/browser/ui/screen:screen_provider_protected",
@@ -89,7 +90,6 @@ source_set("signin_screen_provider") {
 }
 
 source_set("unit_tests") {
-  configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [ "signin_utils_unittest.mm" ]
   deps = [
@@ -121,7 +121,6 @@ source_set("unit_tests") {
 }
 
 source_set("constants") {
-  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "signin_constants.h",
     "signin_constants.mm",
@@ -130,10 +129,7 @@ source_set("constants") {
 }
 
 source_set("eg2_tests") {
-  configs += [
-    "//build/config/compiler:enable_arc",
-    "//build/config/ios:xctest_config",
-  ]
+  configs += [ "//build/config/ios:xctest_config" ]
   testonly = true
   sources = [ "signin_coordinator_egtest.mm" ]
   deps = [

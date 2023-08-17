@@ -25,6 +25,7 @@
 
 #if BUILDFLAG(IS_WIN)
 #include "third_party/dawn/include/dawn/native/D3D11Backend.h"
+#include "ui/gl/direct_composition_support.h"
 #include "ui/gl/gl_angle_util_win.h"
 #endif
 
@@ -111,6 +112,7 @@ bool GetANGLED3D11DeviceLUID(LUID* luid) {
 }  // namespace
 
 std::unique_ptr<DawnContextProvider> DawnContextProvider::Create(
+    const GpuPreferences& gpu_preferences,
     webgpu::DawnCachingInterfaceFactory* caching_interface_factory,
     CacheBlobCallback callback) {
   auto context_provider =
@@ -120,7 +122,7 @@ std::unique_ptr<DawnContextProvider> DawnContextProvider::Create(
   // the only known way to avoid this is platform-specific; e.g. on Mac, create
   // a Dawn device, get the actual Metal device from it, and compare against
   // MTLCreateSystemDefaultDevice().
-  if (!context_provider->Initialize(std::move(callback))) {
+  if (!context_provider->Initialize(gpu_preferences, std::move(callback))) {
     context_provider.reset();
   }
   return context_provider;
@@ -131,7 +133,8 @@ DawnContextProvider::DawnContextProvider(
     : caching_interface_factory_(caching_interface_factory) {}
 DawnContextProvider::~DawnContextProvider() = default;
 
-bool DawnContextProvider::Initialize(CacheBlobCallback callback) {
+bool DawnContextProvider::Initialize(const GpuPreferences& gpu_preferences,
+                                     CacheBlobCallback callback) {
   std::unique_ptr<webgpu::DawnCachingInterface> caching_interface;
   if (caching_interface_factory_) {
     caching_interface = caching_interface_factory_->CreateInstance(
@@ -139,22 +142,20 @@ bool DawnContextProvider::Initialize(CacheBlobCallback callback) {
   }
 
   platform_ = std::make_unique<Platform>(std::move(caching_interface));
-
-  GpuPreferences preferences;
-#if DCHECK_IS_ON()
-  preferences.enable_dawn_backend_validation =
-      DawnBackendValidationLevel::kFull;
-#else
-  preferences.enable_dawn_backend_validation =
-      DawnBackendValidationLevel::kDisabled;
-#endif
-
-  instance_ = webgpu::DawnInstance::Create(platform_.get(), preferences);
+  instance_ = webgpu::DawnInstance::Create(platform_.get(), gpu_preferences);
 
   // If a new toggle is added here, ForceDawnTogglesForSkia() which collects
   // info for about:gpu should be updated as well.
-  wgpu::DawnTogglesDescriptor toggles_desc;
   std::vector<const char*> enabled_toggles;
+  std::vector<const char*> disabled_toggles;
+  for (const auto& toggle : gpu_preferences.enabled_dawn_features_list) {
+    enabled_toggles.push_back(toggle.c_str());
+  }
+  for (const auto& toggle : gpu_preferences.disabled_dawn_features_list) {
+    disabled_toggles.push_back(toggle.c_str());
+  }
+  // The following toggles are all device-scoped toggles so it's not necessary
+  // to pass them when creating the Instance above.
 #if DCHECK_IS_ON()
   enabled_toggles.push_back("use_user_defined_labels_in_backend");
 #else
@@ -163,8 +164,17 @@ bool DawnContextProvider::Initialize(CacheBlobCallback callback) {
   enabled_toggles.push_back("disable_robustness");
   enabled_toggles.push_back("skip_validation");
 #endif
+
+  wgpu::DawnTogglesDescriptor toggles_desc;
   toggles_desc.enabledToggles = enabled_toggles.data();
+  toggles_desc.disabledToggles = disabled_toggles.data();
+#ifdef WGPU_BREAKING_CHANGE_COUNT_RENAME
+  toggles_desc.enabledToggleCount = enabled_toggles.size();
+  toggles_desc.disabledToggleCount = disabled_toggles.size();
+#else
   toggles_desc.enabledTogglesCount = enabled_toggles.size();
+  toggles_desc.disabledTogglesCount = disabled_toggles.size();
+#endif
 
   wgpu::DeviceDescriptor descriptor;
   descriptor.nextInChain = &toggles_desc;
@@ -182,6 +192,10 @@ bool DawnContextProvider::Initialize(CacheBlobCallback callback) {
   adapter_options.powerPreference = wgpu::PowerPreference::LowPower;
 
 #if BUILDFLAG(IS_WIN)
+  if (adapter_options.backendType == wgpu::BackendType::D3D11) {
+    features.push_back(wgpu::FeatureName::D3D11MultithreadProtected);
+  }
+
   // Request the GPU that ANGLE is using if possible.
   dawn::native::d3d::RequestAdapterOptionsLUID adapter_options_luid;
   if (GetANGLED3D11DeviceLUID(&adapter_options_luid.adapterLUID)) {
@@ -197,16 +211,16 @@ bool DawnContextProvider::Initialize(CacheBlobCallback callback) {
   }
 
   wgpu::Adapter adapter(adapters[0].Get());
-
-  wgpu::AdapterProperties properties;
-  adapter.GetProperties(&properties);
-  if (wgpu::Adapter(adapter.Get())
-          .HasFeature(wgpu::FeatureName::TransientAttachments)) {
+  if (adapter.HasFeature(wgpu::FeatureName::TransientAttachments)) {
     features.push_back(wgpu::FeatureName::TransientAttachments);
   }
 
   descriptor.requiredFeatures = features.data();
+#ifdef WGPU_BREAKING_CHANGE_COUNT_RENAME
+  descriptor.requiredFeatureCount = std::size(features);
+#else
   descriptor.requiredFeaturesCount = std::size(features);
+#endif
 
   wgpu::Device device = adapter.CreateDevice(&descriptor);
   if (!device) {
@@ -218,6 +232,17 @@ bool DawnContextProvider::Initialize(CacheBlobCallback callback) {
   device.SetDeviceLostCallback(&LogDeviceLost, nullptr);
   device.SetLoggingCallback(&LogInfo, nullptr);
   device_ = std::move(device);
+
+#if BUILDFLAG(IS_WIN)
+  // DirectComposition is initialized in ui/gl/init/gl_initializer_win.cc while
+  // initializing GL. So we need to shutdown it and re-initialize it here with
+  // the D3D11 device from dawn device.
+  // TODO(crbug.com/1469283): avoid initializing DirectComposition twice.
+  gl::ShutdownDirectComposition();
+  if (auto d3d11_device = GetD3D11Device()) {
+    gl::InitializeDirectComposition(std::move(d3d11_device));
+  }
+#endif  // BUILDFLAG(IS_WIN)
 
   return true;
 }
@@ -244,7 +269,10 @@ wgpu::Instance DawnContextProvider::GetInstance() const {
 #if BUILDFLAG(IS_WIN)
 Microsoft::WRL::ComPtr<ID3D11Device> DawnContextProvider::GetD3D11Device()
     const {
-  return dawn::native::d3d11::GetD3D11Device(device_.Get());
+  if (GetDefaultBackendType() == wgpu::BackendType::D3D11) {
+    return dawn::native::d3d11::GetD3D11Device(device_.Get());
+  }
+  return nullptr;
 }
 #endif
 

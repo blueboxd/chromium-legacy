@@ -218,6 +218,9 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoader
   // A caller should handle the case.
   bool StartRaceNetworkRequest();
 
+  std::vector<blink::ServiceWorkerRouterSource> MaybeEvaluateRouterConditions()
+      const;
+
   network::mojom::URLResponseHeadPtr response_head_;
   absl::optional<net::RedirectInfo> redirect_info_;
   int redirect_limit_;
@@ -279,7 +282,7 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoader
       race_network_request_url_loader_factory_;
   absl::optional<ServiceWorkerRaceNetworkRequestURLLoaderClient>
       race_network_request_loader_client_;
-  std::unique_ptr<ServiceWorkerForwardedRaceNetworkRequestURLLoaderFactory>
+  absl::optional<ServiceWorkerForwardedRaceNetworkRequestURLLoaderFactory>
       forwarded_race_network_request_url_loader_factory_;
   mojo::PendingRemote<network::mojom::URLLoaderFactory>
       remote_forwarded_race_network_request_url_loader_factory_;

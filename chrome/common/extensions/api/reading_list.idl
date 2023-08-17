@@ -32,9 +32,21 @@ namespace readingList{
     boolean? hasBeenRead;
   };
 
+  dictionary QueryInfo {
+    // The url to query for.
+    DOMString? url;
+
+    // The title to query for.
+    DOMString? title;
+
+    // The read status to query for.
+    boolean? hasBeenRead;
+  };
+
   callback AddEntryCallback = void ();
   callback RemoveEntryCallback = void();
   callback UpdateEntryCallback = void();
+  callback QueryCallback = void(ReadingListEntry[] entries);
 
   interface Functions {
     // Adds an entry to the reading list if it does not exist.
@@ -57,5 +69,27 @@ namespace readingList{
     [supportsPromises] static void updateEntry(
                                       UpdateEntryOptions info,
                                       optional UpdateEntryCallback callback);
+
+    // Retrieves all entries which match the QueryInfo properties.
+    // Properties which are not provided will not be matched.
+    // |info|: The entry properties to search for.
+    // |callback|: Invoked once the entries have been matched.
+    [supportsPromises] static void query(QueryInfo info,
+                                         QueryCallback callback);
+  };
+
+  interface Events {
+    // Triggered when a ReadingListEntry was added to the reading list.
+    // |entry|: The entry that was added.
+    static void onEntryAdded(ReadingListEntry entry);
+
+    // Triggered when a ReadingListEntry is about to be removed from the
+    // reading list.
+    // |entry|: The entry that will be removed.
+    static void onEntryWillBeRemoved(ReadingListEntry entry);
+
+    // Triggered when a ReadingListEntry was updated in the reading list.
+    // |entry|: The entry that was updated.
+    static void onEntryUpdated(ReadingListEntry entry);
   };
 };

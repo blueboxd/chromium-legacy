@@ -35,6 +35,7 @@
 namespace chrome_pdf {
 
 class PdfAccessibilityActionHandler;
+class PdfAccessibilityImageFetcher;
 
 }  // namespace chrome_pdf
 
@@ -49,23 +50,42 @@ class Transform;
 
 namespace pdf {
 
+#if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class PdfOcrRequestStatus {
+  kRequested = 0,
+  kPerformed = 1,
+  kMaxValue = kPerformed,
+};
+#endif  // BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
+
 class PdfAccessibilityTree : public content::PluginAXTreeSource,
                              public content::RenderFrameObserver,
                              public chrome_pdf::PdfAccessibilityDataHandler {
  public:
 #if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
   // Used for storing OCR requests either before performing an OCR job, or after
-  // the results have been received. This is for scheduling the work on another
-  // thread in patches in order to unblock the user from reading a partially
-  // OCRed PDF.
+  // the results have been received. This is for scheduling the work in another
+  // task in batches in order to unblock the user from reading a partially
+  // OCRed PDF, and in order to avoid sending all the images to the OCR Service
+  // at once, in case the PDF is closed halfway through the OCR process.
   struct PdfOcrRequest {
     PdfOcrRequest(const ui::AXNodeID& image_node_id,
                   const chrome_pdf::AccessibilityImageInfo& image,
-                  const ui::AXNodeID& parent_node_id);
+                  const ui::AXNodeID& parent_node_id,
+                  uint32_t page_index);
 
     const ui::AXNodeID image_node_id;
     const chrome_pdf::AccessibilityImageInfo image;
     const ui::AXNodeID parent_node_id;
+    const uint32_t page_index;
+    // This boolean indicates which request corresponds to the last image on
+    // each page.
+    bool is_last_on_page = false;
+
+    // This field is set after the image is extracted from PDF.
+    gfx::SizeF image_pixel_size;
   };
 
   // Manages the connection to the OCR Service via Mojo, and ensures that
@@ -73,12 +93,12 @@ class PdfAccessibilityTree : public content::PluginAXTreeSource,
   class PdfOcrService final {
    public:
     using OnOcrDataReceivedCallback = base::RepeatingCallback<void(
-        const ui::AXNodeID& image_node_id,
-        const chrome_pdf::AccessibilityImageInfo& image,
-        const ui::AXNodeID& parent_node_id,
-        const ui::AXTreeUpdate& tree_update)>;
+        std::vector<PdfOcrRequest> ocr_requests,
+        std::vector<ui::AXTreeUpdate> tree_updates)>;
 
-    PdfOcrService(content::RenderFrame& render_frame,
+    PdfOcrService(chrome_pdf::PdfAccessibilityImageFetcher* image_fetcher,
+                  content::RenderFrame& render_frame,
+                  uint32_t page_count,
                   OnOcrDataReceivedCallback callback);
 
     PdfOcrService(const PdfOcrService&) = delete;
@@ -86,29 +106,61 @@ class PdfAccessibilityTree : public content::PluginAXTreeSource,
 
     ~PdfOcrService();
 
-    void ScheduleOcrRequests(base::queue<PdfOcrRequest> requests);
-    bool IsOcrReady() const;
-    bool IsQueueEmpty() const;
+    // If the OCR Service is created before the PDF is loaded or reloaded, i.e.
+    // before `PdfAccessibilityTree::SetAccessibilityDocInfo` is called,
+    // `PdfAccessibilityTree::page_count_` would be wrong, hence we need to
+    // reset the page count in this class, i.e. the `remaining_page_count_`
+    // field, to its correct value.
+    void ResetPageCount(uint32_t page_count);
+    void OcrPage(base::queue<PdfOcrRequest> page_requests);
+    bool AreAllPagesOcred() const;
+    bool AreAllPagesInBatchOcred() const;
     void SetScreenAIAnnotatorForTesting(
         mojo::PendingRemote<screen_ai::mojom::ScreenAIAnnotator>
             screen_ai_annotator);
+    void SetPagesPerBatchForTesting(uint32_t pages_per_batch) {
+      pages_per_batch_ = pages_per_batch;
+    }
 
    private:
-    void ScheduleNextQueuedTask();
-    void ReceiveOcrResultsForRequest(const PdfOcrRequest& request,
-                                     const ui::AXTreeUpdate& tree_update);
+    // TODO(crbug.com/1443341): Increase initial value after batching issue is
+    // fixed.
+    uint32_t pages_per_batch_ = 1u;
 
-    base::queue<PdfOcrRequest> queued_requests_;
-    OnOcrDataReceivedCallback callback_;
+    void OcrNextImage();
+    void ReceiveOcrResultsForImage(PdfOcrRequest request,
+                                   const ui::AXTreeUpdate& tree_update);
+
+    // `image_fetcher_` owns `this`.
+    chrome_pdf::PdfAccessibilityImageFetcher* const image_fetcher_;
+
+    uint32_t remaining_page_count_;
+    // True if there are pending OCR requests. Used to determine if `OcrPage`
+    // should call `OcrNextImage` or if the next call to
+    // `ReceiveOcrResultsForImage` should do it instead. This avoids the
+    // possibility of processing requests in the wrong order.
+    bool is_ocr_in_progress_ = false;
+    // A PDF is made up of a number of pages, and each page might have one or
+    // more inaccessible images that need to be OCRed. This queue could contain
+    // the OCR requests for all the images on several pages, so the requests
+    // from each page are concatenated together into a single queue.
+    // `PdfOcrRequest.is_last_on_page` indicates which request is the last on
+    // each page.
+    base::queue<PdfOcrRequest> all_requests_;
+    std::vector<PdfOcrRequest> batch_requests_;
+    std::vector<ui::AXTreeUpdate> batch_tree_updates_;
+    OnOcrDataReceivedCallback on_ocr_data_received_callback_;
     mojo::Remote<screen_ai::mojom::ScreenAIAnnotator> screen_ai_annotator_;
     SEQUENCE_CHECKER(sequence_checker_);
+    // Needs to be kept last so that it would be destructed first.
     base::WeakPtrFactory<PdfOcrService> weak_ptr_factory_{this};
   };
 #endif  // BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
 
   PdfAccessibilityTree(
       content::RenderFrame* render_frame,
-      chrome_pdf::PdfAccessibilityActionHandler* action_handler);
+      chrome_pdf::PdfAccessibilityActionHandler* action_handler,
+      chrome_pdf::PdfAccessibilityImageFetcher* image_fetcher);
   ~PdfAccessibilityTree() override;
 
   static bool IsDataFromPluginValid(
@@ -173,20 +225,17 @@ class PdfAccessibilityTree : public content::PluginAXTreeSource,
   void OnDestruct() override;
 
 #if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
-  PdfOcrService* CreateOcrService();
+  void CreateOcrService();
 
-  // Removes the image node in the accessibility tree with the specified ID, and
-  // adds a page node and its child nodes built from OCR results. OCR results
-  // are provided in the format of AXTreeUpdate, which is used for storing both
-  // the page id and the new nodes built from OCR results; this AXTreeUpdate
-  // shouldn't be unserialized directly.
-  virtual void OnOcrDataReceived(
-      const ui::AXNodeID& image_node_id,
-      const chrome_pdf::AccessibilityImageInfo& image,
-      const ui::AXNodeID& parent_node_id,
-      const ui::AXTreeUpdate& tree_update);
+  PdfOcrService* ocr_service_for_testing() { return ocr_service_.get(); }
 
-  const ui::AXTree& tree_for_testing() const { return tree_; }
+  // After receiving a batch of tree updates containing the results of the OCR
+  // Service, this method adds each piece of OCRed text in the correct page,
+  // replacing each image node for which we have OCRed text.
+  virtual void OnOcrDataReceived(std::vector<PdfOcrRequest> ocr_requests,
+                                 std::vector<ui::AXTreeUpdate> tree_updates);
+
+  ui::AXTree& tree_for_testing() { return tree_; }
 #endif  // BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
 
   bool ShowContextMenu();
@@ -267,6 +316,7 @@ class PdfAccessibilityTree : public content::PluginAXTreeSource,
 
   // Unowned. Must outlive `this`.
   chrome_pdf::PdfAccessibilityActionHandler* const action_handler_;
+  chrome_pdf::PdfAccessibilityImageFetcher* const image_fetcher_;
 
   // `zoom_` signifies the zoom level set in for the browser content.
   // `scale_` signifies the scale level set by user. Scale is applied

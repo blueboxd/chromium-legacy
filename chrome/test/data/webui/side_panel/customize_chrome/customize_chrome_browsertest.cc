@@ -5,8 +5,8 @@
 #include "base/test/scoped_feature_list.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/web_ui_mocha_browser_test.h"
-#include "components/search/ntp_features.h"
 #include "content/public/test/browser_test.h"
+#include "ui/base/ui_base_features.h"
 
 class SidePanelCustomizeChromeTest : public WebUIMochaBrowserTest {
  protected:
@@ -16,7 +16,7 @@ class SidePanelCustomizeChromeTest : public WebUIMochaBrowserTest {
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_{
-      ntp_features::kCustomizeChromeSidePanel};
+      features::kCustomizeChromeSidePanel};
 };
 
 IN_PROC_BROWSER_TEST_F(SidePanelCustomizeChromeTest, ButtonLabel) {
@@ -39,8 +39,7 @@ IN_PROC_BROWSER_TEST_F(SidePanelCustomizeChromeTest, Appearance) {
   RunTest("side_panel/customize_chrome/appearance_test.js", "mocha.run()");
 }
 
-// TODO(crbug.com/1466344): Re-enable this test
-IN_PROC_BROWSER_TEST_F(SidePanelCustomizeChromeTest, DISABLED_Categories) {
+IN_PROC_BROWSER_TEST_F(SidePanelCustomizeChromeTest, Categories) {
   RunTest("side_panel/customize_chrome/categories_test.js", "mocha.run()");
 }
 
@@ -49,20 +48,11 @@ IN_PROC_BROWSER_TEST_F(SidePanelCustomizeChromeTest, CheckMarkWrapper) {
           "mocha.run()");
 }
 
-IN_PROC_BROWSER_TEST_F(SidePanelCustomizeChromeTest, Color) {
-  RunTest("side_panel/customize_chrome/color_test.js", "mocha.run()");
-}
-
-IN_PROC_BROWSER_TEST_F(SidePanelCustomizeChromeTest, Colors) {
-  RunTest("side_panel/customize_chrome/colors_test.js", "mocha.run()");
-}
-
 IN_PROC_BROWSER_TEST_F(SidePanelCustomizeChromeTest, HoverButton) {
   RunTest("side_panel/customize_chrome/hover_button_test.js", "mocha.run()");
 }
 
-// TODO(crbug.com/1466344): Re-enable this test
-IN_PROC_BROWSER_TEST_F(SidePanelCustomizeChromeTest, DISABLED_Themes) {
+IN_PROC_BROWSER_TEST_F(SidePanelCustomizeChromeTest, Themes) {
   RunTest("side_panel/customize_chrome/themes_test.js", "mocha.run()");
 }
 

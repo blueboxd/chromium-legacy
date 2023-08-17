@@ -100,7 +100,10 @@ static const CSSPropertyID kStaticEditingProperties[] = {
     CSSPropertyID::kWebkitTextFillColor,
     CSSPropertyID::kWebkitTextStrokeColor,
     CSSPropertyID::kWebkitTextStrokeWidth,
-    CSSPropertyID::kCaretColor};
+    CSSPropertyID::kCaretColor,
+    CSSPropertyID::kTextWrap,
+    CSSPropertyID::kWhiteSpaceCollapse,
+};
 
 enum EditingPropertiesType {
   kOnlyInheritableEditingProperties,
@@ -115,14 +118,6 @@ static const Vector<const CSSProperty*>& AllEditingProperties(
     CSSProperty::FilterWebExposedCSSPropertiesIntoVector(
         execution_context, kStaticEditingProperties,
         std::size(kStaticEditingProperties), properties);
-    // TODO(crbug.com/1417543): Move to `kStaticEditingProperties` when removing
-    // the runtime switch.
-    if (RuntimeEnabledFeatures::CSSWhiteSpaceShorthandEnabled()) {
-      properties.push_back(&GetCSSPropertyWhiteSpaceCollapse());
-      properties.push_back(&GetCSSPropertyTextWrap());
-    } else {
-      properties.push_back(&GetCSSPropertyWhiteSpace());
-    }
   }
   return properties;
 }
@@ -607,7 +602,9 @@ void EditingStyle::Init(Node* node, PropertiesToInclude properties_to_include) {
     }
   }
 
-  if (const ComputedStyle* computed_style = node->GetComputedStyle()) {
+  const ComputedStyle* computed_style =
+      node ? node->GetComputedStyle() : nullptr;
+  if (computed_style) {
     // Fix for crbug.com/768261: due to text-autosizing, reading the current
     // computed font size and re-writing it to an element may actually cause the
     // font size to become larger (since the autosizer will run again on the new
@@ -683,10 +680,12 @@ void EditingStyle::ReplaceFontSizeByKeywordIfPossible(
     CSSComputedStyleDeclaration* css_computed_style) {
   DCHECK(computed_style);
   if (computed_style->GetFontDescription().KeywordSize()) {
-    mutable_style_->ParseAndSetProperty(
-        CSSPropertyID::kFontSize,
-        css_computed_style->GetFontSizeCSSValuePreferringKeyword()->CssText(),
-        /* important */ false, secure_context_mode);
+    if (const CSSValue* keyword =
+            css_computed_style->GetFontSizeCSSValuePreferringKeyword()) {
+      mutable_style_->ParseAndSetProperty(
+          CSSPropertyID::kFontSize, keyword->CssText(),
+          /* important */ false, secure_context_mode);
+    }
   }
 }
 
@@ -1052,12 +1051,10 @@ bool EditingStyle::ConflictsWithInlineStyleOfElement(
     // e-mail, etc., `white-space` is more interoperable when
     // `white-space-collapse` is not broadly supported. See crbug.com/1417543
     // and `editing/pasteboard/pasting-tabs.html`.
-    DCHECK_NE(property_id, CSSPropertyID::kAlternativeWhiteSpace);
+    DCHECK_NE(property_id, CSSPropertyID::kWhiteSpace);
     const bool is_whitespace_property =
-        RuntimeEnabledFeatures::CSSWhiteSpaceShorthandEnabled()
-            ? property_id == CSSPropertyID::kWhiteSpaceCollapse ||
-                  property_id == CSSPropertyID::kTextWrap
-            : property_id == CSSPropertyID::kWhiteSpace;
+        property_id == CSSPropertyID::kWhiteSpaceCollapse ||
+        property_id == CSSPropertyID::kTextWrap;
     if (is_whitespace_property && IsTabHTMLSpanElement(element)) {
       continue;
     }
@@ -1780,18 +1777,6 @@ StyleChange::StyleChange(EditingStyle* style, const Position& position)
   if (!document->GetFrame()->GetEditor().ShouldStyleWithCSS())
     ExtractTextStyles(document, mutable_style,
                       computed_style->IsMonospaceFont());
-
-  // Disables this use of `white-space` as this doesn't look effective any more.
-  // See crbug.com/1417543 and crrev.com/c/4289333.
-  if (!RuntimeEnabledFeatures::EditingStyleWhiteSpaceEnabled()) {
-    // Changing the whitespace style in a tab span would collapse the tab into a
-    // space.
-    if (IsTabHTMLSpanElementTextNode(position.AnchorNode()) ||
-        IsTabHTMLSpanElement((position.AnchorNode()))) {
-      mutable_style->RemoveProperty(CSSPropertyID::kWhiteSpace);
-      mutable_style->RemoveProperty(CSSPropertyID::kAlternativeWhiteSpace);
-    }
-  }
 
   // If unicode-bidi is present in mutableStyle and direction is not, then add
   // direction to mutableStyle.

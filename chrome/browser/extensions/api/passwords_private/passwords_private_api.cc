@@ -185,19 +185,11 @@ ResponseAction PasswordsPrivateGetSavedPasswordListFunction::Run() {
     return RespondNow(Error(kNoDelegateError));
   }
 
-  // GetList() can immediately call GotList() (which would Respond() before
-  // RespondLater()). So we post a task to preserve order.
-  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&PasswordsPrivateGetSavedPasswordListFunction::GetList,
-                     this));
-  return RespondLater();
-}
-
-void PasswordsPrivateGetSavedPasswordListFunction::GetList() {
   GetDelegate(browser_context())
       ->GetSavedPasswordsList(base::BindOnce(
           &PasswordsPrivateGetSavedPasswordListFunction::GotList, this));
+
+  return did_respond() ? AlreadyResponded() : RespondLater();
 }
 
 void PasswordsPrivateGetSavedPasswordListFunction::GotList(
@@ -223,19 +215,11 @@ ResponseAction PasswordsPrivateGetPasswordExceptionListFunction::Run() {
     return RespondNow(Error(kNoDelegateError));
   }
 
-  // GetList() can immediately call GotList() (which would Respond() before
-  // RespondLater()). So we post a task to preserve order.
-  base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&PasswordsPrivateGetPasswordExceptionListFunction::GetList,
-                     this));
-  return RespondLater();
-}
-
-void PasswordsPrivateGetPasswordExceptionListFunction::GetList() {
   GetDelegate(browser_context())
       ->GetPasswordExceptionsList(base::BindOnce(
           &PasswordsPrivateGetPasswordExceptionListFunction::GotList, this));
+
+  return did_respond() ? AlreadyResponded() : RespondLater();
 }
 
 void PasswordsPrivateGetPasswordExceptionListFunction::GotList(
@@ -272,6 +256,24 @@ ResponseAction PasswordsPrivateFetchFamilyMembersFunction::Run() {
 
   // `FamilyFetchCompleted()` might respond before we reach this point.
   return did_respond() ? AlreadyResponded() : RespondLater();
+}
+
+// PasswordsPrivateSharePasswordFunction
+ResponseAction PasswordsPrivateSharePasswordFunction::Run() {
+  if (!GetDelegate(browser_context())) {
+    return RespondNow(Error(kNoDelegateError));
+  }
+
+  // TODO(crbug/1445526): Respond with an error if arguments are not valid
+  // (password doesn't exist, auth validity expired, recipient doesn't have
+  // public key or user_id).
+
+  auto parameters =
+      api::passwords_private::SharePassword::Params::Create(args());
+  EXTENSION_FUNCTION_VALIDATE(parameters);
+  GetDelegate(browser_context())
+      ->SharePassword(parameters->id, parameters->recipients);
+  return RespondNow(NoArguments());
 }
 
 void PasswordsPrivateFetchFamilyMembersFunction::FamilyFetchCompleted(

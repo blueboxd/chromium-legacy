@@ -11,8 +11,10 @@
 #include "base/functional/callback_helpers.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/test/bind.h"
+#include "chrome/browser/ui/web_applications/web_app_run_on_os_login_notification.h"
 #include "chrome/browser/web_applications/web_app_callback_app_identity.h"
 #include "components/services/app_service/public/cpp/app_launch_util.h"
+#include "components/webapps/browser/uninstall_result_code.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace web_app {
@@ -151,6 +153,15 @@ void FakeWebAppUiManager::MigrateLauncherState(const AppId& from_app_id,
                                                base::OnceClosure callback) {
   std::move(callback).Run();
 }
+
+void FakeWebAppUiManager::DisplayRunOnOsLoginNotification(
+    const std::vector<std::string>& app_names,
+    base::WeakPtr<Profile> profile) {
+  // Still show the notification so it can be tested using the
+  // NotificationDisplayServiceTester
+  web_app::DisplayRunOnOsLoginNotification(app_names, profile);
+}
+
 #endif  // BUILDFLAG(IS_CHROMEOS)
 
 content::WebContents* FakeWebAppUiManager::CreateNewTab() {
@@ -159,5 +170,31 @@ content::WebContents* FakeWebAppUiManager::CreateNewTab() {
 
 void FakeWebAppUiManager::TriggerInstallDialog(
     content::WebContents* web_contents) {}
+
+void FakeWebAppUiManager::PresentUserUninstallDialog(
+    const AppId& app_id,
+    webapps::WebappUninstallSource uninstall_source,
+    BrowserWindow* parent_window,
+    UninstallCompleteCallback callback) {
+  std::move(callback).Run(webapps::UninstallResultCode::kSuccess);
+}
+
+void FakeWebAppUiManager::PresentUserUninstallDialog(
+    const AppId& app_id,
+    webapps::WebappUninstallSource uninstall_source,
+    gfx::NativeWindow parent_window,
+    UninstallCompleteCallback callback) {
+  std::move(callback).Run(webapps::UninstallResultCode::kSuccess);
+}
+
+void FakeWebAppUiManager::PresentUserUninstallDialog(
+    const AppId& app_id,
+    webapps::WebappUninstallSource uninstall_source,
+    gfx::NativeWindow parent_window,
+    UninstallCompleteCallback callback,
+    UninstallScheduledCallback scheduled_callback) {
+  std::move(scheduled_callback).Run(/*uninstall_scheduled=*/true);
+  std::move(callback).Run(webapps::UninstallResultCode::kSuccess);
+}
 
 }  // namespace web_app

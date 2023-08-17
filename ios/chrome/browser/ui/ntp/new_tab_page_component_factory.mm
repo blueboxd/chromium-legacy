@@ -26,10 +26,6 @@
 #import "ios/public/provider/chrome/browser/ui_utils/ui_utils_api.h"
 #import "ios/web/public/web_state.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 @implementation NewTabPageComponentFactory
 
 #pragma mark - NewTabPageComponentFactoryProtocol methods
@@ -64,19 +60,16 @@
   DiscoverFeedService* discoverFeedService =
       DiscoverFeedServiceFactory::GetForBrowserState(browserState);
   return [[NewTabPageMediator alloc]
-              initWithWebState:webState
-            templateURLService:templateURLService
-                     URLLoader:UrlLoadingBrowserAgent::FromBrowser(browser)
-                   authService:authService
-               identityManager:IdentityManagerFactory::GetForBrowserState(
-                                   browserState)
-         accountManagerService:ChromeAccountManagerServiceFactory::
-                                   GetForBrowserState(browserState)
-                    logoVendor:ios::provider::CreateLogoVendor(browser,
-                                                               webState)
-      identityDiscImageUpdater:imageUpdater
-                   isIncognito:browserState->IsOffTheRecord()
-           discoverFeedService:discoverFeedService];
+      initWithTemplateURLService:templateURLService
+                       URLLoader:UrlLoadingBrowserAgent::FromBrowser(browser)
+                     authService:authService
+                 identityManager:IdentityManagerFactory::GetForBrowserState(
+                                     browserState)
+           accountManagerService:ChromeAccountManagerServiceFactory::
+                                     GetForBrowserState(browserState)
+        identityDiscImageUpdater:imageUpdater
+                     isIncognito:browserState->IsOffTheRecord()
+             discoverFeedService:discoverFeedService];
 }
 
 - (NewTabPageViewController*)NTPViewController {

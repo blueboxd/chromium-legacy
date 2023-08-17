@@ -33,6 +33,9 @@ inline constexpr char kEmojiSuggestionEnabled[] =
 inline constexpr char kEmojiSuggestionEnterpriseAllowed[] =
     "assistive_input.emoji_suggestion.enterprise_allowed";
 
+// A boolean pref of whether orca is enabled.
+inline constexpr char kOrcaEnabled[] = "assistive_input.orca_enabled";
+
 // A boolean pref used by an admin policy to enable/disable particular
 // features on the physical keyboard. See the policy at
 // PhysicalKeyboardAutocorrect.yml.
@@ -44,6 +47,14 @@ inline constexpr char kManagedPhysicalKeyboardAutocorrectAllowed[] =
 // PhysicalKeyboardPredictiveWriting.yml.
 inline constexpr char kManagedPhysicalKeyboardPredictiveWritingAllowed[] =
     "settings.ime.managed.physical_keyboard.predictive_writing_enabled";
+
+// An integer pref which indicates the orca consent status from the user.
+inline constexpr char kOrcaConsentStatus[] = "ash.orca.consent_status";
+
+// An integer pref which indicates the number of times the orca consent window
+// has been dismissed by the user.
+inline constexpr char kOrcaConsentWindowDismissCount[] =
+    "ash.orca.consent_window_dismiss_count";
 
 // A boolean pref of whether GIF support is enabled in emoji picker.
 inline constexpr char kEmojiPickerGifSupportEnabled[] =
@@ -1086,6 +1097,30 @@ inline constexpr char kWallpaperMeanColors[] = "ash.wallpaper.k_mean_colors";
 // A dictionary pref that maps wallpaper file paths to their celebi colors.
 inline constexpr char kWallpaperCelebiColors[] = "ash.wallpaper.celebi_colors";
 
+// A boolean pref used to initiate the wallpaper daily refresh scheduled
+// feature. Unlike other scheduled features, the value is unimportant and should
+// NOT be used to determine whether daily refresh mode is enabled. The change in
+// this pref's value is used as a signal to check whether the user's wallpaper
+// should be refreshed. Even though there are 2 changes per day, only one change
+// (0->1) is meant to result in the update of the wallpaper. The other
+// change is meant to be a retry in case this change fails.
+inline constexpr char kWallpaperDailyRefreshCheck[] =
+    "ash.wallpaper_daily_refresh.check";
+
+// An integer pref storing the type of automatic scheduling of wallpaper daily
+// refresh mode. The value will always be 2, which indicates that this scheduled
+// feature runs on a custom schedule.
+inline constexpr char kWallpaperDailyRefreshScheduleType[] =
+    "ash.wallpaper_daily_refresh.schedule_type";
+
+// Integer prefs storing the primary and secondary check times of the wallpaper
+// daily refresh mode. The times are represented as the number of minutes from
+// 00:00 (12:00 AM) regardless of the date or the timezone.
+inline constexpr char kWallpaperDailyRefreshFirstCheckTime[] =
+    "ash.wallpaper_daily_refresh.first_check_time";
+inline constexpr char kWallpaperDailyRefreshSecondCheckTime[] =
+    "ash.wallpaper_daily_refresh.second_check_time";
+
 // Boolean pref indicating whether a user has enabled the bluetooth adapter.
 inline constexpr char kUserBluetoothAdapterEnabled[] =
     "ash.user.bluetooth.adapter_enabled";
@@ -1282,6 +1317,11 @@ inline constexpr char kAppListReorderNudge[] =
 inline constexpr char kLauncherFilesPrivacyNotice[] =
     "ash.launcher.continue_section_privacy_notice";
 
+// A dictionary pref that determines if the image search privacy notice in the
+// launcher search should be shown or not.
+inline constexpr char kImageSearchPrivacyNotice[] =
+    "ash.launcher.image_search_privacy_notice";
+
 // A boolean pref that indicates whether lock screen media controls are enabled.
 // Controlled by user policy.
 inline constexpr char kLockScreenMediaControlsEnabled[] =
@@ -1316,6 +1356,10 @@ inline constexpr char kSendFunctionKeys[] =
 inline constexpr char kNaturalScroll[] = "settings.touchpad.natural_scroll";
 // A boolean pref which is true if mouse reverse scroll is enabled.
 inline constexpr char kMouseReverseScroll[] = "settings.mouse.reverse_scroll";
+
+// A time pref storing the last time the multipaste menu was shown.
+inline constexpr char kMultipasteMenuLastTimeShown[] =
+    "ash.clipboard.multipaste_menu.last_time_shown";
 
 // A dictionary storing the number of times and most recent time the multipaste
 // contextual nudge was shown.

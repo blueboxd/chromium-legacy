@@ -19,7 +19,6 @@ import androidx.annotation.Nullable;
 
 import org.chromium.base.BuildInfo;
 import org.chromium.base.ContextUtils;
-import org.chromium.base.MathUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.app.ChromeActivity;
@@ -27,7 +26,6 @@ import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.state.CriticalPersistedTabData;
-import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
 import org.chromium.chrome.browser.tasks.tab_management.TabUiThemeProvider;
 import org.chromium.components.browser_ui.site_settings.WebsitePreferenceBridge;
 import org.chromium.components.content_settings.ContentSettingValues;
@@ -45,6 +43,8 @@ import java.lang.annotation.RetentionPolicy;
  * Collection of utility methods that operates on Tab.
  */
 public class TabUtils {
+    public static final float THUMBNAIL_ASPECT_RATIO = 0.85f;
+
     /**
      * Define the callers of NavigationControllerImpl#setUseDesktopUserAgent.
      */
@@ -217,6 +217,21 @@ public class TabUtils {
     }
 
     /**
+     * Check if Request Desktop Site ContentSettings is global setting.
+     * @param profile The profile used to retrieve ContentSettings.
+     * @param url The Url used to retrieve ContentSettings.
+     * @return Whether Request Desktop Site ContentSettings is global setting.
+     */
+    public static boolean isRequestDesktopSiteContentSettingsGlobal(
+            Profile profile, @Nullable GURL url) {
+        if (url == null) {
+            return true;
+        }
+        return WebsitePreferenceBridge.isContentSettingGlobal(
+                profile, ContentSettingsType.REQUEST_DESKTOP_SITE, url, url);
+    }
+
+    /**
      * Check if Request Desktop Site global setting is enabled.
      * @param profile The profile of the tab.
      *        Content settings have separate storage for incognito profiles.
@@ -277,8 +292,7 @@ public class TabUtils {
                     / (context.getResources().getConfiguration().screenHeightDp * 1.f
                             - toolbarHeightDp);
         }
-        float value = (float) TabUiFeatureUtilities.THUMBNAIL_ASPECT_RATIO.getValue();
-        return MathUtils.clamp(value, 0.5f, 2.0f);
+        return THUMBNAIL_ASPECT_RATIO;
     }
 
     /**

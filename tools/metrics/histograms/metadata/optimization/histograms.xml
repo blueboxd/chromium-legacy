@@ -34,6 +34,8 @@ chromium-metrics-reviews@google.com.
 </variants>
 
 <variants name="OptimizationTarget">
+  <variant name="AutofillFieldTypeClassification"
+      summary="Classifies autofill field types"/>
   <variant name="ClientSidePhishing" summary="Client Side Phishing"/>
   <variant name="ClientSidePhishingImageEmbedder"
       summary="Client Side Phishing Image Embedder"/>
@@ -53,6 +55,7 @@ chromium-metrics-reviews@google.com.
   <variant name="PageTopicsV2" summary="Page topics v2"/>
   <variant name="PageVisibility" summary="Page visibility"/>
   <variant name="PainfulPageLoad" summary="Painful page load"/>
+  <variant name="PreloadingHeuristics" summary="Speculation-rule preloading"/>
   <variant name="SegmentationAdaptiveToolbar"
       summary="Segmentation: Adaptive toolbar button"/>
   <variant name="SegmentationBottomToolbar"
@@ -63,11 +66,15 @@ chromium-metrics-reviews@google.com.
       summary="Chrome Start Android"/>
   <variant name="SegmentationChromeStartAndroidV2"
       summary="Chrome Start Android V2"/>
+  <variant name="SegmentationDesktopNtpModule"
+      summary="Segmentation: Desktop new tab page module users"/>
   <variant name="SegmentationDeviceSwitcher"
       summary="Segmentation: Device switcher"/>
   <variant name="SegmentationDummyFeature" summary="Dummy feature"/>
   <variant name="SegmentationFeedUser"
       summary="Segmentation: Feed usage in Chrome"/>
+  <variant name="SegmentationIosModuleRanker"
+      summary="Segmentation: Ios module ranker"/>
   <variant name="SegmentationNewTab" summary="Segmentation: New tab page user"/>
   <variant name="SegmentationQueryTiles" summary="Query tiles"/>
   <variant name="SegmentationSearchUser" summary="Segmentation: Search user"/>
@@ -134,8 +141,14 @@ chromium-metrics-reviews@google.com.
       summary="Returns price related data for shopping websites"/>
   <variant name="SalientImage"
       summary="Provides information about images for a URL."/>
+  <variant name="ShoppingDiscounts"
+      summary="This optimization provides information about shopping
+               discounts for a URL."/>
   <variant name="ShoppingPagePredictor"
       summary="Determines if a page is shopping related or not"/>
+  <variant name="ShoppingPageTypes"
+      summary="This optimization provides information about shopping page
+               types of this page."/>
   <variant name="ThankCreatorEligible"
       summary="This optimization provides information for whether a page is
                eligible for the 'Thank Creator' feature."/>
@@ -321,7 +334,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="OptimizationGuide.HintsFetcher.GetHintsRequest.NetErrorCode"
-    enum="NetErrorCodes" expires_after="2023-12-10">
+    enum="NetErrorCodes" expires_after="2024-02-11">
   <owner>mcrouse@chromium.org</owner>
   <owner>sophiechang@chromium.org</owner>
   <summary>
@@ -331,7 +344,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="OptimizationGuide.HintsFetcher.GetHintsRequest.Status"
-    enum="HttpResponseCode" expires_after="2023-12-10">
+    enum="HttpResponseCode" expires_after="2024-02-11">
   <owner>mcrouse@chromium.org</owner>
   <owner>sophiechang@chromium.org</owner>
   <summary>
@@ -363,7 +376,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="OptimizationGuide.HintsManager.ActiveTabUrlsToFetchFor"
-    units="counts" expires_after="2023-12-17">
+    units="counts" expires_after="M121">
   <owner>sophiechang@chromium.org</owner>
   <owner>mcrouse@chromium.org</owner>
   <summary>
@@ -375,7 +388,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="OptimizationGuide.HintsManager.ConcurrentBatchUpdateFetches"
-    units="counts" expires_after="2023-12-17">
+    units="counts" expires_after="M121">
   <owner>sophiechang@chromium.org</owner>
   <owner>mcrouse@chromium.org</owner>
   <summary>
@@ -706,7 +719,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="OptimizationGuide.PageContentAnnotations.GoogleSearchMetadataExtracted"
-    enum="Boolean" expires_after="M120">
+    enum="Boolean" expires_after="2024-01-21">
   <owner>sophiechang@chromium.org</owner>
   <owner>chrome-intelligence-core@google.com</owner>
   <summary>
@@ -857,7 +870,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="OptimizationGuide.PageContentAnnotationsService.ModelExecutionLatency.PageEntities"
-    units="ms" expires_after="2023-12-10">
+    units="ms" expires_after="2024-02-11">
   <owner>mcrouse@chromium.org</owner>
   <owner>chrome-intelligence-core@google.com</owner>
   <summary>
@@ -869,7 +882,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="OptimizationGuide.PageContentAnnotationsService.ModelThreadExecutionLatency.PageEntities"
-    units="ms" expires_after="2023-12-10">
+    units="ms" expires_after="2024-02-11">
   <owner>sophiechang@chromium.org</owner>
   <owner>chrome-intelligence-core@google.com</owner>
   <summary>
@@ -899,7 +912,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="OptimizationGuide.PageContentAnnotationsService.RelatedSearchesExtracted"
-    enum="BooleanAnnotated" expires_after="2023-12-10">
+    enum="BooleanAnnotated" expires_after="2024-02-11">
   <owner>mahmadi@chromium.org</owner>
   <owner>sophiechang@chromium.org</owner>
   <summary>
@@ -1080,7 +1093,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="OptimizationGuide.PredictionManager.DownloadServiceAvailabilityBlockedFetch"
-    enum="BooleanBlocked" expires_after="2023-12-04">
+    enum="BooleanBlocked" expires_after="2024-02-05">
   <owner>sophiechang@chromium.org</owner>
   <owner>mcrouse@chromium.org</owner>
   <summary>
@@ -1202,8 +1215,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="OptimizationGuide.PredictionModelDownloadManager.DownloadStatus"
-    enum="OptimizationGuidePredictionModelDownloadStatus"
-    expires_after="2023-12-17">
+    enum="OptimizationGuidePredictionModelDownloadStatus" expires_after="M121">
   <owner>sophiechang@chromium.org</owner>
   <owner>mcrouse@chromium.org</owner>
   <summary>
@@ -1214,7 +1226,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="OptimizationGuide.PredictionModelDownloadManager.DownloadSucceeded"
-    enum="BooleanSuccess" expires_after="2023-12-17">
+    enum="BooleanSuccess" expires_after="M121">
   <owner>sophiechang@chromium.org</owner>
   <owner>mcrouse@chromium.org</owner>
   <summary>
@@ -1278,7 +1290,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="OptimizationGuide.PredictionModelFetcher.GetModelsResponse.NetErrorCode"
-    enum="NetErrorCodes" expires_after="2023-11-19">
+    enum="NetErrorCodes" expires_after="2024-01-21">
   <owner>mcrouse@chromium.org</owner>
   <owner>sophiechang@chromium.org</owner>
   <summary>
@@ -1308,7 +1320,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="OptimizationGuide.PredictionModelFetcher.GetModelsResponse.Status"
-    enum="HttpResponseCode" expires_after="2023-11-19">
+    enum="HttpResponseCode" expires_after="2024-01-21">
   <owner>mcrouse@chromium.org</owner>
   <owner>sophiechang@chromium.org</owner>
   <summary>
@@ -1349,6 +1361,17 @@ chromium-metrics-reviews@google.com.
   <token key="OptimizationTarget" variants="OptimizationTarget"/>
 </histogram>
 
+<histogram name="OptimizationGuide.PredictionModelRemoved.{OptimizationTarget}"
+    enum="Boolean" expires_after="M121">
+  <owner>rajendrant@chromium.org</owner>
+  <owner>sophiechang@chromium.org</owner>
+  <summary>
+    Recorded whenever the prediction model for {OptimizationTarget} was removed
+    from the model store.
+  </summary>
+  <token key="OptimizationTarget" variants="OptimizationTarget"/>
+</histogram>
+
 <histogram
     name="OptimizationGuide.PredictionModelStore.HostModelFeaturesLoadMetadataResult"
     enum="BooleanLoaded" expires_after="2022-01-28">
@@ -1377,13 +1400,26 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="OptimizationGuide.PredictionModelStore.ModelRemovalReason"
     enum="OptimizationGuidePredictionModelStoreModelRemovalReason"
-    expires_after="2023-12-17">
+    expires_after="M121">
   <owner>rajendrant@chromium.org</owner>
   <owner>sophiechang@chromium.org</owner>
   <summary>
     Records the reason the prediction model was removed from the model store.
     Recorded when the model is removed.
   </summary>
+</histogram>
+
+<histogram
+    name="OptimizationGuide.PredictionModelStore.ModelRemovalReason.{OptimizationTarget}"
+    enum="OptimizationGuidePredictionModelStoreModelRemovalReason"
+    expires_after="M121">
+  <owner>rajendrant@chromium.org</owner>
+  <owner>sophiechang@chromium.org</owner>
+  <summary>
+    Records the reason the prediction model for {OptimizationTarget} was removed
+    from the model store. Recorded when the model is removed.
+  </summary>
+  <token key="OptimizationTarget" variants="OptimizationTarget"/>
 </histogram>
 
 <histogram

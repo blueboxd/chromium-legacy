@@ -1986,6 +1986,7 @@ interface Document : Node
     method adoptNode
     method append
     method ariaNotify
+    method browsingTopics
     method captureEvents
     method caretRangeFromPoint
     method clear
@@ -2241,9 +2242,6 @@ interface DynamicsCompressorNode : AudioNode
 interface EditContext : EventTarget
     attribute @@toStringTag
     getter characterBoundsRangeStart
-    getter enterKeyHint
-    getter inputMode
-    getter inputPanelPolicy
     getter oncharacterboundsupdate
     getter oncompositionend
     getter oncompositionstart
@@ -2260,17 +2258,11 @@ interface EditContext : EventTarget
     method updateSelection
     method updateSelectionBounds
     method updateText
-    setter enterKeyHint
-    setter inputMode
-    setter inputPanelPolicy
     setter oncharacterboundsupdate
     setter oncompositionend
     setter oncompositionstart
     setter ontextformatupdate
     setter ontextupdate
-    setter selectionEnd
-    setter selectionStart
-    setter text
 interface Element : Node
     attribute @@toStringTag
     attribute @@unscopables
@@ -2718,6 +2710,18 @@ interface FederatedCredential : Credential
     getter protocol
     getter provider
     method constructor
+interface Fence
+    attribute @@toStringTag
+    method constructor
+    method getNestedConfigs
+    method reportEvent
+    method setReportEventDataForAutomaticBeacons
+interface FencedFrameConfig
+    attribute @@toStringTag
+    getter height
+    getter width
+    method constructor
+    method setSharedStorageContext
 interface File : Blob
     attribute @@toStringTag
     getter lastModified
@@ -2757,6 +2761,14 @@ interface FileReader : EventTarget
     setter onloadend
     setter onloadstart
     setter onprogress
+interface FileSystemChangeRecord
+    attribute @@toStringTag
+    getter changedHandle
+    getter relativePathComponents
+    getter relativePathMovedFrom
+    getter root
+    getter type
+    method constructor
 interface FileSystemDirectoryHandle : FileSystemHandle
     attribute @@toStringTag
     method @@asyncIterator
@@ -2785,6 +2797,12 @@ interface FileSystemHandle
     method queryPermission
     method remove
     method requestPermission
+interface FileSystemObserver
+    attribute @@toStringTag
+    method constructor
+    method disconnect
+    method observe
+    method unobserve
 interface FileSystemWritableFileStream : WritableStream
     attribute @@toStringTag
     method constructor
@@ -3874,6 +3892,20 @@ interface HTMLEmbedElement : HTMLElement
     setter src
     setter type
     setter width
+interface HTMLFencedFrameElement : HTMLElement
+    static method canLoadOpaqueURL
+    attribute @@toStringTag
+    getter allow
+    getter config
+    getter height
+    getter sandbox
+    getter width
+    method constructor
+    setter allow
+    setter config
+    setter height
+    setter sandbox
+    setter width
 interface HTMLFieldSetElement : HTMLElement
     attribute @@toStringTag
     getter disabled
@@ -4034,8 +4066,10 @@ interface HTMLHeadingElement : HTMLElement
     setter align
 interface HTMLHtmlElement : HTMLElement
     attribute @@toStringTag
+    getter blocking
     getter version
     method constructor
+    setter blocking
     setter version
 interface HTMLIFrameElement : HTMLElement
     attribute @@toStringTag
@@ -4043,6 +4077,7 @@ interface HTMLIFrameElement : HTMLElement
     getter allow
     getter allowFullscreen
     getter allowPaymentRequest
+    getter browsingTopics
     getter contentDocument
     getter contentWindow
     getter credentialless
@@ -4069,6 +4104,7 @@ interface HTMLIFrameElement : HTMLElement
     setter allow
     setter allowFullscreen
     setter allowPaymentRequest
+    setter browsingTopics
     setter credentialless
     setter csp
     setter frameBorder
@@ -4675,7 +4711,7 @@ interface HTMLSelectElement : HTMLElement
     setter selectedIndex
     setter size
     setter value
-interface HTMLSelectMenuElement : HTMLElement
+interface HTMLSelectListElement : HTMLElement
     attribute @@toStringTag
     getter disabled
     getter form
@@ -5103,7 +5139,6 @@ interface IDBIndex
     getter name
     getter objectStore
     getter unique
-    method batchGetAll
     method constructor
     method count
     method get
@@ -5133,7 +5168,6 @@ interface IDBObjectStore
     getter name
     getter transaction
     method add
-    method batchGetAll
     method clear
     method constructor
     method count
@@ -6284,6 +6318,7 @@ interface NavigateEvent : Event
     getter destination
     getter downloadRequest
     getter formData
+    getter hasUAVisualTransition
     getter hashChange
     getter info
     getter navigationType
@@ -6363,6 +6398,7 @@ interface Navigator
     getter contacts
     getter cookieEnabled
     getter credentials
+    getter deprecatedRunAdAuctionEnforcesKAnonymity
     getter deviceMemory
     getter devicePosture
     getter doNotTrack
@@ -6409,24 +6445,33 @@ interface Navigator
     getter webkitTemporaryStorage
     getter windowControlsOverlay
     getter xr
+    method adAuctionComponents
+    method canLoadAdAuctionFencedFrame
     method canShare
     method clearAppBadge
     method constructor
+    method createAuctionNonce
     method createHandwritingRecognizer
+    method deprecatedReplaceInURN
+    method deprecatedURNToURL
     method getBattery
     method getEnvironmentIntegrity
     method getGamepads
     method getInstalledRelatedApps
     method getUserMedia
     method javaEnabled
+    method joinAdInterestGroup
+    method leaveAdInterestGroup
     method queryHandwritingRecognizer
     method registerProtocolHandler
     method requestMIDIAccess
     method requestMediaKeySystemAccess
+    method runAdAuction
     method sendBeacon
     method setAppBadge
     method share
     method unregisterProtocolHandler
+    method updateAdInterestGroups
     method vibrate
     method webkitGetUserMedia
 interface NavigatorManagedData : EventTarget
@@ -7143,6 +7188,7 @@ interface PointerEvent : MouseEvent
     method getPredictedEvents
 interface PopStateEvent : Event
     attribute @@toStringTag
+    getter hasUAVisualTransition
     getter state
     method constructor
 interface Presentation
@@ -9126,6 +9172,21 @@ interface ShadowRoot : DocumentFragment
     setter fullscreenElement
     setter innerHTML
     setter onslotchange
+interface SharedStorage
+    attribute @@asyncIterator
+    attribute @@toStringTag
+    getter worklet
+    method append
+    method clear
+    method constructor
+    method delete
+    method run
+    method selectURL
+    method set
+interface SharedStorageWorklet
+    attribute @@toStringTag
+    method addModule
+    method constructor
 interface SharedWorker : EventTarget
     attribute @@toStringTag
     getter onerror
@@ -11410,7 +11471,7 @@ interface WebSocket : EventTarget
 interface WebSocketStream
     attribute @@toStringTag
     getter closed
-    getter connection
+    getter opened
     getter url
     method close
     method constructor
@@ -12285,6 +12346,7 @@ namespace console
     getter documentPictureInPicture
     getter event
     getter external
+    getter fence
     getter frameElement
     getter frames
     getter history
@@ -12447,6 +12509,7 @@ namespace console
     getter scrollbars
     getter self
     getter sessionStorage
+    getter sharedStorage
     getter speechSynthesis
     getter status
     getter statusbar

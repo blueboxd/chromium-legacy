@@ -83,6 +83,22 @@ void SharedDictionaryStorageInMemory::ClearAllDictionaries() {
   dictionary_info_map_.clear();
 }
 
+bool SharedDictionaryStorageInMemory::HasDictionaryBetween(
+    base::Time start_time,
+    base::Time end_time) {
+  for (const auto& [scheme_host_port, info_map] : dictionary_info_map_) {
+    std::ignore = scheme_host_port;
+    for (const auto& [match, dict] : info_map) {
+      std::ignore = match;
+      if ((dict.response_time() >= start_time) &&
+          (dict.response_time() < end_time)) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
 scoped_refptr<SharedDictionaryWriter>
 SharedDictionaryStorageInMemory::CreateWriter(const GURL& url,
                                               base::Time response_time,
@@ -91,6 +107,15 @@ SharedDictionaryStorageInMemory::CreateWriter(const GURL& url,
   return base::MakeRefCounted<SharedDictionaryWriterInMemory>(base::BindOnce(
       &SharedDictionaryStorageInMemory::OnDictionaryWritten,
       weak_factory_.GetWeakPtr(), url, response_time, expiration, match));
+}
+
+bool SharedDictionaryStorageInMemory::IsAlreadyRegistered(
+    const GURL& url,
+    base::Time response_time,
+    base::TimeDelta expiration,
+    const std::string& match) {
+  return IsAlreadyRegisteredInDictionaryInfoMap(
+      dictionary_info_map_, url, response_time, expiration, match);
 }
 
 void SharedDictionaryStorageInMemory::OnDictionaryWritten(
@@ -105,10 +130,10 @@ void SharedDictionaryStorageInMemory::OnDictionaryWritten(
   if (result != SharedDictionaryWriterInMemory::Result::kSuccess) {
     return;
   }
-  dictionary_info_map_[url::SchemeHostPort(url)].insert(std::make_pair(
+  dictionary_info_map_[url::SchemeHostPort(url)].insert_or_assign(
       match,
       DictionaryInfo(url, response_time, expiration, match,
-                     /*last_used_time=*/base::Time::Now(), data, size, hash)));
+                     /*last_used_time=*/base::Time::Now(), data, size, hash));
   if (manager_) {
     manager_->MaybeRunCacheEvictionPerSite(isolation_key_.top_frame_site());
     manager_->MaybeRunCacheEviction();

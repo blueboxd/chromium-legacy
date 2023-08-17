@@ -15,6 +15,7 @@
 #include "third_party/blink/public/common/chrome_debug_urls.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
+#include "third_party/blink/public/mojom/devtools/console_message.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/devtools/inspector_issue.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/media_player_action.mojom-blink.h"
@@ -167,7 +168,7 @@ HitTestResult HitTestResultForRootFramePos(
       frame->View()->ConvertFromRootFrame(pos_in_root_frame));
   HitTestResult result = frame->GetEventHandler().HitTestResultAtLocation(
       location, HitTestRequest::kReadOnly | HitTestRequest::kActive);
-  result.SetToShadowHostIfInRestrictedShadowRoot();
+  result.SetToShadowHostIfInUAShadowRoot();
   return result;
 }
 
@@ -1142,7 +1143,6 @@ void LocalFrameMojoHandler::NotifyNavigationApiOfDisposedEntries(
 void LocalFrameMojoHandler::TraverseCancelled(
     const String& navigation_api_key,
     mojom::blink::TraverseCancelledReason reason) {
-  frame_->GetPage()->HistoryNavigationVirtualTimePauser().UnpauseVirtualTime();
   frame_->DomWindow()->navigation()->TraverseCancelled(navigation_api_key,
                                                        reason);
 }
@@ -1377,6 +1377,11 @@ void LocalFrameMojoHandler::AddResourceTimingEntryForFailedSubframeNavigation(
 }
 
 void LocalFrameMojoHandler::RequestFullscreenDocumentElement() {
+  // Bail early and report failure if fullscreen is not enabled.
+  if (!Fullscreen::FullscreenEnabled(*frame_->GetDocument(),
+                                     ReportOptions::kReportOnFailure)) {
+    return;
+  }
   if (auto* document_element = frame_->GetDocument()->documentElement()) {
     // `kWindowOpen` assumes this function is only invoked for newly created
     // windows (e.g. fullscreen popups). Update this if additional callers are

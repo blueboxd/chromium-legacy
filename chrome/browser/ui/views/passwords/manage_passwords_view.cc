@@ -23,7 +23,6 @@
 #include "components/password_manager/core/browser/password_manager_client.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/common/password_manager_constants.h"
-#include "components/password_manager/core/common/password_manager_features.h"
 #include "components/sync/base/features.h"
 #include "ui/base/interaction/element_identifier.h"
 #include "ui/gfx/favicon_size.h"
@@ -38,8 +37,6 @@ ManagePasswordsView::ManagePasswordsView(content::WebContents* web_contents,
                              anchor_view,
                              /*easily_dismissable=*/true),
       controller_(PasswordsModelDelegateFromWebContents(web_contents)) {
-  DCHECK(base::FeatureList::IsEnabled(
-      password_manager::features::kRevampedPasswordManagementBubble));
   SetButtons(ui::DIALOG_BUTTON_NONE);
 
   SetLayoutManager(std::make_unique<views::BoxLayout>(
@@ -159,7 +156,7 @@ ManagePasswordsView::CreatePasswordDetailsView() {
   DCHECK(controller_.get_currently_selected_password().has_value());
   return std::make_unique<ManagePasswordsDetailsView>(
       controller_.get_currently_selected_password().value(),
-      base::BindRepeating(&ItemsBubbleController::UsernameExists,
+      base::BindRepeating(&ManagePasswordsBubbleController::UsernameExists,
                           base::Unretained(&controller_)),
       base::BindRepeating(
           [](ManagePasswordsView* view) {

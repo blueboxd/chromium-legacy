@@ -18,7 +18,6 @@
 #include "chrome/browser/consent_auditor/consent_auditor_factory.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
-#include "chrome/browser/invalidation/profile_invalidation_provider_factory.h"
 #include "chrome/browser/metrics/variations/google_groups_updater_service_factory.h"
 #include "chrome/browser/password_manager/account_password_store_factory.h"
 #include "chrome/browser/password_manager/password_receiver_service_factory.h"
@@ -57,7 +56,6 @@
 #include "components/consent_auditor/consent_auditor.h"
 #include "components/desks_storage/core/desk_sync_service.h"
 #include "components/history/core/browser/history_service.h"
-#include "components/invalidation/impl/profile_invalidation_provider.h"
 #include "components/metrics/demographics/user_demographics.h"
 #include "components/password_manager/core/browser/password_store_interface.h"
 #include "components/password_manager/core/browser/sharing/password_receiver_service.h"
@@ -100,9 +98,7 @@
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
 #include "chrome/browser/profiles/profile_key.h"
-#include "chrome/browser/supervised_user/supervised_user_service_factory.h"
 #include "chrome/browser/supervised_user/supervised_user_settings_service_factory.h"
-#include "components/supervised_user/core/browser/supervised_user_service.h"
 #include "components/supervised_user/core/browser/supervised_user_settings_service.h"
 #include "components/supervised_user/core/browser/supervised_user_sync_model_type_controller.h"
 #endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
@@ -242,6 +238,13 @@ ChromeSyncClient::ChromeSyncClient(Profile* profile)
   account_password_store_ = AccountPasswordStoreFactory::GetForProfile(
       profile_, ServiceAccessType::IMPLICIT_ACCESS);
 
+  supervised_user::SupervisedUserSettingsService*
+      supervised_user_settings_service = nullptr;
+#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
+  supervised_user_settings_service =
+      SupervisedUserSettingsServiceFactory::GetForKey(
+          profile_->GetProfileKey());
+#endif
   // TODO(https://crbug.com/1404250): Pass AccountBookmarkSyncServiceFactory
   //                                  when it is available.
   component_factory_ = std::make_unique<SyncApiComponentFactoryImpl>(
@@ -250,7 +253,8 @@ ChromeSyncClient::ChromeSyncClient(Profile* profile)
       account_web_data_service_, profile_password_store_,
       account_password_store_,
       BookmarkSyncServiceFactory::GetForProfile(profile_), nullptr,
-      PowerBookmarkServiceFactory::GetForBrowserContext(profile_));
+      PowerBookmarkServiceFactory::GetForBrowserContext(profile_),
+      supervised_user_settings_service);
 }
 
 ChromeSyncClient::~ChromeSyncClient() = default;
@@ -387,16 +391,6 @@ ChromeSyncClient::CreateDataTypeControllers(syncer::SyncService* sync_service) {
         /*delegate_for_transport_mode=*/
         std::make_unique<syncer::ForwardingModelTypeControllerDelegate>(
             sharing_message_delegate)));
-
-#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
-    // |profile_| must not be null and must outlive this controller.
-    controllers.push_back(
-        std::make_unique<SupervisedUserSyncModelTypeController>(
-            syncer::SUPERVISED_USER_SETTINGS,
-            base::BindRepeating(&Profile::IsChild, base::Unretained(profile_)),
-            dump_stack, model_type_store_factory,
-            GetSyncableServiceForType(syncer::SUPERVISED_USER_SETTINGS)));
-#endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
     // Extension sync is enabled by default.
@@ -555,16 +549,6 @@ trusted_vault::TrustedVaultClient* ChromeSyncClient::GetTrustedVaultClient() {
       ->GetTrustedVaultClient();
 }
 
-invalidation::InvalidationService* ChromeSyncClient::GetInvalidationService() {
-  invalidation::ProfileInvalidationProvider* provider =
-      invalidation::ProfileInvalidationProviderFactory::GetForProfile(profile_);
-
-  if (provider) {
-    return provider->GetInvalidationService();
-  }
-  return nullptr;
-}
-
 syncer::SyncInvalidationsService*
 ChromeSyncClient::GetSyncInvalidationsService() {
   return SyncInvalidationsServiceFactory::GetForProfile(profile_);
@@ -606,12 +590,6 @@ ChromeSyncClient::GetSyncableServiceForType(syncer::ModelType type) {
                  : nullptr;
     }
 #endif  // BUILDFLAG(ENABLE_SPELLCHECK)
-#if BUILDFLAG(ENABLE_SUPERVISED_USERS)
-    case syncer::SUPERVISED_USER_SETTINGS:
-      return SupervisedUserSettingsServiceFactory::GetForKey(
-                 profile_->GetProfileKey())
-          ->AsWeakPtr();
-#endif  // BUILDFLAG(ENABLE_SUPERVISED_USERS)
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     case syncer::ARC_PACKAGE:
       return arc::ArcPackageSyncableService::Get(profile_)->AsWeakPtr();

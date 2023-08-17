@@ -60,8 +60,11 @@
   }
 
   #oneGoogleBarScrim {
-    background: linear-gradient(rgba(0, 0, 0, 0.25), transparent);
-    height: 64px;
+    background: linear-gradient(rgba(0,0,0,0.25) 0%,
+                                rgba(0,0,0,0.12) 45%,
+                                rgba(0,0,0,0.05) 65%,
+                                transparent 100%);
+    height: 80px;
     position: absolute;
     top: 0;
     width: 100%;
@@ -355,6 +358,11 @@
     top: 0;
     z-index: 101;
   }
+
+  #webstoreToast {
+    padding: 16px;
+    visibility: hidden;
+  }
 </style>
 <div id="content" style="
         --color-new-tab-page-attribution-foreground: [[rgbaOrInherit_(theme_.textColor)]];
@@ -390,6 +398,14 @@
       </ntp-lens-upload-dialog>
     </template>
   </div>
+  <template is="dom-if" if="[[lazyRender_]]" >
+    <cr-toast id="webstoreToast" duration="10000">
+      <div>$i18n{webstoreThemesToastMessage}</div>
+      <cr-button on-click="onWebstoreToastButtonClick_">
+        $i18n{webstoreThemesToastButtonText}
+      </cr-button>
+    </cr-toast>
+  </template>
   <dom-if if="[[lazyRender_]]" on-dom-change="onLazyRendered_">
     <template>
       <template is="dom-if" if="[[shortcutsEnabled_]]">

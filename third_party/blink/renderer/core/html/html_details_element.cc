@@ -65,6 +65,10 @@ void HTMLDetailsElement::DispatchPendingEvent(
 
 LayoutObject* HTMLDetailsElement::CreateLayoutObject(
     const ComputedStyle& style) {
+  if (RuntimeEnabledFeatures::DetailsStylingEnabled()) {
+    return HTMLElement::CreateLayoutObject(style);
+  }
+
   return LayoutObject::CreateBlockFlowOrListItem(this, style);
 }
 
@@ -214,11 +218,10 @@ HTMLDetailsElement::OtherElementsInNameGroup() {
   CHECK(RuntimeEnabledFeatures::AccordionPatternEnabled());
   HeapVector<Member<HTMLDetailsElement>> result;
   const AtomicString& name = GetName();
-  if (name.empty() || !IsInTreeScope()) {
+  if (name.empty()) {
     return result;
   }
-  HTMLDetailsElement* details =
-      Traversal<HTMLDetailsElement>::Next(GetTreeScope().RootNode());
+  HTMLDetailsElement* details = Traversal<HTMLDetailsElement>::Next(TreeRoot());
   while (details) {
     if (details != this && details->GetName() == name) {
       result.push_back(details);

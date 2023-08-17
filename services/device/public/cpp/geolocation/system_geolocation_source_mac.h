@@ -9,10 +9,6 @@
 #include "services/device/public/cpp/geolocation/geolocation_manager.h"
 #include "services/device/public/cpp/geolocation/system_geolocation_source.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 @class GeolocationManagerDelegate;
 @class CLLocationManager;
 
@@ -42,6 +38,7 @@ class COMPONENT_EXPORT(GEOLOCATION) SystemGeolocationSourceMac
 
   void StartWatchingPosition(bool high_accuracy) override;
   void StopWatchingPosition() override;
+  void RequestPermission() override;
 
   // Calls requestWhenInUseAuthorization from CLLocationManager.
   void TrackGeolocationAttempted() override;

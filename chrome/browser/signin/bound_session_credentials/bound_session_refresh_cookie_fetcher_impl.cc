@@ -6,10 +6,14 @@
 
 #include <memory>
 
+#include "base/base64url.h"
 #include "base/functional/bind.h"
 #include "base/location.h"
+#include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
 #include "base/time/time.h"
-#include "components/signin/public/base/signin_client.h"
+#include "chrome/browser/signin/bound_session_credentials/session_binding_helper.h"
+#include "components/signin/public/base/wait_for_network_callback_helper.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/cookies/canonical_cookie.h"
@@ -23,24 +27,36 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace {
+constexpr char kRotationChallengeHeader[] = "Sec-Session-Google-Challenge";
 constexpr char kRotationChallengeResponseHeader[] =
     "Sec-Session-Google-Response";
+constexpr char kChallengeItemKey[] = "challenge";
 
-bool IsExpectedCookie(const GURL& url,
-                      const std::string& cookie_name,
-                      const net::CanonicalCookie& cookie) {
-  return (cookie.Name() == cookie_name) && cookie.IsDomainMatch(url.host());
+bool IsExpectedCookie(
+    const GURL& url,
+    const std::string& cookie_name,
+    const network::mojom::CookieOrLineWithAccessResultPtr& cookie_ptr) {
+  if (cookie_ptr->access_result.status.IsInclude()) {
+    CHECK(cookie_ptr->cookie_or_line->is_cookie());
+    const net::CanonicalCookie& cookie =
+        cookie_ptr->cookie_or_line->get_cookie();
+    return (cookie.Name() == cookie_name) && cookie.IsDomainMatch(url.host());
+  }
+  return false;
 }
 }  // namespace
 
 BoundSessionRefreshCookieFetcherImpl::BoundSessionRefreshCookieFetcherImpl(
-    SigninClient* client,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+    WaitForNetworkCallbackHelper& wait_for_network_callback_helper,
+    SessionBindingHelper& session_binding_helper,
     const GURL& cookie_url,
-    const std::string& cookie_name)
-    : client_(client),
+    base::flat_set<std::string> cookie_names)
+    : url_loader_factory_(std::move(url_loader_factory)),
+      wait_for_network_callback_helper_(wait_for_network_callback_helper),
+      session_binding_helper_(session_binding_helper),
       expected_cookie_domain_(cookie_url),
-      expected_cookie_name_(cookie_name),
-      url_loader_factory_(client->GetURLLoaderFactory()) {}
+      expected_cookie_names_(std::move(cookie_names)) {}
 
 BoundSessionRefreshCookieFetcherImpl::~BoundSessionRefreshCookieFetcherImpl() =
     default;
@@ -50,12 +66,13 @@ void BoundSessionRefreshCookieFetcherImpl::Start(
   CHECK(!callback_);
   CHECK(callback);
   callback_ = std::move(callback);
-  client_->DelayNetworkCall(
+  wait_for_network_callback_helper_->DelayNetworkCall(
       base::BindOnce(&BoundSessionRefreshCookieFetcherImpl::StartRefreshRequest,
-                     weak_ptr_factory_.GetWeakPtr()));
+                     weak_ptr_factory_.GetWeakPtr(), absl::nullopt));
 }
 
-void BoundSessionRefreshCookieFetcherImpl::StartRefreshRequest() {
+void BoundSessionRefreshCookieFetcherImpl::StartRefreshRequest(
+    absl::optional<std::string> sec_session_challenge_response) {
   // TODO(b/273920907): Update the `traffic_annotation` setting once a mechanism
   // allowing the user to disable the feature is implemented.
   net::NetworkTrafficAnnotationTag traffic_annotation =
@@ -102,11 +119,10 @@ void BoundSessionRefreshCookieFetcherImpl::StartRefreshRequest() {
   request->url = GaiaUrls::GetInstance()->rotate_bound_cookies_url();
   request->method = "GET";
 
-  // TODO(b/284956553): Properly sign the challenge and attach it to the
-  // request. This temporary to unblock local testing as the rotation endpoint
-  // requires the presence of this header to issue required cookies.
-  request->headers.SetHeader(kRotationChallengeResponseHeader,
-                             "fakeChallengeResponse");
+  if (sec_session_challenge_response) {
+    request->headers.SetHeader(kRotationChallengeResponseHeader,
+                               *sec_session_challenge_response);
+  }
 
   url::Origin origin = GaiaUrls::GetInstance()->gaia_origin();
   request->site_for_cookies = net::SiteForCookies::FromOrigin(origin);
@@ -136,9 +152,16 @@ void BoundSessionRefreshCookieFetcherImpl::StartRefreshRequest() {
 
 void BoundSessionRefreshCookieFetcherImpl::OnURLLoaderComplete(
     scoped_refptr<net::HttpResponseHeaders> headers) {
-  url_loader_completed_ = true;
   net::Error net_error = static_cast<net::Error>(url_loader_->NetError());
 
+  absl::optional<std::string> challenge_header_value =
+      GetChallengeIfBindingKeyAssertionRequired(headers);
+  if (challenge_header_value) {
+    HandleBindingKeyAssertionRequired(*challenge_header_value);
+    return;
+  }
+
+  cookie_refresh_completed_ = true;
   result_ = GetResultFromNetErrorAndHttpStatusCode(
       net_error,
       headers ? absl::optional<int>(headers->response_code()) : absl::nullopt);
@@ -191,12 +214,96 @@ BoundSessionRefreshCookieFetcherImpl::GetResultFromNetErrorAndHttpStatusCode(
 
 void BoundSessionRefreshCookieFetcherImpl::ReportRefreshResult() {
   reported_cookies_notified_timer_.Stop();
-  CHECK(url_loader_completed_);
-  if (result_ == Result::kSuccess && !expected_cookie_set_) {
+  CHECK(cookie_refresh_completed_);
+  if (result_ == Result::kSuccess && !expected_cookies_set_) {
     result_ = Result::kServerUnexepectedResponse;
   }
 
   std::move(callback_).Run(result_);
+}
+
+absl::optional<std::string>
+BoundSessionRefreshCookieFetcherImpl::GetChallengeIfBindingKeyAssertionRequired(
+    const scoped_refptr<net::HttpResponseHeaders>& headers) const {
+  if (!headers || headers->response_code() != net::HTTP_UNAUTHORIZED ||
+      !headers->HasHeader(kRotationChallengeHeader)) {
+    return absl::nullopt;
+  }
+
+  std::string challenge;
+  headers->GetNormalizedHeader(kRotationChallengeHeader, &challenge);
+  return challenge;
+}
+
+void BoundSessionRefreshCookieFetcherImpl::HandleBindingKeyAssertionRequired(
+    const std::string& challenge_header_value) {
+  if (has_assertion_been_already_requested_) {
+    // TODO(b/293838716): Handle expired challenges. We currently can't
+    // distinguish expired challenges.
+    ReportChallengeRequiredUnexpectedFormat();
+    return;
+  }
+
+  // Binding key assertion required.
+  has_assertion_been_already_requested_ = true;
+  std::string challenge = ParseChallengeHeader(challenge_header_value);
+  if (challenge.empty()) {
+    ReportChallengeRequiredUnexpectedFormat();
+    return;
+  }
+  RefreshWithChallenge(challenge);
+}
+
+// static
+std::string BoundSessionRefreshCookieFetcherImpl::ParseChallengeHeader(
+    const std::string& header) {
+  base::StringPairs items;
+  base::SplitStringIntoKeyValuePairs(header, '=', ';', &items);
+  std::string encoded_challenge;
+  for (const auto& [key, value] : items) {
+    // TODO(b/293838716): Check `session_id` matches the current session's id.
+    if (base::EqualsCaseInsensitiveASCII(key, kChallengeItemKey)) {
+      encoded_challenge = value;
+    }
+  }
+
+  std::string challenge;
+  if (!encoded_challenge.empty() &&
+      base::Base64UrlDecode(encoded_challenge,
+                            base::Base64UrlDecodePolicy::DISALLOW_PADDING,
+                            &challenge)) {
+    return challenge;
+  }
+  return std::string();
+}
+
+void BoundSessionRefreshCookieFetcherImpl::
+    ReportChallengeRequiredUnexpectedFormat() {
+  cookie_refresh_completed_ = true;
+  result_ = Result::kChallengeRequiredUnexpectedFormat;
+  ReportRefreshResult();
+}
+
+void BoundSessionRefreshCookieFetcherImpl::RefreshWithChallenge(
+    const std::string& challenge) {
+  session_binding_helper_->GenerateBindingKeyAssertion(
+      challenge, GaiaUrls::GetInstance()->rotate_bound_cookies_url(),
+      base::BindOnce(
+          &BoundSessionRefreshCookieFetcherImpl::OnGenerateBindingKeyAssertion,
+          weak_ptr_factory_.GetWeakPtr()));
+}
+
+void BoundSessionRefreshCookieFetcherImpl::OnGenerateBindingKeyAssertion(
+    std::string assertion) {
+  if (assertion.empty()) {
+    result_ = Result::kSignChallengeFailed;
+    cookie_refresh_completed_ = true;
+    ReportRefreshResult();
+    return;
+  }
+  wait_for_network_callback_helper_->DelayNetworkCall(
+      base::BindOnce(&BoundSessionRefreshCookieFetcherImpl::StartRefreshRequest,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(assertion)));
 }
 
 void BoundSessionRefreshCookieFetcherImpl::OnCookiesAccessed(
@@ -208,19 +315,24 @@ void BoundSessionRefreshCookieFetcherImpl::OnCookiesAccessed(
     }
 
     reported_cookies_notified_ = true;
-    for (const network::mojom::CookieOrLineWithAccessResultPtr& cookie :
-         cookie_details->cookie_list) {
-      if (cookie->access_result.status.IsInclude()) {
-        CHECK(cookie->cookie_or_line->is_cookie());
-        expected_cookie_set_ =
-            expected_cookie_set_ ||
-            IsExpectedCookie(expected_cookie_domain_, expected_cookie_name_,
-                             cookie->cookie_or_line->get_cookie());
+    bool all_cookies_set = true;
+    for (const std::string& expected_cookie_name : expected_cookie_names_) {
+      auto it = base::ranges::find_if(
+          cookie_details->cookie_list,
+          [this, &expected_cookie_name](
+              const network::mojom::CookieOrLineWithAccessResultPtr& cookie) {
+            return IsExpectedCookie(expected_cookie_domain_,
+                                    expected_cookie_name, cookie);
+          });
+      if (it == cookie_details->cookie_list.end()) {
+        all_cookies_set = false;
+        break;
       }
     }
+    expected_cookies_set_ = expected_cookies_set_ || all_cookies_set;
   }
 
-  if (url_loader_completed_ && reported_cookies_notified_) {
+  if (cookie_refresh_completed_ && reported_cookies_notified_) {
     ReportRefreshResult();
   }
 }

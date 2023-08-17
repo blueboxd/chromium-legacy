@@ -219,6 +219,33 @@ void CheckSoftNavigationHeuristicsTracking(const Document& document,
   }
 }
 
+class PopoverCloseWatcherEventListener : public NativeEventListener {
+ public:
+  explicit PopoverCloseWatcherEventListener(HTMLElement* popover)
+      : popover_(popover) {}
+
+  void Invoke(ExecutionContext*, Event* event) override {
+    if (!popover_) {
+      return;
+    }
+    // Don't do anything in response to cancel events, as per the HTML spec
+    if (event->type() == event_type_names::kClose) {
+      popover_->HidePopoverInternal(
+          HidePopoverFocusBehavior::kFocusPreviousElement,
+          HidePopoverTransitionBehavior::kFireEventsAndWaitForTransitions,
+          /*exception_state=*/nullptr);
+    }
+  }
+
+  void Trace(Visitor* visitor) const override {
+    visitor->Trace(popover_);
+    NativeEventListener::Trace(visitor);
+  }
+
+ private:
+  WeakMember<HTMLElement> popover_;
+};
+
 }  // anonymous namespace
 
 String HTMLElement::nodeName() const {
@@ -1186,28 +1213,6 @@ PopoverValueType GetPopoverTypeFromAttributeValue(const AtomicString& value) {
 }  // namespace
 
 void HTMLElement::UpdatePopoverAttribute(const AtomicString& value) {
-  if (!RuntimeEnabledFeatures::HTMLPopoverAttributeEnabled(
-          GetDocument().GetExecutionContext())) {
-    // If the feature flag isn't enabled, give a console warning about this
-    // usage of the 'popover' attribute, which is likely to cause breakage when
-    // the feature ships.
-    auto& document = GetDocument();
-    auto* console_message = MakeGarbageCollected<ConsoleMessage>(
-        mojom::blink::ConsoleMessageSource::kOther,
-        mojom::blink::ConsoleMessageLevel::kError,
-        "Found a 'popover' attribute. If you are testing the popover API, you "
-        "must enable Experimental Web Platform Features. If not, note that "
-        "custom attributes must start with 'data-': "
-        "https://html.spec.whatwg.org/multipage/"
-        "dom.html#custom-data-attribute. This usage will *likely cause site "
-        "breakage* when the popover API ships: "
-        "https://chromestatus.com/feature/5463833265045504.");
-    console_message->SetNodes(document.GetFrame(),
-                              {DOMNodeIds::IdForNode(this)});
-    document.AddConsoleMessage(console_message);
-    return;
-  }
-
   PopoverValueType type = GetPopoverTypeFromAttributeValue(value);
   if (type == PopoverValueType::kManual &&
       !EqualIgnoringASCIICase(value, keywords::kManual)) {
@@ -1297,8 +1302,6 @@ PopoverValueType HTMLElement::PopoverType() const {
 
 // This should be true when `:popover-open` should match.
 bool HTMLElement::popoverOpen() const {
-  CHECK(RuntimeEnabledFeatures::HTMLPopoverAttributeEnabled(
-      GetDocument().GetExecutionContext()));
   if (auto* popover_data = GetPopoverData())
     return popover_data->visibilityState() == PopoverVisibilityState::kShowing;
   return false;
@@ -1308,8 +1311,6 @@ bool HTMLElement::IsPopoverReady(PopoverTriggerAction action,
                                  ExceptionState* exception_state,
                                  bool include_event_handler_text,
                                  Document* expected_document) const {
-  CHECK(RuntimeEnabledFeatures::HTMLPopoverAttributeEnabled(
-      GetDocument().GetExecutionContext()));
   CHECK_NE(action, PopoverTriggerAction::kNone);
 
   auto maybe_throw_exception = [&exception_state, &include_event_handler_text](
@@ -1364,12 +1365,13 @@ bool HTMLElement::IsPopoverReady(PopoverTriggerAction action,
                           "hiding a popover element.");
     return false;
   }
-  if (action == PopoverTriggerAction::kShow && IsA<HTMLDialogElement>(this) &&
-      hasAttribute(html_names::kOpenAttr)) {
-    maybe_throw_exception(DOMExceptionCode::kInvalidStateError,
-                          "The dialog is already open as a dialog, and "
-                          "therefore cannot be opened as a popover.");
-    return false;
+  if (auto* dialog = DynamicTo<HTMLDialogElement>(this)) {
+    if (action == PopoverTriggerAction::kShow && dialog->IsModal()) {
+      maybe_throw_exception(DOMExceptionCode::kInvalidStateError,
+                            "The dialog is already open as a dialog, and "
+                            "therefore cannot be opened as a popover.");
+      return false;
+    }
   }
   if (action == PopoverTriggerAction::kShow &&
       Fullscreen::IsFullscreenElement(*this)) {
@@ -1403,8 +1405,6 @@ void MarkPopoverInvokersDirty(const HTMLElement& popover) {
 }  // namespace
 
 bool HTMLElement::togglePopover(ExceptionState& exception_state) {
-  CHECK(RuntimeEnabledFeatures::HTMLPopoverAttributeEnabled(
-      GetDocument().GetExecutionContext()));
   if (popoverOpen()) {
     hidePopover(exception_state);
   } else {
@@ -1419,8 +1419,6 @@ bool HTMLElement::togglePopover(ExceptionState& exception_state) {
 }
 
 bool HTMLElement::togglePopover(bool force, ExceptionState& exception_state) {
-  CHECK(RuntimeEnabledFeatures::HTMLPopoverAttributeEnabled(
-      GetDocument().GetExecutionContext()));
   if (!force && popoverOpen()) {
     hidePopover(exception_state);
   } else if (force && !popoverOpen()) {
@@ -1446,9 +1444,6 @@ void HTMLElement::showPopover(ExceptionState& exception_state) {
 
 void HTMLElement::ShowPopoverInternal(Element* invoker,
                                       ExceptionState* exception_state) {
-  CHECK(RuntimeEnabledFeatures::HTMLPopoverAttributeEnabled(
-      GetDocument().GetExecutionContext()));
-
   if (!IsPopoverReady(PopoverTriggerAction::kShow, exception_state,
                       /*include_event_handler_text=*/false, /*document=*/nullptr)) {
     CHECK(exception_state)
@@ -1548,6 +1543,20 @@ void HTMLElement::ShowPopoverInternal(Element* invoker,
       CHECK(RuntimeEnabledFeatures::HTMLPopoverHintEnabled());
       original_document.SetPopoverHintShowing(this);
     }
+
+    if (RuntimeEnabledFeatures::CloseWatcherEnabled()) {
+      auto* close_watcher = CloseWatcher::Create(
+          GetDocument().domWindow(), /*dialog_for_use_counters=*/nullptr);
+      if (close_watcher) {
+        auto* event_listener =
+            MakeGarbageCollected<PopoverCloseWatcherEventListener>(this);
+        close_watcher->addEventListener(event_type_names::kClose,
+                                        event_listener);
+        close_watcher->addEventListener(event_type_names::kCancel,
+                                        event_listener);
+      }
+      GetPopoverData()->setCloseWatcher(close_watcher);
+    }
   }
 
   MarkPopoverInvokersDirty(*this);
@@ -1618,8 +1627,6 @@ void HTMLElement::HideAllPopoversUntil(
     HidePopoverFocusBehavior focus_behavior,
     HidePopoverTransitionBehavior transition_behavior,
     HidePopoverIndependence popover_independence) {
-  CHECK(RuntimeEnabledFeatures::HTMLPopoverAttributeEnabled(
-      document.GetExecutionContext()));
   CHECK(!endpoint || endpoint->HasPopoverAttribute());
   CHECK(endpoint ||
         popover_independence == HidePopoverIndependence::kHideUnrelated);
@@ -1721,8 +1728,6 @@ void HTMLElement::HideAllPopoversUntil(
 }
 
 void HTMLElement::hidePopover(ExceptionState& exception_state) {
-  CHECK(RuntimeEnabledFeatures::HTMLPopoverAttributeEnabled(
-      GetDocument().GetExecutionContext()));
   HidePopoverInternal(
       HidePopoverFocusBehavior::kFocusPreviousElement,
       HidePopoverTransitionBehavior::kFireEventsAndWaitForTransitions,
@@ -1733,9 +1738,6 @@ void HTMLElement::HidePopoverInternal(
     HidePopoverFocusBehavior focus_behavior,
     HidePopoverTransitionBehavior transition_behavior,
     ExceptionState* exception_state) {
-  CHECK(RuntimeEnabledFeatures::HTMLPopoverAttributeEnabled(
-      GetDocument().GetExecutionContext()));
-
   if (!IsPopoverReady(PopoverTriggerAction::kHide, exception_state,
                       /*include_event_handler_text=*/true, /*document=*/nullptr)) {
     return;
@@ -1864,18 +1866,21 @@ void HTMLElement::HidePopoverInternal(
     }
   }
 
-  if (auto* selectmenu = popoverOwnerSelectMenuElement()) {
-    // popoverOwnerSelectMenuElement() is set on both the <selectmenu> listbox
-    // and the <selectmenu> autofill preview popover.
-    if (selectmenu->ListBoxPart() == this) {
-      selectmenu->ListboxWasClosed();
+  if (auto* selectlist = popoverOwnerSelectListElement()) {
+    // popoverOwnerSelectListElement() is set on both the <selectlist> listbox
+    // and the <selectlist> autofill preview popover.
+    if (selectlist->ListBoxPart() == this) {
+      selectlist->ListboxWasClosed();
     }
+  }
+
+  if (auto* close_watcher = GetPopoverData()->closeWatcher()) {
+    close_watcher->destroy();
+    GetPopoverData()->setCloseWatcher(nullptr);
   }
 }
 
 void HTMLElement::SetPopoverFocusOnShow() {
-  CHECK(RuntimeEnabledFeatures::HTMLPopoverAttributeEnabled(
-      GetDocument().GetExecutionContext()));
   // The layout must be updated here because we call Element::isFocusable,
   // which requires an up-to-date layout.
   GetDocument().UpdateStyleAndLayoutTreeForNode(this,
@@ -2017,8 +2022,6 @@ const HTMLElement* HTMLElement::FindTopmostPopoverAncestor(
   CHECK(new_popover.HasPopoverAttribute());
   CHECK_NE(new_popover.PopoverType(), PopoverValueType::kManual);
   auto& document = new_popover.GetDocument();
-  CHECK(RuntimeEnabledFeatures::HTMLPopoverAttributeEnabled(
-      document.GetExecutionContext()));
 
   // Build a map from each open popover to its position in the stack.
   HeapHashMap<Member<const HTMLElement>, int> popover_positions;
@@ -2067,8 +2070,6 @@ const HTMLElement* FindTopmostRelatedPopover(
     const PopoverAncestorOptionsSet& ancestor_options =
         PopoverAncestorOptionsSet()) {
   auto& document = node.GetDocument();
-  CHECK(RuntimeEnabledFeatures::HTMLPopoverAttributeEnabled(
-      document.GetExecutionContext()));
   // Check if we're in an invoking element or a popover, and choose
   // the higher popover on the stack.
   auto* direct_popover_ancestor = NearestOpenPopover(&node, ancestor_options);
@@ -2095,10 +2096,6 @@ void HTMLElement::HandlePopoverLightDismiss(const Event& event,
                                             const Node& target_node) {
   CHECK(event.isTrusted());
   auto& document = target_node.GetDocument();
-  if (!RuntimeEnabledFeatures::HTMLPopoverAttributeEnabled(
-          document.GetExecutionContext())) {
-    return;
-  }
   if (!document.TopmostPopoverOrHint()) {
     return;
   }
@@ -2136,6 +2133,10 @@ void HTMLElement::HandlePopoverLightDismiss(const Event& event,
       }
     }
   } else if (event_type == event_type_names::kKeydown) {
+    // TODO(http://crbug.com/1171318): Remove this keydown branch once
+    // CloseWatcher has been fully enabled. CloseWatcher will handle escape key
+    // presses instead of this.
+    DCHECK(!RuntimeEnabledFeatures::CloseWatcherEnabled());
     const KeyboardEvent* key_event = DynamicTo<KeyboardEvent>(event);
     if (key_event && key_event->key() == "Escape") {
       CHECK(!event.GetEventPath().IsEmpty());
@@ -2151,8 +2152,6 @@ void HTMLElement::HandlePopoverLightDismiss(const Event& event,
 
 void HTMLElement::InvokePopover(Element* invoker) {
   CHECK(invoker);
-  CHECK(RuntimeEnabledFeatures::HTMLPopoverAttributeEnabled(
-      GetDocument().GetExecutionContext()));
   CHECK(HasPopoverAttribute());
   ShowPopoverInternal(invoker, /*exception_state=*/nullptr);
 }
@@ -2270,17 +2269,15 @@ void HTMLElement::HoveredElementChanged(Element* old_element,
   }
 }
 
-void HTMLElement::SetPopoverOwnerSelectMenuElement(
-    HTMLSelectMenuElement* element) {
-  CHECK(RuntimeEnabledFeatures::HTMLSelectMenuElementEnabled());
-  CHECK(RuntimeEnabledFeatures::HTMLPopoverAttributeEnabled(
-      GetDocument().GetExecutionContext()));
+void HTMLElement::SetPopoverOwnerSelectListElement(
+    HTMLSelectListElement* element) {
+  CHECK(RuntimeEnabledFeatures::HTMLSelectListElementEnabled());
   CHECK(HasPopoverAttribute());
-  GetPopoverData()->setOwnerSelectMenuElement(element);
+  GetPopoverData()->setOwnerSelectListElement(element);
 }
 
-HTMLSelectMenuElement* HTMLElement::popoverOwnerSelectMenuElement() const {
-  return GetPopoverData() ? GetPopoverData()->ownerSelectMenuElement()
+HTMLSelectListElement* HTMLElement::popoverOwnerSelectListElement() const {
+  return GetPopoverData() ? GetPopoverData()->ownerSelectListElement()
                           : nullptr;
 }
 
@@ -2970,7 +2967,7 @@ int HTMLElement::OffsetTopOrLeft(bool top) {
   if (!layout_object)
     return 0;
 
-  HashSet<Member<TreeScope>> ancestor_tree_scopes = GetAncestorTreeScopes();
+  HeapHashSet<Member<TreeScope>> ancestor_tree_scopes = GetAncestorTreeScopes();
   LayoutUnit offset;
   Element* offset_parent = this;
   bool new_spec_behavior =
@@ -3007,7 +3004,7 @@ int HTMLElement::offsetTopForBinding() {
 
 int HTMLElement::offsetWidthForBinding() {
   GetDocument().EnsurePaintLocationDataValidForNode(
-      this, DocumentUpdateReason::kJavaScript, CSSPropertyID::kWidth);
+      this, DocumentUpdateReason::kJavaScript);
   int result = 0;
   if (const auto* layout_object = GetLayoutBoxModelObject()) {
     result = AdjustedOffsetForZoom(layout_object->OffsetWidth());
@@ -3020,7 +3017,7 @@ int HTMLElement::offsetWidthForBinding() {
 DISABLE_CFI_PERF
 int HTMLElement::offsetHeightForBinding() {
   GetDocument().EnsurePaintLocationDataValidForNode(
-      this, DocumentUpdateReason::kJavaScript, CSSPropertyID::kHeight);
+      this, DocumentUpdateReason::kJavaScript);
   int result = 0;
   if (const auto* layout_object = GetLayoutBoxModelObject()) {
     result = AdjustedOffsetForZoom(layout_object->OffsetHeight());

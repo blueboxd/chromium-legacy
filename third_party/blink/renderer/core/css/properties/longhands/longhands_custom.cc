@@ -1705,12 +1705,34 @@ const CSSValue* ClipPath::ParseSingleValue(CSSParserTokenRange& range,
   if (range.Peek().Id() == CSSValueID::kNone) {
     return css_parsing_utils::ConsumeIdent(range);
   }
+
   if (cssvalue::CSSURIValue* url =
           css_parsing_utils::ConsumeUrl(range, context)) {
     return url;
   }
-  return css_parsing_utils::ConsumeBasicShape(
+
+  CSSValue* geometry_box = nullptr;
+  if (RuntimeEnabledFeatures::ClipPathGeometryBoxEnabled()) {
+    geometry_box = css_parsing_utils::ConsumeGeometryBox(range);
+  }
+  CSSValue* basic_shape = css_parsing_utils::ConsumeBasicShape(
       range, context, css_parsing_utils::AllowPathValue::kAllow);
+  if (basic_shape && !geometry_box &&
+      RuntimeEnabledFeatures::ClipPathGeometryBoxEnabled()) {
+    geometry_box = css_parsing_utils::ConsumeGeometryBox(range);
+  }
+  if (basic_shape || geometry_box) {
+    CSSValueList* list = CSSValueList::CreateSpaceSeparated();
+    if (basic_shape) {
+      list->Append(*basic_shape);
+    }
+    if (geometry_box) {
+      list->Append(*geometry_box);
+    }
+    return list;
+  }
+
+  return nullptr;
 }
 
 const CSSValue* ClipPath::CSSValueFromComputedStyleInternal(
@@ -1719,8 +1741,16 @@ const CSSValue* ClipPath::CSSValueFromComputedStyleInternal(
     bool allow_visited_style) const {
   if (ClipPathOperation* operation = style.ClipPath()) {
     if (operation->GetType() == ClipPathOperation::kShape) {
-      return ValueForBasicShape(
-          style, To<ShapeClipPathOperation>(operation)->GetBasicShape());
+      CSSValueList* list = CSSValueList::CreateSpaceSeparated();
+      if (auto* shape = DynamicTo<ShapeClipPathOperation>(operation)) {
+        auto* basic_shape = ValueForBasicShape(style, shape->GetBasicShape());
+        list->Append(*basic_shape);
+        GeometryBox geometry_box = shape->GetGeometryBox();
+        if (geometry_box != GeometryBox::kBorderBox) {
+          list->Append(*CSSIdentifierValue::Create(geometry_box));
+        }
+      }
+      return list;
     }
     if (operation->GetType() == ClipPathOperation::kReference) {
       AtomicString url = To<ReferenceClipPathOperation>(operation)->Url();
@@ -2761,14 +2791,8 @@ static bool IsDisplayOutside(CSSValueID id) {
 }
 
 static bool IsDisplayInside(CSSValueID id) {
-  if (id == CSSValueID::kFlow) {
-    return RuntimeEnabledFeatures::CSSDisplayMultipleValuesEnabled();
-  }
-  if ((id >= CSSValueID::kFlowRoot && id <= CSSValueID::kGrid) ||
-      id == CSSValueID::kMath) {
-    return true;
-  }
-  return false;
+  return (id >= CSSValueID::kFlowRoot && id <= CSSValueID::kGrid) ||
+         id == CSSValueID::kMath || id == CSSValueID::kFlow;
 }
 
 static bool IsDisplayBox(CSSValueID id) {
@@ -2785,8 +2809,7 @@ static bool IsDisplayLegacy(CSSValueID id) {
 }
 
 bool IsDisplayListItem(CSSValueID id) {
-  return RuntimeEnabledFeatures::CSSDisplayMultipleValuesEnabled() &&
-         id == CSSValueID::kListItem;
+  return id == CSSValueID::kListItem;
 }
 
 struct DisplayValidationResult {
@@ -2867,8 +2890,7 @@ const CSSValue* ParseDisplayMultipleKeywords(
   CSSValueList* values = CSSValueList::CreateSpaceSeparated();
   values->Append(*first_value);
   values->Append(*css_parsing_utils::ConsumeIdent(range));
-  if (RuntimeEnabledFeatures::CSSDisplayMultipleValuesEnabled() &&
-      !range.AtEnd()) {
+  if (!range.AtEnd()) {
     if (range.Peek().Id() == CSSValueID::kInvalid) {
       return nullptr;
     }
@@ -2886,11 +2908,6 @@ const CSSValue* ParseDisplayMultipleKeywords(
     if (inside != CSSValueID::kFlow && inside != CSSValueID::kFlowRoot) {
       return nullptr;
     }
-  }
-
-  if (!RuntimeEnabledFeatures::CSSDisplayMultipleValuesEnabled() &&
-      result->inside->GetValueID() != CSSValueID::kMath) {
-    return nullptr;
   }
 
   DropDisplayKeywords(*result);
@@ -2983,21 +3000,18 @@ const CSSValue* Display::CSSValueFromComputedStyleInternal(
     return values;
   }
   if (style.Display() == EDisplay::kInlineListItem) {
-    DCHECK(RuntimeEnabledFeatures::CSSDisplayMultipleValuesEnabled());
     CSSValueList* values = CSSValueList::CreateSpaceSeparated();
     values->Append(*CSSIdentifierValue::Create(CSSValueID::kInline));
     values->Append(*CSSIdentifierValue::Create(CSSValueID::kListItem));
     return values;
   }
   if (style.Display() == EDisplay::kFlowRootListItem) {
-    DCHECK(RuntimeEnabledFeatures::CSSDisplayMultipleValuesEnabled());
     CSSValueList* values = CSSValueList::CreateSpaceSeparated();
     values->Append(*CSSIdentifierValue::Create(CSSValueID::kFlowRoot));
     values->Append(*CSSIdentifierValue::Create(CSSValueID::kListItem));
     return values;
   }
   if (style.Display() == EDisplay::kInlineFlowRootListItem) {
-    DCHECK(RuntimeEnabledFeatures::CSSDisplayMultipleValuesEnabled());
     CSSValueList* values = CSSValueList::CreateSpaceSeparated();
     values->Append(*CSSIdentifierValue::Create(CSSValueID::kInline));
     values->Append(*CSSIdentifierValue::Create(CSSValueID::kFlowRoot));
@@ -3048,8 +3062,7 @@ void Display::ApplyValue(StyleResolverState& state,
     CSSValueID inside =
         result->inside ? result->inside->GetValueID() : CSSValueID::kInvalid;
 
-    if (RuntimeEnabledFeatures::CSSDisplayMultipleValuesEnabled() &&
-        result->list_item) {
+    if (result->list_item) {
       const bool is_block =
           outside == CSSValueID::kBlock || !IsValidCSSValueID(outside);
       if (inside != CSSValueID::kFlowRoot) {
@@ -3061,32 +3074,23 @@ void Display::ApplyValue(StyleResolverState& state,
       }
       return;
     }
-    if (RuntimeEnabledFeatures::CSSDisplayMultipleValuesEnabled()) {
-      DCHECK(IsDisplayOutside(outside));
-      DCHECK(IsDisplayInside(inside));
-      const bool is_block = outside == CSSValueID::kBlock;
-      if (inside == CSSValueID::kFlowRoot) {
-        builder.SetDisplay(is_block ? EDisplay::kFlowRoot
-                                    : EDisplay::kInlineBlock);
-      } else if (inside == CSSValueID::kFlow) {
-        builder.SetDisplay(is_block ? EDisplay::kBlock : EDisplay::kInline);
-      } else if (inside == CSSValueID::kTable) {
-        builder.SetDisplay(is_block ? EDisplay::kTable
-                                    : EDisplay::kInlineTable);
-      } else if (inside == CSSValueID::kFlex) {
-        builder.SetDisplay(is_block ? EDisplay::kFlex : EDisplay::kInlineFlex);
-      } else if (inside == CSSValueID::kGrid) {
-        builder.SetDisplay(is_block ? EDisplay::kGrid : EDisplay::kInlineGrid);
-      } else if (inside == CSSValueID::kMath) {
-        builder.SetDisplay(is_block ? EDisplay::kBlockMath : EDisplay::kMath);
-      }
-      return;
-    }
-    DCHECK(inside == CSSValueID::kMath);
-    if (outside == CSSValueID::kBlock) {
-      builder.SetDisplay(EDisplay::kBlockMath);
-    } else {
-      builder.SetDisplay(EDisplay::kMath);
+
+    DCHECK(IsDisplayOutside(outside));
+    DCHECK(IsDisplayInside(inside));
+    const bool is_block = outside == CSSValueID::kBlock;
+    if (inside == CSSValueID::kFlowRoot) {
+      builder.SetDisplay(is_block ? EDisplay::kFlowRoot
+                                  : EDisplay::kInlineBlock);
+    } else if (inside == CSSValueID::kFlow) {
+      builder.SetDisplay(is_block ? EDisplay::kBlock : EDisplay::kInline);
+    } else if (inside == CSSValueID::kTable) {
+      builder.SetDisplay(is_block ? EDisplay::kTable : EDisplay::kInlineTable);
+    } else if (inside == CSSValueID::kFlex) {
+      builder.SetDisplay(is_block ? EDisplay::kFlex : EDisplay::kInlineFlex);
+    } else if (inside == CSSValueID::kGrid) {
+      builder.SetDisplay(is_block ? EDisplay::kGrid : EDisplay::kInlineGrid);
+    } else if (inside == CSSValueID::kMath) {
+      builder.SetDisplay(is_block ? EDisplay::kBlockMath : EDisplay::kMath);
     }
     return;
   }
@@ -5257,21 +5261,8 @@ const CSSValue* MarginRight::CSSValueFromComputedStyleInternal(
     return ComputedStyleUtils::ZoomAdjustedPixelValueForLength(margin_right,
                                                                style);
   }
-  float value;
-  const auto& box = *To<LayoutBox>(layout_object);
-  if (margin_right.IsPercentOrCalc()) {
-    // LayoutBox gives a marginRight() that is the distance between the
-    // right-edge of the child box and the right-edge of the containing box,
-    // when display == EDisplay::kBlock. Let's calculate the absolute value
-    // of the specified margin-right % instead of relying on LayoutBox's
-    // marginRight() value.
-    value = MinimumValueForLength(margin_right,
-                                  box.ContainingBlockLogicalWidthForContent())
-                .ToFloat();
-  } else {
-    value = box.MarginRight().ToFloat();
-  }
-  return ZoomAdjustedPixelValue(value, style);
+  return ZoomAdjustedPixelValue(To<LayoutBox>(layout_object)->MarginRight(),
+                                style);
 }
 
 const CSSValue* MarginTop::ParseSingleValue(
@@ -8539,30 +8530,27 @@ CSSIdentifierValue* ConsumeIdentNoTemplate(CSSParserTokenRange& range,
 }
 }  // namespace
 
-const CSSValue* TransitionAnimationType::ParseSingleValue(
+const CSSValue* TransitionBehavior::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
   CSSValueList* list = css_parsing_utils::ConsumeCommaSeparatedList(
       ConsumeIdentNoTemplate, range, context);
-  if (!list || !css_parsing_utils::IsValidTransitionAnimationTypeList(*list)) {
+  if (!list || !css_parsing_utils::IsValidTransitionBehaviorList(*list)) {
     return nullptr;
   }
   return list;
 }
 
-const CSSValue* TransitionAnimationType::CSSValueFromComputedStyleInternal(
+const CSSValue* TransitionBehavior::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const LayoutObject*,
     bool allow_visited_style) const {
-  return ComputedStyleUtils::ValueForTransitionAnimationType(
-      style.Transitions());
+  return ComputedStyleUtils::ValueForTransitionBehavior(style.Transitions());
 }
 
-const CSSValue* TransitionAnimationType::InitialValue() const {
-  CSSValueList* list = CSSValueList::CreateCommaSeparated();
-  list->Append(*CSSIdentifierValue::Create(CSSValueID::kNormal));
-  return list;
+const CSSValue* TransitionBehavior::InitialValue() const {
+  return CSSIdentifierValue::Create(CSSValueID::kNormal);
 }
 
 const CSSValue* TransitionTimingFunction::ParseSingleValue(
@@ -8811,8 +8799,7 @@ const CSSValue* ViewTimelineInset::CSSValueFromComputedStyleInternal(
 
 const CSSValue* ViewTimelineInset::InitialValue() const {
   CSSValueList* list = CSSValueList::CreateCommaSeparated();
-  list->Append(
-      *CSSNumericLiteralValue::Create(0, CSSPrimitiveValue::UnitType::kPixels));
+  list->Append(*CSSIdentifierValue::Create(CSSValueID::kAuto));
   return list;
 }
 
@@ -10172,14 +10159,6 @@ const CSSValue* WebkitWritingMode::CSSValueFromComputedStyleInternal(
   return CSSIdentifierValue::Create(style.GetWritingMode());
 }
 
-const CSSValue* WhiteSpace::CSSValueFromComputedStyleInternal(
-    const ComputedStyle& style,
-    const LayoutObject*,
-    bool allow_visited_style) const {
-  DCHECK(!RuntimeEnabledFeatures::CSSWhiteSpaceShorthandEnabled());
-  return CSSIdentifierValue::Create(style.WhiteSpace());
-}
-
 // Longhands for `white-space`: `white-space-collapse` and `text-wrap`.
 const CSSValue* WhiteSpaceCollapse::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
@@ -10310,8 +10289,6 @@ void WillChange::ApplyInitial(StyleResolverState& state) const {
   builder.SetWillChangeContents(false);
   builder.SetWillChangeScrollPosition(false);
   builder.SetWillChangeProperties(Vector<CSSPropertyID>());
-  builder.SetSubtreeWillChangeContents(
-      state.ParentStyle()->SubtreeWillChangeContents());
 }
 
 void WillChange::ApplyInherit(StyleResolverState& state) const {
@@ -10320,8 +10297,6 @@ void WillChange::ApplyInherit(StyleResolverState& state) const {
   builder.SetWillChangeScrollPosition(
       state.ParentStyle()->WillChangeScrollPosition());
   builder.SetWillChangeProperties(state.ParentStyle()->WillChangeProperties());
-  builder.SetSubtreeWillChangeContents(
-      state.ParentStyle()->SubtreeWillChangeContents());
 }
 
 void WillChange::ApplyValue(StyleResolverState& state,
@@ -10520,7 +10495,8 @@ const CSSValue* BackgroundRepeatX::CSSValueFromComputedStyleInternal(
     const LayoutObject*,
     bool allow_visited_style) const {
   CSSValueList* list = CSSValueList::CreateCommaSeparated();
-  for (const FillLayer* curr_layer = &style.BackgroundLayers(); curr_layer; curr_layer = curr_layer->Next()) {
+  for (const FillLayer* curr_layer = &style.BackgroundLayers(); curr_layer;
+       curr_layer = curr_layer->Next()) {
     list->Append(*CSSIdentifierValue::Create(curr_layer->RepeatX()));
   }
   return list;
@@ -10531,7 +10507,8 @@ const CSSValue* BackgroundRepeatY::CSSValueFromComputedStyleInternal(
     const LayoutObject*,
     bool allow_visited_style) const {
   CSSValueList* list = CSSValueList::CreateCommaSeparated();
-  for (const FillLayer* curr_layer = &style.BackgroundLayers(); curr_layer; curr_layer = curr_layer->Next()) {
+  for (const FillLayer* curr_layer = &style.BackgroundLayers(); curr_layer;
+       curr_layer = curr_layer->Next()) {
     list->Append(*CSSIdentifierValue::Create(curr_layer->RepeatY()));
   }
   return list;

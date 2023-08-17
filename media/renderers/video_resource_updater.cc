@@ -90,7 +90,8 @@ VideoFrameResourceType ExternalResourceTypeForHardwarePlanes(
         VideoPixelFormatToGfxBufferFormat(format);
     DCHECK(buffer_format.has_value());
     if (frame.shared_image_format_type() == SharedImageFormatType::kLegacy) {
-      si_formats[0] = viz::GetSharedImageFormat(buffer_format.value());
+      si_formats[0] =
+          viz::GetSinglePlaneSharedImageFormat(buffer_format.value());
     } else {
 #if BUILDFLAG(IS_OZONE)
       CHECK_EQ(frame.shared_image_format_type(),
@@ -193,7 +194,7 @@ VideoFrameResourceType ExternalResourceTypeForHardwarePlanes(
       // allowed even for two-texture NV12 frames. This is intended to handle a
       // couple of cases: a) when these textures are connected to the
       // corresponding plane of the contents of an EGLStream using
-      // EGL_NV_stream_consumer_gltexture_yuv; b) when gl::GLImageD3D is used
+      // EGL_NV_stream_consumer_gltexture_yuv; b) when D3DImageBacking is used
       // with GL_TEXTURE_EXTERNAL_OES (note that this case should be able to be
       // migrated to GL_TEXTURE_2D after https://crrev.com/c/3856660).
       DCHECK(target == 0 || target == GL_TEXTURE_EXTERNAL_OES ||

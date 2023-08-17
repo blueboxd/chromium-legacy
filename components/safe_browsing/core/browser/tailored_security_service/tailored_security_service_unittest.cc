@@ -43,11 +43,13 @@ class TestingTailoredSecurityService : public TailoredSecurityService {
   explicit TestingTailoredSecurityService(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       PrefService* prefs)
-      // NOTE: Simply pass null object for IdentityManager.
+      // NOTE: Simply pass null object for IdentityManager and SyncService.
       // TailoredSecurityService's only usage of this object is to fetch access
       // tokens via RequestImpl, and TestingTailoredSecurityService deliberately
       // replaces this flow with TestRequest.
-      : TailoredSecurityService(nullptr, prefs),
+      : TailoredSecurityService(/*identity_manager=*/nullptr,
+                                /*sync_service=*/nullptr,
+                                prefs),
         url_loader_factory_(url_loader_factory) {}
   ~TestingTailoredSecurityService() override = default;
 
@@ -279,7 +281,10 @@ class TailoredSecurityServiceTest : public testing::Test {
         prefs::kEnhancedProtectionEnabledViaTailoredSecurity, false);
     prefs_.registry()->RegisterIntegerPref(
         prefs::kTailoredSecuritySyncFlowLastUserInteractionState,
-        TailoredSecurityUserInteractionState::UNSET);
+        TailoredSecurityRetryState::UNSET);
+    prefs_.registry()->RegisterIntegerPref(
+        prefs::kTailoredSecuritySyncFlowRetryState,
+        TailoredSecurityRetryState::UNSET);
     prefs_.registry()->RegisterTimePref(
         prefs::kTailoredSecuritySyncFlowLastRunTime, base::Time());
 
@@ -517,7 +522,7 @@ TEST_F(TailoredSecurityServiceTest, NotifiesSyncForDisabled) {
 }
 
 TEST_F(TailoredSecurityServiceTest,
-       RetryEnabledTimestampUpdateCallbackSetsOutcomeToUnknown) {
+       RetryEnabledTimestampUpdateCallbackSetsStateToRetryNeeded) {
   scoped_feature_list_.Reset();
   scoped_feature_list_.InitWithFeatures(
       {safe_browsing::kTailoredSecurityRetryForSyncUsers}, {});
@@ -526,19 +531,17 @@ TEST_F(TailoredSecurityServiceTest,
         GURL(kQueryTailoredSecurityServiceUrl));
     tailored_security_service()->SetExpectedTailoredSecurityServiceValue(true);
 
-    EXPECT_NE(prefs()->GetInteger(
-                  prefs::kTailoredSecuritySyncFlowLastUserInteractionState),
-              TailoredSecurityUserInteractionState::UNKNOWN);
+    EXPECT_NE(prefs()->GetInteger(prefs::kTailoredSecuritySyncFlowRetryState),
+              TailoredSecurityRetryState::RETRY_NEEDED);
 
     tailored_security_service()->TailoredSecurityTimestampUpdateCallback();
 
-    EXPECT_EQ(prefs()->GetInteger(
-                  prefs::kTailoredSecuritySyncFlowLastUserInteractionState),
-              TailoredSecurityUserInteractionState::UNKNOWN);
+    EXPECT_EQ(prefs()->GetInteger(prefs::kTailoredSecuritySyncFlowRetryState),
+              TailoredSecurityRetryState::RETRY_NEEDED);
   }
 }
 
-TEST_F(TailoredSecurityServiceTest, RetryDisabledOutcomeRemainsUnset) {
+TEST_F(TailoredSecurityServiceTest, RetryDisabledStateRemainsUnset) {
   scoped_feature_list_.Reset();
   scoped_feature_list_.InitWithFeatures(
       {}, {safe_browsing::kTailoredSecurityRetryForSyncUsers});
@@ -547,15 +550,13 @@ TEST_F(TailoredSecurityServiceTest, RetryDisabledOutcomeRemainsUnset) {
         GURL(kQueryTailoredSecurityServiceUrl));
     tailored_security_service()->SetExpectedTailoredSecurityServiceValue(true);
 
-    EXPECT_EQ(prefs()->GetInteger(
-                  prefs::kTailoredSecuritySyncFlowLastUserInteractionState),
-              TailoredSecurityUserInteractionState::UNSET);
+    EXPECT_EQ(prefs()->GetInteger(prefs::kTailoredSecuritySyncFlowRetryState),
+              TailoredSecurityRetryState::UNSET);
 
     tailored_security_service()->TailoredSecurityTimestampUpdateCallback();
 
-    EXPECT_EQ(prefs()->GetInteger(
-                  prefs::kTailoredSecuritySyncFlowLastUserInteractionState),
-              TailoredSecurityUserInteractionState::UNSET);
+    EXPECT_EQ(prefs()->GetInteger(prefs::kTailoredSecuritySyncFlowRetryState),
+              TailoredSecurityRetryState::UNSET);
   }
 }
 

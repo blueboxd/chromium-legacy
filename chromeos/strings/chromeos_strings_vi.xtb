@@ -15,7 +15,6 @@
 <translation id="1075811647922107217">Kích thước trang</translation>
 <translation id="1082009148392559545">Đang tải trình bảo vệ màn hình xuống</translation>
 <translation id="1094693127011229778">Địa chỉ IP không có sẵn</translation>
-<translation id="1113892970288677790">Chọn các hình ảnh và tác phẩm nghệ thuật tuyển chọn</translation>
 <translation id="1118572504348554005">Chúng tôi có thể chia sẻ ý kiến phản hồi bạn gửi qua biểu mẫu này với các đối tác nhằm khắc phục lỗi và các vấn đề khác mà bạn báo cáo cho chúng tôi. Bạn không nên gửi thông tin nhạy cảm, như mật khẩu chẳng hạn.</translation>
 <translation id="1119447706177454957">Lỗi nội bộ</translation>
 <translation id="1124772482545689468">Người dùng</translation>
@@ -183,6 +182,7 @@
 <translation id="225692081236532131">Trạng thái kích hoạt</translation>
 <translation id="2271469253353559191">Lịch áp dụng chế độ tối</translation>
 <translation id="2276999893457278469">Nội dung trợ giúp hàng đầu</translation>
+<translation id="2279051792571591988">Khôi phục chế độ mặc định</translation>
 <translation id="2287186687001756809">Không có hình ảnh nào. Để thêm ảnh, hãy truy cập <ph name="LINK" /></translation>
 <translation id="2307344026739914387">Dùng cặp khóa hiện tại</translation>
 <translation id="2320295602967756579">Bật giao diện sáng</translation>
@@ -224,6 +224,7 @@
 <translation id="2620436844016719705">Hệ thống</translation>
 <translation id="2638662041295312666">Hình ảnh đăng nhập</translation>
 <translation id="2640549051766135490">Đã chọn album <ph name="TITLE" /> <ph name="DESC" /></translation>
+<translation id="2652403576514495859">bật/tắt tính năng nhập bằng giọng nói</translation>
 <translation id="267442004702508783">làm mới</translation>
 <translation id="268270014981824665">giảm ánh sáng bàn phím</translation>
 <translation id="2712812801627182647">Khoá xác thực TLS</translation>
@@ -331,7 +332,6 @@
 <translation id="361575905210396100">Cảm ơn bạn đã phản hồi</translation>
 <translation id="3632579075709132555">Bật/tắt Màn hình bảo vệ quyền riêng tư</translation>
 <translation id="3651050199673793219">Chọn đơn vị nhiệt độ</translation>
-<translation id="3663574643422533538">Chọn hình minh hoạ dành riêng cho <ph name="PRODUCT_NAME" /></translation>
 <translation id="3668449597372804501">Hình nền Luồng đám mây</translation>
 <translation id="3689839747745352263">Kiểm tra <ph name="TEST_NAME" /></translation>
 <translation id="370665806235115550">Đang tải...</translation>
@@ -457,7 +457,7 @@
 <translation id="463791356324567266">Đang hủy quá trình quét...</translation>
 <translation id="4646949265910132906">Kết nối Wi-Fi an toàn</translation>
 <translation id="4650608062294027130">Nút Shift phải</translation>
-<translation id="4654549501020883054">Thay đổi hàng ngày</translation>
+<translation id="4654549501020883054">Thay đổi hằng ngày</translation>
 <translation id="4665014895760275686">Nhà sản xuất</translation>
 <translation id="467510802200863975">Mật khẩu không khớp</translation>
 <translation id="467715984478005772">Tin là có tường lửa</translation>
@@ -589,6 +589,7 @@
 <translation id="5620281292257375798">Chỉ sử dụng nội bộ</translation>
 <translation id="5649768706273821470">Nghe</translation>
 <translation id="5655283760733841251">Tăng độ sáng đèn bàn phím</translation>
+<translation id="5655296450510165335">Đăng ký thiết bị</translation>
 <translation id="5655776422854483175">Không có lệnh in nào</translation>
 <translation id="5659593005791499971">Email</translation>
 <translation id="5662240986744577912">bật/tắt màn hình bảo vệ quyền riêng tư</translation>
@@ -644,6 +645,7 @@
 <translation id="6061772781719867950">Yêu cầu HTTP không thành công</translation>
 <translation id="6073292342939316679">giảm độ sáng đèn bàn phím</translation>
 <translation id="6075872808778243331">(Android) Độ trễ của yêu cầu HTTP</translation>
+<translation id="6078323886959318429">Thêm lối tắt</translation>
 <translation id="6104112872696127344">Đã hủy quá trình quét</translation>
 <translation id="6106186594183574873">Để hoàn tất, hãy nhập mật khẩu cũ của bạn</translation>
 <translation id="6108689792487843350">Không thể kết nối với cổng</translation>
@@ -799,10 +801,10 @@
 <translation id="7297226631177386107">Không thể kết nối với các trang web HTTPS qua tường lửa</translation>
 <translation id="7297726121602187087">Xanh lục đậm</translation>
 <translation id="7302860742311162920">ICCID</translation>
-<translation id="7305236594389852547">bật/tắt tính năng nhập bằng giọng nói</translation>
 <translation id="7305884605064981971">EDGE</translation>
 <translation id="7308203371573257315">Hỏi chuyên gia trong diễn đàn trợ giúp Chromebook</translation>
 <translation id="7311368985037279727">màu bàn phím</translation>
+<translation id="7317831949569936035">Đăng ký học</translation>
 <translation id="7319430975418800333">A3</translation>
 <translation id="7343581795491695942"><ph name="QUERY_TEXT" />; <ph name="RESULT_TEXT" />; Hãy nhấn phím Tìm kiếm + Phím cách để xem kết quả trong Google Tìm kiếm.</translation>
 <translation id="7343649194310845056">Thiết bị mạng</translation>
@@ -814,6 +816,7 @@
 <translation id="7397270852490618635">Tắt giao diện sáng</translation>
 <translation id="741244894080940828">chuyển đổi</translation>
 <translation id="7415801143053185905">Yêu cầu HTTP có độ trễ rất cao</translation>
+<translation id="7425178841057519191">{NUM_ROOL_APPS,plural,offset:2 =1{Quản trị viên của bạn đã đặt <ph name="APP_NAME_1" /> ở chế độ tự khởi động mỗi khi bạn đăng nhập.}=2{Quản trị viên của bạn đã đặt <ph name="APP_NAME_1" /> và <ph name="APP_NAME_2" /> ở chế độ tự khởi động mỗi khi bạn đăng nhập.}=3{Quản trị viên của bạn đã đặt <ph name="APP_NAME_1" />, <ph name="APP_NAME_2" /> và <ph name="APP_NAME_3" /> ở chế độ tự khởi động mỗi khi bạn đăng nhập.}other{Quản trị viên của bạn đã đặt <ph name="APP_NAME_1" />, <ph name="APP_NAME_2" /> và # ứng dụng khác ở chế độ tự khởi động mỗi khi bạn đăng nhập.}}</translation>
 <translation id="7427315641433634153">MSCHAP</translation>
 <translation id="7458970041932198923">Vui lòng kết nối mạng và tải lại trang để xem và đặt hình đại diện.</translation>
 <translation id="7469648432129124067">Đã phát hiện thấy cổng</translation>
@@ -1012,6 +1015,7 @@
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8987565828374052507">{NUMBER_OF_PAGES,plural, =0{Quét}=1{Quét trang {NUMBER_OF_PAGES}}other{Quét trang {NUMBER_OF_PAGES}}}</translation>
 <translation id="8997710128084572139">Thiết bị còn <ph name="BATTERY_PERCENTAGE" />% pin.</translation>
+<translation id="8998156756248178381">{NUM_ROOL_APPS,plural, =1{<ph name="APP_NAME_1" /> đã tự khởi động}other{# ứng dụng đã tự khởi động}}</translation>
 <translation id="8998289560386111590">Không hoạt động trên thiết bị của bạn</translation>
 <translation id="9003704114456258138">Tần số</translation>
 <translation id="9024331582947483881">toàn màn hình</translation>

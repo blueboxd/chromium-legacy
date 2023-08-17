@@ -35,7 +35,6 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 
-import org.chromium.base.Callback;
 import org.chromium.base.test.UiThreadTest;
 import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.CommandLineFlags;
@@ -98,7 +97,7 @@ public class BookmarkToolbarTest extends BlankUiTestActivityTestCase {
     @Mock
     BookmarkOpener mBookmarkOpener;
     @Mock
-    Callback<BookmarkId> mOpenFolderCallback;
+    Runnable mNavigateBackRunnable;
 
     private Activity mActivity;
     private WindowAndroid mWindowAndroid;
@@ -133,7 +132,7 @@ public class BookmarkToolbarTest extends BlankUiTestActivityTestCase {
                     .thenReturn(Collections.singletonList(BOOKMARK_ID_ROOT));
 
             BookmarkItem rootBookmarkItem = new BookmarkItem(
-                    BOOKMARK_ID_ROOT, "root", null, false, null, false, false, 0, false);
+                    BOOKMARK_ID_ROOT, "root", null, false, null, false, false, 0, false, 0);
             when(mBookmarkModel.getBookmarkById(BOOKMARK_ID_ROOT)).thenReturn(rootBookmarkItem);
 
             mockBookmarkItem(BOOKMARK_ID_FOLDER, "folder", null, true, BOOKMARK_ID_ROOT, true);
@@ -170,13 +169,13 @@ public class BookmarkToolbarTest extends BlankUiTestActivityTestCase {
         mBookmarkToolbar.setSelectionDelegate(mSelectionDelegate);
         mBookmarkToolbar.setBookmarkUiMode(BookmarkUiMode.FOLDER);
         mBookmarkToolbar.setIsDialogUi(true);
-        mBookmarkToolbar.setOpenFolderCallback(mOpenFolderCallback);
+        mBookmarkToolbar.setNavigateBackRunnable(mNavigateBackRunnable);
     }
 
     private void mockBookmarkItem(BookmarkId bookmarkId, String title, String url, boolean isFolder,
             BookmarkId parent, boolean isEditable) {
         BookmarkItem bookmarkItem = new BookmarkItem(
-                bookmarkId, title, new GURL(url), isFolder, parent, isEditable, false, 0, false);
+                bookmarkId, title, new GURL(url), isFolder, parent, isEditable, false, 0, false, 0);
         when(mBookmarkModel.getBookmarkById(bookmarkId)).thenReturn(bookmarkItem);
     }
 
@@ -213,7 +212,7 @@ public class BookmarkToolbarTest extends BlankUiTestActivityTestCase {
         initializeNormal();
         mBookmarkToolbar.setCurrentFolder(BOOKMARK_ID_FOLDER);
         mBookmarkToolbar.onNavigationBack();
-        Mockito.verify(mOpenFolderCallback).onResult(BOOKMARK_ID_ROOT);
+        Mockito.verify(mNavigateBackRunnable).run();
     }
 
     @Test

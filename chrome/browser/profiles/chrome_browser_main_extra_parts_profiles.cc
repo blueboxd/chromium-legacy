@@ -88,6 +88,7 @@
 #include "chrome/browser/media_galleries/media_galleries_preferences_factory.h"
 #include "chrome/browser/metrics/variations/google_groups_updater_service_factory.h"
 #include "chrome/browser/navigation_predictor/navigation_predictor_keyed_service_factory.h"
+#include "chrome/browser/navigation_predictor/preloading_model_keyed_service_factory.h"
 #include "chrome/browser/net/dns_probe_service_factory.h"
 #include "chrome/browser/net/profile_network_context_service_factory.h"
 #include "chrome/browser/notifications/metrics/notification_metrics_logger_factory.h"
@@ -116,6 +117,7 @@
 #include "chrome/browser/permissions/prediction_service_factory.h"
 #include "chrome/browser/persisted_state_db/session_proto_db_factory.h"
 #include "chrome/browser/plugins/plugin_prefs_factory.h"
+#include "chrome/browser/plus_addresses/plus_address_service_factory.h"
 #include "chrome/browser/policy/cloud/user_cloud_policy_invalidator_factory.h"
 #include "chrome/browser/predictors/autocomplete_action_predictor_factory.h"
 #include "chrome/browser/predictors/loading_predictor_factory.h"
@@ -141,6 +143,7 @@
 #include "chrome/browser/safe_browsing/tailored_security/tailored_security_service_factory.h"
 #include "chrome/browser/safe_browsing/url_lookup_service_factory.h"
 #include "chrome/browser/safe_browsing/verdict_cache_manager_factory.h"
+#include "chrome/browser/search_engine_choice/search_engine_choice_service_factory.h"
 #include "chrome/browser/search_engines/template_url_fetcher_factory.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/search_provider_logos/logo_service_factory.h"
@@ -211,6 +214,7 @@
 #include "components/safe_browsing/buildflags.h"
 #include "components/services/screen_ai/buildflags/buildflags.h"
 #include "components/signin/public/base/signin_buildflags.h"
+#include "components/signin/public/base/signin_switches.h"
 #include "components/site_engagement/content/site_engagement_service.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
 #include "components/supervised_user/core/common/buildflags.h"
@@ -223,6 +227,7 @@
 #if BUILDFLAG(IS_ANDROID)
 #include "chrome/browser/android/auxiliary_search/auxiliary_search_provider.h"
 #include "chrome/browser/android/metrics/android_session_durations_service_factory.h"
+#include "chrome/browser/android/persisted_tab_data/leveldb_persisted_tab_data_storage_android_factory.h"
 #include "chrome/browser/android/reading_list/reading_list_manager_factory.h"
 #include "chrome/browser/android/search_permissions/search_permissions_service.h"
 #include "chrome/browser/android/thin_webview/chrome_thin_webview_initializer.h"
@@ -561,7 +566,7 @@ void ChromeBrowserMainExtraPartsProfiles::
   autofill::AutofillLogRouterFactory::GetInstance();
   autofill::AutofillOfferManagerFactory::GetInstance();
   autofill::AutofillOptimizationGuideFactory::GetInstance();
-  autofill::IBANManagerFactory::GetInstance();
+  autofill::IbanManagerFactory::GetInstance();
   autofill::MerchantPromoCodeManagerFactory::GetInstance();
   autofill::PersonalDataManagerFactory::GetInstance();
 #if BUILDFLAG(IS_ANDROID)
@@ -750,6 +755,9 @@ void ChromeBrowserMainExtraPartsProfiles::
 #endif
   KAnonymityServiceFactory::GetInstance();
   LanguageModelManagerFactory::GetInstance();
+#if BUILDFLAG(IS_ANDROID)
+  LevelDBPersistedTabDataStorageAndroidFactory::GetInstance();
+#endif
   login_detection::LoginDetectionKeyedServiceFactory::GetInstance();
 #if !BUILDFLAG(IS_ANDROID)
   LoginUIServiceFactory::GetInstance();
@@ -798,6 +806,7 @@ void ChromeBrowserMainExtraPartsProfiles::
 #endif
   ModelTypeStoreServiceFactory::GetInstance();
   NavigationPredictorKeyedServiceFactory::GetInstance();
+  PreloadingModelKeyedServiceFactory::GetInstance();
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   NearbySharingServiceFactory::GetInstance();
 #endif
@@ -874,6 +883,7 @@ void ChromeBrowserMainExtraPartsProfiles::
   PluginInfoHostImpl::EnsureFactoryBuilt();
   PluginPrefsFactory::GetInstance();
 #endif
+  PlusAddressServiceFactory::GetInstance();
 #if BUILDFLAG(IS_CHROMEOS)
   policy::DlpDownloadObserverFactory::GetInstance();
   policy::DlpRulesManagerFactory::GetInstance();
@@ -986,6 +996,13 @@ void ChromeBrowserMainExtraPartsProfiles::
   SCTReportingServiceFactory::GetInstance();
 #if BUILDFLAG(IS_ANDROID)
   search_resumption_module::StartSuggestServiceFactory::GetInstance();
+#endif
+#if BUILDFLAG(ENABLE_SEARCH_ENGINE_CHOICE)
+  if (base::FeatureList::IsEnabled(switches::kSearchEngineChoice)) {
+    SearchEngineChoiceServiceFactory::GetInstance();
+  }
+#endif
+#if BUILDFLAG(IS_ANDROID)
   SearchPermissionsService::Factory::GetInstance();
 #endif
   SearchPrefetchServiceFactory::GetInstance();

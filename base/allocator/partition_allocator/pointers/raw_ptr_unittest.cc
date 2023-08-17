@@ -7,6 +7,7 @@
 #include <climits>
 #include <cstddef>
 #include <cstdint>
+#include <memory>
 #include <string>
 #include <thread>
 #include <type_traits>
@@ -134,6 +135,9 @@ static_assert([]() constexpr {
     r->i += 1;                                  // operator->()
     [[maybe_unused]] Int* i2 = r;               // operator T*()
     [[maybe_unused]] IntBase* i3 = r;           // operator Convertible*()
+
+    [[maybe_unused]] Int** i4 = &r.AsEphemeralRawAddr();
+    [[maybe_unused]] Int*& i5 = r.AsEphemeralRawAddr();
 
     Int* array = new Int[3]();
     {
@@ -1501,6 +1505,48 @@ TEST_F(RawPtrTest, ToAddressGivesBackRawAddress) {
   EXPECT_EQ(base::to_address(raw), base::to_address(miracle));
 }
 
+void InOutParamFuncWithPointer(int* in, int** out) {
+  *out = in;
+}
+
+TEST_F(RawPtrTest, EphemeralRawAddrPointerPointer) {
+  int v1 = 123;
+  int v2 = 456;
+  raw_ptr<int> ptr = &v1;
+  // Pointer pointer should point to a pointer other than one inside raw_ptr.
+  EXPECT_NE(&ptr.AsEphemeralRawAddr(),
+            reinterpret_cast<int**>(std::addressof(ptr)));
+  // But inner pointer should point to the same address.
+  EXPECT_EQ(*&ptr.AsEphemeralRawAddr(), &v1);
+
+  // Inner pointer can be rewritten via the pointer pointer.
+  *&ptr.AsEphemeralRawAddr() = &v2;
+  EXPECT_EQ(ptr.get(), &v2);
+  InOutParamFuncWithPointer(&v1, &ptr.AsEphemeralRawAddr());
+  EXPECT_EQ(ptr.get(), &v1);
+}
+
+void InOutParamFuncWithReference(int* in, int*& out) {
+  out = in;
+}
+
+TEST_F(RawPtrTest, EphemeralRawAddrPointerReference) {
+  int v1 = 123;
+  int v2 = 456;
+  raw_ptr<int> ptr = &v1;
+  // Pointer reference should refer to a pointer other than one inside raw_ptr.
+  EXPECT_NE(&static_cast<int*&>(ptr.AsEphemeralRawAddr()),
+            reinterpret_cast<int**>(std::addressof(ptr)));
+  // But inner pointer should point to the same address.
+  EXPECT_EQ(static_cast<int*&>(ptr.AsEphemeralRawAddr()), &v1);
+
+  // Inner pointer can be rewritten via the pointer pointer.
+  static_cast<int*&>(ptr.AsEphemeralRawAddr()) = &v2;
+  EXPECT_EQ(ptr.get(), &v2);
+  InOutParamFuncWithReference(&v1, ptr.AsEphemeralRawAddr());
+  EXPECT_EQ(ptr.get(), &v1);
+}
+
 }  // namespace
 
 namespace base::internal {
@@ -1524,11 +1570,12 @@ class BackupRefPtrTest : public testing::Test {
       partition_alloc::PartitionAllocator(partition_alloc::PartitionOptions{
           .backup_ref_ptr =
               partition_alloc::PartitionOptions::BackupRefPtr::kEnabled,
-          .memory_tagging =
-              base::CPU::GetInstanceNoAllocation().has_mte()
-                  ? partition_alloc::PartitionOptions::MemoryTagging::kEnabled
-                  : partition_alloc::PartitionOptions::MemoryTagging::
-                        kDisabled});
+          .memory_tagging = {.enabled =
+                                 base::CPU::GetInstanceNoAllocation().has_mte()
+                                     ? partition_alloc::PartitionOptions::
+                                           MemoryTagging::kEnabled
+                                     : partition_alloc::PartitionOptions::
+                                           MemoryTagging::kDisabled}});
 };
 
 TEST_F(BackupRefPtrTest, Basic) {
@@ -2224,7 +2271,9 @@ namespace {
   F(safely_unwrap_for_extraction)     \
   F(unsafely_unwrap_for_comparison)   \
   F(advance)                          \
-  F(duplicate)
+  F(duplicate)                        \
+  F(wrap_ptr_for_duplication)         \
+  F(unsafely_unwrap_for_duplication)
 
 // Can't use gMock to count the number of invocations because
 // gMock itself triggers raw_ptr<T> operations.
@@ -2339,6 +2388,19 @@ TEST_F(HookableRawPtrImplTest, Duplicate) {
     delete ptr;
   }
   EXPECT_EQ(CountingHooks::Get()->duplicate_count, 1u);
+}
+
+TEST_F(HookableRawPtrImplTest, CrossKindCopyConstruction) {
+  CountingHooks::Get()->ResetCounts();
+  {
+    int* ptr = new int;
+    raw_ptr<int> non_dangling_ptr = ptr;
+    raw_ptr<int, RawPtrTraits::kMayDangle> dangling_ptr(non_dangling_ptr);
+    delete ptr;
+  }
+  EXPECT_EQ(CountingHooks::Get()->duplicate_count, 0u);
+  EXPECT_EQ(CountingHooks::Get()->wrap_ptr_for_duplication_count, 1u);
+  EXPECT_EQ(CountingHooks::Get()->unsafely_unwrap_for_duplication_count, 1u);
 }
 
 #endif  // BUILDFLAG(USE_HOOKABLE_RAW_PTR)

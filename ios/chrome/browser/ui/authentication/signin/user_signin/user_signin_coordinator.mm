@@ -32,10 +32,6 @@
 #import "ios/chrome/browser/ui/authentication/unified_consent/unified_consent_coordinator.h"
 #import "ios/chrome/browser/unified_consent/unified_consent_service_factory.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 using signin_metrics::AccessPoint;
 using signin_metrics::PromoAction;
 
@@ -237,11 +233,6 @@ using signin_metrics::PromoAction;
   [super stop];
   [self.logger disconnect];
   _logger = nil;
-}
-
-- (void)dealloc {
-  // TODO(crbug.com/1454777)
-  DUMP_WILL_BE_CHECK(!self.logger);
 }
 
 #pragma mark - UnifiedConsentCoordinatorDelegate

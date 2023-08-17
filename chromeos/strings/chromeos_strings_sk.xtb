@@ -15,7 +15,6 @@
 <translation id="1075811647922107217">Veľkosť stránky</translation>
 <translation id="1082009148392559545">Sťahuje sa šetrič obrazovky</translation>
 <translation id="1094693127011229778">Adresa IP nie je k dispozícii</translation>
-<translation id="1113892970288677790">Vyberte plagáty a obrázky</translation>
 <translation id="1118572504348554005">Spätnú väzbu odoslanú prostredníctvom tohto formulára môžeme zdieľať s našimi partnermi na účely opravy chýb a riešenia ďalších problémov, ktoré nám hlásite. Neuvádzajte citlivé údaje, ako sú heslá.</translation>
 <translation id="1119447706177454957">Interná chyba</translation>
 <translation id="1124772482545689468">Používateľ</translation>
@@ -183,6 +182,7 @@
 <translation id="225692081236532131">Stav aktivácie</translation>
 <translation id="2271469253353559191">Plán tmavého režimu</translation>
 <translation id="2276999893457278469">Najlepší pomocný obsah</translation>
+<translation id="2279051792571591988">Obnoviť predvolené hodnoty</translation>
 <translation id="2287186687001756809">K dispozícii nie je žiadny obrázok. Ak chcete pridať fotky, prejdite na <ph name="LINK" />.</translation>
 <translation id="2307344026739914387">Použitie aktuálneho páru kľúčov</translation>
 <translation id="2320295602967756579">Zapnúť svetlý motív</translation>
@@ -224,6 +224,7 @@
 <translation id="2620436844016719705">Systém</translation>
 <translation id="2638662041295312666">Obrázok na prihlasovacej obrazovke</translation>
 <translation id="2640549051766135490">Album <ph name="TITLE" /> <ph name="DESC" /> bol vybraný</translation>
+<translation id="2652403576514495859">zapnúť alebo prepnúť diktovanie</translation>
 <translation id="267442004702508783">obnovenie</translation>
 <translation id="268270014981824665">stmavenie klávesnice</translation>
 <translation id="2712812801627182647">Overovací kľúč TLS</translation>
@@ -331,7 +332,6 @@
 <translation id="361575905210396100">Ďakujeme vám za spätnú väzbu</translation>
 <translation id="3632579075709132555">Prepínanie zámky na ochranu súkromia</translation>
 <translation id="3651050199673793219">Výber jednotky teploty</translation>
-<translation id="3663574643422533538">Vyberte exkluzívne video t pre zariadenie <ph name="PRODUCT_NAME" /></translation>
 <translation id="3668449597372804501">Tapeta s plynúcimi oblakmi</translation>
 <translation id="3689839747745352263">Test <ph name="TEST_NAME" /></translation>
 <translation id="370665806235115550">Načítava sa...</translation>
@@ -589,6 +589,7 @@
 <translation id="5620281292257375798">Iba interné</translation>
 <translation id="5649768706273821470">Počúvať</translation>
 <translation id="5655283760733841251">Zvýšenie jasu obrazovky</translation>
+<translation id="5655296450510165335">Registrácia zariadenia</translation>
 <translation id="5655776422854483175">Žiadne tlačové úlohy</translation>
 <translation id="5659593005791499971">E-mail</translation>
 <translation id="5662240986744577912">prepnutie zámky na ochranu súkromia</translation>
@@ -644,6 +645,7 @@
 <translation id="6061772781719867950">Neúspešné požiadavky HTTP</translation>
 <translation id="6073292342939316679">zníženie jasu klávesnice</translation>
 <translation id="6075872808778243331">(Android) Latencia protokolu HTTP</translation>
+<translation id="6078323886959318429">Pridať odkaz</translation>
 <translation id="6104112872696127344">Skenovanie bolo zrušené</translation>
 <translation id="6106186594183574873">Ak chcete zmenu dokončiť, zadajte staré heslo</translation>
 <translation id="6108689792487843350">Brána je nedostupná</translation>
@@ -799,10 +801,10 @@
 <translation id="7297226631177386107">Prostredníctvom brány firewall sa nedá pripojiť k webom HTTPS</translation>
 <translation id="7297726121602187087">Tmavozelená</translation>
 <translation id="7302860742311162920">ICCID</translation>
-<translation id="7305236594389852547">prepnutie diktovania</translation>
 <translation id="7305884605064981971">EDGE</translation>
 <translation id="7308203371573257315">Spýtajte sa odborníkov vo fóre pomoci pre Chromebooky</translation>
 <translation id="7311368985037279727">farba klávesnice</translation>
+<translation id="7317831949569936035">Zápis do školy</translation>
 <translation id="7319430975418800333">A3</translation>
 <translation id="7343581795491695942"><ph name="QUERY_TEXT" />; <ph name="RESULT_TEXT" />; stlačením klávesa vyhľadávania a medzerníka zobrazíte výsledok vo Vyhľadávaní Google.</translation>
 <translation id="7343649194310845056">Sieťové zariadenia</translation>
@@ -814,6 +816,7 @@
 <translation id="7397270852490618635">Vypnúť svetlý motív</translation>
 <translation id="741244894080940828">prevod</translation>
 <translation id="7415801143053185905">Veľmi vysoká latencia protokolu HTTPS</translation>
+<translation id="7425178841057519191">{NUM_ROOL_APPS,plural,offset:2 =1{Váš správca nastavil aplikáciu <ph name="APP_NAME_1" /> tak, aby sa automaticky spúšťala vždy, keď sa prihlásite.}=2{Váš správca nastavil aplikácie <ph name="APP_NAME_1" /> a <ph name="APP_NAME_2" /> tak, aby sa automaticky spúšťali vždy, keď sa prihlásite.}=3{Váš správca nastavil aplikácie <ph name="APP_NAME_1" />, <ph name="APP_NAME_2" /> a <ph name="APP_NAME_3" /> tak, aby sa automaticky spúšťali vždy, keď sa prihlásite.}few{Váš správca nastavil <ph name="APP_NAME_1" />, <ph name="APP_NAME_2" /> a # ďalšie aplikácie tak, aby sa automaticky spúšťali vždy, keď sa prihlásite.}many{Your administrator has set <ph name="APP_NAME_1" />, <ph name="APP_NAME_2" /> and # other apps to start automatically every time you log in.}other{Váš správca nastavil <ph name="APP_NAME_1" />, <ph name="APP_NAME_2" /> a # ďalších aplikácií tak, aby sa automaticky spúšťali vždy, keď sa prihlásite.}}</translation>
 <translation id="7427315641433634153">MSCHAP</translation>
 <translation id="7458970041932198923">Ak chcete zobraziť a nastaviť avatary, pripojte sa k sieti a znova načítajte stránku.</translation>
 <translation id="7469648432129124067">Bol rozpoznaný portál</translation>
@@ -1012,6 +1015,7 @@
 <translation id="8983038754672563810">HSPA</translation>
 <translation id="8987565828374052507">{NUMBER_OF_PAGES,plural, =0{Skenovať}=1{Skenovať {NUMBER_OF_PAGES} stránku}few{Skenovať {NUMBER_OF_PAGES} stránky}many{Skenovať {NUMBER_OF_PAGES} stránky}other{Skenovať {NUMBER_OF_PAGES} stránok}}</translation>
 <translation id="8997710128084572139">Úroveň batérie zariadenia je <ph name="BATTERY_PERCENTAGE" /> %.</translation>
+<translation id="8998156756248178381">{NUM_ROOL_APPS,plural, =1{Aplikácia <ph name="APP_NAME_1" /> bola spustená automaticky}few{# aplikácie boli spustené automaticky}many{# apps were started automatically}other{# aplikácií bolo spustených automaticky}}</translation>
 <translation id="8998289560386111590">V zariadení nie je k dispozícii</translation>
 <translation id="9003704114456258138">Frekvencia</translation>
 <translation id="9024331582947483881">celá obrazovka</translation>

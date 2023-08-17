@@ -6,6 +6,7 @@ import './history_clusters_shared_style.css.js';
 import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.js';
 
 import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
+import {EventTracker} from 'chrome://resources/js/event_tracker.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {getTemplate} from './horizontal_carousel.html.js';
@@ -14,8 +15,6 @@ import {getTemplate} from './horizontal_carousel.html.js';
  * @fileoverview This file provides a custom element displaying a horizontal
  * carousel for the carousel elements.
  */
-
-const SCROLL_INTERVAL = 80;
 
 declare global {
   interface HTMLElementTagNameMap {
@@ -63,6 +62,7 @@ export class HorizontalCarouselElement extends HorizontalCarouselElementBase {
   //============================================================================
 
   private resizeObserver_: ResizeObserver|null = null;
+  private eventTracker_: EventTracker = new EventTracker();
   private showBackButton_: boolean;
   private showForwardButton_: boolean;
 
@@ -77,6 +77,7 @@ export class HorizontalCarouselElement extends HorizontalCarouselElementBase {
     });
 
     this.resizeObserver_.observe(this.$.carouselContainer);
+    this.eventTracker_.add(this, 'keyup', this.onTabFocus_.bind(this));
   }
 
   override disconnectedCallback() {
@@ -91,21 +92,30 @@ export class HorizontalCarouselElement extends HorizontalCarouselElementBase {
   //============================================================================
 
   private onCarouselBackClick_() {
-    this.$.carouselContainer.scrollLeft -= SCROLL_INTERVAL;
-    if (this.$.carouselContainer.scrollLeft <= 0) {
-      this.showBackButton_ = false;
-    }
+    const targetPosition = this.calculateTargetPosition_(-1);
+    this.$.carouselContainer.scrollTo(
+        {left: targetPosition, behavior: 'smooth'});
+    this.showBackButton_ = targetPosition > 0;
     this.showForwardButton_ = true;
   }
 
   private onCarouselForwardClick_() {
-    this.$.carouselContainer.scrollLeft += SCROLL_INTERVAL;
-    if (Math.round(this.$.carouselContainer.scrollLeft) +
-            this.$.carouselContainer.clientWidth >=
-        this.$.carouselContainer.scrollWidth) {
-      this.showForwardButton_ = false;
-    }
+    const targetPosition = this.calculateTargetPosition_(1);
+    this.$.carouselContainer.scrollTo(
+        {left: targetPosition, behavior: 'smooth'});
+    this.showForwardButton_ =
+        targetPosition + this.$.carouselContainer.clientWidth <
+        this.$.carouselContainer.scrollWidth;
     this.showBackButton_ = true;
+  }
+
+  private onTabFocus_(event: KeyboardEvent) {
+    const element = event.target as HTMLElement;
+    if (event.code === 'Tab') {
+      // -2px as offsetLeft includes padding
+      this.$.carouselContainer.scrollTo(
+          {left: element.offsetLeft - 2, behavior: 'smooth'});
+    }
   }
 
   //============================================================================
@@ -120,11 +130,21 @@ export class HorizontalCarouselElement extends HorizontalCarouselElementBase {
       this.showForwardButton_ = true;
     } else {
       // On expanding the window, the back and forward buttons should disappear.
-      if (this.$.carouselContainer.scrollLeft <= 0) {
-        this.showBackButton_ = false;
-      }
+      this.showBackButton_ = this.$.carouselContainer.scrollLeft > 0;
       this.showForwardButton_ = false;
     }
+  }
+
+  private calculateTargetPosition_(direction: number) {
+    const offset = this.$.carouselContainer.clientWidth / 2 * direction;
+    const targetPosition =
+        Math.floor(this.$.carouselContainer.scrollLeft + offset);
+    return Math.max(
+        0,
+        Math.min(
+            targetPosition,
+            this.$.carouselContainer.scrollWidth -
+                this.$.carouselContainer.clientWidth));
   }
 }
 

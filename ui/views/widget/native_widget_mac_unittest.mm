@@ -6,11 +6,11 @@
 
 #import <Cocoa/Cocoa.h>
 
+#import "base/apple/scoped_objc_class_swizzler.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
 #import "base/mac/foundation_util.h"
 #include "base/mac/mac_util.h"
-#import "base/mac/scoped_objc_class_swizzler.h"
 #include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/sys_string_conversions.h"
@@ -45,10 +45,6 @@
 #include "ui/views/widget/native_widget_private.h"
 #include "ui/views/widget/widget_interactive_uitest_utils.h"
 #include "ui/views/window/dialog_delegate.h"
-
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
 
 namespace {
 // "{}" in base64encode, to create some dummy restoration data.
@@ -1219,7 +1215,7 @@ class ScopedSwizzleWaiter {
 
   static ScopedSwizzleWaiter* instance_;
 
-  base::mac::ScopedObjCClassSwizzler swizzler_;
+  base::apple::ScopedObjCClassSwizzler swizzler_;
   raw_ptr<base::RunLoop> run_loop_ = nullptr;
   bool method_called_ = false;
 };

@@ -8,6 +8,7 @@
 import {BrowserUtil} from '../../common/browser_util.js';
 import {constants} from '../../common/constants.js';
 import {LocalStorage} from '../../common/local_storage.js';
+import {StringUtil} from '../../common/string_util.js';
 import {BackgroundBridge} from '../common/background_bridge.js';
 import {BrailleCommandData} from '../common/braille/braille_command_data.js';
 import {BridgeConstants} from '../common/bridge_constants.js';
@@ -15,19 +16,18 @@ import {BridgeHelper} from '../common/bridge_helper.js';
 import {Command, CommandStore} from '../common/command_store.js';
 import {EventSourceType} from '../common/event_source_type.js';
 import {GestureCommandData} from '../common/gesture_command_data.js';
-import {KeyMap} from '../common/key_map.js';
+import {KeyBinding, KeyMap} from '../common/key_map.js';
 import {KeyUtil} from '../common/key_util.js';
 import {LocaleOutputHelper} from '../common/locale_output_helper.js';
 import {Msgs} from '../common/msgs.js';
 import {PanelCommand, PanelCommandType} from '../common/panel_command.js';
-import {ALL_PANEL_MENU_NODE_DATA, PanelNodeMenuData, PanelNodeMenuId, PanelNodeMenuItemData} from '../common/panel_menu_data.js';
+import {ALL_PANEL_MENU_NODE_DATA} from '../common/panel_menu_data.js';
 import {SettingsManager} from '../common/settings_manager.js';
 import {QueueMode} from '../common/tts_types.js';
 
 import {ISearchUI} from './i_search_ui.js';
 import {MenuManager} from './menu_manager.js';
 import {PanelInterface} from './panel_interface.js';
-import {PanelMenu, PanelNodeMenu, PanelSearchMenu} from './panel_menu.js';
 import {PanelMode, PanelModeInfo} from './panel_mode.js';
 
 const $ = (id) => document.getElementById(id);
@@ -341,9 +341,9 @@ export class Panel extends PanelInterface {
       // Get the key map.
       const keymap = KeyMap.get();
 
-      // Make a copy of the key bindings, get the localized title of each
-      // command, and then sort them.
-      const sortedBindings = keymap.bindings().slice();
+      // Get the key bindings, get the localized title of each command, and then
+      // sort them.
+      const sortedBindings = keymap.bindings();
       for (let binding, i = 0; binding = sortedBindings[i]; i++) {
         const command = binding.command;
         const keySeq = binding.sequence;
@@ -358,14 +358,12 @@ export class Panel extends PanelInterface {
           binding.title = '';
           continue;
         }
-        let title = Msgs.getMsg(titleMsgId);
-        // Convert to title case.
-        title = title.replace(
-            /\w\S*/g, word => word.charAt(0).toUpperCase() + word.substr(1));
-        binding.title = title;
+        const title = Msgs.getMsg(titleMsgId);
+        binding.title = StringUtil.toTitleCase(title);
       }
       sortedBindings.sort(
-          (binding1, binding2) => binding1.title.localeCompare(binding2.title));
+          (binding1, binding2) =>
+              binding1.title.localeCompare(String(binding2.title)));
 
       // Insert items from the bindings into the menus.
       const sawBindingSet = {};

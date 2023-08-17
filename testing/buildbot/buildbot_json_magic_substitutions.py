@@ -71,9 +71,9 @@ def _GetChromeOSBoardName(test_config):
       'chrome.tests',
       'chromium.tests',
   ]
-  dimensions = test_config.get('swarming', {}).get('dimension_sets', [])
-  assert len(dimensions)
-  pool = dimensions[0].get('pool')
+  dimensions = test_config.get('swarming', {}).get('dimensions')
+  assert dimensions is not None
+  pool = dimensions.get('pool')
   if not pool:
     raise RuntimeError(
         'No pool set for CrOS test, unable to determine whether running on '
@@ -82,7 +82,7 @@ def _GetChromeOSBoardName(test_config):
   if not StringContainsSubstring(pool, TEST_POOLS):
     raise RuntimeError('Unknown CrOS pool %s' % pool)
 
-  return dimensions[0].get('device_type', 'amd64-generic')
+  return dimensions.get('device_type', 'amd64-generic')
 
 
 def _IsSkylabBot(tester_config):
@@ -103,14 +103,14 @@ def GPUExpectedDeviceId(test_config, _, tester_config):
     tester_config: A dict containing the configuration for the builder
         that |test_config| is for.
   """
-  dimensions = test_config.get('swarming', {}).get('dimension_sets', [])
-  assert dimensions or _IsSkylabBot(tester_config)
+  dimensions = test_config.get('swarming', {}).get('dimensions')
+  assert dimensions is not None or _IsSkylabBot(tester_config)
+  dimensions = dimensions or {}
   gpus = []
-  for d in dimensions:
-    # Split up multiple GPU/driver combinations if the swarming OR operator is
-    # being used.
-    if 'gpu' in d:
-      gpus.extend(d['gpu'].split('|'))
+  # Split up multiple GPU/driver combinations if the swarming OR operator is
+  # being used.
+  if 'gpu' in dimensions:
+    gpus.extend(dimensions['gpu'].split('|'))
 
   # We don't specify GPU on things like Android/CrOS devices, so default to 0.
   if not gpus:
@@ -135,15 +135,14 @@ def _GetGpusFromTestConfig(test_config):
     test_config: A dict containing a configuration for a specific test on a
         specific builder.
   """
-  dimensions = test_config.get('swarming', {}).get('dimension_sets', [])
-  assert dimensions
-  for d in dimensions:
-    # Split up multiple GPU/driver combinations if the swarming OR operator is
-    # being used.
-    if 'gpu' in d:
-      gpus = d['gpu'].split('|')
-      for gpu in gpus:
-        yield gpu
+  dimensions = test_config.get('swarming', {}).get('dimensions')
+  assert dimensions is not None
+  # Split up multiple GPU/driver combinations if the swarming OR operator is
+  # being used.
+  if 'gpu' in dimensions:
+    gpus = dimensions['gpu'].split('|')
+    for gpu in gpus:
+      yield gpu
 
 
 def GPUParallelJobs(test_config, tester_name, tester_config):
@@ -223,19 +222,12 @@ def GPUTelemetryNoRootForUnrootedDevices(test_config, _, tester_config):
     return []
 
   unrooted_devices = {'a13', 'a23'}
-  dimensions = test_config.get('swarming', {}).get('dimension_sets', [])
-  assert dimensions
-  num_unrooted_devices = 0
-  for d in dimensions:
-    device_type = d.get('device_type')
-    if device_type in unrooted_devices:
-      num_unrooted_devices += 1
-  # All devices should be either rooted or unrooted.
-  if num_unrooted_devices == 0:
-    return []
-  if num_unrooted_devices == len(dimensions):
+  dimensions = test_config.get('swarming', {}).get('dimensions')
+  assert dimensions is not None
+  device_type = dimensions.get('device_type')
+  if device_type in unrooted_devices:
     return ['--compatibility-mode=dont-require-rooted-device']
-  raise RuntimeError('All devices must be either rooted or unrooted')
+  return []
 
 
 def GPUWebGLRuntimeFile(test_config, _, tester_config):

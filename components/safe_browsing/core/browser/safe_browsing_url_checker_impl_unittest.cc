@@ -54,16 +54,18 @@ class MockSafeBrowsingDatabaseManager : public TestSafeBrowsingDatabaseManager {
   // SafeBrowsingDatabaseManager implementation.
   // Checks the threat type of |gurl| previously set by |SetThreatTypeForUrl|.
   // It crashes if the threat type of |gurl| is not set in advance.
-  bool CheckBrowseUrl(const GURL& gurl,
-                      const safe_browsing::SBThreatTypeSet& threat_types,
-                      Client* client,
-                      MechanismExperimentHashDatabaseCache
-                          experiment_cache_selection) override {
+  bool CheckBrowseUrl(
+      const GURL& gurl,
+      const safe_browsing::SBThreatTypeSet& threat_types,
+      Client* client,
+      MechanismExperimentHashDatabaseCache experiment_cache_selection,
+      CheckBrowseUrlType check_type) override {
     std::string url = gurl.spec();
     DCHECK(base::Contains(urls_threat_type_, url));
     DCHECK(base::Contains(urls_delayed_callback_, url));
     EXPECT_TRUE(base::Contains(acceptable_cache_selections_,
                                experiment_cache_selection));
+    EXPECT_EQ(check_type, expected_check_type_);
     if (urls_threat_type_[url] == SB_THREAT_TYPE_SAFE) {
       return true;
     }
@@ -88,7 +90,12 @@ class MockSafeBrowsingDatabaseManager : public TestSafeBrowsingDatabaseManager {
 
   bool ChecksAreAlwaysAsync() const override { return false; }
 
-  ThreatSource GetThreatSource() const override {
+  ThreatSource GetBrowseUrlThreatSource(
+      CheckBrowseUrlType check_type) const override {
+    return ThreatSource::UNKNOWN;
+  }
+
+  ThreatSource GetNonBrowseUrlThreatSource() const override {
     return ThreatSource::UNKNOWN;
   }
 
@@ -148,6 +155,10 @@ class MockSafeBrowsingDatabaseManager : public TestSafeBrowsingDatabaseManager {
     acceptable_cache_selections_ = acceptable_cache_selections;
   }
 
+  void SetExpectedCheckBrowseUrlType(CheckBrowseUrlType check_type) {
+    expected_check_type_ = check_type;
+  }
+
   void CancelCheck(Client* client) override { called_cancel_check_ = true; }
 
   bool HasCalledCancelCheck() { return called_cancel_check_; }
@@ -174,6 +185,7 @@ class MockSafeBrowsingDatabaseManager : public TestSafeBrowsingDatabaseManager {
       urls_allowlist_metric_variation_;
   std::set<MechanismExperimentHashDatabaseCache> acceptable_cache_selections_ =
       {MechanismExperimentHashDatabaseCache::kNoExperiment};
+  CheckBrowseUrlType expected_check_type_ = CheckBrowseUrlType::kHashDatabase;
 
   bool called_cancel_check_ = false;
 };
@@ -395,7 +407,8 @@ class MockHashRealTimeService : public HashRealTimeService {
             /*get_network_context=*/base::NullCallback(),
             /*cache_manager=*/nullptr,
             /*ohttp_key_service=*/nullptr,
-            /*get_is_enhanced_protection_enabled=*/base::NullCallback()) {}
+            /*get_is_enhanced_protection_enabled=*/base::NullCallback(),
+            /*webui_delegate=*/nullptr) {}
   base::WeakPtr<MockHashRealTimeService> GetWeakPtr() {
     return weak_factory_.GetWeakPtr();
   }
@@ -438,6 +451,13 @@ class MockHashRealTimeService : public HashRealTimeService {
 
 }  // namespace
 
+struct CreateSafeBrowsingUrlCheckerOptionalArgs {
+  network::mojom::RequestDestination request_destination =
+      network::mojom::RequestDestination::kDocument;
+  bool can_urt_check_subresource_url = false;
+  std::string url_lookup_service_metric_suffix = ".Enterprise";
+  bool is_lookup_mechanism_experiment_enabled = false;
+};
 class SafeBrowsingUrlCheckerTest : public PlatformTest {
  public:
   SafeBrowsingUrlCheckerTest() = default;
@@ -454,14 +474,13 @@ class SafeBrowsingUrlCheckerTest : public PlatformTest {
       bool url_real_time_lookup_enabled,
       bool can_check_safe_browsing_db,
       hash_realtime_utils::HashRealTimeSelection hash_real_time_selection,
-      network::mojom::RequestDestination request_destination =
-          network::mojom::RequestDestination::kDocument,
-      bool is_lookup_mechanism_experiment_enabled = false) {
+      CreateSafeBrowsingUrlCheckerOptionalArgs optional_args =
+          CreateSafeBrowsingUrlCheckerOptionalArgs()) {
     base::MockCallback<base::RepeatingCallback<content::WebContents*()>>
         mock_web_contents_getter;
     scoped_refptr<SafeBrowsingLookupMechanismExperimenter>
         mechanism_experimenter = nullptr;
-    if (is_lookup_mechanism_experiment_enabled) {
+    if (optional_args.is_lookup_mechanism_experiment_enabled) {
       mechanism_experimenter = base::MakeRefCounted<
           SafeBrowsingLookupMechanismExperimenter>(
           /*is_prefetch=*/false, /*ping_manager_on_ui=*/nullptr,
@@ -473,15 +492,16 @@ class SafeBrowsingUrlCheckerTest : public PlatformTest {
           base::TimeTicks::Now());
     }
     return std::make_unique<SafeBrowsingUrlCheckerImpl>(
-        net::HttpRequestHeaders(), /*load_flags=*/0, request_destination,
+        net::HttpRequestHeaders(), /*load_flags=*/0,
+        optional_args.request_destination,
         /*has_user_gesture=*/false, url_checker_delegate_,
         mock_web_contents_getter.Get(), UnsafeResource::kNoRenderProcessId,
         UnsafeResource::kNoRenderFrameId, UnsafeResource::kNoFrameTreeNodeId,
         url_real_time_lookup_enabled,
-        /*can_urt_check_subresource_url=*/false, can_check_safe_browsing_db,
+        optional_args.can_urt_check_subresource_url, can_check_safe_browsing_db,
         /*can_check_high_confidence_allowlist=*/true,
         /*url_lookup_service_metric_suffix=*/
-        url_real_time_lookup_enabled ? ".Enterprise" : ".None",
+        optional_args.url_lookup_service_metric_suffix,
         /*last_committed_url=*/GURL(),
         base::SequencedTaskRunner::GetCurrentDefault(),
         url_real_time_lookup_enabled ? url_lookup_service_->GetWeakPtr()
@@ -489,7 +509,8 @@ class SafeBrowsingUrlCheckerTest : public PlatformTest {
         /*webui_delegate_=*/nullptr,
         /*hash_realtime_service=*/hash_realtime_service_->GetWeakPtr(),
         /*mechanism_experimenter=*/mechanism_experimenter,
-        is_lookup_mechanism_experiment_enabled, hash_real_time_selection);
+        optional_args.is_lookup_mechanism_experiment_enabled,
+        hash_real_time_selection);
   }
 
   // This can be used as the CheckUrl callback in cases where it's a local check
@@ -529,6 +550,46 @@ class SafeBrowsingUrlCheckerTest : public PlatformTest {
           /*name=*/"SafeBrowsing.HPRT.IsLookupServiceFound",
           /*sample=*/expected_is_service_found.value(),
           /*expected_bucket_count=*/1);
+    }
+  }
+  void CheckUrlRealTimeLocalMatchMetrics(
+      absl::optional<bool> expected_local_match_result,
+      absl::optional<bool> expected_mainframe_log,
+      absl::optional<bool> expect_url_lookup_service_metric_suffix) {
+    ASSERT_EQ(expected_local_match_result.has_value(),
+              expected_mainframe_log.has_value());
+    ASSERT_EQ(expected_local_match_result.has_value(),
+              expect_url_lookup_service_metric_suffix.has_value());
+    if (!expected_local_match_result.has_value()) {
+      histogram_tester_.ExpectTotalCount(
+          /*name=*/"SafeBrowsing.RT.LocalMatch.Result", /*expected_count=*/0);
+      histogram_tester_.ExpectTotalCount(
+          /*name=*/"SafeBrowsing.RT.LocalMatch.Result.Mainframe",
+          /*expected_count=*/0);
+      histogram_tester_.ExpectTotalCount(
+          /*name=*/"SafeBrowsing.RT.LocalMatch.Result.NonMainframe",
+          /*expected_count=*/0);
+    } else {
+      AsyncMatch expected_local_match_result_value =
+          expected_local_match_result.value() ? AsyncMatch::MATCH
+                                              : AsyncMatch::NO_MATCH;
+      histogram_tester_.ExpectUniqueSample(
+          /*name=*/"SafeBrowsing.RT.LocalMatch.Result",
+          /*sample=*/expected_local_match_result_value,
+          /*expected_bucket_count=*/1);
+      std::string expected_base_histogram =
+          expected_mainframe_log.value()
+              ? "SafeBrowsing.RT.LocalMatch.Result.Mainframe"
+              : "SafeBrowsing.RT.LocalMatch.Result.NonMainframe";
+      histogram_tester_.ExpectUniqueSample(
+          /*name=*/expected_base_histogram,
+          /*sample=*/expected_local_match_result_value,
+          /*expected_bucket_count=*/1);
+      histogram_tester_.ExpectUniqueSample(
+          /*name=*/expected_base_histogram + ".Enterprise",
+          /*sample=*/expected_local_match_result_value,
+          /*expected_bucket_count=*/
+          expect_url_lookup_service_metric_suffix.value() ? 1 : 0);
     }
   }
 
@@ -708,6 +769,9 @@ TEST_F(SafeBrowsingUrlCheckerTest, CheckUrl_UrlRealTimeEnabledAllowlistMatch) {
   safe_browsing_url_checker->CheckUrl(url, "GET", callback.Get());
 
   task_environment_.RunUntilIdle();
+  CheckUrlRealTimeLocalMatchMetrics(
+      /*expected_local_match_result=*/true, /*expected_mainframe_log=*/true,
+      /*expect_url_lookup_service_metric_suffix=*/true);
 }
 
 TEST_F(SafeBrowsingUrlCheckerTest, CheckUrl_UrlRealTimeEnabledSafeUrl) {
@@ -745,6 +809,85 @@ TEST_F(SafeBrowsingUrlCheckerTest, CheckUrl_UrlRealTimeEnabledSafeUrl) {
   histogram_tester_.ExpectTotalCount(
       "SafeBrowsing.RT.GetCache.FallbackThreatType",
       /*expected_count=*/0);
+  CheckUrlRealTimeLocalMatchMetrics(
+      /*expected_local_match_result=*/false, /*expected_mainframe_log=*/true,
+      /*expect_url_lookup_service_metric_suffix=*/true);
+}
+
+TEST_F(SafeBrowsingUrlCheckerTest,
+       CheckUrl_UrlRealTimeEnabledSafeUrl_NonMainframe) {
+  base::HistogramTester histograms;
+  auto safe_browsing_url_checker = CreateSafeBrowsingUrlChecker(
+      /*url_real_time_lookup_enabled=*/true,
+      /*can_check_safe_browsing_db=*/true,
+      /*hash_real_time_selection=*/
+      hash_realtime_utils::HashRealTimeSelection::kNone,
+      /*optional_args=*/
+      {.request_destination = network::mojom::RequestDestination::kFrame,
+       .can_urt_check_subresource_url = true});
+
+  GURL url("https://example.test/");
+  database_manager_->SetAllowlistLookupDetailsForUrl(url, /*match=*/false,
+                                                     {"RT"});
+  url_lookup_service_->SetThreatTypeForUrl(url, SB_THREAT_TYPE_SAFE,
+                                           /*should_complete_lookup=*/true);
+
+  base::MockCallback<SafeBrowsingUrlCheckerImpl::NativeCheckUrlCallback>
+      callback;
+  EXPECT_CALL(callback,
+              Run(_, /*proceed=*/true, /*showed_interstitial=*/false,
+                  SafeBrowsingUrlCheckerImpl::PerformedCheck::kUrlRealTimeCheck,
+                  /*did_check_url_real_time_allowlist=*/true));
+  EXPECT_CALL(*url_checker_delegate_,
+              StartDisplayingBlockingPageHelper(_, _, _, _, _))
+      .Times(0);
+  safe_browsing_url_checker->CheckUrl(url, "GET", callback.Get());
+
+  task_environment_.RunUntilIdle();
+  histogram_tester_.ExpectUniqueSample("SafeBrowsing.CheckUrl.Timeout",
+                                       /*sample=*/false,
+                                       /*expected_bucket_count=*/1);
+
+  CheckUrlRealTimeLocalMatchMetrics(
+      /*expected_local_match_result=*/false, /*expected_mainframe_log=*/false,
+      /*expect_url_lookup_service_metric_suffix=*/true);
+}
+
+TEST_F(SafeBrowsingUrlCheckerTest,
+       CheckUrl_UrlRealTimeEnabledSafeUrl_EmptyUrlLookupServiceMetricSuffix) {
+  base::HistogramTester histograms;
+  auto safe_browsing_url_checker = CreateSafeBrowsingUrlChecker(
+      /*url_real_time_lookup_enabled=*/true,
+      /*can_check_safe_browsing_db=*/true,
+      /*hash_real_time_selection=*/
+      hash_realtime_utils::HashRealTimeSelection::kNone,
+      /*optional_args=*/{.url_lookup_service_metric_suffix = ""});
+
+  GURL url("https://example.test/");
+  database_manager_->SetAllowlistLookupDetailsForUrl(url, /*match=*/false,
+                                                     {"RT"});
+  url_lookup_service_->SetThreatTypeForUrl(url, SB_THREAT_TYPE_SAFE,
+                                           /*should_complete_lookup=*/true);
+
+  base::MockCallback<SafeBrowsingUrlCheckerImpl::NativeCheckUrlCallback>
+      callback;
+  EXPECT_CALL(callback,
+              Run(_, /*proceed=*/true, /*showed_interstitial=*/false,
+                  SafeBrowsingUrlCheckerImpl::PerformedCheck::kUrlRealTimeCheck,
+                  /*did_check_url_real_time_allowlist=*/true));
+  EXPECT_CALL(*url_checker_delegate_,
+              StartDisplayingBlockingPageHelper(_, _, _, _, _))
+      .Times(0);
+  safe_browsing_url_checker->CheckUrl(url, "GET", callback.Get());
+
+  task_environment_.RunUntilIdle();
+  histogram_tester_.ExpectUniqueSample("SafeBrowsing.CheckUrl.Timeout",
+                                       /*sample=*/false,
+                                       /*expected_bucket_count=*/1);
+
+  CheckUrlRealTimeLocalMatchMetrics(
+      /*expected_local_match_result=*/false, /*expected_mainframe_log=*/true,
+      /*expect_url_lookup_service_metric_suffix=*/false);
 }
 
 TEST_F(SafeBrowsingUrlCheckerTest,
@@ -782,6 +925,9 @@ TEST_F(SafeBrowsingUrlCheckerTest,
       "SafeBrowsing.RT.GetCache.FallbackThreatType",
       /*sample=*/SB_THREAT_TYPE_SAFE,
       /*expected_bucket_count=*/1);
+  CheckUrlRealTimeLocalMatchMetrics(
+      /*expected_local_match_result=*/false, /*expected_mainframe_log=*/true,
+      /*expect_url_lookup_service_metric_suffix=*/true);
 }
 
 TEST_F(SafeBrowsingUrlCheckerTest,
@@ -816,6 +962,9 @@ TEST_F(SafeBrowsingUrlCheckerTest,
       "SafeBrowsing.RT.GetCache.FallbackThreatType",
       /*sample=*/SB_THREAT_TYPE_URL_PHISHING,
       /*expected_bucket_count=*/1);
+  CheckUrlRealTimeLocalMatchMetrics(
+      /*expected_local_match_result=*/false, /*expected_mainframe_log=*/true,
+      /*expect_url_lookup_service_metric_suffix=*/true);
 }
 
 TEST_F(SafeBrowsingUrlCheckerTest,
@@ -841,6 +990,9 @@ TEST_F(SafeBrowsingUrlCheckerTest,
   safe_browsing_url_checker->CheckUrl(url, "GET", callback.Get());
 
   task_environment_.RunUntilIdle();
+  CheckUrlRealTimeLocalMatchMetrics(
+      /*expected_local_match_result=*/false, /*expected_mainframe_log=*/true,
+      /*expect_url_lookup_service_metric_suffix=*/true);
 }
 
 TEST_F(SafeBrowsingUrlCheckerTest,
@@ -867,6 +1019,9 @@ TEST_F(SafeBrowsingUrlCheckerTest,
   safe_browsing_url_checker->CheckUrl(url, "GET", callback.Get());
 
   task_environment_.RunUntilIdle();
+  CheckUrlRealTimeLocalMatchMetrics(
+      /*expected_local_match_result=*/false, /*expected_mainframe_log=*/true,
+      /*expect_url_lookup_service_metric_suffix=*/true);
 }
 
 TEST_F(SafeBrowsingUrlCheckerTest,
@@ -892,6 +1047,9 @@ TEST_F(SafeBrowsingUrlCheckerTest,
   safe_browsing_url_checker->CheckUrl(url, "GET", callback.Get());
 
   task_environment_.RunUntilIdle();
+  CheckUrlRealTimeLocalMatchMetrics(
+      /*expected_local_match_result=*/false, /*expected_mainframe_log=*/true,
+      /*expect_url_lookup_service_metric_suffix=*/true);
 }
 
 TEST_F(SafeBrowsingUrlCheckerTest,
@@ -918,6 +1076,9 @@ TEST_F(SafeBrowsingUrlCheckerTest,
   safe_browsing_url_checker->CheckUrl(url, "GET", callback.Get());
 
   task_environment_.RunUntilIdle();
+  CheckUrlRealTimeLocalMatchMetrics(
+      /*expected_local_match_result=*/false, /*expected_mainframe_log=*/true,
+      /*expect_url_lookup_service_metric_suffix=*/true);
 }
 
 TEST_F(SafeBrowsingUrlCheckerTest,
@@ -927,7 +1088,8 @@ TEST_F(SafeBrowsingUrlCheckerTest,
       /*can_check_safe_browsing_db=*/false,
       /*hash_real_time_selection=*/
       hash_realtime_utils::HashRealTimeSelection::kNone,
-      /*request_destination=*/network::mojom::RequestDestination::kScript);
+      /*optional_args=*/
+      {.request_destination = network::mojom::RequestDestination::kScript});
 
   GURL url("https://example.test/");
 
@@ -943,6 +1105,10 @@ TEST_F(SafeBrowsingUrlCheckerTest,
   safe_browsing_url_checker->CheckUrl(url, "GET", callback.Get());
 
   task_environment_.RunUntilIdle();
+  CheckUrlRealTimeLocalMatchMetrics(
+      /*expected_local_match_result=*/absl::nullopt,
+      /*expected_mainframe_log=*/absl::nullopt,
+      /*expect_url_lookup_service_metric_suffix=*/absl::nullopt);
 }
 
 TEST_F(SafeBrowsingUrlCheckerTest,
@@ -1107,8 +1273,7 @@ TEST_F(SafeBrowsingUrlCheckerTest, CheckUrl_SafeUrl_LookupMechanismExperiment) {
       /*can_check_safe_browsing_db=*/true,
       /*hash_real_time_selection=*/
       hash_realtime_utils::HashRealTimeSelection::kNone,
-      /*request_destination=*/network::mojom::RequestDestination::kDocument,
-      /*is_lookup_mechanism_experiment_enabled=*/true);
+      /*optional_args=*/{.is_lookup_mechanism_experiment_enabled = true});
 
   GURL url("https://example.test/");
   database_manager_->SetThreatTypeForUrl(url, SB_THREAT_TYPE_SAFE,
@@ -1149,8 +1314,7 @@ TEST_F(SafeBrowsingUrlCheckerTest,
       /*can_check_safe_browsing_db=*/true,
       /*hash_real_time_selection=*/
       hash_realtime_utils::HashRealTimeSelection::kNone,
-      /*request_destination=*/network::mojom::RequestDestination::kDocument,
-      /*is_lookup_mechanism_experiment_enabled=*/true);
+      /*optional_args=*/{.is_lookup_mechanism_experiment_enabled = true});
 
   GURL url("https://example.test/");
   database_manager_->SetAllowlistLookupDetailsForUrl(url, /*match=*/true,
@@ -1196,8 +1360,7 @@ TEST_F(
       /*can_check_safe_browsing_db=*/true,
       /*hash_real_time_selection=*/
       hash_realtime_utils::HashRealTimeSelection::kNone,
-      /*request_destination=*/network::mojom::RequestDestination::kDocument,
-      /*is_lookup_mechanism_experiment_enabled=*/true);
+      /*optional_args=*/{.is_lookup_mechanism_experiment_enabled = true});
 
   GURL url("https://example.test/");
   database_manager_->SetAllowlistLookupDetailsForUrl(url, /*match=*/true,
@@ -1243,8 +1406,7 @@ TEST_F(SafeBrowsingUrlCheckerTest,
       /*can_check_safe_browsing_db=*/true,
       /*hash_real_time_selection=*/
       hash_realtime_utils::HashRealTimeSelection::kNone,
-      /*request_destination=*/network::mojom::RequestDestination::kDocument,
-      /*is_lookup_mechanism_experiment_enabled=*/true);
+      /*optional_args=*/{.is_lookup_mechanism_experiment_enabled = true});
 
   GURL url("https://example.test/");
   database_manager_->SetAllowlistLookupDetailsForUrl(url, /*match=*/false,
@@ -1302,8 +1464,7 @@ TEST_F(SafeBrowsingUrlCheckerTest,
       /*can_check_safe_browsing_db=*/true,
       /*hash_real_time_selection=*/
       hash_realtime_utils::HashRealTimeSelection::kNone,
-      /*request_destination=*/network::mojom::RequestDestination::kDocument,
-      /*is_lookup_mechanism_experiment_enabled=*/true);
+      /*optional_args=*/{.is_lookup_mechanism_experiment_enabled = true});
 
   std::set<MechanismExperimentHashDatabaseCache> cache_selections = {
       MechanismExperimentHashDatabaseCache::kHashDatabaseOnly};
@@ -1584,13 +1745,42 @@ TEST_F(SafeBrowsingUrlCheckerTest,
   task_environment_.RunUntilIdle();
 }
 
+TEST_F(SafeBrowsingUrlCheckerTest,
+       CheckUrl_HashRealTimeEnabledThroughDatabaseManager) {
+  auto safe_browsing_url_checker = CreateSafeBrowsingUrlChecker(
+      /*url_real_time_lookup_enabled=*/false,
+      /*can_check_safe_browsing_db=*/true,
+      /*hash_real_time_selection=*/
+      hash_realtime_utils::HashRealTimeSelection::kDatabaseManager);
+
+  GURL url("https://example.test/");
+  database_manager_->SetThreatTypeForUrl(url, SB_THREAT_TYPE_URL_PHISHING,
+                                         /*delayed_callback=*/false);
+  database_manager_->SetExpectedCheckBrowseUrlType(
+      CheckBrowseUrlType::kHashRealTime);
+
+  base::MockCallback<SafeBrowsingUrlCheckerImpl::NativeCheckUrlCallback>
+      callback;
+  // Note that the callback is not called, because resource fetch is not blocked
+  // while we perform a real-time check.
+  EXPECT_CALL(callback, Run(_, _, _, _, _)).Times(0);
+  EXPECT_CALL(*url_checker_delegate_,
+              StartDisplayingBlockingPageHelper(
+                  IsSameThreatSource(ThreatSource::UNKNOWN), _, _, _, _))
+      .Times(1);
+  safe_browsing_url_checker->CheckUrl(url, "GET", callback.Get());
+
+  task_environment_.RunUntilIdle();
+}
+
 TEST_F(SafeBrowsingUrlCheckerTest, CheckUrl_InvalidRequestDestination) {
   auto safe_browsing_url_checker = CreateSafeBrowsingUrlChecker(
       /*url_real_time_lookup_enabled=*/false,
       /*can_check_safe_browsing_db=*/true,
       /*hash_real_time_selection=*/
       hash_realtime_utils::HashRealTimeSelection::kNone,
-      /*request_destination=*/network::mojom::RequestDestination::kAudio);
+      /*optional_args=*/
+      {.request_destination = network::mojom::RequestDestination::kAudio});
   GURL url("https://example.test/");
 
   base::MockCallback<SafeBrowsingUrlCheckerImpl::NativeCheckUrlCallback>

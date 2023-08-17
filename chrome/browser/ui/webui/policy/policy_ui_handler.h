@@ -47,8 +47,6 @@ class PolicyUIHandler : public content::WebUIMessageHandler,
   // policy::PolicyValueAndStatusAggregator::Observer implementation.
   void OnPolicyValueAndStatusChanged() override;
 
-  void AddInfobarForActiveLocalTestPolicies();
-
   void set_web_ui_for_test(content::WebUI* web_ui) { set_web_ui(web_ui); }
 
  protected:
@@ -65,6 +63,8 @@ class PolicyUIHandler : public content::WebUIMessageHandler,
   void HandleCopyPoliciesJson(const base::Value::List& args);
   void HandleSetLocalTestPolicies(const base::Value::List& args);
   void HandleRevertLocalTestPolicies(const base::Value::List& args);
+  void HandleRestartBrowser(const base::Value::List& args);
+  void HandleSetUserAffiliated(const base::Value::List& args);
 
 #if !BUILDFLAG(IS_CHROMEOS)
   void HandleUploadReport(const base::Value::List& args);

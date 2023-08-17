@@ -13,6 +13,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/task/single_thread_task_runner.h"
+#include "base/test/bind.h"
 #include "base/test/gmock_callback_support.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_callback.h"
@@ -21,15 +22,19 @@
 #include "build/config/coverage/buildflags.h"
 #include "chrome/browser/ash/file_manager/copy_or_move_io_task_policy_impl.h"
 #include "chrome/browser/ash/file_manager/file_manager_browsertest_base.h"
+#include "chrome/browser/ash/file_manager/io_task.h"
 #include "chrome/browser/ash/file_manager/path_util.h"
 #include "chrome/browser/ash/login/test/device_state_mixin.h"
 #include "chrome/browser/ash/login/test/logged_in_user_mixin.h"
 #include "chrome/browser/ash/policy/dlp/dlp_files_controller_ash.h"
+#include "chrome/browser/ash/policy/dlp/files_policy_notification_manager.h"
+#include "chrome/browser/ash/policy/dlp/files_policy_notification_manager_factory.h"
 #include "chrome/browser/ash/settings/scoped_testing_cros_settings.h"
 #include "chrome/browser/ash/settings/stub_cros_settings_provider.h"
+#include "chrome/browser/chromeos/policy/dlp/dlp_files_utils.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager_factory.h"
-#include "chrome/browser/chromeos/policy/dlp/mock_dlp_rules_manager.h"
+#include "chrome/browser/chromeos/policy/dlp/test/mock_dlp_rules_manager.h"
 #include "chrome/browser/enterprise/connectors/analysis/mock_file_transfer_analysis_delegate.h"
 #include "chrome/browser/enterprise/connectors/reporting/realtime_reporting_client_factory.h"
 #include "chrome/browser/enterprise/connectors/test/deep_scanning_test_utils.h"
@@ -268,8 +273,14 @@ struct TestCase {
     return *this;
   }
 
-  TestCase& EnableJellybean() {
+  TestCase& EnableCrosComponents() {
+    options.enable_cros_components = true;
     options.enable_jellybean = true;
+    return *this;
+  }
+
+  TestCase& EnableImageContentSearch() {
+    options.enable_image_content_search = true;
     return *this;
   }
 
@@ -348,8 +359,8 @@ struct TestCase {
       full_name += "_DriveShortcuts";
     }
 
-    if (options.enable_jellybean) {
-      full_name += "_Jellybean";
+    if (options.enable_cros_components) {
+      full_name += "_CrosComponents";
     }
 
     switch (options.device_mode) {
@@ -552,11 +563,6 @@ class DlpFilesAppBrowserTest : public FilesAppBrowserTest {
                             base::Unretained(this)));
   }
 
-  void TearDownOnMainThread() override {
-    files_controller_ = nullptr;
-    FilesAppBrowserTest::TearDownOnMainThread();
-  }
-
   bool HandleDlpCommands(const std::string& name,
                          const base::Value::Dict& value,
                          std::string* output) override {
@@ -572,9 +578,7 @@ class DlpFilesAppBrowserTest : public FilesAppBrowserTest {
       ::dlp::GetFilesSourcesResponse response;
       for (unsigned long i = 0; i < file_names->size(); i++) {
         auto* metadata = response.add_files_metadata();
-        auto inode = GetInodeValue(result.Append((*file_names)[i].GetString()));
-        EXPECT_TRUE(inode.has_value());
-        metadata->set_inode(inode.value());
+        metadata->set_path(result.Append((*file_names)[i].GetString()).value());
         metadata->set_source_url((*source_urls)[i].GetString());
       }
 
@@ -702,6 +706,54 @@ class DlpFilesAppBrowserTest : public FilesAppBrowserTest {
           add_files_cb.Get());
       return true;
     }
+    if (name == "enableNewFilesPolicyUX") {
+      policy::DlpFilesController::SetNewFilesPolicyUXEnabledForTesting(true);
+      return true;
+    }
+    if (name == "setCheckFilesTransferMockToPause") {
+      base::FilePath download_path =
+          file_manager::util::GetDownloadsFolderForProfile(profile());
+      absl::optional<int> task_id = value.FindInt("taskId");
+      EXPECT_TRUE(task_id.has_value() && task_id.value() > 0);
+      const base::Value::List* file_names = value.FindList("fileNames");
+      EXPECT_TRUE(file_names);
+      std::vector<base::FilePath> warning_files;
+      for (const auto& file_name : *file_names) {
+        warning_files.emplace_back(download_path.value() + "/" +
+                                   file_name.GetString());
+      }
+      const std::string* action_str = value.FindString("action");
+      EXPECT_TRUE(action_str);
+      EXPECT_TRUE(*action_str == "copy" || *action_str == "move");
+      policy::dlp::FileAction action = *action_str == "copy"
+                                           ? policy::dlp::FileAction::kCopy
+                                           : policy::dlp::FileAction::kMove;
+      // FPNM is created lazily, so call it here to make sure it's created and
+      // starts tracking the tasks.
+      policy::FilesPolicyNotificationManager* fpnm =
+          policy::FilesPolicyNotificationManagerFactory::GetForBrowserContext(
+              profile());
+      EXPECT_TRUE(fpnm);
+
+      auto cb = base::BindLambdaForTesting(
+          [this, task_id, warning_files, action](
+              const dlp::CheckFilesTransferRequest,
+              chromeos::DlpClient::CheckFilesTransferCallback) {
+            policy::FilesPolicyNotificationManager* fpnm =
+                policy::FilesPolicyNotificationManagerFactory::
+                    GetForBrowserContext(profile());
+            ASSERT_TRUE(fpnm);
+            ASSERT_TRUE(fpnm->HasIOTask(task_id.value()));
+            // Call FPNM to show the warning, which pauses the task.
+            fpnm->ShowDlpWarning(base::DoNothing(), task_id,
+                                 std::move(warning_files),
+                                 policy::DlpFileDestination(), action);
+          });
+      chromeos::DlpClient::Get()->GetTestInterface()->SetIsAlive(true);
+      chromeos::DlpClient::Get()->GetTestInterface()->SetCheckFilesTransferMock(
+          cb);
+      return true;
+    }
     return false;
   }
 
@@ -754,15 +806,6 @@ class DlpFilesAppBrowserTest : public FilesAppBrowserTest {
       return data_controls::Component::kDrive;
     }
     return data_controls::Component::kUnknownComponent;
-  }
-
-  // Returns the inode value for |path|, if found.
-  absl::optional<ino64_t> GetInodeValue(const base::FilePath& path) {
-    struct stat file_stats;
-    if (stat(path.value().c_str(), &file_stats) != 0) {
-      return absl::nullopt;
-    }
-    return file_stats.st_ino;
   }
 
   // Invokes `callback` with the previously constructed `response`. Note that
@@ -1268,7 +1311,9 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     OpenFilesInWebDrive, /* open_files_in_web_drive.js */
     FilesAppBrowserTest,
-    ::testing::Values(TestCase("hostedOpenDrive"),
+    ::testing::Values(TestCase("hostedHasDefaultTask"),
+                      TestCase("encryptedHasDefaultTask"),
+                      TestCase("hostedOpenDrive"),
                       TestCase("encryptedHostedOpenDrive"),
                       TestCase("encryptedNonHostedOpenDrive")));
 
@@ -1639,12 +1684,12 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         // TODO(b/189173190): Enable
         // TestCase("drivePinFileMobileNetwork"),
         TestCase("drivePinToggleUpdatesInFakeEntries"),
-        TestCase("drivePinToggleUpdatesInFakeEntries").EnableJellybean(),
+        TestCase("drivePinToggleUpdatesInFakeEntries").EnableCrosComponents(),
         TestCase("drivePinToggleIsDisabledAndHiddenWhenBulkPinningEnabled")
             .EnableBulkPinning(),
         TestCase("drivePinToggleIsDisabledAndHiddenWhenBulkPinningEnabled")
             .EnableBulkPinning()
-            .EnableJellybean(),
+            .EnableCrosComponents(),
         TestCase("driveClickFirstSearchResult"),
         TestCase("drivePressEnterToSearch"),
         TestCase("drivePressClearSearch"),
@@ -1653,12 +1698,13 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("driveAvailableOfflineGearMenu"),
         TestCase("driveAvailableOfflineDirectoryGearMenu"),
         TestCase("driveAvailableOfflineActionBar"),
-        TestCase("driveAvailableOfflineActionBar").EnableJellybean(),
+        TestCase("driveAvailableOfflineActionBar").EnableCrosComponents(),
         TestCase("driveLinkToDirectory"),
         TestCase("driveLinkToDirectory").EnableDriveShortcuts(),
         TestCase("driveLinkOpenFileThroughLinkedDirectory"),
         TestCase("driveLinkOpenFileThroughTransitiveLink"),
         TestCase("driveWelcomeBanner"),
+        TestCase("driveWelcomeBanner").EnableCrosComponents(),
         TestCase("driveOfflineInfoBanner"),
         TestCase("driveEncryptionBadge"),
         TestCase("driveDeleteDialogDoesntMentionPermanentDelete"),
@@ -1674,7 +1720,7 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
             .EnableBulkPinning(),
         TestCase("drivePinToggleIsEnabledInSharedWithMeWhenBulkPinningEnabled")
             .EnableBulkPinning()
-            .EnableJellybean(),
+            .EnableCrosComponents(),
         TestCase("driveCantPinItemsShouldHaveClassNameAndGetUpdatedWhenCanPin")
             .EnableBulkPinning(),
         TestCase("driveItemsOutOfViewportShouldUpdateTheirSyncStatus")
@@ -1687,7 +1733,10 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
             .EnableInlineSyncStatusProgressEvents(),
         TestCase("openDriveDocWhenOffline")
             .EnableBulkPinning()
-            .EnableInlineSyncStatusProgressEvents()
+            .EnableInlineSyncStatusProgressEvents(),
+        TestCase("completedSyncStatusDismissesAfter300Ms")
+            .EnableInlineSyncStatusProgressEvents(),
+        TestCase("driveOutOfOrganizationSpaceBanner")
         // TODO(b/189173190): Enable
         // TestCase("driveEnableDocsOfflineDialog"),
         // TODO(b/189173190): Enable
@@ -1703,6 +1752,7 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
     FilesAppBrowserTest,
     ::testing::Values(
         TestCase("holdingSpaceWelcomeBanner"),
+        TestCase("holdingSpaceWelcomeBanner").EnableCrosComponents(),
         TestCase("holdingSpaceWelcomeBannerWillShowForModalDialogs")
             .WithBrowser(),
         TestCase("holdingSpaceWelcomeBannerOnTabletModeChanged")));
@@ -1797,8 +1847,7 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
     DLP, /* dlp.js */
     DlpFilesAppBrowserTest,
     ::testing::Values(
-        // Flaky. TODO(b/291674465): Re-enable.
-        // TestCase("transferShowDlpToast").EnableDlp(),
+        TestCase("transferShowDlpToast").EnableDlp(),
         TestCase("dlpShowManagedIcon").EnableDlp(),
         TestCase("dlpContextMenuRestrictionDetails").EnableDlp(),
         TestCase("saveAsDlpRestrictedAndroid").EnableArcVm().EnableDlp(),
@@ -1815,7 +1864,9 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("openFolderDlpRestricted").EnableDlp(),
 #endif
         TestCase("fileTasksDlpRestricted").EnableDlp(),
-        TestCase("zipExtractRestrictedArchiveCheckContent").EnableDlp()));
+        TestCase("zipExtractRestrictedArchiveCheckContent").EnableDlp(),
+        TestCase("blockShowsPanelItem").EnableDlp(),
+        TestCase("warnShowsPanelItem").EnableDlp()));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     DriveSpecific, /* drive_specific.js */
@@ -1836,6 +1887,11 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
             .SetDeviceMode(DeviceMode::kConsumerOwned)
             .SetTestAccountType(TestAccountType::kNonManaged)
             .EnableGoogleOneOfferFilesBanner(),
+        TestCase("driveGoogleOneOfferBannerDismiss")
+            .SetDeviceMode(DeviceMode::kConsumerOwned)
+            .SetTestAccountType(TestAccountType::kNonManaged)
+            .EnableGoogleOneOfferFilesBanner()
+            .EnableCrosComponents(),
         TestCase("driveGoogleOneOfferBannerDisabled")
             .EnableGoogleOneOfferFilesBanner()
             .SetDeviceMode(DeviceMode::kConsumerOwned)
@@ -1871,6 +1927,26 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
             .EnableBulkPinning()
             .SetDeviceMode(DeviceMode::kEnrolled)
             .SetTestAccountType(TestAccountType::kEnterprise),
+        TestCase("driveBulkPinningBannerDisabled")
+            .EnableBulkPinning()
+            .SetDeviceMode(DeviceMode::kConsumerOwned)
+            .SetTestAccountType(TestAccountType::kEnterprise)
+            .EnableCrosComponents(),
+        TestCase("driveBulkPinningBannerDisabled")
+            .EnableBulkPinning()
+            .SetDeviceMode(DeviceMode::kConsumerOwned)
+            .SetTestAccountType(TestAccountType::kChild)
+            .EnableCrosComponents(),
+        TestCase("driveBulkPinningBannerDisabled")
+            .EnableBulkPinning()
+            .SetDeviceMode(DeviceMode::kEnrolled)
+            .SetTestAccountType(TestAccountType::kChild)
+            .EnableCrosComponents(),
+        TestCase("driveBulkPinningBannerDisabled")
+            .EnableBulkPinning()
+            .SetDeviceMode(DeviceMode::kEnrolled)
+            .SetTestAccountType(TestAccountType::kEnterprise)
+            .EnableCrosComponents(),
         TestCase("driveBulkPinningBannerEnabled")
             .EnableBulkPinning()
             .SetDeviceMode(DeviceMode::kConsumerOwned)
@@ -1882,7 +1958,22 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("driveBulkPinningBannerEnabled")
             .EnableBulkPinning()
             .SetDeviceMode(DeviceMode::kEnrolled)
-            .SetTestAccountType(TestAccountType::kGoogler)));
+            .SetTestAccountType(TestAccountType::kGoogler),
+        TestCase("driveBulkPinningBannerEnabled")
+            .EnableBulkPinning()
+            .SetDeviceMode(DeviceMode::kConsumerOwned)
+            .SetTestAccountType(TestAccountType::kNonManaged)
+            .EnableCrosComponents(),
+        TestCase("driveBulkPinningBannerEnabled")
+            .EnableBulkPinning()
+            .SetDeviceMode(DeviceMode::kConsumerOwned)
+            .SetTestAccountType(TestAccountType::kNonManagedNonOwner)
+            .EnableCrosComponents(),
+        TestCase("driveBulkPinningBannerEnabled")
+            .EnableBulkPinning()
+            .SetDeviceMode(DeviceMode::kEnrolled)
+            .SetTestAccountType(TestAccountType::kGoogler)
+            .EnableCrosComponents()));
 
 #define FILE_TRANSFER_TEST_CASE(name) \
   TestCase(name).EnableFileTransferConnector()
@@ -1999,11 +2090,16 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
     ::testing::Values(
         TestCase("tabindexSearchBoxFocus"),
         TestCase("tabindexFocus"),
+        TestCase("tabindexFocus").EnableCrosComponents(),
         TestCase("tabindexFocusDownloads"),
+        TestCase("tabindexFocusDownloads").EnableCrosComponents(),
         TestCase("tabindexFocusDownloads").InGuestMode(),
         TestCase("tabindexFocusDirectorySelected"),
-        TestCase("tabindexFocusDirectorySelected").EnableJellybean(),
-        TestCase("tabindexOpenDialogDownloads").WithBrowser()
+        TestCase("tabindexFocusDirectorySelected").EnableCrosComponents(),
+        TestCase("tabindexOpenDialogDownloads").WithBrowser(),
+        TestCase("tabindexOpenDialogDownloads")
+            .WithBrowser()
+            .EnableCrosComponents()
         // TODO(b/189173190): Enable
         // TestCase("tabindexOpenDialogDownloads").WithBrowser(),
         // TODO(b/189173190): Enable
@@ -2353,7 +2449,10 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("searchDocumentsProviderWithRecencyOptions")
             .EnableGenericDocumentsProvider()
             .EnableSearchV2(),
-        TestCase("searchFileSystemProvider").EnableSearchV2()
+        TestCase("searchFileSystemProvider").EnableSearchV2(),
+        TestCase("searchImageByContent")
+            .EnableImageContentSearch()
+            .EnableSearchV2()
         // TODO(b/189173190): Enable
         // TestCase("searchQueryLaunchParam")
         ));
@@ -2414,6 +2513,10 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
             .FeatureIds({"screenplay-a06f961a-17f5-4fbd-8285-49abb000dee1"}),
         TestCase("trashPermanentlyDelete"),
         TestCase("trashRestoreFromToast"),
+// TODO(crbug.com/1425820): Re-enable this test on ChromiumOS MSAN.
+#if !defined(MEMORY_SANITIZER)
+        TestCase("trashRestoreFromToast").EnableCrosComponents(),
+#endif
         TestCase("trashRestoreFromTrash"),
         TestCase("trashRestoreFromTrashShortcut"),
         TestCase("trashEmptyTrash")
@@ -2439,6 +2542,8 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("trashEnsureOldEntriesArePeriodicallyRemoved"),
         TestCase("trashDragDropOutOfTrashPerformsRestoration"),
         TestCase("trashRestorationDialogInProgressDoesntShowUndo"),
+        TestCase("trashRestorationDialogInProgressDoesntShowUndo")
+            .EnableCrosComponents(),
         TestCase("trashTogglingTrashEnabledNavigatesAwayFromTrashRoot"),
         TestCase("trashTogglingTrashEnabledPrefUpdatesDirectoryTree"),
         TestCase("trashCantRestoreWhenParentDoesntExist"),
@@ -2455,7 +2560,10 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
     AndroidPhotos, /* android_photos.js */
     FilesAppBrowserTest,
     ::testing::Values(
-        TestCase("androidPhotosBanner").EnablePhotosDocumentsProvider()));
+        TestCase("androidPhotosBanner").EnablePhotosDocumentsProvider(),
+        TestCase("androidPhotosBanner")
+            .EnablePhotosDocumentsProvider()
+            .EnableCrosComponents()));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     Office, /* office.js */

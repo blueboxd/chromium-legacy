@@ -39,6 +39,26 @@ namespace {
 using SimulateRightClickModifier = ui::mojom::SimulateRightClickModifier;
 using SixPackShortcutModifier = ui::mojom::SixPackShortcutModifier;
 
+// Maps a six pack key to the search/alt shortcut strings.
+static constexpr auto kSixPackNotificationsMap =
+    base::MakeFixedFlatMap<ui::KeyboardCode, std::array<int, 2>>({
+        {ui::KeyboardCode::VKEY_DELETE,
+         {IDS_ASH_SETTINGS_SIX_PACK_KEY_DELETE_ALT,
+          IDS_ASH_SETTINGS_SIX_PACK_KEY_DELETE_SEARCH}},
+        {ui::KeyboardCode::VKEY_HOME,
+         {IDS_ASH_SETTINGS_SIX_PACK_KEY_HOME_ALT,
+          IDS_ASH_SETTINGS_SIX_PACK_KEY_HOME_SEARCH}},
+        {ui::KeyboardCode::VKEY_END,
+         {IDS_ASH_SETTINGS_SIX_PACK_KEY_END_ALT,
+          IDS_ASH_SETTINGS_SIX_PACK_KEY_END_SEARCH}},
+        {ui::KeyboardCode::VKEY_NEXT,
+         {IDS_ASH_SETTINGS_SIX_PACK_KEY_PAGE_DOWN_ALT,
+          IDS_ASH_SETTINGS_SIX_PACK_KEY_PAGE_DOWN_SEARCH}},
+        {ui::KeyboardCode::VKEY_PRIOR,
+         {IDS_ASH_SETTINGS_SIX_PACK_KEY_PAGE_UP_ALT,
+          IDS_ASH_SETTINGS_SIX_PACK_KEY_PAGE_UP_SEARCH}},
+    });
+
 constexpr auto kSixPackKeyToPrefName =
     base::MakeFixedFlatMap<ui::KeyboardCode, const char*>({
         {ui::KeyboardCode::VKEY_DELETE,
@@ -80,6 +100,10 @@ bool IsRightClickRewriteDisabled(SimulateRightClickModifier active_modifier) {
   return active_modifier == SimulateRightClickModifier::kNone;
 }
 
+bool IsSixPackShortcutDisabled(SixPackShortcutModifier active_modifier) {
+  return active_modifier == SixPackShortcutModifier::kNone;
+}
+
 std::u16string GetRightClickRewriteNotificationMessage(
     SimulateRightClickModifier blocked_modifier,
     SimulateRightClickModifier active_modifier) {
@@ -88,16 +112,35 @@ std::u16string GetRightClickRewriteNotificationMessage(
         IDS_ASH_DEVICE_SETTINGS_NOTIFICATIONS_RIGHT_CLICK_DISABLED);
   }
 
+  const int launcher_key_name_id =
+      Shell::Get()->keyboard_capability()->HasLauncherButtonOnAnyKeyboard()
+          ? IDS_ASH_SETTINGS_SHORTCUT_MODIFIER_LAUNCHER
+          : IDS_ASH_SETTINGS_SHORTCUT_MODIFIER_SEARCH;
+  const std::u16string launcher_key_name =
+      l10n_util::GetStringUTF16(launcher_key_name_id);
+
   switch (blocked_modifier) {
     case SimulateRightClickModifier::kAlt:
-      return l10n_util::GetStringUTF16(
-          IDS_ASH_DEVICE_SETTINGS_NOTIFICATIONS_ALT_RIGHT_CLICK);
+      return l10n_util::GetStringFUTF16(
+          IDS_ASH_DEVICE_SETTINGS_NOTIFICATIONS_ALT_RIGHT_CLICK,
+          launcher_key_name);
     case SimulateRightClickModifier::kSearch:
-      return l10n_util::GetStringUTF16(
-          IDS_ASH_DEVICE_SETTINGS_NOTIFICATIONS_LAUNCHER_RIGHT_CLICK);
+      return l10n_util::GetStringFUTF16(
+          IDS_ASH_DEVICE_SETTINGS_NOTIFICATIONS_LAUNCHER_RIGHT_CLICK,
+          launcher_key_name);
     case SimulateRightClickModifier::kNone:
       NOTREACHED_NORETURN();
   }
+}
+
+std::u16string GetRightClickRewriteNotificationTitle(
+    SimulateRightClickModifier active_modifier) {
+  if (IsRightClickRewriteDisabled(active_modifier)) {
+    return l10n_util::GetStringUTF16(
+        IDS_ASH_DEVICE_SETTINGS_NOTIFICATIONS_RIGHT_CLICK_DISABLED_TITLE);
+  }
+  return l10n_util::GetStringUTF16(
+      IDS_ASH_DEVICE_SETTINGS_NOTIFICATIONS_RIGHT_CLICK_TITLE);
 }
 
 std::string GetRightClickNotificationId(
@@ -127,7 +170,7 @@ bool IsActiveUserSession() {
 
 // If the user has reached the settings page through the notification, do
 // not show any more new notifications.
-void StopShowingNotification(const char* pref_name) {
+void PreventNotificationFromShowingAgain(const char* pref_name) {
   Shell::Get()->session_controller()->GetActivePrefService()->SetInteger(
       pref_name, 0);
 }
@@ -166,6 +209,44 @@ std::u16string GetSixPackKeyName(ui::KeyboardCode key_code) {
   }
 }
 
+std::u16string GetSixPackShortcut(ui::KeyboardCode key_code,
+                                  SixPackShortcutModifier modifier) {
+  CHECK(modifier != SixPackShortcutModifier::kNone);
+  int message_id =
+      kSixPackNotificationsMap.at(key_code)[static_cast<int>(modifier) - 1];
+
+  if (modifier == SixPackShortcutModifier::kSearch) {
+    const int launcher_key_name_id =
+        Shell::Get()->keyboard_capability()->HasLauncherButtonOnAnyKeyboard()
+            ? IDS_ASH_SETTINGS_SHORTCUT_MODIFIER_LAUNCHER
+            : IDS_ASH_SETTINGS_SHORTCUT_MODIFIER_SEARCH;
+    const std::u16string launcher_key_name =
+        l10n_util::GetStringUTF16(launcher_key_name_id);
+    return l10n_util::GetStringFUTF16(message_id, launcher_key_name);
+  }
+  return l10n_util::GetStringUTF16(message_id);
+}
+
+std::u16string GetSixPackNotificationMessage(
+    ui::KeyboardCode key_code,
+    SixPackShortcutModifier blocked_modifier,
+    SixPackShortcutModifier active_modifier) {
+  const auto six_pack_key_name = GetSixPackKeyName(key_code);
+  if (IsSixPackShortcutDisabled(active_modifier)) {
+    return l10n_util::GetStringFUTF16(
+        IDS_ASH_DEVICE_SETTINGS_NOTIFICATIONS_SIX_PACK_SHORTCUT_DISABLED,
+        six_pack_key_name);
+  }
+
+  // There's only one active shortcut for the "Insert" six pack key.
+  CHECK(key_code != ui::KeyboardCode::VKEY_INSERT);
+  const auto new_shortcut = GetSixPackShortcut(key_code, active_modifier);
+  const auto old_shortcut = GetSixPackShortcut(key_code, blocked_modifier);
+  return l10n_util::GetStringFUTF16(
+      IDS_ASH_DEVICE_SETTINGS_NOTIFICATIONS_SIX_PACK_KEY, six_pack_key_name,
+      new_shortcut, old_shortcut);
+}
+
 std::string GetSixPackNotificationId(ui::KeyboardCode key_code, int device_id) {
   std::string notification_id;
   switch (key_code) {
@@ -191,6 +272,19 @@ std::string GetSixPackNotificationId(ui::KeyboardCode key_code, int device_id) {
       NOTREACHED_NORETURN();
   }
   return notification_id + kDelimiter + base::NumberToString(device_id);
+}
+
+void RemoveNotification(const std::string& notification_id) {
+  message_center::MessageCenter::Get()->RemoveNotification(notification_id,
+                                                           /*by_user=*/true);
+}
+
+void ShowRemapKeysSubpage(int device_id) {
+  Shell::Get()->system_tray_model()->client()->ShowRemapKeysSubpage(device_id);
+}
+
+void ShowTouchpadSettings() {
+  Shell::Get()->system_tray_model()->client()->ShowTouchpadSettings();
 }
 
 }  // namespace
@@ -252,32 +346,80 @@ void InputDeviceSettingsNotificationController::
 
   prefs->SetInteger(prefs::kRemapToRightClickNotificationsRemaining,
                     num_notifications_remaining - 1);
-  auto on_click_handler =
-      base::MakeRefCounted<message_center::HandleNotificationClickDelegate>(
-          base::BindRepeating([]() {
-            if (!Shell::Get()->session_controller()->IsUserSessionBlocked()) {
-              Shell::Get()
-                  ->system_tray_model()
-                  ->client()
-                  ->ShowTouchpadSettings();
-              StopShowingNotification(
-                  prefs::kRemapToRightClickNotificationsRemaining);
-            }
-          }));
+  const auto notification_id =
+      GetRightClickNotificationId(blocked_modifier, active_modifier);
+  message_center::RichNotificationData rich_notification_data;
+  rich_notification_data.buttons.emplace_back(
+      l10n_util::GetStringUTF16(IDS_ASH_DEVICE_SETTINGS_EDIT_SHORTCUT_BUTTON));
+  rich_notification_data.buttons.emplace_back(
+      l10n_util::GetStringUTF16(IDS_ASH_DEVICE_SETTINGS_LEARN_MORE_BUTTON));
   auto notification = CreateSystemNotificationPtr(
-      message_center::NOTIFICATION_TYPE_SIMPLE,
-      GetRightClickNotificationId(blocked_modifier, active_modifier),
-      l10n_util::GetStringUTF16(IDS_DEPRECATED_SHORTCUT_TITLE),
+      message_center::NOTIFICATION_TYPE_SIMPLE, notification_id,
+      GetRightClickRewriteNotificationTitle(active_modifier),
       GetRightClickRewriteNotificationMessage(blocked_modifier,
                                               active_modifier),
       std::u16string(), GURL(),
       message_center::NotifierId(
           message_center::NotifierType::SYSTEM_COMPONENT, kNotifierId,
           NotificationCatalogName::kEventRewriterDeprecation),
-      message_center::RichNotificationData(), std::move(on_click_handler),
+      rich_notification_data,
+      base::MakeRefCounted<message_center::HandleNotificationClickDelegate>(
+          base::BindRepeating(&InputDeviceSettingsNotificationController::
+                                  HandleRightClickNotificationClicked,
+                              weak_ptr_factory_.GetWeakPtr(), notification_id)),
       kNotificationKeyboardIcon,
       message_center::SystemNotificationWarningLevel::NORMAL);
   message_center_->AddNotification(std::move(notification));
+}
+
+void InputDeviceSettingsNotificationController::
+    HandleSixPackNotificationClicked(int device_id,
+                                     const char* pref_name,
+                                     const std::string& notification_id,
+                                     absl::optional<int> button_index) {
+  // Clicked on body.
+  if (!button_index) {
+    ShowRemapKeysSubpage(device_id);
+    RemoveNotification(notification_id);
+    PreventNotificationFromShowingAgain(pref_name);
+    return;
+  }
+
+  switch (*button_index) {
+    case NotificationButtonIndex::BUTTON_EDIT_SHORTCUT:
+      ShowRemapKeysSubpage(device_id);
+      break;
+    case NotificationButtonIndex::BUTTON_LEARN_MORE:
+      // TODO(b/279503977): Add link to learn more page.
+      break;
+  }
+  PreventNotificationFromShowingAgain(pref_name);
+  RemoveNotification(notification_id);
+}
+
+void InputDeviceSettingsNotificationController::
+    HandleRightClickNotificationClicked(const std::string& notification_id,
+                                        absl::optional<int> button_index) {
+  // Clicked on body.
+  if (!button_index) {
+    ShowTouchpadSettings();
+    PreventNotificationFromShowingAgain(
+        prefs::kRemapToRightClickNotificationsRemaining);
+    RemoveNotification(notification_id);
+    return;
+  }
+
+  switch (*button_index) {
+    case NotificationButtonIndex::BUTTON_EDIT_SHORTCUT:
+      ShowTouchpadSettings();
+      break;
+    case NotificationButtonIndex::BUTTON_LEARN_MORE:
+      // TODO(b/279503977): Add link to learn more page.
+      break;
+  }
+  PreventNotificationFromShowingAgain(
+      prefs::kRemapToRightClickNotificationsRemaining);
+  RemoveNotification(notification_id);
 }
 
 // TODO(b/279503977): Use `blocked_modifier` and `active_modifier` to display
@@ -306,29 +448,27 @@ void InputDeviceSettingsNotificationController::
   }
   prefs->SetInteger(pref, num_notifications_remaining - 1);
 
-  auto on_click_handler =
-      base::MakeRefCounted<message_center::HandleNotificationClickDelegate>(
-          base::BindRepeating(
-              [](int device_id, const char* pref_name) {
-                Shell::Get()
-                    ->system_tray_model()
-                    ->client()
-                    ->ShowRemapKeysSubpage(device_id);
-                StopShowingNotification(pref_name);
-              },
-              device_id, pref));
+  const auto notification_id = GetSixPackNotificationId(key_code, device_id);
+  message_center::RichNotificationData rich_notification_data;
+  rich_notification_data.buttons.emplace_back(
+      l10n_util::GetStringUTF16(IDS_ASH_DEVICE_SETTINGS_EDIT_SHORTCUT_BUTTON));
+  rich_notification_data.buttons.emplace_back(
+      l10n_util::GetStringUTF16(IDS_ASH_DEVICE_SETTINGS_LEARN_MORE_BUTTON));
   auto notification = CreateSystemNotificationPtr(
-      message_center::NOTIFICATION_TYPE_SIMPLE,
-      GetSixPackNotificationId(key_code, device_id),
-      l10n_util::GetStringUTF16(IDS_DEPRECATED_SHORTCUT_TITLE),
-      l10n_util::GetStringFUTF16(
-          IDS_ASH_DEVICE_SETTINGS_NOTIFICATIONS_SIX_PACK_KEY,
-          GetSixPackKeyName(key_code)),
+      message_center::NOTIFICATION_TYPE_SIMPLE, notification_id,
+      l10n_util::GetStringUTF16(IDS_ASH_SETTINGS_SHORTCUT_NOTIFICATION_TITLE),
+      GetSixPackNotificationMessage(key_code, blocked_modifier,
+                                    active_modifier),
       std::u16string(), GURL(),
       message_center::NotifierId(
           message_center::NotifierType::SYSTEM_COMPONENT, kNotifierId,
           NotificationCatalogName::kEventRewriterDeprecation),
-      message_center::RichNotificationData(), std::move(on_click_handler),
+      rich_notification_data,
+      base::MakeRefCounted<message_center::HandleNotificationClickDelegate>(
+          base::BindRepeating(&InputDeviceSettingsNotificationController::
+                                  HandleSixPackNotificationClicked,
+                              weak_ptr_factory_.GetWeakPtr(), device_id, pref,
+                              notification_id)),
       kNotificationKeyboardIcon,
       message_center::SystemNotificationWarningLevel::NORMAL);
   message_center_->AddNotification(std::move(notification));

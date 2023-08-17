@@ -14,6 +14,7 @@
 #include "ash/public/cpp/accessibility_focus_ring_info.h"
 #include "ash/public/cpp/event_rewriter_controller.h"
 #include "ash/public/cpp/window_tree_host_lookup.h"
+#include "ash/webui/settings/public/constants/routes_util.h"
 #include "base/containers/contains.h"
 #include "base/functional/bind.h"
 #include "base/json/json_writer.h"
@@ -30,7 +31,6 @@
 #include "chrome/browser/extensions/extension_tab_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
-#include "chrome/browser/ui/webui/settings/chromeos/constants/routes_util.h"
 #include "chrome/common/extensions/api/accessibility_private.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/webui_url_constants.h"
@@ -49,6 +49,7 @@
 #include "ui/accessibility/accessibility_features.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/window_tree_host.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -58,6 +59,7 @@
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/events/ozone/layout/keyboard_layout_engine.h"
 #include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"
+#include "ui/strings/grit/ui_strings.h"
 #include "ui/wm/core/coordinate_conversion.h"
 
 namespace {
@@ -784,8 +786,11 @@ AccessibilityPrivateShowConfirmationDialogFunction::Run() {
 
   std::u16string title = base::UTF8ToUTF16(params->title);
   std::u16string description = base::UTF8ToUTF16(params->description);
+  std::u16string cancel_name =
+      params->cancel_name ? base::UTF8ToUTF16(params->cancel_name.value())
+                          : l10n_util::GetStringUTF16(IDS_APP_CANCEL);
   ash::AccessibilityController::Get()->ShowConfirmationDialog(
-      title, description,
+      title, description, cancel_name,
       base::BindOnce(
           &AccessibilityPrivateShowConfirmationDialogFunction::OnDialogResult,
           this, /* confirmed */ true),
@@ -957,7 +962,6 @@ AccessibilityPrivateUpdateSwitchAccessBubbleFunction::Run() {
 
 ExtensionFunction::ResponseAction
 AccessibilityPrivateIsLacrosPrimaryFunction::Run() {
-  const bool is_lacros_primary =
-      crosapi::lacros_startup_state::IsLacrosPrimaryEnabled();
-  return RespondNow(WithArguments(is_lacros_primary));
+  return RespondNow(
+      WithArguments(crosapi::lacros_startup_state::IsLacrosEnabled()));
 }

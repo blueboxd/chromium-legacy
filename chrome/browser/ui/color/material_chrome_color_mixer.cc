@@ -6,6 +6,8 @@
 
 #include "chrome/browser/ui/color/chrome_color_id.h"
 #include "chrome/browser/ui/color/chrome_color_provider_utils.h"
+#include "chrome/grit/theme_resources.h"
+#include "components/safe_browsing/core/common/features.h"
 #include "ui/color/color_id.h"
 #include "ui/color/color_mixer.h"
 #include "ui/color/color_provider.h"
@@ -20,6 +22,11 @@ void ApplyDefaultChromeRefreshToolbarColors(ui::ColorMixer& mixer,
       kColorTabBackgroundInactiveFrameActive};
   mixer[kColorAppMenuExpandedForegroundDefault] = {
       kColorTabForegroundInactiveFrameActive};
+
+  if (key.custom_theme && key.custom_theme->HasCustomImage(IDR_THEME_TOOLBAR)) {
+    mixer[kColorAppMenuHighlightDefault] = {ui::kColorSysTonalContainer};
+  }
+
   mixer[kColorAppMenuHighlightSeverityLow] = {kColorAppMenuHighlightDefault};
   mixer[kColorAppMenuHighlightSeverityMedium] = {kColorAppMenuHighlightDefault};
   mixer[kColorAppMenuHighlightSeverityHigh] = {kColorAppMenuHighlightDefault};
@@ -48,6 +55,16 @@ void AddMaterialChromeColorMixer(ui::ColorProvider* provider,
 
   // Download bubble colors.
   mixer[kColorDownloadBubbleRowHover] = {ui::kColorSysStateHoverOnSubtle};
+  mixer[kColorDownloadBubbleShowAllDownloadsIcon] = {
+      ui::kColorSysOnSurfaceSubtle};
+  mixer[kColorDownloadToolbarButtonActive] = ui::PickGoogleColor(
+      ui::kColorSysPrimary, kColorDownloadToolbarButtonRingBackground,
+      color_utils::kMinimumVisibleContrastRatio);
+  mixer[kColorDownloadToolbarButtonRingBackground] = {
+      ui::kColorSysNeutralOutline};
+  mixer[kColorDownloadToolbarButtonAnimationForeground] =
+      AdjustHighlightColorForContrast(ui::kColorSysPrimary,
+                                      kColorDownloadShelfBackground);
 
   // Permission Prompt colors.
   mixer[kColorPermissionPromptRequestText] = {ui::kColorSysOnSurfaceSubtle};
@@ -74,6 +91,7 @@ void AddMaterialChromeColorMixer(ui::ColorProvider* provider,
   mixer[kColorTabSearchSecondaryForeground] = {ui::kColorSysOnSurfaceSubtle};
   mixer[kColorTabSearchScrollbarThumb] = {ui::kColorSysPrimary};
 
+  // Side Panel colors.
   mixer[kColorSidePanelBackground] = {ui::kColorSysBaseContainer};
 
   if (!ShouldApplyChromeMaterialOverrides(key)) {
@@ -96,7 +114,7 @@ void AddMaterialChromeColorMixer(ui::ColorProvider* provider,
   mixer[kColorAvatarButtonHighlightNormalForeground] = {
       ui::kColorSysOnTonalContainer};
   mixer[kColorAvatarButtonHighlightDefaultForeground] = {
-      ui::kColorSysOnSecondaryContainer};
+      ui::kColorSysOnSurfaceSecondary};
   mixer[kColorAvatarButtonHighlightSyncErrorForeground] = {
       ui::kColorSysOnErrorContainer};
   mixer[kColorAvatarButtonHighlightIncognitoForeground] = {
@@ -118,12 +136,22 @@ void AddMaterialChromeColorMixer(ui::ColorProvider* provider,
                                  kColorDownloadShelfBackground),
       kColorDownloadShelfBackground);
   mixer[kColorDownloadItemIconDangerous] = {ui::kColorSysError};
-  // TODO(crbug.com/1399939): use a yellow-ish CR2023 color instead.
-  mixer[kColorDownloadItemIconWarning] = {ui::kColorAlertMediumSeverityIcon};
+  // TODO(crbug.com/1399939): use a yellow-ish CR2023 color instead for the
+  // non-ImprovedDownloadBubbleWarnings case.
+  mixer[kColorDownloadItemIconWarning] = {
+      base::FeatureList::IsEnabled(
+          safe_browsing::kImprovedDownloadBubbleWarnings)
+          ? ui::kColorSysOnSurfaceSubtle
+          : ui::kColorAlertMediumSeverityIcon};
   mixer[kColorDownloadItemProgressRingForeground] = {ui::kColorSysPrimary};
   mixer[kColorDownloadItemTextDangerous] = {ui::kColorSysError};
-  // TODO(crbug.com/1399939): use a yellow-ish CR2023 color instead.
-  mixer[kColorDownloadItemTextWarning] = {ui::kColorAlertMediumSeverityText};
+  // TODO(crbug.com/1399939): use a yellow-ish CR2023 color instead for the
+  // non-ImprovedDownloadBubbleWarnings case.
+  mixer[kColorDownloadItemTextWarning] = {
+      base::FeatureList::IsEnabled(
+          safe_browsing::kImprovedDownloadBubbleWarnings)
+          ? ui::kColorSysOnSurfaceSubtle
+          : ui::kColorAlertMediumSeverityText};
   mixer[kColorDownloadShelfBackground] = {ui::kColorSysBase};
   mixer[kColorDownloadShelfButtonIcon] = {kColorDownloadShelfForeground};
   mixer[kColorDownloadShelfButtonIconDisabled] = {ui::kColorSysStateDisabled};
@@ -133,12 +161,6 @@ void AddMaterialChromeColorMixer(ui::ColorProvider* provider,
   mixer[kColorDownloadShelfContentAreaSeparator] = {
       kColorToolbarSeparatorDefault};
   mixer[kColorDownloadShelfForeground] = {ui::kColorSysOnSurfaceSubtle};
-  mixer[kColorDownloadToolbarButtonActive] =
-      ui::PickGoogleColor(ui::kColorSysPrimary, kColorDownloadShelfBackground,
-                          color_utils::kMinimumVisibleContrastRatio);
-  mixer[kColorDownloadToolbarButtonAnimationForeground] =
-      AdjustHighlightColorForContrast(ui::kColorSysPrimary,
-                                      kColorDownloadShelfBackground);
   mixer[kColorExtensionIconBadgeBackgroundDefault] = {
       ui::kColorSysNeutralContainer};
   mixer[kColorFeaturePromoBubbleBackground] = {ui::kColorSysPrimary};
@@ -186,17 +208,31 @@ void AddMaterialChromeColorMixer(ui::ColorProvider* provider,
       ui::kColorSysStateHoverDimBlendProtection};
   mixer[kColorOmniboxChipInkDropRipple] = {
       ui::kColorSysStateRippleNeutralOnSubtle};
-  mixer[kColorOmniboxSecurityChipDangerous] = {ui::kColorSysError};
-  mixer[kColorOmniboxSecurityChipInkDropHover] = {
-      ui::kColorSysStateHoverOnProminent};
-  mixer[kColorOmniboxSecurityChipInkDropRipple] = {
-      ui::kColorSysStateRippleNeutralOnProminent};
-  mixer[kColorOmniboxSecurityChipText] = {ui::kColorSysOnError};
 
-  // Tab alert colors.
-  mixer[kColorTabAlertMediaRecordingIcon] = {ui::kColorSysError};
-  mixer[kColorTabAlertPipPlayingIcon] = {ui::kColorSysPrimary};
-  mixer[kColorTabAlertAudioPlayingIcon] = {ui::kColorSysOnSurfaceSubtle};
+  // Tabstrip tab alert colors.
+  mixer[kColorTabAlertAudioPlayingActiveFrameActive] = {
+      ui::kColorSysOnSurfaceSubtle};
+  mixer[kColorTabAlertAudioPlayingActiveFrameInactive] = {
+      ui::kColorSysOnSurfaceSubtle};
+  mixer[kColorTabAlertAudioPlayingInactiveFrameActive] = {
+      ui::kColorSysOnSurfaceSubtle};
+  mixer[kColorTabAlertAudioPlayingInactiveFrameInactive] = {
+      ui::kColorSysOnSurfaceSubtle};
+  mixer[kColorTabAlertMediaRecordingActiveFrameActive] = {ui::kColorSysError};
+  mixer[kColorTabAlertMediaRecordingActiveFrameInactive] = {ui::kColorSysError};
+  mixer[kColorTabAlertMediaRecordingInactiveFrameActive] = {ui::kColorSysError};
+  mixer[kColorTabAlertMediaRecordingInactiveFrameInactive] = {
+      ui::kColorSysError};
+  mixer[kColorTabAlertPipPlayingActiveFrameActive] = {ui::kColorSysPrimary};
+  mixer[kColorTabAlertPipPlayingActiveFrameInactive] = {ui::kColorSysPrimary};
+  mixer[kColorTabAlertPipPlayingInactiveFrameActive] = {ui::kColorSysPrimary};
+  mixer[kColorTabAlertPipPlayingInactiveFrameInactive] = {ui::kColorSysPrimary};
+
+  // Hover card tab alert colors.
+  mixer[kColorHoverCardTabAlertMediaRecordingIcon] = {ui::kColorSysError};
+  mixer[kColorHoverCardTabAlertPipPlayingIcon] = {ui::kColorSysPrimary};
+  mixer[kColorHoverCardTabAlertAudioPlayingIcon] = {
+      ui::kColorSysOnSurfaceSubtle};
 
   // Toolbar colors.
   mixer[kColorToolbar] = {ui::kColorSysBase};

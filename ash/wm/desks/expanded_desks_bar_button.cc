@@ -90,8 +90,6 @@ class ASH_EXPORT InnerExpandedDesksBarButton : public DeskButtonBase {
   void SetButtonState(bool enabled) {
     outer_button_->UpdateLabelColor(enabled);
     // Notify the overview highlight if we are about to be disabled.
-    // TODO(b/277988182): Add highlight/chromevoxing support for bento button
-    // desk bar outside of overview.
     if (!enabled && bar_view_->type() == DeskBarViewBase::Type::kOverview) {
       OverviewSession* overview_session =
           Shell::Get()->overview_controller()->overview_session();
@@ -146,6 +144,7 @@ ExpandedDesksBarButton::ExpandedDesksBarButton(
       inner_button_, gfx::Insets(kFocusRingHaloInset), kBorderCornerRadius);
   if (bar_view_->type() == DeskBarViewBase::Type::kOverview) {
     auto* focus_ring = views::FocusRing::Get(inner_button_);
+    focus_ring->SetOutsetFocusRingDisabled(true);
     focus_ring->SetHasFocusPredicate(base::BindRepeating(
         [](const ExpandedDesksBarButton* desks_bar_button,
            const views::View* view) {

@@ -5,7 +5,6 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_RENDER_WIDGET_HOST_VIEW_IOS_H_
 #define CONTENT_BROWSER_RENDERER_HOST_RENDER_WIDGET_HOST_VIEW_IOS_H_
 
-#include "base/memory/raw_ptr.h"
 #include "third_party/blink/public/mojom/input/input_handler.mojom-forward.h"
 
 #include <string>
@@ -83,6 +82,7 @@ class CONTENT_EXPORT RenderWidgetHostViewIOS
   void TakeFallbackContentFrom(RenderWidgetHostView* view) override;
   std::unique_ptr<SyntheticGestureTarget> CreateSyntheticGestureTarget()
       override;
+  void InvalidateLocalSurfaceIdAndAllocationGroup() override;
   void ClearFallbackSurfaceForCommitPending() override;
   void ResetFallbackToFirstNavigationSurface() override;
   viz::FrameSinkId GetRootFrameSinkId() override;

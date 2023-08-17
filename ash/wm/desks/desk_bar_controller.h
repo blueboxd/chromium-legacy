@@ -50,7 +50,7 @@ class ASH_EXPORT DeskBarController : public DesksController::Observer,
     ~BarWidgetAndView();
 
     std::unique_ptr<views::Widget> bar_widget;
-    base::raw_ptr<DeskBarViewBase> bar_view;
+    raw_ptr<DeskBarViewBase> bar_view;
   };
 
   DeskBarController();
@@ -156,7 +156,7 @@ class ASH_EXPORT DeskBarController : public DesksController::Observer,
 
   // When pressing off the bar, it should either commit desk name change, or
   // hide the bar.
-  void OnMaybePressOffBar(const ui::LocatedEvent& event);
+  void OnMaybePressOffBar(ui::LocatedEvent& event);
 
   // Returns desk button for `root`.
   DeskButton* GetDeskButton(aura::Window* root);

@@ -52,13 +52,12 @@ TargetDeviceBootstrapController::TargetDeviceBootstrapController(
     std::unique_ptr<
         TargetDeviceBootstrapController::AccessibilityManagerWrapper>
         accessibility_manager_wrapper,
-    base::WeakPtr<NearbyConnectionsManager> nearby_connections_manager,
-    mojo::SharedRemote<mojom::QuickStartDecoder> quick_start_decoder)
+    QuickStartConnectivityService* quick_start_connectivity_service)
     : auth_broker_(std::move(auth_broker)),
       accessibility_manager_wrapper_(std::move(accessibility_manager_wrapper)) {
   session_context_ = SessionContext();
   connection_broker_ = TargetDeviceConnectionBrokerFactory::Create(
-      session_context_, nearby_connections_manager, quick_start_decoder);
+      session_context_, quick_start_connectivity_service);
 }
 
 TargetDeviceBootstrapController::~TargetDeviceBootstrapController() = default;
@@ -339,6 +338,7 @@ void TargetDeviceBootstrapController::OnChallengeBytesReceived(
                                << "Reason: " << challenge.error().ToString();
     status_.step = Step::ERROR;
     status_.payload = ErrorCode::FETCHING_CHALLENGE_BYTES_FAILED;
+    quick_start_metrics::RecordGaiaTransferAttempted(/*attempted=*/false);
     NotifyObservers();
     return;
     // TODO(b:286853512) - Implement retry mechanism.
@@ -354,6 +354,7 @@ void TargetDeviceBootstrapController::OnChallengeBytesReceived(
       << "Received challenge bytes from Gaia. Requesting FIDO assertion.";
   challenge_bytes_ = challenge.value();
 
+  quick_start_metrics::RecordGaiaTransferAttempted(/*attempted=*/true);
   authenticated_connection_->RequestAccountTransferAssertion(
       challenge_bytes_,
       base::BindOnce(&TargetDeviceBootstrapController::OnFidoAssertionReceived,

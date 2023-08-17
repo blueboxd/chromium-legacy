@@ -34,10 +34,6 @@
 #include "ui/display/display_list.h"
 #include "ui/events/gesture_detection/filtered_gesture_provider.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 namespace remote_cocoa {
 namespace mojom {
 class Application;
@@ -55,6 +51,7 @@ class ScopedPasswordInputEnabler;
 
 @class NSAccessibilityRemoteUIElement;
 @class RenderWidgetHostViewCocoa;
+@class CursorAccessibilityScaleFactorObserver;
 
 namespace content {
 
@@ -152,6 +149,7 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   void EnsureSurfaceSynchronizedForWebTest() override;
   void FocusedNodeChanged(bool is_editable_node,
                           const gfx::Rect& node_bounds_in_screen) override;
+  void InvalidateLocalSurfaceIdAndAllocationGroup() override;
   void ClearFallbackSurfaceForCommitPending() override;
   void ResetFallbackToFirstNavigationSurface() override;
   bool RequestRepaintForTesting() override;
@@ -228,7 +226,9 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
                               RenderWidgetHostViewBase* updated_view) override;
   void OnImeCompositionRangeChanged(
       TextInputManager* text_input_manager,
-      RenderWidgetHostViewBase* updated_view) override;
+      RenderWidgetHostViewBase* updated_view,
+      bool character_bounds_changed,
+      const absl::optional<std::vector<gfx::Rect>>& line_bounds) override;
   void OnSelectionBoundsChanged(
       TextInputManager* text_input_manager,
       RenderWidgetHostViewBase* updated_view) override;
@@ -616,6 +616,9 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   SkColor last_frame_root_background_color_ = SK_ColorTRANSPARENT;
 
   std::unique_ptr<CursorManager> cursor_manager_;
+
+  // Observes macOS's accessibility pointer size user preference changes.
+  CursorAccessibilityScaleFactorObserver* __strong cursor_scale_observer_;
 
   // Used to track active password input sessions.
   std::unique_ptr<ui::ScopedPasswordInputEnabler> password_input_enabler_;

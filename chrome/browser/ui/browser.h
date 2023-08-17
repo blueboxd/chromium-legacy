@@ -33,7 +33,6 @@
 #include "chrome/browser/ui/unload_controller.h"
 #include "components/paint_preview/buildflags/buildflags.h"
 #include "components/prefs/pref_change_registrar.h"
-#include "components/services/screen_ai/buildflags/buildflags.h"
 #include "components/sessions/core/session_id.h"
 #include "components/translate/content/browser/content_translate_driver.h"
 #include "components/zoom/zoom_observer.h"
@@ -64,6 +63,7 @@ class BrowserWindow;
 class ExclusiveAccessManager;
 class FindBarController;
 class LocationBarModel;
+class OverscrollPrefManager;
 class Profile;
 class ScopedKeepAlive;
 class ScopedProfileKeepAlive;
@@ -396,6 +396,12 @@ class Browser : public TabStripModelObserver,
   void set_force_skip_warning_user_on_close(
       bool force_skip_warning_user_on_close) {
     force_skip_warning_user_on_close_ = force_skip_warning_user_on_close;
+  }
+
+  // Sets whether the UI should be immediately updated when scheduled on a
+  // test.
+  void set_update_ui_immediately_for_testing() {
+    update_ui_immediately_for_testing_ = true;
   }
 
   // Accessors ////////////////////////////////////////////////////////////////
@@ -741,6 +747,8 @@ class Browser : public TabStripModelObserver,
   std::unique_ptr<content::EyeDropper> OpenEyeDropper(
       content::RenderFrameHost* frame,
       content::EyeDropperListener* listener) override;
+  void InitiatePreview(content::WebContents& web_contents,
+                       const GURL& url) override;
 
   bool is_type_normal() const { return type_ == TYPE_NORMAL; }
   bool is_type_popup() const { return type_ == TYPE_POPUP; }
@@ -786,10 +794,6 @@ class Browser : public TabStripModelObserver,
   Browser* GetBrowserForOpeningWebUi();
 
   StatusBubble* GetStatusBubbleForTesting();
-
-#if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
-  void RunScreenAIAnnotator();
-#endif
 
  private:
   friend class BrowserTest;
@@ -1337,6 +1341,9 @@ class Browser : public TabStripModelObserver,
   // Tells if the browser should skip warning the user when closing the window.
   bool force_skip_warning_user_on_close_ = false;
 
+  // If true, immediately updates the UI when scheduled.
+  bool update_ui_immediately_for_testing_ = false;
+
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   std::unique_ptr<extensions::ExtensionBrowserWindowHelper>
       extension_browser_window_helper_;
@@ -1353,6 +1360,10 @@ class Browser : public TabStripModelObserver,
   // If true, the Browser window has been closed and this will be deleted
   // shortly (after a PostTask).
   bool is_delete_scheduled_ = false;
+
+#if defined(USE_AURA)
+  std::unique_ptr<OverscrollPrefManager> overscroll_pref_manager_;
+#endif
 
   // The following factory is used for chrome update coalescing.
   base::WeakPtrFactory<Browser> chrome_updater_factory_{this};

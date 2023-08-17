@@ -16,6 +16,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/thread_pool.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -23,6 +24,8 @@
 #include "third_party/blink/renderer/platform/image-decoders/image_decoder_test_helpers.h"
 #include "third_party/blink/renderer/platform/wtf/shared_buffer.h"
 #include "third_party/libavif/src/include/avif/avif.h"
+#include "ui/gfx/color_space.h"
+#include "ui/gfx/color_transform.h"
 
 #define FIXME_SUPPORT_ICC_PROFILE_NO_TRANSFORM 0
 #define FIXME_SUPPORT_ICC_PROFILE_TRANSFORM 0
@@ -200,6 +203,32 @@ StaticColorCheckParam kTestParams[] = {
          {gfx::Point(2, 2), SkColorSetARGB(255, 255, 0, 0)},
      }},
     {"/images/resources/avif/silver-full-range-srgb-420-8bpc.avif",
+     8,
+     ColorType::kRgb,
+     ImageDecoder::kLosslessFormat,
+     ImageDecoder::kAlphaNotPremultiplied,
+     ColorBehavior::kTag,
+     ImageOrientationEnum::kOriginTopLeft,
+     0,
+     {
+         {gfx::Point(0, 0), SkColorSetARGB(255, 192, 192, 192)},
+         {gfx::Point(1, 1), SkColorSetARGB(255, 192, 192, 192)},
+         {gfx::Point(2, 2), SkColorSetARGB(255, 192, 192, 192)},
+     }},
+    {"/images/resources/avif/silver-400-matrix-6.avif",
+     8,
+     ColorType::kRgb,
+     ImageDecoder::kLosslessFormat,
+     ImageDecoder::kAlphaNotPremultiplied,
+     ColorBehavior::kTag,
+     ImageOrientationEnum::kOriginTopLeft,
+     0,
+     {
+         {gfx::Point(0, 0), SkColorSetARGB(255, 192, 192, 192)},
+         {gfx::Point(1, 1), SkColorSetARGB(255, 192, 192, 192)},
+         {gfx::Point(2, 2), SkColorSetARGB(255, 192, 192, 192)},
+     }},
+    {"/images/resources/avif/silver-400-matrix-0.avif",
      8,
      ColorType::kRgb,
      ImageDecoder::kLosslessFormat,
@@ -391,7 +420,7 @@ StaticColorCheckParam kTestParams[] = {
      ImageDecoder::kAlphaNotPremultiplied,
      ColorBehavior::kTag,
      ImageOrientationEnum::kOriginTopLeft,
-     1,
+     2,
      {
          {gfx::Point(0, 0), SkColorSetARGB(0, 255, 0, 0)},
          {gfx::Point(1, 1), SkColorSetARGB(128, 255, 0, 0)},
@@ -404,7 +433,7 @@ StaticColorCheckParam kTestParams[] = {
      ImageDecoder::kAlphaPremultiplied,
      ColorBehavior::kTransformToSRGB,
      ImageOrientationEnum::kOriginTopLeft,
-     1,
+     2,
      {
          {gfx::Point(0, 0), SkColorSetARGB(0, 0, 0, 0)},
          {gfx::Point(1, 1), SkColorSetARGB(128, 255, 0, 0)},
@@ -706,8 +735,13 @@ void ReadYUV(const char* file_name,
 
   // Convert our YUV pixel to RGB to avoid an excessive amounts of test
   // expectations. We otherwise need bit_depth * yuv_sampling * color_type.
-  auto* transform = reinterpret_cast<AVIFImageDecoder*>(decoder.get())
-                        ->GetColorTransformForTesting();
+  gfx::ColorTransform::Options options;
+  options.src_bit_depth = bit_depth;
+  options.dst_bit_depth = bit_depth;
+  auto transform = gfx::ColorTransform::NewColorTransform(
+      reinterpret_cast<AVIFImageDecoder*>(decoder.get())
+          ->GetColorSpaceForTesting(),
+      gfx::ColorSpace(), options);
   transform->Transform(rgb_pixel, 1);
 }
 
@@ -1060,6 +1094,7 @@ TEST(StaticAVIFTests, SizeAvailableBeforeAllDataReceived) {
 }
 
 TEST(StaticAVIFTests, ProgressiveDecoding) {
+  base::HistogramTester histogram_tester;
   scoped_refptr<SharedBuffer> stream_buffer = WTF::SharedBuffer::Create();
   scoped_refptr<SegmentReader> segment_reader =
       SegmentReader::CreateFromSharedBuffer(stream_buffer);
@@ -1082,6 +1117,8 @@ TEST(StaticAVIFTests, ProgressiveDecoding) {
   EXPECT_TRUE(decoder->IsSizeAvailable());
   EXPECT_FALSE(decoder->Failed());
   EXPECT_EQ(decoder->FrameCount(), 1u);
+  histogram_tester.ExpectTotalCount("Blink.DecodedImage.AvifDensity.Count.02MP",
+                                    0);
   ImageFrame* frame = decoder->DecodeFrameBufferAtIndex(0);
   ASSERT_TRUE(frame);
   EXPECT_EQ(frame->GetStatus(), ImageFrame::kFrameEmpty);
@@ -1097,9 +1134,35 @@ TEST(StaticAVIFTests, ProgressiveDecoding) {
   ASSERT_TRUE(frame);
   EXPECT_EQ(frame->GetStatus(), ImageFrame::kFramePartial);
   EXPECT_FALSE(decoder->Failed());
+
+  base::HistogramTester::CountsMap expected_counts;
+  EXPECT_THAT(histogram_tester.GetTotalCountsForPrefix(
+                  "Blink.DecodedImage.AvifDensity.Count."),
+              testing::ContainerEq(expected_counts));
+
+  // Now send the rest of the data.
+  stream_buffer->Append(data->Data() + 8299u + 301u, 62344u);
+  decoder->SetData(stream_buffer, /*all_data_received=*/true);
+  EXPECT_FALSE(decoder->Failed());
+  frame = decoder->DecodeFrameBufferAtIndex(0);
+  ASSERT_TRUE(frame);
+  EXPECT_EQ(frame->GetStatus(), ImageFrame::kFrameComplete);
+  EXPECT_FALSE(decoder->Failed());
+
+  constexpr int kImageArea = 1216 * 832;  // = 1011712
+  constexpr int kFileSize = 70944;
+  constexpr int kSample =
+      (kFileSize * 100 * 8 + kImageArea / 2) / kImageArea;  // = 56
+  histogram_tester.ExpectUniqueSample(
+      "Blink.DecodedImage.AvifDensity.Count.02MP", kSample, 1);
+  expected_counts["Blink.DecodedImage.AvifDensity.Count.02MP"] = 1;
+  EXPECT_THAT(histogram_tester.GetTotalCountsForPrefix(
+                  "Blink.DecodedImage.AvifDensity.Count."),
+              testing::ContainerEq(expected_counts));
 }
 
 TEST(StaticAVIFTests, IncrementalDecoding) {
+  base::HistogramTester histogram_tester;
   scoped_refptr<SharedBuffer> stream_buffer = WTF::SharedBuffer::Create();
   scoped_refptr<SegmentReader> segment_reader =
       SegmentReader::CreateFromSharedBuffer(stream_buffer);
@@ -1112,6 +1175,11 @@ TEST(StaticAVIFTests, IncrementalDecoding) {
   scoped_refptr<SharedBuffer> data =
       ReadFile("/images/resources/avif/tiger_420_8b_grid1x13.avif");
   ASSERT_TRUE(data.get());
+
+  constexpr int kImageArea = 1216 * 832;  // = 1011712
+  constexpr int kFileSize = 72257;
+  constexpr int kSample =
+      (kFileSize * 100 * 8 + kImageArea / 2) / kImageArea;  // = 57
 
   struct Step {
     size_t size;  // In bytes.
@@ -1153,6 +1221,16 @@ TEST(StaticAVIFTests, IncrementalDecoding) {
       }
     }
     previous_size = step.size;
+
+    base::HistogramTester::CountsMap expected_counts;
+    if (step.status == ImageFrame::kFrameComplete) {
+      histogram_tester.ExpectUniqueSample(
+          "Blink.DecodedImage.AvifDensity.Count.02MP", kSample, 1);
+      expected_counts["Blink.DecodedImage.AvifDensity.Count.02MP"] = 1;
+    }
+    EXPECT_THAT(histogram_tester.GetTotalCountsForPrefix(
+                    "Blink.DecodedImage.AvifDensity.Count."),
+                testing::ContainerEq(expected_counts));
   }
 }
 
@@ -1293,6 +1371,262 @@ TEST(StaticAVIFTests, InvalidClapPropertyHandling) {
                 bitmap2.getColor(/*x=*/col, /*y=*/row));
     }
   }
+}
+
+TEST(StaticAVIFTests, BppHistogramSmall) {
+  base::HistogramTester histogram_tester;
+  std::unique_ptr<ImageDecoder> decoder = CreateAVIFDecoder();
+  decoder->SetData(ReadFile("/images/resources/avif/kodim03.avif"), true);
+  ASSERT_TRUE(decoder->IsSizeAvailable());
+  histogram_tester.ExpectTotalCount(
+      "Blink.DecodedImage.AvifDensity.Count.0.4MP", 0);
+  ImageFrame* frame = decoder->DecodeFrameBufferAtIndex(0);
+  ASSERT_TRUE(frame);
+  EXPECT_EQ(ImageFrame::kFrameComplete, frame->GetStatus());
+  EXPECT_FALSE(decoder->Failed());
+  constexpr int kImageArea = 768 * 512;  // = 393216
+  constexpr int kFileSize = 25724;
+  constexpr int kSample =
+      (kFileSize * 100 * 8 + kImageArea / 2) / kImageArea;  // = 52
+  histogram_tester.ExpectUniqueSample(
+      "Blink.DecodedImage.AvifDensity.Count.0.4MP", kSample, 1);
+  base::HistogramTester::CountsMap expected_counts;
+  expected_counts["Blink.DecodedImage.AvifDensity.Count.0.4MP"] = 1;
+  EXPECT_THAT(histogram_tester.GetTotalCountsForPrefix(
+                  "Blink.DecodedImage.AvifDensity.Count."),
+              testing::ContainerEq(expected_counts));
+}
+
+TEST(StaticAVIFTests, BppHistogramSmall3x3) {
+  base::HistogramTester histogram_tester;
+  std::unique_ptr<ImageDecoder> decoder = CreateAVIFDecoder();
+  decoder->SetData(
+      ReadFile("/images/resources/avif/red-full-range-420-8bpc.avif"), true);
+  ASSERT_TRUE(decoder->IsSizeAvailable());
+  histogram_tester.ExpectTotalCount(
+      "Blink.DecodedImage.AvifDensity.Count.0.1MP", 0);
+  ImageFrame* frame = decoder->DecodeFrameBufferAtIndex(0);
+  ASSERT_TRUE(frame);
+  EXPECT_EQ(ImageFrame::kFrameComplete, frame->GetStatus());
+  EXPECT_FALSE(decoder->Failed());
+  // The centi bpp = 318 * 100 * 8 / (3 * 3) ~= 28267, which is greater than the
+  // histogram's max value (1000), so this sample goes into the overflow bucket.
+  constexpr int kSample = 1000;
+  histogram_tester.ExpectUniqueSample(
+      "Blink.DecodedImage.AvifDensity.Count.0.1MP", kSample, 1);
+  base::HistogramTester::CountsMap expected_counts;
+  expected_counts["Blink.DecodedImage.AvifDensity.Count.0.1MP"] = 1;
+  EXPECT_THAT(histogram_tester.GetTotalCountsForPrefix(
+                  "Blink.DecodedImage.AvifDensity.Count."),
+              testing::ContainerEq(expected_counts));
+}
+
+TEST(StaticAVIFTests, BppHistogramSmall900000) {
+  base::HistogramTester histogram_tester;
+  std::unique_ptr<ImageDecoder> decoder = CreateAVIFDecoder();
+  decoder->SetData(ReadFile("/images/resources/avif/peach_900000.avif"), true);
+  ASSERT_TRUE(decoder->IsSizeAvailable());
+  histogram_tester.ExpectTotalCount(
+      "Blink.DecodedImage.AvifDensity.Count.0.9MP", 0);
+  ImageFrame* frame = decoder->DecodeFrameBufferAtIndex(0);
+  ASSERT_TRUE(frame);
+  EXPECT_EQ(ImageFrame::kFrameComplete, frame->GetStatus());
+  EXPECT_FALSE(decoder->Failed());
+  constexpr int kImageArea = 1200 * 750;  // = 900000
+  constexpr int kFileSize = 8144;
+  constexpr int kSample =
+      (kFileSize * 100 * 8 + kImageArea / 2) / kImageArea;  // = 7
+  histogram_tester.ExpectUniqueSample(
+      "Blink.DecodedImage.AvifDensity.Count.0.9MP", kSample, 1);
+  base::HistogramTester::CountsMap expected_counts;
+  expected_counts["Blink.DecodedImage.AvifDensity.Count.0.9MP"] = 1;
+  EXPECT_THAT(histogram_tester.GetTotalCountsForPrefix(
+                  "Blink.DecodedImage.AvifDensity.Count."),
+              testing::ContainerEq(expected_counts));
+}
+
+TEST(StaticAVIFTests, BppHistogramBig) {
+  base::HistogramTester histogram_tester;
+  std::unique_ptr<ImageDecoder> decoder = CreateAVIFDecoder();
+  decoder->SetData(ReadFile("/images/resources/avif/bee.avif"), true);
+  ASSERT_TRUE(decoder->IsSizeAvailable());
+  histogram_tester.ExpectTotalCount("Blink.DecodedImage.AvifDensity.Count.13MP",
+                                    0);
+  ImageFrame* frame = decoder->DecodeFrameBufferAtIndex(0);
+  ASSERT_TRUE(frame);
+  EXPECT_EQ(ImageFrame::kFrameComplete, frame->GetStatus());
+  EXPECT_FALSE(decoder->Failed());
+  constexpr int kImageArea = 4032 * 3024;  // = 12192768
+  constexpr int kFileSize = 88692;
+  constexpr int kSample =
+      (kFileSize * 100 * 8 + kImageArea / 2) / kImageArea;  // = 6
+  histogram_tester.ExpectUniqueSample(
+      "Blink.DecodedImage.AvifDensity.Count.13MP", kSample, 1);
+  base::HistogramTester::CountsMap expected_counts;
+  expected_counts["Blink.DecodedImage.AvifDensity.Count.13MP"] = 1;
+  EXPECT_THAT(histogram_tester.GetTotalCountsForPrefix(
+                  "Blink.DecodedImage.AvifDensity.Count."),
+              testing::ContainerEq(expected_counts));
+}
+
+TEST(StaticAVIFTests, BppHistogramBig13000000) {
+  base::HistogramTester histogram_tester;
+  std::unique_ptr<ImageDecoder> decoder = CreateAVIFDecoder();
+  decoder->SetData(ReadFile("/images/resources/avif/peach_13000000.avif"),
+                   true);
+  ASSERT_TRUE(decoder->IsSizeAvailable());
+  histogram_tester.ExpectTotalCount("Blink.DecodedImage.AvifDensity.Count.13MP",
+                                    0);
+  ImageFrame* frame = decoder->DecodeFrameBufferAtIndex(0);
+  ASSERT_TRUE(frame);
+  EXPECT_EQ(ImageFrame::kFrameComplete, frame->GetStatus());
+  EXPECT_FALSE(decoder->Failed());
+  constexpr int kImageArea = 4000 * 3250;  // = 13000000
+  constexpr int kFileSize = 16725;
+  constexpr int kSample =
+      (kFileSize * 100 * 8 + kImageArea / 2) / kImageArea;  // = 1
+  histogram_tester.ExpectUniqueSample(
+      "Blink.DecodedImage.AvifDensity.Count.13MP", kSample, 1);
+  base::HistogramTester::CountsMap expected_counts;
+  expected_counts["Blink.DecodedImage.AvifDensity.Count.13MP"] = 1;
+  EXPECT_THAT(histogram_tester.GetTotalCountsForPrefix(
+                  "Blink.DecodedImage.AvifDensity.Count."),
+              testing::ContainerEq(expected_counts));
+}
+
+TEST(StaticAVIFTests, BppHistogramHuge) {
+  base::HistogramTester histogram_tester;
+  std::unique_ptr<ImageDecoder> decoder = CreateAVIFDecoder();
+  decoder->SetData(ReadFile("/images/resources/avif/peach.avif"), true);
+  ASSERT_TRUE(decoder->IsSizeAvailable());
+  histogram_tester.ExpectTotalCount(
+      "Blink.DecodedImage.AvifDensity.Count.14+MP", 0);
+  ImageFrame* frame = decoder->DecodeFrameBufferAtIndex(0);
+  ASSERT_TRUE(frame);
+  EXPECT_EQ(ImageFrame::kFrameComplete, frame->GetStatus());
+  EXPECT_FALSE(decoder->Failed());
+  constexpr int kImageArea = 4624 * 3472;  // = 16054528
+  constexpr int kFileSize = 20095;
+  constexpr int kSample =
+      (kFileSize * 100 * 8 + kImageArea / 2) / kImageArea;  // = 1
+  histogram_tester.ExpectUniqueSample(
+      "Blink.DecodedImage.AvifDensity.Count.14+MP", kSample, 1);
+  base::HistogramTester::CountsMap expected_counts;
+  expected_counts["Blink.DecodedImage.AvifDensity.Count.14+MP"] = 1;
+  EXPECT_THAT(histogram_tester.GetTotalCountsForPrefix(
+                  "Blink.DecodedImage.AvifDensity.Count."),
+              testing::ContainerEq(expected_counts));
+}
+
+TEST(StaticAVIFTests, BppHistogramHuge13000002) {
+  base::HistogramTester histogram_tester;
+  std::unique_ptr<ImageDecoder> decoder = CreateAVIFDecoder();
+  decoder->SetData(ReadFile("/images/resources/avif/peach_13000002.avif"),
+                   true);
+  ASSERT_TRUE(decoder->IsSizeAvailable());
+  histogram_tester.ExpectTotalCount(
+      "Blink.DecodedImage.AvifDensity.Count.14+MP", 0);
+  ImageFrame* frame = decoder->DecodeFrameBufferAtIndex(0);
+  ASSERT_TRUE(frame);
+  EXPECT_EQ(ImageFrame::kFrameComplete, frame->GetStatus());
+  EXPECT_FALSE(decoder->Failed());
+  constexpr int kImageArea = 3961 * 3282;  // = 13000002
+  constexpr int kFileSize = 16379;
+  constexpr int kSample =
+      (kFileSize * 100 * 8 + kImageArea / 2) / kImageArea;  // = 1
+  histogram_tester.ExpectUniqueSample(
+      "Blink.DecodedImage.AvifDensity.Count.14+MP", kSample, 1);
+  base::HistogramTester::CountsMap expected_counts;
+  expected_counts["Blink.DecodedImage.AvifDensity.Count.14+MP"] = 1;
+  EXPECT_THAT(histogram_tester.GetTotalCountsForPrefix(
+                  "Blink.DecodedImage.AvifDensity.Count."),
+              testing::ContainerEq(expected_counts));
+}
+
+TEST(StaticAVIFTests, BppHistogramInvalid) {
+  base::HistogramTester histogram_tester;
+  std::unique_ptr<ImageDecoder> decoder = CreateAVIFDecoder();
+  decoder->SetData(
+      ReadFile(
+          "/images/resources/avif/"
+          "red-at-12-oclock-with-color-profile-with-wrong-frame-header.avif"),
+      true);
+  ASSERT_TRUE(decoder->IsSizeAvailable());
+  EXPECT_FALSE(decoder->Failed());
+  EXPECT_EQ(decoder->FrameCount(), 1u);
+  ImageFrame* frame = decoder->DecodeFrameBufferAtIndex(0);
+  ASSERT_TRUE(frame);
+  EXPECT_NE(ImageFrame::kFrameComplete, frame->GetStatus());
+  EXPECT_TRUE(decoder->Failed());
+  const base::HistogramTester::CountsMap empty_counts;
+  EXPECT_THAT(histogram_tester.GetTotalCountsForPrefix(
+                  "Blink.DecodedImage.AvifDensity.Count."),
+              testing::ContainerEq(empty_counts));
+}
+
+TEST(StaticAVIFTests, BppHistogram10bit) {
+  base::HistogramTester histogram_tester;
+  std::unique_ptr<ImageDecoder> decoder = CreateAVIFDecoder();
+  decoder->SetData(
+      ReadFile("/images/resources/avif/red-full-range-420-10bpc.avif"), true);
+  ASSERT_TRUE(decoder->IsSizeAvailable());
+  ImageFrame* frame = decoder->DecodeFrameBufferAtIndex(0);
+  ASSERT_TRUE(frame);
+  EXPECT_EQ(ImageFrame::kFrameComplete, frame->GetStatus());
+  EXPECT_FALSE(decoder->Failed());
+  const base::HistogramTester::CountsMap empty_counts;
+  EXPECT_THAT(histogram_tester.GetTotalCountsForPrefix(
+                  "Blink.DecodedImage.AvifDensity.Count."),
+              testing::ContainerEq(empty_counts));
+}
+
+TEST(StaticAVIFTests, BppHistogramMonochrome) {
+  base::HistogramTester histogram_tester;
+  std::unique_ptr<ImageDecoder> decoder = CreateAVIFDecoder();
+  decoder->SetData(ReadFile("/images/resources/avif/silver-400-matrix-6.avif"),
+                   true);
+  ASSERT_TRUE(decoder->IsSizeAvailable());
+  ImageFrame* frame = decoder->DecodeFrameBufferAtIndex(0);
+  ASSERT_TRUE(frame);
+  EXPECT_EQ(ImageFrame::kFrameComplete, frame->GetStatus());
+  EXPECT_FALSE(decoder->Failed());
+  const base::HistogramTester::CountsMap empty_counts;
+  EXPECT_THAT(histogram_tester.GetTotalCountsForPrefix(
+                  "Blink.DecodedImage.AvifDensity.Count."),
+              testing::ContainerEq(empty_counts));
+}
+
+TEST(StaticAVIFTests, BppHistogramAlpha) {
+  base::HistogramTester histogram_tester;
+  std::unique_ptr<ImageDecoder> decoder = CreateAVIFDecoder();
+  decoder->SetData(ReadFile("/images/resources/avif/red-with-alpha-8bpc.avif"),
+                   true);
+  ASSERT_TRUE(decoder->IsSizeAvailable());
+  ImageFrame* frame = decoder->DecodeFrameBufferAtIndex(0);
+  ASSERT_TRUE(frame);
+  EXPECT_EQ(ImageFrame::kFrameComplete, frame->GetStatus());
+  EXPECT_FALSE(decoder->Failed());
+  const base::HistogramTester::CountsMap empty_counts;
+  EXPECT_THAT(histogram_tester.GetTotalCountsForPrefix(
+                  "Blink.DecodedImage.AvifDensity.Count."),
+              testing::ContainerEq(empty_counts));
+}
+
+TEST(StaticAVIFTests, BppHistogramAnimated) {
+  base::HistogramTester histogram_tester;
+  std::unique_ptr<ImageDecoder> decoder = CreateAVIFDecoder();
+  // red-with-alpha-8bpc.avif
+  decoder->SetData(ReadFile("/images/resources/avif/star-animated-8bpc.avif"),
+                   true);
+  ASSERT_TRUE(decoder->IsSizeAvailable());
+  ImageFrame* frame = decoder->DecodeFrameBufferAtIndex(0);
+  ASSERT_TRUE(frame);
+  EXPECT_EQ(ImageFrame::kFrameComplete, frame->GetStatus());
+  EXPECT_FALSE(decoder->Failed());
+  const base::HistogramTester::CountsMap empty_counts;
+  EXPECT_THAT(histogram_tester.GetTotalCountsForPrefix(
+                  "Blink.DecodedImage.AvifDensity.Count."),
+              testing::ContainerEq(empty_counts));
 }
 
 using StaticAVIFColorTests = ::testing::TestWithParam<StaticColorCheckParam>;

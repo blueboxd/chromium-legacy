@@ -38,7 +38,8 @@ suite('HorizontalCarouselTest', () => {
 
     await new Promise<void>((resolve) => {
       const observer = new ResizeObserver(() => {
-        if (carousel.offsetWidth === 60) {
+        /* Includes 2px padding on either side */
+        if (carousel.offsetWidth === 64) {
           resolve();
           observer.unobserve(carousel);
         }
@@ -55,7 +56,10 @@ suite('HorizontalCarouselTest', () => {
     // On forward button click the back button should show up and the
     // forward button should hide.
     forwardButton.click();
-    assertFalse(backButton.hidden);
-    assertTrue(forwardButton.hidden);
+    setTimeout(() => {
+      assertFalse(backButton.hidden);
+      assertTrue(forwardButton.hidden);
+    }, 1000);
+
   });
 });

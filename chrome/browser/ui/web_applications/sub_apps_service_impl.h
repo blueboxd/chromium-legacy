@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_WEB_APPLICATIONS_SUB_APPS_SERVICE_IMPL_H_
 
 #include <map>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -22,10 +23,15 @@ class RenderFrameHost;
 
 namespace web_app {
 
+class SubAppsInstallDialogController;
+
 class SubAppsServiceImpl
     : public content::DocumentService<blink::mojom::SubAppsService> {
  public:
   using AddResultsMojo = std::vector<blink::mojom::SubAppsServiceAddResultPtr>;
+
+  static constexpr char kSubAppsUninstallNotificationId[] =
+      "sub_apps_uninstall_notification";
 
   SubAppsServiceImpl(const SubAppsServiceImpl&) = delete;
   SubAppsServiceImpl& operator=(const SubAppsServiceImpl&) = delete;
@@ -52,6 +58,7 @@ class SubAppsServiceImpl
 
     AddCallback mojo_callback;
     std::vector<std::unique_ptr<WebAppInstallInfo>> install_infos;
+    std::unique_ptr<SubAppsInstallDialogController> install_dialog;
     AddResultsMojo results;
   };
 
@@ -63,6 +70,8 @@ class SubAppsServiceImpl
       std::vector<std::pair<ManifestId, std::unique_ptr<WebAppInstallInfo>>>
           install_data);
   void ScheduleSubAppInstalls(int add_call_id);
+  void ProcessDialogResponse(int add_call_id, bool dialog_accepted);
+  void FinishAddCallOrShowInstallDialog(int add_call_id);
   void FinishAddCall(
       int add_call_id,
       std::vector<std::tuple<ManifestId, AppId, webapps::InstallResultCode>>
@@ -73,6 +82,10 @@ class SubAppsServiceImpl
       base::OnceCallback<void(blink::mojom::SubAppsServiceRemoveResultPtr)>
           remove_barrier_callback,
       const AppId* calling_app_id);
+  void NotifyUninstall(
+      RemoveCallback result_callback,
+      std::vector<blink::mojom::SubAppsServiceRemoveResultPtr> remove_results);
+
   SubAppsServiceImpl(
       content::RenderFrameHost& render_frame_host,
       mojo::PendingReceiver<blink::mojom::SubAppsService> receiver);

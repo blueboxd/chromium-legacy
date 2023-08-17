@@ -14,6 +14,16 @@ dictionary AuctionReportBuyersConfig {
   required double scale;
 };
 
+dictionary AuctionAdditionalBidSignature {
+  Uint8Array key;
+  Uint8Array signature;
+};
+
+dictionary AuctionAdditionalBidConfig {
+  required USVString bid;
+  required sequence<AuctionAdditionalBidSignature> signatures;
+};
+
 dictionary AuctionAdConfig {
   required USVString seller;
 
@@ -33,6 +43,8 @@ dictionary AuctionAdConfig {
   Promise<any> sellerSignals;
 
   Promise<USVString> directFromSellerSignals;
+  [RuntimeEnabled=FledgeDirectFromSellerSignalsHeaderAdSlot]
+  Promise<DOMString> directFromSellerSignalsHeaderAdSlot;
 
   unsigned long long sellerTimeout;
   unsigned short sellerExperimentGroupId;
@@ -56,6 +68,12 @@ dictionary AuctionAdConfig {
   sequence<DOMString> requiredSellerCapabilities;
 
   AuctionAdInterestGroupSize requestedSize;
+
+  [RuntimeEnabled=FledgeNegativeTargeting]
+  Promise<sequence<AuctionAdditionalBidConfig>> additionalBids;
+
+  [RuntimeEnabled=FledgeNegativeTargeting]
+  USVString auctionNonce;
 
   sequence<AuctionAdConfig> componentAuctions;
   AbortSignal? signal;

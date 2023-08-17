@@ -43,6 +43,7 @@
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_collection_commands.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_context_menu/tab_context_menu_provider.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_grid_constants.h"
+#import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_grid_consumer.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_grid_empty_state_view.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_grid_metrics.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/tab_grid_mutator.h"
@@ -58,10 +59,6 @@
 #import "ios/web/public/thread/web_task_traits.h"
 #import "ios/web/public/thread/web_thread.h"
 #import "ui/base/l10n/l10n_util.h"
-
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
 
 namespace {
 
@@ -176,6 +173,9 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   BOOL _idleRecentTabs;
 
   TabGridPage _activePageWhenAppear;
+
+  BOOL _itemsCanBeRestored;
+  BOOL _itemsCanBeClosed;
 }
 
 // TabGridPaging property.
@@ -203,6 +203,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
       case TabGridPageConfiguration::kIncognitoPageDisabled:
         _incognitoDisabledTabViewController = [[DisabledTabViewController alloc]
             initWithPage:TabGridPageIncognitoTabs];
+        _incognitoDisabledTabViewController.delegate = self;
         _regularTabsViewController = [[GridViewController alloc] init];
         _remoteTabsViewController =
             [[RecentTabsTableViewController alloc] init];
@@ -215,8 +216,10 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
         _incognitoTabsViewController = [[GridViewController alloc] init];
         _regularDisabledTabViewController = [[DisabledTabViewController alloc]
             initWithPage:TabGridPageRegularTabs];
+        _regularDisabledTabViewController.delegate = self;
         _recentDisabledTabViewController = [[DisabledTabViewController alloc]
             initWithPage:TabGridPageRemoteTabs];
+        _recentDisabledTabViewController.delegate = self;
         _pageViewControllers = @[
           _incognitoTabsViewController, _regularDisabledTabViewController,
           _recentDisabledTabViewController
@@ -1605,6 +1608,12 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 // Tells the appropriate delegate to create a new item, and then tells the
 // presentation delegate to show the new item.
 - (void)openNewTabInPage:(TabGridPage)page focusOmnibox:(BOOL)focusOmnibox {
+  // Guard against opening new tabs in a page that is disabled. It is the job
+  // of the caller to make sure to not open a new tab in a page that can't
+  // perform the action. For example, it is an error to attempt to open a new
+  // tab in the icognito page when incognito is disabled by policy.
+  CHECK([self canPerformOpenNewTabActionForDestinationPage:page]);
+
   switch (page) {
     case TabGridPageIncognitoTabs:
       [self.incognitoTabsViewController prepareForDismissal];
@@ -1615,7 +1624,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
       [self.regularTabsDelegate addNewItem];
       break;
     case TabGridPageRemoteTabs:
-      NOTREACHED() << "It is invalid to have an active tab in remote tabs.";
+      NOTREACHED() << "It is invalid to open a new tab in remote tabs.";
       break;
   }
   self.activePage = page;
@@ -1789,6 +1798,28 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   base::UmaHistogramLongTimes("IOS.TabSwitcher.TimeSpentOpeningExistingTab",
                               duration);
   self.tabGridEnterTime = base::TimeTicks();
+}
+
+// Returns YES if the switcher page is enabled. For example, the page may be
+// disabled by policy, in which case NO is returned.
+- (BOOL)isPageEnabled:(TabGridPage)page {
+  switch (page) {
+    case TabGridPageIncognitoTabs:
+      return _pageConfiguration !=
+             TabGridPageConfiguration::kIncognitoPageDisabled;
+    case TabGridPageRegularTabs:
+      return _pageConfiguration != TabGridPageConfiguration::kIncognitoPageOnly;
+    case TabGridPageRemoteTabs:
+      return _pageConfiguration != TabGridPageConfiguration::kIncognitoPageOnly;
+  }
+}
+
+// Returns YES if a new tab action that tagets the `destinationPage` can be
+// performed. The _currentPage can be the same page as the `destinationPage`.
+- (BOOL)canPerformOpenNewTabActionForDestinationPage:
+    (TabGridPage)destinationPage {
+  return [self isPageEnabled:destinationPage] &&
+         self.currentPage != TabGridPageRemoteTabs;
 }
 
 #pragma mark - UIGestureRecognizerDelegate
@@ -2014,6 +2045,18 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 
 - (void)gridViewController:(GridViewController*)gridViewController
        didSelectItemWithID:(NSString*)itemID {
+  // Check that the current page matches the grid view being interacted with.
+  BOOL isOnRegularTabsPage = self.currentPage == TabGridPageRegularTabs;
+  BOOL isOnIncognitoTabsPage = self.currentPage == TabGridPageIncognitoTabs;
+  BOOL isOnRemoteTabsPage = self.currentPage == TabGridPageRemoteTabs;
+  BOOL gridIsRegularTabs = gridViewController == self.regularTabsViewController;
+  BOOL gridIsIncognitoTabs =
+      gridViewController == self.incognitoTabsViewController;
+  if ((isOnRegularTabsPage && !gridIsRegularTabs) ||
+      (isOnIncognitoTabsPage && !gridIsIncognitoTabs) || isOnRemoteTabsPage) {
+    return;
+  }
+
   if (self.tabGridMode == TabGridModeSelection) {
     [self updateSelectionModeToolbars];
     return;
@@ -2282,6 +2325,15 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 }
 
 - (void)newTabButtonTapped:(id)sender {
+  // Ignore the tap if the current page is disabled for some reason, by policy
+  // for instance. This is to avoid situations where the tap action from an
+  // enabled page can make it to a disabled page by releasing the
+  // button press after switching to the disabled page (b/273416844 is an
+  // example).
+  if (![self isPageEnabled:self.currentPage]) {
+    return;
+  }
+
   [self setCurrentIdlePageStatus:NO];
   base::RecordAction(base::UserMetricsAction("MobileTabNewTab"));
   [self openNewTabInPage:self.currentPage focusOmnibox:NO];
@@ -2439,6 +2491,84 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   [self.delegate openLinkWithURL:URL];
 }
 
+- (bool)isViewControllerSubjectToParentalControls {
+  return _isSubjectToParentalControls;
+}
+
+#pragma mark - TabGridConsumer
+
+- (void)updateParentalControlStatus:(BOOL)isSubjectToParentalControls {
+  _isSubjectToParentalControls = isSubjectToParentalControls;
+}
+
+- (BOOL)updateTabGridForIncognitoModeDisabled:(BOOL)isIncognitoModeDisabled {
+  BOOL isTabGridUpdated = NO;
+  UIViewController* updatedIncognitoViewController = nil;
+
+  if (isIncognitoModeDisabled &&
+      _pageConfiguration == TabGridPageConfiguration::kAllPagesEnabled) {
+    // Disable incognito mode if it was available before.
+    _pageConfiguration = TabGridPageConfiguration::kIncognitoPageDisabled;
+    isTabGridUpdated = YES;
+
+    // Remove the current incognito tab view controller.
+    [_incognitoTabsViewController willMoveToParentViewController:nil];
+    [_incognitoTabsViewController removeFromParentViewController];
+    [_incognitoTabsViewController.view removeFromSuperview];
+    _incognitoTabsViewController = nil;
+
+    // Create and initialize the disabled incognito tab view controller.
+    _incognitoDisabledTabViewController = [[DisabledTabViewController alloc]
+        initWithPage:TabGridPageIncognitoTabs];
+    _incognitoDisabledTabViewController.delegate = self;
+    [self setupDisabledTabViewForPageType:TabGridPageIncognitoTabs];
+
+    updatedIncognitoViewController = _incognitoDisabledTabViewController;
+  } else if (!isIncognitoModeDisabled &&
+             _pageConfiguration ==
+                 TabGridPageConfiguration::kIncognitoPageDisabled) {
+    // Enable incognito mode if it was previously disabled.
+    _pageConfiguration = TabGridPageConfiguration::kAllPagesEnabled;
+    isTabGridUpdated = YES;
+
+    // Remove the disabled incognito tab view controller.
+    [_incognitoDisabledTabViewController willMoveToParentViewController:nil];
+    [_incognitoDisabledTabViewController removeFromParentViewController];
+    [_incognitoDisabledTabViewController.view removeFromSuperview];
+    _incognitoDisabledTabViewController = nil;
+
+    // Create and initialize the incognito view controller.
+    _incognitoTabsViewController = [[GridViewController alloc] init];
+    self.incognitoTabsViewController.mode = self.tabGridMode;
+    [self setupIncognitoTabsViewController];
+
+    updatedIncognitoViewController = _incognitoTabsViewController;
+  }
+
+  // Finalize the updated tab grid.
+  if (isTabGridUpdated) {
+    CHECK(updatedIncognitoViewController);
+
+    // Point the regular tab view to the incognito tab view.
+    [self.regularTabsViewController.view.leadingAnchor
+        constraintEqualToAnchor:updatedIncognitoViewController.view
+                                    .trailingAnchor]
+        .active = YES;
+
+    // Enable new incognito tab button and set incognito tabs to be visible.
+    [self configureButtonsForActiveAndCurrentPage];
+    [self broadcastIncognitoContentVisibility];
+
+    // Update list of view controllers.
+    _pageViewControllers = @[
+      updatedIncognitoViewController, _regularTabsViewController,
+      _remoteTabsViewController
+    ];
+  }
+
+  return isTabGridUpdated;
+}
+
 #pragma mark - IncognitoReauthObserver
 
 - (void)reauthAgent:(IncognitoReauthSceneAgent*)agent
@@ -2448,6 +2578,16 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   }
 }
 
+#pragma mark - GridConsumer
+
+- (void)setItemsCanBeRestored:(BOOL)itemsCanBeRestored {
+  _itemsCanBeRestored = itemsCanBeRestored;
+}
+
+- (void)setItemsCanBeClosed:(BOOL)itemsCanBeClosed {
+  _itemsCanBeClosed = itemsCanBeClosed;
+}
+
 #pragma mark - UIResponder Helper
 
 // Returns YES if "close all" can be performed. Conditions are:
@@ -2455,17 +2595,12 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 // * There are tabs to close in the current page,
 // * Not in an undo scenario.
 - (BOOL)canCloseAllTab {
-  return self.viewVisible && ((self.currentPage == TabGridPageIncognitoTabs &&
-                               !self.incognitoTabsViewController.gridEmpty) ||
-                              (self.currentPage == TabGridPageRegularTabs &&
-                               !self.regularTabsViewController.gridEmpty &&
-                               !self.undoCloseAllAvailable));
+  return self.viewVisible && _itemsCanBeClosed;
 }
 
 // Returns YES if "undo" the close all action can be performed.
 - (BOOL)canUndoCloseAllTab {
-  return self.viewVisible && self.currentPage == TabGridPageRegularTabs &&
-         self.undoCloseAllAvailable;
+  return self.viewVisible && _itemsCanBeRestored;
 }
 
 #pragma mark - UIResponder
@@ -2478,34 +2613,30 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 
 - (NSArray<UIKeyCommand*>*)keyCommands {
   // On iOS 15+, key commands visible in the app's menu are created in
-  // MenuBuilder.
-  if (@available(iOS 15, *)) {
-    // Return the key commands that are not already present in the menu.
-    return @[
-      UIKeyCommand.cr_openNewRegularTab,
-      UIKeyCommand.cr_undo,
-      UIKeyCommand.cr_close,
-      // TODO(crbug.com/1385469): Move it to the menu builder once we have the
-      // strings.
-      UIKeyCommand.cr_select2,
-      UIKeyCommand.cr_select3,
-    ];
-  } else {
-    // Return all the commands supported by TabGridViewController.
-    return @[
-      UIKeyCommand.cr_openNewTab,
-      UIKeyCommand.cr_openNewIncognitoTab,
-      UIKeyCommand.cr_openNewRegularTab,
-      UIKeyCommand.cr_close,
-    ];
-  }
+  // MenuBuilder. Return the key commands that are not already present in the
+  // menu.
+  return @[
+    UIKeyCommand.cr_openNewRegularTab,
+    UIKeyCommand.cr_undo,
+    UIKeyCommand.cr_close,
+    // TODO(crbug.com/1385469): Move it to the menu builder once we have the
+    // strings.
+    UIKeyCommand.cr_select2,
+    UIKeyCommand.cr_select3,
+  ];
 }
 
 - (BOOL)canPerformAction:(SEL)action withSender:(id)sender {
-  if (sel_isEqual(action, @selector(keyCommand_openNewTab)) ||
-      sel_isEqual(action, @selector(keyCommand_openNewRegularTab)) ||
-      sel_isEqual(action, @selector(keyCommand_openNewIncognitoTab))) {
-    return self.currentPage != TabGridPageRemoteTabs;
+  if (sel_isEqual(action, @selector(keyCommand_openNewTab))) {
+    return [self canPerformOpenNewTabActionForDestinationPage:self.currentPage];
+  }
+  if (sel_isEqual(action, @selector(keyCommand_openNewRegularTab))) {
+    return [self
+        canPerformOpenNewTabActionForDestinationPage:TabGridPageRegularTabs];
+  }
+  if (sel_isEqual(action, @selector(keyCommand_openNewIncognitoTab))) {
+    return [self
+        canPerformOpenNewTabActionForDestinationPage:TabGridPageIncognitoTabs];
   }
   if (sel_isEqual(action, @selector(keyCommand_find))) {
     return self.viewVisible;

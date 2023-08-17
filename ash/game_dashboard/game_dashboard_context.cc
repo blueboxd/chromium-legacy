@@ -13,7 +13,10 @@
 #include "chromeos/ui/frame/frame_header.h"
 #include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/compositor/layer.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/transform.h"
+#include "ui/views/animation/animation_builder.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/wm/core/transient_window_manager.h"
 #include "ui/wm/core/window_util.h"
@@ -28,6 +31,10 @@ static const int kMainMenuButtonVerticalPaddingDp = 3;
 
 // Toolbar padding from the border of the game window.
 static const int kToolbarEdgePadding = 10;
+
+// The animation duration for the bounds change operation on the toolbar widget.
+static constexpr base::TimeDelta kToolbarBoundsChangeAnimationDuration =
+    base::Milliseconds(150);
 
 std::unique_ptr<GameDashboardWidget> CreateTransientChildWidget(
     aura::Window* game_window,
@@ -67,6 +74,12 @@ GameDashboardContext::~GameDashboardContext() {
   }
 }
 
+void GameDashboardContext::SetToolbarSnapLocation(
+    ToolbarSnapLocation new_location) {
+  toolbar_snap_location_ = new_location;
+  AnimateToolbarWidgetBoundsChange(CalculateToolbarWidgetBounds());
+}
+
 void GameDashboardContext::OnWindowBoundsChanged() {
   UpdateMainMenuButtonWidgetBounds();
   MaybeUpdateToolbarWidgetBounds();
@@ -81,21 +94,32 @@ void GameDashboardContext::SetMainMenuButtonEnabled(bool enable) {
 
 void GameDashboardContext::ToggleMainMenu() {
   if (!main_menu_widget_) {
-    auto menu_delegate = std::make_unique<GameDashboardMainMenuView>(this);
+    auto widget_delegate = std::make_unique<GameDashboardMainMenuView>(this);
+    DCHECK(!main_menu_view_);
+    main_menu_view_ = widget_delegate.get();
     main_menu_widget_ =
         base::WrapUnique(views::BubbleDialogDelegateView::CreateBubble(
-            std::move(menu_delegate)));
+            std::move(widget_delegate)));
     main_menu_widget_->Show();
   } else {
-    main_menu_widget_.reset();
+    CloseMainMenu();
   }
+}
+
+void GameDashboardContext::CloseMainMenu() {
+  DCHECK(main_menu_view_);
+  DCHECK(main_menu_widget_.get());
+  main_menu_view_ = nullptr;
+  main_menu_widget_.reset();
 }
 
 bool GameDashboardContext::ToggleToolbar() {
   if (!toolbar_widget_) {
+    auto view = std::make_unique<GameDashboardToolbarView>(this);
+    DCHECK(!toolbar_view_);
+    toolbar_view_ = view.get();
     toolbar_widget_ = CreateTransientChildWidget(
-        game_window_, "GameDashboardToolbar",
-        std::make_unique<GameDashboardToolbarView>(this));
+        game_window_, "GameDashboardToolbar", std::move(view));
     DCHECK_EQ(game_window_,
               wm::GetTransientParent(toolbar_widget_->GetNativeWindow()));
     MaybeUpdateToolbarWidgetBounds();
@@ -103,8 +127,15 @@ bool GameDashboardContext::ToggleToolbar() {
     return true;
   }
 
-  toolbar_widget_.reset();
+  CloseToolbar();
   return false;
+}
+
+void GameDashboardContext::CloseToolbar() {
+  DCHECK(toolbar_view_);
+  DCHECK(toolbar_widget_);
+  toolbar_view_ = nullptr;
+  toolbar_widget_.reset();
 }
 
 void GameDashboardContext::MaybeUpdateToolbarWidgetBounds() {
@@ -115,6 +146,26 @@ void GameDashboardContext::MaybeUpdateToolbarWidgetBounds() {
 
 bool GameDashboardContext::IsToolbarVisible() const {
   return toolbar_widget_ && toolbar_widget_->IsVisible();
+}
+
+void GameDashboardContext::OnRecordingStarted(bool is_recording_game_window) {
+  // TODO(b/273641154): Update the the main menu button to the recording state.
+  if (main_menu_view_) {
+    main_menu_view_->OnRecordingStarted(is_recording_game_window);
+  }
+  if (toolbar_view_) {
+    toolbar_view_->OnRecordingStarted(is_recording_game_window);
+  }
+}
+
+void GameDashboardContext::OnRecordingEnded() {
+  // TODO(b/273641154): Update the the main menu button to the default state.
+  if (main_menu_view_) {
+    main_menu_view_->OnRecordingEnded();
+  }
+  if (toolbar_view_) {
+    toolbar_view_->OnRecordingEnded();
+  }
 }
 
 void GameDashboardContext::CreateAndAddMainMenuButtonWidget() {
@@ -193,6 +244,28 @@ const gfx::Rect GameDashboardContext::CalculateToolbarWidgetBounds() {
   }
 
   return gfx::Rect(origin, preferred_size);
+}
+
+void GameDashboardContext::AnimateToolbarWidgetBoundsChange(
+    const gfx::Rect& target_screen_bounds) {
+  DCHECK(toolbar_widget_);
+  auto* toolbar_window = toolbar_widget_->GetNativeWindow();
+  const auto current_bounds = toolbar_window->GetBoundsInScreen();
+  if (target_screen_bounds == current_bounds) {
+    return;
+  }
+
+  toolbar_widget_->SetBounds(target_screen_bounds);
+  const auto transform = gfx::Transform::MakeTranslation(
+      current_bounds.CenterPoint() - target_screen_bounds.CenterPoint());
+  ui::Layer* layer = toolbar_window->layer();
+  layer->SetTransform(transform);
+  views::AnimationBuilder()
+      .SetPreemptionStrategy(
+          ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET)
+      .Once()
+      .SetDuration(kToolbarBoundsChangeAnimationDuration)
+      .SetTransform(layer, gfx::Transform(), gfx::Tween::ACCEL_0_80_DECEL_80);
 }
 
 }  // namespace ash

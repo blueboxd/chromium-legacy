@@ -90,6 +90,14 @@ enum class TriggerManagerReason {
 // tracking how often triggers fire and throttling them when necessary.
 class TriggerManager {
  public:
+  struct FinishCollectingThreatDetailsResult {
+    FinishCollectingThreatDetailsResult(bool should_send_report,
+                                        bool are_threat_details_available);
+    bool IsReportSent();
+    bool should_send_report;
+    bool are_threat_details_available;
+  };
+
   TriggerManager(BaseUIManager* ui_manager, PrefService* local_state_prefs);
 
   TriggerManager(const TriggerManager&) = delete;
@@ -161,18 +169,22 @@ class TriggerManager {
   // report. |did_proceed| indicates whether the user proceeded through the
   // security interstitial associated with this report. |num_visits| is how many
   // times the user has visited the site before. |error_display_options|
-  // contains the current state of relevant user preferences. We use this object
-  // for interop with WebView, in Chrome it should be created by
-  // TriggerManager::GetSBErrorDisplayOptions().  Returns true if the report was
-  // completed and sent, or false otherwise (eg: the user was not opted-in to
-  // extended reporting after collection began).
-  virtual bool FinishCollectingThreatDetails(
+  // contains the current state of relevant user preferences.
+  // We use this object for interop with WebView, in Chrome it should be
+  // created by TriggerManager::GetSBErrorDisplayOptions(). |is_hats_candidate|
+  // indicates whether the user is a candidate for a HaTS survey, in which case
+  // this method will trigger launching it and attaching ThreatDetails report
+  // information to it. Returns whether the report is supposed to be sent (eg:
+  // is user  opted-in to extended reporting after collection began) and
+  // whether the threat details were available to send.
+  virtual FinishCollectingThreatDetailsResult FinishCollectingThreatDetails(
       TriggerType trigger_type,
       WebContentsKey web_contents_key,
       const base::TimeDelta& delay,
       bool did_proceed,
       int num_visits,
-      const SBErrorOptions& error_display_options);
+      const SBErrorOptions& error_display_options,
+      bool is_hats_candidate = false);
 
   // Called when a ThreatDetails report finishes for the specified
   // |web_contents|.

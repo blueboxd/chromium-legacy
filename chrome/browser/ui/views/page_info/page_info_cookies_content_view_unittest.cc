@@ -20,8 +20,8 @@
 #include "ui/views/test/widget_test.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "chrome/browser/ash/profiles/profile_helper.h"
-#include "components/user_manager/user.h"
+#include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
+#include "components/user_manager/scoped_user_manager.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 namespace {
@@ -35,24 +35,11 @@ std::u16string GetManageButtonSubtitle(views::View* content_view) {
   return managed_button_subtitle->GetText();
 }
 
-const char* GetVectorIconName(NonAccessibleImageView* image_view) {
+const char* GetVectorIconName(views::ImageView* image_view) {
   return image_view->GetImageModel().GetVectorIcon().vector_icon()->name;
 }
 
 }  // namespace
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-class FakeAffiliatedUser : public user_manager::User {
- public:
-  explicit FakeAffiliatedUser(const AccountId& account_id) : User(account_id) {
-    SetAffiliation(true);
-  }
-
-  user_manager::UserType GetType() const override {
-    return user_manager::USER_TYPE_REGULAR;
-  }
-};
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 class PageInfoCookiesContentViewTest
     : public TestWithBrowserView,
@@ -75,12 +62,9 @@ class PageInfoCookiesContentViewTest
     auto* web_contents = browser()->tab_strip_model()->GetActiveWebContents();
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-    auto account_id =
-        AccountId::FromUserEmailGaiaId(profile()->GetProfileUserName(), "id");
-    user_ = std::make_unique<FakeAffiliatedUser>(account_id);
-    ash::ProfileHelper::Get()->SetProfileToUserMappingForTesting(user_.get());
-    ash::ProfileHelper::Get()->SetUserToProfileMappingForTesting(user_.get(),
-                                                                 profile());
+    fake_user_manager_->AddUserWithAffiliation(
+        AccountId::FromUserEmail(profile()->GetProfileUserName()),
+        /*is_affiliated=*/true);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
     presenter_ = std::make_unique<PageInfo>(
@@ -112,7 +96,7 @@ class PageInfoCookiesContentViewTest
     return content_view_->third_party_cookies_toggle_;
   }
 
-  NonAccessibleImageView* third_party_cookies_enforced_icon() {
+  views::ImageView* third_party_cookies_enforced_icon() {
     return content_view_->third_party_cookies_enforced_icon_;
   }
 
@@ -126,7 +110,8 @@ class PageInfoCookiesContentViewTest
   std::unique_ptr<PageInfoCookiesContentView> content_view_;
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  std::unique_ptr<FakeAffiliatedUser> user_;
+  user_manager::TypedScopedUserManager<ash::FakeChromeUserManager>
+      fake_user_manager_{std::make_unique<ash::FakeChromeUserManager>()};
 #endif
 };
 

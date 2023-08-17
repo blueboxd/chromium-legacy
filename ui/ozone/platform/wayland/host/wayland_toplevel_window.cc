@@ -138,7 +138,10 @@ void WaylandToplevelWindow::DispatchHostWindowDragMovement(
     shell_toplevel_->SurfaceResize(connection(), hittest);
 
   connection()->Flush();
+#if !BUILDFLAG(IS_CHROMEOS_LACROS)
+  // TODO(crbug.com/1454893): Revisit to resolve the correct impl.
   connection()->event_source()->ResetPointerFlags();
+#endif
 }
 
 void WaylandToplevelWindow::Show(bool inactive) {
@@ -507,6 +510,8 @@ void WaylandToplevelWindow::HandleAuraToplevelConfigure(
     int32_t width_dip,
     int32_t height_dip,
     const WindowStates& window_states) {
+  VLOG(1) << "Wayland XDG/Aura toplevel configure: states="
+          << window_states.ToString();
   // Store the old state to propagte state changes if Wayland decides to change
   // the state to something else.
   PlatformWindowState old_state = state_;

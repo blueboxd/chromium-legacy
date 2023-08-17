@@ -37,10 +37,6 @@
 #import "ios/chrome/grit/ios_strings.h"
 #import "ui/base/l10n/l10n_util.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 using signin_metrics::AccessPoint;
 using signin_metrics::PromoAction;
 
@@ -180,6 +176,9 @@ using signin_metrics::PromoAction;
                   }
                   // Provide additional data retention options if the user is
                   // syncing their data.
+                  // TODO(crbug.com/1462552): Simplify once kSync becomes
+                  // unreachable or is deleted from the codebase. See
+                  // ConsentLevel::kSync documentation for details.
                   if (weakSelf.identityManager->HasPrimaryAccount(
                           signin::ConsentLevel::kSync)) {
                     [weakSelf

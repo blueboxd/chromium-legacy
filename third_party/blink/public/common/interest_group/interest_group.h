@@ -16,6 +16,7 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/common_export.h"
 #include "third_party/blink/public/common/interest_group/ad_display_size.h"
+#include "third_party/blink/public/common/interest_group/auction_server_request_flags.h"
 #include "third_party/blink/public/common/interest_group/seller_capabilities.h"
 #include "third_party/blink/public/mojom/interest_group/interest_group_types.mojom-shared.h"
 #include "url/gurl.h"
@@ -43,7 +44,9 @@ struct BLINK_COMMON_EXPORT InterestGroup {
        absl::optional<std::string> buyer_reporting_id = absl::nullopt,
        absl::optional<std::string> buyer_and_seller_reporting_id =
            absl::nullopt,
-       absl::optional<std::string> ad_render_id = absl::nullopt);
+       absl::optional<std::string> ad_render_id = absl::nullopt,
+       absl::optional<std::vector<url::Origin>> allowed_reporting_origins =
+           absl::nullopt);
     ~Ad();
 
     // Returns the approximate size of the contents of this InterestGroup::Ad,
@@ -65,6 +68,9 @@ struct BLINK_COMMON_EXPORT InterestGroup {
 
     // Optional alias to use for B&A auctions
     absl::optional<std::string> ad_render_id;
+
+    // Optional origins that can receive macro expanded reports.
+    absl::optional<std::vector<url::Origin>> allowed_reporting_origins;
 
     // Only used in tests, but provided as an operator instead of as
     // IsEqualForTesting() to make it easier to implement InterestGroup's
@@ -100,7 +106,8 @@ struct BLINK_COMMON_EXPORT InterestGroup {
       absl::optional<std::vector<InterestGroup::Ad>> ad_components,
       absl::optional<base::flat_map<std::string, blink::AdSize>> ad_sizes,
       absl::optional<base::flat_map<std::string, std::vector<std::string>>>
-          size_groups);
+          size_groups,
+      AuctionServerRequestFlags auction_server_request_flags);
 
   ~InterestGroup();
 
@@ -139,7 +146,9 @@ struct BLINK_COMMON_EXPORT InterestGroup {
   absl::optional<base::flat_map<std::string, std::vector<std::string>>>
       size_groups;
 
-  static_assert(__LINE__ == 142, R"(
+  AuctionServerRequestFlags auction_server_request_flags;
+
+  static_assert(__LINE__ == 151, R"(
 If modifying InterestGroup fields, make sure to also modify:
 
 * IsValid(), EstimateSize(), and IsEqualForTesting() in this class
@@ -149,8 +158,8 @@ If modifying InterestGroup fields, make sure to also modify:
 * validate_blink_interest_group.cc
 * validate_blink_interest_group_test.cc
 * test_interest_group_builder[.h/.cc]
-* interest_group_mojom_traits[.h/.cc/.test].
-* bidder_worklet.cc (to pass the InterestGroup to generateBid()).
+* interest_group_mojom_traits[.h/.cc/.test]
+* bidder_worklet.cc (to pass the InterestGroup to generateBid())
 
 In interest_group_storage.cc, add the new field and any respective indices,
 update `ClearExcessiveStorage()`, add a new database version and migration, and
@@ -159,7 +168,7 @@ migration test.
 If the new field is to be updatable via dailyUpdateUrl, also update *all* of
 these:
 
-* Add field to content::InterestGroupUpdate.
+* Add field to content::InterestGroupUpdate
 * InterestGroupStorage::DoStoreInterestGroupUpdate()
 * ParseUpdateJson in interest_group_update_manager.cc
 * Update AdAuctionServiceImplTest.UpdateAllUpdatableFields

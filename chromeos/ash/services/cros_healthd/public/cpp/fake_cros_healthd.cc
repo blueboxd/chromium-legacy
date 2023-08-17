@@ -14,11 +14,13 @@
 #include "base/notreached.h"
 #include "base/task/single_thread_task_runner.h"
 #include "chromeos/ash/components/mojo_service_manager/connection.h"
+#include "chromeos/ash/services/cros_healthd/public/cpp/fake_routine_control.h"
 #include "chromeos/ash/services/cros_healthd/public/cpp/service_connection.h"
 #include "chromeos/ash/services/cros_healthd/public/mojom/cros_healthd_events.mojom.h"
 #include "chromeos/ash/services/cros_healthd/public/mojom/cros_healthd_routines.mojom.h"
 #include "chromeos/services/network_health/public/mojom/network_health.mojom.h"
 #include "chromeos/services/network_health/public/mojom/network_health_types.mojom.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote_set.h"
 #include "mojo/public/cpp/system/handle.h"
 #include "mojo/public/cpp/system/platform_handle.h"
@@ -138,6 +140,25 @@ void FakeCrosHealthd::SetProbeTelemetryInfoResponseForTesting(
 void FakeCrosHealthd::SetIsEventSupportedResponseForTesting(
     mojom::SupportStatusPtr& result) {
   is_event_supported_response_.Swap(&result);
+}
+
+void FakeCrosHealthd::SetIsRoutineArgumentSupportedResponseForTesting(
+    mojom::SupportStatusPtr& result) {
+  is_routine_argument_supported_response_.Swap(&result);
+}
+
+void FakeCrosHealthd::FlushRoutineServiceForTesting() {
+  routines_provider_.FlushForTesting();
+}
+
+FakeRoutineControl* FakeCrosHealthd::GetRoutineControlForArgumentTag(
+    mojom::RoutineArgument::Tag tag) {
+  auto it = routine_controllers_.find(tag);
+  if (it == routine_controllers_.end()) {
+    return nullptr;
+  }
+
+  return &it->second;
 }
 
 void FakeCrosHealthd::SetProbeProcessInfoResponseForTesting(
@@ -813,6 +834,21 @@ void FakeCrosHealthd::ProbeMultipleProcessInfo(
       FROM_HERE,
       base::BindOnce(std::move(callback), multiple_process_response_.Clone()),
       callback_delay_);
+}
+
+void FakeCrosHealthd::CreateRoutine(
+    mojom::RoutineArgumentPtr argument,
+    mojo::PendingReceiver<mojom::RoutineControl> pending_receiver,
+    mojo::PendingRemote<mojom::RoutineObserver> observer) {
+  routine_controllers_.emplace(
+      std::piecewise_construct, std::forward_as_tuple(argument->which()),
+      std::forward_as_tuple(std::move(pending_receiver), std::move(observer)));
+}
+
+void FakeCrosHealthd::IsRoutineArgumentSupported(
+    mojom::RoutineArgumentPtr arg,
+    IsRoutineArgumentSupportedCallback callback) {
+  std::move(callback).Run(is_routine_argument_supported_response_->Clone());
 }
 
 }  // namespace ash::cros_healthd

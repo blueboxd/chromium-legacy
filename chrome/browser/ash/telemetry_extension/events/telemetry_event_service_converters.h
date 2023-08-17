@@ -15,14 +15,17 @@
 #include "chromeos/crosapi/mojom/telemetry_extension_exception.mojom.h"
 #include "chromeos/crosapi/mojom/telemetry_keyboard_event.mojom.h"
 
-namespace ash::converters {
+namespace ash::converters::events {
 
 // This file contains helper functions used by TelemetryEventServiceAsh to
 // convert its types to/from cros_healthd EventService types.
 
 namespace unchecked {
 
-absl::optional<uint32_t> UncheckedConvertEventNullablePrimitivePtr(
+crosapi::mojom::UInt32ValuePtr LegacyUncheckedConvertPtr(
+    cros_healthd::mojom::NullableUint32Ptr input);
+
+absl::optional<uint32_t> UncheckedConvertPtr(
     cros_healthd::mojom::NullableUint32Ptr input);
 
 crosapi::mojom::TelemetryAudioJackEventInfoPtr UncheckedConvertPtr(
@@ -40,8 +43,8 @@ crosapi::mojom::TelemetryLidEventInfoPtr UncheckedConvertPtr(
 crosapi::mojom::TelemetryUsbEventInfoPtr UncheckedConvertPtr(
     cros_healthd::mojom::UsbEventInfoPtr input);
 
-crosapi::mojom::TelemetryHdmiEventInfoPtr UncheckedConvertPtr(
-    cros_healthd::mojom::HdmiEventInfoPtr input);
+crosapi::mojom::TelemetryExternalDisplayEventInfoPtr UncheckedConvertPtr(
+    cros_healthd::mojom::ExternalDisplayEventInfoPtr input);
 
 crosapi::mojom::TelemetrySdCardEventInfoPtr UncheckedConvertPtr(
     cros_healthd::mojom::SdCardEventInfoPtr input);
@@ -72,9 +75,6 @@ crosapi::mojom::TelemetryStylusConnectedEventInfoPtr UncheckedConvertPtr(
 
 crosapi::mojom::TelemetryStylusTouchPointInfoPtr UncheckedConvertPtr(
     cros_healthd::mojom::StylusTouchPointInfoPtr input);
-
-crosapi::mojom::UInt32ValuePtr UncheckedConvertPtr(
-    cros_healthd::mojom::NullableUint32Ptr input);
 
 crosapi::mojom::TelemetryEventInfoPtr UncheckedConvertPtr(
     cros_healthd::mojom::EventInfoPtr input);
@@ -120,8 +120,8 @@ crosapi::mojom::TelemetryPowerEventInfo::State Convert(
 crosapi::mojom::TelemetryStylusGarageEventInfo::State Convert(
     cros_healthd::mojom::StylusGarageEventInfo::State input);
 
-crosapi::mojom::TelemetryHdmiEventInfo::State Convert(
-    cros_healthd::mojom::HdmiEventInfo::State input);
+crosapi::mojom::TelemetryExternalDisplayEventInfo::State Convert(
+    cros_healthd::mojom::ExternalDisplayEventInfo::State input);
 
 crosapi::mojom::TelemetryInputTouchButton Convert(
     cros_healthd::mojom::InputTouchButton input);
@@ -141,19 +141,23 @@ std::vector<OutputT> ConvertVector(std::vector<InputT> input) {
 }
 
 template <class InputT>
-auto ConvertEventNullablePrimitivePtr(InputT input) {
+auto LegacyConvertStructPtr(InputT input) {
   return (!input.is_null())
-             ? unchecked::UncheckedConvertEventNullablePrimitivePtr(
-                   std::move(input))
-             : absl::nullopt;
+             ? unchecked::LegacyUncheckedConvertPtr(std::move(input))
+             : nullptr;
 }
 
-template <class InputT>
-auto ConvertStructPtr(InputT input) {
+template <class InputT,
+          class... Types,
+          class OutputT = decltype(unchecked::UncheckedConvertPtr(
+              std::declval<InputT>(),
+              std::declval<Types>()...)),
+          class = std::enable_if_t<std::is_default_constructible_v<OutputT>>>
+OutputT ConvertStructPtr(InputT input) {
   return (!input.is_null()) ? unchecked::UncheckedConvertPtr(std::move(input))
-                            : nullptr;
+                            : OutputT();
 }
 
-}  // namespace ash::converters
+}  // namespace ash::converters::events
 
 #endif  // CHROME_BROWSER_ASH_TELEMETRY_EXTENSION_EVENTS_TELEMETRY_EVENT_SERVICE_CONVERTERS_H_

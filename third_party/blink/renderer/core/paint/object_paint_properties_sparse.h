@@ -84,9 +84,9 @@ class CORE_EXPORT ObjectPaintPropertiesSparse : public ObjectPaintProperties {
 
   // Identifier used for indexing into the sparse vector of nodes. NOTE: when
   // adding a new node to this list, make sure to do the following. Update
-  // the kMax<NodeType> value to reflect the value you added, and renumber all
+  // the kLast<NodeType> value to reflect the value you added, and renumber all
   // higher value enums. The HasNodeTypeInRange() method assumes that  all nodes
-  // of NodeType are bounded between kMin<NodeType>() and kMax<NodeType>, and
+  // of NodeType are bounded between kFirst<NodeType>() and kLast<NodeType>, and
   // there are no other types of nodes in that range.
   enum class NodeId : unsigned {
     // Transforms
@@ -101,43 +101,42 @@ class CORE_EXPORT ObjectPaintPropertiesSparse : public ObjectPaintProperties {
     kPerspective = 8,
     kReplacedContentTransform = 9,
     kScrollTranslation = 10,
+    kTransformAlias = 11,
     kFirstTransform = kPaintOffsetTranslation,
-    kLastTransform = kScrollTranslation,
+    kLastTransform = kTransformAlias,
 
     // NOTE: the Scroll node is NOT a transform.
-    kScroll = 11,
+    kScroll = 12,
 
     // Effects
-    kEffect = 12,
-    kFilter = 13,
-    kMask = 14,
-    kClipPathMask = 15,
-    kVerticalScrollbarEffect = 16,
-    kHorizontalScrollbarEffect = 17,
-    kScrollCorner = 18,
+    kElementCaptureEffect = 13,
+    kEffect = 14,
+    kFilter = 15,
+    kMask = 16,
+    kClipPathMask = 17,
+    kVerticalScrollbarEffect = 18,
+    kHorizontalScrollbarEffect = 19,
+    kScrollCorner = 20,
+    kEffectAlias = 21,
     kFirstEffect = kEffect,
-    kLastEffect = kScrollCorner,
+    kLastEffect = kEffectAlias,
 
     // Clips
-    kPixelMovingFilterClipExpander = 19,
-    kClipPathClip = 20,
-    kMaskClip = 21,
-    kCssClip = 22,
-    kCssClipFixedPosition = 23,
-    kOverflowControlsClip = 24,
-    kBackgroundClip = 25,
-    kInnerBorderRadiusClip = 26,
-    kOverflowClip = 27,
+    kClipPathClip = 22,
+    kMaskClip = 23,
+    kCssClip = 24,
+    kOverflowControlsClip = 25,
+    kBackgroundClip = 26,
+    kPixelMovingFilterClipExpander = 27,
+    kInnerBorderRadiusClip = 28,
+    kOverflowClip = 29,
+    kCssClipFixedPosition = 30,
+    kClipAlias = 31,
     kFirstClip = kPixelMovingFilterClipExpander,
-    kLastClip = kOverflowClip,
-
-    // Aliases
-    kTransformAlias = 28,
-    kEffectAlias = 29,
-    kClipAlias = 30,
+    kLastClip = kClipAlias,
 
     // Should be updated whenever a higher value NodeType is added.
-    kNumFields = kClipAlias + 1
+    kNumFields = kLastClip + 1
   };
 
   // Transform implementations.
@@ -165,17 +164,19 @@ class CORE_EXPORT ObjectPaintPropertiesSparse : public ObjectPaintProperties {
   ADD_TRANSFORM(ReplacedContentTransform, NodeId::kReplacedContentTransform)
   ADD_TRANSFORM(ScrollTranslation, NodeId::kScrollTranslation)
   using ScrollPaintPropertyNodeOrAlias = ScrollPaintPropertyNode;
-  ADD_NODE(Scroll, nodes_, Scroll, NodeId::kScroll)
   ADD_ALIAS_NODE(Transform,
                  nodes_,
                  TransformIsolationNode,
                  NodeId::kTransformAlias)
+
+  ADD_NODE(Scroll, nodes_, Scroll, NodeId::kScroll)
 
   // Effect node implementations.
   bool HasEffectNode() const override {
     return HasNodeTypeInRange(NodeId::kFirstEffect, NodeId::kLastEffect);
   }
 
+  ADD_EFFECT(ElementCaptureEffect, NodeId::kElementCaptureEffect)
   ADD_EFFECT(Effect, NodeId::kEffect)
   ADD_EFFECT(Filter, NodeId::kFilter)
   ADD_EFFECT(Mask, NodeId::kMask)
@@ -189,16 +190,16 @@ class CORE_EXPORT ObjectPaintPropertiesSparse : public ObjectPaintProperties {
   bool HasClipNode() const override {
     return HasNodeTypeInRange(NodeId::kFirstClip, NodeId::kLastClip);
   }
-  ADD_CLIP(PixelMovingFilterClipExpander,
-           NodeId::kPixelMovingFilterClipExpander)
   ADD_CLIP(ClipPathClip, NodeId::kClipPathClip)
   ADD_CLIP(MaskClip, NodeId::kMaskClip)
   ADD_CLIP(CssClip, NodeId::kCssClip)
-  ADD_CLIP(CssClipFixedPosition, NodeId::kCssClipFixedPosition)
   ADD_CLIP(OverflowControlsClip, NodeId::kOverflowControlsClip)
   ADD_CLIP(BackgroundClip, NodeId::kBackgroundClip)
+  ADD_CLIP(PixelMovingFilterClipExpander,
+           NodeId::kPixelMovingFilterClipExpander)
   ADD_CLIP(InnerBorderRadiusClip, NodeId::kInnerBorderRadiusClip)
   ADD_CLIP(OverflowClip, NodeId::kOverflowClip)
+  ADD_CLIP(CssClipFixedPosition, NodeId::kCssClipFixedPosition)
   ADD_ALIAS_NODE(Clip, nodes_, ClipIsolationNode, NodeId::kClipAlias)
 
 #undef ADD_CLIP

@@ -42,10 +42,6 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 namespace updater::test {
 namespace {
 
@@ -340,8 +336,10 @@ void ExpectLegacyUpdaterMigrated(UpdaterScope scope) {
   EXPECT_FALSE(persisted_data->GetDateLastRollcall(kCorruptedApp));
 }
 
-void InstallApp(UpdaterScope scope, const std::string& app_id) {
-  RegisterApp(scope, app_id);
+void InstallApp(UpdaterScope scope,
+                const std::string& app_id,
+                const base::Version& version) {
+  RegisterApp(scope, app_id, version);
 }
 
 void UninstallApp(UpdaterScope scope, const std::string& app_id) {

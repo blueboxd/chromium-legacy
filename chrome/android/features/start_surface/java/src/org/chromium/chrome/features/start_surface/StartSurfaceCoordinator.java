@@ -208,6 +208,7 @@ public class StartSurfaceCoordinator implements StartSurface {
     private ObservableSupplier<Profile> mProfileSupplier;
     private QueryTileSection mQueryTileSection;
     private boolean mIsMVTilesInitialized;
+    private final boolean mIsSurfacePolishEnabled;
 
     private class ScrollableContainerDelegateImpl implements ScrollableContainerDelegate {
         @Override
@@ -322,6 +323,7 @@ public class StartSurfaceCoordinator implements StartSurface {
                 || !ChromeFeatureList.sQueryTilesOnStart.isEnabled();
         mIsStartSurfaceRefactorEnabled =
                 ReturnToChromeUtil.isStartSurfaceRefactorEnabled(mActivity);
+        mIsSurfacePolishEnabled = ChromeFeatureList.sSurfacePolish.isEnabled();
         TabSwitcher.Controller controller = null;
         Runnable initializeMVTilesRunnable = null;
         View logoContainerView = null;
@@ -333,7 +335,8 @@ public class StartSurfaceCoordinator implements StartSurface {
                     browserControlsManager, tabCreatorManager, menuOrKeyboardActionController,
                     containerView, multiWindowModeStateDispatcher, scrimCoordinator,
                     /* rootView= */ containerView, dynamicResourceLoaderSupplier, snackbarManager,
-                    modalDialogManager, incognitoReauthControllerSupplier, backPressManager);
+                    modalDialogManager, incognitoReauthControllerSupplier, backPressManager,
+                    /* layoutStateProviderSupplier */ null);
             mTabSwitcherCustomViewManagerSupplier.set(
                     mGridTabSwitcher.getTabSwitcherCustomViewManager());
             controller = mGridTabSwitcher.getController();
@@ -866,8 +869,13 @@ public class StartSurfaceCoordinator implements StartSurface {
                     : TabSwitcherType.CAROUSEL;
         }
 
-        mView = (TasksView) LayoutInflater.from(mActivity).inflate(
-                R.layout.tasks_view_layout, null);
+        if (!mIsSurfacePolishEnabled) {
+            mView = (TasksView) LayoutInflater.from(mActivity).inflate(
+                    R.layout.tasks_view_layout, null);
+        } else {
+            mView = (TasksView) LayoutInflater.from(mActivity).inflate(
+                    R.layout.tasks_view_layout_polish, null);
+        }
         mView.setId(R.id.primary_tasks_surface_view);
         mView.initialize(mActivityLifecycleDispatcher,
                 mParentTabSupplier.hasValue() && mParentTabSupplier.get().isIncognito(),
@@ -1018,7 +1026,9 @@ public class StartSurfaceCoordinator implements StartSurface {
         int realHeight = getPixelSize(R.dimen.toolbar_height_no_shadow) - realVerticalMargin * 2;
         int fakeAndRealHeightDiff = fakeHeight - realHeight;
 
-        int fakeEndPadding = getPixelSize(R.dimen.search_box_end_padding);
+        int fakeEndPadding = mIsSurfacePolishEnabled
+                ? getPixelSize(R.dimen.fake_search_box_end_padding)
+                : getPixelSize(R.dimen.search_box_end_padding);
         // realEndPadding is 0;
 
         // fakeTranslationX is 0;
@@ -1027,11 +1037,14 @@ public class StartSurfaceCoordinator implements StartSurface {
                 + (getPixelSize(R.dimen.fake_search_box_lateral_padding)
                         - getPixelSize(R.dimen.search_box_start_padding));
 
-        int fakeButtonSize = getPixelSize(R.dimen.tasks_surface_location_bar_url_button_size);
+        int fakeButtonSize = mIsSurfacePolishEnabled
+                ? getPixelSize(R.dimen.location_bar_action_icon_width)
+                : getPixelSize(R.dimen.tasks_surface_location_bar_url_button_size);
         int realButtonSize = getPixelSize(R.dimen.location_bar_action_icon_width);
 
-        int fakeLensButtonStartMargin =
-                getPixelSize(R.dimen.tasks_surface_location_bar_url_button_start_margin);
+        int fakeLensButtonStartMargin = mIsSurfacePolishEnabled
+                ? 0
+                : getPixelSize(R.dimen.tasks_surface_location_bar_url_button_start_margin);
         // realLensButtonStartMargin is 0;
 
         mOffsetChangedListenerToGenerateScrollEvents = (appBarLayout, verticalOffset) -> {

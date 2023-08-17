@@ -55,6 +55,11 @@ class AppListItemViewPixelTest
 
   // AshTestBase:
   void SetUp() override {
+    scoped_feature_list_.InitWithFeatureStates(
+        {{app_list_features::kDragAndDropRefactor, use_drag_drop_refactor()},
+         {features::kAppCollectionFolderRefresh, use_folder_icon_refresh()},
+         {chromeos::features::kJelly, jelly_enabled()}});
+
     AshTestBase::SetUp();
 
     // As per `app_list_config_provider.cc`, dense values are used for screens
@@ -66,11 +71,6 @@ class AppListItemViewPixelTest
           std::make_unique<DragDropControllerTestApi>(drag_controller);
       drag_controller->SetDisableNestedLoopForTesting(true);
     }
-
-    scoped_feature_list_.InitWithFeatureStates(
-        {{app_list_features::kDragAndDropRefactor, use_drag_drop_refactor()},
-         {features::kAppCollectionFolderRefresh, use_folder_icon_refresh()},
-         {chromeos::features::kJelly, jelly_enabled()}});
   }
 
   void TearDown() override {
@@ -150,10 +150,10 @@ class AppListItemViewPixelTest
   size_t GetRevisionNumber() {
     if (jelly_enabled()) {
       // Revision numbers reset with Jelly.
-      return 1u;
+      return 3;
     }
 
-    size_t base_revision_number = 4;
+    size_t base_revision_number = 5;
     if (use_folder_icon_refresh()) {
       ++base_revision_number;
     }
@@ -200,7 +200,7 @@ TEST_P(AppListItemViewPixelTest, AppListItemView) {
 
   ShowAppList();
   EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentsOnPrimaryScreen(
-      GenerateScreenshotName(), /*revision_number=*/jelly_enabled() ? 0 : 1,
+      GenerateScreenshotName(), /*revision_number=*/jelly_enabled() ? 1 : 1,
       GetItemViewAt(0), GetItemViewAt(1)));
 }
 
@@ -229,19 +229,19 @@ TEST_P(AppListItemViewPixelTest, AppListFolderItemsLayoutInIcon) {
       // In production, use_folder_icon_refresh() is always enabled when jelly
       // is enabled.
       EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentsOnPrimaryScreen(
-          GenerateScreenshotName(), /*revision_number=*/0, GetItemViewAt(0),
+          GenerateScreenshotName(), /*revision_number=*/2, GetItemViewAt(0),
           GetItemViewAt(1), GetItemViewAt(2), GetItemViewAt(3),
           GetItemViewAt(4)));
     }
     // jelly_enabled && !use_folder_icon_refresh is deliberately skipped.
   } else if (use_folder_icon_refresh()) {
     EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentsOnPrimaryScreen(
-        GenerateScreenshotName(), /*revision_number=*/2, GetItemViewAt(0),
+        GenerateScreenshotName(), /*revision_number=*/3, GetItemViewAt(0),
         GetItemViewAt(1), GetItemViewAt(2), GetItemViewAt(3),
         GetItemViewAt(4)));
   } else {
     EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentsOnPrimaryScreen(
-        GenerateScreenshotName(), /*revision_number=*/1, GetItemViewAt(0),
+        GenerateScreenshotName(), /*revision_number=*/2, GetItemViewAt(0),
         GetItemViewAt(1), GetItemViewAt(2), GetItemViewAt(3)));
   }
 }
@@ -282,7 +282,7 @@ TEST_P(AppListItemViewPixelTest, AppListFolderIconExtendedState) {
   if (jelly_enabled()) {
     if (use_folder_icon_refresh()) {
       EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentsOnPrimaryScreen(
-          GenerateScreenshotName(), /*revision_number=*/0, GetItemViewAt(0),
+          GenerateScreenshotName(), /*revision_number=*/2, GetItemViewAt(0),
           GetItemViewAt(1), GetItemViewAt(2), GetItemViewAt(3),
           GetItemViewAt(4)));
     }
@@ -290,12 +290,12 @@ TEST_P(AppListItemViewPixelTest, AppListFolderIconExtendedState) {
     // occur in production.
   } else if (use_folder_icon_refresh()) {
     EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentsOnPrimaryScreen(
-        GenerateScreenshotName(), /*revision_number=*/2, GetItemViewAt(0),
+        GenerateScreenshotName(), /*revision_number=*/3, GetItemViewAt(0),
         GetItemViewAt(1), GetItemViewAt(2), GetItemViewAt(3),
         GetItemViewAt(4)));
   } else {
     EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentsOnPrimaryScreen(
-        GenerateScreenshotName(), /*revision_number=*/1, GetItemViewAt(0),
+        GenerateScreenshotName(), /*revision_number=*/2, GetItemViewAt(0),
         GetItemViewAt(1), GetItemViewAt(2), GetItemViewAt(3)));
   }
 

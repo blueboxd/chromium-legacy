@@ -39,6 +39,7 @@
 <translation id="2767464022270041271">Ez dago pasahitzik gordeta. Gordetako pasahitzak egiaztatzeko gai da Google-ren Pasahitz-kudeatzailea.</translation>
 <translation id="2840432500933227975">Ireki Chrome-ren ezarpenak iOS-en, sakatu "Browser Default APP" (arakatzaile-aplikazio lehenetsia) eta hautatu Chrome.</translation>
 <translation id="2869959624320573933">Hasi saioa Chrome-n</translation>
+<translation id="2876628302275096482">Lortu <ph name="BEGIN_LINK" />Chrome-k zure datuen pribatutasuna babesteko duen moduari<ph name="END_LINK" /> buruzko informazio gehiago</translation>
 <translation id="2957447865124070833">Hautatu <ph name="BEGIN_BOLD" />Chrome<ph name="END_BOLD" />.</translation>
 <translation id="3030414234702425231"><ph name="SIGNOUT_MANAGED_DOMAIN" /> domeinuak kudeatutako kontu baten saioa amaituko duzunez, Chrome-n dituzun datuak ezabatu egingo dira gailu honetatik. Hala ere, datu horiek Google-ko kontuan egoten jarraituko dute.</translation>
 <translation id="3167189358072330585">Kontua ez dabil Google Chrome-n. Jarri harremanetan domeinuaren administratzailearekin edo erabili ohiko Google-ko kontu bat saioa hasteko.</translation>
@@ -79,10 +80,12 @@
 <translation id="5162467219239570114">Chrome zaharkituta dago. Ez badago eguneratzerik <ph name="BEGIN_LINK" />App Store<ph name="END_LINK" /> dendan, baliteke gailua Chrome-ren bertsio berriekin bateragarria ez izatea.</translation>
 <translation id="5389212809648216794">Google Chrome-k ezin du erabili kamera, beste aplikazio bat ari delako hura erabiltzen</translation>
 <translation id="5395376160638294582">Izan beti Google-ko kontuko Chrome-ren datuak erabiltzeko aukera</translation>
+<translation id="5439191312780166229">Webgune arriskutsuen berri ematen dizu, Google-k ezagutzen ez zituenak barne, webguneetan babes estandarrak baino datu gehiago aztertuz. Chrome-ren abisuak saltatzea aukera dezakezu.</translation>
 <translation id="5460571915754665838">4. Hautatu Chrome.</translation>
 <translation id="5492504007368565877">Google-ren Pasahitz-kudeatzailea aplikazioak ezin ditu egiaztatu pasahitzak.</translation>
 <translation id="5527026824954593399">Sakatu "Ikusi Google Maps-ekin Chrome-n".</translation>
 <translation id="5552137475244467770">Sarean argitaratu diren zerrendetan zure pasahitzak dauden egiaztatzen du noizean behin Chrome-k. Hori egiteko, pasahitzak eta erabiltzaile-izenak enkriptatu egiten ditu, inork ezin ditzan irakurri, Google barne.</translation>
+<translation id="5554520618550346933">Pasahitz bat erabiltzen duzunean, Chrome-k sarean argitaratu den ala ez jakinarazten dizu. Horretarako, pasahitzak eta erabiltzaile-izenak enkriptatzen ditu inork irakurri ezin ditzan, ezta Google-k ere.</translation>
 <translation id="5639704535586432836">Ireki Ezarpenak &gt; Pribatutasuna &gt; Kamera &gt; Google Chrome, eta aktibatu kamera.</translation>
 <translation id="5642200033778930880">Google Chrome-k ezin du erabili kamera Ikuspegi zatitua moduan</translation>
 <translation id="5661521615548540542">Google-ren Pasahitz-kudeatzailea zerbitzuak ezin izan ditu egiaztatu pasahitz guztiak. Saiatu berriro geroago.</translation>
@@ -148,6 +151,7 @@
 <translation id="8765470054473112089">Helbide-barran edo bilaketa-koadroan zerbait idazten duzunean, Chrome-k bilatzaile lehenetsira bidaltzen du, iradokizun hobeak lortzeko. Ezkutuko moduan, aukera hori desaktibatuta dago.</translation>
 <translation id="8772179140489533211">Chrome-n saioa hasteko onarpen-mezuak erakusten ditu.</translation>
 <translation id="8788269841521769222">Ez duzu pasahitza gogoratu beharko. <ph name="EMAIL" /> kontuko Google-ren Pasahitz-kudeatzailea zerbitzuan gordeko da.</translation>
+<translation id="8808828119384186784">Chrome-ren ezarpenak</translation>
 <translation id="8857676124663337448">Google-ren Pasahitz-kudeatzailea zerbitzuak ezin izan ditu egiaztatu pasahitz guztiak. Saiatu berriro bihar.</translation>
 <translation id="8897749957032330183">Pasahitzak gailu honetan gordetzen dira, Google-ren Pasahitz-kudeatzailea zerbitzuan.</translation>
 <translation id="8969290730818637510">Aktibatuta dagoenean:

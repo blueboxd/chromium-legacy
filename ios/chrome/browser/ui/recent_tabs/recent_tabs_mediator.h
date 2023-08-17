@@ -15,6 +15,8 @@
 
 class BrowserList;
 class FaviconLoader;
+@protocol GridConsumer;
+@protocol GridToolbarsMutator;
 @protocol RecentTabsConsumer;
 
 namespace signin {
@@ -46,6 +48,10 @@ class TabRestoreService;
 // The consumer for this object. This can change during the lifetime of this
 // object and may be nil.
 @property(nonatomic, strong) id<RecentTabsConsumer> consumer;
+// Consumer to reflect model modification to grid UI layer.
+@property(nonatomic, weak) id<GridConsumer> gridConsumer;
+// Mutator to handle toolbars modification.
+@property(nonatomic, weak) id<GridToolbarsMutator> toolbarsMutator;
 
 - (instancetype)
     initWithSessionSyncService:

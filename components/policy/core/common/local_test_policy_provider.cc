@@ -18,18 +18,26 @@ namespace policy {
 // static
 std::unique_ptr<LocalTestPolicyProvider>
 LocalTestPolicyProvider::CreateIfAllowed(version_info::Channel channel) {
+  if (IsAllowed(channel)) {
+    return base::WrapUnique(new LocalTestPolicyProvider());
+  }
+
+  return nullptr;
+}
+
+bool LocalTestPolicyProvider::IsAllowed(version_info::Channel channel) {
   if (channel == version_info::Channel::CANARY ||
       channel == version_info::Channel::DEFAULT) {
-    return base::WrapUnique(new LocalTestPolicyProvider());
+    return true;
   }
 
 #if BUILDFLAG(IS_IOS)
   if (channel == version_info::Channel::BETA) {
-    return base::WrapUnique(new LocalTestPolicyProvider());
+    return true;
   }
 #endif
 
-  return nullptr;
+  return false;
 }
 
 LocalTestPolicyProvider::~LocalTestPolicyProvider() = default;
@@ -38,6 +46,10 @@ void LocalTestPolicyProvider::LoadJsonPolicies(
     const std::string& json_policies_string) {
   loader_.SetPolicyListJson(json_policies_string);
   RefreshPolicies();
+}
+
+void LocalTestPolicyProvider::SetUserAffiliated(bool affiliated) {
+  loader_.SetUserAffiliated(affiliated);
 }
 
 void LocalTestPolicyProvider::ClearPolicies() {
@@ -57,11 +69,10 @@ bool LocalTestPolicyProvider::IsFirstPolicyLoadComplete(
 }
 
 // static
-void LocalTestPolicyProvider::RegisterProfilePrefs(
+void LocalTestPolicyProvider::RegisterLocalStatePrefs(
     PrefRegistrySimple* registry) {
-  registry->RegisterListPref(
-      policy::policy_prefs::kLocalTestPoliciesForNextStartup,
-      base::Value::List());
+  registry->RegisterStringPref(
+      policy::policy_prefs::kLocalTestPoliciesForNextStartup, std::string());
 }
 
 LocalTestPolicyProvider::LocalTestPolicyProvider() {

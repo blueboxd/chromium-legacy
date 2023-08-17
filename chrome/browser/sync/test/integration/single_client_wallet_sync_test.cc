@@ -31,7 +31,6 @@
 #include "components/autofill/core/browser/personal_data_manager_observer.h"
 #include "components/autofill/core/browser/test_autofill_clock.h"
 #include "components/autofill/core/browser/webdata/autofill_sync_bridge_util.h"
-#include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/identity_manager/identity_test_utils.h"
@@ -759,7 +758,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest,
   std::vector<CreditCard*> cards = pdm->GetCreditCards();
   ASSERT_EQ(1uL, cards.size());
   EXPECT_EQ(u"0001", cards[0]->LastFourDigits());
-  EXPECT_EQ(CreditCard::MASKED_SERVER_CARD, cards[0]->record_type());
+  EXPECT_EQ(CreditCard::RecordType::kMaskedServerCard, cards[0]->record_type());
 
   // Unmask the card (the full card number has to start with "34" to match the
   // type of the masked card which is by default AMEX in the tests).
@@ -778,7 +777,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest,
   cards = pdm->GetCreditCards();
   ASSERT_EQ(1uL, cards.size());
   EXPECT_EQ(u"0001", cards[0]->LastFourDigits());
-  EXPECT_EQ(CreditCard::FULL_SERVER_CARD, cards[0]->record_type());
+  EXPECT_EQ(CreditCard::RecordType::kFullServerCard, cards[0]->record_type());
   EXPECT_EQ("different", pdm->GetPaymentsCustomerData()->customer_id);
 }
 
@@ -868,7 +867,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest,
   ASSERT_NE(nullptr, pdm);
 
   // Add a server credit card on the client.
-  CreditCard credit_card(CreditCard::MASKED_SERVER_CARD, "a123");
+  CreditCard credit_card(CreditCard::RecordType::kMaskedServerCard, "a123");
   std::vector<CreditCard> credit_cards = {credit_card};
   wallet_helper::SetServerCreditCards(0, credit_cards);
 
@@ -951,7 +950,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest,
   wallet_helper::SetServerProfiles(0, client_profiles);
 
   // Add a server credit card on the client.
-  CreditCard credit_card(CreditCard::MASKED_SERVER_CARD, "a123");
+  CreditCard credit_card(CreditCard::RecordType::kMaskedServerCard, "a123");
   std::vector<CreditCard> credit_cards = {credit_card};
   wallet_helper::SetServerCreditCards(0, credit_cards);
 
@@ -1093,60 +1092,6 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest,
   EXPECT_EQ(kDefaultBillingAddressID, cards[0]->billing_address_id());
 }
 
-// AutofillAccountProfilesUnionView deprecates support for server profiles.
-// TODO(crbug.com/1348294): Remove when launched.
-class SingleClientWalletServerAddressSyncTest
-    : public SingleClientWalletSyncTest {
- public:
-  SingleClientWalletServerAddressSyncTest() {
-    features_.InitAndDisableFeature(
-        autofill::features::kAutofillAccountProfilesUnionView);
-  }
-
- private:
-  base::test::ScopedFeatureList features_;
-};
-
-IN_PROC_BROWSER_TEST_F(SingleClientWalletServerAddressSyncTest,
-                       ConvertServerAddress) {
-  GetFakeServer()->SetWalletData(
-      {CreateSyncWalletAddress(/*name=*/"address-1", /*company=*/"Company-1"),
-       CreateDefaultSyncPaymentsCustomerData()});
-  ASSERT_TRUE(SetupSync());
-
-  // Wait to make sure the address got converted locally.
-  AutofillWalletConversionChecker(0).Wait();
-
-  // Make sure the wallet_metadata is committed to the server, make an
-  // independent later commit and wait for it to happen.
-  ASSERT_TRUE(
-      bookmarks_helper::AddURL(0, "What are you syncing about?",
-                               GURL("https://google.com/synced-bookmark-1")));
-  ASSERT_TRUE(ServerCountMatchStatusChecker(syncer::BOOKMARKS, 1).Wait());
-
-  // Make sure the data is present on the client.
-  autofill::PersonalDataManager* pdm = GetPersonalDataManager(0);
-  ASSERT_EQ(1uL, pdm->GetServerProfiles().size());
-  ASSERT_EQ(kDefaultCustomerID, pdm->GetPaymentsCustomerData()->customer_id);
-
-  // Check also the data related to conversion to local profiles.
-  ASSERT_EQ(1uL, pdm->GetProfiles().size());
-  std::map<std::string, AutofillMetadata> addresses_metadata =
-      GetServerAddressesMetadata(0);
-  EXPECT_EQ(1U, addresses_metadata.size());
-  EXPECT_TRUE(addresses_metadata.begin()->second.has_converted);
-
-  // Check the data is correctly on the server.
-  EXPECT_THAT(fake_server_->GetSyncEntitiesByModelType(
-                  syncer::AUTOFILL_WALLET_METADATA),
-              Contains(AddressHasConverted()));
-
-  histogram_tester_.ExpectBucketCount(
-      "Autofill.WalletAddressConversionType",
-      /*sample=*/AutofillMetrics::CONVERTED_ADDRESS_ADDED,
-      /*expected_count=*/1);
-}
-
 IN_PROC_BROWSER_TEST_F(SingleClientWalletSyncTest,
                        DoNotConvertServerAddressAgain) {
   sync_pb::SyncEntity address_entity =
@@ -1277,7 +1222,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSecondaryAccountSyncTest,
       syncer::AUTOFILL_WALLET_DATA));
 
   // PersonalDataManager should use (ephemeral) account storage.
-  EXPECT_FALSE(GetPersonalDataManager(0)->IsSyncFeatureEnabled());
+  EXPECT_FALSE(GetPersonalDataManager(0)
+                   ->IsSyncFeatureEnabledForPaymentsServerMetrics());
   EXPECT_TRUE(
       GetPersonalDataManager(0)->IsUsingAccountStorageForServerDataForTest());
 
@@ -1314,7 +1260,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientWalletSecondaryAccountSyncTest,
       syncer::AUTOFILL_WALLET_DATA));
 
   // PersonalDataManager should have switched to persistent storage.
-  EXPECT_TRUE(GetPersonalDataManager(0)->IsSyncFeatureEnabled());
+  EXPECT_TRUE(GetPersonalDataManager(0)
+                  ->IsSyncFeatureEnabledForPaymentsServerMetrics());
   EXPECT_FALSE(
       GetPersonalDataManager(0)->IsUsingAccountStorageForServerDataForTest());
 
@@ -1347,7 +1294,8 @@ IN_PROC_BROWSER_TEST_F(
       syncer::AUTOFILL_WALLET_DATA));
 
   // PersonalDataManager should use (ephemeral) account storage.
-  EXPECT_FALSE(GetPersonalDataManager(0)->IsSyncFeatureEnabled());
+  EXPECT_FALSE(GetPersonalDataManager(0)
+                   ->IsSyncFeatureEnabledForPaymentsServerMetrics());
   EXPECT_TRUE(
       GetPersonalDataManager(0)->IsUsingAccountStorageForServerDataForTest());
 
@@ -1398,7 +1346,8 @@ IN_PROC_BROWSER_TEST_F(
       syncer::AUTOFILL_WALLET_DATA));
 
   // PersonalDataManager should have switched to persistent storage.
-  EXPECT_TRUE(GetPersonalDataManager(0)->IsSyncFeatureEnabled());
+  EXPECT_TRUE(GetPersonalDataManager(0)
+                  ->IsSyncFeatureEnabledForPaymentsServerMetrics());
   EXPECT_FALSE(
       GetPersonalDataManager(0)->IsUsingAccountStorageForServerDataForTest());
 

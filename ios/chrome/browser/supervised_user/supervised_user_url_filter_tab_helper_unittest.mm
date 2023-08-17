@@ -10,8 +10,6 @@
 #import "components/signin/public/identity_manager/account_capabilities_test_mutator.h"
 #import "components/signin/public/identity_manager/identity_manager.h"
 #import "components/signin/public/identity_manager/identity_test_utils.h"
-#import "components/supervised_user/core/browser/kids_chrome_management_client.h"
-#import "components/supervised_user/core/browser/kids_chrome_management_test_utils.h"
 #import "components/supervised_user/core/browser/supervised_user_service.h"
 #import "components/supervised_user/core/browser/supervised_user_settings_service.h"
 #import "components/supervised_user/core/common/features.h"
@@ -28,6 +26,7 @@
 #import "ios/chrome/browser/supervised_user/supervised_user_service_factory.h"
 #import "ios/chrome/browser/supervised_user/supervised_user_settings_service_factory.h"
 #import "ios/chrome/test/testing_application_context.h"
+#import "ios/components/security_interstitials/ios_blocking_page_tab_helper.h"
 #import "ios/web/public/navigation/web_state_policy_decider.h"
 #import "ios/web/public/test/fakes/fake_web_state.h"
 #import "ios/web/public/test/web_task_environment.h"
@@ -36,13 +35,10 @@
 #import "testing/gtest/include/gtest/gtest.h"
 #import "testing/platform_test.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 namespace {
 
 const char kTestEmail[] = "test@gmail.com";
+NSString* kExampleURL = @"http://example.com";
 
 }  // namespace
 
@@ -59,19 +55,13 @@ class SupervisedUserURLFilterTabHelperTest : public PlatformTest {
     web_state_.SetBrowserState(chrome_browser_state_.get());
     SupervisedUserURLFilterTabHelper::CreateForWebState(&web_state_);
     SupervisedUserErrorContainer::CreateForWebState(&web_state_);
-
-    kids_chrome_management_client_ =
-        std::make_unique<kids_management::KidsChromeManagementClientForTesting>(
-            base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
-                &test_url_loader_factory_),
-            IdentityManagerFactory::GetForBrowserState(
-                chrome_browser_state_.get()));
+    security_interstitials::IOSBlockingPageTabHelper::CreateForWebState(
+        &web_state_);
   }
 
   void SetUp() override {
     scoped_feature_list_.InitWithFeatures(
-        {supervised_user::kEnableSupervisionOnDesktopAndIOS,
-         supervised_user::kFilterWebsitesForSupervisedUsersOnDesktopAndIOS},
+        {supervised_user::kFilterWebsitesForSupervisedUsersOnDesktopAndIOS},
         {});
   }
 
@@ -94,11 +84,6 @@ class SupervisedUserURLFilterTabHelperTest : public PlatformTest {
         account);
 
     // Initialize supervised_user services.
-    SupervisedUserSettingsServiceFactory::GetForBrowserState(
-        chrome_browser_state_.get())
-        ->Init(chrome_browser_state_->GetStatePath(),
-               chrome_browser_state_->GetIOTaskRunner(),
-               /*load_synchronously=*/true);
     ChildAccountServiceFactory::GetForBrowserState(chrome_browser_state_.get())
         ->Init();
 
@@ -109,26 +94,14 @@ class SupervisedUserURLFilterTabHelperTest : public PlatformTest {
 
     EXPECT_EQ(supervised_user_service->IsSubjectToParentalControls(),
               is_subject_to_parental_controls);
-
-    // Set up the AsyncURLChecker with KidsChromeManagementClientForTesting.
-    supervised_user_service->GetURLFilter()->InitAsyncURLChecker(
-        kids_chrome_management_client_.get());
   }
 
-  // Calls `ShouldAllowRequest` for a request with the given `url_string` and
-  // whether whether the navigation target frame is the main frame.
+  // Calls `ShouldAllowRequest` for a request with the given `url_string`.
   // Returns true if the URL request is blocked.
-  bool IsURLBlocked(NSString* url_string, bool target_frame_is_main) {
-    // Prepare the mock client response.
-    std::unique_ptr<kids_chrome_management::ClassifyUrlResponse>
-        response_proto = kids_management::BuildResponseProto(classification_);
-    kids_chrome_management_client_->SetResponseWithError(
-        std::move(response_proto),
-        KidsChromeManagementClient::ErrorCode::kSuccess);
-
+  bool IsURLBlocked(NSString* url_string) {
     // Set up for `ShouldAllowRequest`.
     const web::WebStatePolicyDecider::RequestInfo request_info(
-        ui::PageTransition::PAGE_TRANSITION_LINK, target_frame_is_main,
+        ui::PageTransition::PAGE_TRANSITION_LINK, /*target_frame_is_main=*/true,
         /*target_frame_is_cross_origin=*/false,
         /*has_user_gesture=*/false);
     __block bool callback_called = false;
@@ -151,22 +124,24 @@ class SupervisedUserURLFilterTabHelperTest : public PlatformTest {
     return request_policy.ShouldCancelNavigation();
   }
 
-  // Returns true if the URL request is blocked for any navigation target frame.
-  bool IsURLBlocked(NSString* url_string) {
-    bool is_url_blocked_main_frame =
-        IsURLBlocked(url_string, /*target_frame_is_main=*/true);
-    bool is_url_blocked_sub_frame =
-        IsURLBlocked(url_string, /*target_frame_is_main=*/false);
-    EXPECT_EQ(is_url_blocked_main_frame, is_url_blocked_sub_frame);
-    return is_url_blocked_main_frame && is_url_blocked_sub_frame;
-  }
+  void AllowExampleSiteForSupervisedUser() {
+    supervised_user::SupervisedUserService* supervised_user_service =
+        SupervisedUserServiceFactory::GetForBrowserState(
+            chrome_browser_state_.get());
 
-  void AllowAllSitesForSupervisedUser() {
-    classification_ = safe_search_api::ClientClassification::kAllowed;
+    std::map<std::string, bool> hosts;
+    hosts["example.com"] = true;
+    supervised_user_service->GetURLFilter()->SetManualHosts(hosts);
+    supervised_user_service->GetURLFilter()->SetDefaultFilteringBehavior(
+        supervised_user::SupervisedUserURLFilter::ALLOW);
   }
 
   void RestrictAllSitesForSupervisedUser() {
-    classification_ = safe_search_api::ClientClassification::kRestricted;
+    supervised_user::SupervisedUserService* supervised_user_service =
+        SupervisedUserServiceFactory::GetForBrowserState(
+            chrome_browser_state_.get());
+    supervised_user_service->GetURLFilter()->SetDefaultFilteringBehavior(
+        supervised_user::SupervisedUserURLFilter::BLOCK);
   }
 
  private:
@@ -175,9 +150,6 @@ class SupervisedUserURLFilterTabHelperTest : public PlatformTest {
   network::TestURLLoaderFactory test_url_loader_factory_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
   web::FakeWebState web_state_;
-  std::unique_ptr<kids_management::KidsChromeManagementClientForTesting>
-      kids_chrome_management_client_;
-  safe_search_api::ClientClassification classification_;
 };
 
 TEST_F(SupervisedUserURLFilterTabHelperTest,
@@ -185,9 +157,9 @@ TEST_F(SupervisedUserURLFilterTabHelperTest,
   SignIn(kTestEmail,
          /*is_subject_to_parental_controls=*/true);
   RestrictAllSitesForSupervisedUser();
-  EXPECT_TRUE(IsURLBlocked(@"http://blockedurl.com"));
-  AllowAllSitesForSupervisedUser();
-  EXPECT_FALSE(IsURLBlocked(@"http://allowedurl.com"));
+  EXPECT_TRUE(IsURLBlocked(kExampleURL));
+  AllowExampleSiteForSupervisedUser();
+  EXPECT_FALSE(IsURLBlocked(kExampleURL));
 }
 
 TEST_F(SupervisedUserURLFilterTabHelperTest,
@@ -195,14 +167,14 @@ TEST_F(SupervisedUserURLFilterTabHelperTest,
   SignIn(kTestEmail,
          /*is_subject_to_parental_controls=*/false);
   RestrictAllSitesForSupervisedUser();
-  EXPECT_FALSE(IsURLBlocked(@"http://blockedurl.com"));
-  AllowAllSitesForSupervisedUser();
-  EXPECT_FALSE(IsURLBlocked(@"http://allowedurl.com"));
+  EXPECT_FALSE(IsURLBlocked(kExampleURL));
+  AllowExampleSiteForSupervisedUser();
+  EXPECT_FALSE(IsURLBlocked(kExampleURL));
 }
 
 TEST_F(SupervisedUserURLFilterTabHelperTest, AllowsAllSitesWhenLoggedOut) {
   RestrictAllSitesForSupervisedUser();
-  EXPECT_FALSE(IsURLBlocked(@"http://blockedurl.com"));
-  AllowAllSitesForSupervisedUser();
-  EXPECT_FALSE(IsURLBlocked(@"http://allowedurl.com"));
+  EXPECT_FALSE(IsURLBlocked(kExampleURL));
+  AllowExampleSiteForSupervisedUser();
+  EXPECT_FALSE(IsURLBlocked(kExampleURL));
 }

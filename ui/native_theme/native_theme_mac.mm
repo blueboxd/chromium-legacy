@@ -58,7 +58,13 @@ bool IsHighContrast() {
 }
 
 bool InvertedColors() {
-  return NSWorkspace.sharedWorkspace.accessibilityDisplayShouldInvertColors;
+  NSWorkspace* workspace = [NSWorkspace sharedWorkspace];
+  if ([workspace respondsToSelector:@selector
+                 (accessibilityDisplayShouldInvertColors)]) {
+    return NSWorkspace.sharedWorkspace.accessibilityDisplayShouldInvertColors;
+  } else {
+    return false;
+  }
 }
 
 }  // namespace

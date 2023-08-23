@@ -1914,7 +1914,7 @@ config("chromium_code") {
 
       # Warn on unreachable code, including unreachable breaks and returns.
       # See https://crbug.com/346399#c148 for suppression strategies.
-      "-Wunreachable-code-aggressive",
+      # "-Wunreachable-code-aggressive",
     ]
 
     # Thread safety analysis is broken under nacl: https://crbug.com/982423.

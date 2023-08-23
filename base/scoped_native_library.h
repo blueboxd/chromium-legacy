@@ -36,7 +36,7 @@ class BASE_EXPORT ScopedNativeLibrary
   explicit ScopedNativeLibrary(NativeLibrary library);
 
   // Opens the given library and manages its lifetime.
-  explicit ScopedNativeLibrary(const FilePath& library_path);
+  explicit ScopedNativeLibrary(const FilePath& library_path, NativeLibraryOptions options = NativeLibraryOptions());
 
   // Move constructor. Takes ownership of handle stored in |scoped_library|
   ScopedNativeLibrary(ScopedNativeLibrary&& scoped_library);

@@ -12,13 +12,15 @@
 - (instancetype)initWithHandler:(void (^)())handler {
   self = [super init];
   if (self) {
-    _handler = handler;
-    _defaults =
-        [[NSUserDefaults alloc] initWithSuiteName:@"com.apple.universalaccess"];
-    [_defaults addObserver:self
-                forKeyPath:@"mouseDriverCursorSize"
-                   options:0
-                   context:nullptr];
+    if (@available(macOS 10.9, *)) {
+      _handler = handler;
+      _defaults = [[NSUserDefaults alloc]
+          initWithSuiteName:@"com.apple.universalaccess"];
+      [_defaults addObserver:self
+                  forKeyPath:@"mouseDriverCursorSize"
+                     options:0
+                     context:nullptr];
+    }
   }
   return self;
 }

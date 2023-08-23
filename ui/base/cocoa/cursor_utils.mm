@@ -275,14 +275,19 @@ NSCursor* GetNativeCursor(const ui::Cursor& cursor) {
 
 float GetCursorAccessibilityScaleFactor(bool force_update) {
   static absl::optional<float> scale;
-  if (!scale.has_value() || force_update) {
-    NSUserDefaults* defaults =
-        [[NSUserDefaults alloc] initWithSuiteName:@"com.apple.universalaccess"];
-    // This may be 0 in tests, but the expected production range is [1.0, 4.0].
-    scale =
-        std::clamp([defaults floatForKey:@"mouseDriverCursorSize"], 1.f, 4.f);
+  if (@available(macOS 10.9, *)) {
+    if (!scale.has_value() || force_update) {
+      NSUserDefaults* defaults = [[NSUserDefaults alloc]
+          initWithSuiteName:@"com.apple.universalaccess"];
+      // This may be 0 in tests, but the expected production range is
+      // [1.0, 4.0].
+      scale =
+          std::clamp([defaults floatForKey:@"mouseDriverCursorSize"], 1.f, 4.f);
+    }
+    return scale.value();
+  } else {
+    return 1.0f;
   }
-  return scale.value();
 }
 
 }  // namespace ui

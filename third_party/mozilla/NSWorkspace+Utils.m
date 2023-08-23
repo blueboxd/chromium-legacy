@@ -40,14 +40,17 @@
 
 #import "NSWorkspace+Utils.h"
 
-@implementation NSWorkspace(CaminoDefaultBrowserAdditions)
+@implementation NSWorkspace (CaminoDefaultBrowserAdditions)
 
-- (void)setDefaultBrowserWithIdentifier:(NSString*)bundleID
-{
-  LSSetDefaultHandlerForURLScheme(CFSTR("http"), (CFStringRef)bundleID);
-  LSSetDefaultHandlerForURLScheme(CFSTR("https"), (CFStringRef)bundleID);
-  LSSetDefaultRoleHandlerForContentType(kUTTypeHTML, kLSRolesViewer, (CFStringRef)bundleID);
-  LSSetDefaultRoleHandlerForContentType(kUTTypeURL, kLSRolesViewer, (CFStringRef)bundleID);
+- (void)setDefaultBrowserWithIdentifier:(NSString*)bundleID {
+  LSSetDefaultHandlerForURLScheme(CFSTR("http"),
+                                  (CFStringRef)CFBridgingRetain(bundleID));
+  LSSetDefaultHandlerForURLScheme(CFSTR("https"),
+                                  (CFStringRef)CFBridgingRetain(bundleID));
+  LSSetDefaultRoleHandlerForContentType(
+      kUTTypeHTML, kLSRolesViewer, (CFStringRef)CFBridgingRetain(bundleID));
+  LSSetDefaultRoleHandlerForContentType(
+      kUTTypeURL, kLSRolesViewer, (CFStringRef)CFBridgingRetain(bundleID));
 }
 
 @end

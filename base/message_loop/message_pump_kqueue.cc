@@ -132,8 +132,9 @@ MessagePumpKqueue::MessagePumpKqueue()
 
   kevent64_s event{};
   if (KqueueTimersSpuriouslyWakeUp()) {
-    kr = mach_port_allocate(mach_task_self(), MACH_PORT_RIGHT_PORT_SET,
-                            mac::ScopedMachPortSet::Receiver(port_set_).get());
+    kr =
+        mach_port_allocate(mach_task_self(), MACH_PORT_RIGHT_PORT_SET,
+                           apple::ScopedMachPortSet::Receiver(port_set_).get());
     MACH_CHECK(kr == KERN_SUCCESS, kr) << "mach_port_allocate PORT_SET";
 
     kr = mach_port_insert_member(mach_task_self(), wakeup_.get(),
@@ -511,7 +512,9 @@ bool MessagePumpKqueue::ProcessEvents(Delegate* delegate, size_t count) {
             static_cast<int>(event->ident));
       }
     } else if (event->filter == EVFILT_MACHPORT) {
-      mach_port_t port = KqueueTimersSpuriouslyWakeUp() ? static_cast<mach_port_t>(event->data) : static_cast<mach_port_t>(event->ident);
+      mach_port_t port = KqueueTimersSpuriouslyWakeUp()
+                             ? static_cast<mach_port_t>(event->data)
+                             : static_cast<mach_port_t>(event->ident);
 
       if (port == wakeup_.get()) {
         // The wakeup event has been received, do not treat this as "doing

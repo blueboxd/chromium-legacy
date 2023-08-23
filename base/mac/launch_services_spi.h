@@ -15,12 +15,18 @@ extern "C" {
 
 using LSASNRef = const struct CF_BRIDGED_TYPE(id) __LSASN*;
 
-extern const CFStringRef _kLSOpenOptionActivateKey;
-extern const CFStringRef _kLSOpenOptionAddToRecentsKey;
-extern const CFStringRef _kLSOpenOptionArgumentsKey;
-extern const CFStringRef _kLSOpenOptionBackgroundLaunchKey;
-extern const CFStringRef _kLSOpenOptionHideKey;
-extern const CFStringRef _kLSOpenOptionPreferRunningInstanceKey;
+extern const CFStringRef _kLSOpenOptionActivateKey
+    __attribute__((weak_import, weak));
+extern const CFStringRef _kLSOpenOptionAddToRecentsKey
+    __attribute__((weak_import, weak));
+extern const CFStringRef _kLSOpenOptionArgumentsKey
+    __attribute__((weak_import, weak));
+extern const CFStringRef _kLSOpenOptionBackgroundLaunchKey
+    __attribute__((weak_import, weak));
+extern const CFStringRef _kLSOpenOptionHideKey
+    __attribute__((weak_import, weak));
+extern const CFStringRef _kLSOpenOptionPreferRunningInstanceKey
+    __attribute__((weak_import, weak));
 
 using _LSOpenCompletionHandler = void (^)(LSASNRef, Boolean, CFErrorRef);
 void _LSOpenURLsWithCompletionHandler(

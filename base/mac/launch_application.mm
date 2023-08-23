@@ -95,20 +95,25 @@ NSWorkspaceLaunchOptions GetLaunchOptions(LaunchApplicationOptions options) {
 
 NSDictionary* GetOpenOptions(LaunchApplicationOptions options,
                              const CommandLineArgs& command_line_args) {
-  NSDictionary* dict = @{
-    base::apple::CFToNSPtrCast(_kLSOpenOptionArgumentsKey) :
-        CommandLineArgsToArgsArray(command_line_args),
-    base::apple::CFToNSPtrCast(_kLSOpenOptionHideKey) :
-        @(options.hidden_in_background),
-    base::apple::CFToNSPtrCast(_kLSOpenOptionBackgroundLaunchKey) :
-        @(options.hidden_in_background),
-    base::apple::CFToNSPtrCast(_kLSOpenOptionAddToRecentsKey) :
-        @(!options.hidden_in_background),
-    base::apple::CFToNSPtrCast(_kLSOpenOptionActivateKey) : @(options.activate),
-    base::apple::CFToNSPtrCast(_kLSOpenOptionPreferRunningInstanceKey) :
-        @(!options.create_new_instance),
-  };
-  return dict;
+  if (@available(macOS 10.15, *)) {
+    NSDictionary* dict = @{
+      base::apple::CFToNSPtrCast(_kLSOpenOptionArgumentsKey) :
+          CommandLineArgsToArgsArray(command_line_args),
+      base::apple::CFToNSPtrCast(_kLSOpenOptionHideKey) :
+          @(options.hidden_in_background),
+      base::apple::CFToNSPtrCast(_kLSOpenOptionBackgroundLaunchKey) :
+          @(options.hidden_in_background),
+      base::apple::CFToNSPtrCast(_kLSOpenOptionAddToRecentsKey) :
+          @(!options.hidden_in_background),
+      base::apple::CFToNSPtrCast(_kLSOpenOptionActivateKey) :
+          @(options.activate),
+      base::apple::CFToNSPtrCast(_kLSOpenOptionPreferRunningInstanceKey) :
+          @(!options.create_new_instance),
+    };
+    return dict;
+  } else {
+    return @{};
+  }
 }
 
 // Sometimes macOS 11 and 12 report an error launching even though the launch

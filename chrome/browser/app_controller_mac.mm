@@ -12,9 +12,10 @@
 
 #include <dlfcn.h>
 
-#include "base/allocator/partition_allocator/shim/allocator_shim.h"
 #include "base/allocator/buildflags.h"
+#include "base/allocator/partition_allocator/shim/allocator_shim.h"
 #include "base/apple/bridging.h"
+#include "base/apple/scoped_objc_class_swizzler.h"
 #include "base/auto_reset.h"
 #include "base/check_op.h"
 #include "base/command_line.h"
@@ -23,7 +24,6 @@
 #include "base/functional/bind.h"
 #include "base/mac/foundation_util.h"
 #include "base/mac/mac_util.h"
-#include "base/mac/scoped_objc_class_swizzler.h"
 #include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/run_loop.h"
@@ -551,7 +551,7 @@ class AppControllerProfileObserver : public ProfileAttributesStorage::Observer,
 // which would typically cause an OOM crash. To avoid this, the problematic
 // method is swizzled out and the make-OOM-fatal bit is disabled for the
 // duration of the original call. https://crbug.com/654695
-static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
+static base::apple::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
 
 @interface OOMDisabledIMKInputSession : NSObject
 @end
@@ -1136,7 +1136,7 @@ class AppControllerNativeThemeObserver : public ui::NativeThemeObserver {
 #if BUILDFLAG(USE_ALLOCATOR_SHIM)
   // Disable fatal OOM to hack around an OS bug https://crbug.com/654695.
   if (base::mac::IsOS10_12()) {
-    g_swizzle_imk_input_session = new base::mac::ScopedObjCClassSwizzler(
+    g_swizzle_imk_input_session = new base::apple::ScopedObjCClassSwizzler(
         NSClassFromString(@"IMKInputSession"),
         [OOMDisabledIMKInputSession class],
         @selector(_coreAttributesFromRange:whichAttributes:completionHandler:));

@@ -37,52 +37,54 @@
  * ***** END LICENSE BLOCK ***** */
 
 #import "NSPasteboard+Utils.h"
-#import "NSURL+Utils.h"
 #import "NSString+Utils.h"
+#import "NSURL+Utils.h"
 
-#import "base/mac/scoped_nsobject.h"
+NSString* const kCorePasteboardFlavorType_url =
+    @"CorePasteboardFlavorType 0x75726C20";  // 'url '  url
+NSString* const kCorePasteboardFlavorType_urln =
+    @"CorePasteboardFlavorType 0x75726C6E";  // 'urln'  title
+NSString* const kCorePasteboardFlavorType_urld =
+    @"CorePasteboardFlavorType 0x75726C64";  // 'urld' URL description
 
-NSString* const kCorePasteboardFlavorType_url  = @"CorePasteboardFlavorType 0x75726C20"; // 'url '  url
-NSString* const kCorePasteboardFlavorType_urln = @"CorePasteboardFlavorType 0x75726C6E"; // 'urln'  title
-NSString* const kCorePasteboardFlavorType_urld = @"CorePasteboardFlavorType 0x75726C64"; // 'urld' URL description
+NSString* const kWebURLsWithTitlesPboardType =
+    @"WebURLsWithTitlesPboardType";  // Safari-compatible URL + title arrays
 
-NSString* const kWebURLsWithTitlesPboardType  = @"WebURLsWithTitlesPboardType"; // Safari-compatible URL + title arrays
-
-@interface NSPasteboard(ChimeraPasteboardURLUtilsPrivate)
+@interface NSPasteboard (ChimeraPasteboardURLUtilsPrivate)
 
 - (NSString*)cleanedStringWithPasteboardString:(NSString*)aString;
 
 @end
 
-@implementation NSPasteboard(ChimeraPasteboardURLUtilsPrivate)
+@implementation NSPasteboard (ChimeraPasteboardURLUtilsPrivate)
 
 //
 // Utility method to ensure strings we're using in |containsURLData|
 // and |getURLs:andTitles| are free of internal control characters
 // and leading/trailing whitespace
 //
-- (NSString*)cleanedStringWithPasteboardString:(NSString*)aString
-{
-  NSString* cleanString = [aString stringByRemovingCharactersInSet:[NSCharacterSet controlCharacterSet]];
+- (NSString*)cleanedStringWithPasteboardString:(NSString*)aString {
+  NSString* cleanString = [aString
+      stringByRemovingCharactersInSet:[NSCharacterSet controlCharacterSet]];
   return [cleanString stringByTrimmingWhitespace];
 }
 
 @end
 
-@implementation NSPasteboard(ChimeraPasteboardURLUtils)
+@implementation NSPasteboard (ChimeraPasteboardURLUtils)
 
 //
 // Copy a single URL (with an optional title) to the clipboard in all relevant
 // formats. Convenience method for clients that can only ever deal with one
 // URL and shouldn't have to build up the arrays for setURLs:withTitles:.
 //
-- (void)setDataForURL:(NSString*)url title:(NSString*)title
-{
+- (void)setDataForURL:(NSString*)url title:(NSString*)title {
   NSArray* urlList = [NSArray arrayWithObject:url];
   NSArray* titleList = nil;
-  if (title)
+  if (title) {
     titleList = [NSArray arrayWithObject:title];
-  
+  }
+
   [self setURLs:urlList withTitles:titleList];
 }
 
@@ -91,23 +93,26 @@ NSString* const kWebURLsWithTitlesPboardType  = @"WebURLsWithTitlesPboardType"; 
 // using all the available formats.
 // The title array should be nil, or must have the same length as the URL array.
 //
-- (void)setURLs:(NSArray*)inUrls withTitles:(NSArray*)inTitles
-{
+- (void)setURLs:(NSArray*)inUrls withTitles:(NSArray*)inTitles {
   unsigned int urlCount = [inUrls count];
 
-  // Best format that we know about is Safari's URL + title arrays - build these up
+  // Best format that we know about is Safari's URL + title arrays - build these
+  // up
   if (!inTitles) {
     NSMutableArray* tmpTitleArray = [NSMutableArray arrayWithCapacity:urlCount];
-    for (unsigned int i = 0; i < urlCount; ++i)
+    for (unsigned int i = 0; i < urlCount; ++i) {
       [tmpTitleArray addObject:[inUrls objectAtIndex:i]];
+    }
     inTitles = tmpTitleArray;
   }
 
   NSMutableArray* filePaths = [NSMutableArray array];
   for (unsigned int i = 0; i < urlCount; ++i) {
     NSURL* url = [NSURL URLWithString:[inUrls objectAtIndex:i]];
-    if ([url isFileURL] && [[NSFileManager defaultManager] fileExistsAtPath:[url path]])
+    if ([url isFileURL] &&
+        [[NSFileManager defaultManager] fileExistsAtPath:[url path]]) {
       [filePaths addObject:[url path]];
+    }
   }
   if ([filePaths count] > 0) {
     [self addTypes:[NSArray arrayWithObject:NSFilenamesPboardType] owner:nil];
@@ -128,29 +133,33 @@ NSString* const kWebURLsWithTitlesPboardType  = @"WebURLsWithTitlesPboardType"; 
     [self setString:url forType:NSStringPboardType];
 
     const char* tempCString = [url UTF8String];
-    [self setData:[NSData dataWithBytes:tempCString length:strlen(tempCString)] forType:kCorePasteboardFlavorType_url];
+    [self setData:[NSData dataWithBytes:tempCString length:strlen(tempCString)]
+          forType:kCorePasteboardFlavorType_url];
 
-    if (inTitles)
+    if (inTitles) {
       tempCString = [title UTF8String];
-    [self setData:[NSData dataWithBytes:tempCString length:strlen(tempCString)] forType:kCorePasteboardFlavorType_urln];
-  }
-  else if (urlCount > 1)
-  {
+    }
+    [self setData:[NSData dataWithBytes:tempCString length:strlen(tempCString)]
+          forType:kCorePasteboardFlavorType_urln];
+  } else if (urlCount > 1) {
     // With multiple URLs there aren't many other formats we can use
     // Just write a string of each URL (ignoring titles) on a separate line
-    [self setString:[inUrls componentsJoinedByString:@"\n"] forType:NSStringPboardType];
+    [self setString:[inUrls componentsJoinedByString:@"\n"]
+            forType:NSStringPboardType];
 
-    // but we have to put something in the carbon style flavors, otherwise apps will think
-    // there is data there, but get nothing
+    // but we have to put something in the carbon style flavors, otherwise apps
+    // will think there is data there, but get nothing
 
-    NSString* firstURL   = [inUrls objectAtIndex:0];
+    NSString* firstURL = [inUrls objectAtIndex:0];
     NSString* firstTitle = [inTitles objectAtIndex:0];
 
     const char* tempCString = [firstURL UTF8String];
-    [self setData:[NSData dataWithBytes:tempCString length:strlen(tempCString)] forType:kCorePasteboardFlavorType_url];
+    [self setData:[NSData dataWithBytes:tempCString length:strlen(tempCString)]
+          forType:kCorePasteboardFlavorType_url];
 
-    tempCString = [firstTitle UTF8String];    // not i18n friendly
-    [self setData:[NSData dataWithBytes:tempCString length:strlen(tempCString)] forType:kCorePasteboardFlavorType_urln];
+    tempCString = [firstTitle UTF8String];  // not i18n friendly
+    [self setData:[NSData dataWithBytes:tempCString length:strlen(tempCString)]
+          forType:kCorePasteboardFlavorType_urln];
   }
 }
 
@@ -160,17 +169,18 @@ NSString* const kWebURLsWithTitlesPboardType  = @"WebURLsWithTitlesPboardType"; 
 // The arrays returned are on the auto release pool. If |convertFilenames|
 // is YES, then the function will attempt to convert filenames in the drag
 // to file URLs.
-- (void) getURLs:(NSArray**)outUrls
+- (void)getURLs:(NSArray**)outUrls
               andTitles:(NSArray**)outTitles
     convertingFilenames:(BOOL)convertFilenames
-    convertingTextToURL:(BOOL)convertTextToURL
-{
+    convertingTextToURL:(BOOL)convertTextToURL {
   // -types returns an ivar that might be invalidated by further manipulation of
   // NSPasteboard; retain it. https://crbug.com/1016740#c21
-  base::scoped_nsobject<NSArray> types([[self types] retain]);
-  NSURL* urlFromNSURL = nil;  // Used below in getting an URL from the NSURLPboardType.
+  NSArray* types([self types]);
+  NSURL* urlFromNSURL =
+      nil;  // Used below in getting an URL from the NSURLPboardType.
   if ([types containsObject:kWebURLsWithTitlesPboardType]) {
-    NSArray* urlAndTitleContainer = [self propertyListForType:kWebURLsWithTitlesPboardType];
+    NSArray* urlAndTitleContainer =
+        [self propertyListForType:kWebURLsWithTitlesPboardType];
     if ([urlAndTitleContainer count] >= 2) {
       *outUrls = [urlAndTitleContainer objectAtIndex:0];
       *outTitles = [urlAndTitleContainer objectAtIndex:1];
@@ -178,31 +188,33 @@ NSString* const kWebURLsWithTitlesPboardType  = @"WebURLsWithTitlesPboardType"; 
     }
   }
   if ([types containsObject:NSFilenamesPboardType]) {
-    NSArray *files = [self propertyListForType:NSFilenamesPboardType];
+    NSArray* files = [self propertyListForType:NSFilenamesPboardType];
     *outUrls = [NSMutableArray arrayWithCapacity:[files count]];
     *outTitles = [NSMutableArray arrayWithCapacity:[files count]];
-    for ( unsigned int i = 0; i < [files count]; ++i ) {
-      NSString *file = [files objectAtIndex:i];
-      NSString *ext = [[file pathExtension] lowercaseString];
-      NSString *urlString = nil;
-      NSString *title = @"";
+    for (unsigned int i = 0; i < [files count]; ++i) {
+      NSString* file = [files objectAtIndex:i];
+      NSString* ext = [[file pathExtension] lowercaseString];
+      NSString* urlString = nil;
+      NSString* title = @"";
       OSType fileType = NSHFSTypeCodeFromFileType(NSHFSTypeOfFile(file));
-      
-      // Check whether the file is a .webloc, a .ftploc, a .url, or some other kind of file.
-      if ([ext isEqualToString:@"webloc"] || [ext isEqualToString:@"ftploc"] || fileType == 'ilht' || fileType == 'ilft') {
+
+      // Check whether the file is a .webloc, a .ftploc, a .url, or some other
+      // kind of file.
+      if ([ext isEqualToString:@"webloc"] || [ext isEqualToString:@"ftploc"] ||
+          fileType == 'ilht' || fileType == 'ilft') {
         NSURL* urlFromInetloc = [NSURL URLFromInetloc:file];
         if (urlFromInetloc) {
           urlString = [urlFromInetloc absoluteString];
-          title     = [[file lastPathComponent] stringByDeletingPathExtension];
+          title = [[file lastPathComponent] stringByDeletingPathExtension];
         }
       } else if ([ext isEqualToString:@"url"] || fileType == 'LINK') {
         NSURL* urlFromIEURLFile = [NSURL URLFromIEURLFile:file];
         if (urlFromIEURLFile) {
           urlString = [urlFromIEURLFile absoluteString];
-          title     = [[file lastPathComponent] stringByDeletingPathExtension];
+          title = [[file lastPathComponent] stringByDeletingPathExtension];
         }
       }
-      
+
       if (!urlString) {
         if (!convertFilenames) {
           continue;
@@ -210,31 +222,39 @@ NSString* const kWebURLsWithTitlesPboardType  = @"WebURLsWithTitlesPboardType"; 
         // Use the filename if not a .webloc or .url file, or if either of the
         // functions returns nil.
         urlString = [[NSURL fileURLWithPath:file] absoluteString];
-        title     = [file lastPathComponent];
+        title = [file lastPathComponent];
       }
 
-      [(NSMutableArray*) *outUrls addObject:urlString];
-      [(NSMutableArray*) *outTitles addObject:title];
+      [(NSMutableArray*)*outUrls addObject:urlString];
+      [(NSMutableArray*)*outTitles addObject:title];
     }
-  } else if ([types containsObject:NSURLPboardType] && (urlFromNSURL = [NSURL URLFromPasteboard:self])) {
+  } else if ([types containsObject:NSURLPboardType] &&
+             (urlFromNSURL = [NSURL URLFromPasteboard:self])) {
     *outUrls = [NSArray arrayWithObject:[urlFromNSURL absoluteString]];
     NSString* title = nil;
-    if ([types containsObject:kCorePasteboardFlavorType_urld])
+    if ([types containsObject:kCorePasteboardFlavorType_urld]) {
       title = [self stringForType:kCorePasteboardFlavorType_urld];
-    if (!title && [types containsObject:kCorePasteboardFlavorType_urln])
+    }
+    if (!title && [types containsObject:kCorePasteboardFlavorType_urln]) {
       title = [self stringForType:kCorePasteboardFlavorType_urln];
-    if (!title && [types containsObject:NSStringPboardType])
+    }
+    if (!title && [types containsObject:NSStringPboardType]) {
       title = [self stringForType:NSStringPboardType];
+    }
     *outTitles = [NSArray arrayWithObject:(title ? title : @"")];
   } else if (convertTextToURL && [types containsObject:NSStringPboardType]) {
-    NSString* potentialURLString = [self cleanedStringWithPasteboardString:[self stringForType:NSStringPboardType]];
+    NSString* potentialURLString =
+        [self cleanedStringWithPasteboardString:
+                  [self stringForType:NSStringPboardType]];
     if ([potentialURLString isValidURI]) {
       *outUrls = [NSArray arrayWithObject:potentialURLString];
       NSString* title = nil;
-      if ([types containsObject:kCorePasteboardFlavorType_urld])
+      if ([types containsObject:kCorePasteboardFlavorType_urld]) {
         title = [self stringForType:kCorePasteboardFlavorType_urld];
-      if (!title && [types containsObject:kCorePasteboardFlavorType_urln])
+      }
+      if (!title && [types containsObject:kCorePasteboardFlavorType_urln]) {
         title = [self stringForType:kCorePasteboardFlavorType_urln];
+      }
       *outTitles = [NSArray arrayWithObject:(title ? title : @"")];
     } else {
       // The string doesn't look like a URL - return empty arrays
@@ -251,26 +271,30 @@ NSString* const kWebURLsWithTitlesPboardType  = @"WebURLsWithTitlesPboardType"; 
 //
 // Indicates if this pasteboard contains URL data that we understand
 // Deals with all our URL formats. Only strings that are valid URLs count.
-// If this returns YES it is safe to use getURLs:andTitles: to retrieve the data.
+// If this returns YES it is safe to use getURLs:andTitles: to retrieve the
+// data.
 //
 // NB: Does not consider our internal bookmark list format, because callers
 // usually need to deal with this separately because it can include folders etc.
 //
-- (BOOL) containsURLDataConvertingTextToURL:(BOOL)convertTextToURL
-{
+- (BOOL)containsURLDataConvertingTextToURL:(BOOL)convertTextToURL {
   NSArray* types = [self types];
   if ([types containsObject:kWebURLsWithTitlesPboardType] ||
       [types containsObject:NSURLPboardType] ||
-      [types containsObject:NSFilenamesPboardType])
+      [types containsObject:NSFilenamesPboardType]) {
     return YES;
-  
+  }
+
   if (convertTextToURL && [types containsObject:NSStringPboardType]) {
-    // Trim whitespace off the ends and newlines out of the middle so we don't reject otherwise-valid URLs;
-    // we'll do another cleaning when we set the URLs and titles later, so this is safe.
-    NSString* potentialURLString = [self cleanedStringWithPasteboardString:[self stringForType:NSStringPboardType]];
+    // Trim whitespace off the ends and newlines out of the middle so we don't
+    // reject otherwise-valid URLs; we'll do another cleaning when we set the
+    // URLs and titles later, so this is safe.
+    NSString* potentialURLString =
+        [self cleanedStringWithPasteboardString:
+                  [self stringForType:NSStringPboardType]];
     return [potentialURLString isValidURI];
   }
-  
+
   return NO;
 }
 @end

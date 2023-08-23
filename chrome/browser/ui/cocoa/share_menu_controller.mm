@@ -89,11 +89,12 @@ bool CanShare() {
     [menu setAutoenablesItems:NO];
 
     bool canShare = CanShare();
-    // Using a real URL instead of empty string to avoid system log about relative
-    // URLs in the pasteboard. This URL will not actually be shared to, just used
-    // to fetch sharing services that can handle the NSURL type.
+    // Using a real URL instead of empty string to avoid system log about
+    // relative URLs in the pasteboard. This URL will not actually be shared to,
+    // just used to fetch sharing services that can handle the NSURL type.
     NSArray* services = [NSSharingService
-        sharingServicesForItems:@[ [NSURL URLWithString:@"https://google.com"] ]];
+        sharingServicesForItems:@[ [NSURL
+                                    URLWithString:@"https://google.com"] ]];
     for (NSSharingService* service in services) {
       // Don't include "Add to Reading List".
       if ([[service name]
@@ -182,7 +183,9 @@ bool CanShare() {
 
 // Performs the share action using the sharing service represented by |sender|.
 - (void)performShare:(NSMenuItem*)sender {
-  static NSString* const* NSUserActivityTypeBrowsingWebStr = reinterpret_cast<NSString* const*>(dlsym(((void *) -2), "NSUserActivityTypeBrowsingWeb"));
+  static NSString* const* NSUserActivityTypeBrowsingWebStr =
+      reinterpret_cast<NSString* const*>(
+          dlsym(((void*)-2), "NSUserActivityTypeBrowsingWeb"));
 
   if (NSUserActivityTypeBrowsingWebStr) {
     DCHECK(CanShare());
@@ -246,7 +249,8 @@ bool CanShare() {
   BOOL isMail = [[service name] isEqual:NSSharingServiceNameComposeEmail];
   NSString* keyEquivalent = isMail ? [self keyEquivalentForMail] : @"";
   NSString* title = isMail ? l10n_util::GetNSString(IDS_EMAIL_LINK_MAC)
-                           : service.menuItemTitle;
+                    : @available(macOS 10.9, *) ? service.menuItemTitle
+                                                : service.title;
   NSMenuItem* item = [[NSMenuItem alloc] initWithTitle:title
                                                 action:@selector(performShare:)
                                          keyEquivalent:keyEquivalent];

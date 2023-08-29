@@ -446,9 +446,7 @@ struct MenuController::MenuPart {
 
 class MenuController::MenuScrollTask {
  public:
-  MenuScrollTask() {
-    pixels_per_second_ = MenuItemView::pref_menu_height() * 20;
-  }
+  MenuScrollTask() = default;
 
   MenuScrollTask(const MenuScrollTask&) = delete;
   MenuScrollTask& operator=(const MenuScrollTask&) = delete;
@@ -463,12 +461,12 @@ class MenuController::MenuScrollTask {
     bool new_is_up = part.type == MenuPartType::kScrollUp;
     if (new_menu == submenu_ && is_scrolling_up_ == new_is_up)
       return;
-
-    start_scroll_time_ = base::Time::Now();
-    start_y_ = part.submenu->GetVisibleBounds().y();
     submenu_ = new_menu;
     is_scrolling_up_ = new_is_up;
 
+    start_scroll_time_ = base::Time::Now();
+    pixels_per_second_ = submenu_->GetPreferredItemHeight() * 20;
+    start_y_ = submenu_->GetVisibleBounds().y();
     if (!scrolling_timer_.IsRunning()) {
       scrolling_timer_.Start(FROM_HERE, base::Milliseconds(30), this,
                              &MenuScrollTask::Run);
@@ -1964,8 +1962,7 @@ bool MenuController::ShowSiblingMenu(SubmenuView* source,
                                   button->width(), button->height()),
                         anchor, state_.context_menu);
   alt_menu->PrepareForRun(
-      false, has_mnemonics,
-      source->GetMenuItem()->GetRootMenuItem()->show_mnemonics_);
+      has_mnemonics, source->GetMenuItem()->GetRootMenuItem()->show_mnemonics_);
   alt_menu->controller_ = AsWeakPtr();
   SetSelection(alt_menu, SELECTION_OPEN_SUBMENU | SELECTION_UPDATE_IMMEDIATELY);
   return true;
@@ -2194,13 +2191,8 @@ void MenuController::OpenMenuImpl(MenuItemView* item, bool show) {
   // TODO(oshima|sky): Don't show the menu if drag is in progress and
   // this menu doesn't support drag drop. See crbug.com/110495.
   if (show) {
-    size_t old_num_children = item->GetSubmenu()->children().size();
     item->GetDelegate()->WillShowMenu(item);
-    if (old_num_children != item->GetSubmenu()->children().size()) {
-      // If the number of children changed then we may need to add empty items.
-      item->RemoveEmptyMenus();
-      item->AddEmptyMenus();
-    }
+    item->UpdateEmptyMenusAndMetrics();
   }
   const MenuConfig& menu_config = MenuConfig::instance();
   bool prefer_leading =

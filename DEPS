@@ -307,7 +307,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'src_internal_revision': 'cba48a8e1a027fc7633072f1960d120d46f9624f',
+  'src_internal_revision': 'e1461e8cee993dab8930d8d9aa7114c55f5cd008',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
@@ -315,11 +315,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '97c6f935aa8ec6b786f7ff7726f86785316f30d0',
+  'v8_revision': '5edaa0f442c68ddf05663a6de235a51ed041f41d',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '939f6880118192066597f8bdc433255341df56ae',
+  'angle_revision': 'b48983ab8c74d2fcd9ef17c80727affb9e690c53',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -362,7 +362,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling freetype
   # and whatever else without interference from each other.
-  'freetype_revision': '5c00a46805d6423fc45b4ba2c0f2e22dd0450d73',
+  'freetype_revision': '3829fdaae5f12590f93807e9bcb866be131a201a',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling freetype
   # and whatever else without interference from each other.
@@ -818,7 +818,7 @@ deps = {
 
   'src/clank': {
     'url': Var('chrome_git') + '/clank/internal/apps.git' + '@' +
-    '899a187da8f5311e0f6383da2eff45151415bc47',
+    '837e7fbba2007691206048ced96f4d68201e8900',
     'condition': 'checkout_android and checkout_src_internal',
   },
 
@@ -1260,7 +1260,7 @@ deps = {
     Var('chromium_git') + '/devtools/devtools-frontend' + '@' + Var('devtools_frontend_revision'),
 
   'src/third_party/devtools-frontend-internal': {
-      'url': Var('chrome_git') + '/devtools/devtools-internal.git' + '@' + '1937021d8129089060733cc031b2301287f68ec9',
+      'url': Var('chrome_git') + '/devtools/devtools-internal.git' + '@' + '27ae6c62bb811763d67004aac228614136af59cb',
     'condition': 'checkout_src_internal',
   },
 
@@ -4199,7 +4199,7 @@ deps = {
 
   'src/ios_internal':  {
       'url': Var('chrome_git') + '/chrome/ios_internal.git' + '@' +
-        '5137cd674c83f37d0a063bcf59a56cea78525fca',
+        'f4680dfa10c1d1db6e260afd8405c3c6a138346a',
       'condition': 'checkout_ios and checkout_src_internal',
   },
 

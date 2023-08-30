@@ -43,16 +43,17 @@ absl::optional<task_role_t> GetTaskCategoryPolicyRole(
   task_category_policy_data_t category_policy;
   mach_msg_type_number_t task_info_count = TASK_CATEGORY_POLICY_COUNT;
   boolean_t get_default = FALSE;
-
-  kern_return_t result =
-      task_policy_get(task_port, TASK_CATEGORY_POLICY,
-                      reinterpret_cast<task_policy_t>(&category_policy),
-                      &task_info_count, &get_default);
-  if (result != KERN_SUCCESS) {
-    MACH_LOG(ERROR, result) << "task_policy_get TASK_CATEGORY_POLICY";
-    return absl::nullopt;
+  if (__builtin_available(macOS 10.9, *)) {
+    kern_return_t result =
+        task_policy_get(task_port, TASK_CATEGORY_POLICY,
+                        reinterpret_cast<task_policy_t>(&category_policy),
+                        &task_info_count, &get_default);
+    if (result != KERN_SUCCESS) {
+      MACH_LOG(ERROR, result) << "task_policy_get TASK_CATEGORY_POLICY";
+      return absl::nullopt;
+    }
+    DCHECK(!get_default);
   }
-  DCHECK(!get_default);
   return category_policy.role;
 }
 
@@ -111,19 +112,20 @@ bool Process::SetProcessBackgrounded(PortProvider* port_provider,
     return true;
   }
 
-  task_category_policy category_policy;
-  category_policy.role =
-      background ? TASK_BACKGROUND_APPLICATION : TASK_FOREGROUND_APPLICATION;
-  kern_return_t result =
-      task_policy_set(task_port, TASK_CATEGORY_POLICY,
-                      reinterpret_cast<task_policy_t>(&category_policy),
-                      TASK_CATEGORY_POLICY_COUNT);
+  if (__builtin_available(macOS 10.9, *)) {
+    task_category_policy category_policy;
+    category_policy.role =
+        background ? TASK_BACKGROUND_APPLICATION : TASK_FOREGROUND_APPLICATION;
+    kern_return_t result =
+        task_policy_set(task_port, TASK_CATEGORY_POLICY,
+                        reinterpret_cast<task_policy_t>(&category_policy),
+                        TASK_CATEGORY_POLICY_COUNT);
 
-  if (result != KERN_SUCCESS) {
-    MACH_LOG(ERROR, result) << "task_policy_set TASK_CATEGORY_POLICY";
-    return false;
+    if (result != KERN_SUCCESS) {
+      MACH_LOG(ERROR, result) << "task_policy_set TASK_CATEGORY_POLICY";
+      return false;
+    }
   }
-
   return true;
 }
 

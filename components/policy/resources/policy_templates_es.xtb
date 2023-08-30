@@ -2194,6 +2194,7 @@ La política <ph name="DEVICE_LOCAL_ACCOUNTS_POLICY_NAME" /> podría anular el c
 
       Advertencia: No delegues el control de la versión de <ph name="PRODUCT_OS_NAME" /> a una aplicación de kiosco, ya que podría impedir que el dispositivo reciba actualizaciones de software y correcciones de seguridad importantes. Si se delega el control de la versión de <ph name="PRODUCT_OS_NAME" />, se podría poner en riesgo a los usuarios.</translation>
 <translation id="2989404644164421834">Volver a cargar páginas</translation>
+<translation id="299104951237091027">La página del historial de Chrome organizada en grupos no se mostrará en chrome://history/2.</translation>
 <translation id="299446489108785864">Lista de URLs que especifica a qué URLs se aplicará <ph name="AUTO_OPEN_FILE_TYPES_POLICY_NAME" />. Esta política no afecta a los valores abiertos automáticamente por los usuarios.
 
       Si se establece esta política, los archivos se abrirán automáticamente solo si la URL está incluida en la lista y el tipo de archivo aparece en <ph name="AUTO_OPEN_FILE_TYPES_POLICY_NAME" />. Si no se cumple alguna de estas condiciones, la política no abrirá automáticamente el archivo descargado.
@@ -2996,6 +2997,7 @@ Si se inhabilita esta política, no se permitirán las consultas de mayor protec
 <translation id="3625900437628963632">Indica si se recordará el valor de la contraseña de Kerberos definido en este elemento de la política. Si no se define o se le asigna el valor true, se recordará la contraseña. Si se le asigna el valor false, no se recordará la contraseña. Se ignorará si el campo de contraseña de esta cuenta no se especifica. Este campo es compatible desde la versión 116 de ChromeOS.</translation>
 <translation id="3627678165642179114">Habilitar o inhabilitar el servicio web de corrección ortográfica</translation>
 <translation id="3628480121685794414">Habilitar impresión por una cara</translation>
+<translation id="3632122147977480546">La página del historial de Chrome organizada en grupos se mostrará en chrome://history/2.</translation>
 <translation id="3634117682099473917">La plantilla URI de la resolución de DNS-over-HTTPS deseada. Para especificar varias resoluciones de DNS-over-HTTPS, separa las plantillas URI correspondientes con espacios. Esta política es muy similar a <ph name="DOH_TEMPLATES_POLICY_NAME" />, la cual anulará si se establece. Por el contrario, permite especificar información de identificación.
 
 Si se le asigna el valor <ph name="SECURE_DNS_MODE_SECURE" /> a <ph name="DOH_MODE_POLICY_NAME" />, esta política o <ph name="DOH_TEMPLATES_POLICY_NAME" /> deberá establecerse y no dejarse vacía.
@@ -3284,7 +3286,6 @@ Esta política es una solución temporal y se eliminará gradualmente (está pre
       Si se inhabilita esta política, se podrá utilizar el protocolo SPDY.
 
       Si esta política no se configura, el protocolo SPDY estará disponible.</translation>
-<translation id="3887529334667818189">Los recorridos serán visibles en chrome://history/journeys de forma predeterminada y los usuarios podrán cambiar la visibilidad de los recorridos.</translation>
 <translation id="3889458462150559611">Permitir que los sitios web envíen solicitudes a cualquier endpoint de red de forma no segura</translation>
 <translation id="388999630001435491">Permitir que <ph name="PRODUCT_NAME" /> solo se conecte a dispositivos a través de direcciones IP privadas</translation>
 <translation id="3891175633496805812">Inhabilitar el controlador de diagnóstico y telemetría wilco</translation>
@@ -3410,7 +3411,6 @@ Esta política es una solución temporal y se eliminará gradualmente (está pre
       Si se le asigna el valor "True" a esta política, la notificación de advertencia de privacidad se cerrará después de unos segundos.
 
       Si se le asigna el valor "False" o no se le asigna ningún valor, la notificación de advertencia de privacidad permanecerá fijada hasta que el usuario la cierre.</translation>
-<translation id="4008395195135046807">Los recorridos serán visibles en chrome://history/journeys.</translation>
 <translation id="4008507541867797979">Si esta política no se establece o el valor correspondiente se establece en "True", <ph name="PRODUCT_OS_NAME" /> mostrará los usuarios existentes en la pantalla de inicio de sesión y permitirá seleccionar uno de ellos.
 
       Si el valor correspondiente a esta política se establece en "False", <ph name="PRODUCT_OS_NAME" /> no mostrará a los usuarios existentes en la pantalla de inicio de sesión. Se mostrará la pantalla de inicio de sesión normal, en la que solicita la dirección de correo electrónico del usuario y su contraseña o teléfono, o la pantalla intersticial SAML (si se ha activado mediante la política <ph name="LOGIN_AUTHENTICATION_BEHAVIOR_POLICY_NAME" />), a menos que se configure una sesión administrada. Si se ha configurado una sesión administrada, solo se mostrarán las cuentas de dicha sesión, lo que permite seleccionar una de ellas.
@@ -4253,6 +4253,7 @@ Si se inhabilita esta política, la promoción de la extensión del proveedor de
       Si se inhabilita esta opción, los usuarios no podrán usar Mi teléfono.
 
       Si no se establece esta política, la opción predeterminada no estará disponible para usuarios gestionados por empresas y sí estará disponible para los no gestionados.</translation>
+<translation id="4774499365794632139">La página del historial de Chrome organizada en grupos se mostrará en chrome://history/2 de forma predeterminada.</translation>
 <translation id="4783415902268741066">Permitir que se muestre la página más reciente de resultados del buscador predeterminado en un panel lateral del navegador</translation>
 <translation id="4786784434769279324">Acciones que se ejecutarán cuando el ordenador esté inactivo</translation>
 <translation id="4787763197941188108">Anula el tamaño predeterminado de la página de impresión.
@@ -4552,7 +4553,6 @@ Si se asigna el valor true a esta política o no se define, los informes de dato
 <translation id="5130935469849337738">Ofrecer traducción siempre</translation>
 <translation id="5141670636904227950">Establecer el tipo de lupa predeterminada habilitada en la pantalla de inicio de sesión</translation>
 <translation id="5142301680741828703">Mostrar siempre los patrones de URL indicados a continuación en <ph name="PRODUCT_FRAME_NAME" /></translation>
-<translation id="5143258831402123447">Los recorridos no serán visibles en chrome://history/journeys.</translation>
 <translation id="514870861066611127">Esta política determina si se recoge información que se pueda usar para identificar a usuarios, como el inicio de sesión en el SO, el inicio de sesión en el perfil de <ph name="PRODUCT_NAME" />, el nombre de perfil de <ph name="PRODUCT_NAME" />, la ruta del perfil de <ph name="PRODUCT_NAME" /> y la ruta del ejecutable de <ph name="PRODUCT_NAME" />.
 
       Si no se establece la política <ph name="CLOUD_REPORTING_ENABLED_POLICY_NAME" /> o se inhabilita, esta se ignorará.
@@ -4609,16 +4609,6 @@ Si se asigna el valor true a esta política o no se define, los informes de dato
 <translation id="5179853299156742425">La URL desde la que se puede descargar la plantilla de escritorio.</translation>
 <translation id="5182055907976889880">Configura Google Drive en <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="5182483318861266793">Colocar la estantería en la parte derecha de la pantalla</translation>
-<translation id="5184298474980725716">Esta política controla la visibilidad de los recorridos en la página del historial de Chrome.
-
-      Si se habilita esta política, los recorridos serán visibles en chrome://history/journeys.
-
-      Si se inhabilita esta política, los recorridos no serán visibles en chrome://history/journeys.
-
-      Si no se establece esta política, los recorridos serán visibles en chrome://history/journeys de forma predeterminada y los usuarios podrán cambiar la visibilidad de los recorridos.
-
-      Ten en cuenta que si la política <ph name="COMPONENT_UPDATES_ENABLED_POLICY_NAME" /> se inhabilita y <ph name="HISTORY_CLUSTERS_VISIBLE_POLICY_NAME" /> se habilita o no se establece, los recorridos seguirán estando disponibles en chrome://history/journeys, pero es posible que no aparezcan en el omnibox y que sean menos relevantes para el usuario.
-      </translation>
 <translation id="51859390023061147">Inhabilitar la función de restauración completa</translation>
 <translation id="5189360528842591274">Permitir conectarse solo a los servicios Bluetooth de la lista</translation>
 <translation id="5190426551516379357">Si la política se define, se aplica un modo Restringido mínimo en YouTube y se evita que los usuarios seleccionen un modo menos restringido. Cuando se asignan estos valores:
@@ -5705,6 +5695,13 @@ Si no se define esta política o se deja vacía, ningún sitio web podrá inicia
 
 Para obtener información detallada sobre los patrones válidos de <ph name="URL_LABEL" />, consulta https://support.google.com/chrome/a?p=url_blocklist_filter_format.</translation>
 <translation id="6195802366906945965">Determina si se utilizará el verificador de certificados integrado para verificar los certificados de los servidores</translation>
+<translation id="6197455846673223644">Si se habilita esta política, siempre estará activa la recogida de datos anónima con clave de URL, que enviará las URLs de las páginas que el usuario visite a Google para mejorar las búsquedas y la navegación.
+
+Si se inhabilita esta política, no se activará la recogida de datos anónima con clave de URL.
+
+Si no se define la política, el usuario podrá cambiar este ajuste manualmente.
+
+En <ph name="PRODUCT_OS_NAME" /> Kiosk, esta política no ofrece la opción "Permitir que el usuario decida". Si no se define esta política para <ph name="PRODUCT_OS_NAME" /> Kiosk, la recogida de datos anónima con clave de URL siempre estará activa.</translation>
 <translation id="6198947200418556248">Esta política está obsoleta. Si necesitas que las cookies tengan el comportamiento antiguo, usa <ph name="LEGACY_SAMESITE_COOKIE_BEHAVIOR_ENABLED_FOR_DOMAIN_LIST_POLICY_NAME" />. Te permite revertir todas las cookies al comportamiento antiguo de <ph name="ATTRIBUTE_SAMESITE_NAME" />. Si restableces el comportamiento antiguo, las cookies que no especifiquen un atributo <ph name="ATTRIBUTE_SAMESITE_NAME" /> se tratarán como si fueran <ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" />. Además, se eliminará el requisito de que las cookies <ph name="ATTRIBUTE_VALUE_SAMESITE_NONE" /> tengan el atributo <ph name="ATTRIBUTE_SECURE_NAME" /> y se omitirá la comparación de esquemas cuando se evalúe si dos sitios son iguales. Para ver la descripción completa, consulta https://www.chromium.org/administrators/policy-list-3/cookie-legacy-samesite-policies.
 
           Si no se establece esta política, el comportamiento predeterminado de <ph name="ATTRIBUTE_SAMESITE_NAME" /> correspondiente a las cookies dependerá de la configuración personal del usuario en las funciones <ph name="FEATURE_NAME_SAMESITE_BY_DEFAULT_COOKIES" />, <ph name="FEATURE_NAME_SAMESITE_NONE_MUST_BE_SECURE" /> y <ph name="FEATURE_NAME_SCHEMEFUL_SAME_SITE" />, que pueden definirse mediante una prueba pública o mediante la habilitación o la inhabilitación de las marcas <ph name="FLAG_NAME_SAMESITE_BY_DEFAULT_COOKIES" />, <ph name="FLAG_NAME_SAMESITE_NONE_MUST_BE_SECURE" /> o <ph name="FLAG_NAME_SCHEMEFUL_SAME_SITE" /> (respectivamente).</translation>
@@ -5896,6 +5893,16 @@ Consulta https://developer.chrome.com/blog/immutable-document-domain/ para obten
       Si se inhabilita esta política o no se le asigna ningún valor, los usuarios podrán elegir si quieren usar <ph name="CHROME_SYNC_NAME" />.
 
       Nota: No actives esta política si se ha habilitado <ph name="ROAMING_PROFILE_SUPPORT_ENABLED_POLICY_NAME" />, ya que ambas comparten la misma funcionalidad del cliente. La sincronización alojada por Google se desactivará por completo en este caso.</translation>
+<translation id="6320186400425850182">Esta política controla la visibilidad de la página del historial de Chrome organizada en grupos de páginas.
+
+      Si se habilita esta política, se mostrará la página del historial de Chrome organizada en grupos en chrome://history/2.
+
+      Si se inhabilita esta política, la página del historial de Chrome organizada en grupos no se mostrará en chrome://history/2.
+
+      Si no se establece esta política, se mostrará de forma predeterminada la página del historial de Chrome organizada en grupos en chrome://history/2.
+
+      Ten en cuenta que si la política <ph name="COMPONENT_UPDATES_ENABLED_POLICY_NAME" /> se inhabilita, y<ph name="HISTORY_CLUSTERS_VISIBLE_POLICY_NAME" /> se habilita o no se establece, la página del historial de Chrome organizada en grupos seguirá estando disponible en chrome://history/2, pero puede que sea menos relevante para el usuario.
+</translation>
 <translation id="6320935916601887506">Se usará el nuevo comportamiento de offsetParent de forma predeterminada.</translation>
 <translation id="6327643515544933974">Configuración de USB web</translation>
 <translation id="6330882599388782338">Permitir a los sitios web acceder a los sensores</translation>
@@ -7187,7 +7194,6 @@ Si se inhabilita esta política, no se mostrará ninguna advertencia de segurida
 En <ph name="MS_WIN_NAME" />, esta política solo está disponible en instancias que estén vinculadas a un dominio de <ph name="MS_AD_NAME" /> o a <ph name="MS_AAD_NAME" />, o que se hayan registrado en <ph name="CHROME_BROWSER_CLOUD_MANAGEMENT_NAME" />.
 
 En <ph name="MAC_OS_NAME" />, esta política solo está disponible en instancias que se gestionen mediante MDM, que estén vinculadas a un dominio a través de MCX o que se hayan registrado en <ph name="CHROME_BROWSER_CLOUD_MANAGEMENT_NAME" />.</translation>
-<translation id="7403217961820363141">Mostrar recorridos en la página del historial de Chrome</translation>
 <translation id="7406039009275722824">Si se inhabilita <ph name="CHROME_SYNC_NAME" />, las funciones de copia de seguridad y restauración de Android no funcionarán correctamente.</translation>
 <translation id="7406276857470642718">Controla la configuración de los usuarios autenticados mediante SAML con un proveedor de identidades externo</translation>
 <translation id="7407441173422042771">Esta política controla la predicción de red en <ph name="PRODUCT_NAME" />. Permite controlar tanto la precarga de DNS como la conexión previa de SSL y TCP, así como la carga previa de páginas web.
@@ -8525,6 +8531,7 @@ Para definir esta política, se debe inhabilitar la política <ph name="PRIVACY_
        Si se inhabilita esta política o no se establece, Chrome usará el icono predeterminado en el caso de las conexiones seguras.</translation>
 <translation id="8650974590712548439">Ubicación del registro de Windows para clientes de Windows:</translation>
 <translation id="8653085952260859632">Enviar información sobre la memoria</translation>
+<translation id="8653212052128283886">Mostrar una vista del historial de Chrome con grupos de páginas</translation>
 <translation id="8653561013005884087">Si se le asigna el valor "true" a esta política, los mensajes de voz permanecen activados. Si se le asigna el valor "false", los mensajes de voz permanecen desactivados.
 
        Si se configura esta política, los usuarios no pueden cambiarla. Si no se le asigna ningún valor, los mensajes de voz están en un principio desactivados, pero los usuarios pueden activarlos en cualquier momento.</translation>

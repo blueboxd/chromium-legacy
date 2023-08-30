@@ -73,13 +73,15 @@ struct BASE_EXPORT NativeLibraryOptions {
   // inverse, i.e., it does not force a preference for global symbols over local
   // ones.
   bool prefer_own_symbols = false;
+  bool force_bind = false;
 };
 
 // Loads a native library from disk.  Release it with UnloadNativeLibrary when
 // you're done.  Returns NULL on failure.
 // If |error| is not NULL, it may be filled in on load error.
 BASE_EXPORT NativeLibrary LoadNativeLibrary(const FilePath& library_path,
-                                            NativeLibraryLoadError* error);
+                                            NativeLibraryLoadError* error,
+                                            NativeLibraryOptions options = NativeLibraryOptions());
 
 #if BUILDFLAG(IS_WIN)
 // Loads a native library from the system directory using the appropriate flags.

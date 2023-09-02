@@ -375,13 +375,92 @@ int ParseOSProductVersion(const std::string_view& version) {
 
 }  // namespace
 
+namespace {
+
+// Returns the running system's Darwin major version. Don't call this, it's an
+// implementation detail and its result is meant to be cached by
+// MacOSVersionInternal().
+int DarwinMajorVersionInternal() {
+  // base::OperatingSystemVersionNumbers() at one time called Gestalt(), which
+  // was observed to be able to spawn threads (see https://crbug.com/53200).
+  // Nowadays that function calls -[NSProcessInfo operatingSystemVersion], whose
+  // current implementation does things like hit the file system, which is
+  // possibly a blocking operation. Either way, it's overkill for what needs to
+  // be done here.
+  //
+  // uname, on the other hand, is implemented as a simple series of sysctl
+  // system calls to obtain the relevant data from the kernel. The data is
+  // compiled right into the kernel, so no threads or blocking or other
+  // funny business is necessary.
+  //
+  // TODO: Switch to the kern.osproductversion sysctl? It's compiled in and
+  // should require less Darwin offset guessing and parsing.
+
+  struct utsname uname_info;
+  if (uname(&uname_info) != 0) {
+    DPLOG(ERROR) << "uname";
+    return 0;
+  }
+
+  if (strcmp(uname_info.sysname, "Darwin") != 0) {
+    DLOG(ERROR) << "unexpected uname sysname " << uname_info.sysname;
+    return 0;
+  }
+
+  int darwin_major_version = 0;
+  char* dot = strchr(uname_info.release, '.');
+  if (dot) {
+    if (!base::StringToInt(
+            base::StringPiece(uname_info.release,
+                              static_cast<size_t>(dot - uname_info.release)),
+            &darwin_major_version)) {
+      dot = nullptr;
+    }
+  }
+
+  if (!dot) {
+    DLOG(ERROR) << "could not parse uname release " << uname_info.release;
+    return 0;
+  }
+
+  return darwin_major_version;
+}
+
+// The implementation of MacOSVersion() as defined in the header. Don't call
+// this, it's an implementation detail and the result is meant to be cached by
+// MacOSVersion().
+int MacOSVersionInternal() {
+  int darwin_major_version = DarwinMajorVersionInternal();
+
+  // Darwin major versions 6 through 19 corresponded to macOS versions 10.2
+  // through 10.15.
+  CHECK(darwin_major_version >= 6);
+  if (darwin_major_version <= 19) {
+    return 1000 + darwin_major_version - 4;
+  }
+
+  // Darwin major version 20 corresponds to macOS version 11.0. Assume a
+  // correspondence between Darwin's major version numbers and macOS major
+  // version numbers.
+  int macos_major_version = darwin_major_version - 9;
+
+  return macos_major_version * 100;
+}
+
+}  // namespace
+
 int ParseOSProductVersionForTesting(const std::string_view& version) {
   return ParseOSProductVersion(version);
 }
 
 int MacOSVersion() {
-  static int macos_version =
-      ParseOSProductVersion(StringSysctlByName("kern.osproductversion"));
+  static int macos_version;
+  if(@available(macOS 10.14,*)) {
+    macos_version =
+        ParseOSProductVersion(StringSysctlByName("kern.osproductversion"));
+  } else {
+    macos_version = MacOSVersionInternal();
+  }
 
   return macos_version;
 }

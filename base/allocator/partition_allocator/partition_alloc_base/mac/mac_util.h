@@ -20,13 +20,6 @@ namespace partition_alloc::internal::base::mac {
 PA_COMPONENT_EXPORT(PARTITION_ALLOC)
 __attribute__((const)) int MacOSMajorVersion();
 
-// This should be infrequently used. It only makes sense to use this to avoid
-// codepaths that are very likely to break on future (unreleased, untested,
-// unborn) OS releases, or to log when the OS is newer than any known version.
-inline bool IsOSLaterThan14_DontCallThis() {
-  return !IsAtMostOS14();
-}
-
 }  // namespace partition_alloc::internal::base::mac
 
 #endif  // BASE_ALLOCATOR_PARTITION_ALLOCATOR_PARTITION_ALLOC_BASE_MAC_MAC_UTIL_H_

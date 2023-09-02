@@ -28,7 +28,7 @@
 #if BUILDFLAG(IS_IOS)
 #include "base/allocator/partition_allocator/partition_alloc_base/ios/ios_util.h"
 #elif BUILDFLAG(IS_MAC)
-#include "base/allocator/partition_allocator/partition_alloc_base/mac/mac_util.h"
+#include "base/mac/mac_util.h"
 #else
 #error "Unknown platform"
 #endif
@@ -114,7 +114,7 @@ void NameRegion(void* start, size_t length, PageTag page_tag) {
 // entitlement, returning whether MAP_JIT should be used to allocate regions
 // that will contain JIT-compiled executable code.
 bool UseMapJit() {
-  if (!base::mac::IsAtLeastOS10_14()) {
+  if (!::base::mac::IsAtLeastOS10_14()) {
     // MAP_JIT existed before macOS 10.14, but had somewhat different semantics.
     // Only one MAP_JIT region was permitted per process, but calling code here
     // will very likely require more than one such region. Since MAP_JIT is not

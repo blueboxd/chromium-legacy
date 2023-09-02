@@ -64,7 +64,7 @@ MacDeviceManagementStateOld IsDeviceRegisteredWithManagementOld() {
         return MacDeviceManagementStateOld::kFailureAPIUnavailable;
       };
 
-      NSArray* root = base::mac::ObjCCast<NSArray>([NSPropertyListSerialization
+      NSArray* root = base::apple::ObjCCast<NSArray>([NSPropertyListSerialization
           propertyListWithData:[SysUTF8ToNSString(profiler_stdout)
                                    dataUsingEncoding:NSUTF8StringEncoding]
                        options:NSPropertyListImmutable
@@ -86,7 +86,7 @@ MacDeviceManagementStateOld IsDeviceRegisteredWithManagementOld() {
               NSString* payload_data =
                   profile_item[@"spconfigprofile_payload_data"];
               NSDictionary* payload_data_dict =
-                  base::mac::ObjCCast<NSDictionary>([NSPropertyListSerialization
+                  base::apple::ObjCCast<NSDictionary>([NSPropertyListSerialization
                       propertyListWithData:
                           [payload_data dataUsingEncoding:NSUTF8StringEncoding]
                                    options:NSPropertyListImmutable

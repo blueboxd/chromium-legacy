@@ -102,12 +102,8 @@ class SecureEnclaveClientTest : public testing::Test {
   raw_ptr<MockSecureEnclaveHelper, DanglingUntriaged>
       mock_secure_enclave_helper_ = nullptr;
   std::unique_ptr<SecureEnclaveClient> secure_enclave_client_;
-<<<<<<< HEAD
-  base::ScopedCFTypeRef<SecKeyRef> test_key_;
-  bool data_protection_keychain_ = false;
-=======
   base::apple::ScopedCFTypeRef<SecKeyRef> test_key_;
->>>>>>> origin/main
+  bool data_protection_keychain_ = false;
 };
 
 // Tests that the CreatePermanentKey method invokes both the SE helper's

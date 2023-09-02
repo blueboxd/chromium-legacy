@@ -196,7 +196,7 @@ class SSLPlatformKeyCSSM : public ThreadedSSLPrivateKey::Delegate {
 
  private:
   bssl::UniquePtr<EVP_PKEY> pubkey_;
-  base::ScopedCFTypeRef<SecKeyRef> key_;
+  base::apple::ScopedCFTypeRef<SecKeyRef> key_;
   const CSSM_KEY* cssm_key_;
 };
 

@@ -367,7 +367,7 @@ void ClipboardMac::ReadFilenames(ClipboardBuffer buffer,
   NSArray* paths = [GetPasteboard() propertyListForType:NSFilenamesPboardType];
   for (NSString* path in paths) {
     result->push_back(
-        ui::FileInfo(base::mac::NSStringToFilePath(path), base::FilePath()));
+        ui::FileInfo(base::apple::NSStringToFilePath(path), base::FilePath()));
   }
 }
 
@@ -462,7 +462,7 @@ void ClipboardMac::WriteRTF(const char* rtf_data, size_t data_len) {
 void ClipboardMac::WriteFilenames(std::vector<ui::FileInfo> filenames) {
   NSMutableArray* paths = [NSMutableArray arrayWithCapacity:filenames.size()];
   for (const ui::FileInfo& file : filenames) {
-    NSString* path = base::mac::FilePathToNSString(file.path);
+    NSString* path = base::apple::FilePathToNSString(file.path);
     [paths addObject:path];
   }
   [GetPasteboard() setPropertyList:paths forType:NSFilenamesPboardType];

@@ -199,7 +199,7 @@ bool CanShare() {
     NSString* title = base::SysUTF16ToNSString(contents->GetTitle());
 
     NSSharingService* service =
-        base::mac::ObjCCastStrict<NSSharingService>([sender representedObject]);
+        base::apple::ObjCCastStrict<NSSharingService>([sender representedObject]);
     service.delegate = self;
     service.subject = title;
 

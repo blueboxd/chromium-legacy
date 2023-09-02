@@ -15,7 +15,7 @@
 #include "base/apple/scoped_dispatch_object.h"
 #include "base/files/scoped_file.h"
 #include "base/mac/mac_util.h"
-#include "base/mac/mach_logging.h"
+#include "base/apple/mach_logging.h"
 #include "base/notreached.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/threading/scoped_blocking_call.h"
@@ -210,9 +210,9 @@ size_t WaitableEvent::WaitMany(WaitableEvent** raw_waitables, size_t count) {
     // Each item in |raw_waitables| will be watched using a dispatch souce
     // scheduled on the serial |queue|. The first one to be invoked will
     // signal the |semaphore| that this method will wait on.
-    ScopedDispatchObject<dispatch_queue_t> queue(dispatch_queue_create(
+    base::apple::ScopedDispatchObject<dispatch_queue_t> queue(dispatch_queue_create(
         "org.chromium.base.WaitableEvent.WaitMany", DISPATCH_QUEUE_SERIAL));
-    ScopedDispatchObject<dispatch_semaphore_t> semaphore(
+    base::apple::ScopedDispatchObject<dispatch_semaphore_t> semaphore(
         dispatch_semaphore_create(0));
 
     // Block capture references. |signaled| will identify the index in
@@ -223,15 +223,15 @@ size_t WaitableEvent::WaitMany(WaitableEvent** raw_waitables, size_t count) {
 
     // Create a MACH_RECV dispatch source for each event. These must be
     // destroyed before the |queue| and |semaphore|.
-    std::vector<std::unique_ptr<DispatchSourceMach>> sources;
+    std::vector<std::unique_ptr<base::apple::DispatchSourceMach>> sources;
     for (size_t i = 0; i < count; ++i) {
       const bool auto_reset =
           raw_waitables[i]->policy_ == WaitableEvent::ResetPolicy::AUTOMATIC;
       // The block will copy a reference to |right|.
       scoped_refptr<WaitableEvent::ReceiveRight> right =
           raw_waitables[i]->receive_right_;
-      auto source =
-          std::make_unique<DispatchSourceMach>(queue, right->Name(), ^{
+      auto source = std::make_unique<base::apple::DispatchSourceMach>(
+          queue, right->Name(), ^{
             // After the semaphore is signaled, another event be signaled and
             // the source may have its block put on the |queue|. WaitMany
             // should only report (and auto-reset) one event, so the first

@@ -2,7 +2,7 @@
 
 # ![Logo](chrome/app/theme/chromium/product_logo_64.png) Chromium-legacy
 
-Chromium-legacy is the up-to-date browser[^chromium] for legacy Mac OS X series no longer officially supported:
+Chromium-legacy is the up-to-date browser[^chromium] for legacy Mac OS X / OS X / macOS series no longer officially supported:
 
 [^chromium]: Chromium, the open-source project on which Google Chrome is based.
 
@@ -12,8 +12,10 @@ Chromium-legacy is the up-to-date browser[^chromium] for legacy Mac OS X series 
 - OS X 10.10 / Yosemite
 - OS X 10.11 / El Capitan
 - macOS 10.12 / Sierra
+- macOS 10.13 / High Sierra
+- macOS 10.14 / Mojave
 
-**NB: Not for officially supported macOS (10.13+).**
+**NB: Not for officially supported macOS (10.15+).**
 
 ## features
 
@@ -22,23 +24,27 @@ Some features (i.e. [DRM](../../wiki/DRM)) need an extra setup to use.
 
 ## system requirements
 
-The latest build of Mac OS X 10.7 or later:
+Tested with the latest build of Mac OS X 10.7 or later:
+
 - 10.7.5 (11G63)
 - 10.8.5 (12F2560)
 - 10.9.5 (13F1911)
 - 10.10.5 (14F2511)
 - 10.11.6 (15G22010)
 - 10.12.6 (16G2136)
+- 10.13.6 (17G14042)
+- 10.14.6 (18G9323)
 
 ## builds
 
 For getting/updating the latest builds, the following options are available:
-- manually from [Releases](../../releases) page
+
+- manually from the [Releases](../../releases) page
 - [an updater](https://github.com/blueboxd/chromium-updater)
-  - the lightweight updater to simply download updates
+  - a lightweight updater to simply check and download updates
 - [a downloader](https://github.com/blueboxd/chromium-legacy/discussions/25) by [@Wowfunhappy](https://github.com/Wowfunhappy)
-  - an automatic updater with several workarounds / addons
-  - NB: some Chromium's features (i.e. sync) will be disabled by this downloader, and may need modifications to use those
+  - an automatic updater with several workarounds/addons
+  - NB: some Chromium's native features (e.g. sync) may be disabled by this downloader, and may need modifications to use those
 
 ### canary (Chrome canary channel)
 
@@ -50,7 +56,7 @@ See [Releases](../../releases) for recent builds.
 
 ### stable (Chrome stable channel)
 
-Stable builds are based on Chrome's stable channel branch, and passed a few basic tests (launching, HTML5/JS tests, media playing) on 10.7.
+Stable builds are based on Chrome's stable channel branch and passed a few basic tests (launching, HTML5/JS tests, media playing) on 10.7 - 10.14.
 
 See [releases/tag/stable](../../releases/tag/stable) for the current stable channel release.
 
@@ -65,10 +71,10 @@ See [releases/tag/stable](../../releases/tag/stable) for the current stable chan
     - won't disappear despite the "Show scrollbars when scrolling" option being enabled when GPU compositing is disabled
 - GPU assists
   - on 10.7, due to the old OpenGL version, disabled entirely by embedded policy
-  - on 10.8/10.9, GPU compositing is disabled by hardcoded `--disable-gpu-compositing` option due to rendering glitches.
-- DRM
-  - on 10.7/10.8, cannot use DRM-protected media at all
-  - on 10.9+, need to [install Widevine library](../../wiki/DRM) to use DRM
+  - on 10.8/10.9, GPU compositing is disabled by the hardcoded `--disable-gpu-compositing` option due to rendering glitches.
+- DRM (Widevine)
+  - usable with limited resolution/compatibility
+  - need to [setup](../../wiki/DRM) to use
 - U2F/WebAuthn/FIDO2
   - on 10.7, you need [patched `IOHIDFamily.kext`](../../../IOHIDFamily-368.21) to use USB keys
 

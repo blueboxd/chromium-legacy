@@ -19,6 +19,11 @@ COMPONENT_EXPORT(UI_BASE)
                       action:(SEL)action
                       target:(id)target;
 
++ (NSButton*)buttonWithTitle:(NSString*)title
+                      image: (NSImage*)image
+                      action:(SEL)action
+                      target:(id)target;
+
 + (NSButton*)checkboxWithTitle:(NSString*)title;
 
 @end

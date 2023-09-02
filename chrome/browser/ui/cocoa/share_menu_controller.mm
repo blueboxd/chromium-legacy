@@ -6,7 +6,7 @@
 
 #import "chrome/browser/ui/cocoa/share_menu_controller.h"
 
-#include "base/mac/foundation_util.h"
+#include "base/apple/foundation_util.h"
 #include "base/mac/mac_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/sys_string_conversions.h"

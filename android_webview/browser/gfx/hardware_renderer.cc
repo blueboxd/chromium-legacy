@@ -73,6 +73,11 @@ class ScopedAcquireExternalContext {
       // with the external context.
       base::TimeTicks start_time = base::TimeTicks::Now();
 
+      // If the context has changed, make sure it gets current now.
+      if (!state_->context()->IsCurrent(surface_)) {
+        state_->MakeCurrent(surface_);
+      }
+
       eglAcquireExternalContextANGLE(state_->display()->GetDisplay(),
                                      surface_->GetHandle());
 
@@ -176,7 +181,7 @@ class HardwareRenderer::OnViz : public viz::DisplayClient {
                         ChildFrame* child_frame);
   void PostDrawOnViz(viz::FrameTimingDetailsMap* timing_details);
   void RemoveOverlaysOnViz();
-  void MarkExpectContextLossOnViz();
+  void MarkAllowContextLossOnViz();
 
   OverlayProcessorWebView* overlay_processor() {
     return overlay_processor_webview_;
@@ -459,7 +464,7 @@ void HardwareRenderer::OnViz::RemoveOverlaysOnViz() {
   }
 }
 
-void HardwareRenderer::OnViz::MarkExpectContextLossOnViz() {
+void HardwareRenderer::OnViz::MarkAllowContextLossOnViz() {
   DCHECK_CALLED_ON_VALID_THREAD(viz_thread_checker_);
   expect_context_loss_ = true;
 }
@@ -591,6 +596,9 @@ void HardwareRenderer::InitializeOnViz(
 
 HardwareRenderer::~HardwareRenderer() {
   DCHECK_CALLED_ON_VALID_THREAD(render_thread_checker_);
+  // Do not crash for context loss during destruction. It's possible functor is
+  // being destroyed due to an already-detected lost context.
+  MarkAllowContextLoss();
   output_surface_provider_.shared_context_state()->MakeCurrent(nullptr);
   VizCompositorThreadRunnerWebView::GetInstance()->ScheduleOnVizAndBlock(
       base::DoNothingWithBoundArgs(std::move(on_viz_)));
@@ -613,6 +621,11 @@ bool HardwareRenderer::IsUsingVulkan() const {
   return output_surface_provider_.shared_context_state()->GrContextIsVulkan();
 }
 
+bool HardwareRenderer::IsUsingANGLEOverGL() const {
+  return !IsUsingVulkan() && gl::GLSurfaceEGL::GetGLDisplayEGL()
+                                 ->IsANGLEExternalContextAndSurfaceSupported();
+}
+
 void HardwareRenderer::DrawAndSwap(const HardwareRendererDrawParams& params,
                                    const OverlaysParams& overlays_params) {
   TRACE_EVENT1("android_webview", "HardwareRenderer::Draw", "vulkan",
@@ -626,16 +639,12 @@ void HardwareRenderer::DrawAndSwap(const HardwareRendererDrawParams& params,
 
   DCHECK_CALLED_ON_VALID_THREAD(render_thread_checker_);
 
-  const bool is_angle =
-      !IsUsingVulkan() && gl::GLSurfaceEGL::GetGLDisplayEGL()
-                              ->IsANGLEExternalContextAndSurfaceSupported();
-
   // Ensure that the context is synced from external and synced back before
   // returning. This is only necessary when using ANGLE to keep its internals
   // synced with the external context
   ScopedAcquireExternalContext scoped_acquire(
       output_surface_provider_.shared_context_state().get(),
-      output_surface_provider_.gl_surface().get(), is_angle);
+      output_surface_provider_.gl_surface().get(), IsUsingANGLEOverGL());
 
   viz::FrameTimingDetailsMap timing_details;
 
@@ -772,13 +781,19 @@ void HardwareRenderer::MergeTransactionIfNeeded(
 }
 
 void HardwareRenderer::AbandonContext() {
-  VizCompositorThreadRunnerWebView::GetInstance()->task_runner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&HardwareRenderer::OnViz::MarkExpectContextLossOnViz,
-                     base::Unretained(on_viz_.get())));
-  output_surface_provider_.MarkExpectContextLoss();
+  MarkAllowContextLoss();
   output_surface_provider_.shared_context_state()->MarkContextLost(
       gpu::error::ContextLostReason::kUnknown);
+}
+
+void HardwareRenderer::MarkAllowContextLoss() {
+  if (on_viz_) {
+    VizCompositorThreadRunnerWebView::GetInstance()->task_runner()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&HardwareRenderer::OnViz::MarkAllowContextLossOnViz,
+                       base::Unretained(on_viz_.get())));
+  }
+  output_surface_provider_.MarkAllowContextLoss();
 }
 
 void HardwareRenderer::CommitFrame() {
@@ -840,9 +855,10 @@ void HardwareRenderer::Draw(const HardwareRendererDrawParams& params,
 
   ReportDrawMetric(params);
 
-  if (last_egl_context_) {
+  if (last_egl_context_ && !IsUsingVulkan() && !IsUsingANGLEOverGL()) {
     // We need to watch if the current Android context has changed and enforce a
-    // clean-up in the compositor.
+    // clean-up in the compositor.  This is only necessary for the validating
+    // command decoder.
     EGLContext current_context = eglGetCurrentContext();
     DCHECK(current_context) << "Draw called without EGLContext";
 

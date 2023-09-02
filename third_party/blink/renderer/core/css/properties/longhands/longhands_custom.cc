@@ -175,6 +175,7 @@ const CSSValue* AnchorDefault::CSSValueFromComputedStyleInternal(
   return MakeGarbageCollected<CSSCustomIdentValue>(*style.AnchorDefault());
 }
 
+// anchor-name: none | <dashed-ident>#
 const CSSValue* AnchorName::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
@@ -183,7 +184,8 @@ const CSSValue* AnchorName::ParseSingleValue(
           css_parsing_utils::ConsumeIdent<CSSValueID::kNone>(range)) {
     return value;
   }
-  return css_parsing_utils::ConsumeDashedIdent(range, context);
+  return css_parsing_utils::ConsumeCommaSeparatedList(
+      css_parsing_utils::ConsumeDashedIdent, range, context);
 }
 const CSSValue* AnchorName::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
@@ -192,7 +194,12 @@ const CSSValue* AnchorName::CSSValueFromComputedStyleInternal(
   if (!style.AnchorName()) {
     return CSSIdentifierValue::Create(CSSValueID::kNone);
   }
-  return MakeGarbageCollected<CSSCustomIdentValue>(*style.AnchorName());
+  CSSValueList* list = CSSValueList::CreateCommaSeparated();
+  for (const Member<const ScopedCSSName>& name :
+       style.AnchorName()->GetNames()) {
+    list->Append(*MakeGarbageCollected<CSSCustomIdentValue>(*name));
+  }
+  return list;
 }
 
 const CSSValue* AnimationComposition::ParseSingleValue(
@@ -2309,6 +2316,9 @@ const CSSValue* ContainerType::CSSValueFromComputedStyleInternal(
   if (style.ContainerType() & kContainerTypeSticky) {
     values->Append(*CSSIdentifierValue::Create(CSSValueID::kSticky));
   }
+  if (style.ContainerType() & kContainerTypeSnap) {
+    values->Append(*CSSIdentifierValue::Create(CSSValueID::kSnap));
+  }
   return values;
 }
 
@@ -3110,6 +3120,22 @@ const CSSValue* DominantBaseline::CSSValueFromComputedStyleInternal(
     const LayoutObject*,
     bool allow_visited_style) const {
   return CSSIdentifierValue::Create(style.DominantBaseline());
+}
+
+const CSSValue* DynamicRangeLimit::ParseSingleValue(
+    CSSParserTokenRange& range,
+    const CSSParserContext& context,
+    const CSSParserLocalContext&) const {
+  return css_parsing_utils::ConsumeIdent<
+      CSSValueID::kStandard, CSSValueID::kHigh, CSSValueID::kConstrainedHigh>(
+      range);
+}
+
+const CSSValue* DynamicRangeLimit::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const LayoutObject*,
+    bool allow_visited_style) const {
+  return CSSIdentifierValue::Create(style.DynamicRangeLimit());
 }
 
 const CSSValue* EmptyCells::CSSValueFromComputedStyleInternal(
@@ -3953,72 +3979,12 @@ const CSSValue* GridTemplateAreas::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const LayoutObject*,
     bool allow_visited_style) const {
-  if (!style.NamedGridAreaRowCount()) {
-    DCHECK(!style.NamedGridAreaColumnCount());
-    return CSSIdentifierValue::Create(CSSValueID::kNone);
+  if (const auto& grid_template_areas = style.GridTemplateAreas()) {
+    return MakeGarbageCollected<cssvalue::CSSGridTemplateAreasValue>(
+        grid_template_areas->named_areas, grid_template_areas->row_count,
+        grid_template_areas->column_count);
   }
-
-  return MakeGarbageCollected<cssvalue::CSSGridTemplateAreasValue>(
-      style.NamedGridArea(), style.NamedGridAreaRowCount(),
-      style.NamedGridAreaColumnCount());
-}
-
-void GridTemplateAreas::ApplyInitial(StyleResolverState& state) const {
-  ComputedStyleBuilder& builder = state.StyleBuilder();
-  builder.SetImplicitNamedGridColumnLines(
-      ComputedStyleInitialValues::InitialImplicitNamedGridColumnLines());
-  builder.SetImplicitNamedGridRowLines(
-      ComputedStyleInitialValues::InitialImplicitNamedGridRowLines());
-
-  builder.SetNamedGridArea(ComputedStyleInitialValues::InitialNamedGridArea());
-  builder.SetNamedGridAreaRowCount(
-      ComputedStyleInitialValues::InitialNamedGridAreaRowCount());
-  builder.SetNamedGridAreaColumnCount(
-      ComputedStyleInitialValues::InitialNamedGridAreaColumnCount());
-}
-
-void GridTemplateAreas::ApplyInherit(StyleResolverState& state) const {
-  ComputedStyleBuilder& builder = state.StyleBuilder();
-  builder.SetImplicitNamedGridColumnLines(
-      state.ParentStyle()->ImplicitNamedGridColumnLines());
-  builder.SetImplicitNamedGridRowLines(
-      state.ParentStyle()->ImplicitNamedGridRowLines());
-
-  builder.SetNamedGridArea(state.ParentStyle()->NamedGridArea());
-  builder.SetNamedGridAreaRowCount(
-      state.ParentStyle()->NamedGridAreaRowCount());
-  builder.SetNamedGridAreaColumnCount(
-      state.ParentStyle()->NamedGridAreaColumnCount());
-}
-
-void GridTemplateAreas::ApplyValue(StyleResolverState& state,
-                                   const CSSValue& value,
-                                   ValueMode) const {
-  if (auto* identifier_value = DynamicTo<CSSIdentifierValue>(value)) {
-    DCHECK_EQ(identifier_value->GetValueID(), CSSValueID::kNone);
-    ApplyInitial(state);
-    return;
-  }
-
-  const auto& grid_template_areas_value =
-      To<cssvalue::CSSGridTemplateAreasValue>(value);
-  const NamedGridAreaMap& new_named_grid_areas =
-      grid_template_areas_value.GridAreaMap();
-
-  NamedGridLinesMap implicit_named_grid_column_lines;
-  NamedGridLinesMap implicit_named_grid_row_lines;
-  StyleBuilderConverter::CreateImplicitNamedGridLinesFromGridArea(
-      new_named_grid_areas, implicit_named_grid_column_lines, kForColumns);
-  StyleBuilderConverter::CreateImplicitNamedGridLinesFromGridArea(
-      new_named_grid_areas, implicit_named_grid_row_lines, kForRows);
-
-  ComputedStyleBuilder& builder = state.StyleBuilder();
-  builder.SetImplicitNamedGridColumnLines(implicit_named_grid_column_lines);
-  builder.SetImplicitNamedGridRowLines(implicit_named_grid_row_lines);
-
-  builder.SetNamedGridArea(new_named_grid_areas);
-  builder.SetNamedGridAreaRowCount(grid_template_areas_value.RowCount());
-  builder.SetNamedGridAreaColumnCount(grid_template_areas_value.ColumnCount());
+  return CSSIdentifierValue::Create(CSSValueID::kNone);
 }
 
 const CSSValue* GridTemplateAreas::InitialValue() const {
@@ -5168,21 +5134,18 @@ const CSSValue* MarginBottom::ParseSingleValue(
 
 bool MarginBottom::IsLayoutDependent(const ComputedStyle* style,
                                      LayoutObject* layout_object) const {
-  return layout_object && layout_object->IsBox() &&
-         (!style || !style->MarginBottom().IsFixed());
+  return layout_object && layout_object->IsBox();
 }
 
 const CSSValue* MarginBottom::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const LayoutObject* layout_object,
     bool allow_visited_style) const {
-  const Length& margin_bottom = style.MarginBottom();
-  if (margin_bottom.IsFixed() || !layout_object || !layout_object->IsBox()) {
-    return ComputedStyleUtils::ZoomAdjustedPixelValueForLength(margin_bottom,
-                                                               style);
+  if (const LayoutBox* box = DynamicTo<LayoutBox>(layout_object)) {
+    return ZoomAdjustedPixelValue(box->MarginBottom(), style);
   }
-  return ZoomAdjustedPixelValue(To<LayoutBox>(layout_object)->MarginBottom(),
-                                style);
+  return ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
+      style.MarginBottom(), style);
 }
 
 bool MarginInlineEnd::IsLayoutDependent(const ComputedStyle* style,
@@ -5221,21 +5184,18 @@ const CSSValue* MarginLeft::ParseSingleValue(
 
 bool MarginLeft::IsLayoutDependent(const ComputedStyle* style,
                                    LayoutObject* layout_object) const {
-  return layout_object && layout_object->IsBox() &&
-         (!style || !style->MarginLeft().IsFixed());
+  return layout_object && layout_object->IsBox();
 }
 
 const CSSValue* MarginLeft::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const LayoutObject* layout_object,
     bool allow_visited_style) const {
-  const Length& margin_left = style.MarginLeft();
-  if (margin_left.IsFixed() || !layout_object || !layout_object->IsBox()) {
-    return ComputedStyleUtils::ZoomAdjustedPixelValueForLength(margin_left,
-                                                               style);
+  if (const LayoutBox* box = DynamicTo<LayoutBox>(layout_object)) {
+    return ZoomAdjustedPixelValue(box->MarginLeft(), style);
   }
-  return ZoomAdjustedPixelValue(To<LayoutBox>(layout_object)->MarginLeft(),
-                                style);
+  return ComputedStyleUtils::ZoomAdjustedPixelValueForLength(style.MarginLeft(),
+                                                             style);
 }
 
 const CSSValue* MarginRight::ParseSingleValue(
@@ -5248,21 +5208,18 @@ const CSSValue* MarginRight::ParseSingleValue(
 
 bool MarginRight::IsLayoutDependent(const ComputedStyle* style,
                                     LayoutObject* layout_object) const {
-  return layout_object && layout_object->IsBox() &&
-         (!style || !style->MarginRight().IsFixed());
+  return layout_object && layout_object->IsBox();
 }
 
 const CSSValue* MarginRight::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const LayoutObject* layout_object,
     bool allow_visited_style) const {
-  const Length& margin_right = style.MarginRight();
-  if (margin_right.IsFixed() || !layout_object || !layout_object->IsBox()) {
-    return ComputedStyleUtils::ZoomAdjustedPixelValueForLength(margin_right,
-                                                               style);
+  if (const LayoutBox* box = DynamicTo<LayoutBox>(layout_object)) {
+    return ZoomAdjustedPixelValue(box->MarginRight(), style);
   }
-  return ZoomAdjustedPixelValue(To<LayoutBox>(layout_object)->MarginRight(),
-                                style);
+  return ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
+      style.MarginRight(), style);
 }
 
 const CSSValue* MarginTop::ParseSingleValue(
@@ -5275,21 +5232,18 @@ const CSSValue* MarginTop::ParseSingleValue(
 
 bool MarginTop::IsLayoutDependent(const ComputedStyle* style,
                                   LayoutObject* layout_object) const {
-  return layout_object && layout_object->IsBox() &&
-         (!style || !style->MarginTop().IsFixed());
+  return layout_object && layout_object->IsBox();
 }
 
 const CSSValue* MarginTop::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const LayoutObject* layout_object,
     bool allow_visited_style) const {
-  const Length& margin_top = style.MarginTop();
-  if (margin_top.IsFixed() || !layout_object || !layout_object->IsBox()) {
-    return ComputedStyleUtils::ZoomAdjustedPixelValueForLength(margin_top,
-                                                               style);
+  if (const LayoutBox* box = DynamicTo<LayoutBox>(layout_object)) {
+    return ZoomAdjustedPixelValue(box->MarginTop(), style);
   }
-  return ZoomAdjustedPixelValue(To<LayoutBox>(layout_object)->MarginTop(),
-                                style);
+  return ComputedStyleUtils::ZoomAdjustedPixelValueForLength(style.MarginTop(),
+                                                             style);
 }
 
 const CSSValue* MarkerEnd::ParseSingleValue(
@@ -8787,12 +8741,7 @@ const CSSValue* ViewTimelineInset::CSSValueFromComputedStyleInternal(
   }
   CSSValueList* list = CSSValueList::CreateCommaSeparated();
   for (const TimelineInset& inset : vector) {
-    list->Append(*MakeGarbageCollected<CSSValuePair>(
-        ComputedStyleUtils::ZoomAdjustedPixelValueForLength(inset.GetStart(),
-                                                            style),
-        ComputedStyleUtils::ZoomAdjustedPixelValueForLength(inset.GetEnd(),
-                                                            style),
-        CSSValuePair::kDropIdenticalValues));
+    list->Append(*ComputedStyleUtils::ValueForTimelineInset(inset, style));
   }
   return list;
 }
@@ -8874,14 +8823,15 @@ const CSSValue* Appearance::ParseSingleValue(
     const CSSParserLocalContext& local_context) const {
   CSSValueID id = range.Peek().Id();
   CSSPropertyID property = CSSPropertyID::kAppearance;
+  if (local_context.UseAliasParsing()) {
+    property = CSSPropertyID::kAliasWebkitAppearance;
+  }
   if (CSSParserFastPaths::IsValidKeywordPropertyAndValue(property, id,
                                                          context.Mode())) {
-    if (local_context.UseAliasParsing()) {
-      property = CSSPropertyID::kAliasWebkitAppearance;
-    }
     css_parsing_utils::CountKeywordOnlyPropertyUsage(property, context, id);
     return css_parsing_utils::ConsumeIdent(range);
   }
+  css_parsing_utils::WarnInvalidKeywordPropertyUsage(property, context, id);
   return nullptr;
 }
 

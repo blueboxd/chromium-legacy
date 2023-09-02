@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_fragment_builder.h"
 
 #include "base/containers/contains.h"
+#include "third_party/blink/public/mojom/use_counter/metrics/web_feature.mojom-shared.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_fragment.h"
 #include "third_party/blink/renderer/core/style/computed_style_base_constants.h"
@@ -138,6 +139,10 @@ void NGFragmentBuilder::PropagateSnapAreas(const NGPhysicalFragment& child) {
       snap_areas.insert(child_snap_area);
     }
   }
+
+  if (child.IsSnapArea() && child.PropagatedSnapAreas()) {
+    child.GetDocument().CountUse(WebFeature::kScrollSnapNestedSnapAreas);
+  }
 }
 
 NGLogicalAnchorQuery& NGFragmentBuilder::EnsureAnchorQuery() {
@@ -160,8 +165,9 @@ void NGFragmentBuilder::PropagateChildAnchors(
     options = AnchorQuerySetOptions(
         child, node_, IsBlockFragmentationContextRoot() || HasItems());
     if (child.Style().AnchorName()) {
-      EnsureAnchorQuery().Set(child.Style().AnchorName(),
-                              *child.GetLayoutObject(), rect, *options);
+      for (const ScopedCSSName* name : child.Style().AnchorName()->GetNames()) {
+        EnsureAnchorQuery().Set(name, *child.GetLayoutObject(), rect, *options);
+      }
     }
     if (child.IsImplicitAnchor()) {
       EnsureAnchorQuery().Set(child.GetLayoutObject(), *child.GetLayoutObject(),

@@ -52,7 +52,6 @@ import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabCreator;
 import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
-import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
 import org.chromium.chrome.browser.ui.messages.snackbar.Snackbar;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager.SnackbarController;
@@ -283,8 +282,8 @@ public class HistoryManager implements OnMenuItemClickListener, SelectionObserve
                 }
 
                 @Override
-                public boolean areTabGroupsEnabled() {
-                    return TabUiFeatureUtilities.isTabGroupsAndroidEnabled(mActivity);
+                public boolean isRenameEnabled() {
+                    return ChromeFeatureList.isEnabled(ChromeFeatureList.RENAME_JOURNEYS);
                 }
             };
 
@@ -443,6 +442,10 @@ public class HistoryManager implements OnMenuItemClickListener, SelectionObserve
                 (view, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom)
                         -> updateTouchDelegate(
                                 compositeTouchDelegate, view, tabLayout, new AtomicReference<>()));
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.RENAME_JOURNEYS)) {
+            firstTab.view.getTab().setText(R.string.history_clusters_by_date_tab_label);
+            secondTab.view.getTab().setText(R.string.history_clusters_by_group_tab_label);
+        }
         return viewGroup;
     }
 

@@ -43,7 +43,6 @@ import org.chromium.chrome.browser.bookmarks.BookmarkModel;
 import org.chromium.chrome.browser.bookmarks.PowerBookmarkUtils;
 import org.chromium.chrome.browser.commerce.ShoppingFeatures;
 import org.chromium.chrome.browser.commerce.ShoppingServiceFactory;
-import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.device.DeviceConditions;
 import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -65,7 +64,6 @@ import org.chromium.chrome.browser.share.ShareUtils;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tasks.ReturnToChromeUtil;
-import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
 import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.chrome.browser.translate.TranslateUtils;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuHandler;
@@ -555,6 +553,10 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
                 .setVisible(isCurrentTabNotNull && shouldShowReaderModePrefs(currentTab));
 
         updateManagedByMenuItem(menu, currentTab);
+
+        // Only display quick delete divider line on the page menu and if quick delete is enabled.
+        menu.findItem(R.id.quick_delete_divider_line_id)
+                .setVisible(isQuickDeleteEnabled(isIncognito));
     }
 
     /**
@@ -575,11 +577,8 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
         // We show the re-auth screen only in Incognito mode.
         boolean isIncognitoReauthShowing = isIncognito && (mIncognitoReauthController != null)
                 && mIncognitoReauthController.isReauthPageShowing();
-        boolean isTabSelectionEditorContext = isOverviewModeMenu
-                && TabUiFeatureUtilities.isTabGroupsAndroidEnabled(mContext)
-                && !DeviceClassManager.enableAccessibilityLayout(mContext);
 
-        boolean isMenuSelectTabsVisible = isTabSelectionEditorContext;
+        boolean isMenuSelectTabsVisible = isOverviewModeMenu;
         boolean isMenuSelectTabsEnabled = !isIncognitoReauthShowing && isMenuSelectTabsVisible
                 && mTabModelSelector.getTabModelFilterProvider()
                                 .getCurrentTabModelFilter()
@@ -644,10 +643,8 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
                 item.setEnabled(hasIncognitoTabs);
             }
             if (item.getItemId() == R.id.quick_delete_menu_id) {
-                boolean isQuickDeleteEnabled =
-                        !isIncognito && QuickDeleteController.isQuickDeleteEnabled();
-                item.setVisible(isQuickDeleteEnabled);
-                item.setEnabled(isQuickDeleteEnabled);
+                item.setVisible(isQuickDeleteEnabled(isIncognito));
+                item.setEnabled(isQuickDeleteEnabled(isIncognito));
             }
 
             // This needs to be done after the visibility of the item is set.
@@ -665,6 +662,14 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
                 hasItemBetweenDividers = true;
             }
         }
+    }
+
+    /**
+     * @param isIncognito Whether the currentTab is incognito.
+     * @return Whether the quick delete menu item should be enabled.
+     */
+    private boolean isQuickDeleteEnabled(boolean isIncognito) {
+        return !isIncognito && QuickDeleteController.isQuickDeleteEnabled();
     }
 
     /**

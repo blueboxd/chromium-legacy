@@ -4,6 +4,7 @@
 <translation id="1006017844123154345">Open Online</translation>
 <translation id="1036348656032585052">Turn off</translation>
 <translation id="1044891598689252897">Sites will work normally</translation>
+<translation id="1073417869336441572">Help us improve Chrome by telling us why you allowed third-party cookies. <ph name="BEGIN_LINK" />Send feedback<ph name="END_LINK" /></translation>
 <translation id="1124090076051167250">This will clear <ph name="DATASIZE" /> of data and cookies stored by sites or by apps on your home screen.</translation>
 <translation id="1178581264944972037">Pause</translation>
 <translation id="1181037720776840403">Remove</translation>
@@ -19,7 +20,6 @@
 <translation id="1371239764779356792">Allow a site to save data on your device</translation>
 <translation id="1383876407941801731">Search</translation>
 <translation id="1384959399684842514">Download paused</translation>
-<translation id="1409426117486808224">Simplified view for open tabs</translation>
 <translation id="1415402041810619267">URL truncated</translation>
 <translation id="1426410128494586442">Yes</translation>
 <translation id="1446450296470737166">Allow full control of MIDI devices</translation>
@@ -118,6 +118,7 @@
 <translation id="3008272652534848354">Reset permissions</translation>
 <translation id="301521992641321250">Automatically blocked</translation>
 <translation id="3069226013421428034">Allow third-party sign-in for a specific site.</translation>
+<translation id="3082992102194421695">{COUNT,plural, =1{Expires tomorrow}other{Expires in # days}}</translation>
 <translation id="310297983047869047">Previous slide</translation>
 <translation id="3109724472072898302">Collapsed</translation>
 <translation id="3114012059975132928">Video player</translation>
@@ -140,6 +141,7 @@
 <translation id="3386292677130313581">Ask before allowing sites to know your location (recommended)</translation>
 <translation id="3403537308306431953"><ph name="ZOOM_LEVEL" /> %%</translation>
 <translation id="344449859752187052">Third-party cookies blocked</translation>
+<translation id="3465378418721443318">{DAYS,plural, =1{Chrome will block cookies again tomorrow}other{# days until Chrome blocks cookies again}}</translation>
 <translation id="3521663503435878242">Sites under <ph name="DOMAIN" /></translation>
 <translation id="3538390592868664640">Block sites from creating a 3D map of your surroundings or tracking camera position</translation>
 <translation id="3544058026430919413">A company can define a group of sites that can use cookies to share your activity in the group. This is off in Incognito.</translation>
@@ -162,6 +164,7 @@
 <translation id="381841723434055211">Phone numbers</translation>
 <translation id="3826050100957962900">Third-party sign-in</translation>
 <translation id="3835233591525155343">Your device use</translation>
+<translation id="3843916486309149084">Chrome will block cookies again today</translation>
 <translation id="385051799172605136">Back</translation>
 <translation id="3859306556332390985">Seek forward</translation>
 <translation id="3895926599014793903">Force enable zoom</translation>
@@ -301,6 +304,7 @@
 <translation id="6367753977865761591">Block third-party sign-in for a specific site.</translation>
 <translation id="6388207532828177975">Clear &amp; reset</translation>
 <translation id="6398765197997659313">Exit full screen</translation>
+<translation id="640163077447496506">Expires today</translation>
 <translation id="6405650995156823521"><ph name="FIRST_PART" /> • <ph name="SECOND_PART" /></translation>
 <translation id="6439114592976064011">Block sites from using your virtual reality device and data</translation>
 <translation id="6447842834002726250">Cookies</translation>
@@ -336,7 +340,6 @@
 <translation id="7000754031042624318">Turned off in Android settings</translation>
 <translation id="7016516562562142042">Allowed for current search engine</translation>
 <translation id="702275896380648118">This site determines things that you like and then suggests ads to other sites. This site also gets your ad topics from Chrome to show you more relevant ads.</translation>
-<translation id="702463548815491781">Recommended when TalkBack or Switch Access are on</translation>
 <translation id="7053983685419859001">Block</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 selected}other{# selected}}</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> selected. Options available near top of the screen</translation>
@@ -396,6 +399,7 @@
 <translation id="8131740175452115882">Confirm</translation>
 <translation id="8154912474061769055">Features on many sites may not work</translation>
 <translation id="8168435359814927499">Content</translation>
+<translation id="8186479265534291036">Site not working? Third-party cookies blocked</translation>
 <translation id="8197286292360124385"><ph name="PERMISSION_1" /> allowed</translation>
 <translation id="8200772114523450471">Resume</translation>
 <translation id="8206354486702514201">This setting is enforced by your administrator.</translation>

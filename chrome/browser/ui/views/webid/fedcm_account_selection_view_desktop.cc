@@ -103,10 +103,14 @@ void FedCmAccountSelectionView::Show(
 
   bool create_bubble = !bubble_widget_;
   if (create_bubble) {
-    bubble_widget_ = CreateBubbleWithAccessibleTitle(
-                         top_frame_for_display_, iframe_for_display_, idp_title,
-                         rp_context, show_auto_reauthn_checkbox)
-                         ->GetWeakPtr();
+    views::Widget* widget = CreateBubbleWithAccessibleTitle(
+        top_frame_for_display_, iframe_for_display_, idp_title, rp_context,
+        show_auto_reauthn_checkbox);
+    if (!widget) {
+      delegate_->OnDismiss(DismissReason::kOther);
+      return;
+    }
+    bubble_widget_ = widget->GetWeakPtr();
 
     // Initialize InputEventActivationProtector to handle potentially unintended
     // input events. Do not override `input_protector_` set by
@@ -173,12 +177,15 @@ void FedCmAccountSelectionView::ShowFailureDialog(
 
   bool create_bubble = !bubble_widget_;
   if (create_bubble) {
-    bubble_widget_ = CreateBubbleWithAccessibleTitle(
-                         base::UTF8ToUTF16(top_frame_etld_plus_one),
-                         iframe_etld_plus_one_u16,
-                         base::UTF8ToUTF16(idp_etld_plus_one), rp_context,
-                         /*show_auto_reauthn_checkbox=*/false)
-                         ->GetWeakPtr();
+    views::Widget* widget = CreateBubbleWithAccessibleTitle(
+        base::UTF8ToUTF16(top_frame_etld_plus_one), iframe_etld_plus_one_u16,
+        base::UTF8ToUTF16(idp_etld_plus_one), rp_context,
+        /*show_auto_reauthn_checkbox=*/false);
+    if (!widget) {
+      delegate_->OnDismiss(DismissReason::kOther);
+      return;
+    }
+    bubble_widget_ = widget->GetWeakPtr();
 
     // Initialize InputEventActivationProtector to handle potentially unintended
     // input events. Do not override `input_protector_` set by
@@ -193,8 +200,58 @@ void FedCmAccountSelectionView::ShowFailureDialog(
       base::UTF8ToUTF16(top_frame_etld_plus_one), iframe_etld_plus_one_u16,
       base::UTF8ToUTF16(idp_etld_plus_one), idp_metadata);
 
-  if ((create_bubble || is_modal_closed_but_accounts_fetch_pending_) &&
-      is_web_contents_visible_) {
+  if (create_bubble || is_modal_closed_but_accounts_fetch_pending_) {
+    is_modal_closed_but_accounts_fetch_pending_ = false;
+    if (is_web_contents_visible_) {
+      input_protector_->VisibilityChanged(true);
+      bubble_widget_->Show();
+    }
+  }
+  // Else:
+  // The bubble is not guaranteed to be shown. The bubble will be hidden if the
+  // associated web contents are hidden.
+}
+
+void FedCmAccountSelectionView::ShowErrorDialog(
+    const std::string& top_frame_etld_plus_one,
+    const absl::optional<std::string>& iframe_etld_plus_one,
+    const std::string& idp_etld_plus_one,
+    const blink::mojom::RpContext& rp_context,
+    const content::IdentityProviderMetadata& idp_metadata,
+    const absl::optional<TokenError>& error) {
+  state_ = State::SIGN_IN_ERROR;
+  notify_delegate_of_dismiss_ = true;
+  absl::optional<std::u16string> iframe_etld_plus_one_u16 =
+      iframe_etld_plus_one ? absl::make_optional<std::u16string>(
+                                 base::UTF8ToUTF16(*iframe_etld_plus_one))
+                           : absl::nullopt;
+
+  bool create_bubble = !bubble_widget_;
+  if (create_bubble) {
+    views::Widget* widget = CreateBubbleWithAccessibleTitle(
+        base::UTF8ToUTF16(top_frame_etld_plus_one), iframe_etld_plus_one_u16,
+        base::UTF8ToUTF16(idp_etld_plus_one), rp_context,
+        /*show_auto_reauthn_checkbox=*/false);
+    if (!widget) {
+      delegate_->OnDismiss(DismissReason::kOther);
+      return;
+    }
+    bubble_widget_ = widget->GetWeakPtr();
+
+    // Initialize InputEventActivationProtector to handle potentially unintended
+    // input events. Do not override `input_protector_` set by
+    // SetInputEventActivationProtectorForTesting().
+    if (!input_protector_) {
+      input_protector_ =
+          std::make_unique<views::InputEventActivationProtector>();
+    }
+  }
+
+  GetBubbleView()->ShowErrorDialog(
+      base::UTF8ToUTF16(top_frame_etld_plus_one), iframe_etld_plus_one_u16,
+      base::UTF8ToUTF16(idp_etld_plus_one), idp_metadata, error);
+
+  if (create_bubble && is_web_contents_visible_) {
     bubble_widget_->Show();
     input_protector_->VisibilityChanged(true);
   }
@@ -274,6 +331,14 @@ views::Widget* FedCmAccountSelectionView::CreateBubbleWithAccessibleTitle(
     bool show_auto_reauthn_checkbox) {
   Browser* browser =
       chrome::FindBrowserWithWebContents(delegate_->GetWebContents());
+
+  // Reject the API if the browser is not found or its tab strip model does not
+  // exist, as we require those to show UI. It is unclear why there are callers
+  // attempting FedCM when some of these checks fail.
+  if (!browser || !browser->tab_strip_model()) {
+    return nullptr;
+  }
+
   browser->tab_strip_model()->AddObserver(this);
 
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
@@ -478,6 +543,9 @@ FedCmAccountSelectionView::SheetType FedCmAccountSelectionView::GetSheetType() {
 
     case State::AUTO_REAUTHN:
       return SheetType::AUTO_REAUTHN;
+
+    case State::SIGN_IN_ERROR:
+      return SheetType::SIGN_IN_ERROR;
 
     default:
       NOTREACHED_NORETURN();

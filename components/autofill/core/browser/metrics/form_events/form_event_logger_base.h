@@ -14,7 +14,6 @@
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/metrics/autofill_metrics.h"
 #include "components/autofill/core/browser/metrics/form_events/form_events.h"
-#include "components/autofill/core/browser/sync_utils.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/autofill/core/common/form_interactions_flow.h"
 
@@ -38,15 +37,15 @@ class FormEventLoggerBase {
     local_record_type_count_ = local_record_type_count;
   }
 
-  void OnDidInteractWithAutofillableForm(const FormStructure& form,
-                                         AutofillSyncSigninState sync_state);
+  void OnDidInteractWithAutofillableForm(
+      const FormStructure& form,
+      AutofillMetrics::PaymentsSigninState signin_state_for_metrics);
 
-  void OnDidPollSuggestions(const FormFieldData& field,
-                            AutofillSyncSigninState sync_state);
+  void OnDidPollSuggestions(
+      const FormFieldData& field,
+      AutofillMetrics::PaymentsSigninState signin_state_for_metrics);
 
   void OnDidParseForm(const FormStructure& form);
-
-  void OnPopupSuppressed(const FormStructure& form, const AutofillField& field);
 
   void OnUserHideSuggestions(const FormStructure& form,
                              const AutofillField& field);
@@ -55,14 +54,16 @@ class FormEventLoggerBase {
       const FormStructure& form,
       const AutofillField& field,
       const base::TimeTicks& form_parsed_timestamp,
-      AutofillSyncSigninState sync_state,
+      AutofillMetrics::PaymentsSigninState signin_state_for_metrics,
       bool off_the_record);
 
-  void OnWillSubmitForm(AutofillSyncSigninState sync_state,
-                        const FormStructure& form);
+  void OnWillSubmitForm(
+      AutofillMetrics::PaymentsSigninState signin_state_for_metrics,
+      const FormStructure& form);
 
-  void OnFormSubmitted(AutofillSyncSigninState sync_state,
-                       const FormStructure& form);
+  void OnFormSubmitted(
+      AutofillMetrics::PaymentsSigninState signin_state_for_metrics,
+      const FormStructure& form);
 
   void OnTypedIntoNonFilledField();
   void OnEditedAutofilledField();
@@ -188,7 +189,6 @@ class FormEventLoggerBase {
   size_t local_record_type_count_ = 0;
   bool has_parsed_form_ = false;
   bool has_logged_interacted_ = false;
-  bool has_logged_popup_suppressed_ = false;
   bool has_logged_user_hide_suggestions_ = false;
   bool has_logged_suggestions_shown_ = false;
   bool has_logged_suggestion_filled_ = false;
@@ -232,7 +232,8 @@ class FormEventLoggerBase {
   // Weak reference.
   const raw_ref<AutofillClient> client_;
 
-  AutofillSyncSigninState sync_state_ = AutofillSyncSigninState::kNumSyncStates;
+  AutofillMetrics::PaymentsSigninState signin_state_for_metrics_ =
+      AutofillMetrics::PaymentsSigninState::kUnknown;
 };
 }  // namespace autofill::autofill_metrics
 

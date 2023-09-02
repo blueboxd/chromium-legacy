@@ -114,13 +114,11 @@ SegmentationPlatformServiceImpl::SegmentationPlatformServiceImpl(
             storage_service_->segment_info_database(),
             storage_service_->signal_storage_config(),
             init_params->profile_prefs, config.get(),
-            field_trial_register_.get(), init_params->clock, platform_options_,
-            storage_service_->default_model_manager());
+            field_trial_register_.get(), init_params->clock, platform_options_);
   }
 
   proxy_ = std::make_unique<ServiceProxyImpl>(
       storage_service_->segment_info_database(),
-      storage_service_->default_model_manager(),
       storage_service_->signal_storage_config(), &config_holder->configs(),
       platform_options_, &segment_selectors_);
   segment_score_provider_ =
@@ -291,6 +289,12 @@ void SegmentationPlatformServiceImpl::OnDatabaseInitialized(bool success) {
 void SegmentationPlatformServiceImpl::OnSegmentationModelUpdated(
     proto::SegmentInfo segment_info) {
   CHECK(IsPlatformInitialized());
+  if (!segment_info.has_model_metadata()) {
+    signal_handler_.OnSignalListUpdated();
+    storage_service_->ExecuteDatabaseMaintenanceTasks(false);
+    return;
+  }
+
   DCHECK(metadata_utils::ValidateSegmentInfoMetadataAndFeatures(segment_info) ==
          metadata_utils::ValidationResult::kValidationSuccess);
 

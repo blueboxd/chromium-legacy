@@ -11,7 +11,7 @@
 
 #include <utility>
 
-#include "base/mac/foundation_util.h"
+#include "base/apple/foundation_util.h"
 #include "base/mac/scoped_ionotificationportref.h"
 #include "base/mac/scoped_ioobject.h"
 #include "base/mac/scoped_ioplugininterface.h"
@@ -29,7 +29,7 @@ UsbDeviceMac::UsbDeviceMac(uint64_t entry_id,
 UsbDeviceMac::~UsbDeviceMac() = default;
 
 void UsbDeviceMac::Open(OpenCallback callback) {
-  base::ScopedCFTypeRef<CFDictionaryRef> matching_dict(
+  base::apple::ScopedCFTypeRef<CFDictionaryRef> matching_dict(
       IORegistryEntryIDMatching(entry_id()));
   if (!matching_dict.get()) {
     USB_LOG(ERROR) << "Failed to create matching dictionary for ID.";

@@ -165,10 +165,12 @@ class EcheTrayTest : public AshTestBase {
 
  private:
   FakeConnectionStatusObserver fake_connection_status_observer_;
-  raw_ptr<EcheTray, ExperimentalAsh> eche_tray_ = nullptr;  // Not owned
-  raw_ptr<PhoneHubTray, ExperimentalAsh> phone_hub_tray_ =
+  raw_ptr<EcheTray, DanglingUntriaged | ExperimentalAsh> eche_tray_ =
       nullptr;  // Not owned
-  raw_ptr<ToastManagerImpl, ExperimentalAsh> toast_manager_ = nullptr;
+  raw_ptr<PhoneHubTray, DanglingUntriaged | ExperimentalAsh> phone_hub_tray_ =
+      nullptr;  // Not owned
+  raw_ptr<ToastManagerImpl, DanglingUntriaged | ExperimentalAsh>
+      toast_manager_ = nullptr;
 
   // Calling the factory constructor is enough to set it up.
   std::unique_ptr<TestAshWebViewFactory> test_web_view_factory_ =
@@ -712,62 +714,6 @@ TEST_F(EcheTrayTest, OnConnectionStatusChanged) {
       ConnectionStatus::kConnectionStatusConnected);
   EXPECT_EQ(GetNumConnectionStatusForUiChangedCalls(), 1u);
   EXPECT_TRUE(eche_tray()->get_initializer_webview_for_test());
-}
-
-TEST_F(EcheTrayTest, DISABLED_OnThemeChanged) {
-  ResetUnloadWebContent();
-  eche_tray()->LoadBubble(
-      GURL("http://google.com"), CreateTestImage(), u"app 1", u"your phone",
-      eche_app::mojom::ConnectionStatus::kConnectionStatusDisconnected,
-      eche_app::mojom::AppStreamLaunchEntryPoint::APPS_LIST);
-  eche_tray()->ShowBubble();
-
-  EXPECT_TRUE(eche_tray()->is_active());
-  EXPECT_TRUE(eche_tray()->GetArrowBackButtonForTesting());
-  EXPECT_TRUE(eche_tray()->GetMinimizeButtonForTesting());
-  EXPECT_TRUE(eche_tray()->GetCloseButtonForTesting());
-
-  eche_tray()->OnThemeChanged();
-
-  // Buttons still exist
-  eche_tray()->ShowBubble();
-  EXPECT_TRUE(eche_tray()->is_active());
-  EXPECT_TRUE(eche_tray()->GetArrowBackButtonForTesting());
-  EXPECT_TRUE(eche_tray()->GetMinimizeButtonForTesting());
-  EXPECT_TRUE(eche_tray()->GetCloseButtonForTesting());
-  EXPECT_FALSE(is_web_content_unloaded_);
-
-  eche_tray()->PurgeAndClose();
-  EXPECT_FALSE(eche_tray()->is_active());
-  EXPECT_FALSE(eche_tray()->GetArrowBackButtonForTesting());
-  EXPECT_FALSE(eche_tray()->GetMinimizeButtonForTesting());
-  EXPECT_FALSE(eche_tray()->GetCloseButtonForTesting());
-}
-
-TEST_F(EcheTrayTest, OnThemeChangedNoBubble) {
-  ResetUnloadWebContent();
-  eche_tray()->LoadBubble(
-      GURL("http://google.com"), CreateTestImage(), u"app 1", u"your phone",
-      eche_app::mojom::ConnectionStatus::kConnectionStatusDisconnected,
-      eche_app::mojom::AppStreamLaunchEntryPoint::APPS_LIST);
-
-  eche_tray()->ShowBubble();
-  EXPECT_TRUE(eche_tray()->is_active());
-  EXPECT_TRUE(eche_tray()->GetArrowBackButtonForTesting());
-  EXPECT_TRUE(eche_tray()->GetMinimizeButtonForTesting());
-  EXPECT_TRUE(eche_tray()->GetCloseButtonForTesting());
-
-  eche_tray()->PurgeAndClose();
-  EXPECT_FALSE(eche_tray()->is_active());
-  EXPECT_FALSE(eche_tray()->GetArrowBackButtonForTesting());
-  EXPECT_FALSE(eche_tray()->GetMinimizeButtonForTesting());
-  EXPECT_FALSE(eche_tray()->GetCloseButtonForTesting());
-
-  eche_tray()->OnThemeChanged();
-  EXPECT_FALSE(eche_tray()->is_active());
-  EXPECT_FALSE(eche_tray()->GetArrowBackButtonForTesting());
-  EXPECT_FALSE(eche_tray()->GetMinimizeButtonForTesting());
-  EXPECT_FALSE(eche_tray()->GetCloseButtonForTesting());
 }
 
 }  // namespace ash

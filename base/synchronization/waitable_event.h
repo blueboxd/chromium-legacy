@@ -22,7 +22,7 @@
 #include "base/apple/scoped_mach_port.h"
 #include "base/functional/callback.h"
 #include "base/functional/callback_forward.h"
-#include "base/mac/scoped_mach_port.h"
+#include "base/apple/scoped_mach_port.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
 #elif BUILDFLAG(IS_POSIX) || BUILDFLAG(IS_FUCHSIA)
@@ -231,7 +231,7 @@ class BASE_EXPORT WaitableEvent {
     friend class RefCountedThreadSafe<ReceiveRight>;
     ~ReceiveRight();
 
-    mac::ScopedMachReceiveRight right_;
+    apple::ScopedMachReceiveRight right_;
 
     // This is allocated iff UseSlowWatchList() is true. It is created on the
     // heap to avoid performing initialization when not using the slow path.

@@ -62,7 +62,6 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.chrome.browser.tasks.ReturnToChromeUtil;
 import org.chromium.chrome.browser.tasks.pseudotab.PseudoTab;
-import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
 import org.chromium.chrome.browser.tasks.tab_management.TabListCoordinator.TabListMode;
 import org.chromium.chrome.browser.tasks.tab_management.TabManagementDelegate.TabSwitcherType;
 import org.chromium.chrome.browser.tasks.tab_management.TabSwitcher.TabSwitcherViewObserver;
@@ -380,11 +379,6 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
                 }
                 if (mIsSelectingInTabSwitcher) {
                     mIsSelectingInTabSwitcher = false;
-                    TabModelFilter modelFilter = mTabModelSelector.getTabModelFilterProvider()
-                                                         .getCurrentTabModelFilter();
-                    if (modelFilter instanceof TabGroupModelFilter) {
-                        ((TabGroupModelFilter) modelFilter).recordSessionsCount(tab);
-                    }
 
                     // Use TabSelectionType.From_USER to filter the new tab creation case.
                     if (type == TabSelectionType.FROM_USER) recordUserSwitchedTab(tab, lastId);
@@ -693,8 +687,7 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
                 RecordUserAction.record("MobileTabSwitched");
             }
             // Only log when you switch a tab page directly from tab switcher.
-            if (!TabUiFeatureUtilities.isTabGroupsAndroidEnabled(mContext)
-                    || getRelatedTabs(tab.getId()).size() == 1) {
+            if (getRelatedTabs(tab.getId()).size() == 1) {
                 RecordUserAction.record(
                         "MobileTabSwitched." + TabSwitcherCoordinator.COMPONENT_NAME);
             }
@@ -838,9 +831,7 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
     public void finishedShowing() {
         mIsTabSwitcherShowing = true;
 
-        if (TabUiFeatureUtilities.isTabGroupsAndroidContinuationEnabled(mContext)) {
-            requestAccessibilityFocusOnCurrentTab();
-        }
+        requestAccessibilityFocusOnCurrentTab();
 
         for (TabSwitcherViewObserver observer : mObservers) {
             observer.finishedShowing();
@@ -1167,8 +1158,7 @@ class TabSwitcherMediator implements TabSwitcher.Controller, TabListRecyclerView
     }
 
     private boolean ableToOpenDialog(Tab tab) {
-        return TabUiFeatureUtilities.isTabGroupsAndroidEnabled(mContext)
-                && mTabModelSelector.isIncognitoSelected() == tab.isIncognito()
+        return mTabModelSelector.isIncognitoSelected() == tab.isIncognito()
                 && getRelatedTabs(tab.getId()).size() != 1;
     }
 

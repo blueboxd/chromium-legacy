@@ -293,6 +293,9 @@ id<GREYAction> grey_longPressWithDuration(base::TimeDelta duration);
 // server.
 - (void)waitForSyncInvalidationFields;
 
+// Returns whether UserSelectableType::kHistory is among the selected types.
+- (BOOL)isSyncHistoryDataTypeSelected;
+
 #pragma mark - Tab Utilities (EG2)
 
 // Opens a new tab and waits for the new tab animation to complete within a
@@ -691,6 +694,9 @@ id<GREYAction> grey_longPressWithDuration(base::TimeDelta duration);
 
 // Returns YES if the SyncEnableHistoryDataType feature is enabled.
 - (BOOL)isSyncHistoryDataTypeEnabled [[nodiscard]];
+
+// Returns YES if the ReplaceSyncPromosWithSignInPromos feature is enabled.
+- (BOOL)isReplaceSyncWithSigninEnabled [[nodiscard]];
 
 // Returns YES if the `launchSwitch` is found in host app launch switches.
 - (BOOL)appHasLaunchSwitch:(const std::string&)launchSwitch;

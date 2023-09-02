@@ -5,7 +5,7 @@
 #include "chrome/browser/enterprise/idle/idle_service_factory.h"
 
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/pref_names.h"
+#include "components/enterprise/idle/idle_pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 
 namespace enterprise_idle {
@@ -30,9 +30,10 @@ IdleServiceFactory::IdleServiceFactory()
           ProfileSelections::BuildForRegularProfile()) {}
 
 // BrowserContextKeyedServiceFactory:
-KeyedService* IdleServiceFactory::BuildServiceInstanceFor(
+std::unique_ptr<KeyedService>
+IdleServiceFactory::BuildServiceInstanceForBrowserContext(
     content::BrowserContext* context) const {
-  return new IdleService(Profile::FromBrowserContext(context));
+  return std::make_unique<IdleService>(Profile::FromBrowserContext(context));
 }
 
 void IdleServiceFactory::RegisterProfilePrefs(

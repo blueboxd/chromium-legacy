@@ -14,6 +14,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/device_service.h"
 #include "content/public/browser/permission_controller.h"
+#include "content/public/browser/permission_request_description.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "third_party/blink/public/common/permissions/permission_utils.h"
@@ -59,23 +60,14 @@ void SensorProviderProxyImpl::GetSensor(SensorType type,
     return;
   }
 
-  if (!sensor_provider_) {
-    auto receiver = sensor_provider_.BindNewPipeAndPassReceiver();
-    sensor_provider_.set_disconnect_handler(base::BindOnce(
-        &SensorProviderProxyImpl::OnConnectionError, base::Unretained(this)));
-
-    const auto& binder = GetBinderOverride();
-    if (binder)
-      binder.Run(std::move(receiver));
-    else
-      GetDeviceService().BindSensorProvider(std::move(receiver));
-  }
+  BindToDeviceServiceIfNeeded();
 
   render_frame_host()
       .GetBrowserContext()
       ->GetPermissionController()
       ->RequestPermissionFromCurrentDocument(
-          blink::PermissionType::SENSORS, &render_frame_host(), false,
+          &render_frame_host(),
+          PermissionRequestDescription(blink::PermissionType::SENSORS),
           base::BindOnce(&SensorProviderProxyImpl::OnPermissionRequestCompleted,
                          weak_factory_.GetWeakPtr(), type,
                          std::move(callback)));
@@ -155,6 +147,23 @@ void SensorProviderProxyImpl::OnConnectionError() {
   // GetSensorCallbacks will never be called.
   receiver_set_.Clear();
   sensor_provider_.reset();
+}
+
+void SensorProviderProxyImpl::BindToDeviceServiceIfNeeded() {
+  if (sensor_provider_) {
+    return;
+  }
+
+  auto receiver = sensor_provider_.BindNewPipeAndPassReceiver();
+  sensor_provider_.set_disconnect_handler(base::BindOnce(
+      &SensorProviderProxyImpl::OnConnectionError, base::Unretained(this)));
+
+  const auto& binder = GetBinderOverride();
+  if (binder) {
+    binder.Run(std::move(receiver));
+  } else {
+    GetDeviceService().BindSensorProvider(std::move(receiver));
+  }
 }
 
 DOCUMENT_USER_DATA_KEY_IMPL(SensorProviderProxyImpl);

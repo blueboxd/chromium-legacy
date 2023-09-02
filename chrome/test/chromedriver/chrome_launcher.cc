@@ -137,16 +137,7 @@ Status PrepareDesktopCommandLine(const Capabilities& capabilities,
                            program.value().c_str()));
   }
   base::CommandLine command(program);
-  Switches switches;
-
-  for (auto* common_switch : kCommonSwitches)
-    switches.SetUnparsedSwitch(common_switch);
-  for (auto* desktop_switch : kDesktopSwitches)
-    switches.SetUnparsedSwitch(desktop_switch);
-#if BUILDFLAG(IS_WIN)
-  for (auto* win_desktop_switch : kWindowsDesktopSwitches)
-    switches.SetUnparsedSwitch(win_desktop_switch);
-#endif
+  Switches switches = GetDesktopSwitches();
 
   // Chrome logs are normally sent to a file (whose location can be controlled
   // via the logPath capability). We expose a flag, --enable-chrome-logs, that
@@ -172,13 +163,26 @@ Status PrepareDesktopCommandLine(const Capabilities& capabilities,
     switches.RemoveSwitch(excluded_switch);
   }
   switches.SetFromSwitches(capabilities.switches);
+  // There are two special cases concerning the choice of the transport layer
+  // between ChromeDriver and Chrome:
+  // * Neither 'remote-debugging-port' nor 'remote-debugging-pipe'is provided.
+  // * Both 'remote-debugging-port' and 'remote-debugging-pipe' are provided.
+  // They are treated as 'up to ChromeDriver to choose the transport layer'.
+  // Due to historical reasons their contract must be:
+  // * 'debuggerAddress' returned to the user must contain an HTTP endpoint
+  //    of the form 'ip:port' and behaving as the browser endpoint for handling
+  //    of http requests like /json/version.
+  // This contract is relied upon by Selenium for CDP based BiDi until its
+  // support is discontinued.
+  // For now we are opting to 'remote-debugging-port' as the easiest solution
+  // satisfying this requirement.
+  if (switches.HasSwitch("remote-debugging-port") &&
+      switches.HasSwitch("remote-debugging-pipe")) {
+    switches.RemoveSwitch("remote-debugging-pipe");
+  }
   if (!switches.HasSwitch("remote-debugging-port") &&
       !switches.HasSwitch("remote-debugging-pipe")) {
-    if (PipeBuilder::PlatformIsSupported()) {
-      switches.SetSwitch("remote-debugging-pipe");
-    } else {
-      switches.SetSwitch("remote-debugging-port", "0");
-    }
+    switches.SetSwitch("remote-debugging-port", "0");
   }
   if (capabilities.exclude_switches.count("user-data-dir") > 0) {
     LOG(WARNING) << "excluding user-data-dir switch is not supported";
@@ -884,6 +888,22 @@ Status LaunchReplayChrome(network::mojom::URLLoaderFactory* factory,
 }
 
 }  // namespace
+
+Switches GetDesktopSwitches() {
+  Switches switches;
+  for (auto* common_switch : kCommonSwitches) {
+    switches.SetUnparsedSwitch(common_switch);
+  }
+  for (auto* desktop_switch : kDesktopSwitches) {
+    switches.SetUnparsedSwitch(desktop_switch);
+  }
+#if BUILDFLAG(IS_WIN)
+  for (auto* win_desktop_switch : kWindowsDesktopSwitches) {
+    switches.SetUnparsedSwitch(win_desktop_switch);
+  }
+#endif
+  return switches;
+}
 
 Status LaunchChrome(network::mojom::URLLoaderFactory* factory,
                     const SyncWebSocketFactory& socket_factory,

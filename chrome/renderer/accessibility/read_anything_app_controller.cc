@@ -457,7 +457,8 @@ void ReadAnythingAppController::Distill() {
       model_.GetTreeFromId(model_.active_tree_id()).get();
   std::unique_ptr<ui::AXTreeSource<const ui::AXNode*>> tree_source(
       tree->CreateTreeSource());
-  ui::AXTreeSerializer<const ui::AXNode*> serializer(tree_source.get());
+  ui::AXTreeSerializer<const ui::AXNode*, std::vector<const ui::AXNode*>>
+      serializer(tree_source.get());
   ui::AXTreeUpdate snapshot;
   CHECK(serializer.SerializeChanges(tree->root(), &snapshot));
   model_.SetDistillationInProgress(true);
@@ -566,6 +567,20 @@ void ReadAnythingAppController::OnThemeChanged(ReadAnythingThemePtr new_theme) {
   render_frame_->ExecuteJavaScript(base::ASCIIToUTF16(script));
 }
 
+void ReadAnythingAppController::OnSettingsRestoredFromPrefs(
+    read_anything::mojom::LineSpacing line_spacing,
+    read_anything::mojom::LetterSpacing letter_spacing,
+    const std::string& font,
+    double font_size,
+    read_anything::mojom::Colors color) {
+  model_.OnSettingsRestoredFromPrefs(line_spacing, letter_spacing, font,
+                                     font_size, color);
+  // TODO(abigailbklein): Use v8::Function rather than javascript. If possible,
+  // replace this function call with firing an event.
+  std::string script = "chrome.readingMode.restoreSettingsFromPrefs();";
+  render_frame_->ExecuteJavaScript(base::ASCIIToUTF16(script));
+}
+
 #if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
 void ReadAnythingAppController::ScreenAIServiceReady() {
   distiller_->ScreenAIServiceReady();
@@ -601,8 +616,16 @@ gin::ObjectTemplateBuilder ReadAnythingAppController::GetObjectTemplateBuilder(
                    &ReadAnythingAppController::WideLetterSpacing)
       .SetProperty("veryWideLetterSpacing",
                    &ReadAnythingAppController::VeryWideLetterSpacing)
+      .SetProperty("colorTheme", &ReadAnythingAppController::ColorTheme)
+      .SetProperty("defaultTheme", &ReadAnythingAppController::DefaultTheme)
+      .SetProperty("lightTheme", &ReadAnythingAppController::LightTheme)
+      .SetProperty("darkTheme", &ReadAnythingAppController::DarkTheme)
+      .SetProperty("yellowTheme", &ReadAnythingAppController::YellowTheme)
+      .SetProperty("blueTheme", &ReadAnythingAppController::BlueTheme)
       .SetProperty("isWebUIToolbarVisible",
                    &ReadAnythingAppController::IsWebUIToolbarEnabled)
+      .SetProperty("isReadAloudEnabled",
+                   &ReadAnythingAppController::isReadAloudEnabled)
       .SetProperty("isSelectable", &ReadAnythingAppController::IsSelectable)
       .SetMethod("getChildren", &ReadAnythingAppController::GetChildren)
       .SetMethod("getTextDirection",
@@ -617,6 +640,7 @@ gin::ObjectTemplateBuilder ReadAnythingAppController::GetObjectTemplateBuilder(
       .SetMethod("onCopy", &ReadAnythingAppController::OnCopy)
       .SetMethod("onFontSizeChanged",
                  &ReadAnythingAppController::OnFontSizeChanged)
+      .SetMethod("onFontSizeReset", &ReadAnythingAppController::OnFontSizeReset)
       .SetMethod("onScroll", &ReadAnythingAppController::OnScroll)
       .SetMethod("onLinkClicked", &ReadAnythingAppController::OnLinkClicked)
       .SetMethod("onStandardLineSpacing",
@@ -643,6 +667,8 @@ gin::ObjectTemplateBuilder ReadAnythingAppController::GetObjectTemplateBuilder(
                  &ReadAnythingAppController::GetLetterSpacingValue)
       .SetMethod("onSelectionChange",
                  &ReadAnythingAppController::OnSelectionChange)
+      .SetMethod("onCollapseSelection",
+                 &ReadAnythingAppController::OnCollapseSelection)
       .SetMethod("setContentForTesting",
                  &ReadAnythingAppController::SetContentForTesting)
       .SetMethod("setThemeForTesting",
@@ -695,28 +721,52 @@ float ReadAnythingAppController::LineSpacing() const {
   return model_.line_spacing();
 }
 
-int ReadAnythingAppController::StandardLineSpacing() {
+int ReadAnythingAppController::ColorTheme() const {
+  return model_.color_theme();
+}
+
+int ReadAnythingAppController::StandardLineSpacing() const {
   return static_cast<int>(read_anything::mojom::LineSpacing::kStandard);
 }
 
-int ReadAnythingAppController::LooseLineSpacing() {
+int ReadAnythingAppController::LooseLineSpacing() const {
   return static_cast<int>(read_anything::mojom::LineSpacing::kLoose);
 }
 
-int ReadAnythingAppController::VeryLooseLineSpacing() {
+int ReadAnythingAppController::VeryLooseLineSpacing() const {
   return static_cast<int>(read_anything::mojom::LineSpacing::kVeryLoose);
 }
 
-int ReadAnythingAppController::StandardLetterSpacing() {
+int ReadAnythingAppController::StandardLetterSpacing() const {
   return static_cast<int>(read_anything::mojom::LetterSpacing::kStandard);
 }
 
-int ReadAnythingAppController::WideLetterSpacing() {
+int ReadAnythingAppController::WideLetterSpacing() const {
   return static_cast<int>(read_anything::mojom::LetterSpacing::kWide);
 }
 
-int ReadAnythingAppController::VeryWideLetterSpacing() {
+int ReadAnythingAppController::VeryWideLetterSpacing() const {
   return static_cast<int>(read_anything::mojom::LetterSpacing::kVeryWide);
+}
+
+int ReadAnythingAppController::DefaultTheme() const {
+  return static_cast<int>(read_anything::mojom::Colors::kDefault);
+}
+
+int ReadAnythingAppController::LightTheme() const {
+  return static_cast<int>(read_anything::mojom::Colors::kLight);
+}
+
+int ReadAnythingAppController::DarkTheme() const {
+  return static_cast<int>(read_anything::mojom::Colors::kDark);
+}
+
+int ReadAnythingAppController::YellowTheme() const {
+  return static_cast<int>(read_anything::mojom::Colors::kYellow);
+}
+
+int ReadAnythingAppController::BlueTheme() const {
+  return static_cast<int>(read_anything::mojom::Colors::kBlue);
 }
 
 std::vector<ui::AXNodeID> ReadAnythingAppController::GetChildren(
@@ -832,6 +882,10 @@ bool ReadAnythingAppController::IsWebUIToolbarEnabled() const {
   return features::IsReadAnythingWebUIToolbarEnabled();
 }
 
+bool ReadAnythingAppController::isReadAloudEnabled() const {
+  return features::IsReadAnythingReadAloudEnabled();
+}
+
 void ReadAnythingAppController::OnConnected() {
   mojo::PendingReceiver<read_anything::mojom::UntrustedPageHandlerFactory>
       page_handler_factory_receiver =
@@ -854,7 +908,12 @@ void ReadAnythingAppController::OnFontSizeChanged(bool increase) {
     model_.DecreaseTextSize();
   }
 
-  // TODO(crbug.com/1465029) save font size prefs
+  page_handler_->OnFontSizeChange(model_.font_size());
+}
+
+void ReadAnythingAppController::OnFontSizeReset() {
+  model_.ResetTextSize();
+  page_handler_->OnFontSizeChange(model_.font_size());
 }
 
 void ReadAnythingAppController::OnScroll(bool on_selection) const {
@@ -919,7 +978,7 @@ void ReadAnythingAppController::OnYellowTheme() {
 }
 
 void ReadAnythingAppController::OnBlueTheme() {
-  page_handler_->OnColorChange(read_anything::mojom::Colors::kYellow);
+  page_handler_->OnColorChange(read_anything::mojom::Colors::kBlue);
 }
 
 void ReadAnythingAppController::OnFontChange(const std::string& font) {
@@ -965,8 +1024,10 @@ void ReadAnythingAppController::OnSelectionChange(ui::AXNodeID anchor_node_id,
   // Ignore the new selection if it's collapsed, which is created by a simple
   // click, unless there was a previous selection, in which case the click
   // clears the selection, so we should tell the main page to clear too.
-  if ((anchor_offset == focus_offset) && (anchor_node_id == focus_node_id) &&
-      !model_.has_selection()) {
+  if ((anchor_offset == focus_offset) && (anchor_node_id == focus_node_id)) {
+    if (model_.has_selection()) {
+      OnCollapseSelection();
+    }
     return;
   }
 
@@ -1001,6 +1062,10 @@ void ReadAnythingAppController::OnSelectionChange(ui::AXNodeID anchor_node_id,
 
   page_handler_->OnSelectionChange(model_.active_tree_id(), anchor_node_id,
                                    anchor_offset, focus_node_id, focus_offset);
+}
+
+void ReadAnythingAppController::OnCollapseSelection() const {
+  page_handler_->OnCollapseSelection();
 }
 
 // TODO(crbug.com/1266555): Change line_spacing and letter_spacing types from

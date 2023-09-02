@@ -6,8 +6,8 @@
 #include <memory>
 #include <utility>
 
-#include "base/allocator/partition_allocator/pointers/raw_ptr.h"
 #include "base/location.h"
+#include "base/memory/raw_ptr.h"
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_future.h"
@@ -76,6 +76,20 @@ class TelemetryExtensionEventsApiBrowserTest
 #endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
   }
 
+  void TearDownOnMainThread() override {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+    fake_events_service_impl_ = nullptr;
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+    if (IsCloseAndWaitAshBrowserWindowApisSupported()) {
+      // Since one of tests opens browser window UI in Ash, it should close the
+      // UI so that it won't pollute other tests running against the shared Ash.
+      CloseAllAshBrowserWindows();
+    }
+#endif
+    BaseTelemetryExtensionBrowserTest::TearDownOnMainThread();
+  }
+
  protected:
   FakeEventsService* GetFakeService() {
     return fake_events_service_impl_.get();
@@ -86,8 +100,7 @@ class TelemetryExtensionEventsApiBrowserTest
   // SAFETY: This pointer is owned in a unique_ptr by the EventManager. Since
   // the EventManager lives longer than this test, it is always safe to access
   // the fake in the test body.
-  raw_ptr<FakeEventsService, base::RawPtrTraits::kMayDangle>
-      fake_events_service_impl_;
+  raw_ptr<FakeEventsService> fake_events_service_impl_;
   FakeEventsServiceFactory fake_events_service_factory_;
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -424,6 +437,13 @@ IN_PROC_BROWSER_TEST_F(TelemetryExtensionEventsApiBrowserTest,
       }
     ]);
   )");
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  if (IsCloseAndWaitAshBrowserWindowApisSupported()) {
+    // This test opens a browser window UI in Ash.
+    WaitUntilAtLeastOneAshBrowserWindowOpen();
+  }
+#endif
 }
 
 IN_PROC_BROWSER_TEST_F(TelemetryExtensionEventsApiBrowserTest,
@@ -650,6 +670,49 @@ IN_PROC_BROWSER_TEST_F(TelemetryExtensionEventsApiBrowserTest,
         });
 
         await chrome.os.events.startCapturingEvents("touchpad_connected");
+      }
+    ]);
+  )");
+}
+
+IN_PROC_BROWSER_TEST_F(TelemetryExtensionEventsApiBrowserTest,
+                       CheckTouchscreenTouchEventApiWithoutFeatureFlagFail) {
+  OpenAppUiAndMakeItSecure();
+
+  CreateExtensionAndRunServiceWorker(R"(
+    chrome.test.runTests([
+      function touchscreenTouchEventNotWorking() {
+        chrome.test.assertThrows(() => {
+          chrome.os.events.onTouchscreenTouchEvent.addListener((event) => {
+            // unreachable.
+          });
+        }, [],
+          'Cannot read properties of undefined (reading \'addListener\')'
+        );
+
+        chrome.test.succeed();
+      }
+    ]);
+  )");
+}
+
+IN_PROC_BROWSER_TEST_F(
+    TelemetryExtensionEventsApiBrowserTest,
+    CheckTouchscreenConnectedEventApiWithoutFeatureFlagFail) {
+  OpenAppUiAndMakeItSecure();
+
+  CreateExtensionAndRunServiceWorker(R"(
+    chrome.test.runTests([
+      function touchscreenConnectedEventNotWorking() {
+        chrome.test.assertThrows(() => {
+          chrome.os.events.onTouchscreenConnectedEvent.addListener((event) => {
+            // unreachable.
+          });
+        }, [],
+          'Cannot read properties of undefined (reading \'addListener\')'
+        );
+
+        chrome.test.succeed();
       }
     ]);
   )");
@@ -893,6 +956,90 @@ IN_PROC_BROWSER_TEST_F(PendingApprovalTelemetryExtensionEventsApiBrowserTest,
 
   EXPECT_TRUE(is_diagnostic_app_open);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+}
+
+IN_PROC_BROWSER_TEST_F(PendingApprovalTelemetryExtensionEventsApiBrowserTest,
+                       CheckTouchscreenTouchEventApiWithFeatureFlagWork) {
+  OpenAppUiAndMakeItSecure();
+
+  GetFakeService()->SetOnSubscriptionChange(
+      base::BindLambdaForTesting([this]() {
+        std::vector<crosapi::TelemetryTouchPointInfoPtr> touch_points;
+        touch_points.push_back(crosapi::TelemetryTouchPointInfo::New(
+            1, 2, 3, crosapi::UInt32Value::New(4), crosapi::UInt32Value::New(5),
+            crosapi::UInt32Value::New(6)));
+        touch_points.push_back(crosapi::TelemetryTouchPointInfo::New(
+            7, 8, 9, nullptr, nullptr, nullptr));
+
+        auto touch_event = crosapi::TelemetryTouchscreenTouchEventInfo::New(
+            std::move(touch_points));
+
+        GetFakeService()->EmitEventForCategory(
+            crosapi::TelemetryEventCategoryEnum::kTouchscreenTouch,
+            crosapi::TelemetryEventInfo::NewTouchscreenTouchEventInfo(
+                std::move(touch_event)));
+      }));
+
+  CreateExtensionAndRunServiceWorker(R"(
+    chrome.test.runTests([
+      async function startCapturingEvents() {
+        chrome.os.events.onTouchscreenTouchEvent.addListener((event) => {
+          chrome.test.assertEq(event, {
+            touchPoints: [{
+              trackingId: 1,
+              x: 2,
+              y: 3,
+              pressure: 4,
+              touchMajor: 5,
+              touchMinor: 6
+            },{
+              trackingId: 7,
+              x: 8,
+              y: 9,
+            }]
+          });
+
+          chrome.test.succeed();
+        });
+
+        await chrome.os.events.startCapturingEvents("touchscreen_touch");
+      }
+    ]);
+  )");
+}
+
+IN_PROC_BROWSER_TEST_F(PendingApprovalTelemetryExtensionEventsApiBrowserTest,
+                       CheckTouchscreenConnectedEventApiWithFeatureFlagWork) {
+  OpenAppUiAndMakeItSecure();
+
+  GetFakeService()->SetOnSubscriptionChange(
+      base::BindLambdaForTesting([this]() {
+        auto connected_event =
+            crosapi::TelemetryTouchscreenConnectedEventInfo::New(1, 2, 3);
+
+        GetFakeService()->EmitEventForCategory(
+            crosapi::TelemetryEventCategoryEnum::kTouchscreenConnected,
+            crosapi::TelemetryEventInfo::NewTouchscreenConnectedEventInfo(
+                std::move(connected_event)));
+      }));
+
+  CreateExtensionAndRunServiceWorker(R"(
+    chrome.test.runTests([
+      async function startCapturingEvents() {
+        chrome.os.events.onTouchscreenConnectedEvent.addListener((event) => {
+          chrome.test.assertEq(event, {
+            maxX: 1,
+            maxY: 2,
+            maxPressure: 3
+          });
+
+          chrome.test.succeed();
+        });
+
+        await chrome.os.events.startCapturingEvents("touchscreen_connected");
+      }
+    ]);
+  )");
 }
 
 }  // namespace chromeos

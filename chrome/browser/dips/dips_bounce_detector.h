@@ -9,7 +9,6 @@
 #include <string>
 #include <variant>
 
-#include "base/allocator/partition_allocator/pointers/raw_ptr.h"
 #include "base/functional/callback.h"
 #include "base/memory/raw_ptr.h"
 #include "base/timer/timer.h"
@@ -123,14 +122,8 @@ class DIPSRedirectContext {
     return redirects_.size() + redirect_prefix_count_;
   }
 
-  int GetRedirectChainIndex(const std::string& site) const {
-    for (size_t ind = 0; ind < redirects_.size(); ind++) {
-      if (GetSiteForDIPS(redirects_.at(ind)->url) == site) {
-        return ind;
-      }
-    }
-    return -1;
-  }
+  absl::optional<std::pair<size_t, DIPSRedirectInfo*>> GetRedirectInfoFromChain(
+      const std::string& site) const;
 
  private:
   void AppendClientRedirect(DIPSRedirectInfoPtr client_redirect);
@@ -331,10 +324,11 @@ class DIPSWebContentsObserver
   // applies when the tracking site has appeared previously in the current
   // redirect context.
   void MaybeRecordRedirectHeuristic(
-      const ukm::SourceId& source_id,
+      const ukm::SourceId& first_party_source_id,
       const content::CookieAccessDetails& details);
   void RecordRedirectHeuristic(
-      const ukm::SourceId& source_id,
+      const ukm::SourceId& first_party_source_id,
+      const ukm::SourceId& third_party_source_id,
       const content::CookieAccessDetails& details,
       const size_t sites_passed_count,
       absl::optional<base::Time> last_user_interaction_time);

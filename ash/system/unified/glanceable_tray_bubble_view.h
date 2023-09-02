@@ -5,20 +5,28 @@
 #ifndef ASH_SYSTEM_UNIFIED_GLANCEABLE_TRAY_BUBBLE_VIEW_H_
 #define ASH_SYSTEM_UNIFIED_GLANCEABLE_TRAY_BUBBLE_VIEW_H_
 
+#include "ash/system/screen_layout_observer.h"
 #include "ash/system/tray/tray_bubble_view.h"
 #include "base/memory/weak_ptr.h"
+
+namespace ui {
+template <class ItemType>
+class ListModel;
+}
 
 namespace ash {
 class CalendarView;
 class ClassroomBubbleStudentView;
 class ClassroomBubbleTeacherView;
 class DetailedViewDelegate;
+struct GlanceablesTaskList;
 class TasksBubbleView;
 class Shelf;
 
 // The bubble associated with the `GlanceableTrayBubble`. This bubble is the
 // container for the child `tasks` and `classroom` glanceables.
-class GlanceableTrayBubbleView : public TrayBubbleView {
+class GlanceableTrayBubbleView : public TrayBubbleView,
+                                 public ScreenLayoutObserver {
  public:
   GlanceableTrayBubbleView(const InitParams& init_params, Shelf* shelf);
   GlanceableTrayBubbleView(const GlanceableTrayBubbleView&) = delete;
@@ -37,7 +45,11 @@ class GlanceableTrayBubbleView : public TrayBubbleView {
   CalendarView* GetCalendarView() { return calendar_view_; }
 
   // TrayBubbleView:
-  bool CanActivate() const override;
+  void AddedToWidget() override;
+  void OnWidgetClosing(views::Widget* widget) override;
+
+  // ScreenLayoutObserver:
+  void OnDisplayConfigurationChanged() override;
 
  private:
   // Creates classroom student or teacher view if needed (if the corresponding
@@ -47,12 +59,17 @@ class GlanceableTrayBubbleView : public TrayBubbleView {
   template <typename T>
   void AddClassroomBubbleViewIfNeeded(raw_ptr<T, ExperimentalAsh>* view,
                                       bool is_role_active);
+  void AddTaskBubbleViewIfNeeded(
+      ui::ListModel<GlanceablesTaskList>* task_lists);
 
   void OnGlanceablesContainerPreferredSizeChanged();
   void OnGlanceablesContainerHeightChanged(int height_delta);
 
   const raw_ptr<Shelf, ExperimentalAsh> shelf_;
   const std::unique_ptr<DetailedViewDelegate> detailed_view_delegate_;
+
+  // Whether the bubble view has been initialized.
+  bool initialized_ = false;
 
   // A scrollable view which contains the individual glanceables.
   raw_ptr<views::ScrollView, ExperimentalAsh> scroll_view_ = nullptr;

@@ -35,13 +35,12 @@ import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.browser.browserservices.TrustedWebActivityClient;
 import org.chromium.url.GURL;
 import org.chromium.url.JUnitTestGURLs;
-import org.chromium.url.ShadowGURL;
 
 /**
  * Tests for {@link InstalledWebappGeolocationBridge}.
  */
 @RunWith(BaseRobolectricTestRunner.class)
-@Config(manifest = Config.NONE, shadows = {ShadowGURL.class})
+@Config(manifest = Config.NONE)
 @LooperMode(LooperMode.Mode.LEGACY)
 public class InstalledWebappGeolocationBridgeTest {
     private static final long NATIVE_POINTER = 12;
@@ -66,8 +65,8 @@ public class InstalledWebappGeolocationBridgeTest {
         MockitoAnnotations.initMocks(this);
         mocker.mock(InstalledWebappGeolocationBridgeJni.TEST_HOOKS, mNativeMock);
 
-        mScope = new GURL(JUnitTestGURLs.URL_1);
-        mOtherScope = new GURL(JUnitTestGURLs.URL_2);
+        mScope = JUnitTestGURLs.URL_1;
+        mOtherScope = JUnitTestGURLs.URL_2;
 
         mGeolocation = new InstalledWebappGeolocationBridge(
                 NATIVE_POINTER, mScope, mTrustedWebActivityClient);

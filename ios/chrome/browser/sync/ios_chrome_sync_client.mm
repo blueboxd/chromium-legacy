@@ -36,14 +36,15 @@
 #import "components/sync_user_events/user_event_service.h"
 #import "components/trusted_vault/trusted_vault_service.h"
 #import "components/variations/service/google_groups_updater_service.h"
-#import "ios/chrome/browser/bookmarks/account_bookmark_sync_service_factory.h"
-#import "ios/chrome/browser/bookmarks/local_or_syncable_bookmark_sync_service_factory.h"
+#import "ios/chrome/browser/bookmarks/model/account_bookmark_sync_service_factory.h"
+#import "ios/chrome/browser/bookmarks/model/local_or_syncable_bookmark_sync_service_factory.h"
 #import "ios/chrome/browser/consent_auditor/consent_auditor_factory.h"
 #import "ios/chrome/browser/dom_distiller/dom_distiller_service_factory.h"
 #import "ios/chrome/browser/favicon/favicon_service_factory.h"
 #import "ios/chrome/browser/history/history_service_factory.h"
 #import "ios/chrome/browser/metrics/google_groups_updater_service_factory.h"
 #import "ios/chrome/browser/passwords/ios_chrome_account_password_store_factory.h"
+#import "ios/chrome/browser/passwords/ios_chrome_password_sender_service_factory.h"
 #import "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
 #import "ios/chrome/browser/power_bookmarks/power_bookmark_service_factory.h"
 #import "ios/chrome/browser/reading_list/reading_list_model_factory.h"
@@ -178,8 +179,8 @@ IOSChromeSyncClient::GetPasswordReceiverService() {
 password_manager::PasswordSenderService*
 IOSChromeSyncClient::GetPasswordSenderService() {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
-  // TODO(crbug.com/1445868): return the service once there is a factory.
-  return nullptr;
+  return IOSChromePasswordSenderServiceFactory::GetForBrowserState(
+      browser_state_);
 }
 
 syncer::DataTypeController::TypeVector

@@ -409,7 +409,9 @@ void SingleEntryPropertiesGetterForDriveFs::OnGetFileInfo(
   properties_->hosted = drivefs::IsHosted(metadata->type);
 
   properties_->available_offline =
-      metadata->available_offline || *properties_->hosted;
+      metadata->available_offline ||
+      drive::util::IsEncryptedMimeType(metadata->content_mime_type) ||
+      *properties_->hosted;
   properties_->available_when_metered =
       metadata->available_offline || *properties_->hosted;
   properties_->pinned = metadata->pinned;
@@ -747,7 +749,7 @@ drive::EventLogger* GetLogger(Profile* profile) {
   }
   drive::DriveIntegrationService* service =
       drive::DriveIntegrationServiceFactory::FindForProfile(profile);
-  return service ? service->event_logger() : nullptr;
+  return service ? service->GetLogger() : nullptr;
 }
 
 std::vector<fmp::MountableGuest> CreateMountableGuestList(Profile* profile) {
@@ -807,6 +809,7 @@ fmp::BulkPinProgress BulkPinProgressToJs(
   result.bytes_to_pin = progress.bytes_to_pin;
   result.pinned_bytes = progress.pinned_bytes;
   result.files_to_pin = progress.files_to_pin;
+  result.listed_files = progress.listed_files;
   result.remaining_seconds = !progress.remaining_time.is_inf()
                                  ? progress.remaining_time.InSecondsF()
                                  : 0;

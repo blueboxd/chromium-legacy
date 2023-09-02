@@ -69,11 +69,6 @@ bool WebAppSourceSupported(const WebApp& web_app) {
   return true;
 }
 
-bool DoScopePrefixesMatch(const GURL& scope1, const GURL& scope2) {
-  return base::StartsWith(scope1.spec(), scope2.spec()) ||
-         base::StartsWith(scope2.spec(), scope1.spec());
-}
-
 }  // namespace
 
 WebAppRegistrar::WebAppRegistrar(Profile* profile) : profile_(profile) {}
@@ -320,11 +315,6 @@ GURL WebAppRegistrar::GetAppScope(const AppId& app_id) const {
 
 size_t WebAppRegistrar::GetAppExtendedScopeScore(const GURL& url,
                                                  const AppId& app_id) const {
-  if (!base::FeatureList::IsEnabled(
-          blink::features::kWebAppEnableScopeExtensions)) {
-    return 0;
-  }
-
   if (!url.is_valid()) {
     return 0;
   }
@@ -332,6 +322,16 @@ size_t WebAppRegistrar::GetAppExtendedScopeScore(const GURL& url,
   size_t app_scope = GetUrlInAppScopeScore(url.spec(), app_id);
   if (app_scope > 0) {
     return app_scope;
+  }
+
+  if (!base::FeatureList::IsEnabled(
+          blink::features::kWebAppEnableScopeExtensions)) {
+    return 0;
+  }
+
+  const WebApp* app = GetAppById(app_id);
+  if (!app || app->validated_scope_extensions().empty()) {
+    return 0;
   }
 
   url::Origin origin = url::Origin::Create(url);
@@ -368,6 +368,11 @@ size_t WebAppRegistrar::GetAppExtendedScopeScore(const GURL& url,
 bool WebAppRegistrar::IsUrlInAppScope(const GURL& url,
                                       const AppId& app_id) const {
   return GetUrlInAppScopeScore(url.spec(), app_id) > 0;
+}
+
+bool WebAppRegistrar::IsUrlInAppExtendedScope(const GURL& url,
+                                              const AppId& app_id) const {
+  return GetAppExtendedScopeScore(url, app_id) > 0;
 }
 
 size_t WebAppRegistrar::GetUrlInAppScopeScore(const std::string& url_spec,
@@ -967,19 +972,48 @@ bool WebAppRegistrar::CapturesLinksInScope(const AppId& app_id) const {
   return web_app->is_user_selected_app_for_capturing_links();
 }
 
-std::vector<AppId> WebAppRegistrar::GetOverlappingAppsMatchingScopePrefix(
+absl::optional<AppId> WebAppRegistrar::FindAppThatCapturesLinksInScope(
+    const GURL& url) const {
+  // Nested apps remove that URL space from the parent app, so links from a
+  // nested app cannot be captured by a parent app. Even so, there can be
+  // multiple apps with the same score, but the only one that matters is the
+  // first one that also captures links.
+  size_t top_score = 0;
+  std::vector<AppId> top_apps;
+  for (const AppId& app_id : GetAppIds()) {
+    if (!IsLocallyInstalled(app_id)) {
+      continue;
+    }
+    // TODO(dmurph): Switch to GetAppExtendedScopeScore if the
+    // kWebAppEnableScopeExtensions feature is enabled. b/294079334
+    size_t score = GetUrlInAppScopeScore(url.spec(), app_id);
+    // A score of 0 means it doesn't apply at all.
+    if (score == 0 || score < top_score) {
+      continue;
+    }
+    if (score == top_score) {
+      top_apps.push_back(app_id);
+      continue;
+    }
+    top_score = score;
+    top_apps = {app_id};
+  }
+  if (top_apps.empty()) {
+    return absl::nullopt;
+  }
+  for (const AppId& app_id : top_apps) {
+    if (CapturesLinksInScope(app_id)) {
+      return app_id;
+    }
+  }
+  return absl::nullopt;
+}
+
+std::vector<AppId> WebAppRegistrar::GetOverlappingAppsMatchingScope(
     const AppId& app_id) const {
   std::vector<AppId> all_apps_with_supported_links;
   const GURL& required_scope = GetAppScope(app_id);
   if (!IsValidScopeForLinkCapturing(required_scope)) {
-    return all_apps_with_supported_links;
-  }
-
-  // If current app already captures links in scope, find if there are any other
-  // apps that are have been set by the user to capture links that can prefix
-  // the scope of the current app_id. If any app is not found, then there are no
-  // other apps that can support the same link.
-  if (CapturesLinksInScope(app_id) && !SharesSamePrefixedScopeAs(app_id)) {
     return all_apps_with_supported_links;
   }
 
@@ -994,11 +1028,8 @@ std::vector<AppId> WebAppRegistrar::GetOverlappingAppsMatchingScopePrefix(
       continue;
     }
 
-    // If the app has an invalid scope, or the scope prefixes do not match, do
-    // not take them into account.
-    const GURL& current_scope = GetAppScope(id);
-    if (!IsValidScopeForLinkCapturing(current_scope) ||
-        !DoScopePrefixesMatch(current_scope, required_scope)) {
+    // Filter out apps whose scopes do not match.
+    if (!AppScopesMatchForUserLinkCapturing(id, app_id)) {
       continue;
     }
 
@@ -1012,19 +1043,21 @@ std::vector<AppId> WebAppRegistrar::GetOverlappingAppsMatchingScopePrefix(
   return all_apps_with_supported_links;
 }
 
-bool WebAppRegistrar::AppScopesMatchForUserLinkCapturing(const AppId& app_id1,
-                                                         const AppId& app_id2) {
+bool WebAppRegistrar::AppScopesMatchForUserLinkCapturing(
+    const AppId& app_id1,
+    const AppId& app_id2) const {
   if (!IsLocallyInstalled(app_id1) || !IsLocallyInstalled(app_id2)) {
     return false;
   }
 
   const GURL& app_scope1 = GetAppScope(app_id1);
   const GURL& app_scope2 = GetAppScope(app_id2);
-  if (!app_scope1.is_valid() || !app_scope2.is_valid()) {
+  if (!IsValidScopeForLinkCapturing(app_scope1) ||
+      !IsValidScopeForLinkCapturing(app_scope2)) {
     return false;
   }
 
-  return DoScopePrefixesMatch(app_scope1, app_scope2);
+  return app_scope1 == app_scope2;
 }
 
 std::string WebAppRegistrar::GetAppShortName(const AppId& app_id) const {
@@ -1565,18 +1598,6 @@ std::vector<AppId> WebAppRegistrar::GetAppIdsForAppSet(
     app_ids.push_back(app.app_id());
 
   return app_ids;
-}
-
-bool WebAppRegistrar::SharesSamePrefixedScopeAs(const AppId& without_id) const {
-  for (const auto& app_id : GetAppIds()) {
-    if (app_id != without_id &&
-        base::Contains(GetAppScope(app_id).spec(),
-                       GetAppScope(without_id).spec()) &&
-        CapturesLinksInScope(app_id)) {
-      return true;
-    }
-  }
-  return false;
 }
 
 }  // namespace web_app

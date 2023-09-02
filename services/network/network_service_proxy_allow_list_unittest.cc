@@ -41,7 +41,7 @@ TEST_F(NetworkServiceProxyAllowListTest, IsEnabled) {
   NetworkServiceProxyAllowList allowList;
 
   EXPECT_TRUE(allowList.IsEnabled());
-  EXPECT_TRUE(allowList.GetCustomProxyConfig()
+  EXPECT_TRUE(allowList.MakeIpProtectionCustomProxyConfig()
                   ->rules.restrict_to_network_service_proxy_allow_list);
 }
 
@@ -59,23 +59,6 @@ TEST_F(NetworkServiceProxyAllowListTest, IsPopulated) {
 TEST_F(NetworkServiceProxyAllowListTest, IsPopulated_Empty) {
   NetworkServiceProxyAllowList allowList;
   EXPECT_FALSE(allowList.IsPopulated());
-}
-
-TEST_F(NetworkServiceProxyAllowListTest, CustomProxyConfig_Rules) {
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeaturesAndParameters(
-      {{net::features::kEnableIpProtectionProxy,
-        {{"IpPrivacyProxyServer", "test-server"}}},
-       {network::features::kMaskedDomainList, {}}},
-      {});
-
-  NetworkServiceProxyAllowList allowList;
-  mojom::CustomProxyConfigPtr proxy_config = allowList.GetCustomProxyConfig();
-
-  net::ProxyConfig::ProxyRules expected_rules;
-  expected_rules.ParseFromString("test-server,direct://");
-  expected_rules.restrict_to_network_service_proxy_allow_list = true;
-  EXPECT_TRUE(proxy_config->rules.Equals(expected_rules));
 }
 
 TEST_F(NetworkServiceProxyAllowListTest, Matches_AllowListNotPopulated) {
@@ -148,13 +131,15 @@ const std::vector<MatchTest> kMatchTests = {
     MatchTest{"1PPropHost", "bbco-pb.co.uk", "bbco-pb.co.uk", false},
     MatchTest{"1POtherHost", "somehost.com", "somehost.com", false},
 
-    // "First-party" is defined by having the same hostname, possibly with
-    // a "www" prefix.
-    // TODO: Use SchemefulSite to compare instead of stripping `www.`.
+    // "First-party" is defined as schemefully same-site.
     MatchTest{"1PSameSiteOther1", "www.somehost.com", "somehost.com", false},
     MatchTest{"1PSameSiteOther2", "somehost.com", "www.somehost.com", false},
     MatchTest{"1PSameSiteRsrc1", "www.acme-ra.com", "acme-ra.com", false},
     MatchTest{"1PSameSiteRsrc2", "acme-ra.com", "www.acme-ra.com", false},
+    MatchTest{"1PSameSiteRsrcSub1", "sub.sub.acme-ra.com", "acme-ra.com",
+              false},
+    MatchTest{"1PSameSiteRsrcSub2", "acme-ra.com", "sub.sub.acme-ra.com",
+              false},
     MatchTest{"1PSameSiteProp1", "www.bbco-pb.co.uk", "bbco-pb.co.uk", false},
     MatchTest{"1PSameSiteProp2", "bbco-pb.co.uk", "www.bbco-pb.co.uk", false},
 
@@ -183,7 +168,11 @@ const std::vector<MatchTest> kMatchTests = {
     // subdomains) in the MDL should be not be proxied when the top-level site
     // is a property with the same owner as the resource.
     MatchTest{"3PRsrcInPropSameOwner", "acme-ra.com", "acme-pa.com", false},
-    MatchTest{"3PRsrcInRsrcSameOwner", "acme-ra.com", "acme-rb.co.uk", true},
+    MatchTest{"3PRsrcInRsrcSameOwner", "acme-ra.com", "acme-rb.co.uk", false},
+    MatchTest{"3PRsrcInSubRsrcSameOwner", "acme-ra.com", "sub.acme-rb.co.uk",
+              false},
+    MatchTest{"3PSubRsrcInSubRsrcSameOwner", "sub.acme-ra.com",
+              "sub.acme-rb.co.uk", false},
     MatchTest{"3PSubSameOwner", "sub.acme-ra.com", "acme-pa.com", false},
     MatchTest{"3PSubSubSameOwner", "sub.sub.acme-ra.com", "acme-pa.com", false},
 };

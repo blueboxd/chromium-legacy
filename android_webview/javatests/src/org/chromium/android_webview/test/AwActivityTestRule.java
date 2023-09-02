@@ -32,7 +32,6 @@ import org.chromium.base.test.BaseActivityTestRule;
 import org.chromium.base.test.util.ApplicationTestUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CriteriaHelper;
-import org.chromium.base.test.util.InMemorySharedPreferences;
 import org.chromium.base.test.util.ScalableTimeout;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.test.util.TestCallbackHelperContainer.OnPageFinishedHelper;
@@ -154,9 +153,9 @@ public class AwActivityTestRule extends BaseActivityTestRule<AwTestRunnerActivit
         return getActivity();
     }
 
-    public AwBrowserContext createAwBrowserContextOnUiThread(InMemorySharedPreferences prefs) {
+    public AwBrowserContext createAwBrowserContextOnUiThread() {
         // Native pointer is initialized later in startBrowserProcess if needed.
-        return new AwBrowserContext(prefs, 0, true);
+        return new AwBrowserContext(0);
     }
 
     public TestDependencyFactory createTestDependencyFactory() {
@@ -195,9 +194,8 @@ public class AwActivityTestRule extends BaseActivityTestRule<AwTestRunnerActivit
             throw new AndroidRuntimeException("There should only be one browser context.");
         }
         launchActivity(); // The Activity must be launched in order to load native code
-        final InMemorySharedPreferences prefs = new InMemorySharedPreferences();
         TestThreadUtils.runOnUiThreadBlockingNoException(
-                () -> mBrowserContext = createAwBrowserContextOnUiThread(prefs));
+                () -> mBrowserContext = createAwBrowserContextOnUiThread());
     }
 
     public void startBrowserProcess() {
@@ -329,7 +327,6 @@ public class AwActivityTestRule extends BaseActivityTestRule<AwTestRunnerActivit
 
     public void loadHtmlSync(final AwContents awContents, CallbackHelper onPageFinishedHelper,
             final String html) throws Throwable {
-        int currentCallCount = onPageFinishedHelper.getCallCount();
         final String encodedData = Base64.encodeToString(html.getBytes(), Base64.NO_PADDING);
         loadDataSync(awContents, onPageFinishedHelper, encodedData, "text/html", true);
     }
@@ -752,7 +749,6 @@ public class AwActivityTestRule extends BaseActivityTestRule<AwTestRunnerActivit
     public void loadPopupContents(final AwContents parentAwContents, PopupInfo info,
             OnCreateWindowHandler onCreateWindowHandler) throws Exception {
         TestAwContentsClient popupContentsClient = info.popupContentsClient;
-        AwTestContainerView popupContainerView = info.popupContainerView;
         final AwContents popupContents = info.popupContents;
         OnPageFinishedHelper onPageFinishedHelper = popupContentsClient.getOnPageFinishedHelper();
         int finishCallCount = onPageFinishedHelper.getCallCount();

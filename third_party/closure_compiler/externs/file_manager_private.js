@@ -51,6 +51,14 @@ chrome.fileManagerPrivate.DeviceType = {
 /**
  * @enum {string}
  */
+chrome.fileManagerPrivate.DeviceConnectionState = {
+  OFFLINE: 'OFFLINE',
+  ONLINE: 'ONLINE',
+};
+
+/**
+ * @enum {string}
+ */
 chrome.fileManagerPrivate.DriveConnectionStateType = {
   OFFLINE: 'OFFLINE',
   METERED: 'METERED',
@@ -1007,6 +1015,7 @@ chrome.fileManagerPrivate.ParsedTrashInfoFile;
  *   bytesToPin: number,
  *   pinnedBytes: number,
  *   filesToPin: number,
+ *   listedFiles: number,
  *   remainingSeconds: number,
  *   emptiedQueue: boolean
  * }}
@@ -1366,6 +1375,13 @@ chrome.fileManagerPrivate.searchFilesByHashes = function(volumeId, hashList, cal
 chrome.fileManagerPrivate.searchFiles = function(searchParams, callback) {};
 
 /**
+ * Retrieves the state of the current device connection. |callback|
+ * @param {function(!chrome.fileManagerPrivate.DeviceConnectionState): void}
+ *     callback
+ */
+chrome.fileManagerPrivate.getDeviceConnectionState = function(callback) {};
+
+/**
  * Retrieves the state of the current drive connection. |callback|
  * @param {function(!chrome.fileManagerPrivate.DriveConnectionState): void}
  *     callback
@@ -1670,6 +1686,13 @@ chrome.fileManagerPrivate.cancelIOTask = function(taskId) {};
 chrome.fileManagerPrivate.resumeIOTask = function(taskId, params) {};
 
 /**
+ * Notifies the browser that any info still stored about an already completed
+ * I/O task identified by id can be cleared.
+ * @param {number} taskId
+ */
+chrome.fileManagerPrivate.dismissIOTask = function(taskId) {};
+
+/**
  * Shows a policy dialog for a task. Task ids are communicated to the Files App
  * in each I/O task's progress status.
  * @param {number} taskId
@@ -1757,6 +1780,11 @@ chrome.fileManagerPrivate.onDirectoryChanged;
  * @type {!ChromeEvent}
  */
 chrome.fileManagerPrivate.onPreferencesChanged;
+
+/**
+ * @type {!ChromeEvent}
+ */
+chrome.fileManagerPrivate.onDeviceConnectionStatusChanged;
 
 /**
  * @type {!ChromeEvent}

@@ -225,6 +225,10 @@ namespace developerPrivate {
     // Only populated for extensions that can be affected by the runtime host
     // permissions feature.
     RuntimeHostPermissions? runtimeHostPermissions;
+
+    // True if the extension can access site data through host permissions or
+    // API permissions such as activeTab.
+    boolean canAccessSiteData;
   };
 
   dictionary ExtensionInfo {
@@ -266,6 +270,7 @@ namespace developerPrivate {
     boolean showSafeBrowsingAllowlistWarning;
     boolean showAccessRequestsInToolbar;
     boolean acknowledgeSafetyCheckWarning;
+    boolean? pinnedToToolbar;
   };
 
   dictionary ProfileInfo {
@@ -326,6 +331,7 @@ namespace developerPrivate {
     HostAccess? hostAccess;
     boolean? showAccessRequestsInToolbar;
     boolean? acknowledgeSafetyCheckWarning;
+    boolean? pinnedToToolbar;
   };
 
   dictionary ProfileConfigurationUpdate {
@@ -492,7 +498,8 @@ namespace developerPrivate {
     PERMISSIONS_CHANGED,
     SERVICE_WORKER_STARTED,
     SERVICE_WORKER_STOPPED,
-    CONFIGURATION_CHANGED
+    CONFIGURATION_CHANGED,
+    PINNED_ACTIONS_CHANGED
   };
 
   dictionary PackDirectoryResponse {

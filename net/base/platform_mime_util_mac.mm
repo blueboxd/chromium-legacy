@@ -10,8 +10,8 @@
 #include <string>
 
 #include "base/apple/bridging.h"
-#include "base/mac/foundation_util.h"
-#include "base/mac/scoped_cftyperef.h"
+#include "base/apple/foundation_util.h"
+#include "base/apple/scoped_cftyperef.h"
 #include "base/notreached.h"
 #include "base/strings/sys_string_conversions.h"
 #include "build/build_config.h"
@@ -60,18 +60,18 @@ bool PlatformMimeUtil::GetPlatformMimeTypeFromExtension(
      MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_VERSION_11_0) || \
     (BUILDFLAG(IS_IOS) && __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_14_0)
   else {
-    base::ScopedCFTypeRef<CFStringRef> ext_ref(
+    base::apple::ScopedCFTypeRef<CFStringRef> ext_ref(
         base::SysUTF8ToCFStringRef(ext_nodot));
     if (!ext_ref) {
       return false;
     }
-    base::ScopedCFTypeRef<CFStringRef> uti(
+    base::apple::ScopedCFTypeRef<CFStringRef> uti(
         UTTypeCreatePreferredIdentifierForTag(kUTTagClassFilenameExtension,
                                               ext_ref, nullptr));
     if (!uti) {
       return false;
     }
-    base::ScopedCFTypeRef<CFStringRef> mime_ref(
+    base::apple::ScopedCFTypeRef<CFStringRef> mime_ref(
         UTTypeCopyPreferredTagWithClass(uti, kUTTagClassMIMEType));
     if (!mime_ref) {
       return false;
@@ -106,18 +106,18 @@ bool PlatformMimeUtil::GetPlatformPreferredExtensionForMimeType(
      MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_VERSION_11_0) || \
     (BUILDFLAG(IS_IOS) && __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_14_0)
   else {
-    base::ScopedCFTypeRef<CFStringRef> mime_ref(
+    base::apple::ScopedCFTypeRef<CFStringRef> mime_ref(
         base::SysUTF8ToCFStringRef(mime_type));
     if (!mime_ref) {
       return false;
     }
-    base::ScopedCFTypeRef<CFStringRef> uti(
+    base::apple::ScopedCFTypeRef<CFStringRef> uti(
         UTTypeCreatePreferredIdentifierForTag(kUTTagClassMIMEType, mime_ref,
                                               nullptr));
     if (!uti) {
       return false;
     }
-    base::ScopedCFTypeRef<CFStringRef> ext_ref(
+    base::apple::ScopedCFTypeRef<CFStringRef> ext_ref(
         UTTypeCopyPreferredTagWithClass(uti, kUTTagClassFilenameExtension));
     if (!ext_ref) {
       return false;
@@ -158,13 +158,51 @@ void PlatformMimeUtil::GetPlatformExtensionsForMimeType(
     for (NSString* extension in extensions_list) {
       extensions->insert(base::SysNSStringToUTF8(extension));
     }
-  } else {
+
+    base::FilePath::StringType ext;
+    if (GetPlatformPreferredExtensionForMimeType(mime_type, &ext)) {
+      extensions->insert(ext);
+    }
+  }
+#if (BUILDFLAG(IS_MAC) &&                                    \
+     MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_VERSION_11_0) || \
+    (BUILDFLAG(IS_IOS) && __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_14_0)
+  else {
+    base::apple::ScopedCFTypeRef<CFStringRef> mime_ref(
+        base::SysUTF8ToCFStringRef(mime_type));
+    if (mime_ref) {
+      bool extensions_found = false;
+      base::apple::ScopedCFTypeRef<CFArrayRef> types(
+          UTTypeCreateAllIdentifiersForTag(kUTTagClassMIMEType, mime_ref,
+                                           nullptr));
+      if (types) {
+        for (CFIndex i = 0; i < CFArrayGetCount(types); i++) {
+          base::apple::ScopedCFTypeRef<CFArrayRef> extensions_list(
+              UTTypeCopyAllTagsWithClass(base::apple::CFCast<CFStringRef>(
+                                             CFArrayGetValueAtIndex(types, i)),
+                                         kUTTagClassFilenameExtension));
+          if (!extensions_list) {
+            continue;
+          }
+          extensions_found = true;
+          for (NSString* extension in base::apple::CFToNSPtrCast(
+                   extensions_list)) {
+            extensions->insert(base::SysNSStringToUTF8(extension));
+          }
+        }
+      }
+      if (extensions_found) {
+        return;
+      }
+    }
+
     // Huh? Give up.
     base::FilePath::StringType ext;
     if (GetPlatformPreferredExtensionForMimeType(mime_type, &ext)) {
       extensions->insert(ext);
     }
   }
+#endif
 }
 
 }  // namespace net

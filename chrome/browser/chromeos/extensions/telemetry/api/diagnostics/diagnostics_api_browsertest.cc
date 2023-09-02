@@ -1393,34 +1393,56 @@ IN_PROC_BROWSER_TEST_F(
   )");
 }
 
-class BlockedTelemetryExtensionDiagnosticsApiBrowserTest
+class NoExtraPermissionTelemetryExtensionDiagnosticsApiBrowserTest
     : public PendingApprovalTelemetryExtensionDiagnosticsApiBrowserTest {
  public:
-  BlockedTelemetryExtensionDiagnosticsApiBrowserTest() = default;
+  NoExtraPermissionTelemetryExtensionDiagnosticsApiBrowserTest() = default;
 
-  std::string public_key() const override {
-    return "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAm6NnMxmC5iaSFAILkuIkGXl"
-           "lW1Tie3AW+7Ty3R3sbQ7EVNG3HtFIG7jbJIvSko+lrTa1U1VveOXZw1u3y1T49ihR2X"
-           "FU0w6+3OAXzjuUimKUviGao6EN4KfCegtKyDQnMw0zATBisqBxrPLzGBXxP/AhxH2OG"
-           "gyyioVOzoCF+rnBY7ed+Wh+mPI7s9lrECeisUHHM5xbHXXgr8bnvt3U27jnsctwJWKH"
-           "fcbd3rpMJwBfOmPfuQ0MZvySVkTr/WYeemkwR8/4mek9/UIGMB8X+mXdU9OV/qhylqy"
-           "6FzRw/FdV+RcmzAwEgNmhgXP7TwtFBsUdtTIe2Kio26ciK7PSKwIDAQAB";
-  }
-
-  std::string matches_origin() const override {
-    return "https://hpcs-appschr.hpcloud.hp.com/*";
+ protected:
+  std::string GetManifestFile(const std::string& manifest_key,
+                              const std::string& matches_origin) override {
+    return base::StringPrintf(R"(
+      {
+        "key": "%s",
+        "name": "Test Telemetry Extension",
+        "version": "1",
+        "manifest_version": 3,
+        "chromeos_system_extension": {},
+        "background": {
+          "service_worker": "sw.js"
+        },
+        "permissions": [ "os.diagnostics" ],
+        "externally_connectable": {
+          "matches": [
+            "%s"
+          ]
+        },
+        "options_page": "options.html"
+      }
+    )",
+                              manifest_key.c_str(), matches_origin.c_str());
   }
 };
 
-IN_PROC_BROWSER_TEST_F(BlockedTelemetryExtensionDiagnosticsApiBrowserTest,
-                       RunBluetoothPowerRoutineFromBlockedExtensionFail) {
+IN_PROC_BROWSER_TEST_F(
+    NoExtraPermissionTelemetryExtensionDiagnosticsApiBrowserTest,
+    RunBluetoothScanningRoutineWithoutPermissionFail) {
+  // Configure FakeDiagnosticsService.
+  {
+    auto fake_service_impl = std::make_unique<FakeDiagnosticsService>();
+    SetServiceForTesting(std::move(fake_service_impl));
+  }
+
   CreateExtensionAndRunServiceWorker(R"(
     chrome.test.runTests([
-      function runBluetoothPowerRoutineNotWorking() {
-        chrome.test.assertThrows(() => {
-          chrome.os.diagnostics.runBluetoothPowerRoutine();
-        }, [],
-          'chrome.os.diagnostics.runBluetoothPowerRoutine is not a function'
+      async function runBluetoothScanningRoutineNotWorking() {
+        await chrome.test.assertPromiseRejects(
+          chrome.os.diagnostics.runBluetoothScanningRoutine({
+            length_seconds: 10
+          }),
+          'Error: Unauthorized access to ' +
+          'chrome.os.diagnostics.runBluetoothScanningRoutine. Extension ' +
+          'doesn\'t have the permission.'
         );
         chrome.test.succeed();
       }
@@ -1428,55 +1450,25 @@ IN_PROC_BROWSER_TEST_F(BlockedTelemetryExtensionDiagnosticsApiBrowserTest,
   )");
 }
 
-IN_PROC_BROWSER_TEST_F(BlockedTelemetryExtensionDiagnosticsApiBrowserTest,
-                       RunBluetoothDiscoveryRoutineFromBlockedExtensionFail) {
-  CreateExtensionAndRunServiceWorker(R"(
-    chrome.test.runTests([
-      function runBluetoothDiscoveryRoutineNotWorking() {
-        chrome.test.assertThrows(() => {
-          chrome.os.diagnostics.runBluetoothDiscoveryRoutine();
-        }, [],
-          'chrome.os.diagnostics.runBluetoothDiscoveryRoutine is not a function'
-        );
-        chrome.test.succeed();
-      }
-    ]);
-  )");
-}
+IN_PROC_BROWSER_TEST_F(
+    NoExtraPermissionTelemetryExtensionDiagnosticsApiBrowserTest,
+    RunBluetoothPairingRoutineWithoutPermissionFail) {
+  // Configure FakeDiagnosticsService.
+  {
+    auto fake_service_impl = std::make_unique<FakeDiagnosticsService>();
+    SetServiceForTesting(std::move(fake_service_impl));
+  }
 
-IN_PROC_BROWSER_TEST_F(BlockedTelemetryExtensionDiagnosticsApiBrowserTest,
-                       RunBluetoothScanningRoutineWithoutFeatureFlagFail) {
   CreateExtensionAndRunServiceWorker(R"(
     chrome.test.runTests([
-      function runBluetoothScanningRoutineNotWorking() {
-        chrome.test.assertThrows(() => {
-          chrome.os.diagnostics.runBluetoothScanningRoutine(
-            {
-              length_seconds: 10
-            }
-          );
-        }, [],
-          'chrome.os.diagnostics.runBluetoothScanningRoutine is not a function'
-        );
-        chrome.test.succeed();
-      }
-    ]);
-  )");
-}
-
-IN_PROC_BROWSER_TEST_F(BlockedTelemetryExtensionDiagnosticsApiBrowserTest,
-                       RunBluetoothPairingRoutineWithoutFeatureFlagFail) {
-  CreateExtensionAndRunServiceWorker(R"(
-    chrome.test.runTests([
-      function runBluetoothPairingRoutineNotWorking() {
-        chrome.test.assertThrows(() => {
-          chrome.os.diagnostics.runBluetoothPairingRoutine(
-            {
-              peripheral_id: "HEALTHD_TEST_ID"
-            }
-          );
-        }, [],
-          'chrome.os.diagnostics.runBluetoothPairingRoutine is not a function'
+      async function runBluetoothPairingRoutineNotWorking() {
+        await chrome.test.assertPromiseRejects(
+          chrome.os.diagnostics.runBluetoothPairingRoutine({
+            peripheral_id: "HEALTHD_TEST_ID"
+          }),
+          'Error: Unauthorized access to ' +
+          'chrome.os.diagnostics.runBluetoothPairingRoutine. Extension ' +
+          'doesn\'t have the permission.'
         );
         chrome.test.succeed();
       }

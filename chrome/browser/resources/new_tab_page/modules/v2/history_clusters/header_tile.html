@@ -1,44 +1,72 @@
 <style include="cr-icons cr-shared-style">
   :host {
-    --menu-item-margin: 12px;
     background: var(--color-new-tab-page-module-item-background);
     border-radius: var(--ntp-module-item-border-radius);
     display: flex;
     flex-direction: column;
+    position: relative;
   }
 
-  :host([suggestion-chip-header-enabled_]) {
-    background: transparent;
-    border: none;
-  }
-
+  :host([suggestion-chip-header-enabled_]),
   :host([suggestion-chip-header-enabled_]) ntp-module-header-v2 {
     background: transparent;
     border: none;
   }
 
-  cr-action-menu {
-    --cr-menu-shadow: var(--ntp-menu-shadow);
+  @media (forced-colors: active) {
+   /* Set outline since background isn't visible in hcm */
+    :host {
+      border-radius: var(--ntp-module-item-border-radius);
+      outline: var(--cr-border-hcm);
+    }
   }
 
-  #label-container {
+  #container {
+    border-radius: var(--ntp-module-item-border-radius);
+    height: 100%;
+  }
+
+  .label-container {
     color: var(--color-new-tab-page-primary-foreground);
     display: flex;
     font-size: 20px;
     height: 48px;
     line-height: 24px;
+    margin-top: 8px;
     padding: 0 16px;
   }
 
-  :host([suggestion-chip-header-enabled_]) #label-container {
-    background: var(--color-new-tab-page-module-item-background);
-    border-radius: var(--ntp-module-item-border-radius);
-    height: 100%;
+  :host(:not([suggestion-chip-header-enabled_]):hover) {
+    cursor: pointer;
   }
 
-  :host([suggestion-chip-header-enabled_][format='wide']:not([show-related-searches])) #label-container {
+  :host(:not([suggestion-chip-header-enabled_]):hover) .hover-layer,
+  #suggestion-chip:hover .hover-layer {
+    background: var(--color-new-tab-page-module-item-background-hovered);
+    display: block;
+    inset: 0;
+    position: absolute;
+  }
+
+  .hover-layer {
+    border-radius: var(--ntp-module-item-border-radius);
+    display: none;
+    pointer-events: none;
+  }
+
+  :host([suggestion-chip-header-enabled_]) .label-container {
+    background: var(--color-new-tab-page-module-item-background);
+    border-radius: var(--ntp-module-item-border-radius);
+  }
+
+  :host([suggestion-chip-header-enabled_][format='wide']:not([show-related-searches]))
+      .label-container {
     align-items: start;
-    padding: 16px;
+  }
+
+  :host([suggestion-chip-header-enabled_][format='wide']
+      :not([show-related-searches])) #suggestion-chip {
+    height: 116px;
   }
 
   h2 {
@@ -59,13 +87,22 @@
   #suggestion-chip {
     display: flex;
     font-size: var(--ntp-module-text-size);
+    position: relative;
+    text-decoration: none;
+  }
+
+  #container:focus, #container:focus-visible,
+  #suggestion-chip:focus, #suggestion-chip:focus-visible {
+    box-shadow: var(--ntp-focus-shadow);
+    outline: none;
   }
 
   #suggestion-chip-icon {
     --cr-icon-ripple-size: 16px;
     --cr-icon-image: url(chrome://resources/images/icon_history.svg);
+    align-self: center;
     background-color: var(--color-new-tab-page-primary-foreground);
-    margin: auto;
+    margin: 16px 0;
   }
 
   #suggestion-chip-label {
@@ -73,48 +110,26 @@
     margin-inline-start: 12px;
     line-height: 20px;
   }
-
-  .icon {
-    --cr-icon-ripple-size: 20px;
-    -webkit-mask-size: 16px;
-    background-color: transparent;
-    fill: var(--color-new-tab-page-secondary-foreground);
-    margin-inline-start: calc(-1 * var(--menu-item-margin));
-    margin-inline-end: var(--menu-item-margin);
-  }
-
-  hr {
-    background-color: var(--color-new-tab-page-module-context-menu-divider);
-    border: none;
-    height: 1px;
-    margin: 0;
-  }
 </style>
-<ntp-module-header-v2
-    header-text="[[i18n('modulesJourneysResumeJourney', '')]]"
-    on-menu-button-click="onMenuButtonClick_"
-    more-actions-text="[[i18n('modulesMoreActions', clusterLabel)]]">
-</ntp-module-header-v2>
-<div id="label-container">
-  <div id="label" hidden="[[suggestionChipHeaderEnabled_]]">
-    [[clusterLabel]]
-  </div>
-  <div id="suggestion-chip" hidden="[[!suggestionChipHeaderEnabled_]]">
-    <div id="suggestion-chip-icon" class="cr-icon"></div>
-    <span id="suggestion-chip-label">[[clusterLabel]]</span>
-  </div>
-</div>
-
-<cr-action-menu id="actionMenu">
-  <template is="dom-repeat"
-      items="[[getMenuItemGroups_()]]" as="group">
-    <template is="dom-repeat" items="[[group]]">
-      <button id="[[item.action]]" class="dropdown-item"
-          on-click="onButtonClick_" data-action$="[[item.action]]">
-        <iron-icon class="icon cr-icon" icon="[[item.icon]]"></iron-icon>
-        [[item.text]]
-      </button>
-    </template>
-    <hr hidden$="[[!showDivider_(index)]]">
+<div id="container" tabindex$="[[containerTabIndex_]]">
+  <div class="hover-layer" hidden="[[suggestionChipHeaderEnabled_]]"></div>
+  <ntp-module-header-v2
+      id="moduleHeaderElementV2"
+      header-text="[[i18n('modulesJourneysResumeJourney', '')]]"
+      on-menu-button-click="onMenuButtonClick_"
+      menu-item-groups="[[getMenuItemGroups_()]]"
+      more-actions-text="[[i18n('modulesMoreActions', clusterLabel)]]">
+  </ntp-module-header-v2>
+  <h2 id="label" class="label-container"
+      hidden="[[suggestionChipHeaderEnabled_]]">
+  [[clusterLabel]]
+  </h2>
+  <template is="dom-if" if="[[suggestionChipHeaderEnabled_]]">
+    <a id="suggestion-chip" class="label-container" href="[[normalizedUrl.url]]"
+        on-click="onSuggestClick_">
+      <div class="hover-layer"></div>
+      <div id="suggestion-chip-icon" class="cr-icon"></div>
+      <h2 id="suggestion-chip-label">[[clusterLabel]]</h2>
+    </a>
   </template>
-</cr-action-menu>
+</div>

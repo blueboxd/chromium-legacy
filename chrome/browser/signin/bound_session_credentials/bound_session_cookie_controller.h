@@ -9,7 +9,7 @@
 #include "base/functional/callback_forward.h"
 #include "base/memory/raw_ptr.h"
 #include "base/time/time.h"
-#include "chrome/browser/signin/bound_session_credentials/bound_session_registration_params.pb.h"
+#include "chrome/browser/signin/bound_session_credentials/bound_session_params.pb.h"
 #include "chrome/common/renderer_configuration.mojom.h"
 #include "url/gurl.h"
 
@@ -40,11 +40,11 @@ class BoundSessionCookieController {
     // Called when the bound session parameters change, for example the minimum
     // cookie expiration date changes. Cookie deletion is considered as a change
     // in the expiration date to the null time.
-    virtual void OnBoundSessionParamsChanged() = 0;
+    virtual void OnBoundSessionThrottlerParamsChanged() = 0;
   };
 
   BoundSessionCookieController(
-      bound_session_credentials::RegistrationParams registration_params,
+      const bound_session_credentials::BoundSessionParams& bound_session_params,
       const base::flat_set<std::string>& cookie_names,
       Delegate* delegate);
 
@@ -60,11 +60,16 @@ class BoundSessionCookieController {
       base::OnceClosure resume_blocked_request) = 0;
 
   const GURL& url() const { return url_; }
+  const std::string& session_id() const { return session_id_; }
+  base::Time session_creation_time() const { return session_creation_time_; }
   base::Time min_cookie_expiration_time();
-  chrome::mojom::BoundSessionParamsPtr bound_session_params();
+  chrome::mojom::BoundSessionThrottlerParamsPtr
+  bound_session_throttler_params();
 
  protected:
   const GURL url_;
+  const std::string session_id_;
+  const base::Time session_creation_time_;
   // Map from cookie name to cookie expiration time, it is expected to have two
   // elements the 1P and 3P cookies.
   // Cookie expiration time is reduced by threshold to guarantee cookie will be

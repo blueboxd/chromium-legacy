@@ -270,6 +270,9 @@ class ASH_EXPORT RootWindowDeskSwitchAnimator
   }
   bool animation_finished() const { return animation_finished_; }
   bool reached_edge() const { return reached_edge_; }
+  void set_is_combine_desks_type(bool is_combine_desks_type) {
+    is_combine_desks_type_ = is_combine_desks_type;
+  }
 
   // Begins phase (1) of the animation by taking a screenshot of the starting
   // desk content. Delegate::OnStartingDeskScreenshotTaken() will be called once
@@ -351,7 +354,7 @@ class ASH_EXPORT RootWindowDeskSwitchAnimator
   int GetXPositionOfScreenshot(int index);
 
   // The root window that this animator is associated with.
-  const raw_ptr<aura::Window, ExperimentalAsh> root_window_;
+  const raw_ptr<aura::Window, DanglingUntriaged | ExperimentalAsh> root_window_;
 
   // The type of animator, this will determine what type of animation is
   // created.
@@ -422,6 +425,10 @@ class ASH_EXPORT RootWindowDeskSwitchAnimator
   // calling SetTransform will trigger OnImplicitAnimationsCompleted. In these
   // cases we do not want to notify our delegate that the animation is finished.
   bool setting_new_transform_ = false;
+
+  // When desk close type is `kCombineDesks`, we animate windows moving to the new
+  // desk, otherwise only show desk switching animation.
+  bool is_combine_desks_type_ = false;
 
   // Callbacks that are run after the screenshots are taken for testing
   // purposes. Waiting for the ending screenshots means you will implicitly wait

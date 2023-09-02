@@ -4,9 +4,9 @@
 
 #include "chrome/common/net/x509_certificate_model.h"
 
+#include "base/check.h"
 #include "base/containers/adapters.h"
 #include "base/containers/fixed_flat_map.h"
-#include "base/hash/sha1.h"
 #include "base/i18n/number_formatting.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
@@ -16,6 +16,7 @@
 #include "components/strings/grit/components_strings.h"
 #include "components/url_formatter/url_formatter.h"
 #include "crypto/sha2.h"
+#include "net/base/ip_address.h"
 #include "net/cert/ct_objects_extractor.h"
 #include "net/cert/pki/cert_errors.h"
 #include "net/cert/pki/certificate_policies.h"
@@ -814,14 +815,23 @@ absl::optional<std::string> ProcessGeneralNames(
     rv += FormatGeneralName(IDS_CERT_GENERAL_NAME_URI,
                             uniform_resource_identifier);
   }
-  for (const auto& ip_address : names.ip_addresses) {
+  for (const auto& ip_address_bytes : names.ip_addresses) {
+    net::IPAddress ip_address(ip_address_bytes.AsSpan());
+    // The `GeneralNames` parser should guarantee this.
+    CHECK(ip_address.IsValid());
     rv += FormatGeneralName(IDS_CERT_GENERAL_NAME_IP_ADDRESS,
                             ip_address.ToString());
   }
   for (const auto& ip_address_range : names.ip_address_ranges) {
-    rv += FormatGeneralName(IDS_CERT_GENERAL_NAME_IP_ADDRESS,
-                            ip_address_range.first.ToString() + '/' +
-                                base::NumberToString(ip_address_range.second));
+    net::IPAddress ip_address(ip_address_range.first.AsSpan());
+    net::IPAddress mask(ip_address_range.second.AsSpan());
+    // The `GeneralNames` parser should guarantee this.
+    CHECK(ip_address.IsValid());
+    CHECK(mask.IsValid());
+    rv += FormatGeneralName(
+        IDS_CERT_GENERAL_NAME_IP_ADDRESS,
+        ip_address.ToString() + '/' +
+            base::NumberToString(net::MaskPrefixLength(mask)));
   }
   for (const auto& registered_id : names.registered_ids) {
     rv += FormatGeneralName(IDS_CERT_GENERAL_NAME_REGISTERED_ID,
@@ -1247,19 +1257,7 @@ X509CertificateModel::~X509CertificateModel() = default;
 std::string X509CertificateModel::HashCertSHA256() const {
   auto hash =
       crypto::SHA256Hash(net::x509_util::CryptoBufferAsSpan(cert_data_.get()));
-  return base::HexEncode(hash);
-}
-
-std::string X509CertificateModel::HashCertSHA256WithSeparators() const {
-  auto hash =
-      crypto::SHA256Hash(net::x509_util::CryptoBufferAsSpan(cert_data_.get()));
-  return ProcessRawBytes(hash);
-}
-
-std::string X509CertificateModel::HashCertSHA1WithSeparators() const {
-  auto hash =
-      base::SHA1HashSpan(net::x509_util::CryptoBufferAsSpan(cert_data_.get()));
-  return ProcessRawBytes(hash);
+  return base::ToLowerASCII(base::HexEncode(hash));
 }
 
 std::string X509CertificateModel::GetTitle() const {
@@ -1522,6 +1520,12 @@ std::string X509CertificateModel::ProcessSubjectPublicKeyInfo() const {
   if (rv.empty())
     return std::string();
   return rv;
+}
+
+std::string X509CertificateModel::HashSpkiSHA256() const {
+  DCHECK(parsed_successfully_);
+  auto hash = crypto::SHA256Hash(tbs_.spki_tlv.AsSpan());
+  return base::ToLowerASCII(base::HexEncode(hash));
 }
 
 std::string X509CertificateModel::ProcessRawBitsSignatureWrap() const {

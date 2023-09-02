@@ -35,6 +35,7 @@ class IntegrationTestCommands
                              const base::TimeDelta& idle_timeout) const = 0;
   virtual void ExitTestMode() const = 0;
   virtual void SetGroupPolicies(const base::Value::Dict& values) const = 0;
+  virtual void SetPlatformPolicies(const base::Value::Dict& values) const = 0;
   virtual void SetMachineManaged(bool is_managed_device) const = 0;
   virtual void Clean() const = 0;
   virtual void ExpectClean() const = 0;
@@ -47,6 +48,7 @@ class IntegrationTestCommands
   virtual void ExpectNotActive(const std::string& app_id) const = 0;
   virtual void ExpectSelfUpdateSequence(ScopedServer* test_server) const = 0;
   virtual void ExpectUninstallPing(ScopedServer* test_server) const = 0;
+  virtual void ExpectUpdateCheckRequest(ScopedServer* test_server) const = 0;
   virtual void ExpectUpdateCheckSequence(
       ScopedServer* test_server,
       const std::string& app_id,
@@ -104,6 +106,7 @@ class IntegrationTestCommands
   virtual void GetAppStates(
       const base::Value::Dict& expected_app_states) const = 0;
   virtual void DeleteUpdaterDirectory() const = 0;
+  virtual void DeleteActiveUpdaterExecutable() const = 0;
   virtual void DeleteFile(const base::FilePath& path) const = 0;
   virtual void PrintLog() const = 0;
   virtual base::FilePath GetDifferentUserPath() const = 0;
@@ -125,6 +128,9 @@ class IntegrationTestCommands
   virtual void ExpectLegacyPolicyStatusSucceeds() const = 0;
   virtual void RunUninstallCmdLine() const = 0;
   virtual void RunHandoff(const std::string& app_id) const = 0;
+  virtual void InstallAppViaService(
+      const std::string& app_id,
+      const base::Value::Dict& expected_final_values) const = 0;
 #endif  // BUILDFLAG(IS_WIN)
   virtual void StressUpdateService() const = 0;
   virtual void CallServiceUpdate(const std::string& app_id,

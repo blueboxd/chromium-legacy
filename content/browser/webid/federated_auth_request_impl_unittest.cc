@@ -61,6 +61,8 @@ using DismissReason = content::IdentityRequestDialogController::DismissReason;
 using FedCmEntry = ukm::builders::Blink_FedCm;
 using FedCmIdpEntry = ukm::builders::Blink_FedCmIdp;
 using FetchStatus = content::IdpNetworkRequestManager::FetchStatus;
+using TokenError =
+    content::IdpNetworkRequestManager::IdentityCredentialTokenError;
 using ParseStatus = content::IdpNetworkRequestManager::ParseStatus;
 using TokenStatus = content::FedCmRequestIdTokenStatus;
 using LoginState = content::IdentityRequestAccount::LoginState;
@@ -499,8 +501,10 @@ class TestIdpNetworkRequestManager : public MockIdpNetworkRequestManager {
         config_.token_response.parse_status == ParseStatus::kSuccess
             ? config_.token
             : std::string();
-    base::OnceCallback bound_callback = base::BindOnce(
-        std::move(callback), config_.token_response, delivered_token);
+    TokenResult result;
+    result.token = delivered_token;
+    base::OnceCallback bound_callback =
+        base::BindOnce(std::move(callback), config_.token_response, result);
     if (config_.delay_token_response) {
       delayed_callbacks_.push_back(std::move(bound_callback));
     } else {
@@ -582,6 +586,8 @@ class TestDialogController
     size_t num_show_idp_signin_status_mismatch_dialog_requests{0u};
     // State related to ShowIdpSigninFailureDialog().
     bool did_show_idp_signin_failure_dialog{false};
+    // State related to ShowErrorDialog().
+    bool did_show_error_dialog{false};
   };
 
   explicit TestDialogController(MockConfiguration config)
@@ -663,6 +669,24 @@ class TestDialogController
       case IdpSigninStatusMismatchDialogAction::kNone:
         break;
     }
+  }
+
+  void ShowErrorDialog(const std::string& top_frame_for_display,
+                       const absl::optional<std::string>& iframe_for_display,
+                       const std::string& idp_for_display,
+                       const blink::mojom::RpContext& rp_context,
+                       const IdentityProviderMetadata& idp_metadata,
+                       const absl::optional<TokenError>& error,
+                       IdentityRequestDialogController::DismissCallback
+                           dismiss_callback) override {
+    if (!state_) {
+      return;
+    }
+
+    state_->did_show_error_dialog = true;
+    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(dismiss_callback),
+                                  DismissReason::kCloseButton));
   }
 
   void ShowIdpSigninFailureDialog(base::OnceClosure dismiss_callback) override {
@@ -2961,6 +2985,123 @@ TEST_F(FederatedAuthRequestImplTest, TokenEndpointPostDataEscaping) {
   RunAuthTest(kDefaultRequestParameters, kExpectationSuccess, configuration);
 }
 
+// Test that the is_account_auto_selected value in the token post data for
+// sign-up case.
+TEST_F(FederatedAuthRequestImplTest, AccountAutoSelectedFlagForNewUser) {
+  base::test::ScopedFeatureList list;
+  list.InitAndEnableFeature(features::kFedCmAccountAutoSelectedFlag);
+
+  std::unique_ptr<IdpNetworkRequestManagerParamChecker> checker =
+      std::make_unique<IdpNetworkRequestManagerParamChecker>();
+  checker->SetExpectedTokenPostData(
+      "client_id=" + std::string(kClientId) + "&nonce=" + std::string(kNonce) +
+      "&account_id=" + std::string(kAccountId) + "&disclosure_text_shown=true" +
+      "&is_account_auto_selected=false");
+  SetNetworkRequestManager(std::move(checker));
+
+  RunAuthTest(kDefaultRequestParameters, kExpectationSuccess,
+              kConfigurationValid);
+}
+
+// Test that the is_account_auto_selected value in the token post data for
+// returning user with `mediation:required`.
+TEST_F(FederatedAuthRequestImplTest,
+       AccountAutoSelectedFlagForReturningUserWithMediationRequired) {
+  base::test::ScopedFeatureList list;
+  list.InitAndEnableFeature(features::kFedCmAccountAutoSelectedFlag);
+  // Pretend the sharing permission has been granted for this account.
+  EXPECT_CALL(
+      *test_permission_delegate_,
+      HasSharingPermission(OriginFromString(kRpUrl), OriginFromString(kRpUrl),
+                           OriginFromString(kProviderUrlFull),
+                           Optional(std::string(kAccountId))))
+      .WillOnce(Return(true));
+
+  std::unique_ptr<IdpNetworkRequestManagerParamChecker> checker =
+      std::make_unique<IdpNetworkRequestManagerParamChecker>();
+  checker->SetExpectedTokenPostData(
+      "client_id=" + std::string(kClientId) + "&nonce=" + std::string(kNonce) +
+      "&account_id=" + std::string(kAccountId) +
+      "&disclosure_text_shown=false" + "&is_account_auto_selected=false");
+  SetNetworkRequestManager(std::move(checker));
+
+  MockConfiguration config = kConfigurationValid;
+  config.mediation_requirement = MediationRequirement::kRequired;
+  RunAuthTest(kDefaultRequestParameters, kExpectationSuccess, config);
+}
+
+// Test that the is_account_auto_selected value in the token post data for
+// returning user with `mediation:optional`.
+TEST_F(FederatedAuthRequestImplTest,
+       AccountAutoSelectedFlagForReturningUserWithMediationOptional) {
+  base::test::ScopedFeatureList list;
+  list.InitAndEnableFeature(features::kFedCmAccountAutoSelectedFlag);
+  // Pretend the sharing permission has been granted for this account.
+  EXPECT_CALL(
+      *test_permission_delegate_,
+      HasSharingPermission(OriginFromString(kRpUrl), OriginFromString(kRpUrl),
+                           OriginFromString(kProviderUrlFull),
+                           Optional(std::string(kAccountId))))
+      .Times(2)
+      .WillRepeatedly(Return(true));
+
+  // Pretend the auto re-authn permission has been granted.
+  EXPECT_CALL(*test_auto_reauthn_permission_delegate_,
+              IsAutoReauthnSettingEnabled())
+      .WillOnce(Return(true));
+
+  std::unique_ptr<IdpNetworkRequestManagerParamChecker> checker =
+      std::make_unique<IdpNetworkRequestManagerParamChecker>();
+  checker->SetExpectedTokenPostData(
+      "client_id=" + std::string(kClientId) + "&nonce=" + std::string(kNonce) +
+      "&account_id=" + std::string(kAccountId) +
+      "&disclosure_text_shown=false" + "&is_account_auto_selected=true");
+  SetNetworkRequestManager(std::move(checker));
+
+  MockConfiguration config = kConfigurationValid;
+  config.mediation_requirement = MediationRequirement::kOptional;
+  RunAuthTest(kDefaultRequestParameters, kExpectationSuccess, config);
+}
+
+// Test that the is_account_auto_selected value in the token post data for the
+// quiet period use case.
+TEST_F(FederatedAuthRequestImplTest, AccountAutoSelectedFlagIfInQuietPeriod) {
+  base::test::ScopedFeatureList list;
+  list.InitAndEnableFeature(features::kFedCmAccountAutoSelectedFlag);
+  // Pretend the sharing permission has been granted for this account.
+  EXPECT_CALL(
+      *test_permission_delegate_,
+      HasSharingPermission(OriginFromString(kRpUrl), OriginFromString(kRpUrl),
+                           OriginFromString(kProviderUrlFull),
+                           Optional(std::string(kAccountId))))
+      .Times(2)
+      .WillRepeatedly(Return(true));
+
+  // Pretend the auto re-authn permission has been granted.
+  EXPECT_CALL(*test_auto_reauthn_permission_delegate_,
+              IsAutoReauthnSettingEnabled())
+      .WillOnce(Return(true));
+
+  // Pretend the auto re-authn is in quiet period.
+  EXPECT_CALL(*test_auto_reauthn_permission_delegate_,
+              IsAutoReauthnEmbargoed(OriginFromString(kRpUrl)))
+      .WillOnce(Return(true));
+
+  std::unique_ptr<IdpNetworkRequestManagerParamChecker> checker =
+      std::make_unique<IdpNetworkRequestManagerParamChecker>();
+  checker->SetExpectedTokenPostData(
+      "client_id=" + std::string(kClientId) + "&nonce=" + std::string(kNonce) +
+      "&account_id=" + std::string(kAccountId) +
+      "&disclosure_text_shown=false" + "&is_account_auto_selected=false");
+  SetNetworkRequestManager(std::move(checker));
+
+  RequestExpectations expectations = kExpectationSuccess;
+  expectations.standalone_console_message =
+      "Auto re-authn was previously triggered less than 10 minutes ago. Only "
+      "one auto re-authn request can be made every 10 minutes.";
+  RunAuthTest(kDefaultRequestParameters, expectations, kConfigurationValid);
+}
+
 namespace {
 
 // TestIdpNetworkRequestManager subclass which runs the `account_list_task`
@@ -3041,7 +3182,12 @@ TEST_F(FederatedAuthRequestImplTest,
           base::BindOnce(&NavigateToUrl, web_contents(), GURL(kRpOtherUrl))));
 
   RequestExpectations expectations = {
-      /*return_status=*/absl::nullopt, FederatedAuthRequestResult::kError,
+      /*return_status=*/absl::nullopt,
+      // When the RenderFrameHost changes on navigation, no console message is
+      // received, so pass FederatedAuthRequestResult::kSuccess.
+      main_rfh()->ShouldChangeRenderFrameHostOnSameSiteNavigation()
+          ? FederatedAuthRequestResult::kSuccess
+          : FederatedAuthRequestResult::kError,
       /*standalone_console_message=*/absl::nullopt,
       /*selected_idp_config_url=*/absl::nullopt};
   RunAuthTest(kDefaultRequestParameters, expectations, kConfigurationValid);
@@ -4804,6 +4950,45 @@ TEST_F(FederatedAuthRequestImplTest, RecordNumRequestsPerDocumentMetric) {
   // Check for RP-keyed UKM presence.
   ExpectUKMPresenceInternal("NumRequestsPerDocument", FedCmEntry::kEntryName);
   CheckAllFedCmSessionIDs();
+}
+
+// Test that an error dialog is shown when the token response is invalid.
+TEST_F(FederatedAuthRequestImplTest, InvalidResponseErrorDialogShown) {
+  base::test::ScopedFeatureList list;
+  list.InitAndEnableFeature(features::kFedCmError);
+
+  MockConfiguration configuration = kConfigurationValid;
+  configuration.token_response.parse_status =
+      ParseStatus::kInvalidResponseError;
+  RequestExpectations expectations = {
+      RequestTokenStatus::kError,
+      FederatedAuthRequestResult::kErrorFetchingIdTokenInvalidResponse,
+      /*standalone_console_message=*/absl::nullopt,
+      /*selected_idp_config_url=*/absl::nullopt};
+  RunAuthTest(kDefaultRequestParameters, expectations, configuration);
+
+  EXPECT_TRUE(DidFetch(FetchedEndpoint::TOKEN));
+  EXPECT_TRUE(dialog_controller_state_.did_show_error_dialog);
+}
+
+// Test that an error dialog is not shown when the token response is invalid but
+// the Error API is disabled.
+TEST_F(FederatedAuthRequestImplTest, InvalidResponseErrorDialogDisabled) {
+  base::test::ScopedFeatureList list;
+  list.InitAndDisableFeature(features::kFedCmError);
+
+  MockConfiguration configuration = kConfigurationValid;
+  configuration.token_response.parse_status =
+      ParseStatus::kInvalidResponseError;
+  RequestExpectations expectations = {
+      RequestTokenStatus::kError,
+      FederatedAuthRequestResult::kErrorFetchingIdTokenInvalidResponse,
+      /*standalone_console_message=*/absl::nullopt,
+      /*selected_idp_config_url=*/absl::nullopt};
+  RunAuthTest(kDefaultRequestParameters, expectations, configuration);
+
+  EXPECT_TRUE(DidFetch(FetchedEndpoint::TOKEN));
+  EXPECT_FALSE(dialog_controller_state_.did_show_error_dialog);
 }
 
 }  // namespace content

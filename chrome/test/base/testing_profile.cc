@@ -111,7 +111,6 @@
 #include "chrome/browser/web_applications/test/fake_web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_provider_factory.h"
 #include "components/guest_view/browser/guest_view_manager.h"
-#include "extensions/browser/event_router_factory.h"
 #include "extensions/browser/extension_pref_value_map.h"
 #include "extensions/browser/extension_pref_value_map_factory.h"
 #include "extensions/browser/extension_prefs.h"
@@ -379,20 +378,17 @@ void TestingProfile::Init(bool is_supervised_profile) {
     bool extensions_disabled =
         base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kDisableExtensions);
-    std::unique_ptr<extensions::ExtensionPrefs> extension_prefs(
+    std::unique_ptr<extensions::ExtensionPrefs> extension_prefs =
         extensions::ExtensionPrefs::Create(
             this, GetPrefs(), extensions_path_,
             ExtensionPrefValueMapFactory::GetForBrowserContext(this),
             extensions_disabled,
-            std::vector<extensions::EarlyExtensionPrefsObserver*>()));
+            std::vector<extensions::EarlyExtensionPrefsObserver*>());
     extensions::ExtensionPrefsFactory::GetInstance()->SetInstanceForTesting(
         this, std::move(extension_prefs));
 
     extensions::ExtensionSystemFactory::GetInstance()->SetTestingFactory(
         this, base::BindRepeating(&extensions::TestExtensionSystem::Build));
-
-    extensions::EventRouterFactory::GetInstance()->SetTestingFactory(
-        this, BrowserContextKeyedServiceFactory::TestingFactory());
 
     web_app::WebAppProviderFactory::GetInstance()->SetTestingFactory(
         this, base::BindRepeating(&web_app::FakeWebAppProvider::BuildDefault));

@@ -188,11 +188,6 @@ class MockAutofillClient : public autofill::AutofillClient {
   MOCK_METHOD(void, UpdateWebauthnOfferDialogWithError, (), (override));
   MOCK_METHOD(bool, CloseWebauthnDialog, (), (override));
   MOCK_METHOD(void,
-              ConfirmSaveUpiIdLocally,
-              (const std::string&,
-               base::OnceCallback<void(bool user_decision)>),
-              (override));
-  MOCK_METHOD(void,
               OfferVirtualCardOptions,
               (const std::vector<autofill::CreditCard*>&,
                base::OnceCallback<void(const std::string&)>),
@@ -233,6 +228,10 @@ class MockAutofillClient : public autofill::AutofillClient {
                const autofill::AutofillProfile*,
                SaveAddressProfilePromptOptions,
                AddressProfileSavePromptCallback),
+              (override));
+  MOCK_METHOD(void,
+              ShowEditAddressProfileDialog,
+              (const autofill::AutofillProfile&),
               (override));
   MOCK_METHOD(void, ShowDeleteAddressProfileDialog, (), (override));
   MOCK_METHOD(bool, HasCreditCardScanFeature, (), (override));

@@ -7,9 +7,9 @@
 
 #include <memory>
 
+#include "base/apple/scoped_cftyperef.h"
 #include "base/containers/circular_deque.h"
 #include "base/functional/bind.h"
-#include "base/mac/scoped_cftyperef.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
@@ -109,7 +109,7 @@ class MEDIA_GPU_EXPORT VTVideoEncodeAccelerator
 
   base::TimeDelta AssignMonotonicTimestamp();
 
-  base::ScopedCFTypeRef<VTCompressionSessionRef> compression_session_;
+  base::apple::ScopedCFTypeRef<VTCompressionSessionRef> compression_session_;
 
   gfx::Size input_visible_size_;
   size_t bitstream_buffer_size_ = 0;

@@ -6,7 +6,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-#import "base/mac/foundation_util.h"
+#import "base/apple/foundation_util.h"
 #import "base/mac/mac_util.h"
 #include "base/strings/utf_string_conversions.h"
 #import "testing/gtest_mac.h"
@@ -26,7 +26,7 @@ id<NSAccessibility> ToNSAccessibility(id obj) {
 
 // Unboxes an accessibilityValue into an int via NSNumber.
 int IdToInt(id value) {
-  return base::mac::ObjCCastStrict<NSNumber>(value).intValue;
+  return base::apple::ObjCCastStrict<NSNumber>(value).intValue;
 }
 
 // TODO(https://crbug.com/936990): NSTabItemView is not an NSView (despite the
@@ -118,7 +118,7 @@ TEST_F(TabbedPaneAccessibilityMacTest, AttributesMatchAppKit) {
   // versions of Cocoa by exposing the role description of "tab" even in older
   // versions of macOS. Doing so causes a mismatch between native Cocoa and our
   // tabs.
-  if (base::mac::IsAtLeastOS12()) {
+  if (base::mac::MacOSMajorVersion() >= 12) {
     EXPECT_NSEQ(
         GetLegacyA11yAttributeValue(cocoa_tabs[0],
                                     NSAccessibilityRoleDescriptionAttribute),

@@ -23,12 +23,12 @@
 #include "chrome/browser/ash/system_web_apps/apps/personalization_app/personalization_app_manager.h"
 #include "chrome/browser/ash/system_web_apps/apps/personalization_app/personalization_app_manager_factory.h"
 #include "chrome/browser/ash/system_web_apps/apps/personalization_app/personalization_app_utils.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/nearby_sharing/contacts/nearby_share_contact_manager.h"
 #include "chrome/browser/nearby_sharing/nearby_receive_manager.h"
 #include "chrome/browser/nearby_sharing/nearby_share_settings.h"
 #include "chrome/browser/nearby_sharing/nearby_sharing_service_factory.h"
 #include "chrome/browser/nearby_sharing/nearby_sharing_service_impl.h"
+#include "chrome/browser/ui/webui/ash/settings/search/search_handler.h"
 #include "chrome/browser/ui/webui/managed_ui_handler.h"
 #include "chrome/browser/ui/webui/settings/ash/device_storage_handler.h"
 #include "chrome/browser/ui/webui/settings/ash/os_apps_page/app_notification_handler.h"
@@ -37,7 +37,6 @@
 #include "chrome/browser/ui/webui/settings/ash/os_settings_manager.h"
 #include "chrome/browser/ui/webui/settings/ash/os_settings_manager_factory.h"
 #include "chrome/browser/ui/webui/settings/ash/pref_names.h"
-#include "chrome/browser/ui/webui/settings/ash/search/search_handler.h"
 #include "chrome/browser/ui/webui/settings/ash/settings_user_action_tracker.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/webui_url_constants.h"
@@ -270,6 +269,18 @@ void OSSettingsUI::BindInterface(
 }
 
 void OSSettingsUI::BindInterface(
+    mojo::PendingReceiver<auth::mojom::AuthFactorConfig> receiver) {
+  auth::BindToAuthFactorConfig(std::move(receiver),
+                               quick_unlock::QuickUnlockFactory::GetDelegate());
+}
+
+void OSSettingsUI::BindInterface(
+    mojo::PendingReceiver<auth::mojom::RecoveryFactorEditor> receiver) {
+  auth::BindToRecoveryFactorEditor(
+      std::move(receiver), quick_unlock::QuickUnlockFactory::GetDelegate());
+}
+
+void OSSettingsUI::BindInterface(
     mojo::PendingReceiver<color_change_listener::mojom::PageHandler> receiver) {
   if (!chromeos::features::IsJellyEnabled()) {
     mojo::ReportBadMessage(
@@ -281,33 +292,18 @@ void OSSettingsUI::BindInterface(
 }
 
 void OSSettingsUI::BindInterface(
-    mojo::PendingReceiver<auth::mojom::AuthFactorConfig> receiver) {
-  auth::BindToAuthFactorConfig(std::move(receiver),
-                               quick_unlock::QuickUnlockFactory::GetDelegate(),
-                               g_browser_process->local_state());
-}
-
-void OSSettingsUI::BindInterface(
-    mojo::PendingReceiver<auth::mojom::RecoveryFactorEditor> receiver) {
-  auth::BindToRecoveryFactorEditor(
-      std::move(receiver), quick_unlock::QuickUnlockFactory::GetDelegate(),
-      g_browser_process->local_state());
-}
-
-void OSSettingsUI::BindInterface(
     mojo::PendingReceiver<auth::mojom::PinFactorEditor> receiver) {
   auto* pin_backend = quick_unlock::PinBackend::GetInstance();
   CHECK(pin_backend);
   auth::BindToPinFactorEditor(std::move(receiver),
                               quick_unlock::QuickUnlockFactory::GetDelegate(),
-                              g_browser_process->local_state(), *pin_backend);
+                              *pin_backend);
 }
 
 void OSSettingsUI::BindInterface(
     mojo::PendingReceiver<auth::mojom::PasswordFactorEditor> receiver) {
   auth::BindToPasswordFactorEditor(
-      std::move(receiver), quick_unlock::QuickUnlockFactory::GetDelegate(),
-      g_browser_process->local_state());
+      std::move(receiver), quick_unlock::QuickUnlockFactory::GetDelegate());
 }
 
 void OSSettingsUI::BindInterface(

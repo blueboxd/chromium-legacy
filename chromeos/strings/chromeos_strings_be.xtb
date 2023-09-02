@@ -21,6 +21,7 @@
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1145018782460575098">Акно абнаўлення ўбудаванага праграмнага забеспячэння для знешніх прылад адкрыта. Даступных абнаўленняў: <ph name="NUM_UPDATES" />.</translation>
 <translation id="1145516343487477149">Даведачныя артыкулы і адказы на распаўсюджаныя пытанні пра Chromebook</translation>
+<translation id="1154390310959620237">Можна наладзіць толькі 5 спалучэнняў клавіш. Каб дадаць новае спалучэнне клавіш, трэба выдаліць адно з ужо дададзеных.</translation>
 <translation id="1164939766849482256">Застаўка "Ад відна да цямна"</translation>
 <translation id="1167755866710282443">Адкрыйце меню, каб наладзіць клавішы. Перацягніце меню для перамяшчэння.</translation>
 <translation id="1175697296044146566">Гэтай прыладай <ph name="DEVICE_TYPE" /> кіруе <ph name="MANAGER" /></translation>
@@ -133,6 +134,7 @@
 <translation id="1881188606372070653">Каб адправіць запыт на змяненне змесціва з юрыдычных прычын, перайдзіце на <ph name="BEGIN_LINK1" />старонку юрыдычнай даведкі<ph name="END_LINK1" />. Некаторыя звесткі аб вашым уліковым запісе і сістэме могуць быць адпраўлены ў Google. Мы будзем выкарыстоўваць вашу інфармацыю, каб у адпаведнасці з <ph name="BEGIN_LINK2" />Палітыкай прыватнасці<ph name="END_LINK2" /> і <ph name="BEGIN_LINK3" />Умовамі выкарыстання<ph name="END_LINK3" /> вызначаць тэхнічныя праблемы і ўдасканальваць нашы сэрвісы.</translation>
 <translation id="1885577615937958993">пераматаць медыязмесціва ўперад</translation>
 <translation id="1887850431809612466">Версія апаратнага забеспячэння</translation>
+<translation id="1897672602657312171">Спалучэнне клавіш, у якім не выкарыстоўваецца клавіша пошуку, можа канфліктаваць са спалучэннямі клавіш іншых праграм. Націсніце гэта спалучэнне клавіш яшчэ раз, калі вы хочаце выкарыстоўваць яго і далей, або націсніце іншае спалучэнне клавіш, у якім выкарыстоўваецца клавіша пошуку.</translation>
 <translation id="1904932688895783618">Вось яшчэ некалькі карысных рэсурсаў:</translation>
 <translation id="1905710495812624430">Перавышана максімальная колькасць спроб.</translation>
 <translation id="1908234395526491708">Збоі запытаў UDP</translation>
@@ -230,12 +232,12 @@
 <translation id="2712812801627182647">Ключ аўтэнтыфікацыі TLS</translation>
 <translation id="2713444072780614174">Белы</translation>
 <translation id="2717139507051041123">Уключыць рэжым цёмных колераў</translation>
+<translation id="2728460467788544679">Выдаленне ўсёй гісторыі друку</translation>
 <translation id="2740531572673183784">OK</translation>
 <translation id="2744221223678373668">Абагулена</translation>
 <translation id="2751739896257479635">Фаза 2 аўтэнтыфікацыі EAP</translation>
 <translation id="2783010256799387990">ПРОЙДЗЕНА</translation>
 <translation id="2787435249130282949">большая яркасць клавіятуры</translation>
-<translation id="2789486458103222910">OK</translation>
 <translation id="2805756323405976993">Праграмы</translation>
 <translation id="28232023175184696">Няма падключэння да інтэрнэту. Націсніце, каб паўтарыць спробу.</translation>
 <translation id="2859243502336719778">Важнае абнаўленне</translation>
@@ -247,6 +249,7 @@
 <translation id="2880569433548999039">Застаўка "Рух аблокаў"</translation>
 <translation id="2926057806159140518">Увядзіце імя карыстальніка і пароль або адсканіруйце QR-код</translation>
 <translation id="2940811910881150316">Не ўдаецца пратэсціраваць прыладу. Каб пачаць тэсціраванне, адкрыйце яе вечка.</translation>
+<translation id="2941112035454246133">Нізкі</translation>
 <translation id="3008341117444806826">АБНАВІЦЬ</translation>
 <translation id="3009958530611748826">Выберыце папку для захавання</translation>
 <translation id="3017079585324758401">Фон</translation>
@@ -296,6 +299,7 @@
 <translation id="3369013195428705271">Сапраўды выдаліць гісторыю друку? Бягучыя заданні друку выдалены не будуць.</translation>
 <translation id="3373141842870501561">Шпалеры "Рух Зямлі"</translation>
 <translation id="337375748120863155">Інфармацыя, звязаная з вылучаным фрагментам. Для доступу да налад выкарыстоўвайце клавішы са стрэлкамі ўлева і ўправа.</translation>
+<translation id="3383623117265110236">Эксклюзіўна</translation>
 <translation id="3404249063913988450">Уключыць застаўку</translation>
 <translation id="3413935475507503304">Каб працягнуць абнаўленне, націсніце "Далей".</translation>
 <translation id="3434107140712555581"><ph name="BATTERY_PERCENTAGE" /> %</translation>
@@ -366,6 +370,7 @@
 <translation id="3941014780699102620">Не ўдалося супаставіць хост</translation>
 <translation id="3942420633017001071">Дыягностыка</translation>
 <translation id="3954678691475912818">Гэта прылада невядомага тыпу.</translation>
+<translation id="3959413315969265597">Не ўдалося ўключыць APN. Пераканайцеся, што дададзены стандартны пункт доступу.</translation>
 <translation id="3966286471246132217">Каб атрымаць больш дакладныя вынікі, закрыйце ўсе ўкладкі, пакуль праверка не будзе завершана.</translation>
 <translation id="3967822245660637423">Спампоўка завершана</translation>
 <translation id="3969602104473960991">Пароль Chrome OS зменены</translation>
@@ -401,6 +406,7 @@
 <translation id="4171077696775491955">паменшыць яркасць</translation>
 <translation id="4176463684765177261">Выключана</translation>
 <translation id="4176659219503619100">Панэль кіравання</translation>
+<translation id="4185315616950253617">Спалучэнні клавіш з клавішамі верхняга рада павінны ўключаць у сябе клавішу пошуку.</translation>
 <translation id="420283545744377356">Выключыць застаўку</translation>
 <translation id="4213104098953699324">Клавіятура з USB</translation>
 <translation id="4227825898293920515">Тэрмін дзеяння пароля заканчваецца праз <ph name="TIME" /></translation>
@@ -411,6 +417,7 @@
 <translation id="4258281355379922695">Затрымка HTTP-запытаў</translation>
 <translation id="4271957103967917607">Праглядзець у поўнаэкранным рэжыме</translation>
 <translation id="4275663329226226506">Мультымедыя</translation>
+<translation id="4278766082079064416">Спалучэнне клавіш выкарыстоўваецца для дзеяння "<ph name="CONFLICT_ACCEL_NAME" />". Каб вырашыць канфлікт, змяніце або выдаліце спалучэнне.</translation>
 <translation id="4289540628985791613">Агляд</translation>
 <translation id="4289849978083912975">Слайд-шоу</translation>
 <translation id="4297501883039923494">Спынена: невядомая памылка</translation>
@@ -491,6 +498,7 @@
 <translation id="4861758251032006121">{ATTEMPTS_LEFT,plural, =1{<ph name="ERROR_MESSAGE" /> Засталася {0} спроба}one{<ph name="ERROR_MESSAGE" /> Засталася {0} спроба}few{<ph name="ERROR_MESSAGE" /> Засталося {0} спробы}many{<ph name="ERROR_MESSAGE" /> Засталося {0} спроб}other{<ph name="ERROR_MESSAGE" /> Засталося {0} спробы}}</translation>
 <translation id="4873827928179867585">Алгарытм аўтэнтыфікацыі</translation>
 <translation id="4880328057631981605">Назва пункта доступу</translation>
+<translation id="488307179443832524">Спалучэнне клавіш выкарыстоўваецца для дзеяння "<ph name="CONFLICT_ACCEL_NAME" />". Націсніце новае спалучэнне.</translation>
 <translation id="4885705234041587624">MSCHAPv2</translation>
 <translation id="4890353053343094602">Неадкладна задайце новы</translation>
 <translation id="4891842000192098784">Нагрузка</translation>
@@ -601,11 +609,13 @@
 <translation id="5703716265115423771">паменшыць гучнасць</translation>
 <translation id="5707900041990977207"><ph name="CURRENT_PAGE" /> з <ph name="TOTAL_PAGES" /></translation>
 <translation id="5733298426544876109">Абнавіць убудаванае ПЗ прылады "<ph name="DEVICE_NAME" />"</translation>
+<translation id="574392208103952083">Сярэдні</translation>
 <translation id="5757187557809630523">наступны трэк</translation>
 <translation id="5760715441271661976">Стан партала</translation>
 <translation id="576835345334454681">Павялічыць яркасць дысплэя</translation>
 <translation id="57838592816432529">Выключыць</translation>
 <translation id="5784136236926853061">Вялікая затрымка HTTP-запытаў</translation>
+<translation id="5816802250591013230">Спалучэнне клавіш не прызначана</translation>
 <translation id="5826644637650799838">Інфармацыя аб ілюстрацыі</translation>
 <translation id="5832805196449965646">Дадаць карыстальніка</translation>
 <translation id="583281660410589416">Невядома</translation>
@@ -615,7 +625,6 @@
 <translation id="5859603669299126575">Альбом мастацкай галерэі</translation>
 <translation id="5860033963881614850">Выключана</translation>
 <translation id="5860491529813859533">Уключыць</translation>
-<translation id="5866840822086176774">Вельмі моцны</translation>
 <translation id="5876385649737594562">Уключыце, каб задаць параметры</translation>
 <translation id="588258955323874662">Поўнаэкранны рэжым</translation>
 <translation id="5895138241574237353">Перазапусціць</translation>
@@ -699,7 +708,7 @@
 <translation id="6423239382391657905">OpenVPN</translation>
 <translation id="6439505561246192797">Слабы (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="6447630859861661624">Перайсці ў налады ўліковага запісу</translation>
-<translation id="6456394469623773452">Добры</translation>
+<translation id="6461047516875166066">Даведацца больш</translation>
 <translation id="6463239094587744704">{PAGE_NUMBER,plural, =0{Сканіраваць старонку паўторна?}=1{Сканіраваць старонку {PAGE_NUMBER} паўторна?}one{Сканіраваць старонку {PAGE_NUMBER} паўторна?}few{Сканіраваць старонку {PAGE_NUMBER} паўторна?}many{Сканіраваць старонку {PAGE_NUMBER} паўторна?}other{Сканіраваць старонку {PAGE_NUMBER} паўторна?}}</translation>
 <translation id="6472207088655375767">Аднаразовы пароль</translation>
 <translation id="6480327114083866287">Кіруе <ph name="MANAGER" /></translation>
@@ -767,13 +776,16 @@
 <translation id="7028979494427204405"><ph name="MANAGER" /> кіруе гэтай прыладай і мае доступ да ўсіх дзеянняў карыстальніка, у тым ліку да гісторыі наведаных вэб-старонак, да пароляў і электроннай пошты.</translation>
 <translation id="7040230719604914234">Аператар</translation>
 <translation id="7041549558901442110">Прылада не падключана.</translation>
+<translation id="7046522406494308071">Скінуць усе спалучэнні клавіш да стандартных?</translation>
 <translation id="7058278511608979688">Завяршыць і захаваць</translation>
 <translation id="7059230779847288458">Ідзе зарадка, <ph name="TIME_VALUE" /> да поўнай зарадкі</translation>
+<translation id="7066538517128343186">клавіша <ph name="KEY" /></translation>
 <translation id="7068619307603204412">Падрыхтоўка прылады</translation>
 <translation id="708426984172631313">СПЫНЕНА</translation>
 <translation id="7086440545492620869"><ph name="VALUE" /> <ph name="DISPLAY_NAME" /></translation>
 <translation id="710028965487274708">Збой: памылка аўтарызацыі</translation>
 <translation id="7103252855940681301">Прылада <ph name="INDEX" /> з <ph name="COUNT" />. Назва: <ph name="NAME" />.</translation>
+<translation id="7107255225945990211">Выбраць эксклюзіўныя відэа для <ph name="PRODUCT_NAME" /></translation>
 <translation id="7108668606237948702">Enter</translation>
 <translation id="7130438335435247835">Назва пункта доступу (APN)</translation>
 <translation id="7134436342991564651">{0,plural, =1{Сервер даменных імён}one{Серверы даменных імён}few{Серверы даменных імён}many{Серверы даменных імён}other{Серверы даменных імён}}</translation>
@@ -795,6 +807,7 @@
 <translation id="7216409898977639127">Сотавы аператар</translation>
 <translation id="725133483556299729">Выбраць адрас электроннай пошты</translation>
 <translation id="7271040990581020067">Сканер зараз выкарыстоўваецца. Паўтарыце спробу пазней.</translation>
+<translation id="7273347807225967898">Спалучэнне клавіш недаступнае. Націсніце новае спалучэнне з выкарыстаннем клавішы-мадыфікатара (Ctrl, Alt, Shift, клавіш пошуку або панэлі запуску).</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7281657306185710294">Адчуванне брызу</translation>
 <translation id="7287310195820267359">Калекцыі шпалер</translation>
@@ -854,6 +867,7 @@
 <translation id="7718231387947923843">падсвятленне клавіятуры</translation>
 <translation id="773153675489693198">Колькасць цыклаў</translation>
 <translation id="7747039790905080783">Папярэдне абагулены ключ</translation>
+<translation id="7752963721013053477">"Ад відна да цямна" – эксклюзіўна</translation>
 <translation id="7762130827864645708">Пароль зменены. У далейшым выкарыстоўвайце яго.</translation>
 <translation id="7763470514545477072">Супадзенне па суфіксе дамена</translation>
 <translation id="7769672763586021400">Ідэнтыфікатар мадэлі</translation>
@@ -873,6 +887,7 @@
 <translation id="7881066108824108340">DNS</translation>
 <translation id="7882358943899516840">Тып пастаўшчыка</translation>
 <translation id="7882501334836096755">Адкрыты ключ</translation>
+<translation id="7903695460270716054">Выбраць падабраныя творы і відарысы</translation>
 <translation id="7915220255123750251">Кіраванне наладамі сеткавых APN. З дапамогай APN устанаўліваецца падключэнне паміж сотавай сеткай і інтэрнэтам.</translation>
 <translation id="7936303884198020182">Серверы даменных імён не знойдзены</translation>
 <translation id="7942349550061667556">Чырвоны</translation>
@@ -899,6 +914,7 @@
 <translation id="808894953321890993">Змяніць пароль</translation>
 <translation id="8094062939584182041">Дазволіць Google апавяшчаць вас па электроннай пошце пра гэту праблему</translation>
 <translation id="8104083085214006426">Вы карыстаецеся адкрытай небяспечнай сеткай</translation>
+<translation id="8111706652656628199">Спалучэнне клавіш недаступнае. Націсніце новае спалучэнне клавіш, выкарыстоўваючы клавішу Shift і яшчэ адну клавішу-мадыфікатар (Ctrl, Alt, клавішы пошуку або панэлі запуску).</translation>
 <translation id="811820734797650957">(Android) Можна выканаць праверку ping для шлюза</translation>
 <translation id="8129620843620772246"><ph name="TEMPERATURE_C" /> °C</translation>
 <translation id="8132480444149501833">Запытаць лічыльнікі трафіка</translation>
@@ -917,12 +933,12 @@
 <translation id="8286154143153872371">Каб праглядаць шпалеры, падключыце прыладу да інтэрнэту і перазагрузіце старонку.</translation>
 <translation id="8291967909914612644">Родная краіна аператара</translation>
 <translation id="8294431847097064396">Крыніца</translation>
-<translation id="8297006494302853456">Слабы</translation>
 <translation id="8302368968391049045">Брандмаўар HTTPS</translation>
 <translation id="8312330582793120272">прайграць медыязмесціва</translation>
 <translation id="8318753676953949627">Няма відарысаў</translation>
 <translation id="8329018942023753850">праграма "Калькулятар"</translation>
 <translation id="8336739000755212683">Змяніць відарыс уліковага запісу на прыладзе</translation>
+<translation id="8347126826554447157"><ph name="SHORCTCUT1" /> ці <ph name="SHORCTCUT2" /></translation>
 <translation id="8347227221149377169">Заданні друку</translation>
 <translation id="8351855506390808906">Кропка дотыку для вызначэння клавіш</translation>
 <translation id="8352772353338965963">Дадайце ўліковы запіс для функцыі ўваходу ў некалькі ўліковых запісаў. Гэта функцыя дае магчымасць пераключацца паміж уліковымі запісамі, у якія выкананы ўваход, без уводу пароля. Таму выкарыстоўвайце яе толькі для ўліковых запісаў, якім давяраеце.</translation>
@@ -977,6 +993,7 @@
 <translation id="8764414543112028321">WireGuard</translation>
 <translation id="87646919272181953">Альбом Google Фота</translation>
 <translation id="877985182522063539">A4</translation>
+<translation id="8789196995628578448">Спалучэнне клавіш выкарыстоўваецца для дзеяння "<ph name="CONFLICT_ACCEL_NAME" />". Націсніце новае спалучэнне. Каб замяніць зыходнае спалучэнне клавіш, націсніце яго яшчэ раз.</translation>
 <translation id="879568662008399081">Гэта сетка можа мець партал узаемадзеяння</translation>
 <translation id="8798099450830957504">Стандартна</translation>
 <translation id="8798441408945964110">Назва пастаўшчыка</translation>
@@ -1039,6 +1056,7 @@
 <translation id="9122602430962285795">Каб зноў падключыцца да сеткі, перайдзіце ў Налады</translation>
 <translation id="9126720536733509015">Захаваць некалькі старонак у адзін PDF-файл</translation>
 <translation id="9133104754938025929">Для эканоміі зараду акумулятара застаўка працуе толькі падчас зарадкі.</translation>
+<translation id="9133772297793293778">Націсніце 1 з 4 клавіш-мадыфікатараў і 1 іншую клавішу на клавіятуры Каб выйсці з рэжыму рэдагавання, націсніце Alt + Esc.</translation>
 <translation id="9137526406337347448">Сэрвісы Google</translation>
 <translation id="9138630967333032450">Shift злева</translation>
 <translation id="9143347780818904997">цягам <ph name="MINUTES" /> хв</translation>

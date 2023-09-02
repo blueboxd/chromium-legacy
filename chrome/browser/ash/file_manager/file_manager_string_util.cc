@@ -379,6 +379,10 @@ void AddStringsGeneric(base::Value::Dict* dict) {
   SET_STRING("BULK_PINNING_GET_STARTED",
              IDS_FILE_BROWSER_BULK_PINNING_GET_STARTED);
   SET_STRING("BULK_PINNING_LISTING", IDS_FILE_BROWSER_BULK_PINNING_LISTING);
+  SET_STRING("BULK_PINNING_LISTING_WITH_MULTIPLE_ITEMS",
+             IDS_FILE_BROWSER_BULK_PINNING_LISTING_WITH_MULTIPLE_ITEMS);
+  SET_STRING("BULK_PINNING_LISTING_WITH_SINGLE_ITEM",
+             IDS_FILE_BROWSER_BULK_PINNING_LISTING_WITH_SINGLE_ITEM);
   SET_STRING("BULK_PINNING_NOT_ENOUGH_SPACE",
              IDS_FILE_BROWSER_BULK_PINNING_NOT_ENOUGH_SPACE);
   SET_STRING("BULK_PINNING_OFFLINE", IDS_FILE_BROWSER_BULK_PINNING_OFFLINE);
@@ -534,6 +538,10 @@ void AddStringsGeneric(base::Value::Dict* dict) {
              IDS_FILE_BROWSER_ERROR_EXTERNAL_DRIVE_LONG_NAME);
   SET_STRING("ERROR_PROGRESS_SUMMARY_PLURAL",
              IDS_FILE_BROWSER_ERROR_PROGRESS_SUMMARY_PLURAL);
+  SET_STRING_PLURAL("WARNING_PROGRESS_SUMMARY_SINGLE",
+                    IDS_FILE_BROWSER_WARNING_PROGRESS_SUMMARY, 1);
+  SET_STRING_PLURAL("WARNING_PROGRESS_SUMMARY_PLURAL",
+                    IDS_FILE_BROWSER_WARNING_PROGRESS_SUMMARY, 2);
   SET_STRING("ERROR_RENAMING", IDS_FILE_BROWSER_ERROR_RENAMING);
   SET_STRING("ERROR_RESERVED_NAME", IDS_FILE_BROWSER_ERROR_RESERVED_NAME);
   SET_STRING("ERROR_WHITESPACE_NAME", IDS_FILE_BROWSER_ERROR_WHITESPACE_NAME);
@@ -1208,10 +1216,13 @@ void AddStringsForVms(base::Value::Dict* dict) {
   dict->Set("FOLDER_SHARED_WITH_BRUSCHETTA",
             l10n_util::GetStringFUTF16(
                 IDS_FILE_BROWSER_FOLDER_SHARED_WITH_BRUSCHETTA, overall_name));
-  dict->Set(
-      "FOLDER_SHARED_WITH_BRUSCHETTA_PLURAL",
-      l10n_util::GetStringFUTF16(
-          IDS_FILE_BROWSER_FOLDER_SHARED_WITH_BRUSCHETTA_PLURAL, overall_name));
+  // ui/file_manager/file_manager/foreground/js/crostini_controller.js expects
+  // a string with "$1" in it, and the JavaScript code will fill in the number
+  // of folders shared.
+  dict->Set("FOLDER_SHARED_WITH_BRUSCHETTA_PLURAL",
+            l10n_util::GetStringFUTF16(
+                IDS_FILE_BROWSER_FOLDER_SHARED_WITH_BRUSCHETTA_PLURAL, u"$1",
+                overall_name));
   dict->Set(
       "SHARE_WITH_BRUSCHETTA_BUTTON_LABEL",
       l10n_util::GetStringFUTF16(
@@ -1224,10 +1235,11 @@ void AddStringsForVms(base::Value::Dict* dict) {
             l10n_util::GetStringFUTF16(
                 IDS_FILE_BROWSER_SHARE_ROOT_FOLDER_WITH_BRUSCHETTA_TITLE,
                 overall_name));
-  dict->Set(
-      "SHARE_ROOT_FOLDER_WITH_BRUSCHETTA",
-      l10n_util::GetStringFUTF16(
-          IDS_FILE_BROWSER_SHARE_ROOT_FOLDER_WITH_BRUSCHETTA, overall_name));
+  // As above, the JavaScript code will replace the "$1".
+  dict->Set("SHARE_ROOT_FOLDER_WITH_BRUSCHETTA",
+            l10n_util::GetStringFUTF16(
+                IDS_FILE_BROWSER_SHARE_ROOT_FOLDER_WITH_BRUSCHETTA,
+                overall_name, u"$1"));
   dict->Set("SHARE_ROOT_FOLDER_WITH_BRUSCHETTA_DRIVE",
             l10n_util::GetStringFUTF16(
                 IDS_FILE_BROWSER_SHARE_ROOT_FOLDER_WITH_BRUSCHETTA_DRIVE,

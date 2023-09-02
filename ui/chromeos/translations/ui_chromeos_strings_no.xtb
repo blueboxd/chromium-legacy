@@ -35,6 +35,7 @@
 <translation id="1280820357415527819">Søker etter mobilnettverk</translation>
 <translation id="1293556467332435079">Filer</translation>
 <translation id="1297922636971898492">Google Disk er ikke tilgjengelig for øyeblikket. Opplastingen starter automatisk på nytt når Google Disk er tilgjengelig.</translation>
+<translation id="1306130176943817227">Kan ikke slette. Elementet er i bruk.</translation>
 <translation id="1307931752636661898">Kan ikke vise Linux-filer</translation>
 <translation id="1313405956111467313">Automatisk konfigurasjon av proxy-tjener</translation>
 <translation id="134645005685694099">Enheten din har ikke nok lagringsplass til å holde filsynkronisering påslått. Nye filer synkroniseres ikke lenger automatisk.</translation>
@@ -170,6 +171,7 @@
 <translation id="23721837607121582">Last ned mobilprofilen, nettverk <ph name="NETWORK_INDEX" /> av <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" /></translation>
 <translation id="2377319039870049694">Bytt til listevisning</translation>
 <translation id="2377590462528165447"><ph name="NUMBER_OF_ITEMS" /> mapper er delt med Linux</translation>
+<translation id="2379576081295865700">Sjekker lagringsplassen … Fant 1 element</translation>
 <translation id="2383454254762599978">Legg i papirkurven</translation>
 <translation id="2387458720915042159">Tilkoblingstype for proxy-tjener</translation>
 <translation id="2389832672041313158">Burmesisk/myanmarsk</translation>
@@ -540,6 +542,7 @@
 <translation id="5218183485292899140">Sveitsisk fransk</translation>
 <translation id="5234764350956374838">Lukk</translation>
 <translation id="5253070652067921974">Opprettet av</translation>
+<translation id="5254207638927440400">Kan ikke flytte filen. Filen er i bruk.</translation>
 <translation id="5257456363153333584">Øyenstikker</translation>
 <translation id="5262311848634918433"><ph name="MARKUP_1" />Tilgang til filer uansett hvor du er, til og med uten nett.<ph name="MARKUP_2" />
         Filer i Google Disk er oppdatert og tilgjengelige fra hvilken som helst enhet.<ph name="MARKUP_3" />
@@ -663,6 +666,7 @@
 <translation id="6164412158936057769">Sommerfugler</translation>
 <translation id="6165508094623778733">Finn ut mer</translation>
 <translation id="6170470584681422115">Smørbrød</translation>
+<translation id="6177854567773392726">Sjekker lagringsplassen … Fant <ph name="ITEMS_FOUND" /> elementer</translation>
 <translation id="6181912134988520389">Gi <ph name="VM_NAME" /> tilgang til filer på Google Disk. Endringer synkroniseres med de andre enhetene dine.</translation>
 <translation id="6187719147498869044">Ungarsk</translation>
 <translation id="6198252989419008588">Endre personlig kode</translation>
@@ -1045,6 +1049,7 @@
 <translation id="9038620279323455325">Filnavnet «<ph name="FILE_NAME" />» finnes allerede. Velg et annet navn.</translation>
 <translation id="9046895021617826162">Tilkoblingen mislyktes</translation>
 <translation id="9065512565307033593">Hvis du ikke verifiserer SIM-kortet, blir nettverkstilgangen din slått av.</translation>
+<translation id="9083722265619106011">{0,plural, =1{1 advarsel.}other{<ph name="COUNT" /> advarsler.}}</translation>
 <translation id="908378762078012445">Russisk med fonetisk AATSEEL-tastatur</translation>
 <translation id="9086302186042011942">Synkroniserer</translation>
 <translation id="9099674669267916096">Antall sider</translation>

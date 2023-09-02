@@ -9,6 +9,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <string_view>
 #include <vector>
 
 #include "base/component_export.h"
@@ -19,6 +20,10 @@
 
 namespace ash {
 namespace input_method {
+
+// Map from language code to associated input method IDs, etc.
+using LanguageCodeToIdsMap =
+    std::multimap<std::string, std::string, std::less<>>;
 
 class InputMethodDelegate;
 
@@ -59,9 +64,12 @@ class COMPONENT_EXPORT(UI_BASE_IME_ASH) InputMethodUtil {
   // The retured input method IDs are sorted by populalirty per
   // chromeos/platform/assets/input_methods/allowlist.txt.
   bool GetInputMethodIdsFromLanguageCode(
-      const std::string& language_code,
+      std::string_view language_code,
       InputMethodType type,
       std::vector<std::string>* out_input_method_ids) const;
+
+  std::vector<std::string> GetInputMethodIdsFromHandwritingLanguage(
+      std::string_view handwriting_language);
 
   // Gets the input method IDs suitable for the first user login, based on
   // the given language code (UI language), and the descriptor of the
@@ -150,8 +158,8 @@ class COMPONENT_EXPORT(UI_BASE_IME_ASH) InputMethodUtil {
  protected:
   // protected: for unit testing as well.
   bool GetInputMethodIdsFromLanguageCodeInternal(
-      const std::multimap<std::string, std::string>& language_code_to_ids,
-      const std::string& normalized_language_code,
+      const LanguageCodeToIdsMap& language_code_to_ids,
+      std::string_view normalized_language_code,
       InputMethodType type,
       std::vector<std::string>* out_input_method_ids) const;
 
@@ -163,10 +171,8 @@ class COMPONENT_EXPORT(UI_BASE_IME_ASH) InputMethodUtil {
       const InputMethodDescriptor& input_method,
       bool short_name) const;
 
-  // Map from language code to associated input method IDs, etc.
-  using LanguageCodeToIdsMap = std::multimap<std::string, std::string>;
-
   LanguageCodeToIdsMap language_code_to_ids_;
+  LanguageCodeToIdsMap handwriting_language_to_ids_;
   InputMethodIdToDescriptorMap id_to_descriptor_;
 
   using EnglishToIDMap = base::flat_map<std::string, int>;

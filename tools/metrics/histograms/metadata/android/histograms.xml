@@ -40,6 +40,46 @@ chromium-metrics-reviews@google.com.
   <variant name=".Video" summary=""/>
 </variants>
 
+<variants name="AndroidNavigationOrSuggestionPrefetch">
+  <variant name="NavigationPrefetch"
+      summary="Recorded for prefetches where Chrome is relatively confident
+               an omnibox navigation is about to occur (i.e. the user
+               selected a search suggestion). These prefetches allow Chrome
+               to kickstart the request without waiting until before unload
+               handlers or other navigation pre-processing mechanisms in
+               Chrome."/>
+  <variant name="SuggestionPrefetch"
+      summary="Recorded for prefetches where an omnibox suggestion from the
+               suggestion server recommends a prefetch of a suggestion
+               results page."/>
+</variants>
+
+<variants name="AndroidNavigationPrefetchOnly">
+  <variant name="NavigationPrefetch"
+      summary="Recorded for prefetches where Chrome is relatively confident
+               an omnibox navigation is about to occur (i.e. the user
+               selected a search suggestion). These prefetches allow Chrome
+               to kickstart the request without waiting until before unload
+               handlers or other navigation pre-processing mechanisms in
+               Chrome."/>
+</variants>
+
+<variants name="AndroidSearchPrefetch">
+  <variant name="SearchPrefetch"
+      summary="Search Prefetch issues results page requests in response to
+               either the suggestion server or the Omnibox client being
+               confident that the user will navigate to a specific search
+               suggestion. These requests are then served instantly to the
+               user when the user navigates to a search suggestion with the
+               same search terms. These requests can have mismatching query
+               params as the Omnibox client updates the search navigation URL
+               as the user types more into the Omnibox. The suggestion server
+               issues prefetch hints along with the suggestion request.
+               Additionally, the Omnibox client decides to prefetch when the
+               user has chosen (or likely chosen) a search suggestion to
+               initiate the search suggestion navigation earlier."/>
+</variants>
+
 <variants name="ChildProcessConnectionMetricsBindingState">
   <variant name="ContentModerate"
       summary="Moderate binding excluding BindingManager bindings"/>
@@ -153,7 +193,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.ActivityStop.PercentageOfTabsUsed" units="%"
-    expires_after="2023-12-24">
+    expires_after="2024-02-25">
   <owner>gauravjj@google.com</owner>
   <owner>skavuluru@google.com</owner>
   <owner>clank-large-form-factors@google.com</owner>
@@ -565,7 +605,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.ChildMismatch.AppInfoError2" enum="ChildAppInfoError"
-    expires_after="2023-12-24">
+    expires_after="2024-02-25">
   <owner>torne@chromium.org</owner>
   <owner>boliu@chromium.org</owner>
   <summary>
@@ -592,7 +632,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.ChildMismatch.BrowserVersionChanged2"
-    enum="BooleanChanged" expires_after="2023-12-24">
+    enum="BooleanChanged" expires_after="2024-02-25">
   <owner>torne@chromium.org</owner>
   <owner>boliu@chromium.org</owner>
   <summary>
@@ -1106,7 +1146,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.DragDrop.FromWebContent.Duration{DropResult}"
-    units="ms" expires_after="2023-12-08">
+    units="ms" expires_after="2024-02-20">
   <owner>wenyufu@chromium.org</owner>
   <owner>clank-large-form-factors@google.com</owner>
   <summary>
@@ -1207,7 +1247,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.DragDrop.Image.Size" units="KB"
-    expires_after="2023-12-17">
+    expires_after="2024-02-20">
   <owner>shuyng@google.com</owner>
   <owner>clank-large-form-factors@google.com</owner>
   <summary>
@@ -1228,7 +1268,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.DragDrop.ToOmnibox.DropType"
-    enum="AndroidToolbarDropType" expires_after="2023-12-10">
+    enum="AndroidToolbarDropType" expires_after="2024-02-25">
   <owner>wenyufu@chromium.org</owner>
   <owner>clank-large-form-factors@google.com</owner>
   <summary>
@@ -1278,7 +1318,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="Android.FeatureModules.AvailabilityStatus"
-    enum="FeatureModuleAvailabilityStatus" expires_after="2023-12-17">
+    enum="FeatureModuleAvailabilityStatus" expires_after="2024-02-20">
 <!-- Name completed by histogram_suffixes
        name="AndroidFeatureModuleName" -->
 
@@ -1311,7 +1351,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="Android.FeatureModules.InstallingStatus"
-    enum="FeatureModuleInstallingStatus" expires_after="2023-12-17">
+    enum="FeatureModuleInstallingStatus" expires_after="2024-02-20">
 <!-- Name completed by histogram_suffixes
        name="AndroidFeatureModuleName" -->
 
@@ -1476,7 +1516,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Android.Fonts.TimeDownloadableFontsRetrievedAfterFirstDraw{ActivityType}"
-    units="ms" expires_after="2023-12-15">
+    units="ms" expires_after="2024-02-20">
   <owner>sinansahin@google.com</owner>
   <owner>twellington@chromium.org</owner>
   <summary>
@@ -1502,7 +1542,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Android.Fonts.TimeDownloadableFontsRetrievedBeforeFirstDraw{ActivityType}"
-    units="ms" expires_after="2023-12-15">
+    units="ms" expires_after="2024-02-20">
   <owner>sinansahin@google.com</owner>
   <owner>twellington@chromium.org</owner>
   <summary>
@@ -1539,7 +1579,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.GridTabSwitcher.ThumbnailFetchingResult"
-    enum="GridTabSwitcherThumbnailFetchingResult" expires_after="2023-12-24">
+    enum="GridTabSwitcherThumbnailFetchingResult" expires_after="2024-02-25">
   <owner>ckitagawa@chromium.org</owner>
   <owner>clank-isochron-team@google.com</owner>
   <summary>
@@ -1624,7 +1664,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.IncognitoReauth.PromoImpressionAfterActionCount"
-    units="count" expires_after="2023-12-24">
+    units="count" expires_after="2024-02-25">
   <owner>arabm@google.com</owner>
   <owner>chrome-incognito@google.com</owner>
   <summary>
@@ -1670,7 +1710,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.Intent.MainFrameIntentLaunch"
-    enum="MainFrameIntentLaunch" expires_after="2023-12-17">
+    enum="MainFrameIntentLaunch" expires_after="2024-02-20">
   <owner>mthiesse@chromium.org</owner>
   <owner>yfriedman@chromium.org</owner>
   <summary>
@@ -1746,7 +1786,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.Jank.AsyncTaskGetOnUiThreadStatus"
-    enum="AsyncTaskStatus" expires_after="2023-12-24">
+    enum="AsyncTaskStatus" expires_after="2024-02-25">
   <owner>smaier@chromium.org</owner>
   <owner>agrieve@chromium.org</owner>
   <summary>
@@ -2107,7 +2147,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.MultiWindowMode.TotalDuration" units="ms"
-    expires_after="2023-12-16">
+    expires_after="2024-02-20">
   <owner>skavuluru@google.com</owner>
   <owner>twellington@chromium.org</owner>
   <owner>clank-large-form-factors@google.com</owner>
@@ -2147,7 +2187,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.Omnibox.InputToNavigationControllerStart" units="ms"
-    expires_after="2023-12-24">
+    expires_after="2024-02-25">
   <owner>spelchat@chromium.org</owner>
   <owner>chrome-brapp-loading@google.com</owner>
   <summary>
@@ -2158,20 +2198,16 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.Omnibox.InvalidMatch" enum="MatchResult"
-    expires_after="2024-01-14">
+    expires_after="2024-08-14">
   <owner>ender@chromium.org</owner>
-  <owner>tedchoc@chromium.org</owner>
-  <owner>mpearson@chromium.org</owner>
-  <owner>jdonnelly@chromium.org</owner>
+  <owner>chrome-mobile-search@google.com</owner>
   <summary>
     Recorded every time AutocompleteController.java interacts with
     autocomplete_controller_android.cc. Indicates how often matches referenced
     by Java are different from the matches referenced by C++ at any position.
 
-    Note: Chrome M91 and before only increased this histogram for specific Match
-    objects that the user interacted with. As of M92, this histogram is
-    increased for every case where at least one Match referenced by Java was
-    different from its corresponding C++ match at the same exact position.
+    Note: starting Chrome 118, this is recorded every time we detect a
+    non-cached match, when Native and Java AutocompleteResult objects differ.
   </summary>
 </histogram>
 
@@ -2220,7 +2256,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.Omnibox.RefineActionUsage" enum="RefineActionUsage"
-    expires_after="2023-12-24">
+    expires_after="2024-02-25">
   <owner>ender@chromium.org</owner>
   <owner>jdonnelly@chromium.org</owner>
   <summary>
@@ -2237,7 +2273,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.Omnibox.SetGeolocationHeadersTime" units="ms"
-    expires_after="2023-12-17">
+    expires_after="2024-02-20">
   <owner>spelchat@chromium.org</owner>
   <owner>chrome-brapp-loading@google.com</owner>
   <summary>
@@ -2278,7 +2314,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.Omnibox.SuggestionList.LayoutTime2" units="ms"
-    expires_after="2023-12-17">
+    expires_after="2024-02-20">
   <owner>ender@chromium.org</owner>
   <owner>mpearson@chromium.org</owner>
   <owner>jdonnelly@chromium.org</owner>
@@ -2336,7 +2372,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.Omnibox.SuggestionList.MeasureTime2" units="ms"
-    expires_after="2023-12-17">
+    expires_after="2024-02-20">
   <owner>ender@chromium.org</owner>
   <owner>mpearson@chromium.org</owner>
   <owner>jdonnelly@chromium.org</owner>
@@ -2364,7 +2400,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.Omnibox.SuggestionList.RequestToUiModel.First"
-    units="ms" expires_after="2023-12-24">
+    units="ms" expires_after="2024-02-25">
   <owner>ender@google.com</owner>
   <owner>pnoland@chromium.org</owner>
   <owner>gangwu@chromium.org</owner>
@@ -2381,7 +2417,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.Omnibox.SuggestionList.RequestToUiModel.Last"
-    units="ms" expires_after="2023-12-24">
+    units="ms" expires_after="2024-02-25">
   <owner>ender@google.com</owner>
   <owner>pnoland@chromium.org</owner>
   <owner>gangwu@chromium.org</owner>
@@ -2468,7 +2504,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.Omnibox.SuggestionView.CreateTime2" units="ms"
-    expires_after="2023-12-17">
+    expires_after="2024-02-20">
   <owner>ender@chromium.org</owner>
   <owner>mpearson@chromium.org</owner>
   <owner>jdonnelly@chromium.org</owner>
@@ -2605,10 +2641,9 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.Omnibox.UsedSuggestionFromCache" enum="Boolean"
-    expires_after="2024-01-14">
+    expires_after="2024-08-14">
   <owner>ender@chromium.org</owner>
-  <owner>jdonnelly@chromium.org</owner>
-  <owner>mpearson@chromium.org</owner>
+  <owner>chrome-mobile-search@google.com</owner>
   <summary>
     Records whether users interacted with suggestion originating from Java
     cache.
@@ -2622,7 +2657,90 @@ chromium-metrics-reviews@google.com.
 
     Recorded every time the User initiates navigation using the Omnibox or the
     Suggestions list, regardless of context.
+
+    Note: starting Chrome 118 this is recorded for every Autocomplete action
+    requiring native AutocompleteMatch instance.
   </summary>
+</histogram>
+
+<histogram
+    name="Android.Omnibox.{AndroidSearchPrefetch}.GeoLocationTime.{AndroidNavigationOrSuggestionPrefetch}"
+    units="ms" expires_after="2023-10-15">
+  <owner>ryansturm@chromium.org</owner>
+  <owner>curranmax@chromium.org</owner>
+  <owner>chrome-search@google.com</owner>
+  <summary>
+    {AndroidSearchPrefetch}
+
+    The amount of time it takes to get the Geo Location header for a prefetch
+    request.
+
+    {AndroidNavigationOrSuggestionPrefetch}
+  </summary>
+  <token key="AndroidSearchPrefetch" variants="AndroidSearchPrefetch"/>
+  <token key="AndroidNavigationOrSuggestionPrefetch"
+      variants="AndroidNavigationOrSuggestionPrefetch"/>
+</histogram>
+
+<histogram
+    name="Android.Omnibox.{AndroidSearchPrefetch}.NumPrefetchesStartedInOmniboxSession.{AndroidNavigationPrefetchOnly}"
+    units="count" expires_after="2023-10-15">
+  <owner>ryansturm@chromium.org</owner>
+  <owner>curranmax@chromium.org</owner>
+  <owner>chrome-search@google.com</owner>
+  <summary>
+    {AndroidSearchPrefetch}
+
+    The number of prefetches that were successfully started from touch down
+    events. This is recorded once per omnibox session.
+
+    {AndroidNavigationPrefetchOnly}
+  </summary>
+  <token key="AndroidSearchPrefetch" variants="AndroidSearchPrefetch"/>
+  <token key="AndroidNavigationPrefetchOnly"
+      variants="AndroidNavigationPrefetchOnly"/>
+</histogram>
+
+<histogram
+    name="Android.Omnibox.{AndroidSearchPrefetch}.TouchDownPrefetchResult.{AndroidNavigationPrefetchOnly}"
+    enum="SearchPrefetchTouchDownPrefetchResult" expires_after="2023-10-15">
+  <owner>ryansturm@chromium.org</owner>
+  <owner>curranmax@chromium.org</owner>
+  <owner>chrome-search@google.com</owner>
+  <summary>
+    {AndroidSearchPrefetch}
+
+    Whether or not the last prefetch started from the touch down trigger was
+    used for a navigation. This is recorded once per omnibox session.
+
+    {AndroidNavigationPrefetchOnly}
+  </summary>
+  <token key="AndroidSearchPrefetch" variants="AndroidSearchPrefetch"/>
+  <token key="AndroidNavigationPrefetchOnly"
+      variants="AndroidNavigationPrefetchOnly"/>
+</histogram>
+
+<histogram
+    name="Android.Omnibox.{AndroidSearchPrefetch}.TouchDownProcessTime.{AndroidNavigationPrefetchOnly}"
+    units="ms" expires_after="2023-10-15">
+  <owner>ryansturm@chromium.org</owner>
+  <owner>curranmax@chromium.org</owner>
+  <owner>chrome-search@google.com</owner>
+  <summary>
+    {AndroidSearchPrefetch}
+
+    The amount of time it takes to process a touch down event for Search
+    Prefetch. This includes cases where: 1) the event is filtered out in the
+    Java code (native is not initialized, the limit for preetches in an omnibox
+    session is reached, etc.), 2) the event is sent to native but the prefetch
+    is not started, and 3) the event is sent to native and the prefetch request
+    is started.
+
+    {AndroidNavigationPrefetchOnly}
+  </summary>
+  <token key="AndroidSearchPrefetch" variants="AndroidSearchPrefetch"/>
+  <token key="AndroidNavigationPrefetchOnly"
+      variants="AndroidNavigationPrefetchOnly"/>
 </histogram>
 
 <histogram name="Android.OmniboxFocusReason" enum="OmniboxFocusReason"
@@ -3264,7 +3382,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.RequestDesktopSite.Changed" enum="SiteLayout"
-    expires_after="2023-12-17">
+    expires_after="2024-02-20">
   <owner>shuyng@google.com</owner>
   <owner>twellington@chromium.org</owner>
   <summary>
@@ -3275,7 +3393,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.RequestDesktopSite.DomainSettingChanged"
-    enum="Boolean" expires_after="2023-12-17">
+    enum="Boolean" expires_after="2024-02-20">
   <owner>shuyng@google.com</owner>
   <owner>twellington@chromium.org</owner>
   <summary>
@@ -3287,7 +3405,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.RequestDesktopSite.PerSiteIphDismissed.AppMenuOpened"
-    enum="Boolean" expires_after="2023-12-17">
+    enum="Boolean" expires_after="2024-02-20">
   <owner>aishwaryarj@google.com</owner>
   <owner>shuyng@google.com</owner>
   <summary>
@@ -3297,7 +3415,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.RequestDesktopSite.SubDomainSettingChanged"
-    enum="Boolean" expires_after="2023-12-17">
+    enum="Boolean" expires_after="2024-02-20">
   <owner>shuyng@google.com</owner>
   <owner>twellington@chromium.org</owner>
   <summary>
@@ -3345,7 +3463,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Android.RequestDesktopSite.UserSwitchToDesktop.DomainSettingAdded"
-    enum="Boolean" expires_after="2023-12-17">
+    enum="Boolean" expires_after="2024-02-20">
   <owner>shuyng@google.com</owner>
   <owner>twellington@chromium.org</owner>
   <summary>
@@ -3358,7 +3476,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Android.RequestDesktopSite.UserSwitchToDesktop.SubDomainSettingAdded"
-    enum="Boolean" expires_after="2023-12-17">
+    enum="Boolean" expires_after="2024-02-20">
   <owner>shuyng@google.com</owner>
   <owner>twellington@chromium.org</owner>
   <summary>
@@ -3578,6 +3696,17 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Android.SelectFileDialogUploadMethods"
+    enum="SelectFileDialogUploadMethods" expires_after="2024-01-07">
+  <owner>finnur@chromium.org</owner>
+  <owner>peter@chromium.org</owner>
+  <summary>
+    Records the method of upload for files uploaded from Chrome via the
+    SelectFileDialog, focusing mostly on image and video types. Recorded when
+    user uploads files to a website (once per item uploaded).
+  </summary>
+</histogram>
+
 <histogram name="Android.ShowSelectionMenuSourceType" enum="MenuSourceType"
     expires_after="2024-01-14">
   <owner>mvanouwerkerk@chromium.org</owner>
@@ -3716,7 +3845,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.Tab.CreateNewTabDuration.{TabLaunchType}" units="ms"
-    expires_after="2023-12-10">
+    expires_after="2024-02-20">
   <owner>sreejakshetty@chromium.org</owner>
   <owner>spelchat@chromium.org</owner>
   <owner>chrome-brapp-loading@google.com</owner>
@@ -3827,7 +3956,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.TabMultiSelectV2.SharingState"
-    enum="TabSelectionEditorShareActionState" expires_after="2023-12-24">
+    enum="TabSelectionEditorShareActionState" expires_after="2024-02-25">
   <owner>ckitagawa@chromium.org</owner>
   <owner>bjfong@google.com</owner>
   <owner>fredmello@chromium.org</owner>
@@ -3894,6 +4023,85 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Android.TabStrip.PlaceholderStripLeftoverTabsCount"
+    units="tabs" expires_after="2023-12-31">
+  <owner>nemco@google.com</owner>
+  <owner>skavuluru@google.com</owner>
+  <owner>twellington@chromium.org</owner>
+  <owner>clank-large-form-factors@google.com</owner>
+  <summary>
+    We show empty placeholder tabs on the tablet tab strip during startup. The
+    placeholders will be replaced by real tabs once they are restored,
+    preventing a visual flicker/scroll jank as the restored tabs are rapidly
+    populated to the strip. The number of placeholders and positioning of the
+    active tab is calculated based on tab metadata saved to disk, and thus does
+    not account for tabs created by other means during startup (e.g. user
+    interaction). This histogram records the number of placeholder tabs, if any
+    that are leftover when all tabs have been restored. This is captured when
+    all tabs are finished restoring.
+  </summary>
+</histogram>
+
+<histogram
+    name="Android.TabStrip.PlaceholderStripTabsCreatedDuringRestoreCount"
+    units="tabs" expires_after="2023-12-31">
+  <owner>nemco@google.com</owner>
+  <owner>skavuluru@google.com</owner>
+  <owner>twellington@chromium.org</owner>
+  <owner>clank-large-form-factors@google.com</owner>
+  <summary>
+    We show empty placeholder tabs on the tablet tab strip during startup. The
+    placeholders will be replaced by real tabs once they are restored,
+    preventing a visual flicker/scroll jank as the restored tabs are rapidly
+    populated to the strip. The number of placeholders and positioning of the
+    active tab is calculated based on tab metadata saved to disk, and thus does
+    not account for tabs created by other means during startup (e.g. user
+    interaction). This histogram records the number of tabs created in this way
+    (and thus are not accounted for in the placeholder strip). This is captured
+    when all tabs are finished restoring.
+  </summary>
+</histogram>
+
+<histogram name="Android.TabStrip.PlaceholderStripTabsNeededDuringRestoreCount"
+    units="tabs" expires_after="2023-12-31">
+  <owner>nemco@google.com</owner>
+  <owner>skavuluru@google.com</owner>
+  <owner>twellington@chromium.org</owner>
+  <owner>clank-large-form-factors@google.com</owner>
+  <summary>
+    We show empty placeholder tabs on the tablet tab strip during startup. The
+    placeholders will be replaced by real tabs once they are restored,
+    preventing a visual flicker/scroll jank as the restored tabs are rapidly
+    populated to the strip. The number of placeholders and positioning of the
+    active tab is calculated based on tab metadata saved to disk, and thus does
+    not account for tabs created by other means during startup (e.g. user
+    interaction). This histogram records the number of restored tabs, if any,
+    that we unexpectedly did not allocate a placeholder for. This is captured
+    when all tabs are finished restoring.
+  </summary>
+</histogram>
+
+<histogram name="Android.TabStrip.PlaceholderStripVisibleDuration" units="ms"
+    expires_after="2023-12-31">
+  <owner>nemco@google.com</owner>
+  <owner>skavuluru@google.com</owner>
+  <owner>twellington@chromium.org</owner>
+  <owner>clank-large-form-factors@google.com</owner>
+  <summary>
+    We show empty placeholder tabs on the tablet tab strip during startup. The
+    placeholders will be replaced by real tabs once they are restored,
+    preventing a visual flicker/scroll jank as the restored tabs are rapidly
+    populated to the strip. The number of placeholders and positioning of the
+    active tab is calculated based on tab metadata saved to disk, and thus does
+    not account for tabs created by other means during startup (e.g. user
+    interaction). This histogram records the amount of time for which the
+    placeholders are ready to be shown before the tab state is initialized. This
+    will roughly measure the amount of time that we could have been seeing the
+    flicker/scroll jank without this feature. This is captured when all tabs are
+    finished restoring.
+  </summary>
+</histogram>
+
 <histogram name="Android.TabStrip.TimeToBufferSwapAfterInitializeTabState"
     units="ms" expires_after="2023-12-31">
   <owner>nemco@google.com</owner>
@@ -3925,7 +4133,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.TabStrip.TimeToSwitchTab" units="ms"
-    expires_after="2023-12-24">
+    expires_after="2024-02-25">
   <owner>gauravjj@google.com</owner>
   <owner>twellington@chromium.org</owner>
   <owner>clank-large-form-factors@google.com</owner>
@@ -4196,6 +4404,35 @@ chromium-metrics-reviews@google.com.
     each time an API is called.
 
     For historical data (before M99), see &quot;WebView.ApiCall&quot;.
+  </summary>
+</histogram>
+
+<histogram name="Android.WebView.ApiCall.Static" enum="WebViewApiCallStatic"
+    expires_after="2024-08-22">
+  <owner>ntfschr@chromium.org</owner>
+  <owner>woa-performance@google.com</owner>
+  <owner>src/android_webview/OWNERS</owner>
+  <summary>
+    Records calls to static WebView APIs through the platform (framework) APIs.
+    This may include AndroidX API calls on OS versions where the AndroidX
+    library just calls through the platform API (see
+    &quot;Android.WebView.AndroidX.ApiCall&quot; for details). This is logged
+    each time an API is called.
+
+    Recorded in M118+.
+  </summary>
+</histogram>
+
+<histogram name="Android.WebView.ApiCall.System" enum="WebViewApiCallSystem"
+    expires_after="2024-08-22">
+  <owner>ntfschr@chromium.org</owner>
+  <owner>woa-performance@google.com</owner>
+  <owner>src/android_webview/OWNERS</owner>
+  <summary>
+    Records calls to WebView APIs made by the system through the platform
+    (framework) APIs. This is logged each time an API is called.
+
+    Recorded in M118+.
   </summary>
 </histogram>
 
@@ -4834,7 +5071,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.WebView.MixedContent.Mode"
-    enum="WebViewMixedContentMode" expires_after="2023-08-25">
+    enum="WebViewMixedContentMode" expires_after="2024-08-25">
   <owner>ntfschr@chromium.org</owner>
   <owner>carlosil@chromium.org</owner>
   <owner>src/android_webview/OWNERS</owner>
@@ -4975,7 +5212,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.WebView.OptionallyBlockableMixedContentLoaded.Mode"
-    enum="WebViewMixedContentMode" expires_after="2023-08-25">
+    enum="WebViewMixedContentMode" expires_after="2024-08-25">
   <owner>ntfschr@chromium.org</owner>
   <owner>carlosil@chromium.org</owner>
   <owner>src/android_webview/OWNERS</owner>
@@ -5421,16 +5658,16 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Android.WebView.UserAgentClientHintsMetadata.Available"
-    enum="BooleanAvailable" expires_after="2024-02-01">
+<histogram name="Android.WebView.UserAgentClientHintsMetadata.AvailableType"
+    enum="UserAgentMetadataAvailableType" expires_after="2024-05-01">
   <owner>victortan@chromium.org</owner>
   <owner>torne@chromium.org</owner>
   <owner>src/android_webview/OWNERS</owner>
   <summary>
-    Records when we propagate user-agent client hints metadata if the
-    kUserAgentClientHint is enabled and the overridden user-agent contains the
-    default user-agent. This is recorded every time webview updates the
-    user-agent for the request.
+    Records when we propagate user-agent client hints metadata in different
+    cases. This give us an idea to understand better how the user-agent metadata
+    overrides and user-agent overrides work. This is recorded every time webview
+    updates the user-agent or user-agent medatadata for the request.
   </summary>
 </histogram>
 

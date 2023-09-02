@@ -7,7 +7,7 @@ import '../strings.m.js';
 import {loadTimeData} from 'chrome://resources/ash/common/load_time_data.m.js';
 import {assertNotReached} from 'chrome://resources/js/assert_ts.js';
 
-import {Accelerator, AcceleratorCategory, AcceleratorId, AcceleratorInfo, AcceleratorSource, AcceleratorState, AcceleratorSubcategory, AcceleratorType, Modifier, MojoAcceleratorInfo, MojoSearchResult, StandardAcceleratorInfo, TextAcceleratorInfo} from './shortcut_types.js';
+import {Accelerator, AcceleratorCategory, AcceleratorId, AcceleratorInfo, AcceleratorKeyState, AcceleratorSource, AcceleratorState, AcceleratorSubcategory, AcceleratorType, Modifier, MojoAcceleratorInfo, MojoSearchResult, StandardAcceleratorInfo, TextAcceleratorInfo} from './shortcut_types.js';
 
 // TODO(jimmyxgong): ChromeOS currently supports up to F24 but can be updated to
 // F32. Update here when F32 is available.
@@ -34,7 +34,7 @@ export const keyCodeToModifier: {[keyCode: number]: number} = {
 export const unidentifiedKeyCodeToKey: {[keyCode: number]: string} = {
   159: 'MicrophoneMuteToggle',
   237: 'EmojiPicker',
-  238: 'ToggleDictation',
+  238: 'EnableOrToggleDictation',
   239: 'ViewAllApps',
 };
 
@@ -42,25 +42,6 @@ export const unidentifiedKeyCodeToKey: {[keyCode: number]: string} = {
 export const isCustomizationDisabled = (): boolean => {
   return !loadTimeData.getBoolean('isCustomizationEnabled');
 };
-
-// Returns true if search is enabled via the feature flag.
-export const isSearchEnabled = (): boolean => {
-  return loadTimeData.getBoolean('isSearchEnabled');
-};
-
-export const areAcceleratorsEqual =
-    (accelA: Accelerator, accelB: Accelerator): boolean => {
-      // This picking of types is necessary because Accelerators are a subset
-      // of MojoAccelerators, and MojoAccelerators have properties that error
-      // when they're stringified. Due to TypeScript's structural typing, we
-      // can't prevent MojoAccelerators from being passed to this function.
-      const accelAComparable:
-          Accelerator = {keyCode: accelA.keyCode, modifiers: accelA.modifiers};
-      const accelBComparable:
-          Accelerator = {keyCode: accelB.keyCode, modifiers: accelB.modifiers};
-      return JSON.stringify(accelAComparable) ===
-          JSON.stringify(accelBComparable);
-    };
 
 export const isTextAcceleratorInfo =
     (accelInfo: AcceleratorInfo|MojoAcceleratorInfo):
@@ -88,7 +69,8 @@ export const createEmptyAccelInfoFromAccel =
     };
 
 export const createEmptyAcceleratorInfo = (): StandardAcceleratorInfo => {
-  return createEmptyAccelInfoFromAccel({modifiers: 0, keyCode: 0});
+  return createEmptyAccelInfoFromAccel(
+      {modifiers: 0, keyCode: 0, keyState: AcceleratorKeyState.PRESSED});
 };
 
 export const getAcceleratorId =

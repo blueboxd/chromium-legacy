@@ -8,18 +8,12 @@
 #include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_feature_list.h"
-#include "chrome/browser/browser_features.h"
 #include "chrome/browser/command_updater_impl.h"
 #include "chrome/browser/ui/chrome_pages.h"
-#include "chrome/browser/ui/views/user_education/browser_user_education_service.h"
 #include "chrome/browser/ui/webui/browser_command/browser_command_handler.h"
-#include "chrome/common/chrome_features.h"
+#include "chrome/browser/user_education/user_education_service.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/content_settings/core/common/pref_names.h"
-#include "components/password_manager/core/common/password_manager_pref_names.h"
-#include "components/performance_manager/public/features.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/user_education/common/help_bubble_factory_registry.h"
@@ -29,7 +23,6 @@
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/interaction/element_tracker.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/base/window_open_disposition_utils.h"
 #include "ui/webui/resources/js/browser_command/browser_command.mojom.h"
@@ -64,6 +57,11 @@ class TestCommandHandler : public BrowserCommandHandler {
                               profile,
                               supported_commands) {}
   ~TestCommandHandler() override = default;
+
+  void NavigateToEnhancedProtectionSetting() override {
+    // The functionality of opening a URL is removed, as it cannot be executed
+    // in a unittest.
+  }
 
   void NavigateToURL(const GURL&, WindowOpenDisposition) override {
     // The functionality of opening a URL is removed, as it cannot be executed
@@ -191,6 +189,8 @@ class MockCommandHandler : public TestCommandHandler {
  public:
   explicit MockCommandHandler(Profile* profile) : TestCommandHandler(profile) {}
   ~MockCommandHandler() override = default;
+
+  MOCK_METHOD(void, NavigateToEnhancedProtectionSetting, ());
 
   MOCK_METHOD(void, NavigateToURL, (const GURL&, WindowOpenDisposition));
 
@@ -417,15 +417,11 @@ TEST_F(
 TEST_F(BrowserCommandHandlerTest, OpenSafeBrowsingEnhancedProtectionCommand) {
   // The kOpenSafeBrowsingEnhancedProtectionSettings command opens a new
   // settings window with the Safe Browsing settings with the Enhanced
-  // Protection section expanded, and the correct disposition.
+  // Protection section expanded, and an In-product help bubble
   ClickInfoPtr info = ClickInfo::New();
   info->middle_button = true;
   info->meta_key = true;
-  EXPECT_CALL(
-      *command_handler_,
-      NavigateToURL(GURL(chrome::GetSettingsUrl(
-                        chrome::kSafeBrowsingEnhancedProtectionSubPage)),
-                    DispositionFromClick(*info)));
+  EXPECT_CALL(*command_handler_, NavigateToEnhancedProtectionSetting());
   EXPECT_TRUE(ExecuteCommand(
       Command::kOpenSafeBrowsingEnhancedProtectionSettings, std::move(info)));
 }

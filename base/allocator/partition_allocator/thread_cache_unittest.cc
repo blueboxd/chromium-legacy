@@ -62,11 +62,11 @@ class DeltaCounter {
 std::unique_ptr<PartitionAllocatorForTesting> CreateAllocator() {
   std::unique_ptr<PartitionAllocatorForTesting> allocator =
       std::make_unique<PartitionAllocatorForTesting>(PartitionOptions {
-        .aligned_alloc = PartitionOptions::AlignedAlloc::kAllowed,
+        .aligned_alloc = PartitionOptions::kAllowed,
 #if !BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
-        .thread_cache = PartitionOptions::ThreadCache::kEnabled,
+        .thread_cache = PartitionOptions::kEnabled,
 #endif  // BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
-        .star_scan_quarantine = PartitionOptions::StarScanQuarantine::kAllowed,
+        .star_scan_quarantine = PartitionOptions::kAllowed,
       });
   allocator->root()->UncapEmptySlotSpanMemoryForTesting();
 
@@ -272,8 +272,8 @@ TEST_P(PartitionAllocThreadCacheTest, Purge) {
 
 TEST_P(PartitionAllocThreadCacheTest, NoCrossPartitionCache) {
   PartitionAllocatorForTesting allocator(PartitionOptions{
-      .aligned_alloc = PartitionOptions::AlignedAlloc::kAllowed,
-      .star_scan_quarantine = PartitionOptions::StarScanQuarantine::kAllowed,
+      .aligned_alloc = PartitionOptions::kAllowed,
+      .star_scan_quarantine = PartitionOptions::kAllowed,
   });
 
   size_t bucket_index = FillThreadCacheAndReturnIndex(kSmallSize);
@@ -640,18 +640,10 @@ class ThreadDelegateForMultipleThreadCachesAccounting
 
 }  // namespace
 
-// TODO(https://crbug.com/1472705): Flaky on Android.
-#if BUILDFLAG(IS_ANDROID)
-#define MAYBE_MultipleThreadCachesAccounting \
-  DISABLED_MultipleThreadCachesAccounting
-#else
-#define MAYBE_MultipleThreadCachesAccounting MultipleThreadCachesAccounting
-#endif
-
-TEST_P(PartitionAllocThreadCacheTest, MAYBE_MultipleThreadCachesAccounting) {
+TEST_P(PartitionAllocThreadCacheTest, MultipleThreadCachesAccounting) {
   ThreadCacheStats wqthread_stats{0};
-#if !(BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_ANDROID) ||   \
-      BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_LINUX)) && \
+#if (BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_CHROMEOS) || \
+     BUILDFLAG(IS_LINUX)) &&                                                   \
     BUILDFLAG(USE_PARTITION_ALLOC_AS_MALLOC)
   {
     // iOS and MacOS 15 create worker threads internally(start_wqthread).
@@ -1419,7 +1411,7 @@ TEST_P(PartitionAllocThreadCacheTest, AllocationRecordingAligned) {
                                  {128, 2 * internal::PartitionPageSize()},
                                  {(4 << 20) + 1, 1 << 19}};
   for (auto [requested_size, alignment] : size_alignments) {
-    void* ptr = root()->AlignedAllocWithFlags(0, alignment, requested_size);
+    void* ptr = root()->AlignedAlloc(alignment, requested_size);
     ASSERT_TRUE(ptr);
     alloc_count++;
     total_size += root()->GetUsableSize(ptr);

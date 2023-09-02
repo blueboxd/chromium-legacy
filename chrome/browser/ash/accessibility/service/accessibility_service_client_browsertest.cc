@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -292,7 +292,8 @@ class AccessibilityServiceClientTest : public InProcessBrowserTest {
   }
 
   // Unowned.
-  raw_ptr<FakeAccessibilityService, ExperimentalAsh> fake_service_ = nullptr;
+  raw_ptr<FakeAccessibilityService, DanglingUntriaged | ExperimentalAsh>
+      fake_service_ = nullptr;
 
  private:
   std::unique_ptr<KeyedService> CreateTestAccessibilityService(

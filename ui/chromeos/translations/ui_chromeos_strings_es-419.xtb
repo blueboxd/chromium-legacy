@@ -35,6 +35,7 @@
 <translation id="1280820357415527819">Buscando redes móviles</translation>
 <translation id="1293556467332435079">Archivos</translation>
 <translation id="1297922636971898492">Actualmente, Google Drive no está disponible. La carga se reiniciará automáticamente cuando vuelva a estar disponible.</translation>
+<translation id="1306130176943817227">No se puede borrar el elemento porque está en uso.</translation>
 <translation id="1307931752636661898">No se pueden ver los archivos de Linux</translation>
 <translation id="1313405956111467313">Configuración automática de proxy</translation>
 <translation id="134645005685694099">Tu dispositivo no tiene suficiente espacio de almacenamiento para mantener activada la sincronización de archivos. Los archivos nuevos ya no se sincronizarán de forma automática.</translation>
@@ -94,6 +95,7 @@
 <translation id="174937106936716857">Cantidad total de archivos</translation>
 <translation id="1755345808328621801">Este archivo está diseñado para PCs que utilizan software de Windows, por lo que no es compatible con tu dispositivo, el cual ejecuta ChromeOS. Busca una aplicación equivalente adecuada en Chrome Web Store.</translation>
 <translation id="1757915090001272240">Wide Latin</translation>
+<translation id="1761091787730831947">Compartir con <ph name="VM_NAME" /></translation>
 <translation id="1773212559869067373">Certificado de autenticación rechazado de forma local</translation>
 <translation id="1775381402323441512">Información del video</translation>
 <translation id="180035236176489073">Tienes que estar conectado para acceder a estos archivos.</translation>
@@ -169,6 +171,7 @@
 <translation id="23721837607121582">Descarga un perfil de dispositivo móvil, red <ph name="NETWORK_INDEX" /> de <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" /></translation>
 <translation id="2377319039870049694">Cambiar a la vista de lista</translation>
 <translation id="2377590462528165447"><ph name="NUMBER_OF_ITEMS" /> carpetas compartidas con Linux</translation>
+<translation id="2379576081295865700">Comprobando el espacio de almacenamiento… Se encontró 1 elemento</translation>
 <translation id="2383454254762599978">Mover a la papelera</translation>
 <translation id="2387458720915042159">Tipo de conexión proxy</translation>
 <translation id="2389832672041313158">Birmano</translation>
@@ -210,6 +213,7 @@
 <translation id="2718540689505416944">Instalar la app con Linux</translation>
 <translation id="2719020180254996569">Red <ph name="NETWORK_INDEX" /> de <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, detalles</translation>
 <translation id="2724954091494693138">Turco con teclado Turco-F</translation>
+<translation id="2732288874651063549">Administrar la configuración para compartir con <ph name="VM_NAME" /></translation>
 <translation id="2732839045120506979">Vietnamita (VNI)</translation>
 <translation id="2735623501230989521">Permite que Parallels Desktop acceda a los archivos de la carpeta <ph name="FOLDER_NAME" />.</translation>
 <translation id="2764206540577097904">Usaste todo tu almacenamiento individual de Google Workspace.</translation>
@@ -304,6 +308,7 @@
 <translation id="3509680540198371098">Red <ph name="NETWORK_INDEX" /> de <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, intensidad de la señal: <ph name="SIGNAL_STRENGTH" />%, detalles</translation>
 <translation id="3511705761158917664">Preparando la sincronización de <ph name="NUMBER_OF_ITEMS" /> elementos...</translation>
 <translation id="3522708245912499433">Portugués</translation>
+<translation id="3523225005467146490">Se compartió 1 carpeta con <ph name="VM_NAME" /></translation>
 <translation id="3524311639100184459">Precaución: Estos archivos son temporales y es posible que se borren automáticamente para liberar espacio en el disco.  <ph name="BEGIN_LINK" />Más información<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">Carpeta</translation>
 <translation id="3548125359243647069">Se ingresó el PIN de forma incorrecta demasiadas veces.</translation>
@@ -537,6 +542,7 @@
 <translation id="5218183485292899140">Francés (Suiza)</translation>
 <translation id="5234764350956374838">Descartar</translation>
 <translation id="5253070652067921974">Creado por</translation>
+<translation id="5254207638927440400">No se puede mover el archivo porque está en uso.</translation>
 <translation id="5257456363153333584">Libélula</translation>
 <translation id="5262311848634918433"><ph name="MARKUP_1" />Accede a los archivos desde cualquier lugar, incluso sin conexión.<ph name="MARKUP_2" />
     Los archivos en Google Drive están actualizados, y se puede acceder a ellos desde cualquier dispositivo.<ph name="MARKUP_3" />
@@ -660,6 +666,8 @@
 <translation id="6164412158936057769">Mariposas</translation>
 <translation id="6165508094623778733">Más información</translation>
 <translation id="6170470584681422115">Sándwich</translation>
+<translation id="6177854567773392726">Comprobando el espacio de almacenamiento… Se encontraron <ph name="ITEMS_FOUND" /> elementos</translation>
+<translation id="6181912134988520389">Otorga permiso a <ph name="VM_NAME" /> para que acceda a los archivos de tu unidad de Google Drive. Los cambios se sincronizarán con tus otros dispositivos.</translation>
 <translation id="6187719147498869044">Húngaro</translation>
 <translation id="6198252989419008588">Cambiar PIN</translation>
 <translation id="6199801702437275229">Esperando información sobre espacio...</translation>
@@ -763,6 +771,7 @@
 <translation id="6989942356279143254">Sueco</translation>
 <translation id="6990081529015358884">Te has quedado sin espacio.</translation>
 <translation id="6993826899923627728">Estos elementos están en la papelera</translation>
+<translation id="6996593023542748157">Comparte la carpeta con <ph name="VM_NAME" /></translation>
 <translation id="7008426324576352165">Tu organización requiere más almacenamiento para completar la carga.</translation>
 <translation id="7009985720488544166">La política del administrador no permite mover <ph name="COUNT" /> archivos</translation>
 <translation id="7012943028104619157"><ph name="ROOT_TITLE" /> (<ph name="ROOT_SUMMARY" />)</translation>
@@ -852,6 +861,7 @@
 <translation id="76959938259365003">No se pudo vaciar la papelera.</translation>
 <translation id="770015031906360009">Griego</translation>
 <translation id="7705251383879779343">Se copió <ph name="FILE_NAME" />.</translation>
+<translation id="7707941139430559579">No se puede mover el archivo. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="7708271999969613024">Para usar esta red, debes ingresar la clave personal de desbloqueo (PUK) de 8 dígitos que proporciona el operador.</translation>
 <translation id="7711920809702896782">Información de la imagen</translation>
 <translation id="7724603315864178912">Cortar</translation>
@@ -948,6 +958,7 @@
 <translation id="8335837413233998004">Bielorruso</translation>
 <translation id="8336153091935557858">Ayer a las <ph name="YESTERDAY_DAYTIME" /></translation>
 <translation id="8342318071240498787">Ya existe un archivo o un directorio con el mismo nombre.</translation>
+<translation id="83651606385705612">Otorga permiso a <ph name="VM_NAME" /> para que acceda a los archivos de la carpeta <ph name="FOLDER_NAME" /></translation>
 <translation id="8372369524088641025">Clave de WEP no válida</translation>
 <translation id="8372852072747894550">Griego</translation>
 <translation id="8386903983509584791">Finalizó la búsqueda</translation>
@@ -957,6 +968,7 @@
 <translation id="8408068190360279472">Red <ph name="NETWORK_TYPE" />, conectando</translation>
 <translation id="8425213833346101688">Cambiar</translation>
 <translation id="8428213095426709021">Configuración</translation>
+<translation id="8429998526804961548">Se compartieron <ph name="NUMBER_OF_ITEMS" /> carpetas con <ph name="VM_NAME" /></translation>
 <translation id="8431909052837336408">Cambiar el PIN de la tarjeta SIM</translation>
 <translation id="8437209419043462667">Inglés (Estados Unidos)</translation>
 <translation id="8452135315243592079">Falta la tarjeta SIM</translation>
@@ -1037,6 +1049,7 @@
 <translation id="9038620279323455325">Ya existe un archivo con el nombre "<ph name="FILE_NAME" />". Elige otro.</translation>
 <translation id="9046895021617826162">No se pudo conectar</translation>
 <translation id="9065512565307033593">Si no puedes verificar tu identidad, se inhabilitará tu acceso a la red.</translation>
+<translation id="9083722265619106011">{0,plural, =1{1 advertencia.}other{<ph name="COUNT" /> advertencias.}}</translation>
 <translation id="908378762078012445">Ruso con teclado fonético AATSEEL</translation>
 <translation id="9086302186042011942">Sincronización</translation>
 <translation id="9099674669267916096">Cantidad de páginas</translation>

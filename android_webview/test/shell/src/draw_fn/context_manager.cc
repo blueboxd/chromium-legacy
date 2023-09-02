@@ -32,9 +32,10 @@
 #include "third_party/skia/include/gpu/GrBackendDrawableInfo.h"
 #include "third_party/skia/include/gpu/GrBackendSemaphore.h"
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
-#include "third_party/skia/include/gpu/GrBackendSurfaceMutableState.h"
 #include "third_party/skia/include/gpu/GrDirectContext.h"
+#include "third_party/skia/include/gpu/MutableTextureState.h"
 #include "third_party/skia/include/gpu/ganesh/SkSurfaceGanesh.h"
+#include "third_party/skia/include/gpu/ganesh/vk/GrVkBackendSurface.h"
 #include "third_party/skia/include/gpu/vk/GrVkBackendContext.h"
 #include "third_party/skia/include/gpu/vk/GrVkExtensions.h"
 #include "third_party/skia/include/gpu/vk/GrVkTypes.h"
@@ -566,7 +567,7 @@ base::android::ScopedJavaLocalRef<jintArray> ContextManagerVulkan::Draw(
       vk_image_info.fCurrentQueueFamily = VK_QUEUE_FAMILY_IGNORED;
       vk_image_info.fProtected = GrProtected::kNo;
       const auto& vk_image_size = vulkan_surface_->image_size();
-      GrBackendRenderTarget render_target(
+      auto render_target = GrBackendRenderTargets::MakeVk(
           vk_image_size.width(), vk_image_size.height(), vk_image_info);
 
       auto sk_color_type = surface_format == VK_FORMAT_B8G8R8A8_UNORM
@@ -580,7 +581,8 @@ base::android::ScopedJavaLocalRef<jintArray> ContextManagerVulkan::Draw(
     } else {
       auto backend = SkSurfaces::GetBackendRenderTarget(
           sk_surface.get(), SkSurfaces::BackendHandleAccess::kFlushRead);
-      backend.setVkImageLayout(scoped_write.image_layout());
+      GrBackendRenderTargets::SetVkImageLayout(&backend,
+                                               scoped_write.image_layout());
     }
 
     {
@@ -624,8 +626,8 @@ base::android::ScopedJavaLocalRef<jintArray> ContextManagerVulkan::Draw(
           .fSignalSemaphores = &end_semaphore,
       };
       uint32_t queue_index = device_queue_->GetVulkanQueueIndex();
-      GrBackendSurfaceMutableState state(VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
-                                         queue_index);
+      skgpu::MutableTextureState state(VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
+                                       queue_index);
       GrSemaphoresSubmitted submitted =
           gr_context_->flush(sk_surface, flush_info, &state);
       CHECK_EQ(GrSemaphoresSubmitted::kYes, submitted);

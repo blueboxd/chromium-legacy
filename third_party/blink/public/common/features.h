@@ -222,6 +222,8 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kClientHintsDeviceMemory_DEPRECATED);
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kClientHintsDPR);
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kClientHintsDPR_DEPRECATED);
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kClientHintsFormFactor);
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
+    kClientHintsPrefersReducedTransparency);
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kClientHintsResourceWidth);
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kClientHintsResourceWidth_DEPRECATED);
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kClientHintsSaveData);
@@ -254,9 +256,6 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
 // If enabled, DOMContentLoaded will be fired after all async scripts are
 // executed.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kDOMContentLoadedWaitForAsyncScript);
-
-BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kDecodeJpeg420ImagesToYUV);
-BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kDecodeLossyWebPImagesToYUV);
 
 // If enabled, script source text will be decoded and hashed off the main
 // thread.
@@ -557,6 +556,17 @@ BLINK_COMMON_EXPORT extern const base::FeatureParam<bool>
 BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
     kLCPCriticalPathPredictorMaxElementLocatorLength;
 
+// TODO(crbug.com/1419756): We should merge this to ResourceLoadPriority.
+enum class LcppImageLoadPriority {
+  kMedium,
+  kHigh,
+  kVeryHigh,
+};
+
+// The ResourceLoadPriority for images that are expected to be LCP.
+BLINK_COMMON_EXPORT extern const base::FeatureParam<LcppImageLoadPriority>
+    kLCPCriticalPathPredictorImageLoadPriority;
+
 // If enabled, script execution is observed to determine script dependencies of
 // the LCP element.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kLCPScriptObserver);
@@ -570,6 +580,9 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kLightweightNoStatePrefetch);
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kLinkPreview);
 
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kLoadingTasksUnfreezable);
+
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
+    kLoadingPhaseBufferTimeAfterFirstMeaningfulPaint);
 
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
     kLogUnexpectedIPCPostedToBackForwardCachedDocuments);
@@ -616,6 +629,14 @@ BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
 // Keep strong references in the blink memory cache to maximize resource reuse.
 // See https://crbug.com/1409349.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kMemoryCacheStrongReference);
+// The threshold for the total decoded size of resources that keep strong
+// references.
+BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
+    kMemoryCacheStrongReferenceTotalSizeThresholdParam;
+// The threshold for the decoded size of a resource that can keep a strong
+// reference.
+BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
+    kMemoryCacheStrongReferenceResourceSizeThresholdParam;
 // Exclude images from the saved strong references for resources.
 // See https://crbug.com/1409349.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
@@ -624,6 +645,10 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
 // See https://crbug.com/1409349.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
     kMemoryCacheStrongReferenceFilterScripts);
+// Exclude cross origin scripts from the saved strong references for resources.
+// See https://crbug.com/1409349.
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
+    kMemoryCacheStrongReferenceFilterCrossOriginScripts);
 // Save only one unloaded page's resources in the memory cache.
 // See https://crbug.com/1409349.
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(
@@ -915,6 +940,10 @@ BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kSSVTrailerEnforceExposureAssertion);
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kSaveDataImgSrcset);
 
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kScopeMemoryCachePerContext);
+
+// When enabled, only pages that belong to a certain browsing context group are
+// paused instead of all pages.
+BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kPausePagesPerBrowsingContextGroup);
 
 BLINK_COMMON_EXPORT BASE_DECLARE_FEATURE(kScriptStreaming);
 

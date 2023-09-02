@@ -122,12 +122,12 @@ namespace blink {
 
 namespace {
 
-scoped_refptr<const ComputedStyle> BuildInitialStyleForImg(
-    const scoped_refptr<const ComputedStyle>& initial_style) {
+const ComputedStyle* BuildInitialStyleForImg(
+    const ComputedStyle& initial_style) {
   // This matches the img {} declarations in html.css to avoid copy-on-write
   // when only UA styles apply for these properties. See crbug.com/1369454
   // for details.
-  ComputedStyleBuilder builder(*initial_style);
+  ComputedStyleBuilder builder(initial_style);
   builder.SetOverflowX(EOverflow::kClip);
   builder.SetOverflowY(EOverflow::kClip);
   builder.SetOverflowClipMargin(StyleOverflowClipMargin::CreateContent());
@@ -382,6 +382,9 @@ void ApplyLengthConversionFlags(StyleResolverState& state) {
     builder.SetDependsOnSizeContainerQueries(true);
     builder.SetHasContainerRelativeUnits();
   }
+  if (flags & static_cast<Flags>(Flag::kAnchorRelative)) {
+    state.SetHasTreeScopedReference();
+  }
 }
 
 }  // namespace
@@ -464,7 +467,7 @@ static void CollectScopedResolversForHostedShadowTrees(
 
 StyleResolver::StyleResolver(Document& document)
     : initial_style_(ComputedStyle::CreateInitialStyleSingleton()),
-      initial_style_for_img_(BuildInitialStyleForImg(initial_style_)),
+      initial_style_for_img_(BuildInitialStyleForImg(*initial_style_)),
       document_(document) {
   UpdateMediaType();
 }
@@ -472,7 +475,6 @@ StyleResolver::StyleResolver(Document& document)
 StyleResolver::~StyleResolver() = default;
 
 void StyleResolver::Dispose() {
-  initial_style_.reset();
   matched_properties_cache_.Clear();
 }
 
@@ -753,9 +755,8 @@ void StyleResolver::MatchPseudoPartRules(const Element& part_matching_element,
   }
 }
 
-void StyleResolver::MatchAuthorRules(
-    const Element& element,
-    ElementRuleCollector& collector) {
+void StyleResolver::MatchAuthorRules(const Element& element,
+                                     ElementRuleCollector& collector) {
   MatchHostRules(element, collector, tracker_);
   MatchSlottedRules(element, collector, tracker_);
   MatchElementScopeRules(element, collector, tracker_);
@@ -924,7 +925,7 @@ void StyleResolver::MatchAllRules(StyleResolverState& state,
   }
 }
 
-scoped_refptr<const ComputedStyle> StyleResolver::StyleForViewport() {
+const ComputedStyle* StyleResolver::StyleForViewport() {
   ComputedStyleBuilder builder = InitialStyleBuilderForElement();
 
   builder.SetZIndex(0);
@@ -949,7 +950,7 @@ static StyleBaseData* GetBaseData(const StyleResolverState& state) {
     return nullptr;
   }
   auto* old_style = animating_element->GetComputedStyle();
-  return old_style ? old_style->BaseData().get() : nullptr;
+  return old_style ? old_style->BaseData().Get() : nullptr;
 }
 
 static const ComputedStyle* CachedAnimationBaseComputedStyle(
@@ -987,7 +988,7 @@ static void IncrementResolvedStyleCounters(const StyleRequest& style_request,
 // any other properties or elements. (The exceptions can be found in
 // CanReuseBaseComputedStyle().) This is known as the “base computed style
 // optimization”.
-scoped_refptr<const ComputedStyle> StyleResolver::ResolveStyle(
+const ComputedStyle* StyleResolver::ResolveStyle(
     Element* element,
     const StyleRecalcContext& style_recalc_context,
     const StyleRequest& style_request) {
@@ -1450,8 +1451,8 @@ void StyleResolver::ApplyBaseStyleNoCache(
   if (match_result.DependsOnStyleContainerQueries()) {
     state.StyleBuilder().SetDependsOnStyleContainerQueries(true);
   }
-  if (match_result.DependsOnStickyContainerQueries()) {
-    state.StyleBuilder().SetDependsOnStickyContainerQueries(true);
+  if (match_result.DependsOnStateContainerQueries()) {
+    state.StyleBuilder().SetDependsOnStateContainerQueries(true);
   }
   if (match_result.FirstLineDependsOnSizeContainerQueries()) {
     state.StyleBuilder().SetFirstLineDependsOnSizeContainerQueries(true);
@@ -1528,15 +1529,13 @@ void StyleResolver::ApplyBaseStyle(
     // optimization was sound.
     ApplyBaseStyleNoCache(element, style_recalc_context, style_request, state,
                           cascade);
-    scoped_refptr<const ComputedStyle> style_snapshot =
-        state.StyleBuilder().CloneStyle();
+    const ComputedStyle* style_snapshot = state.StyleBuilder().CloneStyle();
     DCHECK_EQ(g_null_atom, ComputeBaseComputedStyleDiff(
                                animation_base_computed_style, *style_snapshot));
 #endif
 
     state.SetStyle(*animation_base_computed_style);
-    state.StyleBuilder().SetBaseData(
-        scoped_refptr<StyleBaseData>(GetBaseData(state)));
+    state.StyleBuilder().SetBaseData(GetBaseData(state));
     state.StyleBuilder().SetStyleType(style_request.pseudo_id);
     if (!state.ParentStyle()) {
       state.SetParentStyle(InitialStyleForElement());
@@ -1583,7 +1582,7 @@ void StyleResolver::ApplyBaseStyle(
 
 #if DCHECK_IS_ON()
     // Verify that we got the right answer.
-    scoped_refptr<const ComputedStyle> incremental_style = state.TakeStyle();
+    const ComputedStyle* incremental_style = state.TakeStyle();
     ApplyBaseStyleNoCache(element, style_recalc_context, style_request, state,
                           cascade);
 
@@ -1603,10 +1602,9 @@ void StyleResolver::ApplyBaseStyle(
         state.StyleBuilder().ViewportUnitFlags() |
         incremental_style->ViewportUnitFlags());
 
-    scoped_refptr<const ComputedStyle> style_snapshot =
-        state.StyleBuilder().CloneStyle();
-    DCHECK_EQ(g_null_atom, ComputeBaseComputedStyleDiff(incremental_style.get(),
-                                                        *style_snapshot));
+    const ComputedStyle* style_snapshot = state.StyleBuilder().CloneStyle();
+    DCHECK_EQ(g_null_atom,
+              ComputeBaseComputedStyleDiff(incremental_style, *style_snapshot));
     // The incremental style must not contain BaseData, otherwise we'd risk
     // creating an infinite chain of BaseData/ComputedStyle in
     // ApplyAnimatedStyle.
@@ -1644,14 +1642,14 @@ CompositorKeyframeValue* StyleResolver::CreateCompositorKeyframeValueSnapshot(
                                                       CascadeOrigin::kAuthor);
     cascade.Apply();
   }
-  scoped_refptr<const ComputedStyle> style = state.TakeStyle();
+  const ComputedStyle* style = state.TakeStyle();
   return CompositorKeyframeValueFactory::Create(property, *style, offset);
 }
 
-scoped_refptr<const ComputedStyle> StyleResolver::StyleForPage(
+const ComputedStyle* StyleResolver::StyleForPage(
     uint32_t page_index,
     const AtomicString& page_name) {
-  scoped_refptr<const ComputedStyle> initial_style = InitialStyleForElement();
+  const ComputedStyle* initial_style = InitialStyleForElement();
   if (!GetDocument().documentElement()) {
     return initial_style;
   }
@@ -1659,7 +1657,7 @@ scoped_refptr<const ComputedStyle> StyleResolver::StyleForPage(
   const ComputedStyle* document_style = GetDocument().GetComputedStyle();
   StyleResolverState state(GetDocument(), *GetDocument().documentElement(),
                            nullptr /* StyleRecalcContext */,
-                           StyleRequest(initial_style.get()));
+                           StyleRequest(initial_style));
   state.CreateNewStyle(*initial_style, *document_style);
 
   STACK_UNINITIALIZED StyleCascade cascade(state);
@@ -1740,8 +1738,7 @@ ComputedStyleBuilder StyleResolver::InitialStyleBuilderForElement() const {
   return builder;
 }
 
-scoped_refptr<const ComputedStyle> StyleResolver::StyleForText(
-    Text* text_node) {
+const ComputedStyle* StyleResolver::StyleForText(Text* text_node) {
   DCHECK(text_node);
   if (Node* parent_node = LayoutTreeBuilderTraversal::Parent(*text_node)) {
     const ComputedStyle* style = parent_node->GetComputedStyle();
@@ -2089,11 +2086,11 @@ StyleResolver::CacheSuccess StyleResolver::ApplyMatchedCache(
         !IsForcedColorsModeEnabled() || is_inherited_cache_hit;
 
     const ComputedStyle* parent_style =
-        is_inherited_cache_hit ? cached_matched_properties->computed_style.get()
+        is_inherited_cache_hit ? cached_matched_properties->computed_style.Get()
                                : state.ParentStyle();
     const ComputedStyle& source_for_noninherited =
         is_non_inherited_cache_hit
-            ? *cached_matched_properties->computed_style.get()
+            ? *cached_matched_properties->computed_style.Get()
             : initial_style;
 
     InitStyle(element, style_request, source_for_noninherited, parent_style,
@@ -2246,7 +2243,7 @@ const CSSValue* StyleResolver::ComputeValue(
   cascade.Apply();
 
   CSSPropertyRef property_ref(property_name, element->GetDocument());
-  scoped_refptr<const ComputedStyle> style = state.TakeStyle();
+  const ComputedStyle* style = state.TakeStyle();
   return ComputedStyleUtils::ComputedPropertyValue(property_ref.GetProperty(),
                                                    *style);
 }
@@ -2257,11 +2254,11 @@ FilterOperations StyleResolver::ComputeFilterOperations(
     const CSSValue& filter_value) {
   ComputedStyleBuilder parent_builder = CreateComputedStyleBuilder();
   parent_builder.SetFont(font);
-  scoped_refptr<const ComputedStyle> parent = parent_builder.TakeStyle();
+  const ComputedStyle* parent = parent_builder.TakeStyle();
 
   StyleResolverState state(GetDocument(), *element,
                            nullptr /* StyleRecalcContext */,
-                           StyleRequest(parent.get()));
+                           StyleRequest(parent));
 
   GetDocument().GetStyleEngine().UpdateViewportSize();
   state.SetStyle(*parent);
@@ -2271,11 +2268,11 @@ FilterOperations StyleResolver::ComputeFilterOperations(
 
   state.LoadPendingResources();
 
-  scoped_refptr<const ComputedStyle> style = state.TakeStyle();
+  const ComputedStyle* style = state.TakeStyle();
   return style->Filter();
 }
 
-scoped_refptr<const ComputedStyle> StyleResolver::StyleForInterpolations(
+const ComputedStyle* StyleResolver::StyleForInterpolations(
     Element& element,
     ActiveInterpolationsMap& interpolations) {
   StyleRecalcContext style_recalc_context =
@@ -2301,8 +2298,7 @@ void StyleResolver::ApplyInterpolations(
   cascade.Apply();
 }
 
-scoped_refptr<const ComputedStyle>
-StyleResolver::BeforeChangeStyleForTransitionUpdate(
+const ComputedStyle* StyleResolver::BeforeChangeStyleForTransitionUpdate(
     Element& element,
     const ComputedStyle& base_style,
     ActiveInterpolationsMap& transition_interpolations) {
@@ -2343,13 +2339,11 @@ void StyleResolver::ApplyPropertiesFromCascade(StyleResolverState& state,
       }
 #if DCHECK_IS_ON()
       // Verify that our application went as planned.
-      scoped_refptr<const ComputedStyle> applied_style =
-          state.StyleBuilder().CloneStyle();
+      const ComputedStyle* applied_style = state.StyleBuilder().CloneStyle();
       cascade.Apply(filter);
-      scoped_refptr<const ComputedStyle> correct_style =
-          state.StyleBuilder().CloneStyle();
-      DCHECK_EQ(g_null_atom, ComputeBaseComputedStyleDiff(applied_style.get(),
-                                                          *correct_style));
+      const ComputedStyle* correct_style = state.StyleBuilder().CloneStyle();
+      DCHECK_EQ(g_null_atom,
+                ComputeBaseComputedStyleDiff(applied_style, *correct_style));
 #endif
     } else {
       cascade.Apply(filter);
@@ -2364,8 +2358,7 @@ void StyleResolver::ApplyPropertiesFromCascade(StyleResolverState& state,
   apply(CascadeFilter(CSSProperty::kLegacyOverlapping, true));
 
   if (state.RejectedLegacyOverlapping()) {
-    scoped_refptr<const ComputedStyle> non_legacy_style =
-        state.StyleBuilder().CloneStyle();
+    const ComputedStyle* non_legacy_style = state.StyleBuilder().CloneStyle();
     // Re-apply all overlapping properties (both legacy and non-legacy).
     apply(CascadeFilter(CSSProperty::kOverlapping, false));
     UseCountLegacyOverlapping(GetDocument(), *non_legacy_style,
@@ -2461,7 +2454,7 @@ Font StyleResolver::ComputeFont(Element& element,
             ->EnsureScopedValue(&GetDocument()));
   }
   state.UpdateFont();
-  scoped_refptr<const ComputedStyle> font_style = state.TakeStyle();
+  const ComputedStyle* font_style = state.TakeStyle();
   return font_style->GetFont();
 }
 
@@ -2478,6 +2471,8 @@ void StyleResolver::UpdateMediaType() {
 
 void StyleResolver::Trace(Visitor* visitor) const {
   visitor->Trace(matched_properties_cache_);
+  visitor->Trace(initial_style_);
+  visitor->Trace(initial_style_for_img_);
   visitor->Trace(selector_filter_);
   visitor->Trace(document_);
   visitor->Trace(tracker_);
@@ -2497,8 +2492,7 @@ ComputedStyleBuilder StyleResolver::CreateAnonymousStyleBuilderWithDisplay(
   return builder;
 }
 
-scoped_refptr<const ComputedStyle>
-StyleResolver::CreateInheritedDisplayContentsStyleIfNeeded(
+const ComputedStyle* StyleResolver::CreateInheritedDisplayContentsStyleIfNeeded(
     const ComputedStyle& parent_style,
     const ComputedStyle& layout_parent_style) {
   if (parent_style.InheritedEqual(layout_parent_style)) {
@@ -2788,7 +2782,7 @@ void StyleResolver::PropagateStyleToViewport() {
 #undef PROPAGATE_VALUE
 #undef PROPAGATE_FROM
 
-scoped_refptr<const ComputedStyle> StyleResolver::StyleForFormattedText(
+const ComputedStyle* StyleResolver::StyleForFormattedText(
     bool is_text_run,
     const FontDescription& default_font,
     const CSSPropertyValueSet* css_property_value_set) {
@@ -2797,7 +2791,7 @@ scoped_refptr<const ComputedStyle> StyleResolver::StyleForFormattedText(
                                css_property_value_set);
 }
 
-scoped_refptr<const ComputedStyle> StyleResolver::StyleForFormattedText(
+const ComputedStyle* StyleResolver::StyleForFormattedText(
     bool is_text_run,
     const ComputedStyle& parent_style,
     const CSSPropertyValueSet* css_property_value_set) {
@@ -2805,7 +2799,7 @@ scoped_refptr<const ComputedStyle> StyleResolver::StyleForFormattedText(
                                &parent_style, css_property_value_set);
 }
 
-scoped_refptr<const ComputedStyle> StyleResolver::StyleForFormattedText(
+const ComputedStyle* StyleResolver::StyleForFormattedText(
     bool is_text_run,
     const FontDescription* default_font,
     const ComputedStyle* parent_style,
@@ -2894,7 +2888,7 @@ static Font ComputeInitialLetterFont(const ComputedStyle& style,
 //  * inline-sizing.
 // Additionally, all of the sizing properties and box-sizing also apply to
 // initial letters (see [css-sizing-3]).
-scoped_refptr<const ComputedStyle> StyleResolver::StyleForInitialLetterText(
+const ComputedStyle* StyleResolver::StyleForInitialLetterText(
     const ComputedStyle& initial_letter_box_style,
     const ComputedStyle& paragraph_style) {
   DCHECK(paragraph_style.InitialLetter().IsNormal());
@@ -2949,7 +2943,7 @@ StyleRulePositionFallback* StyleResolver::ResolvePositionFallbackRule(
   return position_fallback_rule;
 }
 
-scoped_refptr<const ComputedStyle> StyleResolver::ResolvePositionFallbackStyle(
+const ComputedStyle* StyleResolver::ResolvePositionFallbackStyle(
     Element& element,
     unsigned index) {
   const ComputedStyle& base_style = element.ComputedStyleRef();

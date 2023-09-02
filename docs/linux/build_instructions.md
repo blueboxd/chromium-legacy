@@ -15,9 +15,10 @@ Are you a Google employee? See
 *   A 64-bit Intel machine with at least 8GB of RAM. More than 16GB is highly
     recommended.
 *   At least 100GB of free disk space.
-*   You must have Git and Python v3.6+ installed already (and `python3` must point
-    to a Python v3.6+ binary).
-
+*   You must have Git and Python v3.8+ installed already (and `python3` must point
+    to a Python v3.8+ binary). Depot_tools bundles an appropriate version
+    of Python in `$depot_tools/python-bin`, if you don't have an appropriate
+    version already on your system.
 
 Most development is done on Ubuntu (Chromium's build infrastructure currently
 runs 22.04, Jammy Jellyfish). There are some instructions for other distros
@@ -46,12 +47,12 @@ Clone the `depot_tools` repository:
 $ git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
 ```
 
-Add `depot_tools` to the end of your PATH (you will probably want to put this
-in your `~/.bashrc` or `~/.zshrc`). Assuming you cloned `depot_tools` to
+Add `depot_tools` to the beginning of your `PATH` (you will probably want to put
+this in your `~/.bashrc` or `~/.zshrc`). Assuming you cloned `depot_tools` to
 `/path/to/depot_tools`:
 
 ```shell
-$ export PATH="$PATH:/path/to/depot_tools"
+$ export PATH="/path/to/depot_tools:$PATH"
 ```
 
 When cloning `depot_tools` to your home directory **do not** use `~` on PATH,
@@ -59,7 +60,7 @@ otherwise `gclient runhooks` will fail to run. Rather, you should use either
 `$HOME` or the absolute path:
 
 ```shell
-$ export PATH="$PATH:${HOME}/depot_tools"
+$ export PATH="${HOME}/depot_tools:$PATH"
 ```
 
 ## Get the code

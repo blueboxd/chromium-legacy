@@ -12,11 +12,11 @@
 #include <utility>
 #include <vector>
 
+#include "base/apple/scoped_cftyperef.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/queue.h"
 #include "base/functional/callback.h"
 #include "base/functional/callback_forward.h"
-#include "base/mac/scoped_cftyperef.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/time/time.h"
@@ -83,13 +83,15 @@ class MEDIA_GPU_EXPORT VideoToolboxVideoDecoder : public VideoDecoder {
   void ReleaseDecodeCallbacks();
 
   // |accelerator_| callbacks.
-  void OnAcceleratorDecode(base::ScopedCFTypeRef<CMSampleBufferRef> sample,
-                           scoped_refptr<CodecPicture> picture);
+  void OnAcceleratorDecode(
+      base::apple::ScopedCFTypeRef<CMSampleBufferRef> sample,
+      VideoToolboxSessionMetadata session_metadata,
+      scoped_refptr<CodecPicture> picture);
   void OnAcceleratorOutput(scoped_refptr<CodecPicture> picture);
 
   // |video_toolbox_| callbacks.
   void OnVideoToolboxOutput(
-      base::ScopedCFTypeRef<CVImageBufferRef> image,
+      base::apple::ScopedCFTypeRef<CVImageBufferRef> image,
       std::unique_ptr<VideoToolboxDecodeMetadata> metadata);
   void OnVideoToolboxError(DecoderStatus status);
 

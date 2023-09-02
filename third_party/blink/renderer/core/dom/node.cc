@@ -1052,7 +1052,7 @@ void Node::SetLayoutObject(LayoutObject* layout_object) {
   data_ = MakeGarbageCollected<NodeData>(layout_object, nullptr);
 }
 
-void Node::SetComputedStyle(scoped_refptr<const ComputedStyle> computed_style) {
+void Node::SetComputedStyle(const ComputedStyle* computed_style) {
   // We don't set computed style for text nodes.
   DCHECK(IsElementNode());
 
@@ -1590,8 +1590,9 @@ void Node::AttachLayoutTree(AttachContext& context) {
 
   ClearNeedsReattachLayoutTree();
 
-  if (AXObjectCache* cache = GetDocument().ExistingAXObjectCache())
-    cache->UpdateCacheAfterNodeIsAttached(this);
+  if (AXObjectCache* cache = GetDocument().ExistingAXObjectCache()) {
+    cache->NodeIsAttached(this);
+  }
 
   if (context.performing_reattach)
     ReattachHookScope::NotifyAttach(*this);
@@ -2271,7 +2272,7 @@ Node::InsertionNotificationRequest Node::InsertedInto(
   if (ParentOrShadowHostNode()->IsInShadowTree())
     SetFlag(kIsInShadowTreeFlag);
   if (auto* cache = GetDocument().ExistingAXObjectCache()) {
-    cache->ChildrenChanged(&insertion_point);
+    cache->NodeIsConnected(this);
   }
   return kInsertionDone;
 }

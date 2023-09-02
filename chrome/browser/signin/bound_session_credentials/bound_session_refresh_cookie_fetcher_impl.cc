@@ -6,9 +6,9 @@
 
 #include <memory>
 
-#include "base/base64url.h"
 #include "base/functional/bind.h"
 #include "base/location.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
@@ -31,6 +31,7 @@ constexpr char kRotationChallengeHeader[] = "Sec-Session-Google-Challenge";
 constexpr char kRotationChallengeResponseHeader[] =
     "Sec-Session-Google-Response";
 constexpr char kChallengeItemKey[] = "challenge";
+const size_t kMaxAssertionRequestsAllowed = 5;
 
 bool IsExpectedCookie(
     const GURL& url,
@@ -218,7 +219,8 @@ void BoundSessionRefreshCookieFetcherImpl::ReportRefreshResult() {
   if (result_ == Result::kSuccess && !expected_cookies_set_) {
     result_ = Result::kServerUnexepectedResponse;
   }
-
+  base::UmaHistogramEnumeration(
+      "Signin.BoundSessionCredentials.CookieRotationResult", result_);
   std::move(callback_).Run(result_);
 }
 
@@ -237,18 +239,18 @@ BoundSessionRefreshCookieFetcherImpl::GetChallengeIfBindingKeyAssertionRequired(
 
 void BoundSessionRefreshCookieFetcherImpl::HandleBindingKeyAssertionRequired(
     const std::string& challenge_header_value) {
-  if (has_assertion_been_already_requested_) {
-    // TODO(b/293838716): Handle expired challenges. We currently can't
-    // distinguish expired challenges.
-    ReportChallengeRequiredUnexpectedFormat();
+  if (assertion_requests_count_ >= kMaxAssertionRequestsAllowed) {
+    CompleteRequestAndReportRefreshResult(
+        Result::kChallengeRequiredLimitExceeded);
     return;
   }
 
   // Binding key assertion required.
-  has_assertion_been_already_requested_ = true;
+  assertion_requests_count_++;
   std::string challenge = ParseChallengeHeader(challenge_header_value);
   if (challenge.empty()) {
-    ReportChallengeRequiredUnexpectedFormat();
+    CompleteRequestAndReportRefreshResult(
+        Result::kChallengeRequiredUnexpectedFormat);
     return;
   }
   RefreshWithChallenge(challenge);
@@ -259,28 +261,25 @@ std::string BoundSessionRefreshCookieFetcherImpl::ParseChallengeHeader(
     const std::string& header) {
   base::StringPairs items;
   base::SplitStringIntoKeyValuePairs(header, '=', ';', &items);
-  std::string encoded_challenge;
+  std::string challenge;
   for (const auto& [key, value] : items) {
     // TODO(b/293838716): Check `session_id` matches the current session's id.
     if (base::EqualsCaseInsensitiveASCII(key, kChallengeItemKey)) {
-      encoded_challenge = value;
+      challenge = value;
     }
   }
 
-  std::string challenge;
-  if (!encoded_challenge.empty() &&
-      base::Base64UrlDecode(encoded_challenge,
-                            base::Base64UrlDecodePolicy::DISALLOW_PADDING,
-                            &challenge)) {
-    return challenge;
+  if (!base::IsStringUTF8AllowingNoncharacters(challenge)) {
+    DVLOG(1) << "Server-side challenge has non-UTF8 characters.";
+    return std::string();
   }
-  return std::string();
+  return challenge;
 }
 
 void BoundSessionRefreshCookieFetcherImpl::
-    ReportChallengeRequiredUnexpectedFormat() {
+    CompleteRequestAndReportRefreshResult(Result result) {
   cookie_refresh_completed_ = true;
-  result_ = Result::kChallengeRequiredUnexpectedFormat;
+  result_ = result;
   ReportRefreshResult();
 }
 
@@ -296,9 +295,7 @@ void BoundSessionRefreshCookieFetcherImpl::RefreshWithChallenge(
 void BoundSessionRefreshCookieFetcherImpl::OnGenerateBindingKeyAssertion(
     std::string assertion) {
   if (assertion.empty()) {
-    result_ = Result::kSignChallengeFailed;
-    cookie_refresh_completed_ = true;
-    ReportRefreshResult();
+    CompleteRequestAndReportRefreshResult(Result::kSignChallengeFailed);
     return;
   }
   wait_for_network_callback_helper_->DelayNetworkCall(

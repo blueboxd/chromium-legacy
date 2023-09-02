@@ -22,12 +22,10 @@ namespace ash::shortcut_ui {
 ShortcutsAppManager::ShortcutsAppManager(
     local_search_service::LocalSearchServiceProxy* local_search_service_proxy,
     PrefService* pref_service) {
-  if (features::IsSearchInShortcutsAppEnabled()) {
-    search_concept_registry_ =
-        std::make_unique<SearchConceptRegistry>(*local_search_service_proxy);
-    search_handler_ = std::make_unique<SearchHandler>(
-        search_concept_registry_.get(), local_search_service_proxy);
-  }
+  search_concept_registry_ =
+      std::make_unique<SearchConceptRegistry>(*local_search_service_proxy);
+  search_handler_ = std::make_unique<SearchHandler>(
+      search_concept_registry_.get(), local_search_service_proxy);
   accelerator_configuration_provider_ =
       std::make_unique<AcceleratorConfigurationProvider>(pref_service);
 
@@ -68,10 +66,6 @@ void ShortcutsAppManager::SetSearchConcepts(
     shortcut_ui::AcceleratorConfigurationProvider::AcceleratorConfigurationMap
         config,
     std::vector<mojom::AcceleratorLayoutInfoPtr> layout_infos) {
-  if (!features::IsSearchInShortcutsAppEnabled()) {
-    return;
-  }
-
   std::vector<SearchConcept> search_concepts;
 
   for (auto& layout_info : layout_infos) {
@@ -80,8 +74,20 @@ void ShortcutsAppManager::SetSearchConcepts(
       if (const auto& map_iterator =
               config_iterator->second.find(layout_info->action);
           map_iterator != config_iterator->second.end()) {
-        search_concepts.emplace_back(std::move(layout_info),
-                                     std::move(map_iterator->second));
+        // Filter accelerators that state is 'kDisabledByUser' from
+        // map_iterator->second
+        auto& accelerators = map_iterator->second;
+        accelerators.erase(
+            std::remove_if(accelerators.begin(), accelerators.end(),
+                           [](const auto& accel_ptr) {
+                             return accel_ptr->state ==
+                                    mojom::AcceleratorState::kDisabledByUser;
+                           }),
+            accelerators.end());
+        if (!accelerators.empty()) {
+          search_concepts.emplace_back(std::move(layout_info),
+                                       std::move(accelerators));
+        }
       }
     }
   }

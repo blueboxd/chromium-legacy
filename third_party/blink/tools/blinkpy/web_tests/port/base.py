@@ -166,6 +166,7 @@ class Port(object):
         ('win11', 'x86_64'),
         ('linux', 'x86_64'),
         ('fuchsia', 'x86_64'),
+        ('ios16-simulator', 'x86_64'),
     )
 
     CONFIGURATION_SPECIFIER_MACROS = {
@@ -173,6 +174,7 @@ class Port(object):
             'mac10.15', 'mac11', 'mac11-arm64', 'mac12', 'mac12-arm64',
             'mac13', 'mac13-arm64'
         ],
+        'ios': ['ios16-simulator'],
         'win': ['win10.20h2', 'win11-arm64', 'win11'],
         'linux': ['linux'],
         'fuchsia': ['fuchsia'],
@@ -2609,12 +2611,6 @@ class Port(object):
             if normalized_test_name.startswith(suite.full_prefix):
                 return suite.args.copy()
         return []
-
-    @memoized
-    def _get_blocked_tests_for_threaded_compositing_testing(self):
-        path = self._filesystem.join(self.web_tests_dir(), 'TestLists',
-                                     'SingleThreadedTests')
-        return set(self._filesystem.read_text_file(path).split('\n'))
 
     def build_path(self, *comps: str, target: Optional[str] = None):
         """Returns a path from the build directory."""

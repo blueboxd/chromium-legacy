@@ -35,6 +35,7 @@
 <translation id="1280820357415527819">മൊബൈൽ നെറ്റ്‌വർക്കുകൾ തിരയുന്നു</translation>
 <translation id="1293556467332435079">Files</translation>
 <translation id="1297922636971898492">Google ഡ്രൈവ് ഇപ്പോൾ ലഭ്യമല്ല. ലഭ്യമായിക്കഴിഞ്ഞാൽ, അപ്‌ലോഡ് ചെയ്യുന്നത് സ്വയമേവ പുനരാരംഭിക്കും.</translation>
+<translation id="1306130176943817227">ഇല്ലാതാക്കാനാകുന്നില്ല. ഇനം ഉപയോഗത്തിലാണ്.</translation>
 <translation id="1307931752636661898">Linux ഫയലുകൾ കാണാനാവുന്നില്ല</translation>
 <translation id="1313405956111467313">സ്വയമേവയുള്ള പ്രോക്സി ക്രമീകരണം</translation>
 <translation id="134645005685694099">ഫയൽ സമന്വയം ഓണാക്കി നിലനിർത്താൻ ആവശ്യമായ സ്‌റ്റോറേജ് സ്‌പെയ്‌സ് നിങ്ങളുടെ ഉപകരണത്തിലില്ല. പുതിയ ഫയലുകൾ ഇനി സ്വയമേവ സമന്വയിപ്പിക്കില്ല.</translation>
@@ -94,6 +95,7 @@
 <translation id="174937106936716857">മൊത്തം ഫയലുകളുടെ എണ്ണം</translation>
 <translation id="1755345808328621801">Windows സോഫ്റ്റ്‌വെയർ ഉപയോഗിക്കുന്ന PC-ക്ക് വേണ്ടി രൂപകൽപ്പന ചെയ്ത ഫയൽ ആണിത്. ChromeOS റൺ ചെയ്യുന്ന നിങ്ങളുടെ ഉപകരണത്തിൽ ഇതിന് പിന്തുണയില്ല. Chrome വെബ് സ്റ്റോറിൽ അനുയോജ്യമായ മറ്റൊരു ആപ്പ് തിരയുക.</translation>
 <translation id="1757915090001272240">വൈഡ്‌ ലാറ്റിന്‍‌</translation>
+<translation id="1761091787730831947"><ph name="VM_NAME" /> എന്നയാളുമായി പങ്കിടുക</translation>
 <translation id="1773212559869067373">പരിശോധിച്ചുറപ്പിക്കൽ സർട്ടിഫിക്കറ്റ് പ്രാദേശികമായി നിരസിച്ചു</translation>
 <translation id="1775381402323441512">വീഡിയോ വിവരം</translation>
 <translation id="180035236176489073">ഈ ഫയലുകൾ ആക്‌സസ്സുചെയ്യുന്നതിന് നിങ്ങൾ ഓൺലൈനിലായിരിക്കണം.</translation>
@@ -169,6 +171,7 @@
 <translation id="23721837607121582">മൊബൈൽ പ്രൊഫൈൽ ഡൗൺലോഡ് ചെയ്യുക, <ph name="NETWORK_COUNT" /> എണ്ണത്തിൽ <ph name="NETWORK_INDEX" />-ാമത്തെ നെറ്റ്‌വർക്ക്, <ph name="NETWORK_NAME" /></translation>
 <translation id="2377319039870049694">ലിസ്റ്റ് കാഴ്‌ചയിലേക്ക് മാറുക</translation>
 <translation id="2377590462528165447"><ph name="NUMBER_OF_ITEMS" /> ഫോൾഡറുകൾ Linux ഉപയോഗിച്ച് പങ്കിട്ടു</translation>
+<translation id="2379576081295865700">സ്‌റ്റോറേജ് സ്‌പെയ്‌സ് പരിശോധിക്കുന്നു… ഒരു ഇനം കണ്ടെത്തി</translation>
 <translation id="2383454254762599978">ട്രാഷിലേക്ക് നീക്കുക</translation>
 <translation id="2387458720915042159">പ്രോക്‌സി കണക്ഷൻ തരം</translation>
 <translation id="2389832672041313158">ബർമീസ്/മ്യാൻമർ</translation>
@@ -210,6 +213,7 @@
 <translation id="2718540689505416944">Linux ഉപയോഗിച്ച് ആപ്പ് ഇൻസ്‌റ്റാൾ ചെയ്യുക</translation>
 <translation id="2719020180254996569"><ph name="NETWORK_COUNT" />-ൽ <ph name="NETWORK_INDEX" /> നെറ്റ്‌വർക്ക്, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, വിശദാംശങ്ങൾ</translation>
 <translation id="2724954091494693138">F-keyboard ഉള്ള ടർക്കിഷ്</translation>
+<translation id="2732288874651063549"><ph name="VM_NAME" /> എന്നയാളുമായുള്ള പങ്കിടൽ മാനേജ് ചെയ്യുക</translation>
 <translation id="2732839045120506979">വിയറ്റ്നാമീസ് VNI</translation>
 <translation id="2735623501230989521"><ph name="FOLDER_NAME" /> ഫോൾഡറിലെ ഫയലുകൾ ആക്‌സസ് ചെയ്യാൻ Parallels Desktop-ന് അനുമതി നൽകുക</translation>
 <translation id="2764206540577097904">നിങ്ങളുടെ വ്യക്തിഗത Google Workspace സ്റ്റോറേജ് മുഴുവൻ ഉപയോഗിച്ചു.</translation>
@@ -304,6 +308,7 @@
 <translation id="3509680540198371098"><ph name="NETWORK_COUNT" />-ൽ <ph name="NETWORK_INDEX" /> നെറ്റ്‌വർക്ക്, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, സിഗ്‌നൽ ശക്തി <ph name="SIGNAL_STRENGTH" />%, വിശദാംശങ്ങൾ</translation>
 <translation id="3511705761158917664"><ph name="NUMBER_OF_ITEMS" /> ഇനങ്ങൾ സമന്വയിപ്പിക്കാൻ തയ്യാറെടുക്കുന്നു...</translation>
 <translation id="3522708245912499433">പോര്‍ച്ചുഗീസ്</translation>
+<translation id="3523225005467146490"><ph name="VM_NAME" /> എന്നയാളുമായി ഒരു ഫോൾഡർ പങ്കിട്ടു</translation>
 <translation id="3524311639100184459">മുന്നറിയിപ്പ്: ഇവ താൽക്കാലിക ഫയലുകളാണ് ഡിസ്ക്കിൽ ഇടമുണ്ടാക്കാൻ സ്വയമേവ ഇല്ലാതാക്കിയേക്കാം.  <ph name="BEGIN_LINK" />കൂടുതലറിയുക<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">ഫോൾഡർ</translation>
 <translation id="3548125359243647069">തെറ്റായ പിൻ നിരവധി തവണ നൽകി.</translation>
@@ -537,6 +542,7 @@
 <translation id="5218183485292899140">സ്വിസ് ഫ്രഞ്ച്</translation>
 <translation id="5234764350956374838">ഡിസ്മിസ്സ് ചെയ്യുക</translation>
 <translation id="5253070652067921974">സൃഷ്‌ടിച്ചത്</translation>
+<translation id="5254207638927440400">ഫയൽ നീക്കാനാകുന്നില്ല. ഫയൽ ഉപയോഗത്തിലാണ്.</translation>
 <translation id="5257456363153333584">തുമ്പി</translation>
 <translation id="5262311848634918433"><ph name="MARKUP_1" />ഓഫ്‌ലൈനിൽ ആണെങ്കിൽപ്പോലും എവിടെനിന്നും ഫയലുകൾ ആക്‌സസ് ചെയ്യുക.<ph name="MARKUP_2" />
        Google ഡ്രൈവിലെ ഫയലുകൾ അപ്‌‌ ടു ഡേറ്റും ഏതൊരു ഉപകരണത്തിൽ നിന്നും ലഭ്യവുമാണ്.<ph name="MARKUP_3" />
@@ -660,6 +666,8 @@
 <translation id="6164412158936057769">ചിത്രശലഭങ്ങൾ</translation>
 <translation id="6165508094623778733">കൂടുതലറിയുക</translation>
 <translation id="6170470584681422115">സാന്‍ഡ്‌വിച്ച്‌</translation>
+<translation id="6177854567773392726">സ്‌റ്റോറേജ് സ്‌പെയ്‌സ് പരിശോധിക്കുന്നു… <ph name="ITEMS_FOUND" /> ഇനങ്ങൾ കണ്ടെത്തി</translation>
+<translation id="6181912134988520389">നിങ്ങളുടെ Google Drive-ലെ ഫയലുകൾ ആക്‌സസ് ചെയ്യാൻ <ph name="VM_NAME" /> എന്നയാൾക്ക് അനുമതി നൽകുക. മാറ്റങ്ങൾ നിങ്ങളുടെ മറ്റ് ഉപകരണങ്ങളിൽ സമന്വയിപ്പിക്കും.</translation>
 <translation id="6187719147498869044">ഹംഗേറിയൻ</translation>
 <translation id="6198252989419008588">PIN മാറ്റുക</translation>
 <translation id="6199801702437275229">സ്‌പെയ്‌സ് വിവരത്തിനായി കാത്തിരിക്കുന്നു...</translation>
@@ -763,6 +771,7 @@
 <translation id="6989942356279143254">സ്വീഡിഷ്</translation>
 <translation id="6990081529015358884">നിങ്ങൾക്ക് മതിയായ ഇടമില്ല</translation>
 <translation id="6993826899923627728">ഈ ഇനങ്ങൾ നിങ്ങളുടെ ട്രാഷിലാണുള്ളത്</translation>
+<translation id="6996593023542748157"><ph name="VM_NAME" /> എന്നയാളുമായി ഫോൾഡർ പങ്കിടുക</translation>
 <translation id="7008426324576352165">അപ്‌ലോഡ് പൂർത്തിയാക്കാൻ നിങ്ങളുടെ സ്ഥാപനത്തിന് കൂടുതൽ സ്‌റ്റോറേജ് ആവശ്യമാണ്.</translation>
 <translation id="7009985720488544166"><ph name="COUNT" /> ഫയലുകൾ നീക്കുന്നത് അഡ്‌മിൻ നയം ബ്ലോക്ക് ചെയ്തിരിക്കുന്നു</translation>
 <translation id="7012943028104619157"><ph name="ROOT_TITLE" /> (<ph name="ROOT_SUMMARY" />)</translation>
@@ -852,6 +861,7 @@
 <translation id="76959938259365003">ട്രാഷിലുള്ളവ എല്ലാം ഇല്ലാതാക്കാനായില്ല.</translation>
 <translation id="770015031906360009">ഗ്രീക്ക്</translation>
 <translation id="7705251383879779343"><ph name="FILE_NAME" /> പകർത്തി.</translation>
+<translation id="7707941139430559579">ഫയൽ നീക്കാനാകില്ല. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="7708271999969613024">ഈ നെറ്റ്‌വർക്ക് ഉപയോഗിക്കുന്നതിന്, സേവനദാതാവ് നൽകിയ 8 അക്ക പേഴ്‌സണൽ അൺബ്ലോക്കിംഗ് കീ (PUK) നൽകേണ്ടതുണ്ട്.</translation>
 <translation id="7711920809702896782">ചിത്രത്തിന്റെ വിവരം</translation>
 <translation id="7724603315864178912">മുറിക്കുക</translation>
@@ -948,6 +958,7 @@
 <translation id="8335837413233998004">ബെലാറുഷ്യൻ</translation>
 <translation id="8336153091935557858">ഇന്നലെ <ph name="YESTERDAY_DAYTIME" /></translation>
 <translation id="8342318071240498787">സമാന പേരിലുള്ള ഫയൽ അല്ലെങ്കിൽ ഡയറക്‌റ്ററി ഇതിനകം നിലവിലുണ്ട്.</translation>
+<translation id="83651606385705612"><ph name="FOLDER_NAME" /> ഫോൾഡറിലെ ഫയലുകൾ ആക്‌സസ് ചെയ്യാൻ <ph name="VM_NAME" /> എന്നയാൾക്ക് അനുമതി നൽകുക</translation>
 <translation id="8372369524088641025">മോശം WEP കീ</translation>
 <translation id="8372852072747894550">ഗ്രീക്ക്</translation>
 <translation id="8386903983509584791">സ്‌കാൻ ചെയ്യുന്നത് പൂർത്തിയായി</translation>
@@ -957,6 +968,7 @@
 <translation id="8408068190360279472"><ph name="NETWORK_TYPE" /> നെറ്റ്‍വർക്ക്, കണക്റ്റ് ചെയ്യുന്നു</translation>
 <translation id="8425213833346101688">മാറ്റുക</translation>
 <translation id="8428213095426709021">ക്രമീകരണം</translation>
+<translation id="8429998526804961548"><ph name="VM_NAME" /> എന്നയാളുമായി <ph name="NUMBER_OF_ITEMS" /> ഫോൾഡറുകൾ പങ്കിട്ടു</translation>
 <translation id="8431909052837336408">സിം പിൻ മാറ്റുക</translation>
 <translation id="8437209419043462667">യുഎസ്</translation>
 <translation id="8452135315243592079">സിം കാർഡ് കാണുന്നില്ല</translation>
@@ -1037,6 +1049,7 @@
 <translation id="9038620279323455325">"<ph name="FILE_NAME" />" എന്ന പേരുള്ള ഫയൽ മുമ്പേ നിലവിലുണ്ട്. മറ്റൊരു പേര് തിരഞ്ഞെടുക്കുക.</translation>
 <translation id="9046895021617826162">ബന്ധിപ്പിക്കല്‍ പരാജയപ്പെട്ടു</translation>
 <translation id="9065512565307033593">പരിശോധിച്ചുറപ്പിക്കാനായില്ലെങ്കിൽ, നിങ്ങളുടെ നെറ്റ്‌വർക്ക് ആക്‌സസ് പ്രവർത്തനരഹിതമാക്കും.</translation>
+<translation id="9083722265619106011">{0,plural, =1{ഒരു മുന്നറിയിപ്പ്.}other{<ph name="COUNT" /> മുന്നറിയിപ്പുകൾ.}}</translation>
 <translation id="908378762078012445">ഫൊണറ്റിക് AATSEEL കീബോർഡ് ഉള്ള റഷ്യൻ</translation>
 <translation id="9086302186042011942">സമന്വയിപ്പിക്കുന്നു</translation>
 <translation id="9099674669267916096">പേജിന്റെ എണ്ണം</translation>

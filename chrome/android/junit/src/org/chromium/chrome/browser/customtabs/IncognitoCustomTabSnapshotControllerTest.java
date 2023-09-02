@@ -28,13 +28,17 @@ import org.robolectric.annotation.Config;
 
 import org.chromium.base.supplier.Supplier;
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.base.test.util.Batch;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.test.util.browser.Features;
+import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
+import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 
 /**
  * Robolectric tests for {@link IncognitoCustomTabSnapshotController}.
  */
 @RunWith(BaseRobolectricTestRunner.class)
+@Batch(Batch.UNIT_TESTS)
 @Config(manifest = Config.NONE)
 public class IncognitoCustomTabSnapshotControllerTest {
     @Mock
@@ -60,9 +64,10 @@ public class IncognitoCustomTabSnapshotControllerTest {
 
     @Test
     @SmallTest
-    @Features.DisableFeatures({ChromeFeatureList.INCOGNITO_SCREENSHOT,
+    @DisableFeatures({ChromeFeatureList.INCOGNITO_SCREENSHOT,
             ChromeFeatureList.IMPROVED_INCOGNITO_SCREENSHOT})
-    public void testSecureFlagsAdded() {
+    public void
+    testSecureFlagsAdded() {
         mParams.flags = 0;
         mIsIncognitoShowing = true;
         new IncognitoCustomTabSnapshotController(mActivityMock, mIsIncognitoShowingSupplier);
@@ -72,8 +77,8 @@ public class IncognitoCustomTabSnapshotControllerTest {
 
     @Test
     @SmallTest
-    @Features.EnableFeatures({ChromeFeatureList.INCOGNITO_SCREENSHOT})
-    @Features.DisableFeatures({ChromeFeatureList.IMPROVED_INCOGNITO_SCREENSHOT})
+    @EnableFeatures({ChromeFeatureList.INCOGNITO_SCREENSHOT})
+    @DisableFeatures({ChromeFeatureList.IMPROVED_INCOGNITO_SCREENSHOT})
     public void testSecureFlagsRemoved() {
         mParams.flags = WindowManager.LayoutParams.FLAG_SECURE;
         mIsIncognitoShowing = true;
@@ -84,7 +89,7 @@ public class IncognitoCustomTabSnapshotControllerTest {
 
     @Test
     @SmallTest
-    @Features.EnableFeatures({ChromeFeatureList.IMPROVED_INCOGNITO_SCREENSHOT})
+    @EnableFeatures({ChromeFeatureList.IMPROVED_INCOGNITO_SCREENSHOT})
     @Config(minSdk = Build.VERSION_CODES.TIRAMISU)
     public void testRecentsScreenshotsEnabled_ForAndroidTOrAbove_AfterSwitchingToNonIncognito() {
         mIsIncognitoShowing = false;
@@ -96,7 +101,7 @@ public class IncognitoCustomTabSnapshotControllerTest {
 
     @Test
     @SmallTest
-    @Features.EnableFeatures({ChromeFeatureList.IMPROVED_INCOGNITO_SCREENSHOT})
+    @EnableFeatures({ChromeFeatureList.IMPROVED_INCOGNITO_SCREENSHOT})
     @Config(minSdk = Build.VERSION_CODES.TIRAMISU)
     public void testRecentsScreenshotsDisabled_ForAndroidTOrAbove_AfterSwitchingToIncognito() {
         mIsIncognitoShowing = true;
@@ -108,7 +113,7 @@ public class IncognitoCustomTabSnapshotControllerTest {
 
     @Test
     @SmallTest
-    @Features.DisableFeatures({ChromeFeatureList.INCOGNITO_SCREENSHOT,
+    @DisableFeatures({ChromeFeatureList.INCOGNITO_SCREENSHOT,
             ChromeFeatureList.IMPROVED_INCOGNITO_SCREENSHOT})
     @Config(minSdk = Build.VERSION_CODES.TIRAMISU)
     public void

@@ -49,9 +49,11 @@
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/autofill/core/common/autofill_prefs.h"
+#include "components/autofill/core/common/autofill_test_utils.h"
 #include "components/autofill/core/common/autofill_util.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
+#include "components/plus_addresses/plus_address_service.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "components/sync/test/test_sync_service.h"
@@ -60,13 +62,14 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using autofill::test::CreateTestFormField;
-using base::UTF8ToUTF16;
-using ::testing::_;
-
 namespace autofill {
 
 namespace {
+
+using base::UTF8ToUTF16;
+using test::CreateTestFormField;
+using test::CreateTestIbanFormData;
+using ::testing::_;
 
 constexpr char kLocale[] = "en_US";
 
@@ -175,7 +178,8 @@ FormData ConstructFormDateFromTypeValuePairs(
 std::unique_ptr<FormStructure> ConstructFormStructureFromFormData(
     const FormData& form) {
   auto form_structure = std::make_unique<FormStructure>(form);
-  form_structure->DetermineHeuristicTypes(nullptr, nullptr);
+  form_structure->DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
+                                          nullptr);
   return form_structure;
 }
 
@@ -725,7 +729,8 @@ class FormDataImporterTestBase {
                                                const char* exp_cc_month,
                                                const char* exp_cc_year) {
     FormStructure form_structure(form);
-    form_structure.DetermineHeuristicTypes(nullptr, nullptr);
+    form_structure.DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
+                                           nullptr);
     absl::optional<CreditCard> extracted_credit_card =
         ExtractCreditCard(form_structure);
     ASSERT_TRUE(extracted_credit_card);
@@ -819,7 +824,7 @@ TEST_P(FormDataImporterTest, ComplementCountry_VariationCountryCode) {
   AutofillProfile kDefaultGermanProfile =
       ConstructDefaultProfileWithOverriddenCountry("DE");
   kDefaultGermanProfile.ClearFields({ADDRESS_HOME_STATE});
-  autofill_client_->SetVariationConfigCountryCode("DE");
+  autofill_client_->SetVariationConfigCountryCode(GeoIpCountryCode("DE"));
   std::unique_ptr<FormStructure> form_structure =
       ConstructFormStructureFromTypeValuePairs(
           GetDefaultProfileTypeValuePairsWithOverriddenCountry(""));
@@ -860,7 +865,7 @@ TEST_P(FormDataImporterTest, ComplementCountry_PhoneNumberParsing) {
 
   // The complement country feature prefers the variation country code, so the
   // imported country will have country = "DE" assigned.
-  autofill_client_->SetVariationConfigCountryCode("DE");
+  autofill_client_->SetVariationConfigCountryCode(GeoIpCountryCode("DE"));
 
   // Country complemention happens before parsing the phone number. Thus, at the
   // time the number is parsed, we correctly apply the German rules.
@@ -898,6 +903,33 @@ TEST_P(FormDataImporterTest, InvalidPhoneNumber) {
                                              {profile_without_number});
 }
 
+TEST_P(FormDataImporterTest, PlusAddressesExcluded) {
+  const std::string kDummyPlusAddress = "plus+plus@plus.plus";
+
+  // Save `kDummyPlusAddress` into the `plus_address_service`, and configure the
+  // `autofill_client_` to use it.
+  plus_addresses::PlusAddressService plus_address_service;
+  plus_address_service.SavePlusAddress(
+      url::Origin::Create(GURL("https://mattwashere.example")),
+      kDummyPlusAddress);
+  autofill_client_->set_plus_address_service(&plus_address_service);
+
+  // Next, make a form with the `kDummyPlusAddress` filled in, which should be
+  // excluded from imports.
+  TypeValuePairs type_value_pairs = GetDefaultProfileTypeValuePairs();
+  SetValueForType(type_value_pairs, EMAIL_ADDRESS, kDummyPlusAddress);
+  std::unique_ptr<FormStructure> form_structure =
+      ConstructFormStructureFromTypeValuePairs(type_value_pairs);
+
+  // Create a default profile, but remove the email address, since extraction
+  // should skip the known plus address.
+  AutofillProfile expected_profile = ConstructDefaultProfile();
+  expected_profile.ClearFields({EMAIL_ADDRESS});
+
+  ExtractAddressProfilesAndVerifyExpectation(*form_structure,
+                                             {expected_profile});
+}
+
 // ImportAddressProfiles tests.
 TEST_P(FormDataImporterTest, ImportStructuredNameProfile) {
   FormData form;
@@ -912,7 +944,8 @@ TEST_P(FormDataImporterTest, ImportStructuredNameProfile) {
       CreateTestFormField("State:", "state", "California", "text"),
       CreateTestFormField("Zip:", "zip", "94102", "text")};
   FormStructure form_structure(form);
-  form_structure.DetermineHeuristicTypes(nullptr, nullptr);
+  form_structure.DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
+                                         nullptr);
   ExtractAddressProfiles(/*extraction_successful=*/true, form_structure);
 
   const std::vector<AutofillProfile*>& results =
@@ -947,7 +980,8 @@ TEST_P(FormDataImporterTest,
       CreateTestFormField("State:", "state", "California", "text"),
       CreateTestFormField("Zip:", "zip", "94102", "text")};
   FormStructure form_structure(form);
-  form_structure.DetermineHeuristicTypes(nullptr, nullptr);
+  form_structure.DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
+                                         nullptr);
   ExtractAddressProfiles(/*extraction_successful=*/true, form_structure);
 
   const std::vector<AutofillProfile*>& results =
@@ -989,7 +1023,8 @@ TEST_P(
       CreateTestFormField("State:", "state", "California", "text"),
       CreateTestFormField("Zip:", "zip", "94102", "text")};
   FormStructure form_structure(form);
-  form_structure.DetermineHeuristicTypes(nullptr, nullptr);
+  form_structure.DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
+                                         nullptr);
   ExtractAddressProfiles(/*extraction_successful=*/true, form_structure);
 
   const std::vector<AutofillProfile*>& results =
@@ -1025,7 +1060,8 @@ TEST_P(FormDataImporterTest,
       CreateTestFormField("Country:", "country", "Germany", "text"),
       CreateTestFormField("Zip:", "zip", "80992", "text")};
   FormStructure form_structure(form);
-  form_structure.DetermineHeuristicTypes(nullptr, nullptr);
+  form_structure.DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
+                                         nullptr);
   ExtractAddressProfiles(/*extraction_successful=*/true, form_structure);
 
   const std::vector<AutofillProfile*>& results =
@@ -1060,7 +1096,8 @@ TEST_P(FormDataImporterTest, ImportStructuredNameAddressProfile) {
       CreateTestFormField("State:", "state", "California", "text"),
       CreateTestFormField("Zip:", "zip", "94102", "text")};
   FormStructure form_structure(form);
-  form_structure.DetermineHeuristicTypes(nullptr, nullptr);
+  form_structure.DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
+                                         nullptr);
   ExtractAddressProfiles(/*extraction_successful=*/true, form_structure);
 
   const std::vector<AutofillProfile*>& results =
@@ -1552,14 +1589,13 @@ TEST_P(FormDataImporterTest, ImportAddressProfiles_LocalizedCountryName) {
   // the page language is not set. This results in an import of the default
   // profile.
   ExtractAddressProfileAndVerifyExtractionOfDefaultProfile(*form_structure);
-  // Remove the imported profile again, so it doesn't affect the expectation
-  // below.
-  personal_data_manager_->ClearAllLocalData();
 
   // Set the page language to match the localized country value and try again.
   autofill_client_->GetLanguageState()->SetSourceLanguage("de");
+  // Note that the default profile is still available in the PDM.
   ExtractAddressProfilesAndVerifyExpectation(
-      *form_structure, {ConstructDefaultProfileWithOverriddenCountry("AM")});
+      *form_structure, {ConstructDefaultProfile(),
+                        ConstructDefaultProfileWithOverriddenCountry("AM")});
 }
 
 // Tests that a profile is created for countries with composed names.
@@ -1577,7 +1613,8 @@ TEST_P(FormDataImporterTest,
       CreateTestFormField("Zip:", "zip", "11181", "text"),
       CreateTestFormField("Country:", "country", "Myanmar [Burma]", "text")};
   FormStructure form_structure(form);
-  form_structure.DetermineHeuristicTypes(nullptr, nullptr);
+  form_structure.DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
+                                         nullptr);
   ExtractAddressProfiles(/*extraction_successful=*/true, form_structure);
 
   AutofillProfile expected;
@@ -1632,7 +1669,8 @@ TEST_P(FormDataImporterTest, ExtractCreditCard_InvalidCardNumber) {
                                            "02", "2999");
 
   FormStructure form_structure(form);
-  form_structure.DetermineHeuristicTypes(nullptr, nullptr);
+  form_structure.DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
+                                         nullptr);
   base::HistogramTester histogram_tester;
   absl::optional<CreditCard> extracted_credit_card =
       ExtractCreditCard(form_structure);
@@ -1656,7 +1694,8 @@ TEST_P(FormDataImporterTest,
       CreateFullCreditCardForm("Smalls Biggie", "4111-1111-1111-1111", "", "");
 
   FormStructure form_structure(form);
-  form_structure.DetermineHeuristicTypes(nullptr, nullptr);
+  form_structure.DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
+                                         nullptr);
   base::HistogramTester histogram_tester;
   absl::optional<CreditCard> extracted_credit_card =
       ExtractCreditCard(form_structure);
@@ -1673,7 +1712,8 @@ TEST_P(FormDataImporterTest,
                                            "4111-1111-1111-1111", "01", "2000");
 
   FormStructure form_structure(form);
-  form_structure.DetermineHeuristicTypes(nullptr, nullptr);
+  form_structure.DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
+                                         nullptr);
   base::HistogramTester histogram_tester;
   absl::optional<CreditCard> extracted_credit_card =
       ExtractCreditCard(form_structure);
@@ -1697,7 +1737,8 @@ TEST_P(FormDataImporterTest, ExtractCreditCard_MonthSelectInvalidText) {
   };
 
   FormStructure form_structure(form);
-  form_structure.DetermineHeuristicTypes(nullptr, nullptr);
+  form_structure.DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
+                                         nullptr);
   base::HistogramTester histogram_tester;
   absl::optional<CreditCard> extracted_credit_card =
       ExtractCreditCard(form_structure);
@@ -1741,7 +1782,8 @@ TEST_P(FormDataImporterTest, ExtractCreditCard_TwoValidCards) {
       CreateFullCreditCardForm("", "5500 0000 0000 0004", "02", "2999");
 
   FormStructure form_structure2(form2);
-  form_structure2.DetermineHeuristicTypes(nullptr, nullptr);
+  form_structure2.DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
+                                          nullptr);
 
   absl::optional<CreditCard> extracted_credit_card2 =
       ExtractCreditCard(form_structure2);
@@ -1843,7 +1885,8 @@ TEST_P(FormDataImporterTest,
   // The card should not be offered to be saved locally because the feature flag
   // is disabled.
   FormStructure form_structure(form);
-  form_structure.DetermineHeuristicTypes(nullptr, nullptr);
+  form_structure.DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
+                                         nullptr);
   absl::optional<CreditCard> extracted_credit_card =
       ExtractCreditCard(form_structure);
   EXPECT_TRUE(extracted_credit_card);
@@ -1871,7 +1914,8 @@ TEST_P(FormDataImporterTest,
   // The card should not be offered to be saved locally because it only matches
   // the full server card.
   FormStructure form_structure(form);
-  form_structure.DetermineHeuristicTypes(nullptr, nullptr);
+  form_structure.DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
+                                         nullptr);
   absl::optional<CreditCard> extracted_credit_card =
       ExtractCreditCard(form_structure);
   EXPECT_TRUE(extracted_credit_card);
@@ -1885,7 +1929,8 @@ TEST_P(FormDataImporterTest, ExtractCreditCard_SameCreditCardWithConflict) {
       "Biggie Smalls", "4111-1111-1111-1111", "01", "2998");
 
   FormStructure form_structure1(form1);
-  form_structure1.DetermineHeuristicTypes(nullptr, nullptr);
+  form_structure1.DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
+                                          nullptr);
   absl::optional<CreditCard> extracted_credit_card =
       ExtractCreditCard(form_structure1);
   EXPECT_TRUE(extracted_credit_card);
@@ -1907,7 +1952,8 @@ TEST_P(FormDataImporterTest, ExtractCreditCard_SameCreditCardWithConflict) {
                                /* different year */ "2999");
 
   FormStructure form_structure2(form2);
-  form_structure2.DetermineHeuristicTypes(nullptr, nullptr);
+  form_structure2.DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
+                                          nullptr);
   absl::optional<CreditCard> extracted_credit_card2 =
       ExtractCreditCard(form_structure2);
   EXPECT_TRUE(extracted_credit_card2);
@@ -1932,7 +1978,8 @@ TEST_P(FormDataImporterTest, ExtractCreditCard_ShouldReturnLocalCard) {
       "Biggie Smalls", "4111-1111-1111-1111", "01", "2998");
 
   FormStructure form_structure1(form1);
-  form_structure1.DetermineHeuristicTypes(nullptr, nullptr);
+  form_structure1.DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
+                                          nullptr);
   absl::optional<CreditCard> extracted_credit_card =
       ExtractCreditCard(form_structure1);
   EXPECT_TRUE(extracted_credit_card);
@@ -1954,7 +2001,8 @@ TEST_P(FormDataImporterTest, ExtractCreditCard_ShouldReturnLocalCard) {
                                /* different year */ "2999");
 
   FormStructure form_structure2(form2);
-  form_structure2.DetermineHeuristicTypes(nullptr, nullptr);
+  form_structure2.DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
+                                          nullptr);
   absl::optional<CreditCard> extracted_credit_card2 =
       ExtractCreditCard(form_structure2);
   EXPECT_TRUE(extracted_credit_card2);
@@ -1981,7 +2029,8 @@ TEST_P(FormDataImporterTest, ExtractCreditCard_EmptyCardWithConflict) {
       "Biggie Smalls", "4111-1111-1111-1111", "01", "2998");
 
   FormStructure form_structure1(form1);
-  form_structure1.DetermineHeuristicTypes(nullptr, nullptr);
+  form_structure1.DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
+                                          nullptr);
 
   absl::optional<CreditCard> extracted_credit_card =
       ExtractCreditCard(form_structure1);
@@ -2003,7 +2052,8 @@ TEST_P(FormDataImporterTest, ExtractCreditCard_EmptyCardWithConflict) {
                                /* no number */ nullptr, "01", "2999");
 
   FormStructure form_structure2(form2);
-  form_structure2.DetermineHeuristicTypes(nullptr, nullptr);
+  form_structure2.DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
+                                          nullptr);
   absl::optional<CreditCard> extracted_credit_card2 =
       ExtractCreditCard(form_structure2);
   EXPECT_FALSE(extracted_credit_card2);
@@ -2029,7 +2079,8 @@ TEST_P(FormDataImporterTest, ExtractCreditCard_MissingInfoInNew) {
       "Biggie Smalls", "4111-1111-1111-1111", "01", "2999");
 
   FormStructure form_structure1(form1);
-  form_structure1.DetermineHeuristicTypes(nullptr, nullptr);
+  form_structure1.DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
+                                          nullptr);
   absl::optional<CreditCard> extracted_credit_card =
       ExtractCreditCard(form_structure1);
   EXPECT_TRUE(extracted_credit_card);
@@ -2050,7 +2101,8 @@ TEST_P(FormDataImporterTest, ExtractCreditCard_MissingInfoInNew) {
       /* missing name */ nullptr, "4111-1111-1111-1111", "01", "2999");
 
   FormStructure form_structure2(form2);
-  form_structure2.DetermineHeuristicTypes(nullptr, nullptr);
+  form_structure2.DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
+                                          nullptr);
   absl::optional<CreditCard> extracted_credit_card2 =
       ExtractCreditCard(form_structure2);
   EXPECT_TRUE(extracted_credit_card2);
@@ -2076,7 +2128,8 @@ TEST_P(FormDataImporterTest, ExtractCreditCard_MissingInfoInNew) {
                                /* no year */ nullptr);
 
   FormStructure form_structure3(form3);
-  form_structure3.DetermineHeuristicTypes(nullptr, nullptr);
+  form_structure3.DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
+                                          nullptr);
   absl::optional<CreditCard> extracted_credit_card3 =
       ExtractCreditCard(form_structure3);
   EXPECT_FALSE(extracted_credit_card3);
@@ -2119,7 +2172,8 @@ TEST_P(FormDataImporterTest, ExtractCreditCard_MissingInfoInOld) {
                                /* different year */ "2999");
 
   FormStructure form_structure(form);
-  form_structure.DetermineHeuristicTypes(nullptr, nullptr);
+  form_structure.DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
+                                         nullptr);
   absl::optional<CreditCard> extracted_credit_card =
       ExtractCreditCard(form_structure);
   EXPECT_TRUE(extracted_credit_card);
@@ -2161,7 +2215,8 @@ TEST_P(FormDataImporterTest, ExtractCreditCard_SameCardWithSeparators) {
                                            "4111-1111-1111-1111", "01", "2999");
 
   FormStructure form_structure(form);
-  form_structure.DetermineHeuristicTypes(nullptr, nullptr);
+  form_structure.DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
+                                         nullptr);
   absl::optional<CreditCard> extracted_credit_card =
       ExtractCreditCard(form_structure);
   EXPECT_TRUE(extracted_credit_card);
@@ -2202,7 +2257,8 @@ TEST_P(FormDataImporterTest,
                                /* different year */ "2999");
 
   FormStructure form_structure(form);
-  form_structure.DetermineHeuristicTypes(nullptr, nullptr);
+  form_structure.DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
+                                         nullptr);
   absl::optional<CreditCard> extracted_credit_card =
       ExtractCreditCard(form_structure);
   EXPECT_TRUE(extracted_credit_card);
@@ -2242,7 +2298,8 @@ TEST_P(FormDataImporterTest,
                                            "4111 1111 1111 1111", "01", "2999");
 
   FormStructure form_structure(form);
-  form_structure.DetermineHeuristicTypes(nullptr, nullptr);
+  form_structure.DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
+                                         nullptr);
   auto extracted_data = ExtractFormDataAndProcessAddressCandidates(
       form_structure, /*profile_autofill_enabled=*/true,
       /*payment_methods_autofill_enabled=*/true);
@@ -2259,7 +2316,8 @@ TEST_P(FormDataImporterTest,
                                             "01", "2999");
 
   FormStructure form_structure2(form2);
-  form_structure2.DetermineHeuristicTypes(nullptr, nullptr);
+  form_structure2.DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
+                                          nullptr);
   auto extracted_data2 = ExtractFormDataAndProcessAddressCandidates(
       form_structure2, /*profile_autofill_enabled=*/true,
       /*payment_methods_autofill_enabled=*/true);
@@ -2285,7 +2343,8 @@ TEST_P(FormDataImporterTest,
       CreateTestFormField("State:", "state", "California", "text"),
       CreateTestFormField("Zip:", "zip", "94102", "text")};
   FormStructure form_structure3(form3);
-  form_structure3.DetermineHeuristicTypes(nullptr, nullptr);
+  form_structure3.DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
+                                          nullptr);
   auto extracted_data3 = ExtractFormDataAndProcessAddressCandidates(
       form_structure3, /*profile_autofill_enabled=*/true,
       /*payment_methods_autofill_enabled=*/false);
@@ -2306,7 +2365,8 @@ TEST_P(FormDataImporterTest,
                                            "4111 1111 1111 1111", "01", "2999");
 
   FormStructure form_structure(form);
-  form_structure.DetermineHeuristicTypes(nullptr, nullptr);
+  form_structure.DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
+                                         nullptr);
   auto extracted_data = ExtractFormDataAndProcessAddressCandidates(
       form_structure, /*profile_autofill_enabled=*/true,
       /*payment_methods_autofill_enabled=*/true);
@@ -2339,7 +2399,8 @@ TEST_P(FormDataImporterTest,
                                            "4111 1111 1111 1111", "01", "2999");
 
   FormStructure form_structure(form);
-  form_structure.DetermineHeuristicTypes(nullptr, nullptr);
+  form_structure.DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
+                                         nullptr);
   auto extracted_data = ExtractFormDataAndProcessAddressCandidates(
       form_structure, /*profile_autofill_enabled=*/true,
       /*payment_methods_autofill_enabled=*/true);
@@ -2369,7 +2430,8 @@ TEST_P(FormDataImporterTest,
                                            "4111 1111 1111 1111", "01", "2999");
 
   FormStructure form_structure(form);
-  form_structure.DetermineHeuristicTypes(nullptr, nullptr);
+  form_structure.DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
+                                         nullptr);
   auto extracted_data = ExtractFormDataAndProcessAddressCandidates(
       form_structure, /*profile_autofill_enabled=*/true,
       /*payment_methods_autofill_enabled=*/true);
@@ -2398,7 +2460,8 @@ TEST_P(FormDataImporterTest,
                                            "04", "2999");
 
   FormStructure form_structure(form);
-  form_structure.DetermineHeuristicTypes(nullptr, nullptr);
+  form_structure.DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
+                                         nullptr);
   auto extracted_data = ExtractFormDataAndProcessAddressCandidates(
       form_structure, /*profile_autofill_enabled=*/true,
       /*payment_methods_autofill_enabled=*/true);
@@ -2418,7 +2481,8 @@ TEST_P(FormDataImporterTest,
                                            "4111 1111 1111 1112", "01", "2999");
 
   FormStructure form_structure(form);
-  form_structure.DetermineHeuristicTypes(nullptr, nullptr);
+  form_structure.DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
+                                         nullptr);
   auto extracted_data = ExtractFormDataAndProcessAddressCandidates(
       form_structure, /*profile_autofill_enabled=*/true,
       /*payment_methods_autofill_enabled=*/true);
@@ -2439,7 +2503,8 @@ TEST_P(FormDataImporterTest,
   FormData form = CreateFullCreditCardForm("Biggie Smalls",
                                            "4111 1111 1111 1111", "01", "2999");
   FormStructure form_structure(form);
-  form_structure.DetermineHeuristicTypes(nullptr, nullptr);
+  form_structure.DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
+                                         nullptr);
   form_data_importer().CacheFetchedVirtualCard(u"1111");
   auto extracted_data = ExtractFormDataAndProcessAddressCandidates(
       form_structure, /*profile_autofill_enabled=*/true,
@@ -2462,7 +2527,8 @@ TEST_P(
                                            "4111 1111 1111 1111", "01", "1999");
 
   FormStructure form_structure(form);
-  form_structure.DetermineHeuristicTypes(nullptr, nullptr);
+  form_structure.DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
+                                         nullptr);
   auto extracted_data = ExtractFormDataAndProcessAddressCandidates(
       form_structure, /*profile_autofill_enabled=*/true,
       /*payment_methods_autofill_enabled=*/true);
@@ -2490,7 +2556,8 @@ TEST_P(FormDataImporterTest,
       CreateTestFormField("State:", "state", "California", "text"),
       CreateTestFormField("Zip:", "zip", "94102", "text")};
   FormStructure form_structure(form);
-  form_structure.DetermineHeuristicTypes(nullptr, nullptr);
+  form_structure.DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
+                                         nullptr);
   auto extracted_data = ExtractFormDataAndProcessAddressCandidates(
       form_structure, /*profile_autofill_enabled=*/true,
       /*payment_methods_autofill_enabled=*/true);
@@ -2522,7 +2589,8 @@ TEST_P(FormDataImporterTest,
   FormData form = CreateFullCreditCardForm("Biggie Smalls",
                                            "4111 1111 1111 1111", "02", "2999");
   FormStructure form_structure(form);
-  form_structure.DetermineHeuristicTypes(nullptr, nullptr);
+  form_structure.DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
+                                         nullptr);
   auto extracted_data = ExtractFormDataAndProcessAddressCandidates(
       form_structure, /*profile_autofill_enabled=*/true,
       /*payment_methods_autofill_enabled=*/true);
@@ -2556,7 +2624,8 @@ TEST_P(
                                            "4111 1111 1111 1111", "02", "2999");
 
   FormStructure form_structure(form);
-  form_structure.DetermineHeuristicTypes(nullptr, nullptr);
+  form_structure.DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
+                                         nullptr);
   auto extracted_data = ExtractFormDataAndProcessAddressCandidates(
       form_structure, /*profile_autofill_enabled=*/true,
       /*payment_methods_autofill_enabled=*/true);
@@ -2607,7 +2676,8 @@ TEST_P(
 
     base::HistogramTester histogram_tester;
     FormStructure form_structure(form);
-    form_structure.DetermineHeuristicTypes(nullptr, nullptr);
+    form_structure.DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
+                                           nullptr);
     auto extracted_data = ExtractFormDataAndProcessAddressCandidates(
         form_structure, /*profile_autofill_enabled=*/true,
         /*payment_methods_autofill_enabled=*/true);
@@ -2629,7 +2699,8 @@ TEST_P(
 
     base::HistogramTester histogram_tester;
     FormStructure form_structure(form);
-    form_structure.DetermineHeuristicTypes(nullptr, nullptr);
+    form_structure.DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
+                                           nullptr);
     auto extracted_data = ExtractFormDataAndProcessAddressCandidates(
         form_structure, /*profile_autofill_enabled=*/true,
         /*payment_methods_autofill_enabled=*/true);
@@ -2676,7 +2747,8 @@ TEST_P(
                                            "4111 1111 1111 1111", "04", "2999");
 
   FormStructure form_structure(form);
-  form_structure.DetermineHeuristicTypes(nullptr, nullptr);
+  form_structure.DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
+                                         nullptr);
   auto extracted_data = ExtractFormDataAndProcessAddressCandidates(
       form_structure, /*profile_autofill_enabled=*/true,
       /*payment_methods_autofill_enabled=*/true);
@@ -2699,7 +2771,8 @@ TEST_P(FormDataImporterTest, ExtractFormData_OneAddressOneCreditCard) {
                         "2999");
 
   FormStructure form_structure(form);
-  form_structure.DetermineHeuristicTypes(nullptr, nullptr);
+  form_structure.DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
+                                         nullptr);
   auto extracted_data = ExtractFormDataAndProcessAddressCandidates(
       form_structure, /*profile_autofill_enabled=*/true,
       /*payment_methods_autofill_enabled=*/true);
@@ -2735,7 +2808,8 @@ TEST_P(FormDataImporterTest, ExtractFormData_TwoAddressesOneCreditCard) {
   AddFullCreditCardForm(&form, "Biggie Smalls", "4111-1111-1111-1111", "01",
                         "2999");
   FormStructure form_structure(form);
-  form_structure.DetermineHeuristicTypes(nullptr, nullptr);
+  form_structure.DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
+                                         nullptr);
 
   base::RunLoop run_loop;
   EXPECT_CALL(personal_data_observer_, OnPersonalDataFinishedProfileTasks())
@@ -2775,7 +2849,8 @@ TEST_P(FormDataImporterTest, ExtractFormData_ImportIbanRecordType_NoIban) {
   form.url = GURL("https://www.foo.com");
 
   FormStructure form_structure(form);
-  form_structure.DetermineHeuristicTypes(nullptr, nullptr);
+  form_structure.DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
+                                         nullptr);
   auto extracted_data = ExtractFormDataAndProcessAddressCandidates(
       form_structure, /*profile_autofill_enabled=*/true,
       /*payment_methods_autofill_enabled=*/true);
@@ -2783,16 +2858,13 @@ TEST_P(FormDataImporterTest, ExtractFormData_ImportIbanRecordType_NoIban) {
 }
 
 TEST_P(FormDataImporterTest, ExtractFormData_SubmittingIbanFormUpdatesPref) {
-  // Simulate a form submission with a new IBAN.
-  FormData form;
-  form.url = GURL("https://www.foo.com");
   // The pref should always start disabled.
   ASSERT_FALSE(personal_data_manager_->IsAutofillHasSeenIbanPrefEnabled());
 
-  test::CreateTestIbanFormData(&form);
-
-  FormStructure form_structure(form);
-  form_structure.DetermineHeuristicTypes(nullptr, nullptr);
+  // Simulate a form submission with a new IBAN.
+  FormStructure form_structure(CreateTestIbanFormData());
+  form_structure.DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
+                                         nullptr);
   ExtractFormDataAndProcessAddressCandidates(
       form_structure, /*profile_autofill_enabled=*/true,
       /*payment_methods_autofill_enabled=*/true);
@@ -2818,15 +2890,11 @@ TEST_P(FormDataImporterTest,
 TEST_P(FormDataImporterTest,
        ExtractFormData_ImportIbanRecordType_IbanAutofill_NewInvalidIban) {
   // Simulate a form submission with a new IBAN.
-  FormData form;
-  form.url = GURL("https://www.foo.com");
-
   // Invalid Kuwait IBAN with incorrect IBAN length.
   // KW16 will be converted into 203216, and the remainder on 97 is 1.
-  test::CreateTestIbanFormData(&form, "KW1600000000000000000");
-
-  FormStructure form_structure(form);
-  form_structure.DetermineHeuristicTypes(nullptr, nullptr);
+  FormStructure form_structure(CreateTestIbanFormData("KW1600000000000000000"));
+  form_structure.DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
+                                         nullptr);
   auto extracted_data = ExtractFormDataAndProcessAddressCandidates(
       form_structure, /*profile_autofill_enabled=*/true,
       /*payment_methods_autofill_enabled=*/true);
@@ -2838,13 +2906,9 @@ TEST_P(FormDataImporterTest,
 TEST_P(FormDataImporterTest,
        ExtractFormData_ImportIbanRecordType_IbanAutofill_NewIban) {
   // Simulate a form submission with a new IBAN.
-  FormData form;
-  form.url = GURL("https://www.foo.com");
-
-  test::CreateTestIbanFormData(&form);
-
-  FormStructure form_structure(form);
-  form_structure.DetermineHeuristicTypes(nullptr, nullptr);
+  FormStructure form_structure(CreateTestIbanFormData());
+  form_structure.DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
+                                         nullptr);
   auto extracted_data = ExtractFormDataAndProcessAddressCandidates(
       form_structure, /*profile_autofill_enabled=*/true,
       /*payment_methods_autofill_enabled=*/true);
@@ -2863,13 +2927,9 @@ TEST_P(FormDataImporterTest, ExtractFormData_ImportIbanRecordType_LocalIban) {
   EXPECT_THAT(*results[0], ComparesEqual(iban));
 
   // Simulate a form submission with the same IBAN.
-  FormData form;
-  form.url = GURL("https://www.foo.com");
-
-  test::CreateTestIbanFormData(&form);
-
-  FormStructure form_structure(form);
-  form_structure.DetermineHeuristicTypes(nullptr, nullptr);
+  FormStructure form_structure(CreateTestIbanFormData());
+  form_structure.DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
+                                         nullptr);
   auto extracted_data = ExtractFormDataAndProcessAddressCandidates(
       form_structure, /*profile_autofill_enabled=*/true,
       /*payment_methods_autofill_enabled=*/true);
@@ -2886,7 +2946,8 @@ TEST_P(FormDataImporterTest, ExtractFormData_AddressesDisabledOneCreditCard) {
   AddFullCreditCardForm(&form, "Biggie Smalls", "4111-1111-1111-1111", "01",
                         "2999");
   FormStructure form_structure(form);
-  form_structure.DetermineHeuristicTypes(nullptr, nullptr);
+  form_structure.DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
+                                         nullptr);
   auto extracted_data = ExtractFormDataAndProcessAddressCandidates(
       form_structure, /*profile_autofill_enabled=*/false,
       /*payment_methods_autofill_enabled=*/true);
@@ -2918,7 +2979,8 @@ TEST_P(FormDataImporterTest, ExtractFormData_OneAddressCreditCardDisabled) {
   AddFullCreditCardForm(&form, "Biggie Smalls", "4111-1111-1111-1111", "01",
                         "2999");
   FormStructure form_structure(form);
-  form_structure.DetermineHeuristicTypes(nullptr, nullptr);
+  form_structure.DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
+                                         nullptr);
   auto extracted_data = ExtractFormDataAndProcessAddressCandidates(
       form_structure, /*profile_autofill_enabled=*/true,
       /*payment_methods_autofill_enabled=*/false);
@@ -2947,7 +3009,8 @@ TEST_P(FormDataImporterTest, ExtractFormData_AddressCreditCardDisabled) {
   AddFullCreditCardForm(&form, "Biggie Smalls", "4111-1111-1111-1111", "01",
                         "2999");
   FormStructure form_structure(form);
-  form_structure.DetermineHeuristicTypes(nullptr, nullptr);
+  form_structure.DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
+                                         nullptr);
   auto extracted_data = ExtractFormDataAndProcessAddressCandidates(
       form_structure, /*profile_autofill_enabled=*/false,
       /*payment_methods_autofill_enabled=*/false);
@@ -2988,7 +3051,8 @@ TEST_P(FormDataImporterTest, DuplicateMaskedServerCard) {
                  CreateTestFormField("Exp Month:", "exp_month", "01", "text"),
                  CreateTestFormField("Exp Year:", "exp_year", "2999", "text")};
   FormStructure form_structure(form);
-  form_structure.DetermineHeuristicTypes(nullptr, nullptr);
+  form_structure.DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
+                                         nullptr);
   auto extracted_data = ExtractFormDataAndProcessAddressCandidates(
       form_structure, /*profile_autofill_enabled=*/true,
       /*payment_methods_autofill_enabled=*/true);
@@ -3013,7 +3077,8 @@ TEST_P(FormDataImporterTest, ExtractFormData_HiddenCreditCardFormAfterEntered) {
   }
 
   FormStructure form_structure(form);
-  form_structure.DetermineHeuristicTypes(nullptr, nullptr);
+  form_structure.DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
+                                         nullptr);
   auto extracted_data = ExtractFormDataAndProcessAddressCandidates(
       form_structure, /*profile_autofill_enabled=*/true,
       /*payment_methods_autofill_enabled=*/true);
@@ -3092,7 +3157,8 @@ TEST_P(FormDataImporterTest,
                  CreateTestFormField("Exp Month:", "exp_month", "04", "text"),
                  CreateTestFormField("Exp Year:", "exp_year", "2999", "text")};
   FormStructure form_structure(form);
-  form_structure.DetermineHeuristicTypes(nullptr, nullptr);
+  form_structure.DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
+                                         nullptr);
   auto extracted_data = ExtractFormDataAndProcessAddressCandidates(
       form_structure, /*profile_autofill_enabled=*/true,
       /*payment_methods_autofill_enabled=*/true);
@@ -3136,7 +3202,8 @@ TEST_P(FormDataImporterTest,
   base::HistogramTester histogram_tester;
   FormStructure form_structure(form);
 
-  form_structure.DetermineHeuristicTypes(nullptr, nullptr);
+  form_structure.DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
+                                         nullptr);
   auto extracted_data = ExtractFormDataAndProcessAddressCandidates(
       form_structure, /*profile_autofill_enabled=*/true,
       /*payment_methods_autofill_enabled=*/true);
@@ -3170,7 +3237,8 @@ TEST_P(FormDataImporterTest,
                  CreateTestFormField("Exp Year:", "exp_year", "2111", "text")};
   FormStructure form_structure(form);
 
-  form_structure.DetermineHeuristicTypes(nullptr, nullptr);
+  form_structure.DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
+                                         nullptr);
   auto extracted_data = ExtractFormDataAndProcessAddressCandidates(
       form_structure, /*profile_autofill_enabled=*/true,
       /*payment_methods_autofill_enabled=*/true);
@@ -3201,7 +3269,8 @@ TEST_P(FormDataImporterTest,
                  CreateTestFormField("Exp Year:", "exp_year", "", "text")};
   FormStructure form_structure(form);
 
-  form_structure.DetermineHeuristicTypes(nullptr, nullptr);
+  form_structure.DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
+                                         nullptr);
   auto extracted_data = ExtractFormDataAndProcessAddressCandidates(
       form_structure, /*profile_autofill_enabled=*/true,
       /*payment_methods_autofill_enabled=*/true);
@@ -3233,7 +3302,8 @@ TEST_P(
                  CreateTestFormField("Exp Year:", "exp_year", "", "text")};
   FormStructure form_structure(form);
 
-  form_structure.DetermineHeuristicTypes(nullptr, nullptr);
+  form_structure.DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
+                                         nullptr);
   auto extracted_data = ExtractFormDataAndProcessAddressCandidates(
       form_structure, /*profile_autofill_enabled=*/true,
       /*payment_methods_autofill_enabled=*/true);
@@ -3264,7 +3334,8 @@ TEST_P(FormDataImporterTest,
   FormStructure form_structure(form);
 
   base::HistogramTester histogram_tester;
-  form_structure.DetermineHeuristicTypes(nullptr, nullptr);
+  form_structure.DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
+                                         nullptr);
   auto extracted_data = ExtractFormDataAndProcessAddressCandidates(
       form_structure, /*profile_autofill_enabled=*/true,
       /*payment_methods_autofill_enabled=*/true);
@@ -3298,7 +3369,8 @@ TEST_P(FormDataImporterTest,
   FormStructure form_structure(form);
 
   base::HistogramTester histogram_tester;
-  form_structure.DetermineHeuristicTypes(nullptr, nullptr);
+  form_structure.DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
+                                         nullptr);
   auto extracted_data = ExtractFormDataAndProcessAddressCandidates(
       form_structure, /*profile_autofill_enabled=*/true,
       /*payment_methods_autofill_enabled=*/true);
@@ -3333,7 +3405,8 @@ TEST_P(FormDataImporterTest,
   FormStructure form_structure(form);
 
   base::HistogramTester histogram_tester;
-  form_structure.DetermineHeuristicTypes(nullptr, nullptr);
+  form_structure.DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
+                                         nullptr);
   auto extracted_data = ExtractFormDataAndProcessAddressCandidates(
       form_structure, /*profile_autofill_enabled=*/true,
       /*payment_methods_autofill_enabled=*/true);
@@ -3350,7 +3423,8 @@ TEST_P(FormDataImporterTest, ExtractUpiId) {
       CreateTestFormField("UPI ID:", "upi_id", "user@indianbank", "text")};
   FormStructure form_structure(form);
 
-  form_structure.DetermineHeuristicTypes(nullptr, nullptr);
+  form_structure.DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
+                                         nullptr);
   auto extracted_data = ExtractFormDataAndProcessAddressCandidates(
       form_structure, /*profile_autofill_enabled=*/false,
       /*payment_methods_autofill_enabled=*/true);
@@ -3365,7 +3439,8 @@ TEST_P(FormDataImporterTest, ExtractUpiIdDisabled) {
       CreateTestFormField("UPI ID:", "upi_id", "user@indianbank", "text")};
   FormStructure form_structure(form);
 
-  form_structure.DetermineHeuristicTypes(nullptr, nullptr);
+  form_structure.DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
+                                         nullptr);
   auto extracted_data = ExtractFormDataAndProcessAddressCandidates(
       form_structure, /*profile_autofill_enabled=*/false,
       /*payment_methods_autofill_enabled=*/false);
@@ -3379,7 +3454,8 @@ TEST_P(FormDataImporterTest, ExtractUpiIdIgnoreNonUpiId) {
       CreateTestFormField("UPI ID:", "upi_id", "user@gmail.com", "text")};
   FormStructure form_structure(form);
 
-  form_structure.DetermineHeuristicTypes(nullptr, nullptr);
+  form_structure.DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
+                                         nullptr);
   auto extracted_data = ExtractFormDataAndProcessAddressCandidates(
       form_structure, /*profile_autofill_enabled=*/false,
       /*payment_methods_autofill_enabled=*/false);
@@ -3421,7 +3497,8 @@ TEST_P(FormDataImporterTest, SilentlyUpdateExistingProfileByIncompleteProfile) {
                           "text")};
   FormStructure form_structure(form);
 
-  form_structure.DetermineHeuristicTypes(nullptr, nullptr);
+  form_structure.DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
+                                         nullptr);
   ExtractAddressProfiles(/*extraction_successful=*/false, form_structure);
 
   // Expect that no new profile is saved.
@@ -3472,7 +3549,8 @@ TEST_P(
                           "text")};
   FormStructure form_structure(form);
 
-  form_structure.DetermineHeuristicTypes(nullptr, nullptr);
+  form_structure.DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
+                                         nullptr);
   ExtractAddressProfiles(/*extraction_successful=*/false, form_structure,
                          /*skip_waiting_on_pdm=*/false,
                          /*allow_save_prompts=*/false);
@@ -3522,7 +3600,8 @@ TEST_P(FormDataImporterTest, UnusableIncompleteProfile) {
       CreateTestFormField("Last name:", "last_name", "Mitch Morrison", "text")};
   FormStructure form_structure(form);
 
-  form_structure.DetermineHeuristicTypes(nullptr, nullptr);
+  form_structure.DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
+                                         nullptr);
   ExtractAddressProfiles(/*extraction_successful=*/false, form_structure,
                          /*skip_waiting_on_pdm=*/true);
 
@@ -3588,7 +3667,7 @@ TEST_P(FormDataImporterTest, MultiStepImport_ComplementCountryEarly) {
 
   // Now import a profile without a country. The country is thus be complemented
   // to the variation country "DE".
-  autofill_client_->SetVariationConfigCountryCode("DE");
+  autofill_client_->SetVariationConfigCountryCode(GeoIpCountryCode("DE"));
   type_value_pairs = GetSplitDefaultProfileTypeValuePairs(/*part=*/2);
   EXPECT_FALSE(base::Contains(type_value_pairs, ADDRESS_HOME_COUNTRY,
                               [](auto& pair) { return pair.first; }));
@@ -3779,14 +3858,10 @@ TEST_P(FormDataImporterTest,
 
 TEST_P(FormDataImporterTest,
        ExtractFormData_ProcessIbanImportCandidate_NoIban) {
-  // Simulate a form submission with a new IBAN.
-  FormData form;
-  form.url = GURL("https://www.foo.com");
-
-  test::CreateTestIbanFormData(&form, "");
-
-  FormStructure form_structure(form);
-  form_structure.DetermineHeuristicTypes(nullptr, nullptr);
+  // Simulate a form submission with an empty Iban.
+  FormStructure form_structure(CreateTestIbanFormData(/*value=*/""));
+  form_structure.DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
+                                         nullptr);
 
   ASSERT_FALSE(ExtractFormDataAndProcessIbanCandidates(
       form_structure, /*profile_autofill_enabled=*/true,
@@ -3797,13 +3872,9 @@ TEST_P(
     FormDataImporterTest,
     ExtractFormData_ProcessIbanImportCandidate_PaymentMethodsSettingDisabled) {
   // Simulate a form submission with a new IBAN.
-  FormData form;
-  form.url = GURL("https://www.foo.com");
-
-  test::CreateTestIbanFormData(&form);
-
-  FormStructure form_structure(form);
-  form_structure.DetermineHeuristicTypes(nullptr, nullptr);
+  FormStructure form_structure(CreateTestIbanFormData());
+  form_structure.DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
+                                         nullptr);
 
   ASSERT_FALSE(ExtractFormDataAndProcessIbanCandidates(
       form_structure, /*profile_autofill_enabled=*/true,
@@ -3813,13 +3884,9 @@ TEST_P(
 TEST_P(FormDataImporterTest,
        ExtractFormData_ProcessIbanImportCandidate_NewIban) {
   // Simulate a form submission with a new IBAN.
-  FormData form;
-  form.url = GURL("https://www.foo.com");
-
-  test::CreateTestIbanFormData(&form);
-
-  FormStructure form_structure(form);
-  form_structure.DetermineHeuristicTypes(nullptr, nullptr);
+  FormStructure form_structure(CreateTestIbanFormData());
+  form_structure.DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
+                                         nullptr);
 
   EXPECT_TRUE(ExtractFormDataAndProcessIbanCandidates(
       form_structure, /*profile_autofill_enabled=*/true,
@@ -3834,13 +3901,9 @@ TEST_P(FormDataImporterTest,
 
   WaitForOnPersonalDataChanged();
   // Simulate a form submission with a new IBAN.
-  FormData form;
-  form.url = GURL("https://www.foo.com");
-
-  test::CreateTestIbanFormData(&form);
-
-  FormStructure form_structure(form);
-  form_structure.DetermineHeuristicTypes(nullptr, nullptr);
+  FormStructure form_structure(CreateTestIbanFormData());
+  form_structure.DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
+                                         nullptr);
 
   ASSERT_FALSE(ExtractFormDataAndProcessIbanCandidates(
       form_structure, /*profile_autofill_enabled=*/true,
@@ -3858,13 +3921,9 @@ TEST_P(FormDataImporterTest,
           test::GetStrippedValue(test::kIbanValue)));
 
   // Simulate a form submission with a new IBAN.
-  FormData form;
-  form.url = GURL("https://www.foo.com");
-
-  test::CreateTestIbanFormData(&form);
-
-  FormStructure form_structure(form);
-  form_structure.DetermineHeuristicTypes(nullptr, nullptr);
+  FormStructure form_structure(CreateTestIbanFormData());
+  form_structure.DetermineHeuristicTypes(GeoIpCountryCode(""), nullptr,
+                                         nullptr);
 
   ASSERT_FALSE(ExtractFormDataAndProcessIbanCandidates(
       form_structure, /*profile_autofill_enabled=*/true,

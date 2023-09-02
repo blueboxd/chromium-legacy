@@ -21,6 +21,7 @@
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1145018782460575098">외부 기기용 펌웨어 업데이트 창이 열려 있습니다. 업데이트가 <ph name="NUM_UPDATES" />개 있습니다.</translation>
 <translation id="1145516343487477149">Chromebook과 관련된 일반적인 질문에 관한 도움말 및 답변 찾기</translation>
+<translation id="1154390310959620237">단축키는 5개까지만 맞춤설정할 수 있습니다. 새로운 단축키를 추가하려면 기존 단축키를 삭제하세요.</translation>
 <translation id="1164939766849482256">새벽부터 밤까지 화면 보호기</translation>
 <translation id="1167755866710282443">메뉴를 열어 키를 맞춤설정하세요. 이동하려면 메뉴를 드래그하세요.</translation>
 <translation id="1175697296044146566">이 <ph name="DEVICE_TYPE" /> 기기는 <ph name="MANAGER" />에서 관리합니다.</translation>
@@ -133,6 +134,7 @@
 <translation id="1881188606372070653">법적인 이유로 콘텐츠 변경을 요청하려면 <ph name="BEGIN_LINK1" />법률 도움말 페이지<ph name="END_LINK1" />로 이동하세요. 일부 계정 및 시스템 정보가 Google로 전송될 수 있습니다. 제공하신 정보는 기술적인 문제를 해결하고 서비스를 개선하는 데 사용되며, <ph name="BEGIN_LINK2" />개인정보처리방침<ph name="END_LINK2" /> 및 <ph name="BEGIN_LINK3" />서비스 약관<ph name="END_LINK3" />이 적용됩니다.</translation>
 <translation id="1885577615937958993">미디어를 빨리 감습니다</translation>
 <translation id="1887850431809612466">하드웨어 버전</translation>
+<translation id="1897672602657312171">검색 키가 없는 단축키가 일부 앱의 단축키와 충돌할 수 있습니다. 이 단축키를 계속 사용하려면 다시 누르거나 검색 키를 사용하여 새 단축키를 누르세요.</translation>
 <translation id="1904932688895783618">다음은 몇 가지 유용한 리소스입니다.</translation>
 <translation id="1905710495812624430">허용되는 최대 시도 횟수를 초과했습니다.</translation>
 <translation id="1908234395526491708">UDP 요청 실패</translation>
@@ -230,12 +232,12 @@
 <translation id="2712812801627182647">TLS 인증 키</translation>
 <translation id="2713444072780614174">흰색</translation>
 <translation id="2717139507051041123">어두운 색상 모드 사용</translation>
+<translation id="2728460467788544679">인쇄 기록 모두 삭제</translation>
 <translation id="2740531572673183784">확인</translation>
 <translation id="2744221223678373668">공유</translation>
 <translation id="2751739896257479635">EAP 2단계 인증</translation>
 <translation id="2783010256799387990">통과</translation>
 <translation id="2787435249130282949">키보드 더 밝게</translation>
-<translation id="2789486458103222910">확인</translation>
 <translation id="2805756323405976993">앱</translation>
 <translation id="28232023175184696">인터넷에 연결할 수 없습니다. 다시 시도하려면 클릭하세요.</translation>
 <translation id="2859243502336719778">중요 업데이트</translation>
@@ -247,6 +249,7 @@
 <translation id="2880569433548999039">구름 흐름 화면 보호기</translation>
 <translation id="2926057806159140518">사용자 이름과 비밀번호를 입력하거나 QR 코드를 스캔하세요.</translation>
 <translation id="2940811910881150316">기기를 테스트할 수 없습니다. 테스트하려면 덮개를 다시 엽니다.</translation>
+<translation id="2941112035454246133">낮음</translation>
 <translation id="3008341117444806826">새로고침</translation>
 <translation id="3009958530611748826">저장 폴더 선택</translation>
 <translation id="3017079585324758401">배경</translation>
@@ -296,6 +299,7 @@
 <translation id="3369013195428705271">모든 인쇄 기록을 삭제하시겠습니까? 진행 중인 인쇄 작업은 삭제되지 않습니다.</translation>
 <translation id="3373141842870501561">지구 흐름 배경화면</translation>
 <translation id="337375748120863155">선택 항목 관련 정보입니다. 컨트롤에 액세스하려면 왼쪽 또는 오른쪽 화살표 키를 사용하세요.</translation>
+<translation id="3383623117265110236">전용</translation>
 <translation id="3404249063913988450">화면 보호기 사용</translation>
 <translation id="3413935475507503304">업데이트를 계속하려면 다음을 클릭하세요.</translation>
 <translation id="3434107140712555581">배터리 <ph name="BATTERY_PERCENTAGE" />%</translation>
@@ -366,6 +370,7 @@
 <translation id="3941014780699102620">호스트를 확인할 수 없습니다.</translation>
 <translation id="3942420633017001071">진단</translation>
 <translation id="3954678691475912818">기기 유형을 알 수 없습니다.</translation>
+<translation id="3959413315969265597">이 APN을 사용 설정할 수 없습니다. 기본 APN이 추가되었는지 확인하세요.</translation>
 <translation id="3966286471246132217">더욱 정확한 결과를 위해 테스트가 완료될 때까지 모든 앱을 닫으세요.</translation>
 <translation id="3967822245660637423">다운로드 완료</translation>
 <translation id="3969602104473960991">ChromeOS 비밀번호 업데이트됨</translation>
@@ -401,6 +406,7 @@
 <translation id="4171077696775491955">밝기를 낮춥니다</translation>
 <translation id="4176463684765177261">사용 중지됨</translation>
 <translation id="4176659219503619100">제어판</translation>
+<translation id="4185315616950253617">맨 위 행의 단축키에는 검색 키가 포함되어야 합니다.</translation>
 <translation id="420283545744377356">화면 보호기 사용 중지</translation>
 <translation id="4213104098953699324">USB 키보드</translation>
 <translation id="4227825898293920515">비밀번호가 <ph name="TIME" /> 후에 만료됨</translation>
@@ -411,6 +417,7 @@
 <translation id="4258281355379922695">HTTP 지연 시간</translation>
 <translation id="4271957103967917607">전체 화면 보기</translation>
 <translation id="4275663329226226506">미디어</translation>
+<translation id="4278766082079064416">"<ph name="CONFLICT_ACCEL_NAME" />"에 단축키가 사용되고 있습니다. 충돌을 해결하려면 수정하거나 삭제하세요.</translation>
 <translation id="4289540628985791613">개요</translation>
 <translation id="4289849978083912975">슬라이드쇼</translation>
 <translation id="4297501883039923494">중지됨 - 알 수 없는 오류</translation>
@@ -491,6 +498,7 @@
 <translation id="4861758251032006121">{ATTEMPTS_LEFT,plural, =1{<ph name="ERROR_MESSAGE" />, 남은 시도 {0}회}other{<ph name="ERROR_MESSAGE" />, 남은 시도 {0}회}}</translation>
 <translation id="4873827928179867585">인증 알고리즘</translation>
 <translation id="4880328057631981605">액세스포인트 네임(APN)</translation>
+<translation id="488307179443832524">"<ph name="CONFLICT_ACCEL_NAME" />"에 단축키가 사용되고 있습니다. 새로운 단축키를 누르세요.</translation>
 <translation id="4885705234041587624">MSCHAPv2</translation>
 <translation id="4890353053343094602">지금 바로 새 비밀번호를 선택하세요.</translation>
 <translation id="4891842000192098784">스트레스</translation>
@@ -601,11 +609,13 @@
 <translation id="5703716265115423771">볼륨 작게</translation>
 <translation id="5707900041990977207"><ph name="CURRENT_PAGE" />/<ph name="TOTAL_PAGES" /></translation>
 <translation id="5733298426544876109"><ph name="DEVICE_NAME" /> 업데이트</translation>
+<translation id="574392208103952083">보통</translation>
 <translation id="5757187557809630523">다음 트랙입니다</translation>
 <translation id="5760715441271661976">포털 상태</translation>
 <translation id="576835345334454681">디스플레이 밝기 높이기</translation>
 <translation id="57838592816432529">음소거</translation>
 <translation id="5784136236926853061">HTTP 지연 시간 높음</translation>
+<translation id="5816802250591013230">할당된 단축키 없음</translation>
 <translation id="5826644637650799838">작품 정보</translation>
 <translation id="5832805196449965646">사용자 추가</translation>
 <translation id="583281660410589416">알 수 없음</translation>
@@ -615,7 +625,6 @@
 <translation id="5859603669299126575">아트 갤러리 앨범</translation>
 <translation id="5860033963881614850">사용 안함</translation>
 <translation id="5860491529813859533">사용</translation>
-<translation id="5866840822086176774">매우 강함</translation>
 <translation id="5876385649737594562">옵션을 선택하려면 사용 설정하세요.</translation>
 <translation id="588258955323874662">전체화면</translation>
 <translation id="5895138241574237353">다시 시작</translation>
@@ -699,7 +708,7 @@
 <translation id="6423239382391657905">OpenVPN</translation>
 <translation id="6439505561246192797">약함(<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="6447630859861661624">계정 설정으로 이동</translation>
-<translation id="6456394469623773452">좋음</translation>
+<translation id="6461047516875166066">자세히 설명해 줘</translation>
 <translation id="6463239094587744704">{PAGE_NUMBER,plural, =0{페이지를 다시 스캔하시겠습니까?}=1{{PAGE_NUMBER}페이지를 다시 스캔하시겠습니까?}other{{PAGE_NUMBER}페이지를 다시 스캔하시겠습니까?}}</translation>
 <translation id="6472207088655375767">OTP</translation>
 <translation id="6480327114083866287"><ph name="MANAGER" />에서 관리함</translation>
@@ -767,13 +776,16 @@
 <translation id="7028979494427204405"><ph name="MANAGER" />에서 이 기기를 관리하고 방문한 웹페이지, 비밀번호, 이메일을 비롯한 모든 사용자 활동에 액세스합니다.</translation>
 <translation id="7040230719604914234">운영자</translation>
 <translation id="7041549558901442110">기기가 연결되어 있지 않습니다.</translation>
+<translation id="7046522406494308071">모든 단축키를 기본값으로 재설정하시겠습니까?</translation>
 <translation id="7058278511608979688">종료 및 저장</translation>
 <translation id="7059230779847288458">충전 중, 완료까지 <ph name="TIME_VALUE" /> 남음</translation>
+<translation id="7066538517128343186"><ph name="KEY" /> 키</translation>
 <translation id="7068619307603204412">기기 준비</translation>
 <translation id="708426984172631313">중지됨</translation>
 <translation id="7086440545492620869"><ph name="VALUE" /><ph name="DISPLAY_NAME" /></translation>
 <translation id="710028965487274708">실패 - 승인 실패</translation>
 <translation id="7103252855940681301">기기 <ph name="COUNT" />대 중 <ph name="INDEX" />번째, 기기 이름은 <ph name="NAME" />입니다.</translation>
+<translation id="7107255225945990211"><ph name="PRODUCT_NAME" /> 전용 포스터 선택</translation>
 <translation id="7108668606237948702">입력</translation>
 <translation id="7130438335435247835">액세스포인트 네임(APN)</translation>
 <translation id="7134436342991564651">{0,plural, =1{네임서버}other{네임서버}}</translation>
@@ -795,6 +807,7 @@
 <translation id="7216409898977639127">이동통신사</translation>
 <translation id="725133483556299729">이메일 선택</translation>
 <translation id="7271040990581020067">현재 스캐너를 사용하고 있습니다. 나중에 다시 시도해 주세요.</translation>
+<translation id="7273347807225967898">단축키를 사용할 수 없습니다. 특수키(Ctrl, Alt, Shift, 검색 또는 런처)를 사용하여 새로운 단축키를 누르세요.</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7281657306185710294">살랑살랑 바람</translation>
 <translation id="7287310195820267359">배경화면 컬렉션</translation>
@@ -854,6 +867,7 @@
 <translation id="7718231387947923843">키보드 조명</translation>
 <translation id="773153675489693198">사이클 수</translation>
 <translation id="7747039790905080783">사전 공유 키</translation>
+<translation id="7752963721013053477">새벽부터 밤까지 - 전용</translation>
 <translation id="7762130827864645708">비밀번호가 변경되었습니다. 지금부터 새로운 비밀번호를 사용해 주세요.</translation>
 <translation id="7763470514545477072">도메인 서픽스 일치</translation>
 <translation id="7769672763586021400">모델 ID</translation>
@@ -873,6 +887,7 @@
 <translation id="7881066108824108340">DNS</translation>
 <translation id="7882358943899516840">공급자 유형</translation>
 <translation id="7882501334836096755">공개 키</translation>
+<translation id="7903695460270716054">선별된 포스터 및 이미지 선택</translation>
 <translation id="7915220255123750251">네트워크 APN 설정을 관리하세요. APN은 셀룰러 네트워크와 인터넷 간의 연결을 설정합니다.</translation>
 <translation id="7936303884198020182">네임서버를 찾을 수 없습니다.</translation>
 <translation id="7942349550061667556">빨간색</translation>
@@ -899,6 +914,7 @@
 <translation id="808894953321890993">비밀번호 변경</translation>
 <translation id="8094062939584182041">Google에서 이 문제에 관한 이메일을 보내도록 허용</translation>
 <translation id="8104083085214006426">안전하지 않은 개방형 네트워크를 사용하고 있습니다.</translation>
+<translation id="8111706652656628199">단축키를 사용할 수 없습니다. Shift 외 1개(ctrl, Alt, 검색 또는 런처)를 사용하여 새 단축키를 누르세요.</translation>
 <translation id="811820734797650957">(Android) 핑할 수 있는 게이트웨이</translation>
 <translation id="8129620843620772246"><ph name="TEMPERATURE_C" />°C</translation>
 <translation id="8132480444149501833">트래픽 카운터 요청</translation>
@@ -917,12 +933,12 @@
 <translation id="8286154143153872371">배경화면을 보려면 네트워크에 연결하고 페이지를 새로고침하세요.</translation>
 <translation id="8291967909914612644">홈 공급자 국가</translation>
 <translation id="8294431847097064396">출처</translation>
-<translation id="8297006494302853456">약함</translation>
 <translation id="8302368968391049045">HTTPS 방화벽</translation>
 <translation id="8312330582793120272">미디어를 재생합니다</translation>
 <translation id="8318753676953949627">이미지 없음</translation>
 <translation id="8329018942023753850">계산기 앱입니다</translation>
 <translation id="8336739000755212683">기기 계정 이미지 변경</translation>
+<translation id="8347126826554447157"><ph name="SHORCTCUT1" /> 또는 <ph name="SHORCTCUT2" /></translation>
 <translation id="8347227221149377169">인쇄 작업</translation>
 <translation id="8351855506390808906">키매핑 터치 포인트</translation>
 <translation id="8352772353338965963">멀티 로그인에 계정을 추가하세요. 비밀번호를 입력하지 않고 모든 로그인 계정에 액세스할 수 있으므로 이 기능은 신뢰할 수 있는 계정에만 사용해야 합니다.</translation>
@@ -977,6 +993,7 @@
 <translation id="8764414543112028321">WireGuard</translation>
 <translation id="87646919272181953">Google 포토 앨범</translation>
 <translation id="877985182522063539">A4</translation>
+<translation id="8789196995628578448">"<ph name="CONFLICT_ACCEL_NAME" />"에 단축키가 사용되고 있습니다. 새로운 단축키를 누르세요. 원래 단축키를 교체하려면 이 단축키를 다시 누르세요.</translation>
 <translation id="879568662008399081">네트워크에 종속 포털이 있을 수 있습니다.</translation>
 <translation id="8798099450830957504">기본값</translation>
 <translation id="8798441408945964110">공급자 이름</translation>

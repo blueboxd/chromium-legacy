@@ -25,6 +25,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/rand_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/single_thread_task_runner.h"
@@ -58,6 +59,7 @@
 #include "net/filter/gzip_source_stream.h"
 #include "net/filter/source_stream.h"
 #include "net/filter/zstd_source_stream.h"
+#include "net/first_party_sets/first_party_set_entry.h"
 #include "net/first_party_sets/first_party_set_metadata.h"
 #include "net/http/http_content_disposition.h"
 #include "net/http/http_log_util.h"
@@ -100,6 +102,24 @@
 #endif
 
 namespace {
+
+base::Value::Dict FirstPartySetMetadataNetLogParams(
+    const net::FirstPartySetMetadata& first_party_set_metadata,
+    const int64_t* const fps_cache_filter) {
+  base::Value::Dict dict;
+  auto entry_or_empty =
+      [](const absl::optional<net::FirstPartySetEntry>& entry) -> std::string {
+    return entry.has_value() ? entry->GetDebugString() : "none";
+  };
+
+  dict.Set("cache_filter",
+           fps_cache_filter ? base::NumberToString(*fps_cache_filter) : "none");
+  dict.Set("frame_entry",
+           entry_or_empty(first_party_set_metadata.frame_entry()));
+  dict.Set("top_frame_primary",
+           entry_or_empty(first_party_set_metadata.top_frame_entry()));
+  return dict;
+}
 
 base::Value::Dict CookieInclusionStatusNetLogParams(
     const std::string& operation,
@@ -289,15 +309,17 @@ void URLRequestHttpJob::Start() {
   UMA_HISTOGRAM_BOOLEAN("Net.HttpJob.CanIncludeCookies",
                         should_add_cookie_header);
 
+  request_->net_log().BeginEvent(NetLogEventType::FIRST_PARTY_SETS_METADATA);
+
   if (!should_add_cookie_header) {
     OnGotFirstPartySetMetadata(FirstPartySetMetadata());
     return;
   }
+
   absl::optional<FirstPartySetMetadata> metadata =
       cookie_util::ComputeFirstPartySetMetadataMaybeAsync(
           SchemefulSite(request()->url()), request()->isolation_info(),
           request()->context()->cookie_store()->cookie_access_delegate(),
-          request()->force_ignore_top_frame_party_for_cookies(),
           base::BindOnce(&URLRequestHttpJob::OnGotFirstPartySetMetadata,
                          weak_factory_.GetWeakPtr()));
 
@@ -331,6 +353,13 @@ void URLRequestHttpJob::OnGotFirstPartySetCacheFilterMatchInfo(
     FirstPartySetsCacheFilter::MatchInfo match_info) {
   request_info_.fps_cache_filter = match_info.clear_at_run_id;
   request_info_.browser_run_id = match_info.browser_run_id;
+
+  request_->net_log().EndEvent(
+      NetLogEventType::FIRST_PARTY_SETS_METADATA, [&]() {
+        return FirstPartySetMetadataNetLogParams(
+            first_party_set_metadata_,
+            base::OptionalToPtr(request_info_.fps_cache_filter));
+      });
 
   // Privacy mode could still be disabled in SetCookieHeaderAndStart if we are
   // going to send previously saved cookies.

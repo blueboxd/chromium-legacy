@@ -49,6 +49,8 @@ public class PageZoomUtils {
     // The max value for the seek bar to help with rounding effects (not shown to user).
     public static final int PAGE_ZOOM_MAXIMUM_SEEKBAR_VALUE = 250;
 
+    public static final int TEXT_SIZE_CONTRAST_MAX_LEVEL = 50;
+
     // The minimum and maximum zoom values as a percentage (e.g. 50% = 0.50, 300% = 3.0).
     protected static final float PAGE_ZOOM_MINIMUM_ZOOM_LEVEL = 0.50f;
     protected static final float PAGE_ZOOM_MAXIMUM_ZOOM_LEVEL = 3.00f;
@@ -235,7 +237,7 @@ public class PageZoomUtils {
         // The default (float) |fontScale| is 1, the default page zoom is 1.
         // If the user has a system font scale other than the default, always show the menu item.
         boolean isUsingDefaultSystemFontScale = MathUtils.areFloatsEqual(getSystemFontScale(), 1f);
-        if (!isUsingDefaultSystemFontScale) {
+        if (!isUsingDefaultSystemFontScale && HostZoomMap.shouldAdjustForOSLevel()) {
             PageZoomUma.logAppMenuEnabledStateHistogram(
                     PageZoomUma.AccessibilityPageZoomAppMenuEnabledState.OS_ENABLED);
             return true;

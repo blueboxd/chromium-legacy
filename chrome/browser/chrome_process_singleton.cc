@@ -6,13 +6,18 @@
 
 #include <utility>
 
-#include "build/build_config.h"
 #include "chrome/browser/headless/headless_mode_util.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/common/chrome_switches.h"
 
 namespace {
 
+constexpr char kEarlySingletonForceEnabledGroup[] = "Enabled_Forced3";
+constexpr char kEarlySingletonEnabledGroup[] = "Enabled3";
+constexpr char kEarlySingletonDisabledMergeGroup[] = "Disabled_Merge3";
+constexpr char kEarlySingletonDefaultGroup[] = "Default3";
+
+const char* g_early_singleton_feature_group_ = nullptr;
 ChromeProcessSingleton* g_chrome_process_singleton_ = nullptr;
 
 }  // namespace
@@ -80,6 +85,42 @@ void ChromeProcessSingleton::DeleteInstance() {
 ChromeProcessSingleton* ChromeProcessSingleton::GetInstance() {
   CHECK(g_chrome_process_singleton_);
   return g_chrome_process_singleton_;
+}
+
+// static
+void ChromeProcessSingleton::SetupEarlySingletonFeature(
+    const base::CommandLine& command_line) {
+  DCHECK(!g_early_singleton_feature_group_);
+  if (command_line.HasSwitch(switches::kEnableEarlyProcessSingleton)) {
+    g_early_singleton_feature_group_ = kEarlySingletonForceEnabledGroup;
+    return;
+  }
+
+  g_early_singleton_feature_group_ = kEarlySingletonDefaultGroup;
+}
+
+// static
+void ChromeProcessSingleton::RegisterEarlySingletonFeature() {
+  DCHECK(g_early_singleton_feature_group_);
+  // The synthetic trial needs to use kCurrentLog to ensure that UMA report will
+  // be generated from the metrics log that is open at the time of registration.
+  ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial(
+      "EarlyProcessSingleton", g_early_singleton_feature_group_,
+      variations::SyntheticTrialAnnotationMode::kCurrentLog);
+}
+
+// static
+bool ChromeProcessSingleton::IsEarlySingletonFeatureEnabled() {
+  return g_early_singleton_feature_group_ == kEarlySingletonEnabledGroup ||
+         g_early_singleton_feature_group_ == kEarlySingletonForceEnabledGroup;
+}
+
+// static
+bool ChromeProcessSingleton::ShouldMergeMetrics() {
+  // This should not be called when the early singleton feature is enabled.
+  DCHECK(g_early_singleton_feature_group_ && !IsEarlySingletonFeatureEnabled());
+
+  return g_early_singleton_feature_group_ == kEarlySingletonDisabledMergeGroup;
 }
 
 bool ChromeProcessSingleton::NotificationCallback(

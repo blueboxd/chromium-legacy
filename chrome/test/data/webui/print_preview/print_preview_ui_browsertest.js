@@ -717,6 +717,14 @@ TEST_F(
       this.runMochaTest(
           printer_setup_info_cros_test.TestNames.ManagePrintersButtonMetrics);
     });
+
+TEST_F(
+    'PrintPreviewPrinterSetupInfoCrosTest', 'DoNotShowManagePrinters',
+    function() {
+      this.runMochaTest(
+          printer_setup_info_cros_test.TestNames.DoNotShowManagePrinters);
+    });
+
 GEN('#endif')
 
 GEN('#if BUILDFLAG(IS_CHROMEOS)');
@@ -836,6 +844,13 @@ TEST_F(
                             .ManagePrintersMetrics_HasNoDestinations);
     });
 
+TEST_F(
+    'PrintPreviewDestinationDialogCrosTest',
+    'ElementsDisplayedWithShowManagePrintersFalse', function() {
+      this.runMochaTest(
+          destination_dialog_cros_test.TestNames
+              .PrinterSetupAssistanceHasDestinations_ShowManagedPrintersFalse);
+    });
 GEN('#endif');
 
 var PrintPreviewAdvancedDialogTest = class extends PrintPreviewTest {

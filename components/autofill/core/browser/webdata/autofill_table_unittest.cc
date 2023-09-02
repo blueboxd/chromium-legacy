@@ -39,6 +39,7 @@
 #include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/autofill_features.h"
+#include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/autofill/core/common/autofill_util.h"
 #include "components/autofill/core/common/form_field_data.h"
@@ -947,7 +948,8 @@ TEST_P(AutofillTableProfileTest, AutofillProfile) {
 
   home_profile.SetRawInfoWithVerificationStatus(
       ADDRESS_HOME_STREET_ADDRESS,
-      u"Street Name House Number Premise APT 10 Floor 2",
+      u"Street Name between streets House Number Premise APT 10 Floor 2 "
+      u"Landmark",
       VerificationStatus::kUserVerified);
   home_profile.SetRawInfoWithVerificationStatus(
       ADDRESS_HOME_STREET_NAME, u"Street Name", VerificationStatus::kFormatted);
@@ -988,12 +990,12 @@ TEST_P(AutofillTableProfileTest, AutofillProfile) {
       ADDRESS_HOME_PREMISE_NAME, u"Premise", VerificationStatus::kUserVerified);
   ASSERT_EQ(home_profile.GetRawInfo(ADDRESS_HOME_STREET_NAME), u"Street Name");
   home_profile.SetRawInfoWithVerificationStatus(
-      ADDRESS_HOME_LANDMARK, u"Red tree", VerificationStatus::kObserved);
+      ADDRESS_HOME_LANDMARK, u"Landmark", VerificationStatus::kObserved);
   home_profile.SetRawInfoWithVerificationStatus(ADDRESS_HOME_OVERFLOW,
                                                 u"Andar 1, Apto. 12",
                                                 VerificationStatus::kObserved);
   home_profile.SetRawInfoWithVerificationStatus(ADDRESS_HOME_BETWEEN_STREETS,
-                                                u"Marcos y Oliva",
+                                                u"between streets",
                                                 VerificationStatus::kObserved);
   home_profile.SetRawInfoWithVerificationStatus(
       ADDRESS_HOME_ADMIN_LEVEL2, u"Oxaca", VerificationStatus::kObserved);
@@ -1174,6 +1176,8 @@ TEST_F(AutofillTableTest, Iban) {
 }
 
 TEST_F(AutofillTableTest, CreditCard) {
+  base::test::ScopedFeatureList features(
+      features::kAutofillEnableCvcStorageAndFilling);
   // Add a 'Work' credit card.
   CreditCard work_creditcard;
   work_creditcard.set_origin("https://www.example.com/");
@@ -1282,8 +1286,25 @@ TEST_F(AutofillTableTest, CreditCard) {
   EXPECT_FALSE(db_creditcard);
 }
 
+TEST_F(AutofillTableTest, AddCreditCardCvcWithFlagOff) {
+  base::test::ScopedFeatureList features;
+  features.InitAndDisableFeature(features::kAutofillEnableCvcStorageAndFilling);
+  CreditCard card = test::GetCreditCard();
+  card.set_cvc(u"123");
+  EXPECT_TRUE(table_->AddCreditCard(card));
+  std::unique_ptr<CreditCard> db_card = table_->GetCreditCard(card.guid());
+  EXPECT_EQ(u"", db_card->cvc());
+
+  card.set_cvc(u"234");
+  EXPECT_TRUE(table_->UpdateCreditCard(card));
+  db_card = table_->GetCreditCard(card.guid());
+  EXPECT_EQ(u"", db_card->cvc());
+}
+
 // Tests that verify ClearCreditCards function working as expected.
 TEST_F(AutofillTableTest, ClearCreditCards) {
+  base::test::ScopedFeatureList features(
+      features::kAutofillEnableCvcStorageAndFilling);
   CreditCard card = test::GetCreditCard();
   card.set_cvc(u"123");
   EXPECT_TRUE(table_->AddCreditCard(card));
@@ -1305,6 +1326,8 @@ TEST_F(AutofillTableTest, ClearCreditCards) {
 // credit card with only cvc change will not update credit_card table
 // modification_date.
 TEST_F(AutofillTableTest, CreditCardCvc) {
+  base::test::ScopedFeatureList features(
+      features::kAutofillEnableCvcStorageAndFilling);
   const base::Time arbitrary_time = base::Time::FromDoubleT(25);
   // Create the test clock and set the time to a specific value.
   TestAutofillClock test_clock;
@@ -1362,6 +1385,76 @@ TEST_F(AutofillTableTest, CreditCardCvc) {
   cvc_removed_statement.BindString(0, card.guid());
   ASSERT_TRUE(cvc_removed_statement.is_valid());
   EXPECT_FALSE(cvc_removed_statement.Step());
+}
+
+// Tests that update a credit card CVC that doesn't have CVC set initially
+// inserts a new CVC record.
+TEST_F(AutofillTableTest, UpdateCreditCardCvc_Add) {
+  base::test::ScopedFeatureList features(
+      features::kAutofillEnableCvcStorageAndFilling);
+  CreditCard card = test::GetCreditCard();
+  ASSERT_TRUE(card.cvc().empty());
+  ASSERT_TRUE(table_->AddCreditCard(card));
+
+  // Update the credit card CVC, we should expect success and CVC gets updated.
+  card.set_cvc(u"123");
+  EXPECT_TRUE(table_->UpdateCreditCard(card));
+  std::unique_ptr<CreditCard> db_card = table_->GetCreditCard(card.guid());
+  EXPECT_EQ(u"123", db_card->cvc());
+}
+
+// Tests that updating a credit card CVC that is different from CVC set
+// initially.
+TEST_F(AutofillTableTest, UpdateCreditCardCvc_Update) {
+  base::test::ScopedFeatureList features(
+      features::kAutofillEnableCvcStorageAndFilling);
+  CreditCard card = test::GetCreditCard();
+  ASSERT_TRUE(card.cvc().empty());
+  ASSERT_TRUE(table_->AddCreditCard(card));
+
+  // INSERT
+  // Updating a card that doesn't have a CVC is the same as inserting a new CVC
+  // record.
+  card.set_cvc(u"123");
+  EXPECT_TRUE(table_->UpdateCreditCard(card));
+  std::unique_ptr<CreditCard> db_card = table_->GetCreditCard(card.guid());
+  EXPECT_EQ(u"123", db_card->cvc());
+
+  // UPDATE
+  // Update the credit card CVC.
+  card.set_cvc(u"234");
+  EXPECT_TRUE(table_->UpdateCreditCard(card));
+  db_card = table_->GetCreditCard(card.guid());
+  EXPECT_EQ(u"234", db_card->cvc());
+}
+
+// Tests that updating a credit card CVC with empty CVC will delete CVC
+// record. This is necessary because if inserting a CVC, UPDATE is chosen over
+// INSERT, it will causes a crash.
+TEST_F(AutofillTableTest, UpdateCreditCardCvc_Delete) {
+  base::test::ScopedFeatureList features(
+      features::kAutofillEnableCvcStorageAndFilling);
+  CreditCard card = test::GetCreditCard();
+  ASSERT_TRUE(card.cvc().empty());
+  ASSERT_TRUE(table_->AddCreditCard(card));
+
+  // INSERT
+  // Updating a card that doesn't have a CVC is the same as inserting a new CVC
+  // record.
+  card.set_cvc(u"123");
+  EXPECT_TRUE(table_->UpdateCreditCard(card));
+  std::unique_ptr<CreditCard> db_card = table_->GetCreditCard(card.guid());
+  EXPECT_EQ(u"123", db_card->cvc());
+
+  // DELETE
+  // Updating a card with empty CVC is the same as deleting the CVC record.
+  card.set_cvc(u"");
+  EXPECT_TRUE(table_->UpdateCreditCard(card));
+  sql::Statement cvc_statement(db_->GetSQLConnection()->GetUniqueStatement(
+      "SELECT guid FROM local_stored_cvc WHERE guid=?"));
+  cvc_statement.BindString(0, card.guid());
+  ASSERT_TRUE(cvc_statement.is_valid());
+  EXPECT_FALSE(cvc_statement.Step());
 }
 
 // Tests that verify add, update and clear server cvc function working as
@@ -1457,7 +1550,7 @@ TEST_P(AutofillTableProfileTest, UpdateAutofillProfile) {
   profile.SetRawInfo(ADDRESS_HOME_ZIP, u"90025");
   profile.SetRawInfo(ADDRESS_HOME_COUNTRY, u"US");
   profile.SetRawInfo(ADDRESS_HOME_OVERFLOW, u"Andar 1, Apto. 12");
-  profile.SetRawInfo(ADDRESS_HOME_LANDMARK, u"Red tree");
+  profile.SetRawInfo(ADDRESS_HOME_LANDMARK, u"Landmark");
   profile.SetRawInfo(ADDRESS_HOME_BETWEEN_STREETS, u"Marcos y Oliva");
   profile.SetRawInfo(PHONE_HOME_WHOLE_NUMBER, u"18181234567");
   profile.SetRawInfoAsInt(BIRTHDATE_DAY, 14);
@@ -1509,6 +1602,8 @@ TEST_P(AutofillTableProfileTest, UpdateAutofillProfile) {
 }
 
 TEST_F(AutofillTableTest, UpdateCreditCard) {
+  base::test::ScopedFeatureList features(
+      features::kAutofillEnableCvcStorageAndFilling);
   // Add a credit card to the db.
   CreditCard credit_card;
   credit_card.SetRawInfo(CREDIT_CARD_NAME_FULL, u"Jack Torrance");
@@ -1580,6 +1675,8 @@ TEST_F(AutofillTableTest, UpdateCreditCard) {
 }
 
 TEST_F(AutofillTableTest, UpdateCreditCardOriginOnly) {
+  base::test::ScopedFeatureList features(
+      features::kAutofillEnableCvcStorageAndFilling);
   // Add a credit card to the db.
   CreditCard credit_card;
   credit_card.SetRawInfo(CREDIT_CARD_NAME_FULL, u"Jack Torrance");
@@ -3084,16 +3181,6 @@ TEST_F(AutofillTableTest, InsertUpiId) {
   ASSERT_TRUE(s_inspect.Step());
   EXPECT_GE(s_inspect.ColumnString(0), "name@indianbank");
   EXPECT_FALSE(s_inspect.Step());
-}
-
-TEST_F(AutofillTableTest, GetAllUpiIds) {
-  constexpr char upi_id1[] = "name@indianbank";
-  constexpr char upi_id2[] = "vpa@icici";
-  EXPECT_TRUE(table_->InsertUpiId(upi_id1));
-  EXPECT_TRUE(table_->InsertUpiId(upi_id2));
-
-  std::vector<std::string> upi_ids = table_->GetAllUpiIds();
-  ASSERT_THAT(upi_ids, UnorderedElementsAre(upi_id1, upi_id2));
 }
 
 TEST_F(AutofillTableTest, SetAndGetCreditCardOfferData) {

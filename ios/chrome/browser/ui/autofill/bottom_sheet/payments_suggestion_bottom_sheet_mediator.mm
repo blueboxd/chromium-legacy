@@ -97,12 +97,13 @@
   // instead of "one thousand two hundred and fifteen".
   NSString* cardLastDigits =
       base::SysUTF16ToNSString(creditCard->LastFourDigits());
-  cardLastDigits = [@[
-    [cardLastDigits substringWithRange:NSMakeRange(0, 1)],
-    [cardLastDigits substringWithRange:NSMakeRange(1, 1)],
-    [cardLastDigits substringWithRange:NSMakeRange(2, 1)],
-    [cardLastDigits substringWithRange:NSMakeRange(3, 1)]
-  ] componentsJoinedByString:@" "];
+  NSMutableArray* digits = [[NSMutableArray alloc] init];
+  if (cardLastDigits.length > 0) {
+    for (NSUInteger i = 0; i < cardLastDigits.length; i++) {
+      [digits addObject:[cardLastDigits substringWithRange:NSMakeRange(i, 1)]];
+    }
+    cardLastDigits = [digits componentsJoinedByString:@" "];
+  }
 
   // Add mention that the credit card ends with the last 4 digits.
   cardAccessibleName = base::SysUTF16ToNSString(
@@ -138,9 +139,19 @@
 @implementation PaymentsSuggestionBottomSheetMediator {
   // The WebStateList observed by this mediator and the observer bridge.
   raw_ptr<WebStateList> _webStateList;
+
+  // Bridge and forwarder for observing WebState events. The forwarder is a
+  // scoped observation, so the bridge will automatically be removed from the
+  // relevant observer list.
   std::unique_ptr<web::WebStateObserverBridge> _webStateObserver;
   std::unique_ptr<ActiveWebStateObservationForwarder>
       _activeWebStateObservationForwarder;
+
+  // Bridge for observing WebStateList events.
+  std::unique_ptr<WebStateListObserverBridge> _webStateListObserver;
+  std::unique_ptr<
+      base::ScopedObservation<WebStateList, WebStateListObserverBridge>>
+      _webStateListObservation;
 
   // Personal Data Manager from which we can get Credit Card information.
   raw_ptr<autofill::PersonalDataManager> _personalDataManager;
@@ -195,6 +206,11 @@
     _activeWebStateObservationForwarder =
         std::make_unique<ActiveWebStateObservationForwarder>(
             webStateList, _webStateObserver.get());
+    _webStateListObserver = std::make_unique<WebStateListObserverBridge>(self);
+    _webStateListObservation = std::make_unique<
+        base::ScopedObservation<WebStateList, WebStateListObserverBridge>>(
+        _webStateListObserver.get());
+    _webStateListObservation->Observe(_webStateList);
   }
   return self;
 }
@@ -210,9 +226,13 @@
     _personalDataManager->RemoveObserver(_personalDataManagerObserver.get());
     _personalDataManagerObserver.reset();
   }
+
   _scopedPersonalDataManagerObservation.reset();
-  _activeWebStateObservationForwarder = nullptr;
-  _webStateObserver = nullptr;
+
+  _webStateListObservation.reset();
+  _webStateListObserver.reset();
+  _activeWebStateObservationForwarder.reset();
+  _webStateObserver.reset();
   _webStateList = nullptr;
 }
 
@@ -329,9 +349,9 @@
 
 - (void)webStateListDestroyed:(WebStateList*)webStateList {
   DCHECK_EQ(webStateList, _webStateList);
-  _activeWebStateObservationForwarder = nullptr;
-  _webStateObserver = nullptr;
-  _webStateList = nullptr;
+  // `disconnect` cleans up all references to `_webStateList` and objects that
+  // depend on it.
+  [self disconnect];
   [self onWebStateChange];
 }
 

@@ -14,13 +14,13 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
 #include "build/build_config.h"
+#include "chrome/browser/apps/app_service/app_registry_cache_waiter.h"
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/web_applications/test/web_app_browsertest_util.h"
 #include "chrome/browser/web_applications/mojom/user_display_mode.mojom.h"
-#include "chrome/browser/web_applications/test/app_registry_cache_waiter.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_command_scheduler.h"
@@ -124,7 +124,7 @@ WebAppNavigationBrowserTest::GetTestNavigationObserver(const GURL& target_url) {
 }
 
 // static
-void WebAppNavigationBrowserTest::ClickLinkWithModifiersAndWaitForURL(
+void WebAppNavigationBrowserTest::ClickLink(
     content::WebContents* web_contents,
     const GURL& link_url,
     const GURL& target_url,
@@ -132,7 +132,6 @@ void WebAppNavigationBrowserTest::ClickLinkWithModifiersAndWaitForURL(
     const std::string& rel,
     int modifiers,
     blink::WebMouseEvent::Button button) {
-  auto observer = GetTestNavigationObserver(target_url);
   std::string script = base::StringPrintf(
       "(() => {"
       "const link = document.createElement('a');"
@@ -154,7 +153,19 @@ void WebAppNavigationBrowserTest::ClickLinkWithModifiersAndWaitForURL(
   ASSERT_TRUE(content::ExecJs(web_contents, script));
 
   content::SimulateMouseClick(web_contents, modifiers, button);
+}
 
+// static
+void WebAppNavigationBrowserTest::ClickLinkWithModifiersAndWaitForURL(
+    content::WebContents* web_contents,
+    const GURL& link_url,
+    const GURL& target_url,
+    WebAppNavigationBrowserTest::LinkTarget target,
+    const std::string& rel,
+    int modifiers,
+    blink::WebMouseEvent::Button button) {
+  auto observer = GetTestNavigationObserver(target_url);
+  ClickLink(web_contents, link_url, target_url, target, rel, modifiers, button);
   observer->Wait();
 }
 
@@ -244,7 +255,7 @@ void WebAppNavigationBrowserTest::TearDownOnMainThread() {
     }
     const WebApp* app = registrar.GetAppById(app_id);
     DCHECK(app->CanUserUninstallWebApp());
-    AppReadinessWaiter app_readiness_waiter(
+    apps::AppReadinessWaiter app_readiness_waiter(
         profile(), app_id, apps::Readiness::kUninstalledByUser);
     base::RunLoop run_loop;
     provider->scheduler().UninstallWebApp(
@@ -286,7 +297,7 @@ AppId WebAppNavigationBrowserTest::InstallTestWebApp(
 
   AppId app_id = test::InstallWebApp(profile(), std::move(web_app_info));
   DCHECK(!app_id.empty());
-  AppReadinessWaiter(profile(), app_id).Await();
+  apps::AppReadinessWaiter(profile(), app_id).Await();
   return app_id;
 }
 

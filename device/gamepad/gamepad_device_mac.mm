@@ -8,8 +8,8 @@
 #import <Foundation/Foundation.h>
 
 #include "base/apple/bridging.h"
-#include "base/mac/foundation_util.h"
-#include "base/mac/scoped_cftyperef.h"
+#include "base/apple/foundation_util.h"
+#include "base/apple/scoped_cftyperef.h"
 #include "base/strings/sys_string_conversions.h"
 #include "device/gamepad/dualshock4_controller.h"
 #include "device/gamepad/gamepad_data_fetcher.h"
@@ -75,7 +75,7 @@ float NormalizeUInt32Axis(uint32_t value, uint32_t min, uint32_t max) {
 }
 
 GamepadBusType QueryBusType(IOHIDDeviceRef device) {
-  CFStringRef transport_cf = base::mac::CFCast<CFStringRef>(
+  CFStringRef transport_cf = base::apple::CFCast<CFStringRef>(
       IOHIDDeviceGetProperty(device, CFSTR(kIOHIDTransportKey)));
   if (transport_cf) {
     std::string transport = base::SysCFStringRefToUTF8(transport_cf);
@@ -179,8 +179,9 @@ bool GamepadDeviceMac::AddButtonsAndAxes(Gamepad* gamepad) {
 }
 
 bool GamepadDeviceMac::AddButtons(Gamepad* gamepad) {
-  base::ScopedCFTypeRef<CFArrayRef> elements(IOHIDDeviceCopyMatchingElements(
-      device_ref_, /*matching=*/nullptr, kIOHIDOptionsTypeNone));
+  base::apple::ScopedCFTypeRef<CFArrayRef> elements(
+      IOHIDDeviceCopyMatchingElements(device_ref_, /*matching=*/nullptr,
+                                      kIOHIDOptionsTypeNone));
   DCHECK(elements);
   DCHECK(gamepad);
   memset(gamepad->buttons, 0, sizeof(gamepad->buttons));
@@ -259,8 +260,9 @@ bool GamepadDeviceMac::AddButtons(Gamepad* gamepad) {
 }
 
 bool GamepadDeviceMac::AddAxes(Gamepad* gamepad) {
-  base::ScopedCFTypeRef<CFArrayRef> elements(IOHIDDeviceCopyMatchingElements(
-      device_ref_, nullptr, kIOHIDOptionsTypeNone));
+  base::apple::ScopedCFTypeRef<CFArrayRef> elements(
+      IOHIDDeviceCopyMatchingElements(device_ref_, nullptr,
+                                      kIOHIDOptionsTypeNone));
   DCHECK(elements);
   DCHECK(gamepad);
   memset(gamepad->axes, 0, sizeof(gamepad->axes));

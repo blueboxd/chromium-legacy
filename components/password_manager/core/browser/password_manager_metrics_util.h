@@ -317,7 +317,8 @@ enum class PasswordType {
   // Passwords used for Chrome sign-in and is closest ("blessed") to be set to
   // sync when signed into multiple profiles if user wants to set up sync.
   // The primary account is equivalent to the "sync account" if this profile has
-  // enabled sync.
+  // enabled history sync. Note: if sync is enabled, but the history datatype
+  // is not enabled, the account is not considered as primary.
   PRIMARY_ACCOUNT_PASSWORD = 1,
   // Other Gaia passwords used in Chrome other than the sync password.
   OTHER_GAIA_PASSWORD = 2,
@@ -908,6 +909,39 @@ base::OnceCallback<R(Args...)> TimeCallback(
       histogram, base::ElapsedTimer(), std::move(callback));
 }
 
+#if BUILDFLAG(IS_IOS)
+// This enum indicates migration status from Keychain to OSCrypt on iOS in the
+// version 39.
+//
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+//
+// Needs to stay in sync with PasswordManagerMatchedFormType in
+// enums.xml.
+enum class MigrationToOSCrypt {
+  kStarted = 0,
+  kFailedToCopyPasswordColumn = 1,
+  kFailedToDecryptFromKeychain = 2,
+  kFailedToEncrypt = 3,
+  kFailedToUpdate = 4,
+  kSuccess = 5,
+  kFailedToDelete = 6,
+  kMaxValue = kFailedToDelete,
+};
+
+// Records the latency of the migration to OSCrypt of the login db on iOS
+// separated by password store type and whether the migration was successful or
+// not.
+void RecordMigrationToOSCryptLatency(bool success,
+                                     base::TimeDelta latency,
+                                     base::StringPiece store_infix);
+
+// Records the status of the migration to OSCrypt of the login db on iOS
+// separated by password store type.
+void RecordMigrationToOSCryptStatus(base::TimeTicks migration_start_time,
+                                    bool is_account_store,
+                                    MigrationToOSCrypt status);
+#endif
 }  // namespace password_manager::metrics_util
 
 #endif  // COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_MANAGER_METRICS_UTIL_H_

@@ -51,6 +51,7 @@
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service_factory.h"
 #include "chrome/browser/optimization_guide/optimization_guide_web_contents_observer.h"
 #include "chrome/browser/optimization_guide/page_content_annotations_service_factory.h"
+#include "chrome/browser/page_info/about_this_site_tab_helper.h"
 #include "chrome/browser/page_info/page_info_features.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_initialize.h"
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
@@ -89,7 +90,6 @@
 #include "chrome/browser/ui/find_bar/find_bar_state.h"
 #include "chrome/browser/ui/focus_tab_after_navigation_helper.h"
 #include "chrome/browser/ui/passwords/manage_passwords_ui_controller.h"
-#include "chrome/browser/ui/pdf/chrome_pdf_web_contents_helper_client.h"
 #include "chrome/browser/ui/performance_controls/high_efficiency_chip_tab_helper.h"
 #include "chrome/browser/ui/prefs/prefs_tab_helper.h"
 #include "chrome/browser/ui/privacy_sandbox/privacy_sandbox_prompt_helper.h"
@@ -203,8 +203,6 @@
 #endif  // BUILDFLAG(IS_ANDROID)
 
 #if defined(TOOLKIT_VIEWS)
-#include "chrome/browser/page_info/about_this_site_service_factory.h"
-#include "chrome/browser/page_info/about_this_site_tab_helper.h"
 #include "chrome/browser/ui/side_search/side_search_tab_contents_helper.h"
 #include "chrome/browser/ui/side_search/side_search_utils.h"
 #endif
@@ -260,10 +258,6 @@
 #include "chrome/browser/offline_pages/android/auto_fetch_page_load_watcher.h"
 #include "chrome/browser/offline_pages/offline_page_tab_helper.h"
 #include "chrome/browser/offline_pages/recent_tab_helper.h"
-#endif
-
-#if BUILDFLAG(ENABLE_PDF)
-#include "components/pdf/browser/pdf_web_contents_helper.h"
 #endif
 
 #if BUILDFLAG(ENABLE_PLUGINS)
@@ -329,25 +323,23 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
 
   // --- Section 1: Common tab helpers ---
+  if (page_info::IsAboutThisSiteAsyncFetchingEnabled()
 #if defined(TOOLKIT_VIEWS)
-  if (page_info::IsPersistentSidePanelEntryFeatureEnabled()) {
-    auto* optimization_guide_decider =
-        OptimizationGuideKeyedServiceFactory::GetForProfile(profile);
-    auto* about_this_site_service =
-        AboutThisSiteServiceFactory::GetForProfile(profile);
-    if (optimization_guide_decider && about_this_site_service)
-      AboutThisSiteTabHelper::CreateForWebContents(
-          web_contents, optimization_guide_decider, about_this_site_service);
-  }
+      || page_info::IsPersistentSidePanelEntryFeatureEnabled()
 #endif
+  ) {
+    if (auto* optimization_guide_decider =
+            OptimizationGuideKeyedServiceFactory::GetForProfile(profile)) {
+      AboutThisSiteTabHelper::CreateForWebContents(web_contents,
+                                                   optimization_guide_decider);
+    }
+  }
   autofill::ChromeAutofillClient::CreateForWebContents(web_contents);
   if (breadcrumbs::IsEnabled())
     BreadcrumbManagerTabHelper::CreateForWebContents(web_contents);
   chrome::ChainedBackNavigationTracker::CreateForWebContents(web_contents);
   chrome_browser_net::NetErrorTabHelper::CreateForWebContents(web_contents);
-  ChromePasswordManagerClient::CreateForWebContentsWithAutofillClient(
-      web_contents,
-      autofill::ContentAutofillClient::FromWebContents(web_contents));
+  ChromePasswordManagerClient::CreateForWebContents(web_contents);
   ChromePasswordReuseDetectionManagerClient::CreateForWebContents(web_contents);
   CreateSubresourceFilterWebContentsHelper(web_contents);
   ChromeTranslateClient::CreateForWebContents(web_contents);
@@ -400,25 +392,29 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
                 profile));
 
 #if BUILDFLAG(IS_ANDROID)
-    // If enabled, save sensitivity data for each non-incognito android tab
+    // If enabled, save sensitivity data for each non-incognito non-custom
+    // android tab
     // TODO(crbug.com/1466970): Consider moving check conditions or the
     // registration logic to sensitivity_persisted_tab_data_android.*
     if (!profile->IsOffTheRecord() &&
         base::FeatureList::IsEnabled(
             chrome::android::kAndroidAppIntegrationSafeSearch)) {
-      SensitivityPersistedTabDataAndroid::From(
-          TabAndroid::FromWebContents(web_contents),
-          base::BindOnce(
-              [](optimization_guide::PageContentAnnotationsService*
-                     page_content_annotations_service,
-                 PersistedTabDataAndroid* persisted_tab_data) {
-                auto* sensitivity_persisted_tab_data_android =
-                    static_cast<SensitivityPersistedTabDataAndroid*>(
-                        persisted_tab_data);
-                sensitivity_persisted_tab_data_android->RegisterPCAService(
-                    page_content_annotations_service);
-              },
-              page_content_annotations_service));
+      if (auto* tab = TabAndroid::FromWebContents(web_contents);
+          (tab && !tab->IsCustomTab())) {
+        SensitivityPersistedTabDataAndroid::From(
+            tab,
+            base::BindOnce(
+                [](optimization_guide::PageContentAnnotationsService*
+                       page_content_annotations_service,
+                   PersistedTabDataAndroid* persisted_tab_data) {
+                  auto* sensitivity_persisted_tab_data_android =
+                      static_cast<SensitivityPersistedTabDataAndroid*>(
+                          persisted_tab_data);
+                  sensitivity_persisted_tab_data_android->RegisterPCAService(
+                      page_content_annotations_service);
+                },
+                page_content_annotations_service));
+      }
     }
 #endif  // BUILDFLAG(IS_ANDROID)
   }
@@ -700,11 +696,6 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   offline_pages::OfflinePageTabHelper::CreateForWebContents(web_contents);
   offline_pages::RecentTabHelper::CreateForWebContents(web_contents);
   offline_pages::AutoFetchPageLoadWatcher::CreateForWebContents(web_contents);
-#endif
-
-#if BUILDFLAG(ENABLE_PDF)
-  pdf::PDFWebContentsHelper::CreateForWebContentsWithClient(
-      web_contents, std::make_unique<ChromePDFWebContentsHelperClient>());
 #endif
 
 #if BUILDFLAG(ENABLE_PLUGINS)

@@ -24,6 +24,7 @@
 #include "ui/gfx/text_constants.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/label_button.h"
+#include "ui/views/controls/focus_ring.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/flex_layout_types.h"
 #include "ui/views/layout/layout_types.h"
@@ -34,9 +35,9 @@
 namespace ash {
 namespace {
 
-constexpr int kSeeAllIconSize = 24;
-constexpr int kFooterVerticalSpacing = 7;
 constexpr int kFooterStartSpacing = 6;
+constexpr int kFooterVerticalSpacing = 7;
+constexpr int kSeeAllIconLabelSpacing = 6;
 
 class SeeAllButton : public views::LabelButton {
  public:
@@ -47,14 +48,16 @@ class SeeAllButton : public views::LabelButton {
     SetCallback(std::move(on_see_all_pressed));
     SetID(base::to_underlying(GlanceablesViewId::kListFooterSeeAllButton));
     SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_RIGHT);
-    SetImageModel(views::Button::STATE_NORMAL,
-                  ui::ImageModel::FromVectorIcon(vector_icons::kLaunchIcon,
-                                                 cros_tokens::kCrosSysOnSurface,
-                                                 kSeeAllIconSize));
+    SetImageModel(
+        views::Button::STATE_NORMAL,
+        ui::ImageModel::FromVectorIcon(vector_icons::kLaunchIcon,
+                                       cros_tokens::kCrosSysOnSurface));
+    SetImageLabelSpacing(kSeeAllIconLabelSpacing);
     SetTextColorId(views::Button::STATE_NORMAL, cros_tokens::kCrosSysOnSurface);
     TypographyProvider::Get()->StyleLabel(TypographyToken::kCrosButton2,
                                           *label());
     SetAccessibilityProperties(ax::mojom::Role::kLink, see_all_accessible_name);
+    views::FocusRing::Get(this)->SetColorId(cros_tokens::kCrosSysFocusRing);
   }
 
   SeeAllButton(const SeeAllButton&) = delete;

@@ -5,7 +5,7 @@
 import 'chrome://shopping-insights-side-panel.top-chrome/app.js';
 
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
-import {String16} from 'chrome://resources/mojo/mojo/public/mojom/base/string16.mojom-webui.js';
+import {stringToMojoString16} from 'chrome://resources/js/mojo_type_util.js';
 import {ShoppingInsightsAppElement} from 'chrome://shopping-insights-side-panel.top-chrome/app.js';
 import {PriceTrackingSection} from 'chrome://shopping-insights-side-panel.top-chrome/price_tracking_section.js';
 import {ShoppingListApiProxyImpl} from 'chrome://shopping-insights-side-panel.top-chrome/shared/commerce/shopping_list_api_proxy.js';
@@ -145,7 +145,7 @@ suite('ShoppingInsightsAppTest', () => {
     assertTrue(!!historyTitle);
     assertTrue(isVisible(historyTitle));
     assertEquals(
-        loadTimeData.getString('lowPriceMultipleOptions'),
+        loadTimeData.getString('historyTitle'),
         historyTitle.textContent!.trim());
 
     const attributesRow =
@@ -281,7 +281,7 @@ suite('ShoppingInsightsAppTest', () => {
         shoppingInsightsApp.shadowRoot!.querySelector('#historyTitle');
     assertTrue(!!historyTitle);
     assertEquals(
-        loadTimeData.getString('highPriceSingleOption'),
+        loadTimeData.getString('historyTitle'),
         historyTitle.textContent!.trim());
     assertFalse(
         isVisible(historySection.querySelector('catalog-attributes-row')));
@@ -309,13 +309,6 @@ suite('ShoppingInsightsAppTest', () => {
     assertTrue(!!attributesRow);
     assertFalse(isVisible(attributesRow));
   });
-
-  /**
-   * Converts a string to an instance of mojo_base.mojom.String16.
-   */
-  function stringToMojoString16(s: string): String16 {
-    return {data: Array.from(s, c => c.charCodeAt(0))};
-  }
 
   [true, false].forEach((eligible) => {
     test('PriceTrackingSectionVisibility', async () => {

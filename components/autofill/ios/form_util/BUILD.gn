@@ -39,6 +39,7 @@ source_set("form_util_feature") {
     ":fill_js",
     ":form_js",
     "//base",
+    "//components/autofill/ios/common:common",
     "//ios/web/public/js_messaging",
   ]
 }
@@ -53,14 +54,27 @@ source_set("form_handler_feature") {
     ":form_util",
     ":form_util_feature",
     "//base",
+    "//components/autofill/ios/common",
     "//components/password_manager/ios:password_manager_feature_header",
     "//ios/web/public/js_messaging",
+  ]
+}
+
+compile_ts("fill_js_dependencies") {
+  allow_js = true
+  sources = [
+    "resources/create_fill_namespace.js",
+    "resources/fill_constants.js",
+    "resources/fill_element_inference.js",
+    "resources/fill_element_inference_util.js",
   ]
 }
 
 optimize_js("fill_js") {
   primary_script = "resources/fill.js"
   sources = [ "resources/fill.js" ]
+
+  deps = [ ":fill_js_dependencies" ]
 }
 
 optimize_ts("form_js") {

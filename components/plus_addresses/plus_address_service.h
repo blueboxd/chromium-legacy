@@ -9,6 +9,7 @@
 #include <unordered_set>
 #include "base/functional/callback_forward.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/plus_addresses/plus_address_client.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/origin.h"
 
@@ -17,11 +18,6 @@ class IdentityManager;
 }
 
 namespace plus_addresses {
-
-// Represents a psuedo-profile-like object for use on a given facet.
-struct PlusProfile {
-  std::string address;
-};
 
 typedef base::OnceCallback<void(const std::string&)> PlusAddressCallback;
 
@@ -54,16 +50,10 @@ class PlusAddressService : public KeyedService {
   // Check whether the passed-in string is a known plus address.
   bool IsPlusAddress(std::string potential_plus_address);
 
-  // Eventually, will orchestrate UI elements to inform the user of the plus
-  // address being created on their behalf, calling `PlusAddressCallback` on
-  // confirmation. For now, however, simply generates a fake plus address and
-  // runs `callback` with it immediately.
-  // Virtual to allow overriding the behavior in tests. This is a
-  // future-proofing mechanism for when UI elements (and possibly other side
-  // effects) are added. This way, the tests external to this directory can stay
-  // the same.
-  virtual void OfferPlusAddressCreation(url::Origin origin,
-                                        PlusAddressCallback callback);
+  // For now, simply generates a fake plus address and runs `callback` with it
+  // immediately.
+  void OfferPlusAddressCreation(const url::Origin& origin,
+                                PlusAddressCallback callback);
 
   // The label for an autofill suggestion offering to create a new plus address.
   // While only debatably relevant to this class, this function allows for
@@ -71,8 +61,8 @@ class PlusAddressService : public KeyedService {
   std::u16string GetCreateSuggestionLabel();
 
  private:
-  // The user's existing set of plus addresses, scoped to facets.
-  std::unordered_map<std::string, PlusProfile> plus_profiles_;
+  // The user's existing set of plus addresses, scoped to sites.
+  std::unordered_map<std::string, std::string> plus_address_by_site_;
 
   // Used to drive the `IsPlusAddress` function, and derived from the values of
   // `plus_profiles`.
@@ -81,6 +71,9 @@ class PlusAddressService : public KeyedService {
   // Stores pointer to IdentityManager instance. It must outlive the
   // PlusAddressService and can be null during tests.
   const raw_ptr<signin::IdentityManager> identity_manager_;
+
+  // Handles requests to a remote server that this service uses.
+  const PlusAddressClient plus_address_client_;
 };
 
 }  // namespace plus_addresses

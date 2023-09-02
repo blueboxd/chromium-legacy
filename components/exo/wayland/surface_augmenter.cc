@@ -15,6 +15,7 @@
 #include "components/exo/surface.h"
 #include "components/exo/surface_observer.h"
 #include "components/exo/wayland/server_util.h"
+#include "ui/accessibility/aura/aura_window_properties.h"
 #include "ui/gfx/geometry/rounded_corners_f.h"
 #include "ui/gfx/geometry/rrect_f.h"
 #include "ui/gfx/geometry/size.h"
@@ -28,6 +29,10 @@ namespace {
 // associated with with subsurface object.
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kSubSurfaceHasAugmentedSubSurfaceKey, false)
 
+// The minimum version for `augmented_surface_set_rounded_corners_clip_bounds`
+// with a local coordinates bounds.
+static constexpr int kRoundedCornersInLocalCoordinatesSinceVersion = 9;
+
 ////////////////////////////////////////////////////////////////////////////////
 // augmented_surface_interface:
 
@@ -40,6 +45,12 @@ class AugmentedSurface : public SurfaceObserver {
   explicit AugmentedSurface(Surface* surface) : surface_(surface) {
     surface_->AddSurfaceObserver(this);
     surface_->SetProperty(kSurfaceHasAugmentedSurfaceKey, true);
+    // No need to create AX Tree for augmented surfaces because they're
+    // equivalent to quads.
+    // TODO(b/296326746): Revert this CL and set the property to the root
+    // surface once arc accessibility is refactored.
+    surface_->window()->SetProperty(ui::kAXConsiderInvisibleAndIgnoreChildren,
+                                    true);
     surface_->set_legacy_buffer_release_skippable(true);
   }
   AugmentedSurface(const AugmentedSurface&) = delete;
@@ -58,10 +69,13 @@ class AugmentedSurface : public SurfaceObserver {
                   float top_left,
                   float top_right,
                   float bottom_right,
-                  float bottom_left) {
-    surface_->SetRoundedCorners(gfx::RRectF(
-        gfx::RectF(x, y, width, height),
-        gfx::RoundedCornersF(top_left, top_right, bottom_right, bottom_left)));
+                  float bottom_left,
+                  bool is_root_coordinates = true) {
+    surface_->SetRoundedCorners(
+        gfx::RRectF(gfx::RectF(x, y, width, height),
+                    gfx::RoundedCornersF(top_left, top_right, bottom_right,
+                                         bottom_left)),
+        is_root_coordinates);
   }
 
   void SetDestination(float width, float height) {
@@ -191,11 +205,17 @@ void augmented_surface_set_rounded_corners_clip_bounds(wl_client* client,
     return;
   }
 
+  // In the deprecated implementation, the bounds was in its root surface
+  // coordinates. We cannot use SINCE_VERSION here because the protocol is not
+  // changed while its expectation and behavior on the client side has changed.
+  bool is_root_coordinates = (wl_resource_get_version(resource) <
+                              kRoundedCornersInLocalCoordinatesSinceVersion);
+
   GetUserDataAs<AugmentedSurface>(resource)->SetCorners(
       wl_fixed_to_double(x), wl_fixed_to_double(y), wl_fixed_to_double(width),
       wl_fixed_to_double(height), wl_fixed_to_double(top_left),
       wl_fixed_to_double(top_right), wl_fixed_to_double(bottom_right),
-      wl_fixed_to_double(bottom_left));
+      wl_fixed_to_double(bottom_left), is_root_coordinates);
 }
 
 void augmented_surface_set_clip_rect(wl_client* client,

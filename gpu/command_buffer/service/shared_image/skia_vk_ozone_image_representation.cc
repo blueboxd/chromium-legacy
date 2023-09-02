@@ -26,8 +26,9 @@
 #include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/gpu/GrBackendSemaphore.h"
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
-#include "third_party/skia/include/gpu/GrBackendSurfaceMutableState.h"
+#include "third_party/skia/include/gpu/MutableTextureState.h"
 #include "third_party/skia/include/gpu/ganesh/SkSurfaceGanesh.h"
+#include "third_party/skia/include/gpu/ganesh/vk/GrVkBackendSurface.h"
 #include "third_party/skia/include/private/chromium/GrPromiseImageTexture.h"
 
 namespace gpu {
@@ -51,8 +52,8 @@ SkiaVkOzoneImageRepresentation::SkiaVkOzoneImageRepresentation(
   DCHECK(vulkan_image_);
 
   promise_texture_ = GrPromiseImageTexture::Make(
-      GrBackendTexture(size().width(), size().height(),
-                       CreateGrVkImageInfo(vulkan_image_.get())));
+      GrBackendTextures::MakeVk(size().width(), size().height(),
+                                CreateGrVkImageInfo(vulkan_image_.get())));
   DCHECK(promise_texture_);
 }
 
@@ -74,7 +75,7 @@ std::vector<sk_sp<SkSurface>> SkiaVkOzoneImageRepresentation::BeginWriteAccess(
     const gfx::Rect& update_rect,
     std::vector<GrBackendSemaphore>* begin_semaphores,
     std::vector<GrBackendSemaphore>* end_semaphores,
-    std::unique_ptr<GrBackendSurfaceMutableState>* end_state) {
+    std::unique_ptr<skgpu::MutableTextureState>* end_state) {
   DCHECK_EQ(mode_, RepresentationAccessMode::kNone);
   DCHECK(promise_texture_);
 
@@ -119,7 +120,7 @@ std::vector<sk_sp<GrPromiseImageTexture>>
 SkiaVkOzoneImageRepresentation::BeginWriteAccess(
     std::vector<GrBackendSemaphore>* begin_semaphores,
     std::vector<GrBackendSemaphore>* end_semaphores,
-    std::unique_ptr<GrBackendSurfaceMutableState>* end_state) {
+    std::unique_ptr<skgpu::MutableTextureState>* end_state) {
   DCHECK_EQ(mode_, RepresentationAccessMode::kNone);
   DCHECK(promise_texture_);
 
@@ -145,7 +146,7 @@ std::vector<sk_sp<GrPromiseImageTexture>>
 SkiaVkOzoneImageRepresentation::BeginReadAccess(
     std::vector<GrBackendSemaphore>* begin_semaphores,
     std::vector<GrBackendSemaphore>* end_semaphores,
-    std::unique_ptr<GrBackendSurfaceMutableState>* end_state) {
+    std::unique_ptr<skgpu::MutableTextureState>* end_state) {
   DCHECK_EQ(mode_, RepresentationAccessMode::kNone);
   DCHECK(!surface_);
   DCHECK(promise_texture_);
@@ -253,7 +254,7 @@ void SkiaVkOzoneImageRepresentation::EndAccess(bool readonly) {
   mode_ = RepresentationAccessMode::kNone;
 }
 
-std::unique_ptr<GrBackendSurfaceMutableState>
+std::unique_ptr<skgpu::MutableTextureState>
 SkiaVkOzoneImageRepresentation::GetEndAccessState() {
   // There is no layout to change if there is no image.
   if (!vulkan_image_)
@@ -272,7 +273,7 @@ SkiaVkOzoneImageRepresentation::GetEndAccessState() {
       ozone_backing()->is_thread_safe()) {
     DCHECK_NE(vulkan_image_->queue_family_index(), VK_QUEUE_FAMILY_IGNORED);
 
-    return std::make_unique<GrBackendSurfaceMutableState>(
+    return std::make_unique<skgpu::MutableTextureState>(
         VK_IMAGE_LAYOUT_UNDEFINED, vulkan_image_->queue_family_index());
   }
   return nullptr;

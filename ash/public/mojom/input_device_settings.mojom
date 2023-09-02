@@ -121,6 +121,8 @@ struct MouseSettings {
   uint8 scroll_sensitivity;
   // Toggles whether scroll acceleration is enabled.
   bool scroll_acceleration;
+  // Store all the button remappings.
+  array<ButtonRemapping> button_remappings;
 };
 
 // Contains all information needed to display, apply, and update touchpad
@@ -206,9 +208,25 @@ struct Stylus {
 
 // Contains all information needed to display, apply, and update graphics
 // tablet settings.
-// TODO(wangdanny): add `settings` and other missing fields to
-// `mojom::GraphicsTablet` struct.
 struct GraphicsTablet {
+  // Key used to lookup device settings in prefs in the format
+  // "vendor_id:product_id" where the ids are 16-bit hex in lowercase.
+  // Example: 5022:18d1.
+  string device_key;
+  // Unique identifier for the graphics tablet which is assigned by ozone when
+  // it is connected and is reassigned when disconnected and reconnected to the
+  // system. These ids can be rarely reused for multiple devices if the original
+  // device holding the id had been disconnected.
+  uint32 id;
+  GraphicsTabletSettings settings;
+};
+
+// Contains all existing graphics tablet settings available for use.
+struct GraphicsTabletSettings {
+  // Stores all the tablet button remappings.
+  array<ButtonRemapping> tablet_button_remappings;
+  // Stores all the pen button remappings.
+  array<ButtonRemapping> pen_button_remappings;
 };
 
 // Contains all information needed to apply remappings from a button to

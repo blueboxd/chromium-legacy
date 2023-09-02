@@ -39,15 +39,11 @@
     }
   },
   "$build/code_coverage": {
-    "coverage_test_types": [
-      "unit",
-      "overall"
-    ],
     "use_javascript_coverage": true
   },
   "$build/flakiness": {
-    "check_for_flakiness": true,
-    "check_for_flakiness_with_resultdb": true
+    "check_for_flakiness": false,
+    "check_for_flakiness_with_resultdb": false
   },
   "$build/reclient": {
     "instance": "rbe-chromium-untrusted",

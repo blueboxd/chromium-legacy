@@ -26,6 +26,7 @@
 #include "base/containers/cxx20_erase.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
+#include "base/debug/alias.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/functional/callback_helpers.h"
@@ -1048,13 +1049,6 @@ absl::optional<base::FilePath> GetInstallDirectoryX86(UpdaterScope scope) {
   }
   return install_dir.AppendASCII(COMPANY_SHORTNAME_STRING)
       .AppendASCII(PRODUCT_FULLNAME_STRING);
-}
-
-bool IsSTA() {
-  APTTYPE apt_type = APTTYPE_CURRENT;
-  APTTYPEQUALIFIER apt_type_qualifier = APTTYPEQUALIFIER_NONE;
-  return SUCCEEDED(::CoGetApartmentType(&apt_type, &apt_type_qualifier)) &&
-         (apt_type == APTTYPE_STA || apt_type == APTTYPE_MAINSTA);
 }
 
 }  // namespace updater

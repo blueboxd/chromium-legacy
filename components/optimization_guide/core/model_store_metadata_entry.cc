@@ -86,6 +86,36 @@ ModelStoreMetadataEntry::GetModelMetadataEntryIfExists(
   return ModelStoreMetadataEntry(metadata_entry);
 }
 
+// static
+std::set<base::FilePath> ModelStoreMetadataEntry::GetValidModelDirs(
+    PrefService* local_state) {
+  std::set<base::FilePath> valid_model_dirs;
+  for (const auto optimization_target_entry :
+       local_state->GetDict(prefs::localstate::kModelStoreMetadata)) {
+    if (!optimization_target_entry.second.is_dict()) {
+      continue;
+    }
+    auto optimization_target =
+        ParseOptimizationTarget(optimization_target_entry.first);
+    if (!optimization_target) {
+      continue;
+    }
+    for (auto model_cache_key_hash :
+         optimization_target_entry.second.GetDict()) {
+      if (!model_cache_key_hash.second.is_dict()) {
+        continue;
+      }
+      auto metadata =
+          ModelStoreMetadataEntry(&model_cache_key_hash.second.GetDict());
+      auto model_base_dir = metadata.GetModelBaseDir();
+      if (model_base_dir) {
+        valid_model_dirs.insert(*model_base_dir);
+      }
+    }
+  }
+  return valid_model_dirs;
+}
+
 ModelStoreMetadataEntry::ModelStoreMetadataEntry(
     const base::Value::Dict* metadata_entry)
     : metadata_entry_(metadata_entry) {}
@@ -182,6 +212,8 @@ ModelStoreMetadataEntryUpdater::PurgeAllInactiveMetadata(
                                prefs::localstate::kModelStoreMetadata);
   std::vector<std::pair<std::string, std::string>> entries_to_remove;
   std::vector<base::FilePath> inactive_model_dirs;
+  auto killswitch_model_versions =
+      features::GetPredictionModelVersionsInKillSwitch();
   for (auto optimization_target_entry : *updater) {
     if (!optimization_target_entry.second.is_dict()) {
       continue;
@@ -208,6 +240,15 @@ ModelStoreMetadataEntryUpdater::PurgeAllInactiveMetadata(
         RecordPredictionModelStoreModelRemovalVersionHistogram(
             *optimization_target,
             PredictionModelStoreModelRemovalReason::kModelExpired);
+      }
+      if (!should_remove_model && metadata.GetVersion() &&
+          IsPredictionModelVersionInKillSwitch(killswitch_model_versions,
+                                               *optimization_target,
+                                               *metadata.GetVersion())) {
+        should_remove_model = true;
+        RecordPredictionModelStoreModelRemovalVersionHistogram(
+            *optimization_target,
+            PredictionModelStoreModelRemovalReason::kModelInKillSwitchList);
       }
 
       if (should_remove_model) {

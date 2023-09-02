@@ -10,9 +10,9 @@
 #include <string>
 
 #include "base/apple/bridging.h"
+#include "base/apple/foundation_util.h"
+#include "base/apple/scoped_cftyperef.h"
 #include "base/logging.h"
-#include "base/mac/foundation_util.h"
-#include "base/mac/scoped_cftyperef.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
@@ -35,7 +35,7 @@ static void EventReceivedThunk(AXObserverRef observer_ref,
 AXEventRecorderMac::AXEventRecorderMac(base::ProcessId pid,
                                        const AXTreeSelector& selector)
     : observer_run_loop_source_(nullptr) {
-  base::ScopedCFTypeRef<AXUIElementRef> node;
+  base::apple::ScopedCFTypeRef<AXUIElementRef> node;
   if (pid) {
     node.reset(AXUIElementCreateApplication(pid));
     if (!node) {
@@ -162,7 +162,7 @@ std::string AXEventRecorderMac::SerializeTextSelectionChangedProperties(
   NSDictionary* ns_user_info = base::apple::CFToNSPtrCast(user_info);
   std::vector<std::string> serialized_info;
   for (NSString* key in ns_user_info) {
-    NSNumber* value = base::mac::ObjCCast<NSNumber>(ns_user_info[key]);
+    NSNumber* value = base::apple::ObjCCast<NSNumber>(ns_user_info[key]);
     std::string value_string;
     if ([key isEqual:NSAccessibilityTextStateChangeTypeKey]) {
       value_string =

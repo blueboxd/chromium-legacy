@@ -52,7 +52,7 @@ class EduCoexistenceButton extends EduCoexistenceButtonBase {
        */
       buttonClasses: {
         type: String,
-        computed: 'getClass_(buttonType, newOobeStyleEnabled)',
+        computed: 'getClass_(buttonType)',
       },
 
       /**
@@ -89,21 +89,12 @@ class EduCoexistenceButton extends EduCoexistenceButtonBase {
 
   /**
    * @param {!ButtonTypes} buttonType
-   * @param {boolean} newOobeStyleEnabled
    * @return {string} CSS class names
    * @private
    */
-  getClass_(buttonType, newOobeStyleEnabled) {
+  getClass_(buttonType) {
     this.assertButtonType_(buttonType);
-
-    // Disable the border if necessary.
-    const cssClassses = newOobeStyleEnabled ? 'no-border button-radius' : '';
-
-    if (buttonType === ButtonTypes.BACK) {
-      return cssClassses;
-    }
-
-    return 'action-button ' + cssClassses;
+    return buttonType === ButtonTypes.ACTION ? 'action-button' : '';
   }
 
   /**
@@ -160,17 +151,23 @@ class EduCoexistenceButton extends EduCoexistenceButtonBase {
    * @param {!Event} e
    * @private
    */
-  onTap_(e) {
+  onClick_(e) {
     if (this.disabled) {
       e.stopPropagation();
       return;
     }
     if (this.buttonType === ButtonTypes.BACK) {
-      this.dispatchEvent(new CustomEvent('go-back'));
+      this.dispatchEvent(new CustomEvent('go-back', {
+        bubbles: true,
+        composed: true,
+      }));
       return;
     }
     if (this.buttonType === ButtonTypes.ACTION) {
-      this.dispatchEvent(new CustomEvent('go-action'));
+      this.dispatchEvent(new CustomEvent('go-action', {
+        bubbles: true,
+        composed: true,
+      }));
       return;
     }
   }

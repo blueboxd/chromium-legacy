@@ -13,9 +13,9 @@
 #include <sanitizer/lsan_interface.h>
 #endif
 
+#include "base/apple/foundation_util.h"
+#include "base/apple/scoped_cftyperef.h"
 #include "base/check_op.h"
-#include "base/mac/foundation_util.h"
-#include "base/mac/scoped_cftyperef.h"
 #include "device/fido/mac/credential_store.h"
 #include "device/fido/mac/keychain.h"
 
@@ -32,30 +32,31 @@ FakeKeychain::~FakeKeychain() {
 #endif
 }
 
-base::ScopedCFTypeRef<SecKeyRef> FakeKeychain::KeyCreateRandomKey(
+base::apple::ScopedCFTypeRef<SecKeyRef> FakeKeychain::KeyCreateRandomKey(
     CFDictionaryRef params,
     CFErrorRef* error) {
   // Validate certain fields that we always expect to be set.
-  DCHECK(base::mac::GetValueFromDictionary<CFStringRef>(params, kSecAttrLabel));
-  DCHECK(base::mac::GetValueFromDictionary<CFDataRef>(
+  DCHECK(
+      base::apple::GetValueFromDictionary<CFStringRef>(params, kSecAttrLabel));
+  DCHECK(base::apple::GetValueFromDictionary<CFDataRef>(
       params, kSecAttrApplicationLabel));
   // kSecAttrApplicationTag is CFDataRef for new credentials and CFStringRef for
   // version < 3. Keychain docs say it should be CFDataRef
   // (https://developer.apple.com/documentation/security/ksecattrapplicationtag).
-  DCHECK(base::mac::GetValueFromDictionary<CFDataRef>(params,
-                                                      kSecAttrApplicationTag) ||
-         base::mac::GetValueFromDictionary<CFStringRef>(
+  DCHECK(base::apple::GetValueFromDictionary<CFDataRef>(
+             params, kSecAttrApplicationTag) ||
+         base::apple::GetValueFromDictionary<CFStringRef>(
              params, kSecAttrApplicationTag));
   DCHECK_EQ(
-      base::mac::GetValueFromDictionary<CFStringRef>(params, kSecAttrTokenID),
+      base::apple::GetValueFromDictionary<CFStringRef>(params, kSecAttrTokenID),
       kSecAttrTokenIDSecureEnclave);
-  DCHECK(CFEqual(base::mac::GetValueFromDictionary<CFStringRef>(
+  DCHECK(CFEqual(base::apple::GetValueFromDictionary<CFStringRef>(
                      params, kSecAttrAccessGroup),
                  keychain_access_group_));
 
   // Call Keychain services to create a key pair, but first drop all parameters
   // that aren't appropriate in tests.
-  base::ScopedCFTypeRef<CFMutableDictionaryRef> params_copy(
+  base::apple::ScopedCFTypeRef<CFMutableDictionaryRef> params_copy(
       CFDictionaryCreateMutableCopy(kCFAllocatorDefault, /*capacity=*/0,
                                     params));
   // Don't create a Secure Enclave key.
@@ -63,12 +64,12 @@ base::ScopedCFTypeRef<SecKeyRef> FakeKeychain::KeyCreateRandomKey(
   // Don't bind to a keychain-access-group, which would require an entitlement.
   CFDictionaryRemoveValue(params_copy, kSecAttrAccessGroup);
 
-  base::ScopedCFTypeRef<CFMutableDictionaryRef> private_key_params(
+  base::apple::ScopedCFTypeRef<CFMutableDictionaryRef> private_key_params(
       CFDictionaryCreateMutableCopy(
           kCFAllocatorDefault, /*capacity=*/0,
-          base::mac::GetValueFromDictionary<CFDictionaryRef>(
+          base::apple::GetValueFromDictionary<CFDictionaryRef>(
               params_copy, kSecPrivateKeyAttrs)));
-  DCHECK(CFEqual(base::mac::GetValueFromDictionary<CFBooleanRef>(
+  DCHECK(CFEqual(base::apple::GetValueFromDictionary<CFBooleanRef>(
                      private_key_params, kSecAttrIsPermanent),
                  kCFBooleanTrue));
   CFDictionarySetValue(private_key_params, kSecAttrIsPermanent,
@@ -76,17 +77,17 @@ base::ScopedCFTypeRef<SecKeyRef> FakeKeychain::KeyCreateRandomKey(
   CFDictionaryRemoveValue(private_key_params, kSecAttrAccessControl);
   CFDictionaryRemoveValue(private_key_params, kSecUseAuthenticationContext);
   CFDictionarySetValue(params_copy, kSecPrivateKeyAttrs, private_key_params);
-  base::ScopedCFTypeRef<SecKeyRef> private_key(
+  base::apple::ScopedCFTypeRef<SecKeyRef> private_key(
       SecKeyCreateRandomKey(params_copy, error));
   if (!private_key) {
-    return base::ScopedCFTypeRef<SecKeyRef>();
+    return base::apple::ScopedCFTypeRef<SecKeyRef>();
   }
 
   // Stash everything in `items_` so it can be  retrieved in with
   // `ItemCopyMatching. This uses the original `params` rather than the modified
   // copy so that `ItemCopyMatching()` will correctly filter on
   // kSecAttrAccessGroup.
-  base::ScopedCFTypeRef<CFMutableDictionaryRef> keychain_item(
+  base::apple::ScopedCFTypeRef<CFMutableDictionaryRef> keychain_item(
       CFDictionaryCreateMutableCopy(kCFAllocatorDefault, /*capacity=*/0,
                                     params));
   CFDictionarySetValue(keychain_item, kSecValueRef, private_key.get());
@@ -100,47 +101,48 @@ OSStatus FakeKeychain::ItemCopyMatching(CFDictionaryRef query,
   // In practice we don't need to care about limit queries, or leaving out the
   // SecKeyRef or attributes from the result set.
   DCHECK_EQ(
-      base::mac::GetValueFromDictionary<CFBooleanRef>(query, kSecReturnRef),
+      base::apple::GetValueFromDictionary<CFBooleanRef>(query, kSecReturnRef),
       kCFBooleanTrue);
-  DCHECK_EQ(base::mac::GetValueFromDictionary<CFBooleanRef>(
+  DCHECK_EQ(base::apple::GetValueFromDictionary<CFBooleanRef>(
                 query, kSecReturnAttributes),
             kCFBooleanTrue);
   DCHECK_EQ(
-      base::mac::GetValueFromDictionary<CFStringRef>(query, kSecMatchLimit),
+      base::apple::GetValueFromDictionary<CFStringRef>(query, kSecMatchLimit),
       kSecMatchLimitAll);
 
   // Filter the items based on `query`.
-  base::ScopedCFTypeRef<CFMutableArrayRef> items(
+  base::apple::ScopedCFTypeRef<CFMutableArrayRef> items(
       CFArrayCreateMutable(nullptr, items_.size(), &kCFTypeArrayCallBacks));
   for (auto& item : items_) {
     // Each `Keychain` instance is expected to operate only on items of a single
     // keychain-access-group, which is tied to the `Profile`.
     CFStringRef keychain_access_group =
-        base::mac::GetValueFromDictionary<CFStringRef>(query,
-                                                       kSecAttrAccessGroup);
+        base::apple::GetValueFromDictionary<CFStringRef>(query,
+                                                         kSecAttrAccessGroup);
     DCHECK(CFEqual(keychain_access_group,
-                   base::mac::GetValueFromDictionary<CFStringRef>(
+                   base::apple::GetValueFromDictionary<CFStringRef>(
                        item, kSecAttrAccessGroup)) &&
            CFEqual(keychain_access_group, keychain_access_group_));
 
     // Match fields present in `query`.
     CFStringRef label =
-        base::mac::GetValueFromDictionary<CFStringRef>(query, kSecAttrLabel);
-    CFDataRef application_label = base::mac::GetValueFromDictionary<CFDataRef>(
-        query, kSecAttrApplicationLabel);
+        base::apple::GetValueFromDictionary<CFStringRef>(query, kSecAttrLabel);
+    CFDataRef application_label =
+        base::apple::GetValueFromDictionary<CFDataRef>(
+            query, kSecAttrApplicationLabel);
     // kSecAttrApplicationTag can be CFStringRef for legacy credentials and
     // CFDataRef for new ones. We currently don't need to query for either.
     DCHECK(!CFDictionaryGetValue(query, kSecAttrApplicationTag));
     if ((label &&
-         !CFEqual(label, base::mac::GetValueFromDictionary<CFStringRef>(
+         !CFEqual(label, base::apple::GetValueFromDictionary<CFStringRef>(
                              item, kSecAttrLabel))) ||
         (application_label &&
          !CFEqual(application_label,
-                  base::mac::GetValueFromDictionary<CFStringRef>(
+                  base::apple::GetValueFromDictionary<CFStringRef>(
                       item, kSecAttrApplicationLabel)))) {
       continue;
     }
-    base::ScopedCFTypeRef<CFDictionaryRef> item_copy(
+    base::apple::ScopedCFTypeRef<CFDictionaryRef> item_copy(
         CFDictionaryCreateCopy(kCFAllocatorDefault, item));
     CFArrayAppendValue(items, item_copy);
   }
@@ -153,20 +155,22 @@ OSStatus FakeKeychain::ItemCopyMatching(CFDictionaryRef query,
 
 OSStatus FakeKeychain::ItemDelete(CFDictionaryRef query) {
   // Validate certain fields that we always expect to be set.
-  DCHECK_EQ(base::mac::GetValueFromDictionary<CFStringRef>(query, kSecClass),
+  DCHECK_EQ(base::apple::GetValueFromDictionary<CFStringRef>(query, kSecClass),
             kSecClassKey);
-  DCHECK(CFEqual(base::mac::GetValueFromDictionary<CFStringRef>(
+  DCHECK(CFEqual(base::apple::GetValueFromDictionary<CFStringRef>(
                      query, kSecAttrAccessGroup),
                  keychain_access_group_));
   // Only supporting deletion via `kSecAttrApplicationLabel` (credential ID) for
   // now (see `TouchIdCredentialStore::DeleteCredentialById()`).
-  CFDataRef query_credential_id = base::mac::GetValueFromDictionary<CFDataRef>(
-      query, kSecAttrApplicationLabel);
+  CFDataRef query_credential_id =
+      base::apple::GetValueFromDictionary<CFDataRef>(query,
+                                                     kSecAttrApplicationLabel);
   DCHECK(query_credential_id);
   for (auto it = items_.begin(); it != items_.end(); ++it) {
-    const base::ScopedCFTypeRef<CFDictionaryRef>& item = *it;
-    CFDataRef item_credential_id = base::mac::GetValueFromDictionary<CFDataRef>(
-        item, kSecAttrApplicationLabel);
+    const base::apple::ScopedCFTypeRef<CFDictionaryRef>& item = *it;
+    CFDataRef item_credential_id =
+        base::apple::GetValueFromDictionary<CFDataRef>(
+            item, kSecAttrApplicationLabel);
     DCHECK(item_credential_id);
     if (CFEqual(query_credential_id, item_credential_id)) {
       items_.erase(it);  // N.B. `it` becomes invalid
@@ -178,24 +182,26 @@ OSStatus FakeKeychain::ItemDelete(CFDictionaryRef query) {
 
 OSStatus FakeKeychain::ItemUpdate(
     CFDictionaryRef query,
-    base::ScopedCFTypeRef<CFMutableDictionaryRef> attributes_to_update) {
-  DCHECK_EQ(base::mac::GetValueFromDictionary<CFStringRef>(query, kSecClass),
+    base::apple::ScopedCFTypeRef<CFMutableDictionaryRef> attributes_to_update) {
+  DCHECK_EQ(base::apple::GetValueFromDictionary<CFStringRef>(query, kSecClass),
             kSecClassKey);
-  DCHECK(CFEqual(base::mac::GetValueFromDictionary<CFStringRef>(
+  DCHECK(CFEqual(base::apple::GetValueFromDictionary<CFStringRef>(
                      query, kSecAttrAccessGroup),
                  keychain_access_group_));
-  CFDataRef query_credential_id = base::mac::GetValueFromDictionary<CFDataRef>(
-      query, kSecAttrApplicationLabel);
+  CFDataRef query_credential_id =
+      base::apple::GetValueFromDictionary<CFDataRef>(query,
+                                                     kSecAttrApplicationLabel);
   DCHECK(query_credential_id);
   for (auto it = items_.begin(); it != items_.end(); ++it) {
-    const base::ScopedCFTypeRef<CFDictionaryRef>& item = *it;
-    CFDataRef item_credential_id = base::mac::GetValueFromDictionary<CFDataRef>(
-        item, kSecAttrApplicationLabel);
+    const base::apple::ScopedCFTypeRef<CFDictionaryRef>& item = *it;
+    CFDataRef item_credential_id =
+        base::apple::GetValueFromDictionary<CFDataRef>(
+            item, kSecAttrApplicationLabel);
     DCHECK(item_credential_id);
     if (!CFEqual(query_credential_id, item_credential_id)) {
       continue;
     }
-    base::ScopedCFTypeRef<CFMutableDictionaryRef> item_copy(
+    base::apple::ScopedCFTypeRef<CFMutableDictionaryRef> item_copy(
         CFDictionaryCreateMutableCopy(kCFAllocatorDefault, /*capacity=*/0,
                                       item));
     size_t size = CFDictionaryGetCount(attributes_to_update.get());
@@ -207,7 +213,7 @@ OSStatus FakeKeychain::ItemUpdate(
     for (size_t i = 0; i < size; ++i) {
       CFDictionarySetValue(item_copy, keys[i], values[i]);
     }
-    *it = base::ScopedCFTypeRef<CFDictionaryRef>(item_copy.release());
+    *it = base::apple::ScopedCFTypeRef<CFDictionaryRef>(item_copy.release());
     return errSecSuccess;
   }
   return errSecItemNotFound;

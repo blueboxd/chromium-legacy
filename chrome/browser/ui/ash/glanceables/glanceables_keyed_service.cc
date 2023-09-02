@@ -11,9 +11,11 @@
 #include <vector>
 
 #include "ash/constants/ash_pref_names.h"
+#include "ash/constants/ash_switches.h"
 #include "ash/glanceables/glanceables_v2_controller.h"
 #include "ash/shell.h"
 #include "base/check.h"
+#include "base/command_line.h"
 #include "base/functional/bind.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
@@ -49,18 +51,32 @@ GlanceablesKeyedService::GlanceablesKeyedService(Profile* profile)
   pref_change_registrar_.Init(pref_service);
   pref_change_registrar_.Add(
       prefs::kGlanceablesEnabled,
-      base::BindRepeating(&GlanceablesKeyedService::UpdateRegistrationInAsh,
+      base::BindRepeating(&GlanceablesKeyedService::UpdateRegistration,
                           base::Unretained(this)));
 
-  CreateClients();
+  UpdateRegistration();
 }
 
 GlanceablesKeyedService::~GlanceablesKeyedService() = default;
 
 void GlanceablesKeyedService::Shutdown() {
-  classroom_client_.reset();
-  tasks_client_.reset();
-  UpdateRegistrationInAsh();
+  ClearClients();
+}
+
+bool GlanceablesKeyedService::AreGlanceablesEnabled() const {
+  PrefService* const prefs = profile_->GetPrefs();
+  if (features::AreGlanceablesV2Enabled()) {
+    return prefs->GetBoolean(prefs::kGlanceablesEnabled) ||
+           base::CommandLine::ForCurrentProcess()->HasSwitch(
+               ash::switches::kAshBypassGlanceablesPref);
+  }
+
+  if (features::AreGlanceablesV2EnabledForTrustedTesters()) {
+    return prefs->IsManagedPreference(prefs::kGlanceablesEnabled) &&
+           prefs->GetBoolean(prefs::kGlanceablesEnabled);
+  }
+
+  return false;
 }
 
 std::unique_ptr<google_apis::RequestSender>
@@ -84,7 +100,7 @@ GlanceablesKeyedService::CreateRequestSenderForClient(
       /*custom_user_agent=*/std::string(), traffic_annotation_tag);
 }
 
-void GlanceablesKeyedService::CreateClients() {
+void GlanceablesKeyedService::RegisterClients() {
   const auto create_request_sender_callback = base::BindRepeating(
       &GlanceablesKeyedService::CreateRequestSenderForClient,
       base::Unretained(this));
@@ -94,10 +110,23 @@ void GlanceablesKeyedService::CreateClients() {
   tasks_client_ = std::make_unique<GlanceablesTasksClientImpl>(
       create_request_sender_callback);
 
-  UpdateRegistrationInAsh();
+  Shell::Get()->glanceables_v2_controller()->UpdateClientsRegistration(
+      account_id_, GlanceablesV2Controller::ClientsRegistration{
+                       .classroom_client = classroom_client_.get(),
+                       .tasks_client = tasks_client_.get()});
 }
 
-void GlanceablesKeyedService::UpdateRegistrationInAsh() const {
+void GlanceablesKeyedService::ClearClients() {
+  classroom_client_.reset();
+  tasks_client_.reset();
+  if (Shell::HasInstance()) {
+    Shell::Get()->glanceables_v2_controller()->UpdateClientsRegistration(
+        account_id_, GlanceablesV2Controller::ClientsRegistration{
+                         .classroom_client = nullptr, .tasks_client = nullptr});
+  }
+}
+
+void GlanceablesKeyedService::UpdateRegistration() {
   if (!Shell::HasInstance()) {
     return;
   }
@@ -108,17 +137,14 @@ void GlanceablesKeyedService::UpdateRegistrationInAsh() const {
 
   CHECK(prefs);
 
-  if (!prefs->GetBoolean(prefs::kGlanceablesEnabled)) {
-    Shell::Get()->glanceables_v2_controller()->UpdateClientsRegistration(
-        account_id_, GlanceablesV2Controller::ClientsRegistration{
-                         .classroom_client = nullptr, .tasks_client = nullptr});
+  if (!AreGlanceablesEnabled()) {
+    ClearClients();
     return;
   }
 
-  Shell::Get()->glanceables_v2_controller()->UpdateClientsRegistration(
-      account_id_, GlanceablesV2Controller::ClientsRegistration{
-                       .classroom_client = classroom_client_.get(),
-                       .tasks_client = tasks_client_.get()});
+  if (!classroom_client_ || !tasks_client_) {
+    RegisterClients();
+  }
 }
 
 }  // namespace ash

@@ -96,7 +96,7 @@ BASE_FEATURE(kAutofillEnableMerchantOptOutClientSideUrlFiltering,
 // autofill dialogs and bubbles on desktop.
 BASE_FEATURE(kAutofillEnableMovingGPayLogoToTheRightOnDesktop,
              "AutofillEnableMovingGPayLogoToTheRightOnDesktop",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // When enabled, the GPay logo will be moved to the right side in payments
 // autofill dialogs and bubbles on clank.
@@ -142,6 +142,12 @@ BASE_FEATURE(kAutofillEnableRemadeDownstreamMetrics,
              "AutofillEnableRemadeDownstreamMetrics",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+// When enabled, Autofill will attempt to offer upload save for IBANs
+// (International Bank Account Numbers) and autofill server-based IBANs.
+BASE_FEATURE(kAutofillEnableServerIban,
+             "AutofillEnableServerIban",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // When enabled, if the user interacts with the manual fallback bottom sheet
 // on Android, it'll remain sticky until the user dismisses it.
 BASE_FEATURE(kAutofillEnableStickyManualFallbackForCards,
@@ -160,12 +166,6 @@ BASE_FEATURE(kAutofillEnableUpdateVirtualCardEnrollment,
              base::FEATURE_ENABLED_BY_DEFAULT
 #endif
 );
-
-// When enabled, the option of using cloud token virtual card will be offered
-// when all requirements are met.
-BASE_FEATURE(kAutofillEnableVirtualCard,
-             "AutofillEnableVirtualCard",
-             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // When enabled, after a successful authentication to autofill a virtual card,
 // the user will be prompted to opt-in to FIDO if the user is not currently
@@ -200,7 +200,7 @@ BASE_FEATURE(kAutofillMoveLegalTermsAndIconForNewCardEnrollment,
 // card but has a different expiration date.
 BASE_FEATURE(kAutofillOfferToSaveCardWithSameLastFour,
              "AutofillOfferToSaveCardWithSameLastFour",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // When enabled, Autofill will attempt to find standalone CVC fields for VCN
 // card on file when parsing forms.
@@ -268,6 +268,13 @@ BASE_FEATURE(kAutofillUseTwoDotsForLastFourDigits,
 // authentication on Bling.
 BASE_FEATURE(kAutofillEnablePaymentsMandatoryReauthOnBling,
              "AutofillEnablePaymentsMandatoryReauthOnBling",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+#endif
+
+#if BUILDFLAG(IS_ANDROID)
+// When enabled, Chrome will offer to pay with accounts supporting Pix.
+BASE_FEATURE(kEnablePixPayments,
+             "EnablePixPayments",
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif
 

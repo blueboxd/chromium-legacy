@@ -8,6 +8,8 @@
 #import "ios/chrome/browser/shared/ui/table_view/cells/table_view_link_header_footer_item.h"
 #import "ios/chrome/browser/ui/authentication/authentication_constants.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_image_detail_text_item.h"
+#import "ios/chrome/browser/ui/settings/password/password_sharing/family_picker_view_controller_presentation_delegate.h"
+#import "ios/chrome/browser/ui/settings/password/password_sharing/password_sharing_constants.h"
 #import "ios/chrome/browser/ui/settings/password/password_sharing/recipient_info.h"
 #import "ios/chrome/common/string_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
@@ -48,6 +50,8 @@ const CGFloat kAccessorySymbolSize = 22;
       initWithBarButtonSystemItem:UIBarButtonSystemItemCancel
                            target:self
                            action:@selector(cancelButtonTapped)];
+  self.navigationItem.leftBarButtonItem.accessibilityIdentifier =
+      kFamilyPickerCancelButtonId;
   self.navigationItem.title =
       l10n_util::GetNSString(IDS_IOS_PASSWORD_SHARING_TITLE);
   UIBarButtonItem* shareButton = [[UIBarButtonItem alloc]
@@ -77,6 +81,11 @@ const CGFloat kAccessorySymbolSize = 22;
   }
 }
 
+- (void)viewDidDisappear:(BOOL)animated {
+  [self.delegate familyPickerWasDismissed:self];
+  [super viewDidDisappear:animated];
+}
+
 #pragma mark - UITableViewDelegate
 
 - (void)tableView:(UITableView*)tableView
@@ -84,6 +93,7 @@ const CGFloat kAccessorySymbolSize = 22;
   if (_recipients[indexPath.row].isEligible) {
     [tableView cellForRowAtIndexPath:indexPath].accessoryView =
         [[UIImageView alloc] initWithImage:[self checkmarkCircleIcon]];
+    self.navigationItem.rightBarButtonItem.enabled = YES;
   }
 }
 
@@ -92,7 +102,15 @@ const CGFloat kAccessorySymbolSize = 22;
   if (_recipients[indexPath.row].isEligible) {
     [tableView cellForRowAtIndexPath:indexPath].accessoryView =
         [[UIImageView alloc] initWithImage:[self circleIcon]];
+    if (tableView.indexPathsForSelectedRows.count == 0) {
+      self.navigationItem.rightBarButtonItem.enabled = NO;
+    }
   }
+}
+
+- (BOOL)tableView:(UITableView*)tableView
+    shouldHighlightRowAtIndexPath:(NSIndexPath*)indexPath {
+  return _recipients[indexPath.row].isEligible;
 }
 
 #pragma mark - UITableViewDataSource
@@ -133,7 +151,12 @@ const CGFloat kAccessorySymbolSize = 22;
 #pragma mark - FamilyPickerConsumer
 
 - (void)setRecipients:(NSArray<RecipientInfoForIOSDisplay*>*)recipients {
-  _recipients = recipients;
+  NSSortDescriptor* eligibility =
+      [[NSSortDescriptor alloc] initWithKey:@"isEligible" ascending:NO];
+  NSSortDescriptor* fullName = [[NSSortDescriptor alloc] initWithKey:@"fullName"
+                                                           ascending:YES];
+  _recipients =
+      [recipients sortedArrayUsingDescriptors:@[ eligibility, fullName ]];
 
   [self loadModel];
   [self.tableView reloadData];
@@ -213,7 +236,7 @@ const CGFloat kAccessorySymbolSize = 22;
 }
 
 - (void)cancelButtonTapped {
-  // TODO(crbug.com/1463882): Handle cancel tap.
+  [self.delegate familyPickerWasDismissed:self];
 }
 
 - (void)shareButtonTapped {

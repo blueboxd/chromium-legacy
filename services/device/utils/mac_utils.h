@@ -5,7 +5,7 @@
 #ifndef SERVICES_DEVICE_UTILS_MAC_UTILS_H_
 #define SERVICES_DEVICE_UTILS_MAC_UTILS_H_
 
-#include "base/mac/foundation_util.h"
+#include "base/apple/foundation_util.h"
 #include "base/notreached.h"
 #include "base/strings/sys_string_conversions.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -21,8 +21,8 @@ absl::optional<T> GetIntegerProperty(io_service_t service,
                     std::is_same_v<T, int32_t>,
                 "Unsupported template type");
 
-  base::ScopedCFTypeRef<CFNumberRef> cf_number(
-      base::mac::CFCast<CFNumberRef>(IORegistryEntryCreateCFProperty(
+  base::apple::ScopedCFTypeRef<CFNumberRef> cf_number(
+      base::apple::CFCast<CFNumberRef>(IORegistryEntryCreateCFProperty(
           service, property, kCFAllocatorDefault, 0)));
 
   if (!cf_number)
@@ -56,8 +56,8 @@ absl::optional<T> GetStringProperty(io_service_t service,
       std::is_same_v<T, std::string> || std::is_same_v<T, std::u16string>,
       "Unsupported template type");
 
-  base::ScopedCFTypeRef<CFStringRef> ref(
-      base::mac::CFCast<CFStringRef>(IORegistryEntryCreateCFProperty(
+  base::apple::ScopedCFTypeRef<CFStringRef> ref(
+      base::apple::CFCast<CFStringRef>(IORegistryEntryCreateCFProperty(
           service, property, kCFAllocatorDefault, 0)));
 
   if (!ref)

@@ -70,23 +70,23 @@ CreditCardFidoAuthenticator::~CreditCardFidoAuthenticator() {
 }
 
 void CreditCardFidoAuthenticator::Authenticate(
-    const CreditCard* card,
+    CreditCard card,
     base::WeakPtr<Requester> requester,
     base::Value::Dict request_options,
     absl::optional<std::string> context_token) {
-  card_ = card;
+  card_ = std::move(card);
   requester_ = requester;
   context_token_ = context_token;
 
   // Cancel any previous pending WebAuthn requests.
   authenticator()->Cancel();
 
-  if (card_ && IsValidRequestOptions(request_options.Clone())) {
+  if (IsValidRequestOptions(request_options)) {
     current_flow_ = AUTHENTICATION_FLOW;
     GetAssertion(ParseRequestOptions(std::move(request_options)));
   } else if (requester_) {
-    FidoAuthenticationResponse response{.did_succeed = false};
-    requester_->OnFIDOAuthenticationComplete(response);
+    requester_->OnFIDOAuthenticationComplete(
+        FidoAuthenticationResponse{.did_succeed = false});
   }
 }
 
@@ -145,10 +145,20 @@ void CreditCardFidoAuthenticator::IsUserVerifiable(
     return;
   }
 #if BUILDFLAG(IS_ANDROID)
-  // Because Payments servers only accept WebAuthn credentials for Android P
-  // and above, this returns false if the build version is O or below.
-  if (base::android::BuildInfo::GetInstance()->sdk_int() <
-      base::android::SDK_VERSION_P) {
+  // When kAutofillEnableAndroidNKeyForFidoAuthentication is on,
+  // Payments servers only accept WebAuthn credentials for Android N
+  // and above. When kAutofillEnableAndroidNKeyForFidoAuthentication is off,
+  // Payments servers only accept WebAuthn credentials for Android P
+  // and above. Do nothing for the other cases.
+  if (base::FeatureList::IsEnabled(
+          features::kAutofillEnableAndroidNKeyForFidoAuthentication)) {
+    if (base::android::BuildInfo::GetInstance()->sdk_int() <
+        base::android::SDK_VERSION_NOUGAT) {
+      std::move(callback).Run(false);
+      return;
+    }
+  } else if (base::android::BuildInfo::GetInstance()->sdk_int() <
+             base::android::SDK_VERSION_P) {
     std::move(callback).Run(false);
     return;
   }
@@ -483,9 +493,8 @@ void CreditCardFidoAuthenticator::OnFullCardRequestSucceeded(
   if (!requester_)
     return;
 
-  FidoAuthenticationResponse response{
-      .did_succeed = true, .card = &card, .cvc = cvc};
-  requester_->OnFIDOAuthenticationComplete(response);
+  requester_->OnFIDOAuthenticationComplete(FidoAuthenticationResponse{
+      .did_succeed = true, .card = &card, .cvc = cvc});
 }
 
 void CreditCardFidoAuthenticator::OnFullCardRequestFailed(
@@ -497,9 +506,8 @@ void CreditCardFidoAuthenticator::OnFullCardRequestFailed(
   if (!requester_)
     return;
 
-  FidoAuthenticationResponse response{.did_succeed = false,
-                                      .failure_type = failure_type};
-  requester_->OnFIDOAuthenticationComplete(response);
+  requester_->OnFIDOAuthenticationComplete(FidoAuthenticationResponse{
+      .did_succeed = false, .failure_type = failure_type});
 }
 
 blink::mojom::PublicKeyCredentialRequestOptionsPtr

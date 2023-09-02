@@ -4,6 +4,7 @@
 
 #include "base/win/registry.h"
 
+#include <ntstatus.h>
 #include <stddef.h>
 
 #include <algorithm>
@@ -22,6 +23,8 @@
 #include "base/win/object_watcher.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/shlwapi.h"
+
+extern "C" NTSTATUS WINAPI NtDeleteKey(IN HANDLE KeyHandle);
 
 namespace base::win {
 
@@ -192,17 +195,7 @@ LONG RegKey::CreateKey(const wchar_t* name, REGSAM access) {
 }
 
 LONG RegKey::Open(HKEY rootkey, const wchar_t* subkey, REGSAM access) {
-  DCHECK(rootkey && subkey && access);
-  HKEY subhkey = nullptr;
-
-  LONG result = RegOpenKeyEx(rootkey, subkey, 0, access, &subhkey);
-  if (result == ERROR_SUCCESS) {
-    Close();
-    key_ = subhkey;
-    wow64access_ = access & kWow64AccessMask;
-  }
-
-  return result;
+  return Open(rootkey, subkey, /*options=*/0, access);
 }
 
 LONG RegKey::OpenKey(const wchar_t* relative_key_name, REGSAM access) {
@@ -264,12 +257,15 @@ bool RegKey::HasValue(const wchar_t* name) const {
          ERROR_SUCCESS;
 }
 
-DWORD RegKey::GetValueCount() const {
+base::expected<DWORD, LONG> RegKey::GetValueCount() const {
   DWORD count = 0;
   LONG result =
       RegQueryInfoKey(key_, nullptr, nullptr, nullptr, nullptr, nullptr,
                       nullptr, &count, nullptr, nullptr, nullptr, nullptr);
-  return (result == ERROR_SUCCESS) ? count : 0;
+  if (result == ERROR_SUCCESS) {
+    return base::ok(count);
+  }
+  return base::unexpected(result);
 }
 
 FILETIME RegKey::GetLastWriteTime() const {
@@ -292,51 +288,34 @@ LONG RegKey::GetValueNameAt(DWORD index, std::wstring* name) const {
   return r;
 }
 
-LONG RegKey::DeleteKey(const wchar_t* name) {
+LONG RegKey::DeleteKey(const wchar_t* name, RecursiveDelete recursive) {
   DCHECK(name);
+
+  if (!Valid()) {
+    return ERROR_INVALID_HANDLE;
+  }
 
   // Verify the key exists before attempting delete to replicate previous
   // behavior.
-  // `RegOpenKeyEx()` will return an error if `key_` is invalid.
-  HKEY subkey = nullptr;
-  LONG result =
-      RegOpenKeyEx(key_, name, 0, READ_CONTROL | wow64access_, &subkey);
-  if (result != ERROR_SUCCESS) {
-    return result;
-  }
-  RegCloseKey(subkey);
-
-  return RegDelRecurse(key_, name, wow64access_);
-}
-
-LONG RegKey::DeleteEmptyKey(const wchar_t* name) {
-  DCHECK(name);
-
-  // `RegOpenKeyEx()` will return an error if `key_` is invalid.
-  HKEY target_key = nullptr;
-  LONG result =
-      RegOpenKeyEx(key_, name, 0, KEY_READ | wow64access_, &target_key);
-
+  RegKey target_key;
+  LONG result = target_key.Open(key_, name, REG_OPTION_OPEN_LINK,
+                                wow64access_ | KEY_QUERY_VALUE | DELETE);
   if (result != ERROR_SUCCESS) {
     return result;
   }
 
-  DWORD count = 0;
-  result =
-      RegQueryInfoKey(target_key, nullptr, nullptr, nullptr, nullptr, nullptr,
-                      nullptr, &count, nullptr, nullptr, nullptr, nullptr);
-
-  RegCloseKey(target_key);
-
-  if (result != ERROR_SUCCESS) {
-    return result;
+  if (recursive.value()) {
+    target_key.Close();
+    return RegDelRecurse(key_, name, wow64access_);
   }
 
-  if (count == 0) {
-    return RegDeleteKeyEx(key_, name, wow64access_, 0);
+  // Next, try to delete the key if it is a symbolic link.
+  if (auto deleted_link = target_key.DeleteIfLink(); deleted_link.has_value()) {
+    return deleted_link.value();
   }
 
-  return ERROR_DIR_NOT_EMPTY;
+  // It's not a symbolic link, so try to delete it without recursing.
+  return ::RegDeleteKeyEx(target_key.key_, L"", wow64access_, 0);
 }
 
 LONG RegKey::DeleteValue(const wchar_t* value_name) {
@@ -490,61 +469,104 @@ bool RegKey::StartWatching(ChangeCallback callback) {
   return true;
 }
 
+LONG RegKey::Open(HKEY rootkey,
+                  const wchar_t* subkey,
+                  DWORD options,
+                  REGSAM access) {
+  DCHECK(options == 0 || options == REG_OPTION_OPEN_LINK) << options;
+  DCHECK(rootkey && subkey && access);
+  HKEY subhkey = nullptr;
+
+  LONG result = RegOpenKeyEx(rootkey, subkey, options, access, &subhkey);
+  if (result == ERROR_SUCCESS) {
+    Close();
+    key_ = subhkey;
+    wow64access_ = access & kWow64AccessMask;
+  }
+
+  return result;
+}
+
+expected<bool, LONG> RegKey::IsLink() const {
+  DWORD value_type = 0;
+  LONG result = ::RegQueryValueEx(key_, L"SymbolicLinkValue",
+                                  /*lpReserved=*/nullptr, &value_type,
+                                  /*lpData=*/nullptr, /*lpcbData=*/nullptr);
+  if (result == ERROR_FILE_NOT_FOUND) {
+    return ok(false);
+  }
+  if (result == ERROR_SUCCESS) {
+    return ok(value_type == REG_LINK);
+  }
+  return unexpected(result);
+}
+
+absl::optional<LONG> RegKey::DeleteIfLink() {
+  if (auto is_link = IsLink(); !is_link.has_value()) {
+    return is_link.error();  // Failed to determine if a link.
+  } else if (is_link.value() == false) {
+    return absl::nullopt;  // Not a link.
+  }
+
+  const NTSTATUS delete_result = ::NtDeleteKey(key_);
+  if (delete_result == STATUS_SUCCESS) {
+    return ERROR_SUCCESS;
+  }
+  using RtlNtStatusToDosErrorFunction = ULONG(WINAPI*)(NTSTATUS);
+  static const RtlNtStatusToDosErrorFunction rtl_nt_status_to_dos_error =
+      reinterpret_cast<RtlNtStatusToDosErrorFunction>(::GetProcAddress(
+          ::GetModuleHandle(L"ntdll.dll"), "RtlNtStatusToDosError"));
+  // The most common cause of failure is the presence of subkeys, which is
+  // reported as `STATUS_CANNOT_DELETE` and maps to `ERROR_ACCESS_DENIED`.
+  return rtl_nt_status_to_dos_error
+             ? static_cast<LONG>(rtl_nt_status_to_dos_error(delete_result))
+             : ERROR_ACCESS_DENIED;
+}
+
 // static
 LONG RegKey::RegDelRecurse(HKEY root_key, const wchar_t* name, REGSAM access) {
-  // First, see if the key can be deleted without having to recurse.
-  LONG result = RegDeleteKeyEx(root_key, name, access, 0);
+  // First, open the key; taking care not to traverse symbolic links.
+  RegKey target_key;
+  LONG result = target_key.Open(
+      root_key, name, REG_OPTION_OPEN_LINK,
+      access | KEY_ENUMERATE_SUB_KEYS | KEY_QUERY_VALUE | DELETE);
+  if (result == ERROR_FILE_NOT_FOUND) {  // The key doesn't exist.
+    return ERROR_SUCCESS;
+  }
+  if (result != ERROR_SUCCESS) {
+    return result;
+  }
+
+  // Next, try to delete the key if it is a symbolic link.
+  if (auto deleted_link = target_key.DeleteIfLink(); deleted_link.has_value()) {
+    return deleted_link.value();
+  }
+
+  // It's not a symbolic link, so try to delete it without recursing.
+  result = ::RegDeleteKeyEx(target_key.key_, L"", access, 0);
   if (result == ERROR_SUCCESS) {
     return result;
   }
 
-  HKEY target_key = nullptr;
-  result = RegOpenKeyEx(root_key, name, 0, KEY_ENUMERATE_SUB_KEYS | access,
-                        &target_key);
-
-  if (result == ERROR_FILE_NOT_FOUND) {
-    return ERROR_SUCCESS;
-  }
-  if (result != ERROR_SUCCESS)
-    return result;
-
-  std::wstring subkey_name(name);
-
-  // Check for an ending slash and add one if it is missing.
-  if (!subkey_name.empty() && subkey_name.back() != '\\') {
-    subkey_name.push_back('\\');
-  }
-
-  // Enumerate the keys
-  result = ERROR_SUCCESS;
-  const DWORD kMaxKeyNameLength = MAX_PATH;
-  const size_t base_key_length = subkey_name.length();
-  std::wstring key_name;
-  while (result == ERROR_SUCCESS) {
+  // Enumerate the keys.
+  const DWORD kMaxKeyNameLength = 256;  // Includes string terminator.
+  auto subkey_buffer = std::make_unique<wchar_t[]>(kMaxKeyNameLength);
+  while (true) {
     DWORD key_size = kMaxKeyNameLength;
-    result =
-        RegEnumKeyEx(target_key, 0, WriteInto(&key_name, kMaxKeyNameLength),
-                     &key_size, nullptr, nullptr, nullptr, nullptr);
-
-    if (result != ERROR_SUCCESS) {
+    if (::RegEnumKeyEx(target_key.key_, 0, &subkey_buffer[0], &key_size,
+                       nullptr, nullptr, nullptr, nullptr) != ERROR_SUCCESS) {
       break;
     }
-
-    key_name.resize(key_size);
-    subkey_name.resize(base_key_length);
-    subkey_name += key_name;
-
-    if (RegDelRecurse(root_key, subkey_name.c_str(), access) != ERROR_SUCCESS) {
+    CHECK_LT(key_size, kMaxKeyNameLength);
+    CHECK_EQ(subkey_buffer[key_size], L'\0');
+    if (RegDelRecurse(target_key.key_, &subkey_buffer[0], access) !=
+        ERROR_SUCCESS) {
       break;
     }
   }
-
-  RegCloseKey(target_key);
 
   // Try again to delete the key.
-  result = RegDeleteKeyEx(root_key, name, access, 0);
-
-  return result;
+  return ::RegDeleteKeyEx(target_key.key_, L"", access, 0);
 }
 
 // RegistryValueIterator ------------------------------------------------------

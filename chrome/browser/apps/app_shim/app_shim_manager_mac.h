@@ -14,8 +14,8 @@
 #include <vector>
 
 #include "apps/app_lifetime_monitor.h"
+#include "base/apple/scoped_cftyperef.h"
 #include "base/functional/callback_forward.h"
-#include "base/mac/scoped_cftyperef.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/apps/app_shim/app_shim_host_bootstrap_mac.h"
@@ -27,6 +27,7 @@
 #include "chrome/browser/profiles/profile_observer.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list_observer.h"
+#include "chrome/browser/web_applications/os_integration/web_app_shortcut_mac.h"
 #include "chrome/browser/web_applications/web_app_id.h"
 #include "chrome/services/mac_notifications/public/mojom/mac_notifications.mojom.h"
 
@@ -120,7 +121,8 @@ class AppShimManager
     // installed for |profile| when this method is called.
     virtual void LaunchShim(Profile* profile,
                             const web_app::AppId& app_id,
-                            bool recreate_shims,
+                            web_app::LaunchShimUpdateBehavior update_behavior,
+                            web_app::ShimLaunchMode launch_mode,
                             ShimLaunchedCallback launched_callback,
                             ShimTerminatedCallback terminated_callback) = 0;
 
@@ -141,10 +143,6 @@ class AppShimManager
   AppShimManager(const AppShimManager&) = delete;
   AppShimManager& operator=(const AppShimManager&) = delete;
   ~AppShimManager() override;
-
-  // Called at the beginning of browser shut down. Is used to remove |this| as
-  // a ProfileManager and AvatarMenuObserver observer.
-  void OnBeginTearDown();
 
   // Get the host corresponding to a profile and app id, or null if there is
   // none.
@@ -193,7 +191,8 @@ class AppShimManager
   // AppShimHost::Client:
   void OnShimLaunchRequested(
       AppShimHost* host,
-      bool recreate_shims,
+      web_app::LaunchShimUpdateBehavior update_behavior,
+      web_app::ShimLaunchMode launch_mode,
       base::OnceCallback<void(base::Process)> launched_callback,
       base::OnceClosure terminated_callback) override;
   void OnShimProcessDisconnected(AppShimHost* host) override;
@@ -222,6 +221,7 @@ class AppShimManager
   // ProfileManagerObserver overrides:
   void OnProfileAdded(Profile* profile) override;
   void OnProfileMarkedForPermanentDeletion(Profile* profile) override;
+  void OnProfileManagerDestroying() override;
 
   // BrowserListObserver overrides:
   void OnBrowserAdded(Browser* browser) override;
@@ -234,7 +234,7 @@ class AppShimManager
   // AvatarMenuObserver:
   void OnAvatarMenuChanged(AvatarMenu* menu) override;
 
-  static base::ScopedCFTypeRef<SecRequirementRef>
+  static base::apple::ScopedCFTypeRef<SecRequirementRef>
       BuildAppShimRequirementFromFrameworkRequirementString(CFStringRef);
 
   class AppShimObserver {
@@ -258,6 +258,9 @@ class AppShimManager
 
   // Return the profile for |path|, only if it is already loaded.
   virtual Profile* ProfileForPath(const base::FilePath& path);
+
+  // Return a profile to use for a background shim launch, virtual for tests.
+  virtual Profile* ProfileForBackgroundShimLaunch(const web_app::AppId& app_id);
 
   // Load a profile and call |callback| when completed or failed.
   virtual void LoadProfileAsync(const base::FilePath& path,
@@ -410,6 +413,10 @@ class AppShimManager
   ProfileState* GetOrCreateProfileState(Profile* profile,
                                         const web_app::AppId& app_id);
 
+  void LaunchShimInBackgroundMode(
+      const web_app::AppId& app_id,
+      base::OnceCallback<void(AppShimHost*)> callback);
+
   // Returns a mapping of profile paths to how many of the files and urls passed
   // in in `params` each profile can handle.
   static std::map<base::FilePath, int> GetProfilesWithMatchingHandlers(
@@ -425,7 +432,7 @@ class AppShimManager
 
   std::unique_ptr<Delegate> delegate_;
 
-  // Weak, reset during OnBeginTearDown.
+  // Weak, reset during OnProfileManagerDestroying.
   raw_ptr<ProfileManager> profile_manager_ = nullptr;
 
   // Map from extension id to the state for that app.

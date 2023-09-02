@@ -94,6 +94,9 @@ void AddMaterialChromeColorMixer(ui::ColorProvider* provider,
   // Side Panel colors.
   mixer[kColorSidePanelBackground] = {ui::kColorSysBaseContainer};
 
+  // Tab Group Dialog colors.
+  mixer[kColorTabGroupDialogIconEnabled] = {ui::kColorSysOnSurfaceSubtle};
+
   if (!ShouldApplyChromeMaterialOverrides(key)) {
     return;
   }
@@ -124,6 +127,9 @@ void AddMaterialChromeColorMixer(ui::ColorProvider* provider,
   mixer[kColorAvatarButtonNormalRipple] = {ui::kColorSysStateRipplePrimary};
   mixer[kColorBookmarkBarBackground] = {ui::kColorSysBase};
   mixer[kColorBookmarkBarForeground] = {ui::kColorSysOnSurfaceSubtle};
+  // Aligns with kColorToolbarButtonIconInactive.
+  mixer[kColorBookmarkBarForegroundDisabled] = {ui::GetResultingPaintColor(
+      {ui::kColorSysStateDisabled}, {kColorToolbar})};
   mixer[kColorBookmarkBarSeparatorChromeRefresh] = {ui::kColorSysOnBaseDivider};
   mixer[kColorBookmarkButtonIcon] = {kColorBookmarkBarForeground};
   mixer[kColorBookmarkDialogProductImageBorder] = {ui::kColorSysNeutralOutline};

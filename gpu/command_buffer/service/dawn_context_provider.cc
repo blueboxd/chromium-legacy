@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/check_op.h"
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/notreached.h"
@@ -19,6 +20,7 @@
 #include "gpu/command_buffer/service/dawn_platform.h"
 #include "gpu/config/gpu_finch_features.h"
 #include "gpu/config/gpu_preferences.h"
+#include "gpu/config/gpu_switches.h"
 #include "third_party/skia/include/gpu/graphite/Context.h"
 #include "third_party/skia/include/gpu/graphite/dawn/DawnBackendContext.h"
 #include "third_party/skia/include/gpu/graphite/dawn/DawnUtils.h"
@@ -43,24 +45,9 @@ void LogError(WGPUErrorType type, char const* message, void* userdata) {
 void LogDeviceLost(WGPUDeviceLostReason reason,
                    char const* message,
                    void* userdata) {
-  if (reason == WGPUDeviceLostReason::WGPUDeviceLostReason_Destroyed)
-    return;
-  LOG(FATAL) << message;
-}
-
-wgpu::BackendType GetDefaultBackendType() {
-#if BUILDFLAG(IS_WIN)
-  return base::FeatureList::IsEnabled(features::kSkiaGraphiteDawnUseD3D12)
-             ? wgpu::BackendType::D3D12
-             : wgpu::BackendType::D3D11;
-#elif BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
-  return wgpu::BackendType::Vulkan;
-#elif BUILDFLAG(IS_APPLE)
-  return wgpu::BackendType::Metal;
-#else
-  NOTREACHED();
-  return wgpu::BackendType::Null;
-#endif
+  if (reason != WGPUDeviceLostReason_Destroyed) {
+    LOG(FATAL) << message;
+  }
 }
 
 class Platform : public webgpu::DawnPlatform {
@@ -115,6 +102,17 @@ std::unique_ptr<DawnContextProvider> DawnContextProvider::Create(
     const GpuPreferences& gpu_preferences,
     webgpu::DawnCachingInterfaceFactory* caching_interface_factory,
     CacheBlobCallback callback) {
+  return DawnContextProvider::CreateWithBackend(
+      GetDefaultBackendType(), DefaultForceFallbackAdapter(), gpu_preferences,
+      caching_interface_factory, std::move(callback));
+}
+
+std::unique_ptr<DawnContextProvider> DawnContextProvider::CreateWithBackend(
+    wgpu::BackendType backend_type,
+    bool force_fallback_adapter,
+    const GpuPreferences& gpu_preferences,
+    webgpu::DawnCachingInterfaceFactory* caching_interface_factory,
+    CacheBlobCallback callback) {
   auto context_provider =
       base::WrapUnique(new DawnContextProvider(caching_interface_factory));
 
@@ -122,10 +120,46 @@ std::unique_ptr<DawnContextProvider> DawnContextProvider::Create(
   // the only known way to avoid this is platform-specific; e.g. on Mac, create
   // a Dawn device, get the actual Metal device from it, and compare against
   // MTLCreateSystemDefaultDevice().
-  if (!context_provider->Initialize(gpu_preferences, std::move(callback))) {
+  if (!context_provider->Initialize(backend_type, force_fallback_adapter,
+                                    gpu_preferences, std::move(callback))) {
     context_provider.reset();
   }
   return context_provider;
+}
+// static
+wgpu::BackendType DawnContextProvider::GetDefaultBackendType() {
+  const auto switch_value =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kSkiaGraphiteBackend);
+  if (switch_value == switches::kSkiaGraphiteBackendDawnD3D11) {
+    return wgpu::BackendType::D3D11;
+  } else if (switch_value == switches::kSkiaGraphiteBackendDawnD3D12) {
+    return wgpu::BackendType::D3D12;
+  } else if (switch_value == switches::kSkiaGraphiteBackendDawnMetal) {
+    return wgpu::BackendType::Metal;
+  } else if (switch_value == switches::kSkiaGraphiteBackendDawnSwiftshader ||
+             switch_value == switches::kSkiaGraphiteBackendDawnVulkan) {
+    return wgpu::BackendType::Vulkan;
+  }
+#if BUILDFLAG(IS_WIN)
+  return base::FeatureList::IsEnabled(features::kSkiaGraphiteDawnUseD3D12)
+             ? wgpu::BackendType::D3D12
+             : wgpu::BackendType::D3D11;
+#elif BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
+  return wgpu::BackendType::Vulkan;
+#elif BUILDFLAG(IS_APPLE)
+  return wgpu::BackendType::Metal;
+#else
+  NOTREACHED();
+  return wgpu::BackendType::Null;
+#endif
+}
+
+// static
+bool DawnContextProvider::DefaultForceFallbackAdapter() {
+  return base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+             switches::kSkiaGraphiteBackend) ==
+         switches::kSkiaGraphiteBackendDawnSwiftshader;
 }
 
 DawnContextProvider::DawnContextProvider(
@@ -133,7 +167,9 @@ DawnContextProvider::DawnContextProvider(
     : caching_interface_factory_(caching_interface_factory) {}
 DawnContextProvider::~DawnContextProvider() = default;
 
-bool DawnContextProvider::Initialize(const GpuPreferences& gpu_preferences,
+bool DawnContextProvider::Initialize(wgpu::BackendType backend_type,
+                                     bool force_fallback_adapter,
+                                     const GpuPreferences& gpu_preferences,
                                      CacheBlobCallback callback) {
   std::unique_ptr<webgpu::DawnCachingInterface> caching_interface;
   if (caching_interface_factory_) {
@@ -165,6 +201,15 @@ bool DawnContextProvider::Initialize(const GpuPreferences& gpu_preferences,
   enabled_toggles.push_back("skip_validation");
 #endif
 
+#if BUILDFLAG(IS_APPLE)
+  if (backend_type == wgpu::BackendType::Vulkan) {
+    // Vulkan doesn't support IOSurface image backing, so we need
+    // MultiPlanarFormatExtendedUsages to copy to/from multiplanar texture.
+    // And this feature is currently experimental.
+    enabled_toggles.push_back("allow_unsafe_apis");
+  }
+#endif  // BUILDFLAG(IS_APPLE)
+
   wgpu::DawnTogglesDescriptor toggles_desc;
   toggles_desc.enabledToggles = enabled_toggles.data();
   toggles_desc.disabledToggles = disabled_toggles.data();
@@ -188,12 +233,15 @@ bool DawnContextProvider::Initialize(const GpuPreferences& gpu_preferences,
   };
 
   wgpu::RequestAdapterOptions adapter_options;
-  adapter_options.backendType = GetDefaultBackendType();
+  adapter_options.backendType = backend_type;
+  adapter_options.forceFallbackAdapter = force_fallback_adapter;
   adapter_options.powerPreference = wgpu::PowerPreference::LowPower;
 
 #if BUILDFLAG(IS_WIN)
   if (adapter_options.backendType == wgpu::BackendType::D3D11) {
     features.push_back(wgpu::FeatureName::D3D11MultithreadProtected);
+    features.push_back(wgpu::FeatureName::Norm16TextureFormats);
+    features.push_back(wgpu::FeatureName::MultiPlanarFormatP010);
   }
 
   // Request the GPU that ANGLE is using if possible.
@@ -214,6 +262,12 @@ bool DawnContextProvider::Initialize(const GpuPreferences& gpu_preferences,
   if (adapter.HasFeature(wgpu::FeatureName::TransientAttachments)) {
     features.push_back(wgpu::FeatureName::TransientAttachments);
   }
+  if (adapter.HasFeature(wgpu::FeatureName::MSAARenderToSingleSampled)) {
+    features.push_back(wgpu::FeatureName::MSAARenderToSingleSampled);
+  }
+  if (adapter.HasFeature(wgpu::FeatureName::MultiPlanarFormatExtendedUsages)) {
+    features.push_back(wgpu::FeatureName::MultiPlanarFormatExtendedUsages);
+  }
 
   descriptor.requiredFeatures = features.data();
 #ifdef WGPU_BREAKING_CHANGE_COUNT_RENAME
@@ -232,6 +286,8 @@ bool DawnContextProvider::Initialize(const GpuPreferences& gpu_preferences,
   device.SetDeviceLostCallback(&LogDeviceLost, nullptr);
   device.SetLoggingCallback(&LogInfo, nullptr);
   device_ = std::move(device);
+
+  backend_type_ = backend_type;
 
 #if BUILDFLAG(IS_WIN)
   // DirectComposition is initialized in ui/gl/init/gl_initializer_win.cc while
@@ -269,7 +325,7 @@ wgpu::Instance DawnContextProvider::GetInstance() const {
 #if BUILDFLAG(IS_WIN)
 Microsoft::WRL::ComPtr<ID3D11Device> DawnContextProvider::GetD3D11Device()
     const {
-  if (GetDefaultBackendType() == wgpu::BackendType::D3D11) {
+  if (backend_type() == wgpu::BackendType::D3D11) {
     return dawn::native::d3d11::GetD3D11Device(device_.Get());
   }
   return nullptr;

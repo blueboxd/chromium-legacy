@@ -14,6 +14,7 @@
 #include "ash/capture_mode/capture_mode_controller.h"
 #include "ash/capture_mode/capture_mode_demo_tools_controller.h"
 #include "ash/capture_mode/capture_mode_metrics.h"
+#include "ash/capture_mode/capture_mode_util.h"
 #include "ash/capture_mode/recording_overlay_controller.h"
 #include "ash/constants/ash_features.h"
 #include "ash/shell.h"
@@ -45,6 +46,7 @@
 #include "ui/gfx/scoped_canvas.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/coordinate_conversion.h"
+#include "ui/wm/core/window_util.h"
 #include "ui/wm/public/activation_client.h"
 
 namespace ash {
@@ -322,7 +324,8 @@ gfx::Rect VideoRecordingWatcher::GetCaptureSurfaceConfineBounds() const {
       return capture_region;
     }
     case CaptureModeSource::kWindow:
-      return gfx::Rect(window_being_recorded_->bounds().size());
+      return capture_mode_util::GetCaptureWindowConfineBounds(
+          window_being_recorded_);
   }
 }
 
@@ -746,9 +749,11 @@ void VideoRecordingWatcher::UpdateLayerStackingAndDimmers() {
     }
 
     // No need to dim windows that are below the window being recorded in
-    // z-order, or those on other displays, or other desks.
+    // z-order, or those on other displays, or other desks, or transient
+    // descendants of the window being recorded.
     if (did_find_recorded_window || window->GetRootWindow() != current_root_ ||
-        !AreWindowsOnSameDesk(window, window_being_recorded_)) {
+        !AreWindowsOnSameDesk(window, window_being_recorded_) ||
+        wm::HasTransientAncestor(window, window_being_recorded_)) {
       dimmers_.erase(window);
       continue;
     }

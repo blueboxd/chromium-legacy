@@ -10,12 +10,12 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_piece_forward.h"
 #include "base/version.h"
+#include "chrome/browser/ui/web_applications/test/isolated_web_app_test_utils.h"
 #include "chrome/browser/web_applications/test/web_app_icon_test_utils.h"
 #include "components/web_package/test_support/signed_web_bundles/web_bundle_signer.h"
 #include "components/web_package/web_bundle_builder.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "third_party/skia/include/core/SkStream.h"
-#include "third_party/skia/include/encode/SkPngEncoder.h"
+#include "third_party/skia/include/core/SkColor.h"
 
 namespace web_app {
 
@@ -35,16 +35,6 @@ constexpr base::StringPiece kTestManifest = R"({
         }
       ]
     })";
-
-std::string GetTestIconInString() {
-  SkBitmap icon_bitmap = CreateSquareIcon(256, SK_ColorGREEN);
-  SkDynamicMemoryWStream stream;
-  bool success = SkPngEncoder::Encode(&stream, icon_bitmap.pixmap(), {});
-  CHECK(success);
-  sk_sp<SkData> icon_skdata = stream.detachAsData();
-  return std::string(static_cast<const char*>(icon_skdata->data()),
-                     icon_skdata->size());
-}
 }  // namespace
 
 TestSignedWebBundle::TestSignedWebBundle(
@@ -96,6 +86,14 @@ void TestSignedWebBundleBuilder::AddHtml(base::StringPiece url,
                        html_content);
 }
 
+void TestSignedWebBundleBuilder::AddJavaScript(
+    base::StringPiece url,
+    base::StringPiece script_content) {
+  builder_.AddExchange(
+      url, {{":status", "200"}, {"content-type", "application/javascript"}},
+      script_content);
+}
+
 void TestSignedWebBundleBuilder::AddPrimaryUrl(GURL url) {
   builder_.AddPrimaryURL(url);
 }
@@ -126,8 +124,7 @@ TestSignedWebBundle TestSignedWebBundleBuilder::BuildDefault(
       build_options.base_url_.has_value()
           ? build_options.base_url_.value().Resolve(kTestIconUrl).spec()
           : kTestIconUrl,
-
-      GetTestIconInString());
+      test::BitmapAsPng(CreateSquareIcon(256, SK_ColorGREEN)));
 
   if (build_options.index_html_content_.has_value()) {
     builder.AddHtml(

@@ -15,6 +15,7 @@
 #include "base/values.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/safety_hub/notification_permission_review_service.h"
 #include "chrome/browser/ui/safety_hub/notification_permission_review_service_factory.h"
 #include "chrome/browser/ui/safety_hub/unused_site_permissions_service.h"
 #include "chrome/browser/ui/safety_hub/unused_site_permissions_service_factory.h"
@@ -208,9 +209,21 @@ base::Value::List SafetyHubHandler::PopulateUnusedSitePermissionsData() {
         stored_value.GetDict().FindList(permissions::kRevokedKey)->Clone();
     base::Value::List permissions_value_list;
     for (base::Value& type : type_list) {
-      permissions_value_list.Append(
+      base::StringPiece permission_str =
           site_settings::ContentSettingsTypeToGroupName(
-              static_cast<ContentSettingsType>(type.GetInt())));
+              static_cast<ContentSettingsType>(type.GetInt()));
+      if (!permission_str.empty()) {
+        permissions_value_list.Append(permission_str);
+      }
+    }
+
+    // Some permissions have no readable name, although Safety Hub revokes them.
+    // To prevent crashes, if there is no permission to be shown in the UI, the
+    // origin will not be added to the revoked permissions list.
+    // TODO(crbug.com/1459305): Remove this after adding check for
+    // ContentSettingsTypeToGroupName.
+    if (permissions_value_list.empty()) {
+      continue;
     }
 
     revoked_permission_value.Set(
@@ -236,8 +249,12 @@ void SafetyHubHandler::HandleGetNotificationPermissionReviewList(
 
   const base::Value& callback_id = args[0];
 
+  NotificationPermissionsReviewService* service =
+      NotificationPermissionsReviewServiceFactory::GetForProfile(profile_);
+  DCHECK(service);
+
   base::Value::List result =
-      site_settings::PopulateNotificationPermissionReviewData(profile_);
+      service->PopulateNotificationPermissionReviewData(profile_);
 
   ResolveJavascriptCallback(callback_id, base::Value(std::move(result)));
 }
@@ -247,7 +264,7 @@ void SafetyHubHandler::HandleIgnoreOriginsForNotificationPermissionReview(
   CHECK_EQ(1U, args.size());
   const base::Value::List& origins = args[0].GetList();
 
-  auto* service =
+  NotificationPermissionsReviewService* service =
       NotificationPermissionsReviewServiceFactory::GetForProfile(profile_);
   DCHECK(service);
 
@@ -319,7 +336,7 @@ void SafetyHubHandler::HandleUndoIgnoreOriginsForNotificationPermissionReview(
     const base::Value::List& args) {
   CHECK_EQ(1U, args.size());
   const base::Value::List& origins = args[0].GetList();
-  auto* service =
+  NotificationPermissionsReviewService* service =
       NotificationPermissionsReviewServiceFactory::GetForProfile(profile_);
   DCHECK(service);
 
@@ -420,11 +437,17 @@ void SafetyHubHandler::SendUnusedSitePermissionsReviewList() {
 }
 
 void SafetyHubHandler::SendNotificationPermissionReviewList() {
+  NotificationPermissionsReviewService* service =
+      NotificationPermissionsReviewServiceFactory::GetForProfile(profile_);
+  CHECK(service);
+
+  base::Value::List result =
+      service->PopulateNotificationPermissionReviewData(profile_);
   // Notify observers that the permission review list could have changed. Note
   // that the list is not guaranteed to have changed.
   FireWebUIListener(
       site_settings::kNotificationPermissionsReviewListMaybeChangedEvent,
-      site_settings::PopulateNotificationPermissionReviewData(profile_));
+      service->PopulateNotificationPermissionReviewData(profile_));
 }
 
 void SafetyHubHandler::SetClockForTesting(base::Clock* clock) {

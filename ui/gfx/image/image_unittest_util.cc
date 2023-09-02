@@ -22,7 +22,7 @@
 #include "ui/gfx/test/sk_color_eq.h"
 
 #if BUILDFLAG(IS_IOS)
-#include "base/mac/scoped_cftyperef.h"
+#include "base/apple/scoped_cftyperef.h"
 #include "skia/ext/skia_utils_ios.h"
 #include "ui/base/resource/resource_scale_factor.h"
 #elif BUILDFLAG(IS_MAC)
@@ -191,7 +191,7 @@ PlatformImage CreatePlatformImage() {
     bitmap = CreateBitmap(size, size);
   }
 
-  base::ScopedCFTypeRef<CGColorSpaceRef> color_space(
+  base::apple::ScopedCFTypeRef<CGColorSpaceRef> color_space(
       CGColorSpaceCreateDeviceRGB());
   UIImage* image =
       skia::SkBitmapToUIImageWithColorSpace(bitmap, scale, color_space);

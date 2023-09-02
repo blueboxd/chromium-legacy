@@ -223,11 +223,6 @@ bool StructTraits<blink::mojom::AuctionAdConfigNonSharedParamsDataView,
     if (!component_auction.non_shared_params.component_auctions.empty()) {
       return false;
     }
-    // Component auctions must not specify an auctionNonce; it's only meaningful
-    // for the top-level auction.
-    if (component_auction.non_shared_params.auction_nonce) {
-      return false;
-    }
   }
 
   return true;
@@ -248,6 +243,10 @@ bool StructTraits<blink::mojom::AuctionAdConfigDataView, blink::AuctionConfig>::
   }
 
   out->expects_additional_bids = data.expects_additional_bids();
+  if (out->expects_additional_bids &&
+      !out->non_shared_params.auction_nonce.has_value()) {
+    return false;
+  }
 
   out->expects_direct_from_seller_signals_header_ad_slot =
       data.expects_direct_from_seller_signals_header_ad_slot();

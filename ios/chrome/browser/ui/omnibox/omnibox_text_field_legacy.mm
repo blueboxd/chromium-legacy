@@ -6,15 +6,15 @@
 
 #import <CoreText/CoreText.h>
 
+#import "base/apple/foundation_util.h"
 #import "base/check_op.h"
 #import "base/command_line.h"
 #import "base/ios/ios_util.h"
-#import "base/mac/foundation_util.h"
 #import "base/notreached.h"
 #import "base/strings/sys_string_conversions.h"
 #import "components/grit/components_scaled_resources.h"
 #import "components/omnibox/browser/autocomplete_input.h"
-#import "ios/chrome/browser/autocomplete/autocomplete_scheme_classifier_impl.h"
+#import "ios/chrome/browser/autocomplete/model/autocomplete_scheme_classifier_impl.h"
 #import "ios/chrome/browser/shared/model/application_context/application_context.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/shared/public/features/system_flags.h"
@@ -587,6 +587,13 @@ NSString* const kOmniboxFadeAnimationKey = @"OmniboxFadeAnimation";
 }
 
 - (BOOL)canPerformAction:(SEL)action withSender:(id)sender {
+  // TODO(crbug.com/1478261): Improve this short term fix.
+  if (@available(iOS 17.0, *)) {
+    if (action == @selector(undoManager)) {
+      return YES;
+    }
+  }
+
   // If the text is not empty and there is selected text, show copy and cut.
   if ([self textInRange:self.selectedTextRange].length > 0 &&
       (action == @selector(cut:) || action == @selector(copy:))) {

@@ -34,6 +34,8 @@ SANDBOX_POLICY_EXPORT BASE_DECLARE_FEATURE(kWinSboxHighRendererJobMemoryLimits);
 SANDBOX_POLICY_EXPORT BASE_DECLARE_FEATURE(kWinSboxRendererCloseKsecDD);
 SANDBOX_POLICY_EXPORT BASE_DECLARE_FEATURE(kWinSboxWarmupProcessPrng);
 SANDBOX_POLICY_EXPORT BASE_DECLARE_FEATURE(kWinSboxNetworkServiceSandboxIsLPAC);
+SANDBOX_POLICY_EXPORT BASE_DECLARE_FEATURE(kWinSboxForceRendererCodeIntegrity);
+SANDBOX_POLICY_EXPORT BASE_DECLARE_FEATURE(kWinSboxZeroAppShim);
 #endif  // BUILDFLAG(IS_WIN)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -44,6 +46,13 @@ SANDBOX_POLICY_EXPORT BASE_DECLARE_FEATURE(kForceSpectreVariant2Mitigation);
 #if BUILDFLAG(IS_MAC)
 SANDBOX_POLICY_EXPORT BASE_DECLARE_FEATURE(kCacheMacSandboxProfiles);
 #endif  // BUILDFLAG(IS_MAC)
+
+#if BUILDFLAG(IS_WIN)
+// Returns whether the network sandbox is supported. This is different from
+// IsAppContainerSandboxSupported as the Network Service uses some newer APIs to
+// correctly function when sandboxed.
+SANDBOX_POLICY_EXPORT bool IsNetworkSandboxSupported();
+#endif  // BUILDFLAG(IS_WIN)
 
 // Returns whether the network sandbox is enabled for the current platform
 // configuration. This might be overridden by the content embedder so prefer

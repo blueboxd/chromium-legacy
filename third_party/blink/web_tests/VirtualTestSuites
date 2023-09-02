@@ -248,16 +248,6 @@
     "expires": "Jul 1, 2023"
   },
   {
-    "prefix": "gpu-rasterization-disable-yuv",
-    "platforms": ["Linux", "Mac", "Win"],
-    "bases": ["images/yuv-decode-eligible"],
-    "args": ["--enable-gpu-rasterization",
-             "--disable-blink-features=DecodeLossyWebPImagesToYUV",
-             "--disable-blink-features=DecodeJpeg420ImagesToYUV",
-             "--disable-threaded-compositing", "--disable-threaded-animation"],
-    "expires": "Jul 1, 2023"
-  },
-  {
     "prefix": "exotic-color-space",
     "platforms": ["Linux", "Mac", "Win"],
     "bases": ["images"],
@@ -281,7 +271,10 @@
               "media/stable",
               "webexposed",
               "compositing/filters",
-              "external/wpt/performance-timeline/tentative/with-filter-options-originA.html"
+              "external/wpt/performance-timeline/tentative/with-filter-options-originA.html",
+              "external/wpt/css/css-color/parsing/color-invalid-relative-color.html",
+              "external/wpt/css/css-color/parsing/color-valid-relative-color.html",
+              "external/wpt/css/css-color/parsing/color-computed-relative-color.html"
             ],
     "exclusive_tests": ["media/stable"],
     "args": ["--stable-release-mode",
@@ -918,12 +911,15 @@
       "external/wpt/css/css-highlight-api/highlight-pseudo-computed.html",
       "external/wpt/css/css-text/parsing/text-autospace-computed.html",
       "external/wpt/css/css-text/parsing/text-autospace-valid.html",
+      "external/wpt/css/css-text/text-spacing-trim/",
       "external/wpt/web-animations/animation-model/animation-types/accumulation-per-property-002.html",
       "external/wpt/web-animations/animation-model/animation-types/addition-per-property-002.html",
-      "external/wpt/web-animations/animation-model/animation-types/interpolation-per-property-002.html"
+      "external/wpt/web-animations/animation-model/animation-types/interpolation-per-property-002.html",
+      "fast/dynamic/text-combine.html",
+      "virtual/text-antialias/justify-ideograph-leading-expansion.html"
     ],
     "args": [
-      "--enable-blink-features=CSSTextAutoSpace",
+      "--enable-blink-features=CSSTextAutoSpace,CSSTextSpacingTrim",
       "--disable-threaded-compositing", "--disable-threaded-animation"],
     "expires": "Dec 1, 2023"
   },
@@ -1150,14 +1146,14 @@
     "expires": "Jul 1, 2023"
   },
   {
-    "prefix": "non-streaming-declarative-shadow-dom-disabled",
+    "prefix": "non-streaming-declarative-shadow-dom-enabled",
     "owners": ["masonf@chromium.org", "dom-dev@chromium.org"],
     "platforms": ["Linux", "Mac", "Win"],
     "bases": [
-      "external/wpt/shadow-dom/declarative"
+      "external/wpt/shadow-dom/declarative",
+      "http/tests/inspector-protocol/issues/non-streaming-declarative-shadow-dom-issue.js"
     ],
-    "args": ["--disable-features=DeprecatedNonStreamingDeclarativeShadowDOM",
-             "--disable-threaded-compositing", "--disable-threaded-animation"],
+    "args": ["--enable-features=DeprecatedNonStreamingDeclarativeShadowDOM"],
     "expires": "Feb 1, 2024"
   },
   {
@@ -1191,7 +1187,8 @@
     "bases": [
       "external/wpt/html/rendering/the-details-element",
       "fast/multicol/span/summary-split.html",
-      "html/details_summary/details-inline.html"
+      "html/details_summary/details-inline.html",
+      "wpt_internal/html/rendering/the-details-element"
     ],
     "args": ["--disable-blink-features=DetailsStyling",
              "--disable-threaded-compositing", "--disable-threaded-animation"],
@@ -1753,13 +1750,15 @@
     "platforms": ["Linux", "Mac", "Win"],
     "bases": [
       "external/wpt/shared-storage",
+      "http/tests/inspector-protocol/shared-storage",
       "http/tests/inspector-protocol/storage/shared-storage.js",
       "http/tests/inspector-protocol/storage/shared-storage-delete.js",
       "http/tests/inspector-protocol/storage/shared-storage-set.js",
       "http/tests/inspector-protocol/storage/shared-storage-tracking-disabled.js"
     ],
     "exclusive_tests": [
-      "external/wpt/shared-storage"
+      "external/wpt/shared-storage",
+      "http/tests/inspector-protocol/shared-storage"
     ],
     "args": ["--enable-features=SharedStorageAPI,FencedFrames:implementation_type/mparch,PrivacySandboxAdsAPIsOverride,FencedFramesAPIChanges,FencedFramesDefaultMode,SharedStorageAPIM118,FencedFramesEnforceFocus",
              "--disable-threaded-compositing", "--disable-threaded-animation"],
@@ -2222,6 +2221,19 @@
     "expires": "Jul 1, 2023"
   },
   {
+    "prefix": "option-label-only-in-no-quirks",
+    "platforms": ["Linux"],
+    "bases": [
+      "fast/forms/select/HTMLOptionElement_label01.html",
+      "fast/forms/select/HTMLOptionElement_label03.html",
+      "fast/forms/select/HTMLOptionElement_label05.html",
+      "fast/forms/select/HTMLOptionElement_label06.html",
+      "fast/forms/select/HTMLOptionElement_label07.html"
+    ],
+    "args": ["--disable-features=OptionElementAlwaysUseLabel"],
+    "expires": "Jul 1, 2024"
+  },
+  {
     "prefix": "date-input-inline-block-disabled",
     "owners": ["jarhar@chromium.org", "dom-dev@chromium.org"],
     "platforms": ["Linux"],
@@ -2326,7 +2338,7 @@
       "images/image-change-src.html"
     ],
     "args": [
-      "--enable-features=MainThreadHighPriorityImageLoading",
+      "--disable-features=MainThreadHighPriorityImageLoading",
       "--disable-threaded-compositing", "--disable-threaded-animation"
     ],
     "expires": "Dec 1, 2023"
@@ -2406,6 +2418,7 @@
     "bases": [
       "http/tests/lcp_critical_path_predictor"
     ],
+    "exclusive_tests": "ALL",
     "args": [
       "--enable-features=LCPCriticalPathPredictor",
       "--disable-threaded-compositing", "--disable-threaded-animation"
@@ -2413,6 +2426,26 @@
     "expires": "Jul 10, 2024",
     "owners": [
       "chikamune@chromium.org",
+      "kouhei@chromium.org"
+    ]
+  },
+  {
+    "prefix": "lcp-script-observer",
+    "platforms": [
+      "Linux",
+      "Mac",
+      "Win"
+    ],
+    "bases": [
+      "http/tests/lcp-script-observer"
+    ],
+    "exclusive_tests": "ALL",
+    "args": [
+      "--enable-features=LCPCriticalPathPredictor,LCPScriptObserver"
+    ],
+    "expires": "Sep 10, 2024",
+    "owners": [
+      "alexnj@chromium.org",
       "kouhei@chromium.org"
     ]
   },
@@ -2431,13 +2464,20 @@
     "owners": ["mych@chromium.org"]
   },
   {
-    "prefix": "deprecated-css-apperarance-values-disabled",
+    "prefix": "deprecated-css-appearance-values-enabled",
     "platforms": ["Linux", "Mac", "Win"],
     "bases": [
+      "css-parser/deprecated-css-appearance-values-warning/appearance-warning-cssom-usecounter.html",
+      "css-parser/deprecated-css-appearance-values-warning/appearance-warning-usecounter.html",
+      "css-parser/deprecated-css-appearance-values-warning/webkit-appearance-warning-cssom-usecounter.html",
+      "css-parser/deprecated-css-appearance-values-warning/webkit-appearance-warning-usecounter.html",
       "http/tests/inspector-protocol/issues/css-appearance-non-standard-issue.js",
+      "http/tests/inspector-protocol/issues/css-appearance-non-standard-cssom-issue.js",
       "http/tests/inspector-protocol/issues/css-webkit-appearance-non-standard-issue.js"
     ],
-    "args": ["--disable-blink-features=RemoveNonStandardAppearanceValue",
+    "args": ["--enable-blink-features=NonStandardAppearanceValuesHighUsage",
+             "--enable-blink-features=NonStandardAppearanceValuesLowUsage",
+             "--enable-blink-features=NonStandardAppearanceValueSliderVertical",
              "--disable-threaded-compositing", "--disable-threaded-animation"],
     "owners": ["dizhangg@chromium.org"],
     "expires": "Dec 21, 2023"
@@ -2448,16 +2488,27 @@
     "bases": [
       "external/wpt/css/css-writing-modes/forms/progress-appearance-native-vertical.optional.html",
       "external/wpt/css/css-writing-modes/forms/meter-appearance-native-vertical.optional.html",
-      "external/wpt/css/css-writing-modes/forms/textarea-appearance-native-vlr.optional.html",
       "external/wpt/css/css-writing-modes/forms/button-appearance-native-vertical.optional.html",
       "external/wpt/css/css-writing-modes/forms/select-multiple-appearance-native-vlr.optional.html",
       "external/wpt/css/css-writing-modes/forms/color-input-appearance-native-vertical.optional.html",
       "external/wpt/css/css-writing-modes/forms/range-input-appearance-native-vertical.optional.html",
-      "external/wpt/css/css-writing-modes/forms/text-input-block-size.optional.html",
       "external/wpt/css/css-writing-modes/forms/date-input-appearance-native-vertical.optional.html",
       "external/wpt/css/css-flexbox/flex-item-compressible-002.html"
     ],
     "args": ["--disable-features=FormControlsVerticalWritingModeSupport",
+             "--disable-threaded-compositing", "--disable-threaded-animation"],
+    "owners": ["dizhangg@chromium.org"],
+    "expires": "Dec 21, 2023"
+  },
+  {
+    "prefix": "vertical-form-controls-text-disabled",
+    "platforms": ["Linux", "Mac", "Win"],
+    "bases": [
+      "external/wpt/css/css-writing-modes/forms/textarea-appearance-native-vlr.optional.html",
+      "external/wpt/css/css-writing-modes/forms/text-input-block-size.optional.html",
+      "external/wpt/css/css-flexbox/flex-item-compressible-002.html"
+    ],
+    "args": ["--disable-features=FormControlsVerticalWritingModeTextSupport",
              "--disable-threaded-compositing", "--disable-threaded-animation"],
     "owners": ["dizhangg@chromium.org"],
     "expires": "Dec 21, 2023"
@@ -3378,7 +3429,6 @@
       "http/tests/devtools/bindings/suspendtarget-navigator.js",
       "http/tests/devtools/cache-storage/cache-data.js",
       "http/tests/devtools/cache-storage/cache-deletion.js",
-      "http/tests/devtools/components/chunked-file-reader.js",
       "http/tests/devtools/components/segmented-range.js",
       "http/tests/devtools/console-sidebar/console-filter-sidebar.js",
       "http/tests/devtools/console/console-Object-overwritten.js",
@@ -3625,10 +3675,7 @@
       "http/tests/devtools/tracing/timeline-js/timeline-runtime-stats.js",
       "http/tests/devtools/tracing/timeline-layout/timeline-layout-with-invalidations.js",
       "http/tests/devtools/tracing/timeline-misc/timeline-aggregated-details.js",
-      "http/tests/devtools/tracing/timeline-misc/timeline-crypto.js",
       "http/tests/devtools/tracing/timeline-misc/timeline-flame-chart-automatically-size-window.js",
-      "http/tests/devtools/tracing/timeline-misc/timeline-scheduler-posttask.js",
-      "http/tests/devtools/tracing/timeline-misc/timeline-window-filter.js",
       "http/tests/devtools/tracing/timeline-paint/layer-tree.js",
       "http/tests/devtools/unit/datagrid-editable-longtext.js",
       "http/tests/devtools/unit/list-control-equal-height.js",
@@ -3939,6 +3986,7 @@
       "inspector-protocol/input/imeSetComposition-01.js",
       "inspector-protocol/input/imeSetComposition-02.js",
       "inspector-protocol/layers/paint-profiler.js",
+      "inspector-protocol/layers/layer-sticky.js",
       "inspector-protocol/layout-fonts/unicode-range-order.js",
       "inspector-protocol/memory/sampling-native-snapshot.js",
       "inspector-protocol/overlay/overlay-persistent-overlays-with-emulation.js",
@@ -4256,14 +4304,15 @@
       "wpt_internal/css/css-pseudo/spelling-error-color-dynamic-003.html",
       "wpt_internal/css/css-pseudo/spelling-error-color-dynamic-004.html",
       "wpt_internal/css/css-text-decor/text-decoration-line-grammar-error-001.html",
+      "wpt_internal/css/css-text-decor/text-decoration-line-grammar-error-002.html",
       "wpt_internal/css/css-text-decor/text-decoration-line-spelling-error-001.html",
+      "wpt_internal/css/css-text-decor/text-decoration-line-spelling-error-002.html",
       "wpt_internal/digital-goods/digital-goods-interface.https.html",
       "wpt_internal/display-lock/beforematch/beforematch-scroll-to-text-fragment.html",
       "wpt_internal/display-lock/css-content-visibility/hiddenuntilfound/content-visibility-auto-text-fragment.html",
       "wpt_internal/geolocation-api/notimer-after-unload.https.html",
       "wpt_internal/html/cross-origin-opener-policy/reporting/navigation-reporting/reporting-coop-navigated-popup.https.html",
       "wpt_internal/long-animation-frame/loaf-ukm.html",
-      "wpt_internal/orientation-event/motion/page-visibility.https.html",
       "wpt_internal/payments/promises-keep-request-alive.https.html",
       "wpt_internal/prerender/restriction-web-auth.https.html",
       "wpt_internal/prerender/unload-on-prerender-cross-origin-subframe-navigation.html",

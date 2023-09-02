@@ -49,8 +49,14 @@ void OnLogoutRpsResponse(ScriptPromiseResolver* resolver,
 
 }  // namespace
 
-IdentityCredential* IdentityCredential::Create(const String& token) {
-  return MakeGarbageCollected<IdentityCredential>(token);
+IdentityCredential* IdentityCredential::Create(const String& token,
+                                               bool is_account_auto_selected) {
+  if (RuntimeEnabledFeatures::FedCmAccountAutoSelectedFlagEnabled()) {
+    return MakeGarbageCollected<IdentityCredential>(token,
+                                                    is_account_auto_selected);
+  } else {
+    return MakeGarbageCollected<IdentityCredential>(token);
+  }
 }
 
 bool IdentityCredential::IsRejectingPromiseDueToCSP(
@@ -87,8 +93,11 @@ bool IdentityCredential::IsRejectingPromiseDueToCSP(
   return true;
 }
 
-IdentityCredential::IdentityCredential(const String& token)
-    : Credential(/* id = */ "", kIdentityCredentialType), token_(token) {}
+IdentityCredential::IdentityCredential(const String& token,
+                                       bool is_account_auto_selected)
+    : Credential(/* id = */ "", kIdentityCredentialType),
+      token_(token),
+      is_account_auto_selected_(is_account_auto_selected) {}
 
 bool IdentityCredential::IsIdentityCredential() const {
   return true;

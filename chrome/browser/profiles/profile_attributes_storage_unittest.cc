@@ -49,7 +49,7 @@
 #include "ui/native_theme/native_theme.h"
 
 #if !BUILDFLAG(IS_ANDROID)
-#include "chrome/browser/ui/signin/profile_colors_util.h"
+#include "chrome/browser/ui/profiles/profile_colors_util.h"
 #endif
 
 using ::testing::Mock;
@@ -502,7 +502,9 @@ TEST_F(ProfileAttributesStorageTest, MultipleProfiles) {
     AddTestingProfile();
     EXPECT_EQ(i + 1, storage()->GetNumberOfProfiles());
     EXPECT_EQ(i + 1, storage()->GetAllProfilesAttributes().size());
-    EXPECT_EQ(i + 1, storage()->GetAllProfilesAttributesSortedByName().size());
+    EXPECT_EQ(
+        i + 1,
+        storage()->GetAllProfilesAttributesSortedByNameWithCheck().size());
     EXPECT_EQ(i + 1,
               storage()->GetAllProfilesAttributesSortedForDisplay().size());
   }
@@ -530,7 +532,8 @@ TEST_F(ProfileAttributesStorageTest, MultipleProfiles) {
               attributes_entry->GetPath());
   }
 
-  EXPECT_EQ(4U, storage()->GetAllProfilesAttributesSortedByName().size());
+  EXPECT_EQ(4U,
+            storage()->GetAllProfilesAttributesSortedByNameWithCheck().size());
   EXPECT_EQ(4U, storage()->GetAllProfilesAttributesSortedForDisplay().size());
 }
 
@@ -2098,11 +2101,15 @@ TEST_F(ProfileAttributesStorageTest, UpdateProfilesOrderPref) {
   AddSimpleTestingProfileWithName(u"C");
   AddSimpleTestingProfileWithName(u"D");
 
+  base::HistogramTester histogram_tester;
+
   {
     std::vector<std::string> expected_keys{"A", "B", "C", "D"};
     ASSERT_EQ(
         EntriesToKeys(storage()->GetAllProfilesAttributesSortedForDisplay()),
         expected_keys);
+    histogram_tester.ExpectUniqueSample("Profile.ProfilesOrderChanged", true,
+                                        0u);
   }
 
   {
@@ -2111,6 +2118,8 @@ TEST_F(ProfileAttributesStorageTest, UpdateProfilesOrderPref) {
     EXPECT_EQ(
         EntriesToKeys(storage()->GetAllProfilesAttributesSortedForDisplay()),
         expected_keys);
+    histogram_tester.ExpectUniqueSample("Profile.ProfilesOrderChanged", true,
+                                        1u);
   }
 
   {
@@ -2119,6 +2128,8 @@ TEST_F(ProfileAttributesStorageTest, UpdateProfilesOrderPref) {
     EXPECT_EQ(
         EntriesToKeys(storage()->GetAllProfilesAttributesSortedForDisplay()),
         expected_keys);
+    histogram_tester.ExpectUniqueSample("Profile.ProfilesOrderChanged", true,
+                                        2u);
   }
 }
 
@@ -2132,6 +2143,8 @@ TEST_F(ProfileAttributesStorageTest, UpdateProfilesOrderPrefIsSymetric) {
   AddSimpleTestingProfileWithName(u"B");
   AddSimpleTestingProfileWithName(u"C");
   AddSimpleTestingProfileWithName(u"D");
+
+  base::HistogramTester histogram_tester;
 
   std::vector<std::string> initial_keys_order{"A", "B", "C", "D"};
   ASSERT_EQ(
@@ -2154,6 +2167,8 @@ TEST_F(ProfileAttributesStorageTest, UpdateProfilesOrderPrefIsSymetric) {
   EXPECT_EQ(
       EntriesToKeys(storage()->GetAllProfilesAttributesSortedForDisplay()),
       initial_keys_order);
+
+  histogram_tester.ExpectUniqueSample("Profile.ProfilesOrderChanged", true, 2u);
 }
 
 TEST_F(ProfileAttributesStorageTest, UpdateProfilesOrderPrefSameIndex) {
@@ -2162,6 +2177,8 @@ TEST_F(ProfileAttributesStorageTest, UpdateProfilesOrderPrefSameIndex) {
   AddSimpleTestingProfileWithName(u"A");
   AddSimpleTestingProfileWithName(u"B");
   AddSimpleTestingProfileWithName(u"C");
+
+  base::HistogramTester histogram_tester;
 
   std::vector<std::string> initial_keys_order{"A", "B", "C"};
   ASSERT_EQ(
@@ -2176,6 +2193,7 @@ TEST_F(ProfileAttributesStorageTest, UpdateProfilesOrderPrefSameIndex) {
   EXPECT_EQ(
       EntriesToKeys(storage()->GetAllProfilesAttributesSortedForDisplay()),
       initial_keys_order);
+  histogram_tester.ExpectUniqueSample("Profile.ProfilesOrderChanged", true, 0u);
 }
 
 class ProfileAttributesStorageTestWithProfileReorderingParam
@@ -2187,17 +2205,20 @@ class ProfileAttributesStorageTestWithProfileReorderingParam
 };
 
 // In this test we are checking the order of which the method
-// `GetAllProfilesAttributesSortedWithCheck()` based on the feature flag
-// `kProfilesReordering`.
-// When the feature is on, we expect the order to be the same as the order of
-// profile insertion. When the feature is off, we expect the order to be
-// alphabetically sorted based on the profile name.
+// `GetAllProfilesAttributesSortedByLocalProfileNameWithCheck()` based on the
+// feature flag `kProfilesReordering`. When the feature is on, we expect the
+// order to be the same as the order of profile insertion. When the feature is
+// off, we expect the order to be alphabetically sorted based on the profile
+// name.
 TEST_P(ProfileAttributesStorageTestWithProfileReorderingParam,
        ProfileOrderWith_GetAllProfilesAttributesSortedWithCheck) {
   DisableObserver();
 
   EXPECT_EQ(0U, storage()->GetNumberOfProfiles());
-  EXPECT_EQ(0U, storage()->GetAllProfilesAttributesSortedWithCheck().size());
+  EXPECT_EQ(0U,
+            storage()
+                ->GetAllProfilesAttributesSortedByLocalProfileNameWithCheck()
+                .size());
 
   const std::u16string profile1(u"D");
   const std::u16string profile2(u"C");
@@ -2208,7 +2229,8 @@ TEST_P(ProfileAttributesStorageTestWithProfileReorderingParam,
   AddSimpleTestingProfileWithName(profile3);
 
   {
-    auto sorted_entries = storage()->GetAllProfilesAttributesSortedWithCheck();
+    auto sorted_entries =
+        storage()->GetAllProfilesAttributesSortedByLocalProfileNameWithCheck();
     ASSERT_EQ(2U, sorted_entries.size());
     if (IsParamFeatureEnabled()) {
       EXPECT_EQ(profile1, sorted_entries[0]->GetLocalProfileName());
@@ -2223,7 +2245,8 @@ TEST_P(ProfileAttributesStorageTestWithProfileReorderingParam,
   AddSimpleTestingProfileWithName(profile2);
 
   {
-    auto sorted_entries = storage()->GetAllProfilesAttributesSortedWithCheck();
+    auto sorted_entries =
+        storage()->GetAllProfilesAttributesSortedByLocalProfileNameWithCheck();
     ASSERT_EQ(3U, sorted_entries.size());
     if (IsParamFeatureEnabled()) {
       EXPECT_EQ(profile1, sorted_entries[0]->GetLocalProfileName());

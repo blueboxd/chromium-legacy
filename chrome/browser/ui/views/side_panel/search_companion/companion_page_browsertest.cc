@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/base64.h"
+#include "base/base64url.h"
 #include "base/base_paths.h"
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
@@ -434,10 +434,12 @@ class CompanionPageBrowserTest : public InProcessBrowserTest {
 
   companion::proto::CompanionUrlParams DeserializeCompanionRequest(
       const std::string& companion_url_param) {
+    std::string serialized_proto;
+    EXPECT_TRUE(base::Base64UrlDecode(
+        companion_url_param, base::Base64UrlDecodePolicy::DISALLOW_PADDING,
+        &serialized_proto));
+
     companion::proto::CompanionUrlParams proto;
-    auto base64_decoded = base::Base64Decode(companion_url_param);
-    auto serialized_proto = std::string(base64_decoded.value().begin(),
-                                        base64_decoded.value().end());
     EXPECT_TRUE(proto.ParseFromString(serialized_proto));
     return proto;
   }
@@ -1562,6 +1564,8 @@ IN_PROC_BROWSER_TEST_F(CompanionPageBrowserTest,
   ExpectUkmEntry(
       &ukm_recorder, ukm::builders::Companion_PageView::kOpenTriggerName,
       static_cast<int>(SidePanelOpenTrigger::kContextMenuSearchOption));
+  histogram_tester_->ExpectBucketCount("Companion.SidePanel.ShowUiSuccess",
+                                       true, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(CompanionPageBrowserTest,
@@ -1610,6 +1614,8 @@ IN_PROC_BROWSER_TEST_F(CompanionPageBrowserTest,
   // The language params should be unset when is_image_translate=false.
   EXPECT_EQ(GetLastSourceLang(), "");
   EXPECT_EQ(GetLastTargetLang(), "");
+  histogram_tester_->ExpectBucketCount("Companion.SidePanel.ShowUiSuccess",
+                                       true, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(CompanionPageBrowserTest,
@@ -1657,6 +1663,8 @@ IN_PROC_BROWSER_TEST_F(CompanionPageBrowserTest,
                  static_cast<int>(SidePanelOpenTrigger::kLensContextMenu));
   EXPECT_EQ(GetLastSourceLang(), source_lang);
   EXPECT_EQ(GetLastTargetLang(), target_lang);
+  histogram_tester_->ExpectBucketCount("Companion.SidePanel.ShowUiSuccess",
+                                       true, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(CompanionPageBrowserTest, OpenedFromEntryPoint) {
@@ -1681,6 +1689,8 @@ IN_PROC_BROWSER_TEST_F(CompanionPageBrowserTest, OpenedFromEntryPoint) {
   ExpectUkmEntry(&ukm_recorder,
                  ukm::builders::Companion_PageView::kOpenTriggerName,
                  static_cast<int>(SidePanelOpenTrigger::kComboboxSelected));
+  histogram_tester_->ExpectBucketCount("Companion.SidePanel.ShowUiSuccess",
+                                       true, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(CompanionPageBrowserTest,
@@ -1715,6 +1725,29 @@ IN_PROC_BROWSER_TEST_F(CompanionPageBrowserTest,
   ExpectUkmEntry(
       &ukm_recorder, ukm::builders::Companion_PageView::kOpenTriggerName,
       static_cast<int>(SidePanelOpenTrigger::kPinnedEntryToolbarButton));
+}
+
+IN_PROC_BROWSER_TEST_F(CompanionPageBrowserTest,
+                       RefreshCompanionPageMessageDoesReload) {
+  EnableSignInMsbbExps(/*signed_in=*/true, /*msbb=*/true, /*exps=*/true);
+
+  // Load a page on the active tab and open companion side panel
+  ASSERT_TRUE(
+      ui_test_utils::NavigateToURL(browser(), CreateUrl(kHost, kRelativeUrl1)));
+  side_panel_coordinator()->Show(SidePanelEntry::Id::kSearchCompanion);
+  WaitForCompanionToBeLoaded();
+  auto proto = GetLastCompanionProtoFromUrlLoad();
+  EXPECT_TRUE(proto.has_value());
+  EXPECT_EQ(proto->page_url(), CreateUrl(kHost, kRelativeUrl1));
+
+  // Simulate a message to refresh companion page.
+  CompanionScriptBuilder builder(MethodType::kRefreshCompanionPage);
+  EXPECT_TRUE(ExecJs(builder.Build()));
+
+  WaitForCompanionIframeReload();
+  proto = GetLastCompanionProtoFromUrlLoad();
+  EXPECT_TRUE(proto.has_value());
+  EXPECT_EQ(proto->page_url(), CreateUrl(kHost, kRelativeUrl1));
 }
 
 class CompanionPageDisabledBrowserTest : public CompanionPageBrowserTest {

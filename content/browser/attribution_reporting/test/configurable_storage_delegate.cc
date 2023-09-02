@@ -144,7 +144,8 @@ ConfigurableStorageDelegate::GetRandomizedResponse(
     const CommonSourceInfo& source,
     const attribution_reporting::EventReportWindows& event_report_windows,
     base::Time source_time,
-    int max_event_level_reports) {
+    int max_event_level_reports,
+    double randomized_response_rate) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return randomized_response_;
 }
@@ -153,7 +154,8 @@ double ConfigurableStorageDelegate::ComputeChannelCapacity(
     const CommonSourceInfo& source,
     const attribution_reporting::EventReportWindows& event_report_windows,
     base::Time source_time,
-    int max_event_level_reports) {
+    int max_event_level_reports,
+    double randomized_response_rate) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return channel_capacity_;
 }
@@ -188,7 +190,7 @@ ConfigurableStorageDelegate::GetDefaultEventReportWindows(
     attribution_reporting::mojom::SourceType source_type,
     base::TimeDelta last_report_window) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return *attribution_reporting::EventReportWindows::Create(
+  return *attribution_reporting::EventReportWindows::CreateWindows(
       base::Seconds(0), {last_report_window});
 }
 

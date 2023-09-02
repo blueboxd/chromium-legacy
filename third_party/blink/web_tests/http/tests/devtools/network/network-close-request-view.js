@@ -4,14 +4,17 @@
 
 import {TestRunner} from 'test_runner';
 
+import * as Common from 'devtools/core/common/common.js';
+import * as SDK from 'devtools/core/sdk/sdk.js';
+
 (async function() {
   await TestRunner.showPanel('network');
 
   var panel = UI.panels.network;
   var target = panel.networkLogView;
-  var types = Common.resourceTypes;
+  var types = Common.ResourceType.resourceTypes;
 
-  var requestFoo = SDK.NetworkRequest.create('', '', '', '', '');
+  var requestFoo = SDK.NetworkRequest.NetworkRequest.create('', '', '', '', '');
   requestFoo.setResourceType(types.XHR);
   requestFoo.setRequestIdForTest('foo');
   TestRunner.addResult('Showing request foo');

@@ -119,8 +119,7 @@ public class BookmarkFolderPickerRenderTest {
     private final BookmarkItem mUserFolderItem = new BookmarkItem(
             mUserFolderId, "UserFolder", null, true, mMobileFolderId, false, false, 0, false, 0);
     private final BookmarkItem mUserBookmarkItem = new BookmarkItem(mUserBookmarkId, "UserBookmark",
-            JUnitTestGURLs.getGURL(JUnitTestGURLs.EXAMPLE_URL), false, mUserFolderId, true, false,
-            0, false, 0);
+            JUnitTestGURLs.EXAMPLE_URL, false, mUserFolderId, true, false, 0, false, 0);
     private final BookmarkItem mUserFolderItem2 = new BookmarkItem(
             mUserFolderId2, "UserFolder2", null, true, mMobileFolderId, false, false, 0, false, 0);
 
@@ -242,9 +241,9 @@ public class BookmarkFolderPickerRenderTest {
                     mBookmarkUiPrefs, mShoppingService);
 
             mCoordinator = new BookmarkFolderPickerCoordinator(mActivity, mBookmarkModel,
-                    mBookmarkImageFetcher, Arrays.asList(mUserBookmarkId), mUserFolderId,
-                    mFinishRunnable, mAddNewFolderCoordinator, mBookmarkUiPrefs,
-                    mImprovedBookmarkRowCoordinator);
+                    mBookmarkImageFetcher, Arrays.asList(mUserBookmarkId), mFinishRunnable,
+                    mAddNewFolderCoordinator, mBookmarkUiPrefs, mImprovedBookmarkRowCoordinator,
+                    mShoppingService);
             mContentView.addView(mCoordinator.getView());
 
             Toolbar toolbar = (Toolbar) mContentView.findViewById(R.id.toolbar);

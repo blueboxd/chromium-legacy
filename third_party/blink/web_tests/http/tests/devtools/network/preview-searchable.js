@@ -5,6 +5,9 @@
 import {TestRunner} from 'test_runner';
 import {NetworkTestRunner} from 'network_test_runner';
 
+import * as Common from 'devtools/core/common/common.js';
+import * as Network from 'devtools/panels/network/network.js';
+
 (async function() {
   TestRunner.addResult(`Tests that resources with JSON MIME types are previewed with the JSON viewer.\n`);
   await TestRunner.loadLegacyModule('source_frame');
@@ -57,11 +60,11 @@ import {NetworkTestRunner} from 'network_test_runner';
       typeName = 'XMLView';
     } else if (compontentView instanceof SourceFrame.JSONView) {
       typeName = 'JSONView';
-    } else if (compontentView instanceof Network.RequestHTMLView) {
+    } else if (compontentView instanceof Network.RequestHTMLView.RequestHTMLView) {
       typeName = 'RequestHTMLView';
     } else if (compontentView instanceof UI.EmptyWidget) {
       typeName = 'EmptyWidget';
-    } else if (compontentView instanceof Network.RequestHTMLView) {
+    } else if (compontentView instanceof Network.RequestHTMLView.RequestHTMLView) {
       typeName = 'RequestHTMLView';
     }
 
@@ -77,7 +80,7 @@ import {NetworkTestRunner} from 'network_test_runner';
 
   function trySearches(request, searches, callback) {
     var networkPanel = UI.panels.network;
-    TestRunner.addSniffer(Network.RequestPreviewView.prototype, 'doShowPreview', async function() {
+    TestRunner.addSniffer(Network.RequestPreviewView.RequestPreviewView.prototype, 'doShowPreview', async function() {
       previewViewHandled(searches, callback, await this.contentViewPromise);
       networkPanel.hideRequestPanel();
     });
@@ -91,7 +94,7 @@ import {NetworkTestRunner} from 'network_test_runner';
     var url = 'data:' + contentType + ',' + encodeURIComponent(content);
     NetworkTestRunner.makeSimpleXHR('GET', url, true, function() {
       var request = NetworkTestRunner.findRequestsByURLPattern(new RegExp(Platform.StringUtilities.escapeForRegExp(url)))[0];
-      request.setResourceType(Common.resourceTypes.Document);
+      request.setResourceType(Common.ResourceType.resourceTypes.Document);
       trySearches(request, searches, callback);
     });
   }

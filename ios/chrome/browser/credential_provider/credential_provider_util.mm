@@ -6,7 +6,7 @@
 
 #import <CommonCrypto/CommonDigest.h>
 
-#import "base/mac/foundation_util.h"
+#import "base/apple/foundation_util.h"
 #import "base/strings/sys_string_conversions.h"
 #import "base/strings/utf_string_conversions.h"
 #import "base/task/thread_pool.h"
@@ -153,7 +153,7 @@ void FetchFaviconForURLToPath(FaviconLoader* favicon_loader,
 // Gets the last sync date for favicons in the app group storage.
 base::Time GetFaviconsLastSyncDate() {
   NSDate* last_sync_date =
-      base::mac::ObjCCast<NSDate>([[NSUserDefaults standardUserDefaults]
+      base::apple::ObjCCast<NSDate>([[NSUserDefaults standardUserDefaults]
           objectForKey:kFaviconsLastSyncDatePrefKey]);
   // If no value stored in the NSUserDefaults, consider that the last sync
   // happened forever ago.
@@ -252,6 +252,10 @@ void UpdateFaviconsStorage(FaviconLoader* favicon_loader, bool sync_enabled) {
 
   for (id<Credential> credential : all_credentials_rank) {
     GURL url = GURL(base::SysNSStringToUTF8(credential.serviceIdentifier));
+    if (!url.is_valid()) {
+      // Skip fetching the favicon for credential with invalid URL.
+      continue;
+    }
     NSString* filename = credential.favicon;
     if (!credential.favicon) {
       // Add favicon name to the credential and update the store.

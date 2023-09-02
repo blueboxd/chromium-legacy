@@ -10,8 +10,8 @@
 #include <stddef.h>
 
 #include "base/apple/owned_objc.h"
+#include "base/apple/scoped_cftyperef.h"
 #include "base/mac/mac_util.h"
-#include "base/mac/scoped_cftyperef.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversion_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -89,7 +89,7 @@ NSEvent* BuildFakeMouseEvent(CGEventType mouse_type,
                              float tilt_y = 0.0,
                              float tangential_pressure = 0.0,
                              NSUInteger button_number = 0) {
-  base::ScopedCFTypeRef<CGEventRef> cg_event(CGEventCreateMouseEvent(
+  base::apple::ScopedCFTypeRef<CGEventRef> cg_event(CGEventCreateMouseEvent(
       /*source=*/nullptr, mouse_type, location, button));
   CGEventSetIntegerValueField(cg_event, kCGMouseEventSubtype, subtype);
   CGEventSetDoubleValueField(cg_event, kCGTabletEventRotation, rotation);

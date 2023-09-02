@@ -40,6 +40,7 @@ class FakeWebAppUiManager : public WebAppUiManager {
   // WebAppUiManager:
   WebAppUiManagerImpl* AsImpl() override;
   size_t GetNumWindowsForApp(const AppId& app_id) override;
+  void CloseAppWindows(const AppId& app_id) override {}
   void NotifyOnAllAppWindowsClosed(const AppId& app_id,
                                    base::OnceClosure callback) override;
   bool CanAddAppToQuickLaunchBar() const override;
@@ -47,6 +48,8 @@ class FakeWebAppUiManager : public WebAppUiManager {
   bool IsAppInQuickLaunchBar(const AppId& app_id) const override;
   bool IsInAppWindow(content::WebContents* web_contents,
                      const AppId* app_id) const override;
+  bool IsAppAffiliatedWindowOrNone(
+      content::WebContents* web_contents) const override;
   void NotifyOnAssociatedAppChanged(
       content::WebContents* web_contents,
       const absl::optional<AppId>& previous_app_id,

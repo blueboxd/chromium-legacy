@@ -15,6 +15,7 @@
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/flex_layout_view.h"
+#include "ui/views/layout/box_layout_view.h"
 #include "ui/views/metadata/view_factory.h"
 
 namespace ash {
@@ -45,7 +46,6 @@ class ASH_EXPORT GlanceablesTaskView : public views::FlexLayoutView {
   ~GlanceablesTaskView() override;
 
   void ButtonPressed();
-  void MarkedAsCompleted(bool success);
 
   const views::ImageButton* GetButtonForTest() const;
   bool GetCompletedForTest() const;
@@ -58,7 +58,7 @@ class ASH_EXPORT GlanceablesTaskView : public views::FlexLayoutView {
   // Owned by views hierarchy.
   raw_ptr<CheckButton> button_ = nullptr;
   raw_ptr<views::FlexLayoutView, ExperimentalAsh> contents_view_ = nullptr;
-  raw_ptr<views::FlexLayoutView, ExperimentalAsh> tasks_title_view_ = nullptr;
+  raw_ptr<views::BoxLayoutView, ExperimentalAsh> tasks_title_view_ = nullptr;
   raw_ptr<views::FlexLayoutView, ExperimentalAsh> tasks_details_view_ = nullptr;
   raw_ptr<views::Label, ExperimentalAsh> tasks_label_ = nullptr;
 
@@ -66,8 +66,6 @@ class ASH_EXPORT GlanceablesTaskView : public views::FlexLayoutView {
   const std::string task_list_id_;
   // ID for the task represented by this view.
   const std::string task_id_;
-
-  base::WeakPtrFactory<GlanceablesTaskView> weak_ptr_factory_{this};
 };
 
 }  // namespace ash

@@ -60,6 +60,7 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/window.h"
 #include "ui/events/devices/device_data_manager.h"
@@ -444,6 +445,10 @@ class LockScreenAppStateTest : public BrowserWithTestWindowTest {
   }
 
   void TearDown() override {
+    // Add loop to wait for icon loading. Otherwise,
+    // data_decoder::ServiceProvider is set as null, and data_decoder for icon
+    // loading could cause crash.
+    base::RunLoop().RunUntilIdle();
     state_controller_->RemoveObserver(&observer_);
     state_controller_->Shutdown();
     focus_cycler_delegate_.reset();
@@ -668,7 +673,8 @@ class LockScreenAppStateTest : public BrowserWithTestWindowTest {
 
   std::unique_ptr<base::test::ScopedCommandLine> command_line_;
 
-  raw_ptr<ash::FakeChromeUserManager, ExperimentalAsh> fake_user_manager_;
+  raw_ptr<ash::FakeChromeUserManager, DanglingUntriaged | ExperimentalAsh>
+      fake_user_manager_;
   user_manager::ScopedUserManager user_manager_enabler_;
 
   // Run loop used to throttle test until async state controller initialization
@@ -691,14 +697,17 @@ class LockScreenAppStateTest : public BrowserWithTestWindowTest {
 
   TestStateObserver observer_;
   TestTrayAction tray_action_;
-  raw_ptr<FakeLockScreenProfileCreator, ExperimentalAsh>
+  raw_ptr<FakeLockScreenProfileCreator, DanglingUntriaged | ExperimentalAsh>
       lock_screen_profile_creator_ = nullptr;
-  raw_ptr<TestAppManager, ExperimentalAsh> app_manager_ = nullptr;
+  raw_ptr<TestAppManager, DanglingUntriaged | ExperimentalAsh> app_manager_ =
+      nullptr;
 
   std::unique_ptr<TestAppWindow> app_window_;
   scoped_refptr<const extensions::Extension> app_;
 
   base::SimpleTestTickClock tick_clock_;
+
+  data_decoder::test::InProcessDataDecoder in_process_data_decoder_;
 };
 
 class LockScreenAppStateKioskUserTest : public LockScreenAppStateTest {

@@ -17,7 +17,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.SystemClock;
 import android.provider.Browser;
 
 import androidx.browser.customtabs.CustomTabsService;
@@ -57,6 +56,8 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.AsyncTabCreationParams;
 import org.chromium.chrome.browser.webapps.WebappLauncherActivity;
 import org.chromium.chrome.test.util.browser.Features;
+import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
+import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.chrome.test.util.browser.webapps.WebappTestHelper;
 import org.chromium.components.embedder_support.util.Origin;
 import org.chromium.components.embedder_support.util.UrlConstants;
@@ -212,7 +213,7 @@ public class IntentHandlerUnitTest {
 
     @Test
     @SmallTest
-    @Features.EnableFeatures(ChromeFeatureList.OPAQUE_ORIGIN_FOR_INCOMING_INTENTS)
+    @EnableFeatures(ChromeFeatureList.OPAQUE_ORIGIN_FOR_INCOMING_INTENTS)
     public void testNewIntentInitiator() throws Exception {
         Intent intent = new Intent(Intent.ACTION_VIEW);
         intent.setData(Uri.parse(GOOGLE_URL));
@@ -233,7 +234,7 @@ public class IntentHandlerUnitTest {
 
     @Test
     @SmallTest
-    @Features.DisableFeatures(ChromeFeatureList.OPAQUE_ORIGIN_FOR_INCOMING_INTENTS)
+    @DisableFeatures(ChromeFeatureList.OPAQUE_ORIGIN_FOR_INCOMING_INTENTS)
     public void testNewIntentInitiatorFromRenderer() throws Exception {
         Intent intent = new Intent(Intent.ACTION_VIEW);
         intent.setData(Uri.parse(GOOGLE_URL));
@@ -321,7 +322,7 @@ public class IntentHandlerUnitTest {
         WebappLauncherActivity.LaunchData launchData = new WebappLauncherActivity.LaunchData("id",
                 GOOGLE_URL, null /* webApkPackageName */, false /* isSplashProvidedByWebApk */);
         mIntent = WebappLauncherActivity.createIntentToLaunchForWebapp(
-                webappLauncherActivityIntent, launchData, 0);
+                webappLauncherActivityIntent, launchData);
         Assert.assertEquals(GOOGLE_URL, IntentHandler.getUrlFromIntent(mIntent));
     }
 
@@ -524,23 +525,6 @@ public class IntentHandlerUnitTest {
     @Test
     @SmallTest
     @Feature({"Android-AppBase"})
-    public void testAddTimestampToIntent() {
-        Intent intent = new Intent();
-        Assert.assertEquals(-1, IntentHandler.getTimestampFromIntent(intent));
-        // Check both before and after to make sure that the returned value is
-        // really from {@link SystemClock#elapsedRealtime()}.
-        long before = SystemClock.elapsedRealtime();
-        IntentHandler.addTimestampToIntent(intent);
-        long after = SystemClock.elapsedRealtime();
-        Assert.assertTrue("Time should be increasing",
-                before <= IntentHandler.getTimestampFromIntent(intent));
-        Assert.assertTrue(
-                "Time should be increasing", IntentHandler.getTimestampFromIntent(intent) <= after);
-    }
-
-    @Test
-    @SmallTest
-    @Feature({"Android-AppBase"})
     public void testGeneratedReferrer() {
         Context context = ApplicationProvider.getApplicationContext();
         String packageName = context.getPackageName();
@@ -665,7 +649,7 @@ public class IntentHandlerUnitTest {
         WebappLauncherActivity.LaunchData launchData = new WebappLauncherActivity.LaunchData("id",
                 GOOGLE_URL, null /* webApkPackageName */, false /* isSplashProvidedByWebApk */);
         Intent intent = WebappLauncherActivity.createIntentToLaunchForWebapp(
-                webappLauncherActivityIntent, launchData, 0);
+                webappLauncherActivityIntent, launchData);
 
         assertFalse(mIntentHandler.shouldIgnoreIntent(intent));
     }

@@ -42,17 +42,24 @@
 #include "url/origin.h"
 
 using testing::_;
+using testing::Field;
+using testing::Matcher;
 using testing::NiceMock;
 
 namespace autofill {
 
 namespace {
 
+Matcher<const AutofillTriggerDetails&> EqualsAutofilltriggerDetails(
+    AutofillTriggerDetails details) {
+  return AllOf(
+      Field(&AutofillTriggerDetails::trigger_source, details.trigger_source),
+      Field(&AutofillTriggerDetails::filling_granularity,
+            details.filling_granularity));
+}
+
 constexpr auto kDefaultTriggerSource =
     AutofillSuggestionTriggerSource::kFormControlElementClicked;
-
-const std::u16string kMockPlusAddressForCreationCallback =
-    u"test+1234@test.example";
 
 class MockAutofillDriver : public TestAutofillDriver {
  public:
@@ -76,25 +83,9 @@ class MockAutofillDriver : public TestAutofillDriver {
               (override));
 };
 
-// Used to control the plus addressing feature, such that it is deterministic
-// and does not trigger any UI elements.
-class MockPlusAddressService : public plus_addresses::PlusAddressService {
- public:
-  void OfferPlusAddressCreation(
-      url::Origin origin,
-      plus_addresses::PlusAddressCallback callback) override {
-    std::move(callback).Run(
-        base::UTF16ToUTF8(kMockPlusAddressForCreationCallback));
-  }
-};
-
 class MockAutofillClient : public TestAutofillClient {
  public:
-  MockAutofillClient() {
-    mock_plus_address_service_ = std::make_unique<MockPlusAddressService>();
-    ON_CALL(*this, GetPlusAddressService)
-        .WillByDefault(testing::Return(mock_plus_address_service_.get()));
-  }
+  MockAutofillClient() = default;
   MockAutofillClient(const MockAutofillClient&) = delete;
   MockAutofillClient& operator=(const MockAutofillClient&) = delete;
   MOCK_METHOD(void,
@@ -120,6 +111,10 @@ class MockAutofillClient : public TestAutofillClient {
               GetPlusAddressService,
               (),
               (override));
+  MOCK_METHOD(void,
+              OfferPlusAddressCreation,
+              (const url::Origin&, plus_addresses::PlusAddressCallback),
+              (override));
 
 #if BUILDFLAG(IS_IOS)
   // Mock the client query ID check.
@@ -130,10 +125,7 @@ class MockAutofillClient : public TestAutofillClient {
   void set_last_queried_field(FieldGlobalId field_id) {
     last_queried_field_id_ = field_id;
   }
-#endif
  private:
-  std::unique_ptr<MockPlusAddressService> mock_plus_address_service_;
-#if BUILDFLAG(IS_IOS)
   FieldGlobalId last_queried_field_id_;
 #endif
 };
@@ -165,7 +157,7 @@ class MockBrowserAutofillManager : public BrowserAutofillManager {
                const std::string& guid,
                const FormData& form,
                const FormFieldData& field,
-               const AutofillTriggerSource trigger_source),
+               const AutofillTriggerDetails& trigger_details),
               (override));
 
   bool ShouldShowCardsFromAccountOption(const FormData& form,
@@ -188,7 +180,7 @@ class MockBrowserAutofillManager : public BrowserAutofillManager {
                const FormData& form,
                const FormFieldData& field,
                Suggestion::BackendId backend_id,
-               const AutofillTriggerSource trigger_source),
+               const AutofillTriggerDetails& trigger_details),
               (override));
   MOCK_METHOD(void,
               FillCreditCardFormImpl,
@@ -196,7 +188,7 @@ class MockBrowserAutofillManager : public BrowserAutofillManager {
                const FormFieldData& field,
                const CreditCard& credit_card,
                const std::u16string& cvc,
-               const AutofillTriggerSource trigger_source),
+               const AutofillTriggerDetails& trigger_details),
               (override));
 
  private:
@@ -761,9 +753,11 @@ TEST_F(AutofillExternalDelegateUnitTest,
 #else
       AutofillTriggerSource::kPopup;
 #endif
-  EXPECT_CALL(*browser_autofill_manager_,
-              FillOrPreviewForm(mojom::AutofillActionPersistence::kFill, _, _,
-                                _, expected_source));
+  EXPECT_CALL(
+      *browser_autofill_manager_,
+      FillOrPreviewForm(
+          mojom::AutofillActionPersistence::kFill, _, _, _,
+          EqualsAutofilltriggerDetails({.trigger_source = expected_source})));
   external_delegate_->DidAcceptSuggestion(suggestion, /*position=*/1,
                                           suggestion_source);
 
@@ -773,9 +767,11 @@ TEST_F(AutofillExternalDelegateUnitTest,
       kManualFallbackForAutocompleteUnrecognized;
   expected_source =
       AutofillTriggerSource::kManualFallbackForAutocompleteUnrecognized;
-  EXPECT_CALL(*browser_autofill_manager_,
-              FillOrPreviewForm(mojom::AutofillActionPersistence::kFill, _, _,
-                                _, expected_source));
+  EXPECT_CALL(
+      *browser_autofill_manager_,
+      FillOrPreviewForm(
+          mojom::AutofillActionPersistence::kFill, _, _, _,
+          EqualsAutofilltriggerDetails({.trigger_source = expected_source})));
   external_delegate_->DidAcceptSuggestion(suggestion, /*position=*/1,
                                           suggestion_source);
 }
@@ -794,9 +790,8 @@ TEST_F(AutofillExternalDelegateUnitTest,
   // This should call ShowAutofillPopup.
   std::vector<Suggestion> suggestions;
   suggestions.emplace_back();
-  // `kMockPlusAddressForCreationCallback` is returned when the plus address
-  // creation flow is invoked, whereas this function tests the filling of
-  // existing plus addresses, which is why this expected value is different.
+  // This function tests the filling of existing plus addresses, which is why
+  // `OfferPlusAddressCreation` need not be mocked.
   std::u16string plus_address = u"test+plus@test.example";
   suggestions[0].main_text.value = plus_address;
   suggestions[0].popup_item_id = PopupItemId::kFillExistingPlusAddress;
@@ -823,6 +818,9 @@ TEST_F(AutofillExternalDelegateUnitTest,
 // results in the field being filled with the resulting plus address.
 TEST_F(AutofillExternalDelegateUnitTest,
        ExternalDelegateOffersPlusAddressCreation) {
+  const std::u16string kMockPlusAddressForCreationCallback =
+      u"test+1234@test.example";
+
   IssueOnQuery();
   AutofillClient::PopupOpenArgs open_args;
   EXPECT_CALL(autofill_client_, ShowAutofillPopup)
@@ -843,10 +841,17 @@ TEST_F(AutofillExternalDelegateUnitTest,
                                           kDefaultTriggerSource);
   EXPECT_CALL(autofill_client_,
               HideAutofillPopup(PopupHidingReason::kAcceptSuggestion));
-  EXPECT_CALL(autofill_client_, GetPlusAddressService());
+  // Mock out the plus address creation logic to ensure it is deterministic and
+  // independent of the client implementations in //chrome or //ios.
+  EXPECT_CALL(autofill_client_, OfferPlusAddressCreation)
+      .WillOnce([&](const url::Origin& origin,
+                    plus_addresses::PlusAddressCallback callback) {
+        std::move(callback).Run(
+            base::UTF16ToUTF8(kMockPlusAddressForCreationCallback));
+      });
   // `kMockPlusAddressForCreationCallback` is returned in the callback from the
-  // mocked `PlusAddressService`. Ensure it is filled (vs, say, the empty text
-  // of the suggestion).
+  // mocked `OfferPlusAddressCreation()`. Ensure it is filled (vs, say, the
+  // empty text of the suggestion).
   EXPECT_CALL(*autofill_driver_,
               RendererShouldFillFieldWithValue(
                   field_id_, kMockPlusAddressForCreationCallback));

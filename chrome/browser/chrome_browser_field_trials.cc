@@ -15,6 +15,8 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
+#include "chrome/browser/buildflags.h"
+#include "chrome/browser/chrome_process_singleton.h"
 #include "chrome/browser/metrics/chrome_browser_sampling_trials.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/metrics/chrome_metrics_service_client.h"
@@ -30,8 +32,8 @@
 #include "base/android/build_info.h"
 #include "base/android/bundle_utils.h"
 #include "base/task/thread_pool/environment_config.h"
+#include "chrome/browser/android/flags/chrome_cached_flags.h"
 #include "chrome/browser/android/signin/fre_mobile_identity_consistency_field_trial.h"
-#include "chrome/browser/flags/android/cached_feature_flags.h"
 #include "chrome/browser/flags/android/chrome_feature_list.h"
 #include "chrome/common/chrome_features.h"
 #endif
@@ -109,6 +111,9 @@ void ChromeBrowserFieldTrials::SetUpClientSideFieldTrials(
 }
 
 void ChromeBrowserFieldTrials::RegisterSyntheticTrials() {
+#if BUILDFLAG(ENABLE_PROCESS_SINGLETON)
+  ChromeProcessSingleton::RegisterEarlySingletonFeature();
+#endif  // BUILDFLAG(ENABLE_PROCESS_SINGLETON)
 #if BUILDFLAG(IS_ANDROID)
   static constexpr char kReachedCodeProfilerTrial[] =
       "ReachedCodeProfilerSynthetic2";

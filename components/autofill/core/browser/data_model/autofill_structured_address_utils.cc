@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <map>
 #include <string>
+#include <string_view>
 #include <utility>
 
 #include "base/check.h"
@@ -75,7 +76,7 @@ Re2RegExCache* Re2RegExCache::Instance() {
   return g_re2regex_cache.get();
 }
 
-const RE2* Re2RegExCache::GetRegEx(const std::string& pattern) {
+const RE2* Re2RegExCache::GetRegEx(std::string_view pattern) {
   // For thread safety, acquire a lock to prevent concurrent access.
   base::AutoLock lock(lock_);
 
@@ -95,40 +96,7 @@ const RE2* Re2RegExCache::GetRegEx(const std::string& pattern) {
   return result.first->second.get();
 }
 
-RewriterCache::RewriterCache() = default;
-
-// static
-RewriterCache* RewriterCache::GetInstance() {
-  static base::NoDestructor<RewriterCache> g_rewriter_cache;
-  return g_rewriter_cache.get();
-}
-
-// static
-std::u16string RewriterCache::Rewrite(const std::u16string& country_code,
-                                      const std::u16string& text) {
-  return GetInstance()->GetRewriter(country_code).Rewrite(NormalizeValue(text));
-}
-
-const AddressRewriter& RewriterCache::GetRewriter(
-    const std::u16string& country_code) {
-  // For thread safety, acquire a lock to prevent concurrent access.
-  base::AutoLock lock(lock_);
-
-  auto it = rewriter_map_.find(country_code);
-  if (it != rewriter_map_.end()) {
-    const AddressRewriter& rewriter = it->second;
-    return rewriter;
-  }
-
-  // Insert the expression into the map, check the success and return the
-  // pointer.
-  auto result = rewriter_map_.emplace(
-      country_code, AddressRewriter::ForCountryCode(country_code));
-  DCHECK(result.second);
-  return result.first->second;
-}
-
-std::unique_ptr<const RE2> BuildRegExFromPattern(const std::string& pattern) {
+std::unique_ptr<const RE2> BuildRegExFromPattern(std::string_view pattern) {
   RE2::Options opt;
   // By default, patters are case sensitive.
   // Note that, the named-capture-group patterns build with
@@ -139,7 +107,7 @@ std::unique_ptr<const RE2> BuildRegExFromPattern(const std::string& pattern) {
   auto regex = std::make_unique<const RE2>(pattern, opt);
 
   if (!regex->ok()) {
-    DEBUG_ALIAS_FOR_CSTR(pattern_copy, pattern.c_str(), 128);
+    DEBUG_ALIAS_FOR_CSTR(pattern_copy, pattern.data(), 128);
     base::debug::DumpWithoutCrashing();
   }
 
@@ -232,7 +200,7 @@ std::vector<std::string> GetAllPartialMatches(const std::string& value,
   const RE2* regex = Re2RegExCache::Instance()->GetRegEx(pattern);
   if (!regex || !regex->ok())
     return {};
-  re2::StringPiece input(value);
+  std::string_view input(value);
   std::string match;
   std::vector<std::string> matches;
   while (re2::RE2::FindAndConsume(&input, *regex, &match)) {
@@ -336,6 +304,14 @@ std::string CaptureTypeWithPattern(const ServerFieldType& type,
                                    CaptureOptions options) {
   return CaptureTypeWithAffixedPattern(type, std::string(), pattern,
                                        std::string(), options);
+}
+
+std::u16string NormalizeAndRewrite(const std::u16string& country_code,
+                                   const std::u16string& text,
+                                   bool keep_white_space) {
+  return AddressRewriter::RewriteForCountryCode(
+      country_code.empty() ? u"US" : country_code,
+      NormalizeValue(text, keep_white_space));
 }
 
 std::u16string NormalizeValue(base::StringPiece16 value,

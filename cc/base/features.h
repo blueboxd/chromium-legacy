@@ -29,6 +29,24 @@ CC_BASE_EXPORT BASE_DECLARE_FEATURE(kRemoveMobileViewportDoubleTap);
 // https://docs.google.com/document/d/1smLAXs-DSLLmkEt4FIPP7PVglJXOcwRc7A5G0SEwxaY/edit
 CC_BASE_EXPORT BASE_DECLARE_FEATURE(kScrollUnification);
 
+// When enabled, scrolling within a covering snap area avoids or snaps to inner
+// nested areas, avoiding resting on positions which do not snap the inner area.
+// E.g. when scrolling within snap area A, it will stop either before/after
+// snap area B or with B snapped.
+//   --------
+//  | A      |
+//  |        |
+//  |  ---   |
+//  | | B |  |
+//  |  ---   |
+//  |        |
+//   --------
+CC_BASE_EXPORT BASE_DECLARE_FEATURE(kScrollSnapCoveringAvoidNestedSnapAreas);
+
+// When enabled, scrolling within a covering snap area uses the native fling,
+// allowing much more natural scrolling within these areas.
+CC_BASE_EXPORT BASE_DECLARE_FEATURE(kScrollSnapCoveringUseNativeFling);
+
 // When enabled, cc will show blink's Web-Vital metrics inside its heads up
 // display.
 CC_BASE_EXPORT BASE_DECLARE_FEATURE(kHudDisplayForPerformanceMetrics);
@@ -63,6 +81,12 @@ CC_BASE_EXPORT BASE_DECLARE_FEATURE(kNormalPriorityImageDecoding);
 
 // Use DMSAA instead of MSAA for rastering tiles.
 CC_BASE_EXPORT BASE_DECLARE_FEATURE(kUseDMSAAForTiles);
+
+#if BUILDFLAG(IS_ANDROID)
+// Use DMSAA instead of MSAA for rastering tiles on Android GL backend. Note
+// that the above flag kUseDMSAAForTiles is used for Android Vulkan backend.
+CC_BASE_EXPORT BASE_DECLARE_FEATURE(kUseDMSAAForTilesAndroidGL);
+#endif
 
 // Updating browser controls state will IPC directly from browser main to the
 // compositor thread. Previously this proxied through the renderer main thread.

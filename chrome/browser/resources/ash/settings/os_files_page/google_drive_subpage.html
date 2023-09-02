@@ -60,6 +60,18 @@
     </template>
 
     <template is="dom-if"
+        if="[[shouldShowConfirmationDialog_(dialogType_, 'bulk-pinning-listing-files')]]"
+        restamp>
+      <settings-drive-confirmation-dialog
+          id="driveBulkPinningListingFilesDialog"
+          cancel-button-text="$i18n{googleDriveOkButtonText}"
+          title-text="$i18n{googleDriveFileSyncListingFilesTitle}"
+          body-text="[[getListingFilesDialogBody_(listedFiles_)]]"
+          on-close="onDriveConfirmationDialogClose_">
+      </settings-drive-confirmation-dialog>
+    </template>
+
+    <template is="dom-if"
         if="[[shouldShowConfirmationDialog_(dialogType_, 'bulk-pinning-not-enough-space')]]"
         restamp>
       <settings-drive-confirmation-dialog
@@ -100,25 +112,25 @@
     <div class="start">
       $i18n{googleDriveOfflineStorageTitle}
       <div class="secondary">
-        [[getPinnedSizeLabel_(totalPinnedSize_)]]
+        [[getContentCacheSizeLabel_(contentCacheSize_)]]
       </div>
     </div>
     <div id="cleanUpStorageButtonWrapper">
       <cr-button role="button"
           on-click="onCleanUpStorage_"
-          disabled="[[!shouldEnableCleanUpStorageButton_(bulkPinningStatus_, totalPinnedSize_)]]"
+          disabled="[[!shouldEnableCleanUpStorageButton_(bulkPinningStatus_, contentCacheSize_)]]"
           on-focus="onShowTooltip_"
           on-mouseenter="onShowTooltip_">
         $i18n{googleDriveCleanUpStorageAction}
       </cr-button>
     </div>
     <template is="dom-if"
-        if="[[!shouldEnableCleanUpStorageButton_(bulkPinningStatus_, totalPinnedSize_)]]"
+        if="[[!shouldEnableCleanUpStorageButton_(bulkPinningStatus_, contentCacheSize_)]]"
         restamp>
       <paper-tooltip id="cleanUpStorageTooltip"
           for="cleanUpStorageButtonWrapper"
           fit-to-visible-bounds part="tooltip">
-        [[getCleanUpStorageDisabledTooltipText_(totalPinnedSize_)]]
+        [[getCleanUpStorageDisabledTooltipText_(contentCacheSize_)]]
       </paper-tooltip>
     </template>
   </div>
@@ -140,4 +152,11 @@
   </template>
 
   <div class="hr"></div>
+
+  <settings-toggle-button
+      id="driveEnableDriveOnMeteredNetworkToggle"
+      inverted="true"
+      pref="{{prefs.gdata.cellular.disabled}}"
+      label="$i18n{googleDriveEnabledOnMeteredNetworkLabel}">
+  </settings-toggle-button>
 </template>

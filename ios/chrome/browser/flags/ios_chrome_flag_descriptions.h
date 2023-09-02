@@ -173,10 +173,10 @@ extern const char kBreakpadNoDelayInitialUploadDescription[];
 extern const char kBringYourOwnTabsIOSName[];
 extern const char kBringYourOwnTabsIOSDescription[];
 
-// Title and description for the flag to enable the the sign-in-only flow
-// when no device level account is detected.
-extern const char kConsistencyNewAccountInterfaceName[];
-extern const char kConsistencyNewAccountInterfaceDescription[];
+// Title and description for the flag to enable the content notifications
+// feature.
+extern const char kContentPushNotificationsName[];
+extern const char kContentPushNotificationsDescription[];
 
 // Title and description for the flag to enable experience kit apple calendar
 // events.
@@ -459,6 +459,11 @@ extern const char kFullscreenSmoothScrollingDescription[];
 extern const char kHideContentSuggestionTilesName[];
 extern const char kHideContentSuggestionTilesDescription[];
 
+// Title and description for the flag to enable the number of inactive tabs
+// move.
+extern const char kInactiveTabsMoveLimitName[];
+extern const char kInactiveTabsMoveLimitDescription[];
+
 // Title and description for the flag to enable revamped Incognito NTP page.
 extern const char kIncognitoNtpRevampName[];
 extern const char kIncognitoNtpRevampDescription[];
@@ -500,6 +505,10 @@ extern const char kIOSForceTranslateEnabledDescription[];
 extern const char kIOSNewPostRestoreExperienceName[];
 extern const char kIOSNewPostRestoreExperienceDescription[];
 
+// Title and description for the flag to enable parcel tracking.
+extern const char kIOSParcelTrackingName[];
+extern const char kIOSParcelTrackingDescription[];
+
 // Title and description for the flag to require Local Authentication before
 // accessing the Password Manager Main Page.
 extern const char kIOSPasswordAuthOnEntryName[];
@@ -527,6 +536,11 @@ extern const char kIOSSetUpListDescription[];
 // Title and description for the flag to enable password bottom sheet on IOS.
 extern const char kIOSPasswordBottomSheetName[];
 extern const char kIOSPasswordBottomSheetDescription[];
+
+// Title and description for the flag to enable bulk uploading local passwords
+// for eligible users on the iOS password settings.
+extern const char kIOSPasswordSettingsBulkUploadLocalPasswordsName[];
+extern const char kIOSPasswordSettingsBulkUploadLocalPasswordsDescription[];
 
 // Title and description for the flag to enable payments bottom sheet on IOS.
 extern const char kIOSPaymentsBottomSheetName[];
@@ -763,6 +777,11 @@ extern const char kOptimizationGuidePushNotificationClientDescription[];
 extern const char kOneTapForMapsName[];
 extern const char kOneTapForMapsDescription[];
 
+// Title and description for the flag to enable using annotations manager to
+// fetch web page text used for language detection.
+extern const char kUseAnnotationsForLanguageDetectionName[];
+extern const char kUseAnnotationsForLanguageDetectionDescription[];
+
 // Title and description for the flag to enable PhishGuard password reuse
 // detection.
 extern const char kPasswordReuseDetectionName[];
@@ -878,6 +897,11 @@ extern const char kNewOverflowMenuShareChromeActionDescription[];
 extern const char kStartSurfaceName[];
 extern const char kStartSurfaceDescription[];
 
+// Title and description for the flag to allow batch upload of local data from
+// the new account settings panel.
+extern const char kSyncEnableBatchUploadLocalDataName[];
+extern const char kSyncEnableBatchUploadLocalDataDescription[];
+
 // Title and description for the flag to control if Chrome Sync should use the
 // sandbox servers.
 extern const char kSyncSandboxName[];
@@ -891,10 +915,6 @@ extern const char kSyncSegmentsDataDescription[];
 // Title and description for the flag to synthesize native restore web states.
 extern const char kSynthesizedRestoreSessionName[];
 extern const char kSynthesizedRestoreSessionDescription[];
-
-// Title and description for the flag to enable the Sync History data type.
-extern const char kSyncEnableHistoryDataTypeName[];
-extern const char kSyncEnableHistoryDataTypeDescription[];
 
 // Title and description for the flag to enable TFLite for language detection.
 extern const char kTFLiteLanguageDetectionName[];

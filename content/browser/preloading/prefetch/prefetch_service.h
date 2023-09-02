@@ -15,6 +15,7 @@
 #include "content/browser/preloading/prefetch/prefetch_streaming_url_loader_status.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/global_routing_id.h"
+#include "content/public/browser/service_worker_context.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/url_request/redirect_info.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
@@ -162,6 +163,17 @@ class CONTENT_EXPORT PrefetchService {
       base::WeakPtr<PrefetchContainer> prefetch_container,
       OnEligibilityResultCallback result_callback) const;
 
+  void CheckHasServiceWorker(
+      const GURL& url,
+      base::WeakPtr<PrefetchContainer> prefetch_container,
+      OnEligibilityResultCallback result_callback) const;
+
+  void OnGotServiceWorkerResult(
+      const GURL& url,
+      base::WeakPtr<PrefetchContainer> prefetch_container,
+      OnEligibilityResultCallback result_callback,
+      ServiceWorkerCapability service_worker_capability) const;
+
   // Called after getting the existing cookies associated with
   // |prefetch_container|. If there are any cookies, then the prefetch is not
   // eligible.
@@ -233,12 +245,10 @@ class CONTENT_EXPORT PrefetchService {
   void StartSinglePrefetch(base::WeakPtr<PrefetchContainer> prefetch_container,
                            base::WeakPtr<PrefetchContainer> prefetch_to_evict);
 
-  // Makes the network request for the given |prefetch_container| to the given
-  // |url|. This is called when initially starting a prefetch and when a
-  // redirect causes a change in network context and a new request needs to be
-  // made.
-  void MakePrefetchRequest(base::WeakPtr<PrefetchContainer> prefetch_container,
-                           const GURL& url);
+  // Creates a new URL loader and starts a network request for
+  // |prefetch_container|. |MakePrefetchRequest| must have been previously
+  // called.
+  void SendPrefetchRequest(base::WeakPtr<PrefetchContainer> prefetch_container);
 
   // Gets the URL loader for the given |prefetch_container|. If an override was
   // set by |SetURLLoaderFactoryForTesting|, then that will be returned instead.

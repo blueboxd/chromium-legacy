@@ -29,7 +29,7 @@ import {flush, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/pol
 
 import {getTemplate} from './item.html.js';
 import {ItemMixin} from './item_mixin.js';
-import {computeInspectableViewLabel, EnableControl, getEnableControl, getEnableToggleAriaLabel, getItemSource, getItemSourceString, isEnabled, sortViews, SourceType, userCanChangeEnablement} from './item_util.js';
+import {computeInspectableViewLabel, EnableControl, getEnableControl, getEnableToggleAriaLabel, getEnableToggleTooltipText, getItemSource, getItemSourceString, isEnabled, sortViews, SourceType, userCanChangeEnablement} from './item_util.js';
 import {navigation, Page} from './navigation_helper.js';
 
 export interface ItemDelegate {
@@ -54,6 +54,7 @@ export interface ItemDelegate {
   removeRuntimeHostPermission(id: string, host: string): Promise<void>;
   setItemSafetyCheckWarningAcknowledged(id: string): void;
   setShowAccessRequestsInToolbar(id: string, showRequests: boolean): void;
+  setItemPinnedToToolbar(id: string, pinnedToToolbar: boolean): void;
 
   // TODO(tjudkins): This function is not specific to items, so should be pulled
   // out to a more generic place when we need to access it from elsewhere.
@@ -135,8 +136,14 @@ export class ExtensionsItemElement extends ExtensionsItemElementBase {
         new CustomEvent(eventName, {bubbles: true, composed: true, detail}));
   }
 
-  getDetailsButton() {
+  /** @return The "Details" button. */
+  getDetailsButton(): HTMLElement {
     return this.$.detailsButton;
+  }
+
+  /** @return The "Remove" button, if it exists. */
+  getRemoveButton(): HTMLElement|null {
+    return this.data.mustRemainInstalled ? null : this.$.removeButton;
   }
 
   /** @return The "Errors" button, if it exists. */
@@ -148,6 +155,10 @@ export class ExtensionsItemElement extends ExtensionsItemElementBase {
     return getEnableToggleAriaLabel(
         this.isEnabled_(), this.data.type, this.i18n('appEnabled'),
         this.i18n('extensionEnabled'), this.i18n('itemOff'));
+  }
+
+  private getEnableToggleTooltipText_(): string {
+    return getEnableToggleTooltipText(this.data);
   }
 
   private observeIdVisibility_() {

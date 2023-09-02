@@ -298,8 +298,13 @@ class WebAppRegistrar : public ProfileManagerObserver {
   // Returns whether |url| is in the scope of |app_id|.
   bool IsUrlInAppScope(const GURL& url, const AppId& app_id) const;
 
-  // Returns the strength of matching |url| to the extended & regular scope of
-  // |app_id|. Returns 0 if not in extended scope.
+  // Returns whether |url| is in scope or scope_extensions of |app_id|.
+  // Only checks scope if scope_extensions is disabled.
+  bool IsUrlInAppExtendedScope(const GURL& url, const AppId& app_id) const;
+
+  // Returns the strength of matching |url| to the scope and scope_extensions of
+  // |app_id|. Returns 0 if not in either.
+  // Only checks scope if scope_extensions is disabled.
   size_t GetAppExtendedScopeScore(const GURL& url, const AppId& app_id) const;
 
   // Returns the strength of matching |url_spec| to the scope of |app_id|,
@@ -396,14 +401,16 @@ class WebAppRegistrar : public ProfileManagerObserver {
   // capture links by the user. If an app is not locally installed or is a
   // shortcut, this returns false.
   bool CapturesLinksInScope(const AppId& app_id) const;
+  // Searches for all apps that can control this url, and chooses the best one
+  // that also captures links.
+  absl::optional<AppId> FindAppThatCapturesLinksInScope(const GURL& url) const;
 
   // Returns a set of app ids that match the scope for user link capturing.
-  std::vector<AppId> GetOverlappingAppsMatchingScopePrefix(
-      const AppId& app_id) const;
+  std::vector<AppId> GetOverlappingAppsMatchingScope(const AppId& app_id) const;
 
   // Verifies if the scopes of 2 apps match for user link capturing.
   bool AppScopesMatchForUserLinkCapturing(const AppId& app_id1,
-                                          const AppId& app_id2);
+                                          const AppId& app_id2) const;
 
 #if BUILDFLAG(IS_MAC)
   bool AlwaysShowToolbarInFullscreen(const AppId& app_id) const;
@@ -547,7 +554,6 @@ class WebAppRegistrar : public ProfileManagerObserver {
   bool registry_profile_being_deleted_ = false;
 
  private:
-  bool SharesSamePrefixedScopeAs(const AppId& without_id) const;
   const raw_ptr<Profile> profile_;
   raw_ptr<WebAppProvider> provider_ = nullptr;
 

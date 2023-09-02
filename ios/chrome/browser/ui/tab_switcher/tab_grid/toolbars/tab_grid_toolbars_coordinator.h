@@ -6,17 +6,15 @@
 #define IOS_CHROME_BROWSER_UI_TAB_SWITCHER_TAB_GRID_TOOLBARS_TAB_GRID_TOOLBARS_COORDINATOR_H_
 
 #import "ios/chrome/browser/shared/coordinator/chrome_coordinator/chrome_coordinator.h"
-#import "ios/chrome/browser/ui/tab_switcher/tab_grid/toolbars/tab_grid_toolbars_commands_wrangler.h"
 
 @protocol GridToolbarsMutator;
 @class TabGridBottomToolbar;
 @protocol TabGridToolbarsActionWrangler;
-@protocol TabGridToolbarsDelegateWrangler;
 @class TabGridTopToolbar;
+@protocol TabGridToolbarsCommandsWrangler;
 
 // Coordinator to manage both TabGrid toolbars.
-@interface TabGridToolbarsCoordinator
-    : ChromeCoordinator <TabGridToolbarsCommandsWrangler>
+@interface TabGridToolbarsCoordinator : ChromeCoordinator
 
 // Search delegate.
 @property(nonatomic, weak) id<UISearchBarDelegate> searchDelegate;
@@ -33,7 +31,6 @@
 // connection to the toolbars.
 // TODO(crbug.com/1456659): Remove those.
 @property(nonatomic, weak) id<TabGridToolbarsActionWrangler> actionWrangler;
-@property(nonatomic, weak) id<TabGridToolbarsDelegateWrangler> delegateWrangler;
 
 @end
 

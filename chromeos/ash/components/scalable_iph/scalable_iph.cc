@@ -20,8 +20,11 @@
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
+#include "base/strings/stringprintf.h"
+#include "base/strings/to_string.h"
 #include "base/time/time.h"
 #include "chromeos/ash/components/scalable_iph/iph_session.h"
+#include "chromeos/ash/components/scalable_iph/logger.h"
 #include "chromeos/ash/components/scalable_iph/scalable_iph_constants.h"
 #include "chromeos/ash/components/scalable_iph/scalable_iph_delegate.h"
 #include "components/feature_engagement/public/feature_constants.h"
@@ -197,11 +200,24 @@ std::string GetParamValue(const base::Feature& feature,
   return value;
 }
 
-UiType ParseUiType(const base::Feature& feature) {
+void LogParamValueParseError(Logger* logger,
+                             const base::Location& location,
+                             const std::string& feature_name,
+                             const std::string& param_name) {
+  logger->Log(
+      location,
+      base::StringPrintf(
+          "%s does not have a valid %s param value. Stop parsing the config.",
+          feature_name.c_str(), param_name.c_str()));
+}
+
+UiType ParseUiType(Logger* logger, const base::Feature& feature) {
   std::string ui_type = GetParamValue(feature, kCustomUiTypeParamName);
-  CHECK(ui_type == kCustomUiTypeValueNotification ||
-        ui_type == kCustomUiTypeValueBubble ||
-        ui_type == kCustomUiTypeValueNone);
+  if (ui_type != kCustomUiTypeValueNotification &&
+      ui_type != kCustomUiTypeValueBubble &&
+      ui_type != kCustomUiTypeValueNone) {
+    SCALABLE_IPH_LOG(logger) << ui_type << " is not a valid UI type.";
+  }
 
   if (ui_type == kCustomUiTypeValueNotification) {
     return UiType::kNotification;
@@ -244,44 +260,69 @@ std::string ParseActionEventName(const std::string& event_used_param) {
   return name_value[1];
 }
 
-NotificationParams ParseNotificationParams(const base::Feature& feature) {
-  // TODO(b/288167957): Implement a fallback for an invalid config, e.g. Do not
-  // show an IPH for the case instead of CHECK failure. Config is served from
-  // the server. This is not a constraint coming from client side.
-  NotificationParams param;
-  param.notification_id =
+std::unique_ptr<NotificationParams> ParseNotificationParams(
+    Logger* logger,
+    const base::Feature& feature) {
+  std::unique_ptr<NotificationParams> param =
+      std::make_unique<NotificationParams>();
+  param->notification_id =
       GetParamValue(feature, kCustomNotificationIdParamName);
-  CHECK(!param.notification_id.empty())
-      << kCustomNotificationIdParamName << " is a required field";
-  param.title = GetParamValue(feature, kCustomNotificationTitleParamName);
-  CHECK(!param.title.empty())
-      << kCustomNotificationTitleParamName << " is a required field";
-  param.text = GetParamValue(feature, kCustomNotificationBodyTextParamName);
-  CHECK(!param.text.empty())
-      << kCustomNotificationBodyTextParamName << " is a required field";
-  param.button.text =
+  if (param->notification_id.empty()) {
+    LogParamValueParseError(logger, FROM_HERE, feature.name,
+                            kCustomNotificationIdParamName);
+    return nullptr;
+  }
+  param->title = GetParamValue(feature, kCustomNotificationTitleParamName);
+  if (param->title.empty()) {
+    LogParamValueParseError(logger, FROM_HERE, feature.name,
+                            kCustomNotificationTitleParamName);
+    return nullptr;
+  }
+  param->text = GetParamValue(feature, kCustomNotificationBodyTextParamName);
+  if (param->text.empty()) {
+    LogParamValueParseError(logger, FROM_HERE, feature.name,
+                            kCustomNotificationBodyTextParamName);
+    return nullptr;
+  }
+  param->button.text =
       GetParamValue(feature, kCustomNotificationButtonTextParamName);
-  CHECK(!param.button.text.empty())
-      << kCustomNotificationButtonTextParamName << " is a required field";
+  if (param->button.text.empty()) {
+    LogParamValueParseError(logger, FROM_HERE, feature.name,
+                            kCustomNotificationButtonTextParamName);
+    return nullptr;
+  }
   std::string action_type =
       GetParamValue(feature, kCustomButtonActionTypeParamName);
-  CHECK(!action_type.empty()) << kCustomButtonActionTypeParamName
-                              << " is a required field for notification";
-  param.button.action.action_type = ParseActionType(action_type);
-  CHECK(param.button.action.action_type != ActionType::kInvalid)
-      << " action type cannot be parsed";
+  if (action_type.empty()) {
+    LogParamValueParseError(logger, FROM_HERE, feature.name,
+                            kCustomButtonActionTypeParamName);
+    return nullptr;
+  }
+  param->button.action.action_type = ParseActionType(action_type);
+  if (param->button.action.action_type == ActionType::kInvalid) {
+    LogParamValueParseError(logger, FROM_HERE, feature.name,
+                            kCustomButtonActionTypeParamName);
+    return nullptr;
+  }
   std::string event_used =
       GetParamValue(feature, kCustomButtonActionEventParamName);
-  CHECK(!event_used.empty())
-      << kCustomButtonActionEventParamName << " is a required field";
-  param.button.action.iph_event_name = ParseActionEventName(event_used);
-  CHECK(!event_used.empty()) << " ihp_event_name cannot be parsed";
+  if (event_used.empty()) {
+    LogParamValueParseError(logger, FROM_HERE, feature.name,
+                            kCustomButtonActionEventParamName);
+    return nullptr;
+  }
+  param->button.action.iph_event_name = ParseActionEventName(event_used);
+  if (param->button.action.iph_event_name.empty()) {
+    LogParamValueParseError(logger, FROM_HERE, feature.name,
+                            kCustomButtonActionEventParamName);
+    return nullptr;
+  }
 
   std::string image_type =
       GetParamValue(feature, kCustomNotificationImageTypeParamName);
-  param.image_type = ScalableIphDelegate::NotificationImageType::kNoImage;
+  param->image_type = ScalableIphDelegate::NotificationImageType::kNoImage;
   if (image_type == kCustomNotificationImageTypeValueWallpaper) {
-    param.image_type = ScalableIphDelegate::NotificationImageType::kWallpaper;
+    param->image_type = ScalableIphDelegate::NotificationImageType::kWallpaper;
   }
   return param;
 }
@@ -296,42 +337,61 @@ BubbleIcon ParseBubbleIcon(const std::string& icon_string) {
   return it->second;
 }
 
-BubbleParams ParseBubbleParams(const base::Feature& feature) {
-  // TODO(b/288167957): Implement a fallback for an invalid config, e.g. Do not
-  // show an IPH for the case instead of CHECK failure. Config is served from
-  // the server. This is not a constraint coming from client side.
-  BubbleParams param;
-  param.bubble_id = GetParamValue(feature, kCustomBubbleIdParamName);
-  CHECK(!param.bubble_id.empty())
-      << kCustomBubbleIdParamName << " is a required field";
-  param.text = GetParamValue(feature, kCustomBubbleTextParamName);
-  CHECK(!param.text.empty())
-      << kCustomBubbleTextParamName << " is a required field";
+std::unique_ptr<BubbleParams> ParseBubbleParams(Logger* logger,
+                                                const base::Feature& feature) {
+  std::unique_ptr<BubbleParams> param = std::make_unique<BubbleParams>();
+  param->bubble_id = GetParamValue(feature, kCustomBubbleIdParamName);
+  if (param->bubble_id.empty()) {
+    LogParamValueParseError(logger, FROM_HERE, feature.name,
+                            kCustomBubbleIdParamName);
+    return nullptr;
+  }
+  // Title of bubble could be empty.
+  param->title = GetParamValue(feature, kCustomBubbleTitleParamName);
+  param->text = GetParamValue(feature, kCustomBubbleTextParamName);
+  if (param->text.empty()) {
+    LogParamValueParseError(logger, FROM_HERE, feature.name,
+                            kCustomBubbleTextParamName);
+    return nullptr;
+  }
 
   // Button and action:
   // Some nudge may not have a button and action.
-  param.button.text = GetParamValue(feature, kCustomBubbleButtonTextParamName);
-  if (!param.button.text.empty()) {
+  param->button.text = GetParamValue(feature, kCustomBubbleButtonTextParamName);
+  if (!param->button.text.empty()) {
     std::string action_type =
         GetParamValue(feature, kCustomButtonActionTypeParamName);
-    CHECK(!action_type.empty())
-        << kCustomButtonActionTypeParamName << " is a required field";
+    if (action_type.empty()) {
+      LogParamValueParseError(logger, FROM_HERE, feature.name,
+                              kCustomButtonActionTypeParamName);
+      return nullptr;
+    }
 
-    param.button.action.action_type = ParseActionType(action_type);
-    CHECK(param.button.action.action_type != ActionType::kInvalid)
-        << " action type cannot be parsed";
+    param->button.action.action_type = ParseActionType(action_type);
+    if (param->button.action.action_type == ActionType::kInvalid) {
+      LogParamValueParseError(logger, FROM_HERE, feature.name,
+                              kCustomButtonActionTypeParamName);
+      return nullptr;
+    }
 
     std::string event_used =
         GetParamValue(feature, kCustomButtonActionEventParamName);
-    CHECK(!event_used.empty())
-        << kCustomButtonActionEventParamName << " is a required field";
-    param.button.action.iph_event_name = ParseActionEventName(event_used);
-    CHECK(!event_used.empty()) << " ihp_event_name cannot be parsed";
+    if (event_used.empty()) {
+      LogParamValueParseError(logger, FROM_HERE, feature.name,
+                              kCustomButtonActionEventParamName);
+      return nullptr;
+    }
+    param->button.action.iph_event_name = ParseActionEventName(event_used);
+    if (param->button.action.iph_event_name.empty()) {
+      LogParamValueParseError(logger, FROM_HERE, feature.name,
+                              kCustomButtonActionEventParamName);
+      return nullptr;
+    }
   }
 
   auto icon_string = GetParamValue(feature, kCustomBubbleIconParamName);
-  param.icon = ParseBubbleIcon(icon_string);
-  param.anchor_view_app_id =
+  param->icon = ParseBubbleIcon(icon_string);
+  param->anchor_view_app_id =
       GetParamValue(feature, kCustomBubbleAnchorViewAppIdParamName);
 
   return param;
@@ -366,6 +426,8 @@ ScalableIph::ScalableIph(feature_engagement::Tracker* tracker,
 
   online_ = delegate_->IsOnline();
 
+  SCALABLE_IPH_LOG(logger()) << "Initialize: Online: " << online_;
+
   tracker_->AddOnInitializedCallback(
       base::BindOnce(&ScalableIph::CheckTriggerConditionsOnInitSuccess,
                      weak_ptr_factory_.GetWeakPtr()));
@@ -389,6 +451,8 @@ void ScalableIph::OnConnectionChanged(bool online) {
 
   online_ = online;
 
+  SCALABLE_IPH_LOG(logger()) << "Connection status changed. Online: " << online;
+
   tracker_->AddOnInitializedCallback(
       base::BindOnce(&ScalableIph::CheckTriggerConditionsOnInitSuccess,
                      weak_ptr_factory_.GetWeakPtr()));
@@ -411,6 +475,11 @@ void ScalableIph::OnSessionStateChanged(
 
   session_state_ = session_state;
 
+  SCALABLE_IPH_LOG(logger())
+      << "Session state changed to " << base::ToString(session_state)
+      << ". Whether this is considered to be an unlocked event or not: "
+      << unlocked;
+
   if (unlocked) {
     RecordEvent(Event::kUnlocked);
   }
@@ -424,13 +493,21 @@ void ScalableIph::OnSessionStateChanged(
 }
 
 void ScalableIph::OnSuspendDoneWithoutLockScreen() {
-  DCHECK(session_state_ != ScalableIphDelegate::SessionState::kLocked)
-      << "OnSuspendDoneWithoutLockScreen should never be called with a lock "
-         "screen";
+  if (session_state_ == ScalableIphDelegate::SessionState::kLocked) {
+    SCALABLE_IPH_LOG(logger())
+        << "Unexpected ScalableIph::OnSuspendDoneWithoutLockScreen call";
+    DCHECK(false) << "OnSuspendDoneWithoutLockScreen should never be called "
+                     "with a lock screen";
+  }
+
+  SCALABLE_IPH_LOG(logger())
+      << "Recording kUnlocked because of OnSuspendDoneWithoutLockScreen";
   RecordEvent(Event::kUnlocked);
 }
 
 void ScalableIph::OnAppListVisibilityChanged(bool shown) {
+  SCALABLE_IPH_LOG(logger()) << "App list visibility changed. Shown: " << shown;
+
   if (shown) {
     RecordEvent(Event::kAppListShown);
   }
@@ -441,6 +518,10 @@ void ScalableIph::OnHasSavedPrintersChanged(bool has_saved_printers) {
 
   has_saved_printers_ = has_saved_printers;
 
+  SCALABLE_IPH_LOG(logger())
+      << "Has saved printers status changed. Has saved printers: "
+      << has_saved_printers;
+
   if (!has_saved_printers_closure_for_testing_.is_null()) {
     has_saved_printers_closure_for_testing_.Run();
     has_saved_printers_closure_for_testing_.Reset();
@@ -448,15 +529,24 @@ void ScalableIph::OnHasSavedPrintersChanged(bool has_saved_printers) {
 }
 
 void ScalableIph::PerformActionForIphSession(ActionType action_type) {
+  SCALABLE_IPH_LOG(logger())
+      << "Performing an action for an iph session. Action type:"
+      << base::ToString(action_type);
   PerformAction(action_type);
 }
 
 void ScalableIph::MaybeRecordAppListItemActivation(const std::string& id) {
   auto* it = kAppListItemActivationEventsMap.find(id);
   if (it == kAppListItemActivationEventsMap.end()) {
+    SCALABLE_IPH_LOG(logger())
+        << "Observed an app list item activation. But not recording an app "
+           "list item activation as it's not listed in the map.";
     return;
   }
 
+  SCALABLE_IPH_LOG(logger())
+      << "Recording an app list item activation as event: "
+      << base::ToString(it->second);
   // Record an event via `RecordEvent` instead of directly notifying an event to
   // `tracker_` as `RecordEvent` can do common tasks, e.g. Making sure that a
   // `tracker_` is initialized, etc.
@@ -482,6 +572,9 @@ void ScalableIph::OverrideTaskRunnerForTesting(
 }
 
 void ScalableIph::PerformActionForHelpApp(ActionType action_type) {
+  SCALABLE_IPH_LOG(logger()) << "Perform action for help app. Action type: "
+                             << base::ToString(action_type);
+
   std::string iph_event_name = GetHelpAppIphEventName(action_type);
 
   // ActionType enum is defined on the client side. We can use CHECK as this is
@@ -506,6 +599,9 @@ void ScalableIph::SetHasSavedPrintersChangedClosureForTesting(
 }
 
 void ScalableIph::RecordEvent(ScalableIph::Event event) {
+  SCALABLE_IPH_LOG(logger())
+      << "Record event. Event: " << base::ToString(event);
+
   if (!tracker_) {
     DCHECK(false) << kFunctionCallAfterKeyedServiceShutdown;
     return;
@@ -528,9 +624,14 @@ void ScalableIph::RecordTimeTickEvent() {
   // Do not record timer event outside of an active session, e.g. OOBE, lock
   // screen.
   if (session_state_ != ScalableIphDelegate::SessionState::kActive) {
+    SCALABLE_IPH_LOG(logger())
+        << "Observed time tick event. But not recording it as session state is "
+           "not Active. Current session state is: "
+        << base::ToString(session_state_);
     return;
   }
 
+  SCALABLE_IPH_LOG(logger()) << "Record time tick event.";
   RecordEvent(Event::kFiveMinTick);
 }
 
@@ -542,32 +643,40 @@ void ScalableIph::RecordEventInternal(ScalableIph::Event event,
   }
 
   if (!init_success) {
+    SCALABLE_IPH_LOG(logger())
+        << "Failed to initialize feature_engagement::Tracker";
     DCHECK(false) << "Failed to initialize feature_engagement::Tracker.";
     return;
   }
 
   if (session_state_ != ScalableIphDelegate::SessionState::kActive) {
-    DLOG(WARNING)
+    SCALABLE_IPH_LOG(logger())
         << "No event is expected to be recorded outside of an active session.";
     return;
   }
 
   auto it = GetEventNamesMap().find(event);
   if (it == GetEventNamesMap().end()) {
-    DCHECK(false) << "Missing ScalableIph::Event to event name string mapping.";
+    SCALABLE_IPH_LOG(logger())
+        << "Missing ScalableIph::Event to event name string mapping.";
     return;
   }
 
+  SCALABLE_IPH_LOG(logger()) << "Recording event as " << it->second;
   tracker_->NotifyEvent(it->second);
 
   if (kIphTriggeringEvents.contains(event)) {
+    SCALABLE_IPH_LOG(logger()) << base::ToString(event)
+                               << " is a condition check triggering event. "
+                                  "Running trigger conditions check.";
     CheckTriggerConditions();
   }
 }
 
 void ScalableIph::CheckTriggerConditionsOnInitSuccess(bool init_success) {
   if (!init_success) {
-    DCHECK(false) << "Failed to initialize feature_engagement::Tracker.";
+    SCALABLE_IPH_LOG(logger())
+        << "Failed to initialize feature_engagement::Tracker.";
     return;
   }
 
@@ -582,101 +691,169 @@ void ScalableIph::CheckTriggerConditions() {
   DCHECK(tracker_->IsInitialized());
 
   if (session_state_ != ScalableIphDelegate::SessionState::kActive) {
+    SCALABLE_IPH_LOG(logger()) << "Session state is not Active. No trigger "
+                                  "condition check. Session state is "
+                               << base::ToString(session_state_);
     return;
   }
 
+  SCALABLE_IPH_LOG(logger()) << "Running trigger conditions check.";
   for (const base::Feature* feature : GetFeatureList()) {
+    SCALABLE_IPH_LOG(logger()) << "Checking: " << feature->name;
+
     if (!base::FeatureList::IsEnabled(*feature)) {
+      SCALABLE_IPH_LOG(logger())
+          << feature->name << " is not enabled. Skipping condition check.";
       continue;
     }
 
     if (!ValidateVersionNumber(*feature)) {
-      DLOG(WARNING) << "Version number does not match with the current version "
-                       "number. Skipping a config: "
-                    << feature->name;
+      SCALABLE_IPH_LOG(logger())
+          << "Version number does not match with the current version "
+             "number. Skipping a config: "
+          << feature->name;
       continue;
     }
 
-    if (CheckCustomConditions(*feature) &&
-        tracker_->ShouldTriggerHelpUI(*feature)) {
-      UiType ui_type = ParseUiType(*feature);
-      switch (ui_type) {
-        case UiType::kNotification:
-          delegate_->ShowNotification(
-              ParseNotificationParams(*feature),
-              std::make_unique<IphSession>(*feature, tracker_, this));
-          break;
-        case UiType::kBubble:
-          delegate_->ShowBubble(
-              ParseBubbleParams(*feature),
-              std::make_unique<IphSession>(*feature, tracker_, this));
-          break;
-        case UiType::kNone:
-          break;
+    if (!CheckCustomConditions(*feature)) {
+      SCALABLE_IPH_LOG(logger())
+          << "Custom conditions are not satisfied for " << feature->name;
+      continue;
+    }
+    SCALABLE_IPH_LOG(logger())
+        << "Custom conditions are satisfied for " << feature->name;
+
+    if (!tracker_->ShouldTriggerHelpUI(*feature)) {
+      SCALABLE_IPH_LOG(logger())
+          << "Trigger conditions in feature_engagement::Tracker are not "
+             "satisfied for "
+          << feature->name;
+      continue;
+    }
+    SCALABLE_IPH_LOG(logger())
+        << "Trigger conditions in feature_engagement::Tracker are satisfied "
+           "for "
+        << feature->name;
+
+    UiType ui_type = ParseUiType(logger(), *feature);
+    switch (ui_type) {
+      case UiType::kNotification: {
+        std::unique_ptr<NotificationParams> notification_params =
+            ParseNotificationParams(logger(), *feature);
+        if (!notification_params) {
+          SCALABLE_IPH_LOG(logger())
+              << "Failed to parse notification params for " << feature->name
+              << ". Skipping the config.";
+          continue;
+        }
+        SCALABLE_IPH_LOG(logger()) << "Triggering a notification.";
+        delegate_->ShowNotification(
+            *notification_params.get(),
+            std::make_unique<IphSession>(*feature, tracker_, this));
+        return;
       }
+      case UiType::kBubble: {
+        std::unique_ptr<BubbleParams> bubble_params =
+            ParseBubbleParams(logger(), *feature);
+        if (!bubble_params) {
+          SCALABLE_IPH_LOG(logger())
+              << "Failed to parse bubble params for " << feature->name
+              << ". Skipping the config.";
+          continue;
+        }
+        SCALABLE_IPH_LOG(logger()) << "Triggering a bubble.";
+        delegate_->ShowBubble(
+            *bubble_params.get(),
+            std::make_unique<IphSession>(*feature, tracker_, this));
+        return;
+      }
+      case UiType::kNone:
+        SCALABLE_IPH_LOG(logger())
+            << "Condition gets satisfied. But specified ui type is None.";
+        break;
     }
   }
 }
 
 bool ScalableIph::CheckCustomConditions(const base::Feature& feature) {
+  SCALABLE_IPH_LOG(logger())
+      << "Checking custom conditions for " << feature.name;
   return CheckNetworkConnection(feature) && CheckClientAge(feature) &&
          CheckHasSavedPrinters(feature);
 }
 
 bool ScalableIph::CheckNetworkConnection(const base::Feature& feature) {
+  SCALABLE_IPH_LOG(logger())
+      << "Checking network condition for " << feature.name;
   std::string connection_condition =
       GetParamValue(feature, kCustomConditionNetworkConnectionParamName);
   if (connection_condition.empty()) {
+    SCALABLE_IPH_LOG(logger()) << "No network condition specified.";
     return true;
   }
 
   // If an invalid value is provided, does not satisfy a condition for a
   // fail-safe behavior.
   if (connection_condition != kCustomConditionNetworkConnectionOnline) {
-    DLOG(WARNING) << "Only " << kCustomConditionNetworkConnectionOnline
-                  << " is the valid value for network connection condition";
+    SCALABLE_IPH_LOG(logger())
+        << "Only " << kCustomConditionNetworkConnectionOnline
+        << " is the valid value for network connection condition";
     return false;
   }
 
+  SCALABLE_IPH_LOG(logger())
+      << "Expecting online. Current status is: Online: " << online_;
   return online_;
 }
 
 bool ScalableIph::CheckClientAge(const base::Feature& feature) {
+  SCALABLE_IPH_LOG(logger()) << "Checking client age for " << feature.name;
   std::string client_age_condition =
       GetParamValue(feature, kCustomConditionClientAgeInDaysParamName);
   if (client_age_condition.empty()) {
+    SCALABLE_IPH_LOG(logger()) << "No client age condition specified.";
     return true;
   }
 
-  // Use `DLOG`s for logging instead of `DCHECK(false)` as we want to test those
-  // fail-safe behaviors in browser_tests.
+  // Use `SCALABLE_IPH_LOG`s for logging instead of `DCHECK(false)` as we want
+  // to test those fail-safe behaviors in browser_tests.
   int max_client_age = 0;
   if (!base::StringToInt(client_age_condition, &max_client_age)) {
-    DLOG(WARNING)
+    SCALABLE_IPH_LOG(logger())
         << "Failed to parse client age condition. It must be an integer.";
     return false;
   }
 
   if (max_client_age < 0) {
-    DLOG(WARNING) << "Client age condition must be a positive integer value.";
+    SCALABLE_IPH_LOG(logger())
+        << "Client age condition must be a positive integer value.";
     return false;
   }
 
   int client_age = delegate_->ClientAgeInDays();
   if (client_age < 0) {
-    DLOG(WARNING) << "Client age is a negative number. This can happen if a "
-                     "user changes time zone, etc. Condition is not satisfied "
-                     "for a fail safe behavior.";
+    SCALABLE_IPH_LOG(logger())
+        << "Client age is a negative number. This can happen if a "
+           "user changes time zone, etc. Condition is not satisfied "
+           "for a fail safe behavior.";
     return false;
   }
 
-  return client_age <= max_client_age;
+  const bool result = client_age <= max_client_age;
+  SCALABLE_IPH_LOG(logger())
+      << "Current client age is " << client_age
+      << ". Specified max client age is " << max_client_age
+      << " (inclusive). Condition satisfied is: " << result;
+  return result;
 }
 
 bool ScalableIph::CheckHasSavedPrinters(const base::Feature& feature) {
+  SCALABLE_IPH_LOG(logger())
+      << "Checking has saved printers condition for " << feature.name;
   std::string has_saved_printers_condition =
       GetParamValue(feature, kCustomConditionHasSavedPrintersParamName);
   if (has_saved_printers_condition.empty()) {
+    SCALABLE_IPH_LOG(logger()) << "No has saved printers condition specified.";
     return true;
   }
 
@@ -684,16 +861,20 @@ bool ScalableIph::CheckHasSavedPrinters(const base::Feature& feature) {
           kCustomConditionHasSavedPrintersValueTrue &&
       has_saved_printers_condition !=
           kCustomConditionHasSavedPrintersValueFalse) {
-    DLOG(WARNING)
+    SCALABLE_IPH_LOG(logger())
         << "Invalid value provided for "
         << kCustomConditionHasSavedPrintersParamName
         << ". This condition is not satisfied for a fail-safe behavior.";
     return false;
   }
 
-  bool expected_value =
+  const bool expected_value =
       has_saved_printers_condition == kCustomConditionHasSavedPrintersValueTrue;
-  return has_saved_printers_ == expected_value;
+  const bool result = has_saved_printers_ == expected_value;
+  SCALABLE_IPH_LOG(logger()) << "Expected value is " << expected_value
+                             << ". Current has saved printers value is "
+                             << has_saved_printers_ << ". Result is " << result;
+  return result;
 }
 
 const std::vector<const base::Feature*>& ScalableIph::GetFeatureList() const {
@@ -702,6 +883,21 @@ const std::vector<const base::Feature*>& ScalableIph::GetFeatureList() const {
   }
 
   return GetFeatureListConstant();
+}
+
+std::ostream& operator<<(std::ostream& out, ScalableIph::Event event) {
+  switch (event) {
+    case ScalableIph::Event::kFiveMinTick:
+      return out << "FiveMinTick";
+    case ScalableIph::Event::kUnlocked:
+      return out << "Unlocked";
+    case ScalableIph::Event::kAppListShown:
+      return out << "AppListShown";
+    case ScalableIph::Event::kAppListItemActivationYouTube:
+      return out << "AppListItemActivationYouTube";
+    case ScalableIph::Event::kAppListItemActivationGoogleDocs:
+      return out << "AppListItemActivationGoogleDocs";
+  }
 }
 
 }  // namespace scalable_iph

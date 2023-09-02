@@ -162,7 +162,7 @@ class InsertObserver : public ui::InputMethodObserver {
   }
   int focus_change_count_ = 0;
   base::OneShotTimer delete_timer_;
-  raw_ptr<ui::InputMethod, ExperimentalAsh> ime_;
+  raw_ptr<ui::InputMethod, LeakedDanglingUntriaged | ExperimentalAsh> ime_;
   bool inserted_ = false;
 };
 
@@ -268,6 +268,11 @@ void EmojiPageHandler::GetFeatureList(GetFeatureListCallback callback) {
   if (gif_support_enabled_) {
     enabled_features.push_back(
         emoji_picker::mojom::Feature::EMOJI_PICKER_GIF_SUPPORT);
+  }
+  if (base::FeatureList::IsEnabled(
+          features::kImeSystemEmojiPickerJellySupport)) {
+    enabled_features.push_back(
+        emoji_picker::mojom::Feature::EMOJI_PICKER_JELLY_SUPPORT);
   }
 
   std::move(callback).Run(enabled_features);

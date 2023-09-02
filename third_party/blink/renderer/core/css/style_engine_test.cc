@@ -172,7 +172,10 @@ StyleEngineTest::ScheduleInvalidationsForRules(TreeScope& tree_scope,
     return kRuleSetInvalidationFullRecalc;
   }
   rule_sets.insert(&rule_set);
-  GetStyleEngine().ScheduleInvalidationsForRuleSets(tree_scope, rule_sets);
+  SelectorFilter selector_filter;
+  selector_filter.PushAllParentsOf(tree_scope);
+  GetStyleEngine().ApplyRuleSetInvalidation(tree_scope, tree_scope.RootNode(),
+                                            selector_filter, rule_sets);
   return kRuleSetInvalidationsScheduled;
 }
 
@@ -906,7 +909,7 @@ TEST_F(StyleEngineTest, RuleSetInvalidationCustomPseudo) {
             kRuleSetInvalidationsScheduled);
   UpdateAllLifecyclePhases();
   unsigned after_count = GetStyleEngine().StyleForElementCount();
-  EXPECT_EQ(3u, after_count - before_count);
+  EXPECT_EQ(1u, after_count - before_count);
 }
 
 TEST_F(StyleEngineTest, RuleSetInvalidationHost) {
@@ -981,7 +984,8 @@ TEST_F(StyleEngineTest, RuleSetInvalidationSlotted) {
 }
 
 TEST_F(StyleEngineTest, RuleSetInvalidationHostContext) {
-  GetDocument().body()->setInnerHTML("<div id=host></div>");
+  GetDocument().body()->setInnerHTML(
+      "<div class=match><div id=host></div></div>");
   Element* host = GetDocument().getElementById(AtomicString("host"));
   ASSERT_TRUE(host);
 
@@ -997,6 +1001,14 @@ TEST_F(StyleEngineTest, RuleSetInvalidationHostContext) {
             kRuleSetInvalidationsScheduled);
   UpdateAllLifecyclePhases();
   unsigned after_count = GetStyleEngine().StyleForElementCount();
+  EXPECT_EQ(0u, after_count - before_count);
+
+  before_count = after_count;
+  EXPECT_EQ(ScheduleInvalidationsForRules(
+                shadow_root, ":host-context(.match) .a { background: green}"),
+            kRuleSetInvalidationsScheduled);
+  UpdateAllLifecyclePhases();
+  after_count = GetStyleEngine().StyleForElementCount();
   EXPECT_EQ(1u, after_count - before_count);
 
   EXPECT_EQ(ScheduleInvalidationsForRules(
@@ -1181,15 +1193,9 @@ TEST_F(StyleEngineTest, ScheduleInvalidationAfterSubtreeRecalc) {
   ASSERT_TRUE(t1);
   ASSERT_TRUE(t2);
 
-  // Sanity test.
-  t1->setAttribute(blink::html_names::kClassAttr, AtomicString("t1"));
-  EXPECT_FALSE(GetDocument().NeedsStyleInvalidation());
-  EXPECT_TRUE(GetDocument().ChildNeedsStyleInvalidation());
-  EXPECT_TRUE(t1->NeedsStyleInvalidation());
-
   UpdateAllLifecyclePhases();
 
-  // platformColorsChanged() triggers SubtreeStyleChange on document(). If that
+  // PlatformColorsChanged() triggers SubtreeStyleChange on document(). If that
   // for some reason should change, this test will start failing and the
   // SubtreeStyleChange must be set another way.
   // Calling setNeedsStyleRecalc() explicitly with an arbitrary reason instead
@@ -1199,68 +1205,50 @@ TEST_F(StyleEngineTest, ScheduleInvalidationAfterSubtreeRecalc) {
   // Check that no invalidations sets are scheduled when the document node is
   // already SubtreeStyleChange.
   t2->setAttribute(blink::html_names::kClassAttr, AtomicString("t2"));
-  EXPECT_FALSE(GetDocument().NeedsStyleInvalidation());
-  EXPECT_FALSE(GetDocument().ChildNeedsStyleInvalidation());
+  EXPECT_FALSE(GetDocument().NeedsStyleRecalc());
+  EXPECT_FALSE(GetDocument().ChildNeedsStyleRecalc());
+  UpdateAllLifecyclePhases();  // Mark everything as clean.
 
-  UpdateAllLifecyclePhases();
+  // Toggling the s2 style sheet should normally touch t1 and t2...
   auto* s2 =
       To<HTMLStyleElement>(GetDocument().getElementById(AtomicString("s2")));
   ASSERT_TRUE(s2);
   s2->setDisabled(true);
   GetStyleEngine().UpdateActiveStyle();
-  EXPECT_FALSE(GetDocument().ChildNeedsStyleInvalidation());
-  EXPECT_TRUE(GetDocument().NeedsStyleInvalidation());
+  EXPECT_TRUE(GetDocument().documentElement()->ChildNeedsStyleRecalc());
+  EXPECT_TRUE(t1->NeedsStyleRecalc());
+  EXPECT_TRUE(t2->NeedsStyleRecalc());
+  UpdateAllLifecyclePhases();  // Mark everything as clean.
 
-  UpdateAllLifecyclePhases();
+  // ...but if the root is marked as kSubtreeRecalc, it should not visit them,
+  // and thus not mark them for recalc.
   GetStyleEngine().PlatformColorsChanged();
   s2->setDisabled(false);
   GetStyleEngine().UpdateActiveStyle();
-  EXPECT_FALSE(GetDocument().ChildNeedsStyleInvalidation());
-  EXPECT_FALSE(GetDocument().NeedsStyleInvalidation());
+  EXPECT_FALSE(GetDocument().documentElement()->ChildNeedsStyleRecalc());
+  EXPECT_FALSE(t1->NeedsStyleRecalc());
+  EXPECT_FALSE(t2->NeedsStyleRecalc());
+  UpdateAllLifecyclePhases();  // Mark everything as clean.
 
-  UpdateAllLifecyclePhases();
+  // Toggling the s1 stylesheet shouldn't touch either, since it matches
+  // nothing.
   auto* s1 =
       To<HTMLStyleElement>(GetDocument().getElementById(AtomicString("s1")));
   ASSERT_TRUE(s1);
   s1->setDisabled(true);
   GetStyleEngine().UpdateActiveStyle();
-  EXPECT_TRUE(GetDocument().ChildNeedsStyleInvalidation());
-  EXPECT_FALSE(GetDocument().NeedsStyleInvalidation());
-  EXPECT_TRUE(t1->NeedsStyleInvalidation());
-  EXPECT_TRUE(t2->NeedsStyleInvalidation());
+  EXPECT_FALSE(GetDocument().documentElement()->ChildNeedsStyleRecalc());
+  EXPECT_FALSE(t1->NeedsStyleRecalc());
+  EXPECT_FALSE(t2->NeedsStyleRecalc());
+  UpdateAllLifecyclePhases();  // Mark everything as clean.
 
-  UpdateAllLifecyclePhases();
+  // And thus, kSubtreeRecalc on the root shouldn't make any difference.
   GetStyleEngine().PlatformColorsChanged();
   s1->setDisabled(false);
   GetStyleEngine().UpdateActiveStyle();
-  EXPECT_FALSE(GetDocument().ChildNeedsStyleInvalidation());
-  EXPECT_FALSE(GetDocument().NeedsStyleInvalidation());
-  EXPECT_FALSE(t1->NeedsStyleInvalidation());
-  EXPECT_FALSE(t2->NeedsStyleInvalidation());
-}
-
-TEST_F(StyleEngineTest, ScheduleRuleSetInvalidationsOnNewShadow) {
-  GetDocument().body()->setInnerHTML("<div id='host'></div>");
-  Element* host = GetDocument().getElementById(AtomicString("host"));
-  ASSERT_TRUE(host);
-
-  UpdateAllLifecyclePhases();
-  ShadowRoot& shadow_root =
-      host->AttachShadowRootInternal(ShadowRootType::kOpen);
-
-  shadow_root.setInnerHTML(R"HTML(
-    <style>
-      span { color: green }
-      t1 { color: green }
-    </style>
-    <div id='t1'></div>
-    <span></span>
-  )HTML");
-
-  GetStyleEngine().UpdateActiveStyle();
-  EXPECT_TRUE(GetDocument().ChildNeedsStyleInvalidation());
-  EXPECT_FALSE(GetDocument().NeedsStyleInvalidation());
-  EXPECT_TRUE(shadow_root.NeedsStyleInvalidation());
+  EXPECT_FALSE(GetDocument().documentElement()->ChildNeedsStyleRecalc());
+  EXPECT_FALSE(t1->NeedsStyleRecalc());
+  EXPECT_FALSE(t2->NeedsStyleRecalc());
 }
 
 TEST_F(StyleEngineTest, EmptyHttpEquivDefaultStyle) {
@@ -2749,8 +2737,8 @@ TEST_F(StyleEngineTest, GetComputedStyleOutsideFlatTree) {
   EXPECT_FALSE(innermost->GetComputedStyle());
 
   inner->EnsureComputedStyle();
-  scoped_refptr<const ComputedStyle> outer_style = outer->GetComputedStyle();
-  scoped_refptr<const ComputedStyle> inner_style = inner->GetComputedStyle();
+  const ComputedStyle* outer_style = outer->GetComputedStyle();
+  const ComputedStyle* inner_style = inner->GetComputedStyle();
 
   ASSERT_TRUE(outer_style);
   ASSERT_TRUE(inner_style);
@@ -3244,6 +3232,73 @@ TEST_F(StyleEngineTest, PrintNoForceDarkMode) {
   EXPECT_EQ(frame_view->DocumentBackgroundColor(), Color(18, 18, 18));
   EXPECT_EQ(GetDocument().documentElement()->GetComputedStyle()->ForceDark(),
             true);
+}
+
+TEST_F(StyleEngineTest, PrintScriptingEnabled) {
+  GetDocument().body()->setInnerHTML(R"HTML(
+      <style>
+        @media (scripting) {
+          body { color: green; }
+        }
+        @media (scripting: none) {
+          body { color: red; }
+        }
+      </style>
+    )HTML");
+  GetFrame().GetSettings()->SetScriptEnabled(true);
+  UpdateAllLifecyclePhases();
+  Element* body = GetDocument().body();
+
+  EXPECT_EQ(true,
+            GetDocument().GetExecutionContext()->CanExecuteScripts(
+                ReasonForCallingCanExecuteScripts::kNotAboutToExecuteScript));
+
+  EXPECT_EQ(
+      Color::FromRGB(0, 128, 0),
+      body->GetComputedStyle()->VisitedDependentColor(GetCSSPropertyColor()));
+
+  gfx::SizeF page_size(400, 400);
+  GetDocument().GetFrame()->StartPrinting(page_size, 1);
+  EXPECT_EQ(
+      Color::FromRGB(0, 128, 0),
+      body->GetComputedStyle()->VisitedDependentColor(GetCSSPropertyColor()));
+
+  GetDocument().GetFrame()->EndPrinting();
+}
+
+TEST_F(StyleEngineTest, MediaQueriesChangeScripting) {
+  GetDocument().body()->setInnerHTML(R"HTML(
+        <style>
+          @media (scripting) {
+            body { color: green; }
+          }
+          @media (scripting: none) {
+            body { color: red; }
+          }
+        </style>
+      )HTML");
+  GetFrame().GetSettings()->SetScriptEnabled(true);
+  UpdateAllLifecyclePhases();
+  Element* body = GetDocument().body();
+
+  EXPECT_EQ(true,
+            GetDocument().GetExecutionContext()->CanExecuteScripts(
+                ReasonForCallingCanExecuteScripts::kNotAboutToExecuteScript));
+
+  EXPECT_EQ(
+      Color::FromRGB(0, 128, 0),
+      body->GetComputedStyle()->VisitedDependentColor(GetCSSPropertyColor()));
+
+  GetFrame().GetSettings()->SetScriptEnabled(false);
+  UpdateAllLifecyclePhases();
+
+  EXPECT_EQ(false,
+            GetDocument().GetExecutionContext()->CanExecuteScripts(
+                ReasonForCallingCanExecuteScripts::kNotAboutToExecuteScript));
+
+  EXPECT_EQ(
+      Color::FromRGB(255, 0, 0),
+      body->GetComputedStyle()->VisitedDependentColor(GetCSSPropertyColor()));
 }
 
 TEST_F(StyleEngineTest, AtPropertyUseCount) {
@@ -3920,8 +3975,7 @@ TEST_F(StyleEngineContainerQueryTest, MarkStyleDirtyFromContainerRecalc) {
   auto* inner_editor = DynamicTo<HTMLInputElement>(input)->InnerEditorElement();
   ASSERT_TRUE(inner_editor);
 
-  scoped_refptr<const ComputedStyle> old_inner_style =
-      inner_editor->GetComputedStyle();
+  const ComputedStyle* old_inner_style = inner_editor->GetComputedStyle();
   EXPECT_TRUE(old_inner_style);
 
   unsigned start_count = GetStyleEngine().StyleForElementCount();
@@ -4787,14 +4841,14 @@ TEST_F(StyleEngineTest, NonSlottedStyleDirty) {
   // with ChildNeedsStyleRecalc(), but the child needs to be marked dirty to
   // make sure the next EnsureComputedStyle updates the style to reflect the
   // changes.
-  scoped_refptr<const ComputedStyle> old_style = span->EnsureComputedStyle();
+  const ComputedStyle* old_style = span->EnsureComputedStyle();
   span->SetInlineStyleProperty(CSSPropertyID::kColor, "green");
   EXPECT_FALSE(host->ChildNeedsStyleRecalc());
   EXPECT_TRUE(span->NeedsStyleRecalc());
   UpdateAllLifecyclePhases();
 
   EXPECT_EQ(span->GetComputedStyle(), old_style);
-  scoped_refptr<const ComputedStyle> new_style = span->EnsureComputedStyle();
+  const ComputedStyle* new_style = span->EnsureComputedStyle();
   EXPECT_NE(new_style, old_style);
 
   EXPECT_EQ(Color::FromRGB(255, 0, 0),

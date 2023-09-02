@@ -19,6 +19,7 @@
 #include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/functional/bind.h"
+#include "base/functional/callback_helpers.h"
 #include "base/i18n/icu_util.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -138,7 +139,12 @@
 #include "ui/platform_window/fuchsia/initialize_presenter_api_view.h"
 #endif  // BUILDFLAG(IS_FUCHSIA)
 
+#if BUILDFLAG(IS_WIN)
+#include "base/test/test_reg_util_win.h"
+#endif  // BUILDFLAG(IS_WIN)
+
 namespace content {
+
 namespace {
 
 // Whether an instance of BrowserTestBase has already been created in this
@@ -267,6 +273,16 @@ BrowserTestBase::BrowserTestBase() {
 
 #if BUILDFLAG(IS_POSIX)
   handle_sigterm_ = true;
+#endif
+
+#if BUILDFLAG(IS_WIN)
+  // Disallow overriding HKLM during browser test startup. This is because it
+  // will interfere with process launches, which rely on there being a valid
+  // HKLM. This functionality is restored just before the test fixture itself
+  // starts in ProxyRunTestOnMainThreadLoop, after browser startup has been
+  // completed.
+  registry_util::RegistryOverrideManager::
+      SetAllowHKLMRegistryOverrideForIntegrationTests(/*allow=*/false);
 #endif
 
   // This is called through base::TestSuite initially. It'll also be called
@@ -774,8 +790,7 @@ void BrowserTestBase::SimulateNetworkServiceCrash() {
   FlushNetworkServiceInstanceForTesting();
 
   // Need to re-initialize the network process.
-  initialized_network_process_ = false;
-  InitializeNetworkProcess();
+  ForceInitializeNetworkProcess();
 }
 
 void BrowserTestBase::IgnoreNetworkServiceCrashes() {
@@ -889,7 +904,19 @@ void BrowserTestBase::ProxyRunTestOnMainThreadLoop() {
                          base::Unretained(this)));
     }
     initial_web_contents_.reset();
+
+    OnRestartNetworkServiceForTesting(
+        base::BindRepeating(&BrowserTestBase::ForceInitializeNetworkProcess,
+                            base::Unretained(this)));
+
     SetUpOnMainThread();
+
+#if BUILDFLAG(IS_WIN)
+    // Now that most of process startup is complete, including launching the
+    // network service process, HKLM override can be safely permitted again.
+    registry_util::RegistryOverrideManager::
+        SetAllowHKLMRegistryOverrideForIntegrationTests(/*allow=*/true);
+#endif  // BUILDFLAG(IS_WIN)
 
     if (!IsSkipped()) {
       initial_navigation_observer.reset();
@@ -910,6 +937,8 @@ void BrowserTestBase::ProxyRunTestOnMainThreadLoop() {
 
     TearDownOnMainThread();
     AssertThatNetworkServiceDidNotCrash();
+
+    OnRestartNetworkServiceForTesting(base::NullCallback());
   }
 
   PostRunTestOnMainThread();
@@ -995,7 +1024,7 @@ void BrowserTestBase::AssertThatNetworkServiceDidNotCrash() {
   // TODO(https://crbug.com/1169431#c2): Enable NetworkService crash detection
   // on Fuchsia.
 #if !BUILDFLAG(IS_FUCHSIA)
-  if (network_service_test_.is_bound()) {
+  if (initialized_network_process_ && network_service_test_.is_bound()) {
     // If there was a crash, then |network_service_test_| will receive an error
     // notification, but it's not guaranteed to have arrived at this point.
     // Flush the remote to make sure the notification has been received.
@@ -1005,6 +1034,11 @@ void BrowserTestBase::AssertThatNetworkServiceDidNotCrash() {
         << "Expecting no NetworkService crashes";
   }
 #endif
+}
+
+void BrowserTestBase::ForceInitializeNetworkProcess() {
+  initialized_network_process_ = false;
+  InitializeNetworkProcess();
 }
 
 void BrowserTestBase::InitializeNetworkProcess() {

@@ -5,12 +5,14 @@
 #include "chrome/browser/ui/web_applications/test/isolated_web_app_test_utils.h"
 
 #include <memory>
+#include <string>
 
 #include "base/files/file_path.h"
 #include "base/test/test_future.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_location.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_url_info.h"
 #include "chrome/browser/web_applications/test/web_app_test_utils.h"
@@ -27,8 +29,11 @@
 #include "components/web_package/signed_web_bundles/signed_web_bundle_id.h"
 #include "content/public/common/content_features.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkStream.h"
+#include "third_party/skia/include/encode/SkPngEncoder.h"
+#include "ui/base/page_transition_types.h"
 #include "ui/base/window_open_disposition.h"
-#include "ui/gfx/geometry/rect.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -116,18 +121,15 @@ content::RenderFrameHost* OpenIsolatedWebApp(Profile* profile,
       WebAppProvider::GetForWebApps(profile)->registrar_unsafe();
   const WebApp* app = registrar.GetAppById(app_id);
   EXPECT_TRUE(app);
-  Browser* app_window = Browser::Create(Browser::CreateParams::CreateForApp(
-      GenerateApplicationNameFromAppId(app->app_id()),
-      /*trusted_source=*/true, gfx::Rect(), profile,
-      /*user_gesture=*/true));
 
-  auto new_contents =
-      content::WebContents::Create(content::WebContents::CreateParams(profile));
-  app_window->tab_strip_model()->AppendWebContents(std::move(new_contents),
-                                                   /*foreground=*/true);
-  return ui_test_utils::NavigateToURLWithDisposition(
-      app_window, app->start_url(), WindowOpenDisposition::NEW_WINDOW,
-      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
+  NavigateParams params(profile, app->start_url(),
+                        ui::PAGE_TRANSITION_GENERATED);
+  params.app_id = app->app_id();
+  params.window_action = NavigateParams::SHOW_WINDOW;
+  params.disposition = WindowOpenDisposition::NEW_WINDOW;
+  params.user_gesture = true;
+  ui_test_utils::NavigateToURL(&params);
+  return params.navigated_or_inserted_contents->GetPrimaryMainFrame();
 }
 
 void CreateIframe(content::RenderFrameHost* parent_frame,
@@ -180,4 +182,18 @@ AppId AddDummyIsolatedAppToRegistry(
   provider->install_manager().NotifyWebAppInstalled(app_id);
   return app_id;
 }
+
+// TODO(cmfcmf): Move more test utils into this `test` namespace
+namespace test {
+
+std::string BitmapAsPng(const SkBitmap& bitmap) {
+  SkDynamicMemoryWStream stream;
+  EXPECT_TRUE(SkPngEncoder::Encode(&stream, bitmap.pixmap(), {}));
+  sk_sp<SkData> icon_skdata = stream.detachAsData();
+  return std::string(static_cast<const char*>(icon_skdata->data()),
+                     icon_skdata->size());
+}
+
+}  // namespace test
+
 }  // namespace web_app

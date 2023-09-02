@@ -10,30 +10,8 @@
 #import "ios/chrome/browser/ui/content_suggestions/safety_check/safety_check_item_view.h"
 #import "ios/chrome/browser/ui/content_suggestions/safety_check/safety_check_state.h"
 #import "ios/chrome/browser/ui/content_suggestions/safety_check/types.h"
+#import "ios/chrome/browser/ui/content_suggestions/safety_check/utils.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
-
-namespace {
-
-// Returns the number of check issue types found given `state`.
-int CheckIssuesCount(SafetyCheckState* state) {
-  int count = 0;
-
-  if (state.updateChromeState != UpdateChromeSafetyCheckState::kUpToDate) {
-    count++;
-  }
-
-  if (state.safeBrowsingState != SafeBrowsingSafetyCheckState::kSafe) {
-    count++;
-  }
-
-  if (state.passwordState != PasswordSafetyCheckState::kSafe) {
-    count++;
-  }
-
-  return count;
-}
-
-}  // namespace
 
 @interface SafetyCheckView () <SafetyCheckItemViewTapDelegate>
 @end
@@ -150,8 +128,11 @@ int CheckIssuesCount(SafetyCheckState* state) {
     // Password check
     if (_state.passwordState != PasswordSafetyCheckState::kSafe) {
       SafetyCheckItemView* passwordView = [[SafetyCheckItemView alloc]
-          initWithItemType:SafetyCheckItemType::kPassword
-                layoutType:SafetyCheckItemLayoutType::kCompact];
+                   initWithItemType:SafetyCheckItemType::kPassword
+                         layoutType:SafetyCheckItemLayoutType::kCompact
+                 weakPasswordsCount:_state.weakPasswordsCount
+               reusedPasswordsCount:_state.reusedPasswordsCount
+          compromisedPasswordsCount:_state.compromisedPasswordsCount];
 
       passwordView.tapDelegate = self;
 
@@ -176,6 +157,8 @@ int CheckIssuesCount(SafetyCheckState* state) {
     MultiRowContainerView* multiRowContainer =
         [[MultiRowContainerView alloc] initWithViews:safetyCheckItems];
 
+    multiRowContainer.translatesAutoresizingMaskIntoConstraints = NO;
+
     [self addSubview:multiRowContainer];
 
     AddSameConstraints(multiRowContainer, self);
@@ -194,8 +177,11 @@ int CheckIssuesCount(SafetyCheckState* state) {
 
   if (_state.passwordState != PasswordSafetyCheckState::kSafe) {
     view = [[SafetyCheckItemView alloc]
-        initWithItemType:SafetyCheckItemType::kPassword
-              layoutType:SafetyCheckItemLayoutType::kHero];
+                 initWithItemType:SafetyCheckItemType::kPassword
+                       layoutType:SafetyCheckItemLayoutType::kHero
+               weakPasswordsCount:_state.weakPasswordsCount
+             reusedPasswordsCount:_state.reusedPasswordsCount
+        compromisedPasswordsCount:_state.compromisedPasswordsCount];
   }
 
   if (_state.safeBrowsingState != SafeBrowsingSafetyCheckState::kSafe) {

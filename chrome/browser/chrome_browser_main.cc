@@ -48,6 +48,7 @@
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "base/values.h"
+#include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "cc/base/switches.h"
@@ -63,6 +64,7 @@
 #include "chrome/browser/chrome_browser_main_extra_parts.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/enterprise/browser_management/management_service_factory.h"
+#include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/language/url_language_histogram_factory.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
@@ -95,7 +97,7 @@
 #include "chrome/browser/translate/translate_service.h"
 #include "chrome/browser/ui/color/chrome_color_mixers.h"
 #include "chrome/browser/ui/javascript_dialogs/chrome_javascript_app_modal_dialog_view_factory.h"
-#include "chrome/browser/ui/profile_error_dialog.h"
+#include "chrome/browser/ui/profiles/profile_error_dialog.h"
 #include "chrome/browser/ui/startup/bad_flags_prompt.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
 #include "chrome/browser/ui/webui/chrome_untrusted_web_ui_configs.h"
@@ -626,8 +628,11 @@ ChromeBrowserMainParts::ChromeBrowserMainParts(bool is_integration_test,
                                                StartupData* startup_data)
     : is_integration_test_(is_integration_test), startup_data_(startup_data) {
   DCHECK(startup_data_);
-  if (is_integration_test_)
-    browser_defaults::enable_help_app = false;
+#if BUILDFLAG(IS_CHROMEOS_ASH) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  if (is_integration_test_) {
+    extensions::ComponentLoader::DisableHelpAppForTesting();
+  }
+#endif
 }
 
 ChromeBrowserMainParts::~ChromeBrowserMainParts() {
@@ -906,8 +911,7 @@ int ChromeBrowserMainParts::OnLocalStateLoaded(
   blink::OriginTrialsSettingsProvider::Get()->SetSettings(
       origin_trials_settings_storage->GetSettings());
 
-  metrics::EnableExpiryChecker(chrome_metrics::kExpiredHistogramsHashes,
-                               chrome_metrics::kNumExpiredHistograms);
+  metrics::EnableExpiryChecker(chrome_metrics::kExpiredHistogramsHashes);
 
   return content::RESULT_CODE_NORMAL_EXIT;
 }
@@ -971,6 +975,11 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
 
   // Force MediaCaptureDevicesDispatcher to be created on UI thread.
   MediaCaptureDevicesDispatcher::GetInstance();
+
+#if BUILDFLAG(ENABLE_PROCESS_SINGLETON)
+  if (!ChromeProcessSingleton::IsEarlySingletonFeatureEnabled())
+    ChromeProcessSingleton::CreateInstance(user_data_dir_);
+#endif  // BUILDFLAG(ENABLE_PROCESS_SINGLETON)
 
   // Android's first run is done in Java instead of native.
 #if !BUILDFLAG(IS_ANDROID)
@@ -1164,7 +1173,8 @@ void ChromeBrowserMainParts::PostCreateThreads() {
 #endif
 
 #if BUILDFLAG(ENABLE_PROCESS_SINGLETON)
-  ChromeProcessSingleton::GetInstance()->StartWatching();
+  if (ChromeProcessSingleton::IsEarlySingletonFeatureEnabled())
+    ChromeProcessSingleton::GetInstance()->StartWatching();
 #endif
 
   tracing::SetupBackgroundTracingFieldTrial();
@@ -1445,6 +1455,62 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   // Make sure aura::Env has been initialized.
   CHECK(aura::Env::GetInstance());
 #endif  // defined(USE_AURA)
+
+#if BUILDFLAG(ENABLE_PROCESS_SINGLETON)
+  if (!ChromeProcessSingleton::IsEarlySingletonFeatureEnabled()) {
+    // When another process is running, use that process instead of starting a
+    // new one. NotifyOtherProcess will currently give the other process up to
+    // 20 seconds to respond. Note that this needs to be done before we attempt
+    // to read the profile.
+    notify_result_ =
+        ChromeProcessSingleton::GetInstance()->NotifyOtherProcessOrCreate();
+    UMA_HISTOGRAM_ENUMERATION("Chrome.ProcessSingleton.NotifyResult",
+                              notify_result_,
+                              ProcessSingleton::kNumNotifyResults);
+
+    // If `notify_result_` is not PROCESS_NONE, this process will exit.
+    // Conditionally defer browser metrics (which is how metrics are reported
+    // when the early singleton feature is enabled) to verify whether the
+    // metrics reporting mechanism has an impact on the metrics. If
+    // ShouldMergeMetrics() returns false, the metrics will instead be sent in
+    // an independent log in some future session.
+    if (ChromeProcessSingleton::ShouldMergeMetrics() &&
+        notify_result_ != ProcessSingleton::PROCESS_NONE) {
+      base::FilePath user_data_dir;
+      if (base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir)) {
+        DeferBrowserMetrics(user_data_dir);
+      }
+    }
+
+    switch (notify_result_) {
+      case ProcessSingleton::PROCESS_NONE:
+        // No process already running, fall through to starting a new one.
+        ChromeProcessSingleton::GetInstance()->StartWatching();
+        g_browser_process->platform_part()
+            ->PlatformSpecificCommandLineProcessing(
+                *base::CommandLine::ForCurrentProcess());
+        break;
+
+      case ProcessSingleton::PROCESS_NOTIFIED:
+        printf("%s\n", base::SysWideToNativeMB(
+                           base::UTF16ToWide(l10n_util::GetStringUTF16(
+                               IDS_USED_EXISTING_BROWSER)))
+                           .c_str());
+        return chrome::RESULT_CODE_NORMAL_EXIT_PROCESS_NOTIFIED;
+
+      case ProcessSingleton::PROFILE_IN_USE:
+        return chrome::RESULT_CODE_PROFILE_IN_USE;
+
+      case ProcessSingleton::LOCK_ERROR:
+        LOG(ERROR) << "Failed to create a ProcessSingleton for your profile "
+                      "directory. This means that running multiple instances "
+                      "would start multiple browser processes rather than "
+                      "opening a new window in the existing process. Aborting "
+                      "now to avoid profile corruption.";
+        return chrome::RESULT_CODE_PROFILE_IN_USE;
+    }
+  }
+#endif  // BUILDFLAG(ENABLE_PROCESS_SINGLETON)
 
 #if BUILDFLAG(IS_WIN)
   // We must call DoUpgradeTasks now that we own the browser singleton to
@@ -1973,6 +2039,11 @@ void ChromeBrowserMainParts::PostDestroyThreads() {
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
   master_prefs_.reset();
 #endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
+
+#if BUILDFLAG(ENABLE_PROCESS_SINGLETON)
+  if (!ChromeProcessSingleton::IsEarlySingletonFeatureEnabled())
+    ChromeProcessSingleton::DeleteInstance();
+#endif  // BUILDFLAG(ENABLE_PROCESS_SINGLETON)
 
   device_event_log::Shutdown();
 #endif  // BUILDFLAG(IS_ANDROID)

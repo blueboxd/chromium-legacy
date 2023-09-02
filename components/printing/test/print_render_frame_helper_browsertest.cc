@@ -7,7 +7,6 @@
 #include <stddef.h>
 
 #include <memory>
-#include <tuple>
 #include <utility>
 
 #include "base/command_line.h"
@@ -150,6 +149,11 @@ const char kHTMLWithManyLinesOfText[] =
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 class FakePrintPreviewUI : public mojom::PrintPreviewUI {
  public:
+  struct PageData {
+    uint32_t index;
+    uint32_t content_data_size;
+  };
+
   FakePrintPreviewUI() = default;
   ~FakePrintPreviewUI() override = default;
 
@@ -197,8 +201,7 @@ class FakePrintPreviewUI : public mojom::PrintPreviewUI {
     return did_preview_document_params_ ? did_preview_document_params_.get()
                                         : nullptr;
   }
-  const std::vector<std::pair<uint32_t, uint32_t>>& print_preview_pages()
-      const {
+  const std::vector<PageData>& print_preview_pages() const {
     return print_preview_pages_;
   }
   bool all_pages_have_custom_size() const {
@@ -215,11 +218,11 @@ class FakePrintPreviewUI : public mojom::PrintPreviewUI {
                                     int32_t request_id) override {}
   void DidPreviewPage(mojom::DidPreviewPageParamsPtr params,
                       int32_t request_id) override {
-    uint32_t page_number = params->page_number;
-    DCHECK_NE(page_number, kInvalidPageIndex);
+    uint32_t page_index = params->page_index;
+    DCHECK_NE(page_index, kInvalidPageIndex);
     print_preview_pages_remaining_--;
     print_preview_pages_.emplace_back(
-        params->page_number, params->content->metafile_data_region.GetSize());
+        params->page_index, params->content->metafile_data_region.GetSize());
   }
   void MetafileReadyForPrinting(mojom::DidPreviewDocumentParamsPtr params,
                                 int32_t request_id) override {
@@ -291,8 +294,8 @@ class FakePrintPreviewUI : public mojom::PrintPreviewUI {
   mojom::DidPreviewDocumentParamsPtr did_preview_document_params_;
   // Number of pages to generate for print preview.
   uint32_t print_preview_pages_remaining_ = 0;
-  // Vector of <page_number, content_data_size> that were previewed.
-  std::vector<std::pair<uint32_t, uint32_t>> print_preview_pages_;
+  // Vector of <page_index, content_data_size> that were previewed.
+  std::vector<PageData> print_preview_pages_;
   base::OnceClosure quit_closure_;
   base::OnceClosure quit_closure_for_preview_started_;
 
@@ -861,8 +864,8 @@ TEST_F(MAYBE_PrintRenderFrameHelperTest, Pixels) {
     <div style="width:24px; height:24px; border-color:#0000ff;"></div>
   )HTML");
 
-  printer()->set_should_print_backgrounds(true);
   printer()->set_should_generate_page_images(true);
+  printer()->Params().should_print_backgrounds = true;
   OnPrintPages();
 
   // First page:
@@ -929,9 +932,9 @@ TEST_F(MAYBE_PrintRenderFrameHelperTest, RoundingAndHeadersAndFooters) {
   )HTML");
 
   // Print without headers and footers.
-  printer()->set_should_print_backgrounds(true);
   printer()->set_should_generate_page_images(true);
-  printer()->set_should_display_header_footer(false);
+  printer()->Params().should_print_backgrounds = true;
+  printer()->Params().display_header_footer = false;
   OnPrintPages();
   const MockPrinterPage* page = printer()->GetPrinterPage(0);
   ASSERT_TRUE(page);
@@ -943,7 +946,7 @@ TEST_F(MAYBE_PrintRenderFrameHelperTest, RoundingAndHeadersAndFooters) {
   // footers will actually be shown, since the page margins are so small, so
   // this should look identical to the output with headers and footers turned
   // off.
-  printer()->set_should_display_header_footer(true);
+  printer()->Params().display_header_footer = true;
 
   OnPrintPages();
 
@@ -1135,6 +1138,15 @@ class PrintRenderFrameHelperPreviewTest
         /*has_selection=*/false);
     print_render_frame_helper->PrintPreview(print_settings_.Clone());
     preview_ui()->WaitUntilPreviewUpdate();
+
+#if defined(MOCK_PRINTER_SUPPORTS_PAGE_IMAGES)
+    if (const mojom::DidPreviewDocumentParams* preview_params =
+            preview_ui()->did_preview_document_params()) {
+      const auto& region = preview_params->content->metafile_data_region;
+      ASSERT_TRUE(region.IsValid());
+      printer()->GeneratePageImages(region.Map());
+    }
+#endif  // MOCK_PRINTER_SUPPORTS_PAGE_IMAGES
   }
 
   void OnPrintPreviewRerender() {
@@ -1188,20 +1200,21 @@ class PrintRenderFrameHelperPreviewTest
     EXPECT_EQ(expect_invalid_settings, preview_ui()->InvalidPrinterSetting());
   }
 
-  // |page_number| is 0-based.
-  void VerifyDidPreviewPage(bool expect_generated, uint32_t page_number) {
+  // `page_index` is 0-based.
+  void VerifyDidPreviewPage(bool expect_generated, uint32_t page_index) {
     bool msg_found = false;
     uint32_t data_size = 0;
     for (const auto& preview : preview_ui()->print_preview_pages()) {
-      if (preview.first == page_number) {
+      if (preview.index == page_index) {
         msg_found = true;
-        data_size = preview.second;
+        data_size = preview.content_data_size;
         break;
       }
     }
-    EXPECT_EQ(expect_generated, msg_found) << "For page " << page_number;
+    EXPECT_EQ(expect_generated, msg_found)
+        << "For page at index " << page_index;
     if (expect_generated)
-      EXPECT_NE(0U, data_size) << "For page " << page_number;
+      EXPECT_NE(0U, data_size) << "For page at index " << page_index;
   }
 
   void VerifyDefaultPageLayout(
@@ -2064,6 +2077,125 @@ TEST_F(PrintRenderFrameHelperPreviewTest, PrintForSystemDialog) {
   VerifyPrintPreviewGenerated(true);
   VerifyPagesPrinted(true);
 }
+
+#if defined(MOCK_PRINTER_SUPPORTS_PAGE_IMAGES)
+
+TEST_F(PrintRenderFrameHelperPreviewTest, IgnorePageSizeAndMargin) {
+  LoadHTML(R"HTML(
+    <style>
+      @page {
+        size: 2000px;
+        margin: 100px;
+      }
+      html, body { height:100%; }
+      body {
+        margin: 0;
+      }
+      .flex {
+        display: flex;
+        height: 100%;
+        justify-content: flex-end;
+        align-items: flex-end;
+      }
+      .flex > div {
+        width: 1pt;
+        height: 1pt;
+        background: #00ff00;
+      }
+    </style>
+    <div class="flex"><div></div></div>
+  )HTML");
+
+  print_settings().Set(kSettingPrinterType,
+                       static_cast<int>(mojom::PrinterType::kLocal));
+  print_settings().Set(kSettingShouldPrintBackgrounds, true);
+
+  base::Value::Dict custom_margins;
+  custom_margins.Set(kSettingMarginTop, 12);
+  custom_margins.Set(kSettingMarginRight, 6);
+  custom_margins.Set(kSettingMarginBottom, 12);
+  custom_margins.Set(kSettingMarginLeft, 6);
+  print_settings().Set(kSettingMarginsType,
+                       static_cast<int>(mojom::MarginType::kCustomMargins));
+  print_settings().Set(kSettingMarginsCustom, std::move(custom_margins));
+
+  printer()->set_should_generate_page_images(true);
+
+  OnPrintPreview();
+
+  const MockPrinterPage* page = printer()->GetPrinterPage(0);
+  ASSERT_TRUE(page);
+  const printing::Image& image(page->image());
+
+  // The specified page size is much larger than 8.5x11 inches, but it should be
+  // ignored, because CSS page size and margins are to be ignored, according to
+  // the settings above.
+
+  ASSERT_EQ(image.size(), gfx::Size(612, 792));
+
+  // Find the green point in the bottom right corner of the page.
+  EXPECT_EQ(image.pixel_at(605, 779), 0x00ff00U);
+}
+
+TEST_F(PrintRenderFrameHelperPreviewTest, LandscapeIgnorePageSizeAndMargin) {
+  LoadHTML(R"HTML(
+    <style>
+      @page {
+        size: landscape;
+        margin: 100px;
+      }
+      html, body { height:100%; }
+      body {
+        margin: 0;
+      }
+      .flex {
+        display: flex;
+        height: 100%;
+        justify-content: flex-end;
+        align-items: flex-end;
+      }
+      .flex > div {
+        width: 1pt;
+        height: 1pt;
+        background: #00ff00;
+      }
+    </style>
+    <div class="flex"><div></div></div>
+  )HTML");
+
+  print_settings().Set(kSettingPrinterType,
+                       static_cast<int>(mojom::PrinterType::kLocal));
+  print_settings().Set(kSettingShouldPrintBackgrounds, true);
+
+  base::Value::Dict custom_margins;
+  // TODO(crbug.com/1477190): Would be neat to test with different vertical and
+  // horizontal margins here.
+  custom_margins.Set(kSettingMarginTop, 12);
+  custom_margins.Set(kSettingMarginRight, 12);
+  custom_margins.Set(kSettingMarginBottom, 12);
+  custom_margins.Set(kSettingMarginLeft, 12);
+  print_settings().Set(kSettingMarginsType,
+                       static_cast<int>(mojom::MarginType::kCustomMargins));
+  print_settings().Set(kSettingMarginsCustom, std::move(custom_margins));
+
+  printer()->set_should_generate_page_images(true);
+
+  OnPrintPreview();
+  const MockPrinterPage* page = printer()->GetPrinterPage(0);
+  ASSERT_TRUE(page);
+  const printing::Image& image(page->image());
+
+  // Specified page size should be ignored, according to the settings
+  // above. Page orientation (landscape vs portrait) should still be honored,
+  // though.
+
+  ASSERT_EQ(image.size(), gfx::Size(792, 612));
+
+  // Find the green point in the bottom right corner of the page.
+  EXPECT_EQ(image.pixel_at(779, 599), 0x00ff00U);
+}
+
+#endif  // MOCK_PRINTER_SUPPORTS_PAGE_IMAGES
 
 class PrintRenderFrameHelperTaggedPreviewTest
     : public PrintRenderFrameHelperPreviewTest,

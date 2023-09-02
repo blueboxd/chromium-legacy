@@ -35,6 +35,7 @@
 <translation id="1280820357415527819">Sare mugikorren bila</translation>
 <translation id="1293556467332435079">Fitxategiak</translation>
 <translation id="1297922636971898492">Une honetan, Google Drive ez dago erabilgarri. Erabilgarri dagoenean, automatikoki hasiko da berriro kargatzen.</translation>
+<translation id="1306130176943817227">Ezin da ezabatu. Elementua erabiltzen ari da.</translation>
 <translation id="1307931752636661898">Ezin dira ikusi Linux fitxategiak</translation>
 <translation id="1313405956111467313">Proxy-konfigurazio automatikoa</translation>
 <translation id="134645005685694099">Gailuak ez dauka biltegian fitxategiak sinkronizatzeko aukera aktibatuta mantentzeko behar adina toki. Hemendik aurrera, fitxategi berriak ez dira automatikoki sinkronizatuko.</translation>
@@ -94,6 +95,7 @@
 <translation id="174937106936716857">Fitxategi kopurua guztira</translation>
 <translation id="1755345808328621801">Windows sistema eragilea darabilen PC baterako diseinatuta dago fitxategia. Gailua Chrome OS-koa denez, fitxategia ez da harekin bateragarria. Bilatu ordezko aplikazio egoki bat Chrome Web Store-n.</translation>
 <translation id="1757915090001272240">Latindar zabala</translation>
+<translation id="1761091787730831947">Partekatu <ph name="VM_NAME" /> makina birtualarekin</translation>
 <translation id="1773212559869067373">Autentifikazio-ziurtagiria lokalki baztertu da</translation>
 <translation id="1775381402323441512">Bideoari buruzko informazioa</translation>
 <translation id="180035236176489073">Konektatuta egon behar zara fitxategiak atzitzeko.</translation>
@@ -169,6 +171,7 @@
 <translation id="23721837607121582">Deskargatu mugikorreko profila, <ph name="NETWORK_INDEX" /> / <ph name="NETWORK_COUNT" /> sare, <ph name="NETWORK_NAME" /></translation>
 <translation id="2377319039870049694">Aldatu zerrenda-ikuspegira</translation>
 <translation id="2377590462528165447"><ph name="NUMBER_OF_ITEMS" /> karpeta partekatu dira Linux-ekin</translation>
+<translation id="2379576081295865700">Biltegiratzeko tokia egiaztatzen… 1 elementu aurkitu da.</translation>
 <translation id="2383454254762599978">Eraman zaborrontzira</translation>
 <translation id="2387458720915042159">Proxy konexio mota</translation>
 <translation id="2389832672041313158">Birmaniarra</translation>
@@ -210,6 +213,7 @@
 <translation id="2718540689505416944">Instalatu aplikazioa Linux-ekin</translation>
 <translation id="2719020180254996569"><ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" /> sarea. <ph name="NETWORK_NAME" /> (<ph name="CONNECTION_STATUS" />). Xehetasunak.</translation>
 <translation id="2724954091494693138">Turkiarra (F teklatua)</translation>
+<translation id="2732288874651063549">Kudeatu <ph name="VM_NAME" /> makina birtualarekin partekatzen dituzun elementuak</translation>
 <translation id="2732839045120506979">Vietnamdarra (VNI)</translation>
 <translation id="2735623501230989521">Eman <ph name="FOLDER_NAME" /> karpetako fitxategiak erabiltzeko baimena Parallels Desktop-i</translation>
 <translation id="2764206540577097904">Google Workspace-ko banako biltegi osoa erabili duzu.</translation>
@@ -304,6 +308,7 @@
 <translation id="3509680540198371098"><ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" /> sarea. <ph name="NETWORK_NAME" /> (<ph name="SECURITY_STATUS" />; <ph name="CONNECTION_STATUS" />). Seinalearen indarra: % <ph name="SIGNAL_STRENGTH" />. Xehetasunak.</translation>
 <translation id="3511705761158917664"><ph name="NUMBER_OF_ITEMS" /> elementu sinkronizatzeko prestatzen…</translation>
 <translation id="3522708245912499433">Portugaldarra</translation>
+<translation id="3523225005467146490">Karpeta bat partekatu da <ph name="VM_NAME" /> makina birtualarekin</translation>
 <translation id="3524311639100184459">Kontuz: fitxategi hauek aldi baterakoak dira eta agian automatikoki ezabatuko dira diskoan tokia egiteko.  <ph name="BEGIN_LINK" />Lortu informazio gehiago<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">Karpeta</translation>
 <translation id="3548125359243647069">PINa gehiegitan idatzi da oker.</translation>
@@ -537,6 +542,7 @@
 <translation id="5218183485292899140">Frantsesa (Suitza)</translation>
 <translation id="5234764350956374838">Baztertu</translation>
 <translation id="5253070652067921974">Egilea:</translation>
+<translation id="5254207638927440400">Ezin da mugitu fitxategia. Fitxategia erabiltzen ari da.</translation>
 <translation id="5257456363153333584">Burruntzia</translation>
 <translation id="5262311848634918433"><ph name="MARKUP_1" />Atzitu fitxategiak edonondik, baita konexiorik ez duzunean ere.<ph name="MARKUP_2" />
     Eguneratuta egongo dira eta edozein gailutan erabili ahal izango dituzu Google Drive-ko fitxategiak.<ph name="MARKUP_3" />
@@ -659,6 +665,8 @@
 <translation id="6164412158936057769">Tximeletak</translation>
 <translation id="6165508094623778733">Lortu informazio gehiago</translation>
 <translation id="6170470584681422115">Ogitartekoa</translation>
+<translation id="6177854567773392726">Biltegiratzeko tokia egiaztatzen… <ph name="ITEMS_FOUND" /> elementu aurkitu dira.</translation>
+<translation id="6181912134988520389">Eman Google Drive-ko fitxategiak erabiltzeko baimena <ph name="VM_NAME" /> makina birtualari. Aldaketak beste gailuekin sinkronizatuko dira.</translation>
 <translation id="6187719147498869044">Hungariarra</translation>
 <translation id="6198252989419008588">Aldatu PINa</translation>
 <translation id="6199801702437275229">Tokiari buruzko informazioaren zain…</translation>
@@ -762,6 +770,7 @@
 <translation id="6989942356279143254">Suediarra</translation>
 <translation id="6990081529015358884">Biltegiratze-espazioa agortu zaizu</translation>
 <translation id="6993826899923627728">Elementuak zaborrontzian daude</translation>
+<translation id="6996593023542748157">Partekatu karpeta <ph name="VM_NAME" /> makina birtualarekin</translation>
 <translation id="7008426324576352165">Erakundeak biltegiratze gehiago behar du kargatzen amaitzeko.</translation>
 <translation id="7009985720488544166">Administratzailearen gidalerroek ez dute uzten <ph name="COUNT" /> fitxategi mugitzen</translation>
 <translation id="7012943028104619157"><ph name="ROOT_TITLE" /> (<ph name="ROOT_SUMMARY" />)</translation>
@@ -851,6 +860,7 @@
 <translation id="76959938259365003">Ezin izan da hustu zaborrontzia.</translation>
 <translation id="770015031906360009">Greziarra</translation>
 <translation id="7705251383879779343"><ph name="FILE_NAME" /> kopiatu da.</translation>
+<translation id="7707941139430559579">Ezin da mugitu fitxategia. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="7708271999969613024">Sare hori erabiltzeko, operadoreak emandako zortzi digituko desblokeatzeko gako pertsonala (PUKa) idatzi behar duzu.</translation>
 <translation id="7711920809702896782">Irudiari buruzko informazioa</translation>
 <translation id="7724603315864178912">Ebaki</translation>
@@ -947,6 +957,7 @@
 <translation id="8335837413233998004">Bielorrusiarra</translation>
 <translation id="8336153091935557858">Atzo (<ph name="YESTERDAY_DAYTIME" />)</translation>
 <translation id="8342318071240498787">Badago lehendik ere izen hori duen fitxategi edo direktorio bat.</translation>
+<translation id="83651606385705612">Eman <ph name="FOLDER_NAME" /> karpetako fitxategiak erabiltzeko baimena <ph name="VM_NAME" /> makina birtualari</translation>
 <translation id="8372369524088641025">WEP gako okerra</translation>
 <translation id="8372852072747894550">Greziarra</translation>
 <translation id="8386903983509584791">Amaitu da bilaketa</translation>
@@ -956,6 +967,7 @@
 <translation id="8408068190360279472"><ph name="NETWORK_TYPE" /> sarea. Konektatzen.</translation>
 <translation id="8425213833346101688">Aldatu</translation>
 <translation id="8428213095426709021">Ezarpenak</translation>
+<translation id="8429998526804961548"><ph name="NUMBER_OF_ITEMS" /> karpeta partekatu dira <ph name="VM_NAME" /> makina birtualarekin</translation>
 <translation id="8431909052837336408">Aldatu SIMaren PINa</translation>
 <translation id="8437209419043462667">US</translation>
 <translation id="8452135315243592079">SIM txartela falta da</translation>
@@ -1036,6 +1048,7 @@
 <translation id="9038620279323455325">"<ph name="FILE_NAME" />" izena duen fitxategia bazegoen lehendik ere. Aukeratu beste izen bat.</translation>
 <translation id="9046895021617826162">Ezin izan da konektatu</translation>
 <translation id="9065512565307033593">Egiaztapena gauzatzen ez baduzu, desgaitu egingo da sarerako sarbidea.</translation>
+<translation id="9083722265619106011">{0,plural, =1{1 abisu.}other{<ph name="COUNT" /> abisu.}}</translation>
 <translation id="908378762078012445">Errusiarra, AATSEEL teklatu fonetikoarekin</translation>
 <translation id="9086302186042011942">Sinkronizatzen</translation>
 <translation id="9099674669267916096">Orri kopurua</translation>

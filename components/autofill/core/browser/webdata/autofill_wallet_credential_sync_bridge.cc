@@ -7,11 +7,16 @@
 #include <utility>
 
 #include "base/check.h"
-#include "components/autofill/core/browser/webdata/autofill_table.h"
+#include "base/notreached.h"
+#include "base/ranges/algorithm.h"
+#include "base/strings/string_number_conversions.h"
+#include "components/autofill/core/browser/webdata/autofill_change.h"
+#include "components/autofill/core/browser/webdata/autofill_sync_bridge_util.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_backend.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/model/client_tag_based_model_type_processor.h"
+#include "components/sync/model/metadata_change_list.h"
 #include "components/sync/model/sync_metadata_store_change_list.h"
 #include "components/sync/protocol/autofill_wallet_credential_specifics.pb.h"
 #include "components/sync/protocol/entity_data.h"
@@ -75,26 +80,91 @@ absl::optional<syncer::ModelError>
 AutofillWalletCredentialSyncBridge::MergeFullSyncData(
     std::unique_ptr<syncer::MetadataChangeList> metadata_change_list,
     syncer::EntityChangeList entity_data) {
-  NOTIMPLEMENTED();
-  return absl::nullopt;
+  // When this data type is disabled, all the local data gets deleted, so there
+  // is never anything to merge.
+  return ApplyIncrementalSyncChanges(std::move(metadata_change_list),
+                                     std::move(entity_data));
 }
 
 absl::optional<syncer::ModelError>
 AutofillWalletCredentialSyncBridge::ApplyIncrementalSyncChanges(
     std::unique_ptr<syncer::MetadataChangeList> metadata_change_list,
     syncer::EntityChangeList entity_data) {
-  NOTIMPLEMENTED();
-  return absl::nullopt;
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  AutofillTable* table = GetAutofillTable();
+
+  for (const std::unique_ptr<syncer::EntityChange>& change : entity_data) {
+    sync_pb::AutofillWalletCredentialSpecifics wallet_credential_specifics =
+        change->data().specifics.autofill_wallet_credential();
+    switch (change->type()) {
+      case syncer::EntityChange::ACTION_DELETE:
+        int64_t storage_key;
+        if (!table || change->storage_key().empty() ||
+            !base::StringToInt64(change->storage_key(), &storage_key) ||
+            !table->RemoveServerCvc(storage_key)) {
+          return syncer::ModelError(
+              FROM_HERE,
+              "Failed to delete the Wallet credential data from the table");
+        }
+        break;
+      // TODO(crbug/1472122): Merge the Add and Update APIs for AutofillTable.
+      case syncer::EntityChange::ACTION_ADD:
+        if (!table ||
+            !table->AddServerCvc(
+                AutofillWalletCvcStructDataFromWalletCredentialSpecifics(
+                    wallet_credential_specifics))) {
+          return syncer::ModelError(
+              FROM_HERE,
+              "Failed to add the Wallet credential data to the table");
+        }
+        break;
+      case syncer::EntityChange::ACTION_UPDATE:
+        if (!table ||
+            !table->UpdateServerCvc(
+                AutofillWalletCvcStructDataFromWalletCredentialSpecifics(
+                    wallet_credential_specifics))) {
+          return syncer::ModelError(
+              FROM_HERE,
+              "Failed to update the Wallet credential data to the table");
+        }
+        break;
+    }
+  }
+  // Commit the transaction to make sure the data and the metadata with the
+  // new progress marker is written down.
+  web_data_backend_->CommitChanges();
+
+  // There can be cases where `ApplyIncrementalSyncChanges` is called with
+  // empty `entity_data`, where only the metadata needs to be updated. This
+  // check helps check that and prevent any false positives.
+  if (!entity_data.empty()) {
+    web_data_backend_->NotifyOfMultipleAutofillChanges();
+  }
+  return change_processor()->GetError();
 }
 
 void AutofillWalletCredentialSyncBridge::GetData(StorageKeyList storage_keys,
                                                  DataCallback callback) {
-  NOTIMPLEMENTED();
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  base::ranges::sort(storage_keys);
+  std::vector<std::unique_ptr<ServerCvc>> filterd_server_cvc_list;
+  for (std::unique_ptr<ServerCvc>& server_cvc_from_list :
+       GetAutofillTable()->GetAllServerCvcs()) {
+    if (base::ranges::binary_search(
+            storage_keys,
+            base::NumberToString(server_cvc_from_list->instrument_id))) {
+      filterd_server_cvc_list.push_back(std::move(server_cvc_from_list));
+    }
+  }
+  std::move(callback).Run(ConvertToDataBatch(filterd_server_cvc_list));
 }
 
 void AutofillWalletCredentialSyncBridge::GetAllDataForDebugging(
     DataCallback callback) {
-  NOTIMPLEMENTED();
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  const std::vector<std::unique_ptr<ServerCvc>>& server_cvc_list =
+      GetAutofillTable()->GetAllServerCvcs();
+  std::move(callback).Run(ConvertToDataBatch(server_cvc_list));
 }
 
 std::string AutofillWalletCredentialSyncBridge::GetClientTag(
@@ -115,24 +185,62 @@ std::string AutofillWalletCredentialSyncBridge::GetStorageKey(
 
 void AutofillWalletCredentialSyncBridge::ApplyDisableSyncChanges(
     std::unique_ptr<syncer::MetadataChangeList> delete_metadata_change_list) {
-  NOTIMPLEMENTED();
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // For this data type, we want to delete all the data (not just the metadata)
+  // when the type is disabled!
+  if (AutofillTable* table = GetAutofillTable();
+      !table || !table->ClearServerCvcs()) {
+    change_processor()->ReportError(
+        {FROM_HERE, "Failed to delete wallet credential data from the table."});
+  }
+  web_data_backend_->CommitChanges();
+  web_data_backend_->NotifyOfMultipleAutofillChanges();
 }
 
 bool AutofillWalletCredentialSyncBridge::IsEntityDataValid(
     const syncer::EntityData& entity_data) const {
   return entity_data.specifics.has_autofill_wallet_credential() &&
-         !entity_data.specifics.autofill_wallet_credential()
-              .instrument_id()
-              .empty() &&
-         !entity_data.specifics.autofill_wallet_credential().cvc().empty() &&
-         entity_data.specifics.autofill_wallet_credential()
-             .has_last_updated_time_unix_epoch_millis() &&
-         entity_data.specifics.autofill_wallet_credential()
-                 .last_updated_time_unix_epoch_millis() != 0;
+         IsAutofillWalletCredentialDataSpecificsValid(
+             entity_data.specifics.autofill_wallet_credential());
 }
 
-AutofillTable* AutofillWalletCredentialSyncBridge::GetAutofillTable() {
+void AutofillWalletCredentialSyncBridge::ServerCvcChanged(
+    const ServerCvcChange& change) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  ActOnLocalChange(change);
+}
+
+AutofillTable* AutofillWalletCredentialSyncBridge::GetAutofillTable() const {
   return AutofillTable::FromWebDatabase(web_data_backend_->GetDatabase());
+}
+
+void AutofillWalletCredentialSyncBridge::ActOnLocalChange(
+    const ServerCvcChange& change) {
+  // If sync isn't ready yet (most likely because the data type is disabled),
+  // ignore the change.
+  if (!change_processor()->IsTrackingMetadata()) {
+    return;
+  }
+
+  std::unique_ptr<syncer::MetadataChangeList> metadata_change_list =
+      CreateMetadataChangeList();
+  auto data = std::make_unique<syncer::EntityData>();
+
+  switch (change.type()) {
+    case ServerCvcChange::ADD:
+    case ServerCvcChange::UPDATE:
+      data->name = base::NumberToString(change.data_model().instrument_id);
+      *data->specifics.mutable_autofill_wallet_credential() =
+          AutofillWalletCredentialSpecificsFromStructData(change.data_model());
+      change_processor()->Put(change.key(), std::move(data),
+                              metadata_change_list.get());
+      break;
+    case ServerCvcChange::REMOVE:
+      change_processor()->Delete(change.key(), metadata_change_list.get());
+      break;
+    case ServerCvcChange::EXPIRE:
+      NOTREACHED_NORETURN();
+  }
 }
 
 void AutofillWalletCredentialSyncBridge::LoadMetadata() {
@@ -148,6 +256,25 @@ void AutofillWalletCredentialSyncBridge::LoadMetadata() {
     return;
   }
   change_processor()->ModelReadyToSync(std::move(batch));
+}
+
+std::unique_ptr<syncer::MutableDataBatch>
+AutofillWalletCredentialSyncBridge::ConvertToDataBatch(
+    const std::vector<std::unique_ptr<ServerCvc>>& server_cvc_list) {
+  auto batch = std::make_unique<syncer::MutableDataBatch>();
+  for (const std::unique_ptr<ServerCvc>& server_cvc_from_list :
+       server_cvc_list) {
+    auto entity_data = std::make_unique<syncer::EntityData>();
+    sync_pb::AutofillWalletCredentialSpecifics wallet_credential_specifics =
+        AutofillWalletCredentialSpecificsFromStructData(*server_cvc_from_list);
+    *entity_data->specifics.mutable_autofill_wallet_credential() =
+        wallet_credential_specifics;
+
+    const std::string& storage_key = GetStorageKey(*entity_data);
+    entity_data->name = storage_key;
+    batch->Put(storage_key, std::move(entity_data));
+  }
+  return batch;
 }
 
 }  // namespace autofill

@@ -1493,7 +1493,7 @@ RenderFrameImpl* RenderFrameImpl::CreateMainFrame(
 
   CHECK(!render_frame->in_frame_tree_);
   render_frame->in_frame_tree_ = true;
-#if !((BUILDFLAG(IS_ANDROID) && defined(ARCH_CPU_32_BITS)) || \
+#if !(BUILDFLAG(IS_ANDROID) || \
       (BUILDFLAG(IS_CHROMEOS) && defined(ARCH_CPU_ARM64)))
   render_frame->added_to_frame_tree_stack_trace_.emplace();
 #endif
@@ -1606,7 +1606,7 @@ void RenderFrameImpl::CreateFrame(
     // call to createLocalChild.
     CHECK(!render_frame->in_frame_tree_);
     render_frame->in_frame_tree_ = true;
-#if !((BUILDFLAG(IS_ANDROID) && defined(ARCH_CPU_32_BITS)) || \
+#if !(BUILDFLAG(IS_ANDROID) || \
       (BUILDFLAG(IS_CHROMEOS) && defined(ARCH_CPU_ARM64)))
     render_frame->added_to_frame_tree_stack_trace_.emplace();
 #endif
@@ -1919,8 +1919,6 @@ void RenderFrameImpl::Initialize(blink::WebFrame* parent) {
     factory.RegisterRemoteFactory(GetWebFrame()->GetLocalFrameToken(),
                                   GetBrowserInterfaceBroker());
   }
-
-  frame_request_blocker_ = blink::WebFrameRequestBlocker::Create();
 
   // Bind this class to mojom::Frame and to the message router for legacy IPC.
   // These must be called after |frame_| is set since binding requires a
@@ -2482,14 +2480,6 @@ void RenderFrameImpl::GetInterfaceProvider(
   auto task_runner = GetTaskRunner(blink::TaskType::kInternalDefault);
   DCHECK(task_runner);
   interface_provider_receivers_.Add(this, std::move(receiver), task_runner);
-}
-
-void RenderFrameImpl::BlockRequests() {
-  frame_request_blocker_->Block();
-}
-
-void RenderFrameImpl::ResumeBlockedRequests() {
-  frame_request_blocker_->Resume();
 }
 
 void RenderFrameImpl::AllowBindings(int32_t enabled_bindings_flags) {
@@ -3367,8 +3357,6 @@ RenderFrameImpl::CreateWorkerFetchContext() {
 
   web_dedicated_or_shared_worker_fetch_context->set_ancestor_frame_id(
       routing_id_);
-  web_dedicated_or_shared_worker_fetch_context->set_frame_request_blocker(
-      frame_request_blocker_);
   web_dedicated_or_shared_worker_fetch_context->set_site_for_cookies(
       frame_->GetDocument().SiteForCookies());
   web_dedicated_or_shared_worker_fetch_context->set_top_frame_origin(
@@ -3409,8 +3397,6 @@ RenderFrameImpl::CreateWorkerFetchContextForPlzDedicatedWorker(
 
   web_dedicated_or_shared_worker_fetch_context->set_ancestor_frame_id(
       routing_id_);
-  web_dedicated_or_shared_worker_fetch_context->set_frame_request_blocker(
-      frame_request_blocker_);
   web_dedicated_or_shared_worker_fetch_context->set_site_for_cookies(
       frame_->GetDocument().SiteForCookies());
   web_dedicated_or_shared_worker_fetch_context->set_top_frame_origin(
@@ -3569,7 +3555,7 @@ blink::WebLocalFrame* RenderFrameImpl::CreateChildFrame(
 
   CHECK(!child_render_frame->in_frame_tree_);
   child_render_frame->in_frame_tree_ = true;
-#if !((BUILDFLAG(IS_ANDROID) && defined(ARCH_CPU_32_BITS)) || \
+#if !(BUILDFLAG(IS_ANDROID) || \
       (BUILDFLAG(IS_CHROMEOS) && defined(ARCH_CPU_ARM64)))
   child_render_frame->added_to_frame_tree_stack_trace_.emplace();
 #endif
@@ -4318,7 +4304,6 @@ void RenderFrameImpl::WillSendRequestInternal(
       GetContentClient()->renderer()->IsPrefetchOnly(this);
   url_request_extra_data->set_is_for_no_state_prefetch(
       is_for_no_state_prefetch);
-  url_request_extra_data->set_frame_request_blocker(frame_request_blocker_);
   url_request_extra_data->set_allow_cross_origin_auth_prompt(
       GetWebView()->GetRendererPreferences().allow_cross_origin_auth_prompt);
   url_request_extra_data->set_top_frame_origin(GetSecurityOriginOfTopFrame());
@@ -4639,6 +4624,10 @@ bool RenderFrameImpl::IsLocalRoot() const {
 const RenderFrameImpl* RenderFrameImpl::GetLocalRoot() const {
   return IsLocalRoot() ? this
                        : RenderFrameImpl::FromWebFrame(frame_->LocalRoot());
+}
+
+base::WeakPtr<RenderFrameImpl> RenderFrameImpl::GetWeakPtr() {
+  return weak_factory_.GetWeakPtr();
 }
 
 mojom::DidCommitProvisionalLoadParamsPtr
@@ -5079,7 +5068,7 @@ bool RenderFrameImpl::SwapIn(WebFrame* previous_web_frame) {
 
   CHECK(!in_frame_tree_);
   in_frame_tree_ = true;
-#if !((BUILDFLAG(IS_ANDROID) && defined(ARCH_CPU_32_BITS)) || \
+#if !(BUILDFLAG(IS_ANDROID) || \
       (BUILDFLAG(IS_CHROMEOS) && defined(ARCH_CPU_ARM64)))
   added_to_frame_tree_stack_trace_.emplace();
 #endif
@@ -6131,7 +6120,7 @@ int RenderFrameImpl::GetEnabledBindings() {
 }
 
 void RenderFrameImpl::SetAccessibilityModeForTest(ui::AXMode new_mode) {
-  render_accessibility_manager_->SetMode(new_mode);
+  render_accessibility_manager_->SetMode(new_mode, 1);
 }
 
 const RenderFrameMediaPlaybackOptions&

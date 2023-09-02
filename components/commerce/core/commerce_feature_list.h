@@ -96,11 +96,12 @@ extern const char kPriceInsightsChipLabelExpandOnHighPriceParam[];
 extern const base::FeatureParam<bool> kPriceInsightsChipLabelExpandOnHighPrice;
 extern const char kPriceInsightsShowFeedbackParam[];
 extern const base::FeatureParam<bool> kPriceInsightsShowFeedback;
-
+BASE_DECLARE_FEATURE(kPriceTrackingIconColors);
 BASE_DECLARE_FEATURE(kShoppingCollection);
 BASE_DECLARE_FEATURE(kShoppingList);
 BASE_DECLARE_FEATURE(kShoppingListRegionLaunched);
 BASE_DECLARE_FEATURE(kShoppingListTrackByDefault);
+BASE_DECLARE_FEATURE(kShoppingListWAARestrictionRemoval);
 BASE_DECLARE_FEATURE(kShoppingPageTypes);
 BASE_DECLARE_FEATURE(kShoppingPageTypesRegionLaunched);
 BASE_DECLARE_FEATURE(kShoppingPDPMetrics);

@@ -8,18 +8,18 @@
 
 #include <algorithm>
 
+#import "base/apple/foundation_util.h"
 #include "base/check_op.h"
 #include "base/containers/contains.h"
-#import "base/mac/foundation_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/notreached.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/sys_string_conversions.h"
-#include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/input/native_web_keyboard_event.h"
 #include "content/shell/app/resource.h"
 #include "content/shell/browser/shell.h"
 #include "url/gurl.h"
@@ -56,7 +56,7 @@
 // the various global lists. By returning YES, we allow the window to be
 // removed from the screen.
 - (BOOL)windowShouldClose:(id)sender {
-  CHECK_EQ(base::mac::ObjCCastStrict<NSWindow>(sender), _window);
+  CHECK_EQ(base::apple::ObjCCastStrict<NSWindow>(sender), _window);
   // Don't leave a dangling pointer if the window lives beyond
   // this method. See crbug.com/719830.
   _window.delegate = nil;
@@ -332,7 +332,7 @@ bool ShellPlatformDelegate::HandleKeyboardEvent(
     Shell* shell,
     WebContents* source,
     const NativeWebKeyboardEvent& event) {
-  if (event.skip_in_browser || Shell::ShouldHideToolbar()) {
+  if (event.skip_if_unhandled || Shell::ShouldHideToolbar()) {
     return false;
   }
 

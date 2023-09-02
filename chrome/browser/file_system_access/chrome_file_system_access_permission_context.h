@@ -126,12 +126,13 @@ class ChromeFileSystemAccessPermissionContext
 
   // This method may only be called when the Persistent Permissions feature
   // flag is enabled.
-  void SetOriginHasExtendedPermissionForTesting() {
-    // TODO(https://crbug.com/1011533): Make this per-origin when relevant test
-    // cases are added.
+  void SetOriginHasExtendedPermissionForTesting(const url::Origin& origin) {
     CHECK(base::FeatureList::IsEnabled(
         features::kFileSystemAccessPersistentPermissions));
-    origin_has_extended_permission_for_testing_ = true;
+    // TODO(crbug.com/1011533): Refactor to use the registered Content Setting
+    // value, once implemented.
+    extended_permissions_settings_map_[origin] =
+        ContentSetting::CONTENT_SETTING_ALLOW;
   }
   bool RevokeActiveGrantsForTesting(
       const url::Origin& origin,
@@ -148,11 +149,6 @@ class ChromeFileSystemAccessPermissionContext
   }
 
   enum class GrantType { kRead, kWrite };
-
-  enum class PersistedPermissionOptions {
-    kDoNotUpdatePersistedPermission,
-    kUpdatePersistedPermission,
-  };
 
   // Converts permissions objects into a snapshot of grants categorized by
   // read/write and file/directory types. Currently, used in UI code.
@@ -236,6 +232,11 @@ class ChromeFileSystemAccessPermissionContext
     kExtended,
   };
 
+  enum class PersistedPermissionOptions {
+    kDoNotUpdatePersistedPermission,
+    kUpdatePersistedPermission,
+  };
+
   // Retrieve the persisted grant state for all persisted grants for a given
   // origin.
   PersistedGrantState GetPersistedGrantState(const url::Origin& origin) const;
@@ -314,9 +315,11 @@ class ChromeFileSystemAccessPermissionContext
   struct OriginState;
   std::map<url::Origin, OriginState> active_permissions_map_;
 
-  bool usage_icon_update_scheduled_ = false;
+  // TODO(crbug.com/1011533): Remove this map once the Persistent Permission
+  // Content Setting is implemented.
+  std::map<url::Origin, ContentSetting> extended_permissions_settings_map_;
 
-  bool origin_has_extended_permission_for_testing_ = false;
+  bool usage_icon_update_scheduled_ = false;
 
   scoped_refptr<HostContentSettingsMap> content_settings_;
 

@@ -96,6 +96,50 @@ script_test("system_webview_wpt") {
   ]
 }
 
+script_test("trichrome_webview_wpt") {
+  script = "//third_party/blink/tools/run_wpt_tests.py"
+  args = [
+    "--product",
+    "android_webview",
+    "--zero-tests-executed-ok",
+    "--webview-provider",
+    "@WrappedPath(apks/TrichromeWebView.apk)",
+    "--browser-apk",
+    "@WrappedPath(apks/SystemWebViewShell.apk)",
+    "--additional-apk",
+    "@WrappedPath(apks/TrichromeLibrary.apk)",
+  ]
+  data_deps = [
+    "//android_webview:trichrome_webview_apk",
+    "//android_webview/tools/system_webview_shell:system_webview_shell_layout_test_apk",
+    "//chrome/test/chromedriver:chromedriver_server($host_toolchain)",
+    "//third_party/blink/tools:wpt_tests_android_isolate",
+  ]
+}
+
+if (android_64bit_target_cpu) {
+  script_test("trichrome_webview_wpt_64") {
+    script = "//third_party/blink/tools/run_wpt_tests.py"
+    args = [
+      "--product",
+      "android_webview",
+      "--zero-tests-executed-ok",
+      "--webview-provider",
+      "@WrappedPath(apks/TrichromeWebView64.apk)",
+      "--browser-apk",
+      "@WrappedPath(apks/SystemWebViewShell.apk)",
+      "--additional-apk",
+      "@WrappedPath(apks/TrichromeLibrary64.apk)",
+    ]
+    data_deps = [
+      "//android_webview:trichrome_webview_64_apk",
+      "//android_webview/tools/system_webview_shell:system_webview_shell_layout_test_apk",
+      "//chrome/test/chromedriver:chromedriver_server($host_toolchain)",
+      "//third_party/blink/tools:wpt_tests_android_isolate",
+    ]
+  }
+}
+
 android_apk("webview_instrumentation_apk") {
   # TODO(crbug.com/1099536): Fix tests that break when this is increased.
   target_sdk_version = 24
@@ -419,6 +463,7 @@ instrumentation_test_apk("webview_instrumentation_test_apk") {
     "../javatests/src/org/chromium/android_webview/test/MemoryMetricsLoggerTest.java",
     "../javatests/src/org/chromium/android_webview/test/MetricsFilteringDecoratorTest.java",
     "../javatests/src/org/chromium/android_webview/test/MetricsTestPlatformServiceBridge.java",
+    "../javatests/src/org/chromium/android_webview/test/MultiProfileTest.java",
     "../javatests/src/org/chromium/android_webview/test/NavigationHistoryTest.java",
     "../javatests/src/org/chromium/android_webview/test/OnDiskFileTest.java",
     "../javatests/src/org/chromium/android_webview/test/PolicyUrlFilteringTest.java",
@@ -658,6 +703,7 @@ test("android_webview_unittests") {
     "../browser/aw_media_url_interceptor_unittest.cc",
     "../browser/aw_pac_processor_unittest.cc",
     "../browser/aw_permission_manager_unittest.cc",
+    "../browser/aw_user_agent_metadata_unittest.cc",
     "../browser/component_updater/loader_policies/aw_apps_package_names_allowlist_component_loader_policy_unittest.cc",
     "../browser/enterprise_authentication_app_link_policy_handler_unittest.cc",
     "../browser/gfx/begin_frame_source_webview_unittest.cc",

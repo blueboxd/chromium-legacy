@@ -14,16 +14,18 @@
 // if there's no winner. "scoreAdCheck" is an expression that should be true
 // when evaluated in scoreAd(). "renderURL" can be used to control the response
 // given for TRUSTED_SCORING_SIGNALS_URL.
-async function runTrustedScoringSignalsTest(test, uuid, renderURL, scoreAdCheck) {
+async function runTrustedScoringSignalsTest(test, uuid, renderURL, scoreAdCheck,
+                                            additionalInterestGroupOverrides) {
   const auctionConfigOverrides = {
-      trustedScoringSignalsUrl: TRUSTED_SCORING_SIGNALS_URL,
-      decisionLogicUrl:
-          createDecisionScriptUrl(uuid, {
-              scoreAd: `if (!(${scoreAdCheck})) throw "error";` })};
+      trustedScoringSignalsURL: TRUSTED_SCORING_SIGNALS_URL,
+      decisionLogicURL:
+          createDecisionScriptURL(uuid, {
+                  scoreAd: `if (!(${scoreAdCheck})) throw "error";` })};
   await runBasicFledgeTestExpectingWinner(
       test,
       { uuid: uuid,
-        interestGroupOverrides: {ads: [{renderUrl: renderURL}]},
+        interestGroupOverrides: {ads: [{renderUrl: renderURL}],
+                                 ...additionalInterestGroupOverrides},
         auctionConfigOverrides: auctionConfigOverrides
       });
 }
@@ -35,8 +37,8 @@ async function runTrustedScoringSignalsTest(test, uuid, renderURL, scoreAdCheck)
 async function runTrustedScoringSignalsDataVersionTest(
     test, uuid, renderURL, check) {
   const interestGroupOverrides = {
-      biddingLogicUrl :
-          createBiddingScriptUrl({
+      biddingLogicURL :
+      createBiddingScriptURL({
               generateBid:
                   `if (browserSignals.dataVersion !== undefined)
                       throw "Bad browserSignals.dataVersion"`,
@@ -49,7 +51,7 @@ async function runTrustedScoringSignalsDataVersionTest(
   await joinInterestGroup(test, uuid, interestGroupOverrides);
 
   const auctionConfigOverrides = {
-    decisionLogicUrl: createDecisionScriptUrl(
+    decisionLogicURL: createDecisionScriptURL(
         uuid,
         { scoreAd:
               `if (!(${check})) return false;`,
@@ -58,7 +60,7 @@ async function runTrustedScoringSignalsDataVersionTest(
                  sendReportTo('${createSellerReportUrl(uuid, '2-error')}')
                sendReportTo('${createSellerReportUrl(uuid, '2')}')`,
         }),
-        trustedScoringSignalsUrl: TRUSTED_SCORING_SIGNALS_URL
+        trustedScoringSignalsURL: TRUSTED_SCORING_SIGNALS_URL
   }
   await runBasicFledgeAuctionAndNavigate(test, uuid, auctionConfigOverrides);
   await waitForObservedRequests(
@@ -79,15 +81,15 @@ function createScoringSignalsRenderUrlWithBody(uuid, responseBody) {
 
 promise_test(async test => {
   const uuid = generateUuid(test);
-  const decisionLogicScriptUrl = createDecisionScriptUrl(
+  const decisionLogicScriptUrl = createDecisionScriptURL(
       uuid,
       { scoreAd: 'if (trustedScoringSignals !== null) throw "error";'});
   await runBasicFledgeTestExpectingWinner(
       test,
       { uuid: uuid,
-        auctionConfigOverrides: { decisionLogicUrl: decisionLogicScriptUrl }
+        auctionConfigOverrides: { decisionLogicURL: decisionLogicScriptUrl }
       });
-}, 'No trustedScoringSignalsUrl.');
+}, 'No trustedScoringSignalsURL.');
 
 promise_test(async test => {
   const uuid = generateUuid(test);
@@ -172,8 +174,7 @@ promise_test(async test => {
 
 promise_test(async test => {
   const uuid = generateUuid(test);
-  const renderURL = createScoringSignalsRenderUrlWithBody(
-      uuid, /*responseBody=*/'{"renderUrls":{}}');
+  const renderURL = createRenderUrl(uuid, /*script=*/null, /*signalsParam=*/'no-value');
   await runTrustedScoringSignalsTest(
       test, uuid, renderURL,
       `trustedScoringSignals.renderURL["${renderURL}"] === null`);
@@ -181,12 +182,11 @@ promise_test(async test => {
 
 promise_test(async test => {
   const uuid = generateUuid(test);
-  const renderURL = createScoringSignalsRenderUrlWithBody(
-      uuid, /*responseBody=*/'{"renderUrls":{"https://wrong-url.test": 5}}');
+  const renderURL = createRenderUrl(uuid, /*script=*/null, /*signalsParam=*/'wrong-url');
   await runTrustedScoringSignalsTest(
       test, uuid, renderURL,
       `trustedScoringSignals.renderURL["${renderURL}"] === null &&
-       trustedScoringSignals["https://wrong-url.test/"] === undefined`);
+       Object.keys(trustedScoringSignals.renderURL).length === 1`);
 }, 'Trusted scoring signals response has renderURL not in response.');
 
 /////////////////////////////////////////////////////////////////////////////
@@ -232,7 +232,7 @@ promise_test(async test => {
   await runTrustedScoringSignalsTest(
       test, uuid, renderURL,
       `Object.keys(trustedScoringSignals.renderURL["${renderURL}"]).length  === 2 &&
-      trustedScoringSignals.renderURL["${renderURL}"]["a"] === "b" &&
+       trustedScoringSignals.renderURL["${renderURL}"]["a"] === "b" &&
        JSON.stringify(trustedScoringSignals.renderURL["${renderURL}"]["c"]) === '["d"]'`);
 }, 'Trusted scoring signals response has an object value for renderURL.');
 
@@ -265,11 +265,11 @@ promise_test(async test => {
   const renderURL2 = createRenderUrl(uuid, /*script=*/null, /*signalsParam=*/'string-value');
   await joinInterestGroup(test, uuid, {ads: [{renderUrl: renderURL1}], name: '1'});
   await joinInterestGroup(test, uuid, {ads: [{renderUrl: renderURL2}], name: '2'});
-  let auctionConfigOverrides = { trustedScoringSignalsUrl: TRUSTED_SCORING_SIGNALS_URL };
+  let auctionConfigOverrides = { trustedScoringSignalsURL: TRUSTED_SCORING_SIGNALS_URL };
 
   // scoreAd() only accepts the first IG's bid, validating its trustedScoringSignals.
-  auctionConfigOverrides.decisionLogicUrl =
-        createDecisionScriptUrl(uuid, {
+  auctionConfigOverrides.decisionLogicURL =
+    createDecisionScriptURL(uuid, {
             scoreAd: `if (browserSignals.renderURL === "${renderURL1}" &&
                           trustedScoringSignals.renderURL["${renderURL1}"] !== 1 ||
                           trustedScoringSignals.renderURL["${renderURL2}"] !== undefined)
@@ -280,8 +280,8 @@ promise_test(async test => {
       `Wrong value type returned from first auction: ${config.constructor.type}`);
 
   // scoreAd() only accepts the second IG's bid, validating its trustedScoringSignals.
-  auctionConfigOverrides.decisionLogicUrl =
-        createDecisionScriptUrl(uuid, {
+  auctionConfigOverrides.decisionLogicURL =
+    createDecisionScriptURL(uuid, {
             scoreAd: `if (browserSignals.renderURL === "${renderURL2}" &&
                           trustedScoringSignals.renderURL["${renderURL1}"] !== undefined ||
                           trustedScoringSignals.renderURL["${renderURL2}"] !== '1')
@@ -407,3 +407,90 @@ promise_test(async test => {
       test, uuid, renderURL,
       'browserSignals.dataVersion === 3');
 }, 'Trusted scoring signals response has data-version and no renderURLs.');
+
+/////////////////////////////////////////////////////////////////////////////
+// Trusted scoring signals + component ad tests.
+/////////////////////////////////////////////////////////////////////////////
+
+promise_test(async test => {
+  const uuid = generateUuid(test);
+  const renderURL = createRenderUrl(uuid, /*script=*/null, /*signalsParam=*/'close-connection');
+  const componentURL = createRenderUrl(uuid, /*script=*/null);
+  await runTrustedScoringSignalsTest(
+    test, uuid, renderURL,
+    `trustedScoringSignals === null`,
+    {adComponents: [{renderURL: componentURL}],
+     biddingLogicURL: createBiddingScriptURL({
+         generateBid: `return {bid: 1,
+                               render: interestGroup.ads[0].renderURL,
+                               adComponents: [interestGroup.adComponents[0].renderUrl]};`})});
+}, 'Component ads trusted scoring signals, server closes the connection without sending anything.');
+
+promise_test(async test => {
+  const uuid = generateUuid(test);
+  const renderURL = createRenderUrl(uuid, /*script=*/null, /*signalsParam=*/'num-value');
+  // This should not be sent. If it is, it will take precedence over the "num-value" parameter
+  // from "renderURL", resulting in the "renderURL" having a null "trustedScoringSignals" value.
+  const componentURL = createScoringSignalsRenderUrlWithBody(
+      uuid, /*responseBody=*/'{}');
+  await runTrustedScoringSignalsTest(
+      test, uuid, renderURL,
+      `Object.keys(trustedScoringSignals.renderURL).length === 1 &&
+       trustedScoringSignals.renderURL["${renderURL}"] === 1 &&
+       trustedScoringSignals.adComponentRenderURLs === undefined`,
+      {adComponents: [{renderURL: componentURL}]});
+}, 'Trusted scoring signals request without component ads in bid.');
+
+promise_test(async test => {
+  const uuid = generateUuid(test);
+  const renderURL = createScoringSignalsRenderUrlWithBody(
+      uuid, /*responseBody=*/'{}');
+  const componentURL = createRenderUrl(uuid, /*script=*/null);
+  await runTrustedScoringSignalsTest(
+      test, uuid, renderURL,
+      `Object.keys(trustedScoringSignals.renderURL).length === 1 &&
+       trustedScoringSignals.renderURL["${renderURL}"] === null &&
+       Object.keys(trustedScoringSignals.adComponentRenderURLs).length === 1 &&
+       trustedScoringSignals.adComponentRenderURLs["${componentURL}"] === null`,
+      {adComponents: [{renderURL: componentURL}],
+       biddingLogicURL: createBiddingScriptURL({
+           generateBid: `return {bid: 1,
+                                 render: interestGroup.ads[0].renderURL,
+                                 adComponents: [interestGroup.adComponents[0].renderUrl]};`})});
+}, 'Component ads trusted scoring signals trusted scoring signals response is empty JSON object.');
+
+promise_test(async test => {
+  const uuid = generateUuid(test);
+  const renderURL = createRenderUrl(uuid, /*script=*/null, /*signalsParam=*/'hostname');
+  const componentURL1 = createRenderUrl(uuid, /*script=*/null, /*signalsParam=*/'null-value');
+  const componentURL2 = createRenderUrl(uuid, /*script=*/null, /*signalsParam=*/'num-value');
+  const componentURL3 = createRenderUrl(uuid, /*script=*/null, /*signalsParam=*/'string-value');
+  const componentURL4 = createRenderUrl(uuid, /*script=*/null, /*signalsParam=*/'array-value');
+  const componentURL5 = createRenderUrl(uuid, /*script=*/null, /*signalsParam=*/'object-value');
+  const componentURL6 = createRenderUrl(uuid, /*script=*/null, /*signalsParam=*/'wrong-url');
+
+  await runTrustedScoringSignalsTest(
+      test, uuid, renderURL,
+      `Object.keys(trustedScoringSignals.renderURL).length === 1 &&
+       trustedScoringSignals.renderURL["${renderURL}"] === "${window.location.hostname}" &&
+
+       Object.keys(trustedScoringSignals.adComponentRenderURLs).length === 6 &&
+       trustedScoringSignals.adComponentRenderURLs["${componentURL1}"] === null &&
+       trustedScoringSignals.adComponentRenderURLs["${componentURL2}"] === 1 &&
+       trustedScoringSignals.adComponentRenderURLs["${componentURL3}"] === "1" &&
+       JSON.stringify(trustedScoringSignals.adComponentRenderURLs["${componentURL4}"]) === '[1,"foo",null]' &&
+       Object.keys(trustedScoringSignals.adComponentRenderURLs["${componentURL5}"]).length === 2 &&
+       trustedScoringSignals.adComponentRenderURLs["${componentURL5}"]["a"] === "b" &&
+       JSON.stringify(trustedScoringSignals.adComponentRenderURLs["${componentURL5}"]["c"]) === '["d"]' &&
+       trustedScoringSignals.adComponentRenderURLs["${componentURL6}"] === null`,
+
+      {adComponents: [{renderURL: componentURL1}, {renderURL: componentURL2},
+                      {renderURL: componentURL3}, {renderURL: componentURL4},
+                      {renderURL: componentURL5}, {renderURL: componentURL6}],
+       biddingLogicURL: createBiddingScriptURL({
+           generateBid: `return {bid: 1,
+                                 render: interestGroup.ads[0].renderURL,
+                                 adComponents: ["${componentURL1}", "${componentURL2}",
+                                                "${componentURL3}", "${componentURL4}",
+                                                "${componentURL5}", "${componentURL6}"]};`})});
+}, 'Component ads trusted scoring signals.');

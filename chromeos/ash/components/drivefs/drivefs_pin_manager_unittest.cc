@@ -19,6 +19,7 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/gmock_callback_support.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_callback.h"
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
@@ -31,8 +32,8 @@
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "components/drive/file_errors.h"
 #include "mojo/public/cpp/bindings/receiver.h"
-#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
 namespace drivefs::pinning {
 namespace {
 
@@ -1681,7 +1682,7 @@ TEST_F(DriveFsPinManagerTest, OnSyncingStatusUpdate) {
   {
     ProgressEvent event;
     event.stable_id = static_cast<int64_t>(id1);
-    event.path = path1.value();
+    event.file_path = path1;
     event.progress = 20;
     manager.OnItemProgress(event);
   }
@@ -1867,7 +1868,7 @@ TEST_F(DriveFsPinManagerTest, OnItemProgress) {
   {
     ProgressEvent event;
     event.stable_id = static_cast<int64_t>(id1);
-    event.path = path1.value();
+    event.file_path = path1;
     event.progress = 0;
     manager.OnItemProgress(event);
   }
@@ -1900,7 +1901,7 @@ TEST_F(DriveFsPinManagerTest, OnItemProgress) {
   {
     ProgressEvent event;
     event.stable_id = static_cast<int64_t>(id1);
-    event.path = path1.value();
+    event.file_path = path1;
     event.progress = 20;
     manager.OnItemProgress(event);
   }
@@ -1933,7 +1934,7 @@ TEST_F(DriveFsPinManagerTest, OnItemProgress) {
   {
     ProgressEvent event;
     event.stable_id = static_cast<int64_t>(id2);
-    event.path = path2.value();
+    event.file_path = path2;
     event.progress = 50;
     manager.OnItemProgress(event);
   }
@@ -1966,7 +1967,7 @@ TEST_F(DriveFsPinManagerTest, OnItemProgress) {
   {
     ProgressEvent event;
     event.stable_id = static_cast<int64_t>(id1);
-    event.path = path1.value();
+    event.file_path = path1;
     event.progress = 100;
     manager.OnItemProgress(event);
   }
@@ -1992,7 +1993,7 @@ TEST_F(DriveFsPinManagerTest, OnItemProgress) {
   {
     ProgressEvent event;
     event.stable_id = 329;
-    event.path = profile_path_.Append("Path 3").value();
+    event.file_path = profile_path_.Append("Path 3");
     event.progress = 0;
     manager.OnItemProgress(event);
   }
@@ -2013,7 +2014,7 @@ TEST_F(DriveFsPinManagerTest, OnItemProgress) {
   {
     ProgressEvent event;
     event.stable_id = 458;
-    event.path = mount_path_.Append("Path 2").value();
+    event.file_path = mount_path_.Append("Path 2");
     event.progress = 100;
     manager.OnItemProgress(event);
   }
@@ -2069,7 +2070,7 @@ TEST_F(DriveFsPinManagerTest, OnItemProgress) {
   {
     ProgressEvent event;
     event.stable_id = static_cast<int64_t>(id2);
-    event.path = path2.value();
+    event.file_path = path2;
     event.progress = 80;
     manager.OnItemProgress(event);
   }
@@ -2426,6 +2427,7 @@ TEST_F(DriveFsPinManagerTest, CalculateRequiredSpace) {
 }
 
 TEST_F(DriveFsPinManagerTest, JustCheckRequiredSpace) {
+  base::HistogramTester histogram_tester;
   CompletionCallback completion_callback;
   RunLoop run_loop;
 
@@ -2455,6 +2457,9 @@ TEST_F(DriveFsPinManagerTest, JustCheckRequiredSpace) {
   EXPECT_EQ(progress.required_space, 512 << 20);
   EXPECT_EQ(progress.pinned_bytes, 0);
   EXPECT_EQ(progress.pinned_files, 0);
+  histogram_tester.ExpectUniqueTimeSample(
+      "FileBrowser.GoogleDrive.BulkPinning.TimeSpentListing",
+      progress.time_spent_listing_items, 1);
 }
 
 TEST_F(DriveFsPinManagerTest, WhenMoreResultsReturnedNextPageIsAttempted) {

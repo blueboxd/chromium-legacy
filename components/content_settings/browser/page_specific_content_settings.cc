@@ -502,14 +502,24 @@ AccessDetails::AccessDetails(SiteDataType site_data_type,
 
 AccessDetails::~AccessDetails() = default;
 
+bool AccessDetails::operator<(const AccessDetails& other) const {
+  return std::tie(site_data_type, access_type, url, blocked_by_policy,
+                  is_from_primary_page) <
+         std::tie(other.site_data_type, other.access_type, other.url,
+                  other.blocked_by_policy, other.is_from_primary_page);
+}
+
 PageSpecificContentSettings::SiteDataObserver::SiteDataObserver(
     content::WebContents* web_contents)
     : web_contents_(web_contents) {
   // Make sure the handler was attached to the WebContents as some UT might skip
   // this.
   auto* handler = WebContentsHandler::FromWebContents(web_contents_);
-  if (handler)
+  if (handler) {
     handler->AddSiteDataObserver(this);
+  } else {
+    web_contents_ = nullptr;
+  }
 }
 
 PageSpecificContentSettings::SiteDataObserver::~SiteDataObserver() {
@@ -703,8 +713,15 @@ void PageSpecificContentSettings::SharedWorkerAccessed(
   PageSpecificContentSettings* settings = GetForFrame(
       content::RenderFrameHost::FromID(render_process_id, render_frame_id));
   if (settings) {
-    settings->OnSharedWorkerAccessed(worker_url, name, storage_key,
-                                     blocked_by_policy);
+    if (base::FeatureList::IsEnabled(
+            browsing_data::features::kMigrateStorageToBDM)) {
+      settings->OnBrowsingDataAccessed(
+          browsing_data::SharedWorkerInfo{worker_url, name, storage_key},
+          BrowsingDataModel::StorageType::kSharedWorker, blocked_by_policy);
+    } else {
+      settings->OnSharedWorkerAccessed(worker_url, name, storage_key,
+                                       blocked_by_policy);
+    }
   }
 }
 
@@ -1104,7 +1121,9 @@ void PageSpecificContentSettings::OnTrustTokenAccessed(
 void PageSpecificContentSettings::OnBrowsingDataAccessed(
     BrowsingDataModel::DataKey data_key,
     BrowsingDataModel::StorageType storage_type,
-    bool blocked) {
+    bool blocked,
+    content::Page* originating_page) {
+  originating_page = originating_page ? originating_page : &page();
   auto& model =
       blocked ? blocked_browsing_data_model_ : allowed_browsing_data_model_;
 
@@ -1112,30 +1131,29 @@ void PageSpecificContentSettings::OnBrowsingDataAccessed(
   model->AddBrowsingData(data_key, storage_type, /*storage_size=*/0);
 
   if (blocked) {
+    // Reduce the set of items reported for block to things that are obviously
+    // related to cookies, as that is the icon that is displayed.
     // TODO(crbug.com/1456641): When the COOKIES content setting Omnibox entry
-    // correctly reflects site data, stop ignoring these types.
-    constexpr base::EnumSet<BrowsingDataModel::StorageType,
-                            BrowsingDataModel::StorageType::kFirstType,
-                            BrowsingDataModel::StorageType::kLastType>
-        ignored_types_for_block = {
-            BrowsingDataModel::StorageType::kTrustTokens,
-            BrowsingDataModel::StorageType::kSharedStorage,
-            BrowsingDataModel::StorageType::kInterestGroup,
-            BrowsingDataModel::StorageType::kAttributionReporting,
-        };
-    if (!ignored_types_for_block.Has(storage_type)) {
+    // correctly reflects site data, reconsider limiting the types.
+    if (blocked_browsing_data_model_->IsBlockedByThirdPartyCookieBlocking(
+            storage_type)) {
       OnContentBlocked(ContentSettingsType::COOKIES);
     }
   } else {
     OnContentAllowed(ContentSettingsType::COOKIES);
   }
   MaybeUpdateParent(&PageSpecificContentSettings::OnBrowsingDataAccessed,
-                    data_key, storage_type, blocked);
+                    data_key, storage_type, blocked, originating_page);
 
   // TODO(njeunje): Look into populating an actual url for this access details.
   // Could be obtained from the `data_key`.
-  AccessDetails access_details{SiteDataType::kUnknown, AccessType::kUnknown,
-                               GURL(), blocked, false};
+  GURL accessing_url =
+      absl::holds_alternative<blink::StorageKey>(data_key)
+          ? absl::get<blink::StorageKey>(data_key).origin().GetURL()
+          : GURL();
+  AccessDetails access_details{SiteDataType::kStorage, AccessType::kUnknown,
+                               accessing_url, blocked,
+                               originating_page->IsPrimary()};
   MaybeNotifySiteDataObservers(access_details);
 }
 

@@ -226,6 +226,10 @@ bool IsAccessibilityGameFaceIntegrationEnabled() {
       ::features::kAccessibilityGameFaceIntegration);
 }
 
+BASE_FEATURE(kBacklightOcr, "BacklightOcr", base::FEATURE_DISABLED_BY_DEFAULT);
+bool IsBacklightOcrEnabled() {
+  return base::FeatureList::IsEnabled(features::kBacklightOcr);
+}
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 BASE_FEATURE(kAugmentExistingImageLabels,
@@ -322,6 +326,14 @@ BASE_FEATURE(kReadAnythingWebUIToolbar,
 
 bool IsReadAnythingWebUIToolbarEnabled() {
   return base::FeatureList::IsEnabled(::features::kReadAnythingWebUIToolbar);
+}
+
+BASE_FEATURE(kReadAnythingReadAloud,
+             "ReadAnythingReadAloud",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+bool IsReadAnythingReadAloudEnabled() {
+  return base::FeatureList::IsEnabled(::features::kReadAnythingReadAloud);
 }
 
 BASE_FEATURE(kPdfOcr, "PdfOcr", base::FEATURE_DISABLED_BY_DEFAULT);

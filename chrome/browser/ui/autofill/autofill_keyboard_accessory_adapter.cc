@@ -64,6 +64,13 @@ void AutofillKeyboardAccessoryAdapter::Hide() {
   view_->Hide();
 }
 
+bool AutofillKeyboardAccessoryAdapter::OverlapsWithPictureInPictureWindow()
+    const {
+  // TODO(crbug.com/1477682): Hide the KA suggestion if it overlaps with
+  // picture-in-picture window.
+  return false;
+}
+
 bool AutofillKeyboardAccessoryAdapter::HandleKeyPressEvent(
     const content::NativeWebKeyboardEvent& event) {
   return false;
@@ -115,9 +122,11 @@ AutofillKeyboardAccessoryAdapter::GetWeakPtr() {
 
 // AutofillPopupController implementation.
 
-void AutofillKeyboardAccessoryAdapter::AcceptSuggestion(int index) {
+void AutofillKeyboardAccessoryAdapter::AcceptSuggestion(
+    int index,
+    base::TimeTicks event_time) {
   if (controller_) {
-    controller_->AcceptSuggestion(OffsetIndexFor(index));
+    controller_->AcceptSuggestion(OffsetIndexFor(index), event_time);
   }
 }
 

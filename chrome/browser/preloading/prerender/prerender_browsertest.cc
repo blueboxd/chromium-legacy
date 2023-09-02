@@ -47,6 +47,8 @@ namespace {
 
 // Following definitions are equal to content::PrerenderFinalStatus.
 constexpr int kFinalStatusActivated = 0;
+constexpr int kFinalStatusInvalidSchemeNavigation = 6;
+constexpr int kFinalStatusTriggerDestroyed = 16;
 constexpr int kFinalStatusCrossSiteNavigationInMainFrameNavigation = 64;
 
 }  // namespace
@@ -62,8 +64,8 @@ class PrerenderBrowserTest : public PlatformBrowserTest {
                                 base::Unretained(this))) {}
 
   void SetUp() override {
-    prerender_helper_.SetUp(embedded_test_server());
-    prerender_helper_.SetUp(ssl_server());
+    prerender_helper_.RegisterServerRequestMonitor(embedded_test_server());
+    prerender_helper_.RegisterServerRequestMonitor(ssl_server());
     PlatformBrowserTest::SetUp();
   }
 
@@ -175,6 +177,31 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   histogram_tester.ExpectUniqueSample(
       "Prerender.Experimental.PrerenderHostFinalStatus.Embedder_DirectURLInput",
       kFinalStatusActivated, 1);
+}
+
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, EmbedderTrigger_ChromeUrl) {
+  base::HistogramTester histogram_tester;
+
+  // Navigate to an initial page.
+  GURL url = embedded_test_server()->GetURL("/empty.html");
+  ASSERT_TRUE(content::NavigateToURL(GetActiveWebContents(), url));
+
+  GURL prerender_url("chrome://new-tab-page");
+  ASSERT_FALSE(prerender_url.SchemeIsHTTPOrHTTPS());
+
+  // Start embedder triggered prerendering.
+  std::unique_ptr<content::PrerenderHandle> prerender_handle =
+      GetActiveWebContents()->StartPrerendering(
+          prerender_url, content::PrerenderTriggerType::kEmbedder,
+          prerender_utils::kDirectUrlInputMetricSuffix,
+          ui::PageTransitionFromInt(ui::PAGE_TRANSITION_TYPED |
+                                    ui::PAGE_TRANSITION_FROM_ADDRESS_BAR),
+          content::PreloadingHoldbackStatus::kUnspecified, nullptr);
+  EXPECT_FALSE(prerender_handle);
+
+  histogram_tester.ExpectUniqueSample(
+      "Prerender.Experimental.PrerenderHostFinalStatus.Embedder_DirectURLInput",
+      kFinalStatusInvalidSchemeNavigation, 1);
 }
 
 // Tests that UseCounter for SpeculationRules-triggered prerender is recorded.
@@ -563,7 +590,7 @@ IN_PROC_BROWSER_TEST_P(PrerenderNewTabPageBrowserTest,
   // Simulate a browser-initiated navigation.
   GetActiveWebContents()->OpenURL(content::OpenURLParams(
       prerender_url, content::Referrer(), WindowOpenDisposition::CURRENT_TAB,
-      ui::PageTransitionFromInt(ui::PAGE_TRANSITION_LINK),
+      ui::PageTransitionFromInt(ui::PAGE_TRANSITION_AUTO_BOOKMARK),
       /*is_renderer_initiated=*/false));
   activation_manager.WaitForNavigationFinished();
   EXPECT_TRUE(activation_manager.was_activated());
@@ -614,6 +641,31 @@ IN_PROC_BROWSER_TEST_P(PrerenderNewTabPageBrowserTest,
         << content::test::ActualVsExpectedUkmEntryToString(
                attempt_ukm_entries[0], expected_entry);
   }
+}
+
+IN_PROC_BROWSER_TEST_P(PrerenderNewTabPageBrowserTest,
+                       PrerenderTriggeredCanceled) {
+  base::HistogramTester histogram_tester;
+
+  // Navigate to an initial page.
+  ASSERT_TRUE(content::NavigateToURL(GetActiveWebContents(),
+                                     GURL(chrome::kChromeUINewTabURL)));
+  GURL prerender_url = ssl_server()->GetURL("/simple.html");
+
+  PrerenderManager::CreateForWebContents(GetActiveWebContents());
+  auto* prerender_manager =
+      PrerenderManager::FromWebContents(GetActiveWebContents());
+
+  base::WeakPtr<content::PrerenderHandle> prerender_handle =
+      prerender_manager->StartPrerenderNewTabPage(prerender_url, GetParam());
+  content::test::PrerenderTestHelper::WaitForPrerenderLoadCompletion(
+      *GetActiveWebContents(), prerender_url);
+
+  prerender_manager->StopPrerenderNewTabPage(prerender_handle);
+
+  histogram_tester.ExpectUniqueSample(
+      "Prerender.Experimental.PrerenderHostFinalStatus.Embedder_NewTabPage",
+      kFinalStatusTriggerDestroyed, 1);
 }
 
 }  // namespace

@@ -4,8 +4,8 @@
 
 #import "ios/chrome/browser/ui/settings/tabs/tab_pickup/tab_pickup_settings_table_view_controller.h"
 
+#import "base/apple/foundation_util.h"
 #import "base/i18n/message_formatter.h"
-#import "base/mac/foundation_util.h"
 #import "base/metrics/user_metrics.h"
 #import "base/metrics/user_metrics_action.h"
 #import "base/notreached.h"
@@ -61,8 +61,8 @@ const char kSyncSettingsURL[] = "settings://open_sync";
 @implementation TabPickupSettingsTableViewController {
   // State of the tab pickup feature.
   bool _tabPickupEnabled;
-  // State of the sync feature.
-  bool _syncEnabled;
+  // State of the tab sync feature.
+  bool _tabSyncEnabled;
 }
 
 #pragma mark - Initialization
@@ -73,7 +73,7 @@ const char kSyncSettingsURL[] = "settings://open_sync";
   if (self) {
     self.title =
         l10n_util::GetNSString(IDS_IOS_OPTIONS_TAB_PICKUP_SCREEN_TITLE);
-    _syncEnabled = true;
+    _tabSyncEnabled = true;
   }
   return self;
 }
@@ -108,15 +108,15 @@ const char kSyncSettingsURL[] = "settings://open_sync";
   if (tabPickupSwitchItem.on == enabled) {
     return;
   }
-  tabPickupSwitchItem.on = _syncEnabled && enabled;
+  tabPickupSwitchItem.on = _tabSyncEnabled && enabled;
   [self reconfigureCellsForItems:@[ tabPickupSwitchItem ]];
 }
 
-- (void)setSyncEnabled:(bool)enabled {
-  if (_syncEnabled == enabled) {
+- (void)setTabSyncEnabled:(bool)enabled {
+  if (_tabSyncEnabled == enabled) {
     return;
   }
-  _syncEnabled = enabled;
+  _tabSyncEnabled = enabled;
   TableViewSwitchItem* tabPickupSwitchItem = self.tabPickupSwitchItem;
   tabPickupSwitchItem.enabled = enabled;
   tabPickupSwitchItem.on = _tabPickupEnabled && enabled;
@@ -160,7 +160,7 @@ const char kSyncSettingsURL[] = "settings://open_sync";
 
   if (itemType == ItemType::kSwitch) {
     TableViewSwitchCell* switchCell =
-        base::mac::ObjCCastStrict<TableViewSwitchCell>(cell);
+        base::apple::ObjCCastStrict<TableViewSwitchCell>(cell);
     [switchCell.switchView addTarget:self
                               action:@selector(switchChanged:)
                     forControlEvents:UIControlEventValueChanged];
@@ -175,7 +175,7 @@ const char kSyncSettingsURL[] = "settings://open_sync";
   UIView* headerView = [super tableView:tableView
                  viewForHeaderInSection:section];
   TableViewLinkHeaderFooterView* header =
-      base::mac::ObjCCast<TableViewLinkHeaderFooterView>(headerView);
+      base::apple::ObjCCast<TableViewLinkHeaderFooterView>(headerView);
   if (header) {
     header.delegate = self;
   }
@@ -189,7 +189,7 @@ const char kSyncSettingsURL[] = "settings://open_sync";
 - (void)updatePrivacyInformationItem {
   NSString* privacyFooterText;
   NSMutableArray* URLs = [[NSMutableArray alloc] init];
-  if (_syncEnabled) {
+  if (_tabSyncEnabled) {
     privacyFooterText =
         l10n_util::GetNSString(IDS_IOS_PRIVACY_SYNC_AND_GOOGLE_SERVICES_FOOTER);
     [URLs addObject:[[CrURL alloc] initWithGURL:GURL(kSyncSettingsURL)]];

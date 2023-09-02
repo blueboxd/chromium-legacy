@@ -1084,7 +1084,10 @@ public class CustomTabToolbar extends ToolbarLayout implements View.OnLongClickL
         }
 
         @Override
-        public void gestureDetected(boolean isLongPress) {}
+        public void onFocusByTouch() {}
+
+        @Override
+        public void onTouchAfterFocus() {}
 
         // LocationBarDataProvider.Observer implementation
         // Using the default empty onIncognitoStateChanged.
@@ -1349,6 +1352,9 @@ public class CustomTabToolbar extends ToolbarLayout implements View.OnLongClickL
 
         @Override
         public void showUrlBarCursorWithoutFocusAnimations() {}
+
+        @Override
+        public void clearUrlBarCursorWithoutFocusAnimations() {}
 
         @Override
         public void selectAll() {}

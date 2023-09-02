@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/functional/callback.h"
+#include "base/observer_list.h"
 #include "base/time/time.h"
 #include "content/public/browser/federated_identity_api_permission_context_delegate.h"
 #include "content/public/browser/federated_identity_auto_reauthn_permission_context_delegate.h"
@@ -87,6 +88,10 @@ class ShellFederatedPermissionContext
   void UnregisterIdP(const ::GURL&) override;
   std::vector<GURL> GetRegisteredIdPs() override;
 
+  void SetThirdPartyCookiesBlocked(bool blocked) {
+    third_party_cookies_blocked_ = blocked;
+  }
+
   void SetIdpStatusClosureForTesting(base::RepeatingClosure closure) {
     idp_signin_status_closure_ = std::move(closure);
   }
@@ -102,6 +107,7 @@ class ShellFederatedPermissionContext
   // Map of <IDP, IDPSigninStatus>
   std::map<std::string, absl::optional<bool>> idp_signin_status_;
 
+  base::ObserverList<IdpSigninStatusObserver> idp_signin_status_observer_list_;
   base::RepeatingClosure idp_signin_status_closure_;
 
   bool auto_reauthn_permission_{true};
@@ -115,6 +121,8 @@ class ShellFederatedPermissionContext
 
   // A set of urls that require user mediation.
   std::set<GURL> require_user_mediation_sites_;
+
+  bool third_party_cookies_blocked_{false};
 };
 
 }  // namespace content

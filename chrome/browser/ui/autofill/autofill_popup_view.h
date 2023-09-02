@@ -10,7 +10,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "components/autofill/core/common/aliases.h"
-#include "content/public/browser/native_web_keyboard_event.h"
+#include "content/public/common/input/native_web_keyboard_event.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace autofill {
@@ -42,6 +42,10 @@ class AutofillPopupView {
   // whether the resulting popup was shown (or had to hide, e.g. due to
   // insufficient size).
   virtual void OnSuggestionsChanged() = 0;
+
+  // Returns true if the autofill popup overlaps with the
+  // picture-in-picture window.
+  virtual bool OverlapsWithPictureInPictureWindow() const = 0;
 
   // Makes accessibility announcement.
   virtual void AxAnnounce(const std::u16string& text) = 0;

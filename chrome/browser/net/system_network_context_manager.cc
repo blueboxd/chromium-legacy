@@ -70,7 +70,6 @@
 #include "net/cookies/cookie_util.h"
 #include "net/net_buildflags.h"
 #include "net/third_party/uri_template/uri_template.h"
-#include "sandbox/features.h"
 #include "sandbox/policy/features.h"
 #include "sandbox/policy/sandbox_type.h"
 #include "services/cert_verifier/public/mojom/cert_verifier_service_factory.mojom.h"
@@ -124,7 +123,10 @@ enum class NetworkSandboxState {
   kEnabledByPolicy = 3,
   // Disabled because of a previous failed launch attempt.
   kDisabledBecauseOfFailedLaunch = 4,
-  kMaxValue = kDisabledBecauseOfFailedLaunch
+  // Disabled because the user (might) want kerberos, which is incompatible with
+  // the Linux/Cros sandbox.
+  kDisabledBecauseOfKerberos = 5,
+  kMaxValue = kDisabledBecauseOfKerberos
 };
 
 // The global instance of the SystemNetworkContextManager.
@@ -133,6 +135,12 @@ SystemNetworkContextManager* g_system_network_context_manager = nullptr;
 // Whether or not any instance of the system network context manager has
 // received a failed launch for a sandboxed network service.
 bool g_previously_failed_to_launch_sandboxed_service = false;
+
+#if BUILDFLAG(IS_CHROMEOS)
+// Whether kerberos library loading will work in the network service due to the
+// sandbox.
+bool g_network_service_will_allow_gssapi_library_load = false;
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
 // Constructs HttpAuthStaticParams based on |local_state|.
 network::mojom::HttpAuthStaticParamsPtr CreateHttpAuthStaticParams(
@@ -198,24 +206,63 @@ network::mojom::HttpAuthDynamicParamsPtr CreateHttpAuthDynamicParams(
   return auth_dynamic_params;
 }
 
+void OnNewHttpAuthDynamicParams(
+    network::mojom::HttpAuthDynamicParamsPtr& params) {
+#if BUILDFLAG(IS_CHROMEOS)
+  // The kerberos library is incompatible with the network service sandbox, so
+  // if library loading is now enabled, the network service needs to be
+  // restarted. It will be restarted unsandboxed because is
+  // `g_network_service_will_allow_gssapi_library_load` will be set.
+  if (params->allow_gssapi_library_load &&
+      !g_network_service_will_allow_gssapi_library_load) {
+    g_network_service_will_allow_gssapi_library_load = true;
+    // The network service, if sandboxed, will still not allow gssapi library
+    // loading until it is shut down. On restart the network service will get
+    // the correct value.
+    params->allow_gssapi_library_load = false;
+    // Post a shutdown task because the current task probably holds a raw
+    // pointer to the remote.
+    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
+        FROM_HERE, base::BindOnce(&content::RestartNetworkService));
+  }
+#endif  // BUILDFLAG(IS_CHROMEOS)
+}
+
 void OnAuthPrefsChanged(PrefService* local_state,
                         const std::string& pref_name) {
-  content::GetNetworkService()->ConfigureHttpAuthPrefs(
-      CreateHttpAuthDynamicParams(local_state));
+  auto params = CreateHttpAuthDynamicParams(local_state);
+  OnNewHttpAuthDynamicParams(params);
+  content::GetNetworkService()->ConfigureHttpAuthPrefs(std::move(params));
 }
 
 NetworkSandboxState IsNetworkSandboxEnabledInternal() {
   // If previously an attempt to launch the sandboxed process failed, then
   // launch unsandboxed.
-  if (g_previously_failed_to_launch_sandboxed_service)
+  if (g_previously_failed_to_launch_sandboxed_service) {
     return NetworkSandboxState::kDisabledBecauseOfFailedLaunch;
+  }
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_LINUX)
+  auto* local_state = g_browser_process->local_state();
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS)
+  // The network service sandbox and the kerberos library are incompatible.
+  // If kerberos is enabled by policy, disable the network service sandbox.
+  if (g_network_service_will_allow_gssapi_library_load ||
+      (local_state && local_state->HasPrefPath(prefs::kKerberosEnabled) &&
+       local_state->GetBoolean(prefs::kKerberosEnabled))) {
+    g_network_service_will_allow_gssapi_library_load = true;
+    return NetworkSandboxState::kDisabledBecauseOfKerberos;
+  }
+#endif  // BUILDFLAG(IS_CHROMEOS)
+
 #if BUILDFLAG(IS_WIN)
-  if (!sandbox::features::IsAppContainerSandboxSupported())
+  if (!sandbox::policy::features::IsNetworkSandboxSupported()) {
     return NetworkSandboxState::kDisabledByPlatform;
+  }
 #endif  // BUILDFLAG(IS_WIN)
 
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX)
-  auto* local_state = g_browser_process->local_state();
   if (local_state &&
       local_state->HasPrefPath(prefs::kNetworkServiceSandboxEnabled)) {
     return local_state->GetBoolean(prefs::kNetworkServiceSandboxEnabled)
@@ -410,6 +457,28 @@ void SystemNetworkContextManager::DeleteInstance() {
   g_system_network_context_manager = nullptr;
 }
 
+#if BUILDFLAG(IS_LINUX)
+SystemNetworkContextManager::GssapiLibraryLoadObserver::
+    GssapiLibraryLoadObserver(SystemNetworkContextManager* owner)
+    : owner_(owner) {}
+
+SystemNetworkContextManager::GssapiLibraryLoadObserver::
+    ~GssapiLibraryLoadObserver() = default;
+
+void SystemNetworkContextManager::GssapiLibraryLoadObserver::Install(
+    network::mojom::NetworkService* network_service) {
+  gssapi_library_loader_observer_receiver_.reset();
+  network_service->SetGssapiLibraryLoadObserver(
+      gssapi_library_loader_observer_receiver_.BindNewPipeAndPassRemote());
+}
+
+void SystemNetworkContextManager::GssapiLibraryLoadObserver::
+    OnBeforeGssapiLibraryLoad() {
+  owner_->local_state_->SetBoolean(prefs::kReceivedHttpAuthNegotiateHeader,
+                                   true);
+}
+#endif  // BUILDFLAG(IS_LINUX)
+
 SystemNetworkContextManager::SystemNetworkContextManager(
     PrefService* local_state)
     : local_state_(local_state),
@@ -583,6 +652,10 @@ void SystemNetworkContextManager::RegisterPrefs(PrefRegistrySimple* registry) {
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX)
   registry->RegisterBooleanPref(prefs::kNetworkServiceSandboxEnabled, true);
 #endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX)
+
+#if BUILDFLAG(IS_LINUX)
+  registry->RegisterBooleanPref(prefs::kReceivedHttpAuthNegotiateHeader, false);
+#endif  // BUILDFLAG(IS_LINUX)
 }
 
 // static
@@ -625,8 +698,13 @@ void SystemNetworkContextManager::OnNetworkServiceCreated(
   }
 
   network_service->SetUpHttpAuth(CreateHttpAuthStaticParams(local_state_));
-  network_service->ConfigureHttpAuthPrefs(
-      CreateHttpAuthDynamicParams(local_state_));
+  auto http_auth_dynamic_params = CreateHttpAuthDynamicParams(local_state_);
+  OnNewHttpAuthDynamicParams(http_auth_dynamic_params);
+  network_service->ConfigureHttpAuthPrefs(std::move(http_auth_dynamic_params));
+
+#if BUILDFLAG(IS_LINUX)
+  gssapi_library_loader_observer_.Install(network_service);
+#endif  // BUILDFLAG(IS_LINUX)
 
   // Configure the Certificate Transparency logs.
   if (IsCertificateTransparencyEnabled()) {
@@ -811,6 +889,8 @@ bool SystemNetworkContextManager::IsNetworkSandboxEnabled() {
       "Chrome.SystemNetworkContextManager.NetworkSandboxState", state);
 
   switch (state) {
+    case NetworkSandboxState::kDisabledBecauseOfKerberos:
+      return false;
     case NetworkSandboxState::kDisabledByPlatform:
       return false;
     case NetworkSandboxState::kEnabledByPlatform:

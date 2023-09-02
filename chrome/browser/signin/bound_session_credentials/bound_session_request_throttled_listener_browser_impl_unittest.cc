@@ -29,19 +29,19 @@ class FakeBoundSessionCookieRefreshService
   void Initialize() override {}
 
   void RegisterNewBoundSession(
-      const bound_session_credentials::RegistrationParams& params) override {}
+      const bound_session_credentials::BoundSessionParams& params) override {}
 
   void MaybeTerminateSession(const net::HttpResponseHeaders* headers) override {
   }
 
-  bool IsBoundSession() const override { return true; }
-
-  chrome::mojom::BoundSessionParamsPtr GetBoundSessionParams() const override {
-    return chrome::mojom::BoundSessionParams::New();
+  chrome::mojom::BoundSessionThrottlerParamsPtr GetBoundSessionThrottlerParams()
+      const override {
+    return chrome::mojom::BoundSessionThrottlerParams::New();
   }
 
-  void SetRendererBoundSessionParamsUpdaterDelegate(
-      RendererBoundSessionParamsUpdaterDelegate renderer_updater) override {}
+  void SetRendererBoundSessionThrottlerParamsUpdaterDelegate(
+      RendererBoundSessionThrottlerParamsUpdaterDelegate renderer_updater)
+      override {}
 
   void OnRequestBlockedOnCookie(
       OnRequestBlockedOnCookieCallback resume_blocked_request) override {

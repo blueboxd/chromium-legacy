@@ -531,6 +531,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkStateHandler
 
  private:
   typedef std::map<std::string, std::string> SpecifierGuidMap;
+  friend class DeviceStateTest;
   friend class NetworkStateHandlerTest;
   friend class TechnologyStateController;
 
@@ -801,7 +802,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkStateHandler
       TechnologyState::TECHNOLOGY_UNAVAILABLE;
 
   // Provides stub cellular networks. Not owned by this instance.
-  raw_ptr<StubCellularNetworksProvider, ExperimentalAsh>
+  raw_ptr<StubCellularNetworksProvider, DanglingUntriaged | ExperimentalAsh>
       stub_cellular_networks_provider_ = nullptr;
 
   // Not owned by this instance.

@@ -6,9 +6,9 @@
 
 #import <objc/runtime.h>
 
+#import "base/apple/foundation_util.h"
 #import "base/check_op.h"
 #import "base/feature_list.h"
-#import "base/mac/foundation_util.h"
 #import "base/metrics/histogram_functions.h"
 #import "base/metrics/histogram_macros.h"
 #import "base/metrics/user_metrics.h"
@@ -197,7 +197,6 @@ typedef std::pair<SessionID, TableViewURLItem*> RecentlyClosedTableViewItemPair;
   if (self) {
     _sessionState = SessionsSyncUserState::USER_SIGNED_OUT;
     _syncedSessions.reset(new synced_sessions::SyncedSessions());
-    _restoredTabDisposition = WindowOpenDisposition::CURRENT_TAB;
     _preventUpdates = YES;
   }
   return self;
@@ -1044,7 +1043,7 @@ typedef std::pair<SessionID, TableViewURLItem*> RecentlyClosedTableViewItemPair;
     // Update the TableView and TableViewModel sections to match the new
     // sessionState.
     // Turn Off animations since UITableViewRowAnimationNone still animates.
-    BOOL animationsWereEnabled = [UIView areAnimationsEnabled];
+    const BOOL animationsWereEnabled = [UIView areAnimationsEnabled];
     [UIView setAnimationsEnabled:NO];
     if (newSessionState ==
         SessionsSyncUserState::USER_SIGNED_IN_SYNC_ON_WITH_SESSIONS) {
@@ -1199,11 +1198,11 @@ typedef std::pair<SessionID, TableViewURLItem*> RecentlyClosedTableViewItemPair;
   if (itemTypeSelected == ItemTypeOtherDevicesSigninPromo) {
     [self.signinPromoViewMediator signinPromoViewIsVisible];
     TableViewSigninPromoCell* signinPromoCell =
-        base::mac::ObjCCastStrict<TableViewSigninPromoCell>(cell);
+        base::apple::ObjCCastStrict<TableViewSigninPromoCell>(cell);
     if (base::FeatureList::IsEnabled(
             syncer::kReplaceSyncPromosWithSignInPromos)) {
       TableViewSigninPromoItem* signinPromoItem =
-          base::mac::ObjCCastStrict<TableViewSigninPromoItem>(
+          base::apple::ObjCCastStrict<TableViewSigninPromoItem>(
               [self.tableViewModel itemAtIndexPath:indexPath]);
       [signinPromoItem.configurator
           configureSigninPromoView:signinPromoCell.signinPromoView
@@ -1214,9 +1213,10 @@ typedef std::pair<SessionID, TableViewURLItem*> RecentlyClosedTableViewItemPair;
     }
     // Disable animations when setting the background color to prevent flash on
     // rotation.
+    const BOOL animationsWereEnabled = [UIView areAnimationsEnabled];
     [UIView setAnimationsEnabled:NO];
     signinPromoCell.backgroundColor = nil;
-    [UIView setAnimationsEnabled:YES];
+    [UIView setAnimationsEnabled:animationsWereEnabled];
   }
   // Retrieve favicons for closed tabs and remote sessions.
   if (itemTypeSelected == ItemTypeRecentlyClosed ||
@@ -1231,13 +1231,13 @@ typedef std::pair<SessionID, TableViewURLItem*> RecentlyClosedTableViewItemPair;
   }
   // Set button action method for ItemTypeOtherDevicesSyncOff.
   if (itemTypeSelected == ItemTypeOtherDevicesSyncOff) {
-      TableViewIllustratedCell* illustratedCell =
-          base::mac::ObjCCastStrict<TableViewIllustratedCell>(cell);
-      [illustratedCell.button addTarget:self
-                                 action:@selector(updateSyncState)
-                       forControlEvents:UIControlEventTouchUpInside];
-      illustratedCell.button.accessibilityIdentifier =
-          kRecentTabsTabSyncOffButtonAccessibilityIdentifier;
+    TableViewIllustratedCell* illustratedCell =
+        base::apple::ObjCCastStrict<TableViewIllustratedCell>(cell);
+    [illustratedCell.button addTarget:self
+                               action:@selector(updateSyncState)
+                     forControlEvents:UIControlEventTouchUpInside];
+    illustratedCell.button.accessibilityIdentifier =
+        kRecentTabsTabSyncOffButtonAccessibilityIdentifier;
   }
   // Hide the separator between this cell and the SignIn Promo.
   if (itemTypeSelected == ItemTypeOtherDevicesSignedOut) {
@@ -1249,7 +1249,7 @@ typedef std::pair<SessionID, TableViewURLItem*> RecentlyClosedTableViewItemPair;
     TabsSearchService* search_service =
         TabsSearchServiceFactory::GetForBrowserState(self.browserState);
     __weak TableViewTabsSearchSuggestedHistoryCell* weakCell =
-        base::mac::ObjCCastStrict<TableViewTabsSearchSuggestedHistoryCell>(
+        base::apple::ObjCCastStrict<TableViewTabsSearchSuggestedHistoryCell>(
             cell);
 
     NSString* currentSearchTerm = self.searchTerms;
@@ -1299,7 +1299,8 @@ typedef std::pair<SessionID, TableViewURLItem*> RecentlyClosedTableViewItemPair;
     return nil;
 
   TableViewItem* item = [self.tableViewModel itemAtIndexPath:indexPath];
-  TableViewURLItem* URLItem = base::mac::ObjCCastStrict<TableViewURLItem>(item);
+  TableViewURLItem* URLItem =
+      base::apple::ObjCCastStrict<TableViewURLItem>(item);
 
   return [self.menuProvider
       contextMenuConfigurationForItem:URLItem
@@ -1333,7 +1334,7 @@ typedef std::pair<SessionID, TableViewURLItem*> RecentlyClosedTableViewItemPair;
     case ItemTypeSessionTabData: {
       TableViewItem* item = [self.tableViewModel itemAtIndexPath:indexPath];
       TableViewURLItem* URLItem =
-          base::mac::ObjCCastStrict<TableViewURLItem>(item);
+          base::apple::ObjCCastStrict<TableViewURLItem>(item);
       GURL gurl;
       if (URLItem.URL)
         gurl = URLItem.URL.gurl;
@@ -1391,8 +1392,10 @@ typedef std::pair<SessionID, TableViewURLItem*> RecentlyClosedTableViewItemPair;
   DCHECK(item);
   DCHECK(cell);
 
-  TableViewURLItem* URLItem = base::mac::ObjCCastStrict<TableViewURLItem>(item);
-  TableViewURLCell* URLCell = base::mac::ObjCCastStrict<TableViewURLCell>(cell);
+  TableViewURLItem* URLItem =
+      base::apple::ObjCCastStrict<TableViewURLItem>(item);
+  TableViewURLCell* URLCell =
+      base::apple::ObjCCastStrict<TableViewURLCell>(cell);
 
   NSString* itemIdentifier = URLItem.uniqueIdentifier;
   [self.imageDataSource
@@ -1558,21 +1561,10 @@ typedef std::pair<SessionID, TableViewURLItem*> RecentlyClosedTableViewItemPair;
         session_util::CreateWebStateWithNavigationEntries(
             self.browserState, toLoad->current_navigation_index,
             toLoad->navigations);
-    switch (self.restoredTabDisposition) {
-      case WindowOpenDisposition::CURRENT_TAB:
-        self.webStateList->ReplaceWebStateAt(self.webStateList->active_index(),
-                                             std::move(web_state));
-        break;
-      case WindowOpenDisposition::NEW_FOREGROUND_TAB:
-        self.webStateList->InsertWebState(
-            self.webStateList->count(), std::move(web_state),
-            (WebStateList::INSERT_FORCE_INDEX | WebStateList::INSERT_ACTIVATE),
-            WebStateOpener());
-        break;
-      default:
-        NOTREACHED();
-        break;
-    }
+    self.webStateList->InsertWebState(
+        self.webStateList->count(), std::move(web_state),
+        (WebStateList::INSERT_FORCE_INDEX | WebStateList::INSERT_ACTIVATE),
+        WebStateOpener());
   }
   [self.presentationDelegate showActiveRegularTabFromRecentTabs];
 }
@@ -1600,13 +1592,7 @@ typedef std::pair<SessionID, TableViewURLItem*> RecentlyClosedTableViewItemPair;
       self.isIncognito, self.webStateList->GetActiveWebState(),
       new_tab_page_uma::ACTION_OPENED_RECENTLY_CLOSED_ENTRY);
 
-  // If RecentTabs is being displayed from incognito, the resulting tab will
-  // open in the corresponding normal BVC. Change the disposition to avoid
-  // clobbering any tabs.
-  WindowOpenDisposition disposition =
-      self.isIncognito ? WindowOpenDisposition::NEW_FOREGROUND_TAB
-                       : self.restoredTabDisposition;
-  RestoreTab(entry_id, disposition, self.browser);
+  RestoreTab(entry_id, WindowOpenDisposition::NEW_FOREGROUND_TAB, self.browser);
   [self.presentationDelegate showActiveRegularTabFromRecentTabs];
 }
 
@@ -1678,10 +1664,10 @@ typedef std::pair<SessionID, TableViewURLItem*> RecentlyClosedTableViewItemPair;
     if (headerItem.type == ItemTypeRecentlyClosedHeader ||
         headerItem.type == ItemTypeSessionHeader) {
       TableViewDisclosureHeaderFooterView* disclosureHeaderView =
-          base::mac::ObjCCastStrict<TableViewDisclosureHeaderFooterView>(
+          base::apple::ObjCCastStrict<TableViewDisclosureHeaderFooterView>(
               headerView);
       TableViewDisclosureHeaderFooterItem* disclosureItem =
-          base::mac::ObjCCastStrict<TableViewDisclosureHeaderFooterItem>(
+          base::apple::ObjCCastStrict<TableViewDisclosureHeaderFooterItem>(
               headerItem);
       BOOL collapsed = [self.tableViewModel
           sectionIsCollapsed:[self.tableViewModel
@@ -1759,7 +1745,7 @@ typedef std::pair<SessionID, TableViewURLItem*> RecentlyClosedTableViewItemPair;
            sectionIdentifier:SectionIdentifierOtherDevices];
     TableViewItem* item = [self.tableViewModel itemAtIndexPath:indexPath];
     TableViewSigninPromoItem* signInItem =
-        base::mac::ObjCCastStrict<TableViewSigninPromoItem>(item);
+        base::apple::ObjCCastStrict<TableViewSigninPromoItem>(item);
     signInItem.configurator = configurator;
     // If section is collapsed no tableView update is needed.
     if ([self.tableViewModel

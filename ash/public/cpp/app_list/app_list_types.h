@@ -463,6 +463,24 @@ enum class SystemInfoAnswerCardDisplayType {
   kMultiElementBarChart,
 };
 
+// The categories for launcher search controls.
+enum class AppListSearchControlCategory {
+  kCannotToggle = 0,  // default value to indicate it is non-toggleable
+  kApps = 1,
+  kAppShortcuts = 2,
+  kFiles = 3,
+  kGames = 4,
+  kHelp = 5,
+  kImages = 6,
+  kPlayStore = 7,
+  kWeb = 8,
+};
+
+// Gets the pref name strings used for the app list control category preference
+// dictionary.
+ASH_PUBLIC_EXPORT std::string GetAppListControlCategoryName(
+    AppListSearchControlCategory control_category);
+
 struct ASH_PUBLIC_EXPORT SearchResultIconInfo {
   SearchResultIconInfo();
   // TODO(crbug.com/1232897): Make the search backend explicitly set the shape
@@ -600,11 +618,25 @@ using SearchResultActions = std::vector<SearchResultAction>;
 class ASH_PUBLIC_EXPORT SearchResultTextItem {
  public:
   enum IconCode {
+    kKeyboardShortcutAssistant,
+    kKeyboardShortcutAllApps,
     kKeyboardShortcutBrowserBack,
     kKeyboardShortcutBrowserForward,
     kKeyboardShortcutBrowserRefresh,
+    kKeyboardShortcutBrowserSearch,
+    kKeyboardShortcutCalculator,
+    kKeyboardShortcutDictationToggle,
+    kKeyboardShortcutEmojiPicker,
+    kKeyboardShortcutInputModeChange,
     kKeyboardShortcutZoom,
     kKeyboardShortcutMediaLaunchApp1,
+    kKeyboardShortcutMediaFastForward,
+    kKeyboardShortcutMediaPause,
+    kKeyboardShortcutMediaPlay,
+    kKeyboardShortcutMediaPlayPause,
+    kKeyboardShortcutMediaTrackNext,
+    kKeyboardShortcutMediaTrackPrevious,
+    kKeyboardShortcutMicrophone,
     kKeyboardShortcutBrightnessDown,
     kKeyboardShortcutBrightnessUp,
     kKeyboardShortcutVolumeMute,
@@ -615,7 +647,14 @@ class ASH_PUBLIC_EXPORT SearchResultTextItem {
     kKeyboardShortcutLeft,
     kKeyboardShortcutRight,
     kKeyboardShortcutPrivacyScreenToggle,
+    kKeyboardShortcutSettings,
     kKeyboardShortcutSnapshot,
+    kKeyboardShortcutLauncher,
+    kKeyboardShortcutSearch,
+    kKeyboardShortcutPower,
+    kKeyboardShortcutKeyboardBacklightToggle,
+    kKeyboardShortcutKeyboardBrightnessDown,
+    kKeyboardShortcutKeyboardBrightnessUp,
   };
 
   // Only used for SearchResultTextItemType kString

@@ -21,6 +21,7 @@
 #include "ash/wm/desks/desks_test_util.h"
 #include "ash/wm/overview/overview_item.h"
 #include "ash/wm/overview/overview_test_util.h"
+#include "ash/wm/overview/overview_utils.h"
 #include "ash/wm/pip/pip_positioner.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/splitview/split_view_divider.h"
@@ -1271,6 +1272,29 @@ TEST_F(WindowStateTest, WindowNoOffscreenInMultiDisplays) {
   EXPECT_TRUE(displays[0].bounds().Contains(window->bounds()));
 }
 
+TEST_F(WindowStateTest, CanFullscreen) {
+  std::unique_ptr<aura::Window> window(
+      CreateTestWindowInShellWithBounds(gfx::Rect(100, 100, 100, 100)));
+  WindowState* window_state = WindowState::Get(window.get());
+
+  // Allow everything to test for cross interactions with other flags.
+  int behavior = ~aura::client::kResizeBehaviorCanFullscreen;
+
+  window->SetProperty(aura::client::kResizeBehaviorKey,
+                      behavior | aura::client::kResizeBehaviorCanFullscreen);
+  EXPECT_TRUE(window_state->CanFullscreen());
+  ToggleFullScreen(window_state, nullptr);
+  EXPECT_TRUE(window_state->IsFullscreen());
+  ToggleFullScreen(window_state, nullptr);
+  EXPECT_FALSE(window_state->IsFullscreen());
+
+  window->SetProperty(aura::client::kResizeBehaviorKey,
+                      behavior & ~aura::client::kResizeBehaviorCanFullscreen);
+  EXPECT_FALSE(window_state->CanFullscreen());
+  ToggleFullScreen(window_state, nullptr);
+  EXPECT_FALSE(window_state->IsFullscreen());
+}
+
 TEST_F(WindowStateTest, CanConsumeSystemKeys) {
   std::unique_ptr<aura::Window> window(
       CreateTestWindowInShellWithBounds(gfx::Rect(100, 100, 100, 100)));
@@ -2078,16 +2102,16 @@ TEST_F(WindowStateTest, WindowSnapActionSourceUmaMetrics) {
   auto* split_view_divider = split_view_controller->split_view_divider();
   gfx::Rect divider_bounds =
       split_view_divider->GetDividerBoundsInScreen(false);
-  split_view_controller->StartResizeWithDivider(divider_bounds.CenterPoint());
+  split_view_divider->StartResizeWithDivider(divider_bounds.CenterPoint());
   gfx::Rect display_bounds =
       screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
           window.get());
   gfx::Point resize_point(display_bounds.width() * 0.33f, 0);
-  split_view_controller->ResizeWithDivider(resize_point);
+  split_view_divider->ResizeWithDivider(resize_point);
   // This should not cause any metrics change.
   histograms.ExpectBucketCount(kWindowSnapActionSourceHistogram,
                                WindowSnapActionSource::kNotSpecified, 1);
-  split_view_controller->EndResizeWithDivider(resize_point);
+  split_view_divider->EndResizeWithDivider(resize_point);
   histograms.ExpectBucketCount(kWindowSnapActionSourceHistogram,
                                WindowSnapActionSource::kNotSpecified, 1);
 }

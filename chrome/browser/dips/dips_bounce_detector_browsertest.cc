@@ -388,7 +388,7 @@ class DIPSBounceDetectorBrowserTest : public PlatformBrowserTest {
   }
 
   void SetUpOnMainThread() override {
-    prerender_test_helper_.SetUp(embedded_test_server());
+    prerender_test_helper_.RegisterServerRequestMonitor(embedded_test_server());
     ASSERT_TRUE(embedded_test_server()->Start());
     host_resolver()->AddRule("a.test", "127.0.0.1");
     host_resolver()->AddRule("b.test", "127.0.0.1");
@@ -421,43 +421,6 @@ class DIPSBounceDetectorBrowserTest : public PlatformBrowserTest {
   void StartAppendingReportsTo(std::vector<std::string>* reports) {
     web_contents_observer_->SetIssueReportingCallbackForTesting(
         base::BindRepeating(&AppendSitesInReport, reports));
-  }
-
-  // Navigate to /set-cookie on `host` and wait for OnCookiesAccessed() to be
-  // called.
-  [[nodiscard]] bool NavigateToSetCookie(const net::EmbeddedTestServer* server,
-                                         base::StringPiece host,
-                                         bool is_secure_cookie_set) {
-    auto* web_contents = GetActiveWebContents();
-    std::string relative_url = "/set-cookie?name=value";
-    if (is_secure_cookie_set) {
-      relative_url += ";Secure;SameSite=None";
-    }
-    const auto url = server->GetURL(host, relative_url);
-
-    URLCookieAccessObserver observer(web_contents, url,
-                                     CookieOperation::kChange);
-    bool success = content::NavigateToURL(web_contents, url);
-    if (success) {
-      observer.Wait();
-    }
-    return success;
-  }
-
-  void CreateImageAndWaitForCookieAccess(const GURL& image_url) {
-    WebContents* web_contents = GetActiveWebContents();
-    URLCookieAccessObserver observer(web_contents, image_url,
-                                     CookieOperation::kRead);
-    ASSERT_TRUE(content::ExecJs(web_contents,
-                                content::JsReplace(
-                                    R"(
-    let img = document.createElement('img');
-    img.src = $1;
-    document.body.appendChild(img);)",
-                                    image_url),
-                                content::EXECUTE_SCRIPT_NO_USER_GESTURE));
-    // The image must cause a cookie access, or else this will hang.
-    observer.Wait();
   }
 
   // Perform a browser-based navigation to terminate the current redirect chain.
@@ -826,7 +789,7 @@ IN_PROC_BROWSER_TEST_F(DIPSBounceDetectorBrowserTest,
       content::NavigateToURL(GetActiveWebContents(), primary_main_frame_url));
 
   GURL image_url = https_server.GetURL("c.test", "/favicon/icon.png");
-  CreateImageAndWaitForCookieAccess(image_url);
+  CreateImageAndWaitForCookieAccess(GetActiveWebContents(), image_url);
 
   const GURL primary_main_frame_final_url =
       embedded_test_server()->GetURL("d.test", "/title1.html");
@@ -1058,13 +1021,17 @@ IN_PROC_BROWSER_TEST_F(DIPSBounceDetectorBrowserTest,
   content::WebContents* web_contents = GetActiveWebContents();
 
   // Set cookies on all 4 test domains
-  ASSERT_TRUE(NavigateToSetCookie(embedded_test_server(), "a.test",
+  ASSERT_TRUE(NavigateToSetCookie(web_contents, embedded_test_server(),
+                                  "a.test",
                                   /*is_secure_cookie_set=*/false));
-  ASSERT_TRUE(NavigateToSetCookie(embedded_test_server(), "b.test",
+  ASSERT_TRUE(NavigateToSetCookie(web_contents, embedded_test_server(),
+                                  "b.test",
                                   /*is_secure_cookie_set=*/false));
-  ASSERT_TRUE(NavigateToSetCookie(embedded_test_server(), "c.test",
+  ASSERT_TRUE(NavigateToSetCookie(web_contents, embedded_test_server(),
+                                  "c.test",
                                   /*is_secure_cookie_set=*/false));
-  ASSERT_TRUE(NavigateToSetCookie(embedded_test_server(), "d.test",
+  ASSERT_TRUE(NavigateToSetCookie(web_contents, embedded_test_server(),
+                                  "d.test",
                                   /*is_secure_cookie_set=*/false));
 
   // Start logging WebContentsObserver callbacks.
@@ -1276,7 +1243,7 @@ IN_PROC_BROWSER_TEST_F(
   ASSERT_TRUE(content::NavigateToURLFromRenderer(web_contents, bounce_url));
 
   // Cause a third-party cookie read.
-  CreateImageAndWaitForCookieAccess(image_url);
+  CreateImageAndWaitForCookieAccess(web_contents, image_url);
   // Navigate without a click (i.e. by redirecting).
   ASSERT_TRUE(content::NavigateToURLFromRendererWithoutUserGesture(web_contents,
                                                                    final_url));
@@ -1336,7 +1303,7 @@ IN_PROC_BROWSER_TEST_F(DIPSBounceDetectorBrowserTest,
   ASSERT_TRUE(content::NavigateToURLFromRenderer(web_contents, bounce_url));
 
   // Cause a same-site cookie read.
-  CreateImageAndWaitForCookieAccess(image_url);
+  CreateImageAndWaitForCookieAccess(web_contents, image_url);
   // Navigate without a click (i.e. by redirecting).
   ASSERT_TRUE(content::NavigateToURLFromRendererWithoutUserGesture(web_contents,
                                                                    final_url));
@@ -1552,8 +1519,8 @@ IN_PROC_BROWSER_TEST_F(DIPSBounceDetectorBrowserTest,
                   "c.test/title1.html")));
 }
 
-// Tests the conditions for recording a RedirectHeuristic_CookieAccess UKM
-// event.
+// Tests the conditions for recording RedirectHeuristic_CookieAccess and
+// RedirectHeuristic_CookieAccessThirdParty UKM events.
 IN_PROC_BROWSER_TEST_F(DIPSBounceDetectorBrowserTest,
                        RecordsRedirectHeuristicCookieAccessEvent) {
   ukm::TestAutoSetUkmRecorder ukm_recorder;
@@ -1594,11 +1561,11 @@ IN_PROC_BROWSER_TEST_F(DIPSBounceDetectorBrowserTest,
       ContentSettingsType::COOKIES, ContentSetting::CONTENT_SETTING_ALLOW);
 
   // Set cookies on image URLs.
-  ASSERT_TRUE(NavigateToSetCookie(&https_server, "sub.b.test",
+  ASSERT_TRUE(NavigateToSetCookie(web_contents, &https_server, "sub.b.test",
                                   /*is_secure_cookie_set=*/true));
-  ASSERT_TRUE(NavigateToSetCookie(&https_server, "sub.c.test",
+  ASSERT_TRUE(NavigateToSetCookie(web_contents, &https_server, "sub.c.test",
                                   /*is_secure_cookie_set=*/true));
-  ASSERT_TRUE(NavigateToSetCookie(&https_server, "sub.d.test",
+  ASSERT_TRUE(NavigateToSetCookie(web_contents, &https_server, "sub.d.test",
                                   /*is_secure_cookie_set=*/true));
 
   // Visit initial page.
@@ -1611,11 +1578,13 @@ IN_PROC_BROWSER_TEST_F(DIPSBounceDetectorBrowserTest,
   ASSERT_TRUE(content::NavigateToURLFromRendererWithoutUserGesture(web_contents,
                                                                    target_url));
   // Read a cookie from the tracking URL.
-  CreateImageAndWaitForCookieAccess(image_url_pre_target_redirect);
+  CreateImageAndWaitForCookieAccess(web_contents,
+                                    image_url_pre_target_redirect);
   // Read a cookie from the second tracking URL.
-  CreateImageAndWaitForCookieAccess(image_url_post_target_redirect);
+  CreateImageAndWaitForCookieAccess(web_contents,
+                                    image_url_post_target_redirect);
   // Read a cookie from an image with the same domain as the target URL.
-  CreateImageAndWaitForCookieAccess(target_image_url);
+  CreateImageAndWaitForCookieAccess(web_contents, target_image_url);
 
   // Redirect to second tracking URL. (This has no effect since the cookie
   // accesses already happened.)
@@ -1627,8 +1596,9 @@ IN_PROC_BROWSER_TEST_F(DIPSBounceDetectorBrowserTest,
 
   EndRedirectChain();
 
-  std::vector<ukm::TestUkmRecorder::HumanReadableUkmEntry> ukm_entries =
-      ukm_recorder.GetEntries("RedirectHeuristic.CookieAccess", {});
+  std::vector<ukm::TestUkmRecorder::HumanReadableUkmEntry>
+      ukm_first_party_entries =
+          ukm_recorder.GetEntries("RedirectHeuristic.CookieAccess", {});
 
   // Expect one UKM entry.
 
@@ -1638,10 +1608,21 @@ IN_PROC_BROWSER_TEST_F(DIPSBounceDetectorBrowserTest,
   // Exclude the cookies reads where:
   // - The tracking site did not appear in the prior redirect chain.
   // - The tracking and target sites had the same domain.
-  ASSERT_EQ(1u, ukm_entries.size());
+  ASSERT_EQ(1u, ukm_first_party_entries.size());
   EXPECT_THAT(
-      ukm_recorder.GetSourceForSourceId(ukm_entries[0].source_id)->url(),
+      ukm_recorder.GetSourceForSourceId(ukm_first_party_entries[0].source_id)
+          ->url(),
       Eq(target_url));
+
+  // Expect one corresponding UKM entry for CookieAccessThirdParty.
+  std::vector<ukm::TestUkmRecorder::HumanReadableUkmEntry>
+      ukm_third_party_entries = ukm_recorder.GetEntries(
+          "RedirectHeuristic.CookieAccessThirdParty", {});
+  ASSERT_EQ(1u, ukm_third_party_entries.size());
+  EXPECT_THAT(
+      ukm_recorder.GetSourceForSourceId(ukm_third_party_entries[0].source_id)
+          ->url(),
+      Eq(tracker_url_pre_target_redirect));
 }
 
 // Tests setting different metrics for the RedirectHeuristic_CookieAccess UKM
@@ -1701,9 +1682,9 @@ IN_PROC_BROWSER_TEST_F(DIPSBounceDetectorBrowserTest,
   observer.Wait();
 
   // Set cookies on image URLs.
-  ASSERT_TRUE(NavigateToSetCookie(&https_server, "sub.b.test",
+  ASSERT_TRUE(NavigateToSetCookie(web_contents, &https_server, "sub.b.test",
                                   /*is_secure_cookie_set=*/true));
-  ASSERT_TRUE(NavigateToSetCookie(&https_server, "sub.c.test",
+  ASSERT_TRUE(NavigateToSetCookie(web_contents, &https_server, "sub.c.test",
                                   /*is_secure_cookie_set=*/true));
 
   // Visit initial page.
@@ -1718,7 +1699,7 @@ IN_PROC_BROWSER_TEST_F(DIPSBounceDetectorBrowserTest,
   ASSERT_TRUE(content::NavigateToURLFromRendererWithoutUserGesture(
       web_contents, target_url_3pc_allowed));
   // Read a cookie from the tracking URL with interaction.
-  CreateImageAndWaitForCookieAccess(image_url_with_interaction);
+  CreateImageAndWaitForCookieAccess(web_contents, image_url_with_interaction);
 
   // Redirect to target URL with cookies blocked.
   ASSERT_TRUE(content::NavigateToURLFromRendererWithoutUserGesture(
@@ -1728,7 +1709,7 @@ IN_PROC_BROWSER_TEST_F(DIPSBounceDetectorBrowserTest,
                                            /*iframe_id=*/"test",
                                            image_url_in_iframe));
   // Read a cookie from the tracking URL in an iframe on the target page.
-  CreateImageAndWaitForCookieAccess(image_url_in_iframe);
+  CreateImageAndWaitForCookieAccess(web_contents, image_url_in_iframe);
 
   // Redirect to final URL.
   ASSERT_TRUE(content::NavigateToURLFromRendererWithoutUserGesture(
@@ -1737,10 +1718,11 @@ IN_PROC_BROWSER_TEST_F(DIPSBounceDetectorBrowserTest,
   EndRedirectChain();
 
   std::vector<ukm::TestUkmRecorder::HumanReadableUkmEntry> ukm_entries =
-      ukm_recorder.GetEntries("RedirectHeuristic.CookieAccess",
-                              {"AccessAllowed", "HoursSinceLastInteraction",
-                               "MillisecondsSinceRedirect",
-                               "OpenerHasSameSiteIframe", "SitesPassedCount"});
+      ukm_recorder.GetEntries(
+          "RedirectHeuristic.CookieAccess",
+          {"AccessId", "AccessAllowed", "HoursSinceLastInteraction",
+           "MillisecondsSinceRedirect", "OpenerHasSameSiteIframe",
+           "SitesPassedCount"});
 
   // Expect UKM entries from both of the cookie accesses, as well as the iframe
   // navigation.
@@ -1756,6 +1738,7 @@ IN_PROC_BROWSER_TEST_F(DIPSBounceDetectorBrowserTest,
   // within the last hour, on a site with 3PC access allowed.
 
   // 1 site was passed: tracker_url_with_interaction -> target_url_3pc_allowed
+  auto access_id_1 = ukm_entries[0].metrics.at("AccessId");
   EXPECT_THAT(
       ukm_recorder.GetSourceForSourceId(ukm_entries[0].source_id)->url(),
       Eq(target_url_3pc_allowed));
@@ -1767,6 +1750,7 @@ IN_PROC_BROWSER_TEST_F(DIPSBounceDetectorBrowserTest,
 
   // The second cookie access was due to the iframe navigation from
   // target_url_3pc_blocked to tracker_url_in_iframe.
+  auto access_id_2 = ukm_entries[1].metrics.at("AccessId");
   EXPECT_THAT(
       ukm_recorder.GetSourceForSourceId(ukm_entries[1].source_id)->url(),
       Eq(target_url_3pc_blocked));
@@ -1778,6 +1762,7 @@ IN_PROC_BROWSER_TEST_F(DIPSBounceDetectorBrowserTest,
 
   // 3 sites were passed: tracker_url_in_iframe -> tracker_url_with_interaction
   // -> target_url_3pc_allowed -> target_url_3pc_blocked
+  auto access_id_3 = ukm_entries[2].metrics.at("AccessId");
   EXPECT_THAT(
       ukm_recorder.GetSourceForSourceId(ukm_entries[2].source_id)->url(),
       Eq(target_url_3pc_blocked));
@@ -1785,6 +1770,31 @@ IN_PROC_BROWSER_TEST_F(DIPSBounceDetectorBrowserTest,
   EXPECT_EQ(ukm_entries[2].metrics.at("OpenerHasSameSiteIframe"),
             static_cast<int32_t>(OptionalBool::kTrue));
   EXPECT_EQ(ukm_entries[2].metrics.at("SitesPassedCount"), 3);
+
+  // Verify there are three corresponding CookieAccessThirdParty entries with
+  // matching access IDs.
+  std::vector<ukm::TestUkmRecorder::HumanReadableUkmEntry>
+      ukm_third_party_entries = ukm_recorder.GetEntries(
+          "RedirectHeuristic.CookieAccessThirdParty", {"AccessId"});
+  ASSERT_EQ(3u, ukm_third_party_entries.size());
+
+  EXPECT_THAT(
+      ukm_recorder.GetSourceForSourceId(ukm_third_party_entries[0].source_id)
+          ->url(),
+      Eq(tracker_url_with_interaction));
+  EXPECT_EQ(ukm_third_party_entries[0].metrics.at("AccessId"), access_id_1);
+
+  EXPECT_THAT(
+      ukm_recorder.GetSourceForSourceId(ukm_third_party_entries[1].source_id)
+          ->url(),
+      Eq(tracker_url_in_iframe));
+  EXPECT_EQ(ukm_third_party_entries[1].metrics.at("AccessId"), access_id_2);
+
+  EXPECT_THAT(
+      ukm_recorder.GetSourceForSourceId(ukm_third_party_entries[2].source_id)
+          ->url(),
+      Eq(tracker_url_in_iframe));
+  EXPECT_EQ(ukm_third_party_entries[2].metrics.at("AccessId"), access_id_3);
 }
 
 class DIPSBounceTrackingDevToolsIssueTest

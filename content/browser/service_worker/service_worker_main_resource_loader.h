@@ -14,6 +14,7 @@
 #include "base/time/time.h"
 #include "content/browser/loader/navigation_loader_interceptor.h"
 #include "content/browser/service_worker/embedded_worker_status.h"
+#include "content/browser/service_worker/service_worker_cache_storage_matcher.h"
 #include "content/browser/service_worker/service_worker_fetch_dispatcher.h"
 #include "content/common/content_export.h"
 #include "content/common/service_worker/forwarded_race_network_request_url_loader_factory.h"
@@ -116,21 +117,8 @@ class CONTENT_EXPORT ServiceWorkerMainResourceLoader
     // occurred so the request was not handled.
     kCompleted,
   };
-  // Indicates what kind of preload request is dispatched before starting
-  // the ServiceWorker.
-  //
-  // kNone: No preload request is triggered. This is the default state.
-  // kRaceNetworkRequest:
-  //    RaceNetworkRequest is triggered.
-  //    TODO(crbug.com/1420517) This will be passed to the renderer and block
-  //    the corresponding request from the ServiceWorker.
-  // kNavigationPreload:
-  //    Enabled when Navigation Preload is triggered.
-  enum class DispatchedPreloadType {
-    kNone,
-    kRaceNetworkRequest,
-    kNavigationPreload
-  };
+
+  enum class RaceNetworkRequestMode { kDefault, kForced, kSkipped };
 
   void DidPrepareFetchEvent(scoped_refptr<ServiceWorkerVersion> version,
                             EmbeddedWorkerStatus initial_worker_status);
@@ -229,6 +217,13 @@ class CONTENT_EXPORT ServiceWorkerMainResourceLoader
 
   void TransitionToStatus(Status new_status);
 
+  // Dispatch preloading request based on the condition and feature enablement
+  // status, and set dispatched_preload_type.
+  void MaybeDispatchPreload(
+      RaceNetworkRequestMode race_network_request_mode,
+      scoped_refptr<ServiceWorkerContextWrapper> context_wrapper,
+      scoped_refptr<ServiceWorkerVersion> version);
+
   bool MaybeStartRaceNetworkRequest(
       scoped_refptr<ServiceWorkerContextWrapper> context_wrapper,
       scoped_refptr<ServiceWorkerVersion> version);
@@ -239,6 +234,17 @@ class CONTENT_EXPORT ServiceWorkerMainResourceLoader
       scoped_refptr<ServiceWorkerContextWrapper> context_wrapper,
       scoped_refptr<ServiceWorkerVersion> version);
 
+  // If the feature is enabled, invoke the preload network request.
+  // See this doc for the high-level code flow in
+  // ServiceWorkerMainResourceLoader.
+  // https://docs.google.com/presentation/d/13A54OUqaBPrgkIQZE3a3CnhT3pe3C70j07HCisjNZlI/edit#slide=id.g2753dd0eed3_0_0
+  bool MaybeStartAutoPreload(
+      scoped_refptr<ServiceWorkerContextWrapper> context_wrapper,
+      scoped_refptr<ServiceWorkerVersion> version);
+
+  bool MaybeStartNavigationPreload(
+      scoped_refptr<ServiceWorkerContextWrapper> context_wrapper);
+
   NavigationLoaderInterceptor::FallbackCallback fallback_callback_;
 
   network::ResourceRequest resource_request_;
@@ -247,11 +253,11 @@ class CONTENT_EXPORT ServiceWorkerMainResourceLoader
   const int frame_tree_node_id_;
 
   std::unique_ptr<ServiceWorkerFetchDispatcher> fetch_dispatcher_;
+  std::unique_ptr<ServiceWorkerCacheStorageMatcher> cache_matcher_;
   std::unique_ptr<StreamWaiter> stream_waiter_;
   // The blob needs to be held while it's read to keep it alive.
   mojo::Remote<blink::mojom::Blob> body_as_blob_;
 
-  DispatchedPreloadType dispatched_preload_type_ = DispatchedPreloadType::kNone;
 
   network::mojom::URLResponseHeadPtr response_head_ =
       network::mojom::URLResponseHead::New();

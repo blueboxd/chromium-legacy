@@ -10,10 +10,11 @@
 #include <stddef.h>
 
 #include "base/apple/bridging.h"
+#include "base/apple/foundation_util.h"
+#include "base/apple/scoped_cftyperef.h"
 #include "base/files/file_util.h"
 #include "base/i18n/case_conversion.h"
-#include "base/mac/foundation_util.h"
-#include "base/mac/scoped_cftyperef.h"
+#import "base/mac/mac_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/hang_watcher.h"
@@ -27,18 +28,27 @@ namespace {
 const int kFileTypePopupTag = 1234;
 
 CFStringRef CreateUTIFromExtension(const base::FilePath::StringType& ext) {
-  base::ScopedCFTypeRef<CFStringRef> ext_cf(base::SysUTF8ToCFStringRef(ext));
+  base::apple::ScopedCFTypeRef<CFStringRef> ext_cf(
+      base::SysUTF8ToCFStringRef(ext));
   return UTTypeCreatePreferredIdentifierForTag(kUTTagClassFilenameExtension,
                                                ext_cf.get(), nullptr);
 }
 
 NSString* GetDescriptionFromExtension(const base::FilePath::StringType& ext) {
-  base::ScopedCFTypeRef<CFStringRef> uti(CreateUTIFromExtension(ext));
-  base::ScopedCFTypeRef<CFStringRef> description(
-      UTTypeCopyDescription(uti.get()));
+  CFStringRef uti(CreateUTIFromExtension(ext));
+  NSString* description((__bridge NSString*)UTTypeCopyDescription(uti));
 
-  if (description && CFStringGetLength(description))
-    return base::apple::CFToNSPtrCast(description.get());
+  if (description.length) {
+    return description;
+  } else {
+    base::apple::ScopedCFTypeRef<CFStringRef> uti(CreateUTIFromExtension(ext));
+    NSString* description =
+        base::apple::CFToNSOwnershipCast(UTTypeCopyDescription(uti.get()));
+
+    if (description && description.length) {
+      return description;
+    }
+  }
 
   // In case no description is found, create a description based on the
   // unknown extension type (i.e. if the extension is .qqq, the we create
@@ -336,7 +346,7 @@ void SelectFileDialogBridge::SetAccessoryView(
       // Crash reports suggest that CreateUTIFromExtension may return nil. Hence
       // we nil check before adding to |file_type_set|. See
       // https://crbug.com/630101 and rdar://27490414.
-      base::ScopedCFTypeRef<CFStringRef> uti(CreateUTIFromExtension(ext));
+      base::apple::ScopedCFTypeRef<CFStringRef> uti(CreateUTIFromExtension(ext));
       if (uti) {
         NSString* uti_ns = base::apple::CFToNSPtrCast(uti.get());
         if (![file_type_array containsObject:uti_ns])
@@ -347,7 +357,7 @@ void SelectFileDialogBridge::SetAccessoryView(
       // back to the original extension correctly. This occurs with dynamic
       // UTIs on 10.7 and 10.8.
       // See https://crbug.com/148840, https://openradar.appspot.com/12316273
-      base::ScopedCFTypeRef<CFStringRef> ext_cf(
+      base::apple::ScopedCFTypeRef<CFStringRef> ext_cf(
           base::SysUTF8ToCFStringRef(ext));
       NSString* ext_ns = base::apple::CFToNSPtrCast(ext_cf.get());
       if (![file_type_array containsObject:ext_ns])
@@ -407,7 +417,7 @@ void SelectFileDialogBridge::OnPanelEnded(bool did_cancel) {
     if (type_ == SelectFileDialogType::kSaveAsFile) {
       NSURL* url = [panel_ URL];
       if ([url isFileURL]) {
-        paths.push_back(base::mac::NSStringToFilePath([url path]));
+        paths.push_back(base::apple::NSStringToFilePath([url path]));
       }
 
       NSView* accessoryView = [panel_ accessoryView];
@@ -445,7 +455,7 @@ void SelectFileDialogBridge::OnPanelEnded(bool did_cancel) {
             continue;
         }
 
-        paths.push_back(base::mac::NSStringToFilePath(path));
+        paths.push_back(base::apple::NSStringToFilePath(path));
       }
     }
   }

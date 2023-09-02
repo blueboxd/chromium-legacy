@@ -54,6 +54,10 @@ using VoidCrasAudioHandlerCallback = base::OnceCallback<void(bool result)>;
 // supported by the board.
 using OnNoiseCancellationSupportedCallback = base::OnceCallback<void()>;
 
+// Callback to handle the dbus message for whether hfp_mic_sr is
+// supported by the board.
+using OnHfpMicSrSupportedCallback = base::OnceCallback<void()>;
+
 // This class is not thread safe. The public functions should be called on
 // browser main thread.
 class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_AUDIO) CrasAudioHandler
@@ -96,6 +100,8 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_AUDIO) CrasAudioHandler
 
   static constexpr base::TimeDelta kMetricsDelayTimerInterval =
       base::Seconds(2);
+  static constexpr char kForceRespectUiGainsHistogramName[] =
+      "Cras.ForceRespectUiGains";
   static constexpr char kInputGainChangedSourceHistogramName[] =
       "Cras.InputGainChangedSource";
   static constexpr char kInputGainChangedHistogramName[] =
@@ -146,6 +152,9 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_AUDIO) CrasAudioHandler
 
     // Called when force respect ui gains state changed.
     virtual void OnForceRespectUiGainsStateChanged();
+
+    // Called when hfp_mic_sr state changed.
+    virtual void OnHfpMicSrStateChanged();
 
     // Called when hotword is detected.
     virtual void OnHotwordTriggered(uint64_t tv_sec, uint64_t tv_nsec);
@@ -375,6 +384,26 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_AUDIO) CrasAudioHandler
   // Makes a DBus call to set the state of input force respect ui gains.
   void SetForceRespectUiGainsState(bool state);
 
+  // Returns hfp_mic_sr supported.
+  bool IsHfpMicSrSupportedForDevice(uint64_t device_id);
+
+  // Gets if hfp_mic_sr is supported by the board.
+  void RequestHfpMicSrSupported(OnHfpMicSrSupportedCallback callback);
+
+  // Simulates hfp_mic_sr support in a test.
+  void SetHfpMicSrSupportedForTesting(bool supported);
+
+  // Gets the pref state of hfp_mic_sr.
+  bool GetHfpMicSrState() const;
+
+  // Refreshes the input device hfp_mic_sr state.
+  void RefreshHfpMicSrState();
+
+  // Updates hfp_mic_sr state in `CrasAudioClient` and
+  // `AudioDevicesPrefHandler` to the provided value. `source` records to
+  // metrics who changed the hfp_mic_sr state.
+  void SetHfpMicSrState(bool hfp_mic_sr_on, AudioSettingsChangeSource source);
+
   // Whether there is alternative input/output audio device.
   bool has_alternative_input() const;
   bool has_alternative_output() const;
@@ -534,6 +563,9 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_AUDIO) CrasAudioHandler
 
   // Returns if noise cancellation is supported in CRAS or not.
   bool noise_cancellation_supported() const;
+
+  // Returns if hfp_mic_sr is supported in CRAS or not.
+  bool hfp_mic_sr_supported() const;
 
   // Returns the system AEC group ID. If no group ID is specified, -1 is
   // returned.
@@ -816,6 +848,10 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_AUDIO) CrasAudioHandler
       OnNoiseCancellationSupportedCallback callback,
       absl::optional<bool> system_noise_cancellation_supported);
 
+  // Handle dbus callback for IsHfpMicSrSupported.
+  void HandleGetHfpMicSrSupported(OnHfpMicSrSupportedCallback callback,
+                                  absl::optional<bool> hfp_mic_sr_supported);
+
   // Handle dbus callback for GetSpeakOnMuteDetectionEnabled.
   void HandleGetSpeakOnMuteDetectionEnabled(
       absl::optional<bool> speak_on_mute_detection_enabled);
@@ -925,6 +961,7 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_AUDIO) CrasAudioHandler
   int32_t system_aec_group_id_ = kSystemAecGroupIdNotAvailable;
   bool system_ns_supported_ = false;
   bool system_agc_supported_ = false;
+  bool hfp_mic_sr_supported_ = false;
 
   int num_active_output_streams_ = 0;
   int32_t num_active_nonchrome_output_streams_ = 0;

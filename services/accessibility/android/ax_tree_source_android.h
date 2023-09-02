@@ -10,7 +10,6 @@
 #include <string>
 #include <vector>
 
-#include "base/allocator/partition_allocator/pointers/raw_ptr.h"
 #include "base/containers/flat_map.h"
 #include "base/memory/raw_ptr.h"
 #include "extensions/browser/api/automation_internal/automation_event_router.h"
@@ -31,7 +30,8 @@ namespace ax::android {
 class AXTreeSourceAndroidTest;
 
 using AXTreeAndroidSerializer =
-    ui::AXTreeSerializer<AccessibilityInfoDataWrapper*>;
+    ui::AXTreeSerializer<AccessibilityInfoDataWrapper*,
+                         std::vector<AccessibilityInfoDataWrapper*>>;
 
 // This class represents the accessibility tree from the focused ARC window.
 class AXTreeSourceAndroid
@@ -242,7 +242,7 @@ class AXTreeSourceAndroid
   absl::optional<std::string> notification_key_;
 
   // Window corresponding this tree.
-  raw_ptr<aura::Window, ExperimentalAsh> window_;
+  raw_ptr<aura::Window, DanglingUntriaged | ExperimentalAsh> window_;
 
   // Cache of mapping from the *Android* window id to the last focused node id.
   std::map<int32_t, int32_t> window_id_to_last_focus_node_id_;

@@ -47,7 +47,7 @@ AttributionReport GetReport(base::Time source_time,
                             base::Time trigger_time,
                             base::TimeDelta expiry = kDefaultExpiry) {
   auto event_report_windows =
-      *attribution_reporting::EventReportWindows::CreateAndTruncate(
+      *attribution_reporting::EventReportWindows::CreateWindowsAndTruncate(
           base::Days(0), {kDefaultFirstWindow, kDefaultSecondWindow}, expiry);
   return ReportBuilder(AttributionInfoBuilder().SetTime(trigger_time).Build(),
                        SourceBuilder(source_time)
@@ -223,7 +223,8 @@ TEST(AttributionStorageDelegateImplTest,
     EXPECT_EQ(AttributionStorageDelegateImpl(AttributionNoiseMode::kNone)
                   .GetRandomizedResponse(
                       source.common_info(), source.event_report_windows(),
-                      source.source_time(), source.max_event_level_reports()),
+                      source.source_time(), source.max_event_level_reports(),
+                      source.randomized_response_rate()),
               absl::nullopt);
   }
 }
@@ -417,10 +418,14 @@ TEST(AttributionStorageDelegateImplTest,
                     /*last_report_window=*/base::Days(30)))
             .BuildStored();
     double value =
-        std::round(AttributionStorageDelegateImpl().ComputeChannelCapacity(
-                       source.common_info(), source.event_report_windows(),
-                       source.source_time(), source.max_event_level_reports()) *
-                   100000.0) /
+        std::round(
+            AttributionStorageDelegateImpl().ComputeChannelCapacity(
+                source.common_info(), source.event_report_windows(),
+                source.source_time(), source.max_event_level_reports(),
+                AttributionStorageDelegateImpl().GetRandomizedResponseRate(
+                    source.event_report_windows(), test_case.source_type,
+                    source.max_event_level_reports())) *
+            100000.0) /
         100000.0;
     EXPECT_EQ(test_case.expected, value);
   }
@@ -587,25 +592,25 @@ TEST(AttributionStorageDelegateImplTest, GetDefaultReportWindows_AsExpected) {
       {
           .source_type = SourceType::kNavigation,
           .last_report_window = base::Days(30),
-          .expected = *attribution_reporting::EventReportWindows::Create(
+          .expected = *attribution_reporting::EventReportWindows::CreateWindows(
               base::Days(0), {base::Days(2), base::Days(7), base::Days(30)}),
       },
       {
           .source_type = SourceType::kNavigation,
           .last_report_window = base::Days(5),
-          .expected = *attribution_reporting::EventReportWindows::Create(
+          .expected = *attribution_reporting::EventReportWindows::CreateWindows(
               base::Days(0), {base::Days(2), base::Days(5)}),
       },
       {
           .source_type = SourceType::kNavigation,
           .last_report_window = base::Days(1),
-          .expected = *attribution_reporting::EventReportWindows::Create(
+          .expected = *attribution_reporting::EventReportWindows::CreateWindows(
               base::Days(0), {base::Days(1)}),
       },
       {
           .source_type = SourceType::kEvent,
           .last_report_window = base::Days(5),
-          .expected = *attribution_reporting::EventReportWindows::Create(
+          .expected = *attribution_reporting::EventReportWindows::CreateWindows(
               base::Days(0), {base::Days(5)}),
       },
   };
@@ -640,37 +645,37 @@ TEST_F(AttributionStorageDelegateImplTestEventFlagEnabled,
       {
           .source_type = SourceType::kNavigation,
           .last_report_window = base::Days(30),
-          .expected = *attribution_reporting::EventReportWindows::Create(
+          .expected = *attribution_reporting::EventReportWindows::CreateWindows(
               base::Days(0), {base::Days(2), base::Days(7), base::Days(30)}),
       },
       {
           .source_type = SourceType::kNavigation,
           .last_report_window = base::Days(5),
-          .expected = *attribution_reporting::EventReportWindows::Create(
+          .expected = *attribution_reporting::EventReportWindows::CreateWindows(
               base::Days(0), {base::Days(2), base::Days(5)}),
       },
       {
           .source_type = SourceType::kNavigation,
           .last_report_window = base::Days(1),
-          .expected = *attribution_reporting::EventReportWindows::Create(
+          .expected = *attribution_reporting::EventReportWindows::CreateWindows(
               base::Days(0), {base::Days(1)}),
       },
       {
           .source_type = SourceType::kEvent,
           .last_report_window = base::Days(30),
-          .expected = *attribution_reporting::EventReportWindows::Create(
+          .expected = *attribution_reporting::EventReportWindows::CreateWindows(
               base::Days(0), {base::Days(2), base::Days(7), base::Days(30)}),
       },
       {
           .source_type = SourceType::kEvent,
           .last_report_window = base::Days(5),
-          .expected = *attribution_reporting::EventReportWindows::Create(
+          .expected = *attribution_reporting::EventReportWindows::CreateWindows(
               base::Days(0), {base::Days(2), base::Days(5)}),
       },
       {
           .source_type = SourceType::kEvent,
           .last_report_window = base::Days(1),
-          .expected = *attribution_reporting::EventReportWindows::Create(
+          .expected = *attribution_reporting::EventReportWindows::CreateWindows(
               base::Days(0), {base::Days(1)}),
       },
   };
@@ -728,37 +733,37 @@ TEST_F(AttributionStorageDelegateImplTestFeatureConfigured,
       {
           .source_type = SourceType::kNavigation,
           .last_report_window = base::Days(30),
-          .expected = *attribution_reporting::EventReportWindows::Create(
+          .expected = *attribution_reporting::EventReportWindows::CreateWindows(
               base::Days(0), {base::Days(1), base::Days(5), base::Days(30)}),
       },
       {
           .source_type = SourceType::kNavigation,
           .last_report_window = base::Days(5),
-          .expected = *attribution_reporting::EventReportWindows::Create(
+          .expected = *attribution_reporting::EventReportWindows::CreateWindows(
               base::Days(0), {base::Days(1), base::Days(5)}),
       },
       {
           .source_type = SourceType::kNavigation,
           .last_report_window = base::Days(1),
-          .expected = *attribution_reporting::EventReportWindows::Create(
+          .expected = *attribution_reporting::EventReportWindows::CreateWindows(
               base::Days(0), {base::Days(1)}),
       },
       {
           .source_type = SourceType::kEvent,
           .last_report_window = base::Days(30),
-          .expected = *attribution_reporting::EventReportWindows::Create(
+          .expected = *attribution_reporting::EventReportWindows::CreateWindows(
               base::Days(0), {base::Days(1), base::Days(5), base::Days(30)}),
       },
       {
           .source_type = SourceType::kEvent,
           .last_report_window = base::Days(5),
-          .expected = *attribution_reporting::EventReportWindows::Create(
+          .expected = *attribution_reporting::EventReportWindows::CreateWindows(
               base::Days(0), {base::Days(1), base::Days(5)}),
       },
       {
           .source_type = SourceType::kEvent,
           .last_report_window = base::Days(1),
-          .expected = *attribution_reporting::EventReportWindows::Create(
+          .expected = *attribution_reporting::EventReportWindows::CreateWindows(
               base::Days(0), {base::Days(1)}),
       },
   };
@@ -809,37 +814,37 @@ TEST_F(AttributionStorageDelegateImplTestInvalidFeatureConfigured,
       {
           .source_type = SourceType::kNavigation,
           .last_report_window = base::Days(30),
-          .expected = *attribution_reporting::EventReportWindows::Create(
+          .expected = *attribution_reporting::EventReportWindows::CreateWindows(
               base::Days(0), {base::Days(2), base::Days(7), base::Days(30)}),
       },
       {
           .source_type = SourceType::kNavigation,
           .last_report_window = base::Days(5),
-          .expected = *attribution_reporting::EventReportWindows::Create(
+          .expected = *attribution_reporting::EventReportWindows::CreateWindows(
               base::Days(0), {base::Days(2), base::Days(5)}),
       },
       {
           .source_type = SourceType::kNavigation,
           .last_report_window = base::Days(1),
-          .expected = *attribution_reporting::EventReportWindows::Create(
+          .expected = *attribution_reporting::EventReportWindows::CreateWindows(
               base::Days(0), {base::Days(1)}),
       },
       {
           .source_type = SourceType::kEvent,
           .last_report_window = base::Days(30),
-          .expected = *attribution_reporting::EventReportWindows::Create(
+          .expected = *attribution_reporting::EventReportWindows::CreateWindows(
               base::Days(0), {base::Days(2), base::Days(7), base::Days(30)}),
       },
       {
           .source_type = SourceType::kEvent,
           .last_report_window = base::Days(5),
-          .expected = *attribution_reporting::EventReportWindows::Create(
+          .expected = *attribution_reporting::EventReportWindows::CreateWindows(
               base::Days(0), {base::Days(2), base::Days(5)}),
       },
       {
           .source_type = SourceType::kEvent,
           .last_report_window = base::Days(1),
-          .expected = *attribution_reporting::EventReportWindows::Create(
+          .expected = *attribution_reporting::EventReportWindows::CreateWindows(
               base::Days(0), {base::Days(1)}),
       },
   };

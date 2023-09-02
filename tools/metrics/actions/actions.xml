@@ -4312,6 +4312,15 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Autofill_UndoFilling">
+  <owner>battre@chromium.org</owner>
+  <owner>jihadghanna@google.com</owner>
+  <description>
+    This user action is logged when a user uses Undo to revert a previous
+    autofill operation.
+  </description>
+</action>
+
 <action name="AutofillAddressesViewed">
   <owner>battre@chromium.org</owner>
   <owner>jsaul@google.com</owner>
@@ -10216,6 +10225,109 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="Glanceables_Classroom_AssignmentPressed">
+  <owner>mmourgos@chromium.org</owner>
+  <owner>tbarzic@chromium.org</owner>
+  <owner>chromeos-launcher@google.com</owner>
+  <description>
+    User clicked on an assignment in the classroom glanceable.
+  </description>
+</action>
+
+<action name="Glanceables_Classroom_AssignmentPressed_DefaultList">
+  <owner>mmourgos@chromium.org</owner>
+  <owner>tbarzic@chromium.org</owner>
+  <owner>chromeos-launcher@google.com</owner>
+  <description>
+    User clicked on an assignment in the classroom glanceable, while the default
+    assignment list is shown.
+  </description>
+</action>
+
+<action name="Glanceables_Classroom_HeaderIconPressed">
+  <owner>mmourgos@chromium.org</owner>
+  <owner>tbarzic@chromium.org</owner>
+  <owner>chromeos-launcher@google.com</owner>
+  <description>
+    User clicked on the header icon button in the classroom glanceable.
+  </description>
+</action>
+
+<action name="Glanceables_Classroom_SeeAllPressed">
+  <owner>mmourgos@chromium.org</owner>
+  <owner>tbarzic@chromium.org</owner>
+  <owner>chromeos-launcher@google.com</owner>
+  <description>
+    User clicked on the see all button in the footer of the classroom
+    glanceable.
+  </description>
+</action>
+
+<action name="Glanceables_Classroom_SelectedListChanged">
+  <owner>mmourgos@chromium.org</owner>
+  <owner>tbarzic@chromium.org</owner>
+  <owner>chromeos-launcher@google.com</owner>
+  <description>
+    User changed the selected assignment list in the classroom glanceable.
+  </description>
+</action>
+
+<action name="Glanceables_Tasks_ActiveTaskListChanged">
+  <owner>yulunwu@chromium.org</owner>
+  <owner>chromeos-launcher@google.com</owner>
+  <description>
+    User changes the active task list for the tasks glanceable.
+  </description>
+</action>
+
+<action name="Glanceables_Tasks_AddTaskButtonShown">
+  <owner>yulunwu@chromium.org</owner>
+  <owner>chromeos-launcher@google.com</owner>
+  <description>
+    The add task button is shown for an empty tasks list.
+  </description>
+</action>
+
+<action name="Glanceables_Tasks_LaunchTasksApp_AddNewTaskButton">
+  <owner>yulunwu@chromium.org</owner>
+  <owner>chromeos-launcher@google.com</owner>
+  <description>
+    User clicked on the add new task button on the tasks glanceable.
+  </description>
+</action>
+
+<action name="Glanceables_Tasks_LaunchTasksApp_FooterButton">
+  <owner>yulunwu@chromium.org</owner>
+  <owner>chromeos-launcher@google.com</owner>
+  <description>
+    User clicked on the see all button in the footer of the tasks glanceable.
+  </description>
+</action>
+
+<action name="Glanceables_Tasks_LaunchTasksApp_HeaderButton">
+  <owner>yulunwu@chromium.org</owner>
+  <owner>chromeos-launcher@google.com</owner>
+  <description>
+    User clicked on the tasks icon in the header of the tasks glanceable.
+  </description>
+</action>
+
+<action name="Glanceables_Tasks_TaskMarkedAsCompleted">
+  <owner>yulunwu@chromium.org</owner>
+  <owner>chromeos-launcher@google.com</owner>
+  <description>
+    User marks a task in the tasks glanceable as completed.
+  </description>
+</action>
+
+<action name="Glanceables_Tasks_TaskMarkedAsIncomplete">
+  <owner>yulunwu@chromium.org</owner>
+  <owner>chromeos-launcher@google.com</owner>
+  <description>
+    User marks a task in the tasks glanceable as incomplete.
+  </description>
+</action>
+
 <action name="Go">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
@@ -12637,6 +12749,21 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="IOSBookmarksAddedInBulk">
+  <owner>nicolasmacbeth@google.com</owner>
+  <owner>bling-get-set-up@google.com</owner>
+  <description>User added bookmarks in bulk.</description>
+</action>
+
+<action name="IOSBookmarksAddedInBulkSnackbarViewButtonClicked">
+  <owner>nicolasmacbeth@google.com</owner>
+  <owner>bling-get-set-up@google.com</owner>
+  <description>
+    Recorded when a user clicks the &quot;view&quot; button in the snackbar
+    generated from bulk adding bookmarks. iOS-only.
+  </description>
+</action>
+
 <action name="IOSBookmarksEditorClosedWithSwipeDown">
   <owner>jlebel@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
@@ -12815,12 +12942,26 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="IOSMagicStackSafetyCheckFreshSignal" not_user_triggered="true">
+  <owner>thegreenfrog@google.com</owner>
+  <owner>bling-team@google.com</owner>
+  <description>Recorded when the Safety Check result has changed.</description>
+</action>
+
 <action name="IOSMagicStackShortcutsFreshSignal" not_user_triggered="true">
   <owner>thegreenfrog@google.com</owner>
   <owner>bling-team@google.com</owner>
   <description>
     Recorded when a valid user action related to Reading List, Bookmarks, Recent
     Tabs, or History occurs.
+  </description>
+</action>
+
+<action name="IOSMagicStackTabResumptionFreshSignal" not_user_triggered="true">
+  <owner>thegreenfrog@google.com</owner>
+  <owner>bling-team@google.com</owner>
+  <description>
+    Recorded when the Tab Resumption module has a new relevant tab.
   </description>
 </action>
 
@@ -19909,6 +20050,14 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="MobileKeyboardAccessoryOpenPasswordManager">
+  <owner>noemies@google.com</owner>
+  <description>
+    Reported when user opens the Password Manager page from keyboard accessory.
+    iOS only.
+  </description>
+</action>
+
 <action name="MobileKeyCommandAddToBookmarks">
   <owner>lpromero@google.com</owner>
   <owner>alionadangla@google.com</owner>
@@ -20308,6 +20457,14 @@ should be able to be added at any place in this file.
   <description>
     Reported when Safe Browsing Standard Protection Settings UI was dismissed.
     iOS only.
+  </description>
+</action>
+
+<action name="MobileMagicStackOpenPasswordCheckup">
+  <owner>noemies@google.com</owner>
+  <description>
+    Reported when user opens the Password Checkup page from the Magic Stack. iOS
+    only.
   </description>
 </action>
 
@@ -21245,6 +21402,14 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="MobilePasswordBreachOpenPasswordManager">
+  <owner>noemies@google.com</owner>
+  <description>
+    Reported when user opens the Password Manager page from the password breach
+    view. iOS only.
+  </description>
+</action>
+
 <action name="MobilePasswordCheckupSettingsBack">
   <owner>noemies@google.com</owner>
   <description>
@@ -21257,6 +21422,120 @@ should be able to be added at any place in this file.
   <owner>noemies@google.com</owner>
   <description>
     Reported when Password Checkup Settings UI was dismissed. iOS only.
+  </description>
+</action>
+
+<action name="MobilePasswordDetailsCopy">
+  <owner>noemies@google.com</owner>
+  <description>
+    Reported when user copies a credential's site, username or passwords from
+    the password details view. iOS only.
+  </description>
+</action>
+
+<action name="MobilePasswordDetailsSettingsBack">
+  <owner>noemies@google.com</owner>
+  <description>
+    Reported when user goes back from Password Details Settings UI to root
+    Settings screen. iOS only.
+  </description>
+</action>
+
+<action name="MobilePasswordDetailsSettingsClose">
+  <owner>noemies@google.com</owner>
+  <description>
+    Reported when Password Details Settings UI was dismissed. iOS only.
+  </description>
+</action>
+
+<action name="MobilePasswordDetailsViewPassword">
+  <owner>noemies@google.com</owner>
+  <description>
+    Reported when user taps the eye icon to view a password from the password
+    details view. iOS only.
+  </description>
+</action>
+
+<action name="MobilePasswordInfobarModalOpenPasswordManager">
+  <owner>noemies@google.com</owner>
+  <description>
+    Reported when user opens the Password Manager page from a password infobar
+    modal. iOS only.
+  </description>
+</action>
+
+<action name="MobilePasswordIssuesCompromisedOpen">
+  <owner>noemies@google.com</owner>
+  <description>
+    Reported when user opens the compromised password issues page. iOS only.
+  </description>
+</action>
+
+<action name="MobilePasswordIssuesOpenPasswordDetails">
+  <owner>noemies@google.com</owner>
+  <description>
+    Reported when user opens the password details page from the password issues
+    page. iOS only.
+  </description>
+</action>
+
+<action name="MobilePasswordIssuesReusedOpen">
+  <owner>noemies@google.com</owner>
+  <description>
+    Reported when user opens the reused password issues page. iOS only.
+  </description>
+</action>
+
+<action name="MobilePasswordIssuesSettingsBack">
+  <owner>noemies@google.com</owner>
+  <description>
+    Reported when user goes back from Password Issues Settings UI to root
+    Settings screen. iOS only.
+  </description>
+</action>
+
+<action name="MobilePasswordIssuesSettingsClose">
+  <owner>noemies@google.com</owner>
+  <description>
+    Reported when Password Issues Settings UI was dismissed. iOS only.
+  </description>
+</action>
+
+<action name="MobilePasswordIssuesWeakOpen">
+  <owner>noemies@google.com</owner>
+  <description>
+    Reported when user opens the weak password issues page. iOS only.
+  </description>
+</action>
+
+<action name="MobilePasswordManagerAddPassword">
+  <owner>noemies@google.com</owner>
+  <description>
+    Reported when user adds a password from the Password Manager page. iOS only.
+  </description>
+</action>
+
+<action name="MobilePasswordManagerOpenPasswordCheckup">
+  <owner>noemies@google.com</owner>
+  <description>
+    Reported when user opens the Password Checkup page from the Password
+    Manager. iOS only.
+  </description>
+</action>
+
+<action name="MobilePasswordManagerOpenPasswordDetails">
+  <owner>noemies@google.com</owner>
+  <description>
+    Reported when user opens the password details page from the Password
+    Manager. iOS only.
+  </description>
+</action>
+
+<action name="MobilePasswordManagerSearchPasswords">
+  <owner>noemies@google.com</owner>
+  <description>
+    Reported when user uses the Password Manager search bar to search their
+    passwords. iOS only.
   </description>
 </action>
 
@@ -21724,6 +22003,14 @@ should be able to be added at any place in this file.
   <owner>sczs@chromium.org</owner>
   <description>
     Reported when Search Engine Settings UI was dismissed. iOS only.
+  </description>
+</action>
+
+<action name="MobileSearchPasswordsWidgetOpenPasswordManager">
+  <owner>noemies@google.com</owner>
+  <description>
+    Reported when user opens the Password Manager page from the Search Passwords
+    widget. iOS only.
   </description>
 </action>
 
@@ -23219,6 +23506,14 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="MobileWebsiteOpenPasswordManager">
+  <owner>noemies@google.com</owner>
+  <description>
+    Reported when user opens the Password Manager page when navigating to a
+    website. iOS only.
+  </description>
+</action>
+
 <action name="MobileWebsiteSettingsOpenedFromMenu">
   <owner>tedchoc@chromium.org</owner>
   <description>Page Info opened via the menu.</description>
@@ -23700,6 +23995,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="NewIncognitoTabTipTargetSelected">
+  <obsolete>Deprecated 8/2023. Unused since a while ago.</obsolete>
   <owner>gambard@chromium.org</owner>
   <description>
     The user opened the tools menu while the 'New Incognito Tab' in-product help
@@ -27564,6 +27860,7 @@ should be able to be added at any place in this file.
 
 <action name="PaymentsUserAuthSuccessfulForMandatoryAuthToggle">
   <owner>koulvipul@google.com</owner>
+  <owner>vinnypersky@google.com</owner>
   <owner>sujiezhu@google.com</owner>
   <description>
     Recorded when user completes a successful auth after trying to change the
@@ -27573,6 +27870,7 @@ should be able to be added at any place in this file.
 
 <action name="PaymentsUserAuthSuccessfulToShowEditLocalCardDialog">
   <owner>koulvipul@google.com</owner>
+  <owner>vinnypersky@google.com</owner>
   <owner>sujiezhu@google.com</owner>
   <description>
     Recorded when user completes a successful auth after trying to edit a local
@@ -27583,6 +27881,7 @@ should be able to be added at any place in this file.
 
 <action name="PaymentsUserAuthTriggeredForMandatoryAuthToggle">
   <owner>koulvipul@google.com</owner>
+  <owner>vinnypersky@google.com</owner>
   <owner>sujiezhu@google.com</owner>
   <description>
     Recorded when user is asked for an auth after trying to change the mandatory
@@ -27592,6 +27891,7 @@ should be able to be added at any place in this file.
 
 <action name="PaymentsUserAuthTriggeredToShowEditLocalCardDialog">
   <owner>koulvipul@google.com</owner>
+  <owner>vinnypersky@google.com</owner>
   <owner>sujiezhu@google.com</owner>
   <description>
     Recorded when user is asked for an auth after trying to edit a local card
@@ -31632,6 +31932,56 @@ should be able to be added at any place in this file.
   <description>User shut down from the shelf shutdown button.</description>
 </action>
 
+<action name="ShortcutCustomization_OpenEditAcceleratorDialog">
+  <owner>jimmyxgong@chromium.com</owner>
+  <owner>cros-peripherals@google.com</owner>
+  <description>
+    User clicks on an editable accelerator to modify it.
+  </description>
+</action>
+
+<action name="ShortcutCustomization_RemoveAccelerator">
+  <owner>jimmyxgong@chromium.com</owner>
+  <owner>cros-peripherals@google.com</owner>
+  <description>User has removed an accelerator.</description>
+</action>
+
+<action name="ShortcutCustomization_ResetAction">
+  <owner>jimmyxgong@chromium.com</owner>
+  <owner>cros-peripherals@google.com</owner>
+  <description>
+    User has clicked on the restore default button for an action.
+  </description>
+</action>
+
+<action name="ShortcutCustomization_ResetAll">
+  <owner>jimmyxgong@chromium.com</owner>
+  <owner>cros-peripherals@google.com</owner>
+  <description>
+    User has clicked on the restore default for all actions button.
+  </description>
+</action>
+
+<action name="ShortcutCustomization_StartAddAccelerator">
+  <owner>jimmyxgong@chromium.com</owner>
+  <owner>cros-peripherals@google.com</owner>
+  <description>User has begun adding a new accelerator.</description>
+</action>
+
+<action name="ShortcutCustomization_StartReplaceAccelerator">
+  <owner>jimmyxgong@chromium.com</owner>
+  <owner>cros-peripherals@google.com</owner>
+  <description>User has begun replacing an accelerator.</description>
+</action>
+
+<action name="ShortcutCustomization_SuccessfullyModified">
+  <owner>jimmyxgong@chromium.com</owner>
+  <owner>cros-peripherals@google.com</owner>
+  <description>
+    User has successfully added or replaced an accelerator.
+  </description>
+</action>
+
 <action name="ShowAccessibilitySettings">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
@@ -32207,6 +32557,16 @@ should be able to be added at any place in this file.
   <description>
     Recorded when the user chooses to import data in the sign in enterprise
     account confirmation dialog.
+  </description>
+</action>
+
+<action name="Signin_HistorySync">
+  <owner>myuu@google.com</owner>
+  <owner>jlebel@chromium.org</owner>
+  <owner>chrome-signin-team@google.com</owner>
+  <description>
+    Recorded when user takes an action on the History Sync Opt-In screen.
+    Recorded on iOS only.
   </description>
 </action>
 
@@ -37528,6 +37888,14 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="UpdateNotificaion.NotificationShown">
+  <owner>jiamingc@google.com</owner>
+  <owner>cros-status-area-eng@google.com</owner>
+  <description>
+    A default priority update notification was displayed.
+  </description>
+</action>
+
 <action name="Updater.ServerCertificateChanged">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
@@ -38933,11 +39301,11 @@ should be able to be added at any place in this file.
       label="For iOSPromoCredentialProviderExtension feature"/>
   <suffix name="iOSPromoDefaultBrowser"
       label="For iOSPromoDefaultBrowser feature"/>
+  <suffix name="iOSPromoPasswordManagerWidget"
+      label="For iOSPromoPasswordManagerWidget feature"/>
   <suffix name="iOSPromoPostRestore" label="For iOSPromoPostRestore feature"/>
   <suffix name="iOSPromoPostRestoreDefaultBrowser"
       label="For iOSPromoPostRestoreDefaultBrowser feature"/>
-  <suffix name="iOSPromoSearchPasswordsWidget"
-      label="For iOSPromoSearchPasswordsWidget feature"/>
   <suffix name="iOSPromoWhatsNew" label="For iOSPromoWhatsNew feature"/>
   <suffix name="iOSShareToolbarItemFeature"
       label="For iOSShareToolbarItemFeature feature"/>
@@ -39596,6 +39964,25 @@ should be able to be added at any place in this file.
   <suffix name="SwitchingButton" label="Switching details page button"/>
   <suffix name="VideoCallButton" label="Video Call details page button"/>
   <affected-action name="DemoMode_Highlights_DetailsPage_Clicked"/>
+</action-suffix>
+
+<action-suffix separator="_" ordering="suffix">
+  <suffix name="Aborted"
+      label="The user or other events (identity disappeared, Chrome shutdown)
+             dismissed the History Sync Opt-In screen"/>
+  <suffix name="AlreadyOptedIn"
+      label="The History Sync Opt-In screen is skipped since the user has
+             already opted-in for history sync previously"/>
+  <suffix name="Completed" label="The user tapped on the accept button"/>
+  <suffix name="Declined" label="The user tapped on the decline button"/>
+  <suffix name="Skipped"
+      label="The History Sync Opt-In screen is skipped (Since sync is
+             disabled by policies or the user is signed-out)"/>
+  <suffix name="Started" label="The History Sync Opt-In screen is shown"/>
+  <suffix name="SwipedDown"
+      label="The user dismissed the History Sync Opt-In screen by swiping
+             down"/>
+  <affected-action name="Signin_HistorySync"/>
 </action-suffix>
 
 </actions>

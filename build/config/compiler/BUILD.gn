@@ -181,6 +181,18 @@ declare_args() {
   # configurations. For more details see
   # https://clang.llvm.org/docs/ShadowCallStack.html
   enable_shadow_call_stack = false
+
+  # Use DWARF simple template names, with the following exceptions:
+  #
+  # * Windows is not supported as it doesn't use DWARF.
+  # * Apple platforms (e.g. MacOS, iPhone, iPad) aren't supported because xcode
+  #   lldb doesn't have the needed changes yet.
+  # TODO(crbug.com/1379070): Remove if the upstream default ever changes.
+  #
+  # This greatly reduces the size of debug builds, at the cost of
+  # debugging information which is required by some specialized
+  # debugging tools.
+  simple_template_names = is_clang && !is_nacl && !is_win && !is_apple
 }
 
 declare_args() {
@@ -859,13 +871,8 @@ config("compiler") {
     cflags += [ "-fcomplete-member-pointers" ]
   }
 
-  # Use DWARF simple template names, with the following exceptions:
-  #
-  # * Windows is not supported as it doesn't use DWARF.
-  # * Apple platforms (e.g. MacOS, iPhone, iPad) aren't supported because xcode
-  #   lldb doesn't have the needed changes yet.
-  # TODO(crbug.com/1379070): Remove if the upstream default ever changes.
-  if (is_clang && !is_nacl && !is_win && !is_apple) {
+  # Use DWARF simple template names.
+  if (simple_template_names) {
     cflags_cc += [ "-gsimple-template-names" ]
   }
 
@@ -1756,6 +1763,16 @@ config("default_warnings") {
         cflags += [ "-Wno-nonportable-include-path" ]
       }
 
+      if (is_fuchsia && llvm_force_head_revision) {
+        cflags_cc += [
+          # TODO(https://crbug.com/1474032): fix and reenable
+          "-Wno-deprecated-literal-operator",
+
+          # TODO(https://crbug.com/1474434): fix and reenable
+          "-Wno-missing-field-initializers",
+        ]
+      }
+
       cflags += [
         "-Wenum-compare-conditional",
 
@@ -1889,7 +1906,14 @@ config("chromium_code") {
       # Non-chromium code is not guaranteed to compile cleanly with
       # _FORTIFY_SOURCE. Also, fortified build may fail when optimizations are
       # disabled, so only do that for Release build.
-      defines += [ "_FORTIFY_SOURCE=2" ]
+      fortify_level = "2"
+
+      # ChromeOS supports a high-quality _FORTIFY_SOURCE=3 implementation
+      # with a few custom glibc patches. Use that if it's available.
+      if (is_chromeos_ash) {
+        fortify_level = "3"
+      }
+      defines += [ "_FORTIFY_SOURCE=" + fortify_level ]
     }
 
     if (is_apple) {

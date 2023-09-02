@@ -34,6 +34,7 @@ class ScalableIphBrowserTestBase : public CustomizableTestEnvBrowserTestBase {
       "Test Notification Button Text";
 
   static constexpr char kTestBubbleId[] = "test_bubble_id";
+  static constexpr char kTestBubbleTitle[] = "Test Bubble Title";
   static constexpr char kTestBubbleText[] = "Test Bubble Text";
   static constexpr char kTestBubbleButtonText[] = "Test Bubble Button Text";
   static constexpr char kTestBubbleIconString[] = "GoogleDocsIcon";
@@ -57,8 +58,17 @@ class ScalableIphBrowserTestBase : public CustomizableTestEnvBrowserTestBase {
 
  protected:
   // Allow sub-classes to initialize scoped feature list with different values.
+  // TODO(b/297565024): Abstract this as we initialize more than just IPH
+  //                    configs in this method.
   virtual void InitializeScopedFeatureList();
+  void AppendVersionNumber(base::FieldTrialParams& params,
+                           const base::Feature& feature,
+                           const std::string& version_number);
+  void AppendVersionNumber(base::FieldTrialParams& params,
+                           const base::Feature& feature);
   virtual void AppendVersionNumber(base::FieldTrialParams& params);
+  void AppendFakeUiParamsNotification(base::FieldTrialParams& params,
+                                      const base::Feature& feature);
   void AppendFakeUiParamsNotification(base::FieldTrialParams& params);
   void AppendFakeUiParamsBubble(base::FieldTrialParams& params);
   static std::string FullyQualified(const base::Feature& feature,
@@ -77,6 +87,8 @@ class ScalableIphBrowserTestBase : public CustomizableTestEnvBrowserTestBase {
 
   void AddOnlineNetwork();
 
+  void EnableTestIphFeatures(
+      const std::vector<const base::Feature*> test_iph_features);
   void EnableTestIphFeature();
   const base::Feature& TestIphFeature() const;
 
@@ -88,6 +100,9 @@ class ScalableIphBrowserTestBase : public CustomizableTestEnvBrowserTestBase {
 
   // A sub-class might override this from `InitializeScopedFeatureList`.
   base::test::ScopedFeatureList scoped_feature_list_;
+
+  // Set false in the constructor to disable `ash::features::kScalableIphDebug`.
+  bool enable_scalable_iph_debug_ = true;
 
  private:
   static void SetTestingFactories(content::BrowserContext* browser_context);

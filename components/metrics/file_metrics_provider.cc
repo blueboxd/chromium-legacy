@@ -100,7 +100,7 @@ void DeleteFileWhenPossible(const base::FilePath& path) {
 // This structure stores all the information about the sources being monitored
 // and their current reporting state.
 struct FileMetricsProvider::SourceInfo {
-  SourceInfo(const Params& params)
+  explicit SourceInfo(const Params& params)
       : type(params.type),
         association(params.association),
         prefs_key(params.prefs_key),
@@ -524,7 +524,9 @@ FileMetricsProvider::AccessResult FileMetricsProvider::CheckAndMapMetricSource(
   // Map the file and validate it.
   std::unique_ptr<base::FilePersistentMemoryAllocator> memory_allocator =
       std::make_unique<base::FilePersistentMemoryAllocator>(
-          std::move(mapped), 0, 0, base::StringPiece(), read_only);
+          std::move(mapped), 0, 0, base::StringPiece(),
+          read_only ? base::FilePersistentMemoryAllocator::kReadOnly
+                    : base::FilePersistentMemoryAllocator::kReadWriteExisting);
   if (memory_allocator->GetMemoryState() ==
       base::PersistentMemoryAllocator::MEMORY_DELETED) {
     return ACCESS_RESULT_MEMORY_DELETED;

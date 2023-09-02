@@ -18,7 +18,10 @@ import org.chromium.content_public.browser.BrowserContextHandle;
 import org.chromium.content_public.browser.ContentFeatureList;
 import org.chromium.content_public.browser.ContentFeatureMap;
 import org.chromium.content_public.browser.HostZoomMap;
+import org.chromium.content_public.browser.SiteZoomInfo;
 import org.chromium.content_public.browser.WebContents;
+
+import java.util.HashMap;
 
 /**
  * Implementations of {@link HostZoomMap}
@@ -36,6 +39,34 @@ public class HostZoomMapImpl {
     public static void setZoomLevel(
             WebContents webContents, double newZoomLevel, double adjustedZoomLevel) {
         HostZoomMapImplJni.get().setZoomLevel(webContents, newZoomLevel, adjustedZoomLevel);
+    }
+
+    /**
+     * Set a new zoom level for the given host.
+     * @param host   host url to update.
+     * @param level  double - new zoom level.
+     * @param browserContextHandle BrowserContextHandle to update host zoom for.
+     */
+    public static void setZoomLevelForHost(
+            BrowserContextHandle browserContextHandle, String host, double level) {
+        HostZoomMapImplJni.get().setZoomLevelForHost(browserContextHandle, host, level);
+    }
+
+    /**
+     * Gets zoom levels for all hosts.
+     * @param browserContextHandle BrowserContextHandle to get host zooms for.
+     */
+    public static HashMap<String, Double> getAllHostZoomLevels(
+            BrowserContextHandle browserContextHandle) {
+        SiteZoomInfo[] siteZoomInfoList =
+                HostZoomMapImplJni.get().getAllHostZoomLevels(browserContextHandle);
+        HashMap<String, Double> hostToZoomLevel = new HashMap<>();
+        if (siteZoomInfoList != null) {
+            for (int i = 0; i < siteZoomInfoList.length; i++) {
+                hostToZoomLevel.put(siteZoomInfoList[i].host, siteZoomInfoList[i].zoomLevel);
+            }
+        }
+        return hostToZoomLevel;
     }
 
     /**
@@ -80,10 +111,27 @@ public class HostZoomMapImpl {
         float systemFontScale = getSystemFontScale();
         // The OS |fontScale| will not be factored in zoom estimation if Page Zoom is disabled; a
         // systemFontScale = 1 will be used in this case.
-        if (!ContentFeatureMap.isEnabled(ContentFeatureList.ACCESSIBILITY_PAGE_ZOOM)) {
+        if (!ContentFeatureMap.isEnabled(ContentFeatureList.ACCESSIBILITY_PAGE_ZOOM)
+                || !shouldAdjustForOSLevel()) {
             systemFontScale = 1;
         }
         return adjustZoomLevel(zoomLevel, systemFontScale, (float) desktopSiteZoomScale);
+    }
+
+    @CalledByNative
+    public static SiteZoomInfo buildSiteZoomInfo(String host, double zoomLevel) {
+        return new SiteZoomInfo(host, zoomLevel);
+    }
+
+    /**
+     * Returns true when the field trial param to adjust zoom for OS-level font setting is
+     * true, false otherwise.
+     * @return bool True if zoom should be adjusted.
+     */
+    public static boolean shouldAdjustForOSLevel() {
+        return ContentFeatureMap.getInstance().getFieldTrialParamByFeatureAsBoolean(
+                ContentFeatureList.ACCESSIBILITY_PAGE_ZOOM,
+                ContentFeatureList.ACCESSIBILITY_PAGE_ZOOM_PARAM, true);
     }
 
     /**
@@ -100,7 +148,8 @@ public class HostZoomMapImpl {
         // No calculation to do if the user has set OS-level |fontScale| to 1 (default), and if the
         // desktop site zoom scale is default (1, or 100%).
         if (MathUtils.areFloatsEqual(systemFontScale, 1f)
-                && MathUtils.areFloatsEqual(desktopSiteZoomScale, 1f)) {
+                        && MathUtils.areFloatsEqual(desktopSiteZoomScale, 1f)
+                || !shouldAdjustForOSLevel()) {
             return zoomLevel;
         }
 
@@ -132,5 +181,7 @@ public class HostZoomMapImpl {
         void setDefaultZoomLevel(BrowserContextHandle context, double newDefaultZoomLevel);
         double getDefaultZoomLevel(BrowserContextHandle context);
         double getDesktopSiteZoomScale(WebContents webContents);
+        SiteZoomInfo[] getAllHostZoomLevels(BrowserContextHandle context);
+        void setZoomLevelForHost(BrowserContextHandle context, String host, double level);
     }
 }

@@ -4,6 +4,7 @@
 <translation id="1006017844123154345">Otvori na mreži</translation>
 <translation id="1036348656032585052">Isključi</translation>
 <translation id="1044891598689252897">Web lokacije će normalno funkcionirati</translation>
+<translation id="1073417869336441572">Kažite nam zašto ste dozvolili kolačiće treće strane i pomozite nam da poboljšamo Chrome. <ph name="BEGIN_LINK" />Pošaljite povratne informacije<ph name="END_LINK" /></translation>
 <translation id="1124090076051167250">Ovim će se obrisati <ph name="DATASIZE" /> podataka i kolačića koje su pohranile web lokacije ili aplikacije na početnom ekranu.</translation>
 <translation id="1178581264944972037">Pauziraj</translation>
 <translation id="1181037720776840403">Ukloni</translation>
@@ -19,7 +20,6 @@
 <translation id="1371239764779356792">Dozvolite web lokaciji da pohranjuje podatke na uređaj</translation>
 <translation id="1383876407941801731">Traži</translation>
 <translation id="1384959399684842514">Preuzimanje je pauzirano</translation>
-<translation id="1409426117486808224">Pojednostavljeni prikaz za otvaranje kartica</translation>
 <translation id="1415402041810619267">URL je odsječen</translation>
 <translation id="1426410128494586442">Da</translation>
 <translation id="1446450296470737166">Puna kontrola MIDI uređaja</translation>
@@ -140,6 +140,7 @@
 <translation id="3386292677130313581">Web lokacije moraju tražiti dozvolu za pristup lokaciji (preporučeno)</translation>
 <translation id="3403537308306431953"><ph name="ZOOM_LEVEL" /> %%</translation>
 <translation id="344449859752187052">Kolačići treće strane su blokirani</translation>
+<translation id="3465378418721443318">{DAYS,plural, =1{Chrome će ponovo blokirati kolačiće sutra}one{Chrome će ponovo blokirati kolačiće za # dan}few{Chrome će ponovo blokirati kolačiće za # dana}other{Chrome će ponovo blokirati kolačiće za # dana}}</translation>
 <translation id="3521663503435878242">Web lokacije pod domenom <ph name="DOMAIN" /></translation>
 <translation id="3538390592868664640">Web lokacijama je blokirano kreiranje 3D mape vašeg okruženja ili praćenje položaja kamere</translation>
 <translation id="3544058026430919413">Kompanija može definirati grupu web lokacija koje mogu koristiti kolačiće da dijele vašu aktivnost u grupi. Ovo je isključeno u anonimnom načinu rada.</translation>
@@ -162,6 +163,7 @@
 <translation id="381841723434055211">Brojevi telefona</translation>
 <translation id="3826050100957962900">Prijava treće strane</translation>
 <translation id="3835233591525155343">Korištenje vašeg uređaja</translation>
+<translation id="3843916486309149084">Chrome će ponovo blokirati kolačiće danas</translation>
 <translation id="385051799172605136">Nazad</translation>
 <translation id="3859306556332390985">Pomakni naprijed</translation>
 <translation id="3895926599014793903">Prisilno omogući zumiranje</translation>
@@ -301,6 +303,7 @@
 <translation id="6367753977865761591">Blokirajte prijavu trećih stana za određenu web lokaciju.</translation>
 <translation id="6388207532828177975">Obriši i vrati na zadano</translation>
 <translation id="6398765197997659313">Napusti prikaz preko cijelog ekrana</translation>
+<translation id="640163077447496506">Ističe danas</translation>
 <translation id="6405650995156823521"><ph name="FIRST_PART" /> • <ph name="SECOND_PART" /></translation>
 <translation id="6439114592976064011">Blokira web lokacijama korištenje uređaja i podataka virtuelne realnosti</translation>
 <translation id="6447842834002726250">Kolačići</translation>
@@ -336,7 +339,6 @@
 <translation id="7000754031042624318">Isključeno u postavkama Androida</translation>
 <translation id="7016516562562142042">Dozvoljeno za trenutni pretraživač</translation>
 <translation id="702275896380648118">Ova web lokacija utvrđuje stvari koje vam se sviđaju, a zatim predlaže oglase drugim web lokacijama. Ova web lokacija prikuplja i vaše teme oglasa iz Chromea da vam prikazuje relevantnije oglase.</translation>
-<translation id="702463548815491781">Preporučeno kada je uključena funkcija TalkBack ili prekidač za pristup.</translation>
 <translation id="7053983685419859001">Blokiraj</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 odabrana kartica}one{# odabrana kartica}few{# odabrane kartice}other{# odabranih kartica}}</translation>
 <translation id="7087918508125750058">Odabrali ste <ph name="ITEM_COUNT" />.  Opcije su dostupne pri vrhu ekrana</translation>
@@ -396,6 +398,7 @@
 <translation id="8131740175452115882">Potvrdi</translation>
 <translation id="8154912474061769055">Moguće je da funkcije neće raditi na mnogim web lokacijama</translation>
 <translation id="8168435359814927499">Sadržaj</translation>
+<translation id="8186479265534291036">Web lokacija ne funkcionira? Kolačići treće strane su blokirani</translation>
 <translation id="8197286292360124385">Dozvoljeno: <ph name="PERMISSION_1" /></translation>
 <translation id="8200772114523450471">Nastavi</translation>
 <translation id="8206354486702514201">Ovu postavku je nametnuo vaš administrator.</translation>

@@ -452,12 +452,13 @@ public abstract class PersistedTabData implements UserData {
      * Signal to {@link PersistedTabData} that deferred startup is complete.
      */
     public static void onDeferredStartup() {
-        PersistedTabDataConfiguration.getFilePersistedTabDataStorage().onDeferredStartup();
+        PersistedTabDataJni.get().onDeferredStartup();
     }
 
     /**
      * Signal to {@link PersistedTabData} that the system is shutting down and to finish
      * any pending saves.
+     * TODO(b/298057345) deprecate PersistedTabData.onShutdown()
      */
     public static void onShutdown() {
         PersistedTabDataConfiguration.getFilePersistedTabDataStorage().onShutdown();
@@ -468,5 +469,6 @@ public abstract class PersistedTabData implements UserData {
     @NativeMethods
     public interface Natives {
         void onTabClose(Tab tab);
+        void onDeferredStartup();
     }
 }

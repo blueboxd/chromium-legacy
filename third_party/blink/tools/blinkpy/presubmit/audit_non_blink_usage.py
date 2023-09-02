@@ -42,6 +42,10 @@ _CONFIG = [
             # absl
             'absl::MakeInt128',
             'absl::MakeUint128',
+            'absl::Int128High64',
+            'absl::Int128Low64',
+            'absl::Uint128High64',
+            'absl::Uint128Low64',
             'absl::get',
             'absl::get_if',
             'absl::holds_alternative',
@@ -68,6 +72,7 @@ _CONFIG = [
             'base::DefaultTickClock',
             'base::ElapsedTimer',
             'base::EnumSet',
+            'base::HashInts',
             'base::JobDelegate',
             'base::JobHandle',
             'base::PostJob',
@@ -728,8 +733,9 @@ _CONFIG = [
 
             # Useful for platform-specific code.
             'base::apple::(CFToNSPtrCast|NSToCFPtrCast|CFToNSOwnershipCast|NSToCFOwnershipCast)',
-            'base::mac::Is(AtMost|AtLeast)?OS.+',
-            'base::ScopedCFTypeRef',
+            'base::apple::ScopedCFTypeRef',
+            'base::mac::MacOSVersion',
+            'base::mac::MacOSMajorVersion',
         ],
         'disallowed': [
             ('base::Bind(|Once|Repeating)',

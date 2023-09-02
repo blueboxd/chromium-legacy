@@ -13,7 +13,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/time/time.h"
-#include "components/autofill/core/browser/autofill_trigger_source.h"
+#include "components/autofill/core/browser/autofill_trigger_details.h"
 #include "components/autofill/core/browser/browser_autofill_manager.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/image/image_unittest_util.h"
@@ -77,7 +77,7 @@ class TestBrowserAutofillManager : public BrowserAutofillManager {
       bool observed_submission) override;
   // Immediately triggers the refill.
   void ScheduleRefill(const FormData& form,
-                      const AutofillTriggerSource trigger_source) override;
+                      const AutofillTriggerDetails& trigger_details) override;
 
   // Unique to TestBrowserAutofillManager:
 
@@ -96,7 +96,8 @@ class TestBrowserAutofillManager : public BrowserAutofillManager {
 
   void AddSeenForm(
       const FormData& form,
-      const std::vector<std::vector<std::pair<PatternSource, ServerFieldType>>>&
+      const std::vector<
+          std::vector<std::pair<HeuristicSource, ServerFieldType>>>&
           heuristic_types,
       const std::vector<ServerFieldType>& server_types,
       bool preserve_values_in_form_structure = false);

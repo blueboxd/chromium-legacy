@@ -30,7 +30,7 @@ MenuManagerFactory* MenuManagerFactory::GetInstance() {
 std::unique_ptr<KeyedService>
 MenuManagerFactory::BuildServiceInstanceForTesting(
     content::BrowserContext* context) {
-  return base::WrapUnique(GetInstance()->BuildServiceInstanceFor(context));
+  return GetInstance()->BuildServiceInstanceForBrowserContext(context);
 }
 
 MenuManagerFactory::MenuManagerFactory()
@@ -47,10 +47,11 @@ MenuManagerFactory::MenuManagerFactory()
 
 MenuManagerFactory::~MenuManagerFactory() = default;
 
-KeyedService* MenuManagerFactory::BuildServiceInstanceFor(
+std::unique_ptr<KeyedService> MenuManagerFactory::BuildServiceInstanceForBrowserContext(
     content::BrowserContext* context) const {
   Profile* profile = Profile::FromBrowserContext(context);
-  return new MenuManager(profile, ExtensionSystem::Get(profile)->state_store());
+  return std::make_unique<MenuManager>(
+      profile, ExtensionSystem::Get(profile)->state_store());
 }
 
 bool MenuManagerFactory::ServiceIsCreatedWithBrowserContext() const {

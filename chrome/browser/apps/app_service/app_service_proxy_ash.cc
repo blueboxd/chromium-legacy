@@ -26,6 +26,7 @@
 #include "chrome/browser/apps/app_service/promise_apps/promise_app_service.h"
 #include "chrome/browser/apps/app_service/publishers/app_publisher.h"
 #include "chrome/browser/apps/app_service/publishers/shortcut_publisher.h"
+#include "chrome/browser/apps/app_service/publishers/standalone_browser_apps.h"
 #include "chrome/browser/apps/app_service/uninstall_dialog.h"
 #include "chrome/browser/ash/app_restore/full_restore_service.h"
 #include "chrome/browser/ash/child_accounts/time_limits/app_time_limit_interface.h"
@@ -188,6 +189,10 @@ AppServiceProxyAsh::BrowserAppInstanceTracker() {
 apps::BrowserAppInstanceRegistry*
 AppServiceProxyAsh::BrowserAppInstanceRegistry() {
   return browser_app_instance_registry_.get();
+}
+
+apps::StandaloneBrowserApps* AppServiceProxyAsh::StandaloneBrowserApps() {
+  return publisher_host_ ? publisher_host_->StandaloneBrowserApps() : nullptr;
 }
 
 void AppServiceProxyAsh::RegisterCrosApiSubScriber(
@@ -431,33 +436,42 @@ void AppServiceProxyAsh::RegisterShortcutPublisher(
   shortcut_publishers_[app_type] = publisher;
 }
 
-void AppServiceProxyAsh::UpdateShortcut(ShortcutPtr delta) {
-  ShortcutRegistryCache()->UpdateShortcut(std::move(delta));
-}
-
 apps::ShortcutRegistryCache* AppServiceProxyAsh::ShortcutRegistryCache() {
   return shortcut_registry_cache_ ? shortcut_registry_cache_.get() : nullptr;
 }
 
 void AppServiceProxyAsh::LaunchShortcut(const ShortcutId& id,
                                         int64_t display_id) {
-  ShortcutView shortcut = ShortcutRegistryCache()->GetShortcut(id);
-  if (!shortcut) {
-    return;
-  }
-  AppType app_type = AppRegistryCache().GetAppType(shortcut->host_app_id);
+  std::string host_app_id = ShortcutRegistryCache()->GetShortcutHostAppId(id);
+  std::string local_id = ShortcutRegistryCache()->GetShortcutLocalId(id);
+
+  AppType app_type = AppRegistryCache().GetAppType(host_app_id);
 
   auto* shortcut_publisher = GetShortcutPublisher(app_type);
   if (!shortcut_publisher) {
     return;
   }
-  shortcut_publisher->LaunchShortcut(shortcut->host_app_id, shortcut->local_id,
-                                     display_id);
+  shortcut_publisher->LaunchShortcut(host_app_id, local_id, display_id);
 
   // TODO(crbug.com/1412708): Add new launch source for shortcut and record
   // metrics.
   // TODO(crbug.com/1412708): Add callback to make launch async to support
   // Lacros.
+}
+
+void AppServiceProxyAsh::RemoveShortcut(const ShortcutId& id,
+                                        UninstallSource uninstall_source,
+                                        gfx::NativeWindow parent_window) {
+  std::string host_app_id = ShortcutRegistryCache()->GetShortcutHostAppId(id);
+  std::string local_id = ShortcutRegistryCache()->GetShortcutLocalId(id);
+  AppType app_type = AppRegistryCache().GetAppType(host_app_id);
+
+  auto* shortcut_publisher = GetShortcutPublisher(app_type);
+  if (!shortcut_publisher) {
+    return;
+  }
+  shortcut_publisher->RemoveShortcut(host_app_id, local_id, uninstall_source);
+  // TODO(crbug.com/1412708): Add remove confirmation dialog.
 }
 
 void AppServiceProxyAsh::Shutdown() {

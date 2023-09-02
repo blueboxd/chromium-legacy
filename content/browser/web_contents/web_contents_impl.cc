@@ -57,6 +57,7 @@
 #include "content/browser/browser_plugin/browser_plugin_embedder.h"
 #include "content/browser/browser_plugin/browser_plugin_guest.h"
 #include "content/browser/child_process_security_policy_impl.h"
+#include "content/browser/closewatcher/close_listener_manager.h"
 #include "content/browser/devtools/protocol/page_handler.h"
 #include "content/browser/devtools/render_frame_devtools_agent_host.h"
 #include "content/browser/display_cutout/display_cutout_host_impl.h"
@@ -106,7 +107,6 @@
 #include "content/browser/web_contents/web_contents_view_child_frame.h"
 #include "content/browser/webui/web_ui_controller_factory_registry.h"
 #include "content/browser/webui/web_ui_impl.h"
-#include "content/browser/xr/service/xr_runtime_manager_impl.h"
 #include "content/common/content_switches_internal.h"
 #include "content/common/features.h"
 #include "content/public/browser/ax_inspect_factory.h"
@@ -205,6 +205,10 @@
 
 #if BUILDFLAG(ENABLE_PPAPI)
 #include "content/browser/media/session/pepper_playback_observer.h"
+#endif
+
+#if BUILDFLAG(ENABLE_VR)
+#include "content/browser/xr/service/xr_runtime_manager_impl.h"
 #endif
 
 #if defined(USE_AURA)
@@ -8281,6 +8285,8 @@ void WebContentsImpl::SetFocusedFrame(FrameTreeNode* node,
     // frames).
     SetFocusedFrameTree(&node->frame_tree());
   }
+
+  CloseListenerManager::DidChangeFocusedFrame(this);
 }
 
 void WebContentsImpl::DidCallFocus() {
@@ -9952,7 +9958,8 @@ void WebContentsImpl::AboutToBeDiscarded(WebContents* new_contents) {
                              new_contents);
 }
 
-base::ScopedClosureRunner WebContentsImpl::CreateDisallowCustomCursorScope() {
+base::ScopedClosureRunner WebContentsImpl::CreateDisallowCustomCursorScope(
+    int max_dimension_dips) {
   auto* render_widget_host_base = GetPrimaryMainFrame()
                                       ->GetRenderWidgetHost()
                                       ->GetRenderWidgetHostViewBase();
@@ -9965,7 +9972,7 @@ base::ScopedClosureRunner WebContentsImpl::CreateDisallowCustomCursorScope() {
   }
 
   auto* cursor_manager = render_widget_host_base->GetCursorManager();
-  return cursor_manager->CreateDisallowCustomCursorScope();
+  return cursor_manager->CreateDisallowCustomCursorScope(max_dimension_dips);
 }
 
 bool WebContentsImpl::CancelPrerendering(FrameTreeNode* frame_tree_node,

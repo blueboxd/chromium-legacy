@@ -6,7 +6,7 @@ import {ESimManagerInterface, ESimManagerObserverInterface, ESimOperationResult,
 import {String16} from 'chrome://resources/mojo/mojo/public/mojom/base/string16.mojom-webui.js';
 
 /** @implements {ESimProfile} */
-class FakeProfile {
+export class FakeProfile {
   constructor(eid, iccid, fakeEuicc) {
     this.properties = {
       eid,
@@ -169,7 +169,7 @@ class FakeProfile {
 }
 
 /** @implements {EuiccInterface} */
-class FakeEuicc {
+export class FakeEuicc {
   constructor(eid, numProfiles, fakeESimManager) {
     this.fakeESimManager_ = fakeESimManager;
     this.properties = {eid};

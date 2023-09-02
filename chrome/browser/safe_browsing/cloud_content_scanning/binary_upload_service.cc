@@ -230,6 +230,16 @@ void BinaryUploadService::Request::set_printer_type(
       ->set_printer_type(printer_type);
 }
 
+void BinaryUploadService::Request::set_password(const std::string& password) {
+  content_analysis_request_.mutable_request_data()->set_decryption_key(
+      password);
+}
+
+void BinaryUploadService::Request::set_reason(
+    enterprise_connectors::ContentAnalysisRequest::Reason reason) {
+  content_analysis_request_.set_reason(reason);
+}
+
 std::string BinaryUploadService::Request::SetRandomRequestToken() {
   DCHECK(request_token().empty());
 
@@ -291,6 +301,19 @@ GURL BinaryUploadService::Request::tab_url() const {
   if (!content_analysis_request_.has_request_data())
     return GURL();
   return GURL(content_analysis_request_.request_data().tab_url());
+}
+
+base::optional_ref<const std::string> BinaryUploadService::Request::password()
+    const {
+  return content_analysis_request_.request_data().has_decryption_key()
+             ? base::optional_ref(
+                   content_analysis_request_.request_data().decryption_key())
+             : absl::nullopt;
+}
+
+enterprise_connectors::ContentAnalysisRequest::Reason
+BinaryUploadService::Request::reason() const {
+  return content_analysis_request_.reason();
 }
 
 void BinaryUploadService::Request::StartRequest() {

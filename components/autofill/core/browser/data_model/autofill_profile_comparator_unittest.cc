@@ -92,7 +92,13 @@ class AutofillProfileComparatorTest : public testing::Test {
     using Super::SAME_TOKENS;
   };
 
-  AutofillProfileComparatorTest() = default;
+  AutofillProfileComparatorTest() {
+    features_.InitWithFeatures(
+        {autofill::features::kAutofillEnableSupportForLandmark,
+         autofill::features::kAutofillEnableSupportForBetweenStreets,
+         autofill::features::kAutofillEnableSupportForAdminLevel2},
+        {});
+  };
 
   AutofillProfileComparatorTest(const AutofillProfileComparatorTest&) = delete;
   AutofillProfileComparatorTest& operator=(
@@ -302,8 +308,6 @@ class AutofillProfileComparatorTest : public testing::Test {
               actual.GetInfo(AutofillType(ADDRESS_HOME_ZIP), kLocale));
     EXPECT_EQ(expected.GetInfo(AutofillType(ADDRESS_HOME_COUNTRY), kLocale),
               actual.GetInfo(AutofillType(ADDRESS_HOME_COUNTRY), kLocale));
-    EXPECT_EQ(expected.GetInfo(AutofillType(ADDRESS_HOME_LANDMARK), kLocale),
-              actual.GetInfo(AutofillType(ADDRESS_HOME_LANDMARK), kLocale));
 
     if (check_structured_address_tokens) {
       EXPECT_EQ(expected.GetInfo(
@@ -330,10 +334,16 @@ class AutofillProfileComparatorTest : public testing::Test {
                     AutofillType(autofill::ADDRESS_HOME_SUBPREMISE), kLocale),
                 actual.GetInfo(AutofillType(autofill::ADDRESS_HOME_SUBPREMISE),
                                kLocale));
+      EXPECT_EQ(expected.GetInfo(AutofillType(ADDRESS_HOME_LANDMARK), kLocale),
+                actual.GetInfo(AutofillType(ADDRESS_HOME_LANDMARK), kLocale));
+      EXPECT_EQ(
+          expected.GetInfo(AutofillType(ADDRESS_HOME_BETWEEN_STREETS), kLocale),
+          actual.GetInfo(AutofillType(ADDRESS_HOME_BETWEEN_STREETS), kLocale));
     }
   }
 
   AutofillProfileComparator comparator_{kLocale};
+  base::test::ScopedFeatureList features_;
 };
 
 }  // namespace
@@ -1207,9 +1217,6 @@ TEST_F(AutofillProfileComparatorTest, MergeLandmarkAndBetweenStreetsAndAdmin2) {
 // Checks for various scenarios for determining mergability of profiles w.r.t.
 // the state.
 TEST_F(AutofillProfileComparatorTest, CheckStatesMergability) {
-  base::test::ScopedFeatureList feature;
-  feature.InitAndEnableFeature(
-      autofill::features::kAutofillUseAlternativeStateNameMap);
   autofill::test::ClearAlternativeStateNameMapForTesting();
   autofill::test::PopulateAlternativeStateNameMapForTesting(
       "DE", "RandomState",
@@ -1451,10 +1458,6 @@ TEST_F(AutofillProfileComparatorTest, IsMergeCandidate) {
 
 // Tests that the profiles are merged when they have common states.
 TEST_F(AutofillProfileComparatorTest, MergeProfilesBasedOnState) {
-  base::test::ScopedFeatureList feature;
-  feature.InitAndEnableFeature(
-      autofill::features::kAutofillUseAlternativeStateNameMap);
-
   autofill::test::ClearAlternativeStateNameMapForTesting();
   autofill::test::PopulateAlternativeStateNameMapForTesting();
   autofill::test::PopulateAlternativeStateNameMapForTesting(

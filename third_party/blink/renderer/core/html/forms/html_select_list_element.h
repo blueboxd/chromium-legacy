@@ -34,6 +34,8 @@ class CORE_EXPORT HTMLSelectListElement final
  public:
   explicit HTMLSelectListElement(Document&);
 
+  void ManuallyAssignSlots() override;
+
   // LocalFrameView::LifecycleNotificationObserver
   void DidFinishLifecycleUpdate(const LocalFrameView&) override;
 
@@ -103,6 +105,8 @@ class CORE_EXPORT HTMLSelectListElement final
   void ListboxWasClosed();
 
   void ResetTypeAheadSessionForTesting();
+
+  void HandleButtonEvent(Event&);
 
  private:
   class SelectMutationCallback;
@@ -174,6 +178,8 @@ class CORE_EXPORT HTMLSelectListElement final
   FormControlState SaveFormControlState() const override;
   void RestoreFormControlState(const FormControlState&) override;
 
+  bool HandleButtonKeyboardEvent(KeyboardEvent&);
+
   class ButtonPartEventListener : public NativeEventListener {
    public:
     explicit ButtonPartEventListener(HTMLSelectListElement* select_list_element)
@@ -187,7 +193,6 @@ class CORE_EXPORT HTMLSelectListElement final
 
     void AddEventListeners(HTMLElement* button_part);
     void RemoveEventListeners(HTMLElement* button_part);
-    bool HandleKeyboardEvent(const KeyboardEvent& event);
 
    private:
     Member<HTMLSelectListElement> select_list_element_;
@@ -232,6 +237,7 @@ class CORE_EXPORT HTMLSelectListElement final
   Member<HTMLSlotElement> listbox_slot_;
   Member<HTMLSlotElement> marker_slot_;
   Member<HTMLSlotElement> selected_value_slot_;
+  Member<HTMLSlotElement> options_slot_;
   Member<HTMLOptionElement> selected_option_;
   Member<HTMLOptionElement> selected_option_when_listbox_opened_;
   Member<HTMLOptionElement> suggested_option_;

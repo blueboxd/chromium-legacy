@@ -7,8 +7,8 @@
 #include <stdint.h>
 
 #include "base/apple/bundle_locations.h"
+#include "base/apple/foundation_util.h"
 #include "base/check_op.h"
-#include "base/mac/foundation_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 
@@ -217,7 +217,7 @@ constexpr int64_t kUpdateFrequencyMs = 200;
 - (void)setDownloads:(int)downloads {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DockTileView* dockTileView =
-      base::mac::ObjCCast<DockTileView>(NSApp.dockTile.contentView);
+      base::apple::ObjCCast<DockTileView>(NSApp.dockTile.contentView);
 
   if (downloads != [dockTileView downloads]) {
     [dockTileView setDownloads:downloads];
@@ -228,7 +228,7 @@ constexpr int64_t kUpdateFrequencyMs = 200;
 - (void)setIndeterminate:(BOOL)indeterminate {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DockTileView* dockTileView =
-      base::mac::ObjCCast<DockTileView>(NSApp.dockTile.contentView);
+      base::apple::ObjCCast<DockTileView>(NSApp.dockTile.contentView);
 
   if (indeterminate != [dockTileView indeterminate]) {
     [dockTileView setIndeterminate:indeterminate];
@@ -239,7 +239,7 @@ constexpr int64_t kUpdateFrequencyMs = 200;
 - (void)setProgress:(float)progress {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DockTileView* dockTileView =
-      base::mac::ObjCCast<DockTileView>(NSApp.dockTile.contentView);
+      base::apple::ObjCCast<DockTileView>(NSApp.dockTile.contentView);
 
   [dockTileView setProgress:progress];
 }

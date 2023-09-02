@@ -34,6 +34,7 @@
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/test/test_windows.h"
 #include "ui/base/ime/ash/extension_ime_util.h"
@@ -146,7 +147,8 @@ class TestInputMethodManager : public im::MockInputMethodManager {
     im::InputMethodDescriptor GetCurrentInputMethod() const override {
       im::InputMethodDescriptor descriptor(
           current_ime_id_, "", "", "", std::vector<std::string>(),
-          false /* is_login_keyboard */, GURL(), GURL());
+          false /* is_login_keyboard */, GURL(), GURL(),
+          /*handwriting_language=*/absl::nullopt);
       return descriptor;
     }
 
@@ -185,8 +187,9 @@ class TestInputMethodManager : public im::MockInputMethodManager {
     void GetInputMethodExtensions(
         im::InputMethodDescriptors* descriptors) override {
       for (const auto& id : enabled_input_method_ids_) {
-        descriptors->push_back(im::InputMethodDescriptor(
-            id, "", "", {}, {}, false, GURL(), GURL()));
+        descriptors->push_back(
+            im::InputMethodDescriptor(id, "", "", {}, {}, false, GURL(), GURL(),
+                                      /*handwriting_language=*/absl::nullopt));
       }
     }
 
@@ -358,12 +361,14 @@ class ArcInputMethodManagerServiceTest : public testing::Test {
   std::unique_ptr<FakeTabletMode> tablet_mode_controller_;
   std::unique_ptr<ash::ArcInputMethodBoundsTracker>
       input_method_bounds_tracker_;
-  raw_ptr<TestInputMethodManager, ExperimentalAsh> input_method_manager_ =
-      nullptr;
+  raw_ptr<TestInputMethodManager, DanglingUntriaged | ExperimentalAsh>
+      input_method_manager_ = nullptr;
   raw_ptr<TestInputMethodManagerBridge, ExperimentalAsh> test_bridge_ =
       nullptr;  // Owned by |service_|
-  raw_ptr<ArcInputMethodManagerService, ExperimentalAsh> service_ = nullptr;
-  raw_ptr<TestWindowDelegate, ExperimentalAsh> window_delegate_ = nullptr;
+  raw_ptr<ArcInputMethodManagerService, DanglingUntriaged | ExperimentalAsh>
+      service_ = nullptr;
+  raw_ptr<TestWindowDelegate, DanglingUntriaged | ExperimentalAsh>
+      window_delegate_ = nullptr;
 };
 
 }  // anonymous namespace

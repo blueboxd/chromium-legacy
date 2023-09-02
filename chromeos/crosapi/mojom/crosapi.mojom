@@ -117,6 +117,7 @@ import "mojo/public/mojom/base/values.mojom";
 import "services/device/public/mojom/hid.mojom";
 import "services/media_session/public/mojom/audio_focus.mojom";
 import "services/media_session/public/mojom/media_controller.mojom";
+import "chromeos/crosapi/mojom/embedded_accessibility_helper.mojom";
 import "url/mojom/url.mojom";
 
 // BrowserInfo is a set of parameters passed to ash from browser (such as
@@ -144,8 +145,8 @@ struct BrowserInfo {
 // please note the milestone when you added it, to help us reason about
 // compatibility between the client applications and older ash-chrome binaries.
 //
-// Next version: 115
-// Next method id: 118
+// Next version: 117
+// Next method id: 120
 [Stable, Uuid="8b79c34f-2bf8-4499-979a-b17cac522c1e",
  RenamedFrom="crosapi.mojom.AshChromeService"]
 interface Crosapi {
@@ -327,6 +328,12 @@ interface Crosapi {
   [MinVersion=71] BindEchoPrivate@74(
       pending_receiver<EchoPrivate> receiver);
 
+  // Binds the accessibility helper client factory interface which allows Lacros
+  // to send information to Ash needed for accessibility features.
+  [MinVersion=115]
+  BindEmbeddedAccessibilityHelperClientFactory@118(
+      pending_receiver<EmbeddedAccessibilityHelperClientFactory> receiver);
+
   // EmojiPicker is a service to allow lacros to open the system emoji picker.
   [MinVersion=85] BindEmojiPicker@89(pending_receiver<EmojiPicker> receiver);
 
@@ -427,6 +434,12 @@ interface Crosapi {
   // Binds the KeystoreService interface for challenging keys.
   // Added in M87.
   BindKeystoreService@2(pending_receiver<KeystoreService> receiver);
+
+  // Binds the Lacros app publisher service, which allows Lacros to connect the
+  // Lacros app to the app service.
+  // Added in M118.
+  [MinVersion=116]
+  BindLacrosAppPublisher@119(pending_receiver<AppPublisher> receiver);
 
   // Binds the LocalPrinter interface for printing.
   // Added in M91.
@@ -1007,8 +1020,8 @@ enum OpenUrlFrom {
 // parameters here. If a new parameter is added and its value is only known
 // after the user has logged in, please update BrowserPostLoginParams as well.
 //
-// Next version: 69
-// Next id: 69
+// Next version: 70
+// Next id: 70
 [Stable, RenamedFrom="crosapi.mojom.LacrosInitParams"]
 struct BrowserInitParams {
   // This is ash-chrome's version of the Crosapi interface. This is used by
@@ -1427,6 +1440,12 @@ struct BrowserInitParams {
   // energy saving UI should defer to the OS.
   [MinVersion=68]
   bool is_cros_battery_saver_available@68;
+
+  // Tells lacros whether to check Floss availability of the machine. The check
+  // is used to block Floss from enabling if the machine is indicated
+  // unavailable.
+  [MinVersion=69]
+  bool is_floss_availability_check_needed@69;
 };
 
 // BrowserPostLoginParams is the subset of parameters in BrowserInitParams

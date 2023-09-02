@@ -35,6 +35,7 @@
 #include <queue>
 
 #include "base/auto_reset.h"
+#include "base/containers/contains.h"
 #include "base/containers/fixed_flat_set.h"
 #include "base/numerics/safe_conversions.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -49,6 +50,7 @@
 #include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
 #include "third_party/blink/renderer/core/dom/css_toggle_inference.h"
 #include "third_party/blink/renderer/core/dom/flat_tree_traversal.h"
+#include "third_party/blink/renderer/core/dom/focus_params.h"
 #include "third_party/blink/renderer/core/dom/layout_tree_builder_traversal.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/dom/node_traversal.h"
@@ -703,13 +705,14 @@ AXObjectInclusion AXNodeObject::ShouldIncludeBasedOnSemantics(
           ax::mojom::blink::Role::kSplitter,
           ax::mojom::blink::Role::kSubscript,
           ax::mojom::blink::Role::kSuperscript,
+          ax::mojom::blink::Role::kTerm,
           ax::mojom::blink::Role::kTime,
           ax::mojom::blink::Role::kVideo,
       });
 
-  if (always_included_computed_roles.find(RoleValue()) !=
-      always_included_computed_roles.end())
+  if (base::Contains(always_included_computed_roles, RoleValue())) {
     return kIncludeObject;
+  }
 
   // Using the title or accessibility description (so we
   // check if there's some kind of accessible name for the element)
@@ -1433,6 +1436,9 @@ ax::mojom::blink::Role AXNodeObject::NativeRoleIgnoringAria() const {
   if (GetNode()->HasTagName(html_names::kDdTag))
     return ax::mojom::blink::Role::kDescriptionListDetail;
 
+  if (GetNode()->HasTagName(html_names::kDfnTag))
+    return ax::mojom::blink::Role::kTerm;
+
   if (GetNode()->HasTagName(html_names::kDtTag))
     return ax::mojom::blink::Role::kDescriptionListTerm;
 
@@ -1522,6 +1528,10 @@ ax::mojom::blink::Role AXNodeObject::NativeRoleIgnoringAria() const {
 
   if (GetNode()->HasTagName(html_names::kStrongTag))
     return ax::mojom::blink::Role::kStrong;
+
+  if (GetNode()->HasTagName(html_names::kSearchTag)) {
+    return ax::mojom::blink::Role::kSearch;
+  }
 
   if (GetNode()->HasTagName(html_names::kDelTag) ||
       GetNode()->HasTagName(html_names::kSTag)) {
@@ -5114,7 +5124,7 @@ bool AXNodeObject::OnNativeFocusAction() {
     }
   }
 
-  element->Focus();
+  element->Focus(FocusParams(FocusTrigger::kUserGesture));
 
   // Calling NotifyUserActivation here allows the browser to activate features
   // that need user activation, such as showing an autofill suggestion.
@@ -5276,10 +5286,9 @@ AXObject::AXObjectVector AXNodeObject::ErrorMessageFromAria() const {
     return AXObjectVector();
   }
 
-  Vector<String> ignored;
   HeapVector<Member<Element>> elements_from_attribute;
   if (!ElementsFromAttribute(el, elements_from_attribute,
-                             html_names::kAriaErrormessageAttr, ignored)) {
+                             html_names::kAriaErrormessageAttr)) {
     return AXObjectVector();
   }
 
@@ -5978,10 +5987,9 @@ String AXNodeObject::Description(
   if (!element)
     return String();
 
-  Vector<String> ids;
   HeapVector<Member<Element>> elements_from_attribute;
   if (ElementsFromAttribute(element, elements_from_attribute,
-                            html_names::kAriaDescribedbyAttr, ids)) {
+                            html_names::kAriaDescribedbyAttr)) {
     // TODO(meredithl): Determine description sources when |aria_describedby| is
     // the empty string, in order to make devtools work with attr-associated
     // elements.
@@ -5992,12 +6000,6 @@ String AXNodeObject::Description(
     AXObjectSet visited;
     description = TextFromElements(true, visited, elements_from_attribute,
                                    related_objects);
-
-    for (auto& member_element : elements_from_attribute)
-      ids.push_back(member_element->GetIdAttribute());
-
-    TokenVectorFromAttribute(element, ids, html_names::kAriaDescribedbyAttr);
-    AXObjectCache().UpdateReverseTextRelations(this, ids);
 
     if (!description.IsNull()) {
       if (description_sources) {

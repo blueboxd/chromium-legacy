@@ -7,10 +7,10 @@
 
 #include <set>
 #include <string>
-#include <unordered_map>
 #include <vector>
 
 #include "base/compiler_specific.h"
+#include "base/containers/flat_map.h"
 #include "base/functional/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
@@ -111,7 +111,8 @@ class EventRouter : public KeyedService,
    public:
     virtual ~TestObserver() = default;
     virtual void OnWillDispatchEvent(const Event& event) = 0;
-    virtual void OnDidDispatchEventToProcess(const Event& event) = 0;
+    virtual void OnDidDispatchEventToProcess(const Event& event,
+                                             int process_id) = 0;
   };
 
   // Gets the EventRouter for |browser_context|.
@@ -357,6 +358,8 @@ class EventRouter : public KeyedService,
                            ExtensionUpdatedEventOnPermissionsChange);
   FRIEND_TEST_ALL_PREFIXES(DeveloperPrivateApiUnitTest,
                            OnUserSiteSettingsChanged);
+  FRIEND_TEST_ALL_PREFIXES(DeveloperPrivateApiUnitTest,
+                           ExtensionUpdatedEventOnPinnedActionsChange);
   FRIEND_TEST_ALL_PREFIXES(DeveloperPrivateApiAllowlistUnitTest,
                            ExtensionUpdatedEventOnAllowlistWarningChange);
   FRIEND_TEST_ALL_PREFIXES(DeveloperPrivateApiWithPermittedSitesUnitTest,
@@ -519,8 +522,7 @@ class EventRouter : public KeyedService,
 
   // Map from base event name to observer.
   using Observers = base::ObserverList<Observer>;
-  using ObserverMap =
-      std::unordered_map<std::string, std::unique_ptr<Observers>>;
+  using ObserverMap = base::flat_map<std::string, std::unique_ptr<Observers>>;
   ObserverMap observer_map_;
 
   base::ObserverList<TestObserver>::Unchecked test_observers_;

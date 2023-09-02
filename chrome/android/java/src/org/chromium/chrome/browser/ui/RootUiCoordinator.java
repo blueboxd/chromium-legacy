@@ -82,6 +82,7 @@ import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.DestroyObserver;
 import org.chromium.chrome.browser.lifecycle.InflationObserver;
 import org.chromium.chrome.browser.lifecycle.NativeInitObserver;
+import org.chromium.chrome.browser.lifecycle.WindowFocusChangedObserver;
 import org.chromium.chrome.browser.merchant_viewer.MerchantTrustMetrics;
 import org.chromium.chrome.browser.merchant_viewer.MerchantTrustSignalsCoordinator;
 import org.chromium.chrome.browser.messages.ChromeMessageAutodismissDurationProvider;
@@ -198,7 +199,8 @@ import java.util.function.Consumer;
  */
 public class RootUiCoordinator
         implements DestroyObserver, InflationObserver, NativeInitObserver,
-                   MenuOrKeyboardActionController.MenuOrKeyboardActionHandler, AppMenuBlocker {
+                   MenuOrKeyboardActionController.MenuOrKeyboardActionHandler, AppMenuBlocker,
+                   WindowFocusChangedObserver {
     protected final UnownedUserDataSupplier<TabObscuringHandler> mTabObscuringHandlerSupplier =
             new TabObscuringHandlerSupplier();
 
@@ -498,7 +500,8 @@ public class RootUiCoordinator
         mStatusBarColorController = new StatusBarColorController(mActivity.getWindow(),
                 DeviceFormFactor.isNonMultiDisplayContextOnTablet(/* Context */ mActivity),
                 mActivity, mStatusBarColorProvider, mLayoutManagerSupplier,
-                mActivityLifecycleDispatcher, mActivityTabProvider, mTopUiThemeColorProvider);
+                mActivityLifecycleDispatcher, mActivityTabProvider, mTopUiThemeColorProvider,
+                mStartSurfaceSupplier);
         mEphemeralTabCoordinatorSupplier = ephemeralTabCoordinatorSupplier;
 
         mPageZoomCoordinator = new PageZoomCoordinator(new PageZoomCoordinatorDelegate() {
@@ -1047,6 +1050,17 @@ public class RootUiCoordinator
         }
 
         return true;
+    }
+
+    // WindowFocusChangedObserver implementation
+
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        if (!hasFocus && mPageZoomCoordinator != null) {
+            // If the window loses focus, dismiss the slider so two windows cannot modify the same
+            // value simultaneously.
+            mPageZoomCoordinator.hide();
+        }
     }
 
     /**

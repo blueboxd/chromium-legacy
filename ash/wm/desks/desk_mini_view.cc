@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "ash/accessibility/accessibility_controller_impl.h"
+#include "ash/public/cpp/style/color_provider.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
@@ -61,7 +62,7 @@ constexpr int kShortcutViewHeight = 20;
 constexpr int kShortcutViewIconSize = 14;
 constexpr int kShortcutViewDistanceFromBottom = 4;
 
-// TODO(conniekxu): After CrOS Next is launched, remove
+// TODO(https://b/291622042): After CrOS Next is launched, remove
 // `kPreviewFocusRingRadiusOld`.
 constexpr int kPreviewFocusRingRadius = 10;
 
@@ -119,9 +120,7 @@ DeskMiniView::DeskMiniView(DeskBarViewBase* owner_bar,
   // accessible name.
   auto* desks_controller = DesksController::Get();
   desk_name_view->SetAccessibleName(
-      desk_->name().empty() ? DesksController::GetDeskDefaultName(
-                                  desks_controller->GetDeskIndex(desk_))
-                            : desk_->name());
+      l10n_util::GetStringUTF16(IDS_ASH_DESKS_DESK_NAME));
 
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
@@ -147,8 +146,8 @@ DeskMiniView::DeskMiniView(DeskBarViewBase* owner_bar,
         switch (mini_view->owner_bar()->type()) {
           case DeskBarViewBase::Type::kOverview:
             // Show focus ring for the overview bar when:
-            //   1) it's highlighted via the customized highlight controller;
-            if (desk_preview->IsViewHighlighted()) {
+            //   1) it's focused via the customized focus cycler;
+            if (desk_preview->is_focused()) {
               return true;
             }
             //   2) dragging an overview item over this mini view;
@@ -221,6 +220,7 @@ DeskMiniView::DeskMiniView(DeskBarViewBase* owner_bar,
         std::make_unique<views::ImageView>(ui::ImageModel::FromVectorIcon(
             kDeskBarSearchIcon, cros_tokens::kIconColorPrimary,
             kShortcutViewIconSize)));
+    desk_shortcut_view_->AddChildView(std::make_unique<views::Label>(u"+"));
     desk_shortcut_label_ =
         desk_shortcut_view_->AddChildView(std::make_unique<views::Label>());
 
@@ -289,8 +289,7 @@ void DeskMiniView::UpdateDeskButtonVisibility() {
     const int desk_index = controller->GetDeskIndex(desk_);
     desk_shortcut_view_->SetVisible(visible &&
                                     desk_index < kDeskBarMaxDeskShortcut);
-    desk_shortcut_label_->SetText(u"+ " +
-                                  base::NumberToString16(desk_index + 1));
+    desk_shortcut_label_->SetText(base::NumberToString16(desk_index + 1));
   }
 }
 
@@ -325,7 +324,7 @@ absl::optional<ui::ColorId> DeskMiniView::GetFocusColor() const {
       if ((owner_bar_->dragged_item_over_bar() &&
            IsPointOnMiniView(
                owner_bar_->last_dragged_item_screen_location())) ||
-          desk_preview_->IsViewHighlighted()) {
+          desk_preview_->is_focused()) {
         return focused_desk_color_id;
       } else if (desk_->is_active() && owner_bar_->overview_grid() &&
                  !owner_bar_->overview_grid()->IsShowingSavedDeskLibrary()) {
@@ -506,36 +505,14 @@ gfx::Size DeskMiniView::CalculatePreferredSize() const {
 }
 
 void DeskMiniView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  desk_preview_->GetAccessibleNodeData(node_data);
-
-  // Note that the desk may have already been destroyed.
   if (desk_) {
-    // Announce desk name.
+    // Add node name for the tast test. In `ash.LaunchSavedDesk`, it should have
+    // a node with the below name for the desk mini view.
     node_data->AddStringAttribute(
         ax::mojom::StringAttribute::kName,
         l10n_util::GetStringFUTF8(IDS_ASH_DESKS_DESK_ACCESSIBLE_NAME,
                                   desk_->name()));
-
-    node_data->AddStringAttribute(
-        ax::mojom::StringAttribute::kValue,
-        l10n_util::GetStringUTF8(
-            desk_->is_active()
-                ? IDS_ASH_DESKS_ACTIVE_DESK_MINIVIEW_A11Y_EXTRA_TIP
-                : IDS_ASH_DESKS_INACTIVE_DESK_MINIVIEW_A11Y_EXTRA_TIP));
   }
-
-  // If the desk can be combined or closed, add a tip to let the user know they
-  // can use an accelerator.
-  if (!DesksController::Get()->CanRemoveDesks())
-    return;
-
-  const std::u16string target_desk_name =
-      DesksController::Get()->GetCombineDesksTargetName(desk_);
-  const std::string extra_tip = l10n_util::GetStringFUTF8(
-      IDS_ASH_OVERVIEW_CLOSABLE_DESK_MINIVIEW_A11Y_EXTRA_TIP, target_desk_name);
-
-  node_data->AddStringAttribute(ax::mojom::StringAttribute::kDescription,
-                                extra_tip);
 }
 
 void DeskMiniView::OnThemeChanged() {
@@ -573,7 +550,6 @@ void DeskMiniView::OnDeskNameChanged(const std::u16string& new_name) {
     return;
 
   desk_name_view_->SetText(new_name);
-  desk_name_view_->SetAccessibleName(new_name);
   desk_preview_->SetAccessibleName(new_name);
 
   Layout();
@@ -666,9 +642,9 @@ void DeskMiniView::OnViewFocused(views::View* observed_view) {
   // user pressed the escape key.
   should_commit_name_changes_ = true;
 
-  // Set the Overview highlight to move focus with the DeskNameView.
+  // Set the overview focus ring on `desk_name_view_`.
   if (owner_bar_->type() == DeskBarViewBase::Type::kOverview) {
-    UpdateOverviewHighlightForFocus(desk_name_view_);
+    MoveFocusToView(desk_name_view_);
   }
 
   if (!defer_select_all_)

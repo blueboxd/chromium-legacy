@@ -271,7 +271,10 @@ void V4L2StatefulVideoDecoder::Initialize(const VideoDecoderConfig& config,
 
   // In legacy code this was good for up to 1080p.
   // TODO(mcasas): Increase this by 4x to support 4K decoding, if needed.
-  constexpr size_t kInputBufferMaxSize = 1024 * 1024;
+  // Input buffer size is increased from 1024 * 1024 to accommodate bistreams
+  // with big data size (CAPCM1_Sand_E.h264, CAPCMNL1_Sand_E.h264).
+  // TODO(hnt): Investigate ways to reduce this size.
+  constexpr size_t kInputBufferMaxSize = 1024 * 1024 * 2;
   const auto v4l2_format = OUTPUT_queue_->SetFormat(
       profile_as_v4l2_fourcc, gfx::Size(), kInputBufferMaxSize);
   if (!v4l2_format) {
@@ -314,10 +317,27 @@ void V4L2StatefulVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
   DVLOGF(3) << buffer->AsHumanReadableString(/*verbose=*/false);
 
   if (buffer->end_of_stream()) {
+    if (!decoder_buffer_and_callbacks_.empty()) {
+      // We still have |buffer|s that haven't been enqueued in |OUTPUT_queue_|,
+      // and if we were to SendStopCommand(), they would not be processed. So
+      // let's store the end_of_stream() |buffer| for later processing.
+      decoder_buffer_and_callbacks_.emplace(std::move(buffer),
+                                            std::move(decode_cb));
+      return;
+    }
+
     if (!OUTPUT_queue_->SendStopCommand()) {
       std::move(decode_cb).Run(DecoderStatus::Codes::kFailed);
       return;
     }
+
+    if (!event_task_runner_) {
+      // Receiving Flush before any "normal" Decode() calls. This is a bit of a
+      // contrived situation but possible, nonetheless ,and also a test case.
+      std::move(decode_cb).Run(DecoderStatus::Codes::kOk);
+      return;
+    }
+
     RearmCAPTUREQueueMonitoring();
     flush_cb_ = std::move(decode_cb);
     return;
@@ -335,12 +355,6 @@ void V4L2StatefulVideoDecoder::Decode(scoped_refptr<DecoderBuffer> buffer,
   }
 
   PrintOutQueueStatesForVLOG(FROM_HERE);
-
-  if (!DrainOUTPUTQueue()) {
-    PLOG(ERROR) << "Failed to drain resources from |OUTPUT_queue_|.";
-    std::move(decode_cb).Run(DecoderStatus::Codes::kFailed);
-    return;
-  }
 
   decoder_buffer_and_callbacks_.emplace(std::move(buffer),
                                         std::move(decode_cb));
@@ -579,6 +593,9 @@ bool V4L2StatefulVideoDecoder::InitializeCAPTUREQueue() {
 
   // We need to "enqueue" allocated buffers in the driver in order to use them.
   TryAndEnqueueCAPTUREQueueBuffers();
+
+  TryAndEnqueueOUTPUTQueueBuffers();
+
   return true;
 }
 
@@ -726,6 +743,7 @@ void V4L2StatefulVideoDecoder::TryAndDequeueCAPTUREQueueBuffers() {
       // buffers before sending the IsLast() buffer.
       scoped_refptr<VideoFrame> video_frame = dequeued_buffer->GetVideoFrame();
       CHECK(video_frame);
+
       video_frame->set_timestamp(
           TimeValToTimeDelta(dequeued_buffer->GetTimeStamp()));
 
@@ -884,6 +902,12 @@ bool V4L2StatefulVideoDecoder::TryAndEnqueueOUTPUTQueueBuffers() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(IsInitialized()) << "V4L2StatefulVideoDecoder must be Initialize()d";
 
+  // First try to recover some free slots in |OUTPUT_queue_|.
+  if (!DrainOUTPUTQueue()) {
+    PLOG(ERROR) << "Failed to drain resources from |OUTPUT_queue_|.";
+    return false;
+  }
+
   for (absl::optional<V4L2WritableBufferRef> v4l2_buffer =
            OUTPUT_queue_->GetFreeBuffer();
        v4l2_buffer && !decoder_buffer_and_callbacks_.empty();
@@ -894,6 +918,18 @@ bool V4L2StatefulVideoDecoder::TryAndEnqueueOUTPUTQueueBuffers() {
     auto media_decode_cb =
         std::move(decoder_buffer_and_callbacks_.front().second);
     decoder_buffer_and_callbacks_.pop();
+
+    if (media_buffer->end_of_stream()) {
+      // We had received an end_of_stream() buffer but there were still pending
+      // |decoder_buffer_and_callbacks_|, so we stored it; we can now process it
+      // and start the Flush.
+      if (!OUTPUT_queue_->SendStopCommand()) {
+        std::move(media_decode_cb).Run(DecoderStatus::Codes::kFailed);
+        return false;
+      }
+      flush_cb_ = std::move(media_decode_cb);
+      return true;
+    }
 
     CHECK_EQ(v4l2_buffer->PlanesCount(), 1u);
     uint8_t* dst = static_cast<uint8_t*>(v4l2_buffer->GetPlaneMapping(0));

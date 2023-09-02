@@ -111,6 +111,10 @@ class AutofillAgent : public content::RenderFrameObserver,
   void FieldTypePredictionsAvailable(
       const std::vector<FormDataPredictions>& forms) override;
   void ClearSection() override;
+  // Besides cases that "actually" clear the form, this function needs to be
+  // called before all filling operations. This is because filled fields are no
+  // longer considered previewed - and any state tied to the preview needs to
+  // be reset.
   void ClearPreviewedForm() override;
   void TriggerSuggestions(
       FieldRendererId field_id,
@@ -303,12 +307,6 @@ class AutofillAgent : public content::RenderFrameObserver,
                             blink::WebFormControlElement& element,
                             blink::WebAutofillState autofill_state);
 
-  // Set |node| to display the given |value| as a preview.  The preview is
-  // visible on screen to the user, but not visible to the page via the DOM or
-  // JavaScript.
-  void DoPreviewFieldWithValue(const std::u16string& value,
-                               blink::WebInputElement& node);
-
   // Notifies the AutofillDriver in the browser process of new and/or removed
   // forms, modulo throttling.
   //
@@ -374,7 +372,7 @@ class AutofillAgent : public content::RenderFrameObserver,
   // Records the last autofill action (Fill or Undo) done by the agent. Used in
   // ClearPreviewedForm to get the default state of previewed fields
   // post-clearing.
-  mojom::AutofillActionType last_autofill_action_ =
+  mojom::AutofillActionType last_action_type_ =
       mojom::AutofillActionType::kFill;
 
   // Last form which was interacted with by the user.
@@ -406,12 +404,6 @@ class AutofillAgent : public content::RenderFrameObserver,
   // performance improvement, so that the IPC channel isn't flooded with
   // messages to close the Autofill popup when it can't possibly be showing.
   bool is_popup_possibly_visible_;
-
-  // If the generation popup is possibly visible. This is tracked to prevent
-  // generation UI from displaying at the same time as password manager UI.
-  // This is needed because generation is shown on field focus vs. field click
-  // for the password manager. TODO(gcasto): Have both UIs show on focus.
-  bool is_generation_popup_possibly_visible_;
 
   // Whether or not a user gesture is required before notification of a text
   // field change. Default to true.

@@ -14,8 +14,8 @@
 #include <memory>
 #include <utility>
 
-#include "base/mac/foundation_util.h"
-#include "base/mac/scoped_cftyperef.h"
+#include "base/apple/foundation_util.h"
+#include "base/apple/scoped_cftyperef.h"
 #include "base/memory/raw_ptr.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -504,7 +504,8 @@ bool content::IsNSRange(id value) {
 }
 
 @implementation BrowserAccessibilityCocoa {
-  raw_ptr<content::BrowserAccessibility> _owner;
+  // Dangling pointer https://crbug.com/1475830.
+  raw_ptr<content::BrowserAccessibility, DanglingUntriaged> _owner;
   // An array of children of this object. Cached to avoid re-computing.
   NSMutableArray* __strong _children;
   // Whether the children have changed and need to be updated.

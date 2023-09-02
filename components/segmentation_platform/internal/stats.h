@@ -110,6 +110,11 @@ void RecordModelDeliveryReceived(SegmentId segment_id,
 void RecordModelDeliverySaveResult(SegmentId segment_id,
                                    proto::ModelSource model_source,
                                    bool success);
+// Records the result of attempting to delete the previous version of a server
+// model metadata.
+void RecordModelDeliveryDeleteResult(SegmentId segment_id,
+                                     proto::ModelSource model_source,
+                                     bool success);
 // Records whether the currently stored segment_id matches the incoming
 // segment_id for a particular model_source, as these are expected to match.
 void RecordModelDeliverySegmentIdMatches(SegmentId segment_id,
@@ -199,8 +204,8 @@ void RecordSignalsListeningCount(
 enum class SegmentationSelectionFailureReason {
   kDeprecatedPlatformDisabled = 0,
   kSelectionAvailableInPrefs = 1,
-  kAtLeastOneSegmentNotReady = 2,
-  kAtLeastOneSegmentSignalsNotCollected = 3,
+  kServerModelDatabaseScoreNotReady = 2,
+  kServerModelSignalsNotCollected = 3,
   kSelectionTtlNotExpired = 4,
   kAtLeastOneModelFailedExecution = 5,
   kAtLeastOneModelNeedsMoreSignals = 6,
@@ -208,23 +213,25 @@ enum class SegmentationSelectionFailureReason {
   kFailedToSaveModelResult = 8,
   kInvalidSelectionResultInPrefs = 9,
   kDBInitFailure = 10,
-  kAtLeastOneSegmentNotAvailable = 11,
-  kAtLeastOneSegmentDefaultSignalNotCollected = 12,
-  kAtLeastOneSegmentDefaultExecFailed = 13,
-  kAtLeastOneSegmentDefaultMissingMetadata = 14,
-  kAtLeastOneSegmentTfliteExecFailed = 15,
+  kServerModelSegmentInfoNotAvailable = 11,
+  kDefaultModelSignalsNotCollected = 12,
+  kDefaultModelExecutionFailed = 13,
+  kDefaultModelSegmentInfoNotAvailable = 14,
+  kServerModelExecutionFailed = 15,
   kSelectionAvailableInProtoPrefs = 16,
   kInvalidSelectionResultInProtoPrefs = 17,
   kProtoPrefsUpdateNotRequired = 18,
   kProtoPrefsUpdated = 19,
-  kScoreUsedFromDatabase = 20,
-  kScoreComputedFromDefaultModel = 21,
-  kScoreComputedFromTfliteModel = 22,
+  kServerModelDatabaseScoreUsed = 20,
+  kDefaultModelExecutionScoreUsed = 21,
+  kServerModelExecutionScoreUsed = 22,
   kMultiOutputNotSupported = 23,
   kOnDemandModelExecutionFailed = 24,
   kClassificationResultFromPrefs = 25,
   kClassificationResultNotAvailableInPrefs = 26,
-  kMaxValue = kClassificationResultNotAvailableInPrefs,
+  kDefaultModelDatabaseScoreUsed = 27,
+  kDefaultModelDatabaseScoreNotReady = 28,
+  kMaxValue = kDefaultModelDatabaseScoreNotReady,
 };
 
 // Records the reason for failure or success to compute a segment selection.
@@ -259,7 +266,8 @@ enum class SegmentationModelAvailability {
   kModelHandlerCreated = 0,
   kModelAvailable = 1,
   kMetadataInvalid = 2,
-  kMaxValue = kMetadataInvalid
+  kNoModelAvailable = 3,
+  kMaxValue = kNoModelAvailable
 };
 // Records the availability of segmentation models for each target needed.
 void RecordModelAvailability(SegmentId segment_id,

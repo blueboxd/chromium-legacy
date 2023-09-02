@@ -4,6 +4,7 @@
 <translation id="1006017844123154345">Отвори онлајн</translation>
 <translation id="1036348656032585052">Искључи</translation>
 <translation id="1044891598689252897">Сајтови ће нормално радити</translation>
+<translation id="1073417869336441572">Помозите нам да побољшамо Chrome тако што ћете нам рећи зашто сте дозволили колачиће треће стране. <ph name="BEGIN_LINK" />Пошаљите повратне информације<ph name="END_LINK" /></translation>
 <translation id="1124090076051167250">Овим бришете <ph name="DATASIZE" /> података и колачића које чувају сајтови или апликације на почетном екрану.</translation>
 <translation id="1178581264944972037">Паузирај</translation>
 <translation id="1181037720776840403">Уклони</translation>
@@ -19,7 +20,6 @@
 <translation id="1371239764779356792">Дозволите да сајт чува податке на уређају</translation>
 <translation id="1383876407941801731">Претражи</translation>
 <translation id="1384959399684842514">Преузимање је паузирано</translation>
-<translation id="1409426117486808224">Поједностављен приказ отворених картица</translation>
 <translation id="1415402041810619267">URL је скраћен</translation>
 <translation id="1426410128494586442">Да</translation>
 <translation id="1446450296470737166">Пуна контрола над MIDI уређајима</translation>
@@ -140,6 +140,7 @@
 <translation id="3386292677130313581">Питај пре него што дозволиш сајтовима да знају локацију (препоручено)</translation>
 <translation id="3403537308306431953"><ph name="ZOOM_LEVEL" />%%</translation>
 <translation id="344449859752187052">Колачићи треће стране су блокирани</translation>
+<translation id="3465378418721443318">{DAYS,plural, =1{Chrome ће сутра поново блокирати колачиће}one{Још # дан док Chrome поново не блокира колачиће}few{Још # дана док Chrome поново не блокира колачиће}other{Још # дана док Chrome поново не блокира колачиће}}</translation>
 <translation id="3521663503435878242">Сајтови на домену <ph name="DOMAIN" /></translation>
 <translation id="3538390592868664640">Спречите сајтове да праве 3D мапу окружења или да прате положај камере</translation>
 <translation id="3544058026430919413">Предузеће може да дефинише групу сајтова који могу да користе колачиће да би делили активности у групи. Ово је искључено у режиму без архивирања.</translation>
@@ -162,6 +163,7 @@
 <translation id="381841723434055211">Бројеви телефона</translation>
 <translation id="3826050100957962900">Пријављивање треће стране</translation>
 <translation id="3835233591525155343">Коришћење уређаја</translation>
+<translation id="3843916486309149084">Chrome ће данас поново блокирати колачиће</translation>
 <translation id="385051799172605136">Назад</translation>
 <translation id="3859306556332390985">Премотај унапред</translation>
 <translation id="3895926599014793903">Принудно омогући зумирање</translation>
@@ -301,6 +303,7 @@
 <translation id="6367753977865761591">Блокирајте пријављивање трећих страна за одређени сајт.</translation>
 <translation id="6388207532828177975">Обриши и ресетуј</translation>
 <translation id="6398765197997659313">Изађи из режима целог екрана</translation>
+<translation id="640163077447496506">Истиче данас</translation>
 <translation id="6405650995156823521"><ph name="FIRST_PART" /> • <ph name="SECOND_PART" /></translation>
 <translation id="6439114592976064011">Не дозвољава сајтовима да користе уређај и податке виртуелне реалности</translation>
 <translation id="6447842834002726250">Колачићи</translation>
@@ -336,7 +339,6 @@
 <translation id="7000754031042624318">Искључено је у Android подешавањима</translation>
 <translation id="7016516562562142042">Дозвољено је за актуелни претраживач</translation>
 <translation id="702275896380648118">Овај сајт одређује ствари које вам се свиђају, а затим предлаже огласе за друге сајтове. Овај сајт такође прима податке о вашим темама огласа из Chrome-а да би вам приказивао релевантније огласе.</translation>
-<translation id="702463548815491781">Препоручујемо вам када укључите TalkBack или приступ помоћу прекидача</translation>
 <translation id="7053983685419859001">Блокирај</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{Изабрано: 1}one{Изабрано: #}few{Изабрано: #}other{Изабрано: #}}</translation>
 <translation id="7087918508125750058">Изабрали сте <ph name="ITEM_COUNT" />. Опције су доступне при врху екрана</translation>
@@ -396,6 +398,7 @@
 <translation id="8131740175452115882">Потврди</translation>
 <translation id="8154912474061769055">Функције на многим сајтовима могу да не раде</translation>
 <translation id="8168435359814927499">Садржај</translation>
+<translation id="8186479265534291036">Да ли сајт не ради? Колачићи треће стране су блокирани</translation>
 <translation id="8197286292360124385">Одобрена је дозвола <ph name="PERMISSION_1" /></translation>
 <translation id="8200772114523450471">Настави</translation>
 <translation id="8206354486702514201">Ово подешавање примењује администратор.</translation>

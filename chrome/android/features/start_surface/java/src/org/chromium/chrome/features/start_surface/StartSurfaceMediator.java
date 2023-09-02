@@ -72,6 +72,8 @@ import org.chromium.chrome.browser.lens.LensMetrics;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.PauseResumeWithNativeObserver;
 import org.chromium.chrome.browser.logo.LogoCoordinator;
+import org.chromium.chrome.browser.logo.LogoUtils;
+import org.chromium.chrome.browser.logo.LogoView;
 import org.chromium.chrome.browser.ntp.NewTabPageLaunchOrigin;
 import org.chromium.chrome.browser.omnibox.OmniboxFocusReason;
 import org.chromium.chrome.browser.omnibox.OmniboxStub;
@@ -152,6 +154,7 @@ class StartSurfaceMediator implements TabSwitcher.TabSwitcherViewObserver, View.
     private final CallbackController mCallbackController = new CallbackController();
     private final View mLogoContainerView;
     private final boolean mIsFeedGoneImprovementEnabled;
+    private final boolean mMoveDownLogo;
     private final ActivityLifecycleDispatcher mActivityLifecycleDispatcher;
     private final TabCreatorManager mTabCreatorManager;
     private final boolean mUseMagicSpace;
@@ -287,6 +290,7 @@ class StartSurfaceMediator implements TabSwitcher.TabSwitcherViewObserver, View.
         // causes inconsistency with toolbar's check.
         mIsFeedGoneImprovementEnabled =
                 ReturnToChromeUtil.shouldImproveStartWhenFeedIsDisabled(context);
+        mMoveDownLogo = ReturnToChromeUtil.moveDownLogo();
         mIsStartSurfaceRefactorEnabled = ReturnToChromeUtil.isStartSurfaceRefactorEnabled(context);
         mTabSwitcherClickHandler = tabSwitcherClickHandler;
         mProfileSupplier = profileSupplier;
@@ -1435,12 +1439,12 @@ class StartSurfaceMediator implements TabSwitcher.TabSwitcherViewObserver, View.
 
     private void setMVTilesVisibility(boolean isVisible) {
         if (mInitializeMVTilesRunnable == null) return;
-        if (isVisible && mInitializeMVTilesRunnable != null) mInitializeMVTilesRunnable.run();
         mPropertyModel.set(MV_TILES_VISIBLE, isVisible);
+        if (isVisible && mInitializeMVTilesRunnable != null) mInitializeMVTilesRunnable.run();
     }
 
     private void setLogoVisibility(boolean isVisible) {
-        if (!mIsFeedGoneImprovementEnabled) return;
+        if (!mIsFeedGoneImprovementEnabled && !mMoveDownLogo) return;
 
         if (isVisible && mLogoCoordinator == null) {
             mLogoCoordinator = initializeLogo();
@@ -1648,10 +1652,14 @@ class StartSurfaceMediator implements TabSwitcher.TabSwitcherViewObserver, View.
                             urlParams, /*incognito=*/false, mParentTabSupplier.get());
                 });
         mLogoContainerView.setVisibility(View.VISIBLE);
+        LogoView logoView = mLogoContainerView.findViewById(R.id.search_provider_logo);
+        if (mIsSurfacePolishEnabled) {
+            LogoUtils.setLogoViewLayoutParams(logoView, mContext.getResources(), false,
+                    StartSurfaceConfiguration.SURFACE_POLISH_LESS_BRAND_SPACE.getValue());
+        }
 
-        mLogoCoordinator = new LogoCoordinator(mContext, logoClickedCallback,
-                mLogoContainerView.findViewById(R.id.search_provider_logo), true, null, null,
-                isHomepageShown(), this);
+        mLogoCoordinator = new LogoCoordinator(
+                mContext, logoClickedCallback, logoView, true, null, null, isHomepageShown(), this);
         return mLogoCoordinator;
     }
 
@@ -1663,11 +1671,7 @@ class StartSurfaceMediator implements TabSwitcher.TabSwitcherViewObserver, View.
 
     private void tweakMarginsBetweenSections() {
         Resources resources = mContext.getResources();
-        if (mIsSurfacePolishEnabled) {
-            mPropertyModel.set(TASKS_SURFACE_BODY_TOP_MARGIN,
-                    resources.getDimensionPixelSize(
-                            R.dimen.tasks_surface_body_top_margin_polished));
-        } else {
+        if (!mIsSurfacePolishEnabled) {
             mPropertyModel.set(TASKS_SURFACE_BODY_TOP_MARGIN,
                     resources.getDimensionPixelSize(R.dimen.tasks_surface_body_top_margin));
         }

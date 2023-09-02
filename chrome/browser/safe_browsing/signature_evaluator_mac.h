@@ -9,8 +9,8 @@
 
 #include <string>
 
+#include "base/apple/scoped_cftyperef.h"
 #include "base/files/file_path.h"
-#include "base/mac/scoped_cftyperef.h"
 #include "chrome/browser/safe_browsing/incident_reporting/binary_integrity_incident.h"
 
 namespace safe_browsing {
@@ -59,10 +59,10 @@ class MacSignatureEvaluator {
   bool has_requirement_;
 
   // The static code object constructed from the code object on disk.
-  base::ScopedCFTypeRef<SecStaticCodeRef> code_;
+  base::apple::ScopedCFTypeRef<SecStaticCodeRef> code_;
 
   // The requirement object constructed from the requirement string.
-  base::ScopedCFTypeRef<SecRequirementRef> requirement_;
+  base::apple::ScopedCFTypeRef<SecRequirementRef> requirement_;
 };
 
 }  // namespace safe_browsing

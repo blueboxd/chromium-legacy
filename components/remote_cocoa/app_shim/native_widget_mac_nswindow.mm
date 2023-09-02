@@ -4,9 +4,9 @@
 
 #import "components/remote_cocoa/app_shim/native_widget_mac_nswindow.h"
 
+#include "base/apple/foundation_util.h"
 #include "base/auto_reset.h"
 #include "base/debug/dump_without_crashing.h"
-#include "base/mac/foundation_util.h"
 #include "base/mac/mac_util.h"
 #include "base/memory/raw_ptr_exclusion.h"
 #include "base/trace_event/trace_event.h"
@@ -247,6 +247,7 @@ NSPoint clickedLocation;
   BOOL _preventKeyWindow;
   BOOL _isTooltip;
   BOOL _isHeadless;
+  BOOL _isShufflingForOrdering;
   BOOL _miniaturizationInProgress;
   BOOL _isOrderingOut;
 }
@@ -254,6 +255,7 @@ NSPoint clickedLocation;
 @synthesize bridge = _bridge;
 @synthesize isTooltip = _isTooltip;
 @synthesize isHeadless = _isHeadless;
+@synthesize isShufflingForOrdering = _isShufflingForOrdering;
 @synthesize childWindowAddedHandler = _childWindowAddedHandler;
 @synthesize childWindowRemovedHandler = _childWindowRemovedHandler;
 @synthesize commandDispatchParentOverride = _commandDispatchParentOverride;
@@ -312,6 +314,10 @@ NSPoint clickedLocation;
 // Overridden to ensure that removing a child window does not trigger a Space
 // change, and to perform post-removal operations.
 - (void)removeChildWindow:(NSWindow*)childWindow {
+  if (self != childWindow.parentWindow) {
+    return;
+  }
+
   // For any non-Chrome windows (i.e. those created by the frameworks),
   // remove as usual. Also continue as usual if we're on the active space,
   // or we happen to be a child of another window.
@@ -411,7 +417,7 @@ NSPoint clickedLocation;
 // Private methods.
 
 - (ViewsNSWindowDelegate*)viewsNSWindowDelegate {
-  return base::mac::ObjCCastStrict<ViewsNSWindowDelegate>([self delegate]);
+  return base::apple::ObjCCastStrict<ViewsNSWindowDelegate>([self delegate]);
 }
 
 - (BOOL)hasViewsMenuActive {
@@ -563,8 +569,8 @@ NSPoint clickedLocation;
   [super sendEvent:event];
 }
 
-- (void)reallyOrderWindow:(NSWindowOrderingMode)orderingMode
-               relativeTo:(NSInteger)otherWindowNumber {
+- (void)orderWindowByShuffling:(NSWindowOrderingMode)orderingMode
+                    relativeTo:(NSInteger)otherWindowNumber {
   NativeWidgetMacNSWindow* parent =
       static_cast<NativeWidgetMacNSWindow*>([self parentWindow]);
 
@@ -589,6 +595,8 @@ NSPoint clickedLocation;
     return;
   }
 
+  base::AutoReset<BOOL> shuffling(&_isShufflingForOrdering, YES);
+
   // `otherWindow` is nil if `otherWindowNumber` is 0. In this case, place
   // `self` at the top / bottom, depending on `orderingMode`.
   NSWindow* otherWindow = [NSApp windowWithWindowNumber:otherWindowNumber];
@@ -605,7 +613,7 @@ NSPoint clickedLocation;
 // hardly ever calls display, and reports -[NSWindow isVisible] incorrectly
 // when ordering in a window for the first time.
 // Note that this methods has no effect for children windows. Use
-// -reallyOrderWindow:relativeTo: instead.
+// -orderWindowByShuffling:relativeTo: instead.
 - (void)orderWindow:(NSWindowOrderingMode)orderingMode
          relativeTo:(NSInteger)otherWindowNumber {
   [super orderWindow:orderingMode relativeTo:otherWindowNumber];
@@ -613,7 +621,7 @@ NSPoint clickedLocation;
 }
 
 - (void)miniaturize:(id)sender {
-  static const BOOL isMacOS13OrHigher = base::mac::IsAtLeastOS13();
+  static const BOOL isMacOS13OrHigher = base::mac::MacOSMajorVersion() >= 13;
   // On macOS 13, the miniaturize operation appears to no longer be "atomic"
   // because of non-blocking roundtrip IPC with the Dock. We want to note here
   // that miniaturization is in progress. The process completes when we
@@ -640,7 +648,7 @@ NSPoint clickedLocation;
   // _miniaturizationInProgress is NO, the miniaturization process was
   // cancelled by a call to -makeKeyAndOrderFront:. In that case, we don't want
   // to proceed with miniaturization.
-  static const BOOL isMacOS13OrHigher = base::mac::IsAtLeastOS13();
+  static const BOOL isMacOS13OrHigher = base::mac::MacOSMajorVersion() >= 13;
   if (isMacOS13OrHigher && !_miniaturizationInProgress) {
     return;
   }
@@ -662,7 +670,7 @@ NSPoint clickedLocation;
   // arrange for our removal after our parent becomes the active window
   // to avoid triggering a Space switch.
   NativeWidgetMacNSWindow* parentWindow =
-      base::mac::ObjCCast<NativeWidgetMacNSWindow>([self parentWindow]);
+      base::apple::ObjCCast<NativeWidgetMacNSWindow>([self parentWindow]);
   if (parentWindow != nil && ![parentWindow isOnActiveSpace]) {
     [parentWindow removeChildWindowOnActivation:self];
   } else {
@@ -918,7 +926,7 @@ NSPoint clickedLocation;
 
   for (NSWindow* childWindow in self.childWindows) {
     NativeWidgetMacNSWindow* nativeWidgetMacNSWindow =
-        base::mac::ObjCCast<NativeWidgetMacNSWindow>(childWindow);
+        base::apple::ObjCCast<NativeWidgetMacNSWindow>(childWindow);
 
     [nativeWidgetMacNSWindow
         performSelector:@selector(processChildWindowOrderingCommands)
@@ -928,8 +936,8 @@ NSPoint clickedLocation;
 
 - (void)processChildWindowOrderingCommands {
   for (const auto& command : _windowOrderingCommands) {
-    [self reallyOrderWindow:command.windowOrderingMode
-                 relativeTo:command.otherWindowNumber];
+    [self orderWindowByShuffling:command.windowOrderingMode
+                      relativeTo:command.otherWindowNumber];
   }
   _windowOrderingCommands.clear();
 }

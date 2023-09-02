@@ -66,8 +66,8 @@ class TestAmbientObserver
     ambient_mode_enabled_ = ambient_mode_enabled;
   }
 
-  void OnAnimationThemeChanged(ash::AmbientTheme animation_theme) override {
-    animation_theme_ = animation_theme;
+  void OnAmbientThemeChanged(ash::AmbientTheme ambient_theme) override {
+    ambient_theme_ = ambient_theme;
   }
 
   void OnTopicSourceChanged(ash::AmbientModeTopicSource topic_source) override {
@@ -112,9 +112,9 @@ class TestAmbientObserver
     return ambient_mode_enabled_;
   }
 
-  ash::AmbientTheme animation_theme() {
+  ash::AmbientTheme ambient_theme() {
     ambient_observer_receiver_.FlushForTesting();
-    return animation_theme_;
+    return ambient_theme_;
   }
 
   ash::AmbientModeTopicSource topic_source() {
@@ -149,7 +149,7 @@ class TestAmbientObserver
 
   bool ambient_mode_enabled_ = false;
 
-  ash::AmbientTheme animation_theme_ = ash::AmbientTheme::kSlideshow;
+  ash::AmbientTheme ambient_theme_ = ash::AmbientTheme::kSlideshow;
   uint32_t duration_ = 10;
   ash::AmbientModeTopicSource topic_source_ =
       ash::AmbientModeTopicSource::kArtGallery;
@@ -243,9 +243,9 @@ class PersonalizationAppAmbientProviderImplTest : public ash::AshTestBase {
     return test_ambient_observer_.is_ambient_mode_enabled();
   }
 
-  ash::AmbientTheme ObservedAnimationTheme() {
+  ash::AmbientTheme ObservedAmbientTheme() {
     ambient_provider_remote_.FlushForTesting();
-    return test_ambient_observer_.animation_theme();
+    return test_ambient_observer_.ambient_theme();
   }
 
   ash::AmbientModeTopicSource ObservedTopicSource() {
@@ -283,8 +283,8 @@ class PersonalizationAppAmbientProviderImplTest : public ash::AshTestBase {
                                       enabled);
   }
 
-  void SetAnimationTheme(ash::AmbientTheme animation_theme) {
-    ambient_provider_->SetAnimationTheme(animation_theme);
+  void SetAmbientTheme(ash::AmbientTheme ambient_theme) {
+    ambient_provider_->SetAmbientTheme(ambient_theme);
   }
 
   void FetchSettings() {
@@ -341,16 +341,8 @@ class PersonalizationAppAmbientProviderImplTest : public ash::AshTestBase {
     return ambient_provider_->settings_->art_settings;
   }
 
-  bool HasPendingFetchRequestAtProvider() const {
-    return ambient_provider_->has_pending_fetch_request_;
-  }
-
   bool IsUpdateSettingsPendingAtProvider() const {
     return ambient_provider_->is_updating_backend_;
-  }
-
-  bool HasPendingUpdatesAtProvider() const {
-    return ambient_provider_->has_pending_updates_for_backend_;
   }
 
   base::TimeDelta GetFetchSettingsDelay() {
@@ -473,7 +465,24 @@ TEST_F(PersonalizationAppAmbientProviderImplTest,
 }
 
 TEST_F(PersonalizationAppAmbientProviderImplTest,
-       ShouldCallOnAnimationThemeChanged) {
+       OnAmbientModeEnabled_ShouldCancelDelayedUpdateSettingsRequest) {
+  PrefService* pref_service = profile()->GetPrefs();
+  EXPECT_TRUE(pref_service);
+  UpdateSettings();
+  // A failed response to UpdateSettings creates a new scheduled request to
+  // UpdateSettings.
+  ReplyUpdateSettings(/*success=*/false);
+
+  pref_service->SetBoolean(ash::ambient::prefs::kAmbientModeEnabled, false);
+
+  base::TimeDelta delay1 = GetUpdateSettingsDelay();
+  FastForwardBy(delay1 * 1.5);
+  // Since ambient mode has been disabled, the pending update has been cleared.
+  EXPECT_FALSE(IsUpdateSettingsPendingAtProvider());
+}
+
+TEST_F(PersonalizationAppAmbientProviderImplTest,
+       ShouldCallOnAmbientThemeChanged) {
   // When ambient mode is first enabled during test set up, the video theme
   // should become active by default since the corresponding experiment flags
   // are on. That should count as +1 in the usage metrics for the video theme.
@@ -484,18 +493,18 @@ TEST_F(PersonalizationAppAmbientProviderImplTest,
 
   SetAmbientObserver();
   FetchSettings();
-  SetAnimationTheme(ash::AmbientTheme::kSlideshow);
-  EXPECT_EQ(ash::AmbientTheme::kSlideshow, ObservedAnimationTheme());
+  SetAmbientTheme(ash::AmbientTheme::kSlideshow);
+  EXPECT_EQ(ash::AmbientTheme::kSlideshow, ObservedAmbientTheme());
   histogram_tester().ExpectBucketCount(kAmbientModeAnimationThemeHistogramName,
                                        ash::AmbientTheme::kSlideshow, 1);
 
-  SetAnimationTheme(ash::AmbientTheme::kFeelTheBreeze);
-  EXPECT_EQ(ash::AmbientTheme::kFeelTheBreeze, ObservedAnimationTheme());
+  SetAmbientTheme(ash::AmbientTheme::kFeelTheBreeze);
+  EXPECT_EQ(ash::AmbientTheme::kFeelTheBreeze, ObservedAmbientTheme());
   histogram_tester().ExpectBucketCount(kAmbientModeAnimationThemeHistogramName,
                                        ash::AmbientTheme::kFeelTheBreeze, 1);
 
-  SetAnimationTheme(ash::AmbientTheme::kVideo);
-  EXPECT_EQ(ash::AmbientTheme::kVideo, ObservedAnimationTheme());
+  SetAmbientTheme(ash::AmbientTheme::kVideo);
+  EXPECT_EQ(ash::AmbientTheme::kVideo, ObservedAmbientTheme());
   histogram_tester().ExpectBucketCount(kAmbientModeAnimationThemeHistogramName,
                                        ash::AmbientTheme::kVideo, 2);
   histogram_tester().ExpectBucketCount(kAmbientModeVideoHistogramName,
@@ -506,10 +515,10 @@ TEST_F(PersonalizationAppAmbientProviderImplTest,
        RestoresOldThemeAfterReenabling) {
   SetAmbientObserver();
   FetchSettings();
-  SetAnimationTheme(ash::AmbientTheme::kFeelTheBreeze);
+  SetAmbientTheme(ash::AmbientTheme::kFeelTheBreeze);
   SetEnabledPref(false);
   SetEnabledPref(true);
-  EXPECT_EQ(ash::AmbientTheme::kFeelTheBreeze, ObservedAnimationTheme());
+  EXPECT_EQ(ash::AmbientTheme::kFeelTheBreeze, ObservedAmbientTheme());
   histogram_tester().ExpectBucketCount(kAmbientModeAnimationThemeHistogramName,
                                        ash::AmbientTheme::kFeelTheBreeze, 2);
 }
@@ -538,7 +547,7 @@ TEST_F(PersonalizationAppAmbientProviderImplTest,
   EXPECT_EQ(AmbientModeTopicSource::kVideo, ObservedTopicSource());
 
   // Set to a different theme and select different topic source.
-  SetAnimationTheme(AmbientTheme::kSlideshow);
+  SetAmbientTheme(AmbientTheme::kSlideshow);
   EXPECT_EQ(ash::AmbientModeTopicSource::kGooglePhotos, ObservedTopicSource());
 
   SetTopicSource(ash::AmbientModeTopicSource::kArtGallery);
@@ -579,7 +588,7 @@ TEST_F(PersonalizationAppAmbientProviderImplTest,
 
   // Even while the video topic source is active, temperature settings changes
   // should still be sent to the backend.
-  SetAnimationTheme(AmbientTheme::kVideo);
+  SetAmbientTheme(AmbientTheme::kVideo);
   SetTemperatureUnit(ash::AmbientModeTemperatureUnit::kCelsius);
   ReplyUpdateSettings(/*success=*/true);
   EXPECT_EQ(ash::AmbientModeTemperatureUnit::kCelsius,
@@ -602,7 +611,7 @@ TEST_F(PersonalizationAppAmbientProviderImplTest, SetTopicSource) {
   ReplyFetchSettingsAndAlbums(/*success=*/true);
   // Default screen saver is video theme with only kVideo topic source option.
   // Switch to other theme (kSlideshow) to try different topic sources.
-  SetAnimationTheme(AmbientTheme::kSlideshow);
+  SetAmbientTheme(AmbientTheme::kSlideshow);
 
   EXPECT_EQ(ash::AmbientModeTopicSource::kGooglePhotos, TopicSource());
 
@@ -714,32 +723,40 @@ TEST_F(PersonalizationAppAmbientProviderImplTest, TestUpdateSettings) {
   UpdateSettings();
   EXPECT_TRUE(IsUpdateSettingsPendingAtBackend());
   EXPECT_TRUE(IsUpdateSettingsPendingAtProvider());
-  EXPECT_FALSE(HasPendingUpdatesAtProvider());
 
   ReplyUpdateSettings(/*success=*/true);
   EXPECT_FALSE(IsUpdateSettingsPendingAtBackend());
   EXPECT_FALSE(IsUpdateSettingsPendingAtProvider());
-  EXPECT_FALSE(HasPendingUpdatesAtProvider());
 }
 
-TEST_F(PersonalizationAppAmbientProviderImplTest, TestUpdateSettingsTwice) {
-  UpdateSettings();
-  EXPECT_TRUE(IsUpdateSettingsPendingAtBackend());
-  EXPECT_TRUE(IsUpdateSettingsPendingAtProvider());
-  EXPECT_FALSE(HasPendingUpdatesAtProvider());
+TEST_F(PersonalizationAppAmbientProviderImplTest,
+       TestUpdateSettingsTwice_CancelsPreviousRequests) {
+  SetAmbientObserver();
+  FetchSettings();
+  ReplyFetchSettingsAndAlbums(/*success=*/true);
+  EXPECT_EQ(ash::AmbientModeTemperatureUnit::kCelsius,
+            ObservedTemperatureUnit());
+  EXPECT_EQ(ash::AmbientModeTemperatureUnit::kCelsius,
+            GetCurrentTemperatureUnitInServer());
 
-  UpdateSettings();
+  SetTemperatureUnit(ash::AmbientModeTemperatureUnit::kFahrenheit);
   EXPECT_TRUE(IsUpdateSettingsPendingAtBackend());
   EXPECT_TRUE(IsUpdateSettingsPendingAtProvider());
-  EXPECT_TRUE(HasPendingUpdatesAtProvider());
+
+  SetTemperatureUnit(ash::AmbientModeTemperatureUnit::kCelsius);
+  EXPECT_TRUE(IsUpdateSettingsPendingAtBackend());
+  EXPECT_TRUE(IsUpdateSettingsPendingAtProvider());
 
   ReplyUpdateSettings(/*success=*/true);
   EXPECT_FALSE(IsUpdateSettingsPendingAtBackend());
   EXPECT_FALSE(IsUpdateSettingsPendingAtProvider());
-  EXPECT_TRUE(HasPendingUpdatesAtProvider());
 
-  FastForwardBy(GetUpdateSettingsDelay() * 1.5);
-  EXPECT_FALSE(HasPendingUpdatesAtProvider());
+  // The newer temperature unit is used. The second call to UpdateSettings
+  // cancels the first request.
+  EXPECT_EQ(ash::AmbientModeTemperatureUnit::kCelsius,
+            ObservedTemperatureUnit());
+  EXPECT_EQ(ash::AmbientModeTemperatureUnit::kCelsius,
+            GetCurrentTemperatureUnitInServer());
 }
 
 TEST_F(PersonalizationAppAmbientProviderImplTest,
@@ -747,17 +764,14 @@ TEST_F(PersonalizationAppAmbientProviderImplTest,
   UpdateSettings();
   EXPECT_TRUE(IsUpdateSettingsPendingAtBackend());
   EXPECT_TRUE(IsUpdateSettingsPendingAtProvider());
-  EXPECT_FALSE(HasPendingUpdatesAtProvider());
 
   ReplyUpdateSettings(/*success=*/false);
   EXPECT_FALSE(IsUpdateSettingsPendingAtBackend());
   EXPECT_FALSE(IsUpdateSettingsPendingAtProvider());
-  EXPECT_FALSE(HasPendingUpdatesAtProvider());
 
   FastForwardBy(GetUpdateSettingsDelay() * 1.5);
   EXPECT_TRUE(IsUpdateSettingsPendingAtBackend());
   EXPECT_TRUE(IsUpdateSettingsPendingAtProvider());
-  EXPECT_FALSE(HasPendingUpdatesAtProvider());
 }
 
 TEST_F(PersonalizationAppAmbientProviderImplTest,
@@ -765,23 +779,19 @@ TEST_F(PersonalizationAppAmbientProviderImplTest,
   UpdateSettings();
   EXPECT_TRUE(IsUpdateSettingsPendingAtBackend());
   EXPECT_TRUE(IsUpdateSettingsPendingAtProvider());
-  EXPECT_FALSE(HasPendingUpdatesAtProvider());
 
   ReplyUpdateSettings(/*success=*/false);
   EXPECT_FALSE(IsUpdateSettingsPendingAtBackend());
   EXPECT_FALSE(IsUpdateSettingsPendingAtProvider());
-  EXPECT_FALSE(HasPendingUpdatesAtProvider());
 
   base::TimeDelta delay1 = GetUpdateSettingsDelay();
   FastForwardBy(delay1 * 1.5);
   EXPECT_TRUE(IsUpdateSettingsPendingAtBackend());
   EXPECT_TRUE(IsUpdateSettingsPendingAtProvider());
-  EXPECT_FALSE(HasPendingUpdatesAtProvider());
 
   ReplyUpdateSettings(/*success=*/false);
   EXPECT_FALSE(IsUpdateSettingsPendingAtBackend());
   EXPECT_FALSE(IsUpdateSettingsPendingAtProvider());
-  EXPECT_FALSE(HasPendingUpdatesAtProvider());
 
   base::TimeDelta delay2 = GetUpdateSettingsDelay();
   EXPECT_GT(delay2, delay1);
@@ -789,7 +799,6 @@ TEST_F(PersonalizationAppAmbientProviderImplTest,
   FastForwardBy(delay2 * 1.5);
   EXPECT_TRUE(IsUpdateSettingsPendingAtBackend());
   EXPECT_TRUE(IsUpdateSettingsPendingAtProvider());
-  EXPECT_FALSE(HasPendingUpdatesAtProvider());
 }
 
 TEST_F(PersonalizationAppAmbientProviderImplTest,
@@ -797,61 +806,49 @@ TEST_F(PersonalizationAppAmbientProviderImplTest,
   UpdateSettings();
   EXPECT_TRUE(IsUpdateSettingsPendingAtBackend());
   EXPECT_TRUE(IsUpdateSettingsPendingAtProvider());
-  EXPECT_FALSE(HasPendingUpdatesAtProvider());
 
   ReplyUpdateSettings(/*success=*/false);
   EXPECT_FALSE(IsUpdateSettingsPendingAtBackend());
   EXPECT_FALSE(IsUpdateSettingsPendingAtProvider());
-  EXPECT_FALSE(HasPendingUpdatesAtProvider());
 
   // 1st retry.
   FastForwardBy(GetUpdateSettingsDelay() * 1.5);
   EXPECT_TRUE(IsUpdateSettingsPendingAtBackend());
   EXPECT_TRUE(IsUpdateSettingsPendingAtProvider());
-  EXPECT_FALSE(HasPendingUpdatesAtProvider());
 
   ReplyUpdateSettings(/*success=*/false);
   EXPECT_FALSE(IsUpdateSettingsPendingAtBackend());
   EXPECT_FALSE(IsUpdateSettingsPendingAtProvider());
-  EXPECT_FALSE(HasPendingUpdatesAtProvider());
 
   // 2nd retry.
   FastForwardBy(GetUpdateSettingsDelay() * 1.5);
   EXPECT_TRUE(IsUpdateSettingsPendingAtBackend());
   EXPECT_TRUE(IsUpdateSettingsPendingAtProvider());
-  EXPECT_FALSE(HasPendingUpdatesAtProvider());
 
   ReplyUpdateSettings(/*success=*/false);
   EXPECT_FALSE(IsUpdateSettingsPendingAtBackend());
   EXPECT_FALSE(IsUpdateSettingsPendingAtProvider());
-  EXPECT_FALSE(HasPendingUpdatesAtProvider());
 
   // 3rd retry.
   FastForwardBy(GetUpdateSettingsDelay() * 1.5);
   EXPECT_TRUE(IsUpdateSettingsPendingAtBackend());
   EXPECT_TRUE(IsUpdateSettingsPendingAtProvider());
-  EXPECT_FALSE(HasPendingUpdatesAtProvider());
 
   ReplyUpdateSettings(/*success=*/false);
   EXPECT_FALSE(IsUpdateSettingsPendingAtBackend());
   EXPECT_FALSE(IsUpdateSettingsPendingAtProvider());
-  EXPECT_FALSE(HasPendingUpdatesAtProvider());
 
   // Will not retry.
   FastForwardBy(GetUpdateSettingsDelay() * 1.5);
   EXPECT_FALSE(IsUpdateSettingsPendingAtBackend());
   EXPECT_FALSE(IsUpdateSettingsPendingAtProvider());
-  EXPECT_FALSE(HasPendingUpdatesAtProvider());
 }
 
 TEST_F(PersonalizationAppAmbientProviderImplTest,
        TestNoFetchRequestWhenUpdatingSettings) {
-  EXPECT_FALSE(HasPendingFetchRequestAtProvider());
   UpdateSettings();
-  EXPECT_FALSE(HasPendingFetchRequestAtProvider());
-
   FetchSettings();
-  EXPECT_TRUE(HasPendingFetchRequestAtProvider());
+
   EXPECT_FALSE(IsFetchSettingsPendingAtBackend());
 }
 
@@ -1062,13 +1059,13 @@ TEST_F(PersonalizationAppAmbientProviderImplTest,
                         Field(&mojom::AmbientModeAlbum::checked, IsTrue())))));
 
   // Switch to slide show mode and change settings to some custom configuration.
-  SetAnimationTheme(AmbientTheme::kSlideshow);
+  SetAmbientTheme(AmbientTheme::kSlideshow);
   SetTopicSource(AmbientModeTopicSource::kArtGallery);
   SetAlbumSelected("1", AmbientModeTopicSource::kArtGallery, /*selected=*/true);
   ReplyUpdateSettings(/*success=*/true);
 
   // Switch back to video theme. Same video settings should remain.
-  SetAnimationTheme(AmbientTheme::kVideo);
+  SetAmbientTheme(AmbientTheme::kVideo);
   EXPECT_EQ(ObservedTopicSource(), AmbientModeTopicSource::kVideo);
   EXPECT_THAT(ObservedAlbums(),
               Contains(Pointee(
@@ -1076,7 +1073,7 @@ TEST_F(PersonalizationAppAmbientProviderImplTest,
                         Field(&mojom::AmbientModeAlbum::checked, IsTrue())))));
 
   // Switch back to slide show. The custom setting set previously should stick.
-  SetAnimationTheme(AmbientTheme::kSlideshow);
+  SetAmbientTheme(AmbientTheme::kSlideshow);
   EXPECT_EQ(ObservedTopicSource(), AmbientModeTopicSource::kArtGallery);
   EXPECT_THAT(ObservedAlbums(),
               Contains(Pointee(
@@ -1092,12 +1089,12 @@ TEST_F(PersonalizationAppAmbientProviderImplTest,
   FetchSettings();
   ReplyFetchSettingsAndAlbums(/*success=*/true);
 
-  SetAnimationTheme(AmbientTheme::kVideo);
+  SetAmbientTheme(AmbientTheme::kVideo);
   // Let retries happen and try to expose any erroneous settings changes.
   task_environment()->FastForwardBy(base::Minutes(1));
   // Should not get stuck in a state where video theme is active with a
   // non-video topic source.
-  ASSERT_EQ(ObservedAnimationTheme(), AmbientTheme::kVideo);
+  ASSERT_EQ(ObservedAmbientTheme(), AmbientTheme::kVideo);
   EXPECT_EQ(ObservedTopicSource(), AmbientModeTopicSource::kVideo);
   EXPECT_THAT(ObservedAlbums(),
               Contains(Pointee(AllOf(
@@ -1150,4 +1147,35 @@ TEST_F(PersonalizationAppAmbientProviderImplTest,
   EXPECT_FALSE(ShouldShowTimeOfDayBanner());
 }
 
+TEST_F(PersonalizationAppAmbientProviderImplTest,
+       UpdateSettingsFailure_ShowsCachedSettings) {
+  SetAmbientObserver();
+  FetchSettings();
+  ReplyFetchSettingsAndAlbums(/*success=*/true);
+  // The cached settings have Celsius stored.
+  EXPECT_EQ(ash::AmbientModeTemperatureUnit::kCelsius,
+            ObservedTemperatureUnit());
+  EXPECT_EQ(ash::AmbientModeTemperatureUnit::kCelsius,
+            GetCurrentTemperatureUnitInServer());
+
+  SetTemperatureUnit(ash::AmbientModeTemperatureUnit::kFahrenheit);
+
+  // The value updates to Fahrenheit optimistically.
+  EXPECT_EQ(ash::AmbientModeTemperatureUnit::kFahrenheit,
+            ObservedTemperatureUnit());
+
+  // Fail through all the retries.
+  ReplyUpdateSettings(/*success=*/false);
+  FastForwardBy(GetUpdateSettingsDelay() * 1.5);
+  ReplyUpdateSettings(/*success=*/false);
+  FastForwardBy(GetUpdateSettingsDelay() * 1.5);
+  ReplyUpdateSettings(/*success=*/false);
+  FastForwardBy(GetUpdateSettingsDelay() * 1.5);
+  ReplyUpdateSettings(/*success=*/false);
+  FastForwardBy(GetUpdateSettingsDelay() * 1.5);
+
+  // After all the failures, restore to the cached value.
+  EXPECT_EQ(ash::AmbientModeTemperatureUnit::kCelsius,
+            ObservedTemperatureUnit());
+}
 }  // namespace ash::personalization_app

@@ -27,9 +27,10 @@ import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.ui.hats.SurveyController;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
-import org.chromium.chrome.test.util.browser.Features;
+import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.components.messages.DismissReason;
 import org.chromium.components.messages.MessageBannerProperties;
 import org.chromium.components.messages.MessageDispatcher;
@@ -42,6 +43,7 @@ import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.test.util.UiRestriction;
 
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
@@ -49,7 +51,7 @@ import java.util.concurrent.TimeoutException;
 // clang-format off
 @RunWith(ChromeJUnit4ClassRunner.class)
 @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
-@Features.EnableFeatures(ChromeFeatureList.CHROME_SURVEY_NEXT_ANDROID)
+@EnableFeatures(ChromeFeatureList.CHROME_SURVEY_NEXT_ANDROID)
 @CommandLineFlags.Add({
     ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE, ChromeSwitches.CHROME_FORCE_ENABLE_SURVEY,
     ChromeSurveyController.COMMAND_LINE_PARAM_NAME + "=" +
@@ -82,7 +84,7 @@ public class ChromeSurveyControllerIntegrationTest {
         mSharedPreferenceManager = SharedPreferencesManager.getInstance();
 
         mTestSurveyController = new AlwaysSuccessfulSurveyController();
-        SurveyController.setInstanceForTesting(mTestSurveyController);
+        ChromeSurveyController.setSurveyControllerForTesting(mTestSurveyController);
 
         mActivityTestRule.startMainActivityOnBlankPage();
 
@@ -167,7 +169,7 @@ public class ChromeSurveyControllerIntegrationTest {
         return messages.size() == 0 ? null : MessagesTestHelper.getCurrentMessage(messages.get(0));
     }
 
-    private static class AlwaysSuccessfulSurveyController extends SurveyController {
+    private static class AlwaysSuccessfulSurveyController implements SurveyController {
         public final CallbackHelper downloadCallbackHelper = new CallbackHelper();
         public final CallbackHelper showSurveyCallbackHelper = new CallbackHelper();
 
@@ -181,9 +183,8 @@ public class ChromeSurveyControllerIntegrationTest {
         }
 
         @Override
-        public void showSurveyIfAvailable(Activity activity, String siteId,
-                boolean showAsBottomSheet, int displayLogoResId,
-                ActivityLifecycleDispatcher lifecycleDispatcher) {
+        public void showSurveyIfAvailable(Activity activity, String siteId, int displayLogoResId,
+                ActivityLifecycleDispatcher lifecycleDispatcher, Map<String, String> surveyPsd) {
             showSurveyCallbackHelper.notifyCalled();
         }
     }

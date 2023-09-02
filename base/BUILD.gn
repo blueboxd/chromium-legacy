@@ -1838,6 +1838,8 @@ component("base") {
       "win/reference.h",
       "win/registry.cc",
       "win/registry.h",
+      "win/resource_exhaustion.cc",
+      "win/resource_exhaustion.h",
       "win/resource_util.cc",
       "win/resource_util.h",
       "win/scoped_bstr.cc",
@@ -1953,6 +1955,8 @@ component("base") {
       "apple/call_with_eh_frame_asm.S",
       "apple/dispatch_source_mach.cc",
       "apple/dispatch_source_mach.h",
+      "apple/foundation_util.h",
+      "apple/foundation_util.mm",
       "apple/mach_logging.cc",
       "apple/mach_logging.h",
       "apple/osstatus_logging.h",
@@ -1960,6 +1964,7 @@ component("base") {
       "apple/owned_objc.h",
       "apple/owned_objc.mm",
       "apple/scoped_cffiledescriptorref.h",
+      "apple/scoped_cftyperef.h",
       "apple/scoped_dispatch_object.h",
       "apple/scoped_mach_port.cc",
       "apple/scoped_mach_port.h",
@@ -1974,8 +1979,6 @@ component("base") {
       "file_version_info_apple.h",
       "file_version_info_apple.mm",
       "files/file_util_apple.mm",
-      "mac/foundation_util.h",
-      "mac/foundation_util.mm",
       "memory/platform_shared_memory_mapper_apple.cc",
       "memory/platform_shared_memory_region_apple.cc",
       "message_loop/message_pump_apple.h",
@@ -2026,7 +2029,6 @@ component("base") {
       "mac/scoped_aedesc.h",
       "mac/scoped_authorizationref.h",
       "mac/scoped_authorizationref.mm",
-      "mac/scoped_cftyperef.h",
       "mac/scoped_ionotificationportref.h",
       "mac/scoped_ioobject.h",
       "mac/scoped_ioplugininterface.h",
@@ -2696,6 +2698,7 @@ component("i18n") {
 
 test("base_perftests") {
   sources = [
+    "big_endian_perftest.cc",
     "hash/hash_perftest.cc",
     "json/json_perftest.cc",
     "message_loop/message_pump_perftest.cc",
@@ -2858,6 +2861,8 @@ if (is_android) {
       "profiler/libunwindstack_unwinder_android.h",
       "profiler/native_unwinder_android.cc",
       "profiler/native_unwinder_android.h",
+      "profiler/native_unwinder_android_memory_regions_map_impl.cc",
+      "profiler/native_unwinder_android_memory_regions_map_impl.h",
     ]
 
     public_deps = [
@@ -3271,7 +3276,6 @@ test("base_unittests") {
     "sequence_checker_unittest.cc",
     "sequence_token_unittest.cc",
     "state_transitions_unittest.cc",
-    "std_clamp_unittest.cc",
     "stl_util_unittest.cc",
     "strings/abseil_string_number_conversions_unittest.cc",
     "strings/escape_unittest.cc",
@@ -3451,7 +3455,10 @@ test("base_unittests") {
   }
 
   if (use_safe_libcxx) {
-    sources += [ "libcpp_hardening_test.cc" ]
+    sources += [
+      "libcpp_hardening_test.cc",
+      "std_clamp_unittest.cc",
+    ]
   }
 
   defines = []
@@ -3723,8 +3730,8 @@ test("base_unittests") {
 
   if (is_mac) {
     sources += [
-      "allocator/partition_allocator/shim/allocator_interception_mac_unittest.mm",
-      "allocator/partition_allocator/shim/malloc_zone_functions_mac_unittest.cc",
+      "allocator/partition_allocator/shim/allocator_interception_apple_unittest.mm",
+      "allocator/partition_allocator/shim/malloc_zone_functions_apple_unittest.cc",
       "apple/call_with_eh_frame_unittest.mm",
       "apple/scoped_mach_vm_unittest.cc",
       "apple/scoped_objc_class_swizzler_unittest.mm",
@@ -3780,8 +3787,8 @@ test("base_unittests") {
 
     if (use_allocator_shim) {
       sources += [
-        "allocator/partition_allocator/shim/allocator_interception_mac_unittest.mm",
-        "allocator/partition_allocator/shim/malloc_zone_functions_mac_unittest.cc",
+        "allocator/partition_allocator/shim/allocator_interception_apple_unittest.mm",
+        "allocator/partition_allocator/shim/malloc_zone_functions_apple_unittest.cc",
       ]
     }
 
@@ -3807,6 +3814,7 @@ test("base_unittests") {
       "allocator/partition_allocator/partition_alloc_base/scoped_clear_last_error_pa_unittest.cc",
       "allocator/partition_allocator/partition_alloc_base/strings/cstring_builder_pa_unittest.cc",
       "allocator/partition_allocator/partition_alloc_base/strings/safe_sprintf_pa_unittest.cc",
+      "allocator/partition_allocator/partition_alloc_base/strings/string_util_pa_unittest.cc",
       "allocator/partition_allocator/partition_alloc_base/strings/stringprintf_pa_unittest.cc",
       "allocator/partition_allocator/partition_alloc_base/thread_annotations_pa_unittest.cc",
       "allocator/partition_allocator/partition_alloc_unittest.cc",
@@ -4217,6 +4225,7 @@ if (is_android) {
     # External code should depend on ":base_java" instead.
     visibility = [ ":*" ]
     sources = [
+      "allocator/partition_alloc_features.cc",
       "android/base_features.cc",
       "features.cc",
       "task/task_features.cc",
@@ -4994,5 +5003,14 @@ source_set("partition_alloc_test_support") {
   if (!is_debug) {
     configs -= [ "//build/config/compiler:default_optimization" ]
     configs += [ "//build/config/compiler:optimize_speed" ]
+  }
+}
+
+if (enable_base_tracing) {
+  # This group makes visible those targets in subdirectories that are not
+  # explicitly depended on.
+  group("gn_all") {
+    testonly = true
+    deps = [ "//base/tracing:perfetto_diff_tests" ]
   }
 }

@@ -127,7 +127,7 @@ class InterestGroupPermissionsBrowserTest : public InProcessBrowserTest {
               name: 'cars',
               owner: $1,
               biddingLogicUrl: $2,
-              trustedBiddingSignalsUrl: $3,
+              trustedBiddingSignalsURL: $3,
               trustedBiddingSignalsKeys: ['key1'],
               userBiddingSignals: {some: 'json', data: {here: [1, 2, 3]}},
               ads: [{
@@ -158,7 +158,7 @@ class InterestGroupPermissionsBrowserTest : public InProcessBrowserTest {
 (async function() {
   return await navigator.runAdAuction({
     seller: $1,
-    decisionLogicUrl: $2,
+    decisionLogicURL: $2,
     interestGroupBuyers: [$1],
     auctionSignals: {x: 1},
     sellerSignals: {yet: 'more', info: 1},

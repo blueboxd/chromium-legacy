@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -111,7 +111,8 @@ class LockUnlockTestHelper {
   int GetReportCount() { return report_count_; }
 
  private:
-  raw_ptr<FakeChromeUserManager, ExperimentalAsh> user_manager_;
+  raw_ptr<FakeChromeUserManager, DanglingUntriaged | ExperimentalAsh>
+      user_manager_;
   std::unique_ptr<user_manager::ScopedUserManager> user_manager_enabler_;
   content::BrowserTaskEnvironment task_environment_;
 

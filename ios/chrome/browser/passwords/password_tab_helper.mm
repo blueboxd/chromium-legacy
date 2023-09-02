@@ -7,6 +7,7 @@
 #import "base/check.h"
 #import "base/memory/ptr_util.h"
 #import "base/metrics/histogram_macros.h"
+#import "base/metrics/user_metrics.h"
 #import "components/password_manager/core/browser/manage_passwords_referrer.h"
 #import "components/password_manager/core/browser/password_manager_constants.h"
 #import "ios/chrome/browser/passwords/password_controller.h"
@@ -15,11 +16,6 @@
 #import "net/base/mac/url_conversions.h"
 
 PasswordTabHelper::~PasswordTabHelper() = default;
-
-void PasswordTabHelper::SetBaseViewController(
-    UIViewController* baseViewController) {
-  controller_.baseViewController = baseViewController;
-}
 
 void PasswordTabHelper::SetPasswordControllerDelegate(
     id<PasswordControllerDelegate> delegate) {
@@ -89,6 +85,8 @@ void PasswordTabHelper::ShouldAllowRequest(
     UMA_HISTOGRAM_ENUMERATION(
         "PasswordManager.ManagePasswordsReferrer",
         password_manager::ManagePasswordsReferrer::kPasswordsGoogleWebsite);
+    base::RecordAction(
+        base::UserMetricsAction("MobileWebsiteOpenPasswordManager"));
     return;
   }
   std::move(callback).Run(web::WebStatePolicyDecider::PolicyDecision::Allow());

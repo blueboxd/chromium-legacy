@@ -662,9 +662,8 @@ gfx::Size SwapChainPresenter::GetMonitorSize() const {
   }
 }
 
-void SwapChainPresenter::SetTargetToFullScreen(
-    gfx::Transform* visual_transform,
-    gfx::Rect* visual_clip_rect) const {
+void SwapChainPresenter::SetTargetToFullScreen(gfx::Transform* visual_transform,
+                                               gfx::Rect* visual_clip_rect) {
   // Reset the horizontal/vertical shift according to the visual clip and
   // original transform, since DWM will do the positioning in case of overlay.
   visual_transform->set_rc(
@@ -678,6 +677,8 @@ void SwapChainPresenter::SetTargetToFullScreen(
 
   // Expand the clip rect for swap chain to the whole screen.
   *visual_clip_rect = gfx::Rect(GetMonitorSize());
+
+  last_desktop_plane_removed_ = true;
 }
 
 void SwapChainPresenter::AdjustTargetToOptimalSizeIfNeeded(
@@ -1069,7 +1070,7 @@ gfx::Size SwapChainPresenter::CalculateSwapChainSize(
   // the video processor can do the minimal amount of work and the overlay has
   // to read the minimal amount of data. DWM is also less likely to promote a
   // surface to an overlay if it's much larger than its area on-screen.
-  gfx::Size swap_chain_size = params.content_rect.size();
+  gfx::Size swap_chain_size = gfx::ToNearestRect(params.content_rect).size();
   if (swap_chain_size.IsEmpty())
     return gfx::Size();
   if (params.quad_rect.IsEmpty())
@@ -1340,6 +1341,7 @@ bool SwapChainPresenter::PresentToSwapChain(DCLayerOverlayParams& params,
   DCHECK(params.overlay_image);
   DCHECK_NE(params.overlay_image->type(),
             gl::DCLayerOverlayType::kDCompVisualContent);
+  CHECK(gfx::IsNearestRectWithinDistance(params.content_rect, 0.01f));
 
   gl::DCLayerOverlayType overlay_type = params.overlay_image->type();
 
@@ -1417,6 +1419,12 @@ bool SwapChainPresenter::PresentToSwapChain(DCLayerOverlayParams& params,
     // The swap chain is presenting the same images as last swap, which means
     // that the images were never returned to the video decoder and should
     // have the same contents as last time. It shouldn't need to be redrawn.
+    // But the visual transform and clip rectangle for DCLayerTree update need
+    // to keep the same as the last presentation when desktop plane was removed.
+    if (last_desktop_plane_removed_) {
+      SetTargetToFullScreen(visual_transform, visual_clip_rect);
+    }
+
     return true;
   }
 
@@ -1425,14 +1433,16 @@ bool SwapChainPresenter::PresentToSwapChain(DCLayerOverlayParams& params,
   unsigned input_level = params.overlay_image->texture_array_slice();
 
   if (TryPresentToDecodeSwapChain(input_texture, input_level, input_color_space,
-                                  params.content_rect, swap_chain_size,
-                                  swap_chain_format, params.transform,
-                                  dest_size, target_rect)) {
+                                  gfx::ToNearestRect(params.content_rect),
+                                  swap_chain_size, swap_chain_format,
+                                  params.transform, dest_size, target_rect)) {
     last_overlay_image_ = std::move(params.overlay_image);
     // Only NV12 format is supported in zero copy presentation path.
     if (dest_size.has_value() && target_rect.has_value() &&
         params.z_order > 0) {
       SetTargetToFullScreen(visual_transform, visual_clip_rect);
+    } else {
+      last_desktop_plane_removed_ = false;
     }
 
     return true;
@@ -1468,8 +1478,8 @@ bool SwapChainPresenter::PresentToSwapChain(DCLayerOverlayParams& params,
   }
 
   if (!VideoProcessorBlt(std::move(input_texture), input_level,
-                         params.content_rect, input_color_space,
-                         stream_metadata, use_vp_auto_hdr)) {
+                         gfx::ToNearestRect(params.content_rect),
+                         input_color_space, stream_metadata, use_vp_auto_hdr)) {
     return false;
   }
 
@@ -1574,6 +1584,8 @@ bool SwapChainPresenter::PresentToSwapChain(DCLayerOverlayParams& params,
   // letterboxing overlay presentation.
   if (is_letterboxing_overlay_ready) {
     SetTargetToFullScreen(visual_transform, visual_clip_rect);
+  } else {
+    last_desktop_plane_removed_ = false;
   }
 
   last_overlay_image_ = std::move(params.overlay_image);
@@ -1738,8 +1750,8 @@ bool SwapChainPresenter::VideoProcessorBlt(
   gfx::ColorSpace output_color_space =
       GetOutputColorSpace(src_color_space, is_yuv_swapchain);
   VideoProcessorWrapper* video_processor_wrapper =
-      layer_tree_->InitializeVideoProcessor(
-          content_rect.size(), swap_chain_size_, output_color_space.IsHDR());
+      layer_tree_->InitializeVideoProcessor(content_rect.size(),
+                                            swap_chain_size_);
   if (!video_processor_wrapper)
     return false;
 

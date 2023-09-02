@@ -9,6 +9,8 @@
 #include "ash/constants/ash_features.h"
 #include "ash/glanceables/classroom/glanceables_classroom_client.h"
 #include "ash/glanceables/glanceables_v2_controller.h"
+#include "ash/glanceables/tasks/glanceables_tasks_client.h"
+#include "ash/glanceables/tasks/glanceables_tasks_types.h"
 #include "ash/public/cpp/session/user_info.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
@@ -23,9 +25,11 @@
 #include "base/check.h"
 #include "base/functional/bind.h"
 #include "components/session_manager/session_manager_types.h"
+#include "ui/base/models/list_model.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/geometry/rounded_corners_f.h"
 #include "ui/views/controls/scroll_view.h"
+#include "ui/views/focus/focus_manager.h"
 
 namespace ash {
 
@@ -34,7 +38,8 @@ namespace {
 // The view that parents glanceable bubbles. It's a flex layout view that
 // propagates child preferred size changes to the tray bubble view and the
 // container bounds changes to the bubble view.
-class ContainerView : public views::FlexLayoutView {
+class ContainerView : public views::FlexLayoutView,
+                      public views::FocusChangeListener {
  public:
   using HeightChangeCallback = base::RepeatingCallback<void(int height_delta)>;
   ContainerView(const base::RepeatingClosure& preferred_size_change_callback,
@@ -43,7 +48,6 @@ class ContainerView : public views::FlexLayoutView {
         height_change_callback_(height_change_callback) {
     SetOrientation(views::LayoutOrientation::kVertical);
     SetCollapseMargins(true);
-    SetDefault(views::kMarginsKey, gfx::Insets::VH(8, 0));
   }
 
   ContainerView(const ContainerView&) = delete;
@@ -64,6 +68,17 @@ class ContainerView : public views::FlexLayoutView {
   void ViewHierarchyChanged(
       const views::ViewHierarchyChangedDetails& details) override {
     views::FlexLayoutView::ViewHierarchyChanged(details);
+
+    const int kDefaultMargin = 8;
+    for (size_t i = 0; i < children().size(); ++i) {
+      views::View* child = children()[i];
+      child->SetProperty(
+          views::kMarginsKey,
+          gfx::Insets::TLBR(i == 0u ? 0 : kDefaultMargin, 0,
+                            i == children().size() - 1 ? 0 : kDefaultMargin,
+                            0));
+    }
+
     if (details.parent == this && details.child->GetVisible()) {
       preferred_size_change_callback_.Run();
     }
@@ -83,7 +98,38 @@ class ContainerView : public views::FlexLayoutView {
     }
   }
 
+  void AddedToWidget() override {
+    GetFocusManager()->AddFocusChangeListener(this);
+  }
+
+  void RemovedFromWidget() override {
+    GetFocusManager()->RemoveFocusChangeListener(this);
+  }
+
+  // views::FocusChangeListener:
+  void OnWillChangeFocus(views::View* focused_before,
+                         views::View* focused_now) override {
+    views::View* container_for_new_focus = GetChildThatContains(focused_now);
+    // It the focus is moving into a glanceable container, try scrolling the
+    // whole container into the viewport.
+    if (container_for_new_focus &&
+        container_for_new_focus != GetChildThatContains(focused_before)) {
+      container_for_new_focus->ScrollViewToVisible();
+    }
+  }
+  void OnDidChangeFocus(views::View* focused_before,
+                        views::View* focused_now) override {}
+
  private:
+  views::View* GetChildThatContains(views::View* view) {
+    for (auto* child : children()) {
+      if (child->Contains(view)) {
+        return child;
+      }
+    }
+    return nullptr;
+  }
+
   base::RepeatingClosure preferred_size_change_callback_;
   HeightChangeCallback height_change_callback_;
 };
@@ -97,11 +143,17 @@ GlanceableTrayBubbleView::GlanceableTrayBubbleView(
       shelf_(shelf),
       detailed_view_delegate_(
           std::make_unique<DetailedViewDelegate>(/*tray_controller=*/nullptr)) {
+  Shell::Get()->glanceables_v2_controller()->RecordGlanceablesBubbleShowTime(
+      base::TimeTicks::Now());
 }
 
-GlanceableTrayBubbleView::~GlanceableTrayBubbleView() = default;
+GlanceableTrayBubbleView::~GlanceableTrayBubbleView() {
+  Shell::Get()->glanceables_v2_controller()->NotifyGlanceablesBubbleClosed();
+}
 
 void GlanceableTrayBubbleView::InitializeContents() {
+  CHECK(!initialized_);
+
   scroll_view_ = AddChildView(std::make_unique<views::ScrollView>(
       views::ScrollView::ScrollWithLayers::kEnabled));
   scroll_view_->SetPaintToLayer();
@@ -109,12 +161,13 @@ void GlanceableTrayBubbleView::InitializeContents() {
   scroll_view_->ClipHeightTo(0, std::numeric_limits<int>::max());
   scroll_view_->SetBackgroundColor(absl::nullopt);
   scroll_view_->layer()->SetIsFastRoundedCorner(true);
+  scroll_view_->SetDrawOverflowIndicator(false);
   scroll_view_->SetVerticalScrollBarMode(
       views::ScrollView::ScrollBarMode::kHiddenButEnabled);
 
-  // TODO(b:286941809): Setting rounded corners here, can break the background
-  // blur applied to child bubble views.
-  scroll_view_->layer()->SetRoundedCornerRadius(gfx::RoundedCornersF(24));
+  // TODO(b/286941809): Apply rounded corners. Temporary removed because they
+  // make the background blur to disappear and this requires further
+  // investigation.
 
   // Adjusts the calendar sliding surface bounds (`UpNextView`) with the
   // glanceable view's scrolling.
@@ -145,21 +198,26 @@ void GlanceableTrayBubbleView::InitializeContents() {
           session_manager::SessionState::ACTIVE &&
       session_controller->GetUserSession(0)->user_info.has_gaia_account;
 
-  if (should_show_non_calendar_glanceables && !tasks_bubble_view_) {
-    tasks_bubble_view_ = child_glanceable_container->AddChildView(
-        std::make_unique<TasksBubbleView>(detailed_view_delegate_.get()));
-  }
+  scroll_view_->SetContents(std::move(child_glanceable_container));
 
   if (!calendar_view_) {
-    calendar_view_ = child_glanceable_container->AddChildView(
-        std::make_unique<CalendarView>(detailed_view_delegate_.get()));
+    calendar_view_ =
+        scroll_view_->contents()->AddChildView(std::make_unique<CalendarView>(
+            detailed_view_delegate_.get(), /*for_glanceables_container=*/true));
     // TODO(b:277268122): Update with glanceable spec.
     calendar_view_->SetPreferredSize(gfx::Size(kRevampedTrayMenuWidth, 400));
   }
 
-  scroll_view_->SetContents(std::move(child_glanceable_container));
+  auto* const tasks_client =
+      Shell::Get()->glanceables_v2_controller()->GetTasksClient();
+  if (should_show_non_calendar_glanceables && tasks_client) {
+    CHECK(!tasks_bubble_view_);
+    tasks_client->GetTaskLists(
+        base::BindOnce(&GlanceableTrayBubbleView::AddTaskBubbleViewIfNeeded,
+                       weak_ptr_factory_.GetWeakPtr()));
+  }
 
-  int max_height = CalculateMaxTrayBubbleHeight(shelf_->GetWindow());
+  const int max_height = CalculateMaxTrayBubbleHeight(shelf_->GetWindow());
   SetMaxHeight(max_height);
   ChangeAnchorAlignment(shelf_->alignment());
   ChangeAnchorRect(shelf_->GetSystemTrayAnchorRect());
@@ -183,10 +241,42 @@ void GlanceableTrayBubbleView::InitializeContents() {
           base::Unretained(&classroom_bubble_teacher_view_)));
     }
   }
+
+  calendar_view_->ScrollViewToVisible();
+
+  // Layout to set the calendar view bounds, so the calendar view finishes
+  // initializing (e.g. scroll to today), which happens when the calendar view
+  // bounds are set.
+  Layout();
+
+  initialized_ = true;
 }
 
-bool GlanceableTrayBubbleView::CanActivate() const {
-  return true;
+void GlanceableTrayBubbleView::AddedToWidget() {
+  if (!initialized_) {
+    InitializeContents();
+  }
+  TrayBubbleView::AddedToWidget();
+}
+
+void GlanceableTrayBubbleView::OnWidgetClosing(views::Widget* widget) {
+  if (tasks_bubble_view_) {
+    tasks_bubble_view_->CancelUpdates();
+  }
+  if (classroom_bubble_teacher_view_) {
+    classroom_bubble_teacher_view_->CancelUpdates();
+  }
+  if (classroom_bubble_student_view_) {
+    classroom_bubble_student_view_->CancelUpdates();
+  }
+
+  TrayBubbleView::OnWidgetClosing(widget);
+}
+
+void GlanceableTrayBubbleView::OnDisplayConfigurationChanged() {
+  int max_height = CalculateMaxTrayBubbleHeight(shelf_->GetWindow());
+  SetMaxHeight(max_height);
+  ChangeAnchorRect(shelf_->GetSystemTrayAnchorRect());
 }
 
 template <typename T>
@@ -205,15 +295,48 @@ void GlanceableTrayBubbleView::AddClassroomBubbleViewIfNeeded(
       scroll_contents->children().begin();
   *view = scroll_contents->AddChildViewAt(
       std::make_unique<T>(detailed_view_delegate_.get()), calendar_view_index);
+
+  views::View* const default_focused_child =
+      scroll_contents->GetChildrenFocusList().front();
+  if (default_focused_child != calendar_view_) {
+    calendar_view_->InsertBeforeInFocusList(default_focused_child);
+  }
+  if (tasks_bubble_view_) {
+    tasks_bubble_view_->InsertAfterInFocusList(calendar_view_);
+  }
+}
+
+void GlanceableTrayBubbleView::AddTaskBubbleViewIfNeeded(
+    ui::ListModel<GlanceablesTaskList>* task_lists) {
+  if (task_lists->item_count() == 0) {
+    return;
+  }
+  // Add tasks bubble before everything.
+  auto* const scroll_contents = scroll_view_->contents();
+  tasks_bubble_view_ = scroll_contents->AddChildViewAt(
+      std::make_unique<TasksBubbleView>(detailed_view_delegate_.get(),
+                                        task_lists),
+      0);
+
+  views::View* const default_focused_child =
+      scroll_contents->GetChildrenFocusList().front();
+  if (default_focused_child != calendar_view_) {
+    calendar_view_->InsertBeforeInFocusList(default_focused_child);
+  }
+  tasks_bubble_view_->InsertAfterInFocusList(calendar_view_);
 }
 
 void GlanceableTrayBubbleView::OnGlanceablesContainerPreferredSizeChanged() {
+  if (!initialized_) {
+    return;
+  }
+
   UpdateBubble();
 }
 
 void GlanceableTrayBubbleView::OnGlanceablesContainerHeightChanged(
     int height_delta) {
-  if (!IsDrawn()) {
+  if (!initialized_ || !IsDrawn() || !GetWidget() || GetWidget()->IsClosed()) {
     return;
   }
 

@@ -49,6 +49,10 @@ BASE_FEATURE(kDeepScanningUpdatedUX,
              "SafeBrowsingDeepScanningUpdatedUX",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+BASE_FEATURE(kDeepScanningEncryptedArchives,
+             "SafeBrowsingDeepScanningEncryptedArchives",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kDelayedWarnings,
              "SafeBrowsingDelayedWarnings",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -147,6 +151,10 @@ BASE_FEATURE(kExtensionTelemetryReportHostsContactedViaWebSocket,
              "SafeBrowsingExtensionTelemetryReportHostsContactedViaWebsocket",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+BASE_FEATURE(kExtensionTelemetryTabsApiSignal,
+             "SafeBrowsingExtensionTelemetryTabsApiSignal",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kExtensionTelemetryTabsExecuteScriptSignal,
              "SafeBrowsingExtensionTelemetryTabsExecuteScriptSignal",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -158,6 +166,10 @@ BASE_FEATURE(kExtensionTelemetryCookiesGetSignal,
 BASE_FEATURE(kExtensionTelemetryDeclarativeNetRequestSignal,
              "SafeBrowsingExtensionTelemetryDeclarativeNetRequestSignal",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kExtensionTelemetryDisableOffstoreExtensions,
+             "SafeBrowsingExtensionTelemetryDisableOffstoreExtensions",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kFileTypePoliciesTag,
              "FileTypePoliciesTag",
@@ -229,6 +241,10 @@ constexpr base::FeatureParam<std::string> kRedWarningSurveyDidProceedFilter{
 BASE_FEATURE(kRealTimeUrlFilteringForEnterprise,
              "RealTimeUrlFilteringForEnterprise",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kRedInterstitialFacelift,
+             "RedInterstitialFacelift",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kReferrerChainParameters,
              "SafeBrowsingReferrerChainParameters",
@@ -316,7 +332,7 @@ BASE_FEATURE(kTailoredSecurityIntegration,
 
 BASE_FEATURE(kTailoredSecurityUpdatedMessages,
              "TailoredSecurityUpdatedMessages",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kThreatDomDetailsTagAndAttributeFeature,
              "ThreatDomDetailsTagAttributes",
@@ -367,6 +383,7 @@ constexpr struct {
     {&kExtensionTelemetryCookiesGetAllSignal, true},
     {&kExtensionTelemetryCookiesGetSignal, true},
     {&kExtensionTelemetryDeclarativeNetRequestSignal, true},
+    {&kExtensionTelemetryDisableOffstoreExtensions, true},
     {&kExtensionTelemetryFileData, true},
     {&kExtensionTelemetryPersistence, true},
     {&kExtensionTelemetryPotentialPasswordTheft, true},
@@ -382,6 +399,7 @@ constexpr struct {
     {&kMmapSafeBrowsingDatabase, true},
     {&kNestedArchives, true},
     {&kRealTimeUrlFilteringForEnterprise, true},
+    {&kRedInterstitialFacelift, false},
     {&kSafeBrowsingCsbrrNewDownloadTrigger, true},
     {&kSafeBrowsingLookupMechanismExperiment, true},
     {&kSafeBrowsingRemoveCookiesInAuthRequests, true},

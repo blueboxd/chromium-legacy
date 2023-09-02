@@ -10,6 +10,7 @@
 import {assertInstanceof, assertNotReached} from 'chrome://resources/ash/common/assert.js';
 
 import {getMimeType, startIOTask} from '../../common/js/api.js';
+import {AnnotatedTask, getDefaultTask} from '../../common/js/file_tasks.js';
 import {metrics} from '../../common/js/metrics.js';
 import {str, strf, util} from '../../common/js/util.js';
 import {Crostini} from '../../externs/background/crostini.js';
@@ -17,13 +18,13 @@ import {ProgressCenter} from '../../externs/background/progress_center.js';
 import {FilesAppDirEntry, FilesAppEntry} from '../../externs/files_app_entry_interfaces.js';
 import {FileData, FileKey, FileTasks as StoreFileTasks, PropStatus, State} from '../../externs/ts/state.js';
 import {VolumeManager} from '../../externs/volume_manager.js';
-import {fetchFileTasks} from '../../state/actions_producers/current_directory.js';
+import {fetchFileTasks} from '../../state/ducks/current_directory.js';
 import {getFilesData, getStore, Store, waitForState} from '../../state/store.js';
 import {FilesPasswordDialog} from '../elements/files_password_dialog.js';
 
 import {DirectoryModel} from './directory_model.js';
 import {FileSelection, FileSelectionHandler} from './file_selection.js';
-import {AnnotatedTask, FileTasks, getDefaultTask, TaskPickerType} from './file_tasks.js';
+import {FileTasks, TaskPickerType} from './file_tasks.js';
 import {FileTransferController} from './file_transfer_controller.js';
 import {MetadataModel} from './metadata/metadata_model.js';
 import {MetadataUpdateController} from './metadata_update_controller.js';

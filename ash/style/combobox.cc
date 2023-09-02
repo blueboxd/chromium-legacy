@@ -7,11 +7,14 @@
 #include <memory>
 
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/public/cpp/style/color_provider.h"
 #include "ash/resources/vector_icons/vector_icons.h"
+#include "ash/style/blurred_background_shield.h"
 #include "ash/style/radio_button.h"
 #include "ash/style/radio_button_group.h"
 #include "ash/style/style_util.h"
 #include "ash/style/typography.h"
+#include "ash/wm/work_area_insets.h"
 #include "base/functional/bind.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
@@ -25,14 +28,20 @@
 #include "ui/events/types/event_type.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rounded_corners_f.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/background.h"
+#include "ui/views/controls/button/button.h"
+#include "ui/views/controls/focus_ring.h"
 #include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/controls/scroll_view.h"
 #include "ui/views/highlight_border.h"
-#include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
+#include "ui/views/layout/flex_layout.h"
+#include "ui/views/layout/flex_layout_types.h"
 #include "ui/views/mouse_constants.h"
+#include "ui/views/view_class_properties.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/coordinate_conversion.h"
 
@@ -41,8 +50,12 @@ namespace ash {
 namespace {
 
 // The color constants.
-constexpr ui::ColorId kTextAndIconColorId = cros_tokens::kCrosSysOnSurface;
-constexpr ui::ColorId kMenuBackgroudnColorId =
+constexpr ui::ColorId kActiveTitleAndIconColorId =
+    cros_tokens::kCrosSysSystemOnPrimaryContainer;
+constexpr ui::ColorId kInactiveTitleAndIconColorId =
+    cros_tokens::kCrosSysOnSurface;
+constexpr ui::ColorId kMenuTextColorId = cros_tokens::kCrosSysOnSurface;
+constexpr ui::ColorId kMenuBackgroundColorId =
     cros_tokens::kCrosSysSystemBaseElevated;
 constexpr ui::ColorId kComboboxActiveColorId =
     cros_tokens::kCrosSysSystemPrimaryContainer;
@@ -61,6 +74,69 @@ constexpr int kMinMenuWidth = 256;
 constexpr gfx::Vector2d kMenuOffset(0, 8);
 constexpr int kMenuShadowElevation = 12;
 
+class ComboboxMenuOption : public RadioButton {
+ public:
+  ComboboxMenuOption(int button_width,
+                     PressedCallback callback,
+                     const std::u16string& label)
+      : RadioButton(button_width,
+                    callback,
+                    label,
+                    RadioButton::IconDirection::kLeading,
+                    RadioButton::IconType::kCheck,
+                    kMenuItemInnerPadding,
+                    kCheckmarkLabelSpacing) {
+    // The option is visually a radio button, but handles press actions more
+    // like a button - when pressed, the combobox menu will be closed, and the
+    // pressed option will get selected for the combobox. For this reason, for
+    // accessibility, treat the menu option as a list box option instead of
+    // radio button.
+    SetAccessibilityProperties(ax::mojom::Role::kListBoxOption);
+  }
+
+  // RadioButton:
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
+    RadioButton::GetAccessibleNodeData(node_data);
+    // Clear the checked state set by the base class. The check is used as an
+    // indicator of the current combobox menu selection, and gets updated as the
+    // keyboard selection changes. Announcing that each item that gets keyboard
+    // selection is checked does not add value to the user and may cause
+    // confusion. Additionally, if checked state is set, the action verb will
+    // indicate that activating the item toggles it, which would be misleading.
+    node_data->SetCheckedState(ax::mojom::CheckedState::kNone);
+    node_data->SetDefaultActionVerb(ax::mojom::DefaultActionVerb::kClick);
+  }
+};
+
+class ComboboxMenuOptionGroup : public RadioButtonGroup {
+ public:
+  ComboboxMenuOptionGroup()
+      : RadioButtonGroup(kMinMenuWidth,
+                         kMenuBorderInsets,
+                         0,
+                         RadioButton::IconDirection::kLeading,
+                         RadioButton::IconType::kCheck,
+                         kMenuItemInnerPadding,
+                         kCheckmarkLabelSpacing) {
+    SetAccessibilityProperties(ax::mojom::Role::kListBox);
+  }
+
+  // RadioButtonGroup:
+  RadioButton* AddButton(RadioButton::PressedCallback callback,
+                         const std::u16string& label) override {
+    auto* button = AddChildView(std::make_unique<ComboboxMenuOption>(
+        group_width_ - inside_border_insets_.width(), callback, label));
+    button->set_delegate(this);
+    buttons_.push_back(button);
+    return button;
+  }
+
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
+    RadioButtonGroup::GetAccessibleNodeData(node_data);
+    node_data->SetNameExplicitlyEmpty();
+  }
+};
+
 }  // namespace
 
 //------------------------------------------------------------------------------
@@ -71,20 +147,31 @@ constexpr int kMenuShadowElevation = 12;
 class Combobox::ComboboxMenuView : public views::View {
  public:
   METADATA_HEADER(ComboboxMenuView);
-  explicit ComboboxMenuView(Combobox* combobox) : combobox_(combobox) {
+  explicit ComboboxMenuView(base::WeakPtr<Combobox> combobox)
+      : combobox_(combobox),
+        background_shield_(this,
+                           kMenuBackgroundColorId,
+                           ColorProvider::kBackgroundBlurSigma,
+                           kMenuRoundedCorners) {
     SetLayoutManager(std::make_unique<views::FillLayout>());
 
+    scroll_view_ = AddChildView(std::make_unique<views::ScrollView>(
+        views::ScrollView::ScrollWithLayers::kEnabled));
+    SetLayoutManager(std::make_unique<views::FillLayout>());
+    scroll_view_->SetPaintToLayer(ui::LAYER_NOT_DRAWN);
+    scroll_view_->layer()->SetFillsBoundsOpaquely(false);
+    scroll_view_->ClipHeightTo(0, std::numeric_limits<int>::max());
+    scroll_view_->SetDrawOverflowIndicator(false);
+    scroll_view_->SetBackgroundColor(absl::nullopt);
+    scroll_view_->SetVerticalScrollBarMode(
+        views::ScrollView::ScrollBarMode::kHiddenButEnabled);
+
     // Create a radio buttons group for item list.
-    menu_item_group_ = AddChildView(std::make_unique<RadioButtonGroup>(
-        kMinMenuWidth, kMenuBorderInsets, 0,
-        RadioButton::IconDirection::kLeading, RadioButton::IconType::kCheck,
-        kMenuItemInnerPadding, kCheckmarkLabelSpacing));
+    menu_item_group_ =
+        scroll_view_->SetContents(std::make_unique<ComboboxMenuOptionGroup>());
     UpdateMenuContent();
 
-    // Set background and border.
-    SetBackground(views::CreateThemedRoundedRectBackground(
-        kMenuBackgroudnColorId, kMenuRoundedCorners,
-        /*for_border_thickness=*/0));
+    // Set border.
     SetBorder(std::make_unique<views::HighlightBorder>(
         kMenuRoundedCorners,
         views::HighlightBorder::Type::kHighlightBorderOnShadow));
@@ -95,26 +182,36 @@ class Combobox::ComboboxMenuView : public views::View {
 
   void SelectItem(int index) { menu_item_group_->SelectButtonAtIndex(index); }
 
+  const OptionButtonBase* GetSelectedItemView() const {
+    auto selected_views = menu_item_group_->GetSelectedButtons();
+    if (selected_views.empty()) {
+      return nullptr;
+    }
+
+    return selected_views[0];
+  }
+
   void UpdateMenuContent() {
     menu_item_group_->RemoveAllChildViews();
 
     // Build a radio button group according to current combobox model.
     for (size_t i = 0; i < combobox_->model_->GetItemCount(); i++) {
       auto* item = menu_item_group_->AddButton(
-          base::BindRepeating(&Combobox::MenuSelectionAt,
-                              base::Unretained(combobox_), i),
+          base::BindRepeating(&Combobox::MenuSelectionAt, combobox_, i),
           combobox_->model_->GetDropDownTextAt(i));
       item->SetLabelStyle(TypographyToken::kCrosButton2);
-      item->SetLabelColorId(kTextAndIconColorId);
+      item->SetLabelColorId(kMenuTextColorId);
       item->SetSelected(combobox_->selected_index_.value() == i);
     }
   }
 
  private:
-  const raw_ptr<Combobox> combobox_;
+  const base::WeakPtr<Combobox> combobox_;
+  const BlurredBackgroundShield background_shield_;
 
   // Owned by this.
-  raw_ptr<RadioButtonGroup> menu_item_group_;
+  raw_ptr<ComboboxMenuOptionGroup> menu_item_group_;
+  raw_ptr<views::ScrollView> scroll_view_;
 };
 
 BEGIN_METADATA(Combobox, ComboboxMenuView, views::View)
@@ -142,12 +239,23 @@ class Combobox::ComboboxEventHandler : public ui::EventHandler {
 
   void OnTouchEvent(ui::TouchEvent* event) override { OnLocatedEvent(event); }
 
+  void OnKeyEvent(ui::KeyEvent* event) override {
+    // If the menu is shown, route the key event to the combobox view, to handle
+    // keys impact the menu selection/state even if the combobox view is not
+    // currently focused (which may be the case if the combobox is shown within
+    // non-activatable widget, e.g. a system tray bubble).
+    if (combobox_->IsMenuRunning() && !combobox_->HasFocus()) {
+      combobox_->OnKeyEvent(event);
+    }
+  }
+
  private:
   void OnLocatedEvent(ui::LocatedEvent* event) {
-    // If there is a mouse or touch event happening outside the combobox and
-    // drop down menu, the drop down menu should be closed.
+    // If there is a mouse, scroll or touch event happening outside the combobox
+    // and drop down menu, the drop down menu should be closed.
     if (event->type() != ui::ET_MOUSE_PRESSED &&
-        event->type() != ui::ET_TOUCH_PRESSED) {
+        event->type() != ui::ET_TOUCH_PRESSED &&
+        event->type() != ui::ET_MOUSEWHEEL) {
       return;
     }
 
@@ -178,27 +286,33 @@ Combobox::Combobox(ui::ComboboxModel* model)
     : views::Button(base::BindRepeating(&Combobox::OnComboboxPressed,
                                         base::Unretained(this))),
       model_(model),
-      title_(AddChildView(std::make_unique<views::Label>())) {
+      title_(AddChildView(std::make_unique<views::Label>())),
+      drop_down_arrow_(AddChildView(std::make_unique<views::ImageView>(
+          ui::ImageModel::FromVectorIcon(kDropDownArrowIcon,
+                                         kInactiveTitleAndIconColorId,
+                                         kArrowIconSize)))) {
   // Initialize the combobox with given model.
   CHECK(model_);
   observation_.Observe(model_.get());
   SetSelectedIndex(model_->GetDefaultIndex());
+  OnPerformAction();
   OnComboboxModelChanged(model_);
 
   // Set up layout.
-  SetLayoutManager(std::make_unique<views::BoxLayout>(
-      /*orientation=*/views::BoxLayout::Orientation::kHorizontal,
-      /*inside_border_insets=*/kComboboxBorderInsets));
+  auto* const layout = SetLayoutManager(std::make_unique<views::FlexLayout>());
+  layout->SetInteriorMargin(kComboboxBorderInsets);
+  // Allow `title_` to shrink and elide, so that `drop_down_arrow_` on the
+  // right always remains visible.
+  title_->SetProperty(
+      views::kFlexBehaviorKey,
+      views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToZero,
+                               views::MaximumFlexSizeRule::kUnbounded));
 
   // Stylize the title.
   TypographyProvider::Get()->StyleLabel(TypographyToken::kCrosTitle1,
                                         *title_.get());
-  title_->SetEnabledColorId(kTextAndIconColorId);
-
-  // Add the following drop down arrow icon.
-  AddChildView(
-      std::make_unique<views::ImageView>(ui::ImageModel::FromVectorIcon(
-          kDropDownArrowIcon, kTextAndIconColorId, kArrowIconSize)));
+  title_->SetAutoColorReadabilityEnabled(false);
+  title_->SetEnabledColorId(kInactiveTitleAndIconColorId);
 
   SetFocusBehavior(views::View::FocusBehavior::ALWAYS);
 
@@ -209,8 +323,15 @@ Combobox::Combobox(ui::ComboboxModel* model)
   StyleUtil::InstallRoundedCornerHighlightPathGenerator(
       this, kComboboxRoundedCorners);
   StyleUtil::SetUpInkDropForButton(this);
+  layout->SetChildViewIgnoredByLayout(views::FocusRing::Get(this),
+                                      /*ignored=*/true);
 
   event_handler_ = std::make_unique<ComboboxEventHandler>(this);
+
+  // `ax::mojom::Role::kComboBox` is for UI elements with a dropdown and
+  // an editable text field, which `views::Combobox` does not have. Use
+  // `ax::mojom::Role::kPopUpButton` to match an HTML <select> element.
+  SetAccessibilityProperties(ax::mojom::Role::kPopUpButton);
 }
 
 Combobox::~Combobox() = default;
@@ -237,9 +358,8 @@ void Combobox::SetSelectedIndex(absl::optional<size_t> index) {
   // Update selected item on menu if the menu is opening.
   if (menu_view_) {
     menu_view_->SelectItem(selected_index_.value());
+    NotifyAccessibilityEvent(ax::mojom::Event::kActiveDescendantChanged, true);
   }
-
-  OnPerformAction();
 }
 
 bool Combobox::SelectValue(const std::u16string& value) {
@@ -268,10 +388,107 @@ void Combobox::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   }
 }
 
+void Combobox::OnBlur() {
+  if (menu_) {
+    CloseDropDownMenu();
+  }
+
+  views::Button::OnBlur();
+}
+
+void Combobox::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  views::Button::GetAccessibleNodeData(node_data);
+
+  if (IsMenuRunning()) {
+    node_data->AddState(ax::mojom::State::kExpanded);
+  } else {
+    node_data->AddState(ax::mojom::State::kCollapsed);
+  }
+  node_data->SetDefaultActionVerb(ax::mojom::DefaultActionVerb::kOpen);
+  node_data->SetValue(title_->GetText());
+
+  const OptionButtonBase* selected_button =
+      menu_view_ ? menu_view_->GetSelectedItemView() : nullptr;
+  if (selected_button) {
+    node_data->AddIntAttribute(
+        ax::mojom::IntAttribute::kActivedescendantId,
+        selected_button->GetViewAccessibility().GetUniqueId().Get());
+  }
+}
+
+void Combobox::AddedToWidget() {
+  widget_observer_.Observe(GetWidget());
+}
+
+void Combobox::RemovedFromWidget() {
+  widget_observer_.Reset();
+}
+
+void Combobox::Layout() {
+  views::Button::Layout();
+  views::FocusRing::Get(this)->Layout();
+}
+
+void Combobox::OnWidgetBoundsChanged(views::Widget* widget,
+                                     const gfx::Rect& bounds) {
+  if (menu_) {
+    menu_->SetBounds(GetExpectedMenuBounds());
+  }
+}
+
+std::u16string Combobox::GetTextForRow(size_t row) const {
+  return model_->IsItemSeparatorAt(row) ? std::u16string()
+                                        : model_->GetItemAt(row);
+}
+
+void Combobox::SelectMenuItemForTest(size_t row) {
+  MenuSelectionAt(row);
+}
+
 gfx::Rect Combobox::GetExpectedMenuBounds() const {
   CHECK(menu_view_);
-  return gfx::Rect(GetBoundsInScreen().bottom_left() + kMenuOffset,
-                   menu_view_->GetPreferredSize());
+  WorkAreaInsets* work_area =
+      WorkAreaInsets::ForWindow(GetWidget()->GetNativeWindow());
+  const gfx::Rect available_bounds = work_area->user_work_area_bounds();
+
+  const gfx::Size preferred_size = menu_view_->GetPreferredSize();
+  const gfx::Rect combobox_bounds = GetBoundsInScreen();
+
+  // Decide whether to show the combobox menu below (default) or above the
+  // combobox:
+  // if the combobox menu fits below the combobox, show it below.
+  const int height_below =
+      available_bounds.bottom() - combobox_bounds.bottom() - kMenuOffset.y();
+  bool show_below_combobox = height_below >= preferred_size.height();
+  // If the combobox menu does not fit below combobox, show it above the
+  // combobox of there is more space available above.
+  if (!show_below_combobox) {
+    const int height_above =
+        combobox_bounds.y() - available_bounds.y() - kMenuOffset.y();
+    show_below_combobox = height_below >= height_above;
+  }
+
+  gfx::Rect preferred_bounds =
+      show_below_combobox
+          ? gfx::Rect(combobox_bounds.bottom_left() + kMenuOffset,
+                      preferred_size)
+          : gfx::Rect(
+                combobox_bounds.origin() +
+                    gfx::Vector2d(kMenuOffset.x(),
+                                  -preferred_size.height() - kMenuOffset.y()),
+                preferred_size);
+
+  // If the combobox view is offscreen, translate the preferred combobox bounds
+  // to fit available bounds.
+  if (show_below_combobox && combobox_bounds.bottom() < available_bounds.y()) {
+    preferred_bounds.Offset(0, available_bounds.y() - combobox_bounds.bottom());
+  } else if (!show_below_combobox &&
+             combobox_bounds.y() > available_bounds.bottom()) {
+    preferred_bounds.Offset(0, available_bounds.bottom() - combobox_bounds.y());
+  }
+
+  preferred_bounds.Intersect(available_bounds);
+  return preferred_bounds;
 }
 
 void Combobox::MenuSelectionAt(size_t index) {
@@ -285,8 +502,10 @@ void Combobox::OnComboboxPressed() {
     return;
   }
 
-  if ((base::TimeTicks::Now() - closed_time_) >
-      views::kMinimumTimeBetweenButtonClicks) {
+  if (menu_) {
+    CloseDropDownMenu();
+  } else if ((base::TimeTicks::Now() - closed_time_) >
+             views::kMinimumTimeBetweenButtonClicks) {
     ShowDropDownMenu();
   }
 }
@@ -297,7 +516,8 @@ void Combobox::ShowDropDownMenu() {
     return;
   }
 
-  auto menu_view = std::make_unique<ComboboxMenuView>(this);
+  auto menu_view =
+      std::make_unique<ComboboxMenuView>(weak_ptr_factory_.GetWeakPtr());
   menu_view_ = menu_view.get();
 
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
@@ -317,22 +537,55 @@ void Combobox::ShowDropDownMenu() {
   SetBackground(views::CreateThemedRoundedRectBackground(
       kComboboxActiveColorId, kComboboxRoundedCorners,
       /*for_border_thickness=*/0));
+  title_->SetEnabledColorId(kActiveTitleAndIconColorId);
+  drop_down_arrow_->SetImage(ui::ImageModel::FromVectorIcon(
+      kDropDownArrowIcon, kActiveTitleAndIconColorId, kArrowIconSize));
+
+  RequestFocus();
+  NotifyAccessibilityEvent(ax::mojom::Event::kStateChanged, true);
 }
 
 void Combobox::CloseDropDownMenu() {
   menu_view_ = nullptr;
   menu_.reset();
+
   closed_time_ = base::TimeTicks::Now();
   SetBackground(nullptr);
+  title_->SetEnabledColorId(kInactiveTitleAndIconColorId);
+  drop_down_arrow_->SetImage(ui::ImageModel::FromVectorIcon(
+      kDropDownArrowIcon, kInactiveTitleAndIconColorId, kArrowIconSize));
+  NotifyAccessibilityEvent(ax::mojom::Event::kStateChanged, true);
+
+  // Commit the selection once the combobox view state has been updated.
+  // NOTE: This may run selection callback, which may end up deleting this,
+  // depending on how the callback is handled.
+  OnPerformAction();
 }
 
 void Combobox::OnPerformAction() {
-  CHECK(selected_index_.has_value());
-  title_->SetText(model_->GetItemAt(selected_index_.value()));
+  if (selected_index_ == last_commit_selection_) {
+    return;
+  }
 
-  SchedulePaint();
+  last_commit_selection_ = selected_index_;
 
-  if (callback_) {
+  if (selected_index_.has_value()) {
+    title_->SetText(model_->GetItemAt(selected_index_.value()));
+  } else {
+    title_->SetText(std::u16string());
+  }
+
+  if (selected_index_) {
+    GetViewAccessibility().OverridePosInSet(
+        base::checked_cast<int>(selected_index_.value()),
+        base::checked_cast<int>(model_->GetItemCount()));
+  } else {
+    GetViewAccessibility().ClearPosInSetOverride();
+  }
+
+  NotifyAccessibilityEvent(ax::mojom::Event::kValueChanged, true);
+
+  if (selected_index_.has_value() && callback_) {
     callback_.Run();
   }
 }
@@ -350,13 +603,134 @@ void Combobox::OnComboboxModelChanged(ui::ComboboxModel* model) {
 
   if (menu_view_) {
     menu_view_->UpdateMenuContent();
+    NotifyAccessibilityEvent(ax::mojom::Event::kActiveDescendantChanged, true);
   }
 }
 
 void Combobox::OnComboboxModelDestroying(ui::ComboboxModel* model) {
-  CloseDropDownMenu();
+  // Reset selected index to avoid using the destroying model.
+  SetSelectedIndex(absl::nullopt);
   model_ = nullptr;
   observation_.Reset();
+  CloseDropDownMenu();
+}
+
+bool Combobox::SkipDefaultKeyEventProcessing(const ui::KeyEvent& e) {
+  if (!IsMenuRunning()) {
+    return false;
+  }
+
+  // Let combobox directly handle keys that update combobox menu selection if
+  // the menu is running.
+  if (e.key_code() == ui::VKEY_DOWN || e.key_code() == ui::VKEY_END ||
+      e.key_code() == ui::VKEY_NEXT || e.key_code() == ui::VKEY_HOME ||
+      e.key_code() == ui::VKEY_PRIOR || e.key_code() == ui::VKEY_UP ||
+      e.key_code() == ui::VKEY_TAB) {
+    return true;
+  }
+
+  // Escape should close the drop down list when it is active, not host UI.
+  if (e.key_code() == ui::VKEY_ESCAPE && !e.IsShiftDown() &&
+      !e.IsControlDown() && !e.IsAltDown() && !e.IsAltGrDown()) {
+    return true;
+  }
+
+  return false;
+}
+
+bool Combobox::OnKeyPressed(const ui::KeyEvent& e) {
+  CHECK_EQ(e.type(), ui::ET_KEY_PRESSED);
+
+  CHECK(selected_index_.has_value());
+  CHECK_LT(selected_index_.value(), model_->GetItemCount());
+
+  const auto index_at_or_after = [](ui::ComboboxModel* model,
+                                    size_t index) -> absl::optional<size_t> {
+    for (; index < model->GetItemCount(); ++index) {
+      if (!model->IsItemSeparatorAt(index) && model->IsItemEnabledAt(index)) {
+        return index;
+      }
+    }
+    return absl::nullopt;
+  };
+
+  const auto index_before = [](ui::ComboboxModel* model,
+                               size_t index) -> absl::optional<size_t> {
+    for (; index > 0; --index) {
+      const auto prev = index - 1;
+      if (!model->IsItemSeparatorAt(prev) && model->IsItemEnabledAt(prev)) {
+        return prev;
+      }
+    }
+    return absl::nullopt;
+  };
+
+  absl::optional<size_t> new_index;
+  switch (e.key_code()) {
+    // Show the menu on F4 without modifiers.
+    case ui::VKEY_F4:
+      if (e.IsAltDown() || e.IsAltGrDown() || e.IsControlDown()) {
+        return false;
+      }
+      ShowDropDownMenu();
+      return true;
+
+    // Move to the next item if any, or show the menu on Alt+Down like Windows.
+    case ui::VKEY_DOWN:
+      if (e.IsAltDown()) {
+        ShowDropDownMenu();
+        return true;
+      }
+      new_index = index_at_or_after(model_, selected_index_.value() + 1);
+      break;
+
+    // Move to the end of the list.
+    case ui::VKEY_END:
+    case ui::VKEY_NEXT:  // Page down.
+      new_index = index_before(model_, model_->GetItemCount());
+      break;
+
+    // Move to the beginning of the list.
+    case ui::VKEY_HOME:
+    case ui::VKEY_PRIOR:  // Page up.
+      new_index = index_at_or_after(model_, 0);
+      break;
+
+    // Move to the previous item if any.
+    case ui::VKEY_UP:
+      new_index = index_before(model_, selected_index_.value());
+      break;
+    case ui::VKEY_TAB:
+      if (menu_view_) {
+        new_index =
+            e.IsShiftDown()
+                ? index_before(model_, selected_index_.value())
+                : index_at_or_after(model_, selected_index_.value() + 1);
+        break;
+      }
+      // If menu is closed, proceed with the default TAB key behavior (and let
+      // it move the focus away from the combobox).
+      return views::Button::OnKeyPressed(e);
+    case ui::VKEY_ESCAPE:
+      if (menu_view_) {
+        SetSelectedIndex(last_commit_selection_);
+        CloseDropDownMenu();
+        return true;
+      }
+      return views::Button::OnKeyPressed(e);
+    default:
+      return views::Button::OnKeyPressed(e);
+  }
+
+  // If menu is running, only update selected item on menu instead of committing
+  // the selection. Otherwise, make the selection.
+  if (new_index.has_value()) {
+    SetSelectedIndex(new_index);
+    if (!IsMenuRunning()) {
+      OnPerformAction();
+    }
+  }
+  return true;
 }
 
 BEGIN_METADATA(Combobox, views::Button)

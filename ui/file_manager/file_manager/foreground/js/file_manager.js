@@ -32,12 +32,13 @@ import {FakeEntry, FilesAppDirEntry} from '../../externs/files_app_entry_interfa
 import {ForegroundWindow} from '../../externs/foreground_window.js';
 import {PropStatus} from '../../externs/ts/state.js';
 import {Store} from '../../externs/ts/store.js';
-import {updateBulkPinProgress} from '../../state/actions/bulk_pinning.js';
-import {updatePreferences} from '../../state/actions/preferences.js';
-import {updateSearch} from '../../state/actions/search.js';
-import {addUiEntry, removeUiEntry} from '../../state/actions/ui_entries.js';
-import {getMyFiles} from '../../state/reducers/all_entries.js';
-import {trashRootKey} from '../../state/reducers/volumes.js';
+import {getMyFiles} from '../../state/ducks/all_entries.js';
+import {updateBulkPinProgress} from '../../state/ducks/bulk_pinning.js';
+import {updateDeviceConnectionState} from '../../state/ducks/device.js';
+import {updatePreferences} from '../../state/ducks/preferences.js';
+import {updateSearch} from '../../state/ducks/search.js';
+import {addUiEntry, removeUiEntry} from '../../state/ducks/ui_entries.js';
+import {trashRootKey} from '../../state/ducks/volumes.js';
 import {getEmptyState, getStore} from '../../state/store.js';
 
 import {ActionsController} from './actions_controller.js';
@@ -939,6 +940,12 @@ export class FileManager extends EventTarget {
     store.init(getEmptyState());
     this.initUIFocus_();
     metrics.recordInterval('Load.InitUI');
+
+    chrome.fileManagerPrivate.onDeviceConnectionStatusChanged.addListener(
+        this.updateDeviceConnectionState_.bind(this));
+    chrome.fileManagerPrivate.getDeviceConnectionState(
+        this.updateDeviceConnectionState_.bind(this));
+
     return fileSystemUIPromise;
   }
 
@@ -1796,6 +1803,15 @@ export class FileManager extends EventTarget {
       this.ui_.nudgeContainer.clearSeen(NudgeType['DRIVE_MOVED_FILE_NUDGE']);
       console.debug('Reset Google Drive move to cloud nudge');
     }
+  }
+
+  /**
+   * Invoked when the device connection status changes.
+   * @param {chrome.fileManagerPrivate.DeviceConnectionState} state
+   * @private
+   */
+  updateDeviceConnectionState_(state) {
+    this.store_.dispatch(updateDeviceConnectionState({connection: state}));
   }
 
   /**

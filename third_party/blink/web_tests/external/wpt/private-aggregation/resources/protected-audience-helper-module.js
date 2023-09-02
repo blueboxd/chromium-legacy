@@ -72,7 +72,7 @@ async function waitForObservedReports(uuid, expectedNumReports, timeout = 1000 /
 // run, unless it returns something or throws.
 //
 // The default reportWin() method is empty.
-function createBiddingScriptUrl(params = {}) {
+function createBiddingScriptURL(params = {}) {
   let url = new URL(`${FLEDGE_BASE_URL}resources/bidding-logic.sub.py`);
   if (params.generateBid)
     url.searchParams.append('generateBid', params.generateBid);
@@ -92,7 +92,7 @@ function createBiddingScriptUrl(params = {}) {
 // returns something or throws.
 //
 // The default reportResult() method is empty.
-function createDecisionScriptUrl(uuid, params = {}) {
+function createDecisionScriptURL(uuid, params = {}) {
   let url = new URL(`${FLEDGE_BASE_URL}resources/decision-logic.sub.py`);
   url.searchParams.append('uuid', uuid);
   if (params.scoreAd)
@@ -186,12 +186,13 @@ async function runReportTest(test, uuid, codeToInsert, expectedNumReports = 0) {
   let reportResult = codeToInsert.reportResult;
 
   let interestGroupOverrides =
-    { biddingLogicUrl: createBiddingScriptUrl({ generateBid, reportWin }) };
+    { biddingLogicURL: createBiddingScriptURL({ generateBid, reportWin }) };
 
   await joinInterestGroup(test, uuid, interestGroupOverrides);
   await runBasicFledgeAuctionAndNavigate(
       test, uuid,
-      { decisionLogicUrl: createDecisionScriptUrl(
+    {
+      decisionLogicURL: createDecisionScriptURL(
         uuid, { scoreAd, reportResult })
     });
 

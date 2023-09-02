@@ -72,11 +72,14 @@ class CaptureModeSessionTestApi {
   bool IsFolderSelectionDialogShown();
 
   // Returns true if all UIs (cursors, widgets, and paintings on the layer) of
-  // the capture mode session is visible.
-  bool IsAllUisVisible();
+  // the capture mode session are visible.
+  bool AreAllUisVisible();
+
+  gfx::Rect GetSelectedWindowTargetBounds();
 
  private:
-  const raw_ptr<CaptureModeSession, ExperimentalAsh> session_;
+  const raw_ptr<CaptureModeSession, DanglingUntriaged | ExperimentalAsh>
+      session_;
 };
 
 }  // namespace ash

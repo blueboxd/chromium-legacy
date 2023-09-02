@@ -36,8 +36,6 @@
 #include "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "base/trace_event/memory_dump_manager.h"
-#include "base/trace_event/memory_usage_estimator.h"
-#include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "components/history_clusters/core/config.h"
 #include "components/omnibox/browser/actions/omnibox_action_in_suggest.h"
@@ -210,21 +208,23 @@ void AutocompleteController::GetMatchTypeAndExtendSubtypes(
   // TYPE_ON_DEVICE_HEAD, set the subtype accordingly. The type will be set in
   // the switch statement below for SEARCH_SUGGEST or NAVSUGGEST types.
   if (match.provider) {
-    if (match.provider->type() == AutocompleteProvider::TYPE_ZERO_SUGGEST &&
-        (match.type == AutocompleteMatchType::SEARCH_SUGGEST ||
-         match.type == AutocompleteMatchType::TILE_NAVSUGGEST ||
-         match.type == AutocompleteMatchType::NAVSUGGEST)) {
+    if (match.provider->type() == AutocompleteProvider::TYPE_ZERO_SUGGEST) {
       // Make sure changes here are reflected in UpdateAssistedQueryStats()
       // below in which the zero-prefix suggestions are counted.
-      if (match.type == AutocompleteMatchType::TILE_NAVSUGGEST ||
-          match.type == AutocompleteMatchType::NAVSUGGEST) {
-        subtypes->emplace(omnibox::SUBTYPE_ZERO_PREFIX_LOCAL_FREQUENT_URLS);
-      }
       // We abuse this subtype and use it to for zero-suggest suggestions that
       // aren't personalized by the server. That is, it indicates either
       // client-side most-likely URL suggestions or server-side suggestions
       // that depend only on the URL as context.
-      subtypes->emplace(omnibox::SUBTYPE_URL_BASED);
+      // TODO(crbug/1474087): add a dedicated subtype similar to
+      // LOCAL_FREQUENT_URLS and apply it to TILE_REPEATABLE_QUERY.
+      if (match.type == AutocompleteMatchType::TILE_NAVSUGGEST ||
+          match.type == AutocompleteMatchType::TILE_MOST_VISITED_SITE ||
+          match.type == AutocompleteMatchType::NAVSUGGEST) {
+        subtypes->emplace(omnibox::SUBTYPE_ZERO_PREFIX_LOCAL_FREQUENT_URLS);
+        subtypes->emplace(omnibox::SUBTYPE_URL_BASED);
+      } else if (match.type == AutocompleteMatchType::SEARCH_SUGGEST) {
+        subtypes->emplace(omnibox::SUBTYPE_URL_BASED);
+      }
     } else if (match.provider->type() ==
                AutocompleteProvider::TYPE_ON_DEVICE_HEAD) {
       // This subtype indicates a match from an on-device head provider.
@@ -238,7 +238,8 @@ void AutocompleteController::GetMatchTypeAndExtendSubtypes(
   }
 
   switch (match.type) {
-    case AutocompleteMatchType::SEARCH_SUGGEST: {
+    case AutocompleteMatchType::SEARCH_SUGGEST:
+    case AutocompleteMatchType::TILE_REPEATABLE_QUERY: {
       // Do not set subtype here; subtype may have been set above.
       *type = omnibox::TYPE_QUERY;
       return;
@@ -269,6 +270,7 @@ void AutocompleteController::GetMatchTypeAndExtendSubtypes(
       return;
     }
     case AutocompleteMatchType::TILE_NAVSUGGEST:
+    case AutocompleteMatchType::TILE_MOST_VISITED_SITE:
     case AutocompleteMatchType::NAVSUGGEST: {
       // Do not set subtype here; subtype may have been set above.
       *type = omnibox::TYPE_NAVIGATION;
@@ -1211,6 +1213,10 @@ void AutocompleteController::AttachActions() {
 #endif
   }
   result_.TrimOmniboxActions(input_.IsZeroSuggest());
+
+  if (OmniboxFieldTrial::IsActionsUISimplificationEnabled()) {
+    result_.SplitActionsToSuggestions(input_);
+  }
 }
 
 void AutocompleteController::UpdateAssociatedKeywords(
@@ -1678,7 +1684,7 @@ void AutocompleteController::RunBatchUrlScoringModel(
 
   size_t eligible_matches_count = base::ranges::count_if(
       result_.matches_,
-      [](const auto& match) { return match.scoring_signals.has_value(); });
+      [](const auto& match) { return match.IsUrlScoringEligible(); });
 
   // If `eligible_matches_count` is 0, call `completion_callback` immediately.
   if (eligible_matches_count == 0) {
@@ -1692,7 +1698,7 @@ void AutocompleteController::RunBatchUrlScoringModel(
   std::vector<std::string> stripped_destination_urls;
   stripped_destination_urls.reserve(eligible_matches_count);
   for (auto& match : result_) {
-    if (!match.scoring_signals.has_value()) {
+    if (!match.IsUrlScoringEligible()) {
       continue;
     }
     batch_scoring_signals.push_back(&match.scoring_signals.value());

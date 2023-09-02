@@ -8,6 +8,7 @@
 #include <cstdint>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "components/sync/engine/nigori/cross_user_sharing_public_private_key_pair.h"
 #include "components/sync/engine/nigori/cryptographer.h"
@@ -73,9 +74,8 @@ class CryptographerImpl : public Cryptographer {
   // return true. |key_name| must not be empty and must represent a known key.
   void SelectDefaultEncryptionKey(const std::string& key_name);
 
-  // Adds all keys in |other| that weren't previously known, and selects the
-  // same default key. |other| must have selected a default key.
-  void EmplaceKeysAndSelectDefaultKeyFrom(const CryptographerImpl& other);
+  // Adds all Nigori keys in |other| that weren't previously known.
+  void EmplaceAllNigoriKeysFrom(const CryptographerImpl& other);
 
   // Clears the default encryption key, which causes CanEncrypt() to return
   // false.
@@ -96,6 +96,9 @@ class CryptographerImpl : public Cryptographer {
   // key-pair.
   bool HasKeyPair(const uint32_t key_pair_version) const;
 
+  // Sets or changes the version of the default cross user sharing key.
+  void SelectDefaultCrossUserSharingKey(const uint32_t version);
+
   // Returns a proto representation of the default encryption key. |*this| must
   // have a default encryption key set, as reflected by CanEncrypt().
   sync_pb::NigoriKey ExportDefaultKey() const;
@@ -103,6 +106,22 @@ class CryptographerImpl : public Cryptographer {
   std::unique_ptr<CryptographerImpl> Clone() const;
 
   size_t KeyBagSizeForTesting() const;
+
+  // Encrypts |plaintext| using Auth HPKE using |recipient_public_key|
+  // authentication is added with the current sender's authentication key.
+  // Empty optional is returned upon failure.
+  absl::optional<std::vector<uint8_t>> AuthEncryptForCrossUserSharing(
+      base::span<const uint8_t> plaintext,
+      base::span<const uint8_t> recipient_public_key) const override;
+
+  // Decrypts |encrypted_data| using Auth HPKE using the keys corresponding
+  // to |recipient_key_version| and authenticates that the sender actually used
+  // |sender_public_key| upon auth encryption.
+  //  Empty optional is returned upon failure.
+  absl::optional<std::vector<uint8_t>> AuthDecryptForCrossUserSharing(
+      base::span<const uint8_t> encrypted_data,
+      base::span<const uint8_t> sender_public_key,
+      const uint32_t recipient_key_version) const override;
 
   // Cryptographer overrides.
   bool CanEncrypt() const override;
@@ -127,6 +146,10 @@ class CryptographerImpl : public Cryptographer {
   // must correspond to a key within |key_bag_|. May be empty even if |key_bag_|
   // is not.
   std::string default_encryption_key_name_;
+
+  // The version of the default cross user sharing key to be used for
+  // encryption.
+  absl::optional<uint32_t> default_cross_user_sharing_key_version_;
 
   // Cross user sharing keys we know about.
   CrossUserSharingKeys cross_user_sharing_keys_;

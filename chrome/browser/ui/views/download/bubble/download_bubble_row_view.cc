@@ -24,6 +24,7 @@
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/download/bubble/download_bubble_row_list_view.h"
+#include "chrome/browser/ui/views/download/bubble/download_toolbar_button_view.h"
 #include "chrome/browser/ui/views/download/download_shelf_context_menu_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/grit/generated_resources.h"
@@ -139,6 +140,9 @@ END_METADATA
 }  // namespace
 
 bool DownloadBubbleRowView::UpdateBubbleUIInfo(bool initial_setup) {
+  if (!model_) {
+    return false;
+  }
   auto mode = download::GetDesiredDownloadItemMode(model_.get());
   auto state = model_->GetState();
   bool is_paused = model_->IsPaused();
@@ -182,6 +186,9 @@ bool DownloadBubbleRowView::UpdateBubbleUIInfo(bool initial_setup) {
 }
 
 void DownloadBubbleRowView::UpdateRow(bool initial_setup) {
+  if (!model_) {
+    return;
+  }
   bool ui_info_changed = UpdateBubbleUIInfo(initial_setup);
   if (ui_info_changed) {
     RecordMetricsOnUpdate();
@@ -237,6 +244,9 @@ void DownloadBubbleRowView::SetIconFromImage(gfx::Image icon) {
 }
 
 bool DownloadBubbleRowView::StartLoadFileIcon() {
+  if (!model_) {
+    return false;
+  }
   base::FilePath file_path = model_->GetTargetFilePath();
   // Use a default icon (drive file outline icon) in case we have an empty
   // target path, which is empty for non download offline items, and newly
@@ -292,6 +302,9 @@ void DownloadBubbleRowView::SetFileIconAsIcon(bool is_default_icon) {
 void DownloadBubbleRowView::SetIcon() {
   // The correct scale_factor is set only in the AddedToWidget()
   if (!GetWidget()) {
+    return;
+  }
+  if (!model_) {
     return;
   }
 
@@ -382,6 +395,7 @@ DownloadBubbleRowView::DownloadBubbleRowView(
           base::BindRepeating(&DownloadBubbleRowView::UpdateStatusText,
                               base::Unretained(this))),
       fixed_width_(fixed_width) {
+  CHECK(model_);
   model_->SetDelegate(this);
   SetBorder(views::CreateEmptyBorder(GetLayoutInsets(DOWNLOAD_ROW)));
 
@@ -679,7 +693,7 @@ void DownloadBubbleRowView::Layout() {
 
 void DownloadBubbleRowView::OnMainButtonPressed() {
   if (!bubble_controller_ || !navigation_handler_ ||
-      !ui_info_.main_button_enabled) {
+      !ui_info_.main_button_enabled || !model_) {
     return;
   }
   bubble_controller_->RecordDownloadBubbleInteraction();
@@ -688,7 +702,7 @@ void DownloadBubbleRowView::OnMainButtonPressed() {
         model_->GetDownloadItem(),
         DownloadItemWarningData::WarningSurface::BUBBLE_MAINPAGE,
         DownloadItemWarningData::WarningAction::OPEN_SUBPAGE);
-    navigation_handler_->OpenSecurityDialog(this);
+    navigation_handler_->OpenSecurityDialog(model_->GetContentId());
   } else {
     RecordDownloadOpenButtonPressed(model_->IsDone());
     model_->OpenDownload();
@@ -774,6 +788,9 @@ void DownloadBubbleRowView::UpdateLabels() {
 }
 
 void DownloadBubbleRowView::RecordMetricsOnUpdate() {
+  if (!model_) {
+    return;
+  }
   // This should only be logged once per download.
   if (is_download_warning(download::GetDesiredDownloadItemMode(model_.get())) &&
       !model_->WasUIWarningShown()) {
@@ -790,6 +807,9 @@ void DownloadBubbleRowView::RecordMetricsOnUpdate() {
 }
 
 void DownloadBubbleRowView::RecordDownloadDisplayed() {
+  if (!model_) {
+    return;
+  }
   if (model_->IsDangerous()) {
     DownloadItemWarningData::AddWarningActionEvent(
         model_->GetDownloadItem(),
@@ -825,6 +845,7 @@ void DownloadBubbleRowView::OnDownloadDestroyed(const ContentId& id) {
   if (!navigation_handler_) {
     return;
   }
+  model_.reset();
   // This will return ownership and destroy this object at the end of the
   // method.
   std::unique_ptr<DownloadBubbleRowView> row_view_ptr =
@@ -839,14 +860,11 @@ void DownloadBubbleRowView::OnDownloadDestroyed(const ContentId& id) {
 void DownloadBubbleRowView::AddMainPageButton(
     DownloadCommands::Command command,
     const std::u16string& button_string) {
-  // base::Unretained is fine as DownloadBubbleRowView owns the discard button
-  // and the model. So, if the discard button is alive, so should be its parents
-  // and their owned fields.
   views::MdTextButton* button =
       main_button_holder_->AddChildView(std::make_unique<views::MdTextButton>(
           base::BindRepeating(
               &DownloadBubbleUIController::ProcessDownloadButtonPress,
-              bubble_controller_, base::Unretained(model_.get()), command,
+              bubble_controller_, model_->GetWeakPtr(), command,
               /*is_main_view=*/true),
           button_string));
   button->SetMaxSize(gfx::Size(0, kDownloadButtonHeight));
@@ -864,7 +882,7 @@ views::ImageButton* DownloadBubbleRowView::AddQuickAction(
   views::ImageButton* quick_action = quick_action_holder_->AddChildView(
       views::CreateVectorImageButton(base::BindRepeating(
           &DownloadBubbleUIController::ProcessDownloadButtonPress,
-          bubble_controller_, base::Unretained(model_.get()), command,
+          bubble_controller_, model_->GetWeakPtr(), command,
           /*is_main_view=*/true)));
   InstallCircleHighlightPathGenerator(quick_action);
   quick_action->SetBorder(
@@ -988,18 +1006,24 @@ void DownloadBubbleRowView::ShowContextMenuForViewImpl(
 }
 
 void DownloadBubbleRowView::AnnounceInProgressAlert() {
+  if (!model_) {
+    return;
+  }
   GetViewAccessibility().AnnounceText(
       model_->GetInProgressAccessibleAlertText());
 }
 
 void DownloadBubbleRowView::UpdateStatusText() {
+  if (!model_) {
+    return;
+  }
   secondary_label_->SetText(model_->GetStatusTextForLabel(
       secondary_label_->font_list(), secondary_label_->width()));
 }
 
 bool DownloadBubbleRowView::AcceleratorPressed(
     const ui::Accelerator& accelerator) {
-  if (model_->GetState() != download::DownloadItem::COMPLETE) {
+  if (!model_ || model_->GetState() != download::DownloadItem::COMPLETE) {
     return false;
   }
 

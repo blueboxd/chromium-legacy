@@ -146,11 +146,8 @@ public class TopToolbarCoordinator implements Toolbar {
      * @param identityDiscButtonSupplier Supplier of Identity Disc button.
      * @param resourceManagerSupplier A supplier of a resource manager for native textures.
      * @param isIncognitoModeEnabledSupplier A supplier for whether browsing is currently incognito.
-     * @param isGridTabSwitcherEnabled Whether grid tab switcher is enabled via a feature flag.
      * @param isTabToGtsAnimationEnabled Whether Tab-to-GTS animation is enabled via a feature flag.
      * @param isStartSurfaceEnabled Whether start surface is enabled via a feature flag.
-     * @param isTabGroupsAndroidContinuationEnabled Whether flag TabGroupsContinuationAndroid is
-     *        enabled.
      * @param historyDelegate Delegate used to display navigation history.
      * @param partnerHomepageEnabledSupplier A supplier of a boolean indicating that partner
      *        homepage is enabled.
@@ -186,9 +183,8 @@ public class TopToolbarCoordinator implements Toolbar {
             ButtonDataProvider identityDiscController, Callback<Runnable> invalidatorCallback,
             Supplier<ButtonData> identityDiscButtonSupplier,
             Supplier<ResourceManager> resourceManagerSupplier,
-            BooleanSupplier isIncognitoModeEnabledSupplier, boolean isGridTabSwitcherEnabled,
-            boolean isTabToGtsAnimationEnabled, boolean isStartSurfaceEnabled,
-            boolean isTabGroupsAndroidContinuationEnabled, HistoryDelegate historyDelegate,
+            BooleanSupplier isIncognitoModeEnabledSupplier, boolean isTabToGtsAnimationEnabled,
+            boolean isStartSurfaceEnabled, HistoryDelegate historyDelegate,
             BooleanSupplier partnerHomepageEnabledSupplier, OfflineDownloader offlineDownloader,
             boolean initializeWithIncognitoColors,
             Callback<LoadUrlParams> startSurfaceLogoClickedCallback,
@@ -213,17 +209,15 @@ public class TopToolbarCoordinator implements Toolbar {
             mStartSurfaceToolbarCoordinator = new StartSurfaceToolbarCoordinator(toolbarStub,
                     userEducationHelper, identityDiscController, overviewThemeColorProvider,
                     overviewModeMenuButtonCoordinator, identityDiscButtonSupplier,
-                    isGridTabSwitcherEnabled, isTabToGtsAnimationEnabled,
-                    isTabGroupsAndroidContinuationEnabled, isIncognitoModeEnabledSupplier,
+                    isTabToGtsAnimationEnabled, isIncognitoModeEnabledSupplier,
                     startSurfaceLogoClickedCallback, mIsStartSurfaceRefactorEnabled,
                     shouldCreateLogoInStartToolbar, this::onStartSurfaceToolbarTransitionFinished,
                     mToolbarColorObserverManager);
         } else if (mToolbarLayout instanceof ToolbarPhone
                 || mToolbarLayout instanceof ToolbarTablet) {
-            mTabSwitcherModeCoordinator =
-                    new TabSwitcherModeTTCoordinator(toolbarStub, overviewModeMenuButtonCoordinator,
-                            isGridTabSwitcherEnabled, isTabToGtsAnimationEnabled,
-                            isIncognitoModeEnabledSupplier, mToolbarColorObserverManager);
+            mTabSwitcherModeCoordinator = new TabSwitcherModeTTCoordinator(toolbarStub,
+                    overviewModeMenuButtonCoordinator, isTabToGtsAnimationEnabled,
+                    isIncognitoModeEnabledSupplier, mToolbarColorObserverManager);
         }
         controlContainer.setPostInitializationDependencies(this, initializeWithIncognitoColors,
                 constraintsSupplier, toolbarDataProvider::getTab, compositorInMotionSupplier,
@@ -752,7 +746,8 @@ public class TopToolbarCoordinator implements Toolbar {
         boolean showToolbar = mStartSurfaceToolbarCoordinator.shouldShowRealSearchBox()
                 || (isShowingStartSurfaceTabSwitcher() && !mStartSurfaceToolbarVisible);
         mToolbarLayout.onStartSurfaceStateChanged(showToolbar,
-                mStartSurfaceToolbarCoordinator.isOnHomepage(), isShowingStartSurfaceTabSwitcher());
+                mStartSurfaceToolbarCoordinator.isOnHomepage(), isShowingStartSurfaceTabSwitcher(),
+                mStartSurfaceToolbarCoordinator.isRealSearchBoxFocused());
     }
 
     private boolean isShowingStartSurfaceTabSwitcher() {

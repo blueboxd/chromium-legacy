@@ -9,10 +9,10 @@
 
 #include <utility>
 
+#include "base/apple/foundation_util.h"
 #include "base/apple/mach_logging.h"
 #include "base/containers/buffer_iterator.h"
 #include "base/logging.h"
-#include "base/mac/foundation_util.h"
 #include "base/mac/scoped_mach_msg_destroy.h"
 #include "base/notreached.h"
 #include "base/strings/stringprintf.h"
@@ -116,9 +116,10 @@ void MachPortRendezvousServer::RegisterPortsForPid(
   DCHECK_LT(ports.size(), kMaximumRendezvousPorts);
   DCHECK(!ports.empty());
 
-  ScopedDispatchObject<dispatch_source_t> exit_watcher(dispatch_source_create(
-      DISPATCH_SOURCE_TYPE_PROC, static_cast<uintptr_t>(pid),
-      DISPATCH_PROC_EXIT, dispatch_source_->Queue()));
+  apple::ScopedDispatchObject<dispatch_source_t> exit_watcher(
+      dispatch_source_create(DISPATCH_SOURCE_TYPE_PROC,
+                             static_cast<uintptr_t>(pid), DISPATCH_PROC_EXIT,
+                             dispatch_source_->Queue()));
   dispatch_source_set_event_handler(exit_watcher, ^{
     OnClientExited(pid);
   });
@@ -130,7 +131,7 @@ void MachPortRendezvousServer::RegisterPortsForPid(
 }
 
 MachPortRendezvousServer::ClientData::ClientData(
-    ScopedDispatchObject<dispatch_source_t> exit_watcher,
+    apple::ScopedDispatchObject<dispatch_source_t> exit_watcher,
     MachPortsForRendezvous ports)
     : exit_watcher(exit_watcher), ports(ports) {}
 
@@ -140,14 +141,14 @@ MachPortRendezvousServer::ClientData::~ClientData() = default;
 
 MachPortRendezvousServer::MachPortRendezvousServer() {
   std::string bootstrap_name =
-      StringPrintf(kBootstrapNameFormat, mac::BaseBundleID(), getpid());
+      StringPrintf(kBootstrapNameFormat, apple::BaseBundleID(), getpid());
   kern_return_t kr = bootstrap_check_in(
       bootstrap_port, bootstrap_name.c_str(),
       apple::ScopedMachReceiveRight::Receiver(server_port_).get());
   BOOTSTRAP_CHECK(kr == KERN_SUCCESS, kr)
       << "bootstrap_check_in " << bootstrap_name;
 
-  dispatch_source_ = std::make_unique<DispatchSourceMach>(
+  dispatch_source_ = std::make_unique<apple::DispatchSourceMach>(
       bootstrap_name.c_str(), server_port_.get(), ^{
         HandleRequest();
       });
@@ -304,7 +305,7 @@ size_t MachPortRendezvousClient::GetPortCount() {
 
 // static
 std::string MachPortRendezvousClient::GetBootstrapName() {
-  return StringPrintf(kBootstrapNameFormat, mac::BaseBundleID(), getppid());
+  return StringPrintf(kBootstrapNameFormat, apple::BaseBundleID(), getppid());
 }
 
 bool MachPortRendezvousClient::AcquirePorts() {

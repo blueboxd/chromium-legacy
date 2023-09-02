@@ -45,9 +45,9 @@
 #if BUILDFLAG(IS_MAC)
 #include <ImageIO/ImageIO.h>
 
+#include "base/apple/foundation_util.h"
+#include "base/apple/scoped_cftyperef.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/mac/foundation_util.h"
-#include "base/mac/scoped_cftyperef.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/web_applications/app_shim_registry_mac.h"
 #include "net/base/filename_util.h"
@@ -785,16 +785,17 @@ SkColor OsIntegrationTestOverrideImpl::GetIconTopLeftColorFromShortcutFile(
 #if BUILDFLAG(IS_MAC)
   base::FilePath icon_path =
       shortcut_path.AppendASCII("Contents/Resources/app.icns");
-  base::ScopedCFTypeRef<CFDictionaryRef> empty_dict(
+  base::apple::ScopedCFTypeRef<CFDictionaryRef> empty_dict(
       CFDictionaryCreate(nullptr, nullptr, nullptr, 0, nullptr, nullptr));
-  base::ScopedCFTypeRef<CFURLRef> url = base::mac::FilePathToCFURL(icon_path);
-  base::ScopedCFTypeRef<CGImageSourceRef> source(
+  base::apple::ScopedCFTypeRef<CFURLRef> url =
+      base::apple::FilePathToCFURL(icon_path);
+  base::apple::ScopedCFTypeRef<CGImageSourceRef> source(
       CGImageSourceCreateWithURL(url, nullptr));
   if (!source) {
     return 0;
   }
   // Get the first icon in the .icns file (index 0)
-  base::ScopedCFTypeRef<CGImageRef> cg_image(
+  base::apple::ScopedCFTypeRef<CGImageRef> cg_image(
       CGImageSourceCreateImageAtIndex(source, 0, empty_dict));
   if (!cg_image) {
     return 0;

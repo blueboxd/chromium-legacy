@@ -223,7 +223,9 @@ class ClientControlledWindowStateDelegate : public ash::WindowStateDelegate {
 
  private:
   raw_ptr<ClientControlledShellSurface, ExperimentalAsh> shell_surface_;
-  raw_ptr<ash::ClientControlledState::Delegate, ExperimentalAsh> delegate_;
+  raw_ptr<ash::ClientControlledState::Delegate,
+          DanglingUntriaged | ExperimentalAsh>
+      delegate_;
 };
 
 bool IsPinned(const ash::WindowState* window_state) {
@@ -975,9 +977,10 @@ void ClientControlledShellSurface::SetWidgetBounds(const gfx::Rect& bounds,
           target_display, adjusted_bounds,
           ash::CollisionDetectionUtils::RelativePriority::kPictureInPicture);
 
-      // Only if the window is resizing the bounds should be applied via a
-      // scaling animation, position changes will be applied via kAnimate
-      if (is_resizing_without_rotation) {
+      // Only if the window is resizing with a double tap, the bounds should
+      // be applied via a scaling animation. Position changes will be applied
+      // via kAnimate.
+      if (is_resizing_without_rotation && !IsDragging()) {
         client_controlled_state_->set_next_bounds_change_animation_type(
             ash::WindowState::BoundsChangeAnimationType::kCrossFade);
       }

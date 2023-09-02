@@ -80,6 +80,7 @@ struct AccessDetails {
                 bool blocked_by_policy,
                 bool is_from_primary_page);
   ~AccessDetails();
+  bool operator<(const AccessDetails& other) const;
 
   SiteDataType site_data_type = SiteDataType::kUnknown;
   AccessType access_type = AccessType::kUnknown;
@@ -413,7 +414,8 @@ class PageSpecificContentSettings
   void OnTrustTokenAccessed(const url::Origin& api_origin, bool blocked);
   void OnBrowsingDataAccessed(BrowsingDataModel::DataKey data_key,
                               BrowsingDataModel::StorageType storage_type,
-                              bool blocked);
+                              bool blocked,
+                              content::Page* originating_page = nullptr);
 
 #if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_WIN)
   void OnProtectedMediaIdentifierPermissionSet(const GURL& requesting_frame,

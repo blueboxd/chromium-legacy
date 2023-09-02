@@ -16,8 +16,11 @@
 #include "components/autofill/core/common/signatures.h"
 #include "components/autofill/core/common/unique_ids.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/password_manager/core/browser/form_parsing/password_field_prediction.h"
 
 namespace password_manager {
+
+struct FormPredictions;
 
 constexpr base::TimeDelta kFieldInfoLifetime = base::Minutes(5);
 
@@ -35,24 +38,28 @@ struct FieldInfo {
   // Lowercased field value.
   std::u16string value;
 
+  // Whether the field is likely to be an OTP field, based on its HTML
+  // attributes.
+  bool is_likely_otp;
+
   // The type of the field predicted by the server.
   autofill::ServerFieldType type = autofill::ServerFieldType::UNKNOWN_TYPE;
 
-  // Signatures identifying the form and field on the server.
-  autofill::FormSignature form_signature;
-  autofill::FieldSignature field_signature;
+  // Predictions for the form containing the field.
+  absl::optional<FormPredictions> stored_predictions;
 
   FieldInfo(int driver_id,
             autofill::FieldRendererId field_id,
             std::string signon_realm,
-            std::u16string value);
+            std::u16string value,
+            bool is_likely_otp);
   FieldInfo(const FieldInfo&);
   FieldInfo& operator=(const FieldInfo&);
+  ~FieldInfo();
 
   friend bool operator==(const FieldInfo& lhs, const FieldInfo& rhs) = default;
 };
 
-// TODO(crbug/1468297): Propagate server predictions to the class.
 // Manages information about the last user-interacted fields, keeps
 // the data and erases it once it becomes stale.
 class FieldInfoManager : public KeyedService {
@@ -62,10 +69,15 @@ class FieldInfoManager : public KeyedService {
   ~FieldInfoManager() override;
 
   // Caches |info|.
-  void AddFieldInfo(const FieldInfo& info);
+  void AddFieldInfo(const FieldInfo& new_info,
+                    const absl::optional<FormPredictions>& predictions);
 
   // Retrieves field info for the given |signon_realm|.
   std::vector<FieldInfo> GetFieldInfo(const std::string& signon_realm);
+
+  // Propagates signatures and field type received from the server.
+  void ProcessServerPredictions(
+      const std::map<autofill::FormSignature, FormPredictions>& predictions);
 
  private:
   struct FieldInfoEntry {

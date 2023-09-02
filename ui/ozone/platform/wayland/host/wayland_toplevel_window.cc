@@ -41,16 +41,6 @@
 #include "chromeos/crosapi/cpp/crosapi_constants.h"
 #endif
 
-namespace wl {
-
-bool g_disallow_setting_decoration_insets_for_testing = false;
-
-void AllowClientSideDecorationsForTesting(bool allow) {
-  g_disallow_setting_decoration_insets_for_testing = !allow;
-}
-
-}  // namespace wl
-
 namespace ui {
 
 namespace {
@@ -364,8 +354,7 @@ bool WaylandToplevelWindow::ShouldUpdateWindowShape() const {
 }
 
 bool WaylandToplevelWindow::CanSetDecorationInsets() const {
-  return connection()->SupportsSetWindowGeometry() &&
-         !wl::g_disallow_setting_decoration_insets_for_testing;
+  return connection()->SupportsSetWindowGeometry();
 }
 
 void WaylandToplevelWindow::SetOpaqueRegion(
@@ -1042,6 +1031,9 @@ void WaylandToplevelWindow::SetSizeConstraints() {
 
   if (max_size_dip.has_value())
     shell_toplevel_->SetMaxSize(max_size_dip->width(), max_size_dip->height());
+
+  shell_toplevel_->SetCanMaximize(delegate()->CanMaximize());
+  shell_toplevel_->SetCanFullscreen(delegate()->CanFullscreen());
 
   connection()->Flush();
 }

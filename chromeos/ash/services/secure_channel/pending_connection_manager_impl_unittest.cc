@@ -7,7 +7,6 @@
 #include <memory>
 #include <sstream>
 
-#include "base/allocator/partition_allocator/pointers/raw_ptr.h"
 #include "base/containers/contains.h"
 #include "base/containers/flat_map.h"
 #include "base/functional/bind.h"
@@ -116,7 +115,8 @@ class FakeBleInitiatorConnectionAttemptFactory
 
   size_t num_instances_created_ = 0u;
   size_t num_instances_deleted_ = 0u;
-  raw_ptr<FakeConnectionAttempt<BleInitiatorFailureType>, ExperimentalAsh>
+  raw_ptr<FakeConnectionAttempt<BleInitiatorFailureType>,
+          DanglingUntriaged | ExperimentalAsh>
       last_created_instance_ = nullptr;
 };
 
@@ -197,7 +197,8 @@ class FakeBleListenerConnectionAttemptFactory
 
   size_t num_instances_created_ = 0u;
   size_t num_instances_deleted_ = 0u;
-  raw_ptr<FakeConnectionAttempt<BleListenerFailureType>, ExperimentalAsh>
+  raw_ptr<FakeConnectionAttempt<BleListenerFailureType>,
+          DanglingUntriaged | ExperimentalAsh>
       last_created_instance_ = nullptr;
 };
 
@@ -279,7 +280,8 @@ class FakeNearbyInitiatorConnectionAttemptFactory
 
   size_t num_instances_created_ = 0u;
   size_t num_instances_deleted_ = 0u;
-  raw_ptr<FakeConnectionAttempt<NearbyInitiatorFailureType>, ExperimentalAsh>
+  raw_ptr<FakeConnectionAttempt<NearbyInitiatorFailureType>,
+          DanglingUntriaged | ExperimentalAsh>
       last_created_instance_ = nullptr;
 };
 

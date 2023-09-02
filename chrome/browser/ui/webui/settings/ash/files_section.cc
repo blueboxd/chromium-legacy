@@ -11,9 +11,9 @@
 #include "chrome/browser/ash/drive/file_system_util.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/upload_office_to_cloud/upload_office_to_cloud.h"
+#include "chrome/browser/ui/webui/ash/settings/search/search_tag_registry.h"
 #include "chrome/browser/ui/webui/ash/smb_shares/smb_handler.h"
 #include "chrome/browser/ui/webui/ash/smb_shares/smb_shares_localized_strings_provider.h"
-#include "chrome/browser/ui/webui/settings/ash/search/search_tag_registry.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
@@ -146,6 +146,12 @@ void FilesSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_GOOGLE_DRIVE_FILE_SYNC_TURN_OFF_TITLE_TEXT},
       {"googleDriveFileSyncTurnOffBody",
        IDS_SETTINGS_GOOGLE_DRIVE_FILE_SYNC_TURN_OFF_BODY_TEXT},
+      {"googleDriveFileSyncListingFilesTitle",
+       IDS_SETTINGS_GOOGLE_DRIVE_FILE_SYNC_LISTING_FILES_TITLE_TEXT},
+      {"googleDriveFileSyncListingFilesBody",
+       IDS_SETTINGS_GOOGLE_DRIVE_FILE_SYNC_LISTING_FILES_BODY_TEXT},
+      {"googleDriveFileSyncListingFilesItemsFoundBody",
+       IDS_SETTINGS_GOOGLE_DRIVE_FILE_SYNC_LISTING_FILES_ITEMS_FOUND_BODY_TEXT},
       {"googleDriveNotEnoughSpaceTitle",
        IDS_SETTINGS_GOOGLE_DRIVE_BULK_PINNING_NOT_ENOUGH_SPACE_TITLE_TEXT},
       {"googleDriveNotEnoughSpaceBody",
@@ -165,6 +171,8 @@ void FilesSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_GOOGLE_DRIVE_NOT_SIGNED_IN_SUBLABEL},
       {"googleDriveFileSyncOnSublabel",
        IDS_SETTINGS_GOOGLE_DRIVE_FILE_SYNC_ON_SUBLABEL},
+      {"googleDriveEnabledOnMeteredNetworkLabel",
+       IDS_SETTINGS_GOOGLE_DRIVE_ENABLED_ON_METERED_NETWORK_LABEL},
       {"filesPageTitle", IDS_OS_SETTINGS_FILES},
       {"smbSharesTitle", IDS_SETTINGS_DOWNLOADS_SMB_SHARES},
       {"smbSharesLearnMoreLabel",
@@ -201,7 +209,8 @@ void FilesSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_ALWAYS_MOVE_OFFICE_TO_DRIVE_PREFERENCE_LABEL},
       {"alwaysMoveToOneDrivePreferenceLabel",
        IDS_SETTINGS_ALWAYS_MOVE_OFFICE_TO_ONEDRIVE_PREFERENCE_LABEL},
-  };
+      {"smbSharesTitleDescription",
+       IDS_OS_SETTINGS_REVAMP_DOWNLOADS_SMB_SHARES_DESCRIPTION}};
   html_source->AddLocalizedStrings(kLocalizedStrings);
 
   smb_dialog::AddLocalizedStrings(html_source);

@@ -4,8 +4,10 @@
 
 #include "chrome/browser/ash/input_method/editor_mediator.h"
 
+#include "ash/constants/ash_pref_names.h"
 #include "base/check_op.h"
 #include "chrome/browser/ui/webui/ash/mako/mako_ui.h"
+#include "ui/base/ime/ash/ime_bridge.h"
 
 namespace ash {
 namespace input_method {
@@ -15,9 +17,16 @@ EditorMediator* g_instance_ = nullptr;
 
 }  // namespace
 
-EditorMediator::EditorMediator() : editor_instance_impl_(this) {
+EditorMediator::EditorMediator(Profile* profile, std::string_view country_code)
+    : profile_(profile),
+      editor_instance_impl_(this),
+      editor_switch_(std::make_unique<EditorSwitch>(profile, country_code)),
+      consent_store_(
+          std::make_unique<EditorConsentStore>(profile->GetPrefs())) {
   DCHECK(!g_instance_);
   g_instance_ = this;
+
+  profile_observation_.Observe(profile_);
 }
 
 EditorMediator::~EditorMediator() {
@@ -27,6 +36,10 @@ EditorMediator::~EditorMediator() {
 
 EditorMediator* EditorMediator::Get() {
   return g_instance_;
+}
+
+bool EditorMediator::HasInstance() {
+  return g_instance_ != nullptr;
 }
 
 void EditorMediator::BindEditorInstance(
@@ -39,11 +52,23 @@ void EditorMediator::HandleTrigger() {
 }
 
 void EditorMediator::OnFocus(int context_id) {
+  GetTextFieldContextualInfo(
+      base::BindOnce(&EditorMediator::OnTextFieldContextualInfoChanged,
+                     weak_ptr_factory_.GetWeakPtr()));
+
   text_actuator_.OnFocus(context_id);
 }
 
 void EditorMediator::OnBlur() {
   text_actuator_.OnBlur();
+}
+
+void EditorMediator::OnActivateIme(std::string_view engine_id) {
+  editor_switch_->OnActivateIme(engine_id);
+}
+
+void EditorMediator::OnConsentActionReceived(ConsentAction consent_action) {
+  consent_store_->ProcessConsentAction(consent_action);
 }
 
 void EditorMediator::CommitEditorResult(std::string_view text) {
@@ -57,6 +82,32 @@ void EditorMediator::CommitEditorResult(std::string_view text) {
     mako_page_handler_->CloseUI();
     mako_page_handler_ = nullptr;
   }
+}
+
+void EditorMediator::OnTextFieldContextualInfoChanged(
+    const TextFieldContextualInfo& info) {
+  editor_switch_->OnInputContextUpdated(
+      IMEBridge::Get()->GetCurrentInputContext(), info);
+}
+
+bool EditorMediator::IsAllowedForUse() {
+  return editor_switch_->IsAllowedForUse();
+}
+
+bool EditorMediator::CanBeTriggered() {
+  return editor_switch_->CanBeTriggered();
+}
+
+ConsentStatus EditorMediator::GetConsentStatus() {
+  return consent_store_->GetConsentStatus();
+}
+
+void EditorMediator::OnProfileWillBeDestroyed(Profile* profile) {
+  profile_observation_.Reset();
+
+  profile_ = nullptr;
+  consent_store_ = nullptr;
+  editor_switch_ = nullptr;
 }
 
 }  // namespace input_method

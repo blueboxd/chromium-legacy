@@ -185,15 +185,18 @@ HTMLImageElement* HTMLAreaElement::ImageElement() const {
 }
 
 bool HTMLAreaElement::IsKeyboardFocusable() const {
-  return IsBaseElementFocusable();
+  // Explicitly skip over the HTMLAnchorElement's keyboard focus behavior.
+  return Element::IsKeyboardFocusable();
 }
 
-bool HTMLAreaElement::IsMouseFocusable() const {
-  return IsBaseElementFocusable();
+bool HTMLAreaElement::IsFocusable() const {
+  // Explicitly skip over the HTMLAnchorElement's mouse focus behavior.
+  return HTMLElement::IsFocusable();
 }
 
 bool HTMLAreaElement::IsFocusableStyle() const {
   if (HTMLImageElement* image = ImageElement()) {
+    // TODO(crbug.com/1444450): Why is this not just image->IsFocusableStyle()?
     if (LayoutObject* layout_object = image->GetLayoutObject()) {
       const ComputedStyle& style = layout_object->StyleRef();
       return !style.IsInert() && style.Visibility() == EVisibility::kVisible &&

@@ -38,7 +38,6 @@
 #include "base/task/single_thread_task_runner.h"
 #include "base/task/thread_pool.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
-#include "chrome/browser/apps/app_service/app_service_proxy_ash.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/extension_apps_utils.h"
 #include "chrome/browser/apps/app_service/package_id.h"
@@ -69,6 +68,7 @@
 #include "chrome/browser/ui/ash/shelf/app_service/app_service_app_window_shelf_controller.h"
 #include "chrome/browser/ui/ash/shelf/app_service/shelf_app_service_app_updater.h"
 #include "chrome/browser/ui/ash/shelf/app_service/shelf_app_service_promise_app_updater.h"
+#include "chrome/browser/ui/ash/shelf/app_service/shelf_app_service_shortcut_updater.h"
 #include "chrome/browser/ui/ash/shelf/app_shortcut_shelf_item_controller.h"
 #include "chrome/browser/ui/ash/shelf/app_window_shelf_controller.h"
 #include "chrome/browser/ui/ash/shelf/app_window_shelf_item_controller.h"
@@ -90,7 +90,7 @@
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/browser/ui/tabs/tab_enums.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/browser/ui/webui/settings/ash/app_management/app_management_uma.h"
+#include "chrome/browser/ui/webui/ash/settings/app_management/app_management_uma.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_utils.h"
 #include "chrome/common/chrome_features.h"
@@ -105,6 +105,8 @@
 #include "components/app_constants/constants.h"
 #include "components/favicon/content/content_favicon_driver.h"
 #include "components/services/app_service/public/cpp/app_types.h"
+#include "components/services/app_service/public/cpp/shortcut/shortcut.h"
+#include "components/services/app_service/public/cpp/shortcut/shortcut_update.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "components/user_manager/user_manager.h"
@@ -1062,15 +1064,14 @@ void ChromeShelfController::OnPromiseAppUpdate(
     return;
   }
   ash::ShelfItem item = model_->items()[index];
-  if (update.Name().has_value()) {
-    item.title = base::UTF8ToUTF16(update.Name().value());
-  }
   if (update.Progress().has_value()) {
     item.progress = update.Progress().value();
   }
   if (update.StatusChanged()) {
     item.app_status =
         ShelfControllerHelper::ConvertPromiseStatusToAppStatus(update.Status());
+    item.title = base::UTF8ToUTF16(
+        ShelfControllerHelper::GetLabelForPromiseStatus(update.Status()));
   }
   model_->Set(index, item);
 }
@@ -1086,6 +1087,30 @@ void ChromeShelfController::OnPromiseAppRemoved(
   // TODO(b/288832707): Instead of just unpinning the shelf item, replace it
   // with the installed app item after the animation completes.
   UnpinShelfItemInternal(item.id);
+}
+
+void ChromeShelfController::OnShortcutUpdated(
+    const apps::ShortcutUpdate& update) {
+  int index = model_->ItemIndexByAppID(update.ShortcutId().value());
+  if (index == kInvalidIndex) {
+    return;
+  }
+  ash::ShelfItem item = model_->items()[index];
+  std::u16string title = base::UTF8ToUTF16(update.Name());
+  if (item.title != title) {
+    item.title = title;
+    model_->Set(index, item);
+  }
+
+  // TODO(crbug.com/1412708): Update pinned apps from sync here, need to update
+  // this code to make it work with shortcut items as well.
+}
+
+void ChromeShelfController::OnShortcutRemoved(const apps::ShortcutId& id) {
+  ash::ShelfID shelf_id(id.value());
+  if (model_->ItemByID(shelf_id)) {
+    UnpinShelfItemInternal(shelf_id);
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1551,6 +1576,11 @@ void ChromeShelfController::AddAppUpdaterAndIconLoader(Profile* profile) {
     if (ash::features::ArePromiseIconsEnabled()) {
       app_updaters_for_profile.emplace_back(
           std::make_unique<ShelfPromiseAppUpdater>(this, profile));
+    }
+
+    if (base::FeatureList::IsEnabled(features::kCrosWebAppShortcutUiUpdate)) {
+      app_updaters_for_profile.emplace_back(
+          std::make_unique<ShelfAppServiceShortcutUpdater>(this, profile));
     }
   }
 

@@ -323,6 +323,8 @@ const char* PseudoTypeToString(CSSSelector::PseudoType pseudo_type) {
     DEFINE_STRING_MAPPING(PseudoRequired)
     DEFINE_STRING_MAPPING(PseudoReadOnly)
     DEFINE_STRING_MAPPING(PseudoReadWrite)
+    DEFINE_STRING_MAPPING(PseudoUserInvalid)
+    DEFINE_STRING_MAPPING(PseudoUserValid)
     DEFINE_STRING_MAPPING(PseudoValid)
     DEFINE_STRING_MAPPING(PseudoInvalid)
     DEFINE_STRING_MAPPING(PseudoIndeterminate)
@@ -406,6 +408,8 @@ const char* PseudoTypeToString(CSSSelector::PseudoType pseudo_type) {
     DEFINE_STRING_MAPPING(PseudoViewTransitionImagePair);
     DEFINE_STRING_MAPPING(PseudoViewTransitionNew);
     DEFINE_STRING_MAPPING(PseudoViewTransitionOld);
+    DEFINE_STRING_MAPPING(PseudoDetailsContent)
+    DEFINE_STRING_MAPPING(PseudoDetailsSummary)
     DEFINE_STRING_MAPPING(PseudoParent);
     DEFINE_STRING_MAPPING(PseudoUnparsed)
 #undef DEFINE_STRING_MAPPING

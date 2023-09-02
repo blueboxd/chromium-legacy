@@ -7,7 +7,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/apple/osstatus_logging.h"
 #include "base/notreached.h"
 #include "media/base/media_log.h"
 #include "media/gpu/mac/vt_config_util.h"
@@ -16,9 +15,11 @@ namespace media {
 
 VideoToolboxVP9Accelerator::VideoToolboxVP9Accelerator(
     std::unique_ptr<MediaLog> media_log,
+    absl::optional<gfx::HDRMetadata> hdr_metadata,
     DecodeCB decode_cb,
     OutputCB output_cb)
     : media_log_(std::move(media_log)),
+      hdr_metadata_(std::move(hdr_metadata)),
       decode_cb_(std::move(decode_cb)),
       output_cb_(std::move(output_cb)) {
   DVLOG(1) << __func__;
@@ -100,7 +101,7 @@ bool VideoToolboxVP9Accelerator::ProcessFrame(scoped_refptr<VP9Picture> pic) {
 
   if (format_changed && frame_data_) {
     // TODO(crbug.com/1331597): Consider dropping existing frame data. Doing so
-    // probably requires handing output callbacks ourselves, so that we don't
+    // probably requires handling output callbacks ourselves, so that we don't
     // have to figure out which ones are duplicates.
     // TODO(crbug.com/1331597): Add Reset() to VP9Accelerator for resetting
     // superframe state after Flush().
@@ -163,7 +164,10 @@ bool VideoToolboxVP9Accelerator::ProcessFormat(scoped_refptr<VP9Picture> pic,
       break;
   }
 
-  const absl::optional<gfx::HDRMetadata>& hdr_metadata = pic->hdr_metadata();
+  absl::optional<gfx::HDRMetadata> hdr_metadata = pic->hdr_metadata();
+  if (!hdr_metadata) {
+    hdr_metadata = hdr_metadata_;
+  }
 
   gfx::Size coded_size(static_cast<int>(pic->frame_hdr->frame_width),
                        static_cast<int>(pic->frame_hdr->frame_height));
@@ -174,7 +178,7 @@ bool VideoToolboxVP9Accelerator::ProcessFormat(scoped_refptr<VP9Picture> pic,
       coded_size != active_coded_size_) {
     active_format_.reset();
 
-    base::ScopedCFTypeRef<CFDictionaryRef> format_config =
+    base::apple::ScopedCFTypeRef<CFDictionaryRef> format_config =
         CreateFormatExtensions(kCMVideoCodecType_VP9, profile, color_space,
                                hdr_metadata);
     if (!format_config) {
@@ -183,7 +187,7 @@ bool VideoToolboxVP9Accelerator::ProcessFormat(scoped_refptr<VP9Picture> pic,
       return false;
     }
 
-    base::ScopedCFTypeRef<CMFormatDescriptionRef> format;
+    base::apple::ScopedCFTypeRef<CMFormatDescriptionRef> format;
     OSStatus status = CMVideoFormatDescriptionCreate(
         kCFAllocatorDefault, kCMVideoCodecType_VP9, coded_size.width(),
         coded_size.height(), format_config, active_format_.InitializeInto());
@@ -197,6 +201,11 @@ bool VideoToolboxVP9Accelerator::ProcessFormat(scoped_refptr<VP9Picture> pic,
     active_profile_ = profile;
     active_hdr_metadata_ = hdr_metadata;
     active_coded_size_ = coded_size;
+
+    session_metadata_ = VideoToolboxSessionMetadata{
+        /*allow_software_decoding=*/false,
+        /*is_hbd=*/pic->frame_hdr->bit_depth > 8,
+    };
 
     *format_changed = true;
   } else {
@@ -213,7 +222,7 @@ bool VideoToolboxVP9Accelerator::SubmitFrames(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Take the current superframe.
-  base::ScopedCFTypeRef<CMBlockBufferRef> frame_data;
+  base::apple::ScopedCFTypeRef<CMBlockBufferRef> frame_data;
   std::vector<size_t> frame_sizes;
   frame_data.swap(frame_data_);
   frame_sizes.swap(frame_sizes_);
@@ -258,7 +267,7 @@ bool VideoToolboxVP9Accelerator::SubmitFrames(
   }
 
   // Wrap the frame data in a sample.
-  base::ScopedCFTypeRef<CMSampleBufferRef> sample;
+  base::apple::ScopedCFTypeRef<CMSampleBufferRef> sample;
   size_t size = CMBlockBufferGetDataLength(frame_data);
   OSStatus status = CMSampleBufferCreate(kCFAllocatorDefault,
                                          frame_data,  // data_buffer
@@ -279,7 +288,7 @@ bool VideoToolboxVP9Accelerator::SubmitFrames(
   }
 
   // Submit for decoding.
-  decode_cb_.Run(std::move(sample), std::move(output_pic));
+  decode_cb_.Run(std::move(sample), session_metadata_, std::move(output_pic));
   return true;
 }
 

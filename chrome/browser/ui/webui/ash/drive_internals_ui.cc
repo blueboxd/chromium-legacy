@@ -429,27 +429,9 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler,
   void UpdateConnectionStatusSection() {
     SetSectionEnabled("connection-status-section", true);
 
-    std::string status;
-    switch (drive::util::GetDriveConnectionStatus(profile())) {
-      case drive::util::DRIVE_DISCONNECTED_NOSERVICE:
-        status = "no service";
-        break;
-      case drive::util::DRIVE_DISCONNECTED_NONETWORK:
-        status = "no network";
-        break;
-      case drive::util::DRIVE_DISCONNECTED_NOTREADY:
-        status = "not ready";
-        break;
-      case drive::util::DRIVE_CONNECTED_METERED:
-        status = "metered";
-        break;
-      case drive::util::DRIVE_CONNECTED:
-        status = "connected";
-        break;
-    }
-
     Value::Dict connection_status;
-    connection_status.Set("status", std::move(status));
+    connection_status.Set(
+        "status", ToString(drive::util::GetDriveConnectionStatus(profile())));
     drive::DriveNotificationManager* const manager =
         drive::DriveNotificationManagerFactory::FindForBrowserContext(
             profile());
@@ -730,7 +712,7 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler,
     }
 
     const std::vector<drive::EventLogger::Event> log =
-        service->event_logger()->GetHistory();
+        service->GetLogger()->GetHistory();
 
     Value::List list;
     for (const drive::EventLogger::Event& event : log) {

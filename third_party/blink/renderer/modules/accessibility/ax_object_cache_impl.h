@@ -159,10 +159,7 @@ class MODULES_EXPORT AXObjectCacheImpl
   //
 
   void SelectionChanged(Node*) override;
-  // Update reverse relation cache when aria-labelledby or aria-describedby
-  // point to the relation_source.
-  void UpdateReverseTextRelations(const AXObject* relation_source,
-                                  const Vector<String>& target_ids);
+
   // Effects a ChildrenChanged() on the passed-in object, if unignored,
   // otherwise, uses the first unignored ancestor. Returns the object that the
   // children changed occurs on.
@@ -243,11 +240,10 @@ class MODULES_EXPORT AXObjectCacheImpl
 
   void FocusableChangedWithCleanLayout(Node* node);
   void DocumentTitleChanged() override;
-  // Called when a layout tree for a node has just been attached, so we can make
-  // sure we have the right subclass of AXObject.
-  void UpdateCacheAfterNodeIsAttached(Node*) override;
-  // A DOM node was inserted , but does not necessarily have a layout tree.
-  void DidInsertChildrenOfNode(Node*) override;
+  // Called when a node is connected to the document.
+  void NodeIsConnected(Node*) override;
+  // Called when a node is attached to the layout tree.
+  void NodeIsAttached(Node*) override;
 
   void HandleAttributeChanged(const QualifiedName& attr_name,
                               Element*) override;
@@ -402,7 +398,7 @@ class MODULES_EXPORT AXObjectCacheImpl
   void HandleAriaPressedChangedWithCleanLayout(Node*);
   void HandleNodeLostFocusWithCleanLayout(Node*);
   void HandleNodeGainedFocusWithCleanLayout(Node*);
-  void UpdateCacheAfterNodeIsAttachedWithCleanLayout(Node*);
+  void NodeIsAttachedWithCleanLayout(Node*);
   void DidShowMenuListPopupWithCleanLayout(Node*);
   void DidHideMenuListPopupWithCleanLayout(Node*);
   void HandleScrollPositionChangedWithCleanLayout(Node*);
@@ -496,7 +492,7 @@ class MODULES_EXPORT AXObjectCacheImpl
   // since the last query. Sends the resulting vector over mojo to the browser
   // process. Clears the vector so that the next time it's
   // called, it will only retrieve objects that have changed since now.
-  void SerializeLocationChanges() override;
+  void SerializeLocationChanges(uint32_t reset_token) override;
 
   // Searches the accessibility tree for plugin's root object and returns it.
   // Returns an empty WebAXObject if no root object is present.
@@ -553,6 +549,7 @@ class MODULES_EXPORT AXObjectCacheImpl
   void MarkDocumentDirty() override;
   void ResetSerializer() override;
   void MarkElementDirty(const Node*) override;
+  void MarkElementDirtyWithCleanLayout(const Node*);
 
   // TODO(accessibility) Create an a11y lifecyvcle that encompasses these.
   // Layout is clean and the cache is processing callbacks.
@@ -580,7 +577,6 @@ class MODULES_EXPORT AXObjectCacheImpl
       ax::mojom::blink::Action event_from_action =
           ax::mojom::blink::Action::kNone,
       const BlinkAXEventIntentsSet& event_intents = BlinkAXEventIntentsSet());
-  void LabelChangedWithCleanLayout(Node*);
   void IdChangedWithCleanLayout(Node*);
   void AriaOwnsChangedWithCleanLayout(Node*);
 
@@ -631,6 +627,10 @@ class MODULES_EXPORT AXObjectCacheImpl
   // https://bugs.chromium.org/p/chromium/issues/detail?id=1342801#c12 for more
   // details.
   void UpdateTreeIfNeeded();
+
+  // Make sure a relation cache exists and is initialized. Mst be called with
+  // clean layout.
+  void EnsureRelationCache();
 
   // Create an AXObject, and do not check if a previous one exists.
   // Also, initialize the object and add it to maps for later retrieval.
@@ -716,15 +716,15 @@ class MODULES_EXPORT AXObjectCacheImpl
     kFocusableChanged = 9,
     kIdChanged = 10,
     kInvalidateCachedValuesOnSubtree = 11,
-    kLabelChanged = 12,
-    kMarkDirtyFromHandleLayout = 13,
-    kMarkDirtyFromHandleScroll = 14,
-    kMarkDirtyFromRemove = 15,
-    kNameAttributeChanged = 16,
-    kNodeGainedFocus = 17,
-    kNodeLostFocus = 18,
-    kPostNotificationFromHandleLoadComplete = 19,
-    kPostNotificationFromHandleLoadStart = 20,
+    kMarkDirtyFromHandleLayout = 12,
+    kMarkDirtyFromHandleScroll = 13,
+    kMarkDirtyFromRemove = 14,
+    kNameAttributeChanged = 15,
+    kNodeGainedFocus = 16,
+    kNodeLostFocus = 17,
+    kPostNotificationFromHandleLoadComplete = 18,
+    kPostNotificationFromHandleLoadStart = 19,
+    kPostNotificationFromHandleScrolledToAnchor = 20,
     kRemoveValidationMessageObjectFromFocusedUIElement = 21,
     kRemoveValidationMessageObjectFromValidationMessageObject = 22,
     kRoleChangeFromAriaHasPopup = 23,
@@ -732,14 +732,15 @@ class MODULES_EXPORT AXObjectCacheImpl
     kRoleMaybeChangedFromEventListener = 25,
     kRoleMaybeChangedFromHref = 26,
     kSectionOrRegionRoleMaybeChangedFromLabel = 27,
-    kSectionOrRegionRoleMaybeChangedFromTitle = 28,
-    kTextChangedFromTextChangedNode = 29,
-    kTextMarkerDataAdded = 30,
-    kUpdateActiveMenuOption = 31,
-    kUpdateCacheAfterNodeIsAttached = 32,
-    kUpdateTableRole = 33,
-    kUseMapAttributeChanged = 34,
-    kValidationMessageVisibilityChanged = 35,
+    kSectionOrRegionRoleMaybeChangedFromLabelledBy = 28,
+    kSectionOrRegionRoleMaybeChangedFromTitle = 29,
+    kTextChangedFromTextChangedNode = 30,
+    kTextMarkerDataAdded = 31,
+    kUpdateActiveMenuOption = 32,
+    kNodeIsAttached = 33,
+    kUpdateTableRole = 34,
+    kUseMapAttributeChanged = 35,
+    kValidationMessageVisibilityChanged = 36,
 
     // These updates are associated with an AXID:
     kChildrenChanged = 100,
@@ -795,7 +796,6 @@ class MODULES_EXPORT AXObjectCacheImpl
       ax::mojom::blink::EventFrom event_from,
       ax::mojom::blink::Action event_from_action);
   void MarkAXSubtreeDirty(AXObject*);
-  void MarkElementDirtyWithCleanLayout(const Node*);
   void MarkDocumentDirtyWithCleanLayout();
 
   // Given an object to mark dirty or fire an event on, return an object
@@ -1066,7 +1066,8 @@ class MODULES_EXPORT AXObjectCacheImpl
       render_accessibility_host_;
 
   Member<BlinkAXTreeSource> ax_tree_source_;
-  std::unique_ptr<ui::AXTreeSerializer<AXObject*>> ax_tree_serializer_;
+  std::unique_ptr<ui::AXTreeSerializer<AXObject*, HeapVector<AXObject*>>>
+      ax_tree_serializer_;
 
   HeapDeque<Member<AXDirtyObject>> dirty_objects_;
 

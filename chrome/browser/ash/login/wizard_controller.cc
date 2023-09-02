@@ -39,6 +39,7 @@
 #include "chrome/browser/ash/app_mode/web_app/web_kiosk_app_manager.h"
 #include "chrome/browser/ash/arc/arc_util.h"
 #include "chrome/browser/ash/customization/customization_document.h"
+#include "chrome/browser/ash/drive/file_system_util.h"
 #include "chrome/browser/ash/login/choobe_flow_controller.h"
 #include "chrome/browser/ash/login/configuration_keys.h"
 #include "chrome/browser/ash/login/demo_mode/demo_session.h"
@@ -51,6 +52,7 @@
 #include "chrome/browser/ash/login/login_wizard.h"
 #include "chrome/browser/ash/login/oobe_screen.h"
 #include "chrome/browser/ash/login/quick_unlock/quick_unlock_utils.h"
+#include "chrome/browser/ash/login/quickstart_controller.h"
 #include "chrome/browser/ash/login/screens/add_child_screen.h"
 #include "chrome/browser/ash/login/screens/app_downloading_screen.h"
 #include "chrome/browser/ash/login/screens/arc_vm_data_migration_screen.h"
@@ -84,6 +86,7 @@
 #include "chrome/browser/ash/login/screens/kiosk_enable_screen.h"
 #include "chrome/browser/ash/login/screens/lacros_data_backward_migration_screen.h"
 #include "chrome/browser/ash/login/screens/lacros_data_migration_screen.h"
+#include "chrome/browser/ash/login/screens/local_password_setup_screen.h"
 #include "chrome/browser/ash/login/screens/local_state_error_screen.h"
 #include "chrome/browser/ash/login/screens/locale_switch_screen.h"
 #include "chrome/browser/ash/login/screens/management_transition_screen.h"
@@ -168,6 +171,7 @@
 #include "chrome/browser/ui/webui/ash/login/kiosk_enable_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/lacros_data_backward_migration_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/lacros_data_migration_screen_handler.h"
+#include "chrome/browser/ui/webui/ash/login/local_password_setup_handler.h"
 #include "chrome/browser/ui/webui/ash/login/local_state_error_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/locale_switch_screen_handler.h"
 #include "chrome/browser/ui/webui/ash/login/management_transition_screen_handler.h"
@@ -364,7 +368,8 @@ WizardController* WizardController::default_controller() {
 PrefService* WizardController::local_state_for_testing_ = nullptr;
 
 WizardController::WizardController(WizardContext* wizard_context)
-    : screen_manager_(std::make_unique<ScreenManager>()),
+    : quickstart_controller_(std::make_unique<QuickStartController>()),
+      screen_manager_(std::make_unique<ScreenManager>()),
       wizard_context_(wizard_context),
       shared_url_loader_factory_(
           g_browser_process->shared_url_loader_factory()) {
@@ -591,6 +596,7 @@ WizardController::CreateScreens() {
 
     append(std::make_unique<QuickStartScreen>(
         oobe_ui->GetView<QuickStartScreenHandler>()->AsWeakPtr(),
+        quick_start_controller(),
         base::BindRepeating(&WizardController::OnQuickStartScreenExit,
                             weak_factory_.GetWeakPtr())));
   }
@@ -871,7 +877,7 @@ WizardController::CreateScreens() {
                             weak_factory_.GetWeakPtr())));
   }
 
-  if (features::IsOobeDrivePinningEnabled()) {
+  if (drive::util::IsOobeDrivePinningEnabled()) {
     append(std::make_unique<DrivePinningScreen>(
         oobe_ui->GetView<DrivePinningScreenHandler>()->AsWeakPtr(),
         base::BindRepeating(&WizardController::OnDrivePinningScreenExit,
@@ -891,6 +897,12 @@ WizardController::CreateScreens() {
         oobe_ui->GetView<PasswordSelectionScreenHandler>()->AsWeakPtr(),
         base::BindRepeating(&WizardController::OnPasswordSelectionScreenExit,
                             weak_factory_.GetWeakPtr())));
+  }
+
+  if (features::AreLocalPasswordsEnabledForConsumers()) {
+    append(std::make_unique<LocalPasswordSetupScreen>(
+        oobe_ui->GetView<LocalPasswordSetupHandler>()->AsWeakPtr(),
+        base::BindRepeating([](LocalPasswordSetupScreen::Result result) {})));
   }
 
   return result;
@@ -1012,7 +1024,7 @@ void WizardController::ShowDemoModeSetupScreen() {
 }
 
 void WizardController::ShowDrivePinningScreen() {
-  if (features::IsOobeDrivePinningEnabled()) {
+  if (drive::util::IsOobeDrivePinningEnabled()) {
     SetCurrentScreen(GetScreen(DrivePinningScreenView::kScreenId));
   } else {
     OnDrivePinningScreenExit(DrivePinningScreen::Result::NOT_APPLICABLE);
@@ -1507,10 +1519,8 @@ void WizardController::OnConsolidatedConsentScreenExit(
   OnScreenExit(ConsolidatedConsentScreenView::kScreenId,
                ConsolidatedConsentScreen::GetResultString(result));
 
-  if (features::IsOobeDrivePinningEnabled() &&
-      !GetScreen<DrivePinningScreen>()->CalculateRequiredSpace()) {
-    LOG(ERROR)
-        << "DriveFS bulk-pinning manager cannot calculate the required space";
+  if (drive::util::IsOobeDrivePinningEnabled()) {
+    GetScreen<DrivePinningScreen>()->StartCalculatingRequiredSpace();
   }
 
   if (wizard_context_->is_cloud_ready_update_flow) {

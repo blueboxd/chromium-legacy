@@ -22,11 +22,15 @@
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "chrome/browser/ui/webui/settings/ash/app_management/app_management_uma.h"
+#include "chrome/browser/ui/webui/ash/settings/app_management/app_management_uma.h"
 #endif
 
 namespace apps {
 enum class LaunchSource;
+}
+
+namespace safe_browsing {
+enum class SafeBrowsingSettingReferralMethod;
 }
 
 namespace signin {
@@ -195,6 +199,9 @@ void ShowClearBrowsingDataDialog(Browser* browser);
 void ShowPasswordManager(Browser* browser);
 void ShowPasswordCheck(Browser* browser);
 void ShowSafeBrowsingEnhancedProtection(Browser* browser);
+void ShowSafeBrowsingEnhancedProtectionWithIph(
+    Browser* browser,
+    safe_browsing::SafeBrowsingSettingReferralMethod referral_method);
 void ShowImportDialog(Browser* browser);
 void ShowAboutChrome(Browser* browser);
 void ShowSearchEngineSettings(Browser* browser);
@@ -234,6 +241,11 @@ void ShowDiagnosticsApp(Profile* profile);
 void ShowFirmwareUpdatesApp(Profile* profile);
 
 void ShowShortcutCustomizationApp(Profile* profile);
+// The `action` and `category` will be appended the app URL in the following
+// format: url?action={action}&category={category}.
+void ShowShortcutCustomizationApp(Profile* profile,
+                                  const std::string& action,
+                                  const std::string& category);
 #endif
 
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \

@@ -19,6 +19,7 @@ import {EntryLocation} from '../../externs/entry_location.js';
 import {FakeEntry, FilesAppDirEntry, FilesAppEntry} from '../../externs/files_app_entry_interfaces.js';
 import {VolumeInfo} from '../../externs/volume_info.js';
 import {VolumeManager} from '../../externs/volume_manager.js';
+import {getFileData, getStore} from '../../state/store.js';
 import {XfTree} from '../../widgets/xf_tree.js';
 import {XfTreeItem} from '../../widgets/xf_tree_item.js';
 
@@ -451,6 +452,22 @@ export class FileTransferController {
     return data === 'true';
   }
 
+  /**
+   * @param {!DataTransfer} clipboardData DataTransfer object from the event.
+   * @return {boolean} Returns true when some file under action is encrypted.
+   * @private
+   */
+  isEncrypted_(clipboardData) {
+    let data = clipboardData.getData(`fs/${ENCRYPTED}`);
+    if (!data) {
+      // |clipboardData| in protected mode.
+      const globalData = this.getDragAndDropGlobalData_();
+      if (globalData) {
+        data = globalData.encrypted;
+      }
+    }
+    return data === 'true';
+  }
   /**
    * Calls executePaste with |pastePlan| if paste is allowed by Data Leak
    * Prevention policy. If paste is not allowed, it shows a toast to the
@@ -984,6 +1001,13 @@ export class FileTransferController {
       }
     }
 
+    // Disallow drop target for disabled destination entries.
+    const fileData =
+        getFileData(getStore().getState(), destinationEntry.toURL());
+    if (fileData?.disabled) {
+      return;
+    }
+
     this.destinationEntry_ = destinationEntry;
 
     // Add accept classes if the directory can accept this drop.
@@ -1192,6 +1216,14 @@ export class FileTransferController {
         return false;
       }
     }
+    // Don't allow copy of encrypted files.
+    if (this.metadataModel_.getCache(entries, ['contentMimeType'])
+            .some(
+                (metadata, i) => FileType.isEncrypted(
+                    entries[i], metadata.contentMimeType))) {
+      return false;
+    }
+
     // Check if canCopy is true or undefined, but not false (see
     // https://crbug.com/849999).
     return this.metadataModel_.getCache(entries, ['canCopy'])
@@ -1323,6 +1355,11 @@ export class FileTransferController {
         destinationLocationInfo.volumeInfo.fileSystem.root.toURL()) {
       // Copying between different sources requires all files to be available.
       if (this.isMissingFileContents_(clipboardData)) {
+        return false;
+      }
+
+      // Moving an encrypted files outside of Google Drive is not supported.
+      if (this.isEncrypted_(clipboardData)) {
         return false;
       }
 

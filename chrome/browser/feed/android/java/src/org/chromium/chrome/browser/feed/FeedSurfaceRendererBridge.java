@@ -108,6 +108,7 @@ public class FeedSurfaceRendererBridge {
         }
         FeedSurfaceRendererBridgeJni.get().manualRefresh(mNativeSurfaceRenderer, callback);
     }
+
     void surfaceOpened() {
         // Cancel if destroyed.
         if (mRenderer == null) {
@@ -122,7 +123,6 @@ public class FeedSurfaceRendererBridge {
         }
         FeedSurfaceRendererBridgeJni.get().surfaceClosed(mNativeSurfaceRenderer);
     }
-
     //
     // Methods which may be called after destroy().
     //

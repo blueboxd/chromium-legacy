@@ -167,6 +167,10 @@ ScopedOverviewTransformWindow::ScopedOverviewTransformWindow(
       window_(window),
       original_opacity_(window->layer()->GetTargetOpacity()),
       original_clip_rect_(window_->layer()->GetTargetClipRect()) {
+  raster_scale_observer_lock_.emplace(
+      (new RasterScaleLayerObserver(window_, window_->layer(), window_))
+          ->Lock());
+
   type_ = GetWindowDimensionsType(window->bounds().size());
 
   std::vector<aura::Window*> transient_children_to_hide;
@@ -271,7 +275,7 @@ void ScopedOverviewTransformWindow::RestoreWindow(bool reset_transform,
   // We will handle clipping here, no need to do anything in the destructor.
   reset_clip_on_shutdown_ = false;
 
-  if (!animate || IsMinimized()) {
+  if (!animate || IsMinimizedOrTucked()) {
     // Minimized windows may have had their transforms altered by swiping up
     // from the shelf.
     ScopedOverviewAnimationSettings animation_settings(OVERVIEW_ANIMATION_NONE,
@@ -345,8 +349,9 @@ bool ScopedOverviewTransformWindow::Contains(const aura::Window* target) const {
       return true;
   }
 
-  if (!IsMinimized())
+  if (!IsMinimizedOrTucked()) {
     return false;
+  }
 
   // A minimized window's item_widget_ may have already been destroyed.
   const auto* item_widget = overview_item_->item_widget();
@@ -362,8 +367,9 @@ gfx::RectF ScopedOverviewTransformWindow::GetTransformedBounds() const {
 
 int ScopedOverviewTransformWindow::GetTopInset() const {
   // Mirror window doesn't have insets.
-  if (IsMinimized())
+  if (IsMinimizedOrTucked()) {
     return 0;
+  }
   for (auto* window : window_util::GetVisibleTransientTreeIterator(window_)) {
     // If there are regular windows in the transient ancestor tree, all those
     // windows are shown in the same overview item and the header is not masked.
@@ -427,7 +433,7 @@ gfx::RectF ScopedOverviewTransformWindow::ShrinkRectToFitPreservingAspectRatio(
     const gfx::RectF& rect,
     const gfx::RectF& bounds,
     int top_view_inset,
-    int title_height) {
+    int title_height) const {
   DCHECK(!rect.IsEmpty());
   DCHECK_LE(top_view_inset, rect.height());
   const float scale =
@@ -497,9 +503,10 @@ gfx::RectF ScopedOverviewTransformWindow::ShrinkRectToFitPreservingAspectRatio(
   return gfx::RectF(gfx::ToRoundedRect(new_bounds));
 }
 
-aura::Window* ScopedOverviewTransformWindow::GetOverviewWindow() const {
-  if (IsMinimized())
+aura::Window* ScopedOverviewTransformWindow::GetOverviewWindow() {
+  if (IsMinimizedOrTucked()) {
     return overview_item_->item_widget()->GetNativeWindow();
+  }
   return window_;
 }
 
@@ -516,7 +523,7 @@ void ScopedOverviewTransformWindow::Close() {
       base::Milliseconds(kCloseWindowDelayInMilliseconds));
 }
 
-bool ScopedOverviewTransformWindow::IsMinimized() const {
+bool ScopedOverviewTransformWindow::IsMinimizedOrTucked() const {
   return window_util::IsMinimizedOrTucked(window_);
 }
 
@@ -549,8 +556,9 @@ void ScopedOverviewTransformWindow::UpdateRoundedCorners(bool show) {
 
   // Hide the corners if minimized, OverviewItemView will handle showing the
   // rounded corners on the UI.
-  if (IsMinimized())
+  if (IsMinimizedOrTucked()) {
     DCHECK(!show);
+  }
 
   ui::Layer* layer = window_->layer();
   layer->SetIsFastRoundedCorner(true);
@@ -570,7 +578,7 @@ void ScopedOverviewTransformWindow::UpdateRoundedCorners(bool show) {
 
   // Depending on the size of `backdrop_view`, we might not want to round the
   // window associated with `layer`.
-  auto* backdrop_view = overview_item_->overview_item_view()->backdrop_view();
+  auto* backdrop_view = overview_item_->GetBackDropView();
   const bool has_rounding = window_util::ShouldRoundThumbnailWindow(
       backdrop_view, GetTransformedBounds());
 

@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/ui/settings/password/password_checkup/password_checkup_view_controller.h"
 
-#import "base/mac/foundation_util.h"
+#import "base/apple/foundation_util.h"
 #import "base/metrics/user_metrics.h"
 #import "base/strings/string_number_conversions.h"
 #import "components/google/core/common/google_util.h"
@@ -453,14 +453,20 @@ void SetUpTrailingIconAndAccessoryType(
       static_cast<ItemType>([model itemTypeForIndexPath:indexPath]);
   switch (itemType) {
     case ItemTypeCompromisedPasswords:
+      base::RecordAction(
+          base::UserMetricsAction("MobilePasswordIssuesCompromisedOpen"));
       [self showPasswordIssuesWithWarningType:WarningType::
                                                   kCompromisedPasswordsWarning];
       break;
     case ItemTypeReusedPasswords:
+      base::RecordAction(
+          base::UserMetricsAction("MobilePasswordIssuesReusedOpen"));
       [self showPasswordIssuesWithWarningType:WarningType::
                                                   kReusedPasswordsWarning];
       break;
     case ItemTypeWeakPasswords:
+      base::RecordAction(
+          base::UserMetricsAction("MobilePasswordIssuesWeakOpen"));
       [self
           showPasswordIssuesWithWarningType:WarningType::kWeakPasswordsWarning];
       break;
@@ -514,7 +520,7 @@ void SetUpTrailingIconAndAccessoryType(
       [self.tableViewModel footerForSectionIndex:section]) {
     // Attach self as delegate to handle clicks in page footer.
     TableViewLinkHeaderFooterView* footerView =
-        base::mac::ObjCCastStrict<TableViewLinkHeaderFooterView>(view);
+        base::apple::ObjCCastStrict<TableViewLinkHeaderFooterView>(view);
     footerView.delegate = self;
   }
 

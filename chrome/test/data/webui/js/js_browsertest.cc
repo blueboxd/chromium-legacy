@@ -52,6 +52,10 @@ IN_PROC_BROWSER_TEST_F(WebUiJsTest, Static) {
   RunTest("js/static_types_test.js", "mocha.run();");
 }
 
+IN_PROC_BROWSER_TEST_F(WebUiJsTest, Store) {
+  RunTest("js/store_test.js", "mocha.run();");
+}
+
 IN_PROC_BROWSER_TEST_F(WebUiJsTest, MetricsReporter) {
   // MetricsReporter needs a host that enables BINDINGS_POLICY_MOJO_WEB_UI.
   // Any WebUI host should work, except chrome://webui-test since it is just a
@@ -62,4 +66,8 @@ IN_PROC_BROWSER_TEST_F(WebUiJsTest, MetricsReporter) {
 
 IN_PROC_BROWSER_TEST_F(WebUiJsTest, MockTimer) {
   RunTest("mock_timer_test.js", "mocha.run();");
+}
+
+IN_PROC_BROWSER_TEST_F(WebUiJsTest, MojoTypeUtil) {
+  RunTest("js/mojo_type_util_test.js", "mocha.run();");
 }

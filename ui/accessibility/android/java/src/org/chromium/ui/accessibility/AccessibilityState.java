@@ -183,6 +183,11 @@ public class AccessibilityState {
     private static State sState;
     private static boolean sInitialized;
     private static boolean sIsInTestingMode;
+    private static Boolean sPreInitCachedValuePerformGesturesEnabled;
+
+    private static boolean sExtraStateInitialized;
+    private static boolean sDisplayInversionEnabled;
+    private static boolean sHighContrastEnabled;
 
     // Observers for various System, Activity, and Settings states relevant to accessibility.
     private static final ApplicationStatus.ActivityStateListener sActivityStateListener =
@@ -191,6 +196,8 @@ public class AccessibilityState {
             AccessibilityState::onApplicationStateChange;
     private static ServicesObserver sAccessibilityServicesObserver;
     private static ServicesObserver sAnimationDurationScaleObserver;
+    private static ServicesObserver sDisplayInversionEnabledObserver;
+    private static ServicesObserver sTextContrastObserver;
     private static AccessibilityManager sAccessibilityManager;
 
     /**
@@ -204,6 +211,17 @@ public class AccessibilityState {
      */
     @Deprecated
     private static boolean sAccessibilitySpeakPasswordEnabled;
+
+    /**
+     * The current font weight adjustment set at the Android-OS level. Initialized to be 0, the
+     * default font weight. If a user has the bold text setting enabled, this will be 300.
+     *
+     * This is not included as a part of the {State} object since it is only needed for the web
+     * contents rendering (native widgets have font weight adjusted by the framework).
+     *
+     * This is only available on Android S+, on previous versions of Android this is always 300.
+     */
+    private static int sFontWeightAdjustment;
 
     // The IDs of all running accessibility services.
     private static String[] sServiceIds;
@@ -249,7 +267,28 @@ public class AccessibilityState {
     }
 
     public static boolean isPerformGesturesEnabled() {
-        if (!sInitialized) updateAccessibilityServices();
+        if (!sInitialized) {
+            if (sPreInitCachedValuePerformGesturesEnabled != null) {
+                return sPreInitCachedValuePerformGesturesEnabled;
+            }
+
+            fetchAccessibilityManager();
+            if (sAccessibilityManager.isEnabled()) {
+                for (AccessibilityServiceInfo service :
+                        sAccessibilityManager.getEnabledAccessibilityServiceList(
+                                AccessibilityServiceInfo.FEEDBACK_ALL_MASK)) {
+                    if ((service.getCapabilities()
+                                & AccessibilityServiceInfo.CAPABILITY_CAN_PERFORM_GESTURES)
+                            != 0) {
+                        sPreInitCachedValuePerformGesturesEnabled = true;
+                        return true;
+                    }
+                }
+            }
+            sPreInitCachedValuePerformGesturesEnabled = false;
+            return false;
+        }
+
         return sState.isPerformGesturesEnabled;
     }
 
@@ -290,10 +329,43 @@ public class AccessibilityState {
         return sState.isOnlyPasswordManagersEnabled;
     }
 
+    public static boolean isDisplayInversionEnabled() {
+        if (!sExtraStateInitialized) updateExtraState();
+        return sDisplayInversionEnabled;
+    }
+
+    public static boolean isHighContrastEnabled() {
+        if (!sExtraStateInitialized) updateExtraState();
+        return sHighContrastEnabled;
+    }
+
     @Deprecated
     public static boolean isAccessibilitySpeakPasswordEnabled() {
         if (!sInitialized) updateAccessibilityServices();
         return sAccessibilitySpeakPasswordEnabled;
+    }
+
+    public static int getFontWeightAdjustment() {
+        return sFontWeightAdjustment;
+    }
+
+    /**
+     * Helper method to return the value that is equivalent to the deprecated approach:
+     *     ChromeAccessibilityUtil.get().isAccessibilityEnabled()
+     *
+     * Avoid calling this method at all costs. The naming of this method is misleading and its
+     * usage is tricky. Use the more granular methods of this class.
+     *
+     * Returns true if an accessibility service is running that uses touch exploration OR a service
+     * is running that can perform gestures.
+     *
+     * @return true when touch exploration or gesture performing services are running.
+     */
+    // TODO(mschillaci): Replace all calls of this method with newer approach.
+    @Deprecated
+    public static boolean isAccessibilityEnabled() {
+        return AccessibilityState.isTouchExplorationEnabled()
+                || AccessibilityState.isPerformGesturesEnabled();
     }
 
     /**
@@ -356,6 +428,20 @@ public class AccessibilityState {
         sAccessibilityManager =
                 (AccessibilityManager) ContextUtils.getApplicationContext().getSystemService(
                         Context.ACCESSIBILITY_SERVICE);
+    }
+
+    static void updateExtraState() {
+        sExtraStateInitialized = true;
+        Context context = ContextUtils.getApplicationContext();
+        int displayInversionEnabledSetting = Settings.Secure.getInt(context.getContentResolver(),
+                Settings.Secure.ACCESSIBILITY_DISPLAY_INVERSION_ENABLED, 0);
+        boolean isDisplayInversionEnabled = displayInversionEnabledSetting == 1;
+        sDisplayInversionEnabled = isDisplayInversionEnabled;
+
+        int highTextContrastEnabled = Settings.Secure.getInt(context.getContentResolver(),
+                /*Settings.Secure.ACCESSIBILITY_HIGH_TEXT_CONTRAST_ENABLED*/
+                "high_text_contrast_enabled", 0);
+        sHighContrastEnabled = highTextContrastEnabled == 1;
     }
 
     static void updateAccessibilityServices() {
@@ -431,6 +517,13 @@ public class AccessibilityState {
         }
 
         Context context = ContextUtils.getApplicationContext();
+
+        // Update the font weight adjustment (e.g. bold text setting).
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            sFontWeightAdjustment = context.getResources().getConfiguration().fontWeightAdjustment;
+        } else {
+            sFontWeightAdjustment = 0;
+        }
 
         // Update the user password show/speak preferences.
         int textShowPasswordSetting = Settings.System.getInt(
@@ -646,6 +739,10 @@ public class AccessibilityState {
                 () -> AccessibilityStateJni.get().onAnimatorDurationScaleChanged());
         sAccessibilityServicesObserver = new ServicesObserver(
                 ThreadUtils.getUiThreadHandler(), AccessibilityState::processServicesChange);
+        sDisplayInversionEnabledObserver = new ServicesObserver(
+                ThreadUtils.getUiThreadHandler(), AccessibilityState::processExtraStateChange);
+        sTextContrastObserver = new ServicesObserver(
+                ThreadUtils.getUiThreadHandler(), AccessibilityState::processExtraStateChange);
 
         // We want to be notified whenever the user has updated the animator duration scale.
         contentResolver.registerContentObserver(
@@ -667,6 +764,18 @@ public class AccessibilityState {
         contentResolver.registerContentObserver(
                 Settings.System.getUriFor(Settings.System.TEXT_SHOW_PASSWORD), false,
                 sAccessibilityServicesObserver);
+
+        // We want to be notified if the user changes their display inversion settings.
+        contentResolver.registerContentObserver(
+                Settings.Secure.getUriFor(Settings.Secure.ACCESSIBILITY_DISPLAY_INVERSION_ENABLED),
+                false, sDisplayInversionEnabledObserver);
+
+        // We want to be notified if the user changes their contrast settings.
+        contentResolver.registerContentObserver(
+                Settings.Secure.getUriFor(
+                        /*Settings.Secure.ACCESSIBILITY_HIGH_TEXT_CONTRAST_ENABLED*/
+                        "high_text_contrast_enabled"),
+                false, sTextContrastObserver);
     }
 
     public static void initializeOnStartup() {
@@ -676,6 +785,9 @@ public class AccessibilityState {
         // in which case another update is not needed.
         if (!sInitialized) {
             updateAccessibilityServices();
+        }
+        if (!sExtraStateInitialized) {
+            updateExtraState();
         }
 
         // We want to be notified whenever an Activity or Application state changes.
@@ -689,7 +801,10 @@ public class AccessibilityState {
     private static void onActivityStateChange(Activity activity, int newState) {
         // If Chrome is sent to the background, we will unregister observers, and re-register the
         // observers and query state when Chrome is brought back to the foreground.
-        if (newState == ActivityState.RESUMED) processServicesChange();
+        if (newState == ActivityState.RESUMED) {
+            processServicesChange();
+            processExtraStateChange();
+        }
     }
 
     private static void onApplicationStateChange(int newState) {
@@ -707,14 +822,25 @@ public class AccessibilityState {
         ContentResolver contentResolver = ContextUtils.getApplicationContext().getContentResolver();
         contentResolver.unregisterContentObserver(sAccessibilityServicesObserver);
         contentResolver.unregisterContentObserver(sAnimationDurationScaleObserver);
+        contentResolver.unregisterContentObserver(sDisplayInversionEnabledObserver);
+        contentResolver.unregisterContentObserver(sTextContrastObserver);
         sState = null;
         sInitialized = false;
+        sExtraStateInitialized = false;
+        sDisplayInversionEnabled = false;
+        sHighContrastEnabled = false;
         sAccessibilityManager = null;
     }
 
     private static void processServicesChange() {
         updateAccessibilityServices();
         AccessibilityStateJni.get().recordAccessibilityServiceInfoHistograms();
+    }
+
+    private static void processExtraStateChange() {
+        updateExtraState();
+        AccessibilityStateJni.get().onDisplayInversionEnabledChanged(isDisplayInversionEnabled());
+        AccessibilityStateJni.get().onContrastLevelChanged(isHighContrastEnabled());
     }
 
     private static class ServicesObserver extends ContentObserver {
@@ -739,6 +865,8 @@ public class AccessibilityState {
     @NativeMethods
     interface Natives {
         void onAnimatorDurationScaleChanged();
+        void onDisplayInversionEnabledChanged(boolean enabled);
+        void onContrastLevelChanged(boolean highContrastEnabled);
         void recordAccessibilityServiceInfoHistograms();
     }
 

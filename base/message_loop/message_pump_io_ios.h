@@ -6,8 +6,8 @@
 #define BASE_MESSAGE_LOOP_MESSAGE_PUMP_IO_IOS_H_
 
 #include "base/apple/scoped_cffiledescriptorref.h"
+#include "base/apple/scoped_cftyperef.h"
 #include "base/base_export.h"
-#include "base/mac/scoped_cftyperef.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_pump_apple.h"
 #include "base/message_loop/watchable_io_message_pump_posix.h"
@@ -53,10 +53,10 @@ class BASE_EXPORT MessagePumpIOSForIO : public MessagePumpNSRunLoop,
     void OnFileCanWriteWithoutBlocking(int fd, MessagePumpIOSForIO* pump);
 
     bool is_persistent_ = false;  // false if this event is one-shot.
-    base::apple::ScopedCFFileDescriptorRef fdref_;
+    apple::ScopedCFFileDescriptorRef fdref_;
     CFOptionFlags callback_types_ = 0;
-    base::ScopedCFTypeRef<CFRunLoopSourceRef> fd_source_;
-    base::WeakPtr<MessagePumpIOSForIO> pump_;
+    apple::ScopedCFTypeRef<CFRunLoopSourceRef> fd_source_;
+    WeakPtr<MessagePumpIOSForIO> pump_;
     FdWatcher* watcher_ = nullptr;
   };
 

@@ -293,7 +293,8 @@ void OutputPresenterGL::ScheduleOverlayPlane(
 
     if (acquire_fence && !acquire_fence->GetGpuFenceHandle().is_null()) {
       CHECK(access);
-      CHECK_EQ(gpu::GrContextType::kGL, dependency_->gr_context_type());
+      CHECK_EQ(gpu::GrContextType::kGL,
+               dependency_->GetSharedContextState()->gr_context_type());
       CHECK(features::IsDelegatedCompositingEnabled());
       CHECK(access->representation()->usage() &
             gpu::SHARED_IMAGE_USAGE_RASTER_DELEGATED_COMPOSITING);
@@ -344,14 +345,6 @@ void OutputPresenterGL::ScheduleOverlayPlane(
       overlay_plane_candidate.is_render_pass_draw_quad));
 
 #endif
-}
-
-bool OutputPresenterGL::SupportsGpuVSync() const {
-  return presenter_->SupportsGpuVSync();
-}
-
-void OutputPresenterGL::SetGpuVSyncEnabled(bool enabled) {
-  presenter_->SetGpuVSyncEnabled(enabled);
 }
 
 void OutputPresenterGL::SetVSyncDisplayID(int64_t display_id) {

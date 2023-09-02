@@ -466,6 +466,7 @@ static_library("location_bar") {
     ":buildflags",
     "//build:chromeos_buildflags",
     "//components/dom_distiller/core:core",
+    "//components/safe_browsing/core/common:common",
     "//components/search_engines",
     "//components/strings",
     "//components/url_formatter",
@@ -515,6 +516,7 @@ if (is_android) {
       "android/java/res/drawable/action_call.xml",
       "android/java/res/drawable/action_directions.xml",
       "android/java/res/drawable/action_reviews.xml",
+      "android/java/res/drawable/omnibox_dangerous.xml",
       "android/java/res/drawable/omnibox_https_valid_refresh.xml",
       "android/java/res/values/colors.xml",
       "android/java/res/values/drawables.xml",
@@ -543,6 +545,7 @@ if (is_android) {
     deps = [
       ":java_resources",
       "//base:jni_java",
+      "//chrome/browser/flags:java",
       "//components/embedder_support/android:util_java",
       "//components/security_state/core:security_state_enums_java",
       "//third_party/androidx:androidx_annotation_annotation_java",
@@ -611,7 +614,6 @@ if (is_android) {
       "//third_party/android_deps:protobuf_lite_runtime_java",
       "//third_party/junit:junit",
       "//third_party/mockito:mockito_java",
-      "//url:gurl_junit_shadows",
     ]
   }
 
@@ -778,7 +780,6 @@ source_set("unit_tests") {
     "keyword_provider_unittest.cc",
     "local_history_zero_suggest_provider_unittest.cc",
     "location_bar_model_impl_unittest.cc",
-    "most_visited_sites_provider_unittest.cc",
     "omnibox_controller_unittest.cc",
     "omnibox_edit_model_unittest.cc",
     "omnibox_field_trial_unittest.cc",
@@ -808,6 +809,10 @@ source_set("unit_tests") {
     "zero_suggest_provider_unittest.cc",
     "zero_suggest_verbatim_match_provider_unittest.cc",
   ]
+
+  if (is_android || is_ios) {
+    sources += [ "most_visited_sites_provider_unittest.cc" ]
+  }
 
   if ((!is_android || enable_vr) && !is_ios) {
     sources += [ "location_bar_model_util_unittest.cc" ]
@@ -839,6 +844,7 @@ source_set("unit_tests") {
     "//components/optimization_guide/core:test_support",
     "//components/optimization_guide/proto:optimization_guide_proto",
     "//components/prefs:test_support",
+    "//components/safe_browsing/core/common:common",
     "//components/search",
     "//components/search_engines",
     "//components/search_engines:test_support",

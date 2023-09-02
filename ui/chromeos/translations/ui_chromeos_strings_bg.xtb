@@ -35,6 +35,7 @@
 <translation id="1280820357415527819">Търсят се мобилни мрежи</translation>
 <translation id="1293556467332435079">Файлове</translation>
 <translation id="1297922636971898492">В момента няма достъп до Google Диск. Качването ще се рестартира автоматично, щом услугата отново е налице.</translation>
+<translation id="1306130176943817227">Не може да се изтрие. Елементът се използва.</translation>
 <translation id="1307931752636661898">Файловете за Linux не могат да бъдат показани</translation>
 <translation id="1313405956111467313">Автоматична конфигурация на прокси сървър</translation>
 <translation id="134645005685694099">Мястото в хранилището на устройството ви не е достатъчно, за да остане включена функцията за синхронизиране на файловете. Новите файлове повече няма да се синхронизират автоматично.</translation>
@@ -94,6 +95,7 @@
 <translation id="174937106936716857">Общ брой файлове</translation>
 <translation id="1755345808328621801">Този файл е предназначен за компютри с Windows и не е съвместим с устройството ви с Chrome OS. Моля, потърсете в уеб магазина на Chrome подходящо приложение със същата функционалност.</translation>
 <translation id="1757915090001272240">широка латиница</translation>
+<translation id="1761091787730831947">Споделяне с(ъс) <ph name="VM_NAME" /></translation>
 <translation id="1773212559869067373">Сертификатът за удостоверяване бе отхвърлен локално</translation>
 <translation id="1775381402323441512">Информация за видеофайла</translation>
 <translation id="180035236176489073">Трябва да сте онлайн, за да осъществите достъп до тези файлове.</translation>
@@ -169,6 +171,7 @@
 <translation id="23721837607121582">Изтегляне на мобилния потребителски профил, мрежа <ph name="NETWORK_INDEX" /> от <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" /></translation>
 <translation id="2377319039870049694">Превключване към списъчен изглед</translation>
 <translation id="2377590462528165447"><ph name="NUMBER_OF_ITEMS" /> папки са споделени с Linux</translation>
+<translation id="2379576081295865700">Мястото в хранилището се проверява… Намерен е 1 елемент</translation>
 <translation id="2383454254762599978">Преместване в кошчето</translation>
 <translation id="2387458720915042159">Тип на връзката през прокси сървър</translation>
 <translation id="2389832672041313158">Бирмански</translation>
@@ -210,6 +213,7 @@
 <translation id="2718540689505416944">Инсталиране на приложението с Linux</translation>
 <translation id="2719020180254996569">Мрежа <ph name="NETWORK_INDEX" /> от <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, подробности</translation>
 <translation id="2724954091494693138">Турски с клавиатура от тип F</translation>
+<translation id="2732288874651063549">Управление на споделянето с(ъс) <ph name="VM_NAME" /></translation>
 <translation id="2732839045120506979">Виетнамски (VNI)</translation>
 <translation id="2735623501230989521">Даване на Parallels Desktop на достъп до файловете в папката „<ph name="FOLDER_NAME" />“</translation>
 <translation id="2764206540577097904">Използвахте цялото си индивидуално хранилище в Google Workspace.</translation>
@@ -304,6 +308,7 @@
 <translation id="3509680540198371098">Мрежа <ph name="NETWORK_INDEX" /> от <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, сила на сигнала <ph name="SIGNAL_STRENGTH" />%, подробности</translation>
 <translation id="3511705761158917664"><ph name="NUMBER_OF_ITEMS" /> елемента се подготвят за синхронизиране...</translation>
 <translation id="3522708245912499433">португалски</translation>
+<translation id="3523225005467146490">1 папка е споделена с(ъс) <ph name="VM_NAME" /></translation>
 <translation id="3524311639100184459">Внимание: Тези файлове са временни и може да бъдат изтрити автоматично, за да се освободи място на диска.  <ph name="BEGIN_LINK" />Научете повече<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">Папка</translation>
 <translation id="3548125359243647069">Въведохте грешен ПИН код твърде много пъти.</translation>
@@ -537,6 +542,7 @@
 <translation id="5218183485292899140">Швейцарска (френски) клавиатура</translation>
 <translation id="5234764350956374838">Отхвърляне</translation>
 <translation id="5253070652067921974">Създадено от</translation>
+<translation id="5254207638927440400">Файлът не може да бъде преместен, тъй като се използва.</translation>
 <translation id="5257456363153333584">Водно конче</translation>
 <translation id="5262311848634918433"><ph name="MARKUP_1" />Файловете ви ще са достъпни от всяко място дори когато сте офлайн.<ph name="MARKUP_2" />
 Файловете в Google Диск ще са актуални и достъпни от всяко устройство.<ph name="MARKUP_3" />
@@ -660,6 +666,8 @@
 <translation id="6164412158936057769">Пеперуди</translation>
 <translation id="6165508094623778733">Научете повече</translation>
 <translation id="6170470584681422115">Сандвич</translation>
+<translation id="6177854567773392726">Мястото в хранилището се проверява… Намерени са <ph name="ITEMS_FOUND" /> елемента</translation>
+<translation id="6181912134988520389">Разрешете на <ph name="VM_NAME" /> да осъществява достъп до файловете в профила ви в Google Диск. Промените ще се синхронизират с другите ви устройства.</translation>
 <translation id="6187719147498869044">Унгарски</translation>
 <translation id="6198252989419008588">Промяна на ПИН</translation>
 <translation id="6199801702437275229">Информацията за мястото се изчаква...</translation>
@@ -763,6 +771,7 @@
 <translation id="6989942356279143254">Шведски</translation>
 <translation id="6990081529015358884">Нямате свободно място</translation>
 <translation id="6993826899923627728">Тези елементи са в кошчето ви</translation>
+<translation id="6996593023542748157">Споделяне на папката с(ъс) <ph name="VM_NAME" /></translation>
 <translation id="7008426324576352165">Организацията ви има нужда от още място за съхранение, за да бъде завършено качването.</translation>
 <translation id="7009985720488544166">Преместването на <ph name="COUNT" /> файла е блокирано чрез администраторско правило</translation>
 <translation id="7012943028104619157"><ph name="ROOT_TITLE" /> (<ph name="ROOT_SUMMARY" />)</translation>
@@ -852,6 +861,7 @@
 <translation id="76959938259365003">Кошчето не бе изпразнено.</translation>
 <translation id="770015031906360009">гръцки</translation>
 <translation id="7705251383879779343">Копирахте „<ph name="FILE_NAME" />“.</translation>
+<translation id="7707941139430559579">Файлът не може да бъде преместен. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="7708271999969613024">За да използвате тази мрежа, трябва да въведете 8-цифрения PUK код, предоставен от оператора.</translation>
 <translation id="7711920809702896782">Информация за изображението</translation>
 <translation id="7724603315864178912">Изрязване</translation>
@@ -948,6 +958,7 @@
 <translation id="8335837413233998004">Беларуски</translation>
 <translation id="8336153091935557858">Вчера, <ph name="YESTERDAY_DAYTIME" /></translation>
 <translation id="8342318071240498787">Вече съществува файл или директория със същото име.</translation>
+<translation id="83651606385705612">Разрешете на <ph name="VM_NAME" /> да осъществява достъп до файловете в папката „<ph name="FOLDER_NAME" />“</translation>
 <translation id="8372369524088641025">Ключът за WEP е неправилен</translation>
 <translation id="8372852072747894550">Гръцки</translation>
 <translation id="8386903983509584791">Сканирането завърши</translation>
@@ -957,6 +968,7 @@
 <translation id="8408068190360279472"><ph name="NETWORK_TYPE" /> мрежа – установява се връзка</translation>
 <translation id="8425213833346101688">Промяна</translation>
 <translation id="8428213095426709021">Настройки</translation>
+<translation id="8429998526804961548"><ph name="NUMBER_OF_ITEMS" /> папки са споделени с(ъс) <ph name="VM_NAME" /></translation>
 <translation id="8431909052837336408">Промяна на ПИН за SIM картата</translation>
 <translation id="8437209419043462667">Американска клавиатура</translation>
 <translation id="8452135315243592079">SIM картата липсва</translation>
@@ -1037,6 +1049,7 @@
 <translation id="9038620279323455325">Файлът „<ph name="FILE_NAME" />“ вече съществува. Моля, изберете друго име.</translation>
 <translation id="9046895021617826162">Свързването не бе успешно</translation>
 <translation id="9065512565307033593">Ако не успеете да потвърдите самоличността си, достъпът ви до мрежата ще бъде прекратен.</translation>
+<translation id="9083722265619106011">{0,plural, =1{1 предупреждение.}other{<ph name="COUNT" /> предупреждения.}}</translation>
 <translation id="908378762078012445">Руски с фонетична клавиатура AATSEEL</translation>
 <translation id="9086302186042011942">Синхронизира се</translation>
 <translation id="9099674669267916096">Брой страници</translation>

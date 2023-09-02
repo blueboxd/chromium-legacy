@@ -534,7 +534,8 @@ void OnRequestToken(ScriptPromiseResolver* resolver,
                     const CredentialRequestOptions* options,
                     RequestTokenStatus status,
                     const absl::optional<KURL>& selected_idp_config_url,
-                    const WTF::String& token) {
+                    const WTF::String& token,
+                    bool is_account_auto_selected) {
   switch (status) {
     case RequestTokenStatus::kErrorTooManyRequests: {
       resolver->Reject(MakeGarbageCollected<DOMException>(
@@ -562,7 +563,8 @@ void OnRequestToken(ScriptPromiseResolver* resolver,
       return;
     }
     case RequestTokenStatus::kSuccess: {
-      IdentityCredential* credential = IdentityCredential::Create(token);
+      IdentityCredential* credential =
+          IdentityCredential::Create(token, is_account_auto_selected);
       resolver->Resolve(credential);
       return;
     }
@@ -1422,7 +1424,21 @@ ScriptPromise CredentialsContainer::get(ScriptState* script_state,
       // TODO(kenrb): Add some renderer-side validation here, such as
       // validating |provider|, and making sure the calling context is legal.
       // Some of this has not been spec'd yet.
+
+      if (!provider->hasConfigURL()) {
+        exception_state.ThrowTypeError("Missing the provider's configURL.");
+        resolver->Detach();
+        return ScriptPromise();
+      }
+
       KURL provider_url(provider->configURL());
+
+      if (!provider->hasClientId()) {
+        exception_state.ThrowTypeError("Missing the provider's clientId.");
+        resolver->Detach();
+        return ScriptPromise();
+      }
+
       String client_id = provider->clientId();
 
       ++provider_index;

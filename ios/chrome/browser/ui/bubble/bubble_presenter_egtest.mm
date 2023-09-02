@@ -37,7 +37,13 @@
 #pragma mark - Tests
 
 // Tests that the New Tab IPH can be displayed when opening an URL from omnibox.
-- (void)testNewTabIPH {
+// TODO(crbug.com/1471222): Test is flaky on device. Re-enable the test.
+#if !TARGET_OS_SIMULATOR
+#define MAYBE_testNewTabIPH FLAKY_testNewTabIPH
+#else
+#define MAYBE_testNewTabIPH testNewTabIPH
+#endif
+- (void)MAYBE_testNewTabIPH {
   // Enable the IPH Demo Mode feature to ensure the IPH triggers
   AppLaunchConfiguration config = [self appConfigurationForTestCase];
   config.additional_args.push_back(
@@ -48,21 +54,10 @@
   config.additional_args.push_back("-ForceExperienceForDeviceSwitcher");
   config.additional_args.push_back("SyncedAndFirstDevice");
   config.relaunch_policy = ForceRelaunchByCleanShutdown;
-  // TODO(crbug.com/1470901): remove after fixing the bug on iphone.
-  if (![ChromeEarlGrey isIPadIdiom]) {
-    config.features_disabled.push_back(kBottomOmniboxDefaultSetting);
-    config.features_disabled.push_back(kBottomOmniboxSteadyState);
-  }
 
   [[AppLaunchManager sharedManager] ensureAppLaunchedWithConfiguration:config];
 
-  // Open an URL from NTP is likely not triggering showing the IPH due to
-  // failing the check `BubblePresenter::isTabScrolledToTop`, hence need to open
-  // an URL from non-NTP page below.
   [self openURLFromOmniboxWithIsAfterNewAppLaunch:YES];
-
-  // Open an URL from non-NTP page.
-  [self openURLFromOmniboxWithIsAfterNewAppLaunch:NO];
 
   [ChromeEarlGrey
       waitForUIElementToAppearWithMatcher:grey_accessibilityID(

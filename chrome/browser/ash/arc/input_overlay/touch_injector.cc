@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "ash/app_list/app_list_util.h"
+#include "ash/game_dashboard/game_dashboard_utils.h"
 #include "ash/public/cpp/arc_game_controls_flag.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/utility/transformer_util.h"
@@ -25,6 +26,7 @@
 #include "chrome/browser/ash/arc/input_overlay/display_overlay_controller.h"
 #include "chrome/browser/ash/arc/input_overlay/touch_id_manager.h"
 #include "chrome/browser/ash/arc/input_overlay/touch_injector_observer.h"
+#include "chrome/browser/ash/arc/input_overlay/ui/ui_utils.h"
 #include "chrome/browser/ash/arc/input_overlay/util.h"
 #include "ui/aura/window.h"
 #include "ui/display/display.h"
@@ -286,7 +288,7 @@ void TouchInjector::UpdateFlags() {
 
   ash::ArcGameControlsFlag flags = static_cast<ash::ArcGameControlsFlag>(
       ash::ArcGameControlsFlag::kKnown | ash::ArcGameControlsFlag::kAvailable |
-      (actions_.empty() ? ash::ArcGameControlsFlag::kEmpty : 0) |
+      (GetActiveActionsSize() == 0u ? ash::ArcGameControlsFlag::kEmpty : 0) |
       (touch_injector_enable_ ? ash::ArcGameControlsFlag::kEnabled : 0) |
       (touch_injector_enable_ && input_mapping_visible_
            ? ash::ArcGameControlsFlag::kHint
@@ -358,10 +360,7 @@ void TouchInjector::OnApplyPendingBinding() {
 void TouchInjector::OnBindingSave() {
   DCHECK(display_overlay_controller_);
   // Pending is already applied for beta version.
-  if (IsBeta()) {
-    display_overlay_controller_->TurnFlag(ash::ArcGameControlsFlag::kEdit,
-                                          /*turn_on=*/false);
-  } else {
+  if (!IsBeta()) {
     OnApplyPendingBinding();
     display_overlay_controller_->SetDisplayModeAlpha(DisplayMode::kView);
   }
@@ -946,6 +945,16 @@ int TouchInjector::GetNextNewActionID() {
   return FindNewCustomActionID(ids);
 }
 
+size_t TouchInjector::GetActiveActionsSize() {
+  size_t active_size = 0;
+  for (auto& action : actions_) {
+    if (!action->IsDeleted()) {
+      active_size++;
+    }
+  }
+  return active_size;
+}
+
 void TouchInjector::AddNewAction(ActionType action_type) {
   DCHECK(IsBeta());
   auto action = CreateRawAction(action_type, this);
@@ -957,6 +966,10 @@ void TouchInjector::AddNewAction(ActionType action_type) {
 
   // Apply the change right away for beta.
   NotifyActionAdded(*actions_.emplace_back(std::move(action)));
+
+  // It may need to turn off the flag `kEmpty` after adding an action.
+  UpdateFlagAndProperty(window_, ash::ArcGameControlsFlag::kEmpty,
+                        /*enable_flag=*/false);
 }
 
 void TouchInjector::RemoveAction(Action* action) {
@@ -975,6 +988,15 @@ void TouchInjector::RemoveAction(Action* action) {
   }
 
   NotifyActionRemoved(*action);
+
+  // It may need to turn on the flag `kEmpty` after removing an action.
+  DCHECK_EQ(false, ash::game_dashboard_utils::IsFlagSet(
+                       window_->GetProperty(ash::kArcGameControlsFlagsKey),
+                       ash::ArcGameControlsFlag::kEmpty));
+  if (GetActiveActionsSize() == 0u) {
+    UpdateFlagAndProperty(window_, ash::ArcGameControlsFlag::kEmpty,
+                          /*enable_flag=*/true);
+  }
 }
 
 void TouchInjector::ChangeActionType(Action* action, ActionType action_type) {
@@ -986,10 +1008,9 @@ void TouchInjector::ChangeActionType(Action* action, ActionType action_type) {
   NotifyActionTypeChanged(action, new_action_raw);
 }
 
-void TouchInjector::ChangeActionName(Action* action, std::u16string name) {
+void TouchInjector::ChangeActionName(Action* action, int index) {
   DCHECK(IsBeta());
-  action->set_name_label(name);
-
+  action->set_name_label_index(index);
   NotifyActionNameUpdated(*action);
 }
 

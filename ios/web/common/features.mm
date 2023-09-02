@@ -48,7 +48,7 @@ BASE_FEATURE(kSynthesizedRestoreSession,
 
 BASE_FEATURE(kEnableFullscreenAPI,
              "EnableFullscreenAPI",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kUseLoadSimulatedRequestForOfflinePage,
              "UseLoadSimulatedRequestForErrorPageNavigation",
@@ -71,8 +71,14 @@ const char kOneTapForMapsConsentModeParamTitle[] =
 const char kOneTapForMapsConsentModeDefaultParam[] = "default";
 const char kOneTapForMapsConsentModeForcedParam[] = "forced";
 const char kOneTapForMapsConsentModeDisabledParam[] = "disabled";
+const char kOneTapForMapsConsentModeIPHParam[] = "iph";
+const char kOneTapForMapsConsentModeIPHForcedParam[] = "iphforced";
 BASE_FEATURE(kOneTapForMaps,
              "EnableOneTapForMaps",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kUseAnnotationsForLanguageDetection,
+             "UseAnnotationsForLanguageDetection",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kScrollViewProxyScrollEnabledWorkaround,

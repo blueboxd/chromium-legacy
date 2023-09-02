@@ -219,14 +219,15 @@ gfx::Size ChromeRefresh2023TabStyle::GetSeparatorSize() const {
 
 gfx::Insets ChromeRefresh2023TabStyle::GetContentsInsets() const {
   return gfx::Insets::TLBR(
-      kChromeRefreshTabVerticalPadding,
+      kChromeRefreshTabVerticalPadding + GetLayoutConstant(TAB_STRIP_PADDING),
       GetBottomCornerRadius() + kChromeRefreshTabHorizontalPadding,
       kChromeRefreshTabVerticalPadding + GetLayoutConstant(TAB_STRIP_PADDING),
       GetBottomCornerRadius() + kChromeRefreshTabHorizontalPadding);
 }
 
 gfx::Insets ChromeRefresh2023TabStyle::GetSeparatorMargins() const {
-  return gfx::Insets::TLBR(0, kChromeRefreshSeparatorHorizontalMargin,
+  return gfx::Insets::TLBR(GetLayoutConstant(TAB_STRIP_PADDING),
+                           kChromeRefreshSeparatorHorizontalMargin,
                            GetLayoutConstant(TAB_STRIP_PADDING),
                            kChromeRefreshSeparatorHorizontalMargin);
 }

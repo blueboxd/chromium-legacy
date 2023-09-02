@@ -80,10 +80,14 @@ BASE_FEATURE(kFeedDisableHotStartRefresh,
 
 BASE_FEATURE(kEnableFollowUIUpdate,
              "EnableFollowUIUpdate",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kDiscoverFeedSportCard,
              "DiscoverFeedSportCard",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kContentPushNotifications,
+             "ContentPushNotifications",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Key for NSUserDefaults containing a bool indicating whether the next run
@@ -360,4 +364,8 @@ bool IsFeedHotStartRefreshDisabled() {
 
 bool IsFollowUIUpdateEnabled() {
   return base::FeatureList::IsEnabled(kEnableFollowUIUpdate);
+}
+
+bool IsContentPushNotificationsEnabled() {
+  return base::FeatureList::IsEnabled(kContentPushNotifications);
 }

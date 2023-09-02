@@ -10,6 +10,7 @@
 #include "ash/public/cpp/window_properties.h"
 #include "chromeos/ui/base/window_properties.h"
 #include "chromeos/ui/wm/window_util.h"
+#include "ui/aura/window.h"
 
 namespace ash {
 
@@ -26,6 +27,11 @@ void GameDashboardTestBase::SetUp() {
                                    kScreenBounds.y(), kScreenBounds.width(),
                                    kScreenBounds.height()));
   EXPECT_TRUE(features::IsGameDashboardEnabled());
+}
+
+void GameDashboardTestBase::AdvanceClock(base::TimeDelta delta) {
+  task_environment()->AdvanceClock(delta);
+  task_environment()->RunUntilIdle();
 }
 
 bool GameDashboardTestBase::IsControllerObservingWindow(

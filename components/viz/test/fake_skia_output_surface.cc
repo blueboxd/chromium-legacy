@@ -42,8 +42,7 @@ namespace viz {
 
 FakeSkiaOutputSurface::FakeSkiaOutputSurface(
     scoped_refptr<ContextProvider> context_provider)
-    : SkiaOutputSurface(SkiaOutputSurface::Type::kOpenGL),
-      context_provider_(std::move(context_provider)) {}
+    : context_provider_(std::move(context_provider)) {}
 
 FakeSkiaOutputSurface::~FakeSkiaOutputSurface() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);

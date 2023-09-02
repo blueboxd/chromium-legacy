@@ -1181,12 +1181,6 @@ void MetricsService::MaybeCleanUpAndStoreFinalizedLog(
       ->MarkUnloggedSamplesAsLogged();
   StoreFinalizedLog(log_type, reason, std::move(done_callback),
                     std::move(finalized_log));
-
-  // Call OnDidCreateMetricsLog() after storing a log instead of directly after
-  // opening a log. Otherwise, the async log that was created would potentially
-  // have mistakenly snapshotted the histograms intended for the newly opened
-  // log.
-  delegating_provider_.OnDidCreateMetricsLog();
 }
 
 void MetricsService::PushPendingLogsToPersistentStorage(
@@ -1291,7 +1285,7 @@ void MetricsService::OnFinalLogInfoCollectionDone() {
   pending_ongoing_log_ = true;
 
   base::OnceClosure log_stored_callback =
-      base::BindOnce(&MetricsService::OnPeriodicOngoingLogStored,
+      base::BindOnce(&MetricsService::OnAsyncPeriodicOngoingLogStored,
                      self_ptr_factory_.GetWeakPtr());
   CloseCurrentLog(/*async=*/true,
                   MetricsLogsEventManager::CreateReason::kPeriodic,
@@ -1299,8 +1293,14 @@ void MetricsService::OnFinalLogInfoCollectionDone() {
   OpenNewLog(/*call_providers=*/false);
 }
 
-void MetricsService::OnPeriodicOngoingLogStored() {
+void MetricsService::OnAsyncPeriodicOngoingLogStored() {
   pending_ongoing_log_ = false;
+
+  // Call OnDidCreateMetricsLog() after storing a log instead of directly after
+  // opening a log. Otherwise, the async log that was created would potentially
+  // have mistakenly snapshotted the histograms intended for the newly opened
+  // log.
+  delegating_provider_.OnDidCreateMetricsLog();
 
   // Trim and store unsent logs, including the log that was just closed, so that
   // they're not lost in case of a crash before upload time. However, the
@@ -1342,6 +1342,10 @@ bool MetricsService::PrepareInitialStabilityLog(
 
   auto log_histogram_writer = std::make_unique<MetricsLogHistogramWriter>(
       initial_stability_log.get(), base::Histogram::kUmaStabilityHistogramFlag);
+
+  // Add a beacon to this record to indicate that it's part of the initial
+  // stability log.
+  UMA_STABILITY_HISTOGRAM_BOOLEAN("UMA.InitialStabilityRecordBeacon", true);
 
   // Let metrics providers provide histogram snapshots independently if they
   // have any. This is done synchronously.

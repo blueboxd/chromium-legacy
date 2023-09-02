@@ -19,11 +19,14 @@
 #include "chrome/browser/ui/tabs/tab_types.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
+#include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/frame/top_container_background.h"
 #include "chrome/browser/ui/views/tabs/glow_hover_controller.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_close_button.h"
 #include "chrome/browser/ui/views/tabs/tab_group_underline.h"
 #include "chrome/browser/ui/views/tabs/tab_slot_controller.h"
+#include "chrome/browser/ui/views/tabs/tab_slot_view.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/tab_groups/tab_group_visual_data.h"
 #include "third_party/skia/include/core/SkRRect.h"
@@ -239,7 +242,8 @@ SkPath GM2TabStyleViews::GetPath(TabStyle::PathType path_type,
   // Calculate the bounds of the actual path.
   const float left = aligned_bounds.x();
   const float right = aligned_bounds.right();
-  float tab_top = aligned_bounds.y();
+  float tab_top =
+      aligned_bounds.y() + GetLayoutConstant(TAB_STRIP_PADDING) * scale;
   float tab_left = left + extension;
   float tab_right = right - extension;
 
@@ -604,12 +608,15 @@ TabStyle::SeparatorBounds GM2TabStyleViews::GetSeparatorBounds(
 
   TabStyle::SeparatorBounds separator_bounds;
 
+  const int extra_vertical_space =
+      aligned_bounds.height() -
+      (separator_size.height() + separator_margin.bottom() +
+       separator_margin.top());
+
   separator_bounds.leading = gfx::RectF(
       aligned_bounds.x() + corner_radius - separator_margin.right() -
           separator_size.width(),
-      aligned_bounds.y() + (aligned_bounds.height() - separator_size.height() -
-                            separator_margin.bottom()) /
-                               2,
+      aligned_bounds.y() + extra_vertical_space / 2 + separator_margin.top(),
       separator_size.width(), separator_size.height());
 
   separator_bounds.trailing = separator_bounds.leading;
@@ -936,10 +943,12 @@ void GM2TabStyleViews::PaintTabBackgroundFill(
   if (fill_id.has_value()) {
     gfx::ScopedCanvas scale_scoper(canvas);
     canvas->sk_canvas()->scale(scale, scale);
-    canvas->TileImageInt(
-        *tab_->GetThemeProvider()->GetImageSkiaNamed(fill_id.value()),
-        tab_->GetMirroredX() + tab_->controller()->GetBackgroundOffset(), 0, 0,
-        y_inset, tab_->width(), tab_->height());
+    gfx::ImageSkia* image =
+        tab_->GetThemeProvider()->GetImageSkiaNamed(fill_id.value());
+    TopContainerBackground::PaintThemeAlignedImage(
+        canvas, tab_,
+        BrowserView::GetBrowserViewForBrowser(tab_->controller()->GetBrowser()),
+        image);
   }
 
   if (hovered) {
@@ -1154,15 +1163,25 @@ SkPath ChromeRefresh2023TabStyleViews::GetPath(
     // The tab displays favicon animations that can emerge from the toolbar. The
     // interior clip needs to extend the entire height of the toolbar to support
     // this. Detached tab shapes do not need to respect this.
-    if (path_type != TabStyle::PathType::kInteriorClip ||
-        path_type == TabStyle::PathType::kHitTest) {
+    if (path_type != TabStyle::PathType::kInteriorClip &&
+        path_type != TabStyle::PathType::kHitTest) {
       tab_height -= GetLayoutConstant(TAB_STRIP_PADDING) * scale;
+      tab_height -= GetLayoutConstant(TABSTRIP_TOOLBAR_OVERLAP) * scale;
     }
 
     int left = aligned_bounds.x() + extension_corner_radius;
-    const int top = aligned_bounds.y();
+    int top = aligned_bounds.y() + GetLayoutConstant(TAB_STRIP_PADDING) * scale;
     int right = aligned_bounds.right() - extension_corner_radius;
     const int bottom = top + tab_height;
+
+    // For maximized and fullscreen windows, extend the tab hit test to the top
+    // of the tab, encompassing the top padding. This makes it easy to click on
+    // tabs by moving the mouse to the top of the screen.
+    if (path_type == TabStyle::PathType::kHitTest &&
+        (tab()->GetWidget()->IsMaximized() ||
+         tab()->GetWidget()->IsFullscreen())) {
+      top -= GetLayoutConstant(TAB_STRIP_PADDING) * scale;
+    }
 
     // if the size of the space for the path is smaller than the size of a
     // favicon or if we are building a path for the hit test, expand to take the
@@ -1176,12 +1195,22 @@ SkPath ChromeRefresh2023TabStyleViews::GetPath(
       const int right_separator_overlap =
           tab_style()->GetSeparatorSize().width() - left_separator_overlap;
 
-      left -= (tab_style()->GetSeparatorMargins().right() +
-               left_separator_overlap) *
-              scale;
-      right += (tab_style()->GetSeparatorMargins().left() +
-                right_separator_overlap) *
-               scale;
+      // If there is a tab before this one, then expand into its overlap.
+      const Tab* const previous_tab =
+          tab()->controller()->GetAdjacentTab(tab(), -1);
+      if (previous_tab) {
+        left -= (tab_style()->GetSeparatorMargins().right() +
+                 left_separator_overlap) *
+                scale;
+      }
+
+      // If there is a tab after this one, then expand into its overlap.
+      const Tab* const next_tab = tab()->controller()->GetAdjacentTab(tab(), 1);
+      if (next_tab) {
+        right += (tab_style()->GetSeparatorMargins().left() +
+                  right_separator_overlap) *
+                 scale;
+      }
     }
 
     SkPath path;

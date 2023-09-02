@@ -419,8 +419,6 @@ TabletModeController::TabletModeController()
   chromeos::PowerManagerClient* power_manager_client =
       chromeos::PowerManagerClient::Get();
   power_manager_client->AddObserver(this);
-  power_manager_client->GetSwitchStates(base::BindOnce(
-      &TabletModeController::OnGetSwitchStates, weak_factory_.GetWeakPtr()));
 }
 
 TabletModeController::~TabletModeController() {
@@ -684,6 +682,14 @@ void TabletModeController::OnAccelerometerUpdated(
   }
 
   StartTrackingTabletUsageMetricsIfApplicable();
+}
+
+void TabletModeController::PowerManagerBecameAvailable(bool available) {
+  if (!available) {
+    return;
+  }
+  chromeos::PowerManagerClient::Get()->GetSwitchStates(base::BindOnce(
+      &TabletModeController::OnGetSwitchStates, weak_factory_.GetWeakPtr()));
 }
 
 void TabletModeController::LidEventReceived(
@@ -1334,11 +1340,22 @@ bool TabletModeController::ShouldUiBeInTabletMode() const {
   if (!tablet_mode_behavior_.observe_pointer_device_events)
     return is_in_tablet_physical_state_;
 
-  if (has_external_pointing_device_)
+  // If this is a tablet capable device, and `OnDeviceListsComplete()` has
+  // not been received yet, then skip further checking and don't enter tablet
+  // mode, since `has_external_pointing_device_` and
+  // `has_internal_pointing_device_` are not accurate yet.
+  if (IsBoardTypeMarkedAsTabletCapable() &&
+      !initial_input_device_set_up_finished_) {
     return false;
+  }
 
-  if (is_in_tablet_physical_state_)
+  if (has_external_pointing_device_) {
+    return false;
+  }
+
+  if (is_in_tablet_physical_state_) {
     return true;
+  }
 
   return !has_internal_pointing_device_ && CanEnterTabletMode() &&
          HasActiveInternalDisplay() && base::SysInfo::IsRunningOnChromeOS();

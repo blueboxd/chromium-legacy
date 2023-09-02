@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/html/anchor_element_metrics_sender.h"
 
+#include "base/containers/contains.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -83,13 +84,17 @@ class MockAnchorElementMetricsHost
       WTF::Vector<mojom::blink::AnchorElementMetricsPtr> elements) override {
     for (auto& element : elements) {
       // Ignore duplicates.
-      if (anchor_ids_.find(element->anchor_id) != anchor_ids_.end()) {
+      if (base::Contains(anchor_ids_, element->anchor_id)) {
         continue;
       }
       anchor_ids_.insert(element->anchor_id);
       elements_.emplace_back(std::move(element));
     }
   }
+
+  void ProcessPointerEventUsingMLModel(
+      mojom::blink::AnchorElementPointerEventForMLModelPtr pointer_event)
+      override {}
 
  public:
   std::vector<mojom::blink::AnchorElementClickPtr> clicks_;

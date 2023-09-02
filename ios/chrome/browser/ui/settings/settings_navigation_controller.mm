@@ -6,8 +6,8 @@
 
 #import <MaterialComponents/MaterialSnackbar.h>
 
+#import "base/apple/foundation_util.h"
 #import "base/ios/ios_util.h"
-#import "base/mac/foundation_util.h"
 #import "base/metrics/user_metrics.h"
 #import "base/metrics/user_metrics_action.h"
 #import "components/autofill/core/browser/personal_data_manager.h"
@@ -61,6 +61,13 @@
 #import "ios/chrome/grit/ios_strings.h"
 #import "ios/public/provider/chrome/browser/user_feedback/user_feedback_api.h"
 #import "ui/base/l10n/l10n_util_mac.h"
+
+namespace {
+
+// Sets a custom radius for the half sheet presentation.
+CGFloat const kHalfSheetCornerRadius = 20;
+
+}  // namespace
 
 using password_manager::features::IsPasswordCheckupEnabled;
 
@@ -214,13 +221,31 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
 + (instancetype)
     safetyCheckControllerForBrowser:(Browser*)browser
                            delegate:(id<SettingsNavigationControllerDelegate>)
-                                        delegate {
+                                        delegate
+                 displayAsHalfSheet:(BOOL)displayAsHalfSheet {
   DCHECK(browser);
+
   SettingsNavigationController* navigationController =
       [[SettingsNavigationController alloc]
           initWithRootViewController:nil
                              browser:browser
                             delegate:delegate];
+
+  if (displayAsHalfSheet) {
+    navigationController.modalPresentationStyle = UIModalPresentationPageSheet;
+
+    UISheetPresentationController* presentationController =
+        navigationController.sheetPresentationController;
+
+    presentationController.prefersEdgeAttachedInCompactHeight = YES;
+
+    presentationController.detents = @[
+      UISheetPresentationControllerDetent.mediumDetent,
+      UISheetPresentationControllerDetent.largeDetent,
+    ];
+
+    presentationController.preferredCornerRadius = kHalfSheetCornerRadius;
+  }
 
   [navigationController showSafetyCheckAndStartSafetyCheck];
 
@@ -935,20 +960,6 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
   return l10n_util::GetNSString(IDS_IOS_MANAGE_SYNC_SETTINGS_TITLE);
 }
 
-- (void)showSignOutToast {
-  syncer::SyncService* syncService = SyncServiceFactory::GetForBrowserState(
-      self.browser->GetBrowserState()->GetOriginalChromeBrowserState());
-  int message_id =
-      syncService->HasDisableReason(
-          syncer::SyncService::DISABLE_REASON_ENTERPRISE_POLICY) ||
-              HasManagedSyncDataType(syncService)
-          ? IDS_IOS_GOOGLE_ACCOUNT_SETTINGS_SIGN_OUT_SNACKBAR_MESSAGE_ENTERPRISE
-          : IDS_IOS_GOOGLE_ACCOUNT_SETTINGS_SIGN_OUT_SNACKBAR_MESSAGE;
-  MDCSnackbarMessage* message =
-      [MDCSnackbarMessage messageWithText:l10n_util::GetNSString(message_id)];
-  [self.snackbarCommandsHandler showSnackbarMessage:message bottomOffset:0];
-}
-
 #pragma mark - PasswordsCoordinatorDelegate
 
 - (void)passwordsCoordinatorDidRemove:(PasswordsCoordinator*)coordinator {
@@ -1055,22 +1066,9 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
     [self.currentPresentedViewController
         performSelector:@selector(reportBackUserAction)];
   }
-  self.currentPresentedViewController = base::mac::ObjCCast<
+  self.currentPresentedViewController = base::apple::ObjCCast<
       UIViewController<UIAdaptivePresentationControllerDelegate>>(
       viewController);
-}
-
-- (id<UIViewControllerAnimatedTransitioning>)
-               navigationController:
-                   (UINavigationController*)navigationController
-    animationControllerForOperation:(UINavigationControllerOperation)operation
-                 fromViewController:(UIViewController*)fromVC
-                   toViewController:(UIViewController*)toVC {
-  if (operation == UINavigationControllerOperationPop &&
-      [fromVC respondsToSelector:@selector(settingsWillBeDismissed)]) {
-    [fromVC performSelector:@selector(settingsWillBeDismissed)];
-  }
-  return nil;
 }
 
 #pragma mark - UIResponder
@@ -1193,7 +1191,7 @@ NSString* const kSettingsDoneButtonId = @"kSettingsDoneButtonId";
   [self.clearBrowsingDataCoordinator start];
 }
 
-- (void)showSafetyCheckSettingsAndStartSafetyCheck {
+- (void)showAndStartSafetyCheckInHalfSheet:(BOOL)displayAsHalfSheet {
   [self showSafetyCheckAndStartSafetyCheck];
 }
 

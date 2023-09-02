@@ -5,6 +5,9 @@
 #ifndef CHROME_BROWSER_ASH_ARC_INPUT_OVERLAY_DISPLAY_OVERLAY_CONTROLLER_H_
 #define CHROME_BROWSER_ASH_ARC_INPUT_OVERLAY_DISPLAY_OVERLAY_CONTROLLER_H_
 
+#include <string>
+#include <vector>
+
 #include "ash/public/cpp/arc_game_controls_flag.h"
 #include "ash/public/cpp/window_properties.h"
 #include "base/memory/raw_ptr.h"
@@ -56,9 +59,6 @@ class DisplayOverlayController : public ui::EventHandler,
   void SetDisplayModeAlpha(DisplayMode mode);
   void SetDisplayMode(DisplayMode mode);
 
-  // Turn on/off the `flag` for current registered window.
-  void TurnFlag(ash::ArcGameControlsFlag flag, bool turn_on);
-
   // Get the bounds of `menu_entry_` in screen coordinates.
   absl::optional<gfx::Rect> GetOverlayMenuEntryBounds();
 
@@ -92,7 +92,7 @@ class DisplayOverlayController : public ui::EventHandler,
   // Creates a new action with guidance from the reference action, and deletes
   // the reference action.
   void ChangeActionType(Action* reference_action_, ActionType type);
-  void ChangeActionName(Action* action, std::u16string name);
+  void ChangeActionName(Action* action, int index);
 
   // Returns the size of active actions which include the deleted default
   // actions.
@@ -136,15 +136,22 @@ class DisplayOverlayController : public ui::EventHandler,
 
   const TouchInjector* touch_injector() const { return touch_injector_; }
 
+  const std::vector<std::u16string> action_name_list() const {
+    return action_name_list_;
+  }
+
  private:
   friend class ActionView;
   friend class ArcInputOverlayManagerTest;
   friend class ButtonLabelList;
   friend class ButtonOptionsMenu;
   friend class DisplayOverlayControllerTest;
+  friend class DisplayOverlayControllerAlphaTest;
   friend class EditingList;
+  friend class EditingListTest;
   friend class EditLabelTest;
   friend class EducationalView;
+  friend class GameControlsTestBase;
   friend class InputMappingView;
   friend class InputMenuView;
   friend class MenuEntryView;
@@ -239,6 +246,13 @@ class DisplayOverlayController : public ui::EventHandler,
   void DismissEducationalViewForTesting();
   InputMenuView* GetInputMenuView() { return input_menu_view_; }
   MenuEntryView* GetMenuEntryView() { return menu_entry_; }
+
+  // `action_name_list_` is a vector that holds the list of action name labels
+  // that can be selected.
+  // TODO(b/274690042): Replace placeholder text with localized strings.
+  const std::vector<std::u16string> action_name_list_ = {
+      u"Move", u"Jump",  u"Attack", u"Special ability", u"Crouch",
+      u"Run",  u"Shoot", u"Magic",  u"Reload",          u"Dodge"};
 
   // For editing list reposition. It is nullopt only the first time the editing
   // list view and widget are created.

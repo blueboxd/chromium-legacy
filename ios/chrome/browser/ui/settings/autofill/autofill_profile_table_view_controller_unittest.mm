@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/ui/settings/autofill/autofill_profile_table_view_controller.h"
 
-#import "base/mac/foundation_util.h"
+#import "base/apple/foundation_util.h"
 #import "base/strings/utf_string_conversions.h"
 #import "base/test/ios/wait_util.h"
 #import "base/test/scoped_feature_list.h"
@@ -63,8 +63,8 @@ class AutofillProfileTableViewControllerTest
   }
 
   void TearDown() override {
-    [base::mac::ObjCCastStrict<AutofillProfileTableViewController>(controller())
-        settingsWillBeDismissed];
+    [base::apple::ObjCCastStrict<AutofillProfileTableViewController>(
+        controller()) settingsWillBeDismissed];
     ChromeTableViewControllerTest::TearDown();
   }
 
@@ -72,12 +72,9 @@ class AutofillProfileTableViewControllerTest
     autofill::PersonalDataManager* personal_data_manager =
         autofill::PersonalDataManagerFactory::GetForBrowserState(
             chrome_browser_state_.get());
-    if (base::FeatureList::IsEnabled(
-            autofill::features::kAutofillUseAlternativeStateNameMap)) {
-      personal_data_manager->personal_data_manager_cleaner_for_testing()
-          ->alternative_state_name_map_updater_for_testing()
-          ->set_local_state_for_testing(local_state_.Get());
-    }
+    personal_data_manager->personal_data_manager_cleaner_for_testing()
+        ->alternative_state_name_map_updater_for_testing()
+        ->set_local_state_for_testing(local_state_.Get());
     personal_data_manager->SetSyncServiceForTest(nullptr);
     PersonalDataManagerFinishedProfileTasksWaiter waiter(personal_data_manager);
 

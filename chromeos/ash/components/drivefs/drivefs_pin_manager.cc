@@ -7,6 +7,7 @@
 #include <iomanip>
 #include <locale>
 #include <sstream>
+#include <string_view>
 #include <type_traits>
 
 #include "base/files/file_path.h"
@@ -29,7 +30,6 @@ namespace {
 using ash::SpacedClient;
 using base::Seconds;
 using base::SequencedTaskRunner;
-using base::StringPiece;
 using base::TimeDelta;
 using base::UmaHistogramBoolean;
 using mojom::FileMetadata;
@@ -92,7 +92,7 @@ ostream& operator<<(ostream& out, Quoter<T> q) {
   // Does the string start with 'k'?
   if (!s.empty() && s.front() == 'k') {
     // Skip the 'k' prefix.
-    return out << StringPiece(s).substr(1);
+    return out << std::string_view(s).substr(1);
   }
 
   // No 'k' prefix. Print between parentheses.
@@ -124,7 +124,25 @@ ostream& operator<<(ostream& out, Quoter<TimeDelta> q) {
 }
 
 ostream& operator<<(ostream& out, Quoter<Path> q) {
-  return out << "'" << (*q.value) << "'";
+  const std::string& s = q.value->value();
+  if (VLOG_IS_ON(1)) {
+    return out << "'" << s << "'";
+  }
+
+  for (const std::string_view prefix :
+       {"/root", "/.files-by-id", "/.shortcuts-by-id"}) {
+    if (s.starts_with(prefix)) {
+      if (s.size() == prefix.size()) {
+        return out << "'" << prefix << "'";
+      }
+      DCHECK_GT(s.size(), prefix.size());
+      if (s[prefix.size()] == '/') {
+        return out << "'" << prefix << "/***'";
+      }
+    }
+  }
+
+  return out << "'***'";
 }
 
 ostream& operator<<(ostream& out, Quoter<std::string> q) {
@@ -133,18 +151,20 @@ ostream& operator<<(ostream& out, Quoter<std::string> q) {
 
 template <typename T>
 ostream& operator<<(ostream& out, Quoter<absl::optional<T>> q) {
-  if (!q.value.has_value()) {
+  const absl::optional<T>& v = *q.value;
+  if (!v.has_value()) {
     return out << "(nullopt)";
   }
 
-  return out << Quote(*q.value);
+  return out << Quote(*v);
 }
 
 ostream& operator<<(ostream& out, Quoter<ShortcutDetails> q) {
-  out << "{" << PinManager::Id(q.value->target_stable_id);
+  const ShortcutDetails& s = *q.value;
+  out << "{" << PinManager::Id(s.target_stable_id);
 
-  if (q.value->target_lookup_status != LookupStatus::kOk) {
-    out << " " << Quote(q.value->target_lookup_status);
+  if (s.target_lookup_status != LookupStatus::kOk) {
+    out << " " << Quote(s.target_lookup_status);
   }
 
   return out << "}";
@@ -198,9 +218,10 @@ ostream& operator<<(ostream& out, Quoter<mojom::ItemEvent> q) {
 
 ostream& operator<<(ostream& out, Quoter<mojom::ProgressEvent> q) {
   const mojom::ProgressEvent& e = *q.value;
-  return out << "{" << PinManager::Id(e.stable_id) << " " << Quote(e.path)
-             << ", progress: " << base::StringPrintf("%hhu", e.progress)
-             << "%}";
+  out << "{" << PinManager::Id(e.stable_id) << " "
+      << Quote(e.file_path ? *e.file_path : Path(e.path))
+      << ", progress: " << base::StringPrintf("%hhu", e.progress) << "%}";
+  return out;
 }
 
 ostream& operator<<(ostream& out, Quoter<mojom::FileChange> q) {
@@ -293,11 +314,11 @@ bool Progress::HasEnoughFreeSpace() const {
   // The free space should not go below this limit.
   const int64_t margin = int64_t(2) << 30;
   const bool enough = required_space + margin <= free_space;
-  LOG_IF(ERROR, !enough) << "Not enough space: Free space "
-                         << HumanReadableSize(free_space)
-                         << " is less than required space "
-                         << HumanReadableSize(required_space) << " + margin "
-                         << HumanReadableSize(margin);
+  VLOG_IF(1, !enough) << "Not enough space: Free space "
+                      << HumanReadableSize(free_space)
+                      << " is less than required space "
+                      << HumanReadableSize(required_space) << " + margin "
+                      << HumanReadableSize(margin);
   return enough;
 }
 
@@ -921,6 +942,9 @@ void PinManager::OnSearchResult(const Id dir_id,
     LOG_IF(WARNING, progress_.time_spent_listing_items > Seconds(30))
         << "Listing files took a long time, found" << progress_.listed_items
         << " items in " << Quote(progress_.time_spent_listing_items);
+    base::UmaHistogramLongTimes(
+        "FileBrowser.GoogleDrive.BulkPinning.TimeSpentListing",
+        progress_.time_spent_listing_items);
     VLOG(1) << "Finished listing files in "
             << Quote(progress_.time_spent_listing_items);
     VLOG(1) << NiceNum << "Total queries: " << progress_.total_queries;
@@ -1066,6 +1090,10 @@ void PinManager::Complete(const Stage stage) {
 
   switch (stage) {
     case Stage::kSuccess:
+      // This log line is currently used in a tast test to ensure file
+      // enumeration has completed before proceeding to the CHOOBE screen.
+      // Please do not remove it or change its level without updating the
+      // corresponding test.
       VLOG(1) << "Finished with success";
       break;
 
@@ -1082,6 +1110,12 @@ void PinManager::Complete(const Stage stage) {
       break;
 
     default:
+      LOG_IF(ERROR, progress_.stage == Stage::kNotEnoughSpace)
+          << "Not enough space: Free space "
+          << HumanReadableSize(progress_.free_space)
+          << " is less than required space "
+          << HumanReadableSize(progress_.required_space) << " + margin";
+
       LOG(ERROR) << "Finished with error: " << Quote(stage);
 
       switch (progress_.stage) {
@@ -1320,6 +1354,8 @@ void PinManager::OnFilePinned(const Id id,
   DCHECK(!files_to_pin_.contains(id));
 }
 
+// TODO(b/297442320): Remove `OnSyncingStatusUpdate` now we entirely rely on
+// `OnItemProgress.
 void PinManager::OnSyncingStatusUpdate(const mojom::SyncingStatus& status) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -1346,6 +1382,7 @@ void PinManager::OnSyncingStatusUpdate(const mojom::SyncingStatus& status) {
   PinSomeFiles();
 }
 
+// TODO(b/297442320): Remove `OnSyncingEvent`.
 bool PinManager::OnSyncingEvent(mojom::ItemEvent& event) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -1395,6 +1432,9 @@ bool PinManager::OnSyncingEvent(mojom::ItemEvent& event) {
       UmaHistogramBoolean("FileBrowser.GoogleDrive.BulkPinning.PinnedFiles",
                           false);
       return true;
+    case State::kCancelledAndDeleted:
+    case State::kCancelledAndTrashed:
+      return false;
   }
 
   LOG(ERROR) << "Unexpected event type: " << Quote(event);
@@ -1415,7 +1455,9 @@ void PinManager::OnItemProgress(const mojom::ProgressEvent& event) {
   VLOG(3) << "Received " << Quote(event);
 
   Path relative_path("/");
-  if (!mount_path_.AppendRelativePath(Path(event.path), &relative_path)) {
+  if (!mount_path_.AppendRelativePath(
+          event.file_path ? *event.file_path : Path(event.path),
+          &relative_path)) {
     LOG(ERROR) << "Path not relative to drive mount";
     return;
   }

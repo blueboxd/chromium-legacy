@@ -14,6 +14,7 @@
 #import <MaterialComponents/MaterialSnackbar.h>
 
 #import "base/check.h"
+#import "base/containers/contains.h"
 #import "base/containers/flat_map.h"
 #import "base/hash/hash.h"
 #import "base/i18n/string_compare.h"
@@ -37,7 +38,7 @@
 #import "components/sync/service/sync_service.h"
 #import "components/sync/service/sync_user_settings.h"
 #import "components/url_formatter/url_fixer.h"
-#import "ios/chrome/browser/bookmarks/bookmarks_utils.h"
+#import "ios/chrome/browser/bookmarks/model/bookmarks_utils.h"
 #import "ios/chrome/browser/shared/public/features/system_flags.h"
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/bookmarks/undo_manager_wrapper.h"
@@ -221,7 +222,7 @@ void DeleteBookmarks(const std::set<const BookmarkNode*>& bookmarks,
     DeleteBookmarks(bookmarks, model, node->children()[i - 1].get());
   }
 
-  if (bookmarks.find(node) != bookmarks.end()) {
+  if (base::Contains(bookmarks, node)) {
     model->Remove(node, bookmarks::metrics::BookmarkEditSource::kUser);
   }
 }

@@ -161,39 +161,34 @@ void CreateTestAddressFormData(FormData* form,
   form->submission_event =
       mojom::SubmissionIndicatorEvent::SAME_DOCUMENT_NAVIGATION;
 
-  FormFieldData field;
-  test::CreateTestFormField("First Name", "firstname", "", "text", &field);
-  form->fields.push_back(field);
+  form->fields.push_back(
+      CreateTestFormField("First Name", "firstname", "", "text"));
   types->push_back({NAME_FIRST});
-  test::CreateTestFormField("Middle Name", "middlename", "", "text", &field);
-  form->fields.push_back(field);
+  form->fields.push_back(
+      CreateTestFormField("Middle Name", "middlename", "", "text"));
   types->push_back({NAME_MIDDLE});
-  test::CreateTestFormField("Last Name", "lastname", "", "text", &field);
-  form->fields.push_back(field);
+  form->fields.push_back(
+      CreateTestFormField("Last Name", "lastname", "", "text"));
   types->push_back({NAME_LAST, NAME_LAST_SECOND});
-  test::CreateTestFormField("Address Line 1", "addr1", "", "text", &field);
-  form->fields.push_back(field);
+  form->fields.push_back(
+      CreateTestFormField("Address Line 1", "addr1", "", "text"));
   types->push_back({ADDRESS_HOME_LINE1});
-  test::CreateTestFormField("Address Line 2", "addr2", "", "text", &field);
-  form->fields.push_back(field);
+  form->fields.push_back(
+      CreateTestFormField("Address Line 2", "addr2", "", "text"));
   types->push_back({ADDRESS_HOME_SUBPREMISE, ADDRESS_HOME_LINE2});
-  test::CreateTestFormField("City", "city", "", "text", &field);
-  form->fields.push_back(field);
+  form->fields.push_back(CreateTestFormField("City", "city", "", "text"));
   types->push_back({ADDRESS_HOME_CITY});
-  test::CreateTestFormField("State", "state", "", "text", &field);
-  form->fields.push_back(field);
+  form->fields.push_back(CreateTestFormField("State", "state", "", "text"));
   types->push_back({ADDRESS_HOME_STATE});
-  test::CreateTestFormField("Postal Code", "zipcode", "", "text", &field);
-  form->fields.push_back(field);
+  form->fields.push_back(
+      CreateTestFormField("Postal Code", "zipcode", "", "text"));
   types->push_back({ADDRESS_HOME_ZIP});
-  test::CreateTestFormField("Country", "country", "", "text", &field);
-  form->fields.push_back(field);
+  form->fields.push_back(CreateTestFormField("Country", "country", "", "text"));
   types->push_back({ADDRESS_HOME_COUNTRY});
-  test::CreateTestFormField("Phone Number", "phonenumber", "", "tel", &field);
-  form->fields.push_back(field);
+  form->fields.push_back(
+      CreateTestFormField("Phone Number", "phonenumber", "", "tel"));
   types->push_back({PHONE_HOME_WHOLE_NUMBER});
-  test::CreateTestFormField("Email", "email", "", "email", &field);
-  form->fields.push_back(field);
+  form->fields.push_back(CreateTestFormField("Email", "email", "", "email"));
   types->push_back({EMAIL_ADDRESS});
 }
 
@@ -404,6 +399,12 @@ CreditCard GetMaskedServerCard2() {
                           NextMonth().c_str(), NextYear().c_str(), "");
   credit_card.SetNetworkForMaskedCard(kMasterCard);
   credit_card.set_instrument_id(2);
+  return credit_card;
+}
+
+CreditCard GetMaskedServerCardWithCvc() {
+  CreditCard credit_card = GetMaskedServerCard();
+  credit_card.set_cvc(u"123");
   return credit_card;
 }
 
@@ -736,11 +737,13 @@ void SetCreditCardInfo(CreditCard* credit_card,
                        const char* card_number,
                        const char* expiration_month,
                        const char* expiration_year,
-                       const std::string& billing_address_id) {
+                       const std::string& billing_address_id,
+                       const std::u16string& cvc) {
   check_and_set(credit_card, CREDIT_CARD_NAME_FULL, name_on_card);
   check_and_set(credit_card, CREDIT_CARD_NUMBER, card_number);
   check_and_set(credit_card, CREDIT_CARD_EXP_MONTH, expiration_month);
   check_and_set(credit_card, CREDIT_CARD_EXP_4_DIGIT_YEAR, expiration_year);
+  credit_card->set_cvc(cvc);
   credit_card->set_billing_address_id(billing_address_id);
 }
 

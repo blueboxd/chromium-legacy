@@ -18,11 +18,11 @@ namespace extensions::scripting {
 
 namespace {
 
-constexpr char kDuplicateScriptId[] = "Duplicate script ID '*'";
 constexpr char kEmptyScriptIdError[] = "Script's ID must not be empty";
 constexpr char kFilesExceededSizeLimitError[] =
     "Scripts could not be loaded because '*' exceeds the maximum script size "
     "or the extension's maximum total script size.";
+constexpr char kNonExistentScriptIdError[] = "Nonexistent script ID '*'";
 constexpr char kReservedScriptIdPrefixError[] =
     "Script's ID '*' must not start with '*'";
 
@@ -62,26 +62,50 @@ bool IsScriptIdValid(const std::string& script_id, std::string* error) {
   return true;
 }
 
-std::string CreateDynamicScriptId(
-    const std::string& script_id,
+bool RemoveScripts(
+    const absl::optional<std::vector<std::string>>& ids,
     UserScript::Source source,
-    const std::set<std::string>& existing_script_ids,
-    const std::set<std::string>& new_script_ids,
+    content::BrowserContext* browser_context,
+    const ExtensionId& extension_id,
+    ExtensionUserScriptLoader::DynamicScriptsModifiedCallback remove_callback,
     std::string* error) {
-  if (!IsScriptIdValid(script_id, error)) {
-    return std::string();
+  ExtensionUserScriptLoader* loader =
+      ExtensionSystem::Get(browser_context)
+          ->user_script_manager()
+          ->GetUserScriptLoaderForExtension(extension_id);
+
+  // Remove all scripts if ids are not provided. This doesn't include when ids
+  // has a value, but it's empty.
+  if (!ids.has_value()) {
+    loader->ClearDynamicScripts(source, std::move(remove_callback));
+    return true;
   }
 
-  std::string new_script_id =
-      scripting::AddPrefixToDynamicScriptId(script_id, source);
-  if (base::Contains(existing_script_ids, new_script_id) ||
-      base::Contains(new_script_ids, new_script_id)) {
-    *error =
-        ErrorUtils::FormatErrorMessage(kDuplicateScriptId, script_id.c_str());
-    return std::string();
+  std::set<std::string> ids_to_remove;
+  std::set<std::string> existing_script_ids =
+      loader->GetDynamicScriptIDs(source);
+
+  for (const auto& id : *ids) {
+    if (!scripting::IsScriptIdValid(id, error)) {
+      return false;
+    }
+
+    // Add the dynamic script prefix to `provided_id` before checking against
+    // `existing_script_ids`.
+    std::string id_with_prefix =
+        scripting::AddPrefixToDynamicScriptId(id, source);
+    if (!base::Contains(existing_script_ids, id_with_prefix)) {
+      *error =
+          ErrorUtils::FormatErrorMessage(kNonExistentScriptIdError, id.c_str());
+      return false;
+    }
+
+    ids_to_remove.insert(id_with_prefix);
   }
 
-  return new_script_id;
+  loader->RemoveDynamicScripts(std::move(ids_to_remove),
+                               std::move(remove_callback));
+  return true;
 }
 
 URLPatternSet GetPersistentScriptURLPatterns(

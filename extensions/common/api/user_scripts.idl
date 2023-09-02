@@ -45,7 +45,18 @@ namespace userScripts {
     extensionTypes.RunAt? runAt;
   };
 
+  // An object used to filter user scripts for ${ref:getScripts}.
+  dictionary UserScriptFilter {
+    // $(ref:getScripts) only returns scripts with the IDs specified in this
+    // list.
+    DOMString[]? ids;
+  };
+
   callback RegisterCallback = void();
+
+  callback GetScriptsCallback = void(RegisteredUserScript[] scripts);
+
+  callback UnregisterCallback = void();
 
   interface Functions {
     // Registers one or more user scripts for this extension.
@@ -54,5 +65,23 @@ namespace userScripts {
     // has ocurred.
     [supportsPromises] static void register(RegisteredUserScript[] scripts,
                                             optional RegisterCallback callback);
+
+    // Returns all dynamically-registered user scripts for this extension.
+    // |filter|: If specified, this method returns only the user scripts that
+    // match it.
+    // |callback|: Called once scripts have been fully registered or if an error
+    // occurs.
+    [supportsPromises] static void getScripts(
+        optional UserScriptFilter filter,
+        GetScriptsCallback callback);
+
+    // Unregisters all dynamically-registered user scripts for this extension.
+    // |filter|: If specified, this method unregisters only the user scripts
+    // that match it.
+    // |callback|: Called once scripts have been fully unregistered or if an
+    // error ocurs
+    [supportsPromises] static void unregister(
+        optional UserScriptFilter filter,
+        UnregisterCallback callback);
   };
 };

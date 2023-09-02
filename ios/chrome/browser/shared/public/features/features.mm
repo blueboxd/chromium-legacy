@@ -204,7 +204,7 @@ constexpr base::FeatureParam<int>
 
 BASE_FEATURE(kNotificationSettingsMenuItem,
              "NotificationSettingsMenuItem",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kSpotlightOpenTabsSource,
              "SpotlightOpenTabsSource",
@@ -254,7 +254,7 @@ BASE_FEATURE(kOnlyAccessClipboardAsync,
 
 BASE_FEATURE(kHideSettingsSyncPromo,
              "HideSettingsSyncPromo",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kDefaultBrowserTriggerCriteriaExperiment,
              "DefaultBrowserTriggerCriteriaExperiment",

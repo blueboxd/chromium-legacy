@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -41,7 +41,7 @@ class WebAppIconHealthChecks : public WebAppInstallManagerObserver {
       absl::optional<WebAppIconDiagnostic::Result> result);
   void RecordDiagnosticResults();
 
-  raw_ptr<Profile> profile_;
+  raw_ptr<Profile> profile_ = nullptr;
   apps::AppType app_type_;
   AppTypeInitializedEvent web_apps_published_event_;
 

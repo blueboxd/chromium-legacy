@@ -363,9 +363,6 @@ void ContainerNode::DidInsertNodeVector(
       DispatchChildInsertionEvents(*target_node);
   }
   DispatchSubtreeModifiedEvent();
-
-  if (AXObjectCache* cache = GetDocument().ExistingAXObjectCache())
-    cache->DidInsertChildrenOfNode(this);
 }
 
 class ContainerNode::AdoptAndInsertBefore {
@@ -416,8 +413,7 @@ Node* ContainerNode::InsertBefore(Node* new_child,
   NodeVector targets;
   DOMTreeMutationDetector detector(*new_child, *this);
   NodeMoveScope node_move_scope(
-      *this, ref_child->parentElement() &&
-                     ref_child->parentElement()->firstChild() == ref_child
+      *this, firstChild() == ref_child
                  ? NodeMoveScopeType::kInsertBeforeAllChildren
                  : NodeMoveScopeType::kOther);
   if (!CollectChildrenAndRemoveFromOldParent(*new_child, targets,
@@ -610,8 +606,7 @@ Node* ContainerNode::ReplaceChild(Node* new_child,
     DOMTreeMutationDetector detector(*new_child, *this);
     NodeMoveScope node_move_scope(
         *this, !next ? NodeMoveScopeType::kAppendAfterAllChildren
-                     : (next->parentElement() &&
-                                next->parentElement()->firstChild() == next
+                     : (firstChild() == next
                             ? NodeMoveScopeType::kInsertBeforeAllChildren
                             : NodeMoveScopeType::kOther));
     if (!CollectChildrenAndRemoveFromOldParent(*new_child, targets,
@@ -1717,7 +1712,7 @@ Element* ContainerNode::GetAutofocusDelegate() const {
     // focusable_area is not click-focusable and the call was initiated by the
     // user clicking. I don't believe this is currently possible, so DCHECK
     // instead.
-    DCHECK(focusable_area->IsMouseFocusable());
+    DCHECK(focusable_area->IsFocusable());
 
     return focusable_area;
   }

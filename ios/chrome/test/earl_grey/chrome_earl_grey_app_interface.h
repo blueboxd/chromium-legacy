@@ -466,6 +466,9 @@
 // passphrase to start.
 + (void)addBookmarkWithSyncPassphrase:(NSString*)syncPassphrase;
 
+// Returns whether UserSelectableType::kHistory is among the selected types.
++ (BOOL)isSyncHistoryDataTypeSelected;
+
 #pragma mark - JavaScript Utilities (EG2)
 
 // Executes JavaScript through the WebState's WebFrame and waits for either the
@@ -509,6 +512,9 @@
 
 // Returns YES if the SyncEnableHistoryDataType feature is enabled.
 + (BOOL)isSyncHistoryDataTypeEnabled [[nodiscard]];
+
+// Returns YES if the ReplaceSyncPromosWithSignInPromos feature is enabled.
++ (BOOL)isReplaceSyncWithSigninEnabled [[nodiscard]];
 
 // Returns YES if the `launchSwitch` is found in host app launch switches.
 + (BOOL)appHasLaunchSwitch:(NSString*)launchSwitch;

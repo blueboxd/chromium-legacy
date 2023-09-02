@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -43,9 +43,10 @@ AccessibilityServiceRouterFactory::AccessibilityServiceRouterFactory()
 AccessibilityServiceRouterFactory::~AccessibilityServiceRouterFactory() =
     default;
 
-KeyedService* AccessibilityServiceRouterFactory::BuildServiceInstanceFor(
+std::unique_ptr<KeyedService>
+AccessibilityServiceRouterFactory::BuildServiceInstanceForBrowserContext(
     content::BrowserContext* context) const {
-  return new AccessibilityServiceRouter();
+  return std::make_unique<AccessibilityServiceRouter>();
 }
 
 // static

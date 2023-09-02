@@ -6,8 +6,11 @@
 #include "ash/public/cpp/app_list/app_list_controller.h"
 #include "ash/public/cpp/app_list/app_list_metrics.h"
 #include "ash/public/cpp/system/anchored_nudge_manager.h"
+#include "ash/shell.h"
+#include "ash/system/toast/anchored_nudge_manager_impl.h"
 #include "base/feature_list.h"
 #include "base/scoped_observation.h"
+#include "base/strings/pattern.h"
 #include "chrome/browser/ash/app_list/app_list_client_impl.h"
 #include "chrome/browser/ash/app_list/app_list_model_updater.h"
 #include "chrome/browser/ash/app_list/test/chrome_app_list_test_support.h"
@@ -22,6 +25,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/web_applications/web_app_id_constants.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/test/base/ui_test_utils.h"
 #include "chromeos/ash/components/scalable_iph/iph_session.h"
 #include "chromeos/ash/components/scalable_iph/scalable_iph.h"
 #include "chromeos/ash/components/scalable_iph/scalable_iph_constants.h"
@@ -32,8 +36,12 @@
 #include "components/feature_engagement/test/mock_tracker.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/test/browser_test.h"
+#include "net/http/http_response_headers.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "ui/aura/test/event_generator_delegate_aura.h"
+#include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_observer.h"
 #include "ui/message_center/public/cpp/notification.h"
@@ -46,6 +54,15 @@ using TestEnvironment =
     ::ash::CustomizableTestEnvBrowserTestBase::TestEnvironment;
 using UserSessionType =
     ::ash::CustomizableTestEnvBrowserTestBase::UserSessionType;
+
+constexpr char kTestLogMessage[] = "test-log-message";
+constexpr char kTestLogMessagePattern[] = "*test-log-message*";
+constexpr char kScalableIphDebugLogTextUrl[] =
+    "chrome-untrusted://scalable-iph-debug/log.txt";
+
+BASE_FEATURE(kScalableIphTestTwo,
+             "ScalableIphTestTwo",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 bool IsGoogleChrome() {
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
@@ -102,6 +119,11 @@ class AppListItemWaiter : public AppListModelUpdaterObserver {
       app_list_model_updater_observation_{this};
 };
 
+class ScalableIphBrowserTestDebugOff : public ScalableIphBrowserTest {
+ public:
+  ScalableIphBrowserTestDebugOff() { enable_scalable_iph_debug_ = false; }
+};
+
 class ScalableIphBrowserTestPreinstallApps : public ScalableIphBrowserTest {
  public:
   void SetUpDefaultCommandLine(base::CommandLine* command_line) override {
@@ -130,9 +152,9 @@ class ScalableIphBrowserTestVersionNumberIncorrect
     : public ScalableIphBrowserTest {
  protected:
   void AppendVersionNumber(base::FieldTrialParams& params) override {
-    params[FullyQualified(TestIphFeature(),
-                          scalable_iph::kCustomParamsVersionNumberParamName)] =
-        base::NumberToString(scalable_iph::kCurrentVersionNumber - 1);
+    ScalableIphBrowserTest::AppendVersionNumber(
+        params, TestIphFeature(),
+        base::NumberToString(scalable_iph::kCurrentVersionNumber - 1));
   }
 };
 
@@ -140,9 +162,31 @@ class ScalableIphBrowserTestVersionNumberInvalid
     : public ScalableIphBrowserTest {
  protected:
   void AppendVersionNumber(base::FieldTrialParams& params) override {
-    params[FullyQualified(TestIphFeature(),
-                          scalable_iph::kCustomParamsVersionNumberParamName)] =
-        "Invalid";
+    ScalableIphBrowserTest::AppendVersionNumber(params, TestIphFeature(),
+                                                "Invalid");
+  }
+};
+
+class ScalableIphBrowserTestMultipleIphs : public ScalableIphBrowserTest {
+ protected:
+  void InitializeScopedFeatureList() override {
+    base::FieldTrialParams params_one;
+    AppendVersionNumber(params_one, TestIphFeature());
+    AppendFakeUiParamsNotification(params_one, TestIphFeature());
+    base::test::FeatureRefAndParams test_config_one(TestIphFeature(),
+                                                    params_one);
+
+    base::FieldTrialParams params_two;
+    AppendVersionNumber(params_two, kScalableIphTestTwo);
+    AppendFakeUiParamsNotification(params_two, kScalableIphTestTwo);
+    base::test::FeatureRefAndParams test_config_two(kScalableIphTestTwo,
+                                                    params_two);
+
+    base::test::FeatureRefAndParams scalable_iph_feature(
+        ash::features::kScalableIph, {});
+
+    scoped_feature_list_.InitWithFeaturesAndParameters(
+        {scalable_iph_feature, test_config_one, test_config_two}, {});
   }
 };
 
@@ -296,11 +340,59 @@ class ScalableIphBrowserTestNotification : public ScalableIphBrowserTest {
 };
 
 class ScalableIphBrowserTestBubble : public ScalableIphBrowserTest {
+ public:
+  void SetUp() override {
+    // Set animation duration to zero so the nudge dismisses immediately when
+    // cancelled or timed out.
+    ui::ScopedAnimationDurationScaleMode duration_scale(
+        ui::ScopedAnimationDurationScaleMode::ZERO_DURATION);
+
+    ScalableIphBrowserTest::SetUp();
+  }
+
  protected:
   void InitializeScopedFeatureList() override {
     base::FieldTrialParams params;
     AppendVersionNumber(params);
     AppendFakeUiParamsBubble(params);
+    base::test::FeatureRefAndParams test_config(TestIphFeature(), params);
+
+    base::test::FeatureRefAndParams scalable_iph_feature(
+        ash::features::kScalableIph, {});
+
+    scoped_feature_list_.InitWithFeaturesAndParameters(
+        {scalable_iph_feature, test_config}, {});
+  }
+};
+
+class ScalableIphBrowserTestNotificationInvalidConfig
+    : public ScalableIphBrowserTest {
+ protected:
+  void InitializeScopedFeatureList() override {
+    base::FieldTrialParams params;
+    AppendVersionNumber(params);
+    AppendFakeUiParamsNotification(params);
+    params[FullyQualified(TestIphFeature(),
+                          scalable_iph::kCustomNotificationIdParamName)] = "";
+    base::test::FeatureRefAndParams test_config(TestIphFeature(), params);
+
+    base::test::FeatureRefAndParams scalable_iph_feature(
+        ash::features::kScalableIph, {});
+
+    scoped_feature_list_.InitWithFeaturesAndParameters(
+        {scalable_iph_feature, test_config}, {});
+  }
+};
+
+class ScalableIphBrowserTestBubbleInvalidConfig
+    : public ScalableIphBrowserTest {
+ protected:
+  void InitializeScopedFeatureList() override {
+    base::FieldTrialParams params;
+    AppendVersionNumber(params);
+    AppendFakeUiParamsBubble(params);
+    params[FullyQualified(TestIphFeature(),
+                          scalable_iph::kCustomBubbleIdParamName)] = "";
     base::test::FeatureRefAndParams test_config(TestIphFeature(), params);
 
     base::test::FeatureRefAndParams scalable_iph_feature(
@@ -540,6 +632,96 @@ IN_PROC_BROWSER_TEST_F(ScalableIphBrowserTest, AppListShown) {
   ash::AppListController* app_list_controller = ash::AppListController::Get();
   CHECK(app_list_controller);
   app_list_controller->ShowAppList(ash::AppListShowSource::kSearchKey);
+}
+
+// Logging feature is on by default in `ScalableIphBrowserTest`.
+IN_PROC_BROWSER_TEST_F(ScalableIphBrowserTest, Log) {
+  constexpr char kTestFileNamePattern[] = "*scalable_iph_browsertest.cc*";
+
+  scalable_iph::ScalableIph* scalable_iph =
+      ScalableIphFactory::GetForBrowserContext(browser()->profile());
+  CHECK(scalable_iph);
+
+  // `logging::SetLogMessageHandler` takes a function pointer. Use a static
+  // variable as a captureless lambda can be converted to a function pointer.
+  static base::NoDestructor<std::vector<std::string>> captured_logs;
+  CHECK_EQ(nullptr, logging::GetLogMessageHandler());
+  logging::SetLogMessageHandler([](int severity, const char* file, int line,
+                                   size_t message_start,
+                                   const std::string& str) {
+    captured_logs->push_back(str);
+    return true;
+  });
+
+  SCALABLE_IPH_LOG(scalable_iph->logger()) << kTestLogMessage;
+
+  logging::SetLogMessageHandler(nullptr);
+
+  EXPECT_TRUE(base::MatchPattern(scalable_iph->logger()->GenerateLog(),
+                                 kTestLogMessagePattern));
+  EXPECT_TRUE(base::MatchPattern(scalable_iph->logger()->GenerateLog(),
+                                 kTestFileNamePattern));
+
+  std::string log_output = base::JoinString(*captured_logs, "");
+  if (DCHECK_IS_ON()) {
+    EXPECT_TRUE(base::MatchPattern(log_output, kTestLogMessagePattern));
+  } else {
+    EXPECT_FALSE(base::MatchPattern(log_output, kTestLogMessagePattern));
+  }
+
+  // Confirms that the debug page is accessible.
+  content::RenderFrameHost* render_frame_host = ui_test_utils::NavigateToURL(
+      browser(), GURL(kScalableIphDebugLogTextUrl));
+  ASSERT_TRUE(render_frame_host);
+  ASSERT_TRUE(render_frame_host->GetLastResponseHeaders());
+  EXPECT_EQ(200, render_frame_host->GetLastResponseHeaders()->response_code());
+}
+
+IN_PROC_BROWSER_TEST_F(ScalableIphBrowserTestDebugOff, NoLog) {
+  scalable_iph::ScalableIph* scalable_iph =
+      ScalableIphFactory::GetForBrowserContext(browser()->profile());
+  CHECK(scalable_iph);
+
+  // `logging::SetLogMessageHandler` takes a function pointer. Use a static
+  // variable as a captureless lambda can be converted to a function pointer.
+  static base::NoDestructor<std::vector<std::string>> captured_logs;
+  CHECK_EQ(nullptr, logging::GetLogMessageHandler());
+  logging::SetLogMessageHandler([](int severity, const char* file, int line,
+                                   size_t message_start,
+                                   const std::string& str) {
+    captured_logs->push_back(str);
+    return true;
+  });
+
+  SCALABLE_IPH_LOG(scalable_iph->logger()) << kTestLogMessage;
+
+  logging::SetLogMessageHandler(nullptr);
+
+  EXPECT_TRUE(scalable_iph->logger()->IsLogEmptyForTesting());
+
+  std::string log_output = base::JoinString(*captured_logs, "");
+  EXPECT_FALSE(base::MatchPattern(log_output, kTestLogMessagePattern));
+
+  // Confirms that the debug page is not accessible if the flag is off.
+  content::RenderFrameHost* render_frame_host = ui_test_utils::NavigateToURL(
+      browser(), GURL(kScalableIphDebugLogTextUrl));
+  ASSERT_TRUE(render_frame_host);
+  // Last response headers is nullptr if there is no response. See the comment
+  // of `RenderFrameHost::GetLastResponseHeaders` for details.
+  EXPECT_FALSE(render_frame_host->GetLastResponseHeaders());
+}
+
+IN_PROC_BROWSER_TEST_F(ScalableIphBrowserTestMultipleIphs, OneIphAtATime) {
+  EnableTestIphFeatures({&TestIphFeature(), &kScalableIphTestTwo});
+
+  // Expects that `ShowNotification` gets called exactly once as we expect that
+  // only a single IPH gets triggered at a time.
+  EXPECT_CALL(*mock_delegate(),
+              ShowNotification(::testing::_, ::testing::NotNull()))
+      .Times(1);
+  TriggerConditionsCheckWithAFakeEvent(
+      scalable_iph::ScalableIph::Event::kFiveMinTick);
+  testing::Mock::VerifyAndClearExpectations(mock_tracker());
 }
 
 IN_PROC_BROWSER_TEST_F(ScalableIphBrowserTestPreinstallApps,
@@ -856,6 +1038,7 @@ IN_PROC_BROWSER_TEST_F(ScalableIphBrowserTestBubble, InvokeIphByTimer_Bubble) {
 
   scalable_iph::ScalableIphDelegate::BubbleParams expected_params;
   expected_params.bubble_id = ScalableIphBrowserTestBase::kTestBubbleId;
+  expected_params.title = ScalableIphBrowserTestBase::kTestBubbleTitle;
   expected_params.text = ScalableIphBrowserTestBase::kTestBubbleText;
   expected_params.button.text =
       ScalableIphBrowserTestBase::kTestBubbleButtonText;
@@ -887,6 +1070,7 @@ IN_PROC_BROWSER_TEST_F(ScalableIphBrowserTestBubble, InvokeIphByUnlock_Bubble) {
 
   scalable_iph::ScalableIphDelegate::BubbleParams expected_params;
   expected_params.bubble_id = ScalableIphBrowserTestBase::kTestBubbleId;
+  expected_params.title = ScalableIphBrowserTestBase::kTestBubbleTitle;
   expected_params.text = ScalableIphBrowserTestBase::kTestBubbleText;
   expected_params.button.text =
       ScalableIphBrowserTestBase::kTestBubbleButtonText;
@@ -935,8 +1119,9 @@ IN_PROC_BROWSER_TEST_F(ScalableIphBrowserTestBubble, ShowBubbleAndDismiss) {
   CHECK(anchored_nudge_manager);
   EXPECT_TRUE(anchored_nudge_manager->IsNudgeShown(kTestBubbleId));
 
-  // Default nudge duration is 6 seconds.
-  task_runner()->FastForwardBy(base::Seconds(7));
+  // Fast forward nudge medium duration + 1 second.
+  task_runner()->FastForwardBy(
+      ash::AnchoredNudgeManagerImpl::kNudgeMediumDuration + base::Seconds(1));
 
   EXPECT_FALSE(anchored_nudge_manager->IsNudgeShown(kTestBubbleId));
 
@@ -953,12 +1138,133 @@ IN_PROC_BROWSER_TEST_F(ScalableIphBrowserTestBubble, RemoveBubble) {
               NotifyEvent(scalable_iph::kEventNameFiveMinTick));
   // The action is not performed.
   EXPECT_CALL(*mock_tracker(), NotifyEvent(kTestButtonActionEvent)).Times(0);
+  EXPECT_CALL(*mock_delegate(), PerformActionForScalableIph(::testing::Eq(
+                                    scalable_iph::ActionType::kOpenGoogleDocs)))
+      .Times(0);
 
   TriggerConditionsCheckWithAFakeEvent(
       scalable_iph::ScalableIph::Event::kFiveMinTick);
+
+  ash::AnchoredNudgeManager* anchored_nudge_manager =
+      ash::AnchoredNudgeManager::Get();
+  CHECK(anchored_nudge_manager);
+  EXPECT_TRUE(anchored_nudge_manager->IsNudgeShown(kTestBubbleId));
+
   ash::AnchoredNudgeManager::Get()->Cancel(kTestBubbleId);
+  EXPECT_FALSE(anchored_nudge_manager->IsNudgeShown(kTestBubbleId));
   testing::Mock::VerifyAndClearExpectations(mock_tracker());
-  // TODO(b/290066999): Verify the nudge is not shown.
+}
+
+IN_PROC_BROWSER_TEST_F(ScalableIphBrowserTestBubble, ClickBubble) {
+  EnableTestIphFeature();
+  mock_delegate()->FakeShowBubble();
+
+  // Tracker::Dismissed must be called when an IPH gets dismissed.
+  EXPECT_CALL(*mock_tracker(), Dismissed(::testing::Ref(TestIphFeature())));
+  EXPECT_CALL(*mock_tracker(),
+              NotifyEvent(scalable_iph::kEventNameFiveMinTick));
+  // The action is performed.
+  EXPECT_CALL(*mock_tracker(), NotifyEvent(kTestButtonActionEvent)).Times(1);
+
+  TriggerConditionsCheckWithAFakeEvent(
+      scalable_iph::ScalableIph::Event::kFiveMinTick);
+
+  ash::AnchoredNudgeManager* anchored_nudge_manager =
+      ash::AnchoredNudgeManager::Get();
+  CHECK(anchored_nudge_manager);
+  EXPECT_TRUE(anchored_nudge_manager->IsNudgeShown(kTestBubbleId));
+
+  // `PerformActionForScalableIph` should be called with the corresponding CTA
+  // action_type when a bubble is clicked.
+  EXPECT_CALL(*mock_delegate(),
+              PerformActionForScalableIph(
+                  ::testing::Eq(scalable_iph::ActionType::kOpenGoogleDocs)));
+
+  views::View* nudge_button =
+      ash::Shell::Get()->anchored_nudge_manager()->GetNudgeFirstButtonForTest(
+          kTestBubbleId);
+  ui::test::EventGenerator event_generator(ash::Shell::GetPrimaryRootWindow());
+  event_generator.MoveMouseTo(nudge_button->GetBoundsInScreen().CenterPoint());
+  event_generator.ClickLeftButton();
+
+  EXPECT_FALSE(anchored_nudge_manager->IsNudgeShown(kTestBubbleId));
+  testing::Mock::VerifyAndClearExpectations(mock_tracker());
+}
+
+IN_PROC_BROWSER_TEST_F(ScalableIphBrowserTestNotificationInvalidConfig,
+                       NotShowNotification) {
+  EnableTestIphFeature();
+
+  // Tracker::Dismissed must be called when an IPH gets dismissed.
+  EXPECT_CALL(*mock_tracker(),
+              NotifyEvent(scalable_iph::kEventNameFiveMinTick));
+  // The action is not performed.
+  EXPECT_CALL(*mock_tracker(), NotifyEvent(kTestButtonActionEvent)).Times(0);
+
+  // Simulate an invalid config (i.e. missing notification_id).
+  scalable_iph::ScalableIphDelegate::NotificationParams invalid_params;
+  invalid_params.notification_id = "";
+  invalid_params.title = ScalableIphBrowserTestBase::kTestNotificationTitle;
+  invalid_params.text = ScalableIphBrowserTestBase::kTestNotificationBodyText;
+  invalid_params.button.text =
+      ScalableIphBrowserTestBase::kTestNotificationButtonText;
+  invalid_params.button.action.action_type =
+      scalable_iph::ActionType::kOpenChrome;
+  invalid_params.button.action.iph_event_name =
+      ScalableIphBrowserTestBase::kTestButtonActionEvent;
+
+  // When the config params are invalid and/or not parsable, the notification
+  // should not be shown.
+  EXPECT_CALL(*mock_delegate(), ShowNotification(::testing::Eq(invalid_params),
+                                                 ::testing::NotNull()))
+      .Times(0);
+
+  TriggerConditionsCheckWithAFakeEvent(
+      scalable_iph::ScalableIph::Event::kFiveMinTick);
+
+  // Check that a notification is not shown.
+  auto* message_center = message_center::MessageCenter::Get();
+  auto* notification = message_center->FindVisibleNotificationById("");
+  EXPECT_FALSE(notification);
+  testing::Mock::VerifyAndClearExpectations(mock_tracker());
+}
+
+IN_PROC_BROWSER_TEST_F(ScalableIphBrowserTestBubbleInvalidConfig,
+                       NotShowBubble) {
+  EnableTestIphFeature();
+  mock_delegate()->FakeShowBubble();
+
+  EXPECT_CALL(*mock_tracker(),
+              NotifyEvent(scalable_iph::kEventNameFiveMinTick));
+  // The action is not performed.
+  EXPECT_CALL(*mock_tracker(), NotifyEvent(kTestButtonActionEvent)).Times(0);
+
+  // Simulate an invalid config (i.e. missing bubble_id).
+  scalable_iph::ScalableIphDelegate::BubbleParams invalid_params;
+  invalid_params.bubble_id = "";
+  invalid_params.title = ScalableIphBrowserTestBase::kTestBubbleTitle;
+  invalid_params.text = ScalableIphBrowserTestBase::kTestBubbleText;
+  invalid_params.button.text =
+      ScalableIphBrowserTestBase::kTestBubbleButtonText;
+  invalid_params.button.action.action_type =
+      scalable_iph::ActionType::kOpenGoogleDocs;
+  invalid_params.button.action.iph_event_name =
+      ScalableIphBrowserTestBase::kTestButtonActionEvent;
+  invalid_params.icon =
+      scalable_iph::ScalableIphDelegate::BubbleIcon::kGoogleDocsIcon;
+
+  // When the config params are invalid and/or not parsable, the notification
+  // should not be shown.
+  EXPECT_CALL(*mock_delegate(),
+              ShowBubble(::testing::Eq(invalid_params), ::testing::NotNull()))
+      .Times(0);
+  TriggerConditionsCheckWithAFakeEvent(
+      scalable_iph::ScalableIph::Event::kFiveMinTick);
+  ash::AnchoredNudgeManager* anchored_nudge_manager =
+      ash::AnchoredNudgeManager::Get();
+  CHECK(anchored_nudge_manager);
+  EXPECT_FALSE(anchored_nudge_manager->IsNudgeShown(""));
+  testing::Mock::VerifyAndClearExpectations(mock_tracker());
 }
 
 INSTANTIATE_TEST_SUITE_P(
@@ -998,5 +1304,3 @@ IN_PROC_BROWSER_TEST_P(ScalableIphBrowserTestParameterized,
   EXPECT_EQ(nullptr,
             ScalableIphFactory::GetForBrowserContext(browser()->profile()));
 }
-
-// TODO(b/284053005): Add a test case for invalid event name.

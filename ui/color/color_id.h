@@ -274,6 +274,13 @@
   E_CPONLY(kColorCheckboxOutlineDisabled) \
   E_CPONLY(kColorCheckboxForegroundChecked) \
   E_CPONLY(kColorCheckboxForegroundUnchecked) \
+  E_CPONLY(kColorChipBackgroundHover) \
+  E_CPONLY(kColorChipBackgroundSelected) \
+  E_CPONLY(kColorChipBorder) \
+  E_CPONLY(kColorChipForeground) \
+  E_CPONLY(kColorChipForegroundSelected) \
+  E_CPONLY(kColorChipIcon) \
+  E_CPONLY(kColorChipIconSelected) \
   E_CPONLY(kColorComboboxBackground) \
   E_CPONLY(kColorComboboxBackgroundDisabled) \
   E_CPONLY(kColorComboboxContainerOutline) \
@@ -468,6 +475,10 @@
   E_CPONLY(kColorThemeColorPickerCheckmarkBackground) \
   E_CPONLY(kColorThemeColorPickerCheckmarkForeground) \
   E_CPONLY(kColorThemeColorPickerCustomColorIconBackground) \
+  E_CPONLY(kColorThemeColorPickerHueSliderDialogBackground) \
+  E_CPONLY(kColorThemeColorPickerHueSliderDialogForeground) \
+  E_CPONLY(kColorThemeColorPickerHueSliderDialogIcon) \
+  E_CPONLY(kColorThemeColorPickerHueSliderHandle) \
   E_CPONLY(kColorThemeColorPickerOptionBackground) \
   E_CPONLY(kColorThrobber) \
   E_CPONLY(kColorThrobberPreconnect) \

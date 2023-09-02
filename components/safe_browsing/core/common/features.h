@@ -47,6 +47,10 @@ BASE_DECLARE_FEATURE(kClientSideDetectionTypeForceRequest);
 // Controls whether new deep scanning UX is enabled or not.
 BASE_DECLARE_FEATURE(kDeepScanningUpdatedUX);
 
+// Controls whether we prompt encrypted archive deep scans to provide a
+// password.
+BASE_DECLARE_FEATURE(kDeepScanningEncryptedArchives);
+
 // Controls whether the delayed warning experiment is enabled.
 BASE_DECLARE_FEATURE(kDelayedWarnings);
 // True if mouse clicks should undelay the warnings immediately when delayed
@@ -132,6 +136,10 @@ extern const base::FeatureParam<int> kExtensionTelemetryUploadIntervalSeconds;
 extern const base::FeatureParam<int> kExtensionTelemetryWritesPerInterval;
 
 // Enables collection of telemetry signal whenever an extension invokes the
+// chrome.tabs API methods.
+BASE_DECLARE_FEATURE(kExtensionTelemetryTabsApiSignal);
+
+// Enables collection of telemetry signal whenever an extension invokes the
 // tabs.executeScript API call.
 BASE_DECLARE_FEATURE(kExtensionTelemetryTabsExecuteScriptSignal);
 
@@ -156,6 +164,10 @@ BASE_DECLARE_FEATURE(kExtensionTelemetryCookiesGetSignal);
 // Enables collection of DeclarativeNetRequest rules when an extension invokes
 // the updateDynamicRules()/updateSessionRules() APIs.
 BASE_DECLARE_FEATURE(kExtensionTelemetryDeclarativeNetRequestSignal);
+
+// Enables remotely disabling of malicious off-store extensions identified in
+// Extension Telemetry service reports.
+BASE_DECLARE_FEATURE(kExtensionTelemetryDisableOffstoreExtensions);
 
 // Determines the tag to pass to Omaha to get a file type policy.
 BASE_DECLARE_FEATURE(kFileTypePoliciesTag);
@@ -217,6 +229,9 @@ BASE_DECLARE_FEATURE(kNestedArchives);
 // block intersitial and reporting the interstitial shown event on enterprise
 // managed browsers.
 BASE_DECLARE_FEATURE(kRealTimeUrlFilteringForEnterprise);
+
+// Controls whether we are using red interstitial facelift updates.
+BASE_DECLARE_FEATURE(kRedInterstitialFacelift);
 
 // Enables modifying key parameters on the navigation event collection used to
 // populate referrer chains.

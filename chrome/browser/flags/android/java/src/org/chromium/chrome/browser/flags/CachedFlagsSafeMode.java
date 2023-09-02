@@ -18,6 +18,7 @@ import org.chromium.base.ResettersForTesting;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.AsyncTask;
+import org.chromium.build.BuildConfig;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.components.version_info.VersionInfo;
@@ -34,7 +35,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Safe Mode is a mechanism that allows Chrome to prevent crashes gated behind flags used before
  * native from becoming a crash loop that cannot be recovered from by disabling the experiment.
  */
-class CachedFlagsSafeMode {
+public class CachedFlagsSafeMode {
     private static final String TAG = "Flags";
     private static final int CRASH_STREAK_TO_ENTER_SAFE_MODE = 2;
 
@@ -204,6 +205,12 @@ class CachedFlagsSafeMode {
     }
 
     private boolean shouldEnterSafeMode() {
+        if (BuildConfig.IS_FOR_TEST
+                && (mSafeModeExperimentForcedForTesting == null
+                        || !mSafeModeExperimentForcedForTesting)) {
+            return false;
+        }
+
         int safeModeRunsLeft = SharedPreferencesManager.getInstance().readInt(
                 ChromePreferenceKeys.FLAGS_SAFE_MODE_RUNS_LEFT, 0);
         assert safeModeRunsLeft <= 2;
@@ -381,7 +388,7 @@ class CachedFlagsSafeMode {
         }
     }
 
-    void cacheSafeModeForCachedFlagsEnabled() {
+    public static void cacheSafeModeForCachedFlagsEnabled() {
         SharedPreferencesManager.getInstance().writeBoolean(
                 ChromePreferenceKeys.FLAGS_SAFE_MODE_ENABLED,
                 ChromeFeatureList.isEnabled(ChromeFeatureList.SAFE_MODE_FOR_CACHED_FLAGS));

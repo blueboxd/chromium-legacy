@@ -209,8 +209,13 @@ enum class OfficeFilesUseOutsideDriveHook {
   kMaxValue = OPEN_FROM_FILES_APP,
 };
 
-// UMA metric name that tracks the result of using a MS Office file outside
-// of Drive.
+// UMA metric name that tracks the extension of Office files that are being
+// opened with Drive web.
+constexpr char kOfficeOpenExtensionDriveMetricName[] =
+    "FileBrowser.OfficeFiles.Open.FileType.GoogleDrive";
+
+// UMA metric name that tracks the extension of Office files that are being
+// opened with MS365.
 constexpr char kOfficeOpenExtensionOneDriveMetricName[] =
     "FileBrowser.OfficeFiles.Open.FileType.OneDrive";
 
@@ -402,11 +407,13 @@ void LaunchQuickOffice(Profile* profile,
 // If user's `choice` is `kDialogChoiceQuickOffice`, launch QuickOffice.
 // If user's `choice` is `kDialogChoiceTryAgain`, execute the `task`.
 // If user's `choice` is `kDialogChoiceCancel`, do nothing.
-void OnDialogChoiceReceived(Profile* profile,
-                            const TaskDescriptor& task,
-                            const std::vector<FileSystemURL>& file_urls,
-                            gfx::NativeWindow modal_parent,
-                            const std::string& choice);
+void OnDialogChoiceReceived(
+    Profile* profile,
+    const TaskDescriptor& task,
+    const std::vector<FileSystemURL>& file_urls,
+    gfx::NativeWindow modal_parent,
+    const std::string& choice,
+    ash::office_fallback::FallbackReason fallback_reason);
 
 // Shows a new dialog for users to choose what to do next. Returns True
 // if a new dialog has been effectively created.
@@ -449,7 +456,7 @@ bool IsWebDriveOfficeTask(const TaskDescriptor& task);
 
 bool IsOpenInOfficeTask(const TaskDescriptor& task);
 
-bool IsExtensionInstalled(Profile* profile, const std::string& extension_id);
+bool IsQuickOfficeInstalled(Profile* profile);
 
 // Returns whether |path| is an HTML file according to its extension.
 bool IsHtmlFile(const base::FilePath& path);

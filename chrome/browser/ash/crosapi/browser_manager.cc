@@ -52,6 +52,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/ash/crosapi/browser_action.h"
 #include "chrome/browser/ash/crosapi/browser_data_migrator.h"
@@ -161,11 +162,22 @@ constexpr char kLacrosCannotLaunchNotificationID[] =
 constexpr char kLacrosLauncherNotifierID[] = "lacros_launcher";
 
 base::FilePath LacrosLogDirectory() {
+#if BUILDFLAG(IS_CHROMEOS_DEVICE)
+  // When pre-launching Lacros at login screen is enabled:
+  // - In test images, we always save Lacros logs in /var/log/lacros.
+  // - In non-test images, we save Lacros logs in /var/log/lacros
+  //   only when Lacros is running at login screen. Lacros will
+  //   redirect user-specific logs to the cryptohome after login.
+  // - In gLinux, there's no /var/log/lacros, so we stick with the
+  //   default path.
   if (base::FeatureList::IsEnabled(kLacrosLaunchAtLoginScreen) &&
-      session_manager::SessionManager::Get()->session_state() ==
-          session_manager::SessionState::LOGIN_PRIMARY) {
+      (base::CommandLine::ForCurrentProcess()->HasSwitch(
+           switches::kDisableLoggingRedirect) ||
+       session_manager::SessionManager::Get()->session_state() ==
+           session_manager::SessionState::LOGIN_PRIMARY)) {
     return base::FilePath("/var/log/lacros");
   }
+#endif  // BUILDFLAG(IS_CHROMEOS_DEVICE)
   return browser_util::GetUserDataDir();
 }
 
@@ -256,14 +268,19 @@ void PreloadLacrosFiles(const base::FilePath& lacros_dir) {
   // Preload Widevine for the right architecture.
 #if BUILDFLAG(ENABLE_WIDEVINE)
 #if defined(ARCH_CPU_ARM_FAMILY)
+#if defined(ARCH_CPU_ARM64)
+  base::FilePath libwidevine_path = lacros_dir.Append(
+      "WidevineCdm/_platform_specific/cros_arm64/libwidevinecdm.so");
+#else
   base::FilePath libwidevine_path = lacros_dir.Append(
       "WidevineCdm/_platform_specific/cros_arm/libwidevinecdm.so");
+#endif  // defined(ARCH_CPU_ARM64)
 #else
   base::FilePath libwidevine_path = lacros_dir.Append(
       "WidevineCdm/_platform_specific/cros_x64/libwidevinecdm.so");
-#endif
+#endif  // defined(ARCH_CPU_ARM_FAMILY)
   PreloadFile(libwidevine_path);
-#endif
+#endif  // BUILDFLAG(ENABLE_WIDEVINE)
 }
 
 ResourcesFileSharingMode ClearOrMoveSharedResourceFileInternal(
@@ -1465,17 +1482,10 @@ void BrowserManager::OnLacrosChromeTerminated() {
   is_terminated_ = true;
   SetState(State::STOPPED);
 
-  // TODO(https://crbug.com/1109366): Restart lacros-chrome if it exits
-  // abnormally (e.g. crashes). For now, assume the user meant to close it.
-  // Relaunch lacros-chrome if it was closed due to ash shutting down.
-  // Note that this only matters for side-by-side lacros.
   if (!reload_requested_) {
     auto* primary_user = user_manager::UserManager::Get()->GetPrimaryUser();
-    if (primary_user && primary_user->is_profile_created()) {
-      // We check that the user profile is available, to avoid the case
-      // in which Lacros is terminated before the profile is initialized.
-      SetLaunchOnLoginPref(shutdown_requested_);
-    } else if (shutdown_requested_ && !shutdown_requested_while_prelaunched_) {
+    if (!(primary_user && primary_user->is_profile_created()) &&
+        shutdown_requested_ && !shutdown_requested_while_prelaunched_) {
       // TODO(andreaorru): We expect that the case in which the profile isn't
       // initialized when shutting down only happens when prelaunching at login
       // screen. Here we collect other instances. Remove once we verify there

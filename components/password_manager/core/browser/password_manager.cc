@@ -626,9 +626,14 @@ void PasswordManager::OnUserModifiedNonPasswordField(
   if (base::FeatureList::IsEnabled(
           password_manager::features::kForgotPasswordFormSupport)) {
     FieldInfoManager* field_info_manager = client_->GetFieldInfoManager();
+    // The manager might not exist in incognito.
+    if (!field_info_manager) {
+      return;
+    }
     field_info_manager->AddFieldInfo(
         {driver_id, renderer_id, GetSignonRealm(driver->GetLastCommittedURL()),
-         value});
+         value, is_likely_otp},
+        FindPredictionsForField(renderer_id, driver_id));
   }
 }
 
@@ -801,7 +806,8 @@ PasswordFormManager* PasswordManager::ProvisionallySaveForm(
   // nonempty password field. If such |matched_manager| contains
   // |possible_username|, reset and do not consider for single username.
   if (possible_username &&
-      matched_manager->FormHasPossibleUsername(possible_username)) {
+      matched_manager->ObservedFormHasField(possible_username->driver_id,
+                                            possible_username->renderer_id)) {
     possible_username_.reset();
   }
 
@@ -1272,6 +1278,15 @@ void PasswordManager::ProcessAutofillPredictions(
     password_generation_manager->ProcessPasswordRequirements(forms,
                                                              predictions);
   }
+
+  // Process predictions in case they arrived after the user interacted with
+  // potential username fields.
+  FieldInfoManager* field_info_manager = client_->GetFieldInfoManager();
+  // The manager might not exist in incognito.
+  if (!field_info_manager) {
+    return;
+  }
+  field_info_manager->ProcessServerPredictions(predictions_);
 }
 
 PasswordFormManager* PasswordManager::GetSubmittedManager() const {
@@ -1351,20 +1366,29 @@ PasswordFormManager* PasswordManager::GetMatchedManager(
   return nullptr;
 }
 
-void PasswordManager::TryToFindPredictionsToPossibleUsernameData() {
-  if (!possible_username_ || possible_username_->form_predictions)
-    return;
-
-  for (auto it : predictions_) {
-    if (it.second.driver_id != possible_username_->driver_id)
+absl::optional<FormPredictions> PasswordManager::FindPredictionsForField(
+    FieldRendererId field_id,
+    int driver_id) {
+  for (const auto& form : predictions_) {
+    if (form.second.driver_id != driver_id) {
       continue;
-    for (const PasswordFieldPrediction& field : it.second.fields) {
-      if (field.renderer_id == possible_username_->renderer_id) {
-        possible_username_->form_predictions = it.second;
-        return;
+    }
+    for (const PasswordFieldPrediction& field : form.second.fields) {
+      if (field.renderer_id == field_id) {
+        return form.second;
       }
     }
   }
+  return absl::nullopt;
+}
+
+void PasswordManager::TryToFindPredictionsToPossibleUsernameData() {
+  if (!possible_username_ || possible_username_->form_predictions) {
+    return;
+  }
+
+  possible_username_->form_predictions = FindPredictionsForField(
+      possible_username_->renderer_id, possible_username_->driver_id);
 }
 
 void PasswordManager::ShowManualFallbackForSaving(

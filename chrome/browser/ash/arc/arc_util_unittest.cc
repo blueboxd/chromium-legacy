@@ -190,7 +190,8 @@ class ChromeArcUtilTest : public testing::Test {
   std::unique_ptr<TestingProfileManager> profile_manager_;
   std::unique_ptr<user_manager::ScopedUserManager> user_manager_enabler_;
   // Owned by |profile_manager_|
-  raw_ptr<TestingProfile, ExperimentalAsh> profile_ = nullptr;
+  raw_ptr<TestingProfile, DanglingUntriaged | ExperimentalAsh> profile_ =
+      nullptr;
 };
 
 TEST_F(ChromeArcUtilTest, IsArcAllowedForProfile) {
@@ -290,8 +291,7 @@ TEST_F(ChromeArcUtilTest, IsArcAllowedForProfile_KioskArcSupported) {
 TEST_F(ChromeArcUtilTest, IsArcAllowedForProfile_GuestAccount) {
   base::CommandLine::ForCurrentProcess()->InitFromArgv(
       {"", "--arc-availability=officially-supported"});
-  ScopedLogIn login(GetFakeUserManager(),
-                    GetFakeUserManager()->GetGuestAccountId());
+  ScopedLogIn login(GetFakeUserManager(), user_manager::GuestAccountId());
   EXPECT_TRUE(IsArcAllowedForProfileOnFirstCall(profile()));
 }
 

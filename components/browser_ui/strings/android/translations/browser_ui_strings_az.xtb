@@ -4,6 +4,7 @@
 <translation id="1006017844123154345">Onlayn açın</translation>
 <translation id="1036348656032585052">Deaktiv edin</translation>
 <translation id="1044891598689252897">Saytlar normal qaydada işləyəcək</translation>
+<translation id="1073417869336441572">Üçüncü tərəf kukilərinə icazə vermə səbəbinizi bildirərək Chrome-u təkmilləşdirməyə kömək edin. <ph name="BEGIN_LINK" />Rəy göndərin<ph name="END_LINK" /></translation>
 <translation id="1124090076051167250">Bununla Əsas ekranda saytlar və ya tətbiqlər tərəfindən saxlanılan <ph name="DATASIZE" /> data və kuki silinəcək.</translation>
 <translation id="1178581264944972037">Durdurun</translation>
 <translation id="1181037720776840403">Silin</translation>
@@ -19,7 +20,6 @@
 <translation id="1371239764779356792">Sayta cihazınızda data saxlamağa icazə verin</translation>
 <translation id="1383876407941801731">Axtar</translation>
 <translation id="1384959399684842514">Endirmə durduruldu</translation>
-<translation id="1409426117486808224">Açıq tablar üçün sadələşdirilmiş görünüş</translation>
 <translation id="1415402041810619267">URL tam deyil</translation>
 <translation id="1426410128494586442">Bəli</translation>
 <translation id="1446450296470737166">MIDI cihazlar üzərində tam nəzarətə icazə verin</translation>
@@ -140,6 +140,7 @@
 <translation id="3386292677130313581">Saytlara məkanınızı bilmək icazəsi verməmişdən əvvəl soruşun (tövsiyə olunur)</translation>
 <translation id="3403537308306431953"><ph name="ZOOM_LEVEL" /> %%</translation>
 <translation id="344449859752187052">Üçüncü tərəf kukiləri bloklandı</translation>
+<translation id="3465378418721443318">{DAYS,plural, =1{Chrome sabah kukiləri yenidən bloklayacaq}other{Chrome # gün sonra kukiləri yenidən bloklayacaq}}</translation>
 <translation id="3521663503435878242"><ph name="DOMAIN" /> domenindəki saytlar</translation>
 <translation id="3538390592868664640">Saytların ətrafınızdakı sahələrin 3D xəritəsini yaratmasına və ya kamera mövqeyini izləməsinə qarşı blok qoyun</translation>
 <translation id="3544058026430919413">Şirkət qrupda fəaliyyətinizi paylaşmaq üçün kukilərdən istifadə edə biləcək saytlar qrupu təyin edə bilər. Bu, Anonim rejimdə deaktivdir.</translation>
@@ -162,6 +163,7 @@
 <translation id="381841723434055211">Telefon nömrələri</translation>
 <translation id="3826050100957962900">Üçüncü tərəfin girişi</translation>
 <translation id="3835233591525155343">Cihazdan istifadəniz</translation>
+<translation id="3843916486309149084">Chrome bu gün kukiləri yenidən bloklayacaq</translation>
 <translation id="385051799172605136">Geri</translation>
 <translation id="3859306556332390985">İrəli axtarın</translation>
 <translation id="3895926599014793903">Zoom'a icazə verməyə məcbur edin</translation>
@@ -301,6 +303,7 @@
 <translation id="6367753977865761591">Müəyyən bir sayt üçün üçüncü tərəfin girişini bloklayın.</translation>
 <translation id="6388207532828177975">Təmizləyin və sıfırlayın</translation>
 <translation id="6398765197997659313">Tam ekrandan çıxın</translation>
+<translation id="640163077447496506">Bu gün vaxtı bitir</translation>
 <translation id="6405650995156823521"><ph name="FIRST_PART" /> • <ph name="SECOND_PART" /></translation>
 <translation id="6439114592976064011">Saytların virtual reallıq cihazınızı və datanızı istifadə etməsinin qarşısını alın</translation>
 <translation id="6447842834002726250">Kukilər</translation>
@@ -336,7 +339,6 @@
 <translation id="7000754031042624318">Android ayarlarında söndürülüb</translation>
 <translation id="7016516562562142042">Cari axtarış sistemi üçün icazə verildi</translation>
 <translation id="702275896380648118">Bu sayt bəyəndiklərinizi müəyyənləşdirir və sonra digər saytlara reklam təklif edir. Bu sayt sizə daha uyğun reklamlar göstərmək üçün Chrome'dan reklam mövzularınızı da əldə edir.</translation>
-<translation id="702463548815491781">TalkBack və ya Keçid Düyməsi aktiv olduqda tövsiyə olunur</translation>
 <translation id="7053983685419859001">Bloklayın</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 element seçildi}other{# element seçildi}}</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> seçildi. Seçimlər ekranın yuxarısında əlçatandır</translation>
@@ -396,6 +398,7 @@
 <translation id="8131740175452115882">Təsdiq edin</translation>
 <translation id="8154912474061769055">Əksər saytlardakı funksiyalar işləməyə bilər</translation>
 <translation id="8168435359814927499">Kontent</translation>
+<translation id="8186479265534291036">Sayt işləmir? Üçüncü tərəf kukiləri bloklanıb</translation>
 <translation id="8197286292360124385"><ph name="PERMISSION_1" /> üçün icazə verilib</translation>
 <translation id="8200772114523450471">Davam edin</translation>
 <translation id="8206354486702514201">Bu ayar administratorunuz tərəfindən icra olunur.</translation>

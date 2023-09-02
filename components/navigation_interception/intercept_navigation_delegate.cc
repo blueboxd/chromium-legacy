@@ -211,7 +211,9 @@ bool InterceptNavigationDelegate::ShouldIgnoreNavigation(
   // are present, as we don't support persisting sandbox flags through fallback
   // URL navigation.
   bool is_sandboxed = navigation_handle->SandboxFlagsInherited() !=
-                      network::mojom::WebSandboxFlags::kNone;
+                          network::mojom::WebSandboxFlags::kNone ||
+                      navigation_handle->SandboxFlagsInitiator() !=
+                          network::mojom::WebSandboxFlags::kNone;
 
   return Java_InterceptNavigationDelegate_shouldIgnoreNavigation(
       env, jdelegate, navigation_handle->GetJavaNavigationHandle(),

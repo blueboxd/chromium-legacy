@@ -31,6 +31,9 @@ declare namespace chrome {
     let lineSpacing: number;
     let letterSpacing: number;
 
+    // The current color theme value.
+    let colorTheme: number;
+
     // Enum values for various visual theme changes.
     let standardLineSpacing: number;
     let looseLineSpacing: number;
@@ -38,9 +41,17 @@ declare namespace chrome {
     let standardLetterSpacing: number;
     let wideLetterSpacing: number;
     let veryWideLetterSpacing: number;
+    let defaultTheme: number;
+    let lightTheme: number;
+    let darkTheme: number;
+    let yellowTheme: number;
+    let blueTheme: number;
 
     // Whether the WebUI toolbar feature flag is enabled.
     let isWebUIToolbarVisible: boolean;
+
+    // Whether the Read Aloud feature flag is enabled.
+    let isReadAloudEnabled: boolean;
 
     // Indicates if select-to-distill works on the web page. Used to
     // determine which empty state to display.
@@ -97,6 +108,7 @@ declare namespace chrome {
 
     // Called when a user makes a font size change via the webui toolbar.
     function onFontSizeChanged(increase: boolean): void;
+    function onFontSizeReset(): void;
 
     // Called when the letter spacing is changed via the webui toolbar.
     function onStandardLetterSpacing(): void;
@@ -127,6 +139,9 @@ declare namespace chrome {
     function onSelectionChange(
         anchorNodeId: number, anchorOffset: number, focusNodeId: number,
         focusOffset: number): void;
+    // Called when a user collapses the selection. This is usually accomplished
+    // by clicking.
+    function onCollapseSelection(): void;
 
     // Set the content. Used by tests only.
     // SnapshotLite is a data structure which resembles an AXTreeUpdate. E.g.:
@@ -174,5 +189,9 @@ declare namespace chrome {
     // Ping that the theme choices of the user have been changed using the
     // toolbar and are ready to consume.
     function updateTheme(): void;
+
+    // Ping that the theme choices of the user have been retrieved from
+    // preferences and can be used to set up the page.
+    function restoreSettingsFromPrefs(): void;
   }
 }

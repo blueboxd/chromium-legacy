@@ -5,11 +5,15 @@
 #ifndef CHROME_TEST_BASE_CHROMEOS_CROSIER_INTERACTIVE_ASH_TEST_H_
 #define CHROME_TEST_BASE_CHROMEOS_CROSIER_INTERACTIVE_ASH_TEST_H_
 
+#include <memory>
+
+#include "base/files/scoped_temp_dir.h"
 #include "base/memory/weak_ptr.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/test/base/mixin_based_in_process_browser_test.h"
 #include "chrome/test/interaction/interactive_browser_test.h"
 #include "content/public/test/browser_test.h"
+#include "ui/base/interaction/interaction_sequence.h"
 
 #if BUILDFLAG(IS_CHROMEOS_DEVICE)
 #include "chrome/test/base/chromeos/crosier/chromeos_integration_test_mixin.h"
@@ -18,8 +22,16 @@
 class GURL;
 class Profile;
 
+namespace base {
+class CommandLine;
+}
+
 namespace content {
 class NavigationHandle;
+}
+
+namespace {
+class FakeSessionManagerClientBrowserHelper;
 }
 
 // Base class for tests of ash-chrome integration with the ChromeOS platform,
@@ -69,15 +81,43 @@ class InteractiveAshTest
   // browser_navigator.h.
   base::WeakPtr<content::NavigationHandle> CreateBrowserWindow(const GURL& url);
 
-  // BrowserTestBase:
+  // Sets up the command line and environment variables to support Lacros (by
+  // enabling the Wayland server in ash). Call this from SetUpCommandLine() if
+  // your test starts Lacros.
+  void SetUpCommandLineForLacros(base::CommandLine* command_line);
+
+  // Waits for Ash to be ready for Lacros, including starting the "Exo" Wayland
+  // server. Call this method if your test starts Lacros, otherwise Exo may not
+  // be ready and Lacros may not start.
+  // TODO(http://b/297930282): Ensure we compile ToT Lacros and use it when
+  // testing ToT ash. The rootfs Lacros may be too old to run with ToT ash.
+  void WaitForAshFullyStarted();
+
+  // MixinBasedInProcessBrowserTest:
   void TearDownOnMainThread() override;
+
+  // Blocks until a window exists with the given title. If a matching window
+  // already exists the test will resume immediately.
+  ui::test::internal::InteractiveTestPrivate::MultiStep WaitForWindowWithTitle(
+      aura::Env* env,
+      std::u16string title);
 
  private:
 #if BUILDFLAG(IS_CHROMEOS_DEVICE)
   // This test runs on linux-chromeos in interactive_ui_tests and on a DUT in
   // chromeos_integration_tests.
   ChromeOSIntegrationTestMixin chromeos_integration_test_mixin_{&mixin_host_};
+
+  // Whether to use real session manager client for tests that needs real
+  // user session.
+  bool use_real_session_manager_ = false;
+
+  std::unique_ptr<FakeSessionManagerClientBrowserHelper>
+      fake_session_manager_client_helper_;
 #endif
+
+  // Directory used by Wayland/Lacros in environment variable XDG_RUNTIME_DIR.
+  base::ScopedTempDir scoped_temp_dir_xdg_;
 };
 
 #endif  // CHROME_TEST_BASE_CHROMEOS_CROSIER_INTERACTIVE_ASH_TEST_H_

@@ -440,6 +440,23 @@ bool GetFullDataFilePath(
 
 constexpr uint32_t NetworkContext::kMaxOutstandingRequestsPerProcess;
 
+NetworkContext::NetworkContextHttpAuthPreferences::
+    NetworkContextHttpAuthPreferences(NetworkService* network_service)
+    : network_service_(network_service) {}
+
+NetworkContext::NetworkContextHttpAuthPreferences::
+    ~NetworkContextHttpAuthPreferences() = default;
+
+#if BUILDFLAG(IS_LINUX)
+bool NetworkContext::NetworkContextHttpAuthPreferences::AllowGssapiLibraryLoad()
+    const {
+  if (network_service_) {
+    network_service_->OnBeforeGssapiLibraryLoad();
+  }
+  return net::HttpAuthPreferences::AllowGssapiLibraryLoad();
+}
+#endif  // BUILDFLAG(IS_LINUX)
+
 NetworkContext::PendingCertVerify::PendingCertVerify() = default;
 NetworkContext::PendingCertVerify::~PendingCertVerify() = default;
 
@@ -477,6 +494,7 @@ NetworkContext::NetworkContext(
           std::move(params_->first_party_sets_access_delegate_params),
           network_service_->first_party_sets_manager()),
       cors_preflight_controller_(network_service),
+      http_auth_merged_preferences_(network_service),
       ohttp_handler_(this),
       cors_non_wildcard_request_headers_support_(base::FeatureList::IsEnabled(
           features::kCorsNonWildcardRequestHeadersSupport)) {
@@ -636,6 +654,7 @@ NetworkContext::NetworkContext(
           std::make_unique<SocketFactory>(url_request_context_->net_log(),
                                           url_request_context)),
       cors_preflight_controller_(network_service),
+      http_auth_merged_preferences_(network_service),
       ohttp_handler_(this) {
   // May be nullptr in tests.
   if (network_service_)
@@ -654,9 +673,33 @@ NetworkContext::~NetworkContext() {
   is_destructing_ = true;
 
   // May be nullptr in tests.
-  if (network_service_)
-    network_service_->DeregisterNetworkContext(this);
+  if (network_service_) {
+#if BUILDFLAG(IS_ANDROID)
+    if (params_ && params_->file_paths) {
+      base::FilePath path_to_invalidate;
+      if (GetFullDataFilePath(params_->file_paths,
+                              &network::mojom::NetworkContextFilePaths::
+                                  trust_token_database_name,
+                              path_to_invalidate)) {
+        network_service_->InvalidateNetworkContextPath(path_to_invalidate);
+      }
+      if (GetFullDataFilePath(params_->file_paths,
+                              &network::mojom::NetworkContextFilePaths::
+                                  reporting_and_nel_store_database_name,
+                              path_to_invalidate)) {
+        network_service_->InvalidateNetworkContextPath(path_to_invalidate);
+      }
+      if (GetFullDataFilePath(
+              params_->file_paths,
+              &network::mojom::NetworkContextFilePaths::cookie_database_name,
+              path_to_invalidate)) {
+        network_service_->InvalidateNetworkContextPath(path_to_invalidate);
+      }
+    }
 
+#endif
+    network_service_->DeregisterNetworkContext(this);
+  }
   if (domain_reliability_monitor_)
     domain_reliability_monitor_->Shutdown();
   // Because of the order of declaration in the class,
@@ -2256,10 +2299,10 @@ void NetworkContext::OnHttpAuthDynamicParamsChanged(
       http_auth_dynamic_network_service_params->android_negotiate_account_type);
 #endif  // BUILDFLAG(IS_ANDROID)
 
-#if BUILDFLAG(IS_CHROMEOS)
+#if BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_LINUX)
   http_auth_merged_preferences_.set_allow_gssapi_library_load(
       http_auth_dynamic_network_service_params->allow_gssapi_library_load);
-#endif  // BUILDFLAG(IS_CHROMEOS)
+#endif  // BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_LINUX)
   if (http_auth_dynamic_network_service_params->allowed_schemes.has_value()) {
     http_auth_merged_preferences_.set_allowed_schemes(std::set<std::string>(
         http_auth_dynamic_network_service_params->allowed_schemes->begin(),
@@ -3048,6 +3091,18 @@ void NetworkContext::ResourceSchedulerClientVisibilityChanged(
     const base::UnguessableToken& client_token,
     bool visible) {
   resource_scheduler_->OnClientVisibilityChanged(client_token, visible);
+}
+
+void NetworkContext::FlushCachedClientCertIfNeeded(
+    const net::HostPortPair& host,
+    const scoped_refptr<net::X509Certificate>& certificate) {
+  net::HttpNetworkSession* http_session =
+      url_request_context_->http_transaction_factory()->GetSession();
+  DCHECK(http_session);
+  if (http_session->ssl_client_context()) {
+    http_session->ssl_client_context()->ClearClientCertificateIfNeeded(
+        host, certificate);
+  }
 }
 
 }  // namespace network

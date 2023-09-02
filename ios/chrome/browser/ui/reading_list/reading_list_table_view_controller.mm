@@ -4,9 +4,9 @@
 
 #import "ios/chrome/browser/ui/reading_list/reading_list_table_view_controller.h"
 
+#import "base/apple/foundation_util.h"
 #import "base/check_op.h"
 #import "base/ios/ios_util.h"
-#import "base/mac/foundation_util.h"
 #import "base/metrics/histogram_macros.h"
 #import "base/metrics/user_metrics.h"
 #import "base/metrics/user_metrics_action.h"
@@ -14,6 +14,7 @@
 #import "ios/chrome/app/tests_hook.h"
 #import "ios/chrome/browser/drag_and_drop/drag_item_util.h"
 #import "ios/chrome/browser/drag_and_drop/table_view_url_drag_drop_handler.h"
+#import "ios/chrome/browser/intents/intents_donation_helper.h"
 #import "ios/chrome/browser/shared/coordinator/alert/action_sheet_coordinator.h"
 #import "ios/chrome/browser/shared/model/browser/browser.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
@@ -232,6 +233,7 @@ ReadingListSelectionState GetSelectionStateForSelectedCounts(
   // we need to refresh the empty view margin after the layout is done, to apply
   // the correct top margin value according to the promo view's height.
   [self updateEmptyViewTopMargin];
+  [IntentDonationHelper donateIntent:INTENT_OPEN_READING_LIST];
 }
 
 - (void)viewWillTransitionToSize:(CGSize)size
@@ -485,7 +487,8 @@ ReadingListSelectionState GetSelectionStateForSelectedCounts(
     return;
   }
 
-  TableViewItem* tableViewItem = base::mac::ObjCCastStrict<TableViewItem>(item);
+  TableViewItem* tableViewItem =
+      base::apple::ObjCCastStrict<TableViewItem>(item);
   if ([model hasItem:tableViewItem
           inSectionWithIdentifier:kSectionIdentifierUnread]) {
     [self markItemsAtIndexPaths:@[ [model indexPathForItem:tableViewItem] ]
@@ -501,7 +504,8 @@ ReadingListSelectionState GetSelectionStateForSelectedCounts(
     return;
   }
 
-  TableViewItem* tableViewItem = base::mac::ObjCCastStrict<TableViewItem>(item);
+  TableViewItem* tableViewItem =
+      base::apple::ObjCCastStrict<TableViewItem>(item);
   if ([model hasItem:tableViewItem
           inSectionWithIdentifier:kSectionIdentifierRead]) {
     [self markItemsAtIndexPaths:@[ [model indexPathForItem:tableViewItem] ]
@@ -511,7 +515,7 @@ ReadingListSelectionState GetSelectionStateForSelectedCounts(
 
 - (void)deleteItem:(id<ReadingListListItem>)item {
   TableViewItem<ReadingListListItem>* tableViewItem =
-      base::mac::ObjCCastStrict<TableViewItem<ReadingListListItem>>(item);
+      base::apple::ObjCCastStrict<TableViewItem<ReadingListListItem>>(item);
   if ([self.tableViewModel hasItem:tableViewItem]) {
     NSIndexPath* indexPath =
         [self.tableViewModel indexPathForItem:tableViewItem];
@@ -713,7 +717,7 @@ ReadingListSelectionState GetSelectionStateForSelectedCounts(
       [self.tableViewModel indexPathForItemType:kItemTypeSignInPromo
                               sectionIdentifier:kSectionIdentifierSignInPromo];
   TableViewSigninPromoItem* signInPromoItem =
-      base::mac::ObjCCast<TableViewSigninPromoItem>(
+      base::apple::ObjCCast<TableViewSigninPromoItem>(
           [self.tableViewModel itemAtIndexPath:indexPath]);
   if (!signInPromoItem) {
     return;
@@ -814,7 +818,7 @@ ReadingListSelectionState GetSelectionStateForSelectedCounts(
 // Returns `item` cast as a TableViewItem.
 - (TableViewItem<ReadingListListItem>*)tableItemForReadingListItem:
     (id<ReadingListListItem>)item {
-  return base::mac::ObjCCastStrict<TableViewItem<ReadingListListItem>>(item);
+  return base::apple::ObjCCastStrict<TableViewItem<ReadingListListItem>>(item);
 }
 
 // Applies `updater` to the items in `section`. The updates are done in reverse

@@ -1,5 +1,6 @@
 add_and_true_to_loop_condition
 adjust_src_dst_region_for_blitframebuffer
+avoid_consecutive_keyframes_for_vp9
 avoid_one_component_egl_images
 avoid_stencil_buffers
 broken_egl_image_ref_counting
@@ -91,7 +92,7 @@ force_high_performance_gpu
 force_int_or_srgb_cube_texture_complete
 force_low_power_gpu
 force_nv12_overlay_support
-force_rgb10a2_overlay_support_flags
+force_rgb10a2_overlay_support
 force_update_scissor_state_when_binding_fbo0
 get_frag_data_info_bug
 gl_clear_broken
@@ -112,6 +113,7 @@ needs_offscreen_buffer_workaround
 no_downscaled_overlay_promotion
 pack_parameters_workaround_with_pack_buffer
 prefer_draw_to_copy
+r8_egl_images_broken
 rebind_transform_feedback_before_resume
 regenerate_struct_names
 rely_on_implicit_sync_for_swap_buffers

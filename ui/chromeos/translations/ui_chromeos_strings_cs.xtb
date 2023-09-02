@@ -35,6 +35,7 @@
 <translation id="1280820357415527819">Vyhledávání mobilních sítí</translation>
 <translation id="1293556467332435079">Soubory</translation>
 <translation id="1297922636971898492">Disk Google aktuálně není k dispozici. Jakmile bude Disk Google opět dostupný, nahrávání se automaticky obnoví.</translation>
+<translation id="1306130176943817227">Smazání se nezdařilo. Položka se používá.</translation>
 <translation id="1307931752636661898">Soubory systému Linux nelze zobrazit</translation>
 <translation id="1313405956111467313">Automatické nastavení proxy serveru</translation>
 <translation id="134645005685694099">V zařízení není dostatek úložného prostoru k tomu, aby synchronizace souborů mohla zůstat zapnutá. Nové soubory se již nebudou automaticky synchronizovat.</translation>
@@ -94,6 +95,7 @@
 <translation id="174937106936716857">Celkový počet souborů</translation>
 <translation id="1755345808328621801">Tento soubor je určen pro počítač se softwarem Windows. S vaším zařízením se systémem ChromeOS není kompatibilní. Vyhledejte v Internetovém obchodě Chrome vhodnou náhradní aplikaci.</translation>
 <translation id="1757915090001272240">Široká latinka</translation>
+<translation id="1761091787730831947">Sdílet s nástrojem <ph name="VM_NAME" /></translation>
 <translation id="1773212559869067373">Ověřovací certifikát byl místně odmítnut</translation>
 <translation id="1775381402323441512">Informace o videu</translation>
 <translation id="180035236176489073">Pro přístup k souborům musíte být online.</translation>
@@ -169,6 +171,7 @@
 <translation id="23721837607121582">Stáhněte si mobilní profil, síť <ph name="NETWORK_INDEX" /> z <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" /></translation>
 <translation id="2377319039870049694">Přepnout na zobrazení seznamu</translation>
 <translation id="2377590462528165447">Počet složek sdílených s Linuxem: <ph name="NUMBER_OF_ITEMS" /></translation>
+<translation id="2379576081295865700">Kontrola úložného prostoru… Nalezena 1 položka</translation>
 <translation id="2383454254762599978">Přesunout do koše</translation>
 <translation id="2387458720915042159">Typ připojení k proxy serveru</translation>
 <translation id="2389832672041313158">barmština/myanmarština</translation>
@@ -210,6 +213,7 @@
 <translation id="2718540689505416944">Nainstalujte aplikaci pro Linux</translation>
 <translation id="2719020180254996569">Síť <ph name="NETWORK_INDEX" /> z <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, podrobnosti</translation>
 <translation id="2724954091494693138">turečtina s klávesnicí F</translation>
+<translation id="2732288874651063549">Spravovat sdílení s nástrojem <ph name="VM_NAME" /></translation>
 <translation id="2732839045120506979">vietnamština VNI</translation>
 <translation id="2735623501230989521">Udělujete nástroji Parallels Desktop oprávnění k přístupu k souborům ve složce <ph name="FOLDER_NAME" /></translation>
 <translation id="2764206540577097904">Zaplnili jste celé své úložiště Google Workspace.</translation>
@@ -304,6 +308,7 @@
 <translation id="3509680540198371098">Síť <ph name="NETWORK_INDEX" /> z <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, síla signálu: <ph name="SIGNAL_STRENGTH" /> %, podrobnosti</translation>
 <translation id="3511705761158917664">Příprava na synchronizaci položek (<ph name="NUMBER_OF_ITEMS" />)…</translation>
 <translation id="3522708245912499433">portugalština</translation>
+<translation id="3523225005467146490">1 složka je sdílena s nástrojem <ph name="VM_NAME" /></translation>
 <translation id="3524311639100184459">Upozornění: Tyto soubory jsou dočasné a mohou být automaticky smazány kvůli uvolnění místa na disku.  <ph name="BEGIN_LINK" />Další informace<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">Složka</translation>
 <translation id="3548125359243647069">Příliš mnohokrát jste zadali nesprávný PIN.</translation>
@@ -537,6 +542,7 @@
 <translation id="5218183485292899140">Švýcarská klávesnice (francouzština)</translation>
 <translation id="5234764350956374838">Zavřít</translation>
 <translation id="5253070652067921974">Autor</translation>
+<translation id="5254207638927440400">Soubor nelze přesunout. Používá se.</translation>
 <translation id="5257456363153333584">Vážka</translation>
 <translation id="5262311848634918433"><ph name="MARKUP_1" />Získejte k souborům přístup odkudkoli, dokonce i v režimu offline.<ph name="MARKUP_2" />
     Soubory na Disku Google jsou aktuální a dostupné z libovolného zařízení.<ph name="MARKUP_3" />
@@ -659,6 +665,8 @@
 <translation id="6164412158936057769">Motýli</translation>
 <translation id="6165508094623778733">Další informace</translation>
 <translation id="6170470584681422115">Sendvič</translation>
+<translation id="6177854567773392726">Kontrola úložného prostoru… Nalezen tento počet položek: <ph name="ITEMS_FOUND" /></translation>
+<translation id="6181912134988520389">Udělit nástroji <ph name="VM_NAME" /> oprávnění k přístupu k souborům na Disku Google. Změny se synchronizují do vašich ostatních zařízení.</translation>
 <translation id="6187719147498869044">maďarština</translation>
 <translation id="6198252989419008588">Změnit kód PIN</translation>
 <translation id="6199801702437275229">Čeká se na informace o volném místě...</translation>
@@ -762,6 +770,7 @@
 <translation id="6989942356279143254">švédština</translation>
 <translation id="6990081529015358884">Došlo vám místo</translation>
 <translation id="6993826899923627728">Tyto položky jsou v koši</translation>
+<translation id="6996593023542748157">Sdílet složku s nástrojem <ph name="VM_NAME" /></translation>
 <translation id="7008426324576352165">K dokončení nahrávání vaše organizace potřebuje víc úložného prostoru.</translation>
 <translation id="7009985720488544166">Přesunutí souborů (<ph name="COUNT" />) je blokováno zásadami administrátora</translation>
 <translation id="7012943028104619157"><ph name="ROOT_TITLE" /> (<ph name="ROOT_SUMMARY" />)</translation>
@@ -851,6 +860,7 @@
 <translation id="76959938259365003">Koš se nepodařilo vysypat.</translation>
 <translation id="770015031906360009">řečtina</translation>
 <translation id="7705251383879779343">Položka <ph name="FILE_NAME" /> byla zkopírována.</translation>
+<translation id="7707941139430559579">Soubor nelze přesunout. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="7708271999969613024">Pokud chcete tuto síť používat, je nutné zadat osmimístný klíč PUK, který vám poskytl operátor.</translation>
 <translation id="7711920809702896782">Informace o obrázku</translation>
 <translation id="7724603315864178912">Vyjmout</translation>
@@ -947,6 +957,7 @@
 <translation id="8335837413233998004">běloruština</translation>
 <translation id="8336153091935557858">Včera <ph name="YESTERDAY_DAYTIME" /></translation>
 <translation id="8342318071240498787">Soubor nebo složka s daným názvem již existuje.</translation>
+<translation id="83651606385705612">Udělit nástroji <ph name="VM_NAME" /> oprávnění k přístupu k souborům ve složce <ph name="FOLDER_NAME" /></translation>
 <translation id="8372369524088641025">Chybný klíč WEP</translation>
 <translation id="8372852072747894550">řečtina</translation>
 <translation id="8386903983509584791">Vyhledávání je dokončeno</translation>
@@ -956,6 +967,7 @@
 <translation id="8408068190360279472">Síť: <ph name="NETWORK_TYPE" />, připojování</translation>
 <translation id="8425213833346101688">Změnit</translation>
 <translation id="8428213095426709021">Nastavení</translation>
+<translation id="8429998526804961548">Tento počet složek je sdílen s nástrojem <ph name="VM_NAME" />: <ph name="NUMBER_OF_ITEMS" /></translation>
 <translation id="8431909052837336408">Změnit PIN SIM karty</translation>
 <translation id="8437209419043462667">Americká klávesnice</translation>
 <translation id="8452135315243592079">Chybí SIM karta</translation>
@@ -1036,6 +1048,7 @@
 <translation id="9038620279323455325">Soubor s názvem „<ph name="FILE_NAME" />“ již existuje. Zvolte jiný název.</translation>
 <translation id="9046895021617826162">Připojení selhalo</translation>
 <translation id="9065512565307033593">Pokud se vám nepodaří provést ověření, bude vám zakázán přístup k síti.</translation>
+<translation id="9083722265619106011">{0,plural, =1{1 upozornění.}few{<ph name="COUNT" /> upozornění.}many{<ph name="COUNT" /> upozornění.}other{<ph name="COUNT" /> upozornění.}}</translation>
 <translation id="908378762078012445">ruština s fonetickou klávesnicí AATSEEL</translation>
 <translation id="9086302186042011942">Synchronizace</translation>
 <translation id="9099674669267916096">Počet stránek</translation>

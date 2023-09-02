@@ -4,13 +4,12 @@
 
 #include "components/exo/wayland/wayland_display_observer.h"
 
+#include <chrome-color-management-server-protocol.h>
 #include <wayland-server-core.h>
+#include <wayland-server-protocol-core.h>
 #include <xdg-output-unstable-v1-server-protocol.h>
 
-#include <string>
-
 #include "ash/shell.h"
-#include "chrome-color-management-server-protocol.h"
 #include "components/exo/wayland/output_metrics.h"
 #include "components/exo/wayland/server_util.h"
 #include "components/exo/wayland/wayland_display_output.h"
@@ -18,7 +17,6 @@
 #include "components/exo/wayland/zcr_color_manager.h"
 #include "ui/display/display_observer.h"
 #include "ui/display/screen.h"
-#include "wayland-server-protocol-core.h"
 
 namespace exo {
 namespace wayland {
@@ -29,22 +27,9 @@ WaylandDisplayObserver::~WaylandDisplayObserver() = default;
 
 WaylandDisplayHandler::WaylandDisplayHandler(WaylandDisplayOutput* output,
                                              wl_resource* output_resource)
-    : output_(output), output_resource_(output_resource) {
-  // At construction time the client object is guaranteed to exist.
-  wl_client* client = wl_resource_get_client(output_resource_);
-  CHECK(client);
-  client_destroy_listener_.listener.notify =
-      &WaylandDisplayHandler::OnClientDestroyed;
-  wl_client_add_destroy_listener(client, &client_destroy_listener_.listener);
-}
+    : output_(output), output_resource_(output_resource) {}
 
 WaylandDisplayHandler::~WaylandDisplayHandler() {
-  // Remove the listener to cover the case where the client outlives the
-  // handler.
-  if (!client_destroy_listener_.notified) {
-    wl_list_remove(&client_destroy_listener_.listener.link);
-  }
-
   ash::Shell::Get()->RemoveShellObserver(this);
   for (auto& obs : observers_) {
     obs.OnOutputDestroyed();
@@ -158,14 +143,6 @@ void WaylandDisplayHandler::UnsetXdgOutputResource() {
   xdg_output_resource_ = nullptr;
 }
 
-bool WaylandDisplayHandler::IsClientDestroyedForTesting() const {
-  return client_destroy_listener_.notified;
-}
-
-AuraOutputManager* WaylandDisplayHandler::GetAuraOutputManagerForTesting() {
-  return GetAuraOutputManager();
-}
-
 void WaylandDisplayHandler::XdgOutputSendLogicalPosition(
     const gfx::Point& position) {
   zxdg_output_v1_send_logical_position(xdg_output_resource_, position.x(),
@@ -183,15 +160,6 @@ void WaylandDisplayHandler::XdgOutputSendDescription(const std::string& desc) {
     return;
   }
   zxdg_output_v1_send_description(xdg_output_resource_, desc.c_str());
-}
-
-// static.
-void WaylandDisplayHandler::OnClientDestroyed(struct wl_listener* listener,
-                                              void* data) {
-  ClientDestroyListener* client_destroy_listener = wl_container_of(
-      listener, /*sample=*/client_destroy_listener, /*member=*/listener);
-  client_destroy_listener->notified = true;
-  wl_list_remove(&client_destroy_listener->listener.link);
 }
 
 bool WaylandDisplayHandler::SendDisplayMetrics(const display::Display& display,
@@ -278,14 +246,6 @@ void WaylandDisplayHandler::OnOutputDestroyed() {
 }
 
 AuraOutputManager* WaylandDisplayHandler::GetAuraOutputManager() {
-  // If the client has begun destruction avoid attempting to access the client's
-  // AuraOutputManager instance as libwayland may have freed the object's memory
-  // but not yet updated the data structures used to find the object (see
-  // crbug.com/1433187).
-  if (client_destroy_listener_.notified) {
-    return nullptr;
-  }
-
   wl_client* client = wl_resource_get_client(output_resource_);
   CHECK(client);
   return AuraOutputManager::Get(client);

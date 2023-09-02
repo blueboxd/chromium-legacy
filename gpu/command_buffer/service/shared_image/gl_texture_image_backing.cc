@@ -127,7 +127,7 @@ class SkiaGaneshImageRepresentationImpl : public SkiaGaneshImageRepresentation {
       const gfx::Rect& update_rect,
       std::vector<GrBackendSemaphore>* begin_semaphores,
       std::vector<GrBackendSemaphore>* end_semaphores,
-      std::unique_ptr<GrBackendSurfaceMutableState>* end_state) override {
+      std::unique_ptr<skgpu::MutableTextureState>* end_state) override {
     CheckContext();
 
     if (!write_surfaces_.empty()) {
@@ -161,7 +161,7 @@ class SkiaGaneshImageRepresentationImpl : public SkiaGaneshImageRepresentation {
   std::vector<sk_sp<GrPromiseImageTexture>> BeginWriteAccess(
       std::vector<GrBackendSemaphore>* begin_semaphores,
       std::vector<GrBackendSemaphore>* end_semaphore,
-      std::unique_ptr<GrBackendSurfaceMutableState>* end_state) override {
+      std::unique_ptr<skgpu::MutableTextureState>* end_state) override {
     CheckContext();
 
     return promise_textures_;
@@ -181,7 +181,7 @@ class SkiaGaneshImageRepresentationImpl : public SkiaGaneshImageRepresentation {
   std::vector<sk_sp<GrPromiseImageTexture>> BeginReadAccess(
       std::vector<GrBackendSemaphore>* begin_semaphores,
       std::vector<GrBackendSemaphore>* end_semaphores,
-      std::unique_ptr<GrBackendSurfaceMutableState>* end_state) override {
+      std::unique_ptr<skgpu::MutableTextureState>* end_state) override {
     CheckContext();
     return promise_textures_;
   }
@@ -497,13 +497,7 @@ void GLTextureImageBacking::InitializeGLTexture(
     gl::ProgressReporter* progress_reporter,
     bool framebuffer_attachment_angle,
     std::string debug_label_from_client) {
-  // If the extension does not exist, pass an empty debug label to avoid
-  // subsequent crashes.
-  std::string debug_label;
-  if (gl::g_current_gl_driver->ext.b_GL_KHR_debug) {
-    debug_label = "GLSharedImage_" + debug_label_from_client;
-  }
-
+  const std::string debug_label = "GLSharedImage_" + debug_label_from_client;
   int num_planes = format().NumberOfPlanes();
   textures_.reserve(num_planes);
   for (int plane = 0; plane < num_planes; ++plane) {

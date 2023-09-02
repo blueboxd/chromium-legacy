@@ -8,6 +8,7 @@ import android.content.Context;
 
 import org.chromium.base.BaseSwitches;
 import org.chromium.base.CommandLine;
+import org.chromium.base.FeatureList;
 import org.chromium.base.SysUtils;
 import org.chromium.chrome.browser.flags.BooleanCachedFieldTrialParameter;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -86,6 +87,19 @@ public class OmniboxFeatures {
     private static final MutableFlagWithSafeDefault sShortCircuitUnfocusAnimation =
             new MutableFlagWithSafeDefault(
                     ChromeFeatureList.SHORT_CIRCUIT_UNFOCUS_ANIMATION, false);
+
+    public static final MutableFlagWithSafeDefault sSearchReadyOmniboxAllowQueryEdit =
+            new MutableFlagWithSafeDefault(
+                    ChromeFeatureList.SEARCH_READY_OMNIBOX_ALLOW_QUERY_EDIT, false);
+
+    private static final MutableFlagWithSafeDefault sTouchDownTriggerForPrefetchFlag =
+            new MutableFlagWithSafeDefault(
+                    ChromeFeatureList.OMNIBOX_TOUCH_DOWN_TRIGGER_FOR_PREFETCH, false);
+
+    private static final MutableFlagWithSafeDefault sVisibleUrlTruncationFlag =
+            new MutableFlagWithSafeDefault(ChromeFeatureList.ANDROID_VISIBLE_URL_TRUNCATION, false);
+
+    public static final int DEFAULT_MAX_PREFETCHES_PER_OMNIBOX_SESSION = 5;
 
     /**
      * @param context The activity context.
@@ -180,7 +194,7 @@ public class OmniboxFeatures {
      * Returns whether the omnibox's recycler view pool should be pre-warmed prior to initial use.
      */
     public static boolean shouldPreWarmRecyclerViewPool() {
-        return sWarmRecycledViewPoolFlag.isEnabled();
+        return !isLowMemoryDevice() && sWarmRecycledViewPoolFlag.isEnabled();
     }
 
     /**
@@ -213,5 +227,33 @@ public class OmniboxFeatures {
      */
     public static boolean shouldShortCircuitUnfocusAnimation() {
         return sShortCircuitUnfocusAnimation.isEnabled();
+    }
+
+    /**
+     * Returns whether a touch down event on a search suggestion should send a signal to prefetch
+     * the corresponding page.
+     */
+    public static boolean isTouchDownTriggerForPrefetchEnabled() {
+        return sTouchDownTriggerForPrefetchFlag.isEnabled();
+    }
+
+    /**
+     * Returns the maximum number of prefetches that can be triggered by touch down events within an
+     * omnibox session.
+     */
+    public static int getMaxPrefetchesPerOmniboxSession() {
+        if (!FeatureList.isInitialized()) {
+            return DEFAULT_MAX_PREFETCHES_PER_OMNIBOX_SESSION;
+        }
+        return ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
+                ChromeFeatureList.OMNIBOX_TOUCH_DOWN_TRIGGER_FOR_PREFETCH,
+                "max_prefetches_per_omnibox_session", DEFAULT_MAX_PREFETCHES_PER_OMNIBOX_SESSION);
+    }
+
+    /**
+     * Returns whether the visible url in the url bar should be truncated.
+     */
+    public static boolean shouldTruncateVisibleUrl() {
+        return sVisibleUrlTruncationFlag.isEnabled();
     }
 }

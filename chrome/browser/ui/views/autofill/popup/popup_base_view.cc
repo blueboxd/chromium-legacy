@@ -51,6 +51,11 @@ namespace autofill {
 
 namespace {
 
+// The maximum size (in DIPs) of custom cursors that are permitted while the
+// popup is shown. The size is limited to avoid custom cursors that cover most
+// of the popup.
+constexpr int kMaximumAllowedCustomCursorDimension = 24;
+
 // The maximum number of pixels the suggestions dialog is shifted towards the
 // center the focused field.
 constexpr int kMaximumPixelsToMoveSuggestionToCenter = 120;
@@ -173,6 +178,15 @@ bool PopupBaseView::DoShow() {
   if (!enough_height) {
     return false;
   }
+
+  if (content::WebContents* web_contents = GetWebContents()) {
+    custom_cursor_blocker_ = web_contents->CreateDisallowCustomCursorScope(
+        /*max_dimension_dips=*/kMaximumAllowedCustomCursorDimension + 1);
+  } else {
+    // `delegate_` is already gone and `WebContents` is destroying itself.
+    return false;
+  }
+
   GetWidget()->Show();
 
   // Showing the widget can change native focus (which would result in an

@@ -11,7 +11,6 @@
 #include "ash/ash_export.h"
 #include "ash/constants/quick_settings_catalogs.h"
 #include "ash/system/unified/feature_pod_controller_base.h"
-#include "base/allocator/partition_allocator/pointers/raw_ptr.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 
@@ -51,10 +50,12 @@ class ASH_EXPORT AccessibilityFeaturePodController
   void UpdateTileStateIfExists();
 
   // Unowned.
-  const raw_ptr<UnifiedSystemTrayController, ExperimentalAsh> tray_controller_;
+  const raw_ptr<UnifiedSystemTrayController,
+                DanglingUntriaged | ExperimentalAsh>
+      tray_controller_;
 
   // Owned by views hierarchy.
-  raw_ptr<FeatureTile, ExperimentalAsh> tile_ = nullptr;
+  raw_ptr<FeatureTile, DanglingUntriaged | ExperimentalAsh> tile_ = nullptr;
 
   base::WeakPtrFactory<AccessibilityFeaturePodController> weak_ptr_factory_{
       this};

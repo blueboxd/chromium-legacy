@@ -15,6 +15,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/test/task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/gpu_fence.h"
 #include "ui/gfx/linux/drm_util_linux.h"
@@ -134,7 +135,7 @@ class MAYBE_DrmOverlayValidatorTest : public testing::Test {
   raw_ptr<MockGbmDevice, ExperimentalAsh> gbm_ = nullptr;
   std::unique_ptr<ScreenManager> screen_manager_;
   std::unique_ptr<DrmDeviceManager> drm_device_manager_;
-  raw_ptr<DrmWindow, ExperimentalAsh> window_;
+  raw_ptr<DrmWindow, DanglingUntriaged | ExperimentalAsh> window_;
   std::unique_ptr<DrmOverlayValidator> overlay_validator_;
   std::vector<OverlaySurfaceCandidate> overlay_params_;
   DrmOverlayPlaneList plane_list_;
@@ -261,7 +262,7 @@ void MAYBE_DrmOverlayValidatorTest::AddPlane(
       GetFourCCFormatFromBufferFormat(params.format), params.buffer_size);
   plane_list_.emplace_back(std::move(drm_framebuffer), params.plane_z_order,
                            absl::get<gfx::OverlayTransform>(params.transform),
-                           gfx::ToNearestRect(params.display_rect),
+                           gfx::Rect(), gfx::ToNearestRect(params.display_rect),
                            params.crop_rect, true, nullptr);
 }
 

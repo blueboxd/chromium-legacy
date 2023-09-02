@@ -758,7 +758,7 @@ bool PasswordAutofillAgent::TextDidChangeInTextField(
   }
 
   // Show the popup with the list of available usernames.
-  return ShowSuggestions(element, ShowAll(false), GenerationShowing(false));
+  return ShowSuggestions(element, ShowAll(false));
 }
 
 void PasswordAutofillAgent::UpdateStateForTextChange(
@@ -828,8 +828,7 @@ void PasswordAutofillAgent::TrackAutofilledElement(
 void PasswordAutofillAgent::FillPasswordSuggestion(
     const std::u16string& username,
     const std::u16string& password) {
-  auto element =
-      autofill_agent_->focused_element().DynamicTo<WebInputElement>();
+  auto element = focused_element().DynamicTo<WebInputElement>();
   if (element.IsNull())
     return;
 
@@ -887,8 +886,7 @@ void PasswordAutofillAgent::FillPasswordSuggestion(
 void PasswordAutofillAgent::FillIntoFocusedField(
     bool is_password,
     const std::u16string& credential) {
-  auto focused_input_element =
-      autofill_agent_->focused_element().DynamicTo<WebInputElement>();
+  auto focused_input_element = focused_element().DynamicTo<WebInputElement>();
   if (focused_input_element.IsNull()) {
     return;
   }
@@ -1115,10 +1113,8 @@ bool PasswordAutofillAgent::TryToShowKeyboardReplacingSurface(
 }
 #endif
 
-bool PasswordAutofillAgent::ShowSuggestions(
-    const WebInputElement& element,
-    ShowAll show_all,
-    GenerationShowing generation_popup_showing) {
+bool PasswordAutofillAgent::ShowSuggestions(const WebInputElement& element,
+                                            ShowAll show_all) {
   WebInputElement username_element;
   WebInputElement password_element;
   PasswordInfo* password_info = nullptr;
@@ -1139,9 +1135,6 @@ bool PasswordAutofillAgent::ShowSuggestions(
 
   // Don't attempt to autofill with values that are too large.
   if (element.Value().length() > kMaximumTextSizeForAutocomplete)
-    return false;
-
-  if (generation_popup_showing)
     return false;
 
 #if BUILDFLAG(IS_ANDROID)
@@ -1570,8 +1563,7 @@ void PasswordAutofillAgent::KeyboardReplacingSurfaceClosed(
     bool show_virtual_keyboard) {
   keyboard_replacing_surface_state_ = KeyboardReplacingSurfaceState::kWasShown;
 
-  auto focused_input_element =
-      autofill_agent_->focused_element().DynamicTo<WebInputElement>();
+  auto focused_input_element = focused_element().DynamicTo<WebInputElement>();
   if (focused_input_element.IsNull()) {
     return;
   }
@@ -1585,8 +1577,7 @@ void PasswordAutofillAgent::KeyboardReplacingSurfaceClosed(
     // in a flickering of the popup, due to showing the keyboard at the same
     // time.
     if (IsKeyboardAccessoryEnabled()) {
-      ShowSuggestions(focused_input_element, ShowAll(false),
-                      GenerationShowing(false));
+      ShowSuggestions(focused_input_element, ShowAll(false));
     }
   }
 }

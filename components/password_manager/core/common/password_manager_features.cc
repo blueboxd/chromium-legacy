@@ -51,6 +51,12 @@ BASE_FEATURE(kIOSPasswordCheckup,
 BASE_FEATURE(kIOSPasswordBottomSheet,
              "IOSPasswordBottomSheet",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+// When enabled, eligible users will be given the possibility to bulk upload
+// local passwords in the iOS password settings.
+BASE_FEATURE(kIOSPasswordSettingsBulkUploadLocalPasswords,
+             "IOSPasswordSettingsBulkUploadLocalPasswords",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 #endif  // IS_IOS
 
 // Killswitch for changes regarding password issues in
@@ -157,11 +163,6 @@ BASE_FEATURE(kUnifiedPasswordManagerAndroidBranding,
              "UnifiedPasswordManagerAndroidBranding",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-// Enables new exploratory strings for the save/update password prompts.
-BASE_FEATURE(kExploratorySaveUpdatePasswordStrings,
-             "ExploratorySaveUpdatePasswordStrings",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 BASE_FEATURE(kPasswordsInCredMan,
              "PasswordsInCredMan",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -196,12 +197,6 @@ BASE_FEATURE(kPasswordManagerPasskeys,
 #endif
 
 #if BUILDFLAG(IS_ANDROID)
-
-// The string version to use for the save/update password prompts when the user
-// is syncing passwords. Version 1 is outdated, so the only supported versions
-// currently are 2 and 3.
-extern const base::FeatureParam<int> kSaveUpdatePromptSyncingStringVersion = {
-    &kExploratorySaveUpdatePasswordStrings, "syncing_string_version", 2};
 
 // The version of the password migration warning prefs. When the version
 // increases, the value of the pref LocalPasswordMigrationWarningPrefsVersion
@@ -280,6 +275,11 @@ bool RequiresMigrationForUnifiedPasswordManager() {
 bool IsPasswordCheckupEnabled() {
   return base::FeatureList::IsEnabled(
       password_manager::features::kIOSPasswordCheckup);
+}
+
+bool IsBulkUploadLocalPasswordsEnabled() {
+  return base::FeatureList::IsEnabled(
+      kIOSPasswordSettingsBulkUploadLocalPasswords);
 }
 #endif  // IS_IOS
 

@@ -25,6 +25,12 @@ void RecordSharedCredentialUploadResult(bool success) {
                             success);
 }
 
+void RecordSharedCredentialUploadDuration(base::TimeDelta upload_duration) {
+  base::UmaHistogramTimes(
+      "Nearby.Presence.Credentials.Upload.ServerRequestDuration",
+      upload_duration);
+}
+
 void RecordSharedCredentialDownloadFailureReason(
     ash::nearby::NearbyHttpResult failure_reason) {
   base::UmaHistogramEnumeration(
@@ -40,6 +46,41 @@ void RecordSharedCredentialDownloadTotalAttemptsNeededCount(int attempt_count) {
 void RecordSharedCredentialDownloadResult(bool success) {
   base::UmaHistogramBoolean("Nearby.Presence.Credentials.Download.Result",
                             success);
+}
+
+void RecordFirstTimeRegistrationFlowResult(FirstTimeRegistrationResult result) {
+  base::UmaHistogramEnumeration(
+      "Nearby.Presence.Credentials.FirstTimeRegistration.Result", result);
+}
+
+void RecordSharedCredentialDownloadDuration(base::TimeDelta download_duration) {
+  base::UmaHistogramTimes(
+      "Nearby.Presence.Credentials.Download.ServerRequestDuration",
+      download_duration);
+}
+
+void RecordFirstTimeServerRegistrationFailureReason(
+    ash::nearby::NearbyHttpResult failure_reason) {
+  base::UmaHistogramEnumeration(
+      "Nearby.Presence.Credentials.FirstTimeServerRegistration.FailureReason",
+      failure_reason);
+}
+
+void RecordFirstTimeServerRegistrationTotalAttemptsNeededCount(
+    int attempt_count) {
+  base::UmaHistogramExactLinear(
+      "Nearby.Presence.Credentials.FirstTimeServerRegistration."
+      "AttemptsNeededCount",
+      attempt_count,
+      /*exclusive_max=*/10);
+}
+
+void RecordFirstTimeServerRegistrationDuration(
+    base::TimeDelta registration_duration) {
+  base::UmaHistogramTimes(
+      "Nearby.Presence.Credentials.FirstTimeServerRegistration."
+      "ServerRequestDuration",
+      registration_duration);
 }
 
 }  // namespace ash::nearby::presence::metrics

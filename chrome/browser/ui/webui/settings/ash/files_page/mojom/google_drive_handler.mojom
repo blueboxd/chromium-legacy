@@ -20,6 +20,9 @@ struct Status {
   // The current stage the pin manager is going through.
   drivefs.pin_manager_types.mojom.Stage stage;
 
+  // The number of listed files during the `kListingFiles` stage.
+  uint64 listed_files;
+
   // Whether the stage returned is an error.
   bool is_error;
 };
@@ -39,9 +42,8 @@ interface PageHandler {
   // method exposed below.
   CalculateRequiredSpace();
 
-  // Returns the current size used by all the pinned files for DriveFS as a
-  // string. This string includes the units, e.g. 500 MB.
-  GetTotalPinnedSize() => (string? size);
+  // Returns the current size of the users GCache content_cache, e.g. 500 MB.
+  GetContentCacheSize() => (string? size);
 
   // Unpins all files then force evicts them from the Drive cache (does not
   // force evict hosted documents).

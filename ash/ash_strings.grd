@@ -306,6 +306,10 @@ Style notes:
         <ph name="ime">$8<ex>Using US keyboard</ex></ph>
         <ph name="locale">$9<ex>Using English</ex></ph>
       </message>
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK_ACCESSIBLE_DESCRIPTION" is_accessibility_with_no_ui="true" desc="The accessible description of hotspot and network in the status tray and the information on it.">
+        <ph name="hotspot">$1<ex>Hotspot on, no devices connected</ex></ph>,
+        <ph name="network">$2<ex>Connected to Google-A, Median signal</ex></ph>
+      </message>
       <message name="IDS_ASH_STATUS_TRAY_PRIVACY_ACCESSIBLE_DESCRIPTION" is_accessibility_with_no_ui="true" desc="The accessible description of privacy in the status tray and the information on it.">
         <ph name="mic">$1<ex>A virtual machine is using your microphone</ex></ph>,
         <ph name="camera">$2<ex>A virtual machine is using your camera</ex></ph>
@@ -435,9 +439,6 @@ Style notes:
       </message>
       <message name="IDS_ASH_STATUS_TRAY_LOCK" desc="The label used for the button in the status tray to lock the screen.">
         Lock
-      </message>
-      <message name="IDS_ASH_STATUS_TRAY_POWER_OFF" desc="The label used for the button in the status tray to turn off the device.">
-        Power off
       </message>
       <message name="IDS_ASH_STATUS_TRAY_MESSAGE_NOT_ALLOWED_LACROS" desc="The error message multiple signin is prevented because Lacros is enabled.">
         Signing in a second user is not supported if Lacros is enabled. Please use a second browser profile in Lacros instead or disable Lacros and try again.
@@ -771,6 +772,15 @@ Style notes:
       </message>
       <message name="IDS_ASH_STATUS_TRAY_BLUETOOTH_DISCONNECTED_TOAST" desc="The text used in the toast shown when a new Bluetooth device disconnected from Chromebook.">
       <ph name="DEVICE_NAME">$1<ex>Pixel Buds</ex></ph> disconnected
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE" translateable="false" desc="The label used as the header in the focus mode panel.">
+        Focus
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_TIME_SUBLABEL" translateable="false" desc="The text used for the subtext of the quick settings pod for an expected session duration.">
+      <ph name="MINUTES_VALUE">$1<ex>30</ex></ph> min
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_FOCUS_MODE_DO_NOT_DISTURB" translateable="false" desc="The label text shown on the left side of do not disturb button in Focus mode settings panel.">
+      Do not disturb while in Focus
       </message>
 
       <message name="IDS_ASH_STATUS_TRAY_UPDATE" desc="The label used in the tray popup to notify that the user should restart to get system updates.">
@@ -1330,6 +1340,11 @@ Style notes:
         With dictation, you can type using your voice. Press the dictation key or select the microphone icon at the bottom of the screen when you’re on a text field. Your dictation language is set to <ph name="language">$1<ex>English (United States)</ex></ph>. Speech is sent to Google for processing. You can change the dictation language anytime in Settings > Accessibility.
       </message>
 
+      <!-- Accessibility nudges -->
+      <message name="IDS_ASH_ACCESSIBILITY_NUDGE_DICTATION_NO_FOCUSED_TEXT_FIELD" desc="Displayed in a nudge when Dictation is stopped automatically because there is no focused text field.">
+        Go to a text field to use Dictation
+      </message>
+
       <message name="IDS_ASH_STATUS_TRAY_ACCESSIBILITY_VIRTUAL_KEYBOARD" desc="The label used in the accessibility menu of the system tray to toggle on/off the onscreen keyboard.">
         On-screen keyboard
       </message>
@@ -1686,6 +1701,14 @@ Style notes:
       <message name="VIDEO_CONFERENCE_RETURN_TO_APP_PERIPHERALS_ACCESSIBLE_NAME" desc="Tooltip shown for the return to app button regarding peripherals in the video conference panel.">
         <ph name="CAPTURE_MEDIUM">$1<ex>Camera</ex></ph> in use.
       </message>
+      <message name="VIDEO_CONFERENCE_RETURN_TO_APP_EXPANDED_ACCESSIBLE_NAME" desc="The part of the accessible name that indicate if the return to app panel is expanded or collapsed.
+      It also contains a separator (comma) to separate it from the rest of the accessible name that comes before it.">
+        , expanded
+      </message>
+      <message name="VIDEO_CONFERENCE_RETURN_TO_APP_COLLAPSED_ACCESSIBLE_NAME" desc="The part of the accessible name that indicate if the return to app panel is expanded or collapsed.
+      It also contains a separator (comma) to separate it from the rest of the accessible name that comes before it.">
+        , collapsed
+      </message>
 
       <!-- Phone Hub tray-->
       <message name="IDS_ASH_PHONE_HUB_TRAY_ACCESSIBLE_NAME" desc="The accessible name of the Phone Hub tray bubble for screen readers.">
@@ -1857,49 +1880,49 @@ Style notes:
         Set up
       </message>
       <message name="IDS_ASH_PHONE_HUB_ALL_FEATURES_OPT_IN_DESCRIPTION" desc="Description for the notification and apps opt in view.">
-        View your phone's recent photos, media, notifications, and apps on your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
+        View your phone's recent photos, media, notifications, and apps
       </message>
       <message name="IDS_ASH_PHONE_HUB_ALL_FEATURES_OPT_IN_SET_UP_BUTTON_ACCESSIBLE_NAME" desc="Accessible name of the set up button in the notification and apps opt in view">
-        Set up your phone's recent photos, media, notifications, and apps on your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
+        Set up viewing your phone's recent photos, media, notifications, and apps
       </message>
       <message name="IDS_ASH_PHONE_HUB_ALL_FEATURES_OPT_IN_DISMISS_BUTTON_ACCESSIBLE_NAME" desc="Accessible name of the dismiss button in the notification and apps opt in view">
-        Dismiss setting up your phone's recent photos, media, notifications, and apps on your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
+        Dismiss setting up viewing your phone's recent photos, media, notifications, and apps
       </message>
       <message name="IDS_ASH_PHONE_HUB_NOTIFICATION_AND_APPS_OPT_IN_DESCRIPTION" desc="Description for the notification and apps opt in view.">
-        View your phone's notifications and apps on your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
+        View your phone's notifications and apps
       </message>
       <message name="IDS_ASH_PHONE_HUB_NOTIFICATION_AND_APPS_OPT_IN_SET_UP_BUTTON_ACCESSIBLE_NAME" desc="Accessible name of the set up button for the notification and apps opt in view.">
-        Set up your phone's notifications and apps on your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
+        Set up viewing your phone's notifications and apps
       </message>
       <message name="IDS_ASH_PHONE_HUB_NOTIFICATION_AND_APPS_OPT_IN_DISMISS_BUTTON_ACCESSIBLE_NAME" desc="Accessible name the dismiss button for the notification and apps opt in view.">
-        Dismiss setting up your phone's notifications and apps on your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
+        Dismiss setting up viewing your phone's notifications and apps
       </message>
       <message name="IDS_ASH_PHONE_HUB_NOTIFICATION_OPT_IN_DESCRIPTION" desc="Description for the notification opt in view.">
-        View your phone's notifications on your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
+        View your phone's notifications
       </message>
       <message name="IDS_ASH_PHONE_HUB_NOTIFICATION_OPT_IN_SET_UP_BUTTON_ACCESSIBLE_NAME" desc="Accessible name of the set up button for the notification opt in view.">
-        Set up viewing your phone's notifications on your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
+        Set up viewing your phone's notifications
       </message>
       <message name="IDS_ASH_PHONE_HUB_NOTIFICATION_OPT_IN_DISMISS_BUTTON_ACCESSIBLE_NAME" desc="Accessible name the dismiss button for the notification opt in view.">
-        Dismiss setting up viewing your phone's notifications on your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
+        Dismiss setting up viewing your phone's notifications
       </message>
       <message name="IDS_ASH_PHONE_HUB_NOTIFICATION_AND_CAMERA_ROLL_OPT_IN_DESCRIPTION" desc="Description for the notification opt in view.">
-        View your phone's recent photos, media, and notifications on your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
+        View your phone's recent photos, media, and notifications
       </message>
       <message name="IDS_ASH_PHONE_HUB_NOTIFICATION_AND_CAMERA_ROLL_OPT_IN_SET_UP_BUTTON_ACCESSIBLE_NAME" desc="Accessible name of the set up button for the notification opt in view.">
-        Set up viewing your phone's recent photos, media, and notifications on your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
+        Set up viewing your phone's recent photos, media, and notifications
       </message>
       <message name="IDS_ASH_PHONE_HUB_NOTIFICATION_AND_CAMERA_ROLL_OPT_IN_DISMISS_BUTTON_ACCESSIBLE_NAME" desc="Accessible name of the dismiss button for the notification opt in view.">
-        Dismiss setting up viewing your phone's recent photos, media, and notifications on your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
+        Dismiss setting up viewing your phone's recent photos, media, and notifications
       </message>
       <message name="IDS_ASH_PHONE_HUB_CAMERA_ROLL_AND_APPS_OPT_IN_DESCRIPTION" desc="Description for the notification opt in view.">
-        View your phone's recent photos, media, and apps on your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
+        View your phone's recent photos, media, and apps
       </message>
       <message name="IDS_ASH_PHONE_HUB_CAMERA_ROLL_AND_APPS_OPT_IN_SET_UP_BUTTON_ACCESSIBLE_NAME" desc="Accessible name of the set up button for the notification opt in view.">
-        View your phone's recent photos, media, and apps on your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
+        Set up viewing your phone's recent photos, media, and apps
       </message>
       <message name="IDS_ASH_PHONE_HUB_CAMERA_ROLL_AND_APPS_OPT_IN_DISMISS_BUTTON_ACCESSIBLE_NAME" desc="Accessible name of the dismiss button for the notification opt in view.">
-        View your phone's recent photos, media, and apps on your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
+        Dismiss setting up viewing your phone's recent photos, media, and apps
       </message>
       <message name="IDS_ASH_PHONE_HUB_APP_STREAM_LAUNCHER_TITLE" desc="Title for the launcher that displays apps from your phone.">
         Apps from your phone
@@ -1911,22 +1934,22 @@ Style notes:
         Not supported by app
       </message>
       <message name="IDS_ASH_PHONE_HUB_APPS_OPT_IN_DESCRIPTION" desc="Description for the apps opt in view.">
-        View your phone's apps on your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
+        View your phone's apps
       </message>
       <message name="IDS_ASH_PHONE_HUB_APPS_OPT_IN_SET_UP_BUTTON_ACCESSIBLE_NAME" desc="Accessible name the set up button for the apps opt in view.">
-        Set up viewing your phone's apps on your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
+        Set up viewing your phone's apps
       </message>
       <message name="IDS_ASH_PHONE_HUB_APPS_OPT_IN_DISMISS_BUTTON_ACCESSIBLE_NAME" desc="Accessible name of the dismiss button for the apps opt in view.">
-        Dismiss setting up viewing your phone's apps on your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
+        Dismiss setting up viewing your phone's apps
       </message>
       <message name="IDS_ASH_PHONE_HUB_CAMERA_ROLL_OPT_IN_DESCRIPTION" desc="Description for the camera roll opt in view.">
-        View your phone's recent photos and media on your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
+        View your phone's recent photos and media
       </message>
       <message name="IDS_ASH_PHONE_HUB_CAMERA_ROLL_OPT_IN_SET_UP_BUTTON_ACCESSIBLE_NAME" desc="Description for the camera roll opt in view.">
-        Set up viewing your phone's recent photos and media on your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
+        Set up viewing your phone's recent photos and media
       </message>
       <message name="IDS_ASH_PHONE_HUB_CAMERA_ROLL_OPT_IN_DISMISS_BUTTON_ACCESSIBLE_NAME" desc="Description for the camera roll opt in view.">
-        Dismiss setting up viewing your phone's recent photos and media on your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
+        Dismiss setting up viewing your phone's recent photos and media
       </message>
       <message name="IDS_ASH_PHONE_HUB_NOTIFICATION_HOTSPOT_FAILED_TITLE" desc="Title inside a PhoneHub notification when enable hotspot failed to find a connection.">
         Hotspot connection failed
@@ -2091,10 +2114,10 @@ Style notes:
         CPU usage snapshot, <ph name="CPU_USEAGE">$1<ex>89</ex></ph>%. Temperature <ph name="TEMPERATURE">$2<ex>34</ex></ph> degrees celsius, current speed: <ph name="CPU_AVERAGE_CURRENT_FREQUENCY_GHZ">$3<ex>1.52</ex></ph>GHz
       </message>
       <message name="IDS_ASH_MEMORY_USAGE_IN_LAUNCHER_DESCRIPTION" desc="Message content for the description of the answer card with the current memory usage information in the launcher.">
-        Memory <ph name="USED_MEMORY">$1<ex>2.4 GB</ex></ph> | <ph name="TOTAL_MEMORY">$2<ex>7.6 GB</ex></ph> total
+        Memory <ph name="AVAILABLE_MEMORY">$1<ex>2.4 GB</ex></ph> | <ph name="TOTAL_MEMORY">$2<ex>7.6 GB</ex></ph> total
       </message>
       <message name="IDS_ASH_MEMORY_USAGE_IN_LAUNCHER_ACCESSIBILITY_LABEL" desc="Message content for the accessibility label of the answer card with the current memory usage information in the launcher.">
-        Memory <ph name="USED_MEMORY">$1<ex>2.4 GB</ex></ph> available out of <ph name="TOTAL_MEMORY">$2<ex>7.6 GB</ex></ph> total
+        Memory <ph name="AVAILABLE_MEMORY">$1<ex>2.4 GB</ex></ph> available out of <ph name="TOTAL_MEMORY">$2<ex>7.6 GB</ex></ph> total
       </message>
       <message name="IDS_ASH_BATTERY_STATUS_IN_LAUNCHER_DESCRIPTION_LEFT_SHORT" desc="Message content for the short description on the left of the battery answer card.">
         Battery <ph name="BATTERY_PERCENTAGE">$1<ex>56</ex></ph>%
@@ -2511,13 +2534,19 @@ Style notes:
         Last desk can't be removed.
       </message>
       <message name="IDS_ASH_DESKS_ACTIVE_DESK_MINIVIEW_A11Y_EXTRA_TIP" desc="The accessibility tooltip read by screen readers for a highlighted active desk mini_view.">
-        Active desk.
+        active desk
       </message>
       <message name="IDS_ASH_DESKS_INACTIVE_DESK_MINIVIEW_A11Y_EXTRA_TIP" desc="The accessibility tooltip read by screen readers for a highlighted inactive desk mini_view.">
-        Inactive desk.
+        inactive desk
+      </message>
+      <message name="IDS_ASH_DESKS_DESK_NAME" desc="Alert when highlighting the desk name">
+        Desk name
       </message>
       <message name="IDS_ASH_DESKS_DESK_ACCESSIBLE_NAME" desc="The full accessible desk name">
         Desk: <ph name="DESK_NAME">$1</ph>
+      </message>
+      <message name="IDS_ASH_DESKS_DESK_PREVIEW_A11Y_NAME" desc="The full accessible desk name">
+        Go to <ph name="ACTIVE_STATE">$1</ph> <ph name="DESK_NAME">$2</ph> button.
       </message>
       <message name="IDS_ASH_DESKS_DESK_NAME_COMMIT" desc="Alert when the desk name is committed">
         Desk name was changed to <ph name="DESK_NAME">$1</ph>
@@ -3159,6 +3188,14 @@ Turning on battery saver to increase your battery life.
         Noise cancellation
       </message>
 
+      <message name="IDS_ASH_STATUS_TRAY_AUDIO_INPUT_HFP_MIC_SR" desc="label used for input hfp mic sr toggle">
+        Bluetooth Super Resolution
+      </message>
+
+      <message name="IDS_ASH_STATUS_TRAY_AUDIO_NBS_MESSAGE_HFP_MIC_SR_SUPPORTED" desc="label used to warn that NBS is in use and hfp mic sr supported">
+        Your Chromebook or Bluetooth device is using an older version of Bluetooth. Turn on the Bluetooth Super Resolution or use internal microphone for better audio quality.
+      </message>
+
       <message name="IDS_ASH_STATUS_TRAY_AUDIO_NBS_MESSAGE" desc="label used to warn that NBS is in use">
         Your Chromebook or Bluetooth device is using an older version of Bluetooth. Use the internal microphone for better audio quality.
       </message>
@@ -3428,6 +3465,12 @@ Turning on battery saver to increase your battery life.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_NETWORK_LIST_ACTIVATING" desc="Message for the network list when activating a network.">
         <ph name="NAME">$1<ex>YBH Cellular</ex></ph>: Activating...
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK_LIST_ACTIVATING_WITH_NICK_NAME" desc="Message for the network list when activating a network.">
+        <ph name="NAME">$1<ex>YBH Cellular</ex></ph> · <ph name="SERVICE_PROVIDER">$2<ex>T-Mobile</ex></ph>: Activating...
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK_LIST_ITEM_TITLE" desc="Label for a network shown in a list in settings and oobe displaying its name and subtitle.">
+        <ph name="NETWORK_NAME">$1<ex>My Verizon eSIM</ex></ph> · <ph name="SERVICE_PROVIDER">$2<ex>Verizon Wireless</ex></ph>
       </message>
       <message name="IDS_ASH_STATUS_TRAY_NETWORK_NOT_CONNECTED" desc="Description in status area or network list when no network is connected.">
         No network
@@ -6935,6 +6978,12 @@ New install
       <message name="IDS_GLANCEABLES_TASKS_SELECTED_LIST_EMPTY_ACCESSIBLE_NAME" desc="The glanceable displays tasks items fetched from Google Tasks API. This is the text announced by ChromeVox in case the selected tasks list is empty.">
         Selected list empty, navigate down to add a new task
       </message>
+      <message name="IDS_GLANCEABLES_CLASSROOM_HEADER_ICON_ACCESSIBLE_NAME" desc="The glanceable displays classroom items fetched from Google Classroom API. This is the a11y name announced by ChromeVox for the top left corner header icon that opens Google Classroom website (home page).">
+        Google Classroom website
+      </message>
+      <message name="IDS_GLANCEABLES_TASKS_HEADER_ICON_ACCESSIBLE_NAME" desc="The glanceable displays tasks items fetched from Google Tasks API. This is the a11y name announced by ChromeVox for the top left corner header icon that opens Google Calendar website with the companion app panel open.">
+        Google tasks on web
+      </message>
 
       <!-- Do Not Disturb notification -->
       <message name="IDS_ASH_DO_NOT_DISTURB_NOTIFICATION_TITLE" desc="Label used for the notification that shows up when the 'Do Not Disturb' feature is enabled.">
@@ -6979,6 +7028,9 @@ To shut down the device, press and hold the power button on the device again.
       </message>
 
       <!-- Welcome Tour -->
+      <message name="IDS_ASH_WELCOME_TOUR_COMPLETE_BUTTON_TEXT" desc="Text shown on the button that completes the System UI Welcome Tour tutorial when triggered and opens the Explore app.">
+       Open Explore
+      </message>
       <message name="IDS_ASH_WELCOME_TOUR_DIALOG_ACCEPT_BUTTON_TEXT" desc="Text shown on the dialog's button that starts the System UI Welcome Tour tutorial when triggered.">
         Quick tour
       </message>
@@ -6986,10 +7038,10 @@ To shut down the device, press and hold the power button on the device again.
         No thanks
       </message>
       <message name="IDS_ASH_WELCOME_TOUR_DIALOG_DESCRIPTION_TEXT" desc="Text shown in the body of the dialog as part of the System UI Welcome Tour.">
-        Take a quick tour to get off to a smooth start. With 6 steps, it will just take a few minutes.
+        Take a quick tour to learn how to get around your Chromebook. Get up and running in 6 steps.
       </message>
       <message name="IDS_ASH_WELCOME_TOUR_DIALOG_TITLE_TEXT" desc="Text shown as the Welcome Tour dialog title.">
-        Hi there. Chromebooks are a little different.
+        Hi there. Chromebook is a little different.
       </message>
       <message name="IDS_ASH_WELCOME_TOUR_EXPLORE_APP_BUBBLE_BODY_TEXT" desc="Text shown in the body of a help bubble anchored to the Explore app as part of the System UI Welcome Tour.">
         Those were the basics! Continue in Explore, our built-in app for tips and help. You’ll find tips for getting started, recommended apps, special offers, and the newest Chromebook features.

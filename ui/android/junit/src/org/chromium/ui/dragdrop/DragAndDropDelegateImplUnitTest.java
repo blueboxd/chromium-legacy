@@ -212,8 +212,8 @@ public class DragAndDropDelegateImplUnitTest {
     @Test
     public void testStartDragAndDrop_TextLink() {
         final Bitmap shadowImage = Bitmap.createBitmap(100, 200, Bitmap.Config.ALPHA_8);
-        final DropDataAndroid dropData = DropDataAndroid.create(
-                "text", JUnitTestGURLs.getGURL(JUnitTestGURLs.EXAMPLE_URL), null, null, null);
+        final DropDataAndroid dropData =
+                DropDataAndroid.create("text", JUnitTestGURLs.EXAMPLE_URL, null, null, null);
 
         mDragAndDropDelegateImpl.startDragAndDrop(mContainerView, shadowImage, dropData,
                 /*cursorOffsetX*/ 0, /*cursorOffsetY*/ 0, /*dragObjRectWidth*/ 100,
@@ -363,44 +363,42 @@ public class DragAndDropDelegateImplUnitTest {
 
     @Test
     public void testTextForLinkData_UrlWithNoTitle() {
-        final DropDataAndroid dropData = DropDataAndroid.create(
-                "", JUnitTestGURLs.getGURL(JUnitTestGURLs.EXAMPLE_URL), null, null, null);
+        final DropDataAndroid dropData =
+                DropDataAndroid.create("", JUnitTestGURLs.EXAMPLE_URL, null, null, null);
 
         String text = DragAndDropDelegateImpl.getTextForLinkData(dropData);
-        Assert.assertEquals("Text should match.", JUnitTestGURLs.EXAMPLE_URL, text);
+        Assert.assertEquals("Text should match.", JUnitTestGURLs.EXAMPLE_URL.getSpec(), text);
     }
 
     @Test
     public void testTextForLinkData_UrlWithTitle() {
         String linkTitle = "Link text";
-        final DropDataAndroid dropData = DropDataAndroid.create(
-                linkTitle, JUnitTestGURLs.getGURL(JUnitTestGURLs.EXAMPLE_URL), null, null, null);
+        final DropDataAndroid dropData =
+                DropDataAndroid.create(linkTitle, JUnitTestGURLs.EXAMPLE_URL, null, null, null);
 
         String text = DragAndDropDelegateImpl.getTextForLinkData(dropData);
-        Assert.assertEquals(
-                "Text should match.", linkTitle + "\n" + JUnitTestGURLs.EXAMPLE_URL, text);
+        Assert.assertEquals("Text should match.",
+                linkTitle + "\n" + JUnitTestGURLs.EXAMPLE_URL.getSpec(), text);
     }
 
     @Test
     @Config(sdk = VERSION_CODES.O)
     public void testClipData_ImageWithUrl_PostO() {
-        final DropDataAndroid dropData =
-                DropDataAndroid.create("", JUnitTestGURLs.getGURL(JUnitTestGURLs.EXAMPLE_URL),
-                        new byte[] {1, 2, 3, 4}, "png", IMAGE_FILENAME);
+        final DropDataAndroid dropData = DropDataAndroid.create(
+                "", JUnitTestGURLs.EXAMPLE_URL, new byte[] {1, 2, 3, 4}, "png", IMAGE_FILENAME);
 
         ClipData clipData = mDragAndDropDelegateImpl.buildClipData(dropData);
         Assert.assertEquals(
                 "Image ClipData should include image and URL info.", 2, clipData.getItemCount());
-        Assert.assertEquals("Image URL info should match.", JUnitTestGURLs.EXAMPLE_URL,
+        Assert.assertEquals("Image URL info should match.", JUnitTestGURLs.EXAMPLE_URL.getSpec(),
                 clipData.getItemAt(1).getText());
     }
 
     @Test
     @Config(sdk = VERSION_CODES.N_MR1)
     public void testClipData_ImageWithUrl_PreO() {
-        final DropDataAndroid dropData =
-                DropDataAndroid.create("", JUnitTestGURLs.getGURL(JUnitTestGURLs.EXAMPLE_URL),
-                        new byte[] {1, 2, 3, 4}, "png", IMAGE_FILENAME);
+        final DropDataAndroid dropData = DropDataAndroid.create(
+                "", JUnitTestGURLs.EXAMPLE_URL, new byte[] {1, 2, 3, 4}, "png", IMAGE_FILENAME);
 
         ClipData clipData = mDragAndDropDelegateImpl.buildClipData(dropData);
         Assert.assertEquals(
@@ -409,8 +407,8 @@ public class DragAndDropDelegateImplUnitTest {
 
     @Test
     public void testClipData_TextLink_NonNullIntent() {
-        final DropDataAndroid dropData = DropDataAndroid.create(
-                "", JUnitTestGURLs.getGURL(JUnitTestGURLs.EXAMPLE_URL), null, null, null);
+        final DropDataAndroid dropData =
+                DropDataAndroid.create("", JUnitTestGURLs.EXAMPLE_URL, null, null, null);
         mDragAndDropDelegateImpl.setDragAndDropBrowserDelegate(
                 createDragAndDropBrowserDelegate(false, false, null, new Intent()));
         ClipData clipData = mDragAndDropDelegateImpl.buildClipData(dropData);
@@ -418,7 +416,7 @@ public class DragAndDropDelegateImplUnitTest {
                 clipData.getDescription().hasMimeType(ClipDescription.MIMETYPE_TEXT_PLAIN));
         Assert.assertTrue("Link ClipData should include intent MIME type.",
                 clipData.getDescription().hasMimeType(ClipDescription.MIMETYPE_TEXT_INTENT));
-        Assert.assertEquals("Dragged link text should match.", JUnitTestGURLs.EXAMPLE_URL,
+        Assert.assertEquals("Dragged link text should match.", JUnitTestGURLs.EXAMPLE_URL.getSpec(),
                 clipData.getItemAt(0).getText());
         Assert.assertNotNull(
                 "ClipData intent should not be null.", clipData.getItemAt(0).getIntent());
@@ -426,8 +424,8 @@ public class DragAndDropDelegateImplUnitTest {
 
     @Test
     public void testClipData_TextLink_NullIntent() {
-        final DropDataAndroid dropData = DropDataAndroid.create(
-                "", JUnitTestGURLs.getGURL(JUnitTestGURLs.EXAMPLE_URL), null, null, null);
+        final DropDataAndroid dropData =
+                DropDataAndroid.create("", JUnitTestGURLs.EXAMPLE_URL, null, null, null);
         mDragAndDropDelegateImpl.setDragAndDropBrowserDelegate(
                 createDragAndDropBrowserDelegate(false, false, null, null));
         ClipData clipData = mDragAndDropDelegateImpl.buildClipData(dropData);
@@ -435,7 +433,7 @@ public class DragAndDropDelegateImplUnitTest {
                 clipData.getDescription().hasMimeType(ClipDescription.MIMETYPE_TEXT_PLAIN));
         Assert.assertFalse("Link ClipData should not include intent MIME type.",
                 clipData.getDescription().hasMimeType(ClipDescription.MIMETYPE_TEXT_INTENT));
-        Assert.assertEquals("Dragged link text should match.", JUnitTestGURLs.EXAMPLE_URL,
+        Assert.assertEquals("Dragged link text should match.", JUnitTestGURLs.EXAMPLE_URL.getSpec(),
                 clipData.getItemAt(0).getText());
     }
 

@@ -5,6 +5,9 @@
 import {TestRunner} from 'test_runner';
 import {ConsoleTestRunner} from 'console_test_runner';
 
+import * as SDK from 'devtools/core/sdk/sdk.js';
+import * as Common from 'devtools/core/common/common.js';
+
 (async function() {
   await TestRunner.loadLegacyModule('console');
   TestRunner.addResult(`Tests that ignore-listed sourcemaps properly detach on reload crbug.com/888688`);
@@ -14,7 +17,7 @@ import {ConsoleTestRunner} from 'console_test_runner';
 
   TestRunner.addSniffer(Bindings.IgnoreListManager.prototype, 'patternChangeFinishedForTests', step1);
   var frameworkRegexString = '.*';
-  Common.settingForTest('skipStackFramesPattern').set('.*');
+  Common.Settings.settingForTest('skipStackFramesPattern').set('.*');
 
   async function step1() {
     TestRunner.addResult('Evaluating script with source map');
@@ -23,7 +26,7 @@ import {ConsoleTestRunner} from 'console_test_runner';
     await ConsoleTestRunner.waitForConsoleMessagesPromise(1);
 
     await TestRunner.reloadPagePromise();
-    TestRunner.addResult(`After reload, Console message count: ${SDK.ConsoleModel.allMessagesUnordered().length}`);
+    TestRunner.addResult(`After reload, Console message count: ${SDK.ConsoleModel.ConsoleModel.allMessagesUnordered().length}`);
     TestRunner.completeTest();
   }
 })();

@@ -89,12 +89,17 @@ class DebugConnector : public auction_worklet::mojom::BidderWorklet {
   }
 
   void ReportWin(
+      bool is_for_additional_bid,
       mojom::ReportingIdField reporting_id_field,
       const std::string& reporting_id,
       const absl::optional<std::string>& auction_signals_json,
       const absl::optional<std::string>& per_buyer_signals_json,
       const absl::optional<GURL>& direct_from_seller_per_buyer_signals,
+      const absl::optional<std::string>&
+          direct_from_seller_per_buyer_signals_header_ad_slot,
       const absl::optional<GURL>& direct_from_seller_auction_signals,
+      const absl::optional<std::string>&
+          direct_from_seller_auction_signals_header_ad_slot,
       const std::string& seller_signals_json,
       mojom::KAnonymityBidMode kanon_mode,
       bool bid_is_kanon,
@@ -111,8 +116,7 @@ class DebugConnector : public auction_worklet::mojom::BidderWorklet {
       uint8_t browser_signal_recency,
       const url::Origin& browser_signal_seller_origin,
       const absl::optional<url::Origin>& browser_signal_top_level_seller_origin,
-      uint32_t bidding_data_version,
-      bool has_biding_data_version,
+      absl::optional<uint32_t> bidding_data_version,
       uint64_t trace_id,
       ReportWinCallback report_win_callback) override {
     ADD_FAILURE() << "ReportWin shouldn't be called on DebugConnector";

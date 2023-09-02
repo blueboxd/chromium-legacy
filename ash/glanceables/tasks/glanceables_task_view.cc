@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "ash/glanceables/common/glanceables_view_id.h"
+#include "ash/glanceables/glanceables_metrics.h"
 #include "ash/glanceables/glanceables_v2_controller.h"
 #include "ash/glanceables/tasks/glanceables_tasks_client.h"
 #include "ash/resources/vector_icons/vector_icons.h"
@@ -16,17 +17,20 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_id.h"
 #include "ash/style/typography.h"
+#include "ash/system/time/calendar_utils.h"
 #include "ash/system/time/date_helper.h"
 #include "base/strings/string_util.h"
 #include "base/types/cxx23_to_underlying.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/chromeos/styles/cros_tokens_color_mappings.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/vector_icon_types.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/button.h"
+#include "ui/views/controls/focus_ring.h"
 #include "ui/views/controls/image_view.h"
 
 namespace ash {
@@ -41,10 +45,10 @@ constexpr auto kSecondRowItemsMargin = gfx::Insets::TLBR(0, 0, 0, 4);
 constexpr auto kSingleRowButtonMargin = gfx::Insets::VH(13, 18);
 constexpr auto kDoubleRowButtonMargin = gfx::Insets::VH(16, 18);
 
-constexpr auto kSingleRowTextMargins = gfx::Insets::VH(13, 0);
-constexpr auto kDoubleRowTextMargins = gfx::Insets::VH(7, 0);
+constexpr auto kSingleRowTextMargins = gfx::Insets::TLBR(13, 0, 13, 16);
+constexpr auto kDoubleRowTextMargins = gfx::Insets::TLBR(7, 0, 7, 16);
 
-views::Label* SetupLabel(views::FlexLayoutView* parent) {
+views::Label* SetupLabel(views::View* parent) {
   views::Label* label = parent->AddChildView(std::make_unique<views::Label>());
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   // Views should not be individually selected for accessibility. Accessible
@@ -56,10 +60,17 @@ views::Label* SetupLabel(views::FlexLayoutView* parent) {
 }
 
 std::u16string GetFormattedDueDate(const base::Time& due) {
+  // Google Tasks API does not respect time portion of the date and always
+  // returns "YYYY-MM-DDT00:00:00.000Z" format (see "due" field
+  // https://developers.google.com/tasks/reference/rest/v1/tasks). Treating this
+  // date in UTC format as is leads to showing one day less in timezones to the
+  // west of UTC. The following line adjusts `due` so that it becomes a
+  // **local** midnight instead.
+  const auto adjusted_due = due - calendar_utils::GetTimeDifference(due);
   const auto midnight_today = base::Time::Now().LocalMidnight();
   const auto midnight_tomorrow = midnight_today + base::Days(1);
 
-  if (midnight_today <= due && due < midnight_tomorrow) {
+  if (midnight_today <= adjusted_due && adjusted_due < midnight_tomorrow) {
     return l10n_util::GetStringUTF16(IDS_GLANCEABLES_DUE_TODAY);
   }
 
@@ -67,7 +78,7 @@ std::u16string GetFormattedDueDate(const base::Time& due) {
   CHECK(date_helper);
   const auto formatter =
       date_helper->CreateSimpleDateFormatter(kFormatterPattern);
-  return date_helper->GetFormattedTime(&formatter, due);
+  return date_helper->GetFormattedTime(&formatter, adjusted_due);
 }
 
 std::unique_ptr<views::ImageView> CreateSecondRowIcon(
@@ -92,6 +103,8 @@ class GlanceablesTaskView::CheckButton : public views::ImageButton {
       : views::ImageButton(std::move(pressed_callback)) {
     SetAccessibleRole(ax::mojom::Role::kCheckBox);
     UpdateImage();
+    SetFlipCanvasOnPaintForRTLUI(/*enable=*/false);
+    views::FocusRing::Get(this)->SetColorId(cros_tokens::kCrosSysFocusRing);
   }
 
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
@@ -148,11 +161,11 @@ GlanceablesTaskView::GlanceablesTaskView(const std::string& task_list_id,
   contents_view_->SetOrientation(views::LayoutOrientation::kVertical);
   contents_view_->SetProperty(
       views::kFlexBehaviorKey,
-      views::FlexSpecification(views::MinimumFlexSizeRule::kPreferred,
+      views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToZero,
                                views::MaximumFlexSizeRule::kUnbounded));
 
   tasks_title_view_ =
-      contents_view_->AddChildView(std::make_unique<views::FlexLayoutView>());
+      contents_view_->AddChildView(std::make_unique<views::BoxLayoutView>());
   tasks_details_view_ =
       contents_view_->AddChildView(std::make_unique<views::FlexLayoutView>());
   tasks_details_view_->SetCrossAxisAlignment(views::LayoutAlignment::kCenter);
@@ -178,6 +191,8 @@ GlanceablesTaskView::GlanceablesTaskView(const std::string& task_list_id,
 
     views::Label* due_date_label = SetupLabel(tasks_details_view_);
     due_date_label->SetText(formatted_due_date);
+    due_date_label->SetID(
+        base::to_underlying(GlanceablesViewId::kTaskItemDueLabel));
     due_date_label->SetProperty(views::kMarginsKey, kSecondRowItemsMargin);
     due_date_label->SetFontList(
         TypographyProvider::Get()->ResolveTypographyToken(
@@ -229,20 +244,16 @@ GlanceablesTaskView::GlanceablesTaskView(const std::string& task_list_id,
 GlanceablesTaskView::~GlanceablesTaskView() = default;
 
 void GlanceablesTaskView::ButtonPressed() {
-  if (button_->checked()) {
-    return;
-  }
-
+  bool target_state = !button_->checked();
   // Visually mark the task as completed.
-  button_->SetChecked(true);
-  SetupTasksLabel(/*completed=*/true);
+  button_->SetChecked(target_state);
+  SetupTasksLabel(/*completed=*/target_state);
+  RecordTaskMarkedAsCompleted(target_state);
 
   ash::Shell::Get()
       ->glanceables_v2_controller()
       ->GetTasksClient()
-      ->MarkAsCompleted(task_list_id_, task_id_,
-                        base::BindOnce(&GlanceablesTaskView::MarkedAsCompleted,
-                                       weak_ptr_factory_.GetWeakPtr()));
+      ->MarkAsCompleted(task_list_id_, task_id_, /*completed=*/target_state);
 }
 
 const views::ImageButton* GlanceablesTaskView::GetButtonForTest() const {
@@ -251,15 +262,6 @@ const views::ImageButton* GlanceablesTaskView::GetButtonForTest() const {
 
 bool GlanceablesTaskView::GetCompletedForTest() const {
   return button_->checked();
-}
-
-void GlanceablesTaskView::MarkedAsCompleted(bool success) {
-  if (!success) {
-    SetupTasksLabel(/*completed=*/false);
-  }
-
-  // Uncheck button if the tasks is not successfully marked as completed.
-  button_->SetChecked(success);
 }
 
 void GlanceablesTaskView::SetupTasksLabel(bool completed) {

@@ -16,9 +16,10 @@
 #include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/core/SkSurfaceProps.h"
 #include "third_party/skia/include/gpu/GrBackendSemaphore.h"
-#include "third_party/skia/include/gpu/GrBackendSurfaceMutableState.h"
 #include "third_party/skia/include/gpu/GrDirectContext.h"
+#include "third_party/skia/include/gpu/MutableTextureState.h"
 #include "third_party/skia/include/gpu/ganesh/SkSurfaceGanesh.h"
+#include "third_party/skia/include/gpu/ganesh/vk/GrVkBackendSurface.h"
 #include "third_party/skia/include/gpu/vk/GrVkTypes.h"
 #include "third_party/skia/include/private/chromium/GrPromiseImageTexture.h"
 
@@ -49,7 +50,7 @@ ExternalVkImageSkiaImageRepresentation::BeginWriteAccess(
     const gfx::Rect& update_rect,
     std::vector<GrBackendSemaphore>* begin_semaphores,
     std::vector<GrBackendSemaphore>* end_semaphores,
-    std::unique_ptr<GrBackendSurfaceMutableState>* end_state) {
+    std::unique_ptr<skgpu::MutableTextureState>* end_state) {
   DCHECK_EQ(access_mode_, AccessMode::kNone);
 
   auto* gr_context = context_state_->gr_context();
@@ -101,7 +102,7 @@ ExternalVkImageSkiaImageRepresentation::BeginWriteAccess(
     // If Vulkan/GL/Dawn share the same memory backing, we need to set
     // |end_state| VK_QUEUE_FAMILY_EXTERNAL, and then the caller will set the
     // VkImage to VK_QUEUE_FAMILY_EXTERNAL before calling EndAccess().
-    *end_state = std::make_unique<GrBackendSurfaceMutableState>(
+    *end_state = std::make_unique<skgpu::MutableTextureState>(
         VK_IMAGE_LAYOUT_UNDEFINED, VK_QUEUE_FAMILY_EXTERNAL);
   }
 
@@ -113,7 +114,7 @@ std::vector<sk_sp<GrPromiseImageTexture>>
 ExternalVkImageSkiaImageRepresentation::BeginWriteAccess(
     std::vector<GrBackendSemaphore>* begin_semaphores,
     std::vector<GrBackendSemaphore>* end_semaphores,
-    std::unique_ptr<GrBackendSurfaceMutableState>* end_state) {
+    std::unique_ptr<skgpu::MutableTextureState>* end_state) {
   DCHECK_EQ(access_mode_, AccessMode::kNone);
 
   auto promise_textures =
@@ -129,7 +130,7 @@ ExternalVkImageSkiaImageRepresentation::BeginWriteAccess(
   // |end_state| VK_QUEUE_FAMILY_EXTERNAL, and then the caller will set the
   // VkImage to VK_QUEUE_FAMILY_EXTERNAL before calling EndAccess().
   if (backing_impl()->need_synchronization()) {
-    *end_state = std::make_unique<GrBackendSurfaceMutableState>(
+    *end_state = std::make_unique<skgpu::MutableTextureState>(
         VK_IMAGE_LAYOUT_UNDEFINED, VK_QUEUE_FAMILY_EXTERNAL);
   }
 
@@ -158,7 +159,7 @@ std::vector<sk_sp<GrPromiseImageTexture>>
 ExternalVkImageSkiaImageRepresentation::BeginReadAccess(
     std::vector<GrBackendSemaphore>* begin_semaphores,
     std::vector<GrBackendSemaphore>* end_semaphores,
-    std::unique_ptr<GrBackendSurfaceMutableState>* end_state) {
+    std::unique_ptr<skgpu::MutableTextureState>* end_state) {
   DCHECK_EQ(access_mode_, AccessMode::kNone);
 
   auto promise_textures =
@@ -172,7 +173,7 @@ ExternalVkImageSkiaImageRepresentation::BeginReadAccess(
   // VK_QUEUE_FAMILY_EXTERNAL, and then the caller will set the VkImage to
   // VK_QUEUE_FAMILY_EXTERNAL before calling EndAccess().
   if (backing_impl()->need_synchronization()) {
-    *end_state = std::make_unique<GrBackendSurfaceMutableState>(
+    *end_state = std::make_unique<skgpu::MutableTextureState>(
         VK_IMAGE_LAYOUT_UNDEFINED, VK_QUEUE_FAMILY_EXTERNAL);
   }
 
@@ -233,7 +234,8 @@ void ExternalVkImageSkiaImageRepresentation::EndAccess(bool readonly) {
   // the client TakeEndState() and asserting that the |end_state_| is null here.
 #if DCHECK_IS_ON()
   GrVkImageInfo info;
-  auto result = backing_impl()->backend_texture().getVkImageInfo(&info);
+  auto result = GrBackendTextures::GetVkImageInfo(
+      backing_impl()->backend_texture(), &info);
   DCHECK(result);
   DCHECK(!backing_impl()->need_synchronization() ||
          info.fCurrentQueueFamily == VK_QUEUE_FAMILY_EXTERNAL);

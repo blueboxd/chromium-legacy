@@ -17,21 +17,23 @@
 #include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/autofill_features.h"
+#include "components/autofill/core/common/autofill_test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
-using testing::_;
-using testing::ElementsAre;
-using testing::ElementsAreArray;
-using testing::NiceMock;
-using testing::Pointee;
-using testing::Ref;
-using testing::Return;
-
 namespace autofill {
 
 namespace {
+
+using test::CreateTestCreditCardFormData;
+using ::testing::_;
+using ::testing::ElementsAre;
+using ::testing::ElementsAreArray;
+using ::testing::NiceMock;
+using ::testing::Pointee;
+using ::testing::Ref;
+using ::testing::Return;
 
 class MockAutofillClient : public TestAutofillClient {
  public:
@@ -90,7 +92,7 @@ class MockBrowserAutofillManager : public TestBrowserAutofillManager {
                const FormFieldData& field,
                const CreditCard& credit_card,
                const std::u16string& cvc,
-               const AutofillTriggerSource trigger_source),
+               const AutofillTriggerDetails& trigger_details),
               (override));
   MOCK_METHOD(void,
               FillOrPreviewCreditCardForm,
@@ -98,14 +100,14 @@ class MockBrowserAutofillManager : public TestBrowserAutofillManager {
                const FormData& form,
                const FormFieldData& field,
                const CreditCard* credit_card,
-               const AutofillTriggerSource trigger_source));
+               const AutofillTriggerDetails& trigger_details));
   MOCK_METHOD(void,
               FillOrPreviewVirtualCardInformation,
               (mojom::AutofillActionPersistence action_persistence,
                const std::string& guid,
                const FormData& form,
                const FormFieldData& field,
-               const AutofillTriggerSource trigger_source));
+               const AutofillTriggerDetails& trigger_details));
   MOCK_METHOD(void,
               DidShowSuggestions,
               (bool has_autofill_suggestions,
@@ -180,8 +182,8 @@ class TouchToFillDelegateAndroidImplUnitTest : public testing::Test {
     ON_CALL(*fast_checkout_client, IsNotShownYet)
         .WillByDefault(testing::Return(true));
 
-    test::CreateTestCreditCardFormData(&form_, /*is_https=*/true,
-                                       /*use_month_type=*/false);
+    form_ = test::CreateTestCreditCardFormData(/*is_https=*/true,
+                                               /*use_month_type=*/false);
     form_.fields[0].is_focusable = true;
   }
 
@@ -225,11 +227,10 @@ TEST_F(TouchToFillDelegateAndroidImplUnitTest, TryToShowTouchToFillSucceeds) {
 
 TEST_F(TouchToFillDelegateAndroidImplUnitTest,
        TryToShowTouchToFillFailsIfNotCreditCardField) {
-  {
-    FormFieldData field;
-    test::CreateTestFormField("Arbitrary", "arbitrary", "", "text", &field);
-    form_.fields.insert(form_.fields.begin(), field);
-  }
+  form_.fields.insert(
+      form_.fields.begin(),
+      test::CreateTestFormField("Arbitrary", "arbitrary", "", "text"));
+
   ASSERT_FALSE(touch_to_fill_delegate_->IsShowingTouchToFill());
 
   TryToShowTouchToFill(/*expected_success=*/false);
@@ -299,8 +300,8 @@ TEST_F(TouchToFillDelegateAndroidImplUnitTest,
 TEST_F(TouchToFillDelegateAndroidImplUnitTest,
        TryToShowTouchToFillFailsIfFormIsNotSecure) {
   // Simulate non-secure form.
-  test::CreateTestCreditCardFormData(&form_, /*is_https=*/false,
-                                     /*use_month_type=*/false);
+  form_ = test::CreateTestCreditCardFormData(/*is_https=*/false,
+                                             /*use_month_type=*/false);
 
   ASSERT_FALSE(touch_to_fill_delegate_->IsShowingTouchToFill());
 

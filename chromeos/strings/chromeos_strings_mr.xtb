@@ -21,6 +21,7 @@
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1145018782460575098">बाह्य डिव्हाइससाठी फर्मवेअर अपडेट करण्याची विंडो खुली आहे. <ph name="NUM_UPDATES" /> अपडेट उपलब्ध आहेत.</translation>
 <translation id="1145516343487477149">मदतपर लेख आणि Chromebook शी संबंधित सामान्य प्रश्नांची उत्तरे पहा</translation>
+<translation id="1154390310959620237">तुम्ही फक्त ५ शॉर्टकट कस्टमाइझ करू शकता. नवीन शॉर्टकट जोडण्यासाठी आधीचा शॉर्टकट हटवा.</translation>
 <translation id="1164939766849482256">डॉन टू डार्क स्क्रीन सेव्हर</translation>
 <translation id="1167755866710282443">की कस्टमाइझ करण्यासाठी मेनू उघडा. हलवण्यासाठी मेनू ड्रॅग करा.</translation>
 <translation id="1175697296044146566">हे <ph name="DEVICE_TYPE" /> <ph name="MANAGER" /> द्वारे व्यवस्थापित केले आहे.</translation>
@@ -133,6 +134,7 @@
 <translation id="1881188606372070653">कायदेशीर कारणांसाठी आशय बदलांची विनंती करण्यासाठी <ph name="BEGIN_LINK1" />कायदेशीर मदत पेज<ph name="END_LINK1" /> वर जा. काही खाते आणि सिस्टीम माहिती Google ला पाठवली जाईल. आम्ही आमचे <ph name="BEGIN_LINK2" />गोपनीयता धोरण<ph name="END_LINK2" /> आणि <ph name="BEGIN_LINK3" />सेवा अटी<ph name="END_LINK3" /> यांच्या अधीन राहून, तुम्ही आम्हाला दिलेल्या माहितीचा वापर तांत्रिक समस्या सोडवण्यात आणि आमच्या सेवांमध्ये सुधारणा करण्यात मदत करण्यासाठी करू.</translation>
 <translation id="1885577615937958993">मीडिया फास्ट फॉरवर्ड करा</translation>
 <translation id="1887850431809612466">हार्डवेअर पुनरावृत्ती</translation>
+<translation id="1897672602657312171">शोध कीशिवाय शॉर्टकटचा वापर केल्याने, काही अ‍ॅप्सच्या शॉर्टकटमध्ये समस्या निर्माण होऊ शकतात. हा शॉर्टकट वापरणे पुढे सुरू ठेवण्यासाठी, तो पुन्हा प्रेस करा किंवा शोध की वापरून नवीन शॉर्टकट प्रेस करा.</translation>
 <translation id="1904932688895783618">हे काही इतर उपयुक्त स्रोत आहेत:</translation>
 <translation id="1905710495812624430">कमाल अनुमती असलेले प्रयत्न ओलांडले.</translation>
 <translation id="1908234395526491708">UDP विनंती पूर्ण करता आली नाही</translation>
@@ -230,12 +232,12 @@
 <translation id="2712812801627182647">TLS ऑथेंटिकेशन की</translation>
 <translation id="2713444072780614174">पांढरा</translation>
 <translation id="2717139507051041123">गडद रंगाचा मोड सुरू करा</translation>
+<translation id="2728460467788544679">सर्व प्रिंट इतिहास साफ करा</translation>
 <translation id="2740531572673183784">ठीक आहे</translation>
 <translation id="2744221223678373668">शेअर</translation>
 <translation id="2751739896257479635">EAP टप्पा 2 ऑथेंटिकेशन</translation>
 <translation id="2783010256799387990">पास झाले</translation>
 <translation id="2787435249130282949">कीबोर्ड उजळ</translation>
-<translation id="2789486458103222910">ठीक आहे</translation>
 <translation id="2805756323405976993">ॲप्लिकेशन</translation>
 <translation id="28232023175184696">इंटरनेटशी कनेक्ट करू शकत नाही. पुन्हा प्रयत्न करण्यासाठी क्लिक करा.</translation>
 <translation id="2859243502336719778">महत्त्वाचे अपडेट</translation>
@@ -247,6 +249,7 @@
 <translation id="2880569433548999039">क्लाउड फ्लो स्क्रीन सेव्हर</translation>
 <translation id="2926057806159140518">तुमचे वापरकर्ता नाव आणि पासवर्ड एंटर करा किंवा तुमचा QR कोड स्कॅन करा</translation>
 <translation id="2940811910881150316">डिव्हाइसची चाचणी करू शकत नाही. चाचणी करण्यासाठी लिड पुन्हा उघडा.</translation>
+<translation id="2941112035454246133">निम्न</translation>
 <translation id="3008341117444806826">रिफ्रेश करा</translation>
 <translation id="3009958530611748826">ज्यामध्ये सेव्ह करायचे आहे ते फोल्डर निवडा</translation>
 <translation id="3017079585324758401">बॅकग्राउंड</translation>
@@ -296,6 +299,7 @@
 <translation id="3369013195428705271">तुम्हाला तुमचा सर्व प्रिंट इतिहास नक्की साफ करायचा आहे का? तुमची सुरू असलेली प्रिंट कार्ये साफ केली जाणार नाहीत.</translation>
 <translation id="3373141842870501561">अर्थ फ्लो वॉलपेपर</translation>
 <translation id="337375748120863155">तुमच्या निवडीशी संबंधित माहिती. नियंत्रणे अ‍ॅक्सेस करण्यासाठी लेफ्ट किंवा राइट अ‍ॅरो की वापरा.</translation>
+<translation id="3383623117265110236">विशिष्ट</translation>
 <translation id="3404249063913988450">स्क्रीन सेव्हर सुरू करा</translation>
 <translation id="3413935475507503304">अपडेटसह पुढे सुरू ठेवण्यासाठी, पुढील वर क्लिक करा.</translation>
 <translation id="3434107140712555581"><ph name="BATTERY_PERCENTAGE" />%</translation>
@@ -366,6 +370,7 @@
 <translation id="3941014780699102620">होस्टचे निराकरण करता आले नाही</translation>
 <translation id="3942420633017001071">निदान</translation>
 <translation id="3954678691475912818">डिव्हाइसचा प्रकार अज्ञात आहे.</translation>
+<translation id="3959413315969265597">हे APN सुरू करू शकत नाही. डीफॉल्ट APN जोडलेले असल्याची खात्री करा.</translation>
 <translation id="3966286471246132217">आणखी अचूक परिणामांसाठी, चाचणी पूर्ण होईपर्यंत सर्व अ‍ॅप्स बंद करा.</translation>
 <translation id="3967822245660637423">पूर्ण डाउनलोड करा</translation>
 <translation id="3969602104473960991">ChromeOS चा पासवर्ड अपडेट केला आहे</translation>
@@ -401,6 +406,7 @@
 <translation id="4171077696775491955">ब्राइटनेस कमी करा</translation>
 <translation id="4176463684765177261">अक्षम केले</translation>
 <translation id="4176659219503619100">कंट्रोल पॅनल</translation>
+<translation id="4185315616950253617">वरील ओळीमधील की असलेल्या शॉर्टकटमध्ये शोध की समाविष्ट असणे आवश्यक आहे.</translation>
 <translation id="420283545744377356">स्क्रीन सेव्हर बंद करा</translation>
 <translation id="4213104098953699324">USB कीबोर्ड</translation>
 <translation id="4227825898293920515"><ph name="TIME" /> मध्ये पासवर्ड एक्स्पायर होईल</translation>
@@ -411,6 +417,7 @@
 <translation id="4258281355379922695">HTTP लेटन्सी</translation>
 <translation id="4271957103967917607">फुल स्क्रीन पहा</translation>
 <translation id="4275663329226226506">माध्यम</translation>
+<translation id="4278766082079064416">शॉर्टकट हा "<ph name="CONFLICT_ACCEL_NAME" />" साठी वापरला जात आहे. विवादाचे निराकरण करण्यासाठी संपादित करा किंवा काढून टाका.</translation>
 <translation id="4289540628985791613">विहंगावलोकन</translation>
 <translation id="4289849978083912975">स्लाइड शो</translation>
 <translation id="4297501883039923494">थांबले - अज्ञात एरर</translation>
@@ -491,6 +498,7 @@
 <translation id="4861758251032006121">{ATTEMPTS_LEFT,plural, =1{<ph name="ERROR_MESSAGE" /> {0} प्रयत्न शिल्लक}other{<ph name="ERROR_MESSAGE" /> {0} प्रयत्न शिल्लक}}</translation>
 <translation id="4873827928179867585">ऑथेंटिकेशन अल्गोरिदम</translation>
 <translation id="4880328057631981605">ॲक्सेसबिंदूचे नाव</translation>
+<translation id="488307179443832524">शॉर्टकट हा "<ph name="CONFLICT_ACCEL_NAME" />" साठी वापरला जात आहे. नवीन शॉर्टकट प्रेस करा.</translation>
 <translation id="4885705234041587624">MSCHAPv2</translation>
 <translation id="4890353053343094602">तत्काळ नवीन निवडा</translation>
 <translation id="4891842000192098784">ताण</translation>
@@ -601,11 +609,13 @@
 <translation id="5703716265115423771">आवाज कमी करा</translation>
 <translation id="5707900041990977207"><ph name="TOTAL_PAGES" /> पैकी <ph name="CURRENT_PAGE" /></translation>
 <translation id="5733298426544876109"><ph name="DEVICE_NAME" /> अपडेट करा</translation>
+<translation id="574392208103952083">मध्यम</translation>
 <translation id="5757187557809630523">पुढील ट्रॅक</translation>
 <translation id="5760715441271661976">पोर्टलची स्थिती</translation>
 <translation id="576835345334454681">डिस्प्लेचा ब्राइटनेस वाढवा</translation>
 <translation id="57838592816432529">म्यूट करा</translation>
 <translation id="5784136236926853061">उच्च HTTP लेटन्सी</translation>
+<translation id="5816802250591013230">कोणताही शॉर्टकट असाइन केलेला नाही</translation>
 <translation id="5826644637650799838">आर्टविषयी</translation>
 <translation id="5832805196449965646">व्यक्ती जोडा</translation>
 <translation id="583281660410589416">अज्ञात</translation>
@@ -615,7 +625,6 @@
 <translation id="5859603669299126575">आर्ट गॅलरी अल्बम</translation>
 <translation id="5860033963881614850">बंद</translation>
 <translation id="5860491529813859533">सुरू करा</translation>
-<translation id="5866840822086176774">खूप मजबूत</translation>
 <translation id="5876385649737594562">पर्याय निवडण्यासाठी सुरू करा</translation>
 <translation id="588258955323874662">क्षेत्रे</translation>
 <translation id="5895138241574237353">रीस्टार्ट करा</translation>
@@ -699,7 +708,7 @@
 <translation id="6423239382391657905">OpenVPN</translation>
 <translation id="6439505561246192797">कमकुवत (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="6447630859861661624">खाते सेटिंग्ज मध्ये जा</translation>
-<translation id="6456394469623773452">फाइन</translation>
+<translation id="6461047516875166066">मला आणखी माहिती द्या</translation>
 <translation id="6463239094587744704">{PAGE_NUMBER,plural, =0{Rescan page?}=1{{PAGE_NUMBER} पेज पुन्हा स्कॅन करायचे का?}other{{PAGE_NUMBER} पेज पुन्हा स्कॅन करायची का?}}</translation>
 <translation id="6472207088655375767">OTP</translation>
 <translation id="6480327114083866287"><ph name="MANAGER" /> द्वारे व्यवस्थापित</translation>
@@ -767,13 +776,16 @@
 <translation id="7028979494427204405">हे डिव्हाइस <ph name="MANAGER" /> व्यवस्थापित करतो आणि भेट दिलेली वेबपेज, पासवर्ड आणि ईमेलसह सर्व वापरकर्ता अ‍ॅक्टिव्हिटीचा त्याला अ‍ॅक्सेस आहे.</translation>
 <translation id="7040230719604914234">ऑपरेटर</translation>
 <translation id="7041549558901442110">डिव्हाइस हे कनेक्ट केलेले नाही.</translation>
+<translation id="7046522406494308071">सर्व शॉर्टकट डीफॉल्टवर रीसेट करायचे आहेत का?</translation>
 <translation id="7058278511608979688">संपवा आणि सेव्ह करा</translation>
 <translation id="7059230779847288458">चार्ज होत आहे, <ph name="TIME_VALUE" /> मध्ये पूर्ण होईल</translation>
+<translation id="7066538517128343186"><ph name="KEY" /> की</translation>
 <translation id="7068619307603204412">तुमचे डिव्हाइस तयार आहे</translation>
 <translation id="708426984172631313">थांबवली</translation>
 <translation id="7086440545492620869"><ph name="VALUE" /> <ph name="DISPLAY_NAME" /></translation>
 <translation id="710028965487274708">अयशस्वी झाले - ऑथोरायझेशन करता आले नाही</translation>
 <translation id="7103252855940681301"><ph name="NAME" /> नावाची <ph name="COUNT" /> पैकी <ph name="INDEX" /> डिव्हाइस.</translation>
+<translation id="7107255225945990211"><ph name="PRODUCT_NAME" /> विशिष्ट आर्टवर्क निवडा</translation>
 <translation id="7108668606237948702">प्रविष्‍ट करा</translation>
 <translation id="7130438335435247835">अ‍ॅक्सेस पॉइंट नाव (APN)</translation>
 <translation id="7134436342991564651">{0,plural, =1{नेम सर्व्हर}other{नेम सर्व्हर}}</translation>
@@ -795,6 +807,7 @@
 <translation id="7216409898977639127">सेल्युलर सेवा देणारा</translation>
 <translation id="725133483556299729">ईमेल निवडा</translation>
 <translation id="7271040990581020067">स्कॅनर सध्या वापरात आहे. नंतर पुन्हा प्रयत्न करा.</translation>
+<translation id="7273347807225967898">शॉर्टकट उपलब्ध नाही. मॉडिफायर की वापरून नवीन शॉर्टकट प्रेस करा (कंट्रोल, ऑल्ट, शिफ्ट, शोध किंवा लाँचर).</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
 <translation id="7281657306185710294">वाहणाऱ्या मंद वाऱ्याचा आनंद घ्या</translation>
 <translation id="7287310195820267359">वॉलपेपरचा संग्रह</translation>
@@ -854,6 +867,7 @@
 <translation id="7718231387947923843">कीबोर्ड लाइट</translation>
 <translation id="773153675489693198">सायकलची संख्या</translation>
 <translation id="7747039790905080783">आधीपासून शेअर केलेली की</translation>
+<translation id="7752963721013053477">डॉन टू डार्क - विशिष्ट</translation>
 <translation id="7762130827864645708">तुमचा पासवर्ड यशस्वीरीत्या बदलला होता. कृपया आतापासून नवीन पासवर्ड वापरा.</translation>
 <translation id="7763470514545477072">डोमेन सफिक्स जुळणी</translation>
 <translation id="7769672763586021400">मॉडेल आयडी</translation>
@@ -873,6 +887,7 @@
 <translation id="7881066108824108340">DNS</translation>
 <translation id="7882358943899516840">प्रदाता प्रकार</translation>
 <translation id="7882501334836096755">सार्वजनिक की</translation>
+<translation id="7903695460270716054">निवडक आर्टवर्क आणि इमेज निवडा</translation>
 <translation id="7915220255123750251">नेटवर्क APN सेटिंग्ज व्यवस्थापित करा. APNs ही मोबाइल नेटवर्क आणि इंटरनेट यांदरम्यान कनेक्शन जोडतात.</translation>
 <translation id="7936303884198020182">नेम सर्व्हर आढळले नाहीत</translation>
 <translation id="7942349550061667556">लाल</translation>
@@ -899,6 +914,7 @@
 <translation id="808894953321890993">पासवर्ड बदला</translation>
 <translation id="8094062939584182041">या समस्येविषयी तुम्हाला ईमेल पाठवण्याची Google ला अनुमती द्या</translation>
 <translation id="8104083085214006426">तुम्ही खुले आणि असुरक्षित नेटवर्क वापरत आहात</translation>
+<translation id="8111706652656628199">शॉर्टकट उपलब्ध नाही. शिफ्ट आणि आणखी १ मॉडिफायर की वापरून नवीन शॉर्टकट प्रेस करा (कंट्रोल, ऑल्ट, शोध किंवा लाँचर).</translation>
 <translation id="811820734797650957">(Android) गेटवे ला पिंग केले जाऊ शकते</translation>
 <translation id="8129620843620772246"><ph name="TEMPERATURE_C" />° से</translation>
 <translation id="8132480444149501833">ट्रॅफिक काउंटरची विनंती करा</translation>
@@ -917,12 +933,12 @@
 <translation id="8286154143153872371">कृपया वॉलपेपर पाहण्यासाठी नेटवर्कशी कनेक्ट करा आणि पेज रीलोड करा.</translation>
 <translation id="8291967909914612644">होम पुरवठादार देश</translation>
 <translation id="8294431847097064396">स्रोत</translation>
-<translation id="8297006494302853456">कमकुवत</translation>
 <translation id="8302368968391049045">HTTPS फायरवॉल</translation>
 <translation id="8312330582793120272">मीडिया प्ले करा</translation>
 <translation id="8318753676953949627">कोणत्याही इमेज नाहीत</translation>
 <translation id="8329018942023753850">Calculator ॲप</translation>
 <translation id="8336739000755212683">डिव्हाइस खाते इमेज बदला</translation>
+<translation id="8347126826554447157"><ph name="SHORCTCUT1" /> किंवा <ph name="SHORCTCUT2" /></translation>
 <translation id="8347227221149377169">प्रिंट कार्ये</translation>
 <translation id="8351855506390808906">कीमॅपिंग टच पॉइंट</translation>
 <translation id="8352772353338965963">मल्टिपल साइन-इन वर खाते जोडा. सर्व साइन इन केलेल्या खात्यांवर पासवर्डशिवाय प्रवेश केला जाऊ शकतो, म्हणून हे वैशिष्ट्य केवळ विश्वसनीय खात्यांसह वापरले जावे.</translation>
@@ -977,6 +993,7 @@
 <translation id="8764414543112028321">WireGuard</translation>
 <translation id="87646919272181953">Google Photos अल्बम</translation>
 <translation id="877985182522063539">A4</translation>
+<translation id="8789196995628578448">शॉर्टकट हा "<ph name="CONFLICT_ACCEL_NAME" />" साठी वापरला जात आहे. नवीन शॉर्टकट प्रेस करा. मूळ शॉर्टकट बदलण्यासाठी, हा शॉर्टकट पुन्हा प्रेस करा.</translation>
 <translation id="879568662008399081">या नेटवर्कवर कॅप्टिव्ह पोर्टल असू शकते</translation>
 <translation id="8798099450830957504">डीफॉल्ट</translation>
 <translation id="8798441408945964110">प्रदात्याचे नाव</translation>

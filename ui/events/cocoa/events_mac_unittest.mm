@@ -10,7 +10,7 @@
 #include <utility>
 
 #include "base/apple/owned_objc.h"
-#include "base/mac/scoped_cftyperef.h"
+#include "base/apple/scoped_cftyperef.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "ui/base/test/cocoa_helper.h"
 #import "ui/events/cocoa/cocoa_event_utils.h"
@@ -57,7 +57,7 @@ class EventsMacTest : public CocoaTest {
     CGMouseButton other_button = kCGMouseButtonCenter;
     CGPoint screen_point = cocoa_test_event_utils::ScreenPointFromWindow(
         Flip(window_location).ToCGPoint(), test_window());
-    base::ScopedCFTypeRef<CGEventRef> mouse(
+    base::apple::ScopedCFTypeRef<CGEventRef> mouse(
         CGEventCreateMouseEvent(nullptr, type, screen_point, other_button));
     CGEventSetFlags(mouse, event_flags);
     return cocoa_test_event_utils::AttachWindowToCGEvent(mouse, test_window());
@@ -365,7 +365,7 @@ TEST_F(EventsMacTest, NativeTitlebarEventLocation) {
 TEST_F(EventsMacTest, NoWindowLocation) {
   const CGPoint location = CGPointMake(5, 10);
 
-  base::ScopedCFTypeRef<CGEventRef> mouse(CGEventCreateMouseEvent(
+  base::apple::ScopedCFTypeRef<CGEventRef> mouse(CGEventCreateMouseEvent(
       nullptr, kCGEventMouseMoved, location, kCGMouseButtonLeft));
 
   NSEvent* event = [NSEvent eventWithCGEvent:mouse];

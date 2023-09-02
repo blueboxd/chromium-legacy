@@ -29,6 +29,9 @@ class COMPONENT_EXPORT(SHORTCUT) ShortcutRegistryCache {
     // has been updated and what changes have been made.
     virtual void OnShortcutUpdated(const ShortcutUpdate& update) {}
 
+    // Called when a shortcut represented by `id` been removed from the system.
+    virtual void OnShortcutRemoved(const ShortcutId& id) {}
+
     // Called when the ShortcutRegistryCache object (the thing that this
     // observer observes) will be destroyed. In response, the observer, |this|,
     // should call "cache->RemoveObserver(this)", whether directly or indirectly
@@ -51,7 +54,8 @@ class COMPONENT_EXPORT(SHORTCUT) ShortcutRegistryCache {
   // shortcut if it doesn't exists.
   void UpdateShortcut(ShortcutPtr delta);
 
-  // TODO(crbug.com/1412708): Add remove flow.
+  // Removes the shortcut represented by `id` from the cache.
+  void RemoveShortcut(const ShortcutId& id);
 
   // Get the shortcut by the id, return nullptr if shortcut id doesn't exist.
   // Be careful about the lifetime when using this method, the ShortcutView is
@@ -65,6 +69,12 @@ class COMPONENT_EXPORT(SHORTCUT) ShortcutRegistryCache {
   // only valid before the shortcut is removed from the cache. Please do not
   // store this data and always query a fresh one when using it.
   std::vector<ShortcutView> GetAllShortcuts();
+
+  // Returns the host app id for shortcut represented by 'id'.
+  std::string GetShortcutHostAppId(const ShortcutId& id);
+
+  // Returns the local id for shortcut represented by 'id'.
+  std::string GetShortcutLocalId(const ShortcutId& id);
 
  private:
   // Maps from shortcut_id to the latest state: the "sum" of all previous

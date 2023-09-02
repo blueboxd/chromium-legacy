@@ -51,15 +51,13 @@ class PartitionAllocPCScanTestBase : public testing::Test {
  public:
   PartitionAllocPCScanTestBase()
       : allocator_(PartitionOptions{
-            .aligned_alloc = PartitionOptions::AlignedAlloc::kAllowed,
-            .star_scan_quarantine =
-                PartitionOptions::StarScanQuarantine::kAllowed,
+            .aligned_alloc = PartitionOptions::kAllowed,
+            .star_scan_quarantine = PartitionOptions::kAllowed,
             .memory_tagging = {
-                .enabled = base::CPU::GetInstanceNoAllocation().has_mte()
-                               ? partition_alloc::PartitionOptions::
-                                     MemoryTagging::kEnabled
-                               : partition_alloc::PartitionOptions::
-                                     MemoryTagging::kDisabled}}) {
+                .enabled =
+                    base::CPU::GetInstanceNoAllocation().has_mte()
+                        ? partition_alloc::PartitionOptions::kEnabled
+                        : partition_alloc::PartitionOptions::kDisabled}}) {
     PartitionAllocGlobalInit([](size_t) { PA_LOG(FATAL) << "Out of memory"; });
     // Previous test runs within the same process decommit pools, therefore
     // we need to make sure that the card table is recommitted for each run.
@@ -144,7 +142,7 @@ FullSlotSpanAllocation GetFullSlotSpan(PartitionRoot& root,
   uintptr_t first = 0;
   uintptr_t last = 0;
   for (size_t i = 0; i < num_slots; ++i) {
-    void* ptr = root.AllocWithFlagsNoHooks(0, object_size, PartitionPageSize());
+    void* ptr = root.AllocNoHooks(object_size, PartitionPageSize());
     EXPECT_TRUE(ptr);
     if (i == 0) {
       first = root.ObjectToSlotStart(ptr);
@@ -196,8 +194,7 @@ struct List final : ListBase {
   static List* Create(PartitionRoot& root, ListBase* next = nullptr) {
     List* list;
     if (Alignment) {
-      list = static_cast<List*>(
-          root.AlignedAllocWithFlags(0, Alignment, sizeof(List)));
+      list = static_cast<List*>(root.AlignedAlloc(Alignment, sizeof(List)));
     } else {
       list = static_cast<List*>(root.Alloc(sizeof(List), nullptr));
     }
@@ -391,7 +388,7 @@ TEST_F(PartitionAllocPCScanTest, DanglingReferenceFromFullPage) {
   // This allocation must go through the slow path and call SetNewActivePage(),
   // which will flush the full page from the active page list.
   void* value_buffer =
-      root().AllocWithFlagsNoHooks(0, sizeof(ValueList), PartitionPageSize());
+      root().AllocNoHooks(sizeof(ValueList), PartitionPageSize());
 
   // Assert that the first and the last objects are in different slot spans but
   // in the same bucket.
@@ -463,11 +460,11 @@ TEST_F(PartitionAllocPCScanTest, DanglingInterPartitionReference) {
   using ValueList = SourceList;
 
   PartitionRoot source_root(PartitionOptions{
-      .star_scan_quarantine = PartitionOptions::StarScanQuarantine::kAllowed,
+      .star_scan_quarantine = PartitionOptions::kAllowed,
   });
   source_root.UncapEmptySlotSpanMemoryForTesting();
   PartitionRoot value_root(PartitionOptions{
-      .star_scan_quarantine = PartitionOptions::StarScanQuarantine::kAllowed,
+      .star_scan_quarantine = PartitionOptions::kAllowed,
   });
   value_root.UncapEmptySlotSpanMemoryForTesting();
 
@@ -488,11 +485,11 @@ TEST_F(PartitionAllocPCScanTest, DanglingReferenceToNonScannablePartition) {
   using ValueList = SourceList;
 
   PartitionRoot source_root(PartitionOptions{
-      .star_scan_quarantine = PartitionOptions::StarScanQuarantine::kAllowed,
+      .star_scan_quarantine = PartitionOptions::kAllowed,
   });
   source_root.UncapEmptySlotSpanMemoryForTesting();
   PartitionRoot value_root(PartitionOptions{
-      .star_scan_quarantine = PartitionOptions::StarScanQuarantine::kAllowed,
+      .star_scan_quarantine = PartitionOptions::kAllowed,
   });
   value_root.UncapEmptySlotSpanMemoryForTesting();
 
@@ -513,11 +510,11 @@ TEST_F(PartitionAllocPCScanTest, DanglingReferenceFromNonScannablePartition) {
   using ValueList = SourceList;
 
   PartitionRoot source_root(PartitionOptions{
-      .star_scan_quarantine = PartitionOptions::StarScanQuarantine::kAllowed,
+      .star_scan_quarantine = PartitionOptions::kAllowed,
   });
   source_root.UncapEmptySlotSpanMemoryForTesting();
   PartitionRoot value_root(PartitionOptions{
-      .star_scan_quarantine = PartitionOptions::StarScanQuarantine::kAllowed,
+      .star_scan_quarantine = PartitionOptions::kAllowed,
   });
   value_root.UncapEmptySlotSpanMemoryForTesting();
 
@@ -696,7 +693,7 @@ TEST_F(PartitionAllocPCScanTest, PointersToGuardPages) {
   };
 
   auto* const pointers = static_cast<Pointers*>(
-      root().AllocWithFlagsNoHooks(0, sizeof(Pointers), PartitionPageSize()));
+      root().AllocNoHooks(sizeof(Pointers), PartitionPageSize()));
 
   // Converting to slot start strips MTE tag.
   const uintptr_t super_page =

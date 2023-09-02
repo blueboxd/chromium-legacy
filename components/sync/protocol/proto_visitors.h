@@ -302,6 +302,7 @@ VISIT_PROTO_FIELDS(const sync_pb::AutofillWalletSpecifics& proto) {
   VISIT(address);
   VISIT(customer_data);
   VISIT(cloud_token_data);
+  VISIT(payment_instrument);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::BookmarkSpecifics& proto) {
@@ -368,8 +369,14 @@ VISIT_PROTO_FIELDS(const sync_pb::ContactInfoSpecifics& proto) {
   VISIT(birthdate_year);
 }
 
+VISIT_PROTO_FIELDS(const sync_pb::ContactInfoSpecifics::Observation& proto) {
+  VISIT(type);
+  VISIT(form_hash);
+}
+
 VISIT_PROTO_FIELDS(const sync_pb::ContactInfoSpecifics::TokenMetadata& proto) {
   VISIT_ENUM(status);
+  VISIT_REP(observations);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::ContactInfoSpecifics::StringToken& proto) {
@@ -695,7 +702,7 @@ VISIT_PROTO_FIELDS(
     const sync_pb::IncomingPasswordSharingInvitationSpecifics& proto) {
   VISIT(guid);
   VISIT(sender_info);
-  VISIT(encrypted_password_sharing_invitation_data);
+  VISIT_BYTES(encrypted_password_sharing_invitation_data);
   VISIT(client_only_unencrypted_data);
   VISIT(recipient_key_version);
 }
@@ -910,7 +917,7 @@ VISIT_PROTO_FIELDS(
     const sync_pb::OutgoingPasswordSharingInvitationSpecifics& proto) {
   VISIT(guid);
   VISIT(recipient_user_id);
-  VISIT(encrypted_password_sharing_invitation_data);
+  VISIT_BYTES(encrypted_password_sharing_invitation_data);
   VISIT(client_only_unencrypted_data);
   VISIT(recipient_key_version);
   VISIT(sender_key_version);
@@ -1454,6 +1461,20 @@ VISIT_PROTO_FIELDS(const sync_pb::CloudTokenData& proto) {
   VISIT(exp_year);
   VISIT(art_fife_url);
   VISIT(instrument_token);
+}
+
+VISIT_PROTO_FIELDS(const sync_pb::PaymentInstrument& proto) {
+  VISIT_REP(supported_rails);
+  VISIT(display_icon_url);
+  VISIT(instrument_id);
+  VISIT(bank_account);
+  VISIT(nickname);
+}
+
+VISIT_PROTO_FIELDS(const sync_pb::BankAccountDetails& proto) {
+  VISIT(bank_name);
+  VISIT(account_number_suffix);
+  VISIT_ENUM(account_type);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::CardIssuer& proto) {

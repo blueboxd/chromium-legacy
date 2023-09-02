@@ -146,10 +146,6 @@ class ClientSideDetectionService
   // Sends a model to each renderer.
   virtual void SendModelToRenderers();
 
-  // Returns the model string. Used only for protobuf model. Virtual so that
-  // mock implementation can override it.
-  virtual const std::string& GetModelStr();
-
   // Returns the model type (protobuf or flatbuffer). Virtual so that mock
   // implementation can override it.
   virtual CSDModelType GetModelType();
@@ -188,6 +184,10 @@ class ClientSideDetectionService
   // Checks whether the model class has a model available or not. Virtual so
   // that mock classes can override it.
   virtual bool IsModelAvailable();
+
+  // Checks whether the model class has an image embedding model available or
+  // not.
+  bool HasImageEmbeddingModel();
 
   // For testing the model in browser test.
   void SetModelAndVisualTfLiteForTesting(const base::FilePath& model,
@@ -273,6 +273,12 @@ class ClientSideDetectionService
   // Whether the service is in extended reporting mode or not. This affects the
   // choice of model.
   bool extended_reporting_ = false;
+
+  // Whether the trigger models have been sent or not. This is used to determine
+  // whether an empty model in the model class determines whether the models
+  // haven't been sent or we should clear the models in the scorer because they
+  // have been sent.
+  bool sent_trigger_models_ = false;
 
   // Map of client report phishing request to the corresponding callback that
   // has to be invoked when the request is done.

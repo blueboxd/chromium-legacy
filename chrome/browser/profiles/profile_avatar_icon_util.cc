@@ -28,7 +28,7 @@
 #include "chrome/browser/profiles/avatar_menu.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/signin/profile_colors_util.h"
+#include "chrome/browser/ui/profiles/profile_colors_util.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
@@ -701,7 +701,6 @@ void SetDefaultProfileAvatarIndex(Profile* profile, size_t avatar_icon_index) {
   pref_service->SetBoolean(prefs::kProfileUsingGAIAAvatar, false);
 
   ProfileMetrics::LogProfileAvatarSelection(avatar_icon_index);
-  ProfileMetrics::LogProfileUpdate(profile->GetPath());
 }
 
 #if BUILDFLAG(IS_WIN)

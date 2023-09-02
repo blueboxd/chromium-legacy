@@ -1227,8 +1227,9 @@ bool FocusController::AdvanceFocusInDocumentOrder(
 
   SetFocusedFrame(new_document.GetFrame());
 
-  element->Focus(
-      FocusParams(SelectionBehaviorOnFocus::kReset, type, source_capabilities));
+  element->Focus(FocusParams(SelectionBehaviorOnFocus::kReset, type,
+                             source_capabilities, FocusOptions::Create(),
+                             FocusTrigger::kUserGesture));
   return true;
 }
 
@@ -1503,9 +1504,8 @@ int FocusController::AdjustedTabIndex(const Element& element) {
     return element.GetIntegralAttribute(html_names::kTabindexAttr, 0);
   }
   bool default_focusable =
-      element.SupportsFocus() ||
-      (RuntimeEnabledFeatures::KeyboardFocusableScrollersEnabled() &&
-       IsScrollableNode(&element));
+      element.IsFocusable() ||
+      element.IsScrollableContainerThatShouldBeKeyboardFocusable();
   return element.GetIntegralAttribute(html_names::kTabindexAttr,
                                       default_focusable ? 0 : -1);
 }

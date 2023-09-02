@@ -13,6 +13,7 @@
 #include "components/exo/wayland/test/server_util.h"
 #include "components/exo/wayland/test/wayland_server_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/accessibility/aura/aura_window_properties.h"
 #include "ui/compositor/layer.h"
 
 namespace exo::wayland {
@@ -34,9 +35,10 @@ class ClientData : public test::TestClient::CustomData {
   std::unique_ptr<wl_surface> child_wl_surface;
   std::unique_ptr<wl_subsurface> child_wl_subsurface;
 
-  raw_ptr<augmented_surface, ExperimentalAsh> augmented_surface = nullptr;
-  raw_ptr<augmented_sub_surface, ExperimentalAsh> augmented_sub_surface =
-      nullptr;
+  raw_ptr<augmented_surface, DanglingUntriaged | ExperimentalAsh>
+      augmented_surface = nullptr;
+  raw_ptr<augmented_sub_surface, DanglingUntriaged | ExperimentalAsh>
+      augmented_sub_surface = nullptr;
 };
 
 using SurfaceAugmenterTest = test::WaylandServerTest;
@@ -57,6 +59,10 @@ TEST_F(SurfaceAugmenterTest, AugmentedSubSurfacesDontSendLeaveEnter) {
   // Check that the surface sends enter/leave events.
   ASSERT_TRUE(parent_surface);
   EXPECT_TRUE(parent_surface->HasLeaveEnterCallbackForTesting());
+  // Normal surface will create accessibility nodes.
+  EXPECT_FALSE(parent_surface->window()->GetProperty(
+      ui::kAXConsiderInvisibleAndIgnoreChildren));
+
   // Augment the surface and check that it still sends enter/leave events.
   PostToClientAndWait([&](test::TestClient* client) {
     ClientData* data = client->GetDataAs<ClientData>();
@@ -64,6 +70,9 @@ TEST_F(SurfaceAugmenterTest, AugmentedSubSurfacesDontSendLeaveEnter) {
         client->surface_augmenter(), data->parent_wl_surface.get());
   });
   EXPECT_TRUE(parent_surface->HasLeaveEnterCallbackForTesting());
+  // Augmented surface will suppress accessibility nodes.
+  EXPECT_TRUE(parent_surface->window()->GetProperty(
+      ui::kAXConsiderInvisibleAndIgnoreChildren));
 
   // Create another surface.
   test::ResourceKey child_surface_key;

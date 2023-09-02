@@ -73,6 +73,11 @@ CookieManager::CookieManager(
 }
 
 CookieManager::~CookieManager() {
+  // The cookie manager will go away which means potentially clearing cookies if
+  // policy calls for it. This can be important for background mode for which
+  // renderers might stay active.
+  OnSettingsWillChange();
+
   if (session_cleanup_cookie_store_) {
     session_cleanup_cookie_store_->DeleteSessionCookies(
         cookie_settings_.CreateDeleteCookieOnExitPredicate());
@@ -327,6 +332,12 @@ void CookieManager::SetContentSettingsFor3pcd(
     const ContentSettingsForOneType& settings) {
   OnSettingsWillChange();
   cookie_settings_.set_content_settings_for_3pcd(settings);
+}
+
+void CookieManager::SetContentSettingsFor3pcdMetadataGrants(
+    const ContentSettingsForOneType& settings) {
+  OnSettingsWillChange();
+  cookie_settings_.set_content_settings_for_3pcd_metadata_grants(settings);
 }
 
 void CookieManager::SetStorageAccessGrantSettings(

@@ -5,6 +5,7 @@
 #ifndef CONTENT_COMMON_SERVICE_WORKER_RACE_NETWORK_REQUEST_URL_LOADER_CLIENT_H_
 #define CONTENT_COMMON_SERVICE_WORKER_RACE_NETWORK_REQUEST_URL_LOADER_CLIENT_H_
 
+#include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "content/common/service_worker/service_worker_resource_loader.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -33,16 +34,40 @@ class CONTENT_EXPORT ServiceWorkerRaceNetworkRequestURLLoaderClient
   enum class State {
     // The initial state.
     kWaitForBody,
-    // Transferred from |kWaitForBody|. Once data is available, the consumer
-    // handle will be committed to the original client.
+    // Transferred from |kWaitForBody|. The state indicates a redirect response
+    // is received.
+    kRedirect,
+    // Transferred from |kWaitForBody| or |kRedirect|. The state indicates data
+    // has been received.
+    kResponseReceived,
+    // Transferred from |kResponseReceived|. This state indicates the response
+    // from the original data pipe is read and start transferring the response
+    // to new data pipes.
+    kDataTransferStarted,
+    // Transferred from |kDataTransferStarted| or |kDataTransferFinished|. Once
+    // data is available, the consumer handle will be committed to the original
+    // client based on |owner_|'s commit responsibility.
+    //
+    // The response commit timing may be slower than the data transfer
+    // completion depending on the timing and bufferd data size.
     kResponseCommitted,
-    // Transferred from |kResponseCommitted|. This state indicates buffered data
-    // has been sent to the data pipe.
+    // Transferred from |kResponseReceived| or |kResponseCommitted|. This state
+    // indicates all buffered data has been sent to the data pipe.
     kDataTransferFinished,
     // Indicates the commit is completed. This state closes the data pipe.
     kCompleted,
     // Used when the pipe is closed unexpectedly.
     kAborted,
+  };
+
+  // The enum class that indicates how response data is consumed.
+  enum class DataConsumePolicy {
+    // Tee response data into 1) the data pipe for RaceNetworkRequest and 2) the
+    // data pipe for the fetch handler.
+    kTeeResponse,
+    // Just forward data to the data pipe for the fetch handler. This value
+    // doesn't invoke |ReadAndWrite()|.
+    kForwardingOnly,
   };
 
   // These values are persisted to logs. Entries should not be renumbered and
@@ -114,6 +139,13 @@ class CONTENT_EXPORT ServiceWorkerRaceNetworkRequestURLLoaderClient
   // pipe may be stacked. So this method provides a way to just consume data.
   void DrainData(mojo::ScopedDataPipeConsumerHandle source);
 
+  // Commit and complete the response. Those can be called from |owner_|.
+  void CommitAndCompleteResponseIfDataTransferFinished();
+
+  void MaybeRecordResponseReceivedToFetchHandlerEndTiming(
+      base::TimeTicks fetch_handler_end_time,
+      bool is_fallback);
+
  private:
   struct DataPipeInfo {
     mojo::ScopedDataPipeProducerHandle producer;
@@ -160,7 +192,17 @@ class CONTENT_EXPORT ServiceWorkerRaceNetworkRequestURLLoaderClient
   // the long fetch handler execution. and test case the mechanism to wait for
   // the fetch handler
   void ReadAndWrite(MojoResult);
+  void WatchDataUpdate();
+
   void Abort();
+
+  void RecordResponseReceivedToFetchHandlerEndTiming();
+  // Record the time between the response received time and the fetch handler
+  // end time iff both events are already reached.
+  void MaybeRecordResponseReceivedToFetchHandlerEndTiming();
+
+  void SetFetchHandlerEndTiming(base::TimeTicks fetch_handler_end_time,
+                                bool is_fallback);
 
   State state_ = State::kWaitForBody;
   mojo::Receiver<network::mojom::URLLoaderClient> receiver_{this};
@@ -178,6 +220,10 @@ class CONTENT_EXPORT ServiceWorkerRaceNetworkRequestURLLoaderClient
   absl::optional<network::URLLoaderCompletionStatus> completion_status_;
   bool redirected_ = false;
   std::unique_ptr<mojo::DataPipeDrainer> data_drainer_;
+  DataConsumePolicy data_consume_policy_ = DataConsumePolicy::kTeeResponse;
+  absl::optional<base::TimeTicks> response_received_time_;
+  absl::optional<base::TimeTicks> fetch_handler_end_time_;
+  absl::optional<bool> is_fetch_handler_fallback_;
 
   base::WeakPtrFactory<ServiceWorkerRaceNetworkRequestURLLoaderClient>
       weak_factory_{this};

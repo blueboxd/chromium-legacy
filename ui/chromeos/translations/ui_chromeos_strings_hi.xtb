@@ -35,6 +35,7 @@
 <translation id="1280820357415527819">मोबाइल नेटवर्क खोजे जा रहे हैं</translation>
 <translation id="1293556467332435079">फ़ाइल</translation>
 <translation id="1297922636971898492">Google डिस्क इस समय उपलब्ध नहीं है. Google डिस्क के वापस आ जाने पर अपलोडिंग अपने आप फिर से प्रारंभ हो जाएगी.</translation>
+<translation id="1306130176943817227">आइटम को मिटाया नहीं जा सकता. अभी इसका इस्तेमाल किया जा रहा है.</translation>
 <translation id="1307931752636661898">Linux फ़ाइलें नहीं दिखाई जा सकीं</translation>
 <translation id="1313405956111467313">स्‍वचालित प्रॉक्सी कॉन्फ़िगरेशन</translation>
 <translation id="134645005685694099">फ़ाइल सिंक करने की सुविधा चालू रखने के लिए, आपके डिवाइस में स्टोरेज के लिए बची जगह काफ़ी नहीं है. नई फ़ाइलें अपने-आप सिंक नहीं होंगी.</translation>
@@ -94,6 +95,7 @@
 <translation id="174937106936716857">फ़ाइलों की कुल संख्या</translation>
 <translation id="1755345808328621801">इस फ़ाइल को Windows सॉफ़्टवेयर का इस्तेमाल करने वाले कंप्यूटर के लिए डिज़ाइन किया गया है. यह आपके ChromeOS वाले डिवाइस के साथ काम नहीं करती. कृपया Chrome वेब स्टोर पर कोई ऐसा ऐप्लिकेशन खोजें जिसके साथ यह फ़ाइल काम करती हो.</translation>
 <translation id="1757915090001272240">Wide Latin</translation>
+<translation id="1761091787730831947"><ph name="VM_NAME" /> से शेयर करें</translation>
 <translation id="1773212559869067373">प्रमाणीकरण प्रमाणपत्र को स्थानीय रूप से अस्वीकार कर दिया गया</translation>
 <translation id="1775381402323441512">वीडियो की जानकारी</translation>
 <translation id="180035236176489073">इन फ़ाइलों को एक्सेस करने के लिए आपका ऑनलाइन होना ज़रूरी है.</translation>
@@ -169,6 +171,7 @@
 <translation id="23721837607121582">मोबाइल प्रोफ़ाइल डाउनलोड करें. यह <ph name="NETWORK_COUNT" /> <ph name="NETWORK_NAME" /> नेटवर्क में से नेटवर्क <ph name="NETWORK_INDEX" /> है</translation>
 <translation id="2377319039870049694">'सूची की तरह देखें' पर स्विच करें</translation>
 <translation id="2377590462528165447"><ph name="NUMBER_OF_ITEMS" /> फ़ोल्डर Linux के साथ शेयर किए गए</translation>
+<translation id="2379576081295865700">स्टोरेज के लिए बची जगह की जांच की जा रही है… 1 आइटम मिला</translation>
 <translation id="2383454254762599978">ट्रैश में भेजें</translation>
 <translation id="2387458720915042159">प्रॉक्सी कनेक्शन प्रकार</translation>
 <translation id="2389832672041313158">बर्मीज़/म्यांमार</translation>
@@ -210,6 +213,7 @@
 <translation id="2718540689505416944">Linux पर ऐप्लिकेशन की मदद से इंस्टॉल करें</translation>
 <translation id="2719020180254996569"><ph name="NETWORK_COUNT" /> में से <ph name="NETWORK_INDEX" /> नेटवर्क, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, जानकारी</translation>
 <translation id="2724954091494693138">एफ़-कीबोर्ड के साथ टर्किश</translation>
+<translation id="2732288874651063549"><ph name="VM_NAME" /> के साथ शेयर करने की सुविधा मैनेज करें</translation>
 <translation id="2732839045120506979">वियतनामीज़ वीएनआई</translation>
 <translation id="2735623501230989521">Parallels Desktop को <ph name="FOLDER_NAME" /> फ़ोल्डर की फ़ाइलें ऐक्सेस करने की अनुमति दें</translation>
 <translation id="2764206540577097904">आपने Google Workspace के अपने निजी स्टोरेज का पूरा इस्तेमाल कर लिया है.</translation>
@@ -304,6 +308,7 @@
 <translation id="3509680540198371098"><ph name="NETWORK_COUNT" /> में से <ph name="NETWORK_INDEX" /> नेटवर्क, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, सिग्नल की क्षमता <ph name="SIGNAL_STRENGTH" />%, जानकारी</translation>
 <translation id="3511705761158917664"><ph name="NUMBER_OF_ITEMS" /> आइटम को सिंक किया जा रहा है...</translation>
 <translation id="3522708245912499433">पुर्तगाली</translation>
+<translation id="3523225005467146490"><ph name="VM_NAME" /> के साथ एक फ़ोल्डर शेयर किया गया</translation>
 <translation id="3524311639100184459">चेतावनी: ये फ़ाइलें अस्थायी हैं और डिस्क की जगह खाली करने के लिए अपने-आप मिटाई जा सकती हैं.  <ph name="BEGIN_LINK" />ज़्यादा जानें<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">फ़ोल्डर</translation>
 <translation id="3548125359243647069">कई बार गलत पिन डाला गया.</translation>
@@ -537,6 +542,7 @@
 <translation id="5218183485292899140">स्विस फ़्रेंच</translation>
 <translation id="5234764350956374838">खारिज करें</translation>
 <translation id="5253070652067921974">निर्माता</translation>
+<translation id="5254207638927440400">फ़ाइल को ट्रांसफ़र नहीं किया जा सकता. अभी इसका इस्तेमाल किया जा रहा है.</translation>
 <translation id="5257456363153333584">ड्रेगनफ़्लाय</translation>
 <translation id="5262311848634918433"><ph name="MARKUP_1" />फ़ाइलें कहीं से भी एक्सेस करें, यहां तक कि ऑफ़लाइन भी.<ph name="MARKUP_2" />
     Google डिस्क में रखी फ़ाइलें अप टू डेट रहती हैं और किसी भी डिवाइस से मिल जाती हैं.<ph name="MARKUP_3" />
@@ -660,6 +666,8 @@
 <translation id="6164412158936057769">तितलियां</translation>
 <translation id="6165508094623778733">ज़्यादा जानें</translation>
 <translation id="6170470584681422115">सैंडविच</translation>
+<translation id="6177854567773392726">स्टोरेज के लिए बची जगह की जांच की जा रही है… <ph name="ITEMS_FOUND" /> आइटम मिले</translation>
+<translation id="6181912134988520389"><ph name="VM_NAME" /> को अपने Google Drive में मौजूद फ़ाइलें ऐक्सेस करने की अनुमति दें. बदलावों को आपके दूसरे डिवाइस में सिंक किया जाएगा.</translation>
 <translation id="6187719147498869044">हंगेरियन</translation>
 <translation id="6198252989419008588">पिन बदलें</translation>
 <translation id="6199801702437275229">स्थान जानकारी की प्रतीक्षा कर रहा है...</translation>
@@ -763,6 +771,7 @@
 <translation id="6989942356279143254">स्वीडिश</translation>
 <translation id="6990081529015358884">अब आपके पास और स्‍थान शेष नहीं है</translation>
 <translation id="6993826899923627728">ये आइटम आपके ट्रैश में हैं</translation>
+<translation id="6996593023542748157"><ph name="VM_NAME" /> के साथ फ़ोल्डर शेयर करें</translation>
 <translation id="7008426324576352165">अपलोड को पूरा करने के लिए, आपके संगठन को ज़्यादा स्टोरेज की ज़रूरत है.</translation>
 <translation id="7009985720488544166">एडमिन नीति के तहत, <ph name="COUNT" /> फ़ाइलों को ट्रांसफ़र करने की अनुमति नहीं है</translation>
 <translation id="7012943028104619157"><ph name="ROOT_TITLE" /> (<ph name="ROOT_SUMMARY" />)</translation>
@@ -852,6 +861,7 @@
 <translation id="76959938259365003">ट्रैश खाली नहीं किया जा सका.</translation>
 <translation id="770015031906360009">ग्रीक</translation>
 <translation id="7705251383879779343"><ph name="FILE_NAME" /> को कॉपी किया गया.</translation>
+<translation id="7707941139430559579">फ़ाइल को ट्रांसफ़र नहीं किया जा सकता. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="7708271999969613024">इस नेटवर्क का इस्तेमाल करने के लिए, मोबाइल और इंटरनेट सेवा देने वाली कंपनी से मिली आठ अंकों वाली निजी अनब्लॉकिंग कुंजी (PUK) डालें.</translation>
 <translation id="7711920809702896782">इमेज की जानकारी</translation>
 <translation id="7724603315864178912">काटें</translation>
@@ -948,6 +958,7 @@
 <translation id="8335837413233998004">बेलारशियन</translation>
 <translation id="8336153091935557858">कल <ph name="YESTERDAY_DAYTIME" /></translation>
 <translation id="8342318071240498787">समान नाम वाली फ़ाइल या निर्देशिका पहले से ही मौजूद है.</translation>
+<translation id="83651606385705612"><ph name="VM_NAME" /> को <ph name="FOLDER_NAME" /> फ़ोल्डर में मौजूद फ़ाइलें ऐक्सेस करने की अनुमति दें</translation>
 <translation id="8372369524088641025">ख़राब WEP कुंजी</translation>
 <translation id="8372852072747894550">ग्रीक</translation>
 <translation id="8386903983509584791">स्कैन पूरा हुआ</translation>
@@ -957,6 +968,7 @@
 <translation id="8408068190360279472"><ph name="NETWORK_TYPE" /> नेटवर्क, कनेक्ट हो रहा है</translation>
 <translation id="8425213833346101688">बदलें</translation>
 <translation id="8428213095426709021">सेटिंग</translation>
+<translation id="8429998526804961548"><ph name="VM_NAME" /> के साथ <ph name="NUMBER_OF_ITEMS" /> फ़ोल्डर शेयर किए गए</translation>
 <translation id="8431909052837336408">SIM पिन बदलें</translation>
 <translation id="8437209419043462667">यूएस</translation>
 <translation id="8452135315243592079">अनुपलब्ध SIM कार्ड</translation>
@@ -1037,6 +1049,7 @@
 <translation id="9038620279323455325">"<ph name="FILE_NAME" />" नाम की फ़ाइल पहले से मौजूद है. कृपया कोई दूसरा नाम चुनें.</translation>
 <translation id="9046895021617826162">कनेक्ट करना विफल</translation>
 <translation id="9065512565307033593">अगर आप पुष्टि नहीं कर पाते, तो आपके नेटवर्क का ऐक्सेस बंद कर दिया जाएगा.</translation>
+<translation id="9083722265619106011">{0,plural, =1{1 चेतावनी}one{<ph name="COUNT" /> चेतावनी}other{<ph name="COUNT" /> चेतावनियां}}</translation>
 <translation id="908378762078012445">फ़ोनेटिक AATSEEL कीबोर्ड के साथ रशियन</translation>
 <translation id="9086302186042011942">समन्वयित हो रहा है</translation>
 <translation id="9099674669267916096">पेज संख्या</translation>

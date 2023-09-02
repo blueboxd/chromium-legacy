@@ -5,8 +5,10 @@
 #include "components/sync/nigori/cryptographer_impl.h"
 
 #include <utility>
+#include <vector>
 
 #include "base/check.h"
+#include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "components/sync/nigori/cross_user_sharing_keys.h"
 
@@ -98,10 +100,9 @@ void CryptographerImpl::SelectDefaultEncryptionKey(
   default_encryption_key_name_ = key_name;
 }
 
-void CryptographerImpl::EmplaceKeysAndSelectDefaultKeyFrom(
+void CryptographerImpl::EmplaceAllNigoriKeysFrom(
     const CryptographerImpl& other) {
   EmplaceKeysFrom(other.key_bag_);
-  SelectDefaultEncryptionKey(other.default_encryption_key_name_);
 }
 
 void CryptographerImpl::ClearDefaultEncryptionKey() {
@@ -111,6 +112,8 @@ void CryptographerImpl::ClearDefaultEncryptionKey() {
 void CryptographerImpl::ClearAllKeys() {
   default_encryption_key_name_.clear();
   key_bag_ = NigoriKeyBag::CreateEmpty();
+  default_cross_user_sharing_key_version_ = absl::nullopt;
+  cross_user_sharing_keys_ = CrossUserSharingKeys::CreateEmpty();
 }
 
 bool CryptographerImpl::HasKey(const std::string& key_name) const {
@@ -172,6 +175,49 @@ bool CryptographerImpl::DecryptToString(const sync_pb::EncryptedData& encrypted,
                                         std::string* decrypted) const {
   DCHECK(decrypted);
   return key_bag_.Decrypt(encrypted, decrypted);
+}
+
+absl::optional<std::vector<uint8_t>>
+CryptographerImpl::AuthEncryptForCrossUserSharing(
+    base::span<const uint8_t> plaintext,
+    base::span<const uint8_t> recipient_public_key) const {
+  if (!default_cross_user_sharing_key_version_.has_value()) {
+    DVLOG(1) << "Default encryption key pair version is not set";
+    return absl::nullopt;
+  }
+  if (!cross_user_sharing_keys_.HasKeyPair(
+          default_cross_user_sharing_key_version_.value())) {
+    DVLOG(1) << "Encryption key pair is not available";
+    return absl::nullopt;
+  }
+
+  const CrossUserSharingPublicPrivateKeyPair& encryption_key_pair =
+      cross_user_sharing_keys_.GetKeyPair(
+          default_cross_user_sharing_key_version_.value());
+
+  return encryption_key_pair.HpkeAuthEncrypt(plaintext, recipient_public_key,
+                                             {});
+}
+
+absl::optional<std::vector<uint8_t>>
+CryptographerImpl::AuthDecryptForCrossUserSharing(
+    base::span<const uint8_t> encrypted_data,
+    base::span<const uint8_t> sender_public_key,
+    const uint32_t recipient_key_version) const {
+  if (!cross_user_sharing_keys_.HasKeyPair(recipient_key_version)) {
+    return absl::nullopt;
+  }
+
+  const CrossUserSharingPublicPrivateKeyPair& decryption_key_pair =
+      cross_user_sharing_keys_.GetKeyPair(recipient_key_version);
+
+  return decryption_key_pair.HpkeAuthDecrypt(encrypted_data, sender_public_key,
+                                             {});
+}
+
+void CryptographerImpl::SelectDefaultCrossUserSharingKey(
+    const uint32_t version) {
+  default_cross_user_sharing_key_version_ = version;
 }
 
 }  // namespace syncer

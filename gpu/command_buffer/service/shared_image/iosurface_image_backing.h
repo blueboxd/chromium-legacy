@@ -133,16 +133,16 @@ class SkiaIOSurfaceRepresentation : public SkiaGaneshImageRepresentation {
       const gfx::Rect& update_rect,
       std::vector<GrBackendSemaphore>* begin_semaphores,
       std::vector<GrBackendSemaphore>* end_semaphores,
-      std::unique_ptr<GrBackendSurfaceMutableState>* end_state) override;
+      std::unique_ptr<skgpu::MutableTextureState>* end_state) override;
   std::vector<sk_sp<GrPromiseImageTexture>> BeginWriteAccess(
       std::vector<GrBackendSemaphore>* begin_semaphores,
       std::vector<GrBackendSemaphore>* end_semaphore,
-      std::unique_ptr<GrBackendSurfaceMutableState>* end_state) override;
+      std::unique_ptr<skgpu::MutableTextureState>* end_state) override;
   void EndWriteAccess() override;
   std::vector<sk_sp<GrPromiseImageTexture>> BeginReadAccess(
       std::vector<GrBackendSemaphore>* begin_semaphores,
       std::vector<GrBackendSemaphore>* end_semaphores,
-      std::unique_ptr<GrBackendSurfaceMutableState>* end_state) override;
+      std::unique_ptr<skgpu::MutableTextureState>* end_state) override;
   void EndReadAccess() override;
   bool SupportsMultipleConcurrentReadAccess() override;
 
@@ -221,7 +221,7 @@ class SharedEventAndSignalValue : public BackpressureMetalSharedEvent {
   uint64_t signaled_value() const { return signaled_value_; }
 
  private:
-  base::scoped_nsprotocol<id<MTLSharedEvent>> shared_event_;
+  base::apple::scoped_nsprotocol<id<MTLSharedEvent>> shared_event_;
   uint64_t signaled_value_;
 };
 
@@ -248,6 +248,9 @@ class GPU_GLES2_EXPORT IOSurfaceImageBacking
   IOSurfaceImageBacking(const IOSurfaceImageBacking& other) = delete;
   IOSurfaceImageBacking& operator=(const IOSurfaceImageBacking& other) = delete;
   ~IOSurfaceImageBacking() override;
+
+  bool UploadFromMemory(const std::vector<SkPixmap>& pixmaps) override;
+  bool ReadbackToMemory(const std::vector<SkPixmap>& pixmaps) override;
 
   bool InitializePixels(base::span<const uint8_t> pixel_data);
 

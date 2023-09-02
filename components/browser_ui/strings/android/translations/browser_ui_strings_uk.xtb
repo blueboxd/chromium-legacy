@@ -4,6 +4,7 @@
 <translation id="1006017844123154345">Відкрити в режимі онлайн</translation>
 <translation id="1036348656032585052">Вимкнути</translation>
 <translation id="1044891598689252897">Сайти працюватимуть у звичному режимі</translation>
+<translation id="1073417869336441572">Поясніть, чому ви дозволили сторонні файли cookie, щоб допомогти нам покращити Chrome. <ph name="BEGIN_LINK" />Надіслати відгук<ph name="END_LINK" /></translation>
 <translation id="1124090076051167250">Буде видалено <ph name="DATASIZE" /> даних і файлів cookie сайтів або додатків на головному екрані.</translation>
 <translation id="1178581264944972037">Пауза</translation>
 <translation id="1181037720776840403">Видалити</translation>
@@ -19,7 +20,6 @@
 <translation id="1371239764779356792">Дозволити сайту зберігати дані на вашому пристрої</translation>
 <translation id="1383876407941801731">Пошук</translation>
 <translation id="1384959399684842514">Завантаження призупинено</translation>
-<translation id="1409426117486808224">Спрощений перегляд відкритих вкладок</translation>
 <translation id="1415402041810619267">URL-адресу скорочено</translation>
 <translation id="1426410128494586442">Так</translation>
 <translation id="1446450296470737166">Повний контроль пристроїв MIDI</translation>
@@ -140,6 +140,7 @@
 <translation id="3386292677130313581">Запитувати, перш ніж дозволити сайтам визначати ваше місцезнаходження (рекомендується)</translation>
 <translation id="3403537308306431953"><ph name="ZOOM_LEVEL" />%%</translation>
 <translation id="344449859752187052">Сторонні файли cookie заблоковано</translation>
+<translation id="3465378418721443318">{DAYS,plural, =1{Завтра Chrome знову заблокує файли cookie}one{Chrome знову заблокує файли cookie через # день}few{Chrome знову заблокує файли cookie через # дні}many{Chrome знову заблокує файли cookie через # днів}other{Chrome знову заблокує файли cookie через # дня}}</translation>
 <translation id="3521663503435878242">Сайти домену <ph name="DOMAIN" /></translation>
 <translation id="3538390592868664640">Заборонити сайтам створювати 3D-карту вашого оточення або відстежувати положення камери</translation>
 <translation id="3544058026430919413">Компанія може визначити групу сайтів, які використовуватимуть файли cookie, щоб показувати дані про ваші дії іншим сайтам-користувачам. В анонімному режимі цю функцію вимкнено.</translation>
@@ -162,6 +163,7 @@
 <translation id="381841723434055211">Номери телефонів</translation>
 <translation id="3826050100957962900">Вхід через сторонні сервіси</translation>
 <translation id="3835233591525155343">Дані про активний стан пристрою</translation>
+<translation id="3843916486309149084">Chrome сьогодні знову заблокує файли cookie</translation>
 <translation id="385051799172605136">Назад</translation>
 <translation id="3859306556332390985">Далі</translation>
 <translation id="3895926599014793903">Примусово ввімкнути масштабування</translation>
@@ -301,6 +303,7 @@
 <translation id="6367753977865761591">Заблокувати вхід через сторонні сервіси для певного сайту.</translation>
 <translation id="6388207532828177975">Очистити та скинути</translation>
 <translation id="6398765197997659313">Вийти з повноекранного режиму</translation>
+<translation id="640163077447496506">Строк дії закінчується сьогодні</translation>
 <translation id="6405650995156823521"><ph name="FIRST_PART" /> • <ph name="SECOND_PART" /></translation>
 <translation id="6439114592976064011">Заборонити сайтам доступ до даних і пристрою віртуальної реальності</translation>
 <translation id="6447842834002726250">Файли cookie</translation>
@@ -336,7 +339,6 @@
 <translation id="7000754031042624318">Вимкнено в налаштуваннях Android</translation>
 <translation id="7016516562562142042">Дозволено для поточної пошукової системи</translation>
 <translation id="702275896380648118">Цей сайт визначає теми, які вас цікавлять, а потім пропонує свою рекламу на інших сайтах. Він також використовує ваші теми оголошень із Chrome, щоб показувати вам релевантнішу рекламу.</translation>
-<translation id="702463548815491781">Рекомендується, коли ввімкнено TalkBack або кнопковий доступ</translation>
 <translation id="7053983685419859001">Блокувати</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{Вибрано 1}one{Вибрано #}few{Вибрано #}many{Вибрано #}other{Вибрано #}}</translation>
 <translation id="7087918508125750058">Вибрано <ph name="ITEM_COUNT" />. Панель інструментів розташовано вгорі екрана</translation>
@@ -396,6 +398,7 @@
 <translation id="8131740175452115882">Підтвердити</translation>
 <translation id="8154912474061769055">Функції на багатьох сайтах можуть не працювати</translation>
 <translation id="8168435359814927499">Вміст</translation>
+<translation id="8186479265534291036">Сайт не працює? Сторонні файли cookie заблоковано.</translation>
 <translation id="8197286292360124385">Дозволено: "<ph name="PERMISSION_1" />"</translation>
 <translation id="8200772114523450471">Відновити</translation>
 <translation id="8206354486702514201">Це налаштування застосовується вашим адміністратором.</translation>

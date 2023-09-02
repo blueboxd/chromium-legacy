@@ -18,7 +18,9 @@ namespace blink {
 
 namespace {
 
-webnn::mojom::blink::GraphInfoPtr BuildWebNNGraphInfo(
+using webnn::mojom::blink::OperandPtr;
+
+base::expected<webnn::mojom::blink::GraphInfoPtr, String> BuildWebNNGraphInfo(
     const MLNamedOperands& named_outputs) {
   // The `GraphInfo` represents an entire information of WebNN graph.
   auto graph_info = webnn::mojom::blink::GraphInfo::New();
@@ -29,8 +31,7 @@ webnn::mojom::blink::GraphInfoPtr BuildWebNNGraphInfo(
   HeapHashMap<Member<const MLOperand>, uint64_t> operand_to_id_map;
   for (const auto& [name, operand] : named_outputs) {
     // Create `mojo::Operand` for output operands of graph with the name.
-    auto output_operand =
-        mojo::ConvertTo<webnn::mojom::blink::OperandPtr>(operand.Get());
+    auto output_operand = mojo::ConvertTo<OperandPtr>(operand.Get());
     output_operand->name = name;
     operand_id++;
     graph_info->id_to_operand_map.insert(operand_id, std::move(output_operand));
@@ -54,18 +55,27 @@ webnn::mojom::blink::GraphInfoPtr BuildWebNNGraphInfo(
           // Create `mojo::Operand` for the input MLOperand.
           operand_id++;
           graph_info->id_to_operand_map.insert(
-              operand_id,
-              mojo::ConvertTo<webnn::mojom::blink::OperandPtr>(operand.Get()));
+              operand_id, mojo::ConvertTo<OperandPtr>(operand.Get()));
           //  Build the array of input operands for this graph with the id.
           graph_info->input_operands.push_back(operand_id);
           operand_to_id_map.insert(operand, operand_id);
           break;
         }
         case MLOperand::OperandKind::kConstant: {
-          // TODO(crbug.com/1273291): Convert `mojo::Operand` for constant
-          // operand.
-          NOTIMPLEMENTED();
-          return nullptr;
+          // Convert `mojo::Operand` for constant operand.
+          operand_id++;
+          graph_info->id_to_operand_map.insert(
+              operand_id, mojo::ConvertTo<OperandPtr>(operand.Get()));
+          //  Build the map of constant operands for this graph with the id.
+          const auto* array_buffer_view = operand->ArrayBufferView();
+          CHECK(array_buffer_view);
+          CHECK(!array_buffer_view->IsDetached());
+          graph_info->constant_id_to_buffer_map.insert(
+              operand_id, base::make_span(static_cast<const uint8_t*>(
+                                              array_buffer_view->BaseAddress()),
+                                          array_buffer_view->byteLength()));
+          operand_to_id_map.insert(operand, operand_id);
+          break;
         }
         case MLOperand::OperandKind::kOutput:
           // Because the operators are visited in topological order, if this
@@ -85,19 +95,18 @@ webnn::mojom::blink::GraphInfoPtr BuildWebNNGraphInfo(
       // operators. Create `mojo::Operand` for this operand.
       operand_id++;
       graph_info->id_to_operand_map.insert(
-          operand_id,
-          mojo::ConvertTo<webnn::mojom::blink::OperandPtr>(operand.Get()));
+          operand_id, mojo::ConvertTo<OperandPtr>(operand.Get()));
       operand_to_id_map.insert(operand, operand_id);
     }
 
     // Create `mojo::Operator` with the id of the input and output operands.
     auto operation =
         ConvertToMojoOperator(operand_to_id_map, current_operator.Get());
-    if (!operation) {
+    if (!operation.has_value()) {
       // Return here if the operator is not implemented.
-      return nullptr;
+      return base::unexpected(operation.error());
     }
-    graph_info->operators.emplace_back(std::move(operation));
+    graph_info->operators.emplace_back(std::move(operation.value()));
   }
 
   return graph_info;
@@ -127,15 +136,16 @@ void MLGraphMojo::Trace(Visitor* visitor) const {
 void MLGraphMojo::BuildAsyncImpl(const MLNamedOperands& outputs,
                                  ScriptPromiseResolver* resolver) {
   auto graph_info = BuildWebNNGraphInfo(outputs);
-  if (!graph_info) {
+  if (!graph_info.has_value()) {
     resolver->Reject(MakeGarbageCollected<DOMException>(
-        DOMExceptionCode::kDataError, "Failed to build graph."));
+        DOMExceptionCode::kDataError,
+        "Failed to build graph: " + graph_info.error()));
     return;
   }
   // Create `WebNNGraph` message pipe with `WebNNContext` mojo interface.
   auto* script_state = resolver->GetScriptState();
   ml_context_->CreateWebNNGraph(
-      script_state, std::move(graph_info),
+      script_state, std::move(graph_info.value()),
       WTF::BindOnce(&MLGraphMojo::OnCreateWebNNGraph, WrapPersistent(this),
                     WrapPersistent(resolver)));
 }

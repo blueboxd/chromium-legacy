@@ -5,6 +5,7 @@
 import("//build/buildflag_header.gni")
 import("//build/config/chromeos/ui_mode.gni")
 import("//chrome/version.gni")
+import("//components/optimization_guide/features.gni")
 import("//extensions/buildflags/buildflags.gni")
 
 static_library("autofill") {
@@ -23,19 +24,28 @@ static_library("autofill") {
     "autofill_offer_manager_factory.h",
     "autofill_optimization_guide_factory.cc",
     "autofill_optimization_guide_factory.h",
-    "autofill_popup_controller_utils.cc",
-    "autofill_popup_controller_utils.h",
     "iban_manager_factory.cc",
     "iban_manager_factory.h",
     "merchant_promo_code_manager_factory.cc",
     "merchant_promo_code_manager_factory.h",
     "personal_data_manager_factory.cc",
     "personal_data_manager_factory.h",
+    "shopping_service_delegate_impl.cc",
+    "shopping_service_delegate_impl.h",
     "strike_database_factory.cc",
     "strike_database_factory.h",
+    "subkey_requester_factory.cc",
+    "subkey_requester_factory.h",
     "validation_rules_storage_factory.cc",
     "validation_rules_storage_factory.h",
   ]
+
+  if (build_with_tflite_lib) {
+    sources += [
+      "autofill_ml_prediction_model_service_factory.cc",
+      "autofill_ml_prediction_model_service_factory.h",
+    ]
+  }
 
   public_deps = [
     "//base",
@@ -55,6 +65,7 @@ static_library("autofill") {
     "//chrome/browser/profiles",
     "//chrome/common:constants",
     "//components/autofill/content/browser",
+    "//components/commerce/core:shopping_service",
     "//components/image_fetcher/core",
     "//components/prefs",
     "//components/strings:components_strings_grit",
@@ -188,6 +199,8 @@ if (!is_android) {
     testonly = true
 
     sources = [
+      "autofill_flow_test_util.cc",
+      "autofill_flow_test_util.h",
       "autofill_uitest.cc",
       "autofill_uitest.h",
     ]

@@ -193,7 +193,7 @@ static bool HasDoubleValue(CSSPrimitiveValue::UnitType type) {
     case CSSPrimitiveValue::UnitType::kX:
     case CSSPrimitiveValue::UnitType::kDotsPerInch:
     case CSSPrimitiveValue::UnitType::kDotsPerCentimeter:
-    case CSSPrimitiveValue::UnitType::kFraction:
+    case CSSPrimitiveValue::UnitType::kFlex:
     case CSSPrimitiveValue::UnitType::kInteger:
       return true;
     default:
@@ -1802,6 +1802,7 @@ CSSMathExpressionAnchorQuery::ToCalculationExpression(
     anchor_specifier = AnchorSpecifierValue::Implicit();
   } else if (const auto* custom_ident =
                  DynamicTo<CSSCustomIdentValue>(anchor_specifier_.Get())) {
+    length_resolver.ReferenceAnchor();
     anchor_specifier = MakeGarbageCollected<AnchorSpecifierValue>(
         *MakeGarbageCollected<ScopedCSSName>(custom_ident->Value(),
                                              custom_ident->GetTreeScope()));
@@ -1972,9 +1973,11 @@ class CSSMathExpressionNodeParser {
         anchor_query_type, anchor_specifier, *value, fallback);
   }
 
-  CSSMathExpressionNode* ParseMathFunction(CSSValueID function_id,
-                                           CSSParserTokenRange& tokens,
-                                           int depth) {
+  CSSMathExpressionNode* ParseMathFunction(
+      CSSValueID function_id,
+      CSSParserTokenRange& tokens,
+      const HashMap<CSSValueID, double> color_channel_keyword_values,
+      int depth) {
     if (!IsSupportedMathFunction(function_id)) {
       return nullptr;
     }
@@ -2073,7 +2076,8 @@ class CSSMathExpressionNodeParser {
       }
 
       tokens.ConsumeWhitespace();
-      CSSMathExpressionNode* node = ParseValueExpression(tokens, depth);
+      CSSMathExpressionNode* node =
+          ParseValueExpression(tokens, color_channel_keyword_values, depth);
       if (!node) {
         return nullptr;
       }
@@ -2163,7 +2167,9 @@ class CSSMathExpressionNodeParser {
   }
 
  private:
-  CSSMathExpressionNode* ParseValue(CSSParserTokenRange& tokens) {
+  CSSMathExpressionNode* ParseValue(
+      CSSParserTokenRange& tokens,
+      const HashMap<CSSValueID, double> color_channel_keyword_values) {
     CSSParserToken token = tokens.ConsumeIncludingWhitespace();
     if (token.Id() == CSSValueID::kInfinity) {
       return CSSMathExpressionNumericLiteral::Create(
@@ -2191,6 +2197,14 @@ class CSSMathExpressionNodeParser {
     if (!(token.GetType() == kNumberToken ||
           (token.GetType() == kPercentageToken && is_percentage_allowed_) ||
           token.GetType() == kDimensionToken)) {
+      // For relative color syntax. Swap in the associated value of a color
+      // channel here. e.g. color(from color(srgb 1 0 0) calc(r * 2) 0 0) should
+      // swap in "1" for the value of "r" in the calc expression.
+      if (color_channel_keyword_values.Contains(token.Id())) {
+        return CSSMathExpressionNumericLiteral::Create(
+            color_channel_keyword_values.at(token.Id()),
+            CSSPrimitiveValue::UnitType::kNumber);
+      }
       return nullptr;
     }
 
@@ -2227,8 +2241,10 @@ class CSSMathExpressionNodeParser {
         true /* can_be_resolved_with_conversion_data */, rounding_op);
   }
 
-  CSSMathExpressionNode* ParseValueTerm(CSSParserTokenRange& tokens,
-                                        int depth) {
+  CSSMathExpressionNode* ParseValueTerm(
+      CSSParserTokenRange& tokens,
+      const HashMap<CSSValueID, double> color_channel_keyword_values,
+      int depth) {
     if (tokens.AtEnd()) {
       return nullptr;
     }
@@ -2238,7 +2254,8 @@ class CSSMathExpressionNodeParser {
       CSSParserTokenRange inner_range = tokens.ConsumeBlock();
       tokens.ConsumeWhitespace();
       inner_range.ConsumeWhitespace();
-      CSSMathExpressionNode* result = ParseValueExpression(inner_range, depth);
+      CSSMathExpressionNode* result = ParseValueExpression(
+          inner_range, color_channel_keyword_values, depth);
       if (!result || !inner_range.AtEnd()) {
         return nullptr;
       }
@@ -2251,20 +2268,23 @@ class CSSMathExpressionNodeParser {
       CSSParserTokenRange inner_range = tokens.ConsumeBlock();
       tokens.ConsumeWhitespace();
       inner_range.ConsumeWhitespace();
-      return ParseMathFunction(function_id, inner_range, depth);
+      return ParseMathFunction(function_id, inner_range,
+                               color_channel_keyword_values, depth);
     }
 
-    return ParseValue(tokens);
+    return ParseValue(tokens, color_channel_keyword_values);
   }
 
   CSSMathExpressionNode* ParseValueMultiplicativeExpression(
       CSSParserTokenRange& tokens,
+      const HashMap<CSSValueID, double> color_channel_keyword_values,
       int depth) {
     if (tokens.AtEnd()) {
       return nullptr;
     }
 
-    CSSMathExpressionNode* result = ParseValueTerm(tokens, depth);
+    CSSMathExpressionNode* result =
+        ParseValueTerm(tokens, color_channel_keyword_values, depth);
     if (!result) {
       return nullptr;
     }
@@ -2277,7 +2297,8 @@ class CSSMathExpressionNodeParser {
       }
       tokens.ConsumeIncludingWhitespace();
 
-      CSSMathExpressionNode* rhs = ParseValueTerm(tokens, depth);
+      CSSMathExpressionNode* rhs =
+          ParseValueTerm(tokens, color_channel_keyword_values, depth);
       if (!rhs) {
         return nullptr;
       }
@@ -2295,13 +2316,14 @@ class CSSMathExpressionNodeParser {
 
   CSSMathExpressionNode* ParseAdditiveValueExpression(
       CSSParserTokenRange& tokens,
+      const HashMap<CSSValueID, double> color_channel_keyword_values,
       int depth) {
     if (tokens.AtEnd()) {
       return nullptr;
     }
 
-    CSSMathExpressionNode* result =
-        ParseValueMultiplicativeExpression(tokens, depth);
+    CSSMathExpressionNode* result = ParseValueMultiplicativeExpression(
+        tokens, color_channel_keyword_values, depth);
     if (!result) {
       return nullptr;
     }
@@ -2321,8 +2343,8 @@ class CSSMathExpressionNodeParser {
       }
       tokens.ConsumeIncludingWhitespace();
 
-      CSSMathExpressionNode* rhs =
-          ParseValueMultiplicativeExpression(tokens, depth);
+      CSSMathExpressionNode* rhs = ParseValueMultiplicativeExpression(
+          tokens, color_channel_keyword_values, depth);
       if (!rhs) {
         return nullptr;
       }
@@ -2338,12 +2360,15 @@ class CSSMathExpressionNodeParser {
     return result;
   }
 
-  CSSMathExpressionNode* ParseValueExpression(CSSParserTokenRange& tokens,
-                                              int depth) {
+  CSSMathExpressionNode* ParseValueExpression(
+      CSSParserTokenRange& tokens,
+      const HashMap<CSSValueID, double> color_channel_keyword_values,
+      int depth) {
     if (++depth > kMaxExpressionDepth) {
       return nullptr;
     }
-    return ParseAdditiveValueExpression(tokens, depth);
+    return ParseAdditiveValueExpression(tokens, color_channel_keyword_values,
+                                        depth);
   }
 
   const CSSParserContext& context_;
@@ -2604,11 +2629,12 @@ CSSMathExpressionNode* CSSMathExpressionNode::ParseMathFunction(
     CSSParserTokenRange tokens,
     const CSSParserContext& context,
     const bool is_percentage_allowed,
-    CSSAnchorQueryTypes allowed_anchor_queries) {
+    CSSAnchorQueryTypes allowed_anchor_queries,
+    const HashMap<CSSValueID, double> color_channel_keyword_values) {
   CSSMathExpressionNodeParser parser(context, is_percentage_allowed,
                                      allowed_anchor_queries);
-  CSSMathExpressionNode* result =
-      parser.ParseMathFunction(function_id, tokens, 0);
+  CSSMathExpressionNode* result = parser.ParseMathFunction(
+      function_id, tokens, color_channel_keyword_values, 0);
 
   // TODO(pjh0718): Do simplificiation for result above.
   return result;

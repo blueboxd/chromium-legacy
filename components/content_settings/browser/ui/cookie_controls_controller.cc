@@ -43,10 +43,6 @@ using site_engagement::SiteEngagementService;
 
 namespace {
 
-// The number of page reloads in the last 30 seconds that is considered to be a
-// high confidence breakage signal.
-constexpr int kFrequentReloadThreshold = 3;
-
 constexpr char kEntryPointAnimatedKey[] = "entry_point_animated";
 constexpr char kLastExpirationKey[] = "last_expiration";
 constexpr char kLastVisitedActiveException[] = "last_visited_active_exception";
@@ -55,7 +51,7 @@ constexpr char kActivationsCountKey[] = "activations_count_key";
 base::Value::Dict GetMetadata(HostContentSettingsMap* settings_map,
                               const GURL& url) {
   base::Value stored_value = settings_map->GetWebsiteSetting(
-      url, url, ContentSettingsType::COOKIE_CONTROLS_METADATA, nullptr);
+      url, url, ContentSettingsType::COOKIE_CONTROLS_METADATA);
   if (!stored_value.is_dict()) {
     return base::Value::Dict();
   }
@@ -179,8 +175,9 @@ CookieControlsController::Status CookieControlsController::GetStatus(
   SettingInfo info;
   bool is_allowed = cookie_settings_->IsThirdPartyAccessAllowed(url, &info);
 
-  const bool is_default_setting = info.primary_pattern.MatchesAllHosts() &&
-                                  info.secondary_pattern.MatchesAllHosts();
+  const bool is_default_setting =
+      info.primary_pattern == ContentSettingsPattern::Wildcard() &&
+      info.secondary_pattern == ContentSettingsPattern::Wildcard();
 
   // The UI can reset only host-scoped (without wildcards in the domain) or
   // site-scoped exceptions.
@@ -189,11 +186,15 @@ CookieControlsController::Status CookieControlsController::GetStatus(
       info.secondary_pattern == URLToSchemefulSitePattern(url);
 
   // Rules from regular mode can't be temporarily overridden in incognito.
-  const bool is_exception_from_regular_mode_in_incognito =
-      is_allowed && original_cookie_settings_ &&
-      original_cookie_settings_->ShouldBlockThirdPartyCookies() &&
-      original_cookie_settings_->IsThirdPartyAccessAllowed(url,
-                                                           nullptr /* info */);
+  bool exception_exists_in_regular_profile = false;
+  if (is_allowed && original_cookie_settings_) {
+    SettingInfo original_info;
+    original_cookie_settings_->IsThirdPartyAccessAllowed(url, &original_info);
+
+    exception_exists_in_regular_profile =
+        original_info.primary_pattern != ContentSettingsPattern::Wildcard() ||
+        original_info.secondary_pattern != ContentSettingsPattern::Wildcard();
+  }
 
   CookieControlsStatus status = is_allowed
                                     ? CookieControlsStatus::kDisabledForSite
@@ -203,7 +204,7 @@ CookieControlsController::Status CookieControlsController::GetStatus(
     enforcement = CookieControlsEnforcement::kEnforcedByPolicy;
   } else if (info.source == SETTING_SOURCE_EXTENSION) {
     enforcement = CookieControlsEnforcement::kEnforcedByExtension;
-  } else if (is_exception_from_regular_mode_in_incognito ||
+  } else if (exception_exists_in_regular_profile ||
              (!is_default_setting && !host_or_site_scoped_exception)) {
     // If the exception cannot be reset in-context because of the nature of the
     // setting, display as managed by setting.
@@ -262,7 +263,7 @@ CookieControlsController::GetConfidenceLevel(CookieControlsStatus status,
     return CookieControlsBreakageConfidenceLevel::kMedium;
   }
 
-  if (recent_reloads_count_ >= kFrequentReloadThreshold) {
+  if (recent_reloads_count_ >= features::kUserBypassUIReloadCount.Get()) {
     return CookieControlsBreakageConfidenceLevel::kHigh;
   }
 
@@ -494,7 +495,7 @@ void CookieControlsController::OnPageReloadDetected(int recent_reloads_count) {
   recent_reloads_count_ = recent_reloads_count;
 
   // Only inform the observers if there is a potential confidence level change.
-  if (recent_reloads_count_ < kFrequentReloadThreshold &&
+  if (recent_reloads_count_ < features::kUserBypassUIReloadCount.Get() &&
       !has_exception_expired_since_last_visit_) {
     return;
   }
@@ -568,19 +569,22 @@ void CookieControlsController::RecordActivationMetrics() {
   // Metrics, related to confidence signals:
   // TODO(crbug.com/1446230): Add CookieControlsActivated.FedCmInitiated
   base::UmaHistogramBoolean(
-      "CookieControlsActivated.SaaRequested",
+      "Privacy.CookieControlsActivated.SaaRequested",
       cookie_settings_->HasAnyFrameRequestedStorageAccess(url));
-  base::UmaHistogramCounts100("CookieControlsActivated.PageRefreshCount",
-                              recent_reloads_count_);
-  base::UmaHistogramExactLinear("CookieControlsActivated.SiteEngagementScore",
-                                GetSiteEngagementScore(), 100);
+  base::UmaHistogramCounts100(
+      "Privacy.CookieControlsActivated.PageRefreshCount",
+      recent_reloads_count_);
+  base::UmaHistogramExactLinear(
+      "Privacy.CookieControlsActivated.SiteEngagementScore",
+      GetSiteEngagementScore(), 100);
 
   int allowed_sites = GetAllowedSitesCount();
   int blocked_sites = GetBlockedSitesCount();
   auto site_data_access_type =
       GetSiteDataAccessType(allowed_sites, blocked_sites);
-  base::UmaHistogramEnumeration("CookieControlsActivated.SiteDataAccessType",
-                                site_data_access_type);
+  base::UmaHistogramEnumeration(
+      "Privacy.CookieControlsActivated.SiteDataAccessType",
+      site_data_access_type);
 
   // Record activation UKM.
   // TODO(crbug.com/1446230): Include FedCM information.
@@ -622,8 +626,37 @@ CookieControlsController::TabObserver::TabObserver(
       content::WebContentsObserver::web_contents()->GetVisibleURL();
 }
 
+CookieControlsController::TabObserver::~TabObserver() = default;
+
 void CookieControlsController::TabObserver::OnSiteDataAccessed(
     const AccessDetails& access_details) {
+  if (access_details.site_data_type != SiteDataType::kCookies ||
+      !base::FeatureList::IsEnabled(
+          content_settings::features::kUserBypassUI)) {
+    cookie_controls_->PresentBlockedCookieCounter();
+    return;
+  }
+
+  // When User Bypass is enabled, a large number of string comparisons are
+  // performed to determine what sites are 3P / 1P. Cookie accesses are
+  // reported _very_ frequently as many sites are always reading or writing to
+  // the same cookie, and there is no caching of these accesses anywhere before
+  // here (in constrast to JS storage, which does cache accesses earlier).
+  // A simple cache of cookie accesses is used here to limit the number of
+  // repeated updates.
+  // We can't cache all types of accesses here, because the `site_data_type` is
+  // not always populated with sufficient granularity (often aliasing to
+  // kUnknown). This is relevant as some daya types may impact the block 3P
+  // count, while others may not.
+  // TODO(crbug.com/1271155): Replace the SiteDataType with the Browsing Data
+  // Model's StorageType, which would let us remove an enum, and let us cache
+  // all accesses here.
+
+  if (cookie_accessed_set_.count(access_details)) {
+    return;
+  }
+
+  cookie_accessed_set_.insert(access_details);
   cookie_controls_->PresentBlockedCookieCounter();
 }
 
@@ -635,13 +668,14 @@ void CookieControlsController::TabObserver::PrimaryPageChanged(
     content::Page& page) {
   const GURL& current_url =
       content::WebContentsObserver::web_contents()->GetVisibleURL();
+  cookie_accessed_set_.clear();
 
   if (current_url != last_visited_url_) {
     reload_count_ = 0;
     timer_.Stop();
   } else {
     if (!timer_.IsRunning()) {
-      timer_.Start(FROM_HERE, base::Seconds(30), this,
+      timer_.Start(FROM_HERE, features::kUserBypassUIReloadTime.Get(), this,
                    &CookieControlsController::TabObserver::ResetReloadCounter);
     }
     reload_count_++;

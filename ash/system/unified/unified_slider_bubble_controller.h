@@ -32,7 +32,9 @@ class ASH_EXPORT UnifiedSliderBubbleController
   enum SliderType {
     SLIDER_TYPE_VOLUME = 0,
     SLIDER_TYPE_DISPLAY_BRIGHTNESS,
-    SLIDER_TYPE_KEYBOARD_BACKLIGHT_TOGGLE,
+    // TODO(b/298085976): Keyboard backlight sliders will migrate to toasts.
+    SLIDER_TYPE_KEYBOARD_BACKLIGHT_TOGGLE_OFF,
+    SLIDER_TYPE_KEYBOARD_BACKLIGHT_TOGGLE_ON,
     SLIDER_TYPE_KEYBOARD_BRIGHTNESS,
     SLIDER_TYPE_MIC
   };
@@ -103,7 +105,8 @@ class ASH_EXPORT UnifiedSliderBubbleController
 
   raw_ptr<TrayBubbleView, ExperimentalAsh> bubble_view_ = nullptr;
   raw_ptr<views::Widget, ExperimentalAsh> bubble_widget_ = nullptr;
-  raw_ptr<UnifiedSliderView, ExperimentalAsh> slider_view_ = nullptr;
+  raw_ptr<UnifiedSliderView, DanglingUntriaged | ExperimentalAsh> slider_view_ =
+      nullptr;
 
   // Type of the currently shown slider.
   SliderType slider_type_ = SLIDER_TYPE_VOLUME;

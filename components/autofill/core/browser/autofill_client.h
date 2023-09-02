@@ -16,7 +16,8 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
-#include "components/autofill/core/browser/autofill_trigger_source.h"
+#include "components/autofill/core/browser/autofill_trigger_details.h"
+#include "components/autofill/core/browser/country_type.h"
 #include "components/autofill/core/browser/payments/legal_message_line.h"
 #include "components/autofill/core/browser/payments/risk_data_loader.h"
 #include "components/autofill/core/browser/ui/fast_checkout_client.h"
@@ -29,6 +30,7 @@
 #include "components/autofill/core/common/form_interactions_flow.h"
 #include "components/autofill/core/common/unique_ids.h"
 #include "components/device_reauth/device_authenticator.h"
+#include "components/plus_addresses/plus_address_service.h"
 #include "components/profile_metrics/browser_profile_type.h"
 #include "components/security_state/core/security_state.h"
 #include "components/translate/core/browser/language_state.h"
@@ -76,6 +78,7 @@ class AutofillAblationStudy;
 class AutofillDriver;
 class AutofillDownloadManager;
 struct AutofillErrorDialogContext;
+class AutofillMlPredictionModelHandler;
 class AutofillOfferData;
 class AutofillOfferManager;
 class AutofillOptimizationGuide;
@@ -236,6 +239,15 @@ class AutofillClient : public RiskDataLoader {
     std::u16string expiration_date_year;
   };
 
+  enum class CardSaveType {
+    // Credit card is saved without the CVC.
+    kCardSaveOnly = 0,
+    // Credit card is saved with the CVC.
+    kCardSaveWithCvc = 1,
+    // Only CVC is saved.
+    kCvcSaveOnly = 2,
+  };
+
   // Used for options of upload prompt.
   struct SaveCreditCardOptions {
     SaveCreditCardOptions& with_from_dynamic_change_form(bool b) {
@@ -275,8 +287,8 @@ class AutofillClient : public RiskDataLoader {
       return *this;
     }
 
-    SaveCreditCardOptions& with_cvc_save_only(bool b) {
-      cvc_save_only = b;
+    SaveCreditCardOptions& with_card_save_type(CardSaveType b) {
+      card_save_type = b;
       return *this;
     }
 
@@ -288,7 +300,7 @@ class AutofillClient : public RiskDataLoader {
     bool has_multiple_legal_lines = false;
     bool has_same_last_four_as_server_card_but_different_expiration_date =
         false;
-    bool cvc_save_only = false;
+    CardSaveType card_save_type = CardSaveType::kCardSaveOnly;
   };
 
   // Used for options of save (and update) address profile prompt.
@@ -395,13 +407,26 @@ class AutofillClient : public RiskDataLoader {
   // Gets the AutofillOptimizationGuide instance associated with the client.
   virtual AutofillOptimizationGuide* GetAutofillOptimizationGuide() const;
 
+  // Gets the AutofillModelHandler instance for autofill machine learning
+  // predictions associated with the client.
+  virtual AutofillMlPredictionModelHandler*
+  GetAutofillMlPredictionModelHandler();
+
   // Gets the AutocompleteHistoryManager instance associated with the client.
   virtual AutocompleteHistoryManager* GetAutocompleteHistoryManager() = 0;
 
   // Gets the IbanManager instance associated with the client.
   virtual IbanManager* GetIbanManager();
 
+  // When the enterprise plus address feature is supported, gets the
+  // KeyedService that manages that data.
   virtual plus_addresses::PlusAddressService* GetPlusAddressService();
+
+  // Orchestrates UI for enterprise plus address creation; no-op except on
+  // supported platforms.
+  virtual void OfferPlusAddressCreation(
+      const url::Origin& main_frame_origin,
+      plus_addresses::PlusAddressCallback callback);
 
   // Gets the MerchantPromoCodeManager instance associated with the
   // client (can be null for unsupported platforms).
@@ -470,7 +495,7 @@ class AutofillClient : public RiskDataLoader {
 
   // Retrieves the country code of the user from Chrome variation service.
   // If the variation service is not available, return an empty string.
-  virtual std::string GetVariationConfigCountryCode() const;
+  virtual GeoIpCountryCode GetVariationConfigCountryCode() const;
 
   // Returns the profile type of the session.
   virtual profile_metrics::BrowserProfileType GetProfileType() const;
@@ -617,11 +642,6 @@ class AutofillClient : public RiskDataLoader {
   // visible and has been closed.
   virtual bool CloseWebauthnDialog() = 0;
 
-  // Prompt the user to confirm the saving of a UPI ID.
-  virtual void ConfirmSaveUpiIdLocally(
-      const std::string& upi_id,
-      base::OnceCallback<void(bool user_decision)> callback) = 0;
-
   // Shows the dialog including all credit cards that are available to be used
   // as a virtual card. |candidates| must not be empty and has at least one
   // card. Runs |callback| when a card is selected.
@@ -681,6 +701,10 @@ class AutofillClient : public RiskDataLoader {
   // Will run |callback| on success.
   virtual void ConfirmCreditCardFillAssist(const CreditCard& card,
                                            base::OnceClosure callback) = 0;
+
+  // Show an edit address profile dialog, giving the user an option to alter
+  // autofill profile data.
+  virtual void ShowEditAddressProfileDialog(const AutofillProfile& profile) = 0;
 
   // Show a delete address profile dialog asking if users want to proceed with
   // deletion.
@@ -770,11 +794,14 @@ class AutofillClient : public RiskDataLoader {
   // TODO(crbug.com/1093057): Rename all the "domain" in this flow to origin.
   //                          The server is passing down full origin of the
   //                          urls. "Domain" is no longer accurate.
-  // Notifies the client to update the offer notification when the |offer| is
-  // available. |notification_has_been_shown| indicates whether this
+  // Notifies the client to update the offer notification when the `offer` is
+  // available. `notification_has_been_shown` indicates whether this
   // notification has been shown since profile start-up.
+  // `expand_notification_icon` indicates whether the notification will
+  // automatically expand upon being shown.
   virtual void UpdateOfferNotification(const AutofillOfferData* offer,
-                                       bool notification_has_been_shown);
+                                       bool notification_has_been_shown,
+                                       bool expand_notification_icon);
 
   // Dismiss any visible offer notification on the current tab.
   virtual void DismissOfferNotification();
@@ -784,13 +811,12 @@ class AutofillClient : public RiskDataLoader {
   virtual void OnVirtualCardDataAvailable(
       const VirtualCardManualFallbackBubbleOptions& options);
 
-  // Called when some virtual card retrieval errors happened. Will show the
-  // error dialog with virtual card related messages. The type of error dialog
-  // that is shown will match the `type` in `context`. If the
+  // Shows an error dialog when card retrieval errors happen. The type of error
+  // dialog that is shown will match the `type` in `context`. If the
   // `server_returned_title` and `server_returned_description` in `context` are
-  // both set, the virtual card error dialog that is displayed will have these
-  // fields displayed for the title and description, respectively.
-  virtual void ShowVirtualCardErrorDialog(
+  // both set, the error dialog that is displayed will have these fields
+  // displayed for the title and description, respectively.
+  virtual void ShowAutofillErrorDialog(
       const AutofillErrorDialogContext& context);
 
   // Show/dismiss the progress dialog which contains a throbber and a text

@@ -33,9 +33,12 @@
 #include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/extensions/extension_enable_flow.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "components/services/app_service/public/cpp/app_launch_util.h"
 #include "components/services/app_service/public/cpp/app_types.h"
+#include "components/services/app_service/public/cpp/shortcut/shortcut.h"
+#include "components/services/app_service/public/cpp/shortcut/shortcut_registry_cache.h"
 #include "components/services/app_service/public/cpp/types_util.h"
 #include "content/public/browser/navigation_entry.h"
 #include "extensions/browser/extension_util.h"
@@ -43,6 +46,10 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace {
+
+// TODO(b/297453039): Replace with correct UXW when available.
+constexpr char kPendingString[] = "Waiting...";
+constexpr char kInstallingString[] = "Installing...";
 
 constexpr float kProgressNone = 0;
 constexpr float kProgressNotApplicable = -1;
@@ -64,6 +71,18 @@ ShelfControllerHelper::ShelfControllerHelper(Profile* profile)
     : profile_(profile) {}
 
 ShelfControllerHelper::~ShelfControllerHelper() {}
+
+std::string ShelfControllerHelper::GetLabelForPromiseStatus(
+    apps::PromiseStatus status) {
+  switch (status) {
+    case apps::PromiseStatus::kUnknown:
+    case apps::PromiseStatus::kPending:
+      return kPendingString;
+    case apps::PromiseStatus::kInstalling:
+    case apps::PromiseStatus::kRemove:
+      return kInstallingString;
+  }
+}
 
 // static
 std::u16string ShelfControllerHelper::GetAppTitle(Profile* profile,
@@ -96,6 +115,23 @@ std::u16string ShelfControllerHelper::GetAppTitle(Profile* profile,
         GetPromiseAppTitle(profile, app_id);
     if (!promise_app_title.empty()) {
       return promise_app_title;
+    }
+  }
+
+  if (IsAppServiceShortcut(profile, app_id)) {
+    absl::optional<std::string> shortcut_name =
+        apps::AppServiceProxyFactory::GetForProfile(profile)
+            ->ShortcutRegistryCache()
+            ->GetShortcut(apps::ShortcutId(app_id))
+            ->name;
+
+    std::u16string shortcut_title;
+    if (shortcut_name.has_value()) {
+      shortcut_title = base::UTF8ToUTF16(shortcut_name.value());
+    }
+
+    if (!shortcut_title.empty()) {
+      return shortcut_title;
     }
   }
 
@@ -159,12 +195,11 @@ std::u16string ShelfControllerHelper::GetPromiseAppTitle(
       apps::AppServiceProxyFactory::GetForProfile(profile)
           ->PromiseAppRegistryCache()
           ->GetPromiseAppForStringPackageId(string_package_id);
-  if (!promise_app || !promise_app->name.has_value() ||
-      promise_app->name->empty()) {
+  if (!promise_app) {
     return std::u16string();
   }
 
-  return base::UTF8ToUTF16(promise_app->name.value());
+  return base::UTF8ToUTF16(GetLabelForPromiseStatus(promise_app->status));
 }
 
 // static
@@ -213,6 +248,15 @@ ash::AppStatus ShelfControllerHelper::ConvertPromiseStatusToAppStatus(
   }
 }
 
+// static
+bool ShelfControllerHelper::IsAppServiceShortcut(Profile* profile,
+                                                 const std::string& id) {
+  return base::FeatureList::IsEnabled(features::kCrosWebAppShortcutUiUpdate) &&
+         apps::AppServiceProxyFactory::GetForProfile(profile)
+             ->ShortcutRegistryCache()
+             ->HasShortcut(apps::ShortcutId(id));
+}
+
 bool ShelfControllerHelper::IsValidIDForCurrentUser(
     const std::string& app_id) const {
   if (IsValidIDForArcApp(app_id))
@@ -240,6 +284,12 @@ void ShelfControllerHelper::LaunchApp(const ash::ShelfID& id,
     proxy->Launch(app_id, event_flags,
                   ShelfLaunchSourceToAppsLaunchSource(source),
                   std::make_unique<apps::WindowInfo>(display_id));
+    return;
+  }
+
+  // Launch the shortcut if the shelf item is a shortcut to an app.
+  if (IsAppServiceShortcut(profile_, app_id)) {
+    proxy->LaunchShortcut(apps::ShortcutId(app_id), display_id);
     return;
   }
 

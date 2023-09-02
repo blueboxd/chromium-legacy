@@ -26,6 +26,7 @@
 #include "chrome/browser/ui/ash/shelf/shelf_app_updater.h"
 #include "components/account_id/account_id.h"
 #include "components/prefs/pref_change_registrar.h"
+#include "components/services/app_service/public/cpp/shortcut/shortcut.h"
 #include "components/sync_preferences/pref_service_syncable_observer.h"
 
 class AppIconLoader;
@@ -42,6 +43,7 @@ class ShelfSpinnerController;
 
 namespace apps {
 class PromiseAppUpdate;
+class ShortcutUpdate;
 }
 
 namespace ash {
@@ -281,6 +283,8 @@ class ChromeShelfController
                                 bool by_migration) override;
   void OnPromiseAppUpdate(const apps::PromiseAppUpdate& update) override;
   void OnPromiseAppRemoved(const apps::PackageId& package_id) override;
+  void OnShortcutUpdated(const apps::ShortcutUpdate& update) override;
+  void OnShortcutRemoved(const apps::ShortcutId& id) override;
 
   // AppIconLoaderDelegate:
   void OnAppImageUpdated(const std::string& app_id,

@@ -8,7 +8,6 @@
 #include "base/test/task_environment.h"
 #include "services/accessibility/fake_service_client.h"
 #include "services/accessibility/os_accessibility_service.h"
-#include "services/accessibility/public/mojom/accessibility_service.mojom-shared.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace ax {
@@ -33,8 +32,9 @@ class AssistiveTechnologyControllerTest : public testing::Test {
   }
 
  protected:
-  raw_ptr<AssistiveTechnologyControllerImpl, ExperimentalAsh> at_controller_ =
-      nullptr;
+  raw_ptr<AssistiveTechnologyControllerImpl,
+          DanglingUntriaged | ExperimentalAsh>
+      at_controller_ = nullptr;
   std::unique_ptr<FakeServiceClient> client_;
 
  private:

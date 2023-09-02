@@ -10,9 +10,9 @@
 
 #import <WebKit/WebKit.h>
 
+#include "base/apple/foundation_util.h"
 #include "base/functional/bind.h"
 #include "base/json/json_writer.h"
-#include "base/mac/foundation_util.h"
 #import "base/notreached.h"
 #include "base/strings/sys_string_conversions.h"
 #import "components/autofill/ios/browser/autofill_agent.h"
@@ -53,6 +53,7 @@
 #import "ios/web_view/internal/autofill/web_view_autofill_client_ios.h"
 #import "ios/web_view/internal/cwv_back_forward_list_internal.h"
 #import "ios/web_view/internal/cwv_favicon_internal.h"
+#import "ios/web_view/internal/cwv_find_in_page_controller_internal.h"
 #import "ios/web_view/internal/cwv_html_element_internal.h"
 #import "ios/web_view/internal/cwv_navigation_action_internal.h"
 #import "ios/web_view/internal/cwv_ssl_status_internal.h"
@@ -139,7 +140,7 @@ NSDictionary* NSDictionaryFromDictValue(const base::Value::Dict& value) {
   DCHECK(success) << "Failed to convert base::Value to JSON";
 
   NSData* json_data = [NSData dataWithBytes:json.c_str() length:json.length()];
-  NSDictionary* ns_dictionary = base::mac::ObjCCastStrict<NSDictionary>(
+  NSDictionary* ns_dictionary = base::apple::ObjCCastStrict<NSDictionary>(
       [NSJSONSerialization JSONObjectWithData:json_data
                                       options:kNilOptions
                                         error:nil]);
@@ -308,10 +309,11 @@ WEB_STATE_USER_DATA_KEY_IMPL(WebViewHolder)
   // To support partial rollout and roll back of the feature, try to load
   // the data from `coder` in either the legacy or optimised format. This
   // also allow migrating the storage in-place.
-  _cachedProtobufStorage = base::mac::ObjCCastStrict<CWVWebViewProtobufStorage>(
-      [coder decodeObjectForKey:kProtobufStorageKey]);
+  _cachedProtobufStorage =
+      base::apple::ObjCCastStrict<CWVWebViewProtobufStorage>(
+          [coder decodeObjectForKey:kProtobufStorageKey]);
 
-  _cachedSessionStorage = base::mac::ObjCCastStrict<CRWSessionStorage>(
+  _cachedSessionStorage = base::apple::ObjCCastStrict<CRWSessionStorage>(
       [coder decodeObjectForKey:kSessionStorageKey]);
 
   // If data can't be loaded in either format, return a brand new WebState.
@@ -461,6 +463,7 @@ BOOL gChromeContextMenuEnabled = NO;
 @synthesize canGoForward = _canGoForward;
 @synthesize configuration = _configuration;
 @synthesize estimatedProgress = _estimatedProgress;
+@synthesize findInPageController = _findInPageController;
 @synthesize lastCommittedURL = _lastCommittedURL;
 @synthesize loading = _loading;
 @synthesize navigationDelegate = _navigationDelegate;
@@ -1014,6 +1017,16 @@ BOOL gChromeContextMenuEnabled = NO;
          passwordController:passwordController
           applicationLocale:ios_web_view::ApplicationContext::GetInstance()
                                 ->GetApplicationLocale()];
+}
+
+#pragma mark - Find In Page
+
+- (CWVFindInPageController*)findInPageController {
+  if (!_findInPageController) {
+    _findInPageController =
+        [[CWVFindInPageController alloc] initWithWebState:_webState.get()];
+  }
+  return _findInPageController;
 }
 
 #pragma mark - Preserving and Restoring State

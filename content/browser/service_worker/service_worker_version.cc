@@ -43,6 +43,7 @@
 #include "content/browser/service_worker/service_worker_host.h"
 #include "content/browser/service_worker/service_worker_installed_scripts_sender.h"
 #include "content/browser/service_worker/service_worker_security_utils.h"
+#include "content/browser/service_worker/service_worker_usb_delegate_observer.h"
 #include "content/common/content_navigation_policy.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
@@ -427,6 +428,11 @@ void ServiceWorkerVersion::SetStatus(Status status) {
     // event handlers.
     context_->hid_delegate_observer()->UpdateHasEventHandlers(
         registration_id_, has_hid_event_handlers_);
+
+    // Notify the usb delegate observer if the active service worker has any usb
+    // event handlers.
+    context_->usb_delegate_observer()->UpdateHasEventHandlers(
+        registration_id_, has_usb_event_handlers_);
 #endif  // !BUILDFLAG(IS_ANDROID)
   } else if (status == REDUNDANT) {
     embedded_worker_->OnWorkerVersionDoomed();
@@ -517,6 +523,11 @@ ServiceWorkerVersion::EffectiveFetchHandlerType() const {
 void ServiceWorkerVersion::set_has_hid_event_handlers(
     bool has_hid_event_handlers) {
   has_hid_event_handlers_ = has_hid_event_handlers;
+}
+
+void ServiceWorkerVersion::set_has_usb_event_handlers(
+    bool has_usb_event_handlers) {
+  has_usb_event_handlers_ = has_usb_event_handlers;
 }
 
 void ServiceWorkerVersion::StartWorker(ServiceWorkerMetrics::EventType purpose,
@@ -727,8 +738,9 @@ int ServiceWorkerVersion::StartRequestWithCustomTimeout(
       // didn't come from a service worker.
       scoped_refptr<ServiceWorkerRegistration> registration =
           context_->GetLiveRegistration(registration_id_);
-      DCHECK(registration) << "running workers should have a live registration";
-      registration->set_self_update_delay(base::TimeDelta());
+      if (registration) {
+        registration->set_self_update_delay(base::TimeDelta());
+      }
     }
   }
 
@@ -1358,7 +1370,8 @@ void ServiceWorkerVersion::OnStarting() {
 void ServiceWorkerVersion::OnStarted(
     blink::mojom::ServiceWorkerStartStatus start_status,
     FetchHandlerType new_fetch_handler_type,
-    bool new_has_hid_event_handlers) {
+    bool new_has_hid_event_handlers,
+    bool new_has_usb_event_handlers) {
   DCHECK_EQ(EmbeddedWorkerStatus::RUNNING, running_status());
 
   // TODO(falken): This maps kAbruptCompletion to kErrorScriptEvaluated, which
@@ -1402,6 +1415,7 @@ void ServiceWorkerVersion::OnStarted(
     }
 
     has_hid_event_handlers_ = new_has_hid_event_handlers;
+    has_usb_event_handlers_ = new_has_usb_event_handlers;
   }
 
   // Update |sha256_script_checksum_| if it's empty. This can happen when the

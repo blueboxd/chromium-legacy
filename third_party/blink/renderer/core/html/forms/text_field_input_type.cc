@@ -32,6 +32,7 @@
 #include "third_party/blink/renderer/core/html/forms/text_field_input_type.h"
 
 #include "third_party/blink/renderer/core/dom/events/event_dispatch_forbidden_scope.h"
+#include "third_party/blink/renderer/core/dom/focus_params.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
 #include "third_party/blink/renderer/core/events/before_text_inserted_event.h"
@@ -588,6 +589,8 @@ void TextFieldInputType::SubtreeHasChanged() {
   GetElement().UpdatePlaceholderVisibility();
   GetElement().PseudoStateChanged(CSSSelector::kPseudoValid);
   GetElement().PseudoStateChanged(CSSSelector::kPseudoInvalid);
+  GetElement().PseudoStateChanged(CSSSelector::kPseudoUserValid);
+  GetElement().PseudoStateChanged(CSSSelector::kPseudoUserInvalid);
   GetElement().PseudoStateChanged(CSSSelector::kPseudoInRange);
   GetElement().PseudoStateChanged(CSSSelector::kPseudoOutOfRange);
 
@@ -631,7 +634,7 @@ void TextFieldInputType::UpdateView() {
 }
 
 void TextFieldInputType::FocusAndSelectSpinButtonOwner() {
-  GetElement().Focus();
+  GetElement().Focus(FocusParams(FocusTrigger::kUserGesture));
   GetElement().SetSelectionRange(0, std::numeric_limits<int>::max());
 }
 

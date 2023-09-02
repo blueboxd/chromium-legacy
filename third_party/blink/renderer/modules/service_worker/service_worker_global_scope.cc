@@ -130,6 +130,7 @@
 #include "third_party/blink/renderer/modules/service_worker/service_worker_window_client.h"
 #include "third_party/blink/renderer/modules/service_worker/wait_until_observer.h"
 #include "third_party/blink/renderer/modules/service_worker/web_service_worker_fetch_context_impl.h"
+#include "third_party/blink/renderer/modules/webusb/usb.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/source_location.h"
 #include "third_party/blink/renderer/platform/bindings/v8_binding.h"
@@ -2652,9 +2653,15 @@ void ServiceWorkerGlobalScope::NotifyWebSocketActivity() {
   CHECK(IsContextThread());
   CHECK(event_queue_);
 
+  ScriptState* script_state = ScriptController()->GetScriptState();
+  CHECK(script_state);
+  v8::Isolate* isolate = script_state->GetIsolate();
+  v8::HandleScope handle_scope(isolate);
+
+  v8::Local<v8::Context> v8_context = script_state->GetContext();
+
   bool notify = To<ServiceWorkerGlobalScopeProxy>(ReportingProxy())
-                    .ShouldNotifyServiceWorkerOnWebSocketActivity(
-                        GetThread()->GetIsolate()->GetCurrentContext());
+                    .ShouldNotifyServiceWorkerOnWebSocketActivity(v8_context);
 
   if (notify) {
     // TODO(crbug/1399324): refactor with RAII pattern.
@@ -2697,6 +2704,11 @@ ServiceWorkerGlobalScope::FetchHandlerType() {
 bool ServiceWorkerGlobalScope::HasHidEventHandlers() {
   HID* hid = Supplement<NavigatorBase>::From<HID>(*navigator());
   return hid ? hid->HasEventListeners() : false;
+}
+
+bool ServiceWorkerGlobalScope::HasUsbEventHandlers() {
+  USB* usb = Supplement<NavigatorBase>::From<USB>(*navigator());
+  return usb ? usb->HasEventListeners() : false;
 }
 
 bool ServiceWorkerGlobalScope::SetAttributeEventListener(

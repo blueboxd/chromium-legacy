@@ -6,7 +6,7 @@
 
 #import <string>
 
-#import "base/mac/foundation_util.h"
+#import "base/apple/foundation_util.h"
 #import "base/test/ios/wait_util.h"
 #import "base/test/scoped_feature_list.h"
 #import "base/time/time.h"
@@ -95,8 +95,7 @@ class PaymentRequestFullCardRequesterTest : public PlatformTest {
     infobars::InfoBarManager* infobar_manager =
         InfoBarManagerImpl::FromWebState(web_state());
     autofill_client_.reset(new autofill::ChromeAutofillClientIOS(
-        browser_state(), web_state(), infobar_manager, autofill_agent_,
-        /*password_generation_manager=*/nullptr));
+        browser_state(), web_state(), infobar_manager, autofill_agent_));
 
     std::string locale("en");
     autofill::AutofillDriverIOSFactory::CreateForWebState(
@@ -173,7 +172,7 @@ TEST_F(PaymentRequestFullCardRequesterTest, PresentAndDismissNewPrompt) {
   EXPECT_TRUE([base_view_controller.presentedViewController
       isMemberOfClass:[UINavigationController class]]);
   UINavigationController* navigation_controller =
-      base::mac::ObjCCast<UINavigationController>(
+      base::apple::ObjCCast<UINavigationController>(
           base_view_controller.presentedViewController);
 
   EXPECT_TRUE([navigation_controller.topViewController

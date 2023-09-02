@@ -24,6 +24,7 @@ BASE_DECLARE_FEATURE(kConfirmSuggestionRemovals);
 BASE_DECLARE_FEATURE(kCacheOneGoogleBar);
 BASE_DECLARE_FEATURE(kCustomizeChromeColorExtraction);
 BASE_DECLARE_FEATURE(kCustomizeChromeSidePanelExtensionsCard);
+BASE_DECLARE_FEATURE(kCustomizeChromeWallpaperSearch);
 BASE_DECLARE_FEATURE(kCwsDarkLogo);
 BASE_DECLARE_FEATURE(kDismissPromos);
 BASE_DECLARE_FEATURE(kIframeOneGoogleBar);
@@ -67,7 +68,6 @@ BASE_DECLARE_FEATURE(kNtpOneGoogleBar);
 BASE_DECLARE_FEATURE(kNtpRealboxLensSearch);
 BASE_DECLARE_FEATURE(kNtpLensDirectUpload);
 BASE_DECLARE_FEATURE(kNtpRecipeTasksModule);
-BASE_DECLARE_FEATURE(kNtpRemoveScrim);
 BASE_DECLARE_FEATURE(kNtpSafeBrowsingModule);
 BASE_DECLARE_FEATURE(kNtpShortcuts);
 BASE_DECLARE_FEATURE(kNtpSingleRowShortcuts);
@@ -80,7 +80,6 @@ BASE_DECLARE_FEATURE(kNtpHistoryClustersModuleCategories);
 BASE_DECLARE_FEATURE(kNtpHistoryClustersModuleLoad);
 BASE_DECLARE_FEATURE(kNtpHistoryClustersModuleMaxClusters);
 BASE_DECLARE_FEATURE(kNtpHistoryClustersModuleSuggestionChipHeader);
-BASE_DECLARE_FEATURE(kNtpHistoryClustersModuleDiscounts);
 BASE_DECLARE_FEATURE(kNtpHistoryClustersModuleTextOnly);
 BASE_DECLARE_FEATURE(kNtpModulesHeaderIcon);
 BASE_DECLARE_FEATURE(kNtpChromeCartInHistoryClusterModule);
@@ -100,12 +99,6 @@ extern const base::FeatureParam<double>
 // backgrounds.
 extern const base::FeatureParam<double>
     kNtpElementLuminosityChangeForDarkBackgroundParam;
-
-// Parameter for the CSS selector for the button elements on the OGB.
-extern const base::FeatureParam<std::string> kNtpOgbButtonSelectorParam;
-// Parameter for the CSS selector for the unprotected text on the OGB.
-extern const base::FeatureParam<std::string>
-    kNtpOgbUnprotectedTextSelectorParam;
 
 // Parameter determining the module load timeout.
 extern const char kNtpModulesLoadTimeoutMillisecondsParam[];
@@ -187,6 +180,10 @@ extern const char kNtpRealboxWidthBehaviorParam[];
 
 // Returns the timeout after which the load of a module should be aborted.
 base::TimeDelta GetModulesLoadTimeout();
+
+// Returns the maximum number of columns to show on the redesigned modules UI
+// experience.
+int GetModulesMaxColumnCount();
 
 // Returns a list of module IDs ordered by how they should appear on the NTP.
 std::vector<std::string> GetModulesOrder();

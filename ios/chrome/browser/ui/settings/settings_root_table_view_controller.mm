@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/ui/settings/settings_root_table_view_controller.h"
 
-#import "base/mac/foundation_util.h"
+#import "base/apple/foundation_util.h"
 #import "base/notreached.h"
 #import "ios/chrome/browser/net/crurl.h"
 #import "ios/chrome/browser/shared/public/commands/application_commands.h"
@@ -187,8 +187,14 @@ const CGFloat kActivityIndicatorDimensionIPhone = 56;
   // can leave the new top view controller with a toolbar when it doesn't
   // require one. Disabling editing mode to avoid this. See crbug.com/1404111 as
   // an example.
-  if (parent == nullptr && self.isEditing) {
-    [self setEditing:NO animated:NO];
+  if (parent == nullptr) {
+    if ([self respondsToSelector:@selector(settingsWillBeDismissed)]) {
+      [self performSelector:@selector(settingsWillBeDismissed)];
+    }
+
+    if (self.isEditing) {
+      [self setEditing:NO animated:NO];
+    }
   }
 
   [self.navigationController setToolbarHidden:YES animated:YES];
@@ -261,7 +267,7 @@ const CGFloat kActivityIndicatorDimensionIPhone = 56;
     return nil;
   }
   SettingsNavigationController* navigationController =
-      base::mac::ObjCCast<SettingsNavigationController>(
+      base::apple::ObjCCast<SettingsNavigationController>(
           self.navigationController);
   UIBarButtonItem* doneButton = [navigationController doneButton];
   if (_shouldDisableDoneButtonOnEdit) {
@@ -401,12 +407,13 @@ const CGFloat kActivityIndicatorDimensionIPhone = 56;
   // Removes the veil that prevents user interaction.
   DCHECK(self.veil);
   [UIView animateWithDuration:0.3
-      animations:^{
-        [self.veil removeFromSuperview];
-      }
-      completion:^(BOOL finished) {
-        self.veil = nil;
-      }];
+                   animations:^{
+                     [self.veil removeFromSuperview];
+                   }
+                   completion:nil];
+  // Need to remove `self.veil` to be able immediately, so
+  // `preventUserInteraction` can be called in less than 0.3s after.
+  self.veil = nil;
 
   DCHECK(self.savedBarButtonItem);
   switch (self.savedBarButtonItemPosition) {

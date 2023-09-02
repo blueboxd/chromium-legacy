@@ -13,6 +13,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "cc/slim/layer_tree.h"
 #include "cc/slim/layer_tree_client.h"
+#include "cc/slim/solid_color_layer.h"
 #include "cc/slim/surface_layer.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/quads/compositor_frame.h"
@@ -39,7 +40,10 @@ class MagnifierSurfaceControl : public viz::HostDisplayClient,
                           int width,
                           int height,
                           float corner_radius,
-                          float zoom);
+                          float zoom,
+                          int top_shadow_height,
+                          int bottom_shadow_height,
+                          int bottom_shadow_width_reduction);
   ~MagnifierSurfaceControl() override;
 
   void SetReadbackOrigin(JNIEnv* env, jfloat x, jfloat y);
@@ -72,8 +76,9 @@ class MagnifierSurfaceControl : public viz::HostDisplayClient,
   const gpu::SurfaceHandle surface_handle_;
   const viz::FrameSinkId frame_sink_id_;
 
-  const gfx::Size size_;
+  const gfx::Size surface_size_;  // Includes shadow.
   const scoped_refptr<cc::slim::Layer> root_layer_;
+  const scoped_refptr<cc::slim::SolidColorLayer> rounded_corner_layer_;
   const scoped_refptr<cc::slim::Layer> zoom_layer_;
   const scoped_refptr<cc::slim::SurfaceLayer> surface_layer_;
   viz::ParentLocalSurfaceIdAllocator local_surface_id_allocator_;

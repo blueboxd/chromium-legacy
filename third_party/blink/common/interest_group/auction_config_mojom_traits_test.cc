@@ -413,7 +413,7 @@ TEST(AuctionConfigMojomTraitsTest, ComponentAuctionWithNonce) {
       CreateBasicConfig());
   auction_config.non_shared_params.component_auctions[0]
       .non_shared_params.auction_nonce = base::Uuid::GenerateRandomV4();
-  EXPECT_FALSE(SerializeAndDeserialize(auction_config));
+  EXPECT_TRUE(SerializeAndDeserialize(auction_config));
 }
 
 TEST(AuctionConfigMojomTraitsTest,
@@ -448,10 +448,6 @@ TEST(AuctionConfigMojomTraitsTest, ComponentAuctionSuccessMultipleFull) {
       CreateFullConfig());
   auction_config.non_shared_params.component_auctions.emplace_back(
       CreateFullConfig());
-  for (auto& component : auction_config.non_shared_params.component_auctions) {
-    // Component auctions cannot have auction_nonce set.
-    component.non_shared_params.auction_nonce.reset();
-  }
 
   EXPECT_TRUE(SerializeAndDeserialize(auction_config));
 
@@ -685,6 +681,17 @@ TEST(AuctionConfigMojomTraitsTest, ServerResponseConfig) {
     config.request_id = base::Uuid::GenerateRandomV4();
     EXPECT_TRUE(SerializeAndDeserialize(config));
   }
+}
+
+// Can't have `expects_additional_bids` without a nonce.
+TEST(AuctionConfigMojomTraitsTest, AdditionalBidsNoNonce) {
+  AuctionConfig auction_config = CreateFullConfig();
+  ASSERT_TRUE(auction_config.expects_additional_bids);
+  auction_config.non_shared_params.auction_nonce.reset();
+  EXPECT_FALSE(SerializeAndDeserialize(auction_config));
+
+  auction_config.expects_additional_bids = false;
+  EXPECT_TRUE(SerializeAndDeserialize(auction_config));
 }
 
 class AuctionConfigMojomTraitsDirectFromSellerSignalsTest

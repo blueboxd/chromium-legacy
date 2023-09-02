@@ -39,16 +39,19 @@ PasswordStatusCheckServiceFactory::PasswordStatusCheckServiceFactory()
               .Build()) {
   DependsOn(AccountPasswordStoreFactory::GetInstance());
   DependsOn(AffiliationServiceFactory::GetInstance());
+  DependsOn(BulkLeakCheckServiceFactory::GetInstance());
   DependsOn(PasswordStoreFactory::GetInstance());
 }
 
 PasswordStatusCheckServiceFactory::~PasswordStatusCheckServiceFactory() =
     default;
 
-KeyedService* PasswordStatusCheckServiceFactory::BuildServiceInstanceFor(
+std::unique_ptr<KeyedService>
+PasswordStatusCheckServiceFactory::BuildServiceInstanceForBrowserContext(
     content::BrowserContext* context) const {
   if (!base::FeatureList::IsEnabled(features::kSafetyHub)) {
     return nullptr;
   }
-  return new PasswordStatusCheckService(Profile::FromBrowserContext(context));
+  return std::make_unique<PasswordStatusCheckService>(
+      Profile::FromBrowserContext(context));
 }

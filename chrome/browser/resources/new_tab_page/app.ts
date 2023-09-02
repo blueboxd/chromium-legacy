@@ -295,18 +295,6 @@ export class AppElement extends AppElementBase {
         observer: 'onPromoAndModulesLoadedChange_',
       },
 
-      removeScrim_: {
-        type: Boolean,
-        value: () => loadTimeData.getBoolean('removeScrim'),
-        reflectToAttribute: true,
-      },
-
-      showOneGoogleBarScrim_: {
-        type: Boolean,
-        computed:
-            'computeShowOneGoogleBarScrim_(removeScrim_, showBackgroundImage_)',
-      },
-
       showLensUploadDialog_: Boolean,
 
       /**
@@ -357,7 +345,6 @@ export class AppElement extends AppElementBase {
   private modulesLoaded_: boolean;
   private modulesShownToUser: boolean;
   private promoAndModulesLoaded_: boolean;
-  private removeScrim_: boolean;
   private lazyRender_: boolean;
   private scrolledToTop_: boolean;
 
@@ -427,7 +414,13 @@ export class AppElement extends AppElementBase {
     this.showWebstoreToastListenerId_ =
         NewTabPageProxy.getInstance()
             .callbackRouter.showWebstoreToast.addListener(() => {
-              $$<CrToastElement>(this, '#webstoreToast')!.show();
+              if (this.showCustomize_) {
+                const toast = $$<CrToastElement>(this, '#webstoreToast');
+                if (toast) {
+                  toast!.hidden = false;
+                  toast!.show();
+                }
+              }
             });
 
     // Open Customize Chrome if there are Customize Chrome URL params.
@@ -466,6 +459,9 @@ export class AppElement extends AppElementBase {
                   'background-image-loaded',
                   this.backgroundImageLoadStart_ + duration);
             }
+          },
+          () => {
+              // Ignore. Failed to capture background image load time.
           });
     }
     FocusOutlineManager.forDocument(document);
@@ -532,10 +528,6 @@ export class AppElement extends AppElementBase {
     return (!loadTimeData.getBoolean('middleSlotPromoEnabled') ||
             this.middleSlotPromoLoaded_) &&
         (!loadTimeData.getBoolean('modulesEnabled') || this.modulesLoaded_);
-  }
-
-  private computeShowOneGoogleBarScrim_(): boolean {
-    return this.removeScrim_ && this.showBackgroundImage_;
   }
 
   private async onLazyRendered_() {

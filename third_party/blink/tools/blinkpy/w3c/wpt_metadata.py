@@ -43,19 +43,16 @@ def make_empty_test(other: TestNode) -> TestNode:
 
 
 def fill_implied_expectations(test: TestNode,
-                              extra_subtests: Optional[Set[str]] = None,
-                              test_type: str = 'testharness'):
+                              extra_subtests: Optional[Set[str]] = None):
     """Populate a test result with implied OK/PASS expectations.
 
     This is a helper for diffing WPT results.
     """
-    # TODO(crbug.com/1464051): Replace the `test_type` argument with
-    # `test.test_type`.
     default_expected = default_expected_by_type()
-    _ensure_expectation(test, default_expected[test_type, False])
+    _ensure_expectation(test, default_expected[test.test_type, False])
     for subtest in test.subtests:
         _ensure_expectation(test.get_subtest(subtest),
-                            default_expected[test_type, True])
+                            default_expected[test.test_type, True])
     missing_subtests = (extra_subtests or set()) - set(test.subtests)
     for subtest in missing_subtests:
         subtest_node = SubtestNode(wptnode.DataNode(subtest))
@@ -109,7 +106,7 @@ class TestConfigurations(collections.abc.Mapping):
 
             for step in host.builders.step_names_for_builder(builder):
                 flag_specific = host.builders.flag_specific_option(
-                    builder, step)
+                    builder, step) or ''
                 port = host.port_factory.get(
                     port_name,
                     optparse.Values({
@@ -118,14 +115,20 @@ class TestConfigurations(collections.abc.Mapping):
                     }))
                 product = host.builders.product_for_build_step(builder, step)
                 debug = port.get_option('configuration') == 'Debug'
-                config = metadata.RunInfo({
-                    'product': product,
-                    'os': port.operating_system(),
-                    'port': port.version(),
-                    'debug': debug,
-                    'flag_specific': flag_specific or '',
-                })
-                configs[config] = port
+                virtual_suites = {
+                    suite.full_prefix.split('/')[1]
+                    for suite in port.virtual_test_suites()
+                }
+                for virtual_suite in {'', *virtual_suites}:
+                    config = metadata.RunInfo({
+                        'product': product,
+                        'os': port.operating_system(),
+                        'port': port.version(),
+                        'debug': debug,
+                        'flag_specific': flag_specific,
+                        'virtual_suite': virtual_suite,
+                    })
+                    configs[config] = port
         return cls(host.filesystem, configs)
 
     def enabled_configs(self, test: manifestupdate.TestNode,
@@ -154,15 +157,15 @@ class TestConfigurations(collections.abc.Mapping):
     ) -> bool:
         with contextlib.suppress(KeyError):
             port = self._configs[config]
-            if port.default_smoke_test_only():
-                test_id = test.id
-                if test_id.startswith('/'):
-                    test_id = test_id[1:]
-                if (not self._finder.is_wpt_internal_path(test_id)
-                        and not self._finder.is_wpt_path(test_id)):
-                    test_id = self._finder.wpt_prefix() + test_id
-                if port.skipped_due_to_smoke_tests(test_id):
+            test_name = wpt_url_to_exp_test(test.id)
+            virtual_suite = config['virtual_suite']
+            if virtual_suite:
+                test_name = f'virtual/{virtual_suite}/{test_name}'
+                # Check whether this is a valid virtual test.
+                if not port.lookup_virtual_test_base(test_name):
                     return True
+            if port.skips_test(test_name):
+                return True
         with contextlib.suppress(KeyError):
             product = products.Product({}, config['product'])
             executor_cls = product.executor_classes.get(test.test_type)
@@ -221,3 +224,24 @@ def default_expected_by_type() -> Dict[Tuple[TestType, bool], str]:
 @memoized
 def can_have_subtests(test_type: TestType) -> bool:
     return (test_type, True) in default_expected_by_type()
+
+
+def exp_test_to_wpt_url(test: str) -> Optional[str]:
+    for wpt_dir, url_prefix in Port.WPT_DIRS.items():
+        if test.startswith(wpt_dir):
+            test = test.replace(wpt_dir + '/', url_prefix, 1)
+            # Directory globs in TestExpectations resolve to a "pseudo-test ID".
+            # Do not give an ID for non-directory globs.
+            if test.endswith('/*'):
+                test = test[:-len('*')] + '__dir__'
+            elif test.endswith('*'):
+                return None
+            return test
+    return None
+
+
+def wpt_url_to_exp_test(test: str) -> str:
+    for wpt_dir, url_prefix in Port.WPT_DIRS.items():
+        if test.startswith(url_prefix):
+            return test.replace(url_prefix, wpt_dir + '/', 1)
+    raise ValueError('no matching WPT roots found')

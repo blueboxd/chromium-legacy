@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -207,9 +207,9 @@ class OneDriveUploadHandlerTest : public InProcessBrowserTest,
   }
 
   // Watch for a valid `uploaded_file_url`.
-  void OnUploadDone(const storage::FileSystemURL& uploaded_file_url,
+  void OnUploadDone(absl::optional<storage::FileSystemURL> uploaded_file_url,
                     int64_t size) {
-    ASSERT_TRUE(uploaded_file_url.is_valid());
+    ASSERT_TRUE(uploaded_file_url.has_value());
     EndWait();
   }
 
@@ -237,7 +237,8 @@ class OneDriveUploadHandlerTest : public InProcessBrowserTest,
  protected:
   base::FilePath my_files_dir_;
   base::FilePath read_only_dir_;
-  raw_ptr<file_manager::test::FakeProvidedFileSystemOneDrive, ExperimentalAsh>
+  raw_ptr<file_manager::test::FakeProvidedFileSystemOneDrive,
+          DanglingUntriaged | ExperimentalAsh>
       provided_file_system_;  // Owned by Service.
 
  private:

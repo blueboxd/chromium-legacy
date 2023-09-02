@@ -11,6 +11,7 @@
 #include <utility>
 
 #include "ash/accelerators/accelerator_controller_impl.h"
+#include "ash/accelerators/accelerator_prefs.h"
 #include "ash/accelerators/accelerator_tracker.h"
 #include "ash/accelerators/ash_accelerator_configuration.h"
 #include "ash/accelerators/ash_focus_manager_factory.h"
@@ -812,6 +813,8 @@ Shell::~Shell() {
   // Must be destructed before human_presence_orientation_controller_.
   power_prefs_.reset();
 
+  accelerator_prefs_.reset();
+
   // Must be destructed before the tablet mode and message center controllers,
   // both of which these rely on.
   snooping_protection_controller_.reset();
@@ -858,7 +861,6 @@ Shell::~Shell() {
 
   // Has to happen before ~MruWindowTracker.
   window_cycle_controller_.reset();
-  overview_controller_.reset();
 
   // As clients of `capture_mode_controller_`, `projector_controller_` and
   // `game_dashboard_controller_` need to be destroyed before
@@ -871,6 +873,10 @@ Shell::~Shell() {
   // need to access those windows and it will be a UAF.
   // https://crbug.com/1350711.
   capture_mode_controller_.reset();
+
+  // Has to happen before `~MruWindowTracker` and after
+  // `~GameDashboardController`.
+  overview_controller_.reset();
 
   // This must be called before deleting all the windows below in
   // `CloseAllRootWindowChildWindows()` since host_windows(which gets destroyed)
@@ -1133,9 +1139,19 @@ void Shell::Init(
 
   local_state_ = local_state;
 
-  if (features::IsBatterySaverAvailable()) {
-    battery_saver_controller_ =
-        std::make_unique<BatterySaverController>(local_state_);
+  if (local_state_ != nullptr) {
+    // Only construct BatterySaverController if prefs exists. It uses prefs to
+    // store the battery saver state, so testing its functionality without
+    // prefs doesn't make sense.
+    if (features::IsBatterySaverAvailable()) {
+      battery_saver_controller_ =
+          std::make_unique<BatterySaverController>(local_state_);
+    } else {
+      // It's possible that we have a new Chrome without battery saver mode
+      // available, but still have battery saver running because the previous
+      // chrome did. So unconditionally reset battery saver state.
+      BatterySaverController::ResetState(local_state_);
+    }
   }
 
   // This creates the MessageCenter object which is used by some other objects
@@ -1220,11 +1236,6 @@ void Shell::Init(
 
   if (features::IsFocusModeEnabled()) {
     focus_mode_controller_ = std::make_unique<FocusModeController>();
-  }
-
-  if (features::IsGameDashboardEnabled()) {
-    game_dashboard_controller_ = std::make_unique<GameDashboardController>(
-        shell_delegate_->CreateGameDashboardDelegate());
   }
 
   // Accelerometer file reader starts listening to tablet mode controller.
@@ -1332,6 +1343,13 @@ void Shell::Init(
 
   overview_controller_ = std::make_unique<OverviewController>();
 
+  // `GameDashboardController` has dependencies on `OverviewController` and
+  // `CaptureModeController`.
+  if (features::IsGameDashboardEnabled()) {
+    game_dashboard_controller_ = std::make_unique<GameDashboardController>(
+        shell_delegate_->CreateGameDashboardDelegate());
+  }
+
   // `SnapGroupController` has dependencies on `OverviweController` and
   // `TabletModeController`.
   if (features::IsSnapGroupEnabled()) {
@@ -1371,6 +1389,10 @@ void Shell::Init(
 
   cursor_manager_->SetDisplay(
       display::Screen::GetScreen()->GetPrimaryDisplay());
+
+  // Initialize before AcceleratorController and AshAcceleratorConfiguration.
+  accelerator_prefs_ = std::make_unique<AcceleratorPrefs>(
+      shell_delegate_->CreateAcceleratorPrefsDelegate());
 
   // Must be initialized after InputMethodManager.
   accelerator_keycode_lookup_cache_ =
@@ -1652,7 +1674,8 @@ void Shell::Init(
         glanceables_controller_.get()));
   }
 
-  if (features::AreGlanceablesV2Enabled()) {
+  if (features::AreGlanceablesV2Enabled() ||
+      features::AreGlanceablesV2EnabledForTrustedTesters()) {
     glanceables_v2_controller_ = std::make_unique<GlanceablesV2Controller>();
   }
 

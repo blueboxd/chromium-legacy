@@ -8,6 +8,8 @@ import androidx.annotation.NonNull;
 
 import org.chromium.content.browser.HostZoomMapImpl;
 
+import java.util.Map;
+
 /**
  * Implementations of various static methods related to page zoom.
  */
@@ -87,6 +89,28 @@ public class HostZoomMap {
     }
 
     /**
+     * Get the zoom levels for all hosts.
+     * @param browserContextHandle BrowserContextHandle to get zoom level for.
+     * @return  HashMap<String, Double> map containing the host name as a string to the zoom factor
+     *         (called zoom level on the c++ side) as a double.
+     */
+    public static Map<String, Double> getAllHostZoomLevels(
+            BrowserContextHandle browserContextHandle) {
+        return HostZoomMapImpl.getAllHostZoomLevels(browserContextHandle);
+    }
+
+    /**
+     * Set the zoom level to the given level for the given host.
+     * @param host  host to set zoom level for.
+     * @param level new zoom level (as a zoom factor as described in PageZoomUtils.java).
+     * @param browserContextHandle  BrowserContextHandle to set zoom level for.
+     */
+    public static void setZoomLevelForHost(
+            BrowserContextHandle browserContextHandle, String host, double level) {
+        HostZoomMapImpl.setZoomLevelForHost(browserContextHandle, host, level);
+    }
+
+    /**
      * Set the default zoom level for a given browser context handle (e.g. Profile).
      * @param context       BrowserContextHandle to update default for.
      * @param newDefaultZoomLevel   double, new default value.
@@ -94,6 +118,15 @@ public class HostZoomMap {
     public static void setDefaultZoomLevel(
             BrowserContextHandle context, double newDefaultZoomLevel) {
         HostZoomMapImpl.setDefaultZoomLevel(context, newDefaultZoomLevel);
+    }
+
+    /**
+     * Returns true when the field trial param to adjust zoom for OS-level font setting is
+     * true, false otherwise.
+     * @return bool True if zoom should be adjusted.
+     */
+    public static boolean shouldAdjustForOSLevel() {
+        return HostZoomMapImpl.shouldAdjustForOSLevel();
     }
 
     /**

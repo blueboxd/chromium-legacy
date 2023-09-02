@@ -104,8 +104,9 @@ bool NodeRespondsToTapGesture(Node* node) {
     // Tapping on a text field or other focusable item should trigger
     // adjustment, except that iframe elements are hard-coded to support focus
     // but the effect is often invisible so they should be excluded.
-    if (element->IsMouseFocusable() && !IsA<HTMLIFrameElement>(element))
+    if (element->IsFocusable() && !IsA<HTMLIFrameElement>(element)) {
       return true;
+    }
     // Accept nodes that has a CSS effect when touched.
     if (element->ChildrenOrSiblingsAffectedByActive() ||
         element->ChildrenOrSiblingsAffectedByHover())
@@ -549,7 +550,8 @@ bool FindBestTouchAdjustmentCandidate(
     const gfx::Point& touch_hotspot,
     const gfx::Rect& touch_area,
     const HeapVector<Member<Node>>& nodes) {
-  CHECK(touch_area.Contains(touch_hotspot));
+  // TODO(https://crbug.com/1469267): A CHECK here caused failures on Android!
+  DCHECK(touch_area.Contains(touch_hotspot));
   touch_adjustment::NodeFilter node_filter;
   touch_adjustment::AppendSubtargetsForNode append_subtargets_for_node;
 

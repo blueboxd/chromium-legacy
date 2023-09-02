@@ -177,6 +177,7 @@ class DisplayMediaAccessHandlerTest : public ChromeRenderViewHostTestHarness {
 
     EXPECT_TRUE(test_flags_[0].picker_created);
 
+    picker_factory_ = nullptr;
     access_handler_.reset();
     EXPECT_TRUE(test_flags_[0].picker_deleted);
   }
@@ -210,6 +211,8 @@ class DisplayMediaAccessHandlerTest : public ChromeRenderViewHostTestHarness {
                   &wait_loop, &result, devices);
     wait_loop.Run();
     EXPECT_FALSE(test_flags_[0].picker_created);
+
+    picker_factory_ = nullptr;
     access_handler_.reset();
     EXPECT_EQ(expected_result, result);
 
@@ -227,8 +230,9 @@ class DisplayMediaAccessHandlerTest : public ChromeRenderViewHostTestHarness {
   std::vector<FakeDesktopMediaPickerFactory::TestFlags> test_flags_;
 
  protected:
-  raw_ptr<FakeDesktopMediaPickerFactory, DanglingUntriaged> picker_factory_;
+  // `access_handler` owns `picker_factory` and must outlive it.
   std::unique_ptr<DisplayMediaAccessHandler> access_handler_;
+  raw_ptr<FakeDesktopMediaPickerFactory> picker_factory_;
 };
 
 TEST_F(DisplayMediaAccessHandlerTest, PermissionGiven) {
@@ -422,7 +426,6 @@ TEST_F(DisplayMediaAccessHandlerTest, UpdateMediaRequestStateWithClosing) {
   EXPECT_TRUE(queue_it != GetRequestQueues().end());
   EXPECT_EQ(0u, queue_it->second.size());
   EXPECT_TRUE(test_flags_[0].picker_deleted);
-  access_handler_.reset();
 }
 
 TEST_F(DisplayMediaAccessHandlerTest, CorrectHostAsksForPermissions) {
@@ -562,7 +565,6 @@ TEST_F(DisplayMediaAccessHandlerTest, WebContentsDestroyed) {
 
   NotifyWebContentsDestroyed();
   EXPECT_EQ(0u, GetRequestQueues().size());
-  access_handler_.reset();
 }
 
 TEST_F(DisplayMediaAccessHandlerTest, MultipleRequests) {
@@ -618,14 +620,11 @@ TEST_F(DisplayMediaAccessHandlerTest, MultipleRequests) {
   EXPECT_TRUE(test_flags_[0].picker_deleted);
 // TODO(https://crbug.com/1266425): Fix screen-capture tests on MacOS
 #if BUILDFLAG(IS_MAC)
-  // Starting from macOS 10.15, screen capture requires system permissions
-  // that are disabled by default.
-  if (base::mac::IsAtLeastOS10_15()) {
-    EXPECT_EQ(blink::mojom::MediaStreamRequestResult::SYSTEM_PERMISSION_DENIED,
-              result);
-    access_handler_.reset();
-    return;
-  }
+  // On macOS, screen capture requires system permissions that are disabled by
+  // default.
+  EXPECT_EQ(blink::mojom::MediaStreamRequestResult::SYSTEM_PERMISSION_DENIED,
+            result);
+  return;
 #endif
   EXPECT_EQ(blink::mojom::MediaStreamRequestResult::OK, result);
   EXPECT_EQ(1u, devices.size());
@@ -642,8 +641,6 @@ TEST_F(DisplayMediaAccessHandlerTest, MultipleRequests) {
   EXPECT_EQ(blink::mojom::MediaStreamType::DISPLAY_VIDEO_CAPTURE,
             devices[0].type);
   EXPECT_FALSE(devices[0].IsSameDevice(first_device));
-
-  access_handler_.reset();
 }
 
 TEST_F(DisplayMediaAccessHandlerTest,
@@ -729,20 +726,16 @@ TEST_F(DisplayMediaAccessHandlerTest, ChangeSourceWithPendingPickerRequest) {
   EXPECT_TRUE(test_flags_[0].picker_deleted);
 // TODO(https://crbug.com/1266425): Fix screen-capture tests on MacOS
 #if BUILDFLAG(IS_MAC)
-  // Starting from macOS 10.15, screen capture requires system permissions
-  // that are disabled by default.
-  if (base::mac::IsAtLeastOS10_15()) {
-    EXPECT_EQ(blink::mojom::MediaStreamRequestResult::SYSTEM_PERMISSION_DENIED,
-              results[0]);
-    access_handler_.reset();
-    return;
-  }
+  // On macOS, screen capture requires system permissions that are disabled by
+  // default.
+  EXPECT_EQ(blink::mojom::MediaStreamRequestResult::SYSTEM_PERMISSION_DENIED,
+            results[0]);
+  return;
 #endif
   EXPECT_EQ(blink::mojom::MediaStreamRequestResult::OK, results[0]);
   EXPECT_FALSE(test_flags_[1].picker_created);
   EXPECT_FALSE(test_flags_[1].picker_deleted);
   EXPECT_EQ(blink::mojom::MediaStreamRequestResult::OK, results[1]);
-  access_handler_.reset();
 }
 
 TEST_F(DisplayMediaAccessHandlerTest,
@@ -768,20 +761,16 @@ TEST_F(DisplayMediaAccessHandlerTest,
   wait_loop[0].Run();
 // TODO(https://crbug.com/1266425): Fix screen-capture tests on MacOS
 #if BUILDFLAG(IS_MAC)
-  // Starting from macOS 10.15, screen capture requires system permissions
-  // that are disabled by default.
-  if (base::mac::IsAtLeastOS10_15()) {
-    EXPECT_EQ(blink::mojom::MediaStreamRequestResult::SYSTEM_PERMISSION_DENIED,
-              results[0]);
-    access_handler_.reset();
-    return;
-  }
+  // On macOS, screen capture requires system permissions that are disabled by
+  // default.
+  EXPECT_EQ(blink::mojom::MediaStreamRequestResult::SYSTEM_PERMISSION_DENIED,
+            results[0]);
+  return;
 #endif
   EXPECT_FALSE(test_flags_[1].picker_created);
   EXPECT_FALSE(test_flags_[1].picker_deleted);
   EXPECT_EQ(blink::mojom::MediaStreamRequestResult::PERMISSION_DENIED,
             results[1]);
-  access_handler_.reset();
 }
 
 TEST_F(DisplayMediaAccessHandlerTest,
@@ -808,19 +797,15 @@ TEST_F(DisplayMediaAccessHandlerTest,
   EXPECT_TRUE(test_flags_[0].picker_deleted);
 // TODO(https://crbug.com/1266425): Fix screen-capture tests on MacOS
 #if BUILDFLAG(IS_MAC)
-  // Starting from macOS 10.15, screen capture requires system permissions
-  // that are disabled by default.
-  if (base::mac::IsAtLeastOS10_15()) {
-    EXPECT_EQ(blink::mojom::MediaStreamRequestResult::SYSTEM_PERMISSION_DENIED,
-              results[0]);
-    access_handler_.reset();
-    return;
-  }
+  // On macOS, screen capture requires system permissions that are disabled by
+  // default.
+  EXPECT_EQ(blink::mojom::MediaStreamRequestResult::SYSTEM_PERMISSION_DENIED,
+            results[0]);
+  return;
 #endif
   EXPECT_EQ(blink::mojom::MediaStreamRequestResult::OK, results[0]);
   EXPECT_EQ(blink::mojom::MediaStreamRequestResult::INVALID_STATE, results[1]);
   EXPECT_EQ(blink::mojom::MediaStreamRequestResult::OK, results[2]);
-  access_handler_.reset();
 }
 
 class DisplayMediaAccessHandlerTestWithSelfBrowserSurface
@@ -852,5 +837,4 @@ TEST_P(DisplayMediaAccessHandlerTestWithSelfBrowserSurface,
       &wait_loop, &result, devices);
   wait_loop.Run();
   EXPECT_EQ(exclude_self_browser_surface_, IsWebContentsExcluded());
-  access_handler_.reset();
 }

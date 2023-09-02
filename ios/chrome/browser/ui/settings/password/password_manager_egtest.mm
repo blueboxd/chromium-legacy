@@ -63,7 +63,7 @@ using chrome_test_util::SettingsMenuBackButton;
 using chrome_test_util::TabGridEditButton;
 using chrome_test_util::TextFieldForCellWithLabelId;
 using chrome_test_util::TurnTableViewSwitchOn;
-using password_manager_test_utils::DeleteButtonForUsernameAndPassword;
+using password_manager_test_utils::DeleteButtonForUsernameAndSites;
 using password_manager_test_utils::DeleteCredential;
 using password_manager_test_utils::EditDoneButton;
 using password_manager_test_utils::EditPasswordConfirmationButton;
@@ -73,8 +73,10 @@ using password_manager_test_utils::kScrollAmount;
 using password_manager_test_utils::NavigationBarEditButton;
 using password_manager_test_utils::OpenPasswordManager;
 using password_manager_test_utils::PasswordDetailPassword;
+using password_manager_test_utils::PasswordTextfieldForUsernameAndSites;
 using password_manager_test_utils::SavePasswordForm;
 using password_manager_test_utils::TapNavigationBarEditButton;
+using password_manager_test_utils::UsernameTextfieldForUsernameAndSites;
 using testing::ElementWithAccessibilityLabelSubstring;
 
 namespace {
@@ -414,7 +416,7 @@ void CheckPasswordManagerVisitMetricCount(int count) {
 // screen.
 - (id<GREYMatcher>)
     matcherForDeleteButtonInDetailsWithUsername:(NSString*)username
-                                       password:(NSString*)password;
+                                          sites:(NSString*)password;
 
 @end
 
@@ -454,8 +456,8 @@ void CheckPasswordManagerVisitMetricCount(int count) {
 
 - (id<GREYMatcher>)
     matcherForDeleteButtonInDetailsWithUsername:(NSString*)username
-                                       password:(NSString*)password {
-  return DeleteButtonForUsernameAndPassword(username, password);
+                                          sites:(NSString*)sites {
+  return DeleteButtonForUsernameAndSites(username, sites);
 }
 
 - (void)setUp {
@@ -526,7 +528,8 @@ void CheckPasswordManagerVisitMetricCount(int count) {
   if ([self isRunningTest:@selector
             (testAccountStorageSwitchDisabledByPolicy_SyncToSigninDisabled)] ||
       [self isRunningTest:@selector
-            (testAccountStorageSwitchShownIfSignedIn_SyncToSigninDisabled)]) {
+            (testAccountStorageSwitchShownIfSignedIn_SyncToSigninDisabled)] ||
+      [self isRunningTest:@selector(testAccountStorageSwitchHiddenIfSyncing)]) {
     config.features_disabled.push_back(
         syncer::kReplaceSyncPromosWithSignInPromos);
   }
@@ -773,7 +776,7 @@ void CheckPasswordManagerVisitMetricCount(int count) {
   [[EarlGrey selectElementWithMatcher:NavigationBarEditButton()]
       performAction:grey_tap()];
 
-  DeleteCredential(@"concrete username", @"concrete password");
+  DeleteCredential(@"concrete username", @"https://example.com/");
 
   // Wait until the alert and the detail view are dismissed.
   [ChromeEarlGreyUI waitForAppToIdle];
@@ -830,7 +833,7 @@ void CheckPasswordManagerVisitMetricCount(int count) {
       performAction:grey_replaceText(@"")];
 
   // Delete password.
-  DeleteCredential(@"concrete username", @"concrete password");
+  DeleteCredential(@"concrete username", @"https://example.com/");
 
   // Wait until the alert and the detail view are dismissed.
   [ChromeEarlGreyUI waitForAppToIdle];
@@ -883,7 +886,7 @@ void CheckPasswordManagerVisitMetricCount(int count) {
   [[EarlGrey selectElementWithMatcher:NavigationBarEditButton()]
       performAction:grey_tap()];
 
-  DeleteCredential(@"concrete username", @"concrete password");
+  DeleteCredential(@"concrete username", @"https://example.com/");
 
   // Wait until the alert and the detail view are dismissed.
   [ChromeEarlGreyUI waitForAppToIdle];
@@ -940,9 +943,9 @@ void CheckPasswordManagerVisitMetricCount(int count) {
   [[EarlGrey selectElementWithMatcher:NavigationBarEditButton()]
       performAction:grey_tap()];
 
-  [[EarlGrey
-      selectElementWithMatcher:DeleteButtonForUsernameAndPassword(
-                                   @"concrete username", @"concrete password")]
+  [[EarlGrey selectElementWithMatcher:DeleteButtonForUsernameAndSites(
+                                          @"concrete username",
+                                          @"https://example.com/")]
       performAction:grey_tap()];
 
   [[EarlGrey selectElementWithMatcher:BatchDeleteConfirmationButton()]
@@ -1096,9 +1099,9 @@ void CheckPasswordManagerVisitMetricCount(int count) {
   [[EarlGrey selectElementWithMatcher:NavigationBarEditButton()]
       performAction:grey_tap()];
 
-  [[EarlGrey
-      selectElementWithMatcher:DeleteButtonForUsernameAndPassword(
-                                   @"concrete username", @"concrete password")]
+  [[EarlGrey selectElementWithMatcher:DeleteButtonForUsernameAndSites(
+                                          @"concrete username",
+                                          @"https://example.com/")]
       performAction:grey_tap()];
 
   // Close the dialog by tapping on Password Details screen cancel button.
@@ -1233,8 +1236,9 @@ void CheckPasswordManagerVisitMetricCount(int count) {
   [[EarlGrey selectElementWithMatcher:NavigationBarEditButton()]
       performAction:grey_tap()];
   // Ensure delete button is present after entering editing mode.
-  [[EarlGrey selectElementWithMatcher:DeleteButtonForUsernameAndPassword(
-                                          @"federated username", nil)]
+  [[EarlGrey selectElementWithMatcher:DeleteButtonForUsernameAndSites(
+                                          @"federated username",
+                                          @"https://example.com/")]
       assertWithMatcher:grey_notNil()];
 
   [[EarlGrey selectElementWithMatcher:NavigationBarCancelButton()]
@@ -2153,9 +2157,7 @@ void CheckPasswordManagerVisitMetricCount(int count) {
 
 // Checks that attempts to edit a username to a value which is already used for
 // the same domain fails.
-// TODO(crbug.com/1465016): This test isn't implemented with grouped passwords
-// yet.
-- (void)DISABLED_testEditUsernameFails {
+- (void)testEditUsernameFails {
   SavePasswordForm(/*password=*/@"concrete password",
                    /*username=*/@"concrete username1");
 
@@ -2164,7 +2166,7 @@ void CheckPasswordManagerVisitMetricCount(int count) {
 
   OpenPasswordManager();
 
-  [[self interactionForSinglePasswordEntryWithDomain:@"example.com"]
+  [GetInteractionForPasswordEntry(@"example.com, 2 accounts")
       performAction:grey_tap()];
 
   // Check the snackbar in case of successful reauthentication.
@@ -2175,14 +2177,20 @@ void CheckPasswordManagerVisitMetricCount(int count) {
 
   TapNavigationBarEditButton();
 
-  [[EarlGrey selectElementWithMatcher:PasswordDetailUsername()]
+  [[EarlGrey selectElementWithMatcher:UsernameTextfieldForUsernameAndSites(
+                                          @"concrete username1",
+                                          @"https://example.com/")]
       assertWithMatcher:grey_textFieldValue(@"concrete username1")];
 
   // TODO(crbug.com/1454514): Revert to grey_clearText when fixed in EG.
-  [[EarlGrey selectElementWithMatcher:PasswordDetailUsername()]
+  [[EarlGrey selectElementWithMatcher:UsernameTextfieldForUsernameAndSites(
+                                          @"concrete username1",
+                                          @"https://example.com/")]
       performAction:grey_replaceText(@"")];
 
-  [[EarlGrey selectElementWithMatcher:PasswordDetailUsername()]
+  [[EarlGrey selectElementWithMatcher:UsernameTextfieldForUsernameAndSites(
+                                          @"concrete username1",
+                                          @"https://example.com/")]
       performAction:grey_replaceText(@"concrete username2")];
 
   [[EarlGrey selectElementWithMatcher:EditDoneButton()]
@@ -2585,9 +2593,15 @@ void CheckPasswordManagerVisitMetricCount(int count) {
 // Tests that the duplicate credential section alert is shown when the user adds
 // a credential that has the same website as that of an existing credential
 // (does not contain username).
-// TODO(crbug.com/1465016): This test isn't implemented with grouped passwords
-// yet.
-- (void)DISABLED_testDuplicatedCredentialWithNoUsername {
+// TODO(crbug.com/1474949): Fix flaky test & re-enable.
+#if TARGET_OS_SIMULATOR
+#define MAYBE_testDuplicatedCredentialWithNoUsername \
+  DISABLED_testDuplicatedCredentialWithNoUsername
+#else
+#define MAYBE_testDuplicatedCredentialWithNoUsername \
+  testDuplicatedCredentialWithNoUsername
+#endif
+- (void)MAYBE_testDuplicatedCredentialWithNoUsername {
   OpenPasswordManager();
 
   [[EarlGrey selectElementWithMatcher:AddPasswordToolbarButton()]
@@ -2620,6 +2634,9 @@ void CheckPasswordManagerVisitMetricCount(int count) {
   [[EarlGrey selectElementWithMatcher:PasswordDetailUsername()]
       performAction:grey_replaceText(@"new username")];
 
+  // Wait until duplicated message disappearing animation is done.
+  [ChromeEarlGreyUI waitForAppToIdle];
+
   // Test that the section alert for duplicated credential is removed.
   [[EarlGrey selectElementWithMatcher:DuplicateCredentialViewPasswordButton()]
       assertWithMatcher:grey_not(grey_sufficientlyVisible())];
@@ -2630,7 +2647,9 @@ void CheckPasswordManagerVisitMetricCount(int count) {
   [[EarlGrey selectElementWithMatcher:AddPasswordSaveButton()]
       performAction:grey_tap()];
 
-  [[self interactionForSinglePasswordEntryWithDomain:@"example.com"]
+  [GetInteractionForPasswordEntry(@"example.com, 2 accounts")
+      assertWithMatcher:grey_notNil()];
+  [GetInteractionForPasswordEntry(@"example.com, 2 accounts")
       performAction:grey_tap()];
 
   if (![self notesEnabled]) {
@@ -2640,7 +2659,9 @@ void CheckPasswordManagerVisitMetricCount(int count) {
 
   TapNavigationBarEditButton();
 
-  [[EarlGrey selectElementWithMatcher:PasswordDetailPassword()]
+  [[EarlGrey selectElementWithMatcher:PasswordTextfieldForUsernameAndSites(
+                                          @"new username",
+                                          @"https://www.example.com/")]
       assertWithMatcher:grey_textFieldValue(@"znew password")];
 }
 
@@ -2704,7 +2725,7 @@ void CheckPasswordManagerVisitMetricCount(int count) {
   [[EarlGrey selectElementWithMatcher:NavigationBarEditButton()]
       performAction:grey_tap()];
 
-  DeleteCredential(@"concrete username", @"concrete password");
+  DeleteCredential(@"concrete username", @"https://example.com/");
 
   // Wait until the alert and the detail view are dismissed.
   [ChromeEarlGreyUI waitForAppToIdle];
@@ -2981,7 +3002,7 @@ void CheckPasswordManagerVisitMetricCount(int count) {
       performAction:grey_tap()];
 
   // Delete first password.
-  DeleteCredential(@"user1", @"password1");
+  DeleteCredential(@"user1", @"https://example1.com/");
 
   // Check that the current view is still the password details since there is
   // still one more password left on the view.
@@ -2999,7 +3020,7 @@ void CheckPasswordManagerVisitMetricCount(int count) {
              @"Waiting for the view to load");
 
   // Delete last password.
-  DeleteCredential(@"user2", @"password2");
+  DeleteCredential(@"user2", @"https://example1.com/");
 
   // Check that the current view is now the password manager since we deleted
   // the last password.
@@ -3316,6 +3337,8 @@ void CheckPasswordManagerVisitMetricCount(int count) {
   CheckReauthenticationUIEventMetricTotalCount(0);
 }
 
+// Tests that the Password Manager is opened is search mode when opened from the
+// Search Passwords widget.
 - (void)testOpenSearchPasswordsWidget {
   // Add a saved password to not get the Password Manager's empty state.
   SavePasswordForm();
@@ -3343,6 +3366,43 @@ void CheckPasswordManagerVisitMetricCount(int count) {
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:SettingsDoneButton()]
       performAction:grey_tap()];
+}
+
+// Tests that the indication to open the Password Manager in search mode does
+// not persist after it was first opened. For example, the search bar shouldn't
+// get automatically enabled when going back to the Password Manager when the
+// Password Manager was initially opened with the Search Passwords widget.
+- (void)testGoingBackAfterOpeningInSearchMode {
+  // Add a saved password to not get the Password Manager's empty state.
+  SavePasswordForm();
+
+  [PasswordSettingsAppInterface mockReauthenticationModuleExpectedResult:
+                                    ReauthenticationResult::kSuccess];
+
+  // Open the Password Manager in search mode with the  Search Passwords widget.
+  [ChromeEarlGrey
+      sceneOpenURL:
+          GURL("chromewidgetkit://search-passwords-widget/search-passwords")];
+
+  // The search bar should be enabled.
+  [[EarlGrey selectElementWithMatcher:SearchTextField()]
+      assertWithMatcher:grey_userInteractionEnabled()];
+
+  // Dismiss the search controller.
+  [[EarlGrey
+      selectElementWithMatcher:ButtonWithAccessibilityLabelId(IDS_CANCEL)]
+      performAction:grey_tap()];
+
+  // Open password details.
+  [[self interactionForSinglePasswordEntryWithDomain:@"example.com"]
+      performAction:grey_tap()];
+
+  // Navigate back to the Password Manager. The search bar should not be
+  // enabled.
+  [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
+      performAction:grey_tap()];
+  [[EarlGrey selectElementWithMatcher:SearchTextField()]
+      assertWithMatcher:grey_userInteractionEnabled()];
 }
 
 @end

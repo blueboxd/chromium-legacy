@@ -4,11 +4,13 @@
 
 #include "chrome/browser/ssl/https_first_mode_settings_tracker.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_clock.h"
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager.h"
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager_factory.h"
 #include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
 #include "chrome/browser/ssl/stateful_ssl_host_state_delegate_factory.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/security_interstitials/content/stateful_ssl_host_state_delegate.h"
@@ -45,8 +47,7 @@ class HttpsFirstModeSettingsTrackerTest : public testing::Test {
         HttpsFirstModeServiceFactory::GetInstance(),
         HttpsFirstModeServiceFactory::GetDefaultFactoryForTesting());
     profile_ = IdentityTestEnvironmentProfileAdaptor::
-        CreateProfileForIdentityTestEnvironment(
-            builder, signin::AccountConsistencyMethod::kMirror);
+        CreateProfileForIdentityTestEnvironment(builder);
   }
 
   TestingProfile* profile() { return profile_.get(); }
@@ -63,6 +64,9 @@ TEST_F(HttpsFirstModeSettingsTrackerTest, SiteEngagementHeuristic) {
   ASSERT_TRUE(service);
 
   base::HistogramTester histograms;
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      features::kHttpsFirstModeV2ForTypicallySecureUsers);
 
   site_engagement::SiteEngagementService* engagement_service =
       site_engagement::SiteEngagementService::Get(profile());
@@ -290,11 +294,78 @@ TEST_F(HttpsFirstModeSettingsTrackerTest, SiteEngagementHeuristic) {
   service->Shutdown();
 }
 
+// Tests the repair mitigation for crbug.com/1475747. Namely, if
+// kHttpsFirstModeV2ForTypicallySecureUsers is disabled and the pref is enabled,
+// the code should disable HFM to undo the damage done by the bug.
+TEST_F(HttpsFirstModeSettingsTrackerTest, UndoTypicallySecureUser) {
+  base::test::ScopedFeatureList feature_list;
+
+  feature_list.InitAndDisableFeature(
+      features::kHttpsFirstModeV2ForTypicallySecureUsers);
+
+  HttpsFirstModeService* service =
+      HttpsFirstModeServiceFactory::GetForProfile(profile());
+  ASSERT_TRUE(service);
+
+  // Pretend that the feature had been erroneously enabled previously.
+  profile()->GetPrefs()->SetBoolean(prefs::kHttpsOnlyModeAutoEnabled, true);
+  profile()->GetPrefs()->SetBoolean(prefs::kHttpsOnlyModeEnabled, true);
+
+  EXPECT_FALSE(
+      service->MaybeEnableHttpsFirstModeForUser(/*add_fallback_entry=*/true));
+  EXPECT_FALSE(profile()->GetPrefs()->GetBoolean(prefs::kHttpsOnlyModeEnabled));
+  EXPECT_FALSE(
+      profile()->GetPrefs()->GetBoolean(prefs::kHttpsOnlyModeAutoEnabled));
+}
+
+// Tests the Typically Secure User heuristic to ensure that it respects the
+// finch flag. See TypicallySecureUserPref for more details.
+// Regression test for crbug.com/1475747.
+TEST_F(HttpsFirstModeSettingsTrackerTest,
+       TypicallySecureUserDisabledByDefault) {
+  base::test::ScopedFeatureList feature_list;
+
+  feature_list.InitAndDisableFeature(
+      features::kHttpsFirstModeV2ForTypicallySecureUsers);
+
+  HttpsFirstModeService* service =
+      HttpsFirstModeServiceFactory::GetForProfile(profile());
+  ASSERT_TRUE(service);
+
+  // Typically Secure User heuristic requires a minimum total site engagement
+  // score.
+  site_engagement::SiteEngagementService* engagement_service =
+      site_engagement::SiteEngagementService::Get(profile());
+  ASSERT_TRUE(engagement_service);
+  engagement_service->ResetBaseScoreForURL(GURL("https://google.com"), 90);
+
+  base::SimpleTestClock clock;
+  base::Time now = base::Time::NowFromSystemTime();
+  clock.SetNow(now);
+  service->SetClockForTesting(&clock);
+  // Move the clock so that the profile is old enough.
+  clock.SetNow(now + base::Days(10));
+
+  // This situation would normally qualify for enabling HFM, but it should stay
+  // disabled since the feature is disabled.
+  EXPECT_FALSE(
+      service->MaybeEnableHttpsFirstModeForUser(/*add_fallback_entry=*/true));
+  EXPECT_FALSE(
+      service->MaybeEnableHttpsFirstModeForUser(/*add_fallback_entry=*/false));
+  EXPECT_FALSE(profile()->GetPrefs()->GetBoolean(prefs::kHttpsOnlyModeEnabled));
+  EXPECT_FALSE(
+      profile()->GetPrefs()->GetBoolean(prefs::kHttpsOnlyModeAutoEnabled));
+}
+
 // Tests for the Typically Secure User heuristic. This test repeatedly calls
 // MaybeEnableHttpsFirstModeForUser which is normally called from HTTPS-Upgrade
 // fallbacks in production code. It then checks if the HTTPS-First Mode pref
 // is enabled.
 TEST_F(HttpsFirstModeSettingsTrackerTest, TypicallySecureUserPref) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      features::kHttpsFirstModeV2ForTypicallySecureUsers);
+
   HttpsFirstModeService* service =
       HttpsFirstModeServiceFactory::GetForProfile(profile());
   ASSERT_TRUE(service);

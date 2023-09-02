@@ -3840,7 +3840,8 @@
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
           "--avd-config=../../tools/android/avd/proto/generic_android33_experimental.textpb",
-          "--gtest_filter=-OfferNotificationControllerAndroidBrowserTestForMessagesUi.MessageShown"
+          "--gtest_filter=-OfferNotificationControllerAndroidBrowserTestForMessagesUi.MessageShown",
+          "--emulator-debug-tags=kernel"
         ],
         "merge": {
           "args": [
@@ -4643,7 +4644,8 @@
           "--recover-devices",
           "--avd-config=../../tools/android/avd/proto/generic_android33_experimental.textpb",
           "--git-revision=${got_revision}",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_13.chrome_public_test_apk.filter"
+          "--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_13.chrome_public_test_apk.filter",
+          "--emulator-debug-tags=kernel"
         ],
         "merge": {
           "args": [
@@ -4937,7 +4939,8 @@
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
           "--avd-config=../../tools/android/avd/proto/generic_android33_experimental.textpb",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_12l_13.content_browsertests.filter"
+          "--test-launcher-filter-file=../../testing/buildbot/filters/android.emulator_12l_13.content_browsertests.filter",
+          "--emulator-debug-tags=kernel"
         ],
         "merge": {
           "args": [
@@ -7635,6 +7638,54 @@
       {
         "name": "test_traffic_annotation_auditor",
         "script": "test_traffic_annotation_auditor.py"
+      }
+    ]
+  },
+  "android-chrome-pie-x86-wpt-android-specific": {
+    "isolated_scripts": [
+      {
+        "args": [
+          "--avd-config=../../tools/android/avd/proto/generic_android28.textpb"
+        ],
+        "isolate_name": "chrome_public_wpt",
+        "merge": {
+          "args": [
+            "--verbose",
+            "--test-list",
+            "//third_party/blink/web_tests/TestLists/Default.txt"
+          ],
+          "script": "//third_party/blink/tools/merge_web_test_results.py"
+        },
+        "name": "wpt_tests_suite",
+        "resultdb": {
+          "enable": true,
+          "has_native_resultdb_integration": true
+        },
+        "results_handler": "layout tests",
+        "swarming": {
+          "dimensions": {
+            "cores": "8",
+            "cpu": "x86-64",
+            "device_os": null,
+            "device_type": null,
+            "os": "Ubuntu-22.04",
+            "pool": "chromium.tests.avd"
+          },
+          "named_caches": [
+            {
+              "name": "generic_android28",
+              "path": ".android_emulator/generic_android28"
+            }
+          ],
+          "optional_dimensions": {
+            "60": {
+              "caches": "generic_android28"
+            }
+          },
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
+          "shards": 15
+        },
+        "test_id_prefix": "ninja://chrome/android:chrome_public_wpt/"
       }
     ]
   },

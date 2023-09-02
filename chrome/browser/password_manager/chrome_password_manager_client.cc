@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/command_line.h"
+#include "base/containers/span.h"
 #include "base/functional/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
@@ -36,6 +37,7 @@
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/sync/sync_service_factory.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
+#include "chrome/browser/ui/autofill/chrome_autofill_client.h"
 #include "chrome/browser/ui/passwords/password_generation_popup_controller_impl.h"
 #include "chrome/browser/ui/passwords/passwords_client_ui_delegate.h"
 #include "chrome/browser/ui/passwords/passwords_model_delegate.h"
@@ -44,6 +46,8 @@
 #include "chrome/common/webui_url_constants.h"
 #include "components/autofill/content/browser/content_autofill_driver.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
+#include "components/autofill/content/browser/renderer_forms_with_server_predictions.h"
+#include "components/autofill/content/browser/scoped_autofill_managers_observation.h"
 #include "components/autofill/core/browser/logging/log_manager.h"
 #include "components/autofill/core/common/mojom/autofill_types.mojom-shared.h"
 #include "components/autofill/core/common/password_generation_util.h"
@@ -190,15 +194,15 @@ const syncer::SyncService* GetSyncServiceForProfile(Profile* profile) {
 }  // namespace
 
 // static
-void ChromePasswordManagerClient::CreateForWebContentsWithAutofillClient(
-    content::WebContents* contents,
-    autofill::AutofillClient* autofill_client) {
-  if (FromWebContents(contents))
+void ChromePasswordManagerClient::CreateForWebContents(
+    content::WebContents* contents) {
+  if (FromWebContents(contents)) {
     return;
+  }
 
-  contents->SetUserData(UserDataKey(),
-                        base::WrapUnique(new ChromePasswordManagerClient(
-                            contents, autofill_client)));
+  contents->SetUserData(
+      UserDataKey(),
+      base::WrapUnique(new ChromePasswordManagerClient(contents)));
 }
 
 // static
@@ -656,7 +660,7 @@ void ChromePasswordManagerClient::TriggerReauthForPrimaryAccount(
 
 void ChromePasswordManagerClient::TriggerSignIn(
     signin_metrics::AccessPoint access_point) {
-#if BUILDFLAG(ENABLE_DICE_SUPPORT)
+#if BUILDFLAG(ENABLE_DICE_SUPPORT) || BUILDFLAG(IS_CHROMEOS_LACROS)
   account_storage_auth_helper_.TriggerSignIn(access_point);
 #endif
 }
@@ -1062,6 +1066,10 @@ void ChromePasswordManagerClient::AutomaticGenerationAvailable(
 
   generation_controller->OnAutomaticGenerationAvailable(
       base::AsWeakPtr(driver), ui_data, element_bounds_in_screen_space);
+  // Trigger password suggestions. This is a fallback case if the field was
+  // wrongly classified as new password field.
+  driver->GetPasswordAutofillManager()->MaybeShowPasswordSuggestions(
+      element_bounds_in_screen_space, ui_data.text_direction);
 #else
   password_manager::ContentPasswordManagerDriver* driver =
       GetDriverFactory()->GetDriverForFrame(rfh);
@@ -1304,8 +1312,7 @@ ChromePasswordManagerClient::
 #endif  // BUILDFLAG(IS_ANDROID)
 
 ChromePasswordManagerClient::ChromePasswordManagerClient(
-    content::WebContents* web_contents,
-    autofill::AutofillClient* autofill_client)
+    content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
       content::WebContentsUserData<ChromePasswordManagerClient>(*web_contents),
       profile_(Profile::FromBrowserContext(web_contents->GetBrowserContext())),
@@ -1329,6 +1336,7 @@ ChromePasswordManagerClient::ChromePasswordManagerClient(
 #endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
 #if BUILDFLAG(ENABLE_DICE_SUPPORT) || BUILDFLAG(IS_CHROMEOS_LACROS)
       account_storage_auth_helper_(
+          profile_,
           IdentityManagerFactory::GetForProfile(profile_),
           &password_feature_manager_,
           base::BindRepeating(
@@ -1340,8 +1348,7 @@ ChromePasswordManagerClient::ChromePasswordManagerClient(
               web_contents)),
 #endif  // BUILDFLAG(ENABLE_DICE_SUPPORT) || BUILDFLAG(IS_CHROMEOS_LACROS)
       helper_(this) {
-  ContentPasswordManagerDriverFactory::CreateForWebContents(web_contents, this,
-                                                            autofill_client);
+  ContentPasswordManagerDriverFactory::CreateForWebContents(web_contents, this);
   ContentPasswordManagerDriverFactory* driver_factory = GetDriverFactory();
   log_manager_ = autofill::LogManager::Create(
       password_manager::PasswordManagerLogRouterFactory::GetForBrowserContext(
@@ -1351,6 +1358,11 @@ ChromePasswordManagerClient::ChromePasswordManagerClient(
           base::Unretained(driver_factory)));
 
   driver_factory->RequestSendLoggingAvailability();
+
+  autofill_managers_observation_.Observe(
+      web_contents, autofill::ScopedAutofillManagersObservation::
+                        InitializationPolicy::kObservePreexistingManagers);
+
 #if BUILDFLAG(IS_ANDROID)
   // `this` is tab-scoped, however the local passwords migration warning
   // should only be launched on startup.
@@ -1400,6 +1412,39 @@ void ChromePasswordManagerClient::WebContentsDestroyed() {
             messages::DismissReason::TAB_DESTROYED);
   }
 #endif
+}
+
+void ChromePasswordManagerClient::OnFieldTypesDetermined(
+    autofill::AutofillManager& manager,
+    autofill::FormGlobalId form_id,
+    FieldTypeSource source) {
+  if (source == FieldTypeSource::kHeuristicsOrAutocomplete) {
+    return;
+  }
+
+  absl::optional<autofill::RendererFormsWithServerPredictions>
+      forms_and_predictions =
+          autofill::RendererFormsWithServerPredictions::FromBrowserForm(
+              manager, form_id);
+  if (!forms_and_predictions) {
+    return;
+  }
+
+  for (const auto& [form, rfh_id] : forms_and_predictions->renderer_forms) {
+    auto* rfh = content::RenderFrameHost::FromID(rfh_id);
+    if (!rfh) {
+      continue;
+    }
+    auto* driver =
+        password_manager::ContentPasswordManagerDriver::GetForRenderFrameHost(
+            rfh);
+    if (!driver) {
+      continue;
+    }
+    std::array<const autofill::FormData*, 1> form_pointers = {&form};
+    password_manager_.ProcessAutofillPredictions(
+        driver, form_pointers, forms_and_predictions->predictions);
+  }
 }
 
 password_manager::ContentPasswordManagerDriverFactory*

@@ -19,6 +19,7 @@
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/color/color_id.h"
 #include "ui/events/event.h"
+#include "ui/events/event_utils.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/label.h"
@@ -40,8 +41,16 @@ PopupCellView::~PopupCellView() = default;
 
 bool PopupCellView::HandleKeyPressEvent(
     const content::NativeWebKeyboardEvent& event) {
-  // By default let the parent handle.
-  return false;
+  switch (event.windows_key_code) {
+    case ui::VKEY_RETURN:
+      if (on_accepted_callback_) {
+        on_accepted_callback_.Run(base::TimeTicks::Now());
+        return true;
+      }
+      return false;
+    default:
+      return false;
+  }
 }
 
 void PopupCellView::SetSelected(bool selected) {
@@ -83,7 +92,7 @@ void PopupCellView::SetOnExitedCallback(base::RepeatingClosure callback) {
   on_exited_callback_ = std::move(callback);
 }
 
-void PopupCellView::SetOnAcceptedCallback(base::RepeatingClosure callback) {
+void PopupCellView::SetOnAcceptedCallback(OnAcceptedCallback callback) {
   on_accepted_callback_ = std::move(callback);
 }
 
@@ -150,7 +159,7 @@ void PopupCellView::OnMouseReleased(const ui::MouseEvent& event) {
 
   if (on_accepted_callback_ && event.IsOnlyLeftMouseButton() &&
       HitTestPoint(event.location())) {
-    on_accepted_callback_.Run();
+    RunOnAcceptedForEvent(event);
   }
 }
 
@@ -163,7 +172,7 @@ void PopupCellView::OnGestureEvent(ui::GestureEvent* event) {
       break;
     case ui::ET_GESTURE_TAP:
       if (on_accepted_callback_) {
-        on_accepted_callback_.Run();
+        RunOnAcceptedForEvent(*event);
       }
       break;
     case ui::ET_GESTURE_TAP_CANCEL:
@@ -175,6 +184,18 @@ void PopupCellView::OnGestureEvent(ui::GestureEvent* event) {
     default:
       return;
   }
+}
+
+void PopupCellView::RunOnAcceptedForEvent(const ui::Event& event) {
+  if (event.HasNativeEvent() &&
+      base::FeatureList::IsEnabled(
+          features::kAutofillPopupUseLatencyInformationForAcceptThreshold)) {
+    // Convert the native event timestamp into (an approximation of) time ticks.
+    on_accepted_callback_.Run(ui::EventLatencyTimeFromNative(
+        event.native_event(), base::TimeTicks::Now()));
+    return;
+  }
+  on_accepted_callback_.Run(base::TimeTicks::Now());
 }
 
 bool PopupCellView::HandleAccessibleAction(
@@ -233,7 +254,7 @@ ADD_PROPERTY_METADATA(bool, Selected)
 ADD_PROPERTY_METADATA(std::u16string, TooltipText)
 ADD_PROPERTY_METADATA(base::RepeatingClosure, OnEnteredCallback)
 ADD_PROPERTY_METADATA(base::RepeatingClosure, OnExitedCallback)
-ADD_PROPERTY_METADATA(base::RepeatingClosure, OnAcceptedCallback)
+ADD_PROPERTY_METADATA(PopupCellView::OnAcceptedCallback, OnAcceptedCallback)
 ADD_PROPERTY_METADATA(base::RepeatingClosure, OnSelectedCallback)
 ADD_PROPERTY_METADATA(base::RepeatingClosure, OnUnselectedCallback)
 END_METADATA

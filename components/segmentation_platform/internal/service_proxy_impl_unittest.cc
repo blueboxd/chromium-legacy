@@ -11,7 +11,6 @@
 #include "components/prefs/testing_pref_service.h"
 #include "components/segmentation_platform/internal/constants.h"
 #include "components/segmentation_platform/internal/database/test_segment_info_database.h"
-#include "components/segmentation_platform/internal/execution/default_model_manager.h"
 #include "components/segmentation_platform/internal/execution/mock_model_provider.h"
 #include "components/segmentation_platform/internal/execution/model_executor.h"
 #include "components/segmentation_platform/internal/execution/processing/feature_list_query_processor.h"
@@ -98,8 +97,7 @@ class FakeSegmentSelectorImpl : public SegmentSelectorImpl {
                             config,
                             nullptr,
                             nullptr,
-                            PlatformOptions::CreateDefault(),
-                            nullptr) {}
+                            PlatformOptions::CreateDefault()) {}
   ~FakeSegmentSelectorImpl() override = default;
 
   void UpdateSelectedSegment(SegmentId new_selection, float) override {
@@ -130,12 +128,9 @@ class ServiceProxyImplTest : public testing::Test,
     segment_selectors_[kTestSegmentationKey] =
         std::make_unique<FakeSegmentSelectorImpl>(&pref_service_,
                                                   configs_.at(0).get());
-    test_model_factory_ = std::make_unique<TestModelProviderFactory>(&data_);
-    default_manager_ = std::make_unique<DefaultModelManager>(
-        test_model_factory_.get(), GetAllSegmentIds(configs_));
     service_proxy_impl_ = std::make_unique<ServiceProxyImpl>(
-        segment_db_.get(), default_manager_.get(), nullptr, &configs_,
-        PlatformOptions(false), &segment_selectors_);
+        segment_db_.get(), nullptr, &configs_, PlatformOptions(false),
+        &segment_selectors_);
     service_proxy_impl_->AddObserver(this);
   }
 
@@ -161,11 +156,8 @@ class ServiceProxyImplTest : public testing::Test,
   int status_flag_ = 0;
 
   std::unique_ptr<test::TestSegmentInfoDatabase> segment_db_;
-  TestModelProviderFactory::Data data_;
   std::unique_ptr<MockModelManager> mock_model_manager_;
   ExecutionService execution_;
-  std::unique_ptr<TestModelProviderFactory> test_model_factory_;
-  std::unique_ptr<DefaultModelManager> default_manager_;
   std::unique_ptr<ServiceProxyImpl> service_proxy_impl_;
   std::vector<ServiceProxy::ClientInfo> client_info_;
   std::vector<std::unique_ptr<Config>> configs_;
@@ -195,17 +187,11 @@ TEST_F(ServiceProxyImplTest, GetServiceStatus) {
 TEST_F(ServiceProxyImplTest, GetSegmentationInfoFromDefaultModel) {
   const SegmentId segment_id =
       SegmentId::OPTIMIZATION_TARGET_SEGMENTATION_NEW_TAB;
-  proto::SegmentationModelMetadata model_metadata;
-  model_metadata.set_time_unit(proto::TimeUnit::DAY);
-  data_.default_provider_metadata[segment_id] = model_metadata;
-  data_.segments_supporting_default_model = {segment_id};
   configs_.at(0)->segments.insert(
       {segment_id, std::make_unique<Config::SegmentMetadata>("UmaName")});
   AddSegmentInfo(segment_db_.get(), configs_.at(0).get(), segment_id,
                  proto::ModelSource::DEFAULT_MODEL_SOURCE);
   SetUpProxy();
-
-  ASSERT_TRUE(data_.default_model_providers[segment_id]);
 
   service_proxy_impl_->OnServiceStatusChanged(true, 7);
 
@@ -223,15 +209,12 @@ TEST_F(ServiceProxyImplTest, GetSegmentationInfoFromDefaultModel) {
 TEST_F(ServiceProxyImplTest, GetSegmentationInfoFromDB) {
   const SegmentId segment_id =
       SegmentId::OPTIMIZATION_TARGET_SEGMENTATION_NEW_TAB;
-  data_.segments_supporting_default_model = {segment_id};
   configs_.at(0)->segments.insert(
       {segment_id, std::make_unique<Config::SegmentMetadata>("UmaName")});
-  auto* info =
-      AddSegmentInfo(segment_db_.get(), configs_.at(0).get(), segment_id);
-  data_.default_provider_metadata[segment_id] = info->model_metadata();
-  SetUpProxy();
 
-  ASSERT_TRUE(data_.default_model_providers[segment_id]);
+  AddSegmentInfo(segment_db_.get(), configs_.at(0).get(), segment_id,
+                 proto::ModelSource::DEFAULT_MODEL_SOURCE);
+  SetUpProxy();
 
   service_proxy_impl_->OnServiceStatusChanged(true, 7);
 
@@ -271,7 +254,6 @@ TEST_F(ServiceProxyImplTest, ExecuteModel) {
       SegmentId::OPTIMIZATION_TARGET_SEGMENTATION_NEW_TAB);
 
   SegmentId segment_id = SegmentId::OPTIMIZATION_TARGET_SEGMENTATION_NEW_TAB;
-  data_.segments_supporting_default_model = {segment_id};
   EXPECT_CALL(*mock_model_manager_, GetModelProvider(segment_id, _))
       .WillOnce(testing::Return(nullptr))
       .WillOnce(testing::Return(nullptr));

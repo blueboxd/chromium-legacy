@@ -419,6 +419,7 @@ class CONTENT_EXPORT NavigationRequest
   bool IsServedFromBackForwardCache() override;
   void SetIsOverridingUserAgent(bool override_ua) override;
   void SetSilentlyIgnoreErrors() override;
+  network::mojom::WebSandboxFlags SandboxFlagsInitiator() override;
   network::mojom::WebSandboxFlags SandboxFlagsInherited() override;
   network::mojom::WebSandboxFlags SandboxFlagsToCommit() override;
   bool IsWaitingToCommit() override;
@@ -1242,6 +1243,8 @@ class CONTENT_EXPORT NavigationRequest
     CHECK(HasWebUI());
     return std::move(web_ui_);
   }
+
+  bool shared_storage_writable() const { return shared_storage_writable_; }
 
   enum ErrorPageProcess {
     kNotErrorPage,
@@ -2312,6 +2315,10 @@ class CONTENT_EXPORT NavigationRequest
   // only valid in conjunction with it.
   const int initiator_process_id_ = ChildProcessHost::kInvalidUniqueID;
 
+  // The sandbox flags of the navigation's initiator, if any.
+  // WebSandboxFlags::kNone otherwise.
+  const network::mojom::WebSandboxFlags sandbox_flags_initiator_;
+
   // Whether a navigation in a new window had the opener suppressed. False if
   // the navigation is not in a new window. Can only be true for renderer
   // initiated navigations which use `CreateBrowserInitiated()`.
@@ -2552,6 +2559,11 @@ class CONTENT_EXPORT NavigationRequest
   // the "Sec-Browsing-Topics" header, and if the corresponding response headers
   // contain "Observe-Browsing-Topics: ?1", a topic observation will be stored.
   bool topics_eligible_ = false;
+
+  // Whether or not the request is eligible to write to shared storage from
+  // response headers. See
+  // https://github.com/WICG/shared-storage#from-response-headers
+  bool shared_storage_writable_ = false;
 
   // A WeakPtr for the BindContext associated with the browser routing loader
   // factory for the committing document. This will be set in

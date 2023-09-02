@@ -16,13 +16,13 @@
 #include "base/allocator/partition_allocator/shim/allocator_shim.h"
 #include "base/apple/bridging.h"
 #include "base/apple/scoped_objc_class_swizzler.h"
+#include "base/apple/foundation_util.h"
 #include "base/auto_reset.h"
 #include "base/check_op.h"
 #include "base/command_line.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/files/file_path.h"
 #include "base/functional/bind.h"
-#include "base/mac/foundation_util.h"
 #include "base/mac/mac_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_macros.h"
@@ -89,7 +89,7 @@
 #import "chrome/browser/ui/cocoa/share_menu_controller.h"
 #import "chrome/browser/ui/cocoa/tab_menu_bridge.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
-#include "chrome/browser/ui/profile_picker.h"
+#include "chrome/browser/ui/profiles/profile_picker.h"
 #include "chrome/browser/ui/startup/first_run_service.h"
 #include "chrome/browser/ui/startup/launch_mode_recorder.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
@@ -276,12 +276,12 @@ void RecordLastRunAppBundlePath() {
                                        .DirName()
                                        .DirName()
                                        .DirName();
-  base::ScopedCFTypeRef<CFStringRef> app_bundle_path_cfstring =
+  base::apple::ScopedCFTypeRef<CFStringRef> app_bundle_path_cfstring =
       base::SysUTF8ToCFStringRef(app_bundle_path.value());
   CFPreferencesSetAppValue(
       base::apple::NSToCFPtrCast(app_mode::kLastRunAppBundlePathPrefsKey),
       app_bundle_path_cfstring,
-      base::SysUTF8ToCFStringRef(base::mac::BaseBundleID()));
+      base::SysUTF8ToCFStringRef(base::apple::BaseBundleID()));
 }
 
 bool IsProfileSignedOut(const base::FilePath& profile_path) {
@@ -1086,7 +1086,7 @@ class AppControllerNativeThemeObserver : public ui::NativeThemeObserver {
 
   // Record the path to the (browser) app bundle; this is used by the app mode
   // shim.
-  if (base::mac::AmIBundled()) {
+  if (base::apple::AmIBundled()) {
     base::ThreadPool::PostTask(
         FROM_HERE,
         {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
@@ -1364,7 +1364,7 @@ class AppControllerNativeThemeObserver : public ui::NativeThemeObserver {
     // This is handled outside of the switch statement because we want to hide
     // this regardless if the command is supported or not.
     if (tag == IDC_SHOW_AS_TAB) {
-      NSMenuItem* menuItem = base::mac::ObjCCast<NSMenuItem>(item);
+      NSMenuItem* menuItem = base::apple::ObjCCast<NSMenuItem>(item);
       [menuItem setHidden:YES];
     }
   } else if (action == @selector(terminate:)) {
@@ -2032,10 +2032,10 @@ class AppControllerNativeThemeObserver : public ui::NativeThemeObserver {
   NSWindow* targetWindow = nil;
   if ([target isKindOfClass:[NSPopover class]]) {
     targetWindow =
-        [[[base::mac::ObjCCast<NSPopover>(target) contentViewController] view]
+        [[[base::apple::ObjCCast<NSPopover>(target) contentViewController] view]
             window];
   } else {
-    targetWindow = base::mac::ObjCCast<NSWindow>(target);
+    targetWindow = base::apple::ObjCCast<NSWindow>(target);
   }
 
   if (targetWindow != nil) {
@@ -2087,7 +2087,7 @@ class AppControllerNativeThemeObserver : public ui::NativeThemeObserver {
     return NO;
   }
 
-  NSString* originString = base::mac::ObjCCast<NSString>(
+  NSString* originString = base::apple::ObjCCast<NSString>(
       (userActivity.userInfo)[handoff::kOriginKey]);
   handoff::Origin origin = handoff::OriginFromString(originString);
   UMA_HISTOGRAM_ENUMERATION(

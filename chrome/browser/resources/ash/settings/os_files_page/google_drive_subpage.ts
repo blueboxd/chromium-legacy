@@ -45,6 +45,7 @@ const GOOGLE_DRIVE_BULK_PINNING_PREF = 'drivefs.bulk_pinning_enabled';
 export enum ConfirmationDialogType {
   DISCONNECT = 'disconnect',
   BULK_PINNING_DISABLE = 'bulk-pinning-disable',
+  BULK_PINNING_LISTING_FILES = 'bulk-pinning-listing-files',
   BULK_PINNING_NOT_ENOUGH_SPACE = 'bulk-pinning-not-enough-space',
   BULK_PINNING_UNEXPECTED_ERROR = 'bulk-pinning-unexpected-error',
   BULK_PINNING_CLEAN_UP_STORAGE = 'bulk-pinning-clean-up-storage',
@@ -55,7 +56,7 @@ export enum ConfirmationDialogType {
 /**
  * When the pinned size is not still calculating or unknown.
  */
-enum PinnedSizeType {
+enum ContentCacheSizeType {
   UNKNOWN = 'unknown',
   CALCULATING = 'calculating',
 }
@@ -86,10 +87,10 @@ export class SettingsGoogleDriveSubpageElement extends
       },
 
       /**
-       * Ensures the data binding is updated on the UI when `totalPinnedSize_`
-       * is updated.
+       * Ensures the data binding is updated on the UI when
+       * `contentCacheSize_` is updated.
        */
-      totalPinnedSize_: String,
+      contentCacheSize_: String,
 
       /**
        * Ensures the showSpinner variable is bound to the parent element and
@@ -149,16 +150,29 @@ export class SettingsGoogleDriveSubpageElement extends
   private dialogType_: ConfirmationDialogType = ConfirmationDialogType.NONE;
 
   /**
-   * Keeps track of the last requested total pinned size.
+   * Keeps track of the last requested total content cache size.
    */
-  private totalPinnedSize_: string|PinnedSizeType = PinnedSizeType.CALCULATING;
+  private contentCacheSize_: string|ContentCacheSizeType =
+      ContentCacheSizeType.CALCULATING;
+
+  /**
+   * The number of files that have currently been listed, this count is the one
+   * displayed in the UI which gets updated every 5s from the source at
+   * bulkPinningStatus_.listedFiles.
+   */
+  private listedFiles_: bigint = 0n;
+
+  /**
+   * The interval to update listedFiles_.
+   */
+  private updateListedFilesInterval_: number|undefined = undefined;
 
   /**
    * Whether to show the spinner in the top right of the settings page.
    */
   private showSpinner: boolean = false;
 
-  private updatePinnedSizeInterval_: number;
+  private updateContentCacheSizeInterval_: number;
 
   private isDriveFsBulkPinningEnabled_: boolean;
 
@@ -196,8 +210,16 @@ export class SettingsGoogleDriveSubpageElement extends
    * Returns the total pinned size stored.
    * Used for testing.
    */
-  get totalPinnedSize() {
-    return this.totalPinnedSize_;
+  get contentCacheSize() {
+    return this.contentCacheSize_;
+  }
+
+  /**
+   * Returns the current number of listed files.
+   * Used for testing.
+   */
+  get listedFiles() {
+    return this.listedFiles_;
   }
 
   /**
@@ -215,7 +237,7 @@ export class SettingsGoogleDriveSubpageElement extends
   }
 
   override disconnectedCallback() {
-    clearInterval(this.updatePinnedSizeInterval_);
+    clearInterval(this.updateContentCacheSizeInterval_);
   }
 
   /**
@@ -223,6 +245,8 @@ export class SettingsGoogleDriveSubpageElement extends
    */
   private onServiceUnavailable_() {
     this.bulkPinningServiceUnavailable_ = true;
+    clearInterval(this.updateListedFilesInterval_);
+    this.updateListedFilesInterval_ = undefined;
   }
 
   /**
@@ -230,10 +254,25 @@ export class SettingsGoogleDriveSubpageElement extends
    * This could also end up in an error state (e.g. no free space).
    */
   private onProgress_(status: Status) {
+    this.bulkPinningServiceUnavailable_ = false;
+
     if (status.stage !== this.bulkPinningStatus_?.stage ||
         status.freeSpace !== this.bulkPinningStatus_?.freeSpace ||
-        status.requiredSpace !== this.bulkPinningStatus_?.requiredSpace) {
+        status.requiredSpace !== this.bulkPinningStatus_?.requiredSpace ||
+        status.listedFiles !== this.bulkPinningStatus_?.listedFiles) {
       this.bulkPinningStatus_ = status;
+
+      if (!this.updateListedFilesInterval_ &&
+          status.stage === Stage.kListingFiles) {
+        this.listedFiles_ = this.bulkPinningStatus_?.listedFiles || 0n;
+        this.updateListedFilesInterval_ = setInterval(() => {
+          this.listedFiles_ = this.bulkPinningStatus_?.listedFiles || 0n;
+        }, 5000);
+      }
+    }
+
+    if (status.stage !== Stage.kListingFiles) {
+      this.stopUpdatingListedFilesAndClearDialog_();
     }
 
     let requiredSpace: number;
@@ -248,19 +287,34 @@ export class SettingsGoogleDriveSubpageElement extends
   }
 
   /**
+   * Whilst listing files an interval is maintained to not update the UI with
+   * too many changes. When listing files has finished, ensure the interval is
+   * cleared and the dialog is closed if it is kept open.
+   */
+  private stopUpdatingListedFilesAndClearDialog_() {
+    clearInterval(this.updateListedFilesInterval_);
+    this.updateListedFilesInterval_ = undefined;
+    this.listedFiles_ = 0n;
+    if (this.dialogType_ ===
+        ConfirmationDialogType.BULK_PINNING_LISTING_FILES) {
+      this.dialogType_ = ConfirmationDialogType.NONE;
+    }
+  }
+
+  /**
    * Retrieves the total pinned size of items in Drive and stores the total.
    */
-  private async updateTotalPinnedSize_() {
-    if (!this.totalPinnedSize_) {
+  private async updateContentCacheSize_() {
+    if (!this.contentCacheSize_) {
       // Only set the total pinned size to calculating on the first update.
-      this.totalPinnedSize_ = PinnedSizeType.CALCULATING;
+      this.contentCacheSize_ = ContentCacheSizeType.CALCULATING;
     }
-    const {size} = await this.pageHandler.getTotalPinnedSize();
+    const {size} = await this.pageHandler.getContentCacheSize();
     if (size) {
-      this.totalPinnedSize_ = size;
+      this.contentCacheSize_ = size;
       return;
     }
-    this.totalPinnedSize_ = PinnedSizeType.UNKNOWN;
+    this.contentCacheSize_ = ContentCacheSizeType.UNKNOWN;
   }
 
   /**
@@ -277,7 +331,7 @@ export class SettingsGoogleDriveSubpageElement extends
   override currentRouteChanged(route: Route, _oldRoute?: Route) {
     // Does not apply to this page.
     if (route !== routes.GOOGLE_DRIVE) {
-      clearInterval(this.updatePinnedSizeInterval_);
+      clearInterval(this.updateContentCacheSizeInterval_);
       return;
     }
 
@@ -290,10 +344,10 @@ export class SettingsGoogleDriveSubpageElement extends
   onNavigated() {
     this.attemptDeepLink();
     this.pageHandler.calculateRequiredSpace();
-    this.updateTotalPinnedSize_();
-    clearInterval(this.updatePinnedSizeInterval_);
-    this.updatePinnedSizeInterval_ =
-        setInterval(this.updateTotalPinnedSize_.bind(this), 5000);
+    this.updateContentCacheSize_();
+    clearInterval(this.updateContentCacheSizeInterval_);
+    this.updateContentCacheSizeInterval_ =
+        setInterval(this.updateContentCacheSize_.bind(this), 5000);
   }
 
   /**
@@ -309,15 +363,15 @@ export class SettingsGoogleDriveSubpageElement extends
   /**
    * Returns the text representation of the total pinned size.
    */
-  private getPinnedSizeLabel_(): string {
-    if (this.totalPinnedSize_ === PinnedSizeType.CALCULATING) {
+  private getContentCacheSizeLabel_(): string {
+    if (this.contentCacheSize_ === ContentCacheSizeType.CALCULATING) {
       return this.i18n('googleDriveOfflineClearCalculatingSubtitle');
-    } else if (this.totalPinnedSize_ === PinnedSizeType.UNKNOWN) {
+    } else if (this.contentCacheSize_ === ContentCacheSizeType.UNKNOWN) {
       return this.i18n('googleDriveOfflineClearErrorSubtitle');
     }
 
     return this.i18n(
-        'googleDriveOfflineStorageSpaceTaken', this.totalPinnedSize_);
+        'googleDriveOfflineStorageSpaceTaken', this.contentCacheSize_);
   }
 
   /**
@@ -325,8 +379,8 @@ export class SettingsGoogleDriveSubpageElement extends
    * storage" button is disabled.
    */
   private getCleanUpStorageDisabledTooltipText_(): string {
-    if (this.totalPinnedSize_ === PinnedSizeType.UNKNOWN ||
-        this.totalPinnedSize_ === PinnedSizeType.CALCULATING) {
+    if (this.contentCacheSize_ === ContentCacheSizeType.UNKNOWN ||
+        this.contentCacheSize_ === ContentCacheSizeType.CALCULATING) {
       return this.i18n(
           'googleDriveCleanUpStorageDisabledUnknownStorageTooltip');
     }
@@ -369,7 +423,7 @@ export class SettingsGoogleDriveSubpageElement extends
         break;
       case ConfirmationDialogType.BULK_PINNING_CLEAN_UP_STORAGE:
         await this.proxy_.handler.clearPinnedFiles();
-        this.updateTotalPinnedSize_();
+        this.updateContentCacheSize_();
         break;
       default:
         // All other dialogs currently do not require any action (only a
@@ -426,15 +480,24 @@ export class SettingsGoogleDriveSubpageElement extends
         return;
       }
 
-      // When the device is offline, don't allow the user to enable the toggle.
-      if (this.bulkPinningStatus_?.stage === Stage.kPausedOffline) {
-        this.dialogType_ = ConfirmationDialogType.BULK_PINNING_OFFLINE;
-        return;
-      }
-
       // If an error occurs (that is not related to low disk space) surface an
       // unexpected error dialog.
       this.dialogType_ = ConfirmationDialogType.BULK_PINNING_UNEXPECTED_ERROR;
+      return;
+    }
+
+    // When the device is offline, don't allow the user to enable the toggle.
+    if (this.bulkPinningStatus_?.stage === Stage.kPausedOffline) {
+      target.checked = false;
+      this.dialogType_ = ConfirmationDialogType.BULK_PINNING_OFFLINE;
+      return;
+    }
+
+    // If currently enumerating the files, don't allow the user to enable file
+    // sync until we're certain the corpus will fit on the device.
+    if (this.bulkPinningStatus_?.stage === Stage.kListingFiles) {
+      target.checked = false;
+      this.dialogType_ = ConfirmationDialogType.BULK_PINNING_LISTING_FILES;
       return;
     }
 
@@ -457,8 +520,9 @@ export class SettingsGoogleDriveSubpageElement extends
    */
   private shouldEnableCleanUpStorageButton_() {
     return !this.getPref(GOOGLE_DRIVE_BULK_PINNING_PREF).value &&
-        this.totalPinnedSize_ !== PinnedSizeType.UNKNOWN &&
-        this.totalPinnedSize_ !== PinnedSizeType.CALCULATING;
+        this.contentCacheSize_ !== ContentCacheSizeType.UNKNOWN &&
+        this.contentCacheSize_ !== ContentCacheSizeType.CALCULATING &&
+        this.contentCacheSize_ !== '0 B';
   }
 
   /**
@@ -469,10 +533,18 @@ export class SettingsGoogleDriveSubpageElement extends
     return this.i18nAdvanced('googleDriveOfflineCleanStorageDialogBody', {
       tags: ['a'],
       substitutions: [
-        this.totalPinnedSize_!,
+        this.contentCacheSize_!,
         this.i18n('googleDriveCleanUpStorageLearnMoreLink'),
       ],
     });
+  }
+
+  private getListingFilesDialogBody_() {
+    return this.listedFiles_ > 0n ?
+        this.i18n(
+            'googleDriveFileSyncListingFilesItemsFoundBody',
+            this.listedFiles_.toLocaleString()) :
+        this.i18n('googleDriveFileSyncListingFilesBody');
   }
 
   /**

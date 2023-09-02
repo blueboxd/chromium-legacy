@@ -57,7 +57,7 @@
 namespace updater {
 namespace {
 
-constexpr int64_t kLogRotateAtSize = 1024 * 1024 * 5;  // 5 MiB.
+constexpr int64_t kLogRotateAtSize = 1024 * 1024 * 2;  // 2 MiB.
 
 const char kHexString[] = "0123456789ABCDEF";
 inline char IntToHex(int i) {
@@ -133,12 +133,19 @@ absl::optional<base::FilePath> GetVersionedInstallDirectory(
   return GetVersionedInstallDirectory(scope, base::Version(kUpdaterVersion));
 }
 
-absl::optional<base::FilePath> GetUpdaterExecutablePath(UpdaterScope scope) {
-  absl::optional<base::FilePath> path = GetVersionedInstallDirectory(scope);
+absl::optional<base::FilePath> GetUpdaterExecutablePath(
+    UpdaterScope scope,
+    const base::Version& version) {
+  absl::optional<base::FilePath> path =
+      GetVersionedInstallDirectory(scope, version);
   if (!path) {
     return absl::nullopt;
   }
   return path->Append(GetExecutableRelativePath());
+}
+
+absl::optional<base::FilePath> GetUpdaterExecutablePath(UpdaterScope scope) {
+  return GetUpdaterExecutablePath(scope, base::Version(kUpdaterVersion));
 }
 
 absl::optional<base::FilePath> GetCrashDatabasePath(UpdaterScope scope) {

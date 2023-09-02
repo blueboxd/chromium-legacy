@@ -39,7 +39,7 @@ namespace {
 // Current version number. We write databases at the "current" version number,
 // but any previous version that can read the "compatible" one can make do with
 // our database without *too* many bad effects.
-const int kCurrentVersionNumber = 66;
+const int kCurrentVersionNumber = 67;
 const int kCompatibleVersionNumber = 16;
 
 const char kEarlyExpirationThresholdKey[] = "early_expiration_threshold";
@@ -130,7 +130,7 @@ sql::InitStatus HistoryDatabase::Init(const base::FilePath& history_name) {
   if (!CreateURLTable(false) || !InitVisitTable() ||
       !InitKeywordSearchTermsTable() || !InitDownloadTable() ||
       !InitSegmentTables() || !typed_url_metadata_db_.Init() ||
-      !InitVisitAnnotationsTables()) {
+      !InitVisitAnnotationsTables() || !CreateVisitedLinkTable()) {
     return LogInitFailure(InitStep::CREATE_TABLES);
   }
   if (base::FeatureList::IsEnabled(syncer::kSyncEnableHistoryDataType) &&
@@ -173,6 +173,14 @@ void HistoryDatabase::ComputeDatabaseMetrics(
   if (!visit_count.Step())
     return;
   UMA_HISTOGRAM_COUNTS_1M("History.VisitTableCount", visit_count.ColumnInt(0));
+
+  sql::Statement visited_link_count(
+      db_.GetUniqueStatement("SELECT count(*) FROM visited_links"));
+  if (!visited_link_count.Step()) {
+    return;
+  }
+  UMA_HISTOGRAM_COUNTS_1M("History.VisitedLinkTableCount",
+                          visited_link_count.ColumnInt(0));
 
   UMA_HISTOGRAM_TIMES("History.DatabaseBasicMetricsTime",
                       base::TimeTicks::Now() - start_time);
@@ -981,6 +989,15 @@ sql::InitStatus HistoryDatabase::EnsureCurrentVersion() {
   if (cur_version == 65) {
     if (!MigrateVisitsAddExternalReferrerUrlColumn()) {
       return LogMigrationFailure(65);
+    }
+    cur_version++;
+    // TODO(crbug.com/1414092): Handle failure instead of ignoring it.
+    std::ignore = meta_table_.SetVersionNumber(cur_version);
+  }
+
+  if (cur_version == 66) {
+    if (!MigrateVisitsAddVisitedLinkIdColumn()) {
+      return LogMigrationFailure(66);
     }
     cur_version++;
     // TODO(crbug.com/1414092): Handle failure instead of ignoring it.

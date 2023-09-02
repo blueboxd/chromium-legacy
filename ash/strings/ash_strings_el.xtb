@@ -37,10 +37,12 @@
 <translation id="1148499908455722006">Άνοιγμα παραθύρου διαλόγου πληροφοριών για <ph name="USER_NAME" /></translation>
 <translation id="1150989369772528668">Ημερολόγιο</translation>
 <translation id="1153356358378277386">Συσκευές σε σύζευξη</translation>
+<translation id="1155734730463845512">Τρέχον επίπεδο μπαταρίας <ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="1160215328209699296">ενεργό και σε χρήση</translation>
 <translation id="1170753161936175256"><ph name="EVENT_SUMMARY" />, <ph name="TIME_RANGE" /></translation>
 <translation id="1171742223880403396">Το καλώδιο USB-C που έχετε ενδέχεται να μην μπορεί να συνδεθεί σωστά σε οθόνες</translation>
 <translation id="1175572348579024023">Κύλιση</translation>
+<translation id="1175944128323889279">Τρέχον επίπεδο μπαταρίας <ph name="BATTERY_PERCENTAGE" />%, απομένουν <ph name="TIME" /></translation>
 <translation id="1178581264944972037">Παύση</translation>
 <translation id="1181037720776840403">Κατάργηση</translation>
 <translation id="1182225749592316782">Αυτό επιτρέπει την πρόσβαση για όλες τις εφαρμογές και τους ιστοτόπους με τις άδειες κάμερας και μικροφώνου.</translation>
@@ -61,6 +63,7 @@
 <translation id="1217633719248931900">Μετάβαση στην εφαρμογή</translation>
 <translation id="1218444235442067213"><ph name="APP_NAME" />, εφαρμογή Play Store</translation>
 <translation id="1225748608451425081">Το Chromebook κλειδώθηκε λόγω γνωστού προβλήματος. Θα μπορέσετε να συνδεθείτε σε: <ph name="TIME_LEFT" />.</translation>
+<translation id="1226877728704622336">ανενεργό γραφείο</translation>
 <translation id="1229194443904279055">Διακοπή επιλογής</translation>
 <translation id="1235458158152011030">Γνωστά δίκτυα</translation>
 <translation id="1239161794459865856">Η λειτουργία <ph name="FEATURE_NAME" /> συνδέθηκε.</translation>
@@ -80,12 +83,14 @@
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME" /> (<ph name="ANNOTATION" />)</translation>
 <translation id="1285992161347843613">Εντοπισμός τηλεφώνου</translation>
 <translation id="1287002645302686982">Υπάρχει ήδη ένα γραφείο με την ονομασία <ph name="DESK_TEMPLATE_NAME" /></translation>
+<translation id="1288276784862223576">Ρύθμιση προβολής των πρόσφατων φωτογραφιών και μέσων του τηλεφώνου σας</translation>
 <translation id="1289185460362160437">Επιστρέψτε ξανά το/τη(ν) <ph name="COME_BACK_DAY_OF_WEEK" /> στις <ph name="COME_BACK_TIME" />.</translation>
 <translation id="1290331692326790741">Ασθενές σήμα</translation>
 <translation id="1290982764014248209">Μεταφορά της εφαρμογής <ph name="DRAGGED_APP" /> στον φάκελο <ph name="FOLDER_NAME" />.</translation>
 <translation id="1293264513303784526">Συσκευή USB-C (αριστερή θύρα)</translation>
 <translation id="1293556467332435079">Αρχεία</translation>
 <translation id="1293699935367580298">Esc</translation>
+<translation id="1294046132466831888">Άνοιγμα Εξερεύνησης</translation>
 <translation id="1294929383540927798">Αλλάξτε τις ρυθμίσεις ειδοποιήσεων της οθόνης κλειδώματος</translation>
 <translation id="1301069673413256657">GSM</translation>
 <translation id="1306549533752902673">ΠΡΟΤΕΙΝΟΜΕΝΕΣ ΕΦΑΡΜΟΓΕΣ</translation>
@@ -114,7 +119,6 @@
 <translation id="1415846719612499304">Εμφάνιση λίστας δικτύων. <ph name="STATE_TEXT" />.</translation>
 <translation id="1419738280318246476">Ξεκλειδώστε τη συσκευή για εκτέλεση της ενέργειας ειδοποίησης</translation>
 <translation id="1420408895951708260">Εναλλαγή νυχτερινού φωτισμού. <ph name="STATE_TEXT" /></translation>
-<translation id="1420732223884894666">Δείτε τις πρόσφατες φωτογραφίες και τα μέσα του τηλεφώνου σας στη συσκευή <ph name="DEVICE_TYPE" /></translation>
 <translation id="1426410128494586442">Ναι</translation>
 <translation id="1455242230282523554">Εμφάνιση ρυθμίσεων γλώσσας</translation>
 <translation id="1460620680449458626">Η ένταση ήχου είναι σε σίγαση.</translation>
@@ -126,6 +130,7 @@
 <translation id="1479909375538722835">Κινούμενο μενού προσβασιμότητας</translation>
 <translation id="1480845547124508962"><ph name="CURRENT_TIME" />, πατήστε το πλήκτρο Enter για άνοιγμα της προβολής Ημερολογίου</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
+<translation id="1486307154719069822">Με την υπαγόρευση, μπορείτε να πληκτρολογείτε χρησιμοποιώντας τη φωνή σας. Πατήστε το πλήκτρο υπαγόρευσης ή επιλέξτε το εικονίδιο μικροφώνου στο κάτω μέρος της οθόνης όταν βρίσκεστε σε ένα πεδίο κειμένου. Η γλώσσα υπαγόρευσης έχει οριστεί σε <ph name="LANGUAGE" />. Η ομιλία αποστέλλεται στην Google για επεξεργασία. Μπορείτε να αλλάξετε τη γλώσσα υπαγόρευσης ανά πάσα στιγμή από το μενού Ρυθμίσεις &gt; Προσβασιμότητα.</translation>
 <translation id="1487931858675166540">Γίνεται ανταλλαγή του στοιχείου <ph name="FIRST_ITEM_TITLE" /> με το στοιχείο <ph name="SECOND_ITEM_TITLE" /></translation>
 <translation id="1500926532737552529">Εμφάνιση όλων των προτάσεων</translation>
 <translation id="1510238584712386396">Λειτουργία εκκίνησης</translation>
@@ -136,6 +141,7 @@
 <translation id="1528259147807435347">Έγινε επεξεργασία την προηγούμενη εβδομάδα</translation>
 <translation id="1536604384701784949">Για να χρησιμοποιήσετε τη διεύθυνση <ph name="USER_EMAIL_ADDRESS" />, πρέπει να αποσυνδεθείτε πρώτα από όλους τους λογαριασμούς. Για να αποσυνδεθείτε, επιλέξτε Ακύρωση για επιστροφή. Έπειτα επιλέξτε την ώρα για να ανοίξετε την περιοχή κατάστασης και επιλέξτε Αποσύνδεση. Στη συνέχεια συνδεθείτε ξανά στη διεύθυνση <ph name="USER_EMAIL_ADDRESS_2" />.</translation>
 <translation id="15373452373711364">Μεγάλος δείκτης ποντικιού</translation>
+<translation id="1545331255323159851">Προβολή των πρόσφατων φωτογραφιών, μέσων και ειδοποιήσεων του τηλεφώνου σας</translation>
 <translation id="1546492247443594934">Γραφείο 2</translation>
 <translation id="1546930421365146760">Ζητήστε από τον διαχειριστή σας να ρυθμίσει αυτήν τη συσκευή στην Κονσόλα διαχειριστή Google</translation>
 <translation id="1549512626801247439">διαχείριση αποθηκευτικού χώρου</translation>
@@ -147,10 +153,12 @@
 <translation id="1571697193564730395">Εναλλαγή λειτουργίας Μην ενοχλείτε. <ph name="STATE_TEXT" /></translation>
 <translation id="1576623706766186887">Σμίκρυνση όταν είναι ενεργοποιημένος ο μεγεθυντικός φακός</translation>
 <translation id="1586324912145647027">Μετάβαση στο γραφείο 1 έως 8</translation>
+<translation id="158838227375272121">Ιστότοπος Google Classroom</translation>
 <translation id="1589090746204042747">Αποκτήσει πρόσβαση σε όλη τη δραστηριότητά σας από αυτήν την περίοδο λειτουργίας</translation>
 <translation id="1592682369233288537">Επόμενο γραφείο: <ph name="NEXT_DESK_NAME" />, χρησιμοποιήστε τη συντόμευση Αναζήτηση+Πλήκτρο διαστήματος για ενεργοποίηση.</translation>
 <translation id="1602874809115667351"><ph name="LAUNCHER_KEY_NAME" /> + κάτω βέλος</translation>
 <translation id="1604857178818051494">Παύση μέσων</translation>
+<translation id="1607312127821884567">Παράβλεψη ρύθμισης προβολής των εφαρμογών του τηλεφώνου σας</translation>
 <translation id="1610778689852195798">"Αναίρεση"</translation>
 <translation id="1611993646327628135">Ενεργό</translation>
 <translation id="1620510694547887537">Κάμερα</translation>
@@ -179,9 +187,11 @@
 <translation id="1731815243805539470">Εναλλαγή στον προηγούμενο χρήστη</translation>
 <translation id="1733996486177697563">Εναλλαγή μεταξύ Σκούρου και Φωτεινού θέματος. Αγγίξτε παρατεταμένα στην επιφάνεια εργασίας και, στη συνέχεια, επιλέξτε Ταπετσαρία και στιλ.</translation>
 <translation id="1736898441010944794">Το "<ph name="NAME" />" είναι ορατό σε συσκευές Bluetooth.</translation>
+<translation id="1737078180382804488">Παράβλεψη ρύθμισης προβολής των ειδοποιήσεων του τηλεφώνου σας</translation>
 <translation id="174102739345480129">Ο μαρκαδόρος είναι ανενεργός.</translation>
 <translation id="1743570585616704562">Δεν αναγνωρίστηκε</translation>
 <translation id="1746730358044914197">Οι μέθοδοι εισαγωγής έχουν διαμορφωθεί από τον διαχειριστή σας.</translation>
+<translation id="1747336645387973286">ημερομηνία λήξης: <ph name="DUE_DATE" /></translation>
 <translation id="1747827819627189109">Το πληκτρολόγιο οθόνης είναι ενεργοποιημένο</translation>
 <translation id="1749109475624620922">Το παράθυρο <ph name="WINDOW_TITLE" /> έχει εκχωρηθεί σε όλα τα γραφεία</translation>
 <translation id="1750088060796401187">Επιτρέπονται μόνο <ph name="MAX_DESK_LIMIT" /> γραφεία. Καταργήστε ένα γραφείο για να ανοίξετε ένα άλλο.</translation>
@@ -193,6 +203,7 @@
 <translation id="1771761307086386028">Κύλιση δεξιά</translation>
 <translation id="1774796056689732716">Ημερολόγιο, <ph name="CURRENT_MONTH_YEAR" />, αυτήν τη στιγμή είναι επιλεγμένη η ημερομηνία <ph name="DATE" />.</translation>
 <translation id="1775598828170459419">Εμφάνιση <ph name="NUM_SHOWN_ITEMS" /> από <ph name="NUM_TOTAL_ITEMS" /></translation>
+<translation id="178347895271755507">Ρύθμιση προβολής των πρόσφατων φωτογραφιών, μέσων και ειδοποιήσεων του τηλεφώνου σας</translation>
 <translation id="1787955149152357925">Ανενεργό</translation>
 <translation id="181103072419391116">Ισχύς σήματος <ph name="SIGNAL_STRENGTH" />, Διαχειριζόμενο από τον διαχειριστή σας</translation>
 <translation id="1815245884418711390">Εναλλαγή σημείου πρόσβασης Wi-Fi. Το σημείο πρόσβασης Wi-Fi είναι ανενεργό.</translation>
@@ -209,6 +220,7 @@
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1824922790784036530">Ενεργοποίηση πρόσβασης στην τοποθεσία</translation>
 <translation id="1830308660060964064">Το στοιχείο <ph name="ITEM_TITLE" /> ξεκαρφιτσώθηκε</translation>
+<translation id="1831565490995294689">Επιλέξτε για άνοιγμα της εφαρμογής <ph name="APP_TO_OPEN" />.</translation>
 <translation id="1838895407229022812">Ο Νυχτερινός φωτισμός είναι ανενεργός.</translation>
 <translation id="1854180393107901205">Διακοπή μετάδοσης</translation>
 <translation id="1862380676329487333">Ενημέρωση και αποσύνδεση</translation>
@@ -242,7 +254,6 @@
 <translation id="1989113344093894667">Δεν είναι δυνατή η λήψη του περιεχομένου</translation>
 <translation id="1990046457226896323">Έγινε λήψη των αρχείων ομιλίας.</translation>
 <translation id="1993072747612765854">Μάθετε περισσότερα σχετικά με την πιο πρόσφατη ενημέρωση της εφαρμογής <ph name="SYSTEM_APP_NAME" /></translation>
-<translation id="1995660704900986789">Απενεργοποίηση</translation>
 <translation id="1996162290124031907">Μετάβαση στην επόμενη καρτέλα</translation>
 <translation id="1998100899771863792">Τρέχον γραφείο</translation>
 <translation id="2001444736072756133">Αναζητήστε <ph name="CATEGORY" />, αρχεία, εφαρμογές και άλλα.</translation>
@@ -271,6 +282,7 @@
 <translation id="2135456203358955318">Μεγεθυντικός φακός σε παράθυρο</translation>
 <translation id="2148716181193084225">Σήμερα</translation>
 <translation id="2149229036084364364">Μετάβαση στο προηγούμενο κομμάτι</translation>
+<translation id="2152895518047545149">Φαίνεται ότι δεν λείπει τίποτα. Μπράβο!</translation>
 <translation id="2161132820593978283">Δοκιμάστε τη λειτουργία καδραρίσματος της κάμερας για να βρίσκεστε στο κέντρο της οθόνης κατά τη διάρκεια των βιντεοκλήσεων. Ενεργοποιήστε τη λειτουργία στις Γρήγορες ρυθμίσεις.</translation>
 <translation id="2170530631236737939">Σύρετε προς τα κάτω με τρία δάχτυλα για έξοδο από την Επισκόπηση</translation>
 <translation id="2185166372312820725">Μετάβαση στην προηγούμενη καρτέλα</translation>
@@ -300,6 +312,7 @@
 <translation id="2298170939937364391">Η Μεγέθυνση πλήρους οθόνης ενεργοποιήθηκε. Πατήστε Ctrl+Search+M ξανά για να τον απενεργοποιήσετε.</translation>
 <translation id="2302092602801625023">Αυτός ο λογαριασμός είναι διαχειριζόμενος από το Family Link</translation>
 <translation id="2303600792989757991">Επισκόπηση εναλλαγής παραθύρων</translation>
+<translation id="2305738328104302723">Λίστα εργασιών Google: <ph name="GLANCEABLES_TASKS_LIST_NAME" /></translation>
 <translation id="2315005022200073389"><ph name="HOLDING_SPACE_TITLE" />: Πρόσφατες καταγραφές οθόνης, λήψεις και καρφιτσωμένα αρχεία</translation>
 <translation id="2318576281648121272">Σήμερα <ph name="TODAY_DATE" /></translation>
 <translation id="2322065293366551060"><ph name="CATEGORY" /> , κατηγορία αποτελέσματος αναζήτησης</translation>
@@ -320,7 +333,6 @@
 <translation id="2369165858548251131">"Γεια σας" στα κινεζικά</translation>
 <translation id="2382875860893882175">Η μετάδοση έχει τεθεί σε παύση. Μπορείτε να συνεχίσετε τη μετάδοση ή να τη διακόψετε ανά πάσα στιγμή.</translation>
 <translation id="2386292613071805067">Επιλογή όλων στη σελίδα</translation>
-<translation id="2396594569364254378">Μνήμη που χρησιμοποιείται <ph name="USED_MEMORY" /> | <ph name="TOTAL_MEMORY" /> συνολική μνήμη</translation>
 <translation id="2397416548179033562">Εμφάνιση του μενού του Chrome</translation>
 <translation id="240006516586367791">Στοιχεία ελέγχου μέσων</translation>
 <translation id="2402411679569069051">Για να ξεκλειδώσετε το Chromebook, χρησιμοποιήστε το δακτυλικό αποτύπωμά σας ή ξεκλειδώστε το τηλέφωνό σας</translation>
@@ -341,12 +353,14 @@
 <translation id="2450205753526923158">Λειτουργία στιγμιότυπου οθόνης</translation>
 <translation id="2455994958736234930">Προσθέστε το www. και το .com στη γραμμή διευθύνσεων και έπειτα ανοίξτε τον ιστότοπο</translation>
 <translation id="2456008742792828469">Ημερολόγιο, <ph name="CURRENT_MONTH_YEAR" /></translation>
+<translation id="2465145153332031561">Υγεία μπαταρίας <ph name="BATTERY_HEALTH_PERCENTAGE" />%, πλήθος κύκλων <ph name="CYCLE_COUNT" /></translation>
 <translation id="2473177541599297363">Επιβεβαίωση ανάλυσης</translation>
 <translation id="2475982808118771221">Παρουσιάστηκε σφάλμα</translation>
 <translation id="2482878487686419369">Ειδοποιήσεις</translation>
 <translation id="2484513351006226581">Πατήστε <ph name="KEYBOARD_SHORTCUT" />, για να αλλάξετε διάταξη πληκτρολογίου.</translation>
 <translation id="2487915095798731898">Συμμετοχή</translation>
 <translation id="2501920221385095727">Σταθερά πλήκτρα</translation>
+<translation id="2504454902900101003">Παράβλεψη ρύθμισης προβολής των πρόσφατων φωτογραφιών, μέσων και ειδοποιήσεων του τηλεφώνου σας</translation>
 <translation id="2509468283778169019">Το CAPS LOCK είναι ενεργοποιημένο</translation>
 <translation id="2514415433888497495">Διακοπή <ph name="CAPTURE_MEDIUM" />. Το κουμπί <ph name="CAPTURE_MEDIUM" /> είναι <ph name="CAPTURE_STATE" /></translation>
 <translation id="2515586267016047495">Alt</translation>
@@ -374,6 +388,7 @@
 <translation id="2612614436418177118">Μετακίνηση εικονιδίου εφαρμογής στο πλέγμα εφαρμογής</translation>
 <translation id="2620016719323068571">Αναζητήστε <ph name="CATEGORY" />, αρχεία, εφαρμογές και άλλα…</translation>
 <translation id="2620436844016719705">Σύστημα</translation>
+<translation id="2620900772667816510">Bluetooth Super Resolution</translation>
 <translation id="2621713457727696555">Unsecured</translation>
 <translation id="2624588537172718173">Ήχος συσκευής και μικρόφωνο</translation>
 <translation id="263399434338050016">"Επιλογή όλων"</translation>
@@ -434,10 +449,12 @@
 <translation id="2891209721153296020">"Αποεπιλογή"</translation>
 <translation id="2894949423239620203">Το καλώδιο μπορεί να επηρεάσει την απόδοση</translation>
 <translation id="2914580577416829331">Εγγραφές οθόνης</translation>
+<translation id="2931572158271115754">Δεν υπάρχει τίποτα σε αυτήν τη λίστα εκκρεμοτήτων.</translation>
 <translation id="2941112035454246133">Χαμηλή</translation>
 <translation id="2942350706960889382">Μεγεθυντικός φακός σε παράθυρο</translation>
 <translation id="2942516765047364088">Θέση ραφιού</translation>
 <translation id="2946119680249604491">Προσθήκη σύνδεσης</translation>
+<translation id="2947835478872237115">Τρέχον επίπεδο μπαταρίας <ph name="BATTERY_PERCENTAGE" />%, <ph name="TIME" /> μέχρι την πλήρη φόρτιση</translation>
 <translation id="2949420361496057765">Πατήστε <ph name="MODIFIER" /> και έναν σύνδεσμο</translation>
 <translation id="295852781144570696">Ήχος συσκευής</translation>
 <translation id="2960314608273155470">Λειτουργία λήψης, η προεπιλογή είναι <ph name="SOURCE" /> <ph name="TYPE" />. Πατήστε Tab για πλοήγηση με το πληκτρολόγιο.</translation>
@@ -474,6 +491,7 @@
 <translation id="3081696990447829002">Ανάπτυξη μενού</translation>
 <translation id="3087734570205094154">Κάτω</translation>
 <translation id="3090989381251959936">Εναλλαγή λειτουργίας <ph name="FEATURE_NAME" />. <ph name="STATE_TEXT" /></translation>
+<translation id="3093423061078042895">Ληξιπρόθεσμες</translation>
 <translation id="3095995014811312755">έκδοση</translation>
 <translation id="309749186376891736">Μετακίνηση δείκτη ποντικιού</translation>
 <translation id="3100274880412651815">Παράβλεψη λειτουργίας λήψης</translation>
@@ -482,6 +500,7 @@
 <translation id="3113492864356515707">Επισήμανση προηγούμενου στοιχείου στο ράφι</translation>
 <translation id="3120421559657122717">Να τερματιστεί η λειτουργία της συσκευής;</translation>
 <translation id="3122464029669770682">Κεντρική μονάδα επεξεργασίας</translation>
+<translation id="3125690294288312932">Τύπος εργασιών</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3126069444801937830">Επανεκκίνηση για ενημέρωση</translation>
 <translation id="3139188263101386725">Χρησιμοποιήστε την ενημερωμένη συντόμευση</translation>
@@ -494,6 +513,7 @@
 <translation id="3161500364292033097">Κλείσιμο γραφείου και παραθύρων</translation>
 <translation id="316356270129335934">Ο τομέας <ph name="MANAGER" /> επαναφέρει τη συσκευή <ph name="DEVICE_TYPE" /> σε προηγούμενη έκδοση. Θα γίνει επαναφορά της συσκευής σας και όλα τα δεδομένα θα διαγραφούν.</translation>
 <translation id="3171170659304083361">Ρυθμίσεις μεθόδων εισαγωγής</translation>
+<translation id="3176221688814061633">Το Chromebook ή η συσκευή Bluetooth χρησιμοποιεί μια παλαιότερη έκδοση του Bluetooth. Ενεργοποιήστε το Bluetooth Super Resolution ή χρησιμοποιήστε εσωτερικό μικρόφωνο για καλύτερη ποιότητα ήχου.</translation>
 <translation id="3181441307743005334">Η επανεκκίνηση μπορεί να διαρκέσει λίγη ώρα</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Συνδέθηκε σε κάποια συσκευή}other{Συνδέθηκε σε # συσκευές}}</translation>
 <translation id="320207200541803018">Ορισμός χρονομέτρου</translation>
@@ -508,11 +528,13 @@
 <translation id="324366796737464147">Εξουδετέρωση θορύβου</translation>
 <translation id="3249513730522716925">Η επιφάνεια εργασίας <ph name="WINDOW_TITLE" /> μετακινήθηκε από την επιφάνεια εργασίας <ph name="ACTIVE_DESK" /> στην επιφάνεια εργασίας <ph name="TARGET_DESK" />.</translation>
 <translation id="3252573918265662711">Ρυθμίσεις</translation>
+<translation id="3253743281242075461">Τύπος εργασιών: <ph name="GLANCEABLES_CLASSROOM_LIST_NAME" /></translation>
 <translation id="3255483164551725916">Τι μπορείς να κάνεις;</translation>
 <translation id="3256109297135787951">Κατάργηση της επισήμανσης από κάποιο στοιχείο στο ράφι σας</translation>
 <translation id="3260969790895726815">Η επεξεργασία της ομιλίας γίνεται τοπικά και η υπαγόρευση λειτουργεί εκτός σύνδεσης, αλλά ορισμένες φωνητικές εντολές δεν θα λειτουργούν.</translation>
 <translation id="3265032511221679826">Ενεργοποίηση πρόσβασης στην ακριβή τοποθεσία;</translation>
 <translation id="3269597722229482060">Δεξί κλικ</translation>
+<translation id="3274634049061007184">Προβολή των εφαρμογών του τηλεφώνου σας</translation>
 <translation id="3289364673986435196">Μενού λειτουργίας</translation>
 <translation id="3289544412142055976">Προς το παρόν, δεν υποστηρίζονται οι εφαρμογές Linux</translation>
 <translation id="3289674678944039601">Γίνεται φόρτιση μέσω μετασχηματιστή</translation>
@@ -535,11 +557,14 @@
 <translation id="3364721542077212959">Εργαλεία γραφίδας</translation>
 <translation id="3365977133351922112">Το τηλέφωνό σας είναι πάρα πολύ μακριά. Πλησιάστε περισσότερο το τηλέφωνό σας.</translation>
 <translation id="3368922792935385530">Σε σύνδεση</translation>
+<translation id="3369111525500416043">Λήγουν σύντομα</translation>
 <translation id="3371140690572404006">Συσκευή USB-C (δεξιά μπροστινή θύρα)</translation>
 <translation id="3375634426936648815">Συνδέθηκε</translation>
 <translation id="3378438761594387761">Εδώ θα βρείτε τις πρόσφατες λήψεις και τις καταγραφές οθόνης</translation>
 <translation id="3386978599540877378">ο μεγεθυντικός φακός πλήρους οθόνης</translation>
 <translation id="3387527074123400161">Chromium OS</translation>
+<translation id="3389599499324569679">Ενεργοποίηση υπαγόρευσης;</translation>
+<translation id="3394432020929931914">, αναπτύχθηκε</translation>
 <translation id="3400357268283240774">Πρόσθετες ρυθμίσεις</translation>
 <translation id="3405101454990027959">Ενεργοποίηση πρόσβασης στο μικρόφωνο</translation>
 <translation id="3408735331120433841">Αυτήν τη στιγμή κάνετε μετάδοση της οθόνης σας.</translation>
@@ -567,7 +592,6 @@
 <translation id="3477079411857374384">Control-Shift-Space</translation>
 <translation id="3485319357743610354"><ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, Ισχύς σήματος <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="348799646910989694">Αυτόματη απόκρυψη ραφιού</translation>
-<translation id="3503243067695520519">Γεια σας. Τα Chromebook είναι λίγο διαφορετικά.</translation>
 <translation id="3505066820268455558">Φόρτιση μπαταρίας</translation>
 <translation id="3509391053705095206">Δεν βρέθηκε το τηλέφωνό σας. Βεβαιωθείτε ότι το Bluetooth του τηλεφώνου είναι ενεργό.</translation>
 <translation id="3510164367642747937">Επισήμανση δείκτη ποντικιού</translation>
@@ -578,6 +602,7 @@
 <translation id="353086728817903341">Πραγματοποιήθηκε σύνδεση σε <ph name="NUM_DEVICES" /> συσκευές</translation>
 <translation id="3533126039236445965">Εφαρμογές στο ράφι</translation>
 <translation id="3539957339480430241">Σημείο πρόσβασης Wi-Fi <ph name="DEVICE_NAME" /></translation>
+<translation id="3540893133818942399">Παράβλεψη ρύθμισης προβολής των πρόσφατων φωτογραφιών και μέσων του τηλεφώνου σας</translation>
 <translation id="3542066395059568317">Θα βλέπετε προτάσεις για να συνεχίσετε από εκεί που σταματήσατε. Μπορείτε να κάνετε δεξί κλικ για να καταργήσετε προτάσεις.</translation>
 <translation id="3552189655002856821">Το Wi-Fi είναι απενεργοποιημένο</translation>
 <translation id="3554215588514239132">Εμφάνιση ή απόκρυψη του πλαισίου Εργαλείων για προγραμματιστές</translation>
@@ -592,6 +617,7 @@
 <translation id="3576141592585647168">Αλλαγή ζώνης ώρας</translation>
 <translation id="3577473026931028326">Παρουσιάστηκε κάποιο πρόβλημα. Επανάληψη.</translation>
 <translation id="3580650856351781466">Λήψη αρχείων ομιλίας</translation>
+<translation id="3585296979871889131">Προβολή των πρόσφατων φωτογραφιών, μέσων, ειδοποιήσεων και εφαρμογών του τηλεφώνου σας</translation>
 <translation id="3593039967545720377">Αποκτήστε πρόσβαση στο ιστορικό του πρόχειρου πατώντας <ph name="SHORTCUT_KEY_NAME" /> + V για να προβάλετε το πρόχειρο. Αντιγράψτε ένα στοιχείο για να ξεκινήσετε.</translation>
 <translation id="3593646411856133110">Σύρετε προς τα επάνω και κρατήστε το δάχτυλό σας για να δείτε τις ανοικτές εφαρμογές.</translation>
 <translation id="3595596368722241419">Μπαταρία πλήρης</translation>
@@ -657,6 +683,7 @@
 <translation id="380165613292957338">Γεια, πώς μπορώ να βοηθήσω;</translation>
 <translation id="3804737937830804242">Σύμπτυξη κάμερας</translation>
 <translation id="3824784079442479685">Αυτό επιτρέπει την πρόσβαση στην κάμερα για την εφαρμογή <ph name="APP_NAME" /> και όλες τις εφαρμογές και τους ιστοτόπους με άδεια κάμερας. Ίσως χρειαστεί να ανανεώσετε την ιστοσελίδα ή να επανεκκινήσετε την εφαρμογή.</translation>
+<translation id="3825680296690914697">Παραδόθηκαν <ph name="NUM_TURNED_IN" /> από <ph name="TOTAL_NUM_OF_SUBMISSIONS" />, βαθμολογήθηκαν <ph name="NUM_GRADED" /></translation>
 <translation id="3826099427150913765">Αλλαγή σε κωδικό πρόσβασης</translation>
 <translation id="383058930331066723">Η λειτουργία εξοικονόμησης μπαταρίας είναι ενεργοποιημένη</translation>
 <translation id="383629559565718788">Εμφάνιση ρυθμίσεων πληκτρολογίου</translation>
@@ -687,8 +714,10 @@
 <translation id="3945867833895287237">Σύνδεση σε σημείο πρόσβασης Wi-Fi…</translation>
 <translation id="3950272133184491871">Έξοδος τώρα;</translation>
 <translation id="3950820424414687140">Σύνδεση</translation>
+<translation id="3953130726459169782">Δεν έχουν ολοκληρωθεί ακόμη εργασίες.</translation>
 <translation id="3962859241508114581">Προηγούμενο κομμάτι</translation>
 <translation id="3969043077941541451">Ανενεργό</translation>
+<translation id="3970324493235864154">Προβολή των ειδοποιήσεων του τηλεφώνου σας</translation>
 <translation id="397105322502079400">Υπολογισμός…</translation>
 <translation id="397726367135689299">Η φόρτιση της μπαταρίας ενδέχεται να μην είναι αξιόπιστη.</translation>
 <translation id="3977512764614765090">Η μπαταρία είναι στο <ph name="PERCENTAGE" />% και φορτίζει.</translation>
@@ -727,6 +756,7 @@
 <translation id="4125970834901680537">Δεν είναι δυνατή η χρήση εφαρμογών μέσω ροής σε λειτουργία tablet. Δοκιμάστε ξανά σε λειτουργία φορητού υπολογιστή.</translation>
 <translation id="4129129681837227511">Για να βλέπετε ειδοποιήσεις στην οθόνη κλειδώματος, ξεκλειδώστε τη συσκευή για να αλλάξετε τη ρύθμιση</translation>
 <translation id="4131973331381812765">Θερμοκρασία: <ph name="TEMPERATURE" />°C - Τρέχουσα ταχύτητα: <ph name="CPU_AVERAGE_CURRENT_FREQUENCY_GHZ" /> GHz</translation>
+<translation id="4132502210362661715">Το Chromebook διαθέτει ενσωματωμένες εφαρμογές που σας βοηθούν να ολοκληρώνετε τις εργασίες σας. Βρείτε τις εφαρμογές σας στη Λειτουργία εκκίνησης εφαρμογών.</translation>
 <translation id="4136724716305260864">Ενεργό μέχρι την ανατολή του ηλίου</translation>
 <translation id="4141710407113804517"><ph name="LAUNCHER_KEY_NAME" /> + δεξί βέλος</translation>
 <translation id="4146671046252289537">Μετακίνηση στο τέλος της επόμενης λέξης</translation>
@@ -738,8 +768,11 @@
 <translation id="4181841719683918333">Γλώσσες</translation>
 <translation id="4185671786623711291">Μετακίνηση ενεργού παραθύρου στο γραφείο στα δεξιά</translation>
 <translation id="4189826113259617332">Αποθήκευση όλων των ανοικτών σελίδων στο τρέχον παράθυρο ως σελιδοδείκτες σε έναν νέο φάκελο</translation>
+<translation id="4190143678693626113">Εξοικονομήστε χρόνο απαντώντας γρήγορα στα μηνύματα κειμένου του τηλεφώνου σας από το Chromebook</translation>
+<translation id="4190780880566297084">Παράβλεψη ρύθμισης προβολής των πρόσφατων φωτογραφιών, μέσων και εφαρμογών του τηλεφώνου σας</translation>
 <translation id="4192112279662688596">Ή</translation>
 <translation id="4193857202545160520">Εμφάνιση κλικ και πλήκτρων</translation>
+<translation id="4195579532193195633">Τρέχουσα έκδοση <ph name="VERSION_NAME" /> (<ph name="OFFICIAL_STATUS" />) <ph name="CHANNEL_NAME" /> <ph name="PROCESSOR_VARIATION" /></translation>
 <translation id="4195814663415092787">Συνέχεια από εκεί που σταματήσατε</translation>
 <translation id="4195877955194704651">Κουμπί αυτόματων κλικ</translation>
 <translation id="4197790712631116042">Ανενεργό</translation>
@@ -759,6 +792,7 @@
 <translation id="4250229828105606438">Στιγμιότυπο οθόνης</translation>
 <translation id="425364040945105958">Δεν υπάρχει SIM</translation>
 <translation id="4261870227682513959">Εμφάνιση ρυθμίσεων ειδοποιήσεων. Οι ειδοποιήσεις είναι απενεργοποιημένες.</translation>
+<translation id="4264977415328155183">, συμπτύχθηκε</translation>
 <translation id="4269883910223712419">Ο διαχειριστής αυτής της συσκευής μπορεί να εκτελεί τις ακόλουθες ενέργειες:</translation>
 <translation id="4274537685965975248">Η συντόμευση πληκτρολογίου Ctrl + Alt + Κάτω βέλος άλλαξε. Για να χρησιμοποιήσετε το πλήκτρο End, πατήστε το πλήκτρο <ph name="LAUNCHER_KEY_NAME" /> + Δεξί βέλος.</translation>
 <translation id="4275283744500212192">Άνοιγμα επιλογών διάταξης παραθύρου</translation>
@@ -774,6 +808,7 @@
 <translation id="4302592941791324970">Μη διαθέσιμη</translation>
 <translation id="4303223480529385476">Ανάπτυξη περιοχής κατάστασης</translation>
 <translation id="4305133312001648038">Επαναφορά επιπέδου εστίασης στη σελίδα</translation>
+<translation id="4307713728991152670">Ρύθμιση προβολής των πρόσφατων φωτογραφιών, μέσων και εφαρμογών του τηλεφώνου σας</translation>
 <translation id="4312840429157639164">Η προεπισκόπηση κάμερας τοποθετήθηκε στην επάνω δεξιά γωνία. Διένεξη με επιφάνεια συστήματος.</translation>
 <translation id="4316910396681052118">ΟΛΕΣ ΟΙ ΕΦΑΡΜΟΓΕΣ</translation>
 <translation id="4321179778687042513">ctrl</translation>
@@ -798,14 +833,12 @@
 <translation id="4424159417645388645">Γραφείο 5</translation>
 <translation id="4427695046139341014">Πίνακας ελέγχου παιχνιδιού</translation>
 <translation id="4430019312045809116">Ένταση</translation>
-<translation id="4435022394553622295">Δείτε τις ειδοποιήσεις και τις εφαρμογές του τηλεφώνου σας στη συσκευή <ph name="DEVICE_TYPE" /></translation>
 <translation id="4441283832827406317">Οι εφαρμογές ταξινομούνται κατά όνομα</translation>
 <translation id="4445159312344259901">Συνδεθείτε για ξεκλείδωμα</translation>
 <translation id="4449692009715125625">{NUM_NOTIFICATIONS,plural, =1{1 σημαντική ειδοποίηση}other{# σημαντικές ειδοποιήσεις}}</translation>
 <translation id="4450893287417543264">Να μην εμφανιστεί ξανά</translation>
 <translation id="4451374464530248585">Η συντόμευση πληκτρολογίου Alt + Κάτω βέλος άλλαξε. Για να χρησιμοποιήσετε το πλήκτρο Page Down, πατήστε το πλήκτρο <ph name="LAUNCHER_KEY_NAME" /> + Κάτω βέλος.</translation>
 <translation id="4453876312474547652">Θα δείτε το πρόχειρο όταν πατήσετε παρατεταμένα τα πλήκτρα Ctrl + V. Μπορείτε να απενεργοποιήσετε αυτήν τη συντόμευση απενεργοποιώντας την επισήμανση #clipboard-history-longpress στο chrome://flags (os://flags αν χρησιμοποιείτε το Lacros).</translation>
-<translation id="4455051983450390249">Δείτε τις ειδοποιήσεις του τηλεφώνου σας στη συσκευή <ph name="DEVICE_TYPE" /></translation>
 <translation id="445864333228800152">Καλησπέρα,</translation>
 <translation id="4458688154122353284">Διακοπή εγγραφής οθόνης</translation>
 <translation id="445923051607553918">Σύνδεση με δίκτυο Wi-Fi</translation>
@@ -816,7 +849,7 @@
 <translation id="4477892968187500306">Αυτή η συσκευή μπορεί να περιέχει εφαρμογές που δεν έχουν επαληθευτεί από την Google.</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4481530544597605423">Συσκευές στις οποίες διακόπηκε η σύζευξη</translation>
-<translation id="4505050298327493054">Ενεργή επιφάνεια εργασίας.</translation>
+<translation id="4485506555414638855">Παράβλεψη ρύθμισης προβολής των πρόσφατων φωτογραφιών, μέσων, ειδοποιήσεων και εφαρμογών του τηλεφώνου σας</translation>
 <translation id="450584155212756404">Κανάλι προγραμματιστών</translation>
 <translation id="4513946894732546136">Σχόλια</translation>
 <translation id="4516212064498225455">Τρέχον γραφείο: <ph name="CURRENT_DESK_NAME" />, χρησιμοποιήστε τη συντόμευση Αναζήτηση+Πλήκτρο διαστήματος για να ανοίξετε το μενού Όλα τα γραφεία.</translation>
@@ -834,6 +867,7 @@
 <translation id="4561267230861221837">3G</translation>
 <translation id="4565377596337484307">Απόκρυψη κωδικού πρόσβασης</translation>
 <translation id="4566144812051858745">Δεν ενδιαφέρομαι για καμία πρόταση</translation>
+<translation id="4569753163207712681">Προβολή των πρόσφατων φωτογραφιών, μέσων και εφαρμογών του τηλεφώνου σας</translation>
 <translation id="4573176682887762361">"Πληκτρολόγηση [λέξη / φράση]"</translation>
 <translation id="4577274620589681794">Ο χρόνος τελείωσε · <ph name="LABEL" /></translation>
 <translation id="4577990005084629481">Εμφάνιση προεπισκοπήσεων</translation>
@@ -922,6 +956,7 @@
 <translation id="4925542575807923399">Ο διαχειριστής αυτού του λογαριασμού απαιτεί ο συγκεκριμένος λογαριασμός να είναι ο πρώτος λογαριασμός που συνδέεται σε μια περίοδο σύνδεσης πολλαπλών συνδέσεων.</translation>
 <translation id="493076006037866439">Σμίκρυνση οθόνης</translation>
 <translation id="4936329710968938986">Όλοι, απενεργοποιημένο</translation>
+<translation id="4937170330762390348">Με την υπαγόρευση, μπορείτε να πληκτρολογείτε χρησιμοποιώντας τη φωνή σας. Πατήστε το πλήκτρο υπαγόρευσης ή επιλέξτε το εικονίδιο μικροφώνου στο κάτω μέρος της οθόνης όταν βρίσκεστε σε ένα πεδίο κειμένου. Η γλώσσα υπαγόρευσης έχει οριστεί σε <ph name="LANGUAGE" />. Θα γίνει λήψη αρχείων ομιλίας, ώστε να μπορείτε να χρησιμοποιείτε την υπαγόρευση εκτός σύνδεσης. Μπορείτε να αλλάξετε τη γλώσσα υπαγόρευσης ανά πάσα στιγμή από το μενού Ρυθμίσεις &gt; Προσβασιμότητα.</translation>
 <translation id="4938176435186993759">Απόκρυψη όλων των προτάσεων</translation>
 <translation id="4943007472417128747">Το σημείο πρόσβασης Wi-Fi απενεργοποιήθηκε για να χρησιμοποιηθεί το Wi-Fi. Για να χρησιμοποιήσετε το σημείο πρόσβασης Wi-Fi, απενεργοποιήστε το Wi-Fi.</translation>
 <translation id="4945196315133970626">Απενεργοποίηση ειδοποιήσεων</translation>
@@ -956,6 +991,7 @@
 <translation id="5045550434625856497">Λανθασμένος κωδικός πρόσβασης</translation>
 <translation id="5062496344832867502">ram</translation>
 <translation id="5068762093486106012">Θα ειδοποιηθείτε εάν μιλήσετε ενώ είστε σε σίγαση. Ο ήχος παραμένει πάντα στη συσκευή σας.</translation>
+<translation id="5077416371682039027">Ρύθμιση προβολής των πρόσφατων φωτογραφιών, μέσων, ειδοποιήσεων και εφαρμογών του τηλεφώνου σας</translation>
 <translation id="5078796286268621944">Εσφαλμένο PIN</translation>
 <translation id="5083035541015925118">ctrl + alt + πάνω βέλος</translation>
 <translation id="5083553833479578423">Ξεκλειδώστε περισσότερες λειτουργίες του Βοηθού.</translation>
@@ -983,12 +1019,14 @@
 <translation id="5197255632782567636">Internet</translation>
 <translation id="5198413532174090167"><ph name="DATE" />, <ph name="NUMBER" /> συμβάντα</translation>
 <translation id="5198715732953550718">Η εφαρμογή <ph name="MOVED_APP_NAME" /> συνδυάστηκε με την εφαρμογή <ph name="IN_PLACE_APP" /> για τη δημιουργία νέου φακέλου.</translation>
+<translation id="5203299837691351876">ενεργό γραφείο</translation>
 <translation id="5206028654245650022"><ph name="APP_NAME" />, <ph name="NOTIFICATION_TITLE" />: <ph name="MESSAGE" />, <ph name="PHONE_NAME" /></translation>
 <translation id="5206057955438543357">{NUM_NOTIFICATIONS,plural, =1{1 ακόμη ειδοποίηση}other{# ακόμη ειδοποιήσεις}}</translation>
 <translation id="5207949376430453814">Επισήμανση δρομέα κειμένου</translation>
 <translation id="5208059991603368177">Ενεργό</translation>
 <translation id="5216991270656129561">Ανενεργή έως τις <ph name="TIME" /></translation>
 <translation id="5217646019792206018">Επόμενο γραφείο: <ph name="NEXT_DESK_NAME" />, χρησιμοποιήστε τη συντόμευση Αναζήτηση+Πλήκτρο διαστήματος ή τη συντόμευση πληκτρολογίου: Shift+Αναζήτηση+<ph name="NEXT_DESK_INDEX" /> για ενεργοποίηση.</translation>
+<translation id="5218064144558110424">Επισήμανση ως μη ολοκληρωμένης</translation>
 <translation id="5222676887888702881">Έξοδος</translation>
 <translation id="5229343007215035173">Ενεργοποίηση/απενεργοποίηση οθόνης απορρήτου</translation>
 <translation id="5234764350956374838">Παράβλεψη</translation>
@@ -998,6 +1036,7 @@
 <translation id="5253783950165989294">Πραγματοποιήθηκε σύνδεση σε συσκευή με όνομα <ph name="DEVICE_NAME" />, μπαταρία <ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="5258528442992323769">Δεν υπάρχουν αποθηκευμένα γραφεία.</translation>
 <translation id="5260676007519551770">Γραφείο 4</translation>
+<translation id="5268819379131021772">Λίστα εργασιών Google</translation>
 <translation id="5278086053818066789">Ενεργοποίηση/απενεργοποίηση ChromeVox (εκφωνημένα σχόλια)</translation>
 <translation id="5283099933536931082">Η εφαρμογή <ph name="APP_ITEM_TITLE" /> χρειάζεται την προσοχή σας.</translation>
 <translation id="5283198616748585639">Προσθήκη 1 λεπτού</translation>
@@ -1026,6 +1065,7 @@
 <translation id="536019650977002321">Ο διαχειριστής σας δεν επιτρέπει την καταγραφή ήχου. Επικοινωνήστε με τον διαχειριστή σας για περισσότερες πληροφορίες.</translation>
 <translation id="5361524080961918551">Έγινε μερική λήψη αρχείων ομιλίας στα <ph name="LANGUAGE" /></translation>
 <translation id="5363163447017455357"><ph name="DELIMITER" /> Μετάβαση σε αυτήν την καρτέλα</translation>
+<translation id="5364693579536176785">αποθηκευτικός χώρος</translation>
 <translation id="5369717264580061086">Προεπισκόπηση αρχείου στην εφαρμογή Αρχεία</translation>
 <translation id="5377367976106153749">Ενεργοποίηση πρόσβασης στην κάμερα;</translation>
 <translation id="5379115545237091094">Πάρα πολλές προσπάθειες</translation>
@@ -1034,6 +1074,7 @@
 <translation id="5395308026110844773">Η εφαρμογή <ph name="DRAGGED_APP_NAME" /> πάνω από την εφαρμογή <ph name="IN_PLACE_APP" />, αφήστε για να δημιουργήσετε φάκελο.</translation>
 <translation id="5397578532367286026">Ο διαχειριστής (<ph name="MANAGER_EMAIL" />) μπορεί να ελέγξει τη χρήση και το ιστορικό αυτού του χρήστη στη διεύθυνση chrome.com.</translation>
 <translation id="5400461572260843123">Γρήγορες ρυθμίσεις, πατήστε Αναζήτηση και αριστερά για πρόσβαση στο κέντρο ειδοποιήσεων.</translation>
+<translation id="5413656666631274079">Σελίδα ρυθμίσεων</translation>
 <translation id="5414198321558177633">Η ανανέωση της λίστας προφίλ βρίσκεται σε εξέλιξη. Ενδέχεται να χρειαστούν μερικά λεπτά.</translation>
 <translation id="5426063383988017631">Το μενού Ρυθμίσεις έκλεισε.</translation>
 <translation id="5428899915242071344">Έναρξη επιλογής</translation>
@@ -1048,6 +1089,7 @@
 <translation id="5465662442746197494">Χρειάζεστε βοήθεια;</translation>
 <translation id="547979256943495781">Ράφι στα δεξιά</translation>
 <translation id="5482205457807971887"><ph name="MODIFIER_ONE" /><ph name="KEY_ONE" /> ή <ph name="MODIFIER_TWO" /><ph name="MODIFIER_THREE" /><ph name="KEY_TWO" /></translation>
+<translation id="5482873136202102190">, +</translation>
 <translation id="5491186829646618080">Διαθέσιμες ενημερώσεις υλικολογισμικού</translation>
 <translation id="5503884284981862082">Άνοιγμα/κλείσιμο Βοηθού Google</translation>
 <translation id="550391772491508736">Συνέχιση μετάδοσης</translation>
@@ -1067,7 +1109,6 @@
 <translation id="5551456515017410630">Άνοιγμα/κλείσιμο ημερολογίου</translation>
 <translation id="5551974246223970793">Κατά την αναζήτηση μιας σελίδας, μεταβείτε στο επόμενο αποτέλεσμα για αναζήτηση</translation>
 <translation id="5558091555391176027">Εναλλαγή υψηλής ορατότητας της λειτουργίας Κοινοποίηση κοντά</translation>
-<translation id="5560420195677022218">Δείτε τις εφαρμογές του τηλεφώνου σας στη συσκευή <ph name="DEVICE_TYPE" /></translation>
 <translation id="556042886152191864">Κουμπί</translation>
 <translation id="5570122939431135380">Άνοιγμα νέας καρτέλας σε νέο παράθυρο για ανώνυμη περιήγηση</translation>
 <translation id="5571066253365925590">Το Bluetooth έχει ενεργοποιηθεί</translation>
@@ -1101,11 +1142,13 @@
 <translation id="5678564054339031017">Εμφάνιση επόμενης εβδομάδας</translation>
 <translation id="5679050765726761783">Συνδέθηκε μετασχηματιστής χαμηλής ισχύος</translation>
 <translation id="5682642926269496722">Ο Βοηθός Google δεν είναι διαθέσιμος για τον τρέχοντα λογαριασμό χρήστη.</translation>
+<translation id="5682844616152977671"><ph name="RELATIVE_DATE" />, <ph name="TIME" /></translation>
 <translation id="5689233503102158537">alt + backspace</translation>
 <translation id="5689633613396158040">Ο Νυχτερινός φωτισμός διευκολύνει το θέαση της οθόνης ή την ανάγνωση σε συνθήκες χαμηλού φωτισμού. Πατήστε για να αλλάξετε την ώρα που ενεργοποιείται ο Νυχτερινός φωτισμός ή απενεργοποιήστε τον πλήρως.</translation>
 <translation id="5691772641933328258">Δεν είναι δυνατή η αναγνώριση του δακτυλικού αποτυπώματος</translation>
 <translation id="5693255400847650006">Μικρόφωνο σε χρήση</translation>
 <translation id="5699366815052349604">Εκχώρηση ενεργού παραθύρου σε όλα τα γραφεία</translation>
+<translation id="5701785125601597013">Γρήγορη αποστολή ή απάντηση στα μηνύματα του τηλεφώνου σας με τη χρήση του Phone Hub</translation>
 <translation id="570390244361237317">Όλες οι εφαρμογές, πλοηγηθείτε με τα πλήκτρα βέλους για πρόσβαση σε όλες τις εφαρμογές</translation>
 <translation id="5707775774148071965">Η συσκευή σας υποστηρίζει υψηλότερο ρυθμό μετάδοσης δεδομένων σε σχέση με το καλώδιό σας. Η απόδοση της συσκευής ενδέχεται να είναι περιορισμένη.</translation>
 <translation id="5710450975648804523">Η λειτουργία "Μην ενοχλείτε" είναι ενεργή</translation>
@@ -1132,6 +1175,7 @@
 <translation id="5790085346892983794">Επιτυχία</translation>
 <translation id="5804651031882187592">Απενεργοποίηση ρύθμισης Κλείδωμα SIM</translation>
 <translation id="5805809050170488595">Κλικ για ενεργοποίηση <ph name="NETWORK_NAME" /></translation>
+<translation id="5823239091726045201">Google Tasks στον ιστό</translation>
 <translation id="5825969630400862129">Ρυθμίσεις συνδεδεμένων συσκευών</translation>
 <translation id="5837036133683224804">Διακοπή <ph name="ROUTE_TITLE" /> σε <ph name="RECEIVER_NAME" /></translation>
 <translation id="5841296711770970362">Μετάβαση στο επόμενο κομμάτι</translation>
@@ -1143,6 +1187,7 @@
 <translation id="5864748620896638071">Μπαταρία <ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="5867217927013474703">Συλλογή πληροφοριών δικτύου</translation>
 <translation id="5867606971598166637">Ο διαχειριστής συστήματος παρακολουθεί τις οθόνες σας</translation>
+<translation id="5876535466645959772">Η επιλεγμένη λίστα είναι κενή. Πλοηγηθείτε προς τα κάτω για να προσθέσετε μια νέα εργασία</translation>
 <translation id="5876666360658629066">Εισαγάγετε κωδικό γονέα</translation>
 <translation id="5881540930187678962">Ρυθμίστε το Phone Hub αργότερα</translation>
 <translation id="5881663018261910378">Απενεργοποιημένο</translation>
@@ -1152,7 +1197,6 @@
 <translation id="589817443623831496">Σάρωση σημείων</translation>
 <translation id="5901316534475909376">Shift+Esc</translation>
 <translation id="5901630391730855834">Κίτρινο</translation>
-<translation id="5909862606227538307">Ανενεργό γραφείο.</translation>
 <translation id="5911231045062997865">Προς το παρόν, δεν υποστηρίζονται τα παράθυρα Lacros. Οι άλλες εφαρμογές θα αποθηκευτούν.</translation>
 <translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
 <translation id="5916664084637901428">Ενεργό</translation>
@@ -1163,6 +1207,7 @@
 <translation id="595202126637698455">Η παρακολούθηση απόδοσης έχει ενεργοποιηθεί</translation>
 <translation id="5955304353782037793">εφαρμογή</translation>
 <translation id="5958529069007801266">Εποπτευόμενος χρήστης</translation>
+<translation id="5960410286721553511">Προβολή των πρόσφατων φωτογραφιών και μέσων του τηλεφώνου σας</translation>
 <translation id="5961960957587052807">Ελαφρύ</translation>
 <translation id="5965524703725988602">Εναλλαγή Σκούρου θέματος. <ph name="STATE_TEXT" />.</translation>
 <translation id="5975235751479998104">Μετακίνηση προς τα εμπρός μέσω παραθύρων</translation>
@@ -1174,9 +1219,11 @@
 <translation id="598882571027504733">Για να λάβετε την ενημέρωση, επανεκκινήστε το Chromebook με το συνδεδεμένο πληκτρολόγιο.</translation>
 <translation id="6012623610530968780">Σελίδα <ph name="SELECTED_PAGE" /> από <ph name="TOTAL_PAGE_NUM" /></translation>
 <translation id="601304062528754300">Επισήμανση επόμενου στοιχείου στο ράφι</translation>
+<translation id="6015573907265691211">Επισήμανση ως ολοκληρωμένης</translation>
 <translation id="6018164090099858612">Έξοδος από λειτουργία κατοπτρισμού</translation>
 <translation id="6019566113895157499">Συντομεύσεις πληκτρολογίου</translation>
 <translation id="602001110135236999">Κύλιση αριστερά</translation>
+<translation id="6020147141355393792">Ρύθμιση προβολής των ειδοποιήσεων και εφαρμογών του τηλεφώνου σας</translation>
 <translation id="6022924867608035986">Διαγραφή κειμένου πλαισίου αναζήτησης</translation>
 <translation id="602472752137106327">Εμφάνιση παραθύρων από όλα τα γραφεία, επιλέχτηκε το κουμπί επιλογής.</translation>
 <translation id="6025324406281560198"><ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, Ισχύς σήματος <ph name="SIGNAL_STRENGTH" />, Διαχειριζόμενο από τον διαχειριστή σας</translation>
@@ -1223,7 +1270,6 @@
 <translation id="6179832488876878285">Μπορείτε να καρφιτσώσετε εδώ σημαντικά αρχεία. Ανοίξτε την εφαρμογή Αρχεία για να ξεκινήσετε.</translation>
 <translation id="6182592640011875895">Άνοιγμα γραφείου</translation>
 <translation id="6185696379715117369">Page up</translation>
-<translation id="619279033188484792">Δείτε τις πρόσφατες φωτογραφίες, τα μέσα και τις ειδοποιήσεις του τηλεφώνου σας στη συσκευή <ph name="DEVICE_TYPE" />.</translation>
 <translation id="619335566042889110">Πλήρης φόρτιση τώρα</translation>
 <translation id="6193431488227440296">Προγραμματιστές</translation>
 <translation id="6199775032047436064">Επανάληψη φόρτωσης τρέχουσας σελίδας</translation>
@@ -1269,6 +1315,7 @@
 <translation id="642644398083277086">Διαγραφή όλων των ειδοποιήσεων</translation>
 <translation id="643147933154517414">Όλα έτοιμα</translation>
 <translation id="6431865393913628856">Εγγραφή οθόνης</translation>
+<translation id="643593192654616063"><ph name="STORAGE_IN_USE_SIZE" /> αποθηκευτικού χώρου σε χρήση από σύνολο <ph name="STORAGE_TOTAL_SIZE" /></translation>
 <translation id="6442259747294754014">Η πρόσβαση στο μικρόφωνο της συσκευής είναι απενεργοποιημένη</translation>
 <translation id="6445835306623867477"><ph name="ROUTE_TITLE" /> σε <ph name="RECEIVER_NAME" /></translation>
 <translation id="6445915701151710649">cpu</translation>
@@ -1316,8 +1363,10 @@
 <translation id="6597278316891651699">Η προεπισκόπηση κάμερας τοποθετήθηκε στην κάτω αριστερή γωνία. Διένεξη με επιφάνεια συστήματος.</translation>
 <translation id="661203523074512333"><ph name="SECURITY_STATUS" />, Ισχύς σήματος <ph name="SIGNAL_STRENGTH" />, Διαχειριζόμενο από τον διαχειριστή σας</translation>
 <translation id="6612802754306526077">Επιλέχτηκε η λειτουργία εγγραφής οθόνης.</translation>
+<translation id="6612889377159412215">δευτερεύουσα εργασία</translation>
 <translation id="6613765291890844037">Αποθηκευτικός χώρος <ph name="STORAGE_IN_USE_SIZE" /> σε χρήση | <ph name="STORAGE_TOTAL_SIZE" /> συνολικά</translation>
 <translation id="6614169507485700968">Η οθόνη απορρήτου είναι ενεργοποιημένη.</translation>
+<translation id="6622679827379792051">Ρύθμιση προβολής των εφαρμογών του τηλεφώνου σας</translation>
 <translation id="6625718907317144388">Έχει γίνει απόκρυψη των ειδοποιήσεων των εφαρμογών <ph name="APP_1_TITLE" /> και <ph name="APP_2_TITLE" /> και άλλων εφαρμογών επειδή η προστασία προβολής είναι ενεργοποιημένη</translation>
 <translation id="6627638273713273709">Αναζήτηση+Shift+K</translation>
 <translation id="662830937908749204">Μετατόπιση εστίασης στο επόμενο πλαίσιο</translation>
@@ -1336,6 +1385,7 @@
 <translation id="6671661918848783005">Δεν είναι δυνατό το ξεκλείδωμα του Chromebook</translation>
 <translation id="6682029141988159141">Επικόλληση περιεχομένου από το πρόχειρο</translation>
 <translation id="6683022854667115063">Ακουστικά</translation>
+<translation id="6686023075541098243">Ρύθμιση προβολής των ειδοποιήσεων του τηλεφώνου σας</translation>
 <translation id="6696025732084565524">Απαιτείται σημαντική ενημέρωση του αποσπώμενου πληκτρολογίου σας</translation>
 <translation id="6700713906295497288">Κουμπί μενού IME</translation>
 <translation id="6707693040195709527">Η αλλαγή της συσκευής στην προηγούμενη έκδοση είναι εκπρόθεσμη</translation>
@@ -1359,6 +1409,7 @@
 <translation id="6786750046913594791">Κλείσιμο φακέλου</translation>
 <translation id="6790428901817661496">Αναπαραγωγή</translation>
 <translation id="679368458793552943">Μεγέθυνση όταν είναι ενεργοποιημένος ο μεγεθυντικός φακός</translation>
+<translation id="6794287755901682422">Αυτό το στοιχείο έχει: <ph name="GLANCEABLES_TASK_ITEM_METADATA" />.</translation>
 <translation id="6801878137098616817">Έγινε επεξεργασία πρόσφατα</translation>
 <translation id="6802196538183166658">Άνοιγμα των Γρήγορων ρυθμίσεων με την επιλογή της ώρας</translation>
 <translation id="6802687695197837794">Αυτό επιτρέπει την πρόσβαση για τις εφαρμογές <ph name="APP1_NAME" />, <ph name="APP2_NAME" /> και όλες τις εφαρμογές και ιστοτόπους με άδειες κάμερας και μικροφώνου.</translation>
@@ -1368,6 +1419,7 @@
 <translation id="6819327813400217281">Η προεπισκόπηση κάμερας τοποθετήθηκε στην κάτω αριστερή γωνία</translation>
 <translation id="6820676911989879663">Κάντε ένα διάλειμμα!</translation>
 <translation id="6827049576281411231">Κλείσιμο πλαισίου συμβάντων</translation>
+<translation id="6831561626108366035">Μεταβείτε στο κουμπί <ph name="ACTIVE_STATE" /> <ph name="DESK_NAME" />.</translation>
 <translation id="6836499262298959512">Επικίνδυνο αρχείο</translation>
 <translation id="6852052252232534364">Κλικ για ενεργ.</translation>
 <translation id="6855029042976311970">Έγινε επεξεργασία μόλις τώρα</translation>
@@ -1380,7 +1432,6 @@
 <translation id="6884665277231944629">Επιστροφή στη σημερινή ημέρα</translation>
 <translation id="6886172995547742638">Η απόδοση της συσκευής <ph name="DEVICE_TYPE" /> μπορεί να είναι μειωμένη. Χρησιμοποιήστε έναν πιστοποιημένο μετασχηματιστή USB-C <ph name="PREFERRED_MINIMUM_POWER" /> W ή υψηλότερης ισχύος.</translation>
 <translation id="688631446150864480">Πατήστε το πλήκτρο κάτω βέλους για εναλλαγή παραθύρων.</translation>
-<translation id="6891721121089053234">Δείτε τις πρόσφατες φωτογραφίες, τα μέσα και τις εφαρμογές του τηλεφώνου σας στη συσκευή <ph name="DEVICE_TYPE" />.</translation>
 <translation id="6896758677409633944">Αντιγραφή</translation>
 <translation id="6901883536534621389">Δοκιμάστε τις κινήσεις για πλοήγηση</translation>
 <translation id="6912841030378044227">Εστίαση στη γραμμή διευθύνσεων</translation>
@@ -1403,6 +1454,7 @@
 <translation id="6981291220124935078">Ενεργοποίηση πρόσβασης</translation>
 <translation id="6981982820502123353">Προσβασιμότητα</translation>
 <translation id="698231206551913481">Όλα τα αρχεία και τα τοπικά δεδομένα που σχετίζονται με τον χρήστη θα διαγραφούν οριστικά μόλις καταργηθεί ο χρήστης.</translation>
+<translation id="6989752354829085073">Κάντε μια γρήγορη περιήγηση για να εξοικειωθείτε με το Chromebook. Ξεκινήστε με 6 βήματα.</translation>
 <translation id="7004910047186208204">Σύνδεση σε δεδομένα κινητής τηλεφωνίας</translation>
 <translation id="7005239792648594238">Ανοίξτε μια εφαρμογή για να ξεκινήσετε</translation>
 <translation id="7007983414944123363">Δεν ήταν δυνατή η επαλήθευση του PIN ή του κωδικού πρόσβασής σας. Δοκιμάστε ξανά.</translation>
@@ -1431,6 +1483,7 @@
 <translation id="7098053464892629930">Κατεβάστε την εφαρμογή για το <ph name="NAME" /> στο Google Play για να δείτε όλες τις διαθέσιμες λειτουργίες</translation>
 <translation id="7098389117866926363">Συσκευή USB-C (πίσω αριστερή θύρα)</translation>
 <translation id="7100906357717321275">Εμφάνιση κρυφών αρχείων στην εφαρμογή Αρχεία</translation>
+<translation id="7108254681523785542">Επιλέξτε ένα στοιχείο για να το επικολλήσετε. Μπορείτε να δείτε το πρόχειρο πατώντας <ph name="SHORTCUT_KEY_NAME" /> + v.</translation>
 <translation id="7116969082764510092">Γραφείο 11</translation>
 <translation id="7118268675952955085">στιγμιότυπο οθόνης</translation>
 <translation id="7119327711295338600">Επιλογή επόμενης λέξης ή γράμματος</translation>
@@ -1440,12 +1493,15 @@
 <translation id="7143207342074048698">Σύνδεση</translation>
 <translation id="7144942256906679589">Κατάσταση μπαταρίας</translation>
 <translation id="7165278925115064263">Alt+Shift+K</translation>
+<translation id="7167913274352523149"><ph name="HOTSPOT" />,
+        <ph name="NETWORK" /></translation>
 <translation id="7168224885072002358">Επαναφορά στην προηγούμενη ανάλυση σε <ph name="TIMEOUT_SECONDS" /></translation>
 <translation id="7180611975245234373">Ανανέωση</translation>
 <translation id="7188494361780961876">Το μενού μεταφέρθηκε στην επάνω αριστερή γωνία της οθόνης.</translation>
 <translation id="7189412385142492784">Πόσο απέχει η Αφροδίτη</translation>
 <translation id="7198435252016571249">Η προεπισκόπηση κάμερας τοποθετήθηκε στην κάτω δεξιά γωνία. Διένεξη με επιφάνεια συστήματος.</translation>
 <translation id="7219573373513695352">Δεν υπάρχουν συνδεδεμένες συσκευές</translation>
+<translation id="7229029500464092426">Διαθέσιμη μνήμη <ph name="AVAILABLE_MEMORY" /> | <ph name="TOTAL_MEMORY" /> συνολική μνήμη</translation>
 <translation id="7246071203293827765"><ph name="UPDATE_TEXT" />. Θα πρέπει να γίνει επανεκκίνηση αυτού του Chromebook για την εφαρμογή μιας ενημέρωσης. Η ενέργεια μπορεί να διαρκέσει έως 1 λεπτό.</translation>
 <translation id="7256634071279256947">Πίσω μικρόφωνο</translation>
 <translation id="7258828758145722155">Έγινε επεξεργασία χθες</translation>
@@ -1462,6 +1518,7 @@
 <translation id="7312210124139670355">Ο διαχειριστής σας επαναφέρει την eSIM. Ενδέχεται να χρειαστούν μερικά λεπτά.</translation>
 <translation id="7313193732017069507">Επέκταση κάμερας</translation>
 <translation id="7316261577130609484">Προσθήκη νέας εργασίας</translation>
+<translation id="7330397557116570022">Μεταβείτε σε ένα πεδίο κειμένου για να χρησιμοποιήσετε την Υπαγόρευση</translation>
 <translation id="7331646370422660166">alt + κάτω βέλος</translation>
 <translation id="7340731148882810149">Μενού αυτόματων κλικ</translation>
 <translation id="7346909386216857016">OK, το κατάλαβα</translation>
@@ -1470,6 +1527,7 @@
 <translation id="7360036564632145207">Η αλλαγή της ρύθμισης προστασίας πρόσβασης δεδομένων για περιφερειακά μπορεί να βελτιστοποιήσει την απόδοση</translation>
 <translation id="736045644501761622">Ρύθμιση ταπετσαρίας και στιλ</translation>
 <translation id="7371404428569700291">Εγγραφή παραθύρου</translation>
+<translation id="7372069265635026568"><ph name="AVAILABLE_MEMORY" /> διαθέσιμης μνήμης από σύνολο <ph name="TOTAL_MEMORY" /></translation>
 <translation id="737315737514430195">Αυτό επιτρέπει την πρόσβαση στο μικρόφωνο για όλες τις εφαρμογές και τους ιστοτόπους με άδεια μικροφώνου.</translation>
 <translation id="7377169924702866686">Το Caps Lock είναι ενεργοποιημένο.</translation>
 <translation id="7377481913241237033">Σύνδεση με κωδικό</translation>
@@ -1524,11 +1582,14 @@
 <translation id="7557816257942363084">Η εφαρμογή <ph name="APP_NAME" /> χρησιμοποιεί το μικρόφωνό σας αυτήν τη στιγμή.</translation>
 <translation id="7561982940498449837">Κλείσιμο μενού</translation>
 <translation id="7564874036684306347">Η μετακίνηση των παραθύρων σε άλλη επιφάνεια εργασίας ενδέχεται να οδηγήσει σε μη αναμενόμενη συμπεριφορά. Ενδέχεται να γίνει διαχωρισμός μεταγενέστερων ειδοποιήσεων, παραθύρων και παραθύρων διαλόγου μεταξύ των επιφανειών εργασίας.</translation>
+<translation id="7567950130372125778">Γεια σας. Το Chromebook είναι λίγο διαφορετικό.</translation>
 <translation id="7569509451529460200">Το Braille και το ChromeVox ενεργοποιήθηκαν</translation>
+<translation id="7569886975397378678">Παράβλεψη ρύθμισης προβολής των ειδοποιήσεων και εφαρμογών του τηλεφώνου σας</translation>
 <translation id="7571361473021531288">Μπαταρία <ph name="BATTERY_PERCENTAGE" />% | Χρόνος που απομένει: <ph name="TIME" /></translation>
 <translation id="7573585051776738856">Το ενεργό παράθυρο αγκυρώθηκε δεξιά.</translation>
 <translation id="7579778809502851308">Λήψη οθόνης</translation>
 <translation id="7593891976182323525">Search ή Shift</translation>
+<translation id="7598054670902114203">Σύνοψη χρήσης CPU, <ph name="CPU_USEAGE" />%. Θερμοκρασία <ph name="TEMPERATURE" /> βαθμοί Κελσίου, τρέχουσα ταχύτητα: <ph name="CPU_AVERAGE_CURRENT_FREQUENCY_GHZ" /> GHz</translation>
 <translation id="7600875258240007829">Δείτε όλες τις ειδοποιήσεις</translation>
 <translation id="7601417191446344542">Ενεργοποίηση υπενθύμισης σίγασης;</translation>
 <translation id="7607002721634913082">Έγινε παύση</translation>
@@ -1564,6 +1625,7 @@
 <translation id="7723703419796509666">Εμφάνιση ή απόκρυψη της κονσόλας Εργαλείων για προγραμματιστές</translation>
 <translation id="7724603315864178912">Αποκοπή</translation>
 <translation id="7725108879223146004">Εμφάνιση λεπτομερειών σημείου πρόσβασης Wi-Fi. Γίνεται απενεργοποίηση του σημείου πρόσβασης Wi-Fi.</translation>
+<translation id="7726391492136714301">Δείτε τις ειδοποιήσεις και τις εφαρμογές του τηλεφώνου σας.</translation>
 <translation id="7727952505535211425">Άνοιγμα του ιστοτόπου στη γραμμή διευθύνσεων σε νέα καρτέλα</translation>
 <translation id="7742327441377685481">Δεν υπάρχουν ειδοποιήσεις</translation>
 <translation id="7748275671948949022">Επισήμανση κουμπιού της Λειτουργίας εκκίνησης εφαρμογών στο ράφι</translation>
@@ -1615,6 +1677,7 @@
 <translation id="793716872548410480">Πιέστε <ph name="SHORTCUT_KEY_NAME" /> + V για να δείτε το πρόχειρο. Τα τελευταία 5 στοιχεία που αντιγράψατε αποθηκεύονται στο πρόχειρο.</translation>
 <translation id="7942349550061667556">Κόκκινο</translation>
 <translation id="7944023924886109030">Εμφάνιση όλων των συμβάντων για σήμερα</translation>
+<translation id="7945357288295809525">Εμφάνιση ρυθμίσεων προσβασιμότητας, η λειτουργία <ph name="ENABLED_FEATURES" /> είναι ενεργοποιημένη.</translation>
 <translation id="7947798320695032612">Η εφαρμογή <ph name="APP_NAME" /> θέλει να χρησιμοποιήσει τη συσκευή <ph name="DEVICE_NAME" /></translation>
 <translation id="7951630946012935453">Μείωση φωτεινότητας πληκτρολογίου</translation>
 <translation id="7963689218131240420">Η λειτουργία Μην ενοχλείτε είναι ανενεργή.</translation>
@@ -1674,7 +1737,6 @@
 <translation id="8155007568264258537"><ph name="FEATURE_NAME" /> Η διαχείριση αυτής της ρύθμισης πραγματοποιείται από τον διαχειριστή σας.</translation>
 <translation id="8155628902202578800">Άνοιγμα παραθύρου διαλόγου πληροφοριών για <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8167567890448493835">Χρησιμοποιείτε <ph name="LOCALE_NAME" /></translation>
-<translation id="8183592608247778598">Δείτε τις πρόσφατες φωτογραφίες, τα μέσα, τις ειδοποιήσεις και τις εφαρμογές στη συσκευή <ph name="DEVICE_TYPE" /></translation>
 <translation id="8185090165691050712">Ενεργοποίηση/απενεργοποίηση μενού για λειτουργία κλειδώματος αλλαγής μεγέθους</translation>
 <translation id="8192202700944119416">Οι ειδοποιήσεις είναι κρυφές.</translation>
 <translation id="8196787716797768628">Χρησιμοποιήστε κινήσεις για γρήγορη εναλλαγή μεταξύ εφαρμογών και αλληλεπιδράστε με το Chromebook σε λειτουργία tablet.</translation>
@@ -1700,7 +1762,6 @@
 <translation id="8297006494302853456">Αδύναμο</translation>
 <translation id="8308637677604853869">Προηγούμενο μενού</translation>
 <translation id="830868413617744215">Beta</translation>
-<translation id="8312557488404088015">Κάντε μια γρήγορη περιήγηση για να ξεκινήσετε ομαλά. Με έξι βήματα, θα χρειαστείτε μόνο λίγα λεπτά.</translation>
 <translation id="8314772463905284467">Το Caps Lock είναι ενεργοποιημένο</translation>
 <translation id="8315514906653279104">Ενεργοποίηση…</translation>
 <translation id="8341451174107936385"><ph name="UNLOCK_MORE_FEATURES" />  <ph name="GET_STARTED" /></translation>
@@ -1736,6 +1797,7 @@
 <translation id="8446884382197647889">Μάθετε περισσότερα</translation>
 <translation id="8456543082656546101"><ph name="SHORTCUT_KEY_NAME" /> + V</translation>
 <translation id="8462305545768648477">Κλείσιμο λειτουργίας Επιλέξτε για αυτόματη ανάγνωση</translation>
+<translation id="8468806060683421065">Προθεσμία <ph name="DUE_DATE_AND_TIME" /></translation>
 <translation id="847056008324733326">Εμφάνιση ρυθμίσεων κλίμακας</translation>
 <translation id="8473301994082929012"><ph name="ORGANIZATION_NAME" /> έχει <ph name="FEATURE_STATE" /> <ph name="FEATURE_NAME" />.</translation>
 <translation id="8477270416194247200">Πατήστε Alt+Search ή Shift για ακύρωση.</translation>
@@ -1772,6 +1834,7 @@
 <translation id="8637598503828012618"><ph name="CONNECTION_STATUS" />, Ισχύς σήματος <ph name="SIGNAL_STRENGTH" />, Διαχειριζόμενο από τον διαχειριστή σας</translation>
 <translation id="8638637208069328956">Ενεργοποίηση/απενεργοποίηση μικροφώνου</translation>
 <translation id="8639760480004882931">Απομένει <ph name="PERCENTAGE" /></translation>
+<translation id="8641510901370802679">Εμφάνιση πληροφοριών για <ph name="ANSWER_TYPE" /></translation>
 <translation id="8646417893960517480">Χρονόμετρο <ph name="TOTAL_TIME" /></translation>
 <translation id="8647931990447795414">Για να προσθέσετε ένα άτομο, εισαγάγετε τον κωδικό πρόσβασης γονέα Family Link</translation>
 <translation id="8649597172973390955">Το ράφι είναι πάντα ορατό</translation>
@@ -1819,6 +1882,7 @@
 <translation id="8853703225951107899">Η επαλήθευση του PIN ή του κωδικού πρόσβασής σας εξακολουθεί να μην είναι δυνατή. Σημείωση: Εάν πρόσφατα αλλάξατε τον κωδικό πρόσβασής σας, χρησιμοποιήστε τον παλιό κωδικό πρόσβασης. Ο νέος κωδικός πρόσβασης θα εφαρμοστεί αφού αποσυνδεθείτε.</translation>
 <translation id="8855885154700222542">Πλήκτρο πλήρους οθόνης</translation>
 <translation id="8858369206579825206">Στοιχεία ελέγχου απορρήτου</translation>
+<translation id="8860366331836346216">Προσθήκη eSIM</translation>
 <translation id="8870509716567206129">Η εφαρμογή δεν υποστηρίζει διαχωρισμό οθόνης.</translation>
 <translation id="8874184842967597500">Καμία σύνδεση</translation>
 <translation id="8875021410787719674">Μετακίνηση μεταξύ της κάτω δεξιάς γωνίας, της Εφαρμογής εκκίνησης, της γραμμής διευθύνσεων, της γραμμής σελιδοδεικτών, του ανοιχτού ιστοτόπου και των λήψεων</translation>
@@ -1914,6 +1978,7 @@
 <translation id="953431725143473984">Να τερματιστεί η λειτουργία της συσκευής;</translation>
 <translation id="954052413789300507">Ο χώρος δεν επαρκεί για το αρχείο <ph name="FILENAME" />. Ελευθερώστε χώρο.</translation>
 <translation id="974545358917229949">Εμφάνιση <ph name="RESULT_COUNT" /> αποτελεσμάτων για την αναζήτηση <ph name="QUERY" /></translation>
+<translation id="981011780479609956">Χωρίς ημερομηνία λήξης</translation>
 <translation id="98120814841227350">Μετάβαση στο τέλος του εγγράφου</translation>
 <translation id="987589956647469042">Τα δεδομένα κινητής τηλεφωνίας είναι ενεργοποιημένα</translation>
 <translation id="989374776391122812">Στοιχεία ελέγχου κάμερας και ήχου</translation>

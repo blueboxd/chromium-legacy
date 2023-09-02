@@ -230,8 +230,8 @@ void SmartCardConnection::TransactionState::SettleStartTransaction(
   if (!callback_exception_.IsEmpty()) {
     start_transaction_request_->Reject(callback_exception_);
   } else if (end_transaction_result->is_error()) {
-    start_transaction_request_->Reject(
-        SmartCardError::Create(end_transaction_result->get_error()));
+    SmartCardError::Reject(start_transaction_request_,
+                           end_transaction_result->get_error());
   } else {
     start_transaction_request_->Resolve();
   }
@@ -327,8 +327,7 @@ ScriptPromise SmartCardConnection::transmit(ScriptState* script_state,
   }
 
   if (send_buffer.IsDetached() || send_buffer.IsNull()) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
-                                      "Invalid send buffer.");
+    exception_state.ThrowTypeError("Invalid send buffer.");
     return ScriptPromise();
   }
 
@@ -386,18 +385,18 @@ ScriptPromise SmartCardConnection::control(ScriptState* script_state,
     return ScriptPromise();
   }
 
-  if (data.IsDetached() || data.IsNull()) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
-                                      "Invalid data.");
-    return ScriptPromise();
-  }
-
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(
       script_state, exception_state.GetContext());
   SetOperationInProgress(resolver);
 
   Vector<uint8_t> data_vector;
-  data_vector.Append(data.Bytes(), static_cast<wtf_size_t>(data.ByteLength()));
+
+  // Note that there are control codes which require no input data.
+  // Thus sending an empty data vector is fine.
+  if (!data.IsDetached() && !data.IsNull() && data.ByteLength() > 0u) {
+    data_vector.Append(data.Bytes(),
+                       static_cast<wtf_size_t>(data.ByteLength()));
+  }
 
   connection_->Control(
       control_code, data_vector,
@@ -438,8 +437,7 @@ ScriptPromise SmartCardConnection::setAttribute(
   }
 
   if (data.IsDetached() || data.IsNull()) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
-                                      "Invalid data.");
+    exception_state.ThrowTypeError("Invalid data.");
     return ScriptPromise();
   }
 
@@ -495,6 +493,14 @@ ScriptPromise SmartCardConnection::startTransaction(
       WrapPersistent(signal), WrapPersistent(abort_handle)));
 
   return resolver->Promise();
+}
+
+void SmartCardConnection::OnOperationInProgressCleared() {
+  if (!transaction_state_ || !transaction_state_->HasPendingEnd()) {
+    return;
+  }
+
+  EndTransaction(transaction_state_->TakePendingEnd());
 }
 
 void SmartCardConnection::OnTransactionCallbackDone(
@@ -568,8 +574,7 @@ void SmartCardConnection::OnDisconnectDone(
   ClearOperationInProgress(resolver);
 
   if (result->is_error()) {
-    auto* error = SmartCardError::Create(result->get_error());
-    resolver->Reject(error);
+    SmartCardError::Reject(resolver, result->get_error());
     return;
   }
 
@@ -577,8 +582,6 @@ void SmartCardConnection::OnDisconnectDone(
   connection_.reset();
 
   resolver->Resolve();
-
-  MaybeEndTransaction();
 }
 
 void SmartCardConnection::OnPlainResult(
@@ -587,13 +590,11 @@ void SmartCardConnection::OnPlainResult(
   ClearOperationInProgress(resolver);
 
   if (result->is_error()) {
-    resolver->Reject(SmartCardError::Create(result->get_error()));
+    SmartCardError::Reject(resolver, result->get_error());
     return;
   }
 
   resolver->Resolve();
-
-  MaybeEndTransaction();
 }
 
 void SmartCardConnection::OnDataResult(
@@ -602,16 +603,13 @@ void SmartCardConnection::OnDataResult(
   ClearOperationInProgress(resolver);
 
   if (result->is_error()) {
-    auto* error = SmartCardError::Create(result->get_error());
-    resolver->Reject(error);
+    SmartCardError::Reject(resolver, result->get_error());
     return;
   }
 
   const Vector<uint8_t>& data = result->get_data();
 
   resolver->Resolve(DOMArrayBuffer::Create(data.data(), data.size()));
-
-  MaybeEndTransaction();
 }
 
 void SmartCardConnection::OnStatusDone(
@@ -620,7 +618,7 @@ void SmartCardConnection::OnStatusDone(
   ClearOperationInProgress(resolver);
 
   if (result->is_error()) {
-    resolver->Reject(SmartCardError::Create(result->get_error()));
+    SmartCardError::Reject(resolver, result->get_error());
     return;
   }
 
@@ -630,9 +628,8 @@ void SmartCardConnection::OnStatusDone(
       ToV8ConnectionState(mojo_status->state, mojo_status->protocol);
 
   if (!connection_state.has_value()) {
-    auto* error = SmartCardError::Create(
-        device::mojom::blink::SmartCardError::kInternalError);
-    resolver->Reject(error);
+    SmartCardError::Reject(
+        resolver, device::mojom::blink::SmartCardError::kInternalError);
     return;
   }
 
@@ -645,8 +642,6 @@ void SmartCardConnection::OnStatusDone(
                                mojo_status->answer_to_reset.size()));
   }
   resolver->Resolve(status);
-
-  MaybeEndTransaction();
 }
 
 void SmartCardConnection::OnBeginTransactionDone(
@@ -668,7 +663,7 @@ void SmartCardConnection::OnBeginTransactionDone(
             device::mojom::blink::SmartCardError::kCancelled) {
       RejectWithAbortionReason(resolver, signal);
     } else {
-      resolver->Reject(SmartCardError::Create(result->get_error()));
+      SmartCardError::Reject(resolver, result->get_error());
     }
     return;
   }
@@ -756,14 +751,6 @@ void SmartCardConnection::EndTransaction(SmartCardDisposition disposition) {
                                  WrapPersistent(this)));
 
   SetOperationInProgress(transaction_state_->GetStartTransactionRequest());
-}
-
-void SmartCardConnection::MaybeEndTransaction() {
-  if (!transaction_state_ || !transaction_state_->HasPendingEnd()) {
-    return;
-  }
-
-  EndTransaction(transaction_state_->TakePendingEnd());
 }
 
 }  // namespace blink

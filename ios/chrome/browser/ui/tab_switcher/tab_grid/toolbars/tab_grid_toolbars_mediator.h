@@ -9,8 +9,17 @@
 
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/grid/grid_toolbars_mutator.h"
 
+@class TabGridBottomToolbar;
+@class TabGridTopToolbar;
+
 // Mediates between model layer and top and bottom toolbar UI layer.
 @interface TabGridToolbarsMediator : NSObject <GridToolbarsMutator>
+
+// The toolbars consumer.
+// TODO(crbug.com/1456659): Modify it to be consumers instead of being the full
+// object.
+@property(nonatomic, strong) TabGridTopToolbar* topToolbarConsumer;
+@property(nonatomic, strong) TabGridBottomToolbar* bottomToolbarConsumer;
 
 @end
 

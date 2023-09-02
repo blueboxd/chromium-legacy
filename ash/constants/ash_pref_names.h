@@ -277,6 +277,11 @@ inline constexpr char kLauncherLastContinueRequestTime[] =
 inline constexpr char kLauncherResultEverLaunched[] =
     "launcher.result_ever_launched";
 
+// A dictionary pref that determines if each user-facing category result should
+// show in launcher.
+inline constexpr char kLauncherSearchCategoryControlStatus[] =
+    "launcher.search_category_control_status";
+
 // Dictionary pref to store data on the distribution of provider relevance
 // scores for the launcher normalizer.
 inline constexpr char kLauncherSearchNormalizerParameters[] =
@@ -1785,6 +1790,25 @@ inline constexpr char kSixPackKeyPageDownNotificationsRemaining[] =
 // action is disabled.
 inline constexpr char kSixPackKeyInsertNotificationsRemaining[] =
     "ash.settings.insert_six_pack_key_notifications_remaining";
+
+// A boolean pref that controls whether hands-free profile input super
+// resolution is enabled.
+inline constexpr char kHandsFreeProfileInputSuperResolution[] =
+    "ash.hands_free_profile_input_super_resolution";
+
+// A boolean pref used by an admin policy to allow/disallow user to customize
+// system shortcut. See the policy at ShortcutCustomizationAllowed.yaml.
+inline constexpr char kShortcutCustomizationAllowed[] =
+    "ash.shortcut_customization_allowed";
+
+// A `TimeDelta` pref for the session duration Focus Mode should default to.
+// Based off of the last session, if any.
+inline constexpr char kFocusModeSessionDuration[] =
+    "ash.focus_mode.session_duration";
+// A boolean pref of whether Focus Mode should default to turning on DND. Based
+// off of the last session, if any.
+inline constexpr char kFocusModeDoNotDisturb[] =
+    "ash.focus_mode.do_not_disturb";
 
 // NOTE: New prefs should start with the "ash." prefix. Existing prefs moved
 // into this file should not be renamed, since they may be synced.

@@ -17,11 +17,11 @@
 #include <algorithm>
 #include <atomic>
 
+#include "base/apple/foundation_util.h"
 #include "base/apple/mach_logging.h"
 #include "base/feature_list.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
-#include "base/mac/foundation_util.h"
 #include "base/mac/mac_util.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/threading/thread_id_name_manager.h"
@@ -179,7 +179,7 @@ void PlatformThreadApple::SetCurrentThreadRealtimePeriodValue(
 namespace {
 
 TimeDelta GetCurrentThreadRealtimePeriod() {
-  NSNumber* period = mac::ObjCCast<NSNumber>(
+  NSNumber* period = apple::ObjCCast<NSNumber>(
       NSThread.currentThread.threadDictionary[kRealtimePeriodNsKey]);
 
   return period ? Nanoseconds(period.longLongValue) : TimeDelta();
@@ -395,7 +395,7 @@ void SetCurrentThreadTypeImpl(ThreadType thread_type,
 
 // static
 ThreadPriorityForTest PlatformThreadBase::GetCurrentThreadPriorityForTest() {
-  NSNumber* priority = base::mac::ObjCCast<NSNumber>(
+  NSNumber* priority = base::apple::ObjCCast<NSNumber>(
       NSThread.currentThread.threadDictionary[kThreadPriorityForTestKey]);
 
   if (!priority) {

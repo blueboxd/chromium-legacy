@@ -3969,6 +3969,20 @@ enum WebFeature {
   kZstdContentEncoding = 4629,
   kGetAllScreensMedia = 4630,
   kInputEventToRecentlyMovedIframeMistakenlyDiscarded = 4631,
+  kCSSRelativeColor = 4632,
+  kXPathMissingVariableParsed = 4633,
+  kXPathMissingVariableEvaluated = 4634,
+  kClientHintsPrefersReducedTransparency = 4635,
+  kElementCapture = 4636,
+  kSharedStorageAPI_Fetch_Attribute = 4637,
+  kSharedStorageAPI_Image_Attribute = 4638,
+  kSharedStorageAPI_Iframe_Attribute = 4639,
+  kVirtualKeyboardShow = 4640,
+  kVirtualKeyboardHide = 4641,
+  kVirtualKeyboardOverlayPolicy = 4642,
+  kScrollSnapNestedSnapAreas = 4643,
+  kScrollSnapCoveringSnapArea = 4644,
+  kV8RTCEncodedAudioFrame_SetMetadata_Method = 4645,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

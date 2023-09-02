@@ -179,11 +179,12 @@ class ImportNotifier:
                 continue
             test_type = manifest.get_test_type(
                 self.finder.strip_wpt_path(test_path))
-            # TODO(crbug.com/1464051): After the switch to wptrunner, change the
-            # condition to just `if not test_type` to check for failures in
-            # metadata for other test types. Then, remove the other `examine_*`
-            # methods.
-            if test_type != 'wdspec':
+            if not test_type:
+                continue
+            # TODO(crbug.com/1474702): After the switch to wptrunner, remove
+            # this condition.
+            if (test_type != 'wdspec'
+                    and not self.host.project_config.switched_to_wptrunner):
                 continue
             failing_tests = set()
             for config in self._configs:
@@ -232,11 +233,9 @@ class ImportNotifier:
             if not test_before:
                 test_before = wpt_metadata.make_empty_test(test_after)
             wpt_metadata.fill_implied_expectations(test_before,
-                                                   set(test_after.subtests),
-                                                   test_before.test_type)
+                                                   set(test_after.subtests))
             wpt_metadata.fill_implied_expectations(test_after,
-                                                   set(test_before.subtests),
-                                                   test_after.test_type)
+                                                   set(test_before.subtests))
             assert set(test_before.subtests) == set(test_after.subtests)
             nodes = [(test_before, test_after)]
             nodes.extend((
@@ -352,8 +351,17 @@ class ImportNotifier:
 
             links_list = '\n[0]: https://chromium.googlesource.com/chromium/src/+/HEAD/docs/testing/web_test_expectations.md\n'
 
+            dir_metadata_path = self.host.filesystem.join(
+                directory, "DIR_METADATA")
+            epilogue = (
+                '\nThis bug was filed automatically due to a new WPT test '
+                'failure for which you are marked an OWNER. '
+                'If you do not want to receive these reports, please add '
+                '"wpt { notify: NO }"  to the relevant DIR_METADATA file.')
+
             description = (prologue + failure_list + expectations_statement +
-                           range_statement + commit_list + links_list)
+                           range_statement + commit_list + links_list +
+                           epilogue)
 
             bug = MonorailIssue.new_chromium_issue(summary,
                                                    description,

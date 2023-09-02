@@ -71,6 +71,7 @@
 #include "content/shell/browser/shell_content_browser_client.h"
 #include "content/shell/browser/shell_content_index_provider.h"
 #include "content/shell/browser/shell_devtools_frontend.h"
+#include "content/shell/browser/shell_federated_permission_context.h"
 #include "content/test/mock_platform_notification_service.h"
 #include "content/test/storage_partition_test_helpers.h"
 #include "content/web_test/browser/devtools_protocol_test_bindings.h"
@@ -109,7 +110,7 @@
 #include "url/url_constants.h"
 
 #if BUILDFLAG(IS_MAC)
-#include "base/mac/foundation_util.h"
+#include "base/apple/foundation_util.h"
 #endif
 
 namespace content {
@@ -1086,6 +1087,13 @@ void WebTestControlHost::ReadyToCommitNavigation(
       request->GetRenderFrameHostRestoredFromBackForwardCache();
   if (rfh)
     GetWebTestRenderFrameRemote(rfh)->OnReactivated();
+
+  if (navigation_handle->IsInPrimaryMainFrame() &&
+      next_non_blank_nav_is_new_test_ &&
+      navigation_handle->GetURL() != GURL(kAboutBlankResetWebTest)) {
+    GetWebTestRenderFrameRemote(navigation_handle->GetRenderFrameHost())
+        ->BlockTestUntilStart();
+  }
 }
 
 void WebTestControlHost::RenderProcessHostDestroyed(
@@ -1536,7 +1544,7 @@ class FakeSelectFileDialog : public ui::SelectFileDialog {
   bool IsRunning(gfx::NativeWindow owning_window) const override {
     return false;
   }
-  void ListenerDestroyed() override {}
+  void ListenerDestroyed() override { listener_ = nullptr; }
   bool HasMultipleFileTypeChoicesImpl() override { return false; }
 
  private:
@@ -1885,26 +1893,59 @@ void WebTestControlHost::PrepareRendererForNextWebTest() {
   // |WebTestControlHost::DidFinishNavigation|.
 }
 
+void WebTestControlHost::FlushInputAndStartTest(WeakDocumentPtr doc) {
+  RenderFrameHost* rfh = doc.AsRenderFrameHostIfValid();
+  if (!rfh) {
+    return;
+  }
+
+  // Ensures any synthetic input (e.g. mouse enter/leave/move events as a
+  // result of navigation) have been handled by the renderer.
+  rfh->GetRenderWidgetHost()->FlushForTesting();
+  GetWebTestRenderFrameRemote(rfh)->StartTest();
+}
+
 void WebTestControlHost::DidFinishNavigation(NavigationHandle* navigation) {
-  if (navigation->GetURL() != GURL(kAboutBlankResetWebTest))
-    return;
+  if (navigation->GetURL() == GURL(kAboutBlankResetWebTest)) {
+    // During fuzzing, the |main_window_| might close itself using
+    // window.close(). This might happens after the end of the test, during the
+    // cleanup phase. In this case, the pending about:blank navigation might be
+    // canceled, within the |main_window_| destructor. It is no longer safe to
+    // access |main_window_| here. See https://crbug.com/1221183
+    if (!navigation->HasCommitted()) {
+      return;
+    }
 
-  // During fuzzing, the |main_window_| might close itself using window.close().
-  // This might happens after the end of the test, during the cleanup phase. In
-  // this case, the pending about:blank navigation might be canceled, within the
-  // |main_window_| destructor. It is no longer safe to access |main_window_|
-  // here. See https://crbug.com/1221183
-  if (!navigation->HasCommitted())
-    return;
+    next_non_blank_nav_is_new_test_ = true;
 
-  // Request additional web test specific cleanup in the renderer process:
-  content::WebContentsImpl* web_contents =
-      static_cast<WebContentsImpl*>(main_window_->web_contents());
-  RenderProcessHost* main_rfh_process =
-      web_contents->GetPrimaryMainFrame()->GetProcess();
-  GetWebTestRenderThreadRemote(main_rfh_process)->ResetRendererAfterWebTest();
+    // Request additional web test specific cleanup in the renderer process:
+    content::WebContentsImpl* web_contents =
+        static_cast<WebContentsImpl*>(main_window_->web_contents());
+    RenderProcessHost* main_rfh_process =
+        web_contents->GetPrimaryMainFrame()->GetProcess();
+    GetWebTestRenderThreadRemote(main_rfh_process)->ResetRendererAfterWebTest();
 
-  PrepareRendererForNextWebTestDone();
+    PrepareRendererForNextWebTestDone();
+  } else if (navigation->IsInPrimaryMainFrame() &&
+             !navigation->GetURL().IsAboutBlank() &&
+             next_non_blank_nav_is_new_test_) {
+    next_non_blank_nav_is_new_test_ = false;
+
+    if (navigation->HasCommitted()) {
+      // If the browser is injecting synthetic mouse moves, it does so at
+      // CommitPending time by posting a task to perform the dispatch. Hence,
+      // that task must already be queued (or complete) by this time. Post the
+      // flush input task to ensure it runs after the synthetic mouse event
+      // dispatch task. See comments on next_non_blank_nav_is_new_test_ for
+      // more details.
+      base::SingleThreadTaskRunner::GetCurrentDefault()->PostTask(
+          FROM_HERE,
+          base::BindOnce(
+              &WebTestControlHost::FlushInputAndStartTest,
+              weak_factory_.GetWeakPtr(),
+              navigation->GetRenderFrameHost()->GetWeakDocumentPtr()));
+    }
+  }
 }
 
 void WebTestControlHost::PrepareRendererForNextWebTestDone() {
@@ -2017,6 +2058,9 @@ void WebTestControlHost::BlockThirdPartyCookies(bool block) {
       browser_context->GetDefaultStoragePartition();
   storage_partition->GetCookieManagerForBrowserProcess()
       ->BlockThirdPartyCookies(block);
+  ShellFederatedPermissionContext* federated_context =
+      browser_context->GetShellFederatedPermissionContext();
+  federated_context->SetThirdPartyCookiesBlocked(block);
 }
 
 void WebTestControlHost::BindWebTestControlHostForRenderer(

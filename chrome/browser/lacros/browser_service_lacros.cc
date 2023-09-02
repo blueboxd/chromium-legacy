@@ -40,7 +40,7 @@
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/profile_picker.h"
+#include "chrome/browser/ui/profiles/profile_picker.h"
 #include "chrome/browser/ui/scoped_tabbed_browser_displayer.h"
 #include "chrome/browser/ui/startup/first_run_service.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
@@ -487,8 +487,11 @@ void BrowserServiceLacros::OpenUrlImpl(Profile* profile,
                                        OpenUrlCallback callback) {
   NavigateParams navigate_params(
       profile, url,
-      ui::PageTransitionFromInt(ui::PAGE_TRANSITION_LINK |
-                                ui::PAGE_TRANSITION_FROM_API));
+      // The page transition is chosen to satisfy one of the conditions in
+      // lacros_url_handling::IsNavigationInterceptable.
+      ui::PageTransitionFromInt(ui::PAGE_TRANSITION_TYPED |
+                                ui::PAGE_TRANSITION_FROM_API |
+                                ui::PAGE_TRANSITION_FROM_ADDRESS_BAR));
 
   using OpenUrlParams = crosapi::mojom::OpenUrlParams;
 

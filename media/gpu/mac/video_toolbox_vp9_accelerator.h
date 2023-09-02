@@ -11,13 +11,14 @@
 #include <memory>
 #include <vector>
 
+#include "base/apple/scoped_cftyperef.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/span.h"
 #include "base/functional/callback.h"
-#include "base/mac/scoped_cftyperef.h"
 #include "base/sequence_checker.h"
 #include "media/base/video_codecs.h"
 #include "media/base/video_color_space.h"
+#include "media/gpu/mac/video_toolbox_decode_metadata.h"
 #include "media/gpu/media_gpu_export.h"
 #include "media/gpu/vp9_decoder.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -35,12 +36,14 @@ class MediaLog;
 class MEDIA_GPU_EXPORT VideoToolboxVP9Accelerator
     : public VP9Decoder::VP9Accelerator {
  public:
-  using DecodeCB =
-      base::RepeatingCallback<void(base::ScopedCFTypeRef<CMSampleBufferRef>,
-                                   scoped_refptr<CodecPicture>)>;
+  using DecodeCB = base::RepeatingCallback<void(
+      base::apple::ScopedCFTypeRef<CMSampleBufferRef>,
+      VideoToolboxSessionMetadata,
+      scoped_refptr<CodecPicture>)>;
   using OutputCB = base::RepeatingCallback<void(scoped_refptr<CodecPicture>)>;
 
   VideoToolboxVP9Accelerator(std::unique_ptr<MediaLog> media_log,
+                             absl::optional<gfx::HDRMetadata> hdr_metadata,
                              DecodeCB decode_cb,
                              OutputCB output_cb);
   ~VideoToolboxVP9Accelerator() override;
@@ -68,6 +71,7 @@ class MEDIA_GPU_EXPORT VideoToolboxVP9Accelerator
   bool AppendData(CMBlockBufferRef dest, const uint8_t* data, size_t data_size);
 
   std::unique_ptr<MediaLog> media_log_;
+  absl::optional<gfx::HDRMetadata> hdr_metadata_;
 
   // Callbacks are called synchronously, which is always re-entrant.
   DecodeCB decode_cb_;
@@ -79,10 +83,11 @@ class MEDIA_GPU_EXPORT VideoToolboxVP9Accelerator
   absl::optional<gfx::HDRMetadata> active_hdr_metadata_;
   gfx::Size active_coded_size_;
 
-  base::ScopedCFTypeRef<CMFormatDescriptionRef> active_format_;
+  base::apple::ScopedCFTypeRef<CMFormatDescriptionRef> active_format_;
+  VideoToolboxSessionMetadata session_metadata_;
 
   // The superframe currently being built.
-  base::ScopedCFTypeRef<CMBlockBufferRef> frame_data_;
+  base::apple::ScopedCFTypeRef<CMBlockBufferRef> frame_data_;
   std::vector<size_t> frame_sizes_;
 
   SEQUENCE_CHECKER(sequence_checker_);

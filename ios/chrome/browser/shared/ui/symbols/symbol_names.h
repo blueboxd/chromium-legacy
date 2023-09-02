@@ -20,6 +20,7 @@ extern NSString* const kGoogleIconSymbol;
 extern NSString* const kGoogleShieldSymbol;
 extern NSString* const kChromeSymbol;
 extern NSString* const kGoogleMapsSymbol;
+extern NSString* const kGooglePhotosSymbol;
 #endif  // BUILDFLAG(IOS_USE_BRANDED_SYMBOLS)
 extern NSString* const kPrivacySymbol;
 extern NSString* const kSyncDisabledSymbol;
@@ -54,6 +55,7 @@ extern NSString* const kTunerSymbol;
 extern NSString* const kMoveFolderSymbol;
 extern NSString* const kTopOmniboxOptionSymbol;
 extern NSString* const kBottomOmniboxOptionSymbol;
+extern NSString* const kDangerousOmniboxSymbol;
 
 // Custom symbol names which can be configured with a color palette. iOS 15+
 // only.

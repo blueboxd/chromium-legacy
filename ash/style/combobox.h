@@ -19,14 +19,16 @@ class ComboboxModel;
 }
 
 namespace views {
+class ImageView;
 class Label;
-}
+}  // namespace views
 
 namespace ash {
 
 // A stylized non-editable combobox driven by `ui::ComboboxModel`.
 class ASH_EXPORT Combobox : public views::Button,
-                            public ui::ComboboxModelObserver {
+                            public ui::ComboboxModelObserver,
+                            public views::WidgetObserver {
  public:
   METADATA_HEADER(Combobox);
 
@@ -56,6 +58,20 @@ class ASH_EXPORT Combobox : public views::Button,
   // views::Button:
   void SetCallback(PressedCallback callback) override;
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
+  void OnBlur() override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
+  void AddedToWidget() override;
+  void RemovedFromWidget() override;
+  void Layout() override;
+
+  // WidgetObserver:
+  void OnWidgetBoundsChanged(views::Widget* widget,
+                             const gfx::Rect& bounds) override;
+
+  std::u16string GetTextForRow(size_t row) const;
+
+  // Test method exposing MenuSelectionAt.
+  void SelectMenuItemForTest(size_t index);
 
  private:
   class ComboboxMenuView;
@@ -81,6 +97,10 @@ class ASH_EXPORT Combobox : public views::Button,
   void OnComboboxModelChanged(ui::ComboboxModel* model) override;
   void OnComboboxModelDestroying(ui::ComboboxModel* model) override;
 
+  // views::Button:
+  bool SkipDefaultKeyEventProcessing(const ui::KeyEvent& e) override;
+  bool OnKeyPressed(const ui::KeyEvent& e) override;
+
   // Optionally used to tie the lifetime of the model to this combobox. See
   // constructor.
   std::unique_ptr<ui::ComboboxModel> owned_model_;
@@ -89,6 +109,7 @@ class ASH_EXPORT Combobox : public views::Button,
   raw_ptr<ui::ComboboxModel> model_;
 
   const raw_ptr<views::Label> title_ = nullptr;
+  const raw_ptr<views::ImageView> drop_down_arrow_ = nullptr;
 
   // Callback notified when the selected index changes.
   base::RepeatingClosure callback_;
@@ -96,16 +117,19 @@ class ASH_EXPORT Combobox : public views::Button,
   // The current selected index; nullopt means no selection.
   absl::optional<size_t> selected_index_ = absl::nullopt;
 
+  // The selection that committed by performing selection changed action.
+  absl::optional<size_t> last_commit_selection_ = absl::nullopt;
+
   // A handler handles mouse and touch event happening outside combobox and drop
   // down menu. This is mainly used to decide if we should close the drop down
   // menu.
   std::unique_ptr<ComboboxEventHandler> event_handler_;
 
-  // Drop down menu widget.
-  views::UniqueWidgetPtr menu_;
-
   // Drop down menu view owned by menu widget.
   raw_ptr<ComboboxMenuView> menu_view_ = nullptr;
+
+  // Drop down menu widget.
+  views::UniqueWidgetPtr menu_;
 
   // Like MenuButton, we use a time object in order to keep track of when the
   // combobox was closed. The time is used for simulating menu behavior; that
@@ -117,6 +141,11 @@ class ASH_EXPORT Combobox : public views::Button,
 
   base::ScopedObservation<ui::ComboboxModel, ui::ComboboxModelObserver>
       observation_{this};
+
+  base::ScopedObservation<views::Widget, views::WidgetObserver>
+      widget_observer_{this};
+
+  base::WeakPtrFactory<Combobox> weak_ptr_factory_{this};
 };
 
 }  // namespace ash

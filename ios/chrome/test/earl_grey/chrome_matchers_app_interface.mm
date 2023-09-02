@@ -4,7 +4,7 @@
 
 #import "ios/chrome/test/earl_grey/chrome_matchers_app_interface.h"
 
-#import "base/mac/foundation_util.h"
+#import "base/apple/foundation_util.h"
 #import "base/strings/sys_string_conversions.h"
 #import "components/safe_browsing/core/common/features.h"
 #import "components/strings/grit/components_strings.h"
@@ -78,27 +78,10 @@ NSString* IdentifierForCellAtIndex(unsigned int index) {
   return [NSString stringWithFormat:@"%@%u", kGridCellIdentifierPrefix, index];
 }
 
-id<GREYMatcher> AccessibilityLabelPrefix(NSString* prefix) {
-  GREYMatchesBlock matches = ^BOOL(id element) {
-    if ([element respondsToSelector:@selector(accessibilityLabel)]) {
-      NSString* label = [element accessibilityLabel];
-      return [label hasPrefix:prefix];
-    }
-    return NO;
-  };
-  GREYDescribeToBlock describe = ^void(id<GREYDescription> description) {
-    NSString* name =
-        [NSString stringWithFormat:@"accessibilityLabelPrefix: %@", prefix];
-    [description appendText:name];
-  };
-  return [[GREYElementMatcherBlock alloc] initWithMatchesBlock:matches
-                                              descriptionBlock:describe];
-}
-
 id<GREYMatcher> TableViewSwitchIsToggledOn(BOOL is_toggled_on) {
   GREYMatchesBlock matches = ^BOOL(id element) {
     TableViewSwitchCell* switch_cell =
-        base::mac::ObjCCastStrict<TableViewSwitchCell>(element);
+        base::apple::ObjCCastStrict<TableViewSwitchCell>(element);
     UISwitch* switch_view = switch_cell.switchView;
     return (switch_view.on && is_toggled_on) ||
            (!switch_view.on && !is_toggled_on);
@@ -116,7 +99,7 @@ id<GREYMatcher> TableViewSwitchIsToggledOn(BOOL is_toggled_on) {
 id<GREYMatcher> TableViewSwitchIsEnabled(BOOL is_enabled) {
   GREYMatchesBlock matches = ^BOOL(id element) {
     TableViewSwitchCell* switch_cell =
-        base::mac::ObjCCastStrict<TableViewSwitchCell>(element);
+        base::apple::ObjCCastStrict<TableViewSwitchCell>(element);
     UISwitch* switch_view = switch_cell.switchView;
     return (switch_view.enabled && is_enabled) ||
            (!switch_view.enabled && !is_enabled);
@@ -150,7 +133,7 @@ UIView* SubviewWithAccessibilityIdentifier(NSString* accessibility_id,
 UIWindow* WindowWithAccessibilityIdentifier(NSString* accessibility_id) {
   for (UIScene* scene in UIApplication.sharedApplication.connectedScenes) {
     UIWindowScene* windowScene =
-        base::mac::ObjCCastStrict<UIWindowScene>(scene);
+        base::apple::ObjCCastStrict<UIWindowScene>(scene);
     for (UIWindow* window in windowScene.windows) {
       if ([window.accessibilityIdentifier isEqualToString:accessibility_id]) {
         return window;
@@ -188,16 +171,6 @@ UIWindow* WindowWithAccessibilityIdentifier(NSString* accessibility_id) {
 }
 
 + (id<GREYMatcher>)contextMenuItemWithAccessibilityLabel:(NSString*)label {
-  if (@available(iOS 17, *)) {
-    // On iOS 17 beta 6, context menu item labels contain a comma
-    // followed by the alt text for the item's icon. On iOS 17 beta 5
-    // and earlier, the context menu item labels are simply the item's
-    // title.
-    NSString* commaStr = [label stringByAppendingString:@","];
-    return grey_allOf(grey_anyOf(grey_accessibilityLabel(label),
-                                 AccessibilityLabelPrefix(commaStr), nil),
-                      grey_accessibilityTrait(UIAccessibilityTraitButton), nil);
-  }
   return grey_allOf(grey_accessibilityLabel(label),
                     grey_accessibilityTrait(UIAccessibilityTraitButton), nil);
 }
@@ -373,7 +346,7 @@ UIWindow* WindowWithAccessibilityIdentifier(NSString* accessibility_id) {
   GREYElementMatcherBlock* matcher = [GREYElementMatcherBlock
       matcherWithMatchesBlock:^BOOL(id element) {
         OmniboxTextFieldIOS* omnibox =
-            base::mac::ObjCCast<OmniboxTextFieldIOS>(element);
+            base::apple::ObjCCast<OmniboxTextFieldIOS>(element);
         return [omnibox.text isEqualToString:text];
       }
       descriptionBlock:^void(id<GREYDescription> description) {
@@ -388,7 +361,7 @@ UIWindow* WindowWithAccessibilityIdentifier(NSString* accessibility_id) {
   GREYElementMatcherBlock* matcher = [GREYElementMatcherBlock
       matcherWithMatchesBlock:^BOOL(id element) {
         OmniboxTextFieldIOS* omnibox =
-            base::mac::ObjCCast<OmniboxTextFieldIOS>(element);
+            base::apple::ObjCCast<OmniboxTextFieldIOS>(element);
         return [omnibox.text containsString:text];
       }
       descriptionBlock:^void(id<GREYDescription> description) {
@@ -521,7 +494,7 @@ UIWindow* WindowWithAccessibilityIdentifier(NSString* accessibility_id) {
 }
 
 + (id<GREYMatcher>)bookmarksNavigationBarBackButton {
-  UINavigationBar* navBar = base::mac::ObjCCastStrict<UINavigationBar>(
+  UINavigationBar* navBar = base::apple::ObjCCastStrict<UINavigationBar>(
       SubviewWithAccessibilityIdentifier(kBookmarkNavigationBarIdentifier,
                                          GetAnyKeyWindow()));
   return grey_allOf(grey_buttonTitle(navBar.backItem.title),
@@ -726,7 +699,7 @@ UIWindow* WindowWithAccessibilityIdentifier(NSString* accessibility_id) {
 }
 
 + (id<GREYMatcher>)settingsMenuBackButton {
-  UINavigationBar* navBar = base::mac::ObjCCastStrict<UINavigationBar>(
+  UINavigationBar* navBar = base::apple::ObjCCastStrict<UINavigationBar>(
       SubviewWithAccessibilityIdentifier(@"SettingNavigationBar",
                                          GetAnyKeyWindow()));
   return
@@ -734,7 +707,7 @@ UIWindow* WindowWithAccessibilityIdentifier(NSString* accessibility_id) {
 }
 
 + (id<GREYMatcher>)settingsMenuBackButtonInWindowWithNumber:(int)windowNumber {
-  UINavigationBar* navBar = base::mac::ObjCCastStrict<UINavigationBar>(
+  UINavigationBar* navBar = base::apple::ObjCCastStrict<UINavigationBar>(
       SubviewWithAccessibilityIdentifier(
           @"SettingNavigationBar", WindowWithAccessibilityIdentifier([NSString
                                        stringWithFormat:@"%d", windowNumber])));
@@ -1069,9 +1042,13 @@ UIWindow* WindowWithAccessibilityIdentifier(NSString* accessibility_id) {
   return grey_accessibilityID(kSettingsSearchEngineCellId);
 }
 
++ (id<GREYMatcher>)settingsAddressBarButton {
+  return grey_accessibilityID(kSettingsAddressBarCellId);
+}
+
 + (id<GREYMatcher>)contentViewSmallerThanScrollView {
   GREYMatchesBlock matches = ^BOOL(UIView* view) {
-    UIScrollView* scrollView = base::mac::ObjCCast<UIScrollView>(view);
+    UIScrollView* scrollView = base::apple::ObjCCast<UIScrollView>(view);
     return scrollView &&
            scrollView.contentSize.height < scrollView.bounds.size.height;
   };
@@ -1112,7 +1089,8 @@ UIWindow* WindowWithAccessibilityIdentifier(NSString* accessibility_id) {
     if (![element isKindOfClass:UITableViewCell.class])
       return NO;
 
-    UITableViewCell* cell = base::mac::ObjCCastStrict<UITableViewCell>(element);
+    UITableViewCell* cell =
+        base::apple::ObjCCastStrict<UITableViewCell>(element);
 
     // Try to find the TableView containing the cell.
     UIView* potential_table_view = [cell superview];
@@ -1125,7 +1103,7 @@ UIWindow* WindowWithAccessibilityIdentifier(NSString* accessibility_id) {
       return NO;
 
     UITableView* table_view =
-        base::mac::ObjCCastStrict<UITableView>(potential_table_view);
+        base::apple::ObjCCastStrict<UITableView>(potential_table_view);
 
     NSIndexPath* index_path = [table_view indexPathForCell:cell];
 

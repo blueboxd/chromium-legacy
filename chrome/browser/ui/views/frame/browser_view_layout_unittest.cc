@@ -71,7 +71,6 @@ class MockBrowserViewLayoutDelegate : public BrowserViewLayoutDelegate {
       const gfx::Rect& available_space,
       views::Label& window_title_label) const override {}
   int GetTopInsetInBrowserView() const override { return 0; }
-  int GetThemeBackgroundXInset() const override { return 0; }
   bool IsToolbarVisible() const override { return toolbar_visible_; }
   bool IsBookmarkBarVisible() const override { return bookmark_bar_visible_; }
   bool IsContentsSeparatorEnabled() const override {
@@ -98,6 +97,9 @@ class MockBrowserViewLayoutDelegate : public BrowserViewLayoutDelegate {
     return base::Contains(*supported_features, feature);
   }
   gfx::NativeView GetHostView() const override { return gfx::NativeView(); }
+  gfx::NativeView GetHostViewForAnchoring() const override {
+    return gfx::NativeView();
+  }
   bool BrowserIsSystemWebApp() const override { return false; }
   bool BrowserIsWebApp() const override { return false; }
   bool BrowserIsTypeApp() const override { return false; }

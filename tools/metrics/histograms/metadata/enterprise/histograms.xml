@@ -198,7 +198,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Enterprise.AutoEnrollmentHashDanceSuccessTime{EnterpriseAutoEnrollmentType}"
-    units="ms" expires_after="2023-12-01">
+    units="ms" expires_after="2024-02-20">
   <owner>sergiyb@chromium.org</owner>
   <owner>igorcov@chromium.org</owner>
   <owner>chromeos-commercial-remote-management@google.com</owner>
@@ -227,7 +227,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Enterprise.AutoEnrollmentProtocolTime{EnterpriseAutoEnrollmentType}"
-    units="ms" expires_after="2023-12-01">
+    units="ms" expires_after="2024-02-20">
   <owner>sergiyb@chromium.org</owner>
   <owner>igorcov@chromium.org</owner>
   <owner>chromeos-commercial-remote-management@google.com</owner>
@@ -244,7 +244,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Enterprise.AutoEnrollmentPsmDmServerRequestStatus{EnterpriseAutoEnrollmentType}"
-    enum="EnterpriseDeviceManagementStatus" expires_after="2023-12-01">
+    enum="EnterpriseDeviceManagementStatus" expires_after="2024-02-20">
   <owner>sergiyb@chromium.org</owner>
   <owner>igorcov@chromium.org</owner>
   <owner>chromeos-commercial-remote-management@google.com</owner>
@@ -263,7 +263,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Enterprise.AutoEnrollmentPsmRequestNetworkErrorCode{EnterpriseAutoEnrollmentType}"
-    enum="NetErrorCodes" expires_after="2023-12-01">
+    enum="NetErrorCodes" expires_after="2024-02-20">
   <owner>sergiyb@chromium.org</owner>
   <owner>igorcov@chromium.org</owner>
   <owner>chromeos-commercial-remote-management@google.com</owner>
@@ -282,7 +282,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Enterprise.AutoEnrollmentPsmResult{EnterpriseAutoEnrollmentType}"
-    enum="PsmResult" expires_after="2023-12-01">
+    enum="PsmResult" expires_after="2024-02-20">
   <owner>sergiyb@chromium.org</owner>
   <owner>igorcov@chromium.org</owner>
   <owner>chromeos-commercial-remote-management@google.com</owner>
@@ -302,7 +302,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Enterprise.AutoEnrollmentRequestNetworkErrorCode{EnterpriseAutoEnrollmentType}"
-    enum="NetErrorCodes" expires_after="2023-12-01">
+    enum="NetErrorCodes" expires_after="2024-02-25">
   <owner>sergiyb@chromium.org</owner>
   <owner>igorcov@chromium.org</owner>
   <owner>chromeos-commercial-remote-management@google.com</owner>
@@ -319,7 +319,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Enterprise.AutoEnrollmentRequestStatus{EnterpriseAutoEnrollmentType}"
-    enum="EnterpriseDeviceManagementStatus" expires_after="2023-12-01">
+    enum="EnterpriseDeviceManagementStatus" expires_after="2024-02-20">
   <owner>sergiyb@chromium.org</owner>
   <owner>igorcov@chromium.org</owner>
   <owner>chromeos-commercial-remote-management@google.com</owner>
@@ -364,7 +364,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Enterprise.BrowserSigninPolicy"
-    enum="EnterpriseBrowserSigninPolicy" expires_after="2023-12-17">
+    enum="EnterpriseBrowserSigninPolicy" expires_after="2024-02-20">
   <owner>alexwchen@chromium.org</owner>
   <owner>cbe-eng@google.com</owner>
   <summary>
@@ -658,7 +658,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Enterprise.DeviceRemoteCommand.Executed{Enterprise_RemoteCommandType}"
-    enum="RemoteCommandExecutionStatus" expires_after="2023-12-01">
+    enum="RemoteCommandExecutionStatus" expires_after="2024-02-20">
   <owner>asumaneev@google.com</owner>
   <owner>chromeos-commercial-remote-management@google.com</owner>
   <summary>
@@ -1025,6 +1025,28 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram
+    name="Enterprise.DeviceTrust.Mac.KeychainOSStatus.{KeyType}.{Operation}"
+    enum="ErrSecOSStatus" expires_after="2024-06-01">
+  <owner>seblalancette@chromium.org</owner>
+  <owner>hmare@google.com</owner>
+  <owner>cbe-device-trust-eng@google.com</owner>
+  <summary>
+    Recorded when a failed OSStatus code is returned from a Keychain Services
+    API for the {KeyType} keypair during a {Operation} operation.
+  </summary>
+  <token key="KeyType">
+    <variant name="Permanent" summary="permanent"/>
+    <variant name="Temporary" summary="temporary"/>
+  </token>
+  <token key="Operation">
+    <variant name="Copy" summary="Copy"/>
+    <variant name="Create" summary="Create"/>
+    <variant name="Delete" summary="Delete"/>
+    <variant name="Update" summary="Update"/>
+  </token>
+</histogram>
+
 <histogram name="Enterprise.DeviceTrust.Mac.SecureEnclaveOperation.{KeyType}"
     enum="DTSecureEnclaveOperationStatus" expires_after="2024-06-01">
   <owner>hmare@google.com</owner>
@@ -1035,8 +1057,8 @@ chromium-metrics-reviews@google.com.
     Secure Enclave signing key in the {KeyType} key storage.
   </summary>
   <token key="KeyType">
-    <variant name="Permanent" summary="Permanent key storage"/>
-    <variant name="Temporary" summary="Temporary key storage"/>
+    <variant name="Permanent" summary="permanent"/>
+    <variant name="Temporary" summary="temporary"/>
   </token>
 </histogram>
 
@@ -1278,7 +1300,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Enterprise.Dlp.Errors.DaemonInit"
-    enum="EnterpriseDlpPolicyCrOSDaemonInitError" expires_after="2023-10-01">
+    enum="EnterpriseDlpPolicyCrOSDaemonInitError" expires_after="2024-01-01">
   <owner>accorsi@google.com</owner>
   <owner>chromeos-dlp@google.com</owner>
   <summary>
@@ -1370,6 +1392,16 @@ chromium-metrics-reviews@google.com.
   <summary>
     Records which file action was warned because of Data Leak Prevention policy
     restrictions and proceeded by the user.
+  </summary>
+</histogram>
+
+<histogram name="Enterprise.Dlp.FilesAppOpenTimedOut" enum="Boolean"
+    expires_after="2024-03-01">
+  <owner>aidazolic@google.com</owner>
+  <owner>chromeos-dlp@google.com</owner>
+  <summary>
+    Records True when opening the Files App to show a Data Leak Prevention
+    dialog times out, and False when it successfully opens.
   </summary>
 </histogram>
 
@@ -1606,7 +1638,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Enterprise.DMServerRequestSuccess{EnterpriseDMServerRequest}"
-    enum="EnterpriseDMServerRequestSuccess" expires_after="2023-12-01">
+    enum="EnterpriseDMServerRequestSuccess" expires_after="2024-02-20">
   <owner>rbock@google.com</owner>
   <owner>chromeos-commercial-remote-management@google.com</owner>
   <owner>managed-devices@google.com</owner>
@@ -1819,7 +1851,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Enterprise.EnrollmentForcedManualFallback"
-    enum="EnterpriseEnrollmentType" expires_after="2023-12-01">
+    enum="EnterpriseEnrollmentType" expires_after="2024-02-25">
   <owner>asumaneev@google.com</owner>
   <owner>sergiyb@chromium.org</owner>
   <owner>chromeos-commercial-remote-management@google.com</owner>
@@ -2278,7 +2310,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Enterprise.PlatformAuth.GetAuthData.{Result}Time" units="ms"
-    expires_after="2023-10-31">
+    expires_after="2024-02-20">
   <owner>igorruvinov@chromium.org</owner>
   <owner>zmin@chromium.org</owner>
   <summary>
@@ -2318,7 +2350,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Enterprise.Policies.{PolicyLevel}" enum="EnterprisePolicies"
-    expires_after="2023-12-01">
+    expires_after="2024-02-20">
   <owner>zmin@chromium.org</owner>
   <owner>qiutanw@google.com</owner>
   <owner>chromeos-commercial-remote-management@google.com</owner>
@@ -2461,7 +2493,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Enterprise.ProfileSeparation.DasherPolicyFetch.HttpResponse"
-    enum="HttpResponseCode" expires_after="2023-09-03">
+    enum="HttpResponseCode" expires_after="2024-07-01">
   <owner>ydago@chromium.org</owner>
   <owner>zmin@chromium.org</owner>
   <summary>
@@ -2473,7 +2505,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Enterprise.ProfileSeparation.DasherPolicyFetch.NetworkError"
-    enum="NetErrorCodes" expires_after="2023-10-08">
+    enum="NetErrorCodes" expires_after="2024-07-01">
   <owner>ydago@chromium.org</owner>
   <owner>zmin@chromium.org</owner>
   <summary>
@@ -2483,21 +2515,8 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Enterprise.PublicSession.ExtensionPermissions"
-    enum="ExtensionPermission3" expires_after="2023-03-01">
-  <owner>bfranz@chromium.org</owner>
-  <owner>chromeos-kiosk-eng@google.com</owner>
-  <summary>
-    Extensions (and apps) are quite restricted in public sessions for security
-    and privacy concerns - some permissions are blocked which means the
-    extension itself is blocked (prevented from loading). This histogram counts
-    requested permissions on extension installation in public sessions (both
-    installed and blocked extensions).
-  </summary>
-</histogram>
-
 <histogram name="Enterprise.PublicSession.SessionLength" units="minutes"
-    expires_after="2023-09-03">
+    expires_after="2024-09-03">
   <owner>bfranz@chromium.org</owner>
   <owner>chromeos-kiosk-eng@google.com</owner>
   <summary>
@@ -3017,7 +3036,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="EnterpriseCheck.InvalidPolicies" enum="EnterprisePolicies"
-    expires_after="2023-12-24">
+    expires_after="2024-02-25">
   <owner>pastarmovj@chromium.org</owner>
   <owner>ydago@chromium.org</owner>
   <summary>

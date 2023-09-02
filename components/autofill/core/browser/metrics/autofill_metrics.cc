@@ -170,7 +170,6 @@ int GetFieldTypeGroupPredictionQualityMetric(
       break;
 
     case FieldTypeGroup::kName:
-    case FieldTypeGroup::kNameBilling:
       group = GROUP_NAME;
       break;
 
@@ -182,8 +181,7 @@ int GetFieldTypeGroupPredictionQualityMetric(
       group = GROUP_IBAN;
       break;
 
-    case FieldTypeGroup::kAddressHome:
-    case FieldTypeGroup::kAddressBilling:
+    case FieldTypeGroup::kAddress:
       switch (AutofillType(field_type).GetStorableType()) {
         case ADDRESS_HOME_LINE1:
           group = GROUP_ADDRESS_LINE_1;
@@ -351,8 +349,7 @@ int GetFieldTypeGroupPredictionQualityMetric(
       group = GROUP_EMAIL;
       break;
 
-    case FieldTypeGroup::kPhoneHome:
-    case FieldTypeGroup::kPhoneBilling:
+    case FieldTypeGroup::kPhone:
       group = GROUP_PHONE;
       break;
 
@@ -906,39 +903,34 @@ void AutofillMetrics::LogScanCreditCardCompleted(
 void AutofillMetrics::LogProgressDialogResultMetric(
     bool is_canceled_by_user,
     AutofillProgressDialogType autofill_progress_dialog_type) {
-  std::string dialog_type;
-  switch (autofill_progress_dialog_type) {
-    case AutofillProgressDialogType::kAndroidFIDOProgressDialog:
-      dialog_type = "AndroidFIDO";
-      break;
-    case AutofillProgressDialogType::kVirtualCardUnmaskProgressDialog:
-      dialog_type = "CardUnmask";
-      break;
-    case AutofillProgressDialogType::kUnspecified:
-      NOTREACHED();
-      return;
-  }
-  base::UmaHistogramBoolean(
-      "Autofill.ProgressDialog." + dialog_type + ".Result",
-      is_canceled_by_user);
+  base::UmaHistogramBoolean(base::StrCat({"Autofill.ProgressDialog.",
+                                          GetDialogTypeStringForLogging(
+                                              autofill_progress_dialog_type),
+                                          ".Result"}),
+                            is_canceled_by_user);
 }
 
 void AutofillMetrics::LogProgressDialogShown(
     AutofillProgressDialogType autofill_progress_dialog_type) {
-  std::string dialog_type;
+  base::UmaHistogramBoolean(base::StrCat({"Autofill.ProgressDialog.",
+                                          GetDialogTypeStringForLogging(
+                                              autofill_progress_dialog_type),
+                                          ".Shown"}),
+                            true);
+}
+
+std::string_view AutofillMetrics::GetDialogTypeStringForLogging(
+    AutofillProgressDialogType autofill_progress_dialog_type) {
   switch (autofill_progress_dialog_type) {
     case AutofillProgressDialogType::kAndroidFIDOProgressDialog:
-      dialog_type = "AndroidFIDO";
-      break;
+      return "AndroidFIDO";
     case AutofillProgressDialogType::kVirtualCardUnmaskProgressDialog:
-      dialog_type = "CardUnmask";
-      break;
-    case AutofillProgressDialogType::kUnspecified:
-      NOTREACHED();
-      return;
+      return "VirtualCardUnmask";
+    case AutofillProgressDialogType::kServerCardUnmaskProgressDialog:
+      return "ServerCardUnmask";
+    default:
+      NOTREACHED_NORETURN();
   }
-  base::UmaHistogramBoolean("Autofill.ProgressDialog." + dialog_type + ".Shown",
-                            true);
 }
 
 // static
@@ -1492,7 +1484,7 @@ void AutofillMetrics::LogIsAutofillCreditCardEnabledAtStartup(bool enabled) {
 // static
 void AutofillMetrics::LogIsAutofillEnabledAtPageLoad(
     bool enabled,
-    AutofillSyncSigninState sync_state) {
+    PaymentsSigninState sync_state) {
   std::string name("Autofill.IsEnabled.PageLoad");
   UMA_HISTOGRAM_BOOLEAN(name, enabled);
   base::UmaHistogramBoolean(name + GetMetricsSyncStateSuffix(sync_state),
@@ -1502,7 +1494,7 @@ void AutofillMetrics::LogIsAutofillEnabledAtPageLoad(
 // static
 void AutofillMetrics::LogIsAutofillProfileEnabledAtPageLoad(
     bool enabled,
-    AutofillSyncSigninState sync_state) {
+    PaymentsSigninState sync_state) {
   std::string name("Autofill.Address.IsEnabled.PageLoad");
   UMA_HISTOGRAM_BOOLEAN(name, enabled);
   base::UmaHistogramBoolean(name + GetMetricsSyncStateSuffix(sync_state),
@@ -1512,7 +1504,7 @@ void AutofillMetrics::LogIsAutofillProfileEnabledAtPageLoad(
 // static
 void AutofillMetrics::LogIsAutofillCreditCardEnabledAtPageLoad(
     bool enabled,
-    AutofillSyncSigninState sync_state) {
+    PaymentsSigninState sync_state) {
   std::string name("Autofill.CreditCard.IsEnabled.PageLoad");
   UMA_HISTOGRAM_BOOLEAN(name, enabled);
   base::UmaHistogramBoolean(name + GetMetricsSyncStateSuffix(sync_state),
@@ -1707,6 +1699,11 @@ void AutofillMetrics::LogAutofillPopupHidingReason(PopupHidingReason reason) {
 // static
 void AutofillMetrics::LogAutofillFormCleared() {
   base::RecordAction(base::UserMetricsAction("Autofill_ClearedForm"));
+}
+
+// static
+void AutofillMetrics::LogAutofillUndo() {
+  base::RecordAction(base::UserMetricsAction("Autofill_UndoFilling"));
 }
 
 // static
@@ -2823,27 +2820,25 @@ int64_t AutofillMetrics::FormTypesToBitVector(
   return form_type_bv;
 }
 
-void AutofillMetrics::LogServerCardLinkClicked(
-    AutofillSyncSigninState sync_state) {
-  UMA_HISTOGRAM_ENUMERATION("Autofill.ServerCardLinkClicked", sync_state,
-                            AutofillSyncSigninState::kNumSyncStates);
+void AutofillMetrics::LogServerCardLinkClicked(PaymentsSigninState sync_state) {
+  base::UmaHistogramEnumeration("Autofill.ServerCardLinkClicked", sync_state);
 }
 
 // static
 const char* AutofillMetrics::GetMetricsSyncStateSuffix(
-    AutofillSyncSigninState sync_state) {
+    PaymentsSigninState sync_state) {
   switch (sync_state) {
-    case AutofillSyncSigninState::kSignedOut:
+    case PaymentsSigninState::kSignedOut:
       return ".SignedOut";
-    case AutofillSyncSigninState::kSignedIn:
+    case PaymentsSigninState::kSignedIn:
       return ".SignedIn";
-    case AutofillSyncSigninState::kSignedInAndWalletSyncTransportEnabled:
+    case PaymentsSigninState::kSignedInAndWalletSyncTransportEnabled:
       return ".SignedInAndWalletSyncTransportEnabled";
-    case AutofillSyncSigninState::kSignedInAndSyncFeatureEnabled:
+    case PaymentsSigninState::kSignedInAndSyncFeatureEnabled:
       return ".SignedInAndSyncFeatureEnabled";
-    case AutofillSyncSigninState::kSyncPaused:
+    case PaymentsSigninState::kSyncPaused:
       return ".SyncPaused";
-    case AutofillSyncSigninState::kNumSyncStates:
+    case PaymentsSigninState::kUnknown:
       return ".Unknown";
   }
 }

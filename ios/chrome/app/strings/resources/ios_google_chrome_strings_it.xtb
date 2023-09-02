@@ -2,15 +2,29 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="it">
 <translation id="1143896152279775643">La tua password verrà salvata in Gestore delle password di Google per <ph name="EMAIL" />.</translation>
+<translation id="1180362651362502943">Continua a usare i dati di Chrome nel tuo Account Google.</translation>
 <translation id="1282031177488366470">Contribuisci a migliorare le funzionalità e le prestazioni di Chrome</translation>
+<translation id="1333745675627230582">Gioca a Dino di Chrome</translation>
 <translation id="1352919863522755794">Gestore delle password di Google non ha potuto controllare le tue password. Verifica la tua connessione a internet.</translation>
+<translation id="1407843355326180937">Accedi a questo sito e a Chrome per trovare i tuoi preferiti e altri dati su tutti i tuoi dispositivi.</translation>
 <translation id="1462727070346936664">Accedi per usare al meglio Chrome.</translation>
 <translation id="1479202195792305274">Chrome può controllare le tue password quando accedi con il tuo Account Google.</translation>
 <translation id="1491435845014430217">Attiva l'opzione "Blocca le schede di navigazione in incognito quando chiudi Chrome".</translation>
 <translation id="1493827051843127077">Imposta Chrome come browser predefinito per la sincronizzazione di schede, password e dati di pagamento su tutti i tuoi dispositivi</translation>
 <translation id="1504372625950710826">Chrome non ha potuto verificare la disponibilità di aggiornamenti. Verifica la tua connessione a Internet.</translation>
 <translation id="1511320244449497906">Hai eseguito l'accesso e stai sincronizzando i tuoi dati con un account gestito da <ph name="DOMAIN" /> il cui amministratore può ora configurare criteri relativi agli utenti specifici per questo account che possono modificare il comportamento di Chrome.</translation>
+<translation id="1526327845902180576">Quando la funzionalità è attiva:
+<ph name="BEGIN_INDENT" /> • Contribuisci a migliorare Chrome per le persone che lo usano come fai tu.<ph name="END_INDENT" />
+
+Aspetti da considerare:
+<ph name="BEGIN_INDENT" /> • Google riceve informazioni relative al tuo utilizzo di Chrome, che però non sono riconducibili a te.
+
+  • Se Chrome si arresta in modo anomalo, i dettagli relativi a questo evento potrebbero includere alcune informazioni personali.
+
+  • Se sincronizzi la cronologia con il tuo Account Google, le metriche potrebbero includere anche informazioni relative agli URL che visiti.<ph name="END_INDENT" /></translation>
 <translation id="1554731936187952550">Disponi della misura di sicurezza più efficace di Chrome contro siti web pericolosi</translation>
+<translation id="1675955119303651351">Alcuni dati di Chrome non sono ancora stati salvati nel tuo Account Google.
+        Prova ad attendere qualche minuto prima di uscire. Se esci ora, questi dati verranno eliminati.</translation>
 <translation id="1682483655351012182">Sincronizza i tuoi dati di Chrome</translation>
 <translation id="1733654336159102143">Blocca le schede di navigazione in incognito quando esci da Chrome o passi a un'altra app.</translation>
 <translation id="1759842336958782510">Chrome</translation>
@@ -18,6 +32,7 @@
 <translation id="1917964099031477364">Questo account e gli eventuali dati non salvati verranno rimossi da Chrome e da altre app Google su questo dispositivo.</translation>
 <translation id="2009224836393115614">Chrome non ha potuto controllare le tue password. Verifica la tua connessione a Internet.</translation>
 <translation id="2056123005618757196">Aumenta la tua produttività grazie a Google Chrome, che ti offre semplicità, sicurezza e velocità senza precedenti.</translation>
+<translation id="2120238739383482109">Consente di aprire i preferiti di Chrome.</translation>
 <translation id="2147651015520127414">Chrome ha verificato che <ph name="ISSUER" /> ha emesso il certificato del sito web.</translation>
 <translation id="2199719347983604670">Dati dalla sincronizzazione Chrome</translation>
 <translation id="2339201583852607431">La password verrà salvata nel tuo Account Google (<ph name="EMAIL" />).</translation>
@@ -54,8 +69,10 @@
 <translation id="3594076341410558780">Nascondi "Ottieni il massimo da Chrome"</translation>
 <translation id="3655656110921623717">Ciò significa che Chrome richiederà ogni volta il sito per dispositivi mobili.</translation>
 <translation id="3720541637541300822">Blocca le schede di navigazione in incognito quando chiudi Chrome</translation>
+<translation id="3741995255368156336">Consente di aprire l'elenco di lettura di Chrome.</translation>
 <translation id="3827545470516145620">Otterrai la protezione di sicurezza standard su questo dispositivo</translation>
 <translation id="384394811301901750">Google Chrome non può utilizzare la videocamera al momento</translation>
+<translation id="3901001113120561395">Usa al meglio Chrome.</translation>
 <translation id="3980220367029651214">Stai per cambiare account di sincronizzazione, passando dall'account <ph name="USER_EMAIL1" /> all'account <ph name="USER_EMAIL2" />. I tuoi attuali dati di Chrome vengono gestiti da <ph name="DOMAIN" />. I dati verranno eliminati da questo dispositivo, ma rimarranno memorizzati nell'account <ph name="USER_EMAIL1" />.</translation>
 <translation id="3984746313391923992">La tua organizzazione ti richiede di non effettuare l'accesso a Chrome.</translation>
 <translation id="3988789688219830639">Google Chrome non ha accesso alle tue foto o ai tuoi video. Attiva l'accesso in Impostazioni iOS &gt; Privacy &gt; Foto.</translation>
@@ -64,20 +81,24 @@
 <translation id="417201473131094001">Non supportata su Chrome Canary</translation>
 <translation id="4233521129555661685"><ph name="USER_EMAIL1" /> stava usando Chrome e ha lasciato preferiti, password e altre impostazioni su questo dispositivo.</translation>
 <translation id="424864128008805179">Uscire da Chrome?</translation>
-<translation id="4249068189593983585">Suggerimento per Chrome. Per vedere più opzioni sulla scheda, tocca e tieni premuto il pulsante Mostra schede della barra degli strumenti, che si trova nella parte inferiore o superiore della schermata.</translation>
 <translation id="4508370294876102450">Apri Chrome da qualsiasi app</translation>
 <translation id="4523886039239821078">Alcuni componenti aggiuntivi provocano l'arresto anomalo di Chrome. Disinstallali.</translation>
 <translation id="4633328489441962921">Chrome non può controllare la disponibilità di aggiornamenti</translation>
 <translation id="4636900170638246267">Accedi a questo sito e a Chrome.</translation>
 <translation id="4698415050768537821">Chrome non ha potuto controllare tutte le password. Riprova domani oppure <ph name="BEGIN_LINK" />controlla le password nel tuo Account Google<ph name="END_LINK" />.</translation>
 <translation id="4819268619367838612">Per contribuire a migliorare l'app, Chrome invia a Google dati sull'utilizzo e sugli arresti anomali. <ph name="BEGIN_LINK" />Gestisci<ph name="END_LINK" /></translation>
+<translation id="4831642696589369971">Alcuni dati di Chrome non sono ancora stati salvati nel tuo Account Google.
+
+        Prova ad attendere qualche minuto prima di uscire. Se esci ora, questi dati verranno eliminati.</translation>
 <translation id="484033449593719797">Non supportata su Chrome beta</translation>
 <translation id="4840404732697892756">Gestore delle password di Google può controllare le tue password quando accedi con il tuo Account Google.</translation>
 <translation id="4903674399067644695">In questa scheda vengono mostrati suggerimenti su come utilizzare al meglio Chrome.</translation>
 <translation id="5030102366287574140">Chrome può contribuire a proteggerti da violazioni dei dati, siti web non sicuri e non solo.</translation>
 <translation id="5108659628347594808">Migliora Chrome</translation>
+<translation id="5112925986883715005">Visualizza l'elenco di lettura di Chrome</translation>
 <translation id="5119391094379141756">Seleziona Chrome</translation>
 <translation id="5162467219239570114">Chrome non è aggiornato. Se non sono disponibili aggiornamenti nell'<ph name="BEGIN_LINK" />App Store<ph name="END_LINK" />, è possibile che il dispositivo non supporti più le nuove versioni di Chrome.</translation>
+<translation id="5190139289262548459">La tua organizzazione, <ph name="DOMAIN" />, gestisce l'account a cui hai eseguito l'accesso e la modalità di utilizzo di Chrome.</translation>
 <translation id="5389212809648216794">Google Chrome non può utilizzare la videocamera perché è attualmente utilizzata da un'altra applicazione</translation>
 <translation id="5395376160638294582">Assicurati di poter usare sempre i dati di Chrome nel tuo Account Google</translation>
 <translation id="5439191312780166229">Ricevi un avviso in caso di siti pericolosi, inclusi quelli di cui Google non era a conoscenza, analizzando più dati provenienti dai siti rispetto al livello Protezione standard. Puoi scegliere di ignorare gli avvisi di Chrome.</translation>
@@ -92,7 +113,6 @@
 <translation id="5690427481109656848">Google LLC</translation>
 <translation id="571296537125272375">Offline. Chrome non può controllare la disponibilità di aggiornamenti</translation>
 <translation id="5716154293141027663">Apri Chrome ogni volta che tocchi link in altre app</translation>
-<translation id="5854621639439811139">Suggerimento per Chrome. Alcuni pulsanti ora si trovano nella parte inferiore della schermata, ad esempio Indietro, Avanti e Cerca.</translation>
 <translation id="5998675059699164418">La tua organizzazione richiede l'accesso per usare Chrome.</translation>
 <translation id="6054613632208573261">Usa Chrome per impostazione predefinita</translation>
 <translation id="6063091872902370735">Consenti l'accesso a Chrome</translation>
@@ -104,9 +124,13 @@
 <translation id="6427126399757991875">La tua organizzazione sta configurando Chrome…</translation>
 <translation id="6600954340915313787">Copiata in Chrome</translation>
 <translation id="6634107063912726160">Se esci, Chrome non sincronizzerà gli eventuali nuovi dati con il tuo Account Google. I dati sincronizzati in precedenza rimangono memorizzati nell'account.</translation>
+<translation id="6646696210740573446">Invia una parte offuscata dell'URL a Google tramite un server di tutela della privacy che nasconde il tuo indirizzo IP. Se un sito cerca di rubare la tua password o se scarichi un file dannoso, Chrome potrebbe inviare a Google anche gli URL, inclusi frammenti dei contenuti delle pagine.</translation>
 <translation id="6648150602980899529">Stai per eseguire l'accesso con un account gestito da <ph name="DOMAIN" /> e consentire al relativo amministratore di avere il controllo dei tuoi dati di Chrome. I tuoi dati verranno associati definitivamente a questo account. Se esci da Chrome, i dati verranno eliminati da questo dispositivo, ma rimarranno memorizzati nel tuo Account Google.</translation>
 <translation id="6676840375528380067">Eliminare i dati di Chrome dal dispositivo?</translation>
 <translation id="6709398533399187136">La tua password è stata compromessa nell'ambito di una violazione dei dati. Gestore delle password di Google consiglia di cambiarla subito.</translation>
+<translation id="6815466750807582739">I metodi di pagamento e gli indirizzi non verranno criptati. La cronologia di navigazione di Chrome non verrà sincronizzata.
+
+Solo chi conosce la tua passphrase può leggere i tuoi dati criptati. La passphrase non viene inviata a Google o memorizzata da Google. Se dimentichi la passphrase o vuoi modificare questa impostazione, <ph name="BEGIN_LINK" />cancella i dati di Chrome nel tuo account<ph name="END_LINK" />.</translation>
 <translation id="6822673484890854830">Chrome non ha potuto controllare tutte le password. Riprova più tardi.</translation>
 <translation id="6964931465519938134">Ora puoi usare Chrome ogni volta che tocchi link in messaggi, documenti e altre app.</translation>
 <translation id="6975725306479268850">Scegli Chrome per la compilazione automatica</translation>
@@ -135,9 +159,11 @@
 <translation id="804638182476029347">Consenti le notifiche di Chrome per ricevere avvisi relativi ai cali di prezzo</translation>
 <translation id="81358522153858150">Ora Chrome supporta i criteri relativi agli utenti per il tuo account gestito</translation>
 <translation id="8160472928944011082">Impossibile aggiornare Chrome</translation>
+<translation id="8213758103105806860">Visualizza i preferiti di Chrome</translation>
 <translation id="8357607116237445042">Scegli se cancellare i tuoi dati di Chrome da questo dispositivo o se conservarli</translation>
 <translation id="8370517070665726704">Copyright <ph name="YEAR" /> Google LLC Tutti i diritti riservati.</translation>
 <translation id="840168496893712993">Alcuni componenti aggiuntivi provocano l'arresto anomalo di Chrome. Prova a disinstallarli.</translation>
+<translation id="8413795581997394485">Protegge da siti, download ed estensioni noti per essere pericolosi. Quando visiti un sito, Chrome invia una parte offuscata dell'URL a Google tramite un server di tutela della privacy che nasconde il tuo indirizzo IP. Se un sito effettua attività sospette, vengono inviati anche URL completi e frammenti dei contenuti delle pagine.</translation>
 <translation id="8414886616817913619">La tua organizzazione richiede l'accesso per usare Chrome. <ph name="BEGIN_LINK" />Scopri di più<ph name="END_LINK" /></translation>
 <translation id="84594714173170813">Continua a usare i dati di Chrome nel tuo Account Google</translation>
 <translation id="8459495907675268833">I dati selezionati sono stati rimossi da Chrome e dai dispositivi sincronizzati. Il tuo Account Google potrebbe avere altre forme di cronologia di navigazione, ad esempio ricerche e attività, di altri servizi Google alla pagina history.google.com.</translation>
@@ -152,6 +178,9 @@
 <translation id="8772179140489533211">Vengono mostrate richieste di accesso a Chrome.</translation>
 <translation id="8788269841521769222">Non dovrai ricordare questa password perché verrà salvata in Gestore delle password di Google per <ph name="EMAIL" /></translation>
 <translation id="8808828119384186784">Impostazioni di Chrome</translation>
+<translation id="8856877214925961642">La crittografia delle passphrase non include metodi di pagamento e indirizzi.
+
+Per modificare questa impostazione, <ph name="BEGIN_LINK" />cancella i dati di Chrome nel tuo account<ph name="END_LINK" />.</translation>
 <translation id="8857676124663337448">Gestore delle password di Google non ha potuto controllare tutte le password. Riprova domani.</translation>
 <translation id="8897749957032330183">Le password vengono salvate in Gestore delle password di Google su questo dispositivo.</translation>
 <translation id="8969290730818637510">Quando l'opzione è attiva:

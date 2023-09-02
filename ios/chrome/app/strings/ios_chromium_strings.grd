@@ -201,9 +201,6 @@ locale.  The strings in this file are specific to iOS.
         Chromium has features that help you manage your internet data and how quickly you're able to load webpages.
 <ph name="BEGIN_LINK">BEGIN_LINK</ph>Learn more<ph name="END_LINK">END_LINK</ph>
       </message>
-      <message name="IDS_IOS_BOTTOM_TOOLBAR_IPH_PROMOTION_VOICE_OVER" desc="Text to be read by VoiceOver when the Bottom Toolbar Tip is presented to the user, explaining that the bottom toolbar can be used to reach some controls. Read by Text-to-Speech. [iOS only]">
-        Chromium tip. Some buttons are now at the bottom of your screen, like Back, Forward, and Search.
-      </message>
       <message name="IDS_IOS_CLEAR_BROWSING_DATA_FOOTER_SIGN_OUT_EVERY_WEBSITE" desc="Footer message in the settings to clear browsing data that allows user to sign out of Chrome to sign out their Google account from all websites. [iOS only]">
         To sign out of your Google Account on all websites, <ph name="BEGIN_LINK">BEGIN_LINK</ph>sign out of Chromium<ph name="END_LINK">END_LINK</ph>.
       </message>
@@ -289,7 +286,13 @@ Only someone with your passphrase can read your encrypted data. The passphrase i
         Use Chromium by default to open links, search from widgets, and autofill passwords in other apps
       </message>
       <message name="IDS_IOS_DEFAULT_BROWSER_VIDEO_PROMO_TITLE_TEXT" desc="Chromium version of the title for the default browser video promo. [iOS only]">
-        Open Chromium From Any App
+        Set Chromium as your Default Browser
+      </message>
+      <message name="IDS_IOS_DEFAULT_BROWSER_VIDEO_PROMO_STEP_3" desc="Chromium version of the text of the row indicating the third step of the instruction to set Chrome as default browser [iOS only]">
+        Select "Chromium."
+      </message>
+      <message name="IDS_IOS_DEFAULT_BROWSER_VIDEO_PROMO_STEP_2" desc="Chromium version of the text of the row indicating the second step of the instruction to set Chrome as default browser [iOS only]">
+        Tap "Chromium" then "Default Browser App."
       </message>
       <message name="IDS_IOS_DEFAULT_BROWSER_VIDEO_PROMO_SUBTITLE_TEXT" desc="Chromium version of the subtitle for the default browser video promo. [iOS only]">
         Open Chromium Settings in iOS, then tap on "Browser Default APP" and select Chromium.
@@ -394,9 +397,6 @@ Things to consider:
       <message name="IDS_IOS_LOGIN_ERROR_AUTHENTICATING_HOSTED" desc="Couldn't sign in because hosted account is used.">
         Your account does not work on Chromium. Please contact your domain administrator or use a regular Google Account to sign in.
       </message>
-      <message name="IDS_IOS_LONG_PRESS_TOOLBAR_IPH_PROMOTION_VOICE_OVER" desc="Text to be read by VoiceOver when the LongPress Toolbar Tip is presented to the user. Read by Text-to-Speech.">
-        Chromium tip. For more tab options, touch &amp; hold the Show Tabs button in the toolbar, which is at the bottom or top of your screen.
-      </message>
       <message name="IDS_IOS_MANAGE_SYNC_DATA_FROM_CHROME_SYNC_TITLE" desc="Title for the cell to open 'Data from Chromium sync' web page where the user can control all their data data from sync.">
         Data from Chromium sync
       </message>
@@ -409,11 +409,20 @@ Things to consider:
       <message name="IDS_IOS_MANAGED_SIGNIN_SUBTITLE" desc="The subtitle of the Sign in to a managed account dialog. If the User Policy feature is enabled, the IDS_IOS_MANAGED_SYNC_WITH_USER_POLICY_SUBTITLE subtitle will be used instead of this one. [300em]">
         You are signing in with an account managed by <ph name="DOMAIN">$1<ex>doe.com</ex></ph> and giving its administrator control over your Chromium data. Your data will become permanently tied to this account. Signing out of Chromium will delete your data from this device, but it will remain stored in your Google Account.
       </message>
+      <message name="IDS_IOS_MANAGED_SIGNIN_WITH_USER_POLICY_SUBTITLE" desc="The subtitle of the Sign in with a managed account dialog when user policies are enabled. [iOS only]">
+        Your organization, <ph name="DOMAIN">$1<ex>doe.com</ex></ph>, manages the account you're signing in to and how Chromium can be used. Your administrator can set up or restrict certain features.
+      </message>
       <message name="IDS_IOS_MANAGED_SWITCH_SUBTITLE" desc="The subtitle of the Switch from a managed account dialog. [300em]">
         You are switching sync accounts from <ph name="USER_EMAIL1">$1<ex>john@doe.com</ex></ph> to <ph name="USER_EMAIL2">$2<ex>johndoe@gmail.com</ex></ph>. Your existing Chromium data is managed by <ph name="DOMAIN">$3<ex>doe.com</ex></ph>. This will delete your data from this device, but your data will remain in <ph name="USER_EMAIL1">$1<ex>john@doe.com</ex></ph>.
       </message>
       <message name="IDS_IOS_MANAGED_SYNC_WITH_USER_POLICY_SUBTITLE" desc="The subtitle of the Sync with a managed account dialog when User Policy is enabled (alternative to IDS_IOS_MANAGED_SIGNIN_SUBTITLE). [300em][iOS only]">
         Your organization <ph name="DOMAIN">$1<ex>doe.com</ex></ph> will have access to your Chromium data, bookmarks, history, passwords and other settings you store in this account. When you sign out, your data will be cleared from this device.  However, your data will remain stored in your managed Google Account and be available to your organization. Your organization can also set user policies specific to that account that can change the behavior of Chromium.
+      </message>
+      <message name="IDS_IOS_MINI_MAP_FOOTER_STRING" desc="The text of the footer string displayed at the bottom of the minimap [iOS only].">
+        Chromium uses Google Maps to give you directions and local info on detected addresses.
+      </message>
+      <message name="IDS_IOS_MINI_MAP_IPH_TITLE" desc="The text of the iph string displayed on Mini Map screen on first trigger [iOS only].">
+        Chromium detects addresses using Google Maps to give you directions and local info.
       </message>
       <message name="IDS_IOS_OPTIONS_IMPORT_DATA_HEADER" desc="The header for the Import Data settings screen. [400em]">
         <ph name="USER_EMAIL1">$1<ex>johndoe@gmail.com</ex></ph> was using Chromium and left bookmarks, passwords, and other settings on this device.
@@ -522,6 +531,10 @@ Things to consider:
       </message>
       <message name="IDS_IOS_SIGN_IN_TO_CHROME_SETTING_TITLE" desc="The title for the setting item to Sign in to Chromium [iOS only]">
         Sign in to Chromium
+      </message>
+      <message name="IDS_IOS_SIGNOUT_DIALOG_MESSAGE_WITH_NOT_SAVED_DATA" desc="Body of a dialog shown to users when they sign out of Chrome but Chrome hasn't synced some data yet, which is permanently deleted if the user proceeds.  [iOS only].">
+        Some of your Chromium data hasn't been saved in your Google Account yet.
+        Try waiting a few minutes before signing out. If you sign out now, this data will be deleted.
       </message>
       <message name="IDS_IOS_SIGNOUT_DIALOG_TITLE_WITH_SYNCING_ACCOUNT" desc="The signout dialog title. This dialog is used when the user have a gmail account and sync is turned on [iOS only].">
         Choose whether to clear your Chromium data from this device or keep it
@@ -711,6 +724,87 @@ Things to consider:
       </message>
       <message name="IDS_IOS_IDENTITY_ERROR_INFOBAR_MAKE_SURE_YOU_CAN_ALWAYS_USE_CHROME_DATA_MESSAGE" desc="The error message in the identity error info bar related to making sure your can always use Chromium data in your Google account. [iOS only]">
         Make sure you can always use the Chromium data in your Google Account
+      </message>
+      <message name="IDS_IOS_INTENTS_OPEN_READING_LIST_TITLE" desc="Siri Shortcut for open reading list title [iOS only]">
+        See Chromium Reading List
+      </message>
+      <message name="IDS_IOS_INTENTS_OPEN_READING_LIST_DESCRIPTION" desc="Shortcut description to open reading list in chrome [iOS only].">
+        Opens the Chromium Reading List.
+      </message>
+      <message name="IDS_IOS_INTENTS_OPEN_BOOKMARKS_TITLE" desc="Siri Shortcut for open bookmarks title [iOS only]">
+        See Chromium Bookmarks
+      </message>
+      <message name="IDS_IOS_INTENTS_OPEN_BOOKMARKS_DESCRIPTION" desc="Shortcut description to open bookmarks in chrome [iOS only].">
+        Opens the Chromium bookmarks.
+      </message>
+      <message name="IDS_IOS_INTENTS_OPEN_RECENT_TABS_TITLE" desc="Siri Shortcut for open recent tabs title [iOS only]">
+        See Chromium Recent Tabs
+      </message>
+      <message name="IDS_IOS_INTENTS_OPEN_RECENT_TABS_DESCRIPTION" desc="Shortcut description to open recent tabs in chrome [iOS only].">
+        Opens the Chromium Recent Tabs.
+      </message>
+      <message name="IDS_IOS_INTENTS_OPEN_TAB_GRID_TITLE" desc="Siri Shortcut for open tab grid title [iOS only]">
+        Visit the Tab Grid in Chromium
+      </message>
+      <message name="IDS_IOS_INTENTS_OPEN_TAB_GRID_DESCRIPTION" desc="Shortcut description to open tab grid in chrome [iOS only].">
+        Opens the Chromium Tab Grid.
+      </message>
+      <message name="IDS_IOS_INTENTS_SEARCH_WITH_VOICE_TITLE" desc="Siri Shortcut for search with voice title [iOS only]">
+        Search With Voice in Chromium
+      </message>
+      <message name="IDS_IOS_INTENTS_OPEN_NEW_TAB_TITLE" desc="Siri Shortcut for open new tab title [iOS only]">
+        Open New Tab in Chromium
+      </message>
+      <message name="IDS_IOS_INTENTS_OPEN_NEW_TAB_DESCRIPTION" desc="Siri Shortcut description to open new tab in chromium [iOS only]">
+        Opens a New Tab in Chromium.
+      </message>
+      <message name="IDS_IOS_INTENTS_PLAY_DINO_GAME_TITLE" desc="Siri Shortcut for play dino game title [iOS only]">
+        Play Chromium Dino Game
+      </message>
+      <message name="IDS_IOS_INTENTS_PLAY_DINO_GAME_DESCRIPTION" desc="Siri Shortcut description to open dino game in chromium [iOS only]">
+        Opens the Chromium Dino Game.
+      </message>
+      <message name="IDS_IOS_INTENTS_SET_CHROME_DEFAULT_BROWSER_TITLE" desc="Siri Shortcut for set Chromium as default browser title [iOS only]">
+        Set Chromium As Default Browser
+      </message>
+      <message name="IDS_IOS_INTENTS_SET_CHROME_DEFAULT_BROWSER_DESCRIPTION" desc="Siri Shortcut description to set Chromium as default browser [iOS only]">
+        Opens the Chromium Setting to set Chromium as Default Browser.
+      </message>
+      <message name="IDS_IOS_INTENTS_VIEW_CHROME_HISTORY_TITLE" desc="Siri Shortcut for view chromium history title [iOS only]">
+        View Your Chromium History
+      </message>
+      <message name="IDS_IOS_INTENTS_VIEW_CHROME_HISTORY_DESCRIPTION" desc="Siri Shortcut description to view Chromium history [iOS only]">
+        Opens your Chromium History Page.
+      </message>
+      <message name="IDS_IOS_INTENTS_OPEN_CHROME_INCOGNITO_TAB_TITLE" desc="Siri Shortcut for open chromium incognito tab title [iOS only]">
+        Open Chromium Incognito Tab
+      </message>
+      <message name="IDS_IOS_INTENTS_OPEN_CHROME_INCOGNITO_TAB_DESCRIPTION" desc="Siri Shortcut description to open chromium incognito tab [iOS only]">
+        Opens a New Chromium Incognito Tab.
+      </message>
+      <message name="IDS_IOS_INTENTS_MANAGE_PAYMENT_METHODS_TITLE" desc="Siri Shortcut for manage payment methods title [iOS only]">
+        Manage Payment Methods in Chromium
+      </message>
+      <message name="IDS_IOS_INTENTS_MANAGE_PAYMENT_METHODS_DESCRIPTION" desc="Siri Shortcut description to manage payment methods [iOS only]">
+        Opens The Payment Methods Setting Page in Chromium.
+      </message>
+      <message name="IDS_IOS_INTENTS_RUN_SAFETY_CHECK_TITLE" desc="Siri Shortcut for run safety check title [iOS only]">
+        Run Chromium Safety Check
+      </message>
+      <message name="IDS_IOS_INTENTS_RUN_SAFETY_CHECK_DESCRIPTION" desc="Siri Shortcut description to run safety check [iOS only]">
+        Opens and Runs Safety Check in Chromium.
+      </message>
+      <message name="IDS_IOS_INTENTS_MANAGE_PASSWORDS_TITLE" desc="Siri Shortcut for manage passwords title [iOS only]">
+        Manage Passwords in Chromium
+      </message>
+      <message name="IDS_IOS_INTENTS_MANAGE_PASSWORDS_DESCRIPTION" desc="Siri Shortcut description to manage passwords [iOS only]">
+        Opens The Password Manager in Chromium.
+      </message>
+      <message name="IDS_IOS_INTENTS_MANAGE_SETTINGS_TITLE" desc="Siri Shortcut for manage settings title [iOS only]">
+        Manage Chromium Settings
+      </message>
+      <message name="IDS_IOS_INTENTS_MANAGE_SETTINGS_DESCRIPTION" desc="Siri Shortcut description to manage settings in chromium [iOS only]">
+        Opens The Settings in Chromium.
       </message>
     </messages>
   </release>

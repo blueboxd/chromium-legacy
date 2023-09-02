@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/views/autofill/popup/popup_view_views.h"
+#include "chrome/browser/ui/autofill/autofill_popup_view.h"
 
 #include <memory>
 
@@ -17,15 +18,17 @@
 #include "chrome/browser/ui/views/autofill/popup/popup_cell_view.h"
 #include "chrome/browser/ui/views/autofill/popup/popup_row_view.h"
 #include "chrome/browser/ui/views/autofill/popup/popup_separator_view.h"
+#include "chrome/browser/ui/views/autofill/popup/popup_view_views_test_api.h"
 #include "chrome/browser/ui/views/autofill/popup/popup_warning_view.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/views/chrome_views_test_base.h"
 #include "components/autofill/core/browser/metrics/autofill_metrics.h"
 #include "components/autofill/core/browser/ui/popup_item_ids.h"
 #include "components/autofill/core/browser/ui/suggestion.h"
+#include "components/autofill/core/common/aliases.h"
 #include "components/autofill/core/common/autofill_features.h"
-#include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/input/native_web_keyboard_event.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -47,6 +50,7 @@ namespace autofill {
 
 namespace {
 
+using ::testing::_;
 using ::testing::Mock;
 using ::testing::NiceMock;
 using ::testing::Return;
@@ -114,7 +118,7 @@ class PopupViewViewsTest : public ChromeViewsTestBase {
     view_ = std::make_unique<PopupViewViews>(controller().GetWeakPtr(),
                                              widget_.get());
     widget().SetContentsView(view_.get());
-    view().DoShow();
+    view().Show(AutoselectFirstSuggestion(false));
   }
 
   void CreateAndShowView(const std::vector<PopupItemId>& ids) {
@@ -124,7 +128,7 @@ class PopupViewViewsTest : public ChromeViewsTestBase {
 
   void UpdateSuggestions(const std::vector<PopupItemId>& ids) {
     controller().set_suggestions(ids);
-    view().OnSuggestionsChanged();
+    static_cast<AutofillPopupView&>(view()).OnSuggestionsChanged();
   }
 
   void Paint() {
@@ -174,20 +178,20 @@ class PopupViewViewsTest : public ChromeViewsTestBase {
         blink::WebKeyboardEvent::Type::kRawKeyDown, modifiers,
         ui::EventTimeForNow());
     event.windows_key_code = windows_key_code;
-    view().HandleKeyPressEvent(event);
+    test_api(view()).HandleKeyPressEvent(event);
   }
 
  protected:
   views::View& GetRowViewAt(size_t index) {
     return *absl::visit([](views::View* view) { return view; },
-                        view().GetRowsForTesting()[index]);
+                        test_api(view()).rows()[index]);
   }
 
   PopupRowView& GetPopupRowViewAt(size_t index) {
-    return view().GetPopupRowViewAt(index);
+    return *absl::get<PopupRowView*>(test_api(view()).rows()[index]);
   }
 
-  size_t GetNumberOfRows() { return view().GetRowsForTesting().size(); }
+  size_t GetNumberOfRows() { return test_api(view()).rows().size(); }
 
   MockAutofillPopupController& controller() {
     return autofill_popup_controller_;
@@ -239,14 +243,14 @@ TEST_F(PopupViewViewsTest, CanShowDropdownInBounds) {
   const int kElementHeight = 15;
   controller().set_element_bounds({10, kElementY, 100, kElementHeight});
 
-  EXPECT_FALSE(view().CanShowDropdownInBoundsForTesting({0, 0, 100, 35}));
+  EXPECT_FALSE(test_api(view()).CanShowDropdownInBounds({0, 0, 100, 35}));
 
   // Test a smaller than the popup height (-10px) available space.
-  EXPECT_FALSE(view().CanShowDropdownInBoundsForTesting(
+  EXPECT_FALSE(test_api(view()).CanShowDropdownInBounds(
       {0, 0, 100, kElementY + kElementHeight + kSingleItemPopupHeight - 10}));
 
   // Test a larger than the popup height (+10px) available space.
-  EXPECT_TRUE(view().CanShowDropdownInBoundsForTesting(
+  EXPECT_TRUE(test_api(view()).CanShowDropdownInBounds(
       {0, 0, 100, kElementY + kElementHeight + kSingleItemPopupHeight + 10}));
 
   view().Hide();
@@ -257,10 +261,10 @@ TEST_F(PopupViewViewsTest, CanShowDropdownInBounds) {
                      PopupItemId::kAutocompleteEntry,
                      PopupItemId::kAutocompleteEntry, PopupItemId::kSeparator,
                      PopupItemId::kAutofillOptions});
-  EXPECT_FALSE(view().CanShowDropdownInBoundsForTesting({0, 0, 100, 35}));
-  EXPECT_FALSE(view().CanShowDropdownInBoundsForTesting(
+  EXPECT_FALSE(test_api(view()).CanShowDropdownInBounds({0, 0, 100, 35}));
+  EXPECT_FALSE(test_api(view()).CanShowDropdownInBounds(
       {0, 0, 100, kElementY + kElementHeight + kSingleItemPopupHeight - 10}));
-  EXPECT_TRUE(view().CanShowDropdownInBoundsForTesting(
+  EXPECT_TRUE(test_api(view()).CanShowDropdownInBounds(
       {0, 0, 100, kElementY + kElementHeight + kSingleItemPopupHeight + 10}));
 }
 
@@ -360,7 +364,7 @@ TEST_F(PopupViewViewsTest, Gestures) {
   ui::GestureEvent tap_event(/*x=*/0, /*y=*/0, /*flags=*/0,
                              ui::EventTimeForNow(),
                              ui::GestureEventDetails(ui::ET_GESTURE_TAP));
-  EXPECT_CALL(controller(), AcceptSuggestion(0));
+  EXPECT_CALL(controller(), AcceptSuggestion(0, _));
   GetPopupRowViewAt(0).GetContentView().OnGestureEvent(&tap_event);
 
   // Canceling gesture clears any selection.
@@ -511,7 +515,7 @@ class PopupViewViewsTestKeyboard : public PopupViewViewsTest {
 // Tests that hitting enter on a suggestion autofills it.
 TEST_F(PopupViewViewsTestKeyboard, FillOnEnter) {
   SelectFirstSuggestion();
-  EXPECT_CALL(controller(), AcceptSuggestion(0));
+  EXPECT_CALL(controller(), AcceptSuggestion(0, _));
   EXPECT_CALL(controller(), AcceptSuggestionWithoutThreshold).Times(0);
   SimulateKeyPress(ui::VKEY_RETURN);
 }
@@ -519,7 +523,7 @@ TEST_F(PopupViewViewsTestKeyboard, FillOnEnter) {
 // Tests that hitting tab on a suggestion autofills it.
 TEST_F(PopupViewViewsTestKeyboard, FillOnTabPressed) {
   SelectFirstSuggestion();
-  EXPECT_CALL(controller(), AcceptSuggestion(0));
+  EXPECT_CALL(controller(), AcceptSuggestion(0, _));
   EXPECT_CALL(controller(), AcceptSuggestionWithoutThreshold).Times(0);
   SimulateKeyPress(ui::VKEY_TAB);
 }
@@ -528,7 +532,7 @@ TEST_F(PopupViewViewsTestKeyboard, FillOnTabPressed) {
 // autofill a selected suggestion.
 TEST_F(PopupViewViewsTestKeyboard, NoFillOnTabPressedWithModifiers) {
   SelectFirstSuggestion();
-  EXPECT_CALL(controller(), AcceptSuggestion(0)).Times(0);
+  EXPECT_CALL(controller(), AcceptSuggestion(0, _)).Times(0);
   EXPECT_CALL(controller(), AcceptSuggestionWithoutThreshold).Times(0);
   SimulateKeyPress(ui::VKEY_TAB, /*shift_modifier_pressed=*/false,
                    /*non_shift_modifier_pressed=*/true);
@@ -663,7 +667,7 @@ TEST_F(PopupViewViewsTest, UpdateSuggestionsNoCrash) {
 // Tests that (only) clickable items trigger an AcceptSuggestion event.
 TEST_P(PopupViewViewsTestWithAnyPopupItemId, MAYBE_ShowClickTest) {
   CreateAndShowView({popup_item_id()});
-  EXPECT_CALL(controller(), AcceptSuggestion(0))
+  EXPECT_CALL(controller(), AcceptSuggestion(0, _))
       .Times(IsClickable(popup_item_id()));
   generator().MoveMouseTo(gfx::Point(1000, 1000));
   ASSERT_FALSE(view().IsMouseHovered());
@@ -677,7 +681,7 @@ TEST_P(PopupViewViewsTestWithAnyPopupItemId, MAYBE_ShowClickTest) {
 TEST_P(PopupViewViewsTestWithClickablePopupItemId,
        AcceptSuggestionIfUnfocusedAtPaint) {
   CreateAndShowView({popup_item_id()});
-  EXPECT_CALL(controller(), AcceptSuggestion(0)).Times(1);
+  EXPECT_CALL(controller(), AcceptSuggestion(0, _)).Times(1);
   generator().MoveMouseTo(gfx::Point(1000, 1000));
   ASSERT_FALSE(view().IsMouseHovered());
   Paint();

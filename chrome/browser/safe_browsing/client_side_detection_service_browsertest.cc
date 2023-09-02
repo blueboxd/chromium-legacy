@@ -56,8 +56,9 @@ class PhishingModelWaiter : public mojom::PhishingModelSetterTestObserver {
 
   // mojom::PhishingModelSetterTestObserver
   void PhishingModelUpdated() override {
-    if (callback_)
+    if (callback_) {
       std::move(callback_).Run();
+    }
   }
 
  private:
@@ -110,7 +111,7 @@ class ClientSideDetectionServiceBrowserTest : public PlatformBrowserTest {
 IN_PROC_BROWSER_TEST_F(ClientSideDetectionServiceBrowserTest,
                        MAYBE_ModelUpdatesPropagated) {
 #if BUILDFLAG(IS_MAC)
-  if (base::mac::IsAtLeastOS13()) {
+  if (base::mac::MacOSMajorVersion() >= 13) {
     GTEST_SKIP() << "Flaky on macOS 13: https://crbug.com/1433315";
   }
 #endif
@@ -195,7 +196,7 @@ IN_PROC_BROWSER_TEST_F(ClientSideDetectionServiceBrowserTest,
 IN_PROC_BROWSER_TEST_F(ClientSideDetectionServiceBrowserTest,
                        MAYBE_TfLiteClassification) {
 #if BUILDFLAG(IS_MAC)
-  if (base::mac::IsAtLeastOS13()) {
+  if (base::mac::MacOSMajorVersion() >= 13) {
     GTEST_SKIP() << "Flaky on macOS 13: https://crbug.com/1433315";
   }
 #endif
@@ -295,7 +296,7 @@ IN_PROC_BROWSER_TEST_F(ClientSideDetectionServiceBrowserTest,
 IN_PROC_BROWSER_TEST_F(ClientSideDetectionServiceBrowserTest,
                        MAYBE_TfLiteClassificationAfterTwoModelUploads) {
 #if BUILDFLAG(IS_MAC)
-  if (base::mac::IsAtLeastOS13()) {
+  if (base::mac::MacOSMajorVersion() >= 13) {
     GTEST_SKIP() << "Flaky on macOS 13: https://crbug.com/1433315";
   }
 #endif

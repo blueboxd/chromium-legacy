@@ -33,6 +33,7 @@
 #include <utility>
 
 #include "base/auto_reset.h"
+#include "base/containers/contains.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
@@ -190,8 +191,19 @@ bool ShouldResourceBeAddedToMemoryCache(const FetchParameters& params,
          !IsRawResource(*resource);
 }
 
-bool ShouldResourceBeKeptStrongReferenceByType(Resource* resource) {
+bool ShouldResourceBeKeptStrongReferenceByType(
+    Resource* resource,
+    const SecurityOrigin* settings_object_origin) {
   // Image, fonts, stylesheets and scripts are the most commonly reused scripts.
+
+  if (base::FeatureList::IsEnabled(
+          features::kMemoryCacheStrongReferenceFilterCrossOriginScripts) &&
+      resource->GetType() == ResourceType::kScript &&
+      !SecurityOrigin::Create(resource->Url())
+           ->IsSameOriginWith(settings_object_origin)) {
+    return false;
+  }
+
   return (resource->GetType() == ResourceType::kImage &&
           !base::FeatureList::IsEnabled(
               features::kMemoryCacheStrongReferenceFilterImages)) ||
@@ -199,14 +211,18 @@ bool ShouldResourceBeKeptStrongReferenceByType(Resource* resource) {
           !base::FeatureList::IsEnabled(
               features::kMemoryCacheStrongReferenceFilterScripts)) ||
          resource->GetType() == ResourceType::kFont ||
-         resource->GetType() == ResourceType::kCSSStyleSheet;
+         resource->GetType() == ResourceType::kCSSStyleSheet ||
+         resource->GetType() == ResourceType::kMock;  // For tests.
 }
 
-bool ShouldResourceBeKeptStrongReference(Resource* resource) {
+bool ShouldResourceBeKeptStrongReference(
+    Resource* resource,
+    const SecurityOrigin* settings_object_origin) {
   return IsMainThread() && resource->IsLoaded() &&
          resource->GetResourceRequest().HttpMethod() == http_names::kGET &&
          resource->Options().data_buffering_policy != kDoNotBufferData &&
-         ShouldResourceBeKeptStrongReferenceByType(resource) &&
+         ShouldResourceBeKeptStrongReferenceByType(resource,
+                                                   settings_object_origin) &&
          !resource->GetResponse().CacheControlContainsNoCache() &&
          !resource->GetResponse().CacheControlContainsNoStore();
 }
@@ -486,15 +502,6 @@ ResourceLoadPriority ResourceFetcher::ComputeLoadPriority(
   if (visibility == ResourcePriority::kVisible)
     priority = ResourceLoadPriority::kHigh;
 
-  // LCP Critical Path Predictor identified previous LCP images get a boost
-  // to VeryHigh priority.
-  // Note: The `priority` set here may be overridden by the logic below,
-  //       while that is not the case as of July 2023.
-  if (is_potentially_lcp_element) {
-    ++potentially_lcp_resource_priority_boosts_;
-    priority = ResourceLoadPriority::kVeryHigh;
-  }
-
   // Resources before the first image are considered "early" in the document and
   // resources after the first image are "late" in the document.  Important to
   // note that this is based on when the preload scanner discovers a resource
@@ -585,6 +592,24 @@ ResourceLoadPriority ResourceFetcher::ComputeLoadPriority(
       } else {
         priority = ResourceLoadPriority::kLowest;
       }
+    }
+  }
+
+  // LCP Critical Path Predictor identified resources get a priority boost.
+  // TODO(crbug.com/1419756): Separate out async script priorities from that of
+  // images.
+  if (is_potentially_lcp_element) {
+    ++potentially_lcp_resource_priority_boosts_;
+    switch (features::kLCPCriticalPathPredictorImageLoadPriority.Get()) {
+      case features::LcppImageLoadPriority::kMedium:
+        priority = std::max(priority, ResourceLoadPriority::kMedium);
+        break;
+      case features::LcppImageLoadPriority::kHigh:
+        priority = std::max(priority, ResourceLoadPriority::kHigh);
+        break;
+      case features::LcppImageLoadPriority::kVeryHigh:
+        priority = std::max(priority, ResourceLoadPriority::kVeryHigh);
+        break;
     }
   }
 
@@ -728,6 +753,12 @@ Resource* ResourceFetcher::CachedResource(const KURL& resource_url) const {
   if (it == cached_resources_map_.end())
     return nullptr;
   return it->value.Get();
+}
+
+const HeapHashSet<Member<Resource>>
+ResourceFetcher::MoveResourceStrongReferences() {
+  document_resource_strong_refs_total_size_ = 0;
+  return std::move(document_resource_strong_refs_);
 }
 
 mojom::ControllerServiceWorkerMode
@@ -1452,9 +1483,17 @@ Resource* ResourceFetcher::RequestResource(FetchParameters& params,
 }
 
 void ResourceFetcher::RemoveResourceStrongReference(Resource* resource) {
-  if (resource) {
+  if (resource && document_resource_strong_refs_.Contains(resource)) {
+    const size_t resource_size =
+        static_cast<size_t>(resource->GetResponse().DecodedBodyLength());
     document_resource_strong_refs_.erase(resource);
+    CHECK_GE(document_resource_strong_refs_total_size_, resource_size);
+    document_resource_strong_refs_total_size_ -= resource_size;
   }
+}
+
+bool ResourceFetcher::HasStrongReferenceForTesting(Resource* resource) {
+  return document_resource_strong_refs_.Contains(resource);
 }
 
 void ResourceFetcher::ResourceTimingReportTimerFired(TimerBase* timer) {
@@ -1739,8 +1778,9 @@ void ResourceFetcher::InsertAsPreloadIfNecessary(Resource* resource,
     return;
   }
   PreloadKey key(params.Url(), type);
-  if (preloads_.find(key) != preloads_.end())
+  if (base::Contains(preloads_, key)) {
     return;
+  }
 
   preloads_.insert(key, resource);
   resource->MarkAsPreload();
@@ -2794,20 +2834,44 @@ void ResourceFetcher::CancelWebBundleSubresourceLoadersFor(
 }
 
 void ResourceFetcher::MaybeSaveResourceToStrongReference(Resource* resource) {
-  if (base::FeatureList::IsEnabled(features::kMemoryCacheStrongReference) &&
-      ShouldResourceBeKeptStrongReference(resource)) {
-    document_resource_strong_refs_.insert(resource);
-    freezable_task_runner_->PostDelayedTask(
-        FROM_HERE,
-        WTF::BindOnce(&ResourceFetcher::RemoveResourceStrongReference,
-                      WrapWeakPersistent(this), WrapWeakPersistent(resource)),
-        GetResourceStrongReferenceTimeout(resource));
+  if (!base::FeatureList::IsEnabled(features::kMemoryCacheStrongReference)) {
+    return;
   }
+
+  static const size_t total_size_threshold = static_cast<size_t>(
+      features::kMemoryCacheStrongReferenceTotalSizeThresholdParam.Get());
+  static const size_t resource_size_threshold = static_cast<size_t>(
+      features::kMemoryCacheStrongReferenceResourceSizeThresholdParam.Get());
+  const size_t resource_size =
+      static_cast<size_t>(resource->GetResponse().DecodedBodyLength());
+  const bool size_is_small_enough = resource_size <= resource_size_threshold &&
+                                    resource_size <= total_size_threshold &&
+                                    document_resource_strong_refs_total_size_ <=
+                                        total_size_threshold - resource_size;
+
+  if (!size_is_small_enough) {
+    return;
+  }
+
+  const SecurityOrigin* settings_object_origin =
+      properties_->GetFetchClientSettingsObject().GetSecurityOrigin();
+  if (!ShouldResourceBeKeptStrongReference(resource, settings_object_origin)) {
+    return;
+  }
+
+  document_resource_strong_refs_.insert(resource);
+  document_resource_strong_refs_total_size_ += resource_size;
+  freezable_task_runner_->PostDelayedTask(
+      FROM_HERE,
+      WTF::BindOnce(&ResourceFetcher::RemoveResourceStrongReference,
+                    WrapWeakPersistent(this), WrapWeakPersistent(resource)),
+      GetResourceStrongReferenceTimeout(resource));
 }
 
 void ResourceFetcher::OnMemoryPressure(
     base::MemoryPressureListener::MemoryPressureLevel level) {
   document_resource_strong_refs_.clear();
+  document_resource_strong_refs_total_size_ = 0;
 }
 
 void ResourceFetcher::SetResourceCache(

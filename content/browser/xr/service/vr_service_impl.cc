@@ -15,6 +15,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/ranges/algorithm.h"
 #include "base/stl_util.h"
+#include "base/time/time.h"
 #include "base/trace_event/common/trace_event_common.h"
 #include "build/build_config.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
@@ -23,8 +24,11 @@
 #include "content/browser/xr/service/browser_xr_runtime_impl.h"
 #include "content/browser/xr/service/xr_permission_results.h"
 #include "content/browser/xr/service/xr_runtime_manager_impl.h"
+#include "content/browser/xr/webxr_internals/mojom/webxr_internals.mojom.h"
+#include "content/browser/xr/webxr_internals/webxr_internals_handler_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/permission_controller.h"
+#include "content/public/browser/permission_request_description.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_widget_host.h"
@@ -449,6 +453,13 @@ void VRServiceImpl::RequestSession(
   DVLOG(2) << __func__;
   DCHECK(options);
 
+  webxr::mojom::SessionRequestRecordPtr session_request_record =
+      webxr::mojom::SessionRequestRecord::New();
+  session_request_record->options = options->Clone();
+  session_request_record->requested_time = base::Time::Now();
+  runtime_manager_->GetLoggerManager().RecordSessionRequest(
+      std::move(session_request_record));
+
   // Queue the request to get to when initialization has completed.
   if (!initialization_complete_) {
     DVLOG(2) << __func__ << ": initialization not yet complete, defer request";
@@ -530,7 +541,9 @@ void VRServiceImpl::GetPermissionStatus(SessionRequestData request,
       GetRequiredPermissionsForMode(request.options->mode);
 
   permission_controller->RequestPermissionsFromCurrentDocument(
-      permissions_for_mode, render_frame_host_, true,
+      render_frame_host_,
+      PermissionRequestDescription(permissions_for_mode,
+                                   /*user_gesture=*/true),
       base::BindOnce(&VRServiceImpl::OnPermissionResultsForMode,
                      weak_ptr_factory_.GetWeakPtr(), std::move(request),
                      permissions_for_mode));
@@ -575,7 +588,9 @@ void VRServiceImpl::OnPermissionResultsForMode(
                                         request.optional_features);
 
   permission_controller->RequestPermissionsFromCurrentDocument(
-      permissions_for_features, render_frame_host_, true,
+      render_frame_host_,
+      PermissionRequestDescription(permissions_for_features,
+                                   /* user_gesture = */ true),
       base::BindOnce(&VRServiceImpl::OnPermissionResultsForFeatures,
                      weak_ptr_factory_.GetWeakPtr(), std::move(request),
                      permissions_for_features));

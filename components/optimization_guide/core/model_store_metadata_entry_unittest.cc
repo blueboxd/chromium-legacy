@@ -5,9 +5,12 @@
 #include "components/optimization_guide/core/model_store_metadata_entry.h"
 
 #include "base/files/file_path.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
+#include "components/optimization_guide/core/optimization_guide_features.h"
 #include "components/optimization_guide/core/optimization_guide_prefs.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace optimization_guide {
@@ -83,6 +86,17 @@ TEST_F(ModelStoreMetadataEntryTest, PurgeAllMetadata) {
                                 .AppendASCII("model_cache_key_bar"));
     updater.SetExpiryTime(expired_time);
   }
+  EXPECT_THAT(
+      ModelStoreMetadataEntry::GetValidModelDirs(local_state()),
+      testing::UnorderedElementsAre(base::FilePath::FromASCII("opt_target_foo")
+                                        .AppendASCII("model_cache_key_foo"),
+                                    base::FilePath::FromASCII("opt_target_foo")
+                                        .AppendASCII("model_cache_key_bar"),
+                                    base::FilePath::FromASCII("opt_target_bar")
+                                        .AppendASCII("model_cache_key_foo"),
+                                    base::FilePath::FromASCII("opt_target_bar")
+                                        .AppendASCII("model_cache_key_bar")));
+
   ModelStoreMetadataEntryUpdater::PurgeAllInactiveMetadata(local_state());
 
   // All entries should be purged.
@@ -94,6 +108,8 @@ TEST_F(ModelStoreMetadataEntryTest, PurgeAllMetadata) {
       local_state(), kTestOptimizationTargetFoo, model_cache_key_bar));
   EXPECT_FALSE(ModelStoreMetadataEntry::GetModelMetadataEntryIfExists(
       local_state(), kTestOptimizationTargetBar, model_cache_key_bar));
+  EXPECT_TRUE(
+      ModelStoreMetadataEntry::GetValidModelDirs(local_state()).empty());
 }
 
 TEST_F(ModelStoreMetadataEntryTest, PurgeExpiredMetadata) {
@@ -135,6 +151,17 @@ TEST_F(ModelStoreMetadataEntryTest, PurgeExpiredMetadata) {
                                 .AppendASCII("model_cache_key_bar"));
     updater.SetExpiryTime(expired_time);
   }
+  EXPECT_THAT(
+      ModelStoreMetadataEntry::GetValidModelDirs(local_state()),
+      testing::UnorderedElementsAre(base::FilePath::FromASCII("opt_target_foo")
+                                        .AppendASCII("model_cache_key_foo"),
+                                    base::FilePath::FromASCII("opt_target_foo")
+                                        .AppendASCII("model_cache_key_bar"),
+                                    base::FilePath::FromASCII("opt_target_bar")
+                                        .AppendASCII("model_cache_key_foo"),
+                                    base::FilePath::FromASCII("opt_target_bar")
+                                        .AppendASCII("model_cache_key_bar")));
+
   ModelStoreMetadataEntryUpdater::PurgeAllInactiveMetadata(local_state());
 
   // Only expired entries will be purged.
@@ -146,6 +173,57 @@ TEST_F(ModelStoreMetadataEntryTest, PurgeExpiredMetadata) {
       local_state(), kTestOptimizationTargetFoo, model_cache_key_bar));
   EXPECT_FALSE(ModelStoreMetadataEntry::GetModelMetadataEntryIfExists(
       local_state(), kTestOptimizationTargetBar, model_cache_key_bar));
+  EXPECT_THAT(
+      ModelStoreMetadataEntry::GetValidModelDirs(local_state()),
+      testing::UnorderedElementsAre(base::FilePath::FromASCII("opt_target_foo")
+                                        .AppendASCII("model_cache_key_foo"),
+                                    base::FilePath::FromASCII("opt_target_bar")
+                                        .AppendASCII("model_cache_key_foo")));
+}
+
+TEST_F(ModelStoreMetadataEntryTest, PurgeMetadataInKillSwitch) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      features::kOptimizationGuidePredictionModelKillswitch,
+      {{"OPTIMIZATION_TARGET_PAINFUL_PAGE_LOAD", "5"}});
+
+  auto model_cache_key_foo = CreateModelCacheKey(kTestLocaleFoo);
+  auto model_cache_key_bar = CreateModelCacheKey(kTestLocaleBar);
+  ModelStoreMetadataEntryUpdater::UpdateModelCacheKeyMapping(
+      local_state(), kTestOptimizationTargetFoo, model_cache_key_foo,
+      model_cache_key_foo);
+  ModelStoreMetadataEntryUpdater::UpdateModelCacheKeyMapping(
+      local_state(), kTestOptimizationTargetFoo, model_cache_key_bar,
+      model_cache_key_bar);
+
+  {
+    ModelStoreMetadataEntryUpdater updater(
+        local_state(), kTestOptimizationTargetFoo, model_cache_key_foo);
+    updater.SetModelBaseDir(base::FilePath::FromASCII("opt_target_foo")
+                                .AppendASCII("model_cache_key_foo"));
+    updater.SetVersion(5);
+  }
+  {
+    ModelStoreMetadataEntryUpdater updater(
+        local_state(), kTestOptimizationTargetFoo, model_cache_key_bar);
+    updater.SetModelBaseDir(base::FilePath::FromASCII("opt_target_foo")
+                                .AppendASCII("model_cache_key_bar"));
+    updater.SetVersion(6);
+  }
+  {
+    ModelStoreMetadataEntryUpdater updater(
+        local_state(), kTestOptimizationTargetBar, model_cache_key_foo);
+    updater.SetModelBaseDir(base::FilePath::FromASCII("opt_target_foo")
+                                .AppendASCII("model_cache_key_foo"));
+  }
+
+  ModelStoreMetadataEntryUpdater::PurgeAllInactiveMetadata(local_state());
+  EXPECT_FALSE(ModelStoreMetadataEntry::GetModelMetadataEntryIfExists(
+      local_state(), kTestOptimizationTargetFoo, model_cache_key_foo));
+  EXPECT_TRUE(ModelStoreMetadataEntry::GetModelMetadataEntryIfExists(
+      local_state(), kTestOptimizationTargetFoo, model_cache_key_bar));
+  EXPECT_TRUE(ModelStoreMetadataEntry::GetModelMetadataEntryIfExists(
+      local_state(), kTestOptimizationTargetBar, model_cache_key_foo));
 }
 
 }  // namespace optimization_guide

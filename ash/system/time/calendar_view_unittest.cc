@@ -141,7 +141,8 @@ class CalendarViewTest : public AshTestBase {
     AccountId user_account = AccountId::FromUserEmail(kTestUser);
     GetSessionControllerClient()->SwitchActiveUser(user_account);
 
-    auto calendar_view = std::make_unique<CalendarView>(delegate_.get());
+    auto calendar_view = std::make_unique<CalendarView>(
+        delegate_.get(), /*for_glanceables_container=*/false);
 
     calendar_view_ = widget_->SetContentsView(std::move(calendar_view));
   }
@@ -318,7 +319,8 @@ class CalendarViewTest : public AshTestBase {
  private:
   std::unique_ptr<views::Widget> widget_;
   // Owned by `widget_`.
-  raw_ptr<CalendarView, ExperimentalAsh> calendar_view_ = nullptr;
+  raw_ptr<CalendarView, DanglingUntriaged | ExperimentalAsh> calendar_view_ =
+      nullptr;
   std::unique_ptr<DetailedViewDelegate> delegate_;
   std::unique_ptr<CalendarEventListView> event_list_view_;
   static base::Time fake_time_;
@@ -1424,8 +1426,8 @@ class CalendarViewAnimationTest : public AshTestBase {
   }
 
   void CreateCalendarView() {
-    calendar_view_ = widget_->SetContentsView(
-        std::make_unique<CalendarView>(delegate_.get()));
+    calendar_view_ = widget_->SetContentsView(std::make_unique<CalendarView>(
+        delegate_.get(), /*for_glanceables_container=*/false));
   }
 
   // Gets date cell of a given CalendarMonthView and numerical `day`.
@@ -1544,10 +1546,11 @@ class CalendarViewAnimationTest : public AshTestBase {
  private:
   std::unique_ptr<views::Widget> widget_;
   // Owned by `widget_`.
-  raw_ptr<CalendarView, ExperimentalAsh> calendar_view_ = nullptr;
+  raw_ptr<CalendarView, DanglingUntriaged | ExperimentalAsh> calendar_view_ =
+      nullptr;
   std::unique_ptr<DetailedViewDelegate> delegate_;
   std::unique_ptr<base::subtle::ScopedTimeClockOverrides> time_overrides_;
-  raw_ptr<CalendarModel, ExperimentalAsh> calendar_model_;
+  raw_ptr<CalendarModel, DanglingUntriaged | ExperimentalAsh> calendar_model_;
   std::unique_ptr<calendar_test_utils::CalendarClientTestImpl> calendar_client_;
 };
 
@@ -1622,6 +1625,56 @@ TEST_F(CalendarViewAnimationTest, HeaderAnimation) {
   // Now the header is updated to the new month and year.
   EXPECT_EQ(u"December", month_header()->GetText());
   EXPECT_EQ(u"2021", header_year()->GetText());
+}
+
+TEST_F(CalendarViewAnimationTest, HeaderAnimationDirection) {
+  ui::ScopedAnimationDurationScaleMode test_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::NORMAL_DURATION);
+  base::Time date;
+  ASSERT_TRUE(base::Time::FromString("24 Aug 2023 10:00 GMT", &date));
+  GetSessionControllerClient()->SetSessionState(
+      session_manager::SessionState::ACTIVE);
+  ash::system::ScopedTimezoneSettings timezone_settings(u"America/Los_Angeles");
+  CreateCalendarView();
+
+  // Gives it a duration to let the animation finish and pass the cool down
+  // duration.
+  task_environment()->FastForwardBy(
+      calendar_test_utils::kAnimationSettleDownDuration);
+  UpdateMonth(date);
+  task_environment()->FastForwardBy(
+      calendar_test_utils::kAnimationSettleDownDuration);
+
+  // Scrolls to the next month.
+  ScrollDownOneMonth();
+  EXPECT_FALSE(is_scrolling_up());
+
+  // Gives it a duration to let the animation finish.
+  task_environment()->FastForwardBy(
+      calendar_test_utils::kAnimationSettleDownDuration);
+
+  // Scrolls to the previous month.
+  ScrollUpOneMonth();
+  EXPECT_TRUE(is_scrolling_up());
+
+  // Gives it a duration to let the animation finish.
+  task_environment()->FastForwardBy(
+      calendar_test_utils::kAnimationSettleDownDuration);
+
+  // Opens the event list view by clicking on a non-grayed out cell on the next
+  // month, so that the header will animate to the next month's header.
+  const auto* date_cell = GetDateCell(/*month=*/next_month(), /*day=*/u"10");
+  ClickDateCell(date_cell);
+
+  // Gives it a duration to let the animation finish.
+  task_environment()->FastForwardBy(
+      calendar_test_utils::kAnimationSettleDownDuration);
+  EXPECT_FALSE(is_scrolling_up());
+  EXPECT_TRUE(event_list_view());
+
+  // Gives it a duration to let the animation finish.
+  task_environment()->FastForwardBy(
+      calendar_test_utils::kAnimationSettleDownDuration);
 }
 
 // The month views and header should animate when scrolling up or down.
@@ -2198,36 +2251,39 @@ TEST_F(CalendarViewWithMessageCenterTest,
   EXPECT_TRUE(GetPrimaryUnifiedSystemTray()->IsShowingCalendarView());
   EXPECT_TRUE(GetPrimaryUnifiedSystemTray()->IsMessageCenterBubbleShown());
 
-  int number_of_focusable_views_in_message_center =
-      GetNumberOfFocusableViewsInMessageCenter();
-
   // Today's date cell should be focused now.
   PressTab();
   auto* current_date_cell_view = calendar_focus_manager()->GetFocusedView();
+  ASSERT_TRUE(calendar_focus_manager()->GetFocusedView());
   EXPECT_STREQ(current_date_cell_view->GetClassName(), "CalendarDateCellView");
 
   // Enter the message center.
-  PressTab();
-
-  // Keep tabbing until exiting the message center.
-  for (int i = 0; i < number_of_focusable_views_in_message_center; i++) {
+  while (calendar_focus_manager()->GetFocusedView()) {
     PressTab();
   }
 
-  // The "back to today" `PillButton` is the first focused view.
+  // Keep tabbing until exiting the message center.
+  while (!calendar_focus_manager()->GetFocusedView()) {
+    PressTab();
+  }
+
+  // Focus moves to calendar - the current date view is the first focused view.
   EXPECT_STREQ(calendar_focus_manager()->GetFocusedView()->GetClassName(),
-               "PillButton");
+               "CalendarDateCellView");
 
   // Move back to the message center.
   PressShiftTab();
+  ASSERT_FALSE(calendar_focus_manager()->GetFocusedView());
 
   // Keep tabbing backwards until exiting the message center.
-  for (int i = 0; i < number_of_focusable_views_in_message_center; i++) {
+  while (!calendar_focus_manager()->GetFocusedView()) {
     PressShiftTab();
   }
 
-  // Today's date cell should be focused now.
-  EXPECT_EQ(current_date_cell_view, calendar_focus_manager()->GetFocusedView());
+  // Focus moves to the last view in the calendar's focus order - the calendar
+  // view's `down_button_`.
+  EXPECT_STREQ("IconButton",
+               calendar_focus_manager()->GetFocusedView()->GetClassName());
 }
 
 class CalendarViewWithJellyEnabledTest : public CalendarViewTest {
@@ -2728,6 +2784,33 @@ TEST_F(
   PressEnter();
   ASSERT_TRUE(event_list_view());
 
+  EXPECT_EQ(focus_manager->GetFocusedView(), close_button());
+}
+
+TEST_F(CalendarViewWithJellyEnabledTest,
+       ShouldFocusEventListCloseButton_WhenFocusMovedFromTodayButton) {
+  base::Time date;
+  ASSERT_TRUE(base::Time::FromString("18 Nov 2021 10:00 GMT", &date));
+  // Set time override.
+  SetFakeNow(date);
+  base::subtle::ScopedTimeClockOverrides time_override(
+      &CalendarViewTest::FakeTimeNow, /*time_ticks_override=*/nullptr,
+      /*thread_ticks_override=*/nullptr);
+
+  CreateCalendarView();
+  MockEventsFetched(calendar_utils::GetStartOfMonthUTC(date),
+                    CreateMockEventListWithEventStartTimeTenMinsAway());
+
+  // When fetched events are in the next 10 mins, then up next should have been
+  // created.
+  ASSERT_TRUE(up_next_view());
+
+  auto* focus_manager = calendar_view()->GetFocusManager();
+  reset_to_today_button()->RequestFocus();
+  ASSERT_EQ(reset_to_today_button(), focus_manager->GetFocusedView());
+  GestureTapOn(up_next_todays_events_button());
+
+  ASSERT_TRUE(event_list_view());
   EXPECT_EQ(focus_manager->GetFocusedView(), close_button());
 }
 

@@ -9,6 +9,7 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <string_view>
 #include <utility>
 #include <vector>
 
@@ -999,9 +1000,13 @@ void FilterOptionElementsAndGetOptionStrings(
   for (const auto& option_element : option_elements) {
     if (HasTagName<kOption>(option_element)) {
       const WebOptionElement option = option_element.To<WebOptionElement>();
+      std::u16string content = option.GetText().Utf16();
+      if (content.empty()) {
+        content = GetAriaLabel(option_element.GetDocument(), option_element);
+      }
       options->push_back(
           {.value = option.Value().Utf16().substr(0, kMaxStringLength),
-           .content = option.GetText().Utf16().substr(0, kMaxStringLength)});
+           .content = content.substr(0, kMaxStringLength)});
     }
   }
 }
@@ -1151,7 +1156,7 @@ void FillFormField(const FormFieldData& data,
 }
 
 // Sets the |field|'s "suggested" (non JS visible) value to the value in |data|.
-// Also sets the "autofilled" attribute, causing the background to be yellow.
+// Also sets the "autofilled" attribute, causing the background to be blue.
 void PreviewFormField(const FormFieldData& data,
                       bool is_initiating_node,
                       blink::WebFormControlElement* field) {
@@ -2082,7 +2087,8 @@ void WebFormControlElementToFormField(
   if (IsAutofillableInputElement(input_element) || IsTextAreaElement(element) ||
       IsSelectOrSelectListElement(element)) {
     // The browser doesn't need to differentiate between preview and autofill.
-    field->is_autofilled = element.IsAutofilled();
+    field->is_autofilled =
+        element.GetAutofillState() == WebAutofillState::kAutofilled;
     field->is_focusable = IsWebElementFocusableForAutofill(element);
     field->is_visible = IsWebElementVisible(element);
     field->should_autocomplete =
@@ -2821,7 +2827,7 @@ void TraverseDomForFourDigitCombinations(
       return;
     }
     std::string node_text = node.NodeValue().Utf8();
-    re2::StringPiece input(node_text);
+    std::string_view input(node_text);
     std::string match;
     while (matches.size() < kMaxFourDigitCombinationMatches &&
            re2::RE2::FindAndConsume(&input, kFourDigitRegex, &match)) {

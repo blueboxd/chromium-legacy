@@ -6,13 +6,41 @@
 
 #import <Foundation/Foundation.h>
 
+#import "ios/chrome/common/intents/ManagePasswordsIntent.h"
+#import "ios/chrome/common/intents/ManagePaymentMethodsIntent.h"
+#import "ios/chrome/common/intents/ManageSettingsIntent.h"
+#import "ios/chrome/common/intents/OpenBookmarksIntent.h"
 #import "ios/chrome/common/intents/OpenInChromeIncognitoIntent.h"
 #import "ios/chrome/common/intents/OpenInChromeIntent.h"
+#import "ios/chrome/common/intents/OpenNewIncognitoTabIntent.h"
+#import "ios/chrome/common/intents/OpenNewTabIntent.h"
+#import "ios/chrome/common/intents/OpenReadingListIntent.h"
+#import "ios/chrome/common/intents/OpenRecentTabsIntent.h"
+#import "ios/chrome/common/intents/OpenTabGridIntent.h"
+#import "ios/chrome/common/intents/PlayDinoGameIntent.h"
+#import "ios/chrome/common/intents/RunSafetyCheckIntent.h"
 #import "ios/chrome/common/intents/SearchInChromeIntent.h"
+#import "ios/chrome/common/intents/SearchWithVoiceIntent.h"
+#import "ios/chrome/common/intents/SetChromeDefaultBrowserIntent.h"
+#import "ios/chrome/common/intents/ViewHistoryIntent.h"
 
 @interface ChromeIntentsHandler () <OpenInChromeIncognitoIntentHandling,
                                     OpenInChromeIntentHandling,
-                                    SearchInChromeIntentHandling>
+                                    SearchInChromeIntentHandling,
+                                    OpenReadingListIntentHandling,
+                                    OpenBookmarksIntentHandling,
+                                    OpenRecentTabsIntentHandling,
+                                    OpenTabGridIntentHandling,
+                                    SearchWithVoiceIntentHandling,
+                                    OpenNewTabIntentHandling,
+                                    PlayDinoGameIntentHandling,
+                                    SetChromeDefaultBrowserIntentHandling,
+                                    ViewHistoryIntentHandling,
+                                    OpenNewIncognitoTabIntentHandling,
+                                    ManagePaymentMethodsIntentHandling,
+                                    RunSafetyCheckIntentHandling,
+                                    ManagePasswordsIntentHandling,
+                                    ManageSettingsIntentHandling>
 @end
 
 @implementation ChromeIntentsHandler
@@ -102,6 +130,223 @@
 
   SearchInChromeIntentResponse* response = [[SearchInChromeIntentResponse alloc]
       initWithCode:SearchInChromeIntentResponseCodeContinueInApp
+      userActivity:activity];
+
+  completion(response);
+}
+
+#pragma mark - OpenReadingListIntentHandling
+
+- (void)handleOpenReadingList:(OpenReadingListIntent*)intent
+                   completion:
+                       (void (^)(OpenReadingListIntentResponse*))completion {
+  NSUserActivity* activity = [[NSUserActivity alloc]
+      initWithActivityType:NSStringFromClass([OpenReadingListIntent class])];
+
+  OpenReadingListIntentResponse* response =
+      [[OpenReadingListIntentResponse alloc]
+          initWithCode:OpenReadingListIntentResponseCodeContinueInApp
+          userActivity:activity];
+
+  completion(response);
+}
+
+#pragma mark - OpenBookmarksIntentHandling
+
+- (void)handleOpenBookmarks:(OpenBookmarksIntent*)intent
+                 completion:(void (^)(OpenBookmarksIntentResponse*))completion {
+  NSUserActivity* activity = [[NSUserActivity alloc]
+      initWithActivityType:NSStringFromClass([OpenBookmarksIntent class])];
+
+  OpenBookmarksIntentResponse* response = [[OpenBookmarksIntentResponse alloc]
+      initWithCode:OpenBookmarksIntentResponseCodeContinueInApp
+      userActivity:activity];
+
+  completion(response);
+}
+
+#pragma mark - OpenRecentTabsIntentHandling
+
+- (void)handleOpenRecentTabs:(OpenRecentTabsIntent*)intent
+                  completion:
+                      (void (^)(OpenRecentTabsIntentResponse*))completion {
+  NSUserActivity* activity = [[NSUserActivity alloc]
+      initWithActivityType:NSStringFromClass([OpenRecentTabsIntent class])];
+
+  OpenRecentTabsIntentResponse* response = [[OpenRecentTabsIntentResponse alloc]
+      initWithCode:OpenRecentTabsIntentResponseCodeContinueInApp
+      userActivity:activity];
+
+  completion(response);
+}
+
+#pragma mark - OpenTabGridIntentHandling
+
+- (void)handleOpenTabGrid:(OpenTabGridIntent*)intent
+               completion:(void (^)(OpenTabGridIntentResponse*))completion {
+  NSUserActivity* activity = [[NSUserActivity alloc]
+      initWithActivityType:NSStringFromClass([OpenTabGridIntent class])];
+
+  OpenTabGridIntentResponse* response = [[OpenTabGridIntentResponse alloc]
+      initWithCode:OpenTabGridIntentResponseCodeContinueInApp
+      userActivity:activity];
+
+  completion(response);
+}
+
+#pragma mark - SearchWithVoiceIntentHandling
+
+- (void)handleSearchWithVoice:(SearchWithVoiceIntent*)intent
+                   completion:
+                       (void (^)(SearchWithVoiceIntentResponse*))completion {
+  NSUserActivity* activity = [[NSUserActivity alloc]
+      initWithActivityType:NSStringFromClass([SearchWithVoiceIntent class])];
+
+  SearchWithVoiceIntentResponse* response =
+      [[SearchWithVoiceIntentResponse alloc]
+          initWithCode:SearchWithVoiceIntentResponseCodeContinueInApp
+          userActivity:activity];
+
+  completion(response);
+}
+
+#pragma mark OpenNewTabIntentHandling
+
+- (void)handleOpenNewTab:(SearchWithVoiceIntent*)intent
+              completion:(void (^)(OpenNewTabIntentResponse*))completion {
+  NSUserActivity* activity = [[NSUserActivity alloc]
+      initWithActivityType:NSStringFromClass([OpenNewTabIntent class])];
+
+  OpenNewTabIntentResponse* response = [[OpenNewTabIntentResponse alloc]
+      initWithCode:OpenNewTabIntentResponseCodeContinueInApp
+      userActivity:activity];
+
+  completion(response);
+}
+
+#pragma mark - PlayDinoGameIntentHandling
+
+- (void)handlePlayDinoGame:(PlayDinoGameIntent*)intent
+                completion:(void (^)(PlayDinoGameIntentResponse*))completion {
+  NSUserActivity* activity = [[NSUserActivity alloc]
+      initWithActivityType:NSStringFromClass([PlayDinoGameIntent class])];
+
+  PlayDinoGameIntentResponse* response = [[PlayDinoGameIntentResponse alloc]
+      initWithCode:PlayDinoGameIntentResponseCodeContinueInApp
+      userActivity:activity];
+
+  completion(response);
+}
+
+#pragma mark - SetChromeDefaultBrowserIntentHandling
+
+- (void)
+    handleSetChromeDefaultBrowser:(SetChromeDefaultBrowserIntent*)intent
+                       completion:
+                           (void (^)(SetChromeDefaultBrowserIntentResponse*))
+                               completion {
+  NSUserActivity* activity = [[NSUserActivity alloc]
+      initWithActivityType:NSStringFromClass(
+                               [SetChromeDefaultBrowserIntent class])];
+
+  SetChromeDefaultBrowserIntentResponse* response =
+      [[SetChromeDefaultBrowserIntentResponse alloc]
+          initWithCode:SetChromeDefaultBrowserIntentResponseCodeContinueInApp
+          userActivity:activity];
+
+  completion(response);
+}
+
+#pragma mark - ViewHistoryIntentHandling
+
+- (void)handleViewHistory:(ViewHistoryIntent*)intent
+               completion:(void (^)(ViewHistoryIntentResponse*))completion {
+  NSUserActivity* activity = [[NSUserActivity alloc]
+      initWithActivityType:NSStringFromClass([ViewHistoryIntent class])];
+
+  ViewHistoryIntentResponse* response = [[ViewHistoryIntentResponse alloc]
+      initWithCode:ViewHistoryIntentResponseCodeContinueInApp
+      userActivity:activity];
+
+  completion(response);
+}
+
+#pragma mark - OpenNewIncognitoTabIntentHandling
+
+- (void)handleOpenNewIncognito:(OpenNewIncognitoTabIntent*)intent
+                    completion:(void (^)(OpenNewIncognitoTabIntentResponse*))
+                                   completion {
+  NSUserActivity* activity = [[NSUserActivity alloc]
+      initWithActivityType:NSStringFromClass(
+                               [OpenNewIncognitoTabIntent class])];
+
+  OpenNewIncognitoTabIntentResponse* response =
+      [[OpenNewIncognitoTabIntentResponse alloc]
+          initWithCode:OpenNewIncognitoTabIntentResponseCodeContinueInApp
+          userActivity:activity];
+
+  completion(response);
+}
+
+#pragma mark - ManagePaymentMethodsIntentHandling
+
+- (void)handleManagePaymentMethods:(ManagePaymentMethodsIntent*)intent
+                        completion:
+                            (void (^)(ManagePaymentMethodsIntentResponse*))
+                                completion {
+  NSUserActivity* activity = [[NSUserActivity alloc]
+      initWithActivityType:NSStringFromClass(
+                               [ManagePaymentMethodsIntent class])];
+
+  ManagePaymentMethodsIntentResponse* response =
+      [[ManagePaymentMethodsIntentResponse alloc]
+          initWithCode:ManagePaymentMethodsIntentResponseCodeContinueInApp
+          userActivity:activity];
+
+  completion(response);
+}
+
+#pragma mark - RunSafetyCheckIntentHandling
+
+- (void)handleRunSafetyCheck:(RunSafetyCheckIntent*)intent
+                  completion:
+                      (void (^)(RunSafetyCheckIntentResponse*))completion {
+  NSUserActivity* activity = [[NSUserActivity alloc]
+      initWithActivityType:NSStringFromClass([RunSafetyCheckIntent class])];
+
+  RunSafetyCheckIntentResponse* response = [[RunSafetyCheckIntentResponse alloc]
+      initWithCode:RunSafetyCheckIntentResponseCodeContinueInApp
+      userActivity:activity];
+
+  completion(response);
+}
+
+#pragma mark - ManagePasswordsIntentHandling
+
+- (void)handleManagePasswords:(ManagePasswordsIntent*)intent
+                   completion:
+                       (void (^)(ManagePasswordsIntentResponse*))completion {
+  NSUserActivity* activity = [[NSUserActivity alloc]
+      initWithActivityType:NSStringFromClass([ManagePasswordsIntent class])];
+
+  ManagePasswordsIntentResponse* response =
+      [[ManagePasswordsIntentResponse alloc]
+          initWithCode:ManagePasswordsIntentResponseCodeContinueInApp
+          userActivity:activity];
+
+  completion(response);
+}
+
+#pragma mark - ManageSettingsIntentHandling
+
+- (void)handleManageSettings:(ManageSettingsIntent*)intent
+                  completion:
+                      (void (^)(ManageSettingsIntentResponse*))completion {
+  NSUserActivity* activity = [[NSUserActivity alloc]
+      initWithActivityType:NSStringFromClass([ManageSettingsIntent class])];
+
+  ManageSettingsIntentResponse* response = [[ManageSettingsIntentResponse alloc]
+      initWithCode:ManageSettingsIntentResponseCodeContinueInApp
       userActivity:activity];
 
   completion(response);

@@ -9,8 +9,8 @@
 #include <stddef.h>
 
 #include "base/apple/bridging.h"
-#import "base/mac/foundation_util.h"
-#include "base/mac/scoped_cftyperef.h"
+#import "base/apple/foundation_util.h"
+#include "base/apple/scoped_cftyperef.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/font.h"
 
@@ -36,13 +36,13 @@ TEST(PlatformFontMacTest, DeriveFont) {
       }
     }
 
-    return base::mac::GetValueFromDictionary<CFNumberRef>(dict, key);
+    return base::apple::GetValueFromDictionary<CFNumberRef>(dict, key);
   };
 
   // |weight_tri| is either -1, 0, or 1 meaning "light", "normal", or "bold".
   auto CheckExpected = [GetValueFromDictionaryAndWorkAroundMacOS13Bug](
                            const Font& font, int weight_tri, bool isItalic) {
-    base::ScopedCFTypeRef<CFDictionaryRef> traits(
+    base::apple::ScopedCFTypeRef<CFDictionaryRef> traits(
         CTFontCopyTraits(font.GetCTFont()));
     DCHECK(traits);
 

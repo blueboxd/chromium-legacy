@@ -12,6 +12,7 @@
 #include "base/functional/callback_forward.h"
 #include "base/memory/raw_ref.h"
 #include "components/browsing_data/content/browsing_data_quota_helper.h"
+#include "components/browsing_data/content/shared_worker_info.h"
 #include "content/public/browser/attribution_data_model.h"
 #include "content/public/browser/interest_group_manager.h"
 #include "content/public/browser/private_aggregation_data_model.h"
@@ -51,9 +52,10 @@ class BrowsingDataModel {
     kPrivateAggregation,
     kQuotaStorage,
     kSharedDictionary,
+    kSharedWorker,
 
     kFirstType = kTrustTokens,
-    kLastType = kSharedDictionary,
+    kLastType = kSharedWorker,
     kExtendedDelegateRange =
         63,  // This is needed to include delegate values when adding delegate
              // browsing data to the model.
@@ -70,7 +72,8 @@ class BrowsingDataModel {
                         content::InterestGroupManager::InterestGroupDataKey,
                         content::AttributionDataModel::DataKey,
                         content::PrivateAggregationDataModel::DataKey,
-                        net::SharedDictionaryIsolationKey
+                        net::SharedDictionaryIsolationKey,
+                        browsing_data::SharedWorkerInfo
                         // TODO(crbug.com/1271155): Additional backend keys.
                         >
       DataKey;
@@ -125,7 +128,6 @@ class BrowsingDataModel {
   // A delegate to handle non components/ data type retrieval and deletion.
   class Delegate {
    public:
-    //
     struct DelegateEntry {
       DelegateEntry(DataKey data_key,
                     StorageType storage_type,
@@ -140,16 +142,25 @@ class BrowsingDataModel {
     // Retrieves all possible data keys with its associated storage size.
     virtual void GetAllDataKeys(
         base::OnceCallback<void(std::vector<DelegateEntry>)> callback) = 0;
+
     // Removes all data that matches the data key.
     virtual void RemoveDataKey(DataKey data_key,
                                StorageTypeSet storage_types,
                                base::OnceClosure callback) = 0;
+
     // Returns the owner of the data identified by the given DataKey and
     // StorageType, or nullopt if the delegate does not manage the entity that
     // owns the given data.
     virtual absl::optional<DataOwner> GetDataOwner(
         DataKey data_key,
         StorageType storage_type) const = 0;
+
+    // Returns whether the delegate considers `storage_type` to be blocked by
+    // third party cookie blocking. Returns nullopt if the delegate does not
+    // manage the storage type.
+    virtual absl::optional<bool> IsBlockedByThirdPartyCookieBlocking(
+        StorageType storage_type) const = 0;
+
     virtual ~Delegate() = default;
   };
 
@@ -244,6 +255,10 @@ class BrowsingDataModel {
       const DataOwner& data_owner,
       const net::SchemefulSite& top_level_site,
       base::OnceClosure completed);
+
+  // Returns whether the provided `storage_type` is blocked when third party
+  // cookies are blocked.
+  bool IsBlockedByThirdPartyCookieBlocking(StorageType storage_type) const;
 
  protected:
   friend class BrowsingDataModelTest;

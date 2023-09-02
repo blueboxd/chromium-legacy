@@ -18,6 +18,7 @@
 #include "base/strings/string_piece.h"
 #include "components/autofill/core/browser/autofill_field.h"
 #include "components/autofill/core/browser/autofill_type.h"
+#include "components/autofill/core/browser/country_type.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/form_parsing/field_candidates.h"
 #include "components/autofill/core/browser/form_types.h"
@@ -75,6 +76,7 @@ class FormStructure {
   // Runs several heuristics against the form fields to determine their possible
   // types.
   void DetermineHeuristicTypes(
+      const GeoIpCountryCode& client_country,
       AutofillMetrics::FormInteractionsUkmLogger* form_interactions_ukm_logger,
       LogManager* log_manager);
 
@@ -261,6 +263,7 @@ class FormStructure {
 
   // Classifies each field in |fields_| using the regular expressions.
   void ParseFieldTypesWithPatterns(PatternSource pattern_source,
+                                   const GeoIpCountryCode& client_country,
                                    LogManager* log_manager);
 
   // Returns the values that can be filled into the form structure for the
@@ -354,6 +357,14 @@ class FormStructure {
 
   void set_form_signature(FormSignature signature) {
     form_signature_ = signature;
+  }
+
+  FormSignature alternative_form_signature() const {
+    return alternative_form_signature_;
+  }
+
+  void set_alternative_form_signature(FormSignature signature) {
+    alternative_form_signature_ = signature;
   }
 
   // Returns a FormData containing the data this form structure knows about.
@@ -608,6 +619,13 @@ class FormStructure {
   // The unique signature for this form, composed of the target url domain,
   // the form name, and the form field names in a 64-bit hash.
   FormSignature form_signature_;
+
+  // The alternative signature for this form which is more stable/generic than
+  // `form_signature_`, used when signature is random/unstable at each reload.
+  // It is composed of the target url domain, the fields' form control types,
+  // and for forms with 1-2 fields, one of the following non-empty elements
+  // ordered by preference: path, reference, or query in a 64-bit hash.
+  FormSignature alternative_form_signature_;
 
   // The timestamp (not wallclock time) when this form was initially parsed.
   base::TimeTicks form_parsed_timestamp_;

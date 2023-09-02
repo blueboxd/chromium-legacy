@@ -75,6 +75,10 @@ class PLATFORM_EXPORT AVIFImageDecoder final : public ImageDecoder {
   };
 
   struct AvifIOData {
+    AvifIOData();
+    AvifIOData(const SegmentReader* reader, bool all_data_received);
+    ~AvifIOData();
+
     const SegmentReader* reader = nullptr;
     std::vector<uint8_t> buffer ALLOW_DISCOURAGED_TYPE("Required by libavif");
     bool all_data_received = false;
@@ -141,7 +145,7 @@ class PLATFORM_EXPORT AVIFImageDecoder final : public ImageDecoder {
   avifPixelFormat avif_yuv_format_ = AVIF_PIXEL_FORMAT_NONE;
   wtf_size_t decoded_frame_count_ = 0;
   SkYUVColorSpace yuv_color_space_ = SkYUVColorSpace::kIdentity_SkYUVColorSpace;
-  // Used to call UpdateBppHistogram() at most once to record the
+  // Used to call UpdateAvifBppHistogram() at most once to record the
   // bits-per-pixel value of the image when the image is successfully decoded.
   base::OnceCallback<void(gfx::Size, size_t)> update_bpp_histogram_callback_;
   absl::optional<AVIFCleanApertureType> clap_type_;
@@ -167,8 +171,9 @@ class PLATFORM_EXPORT AVIFImageDecoder final : public ImageDecoder {
 
   const AnimationOption animation_option_;
 
-  // Used temporarily during incremental decoding.
-  Vector<uint32_t> previous_last_decoded_row_;
+  // Used temporarily for incremental decoding and for some YUV to RGB color
+  // conversions.
+  Vector<uint8_t> previous_last_decoded_row_;
 };
 
 }  // namespace blink

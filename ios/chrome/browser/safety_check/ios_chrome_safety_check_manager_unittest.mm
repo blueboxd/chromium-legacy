@@ -29,6 +29,7 @@
 #import "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #import "ios/chrome/browser/sync/sync_setup_service_mock.h"
 #import "ios/chrome/browser/upgrade/upgrade_recommended_details.h"
+#import "ios/chrome/test/testing_application_context.h"
 #import "ios/web/public/test/web_task_environment.h"
 #import "testing/gtest/include/gtest/gtest.h"
 #import "testing/platform_test.h"
@@ -61,6 +62,9 @@ class IOSChromeSafetyCheckManagerTest : public PlatformTest {
         prefs::kIosSafetyCheckManagerSafeBrowsingCheckResult,
         NameForSafetyCheckState(SafeBrowsingSafetyCheckState::kDefault),
         PrefRegistry::LOSSY_PREF);
+    local_registry->RegisterIntegerPref(
+        prefs::kIosMagicStackSegmentationSafetyCheckImpressionsSinceFreshness,
+        -1);
 
     TestChromeBrowserState::Builder builder;
 
@@ -75,6 +79,8 @@ class IOSChromeSafetyCheckManagerTest : public PlatformTest {
                 web::BrowserState, password_manager::TestPasswordStore>));
 
     browser_state_ = builder.Build();
+    TestingApplicationContext::GetGlobal()->SetLocalState(
+        local_pref_service_.get());
 
     password_check_manager_ =
         IOSChromePasswordCheckManagerFactory::GetForBrowserState(
@@ -88,6 +94,7 @@ class IOSChromeSafetyCheckManagerTest : public PlatformTest {
   void TearDown() override {
     safety_check_manager_->StopSafetyCheck();
     safety_check_manager_->Shutdown();
+    TestingApplicationContext::GetGlobal()->SetLocalState(nullptr);
   }
 
  protected:

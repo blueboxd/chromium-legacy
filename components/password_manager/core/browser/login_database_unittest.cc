@@ -48,6 +48,10 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/origin.h"
 
+#if BUILDFLAG(IS_IOS)
+#import <Security/Security.h>
+#endif  // BUILDFLAG(IS_IOS)
+
 using base::ASCIIToUTF16;
 using base::UTF16ToASCII;
 using signin::GaiaIdHash;
@@ -1299,18 +1303,19 @@ TEST_F(LoginDatabaseTest, AddWrongForm) {
   EXPECT_EQ(PasswordStoreChangeList(), db().AddLogin(form));
 }
 
+#if BUILDFLAG(IS_IOS)
 // Test that when adding a login with no password_value but with
-// encrypted_password, the encrypted_password is kept and the password_value
+// keychain_identifier, the keychain_identifier is kept and the password_value
 // is filled in with the decrypted password.
 TEST_F(LoginDatabaseTest, AddLoginWithEncryptedPassword) {
   PasswordForm form;
   form.url = GURL("http://accounts.google.com/LoginAuth");
   form.signon_realm = "http://accounts.google.com/";
   form.username_value = u"my_username";
-  std::string encrypted;
-  EXPECT_EQ(LoginDatabase::ENCRYPTION_RESULT_SUCCESS,
-            db().EncryptedString(u"my_encrypted_password", &encrypted));
-  form.encrypted_password = encrypted;
+  std::string keychain_identifier;
+  EXPECT_TRUE(
+      CreateKeychainIdentifier(u"my_encrypted_password", &keychain_identifier));
+  form.keychain_identifier = keychain_identifier;
   form.blocked_by_user = false;
   form.scheme = PasswordForm::Scheme::kHtml;
 
@@ -1323,28 +1328,28 @@ TEST_F(LoginDatabaseTest, AddLoginWithEncryptedPassword) {
   ASSERT_TRUE(db().GetLogins(PasswordFormDigest(form),
                              /*should_PSL_matching_apply=*/true, &result));
   ASSERT_EQ(1U, result.size());
-  EXPECT_EQ(form.encrypted_password, result[0].get()->encrypted_password);
+  EXPECT_EQ(form.keychain_identifier, result[0].get()->keychain_identifier);
   EXPECT_EQ(u"my_encrypted_password", result[0].get()->password_value);
 
   std::u16string decrypted;
-  EXPECT_EQ(
-      LoginDatabase::ENCRYPTION_RESULT_SUCCESS,
-      db().DecryptedString(result[0].get()->encrypted_password, &decrypted));
+  EXPECT_EQ(errSecSuccess,
+            GetTextFromKeychainIdentifier(result[0].get()->keychain_identifier,
+                                          &decrypted));
   EXPECT_EQ(u"my_encrypted_password", decrypted);
 }
 
 // Test that when adding a login with password_value but with
-// encrypted_password, the encrypted_password is discarded.
+// keychain_identifier, the keychain_identifier is discarded.
 TEST_F(LoginDatabaseTest, AddLoginWithEncryptedPasswordAndValue) {
   PasswordForm form;
   form.url = GURL("http://accounts.google.com/LoginAuth");
   form.signon_realm = "http://accounts.google.com/";
   form.username_value = u"my_username";
   form.password_value = u"my_password_value";
-  std::string encrypted;
-  EXPECT_EQ(LoginDatabase::ENCRYPTION_RESULT_SUCCESS,
-            db().EncryptedString(u"my_encrypted_password", &encrypted));
-  form.encrypted_password = encrypted;
+  std::string keychain_identifier;
+  EXPECT_TRUE(
+      CreateKeychainIdentifier(u"my_encrypted_password", &keychain_identifier));
+  form.keychain_identifier = keychain_identifier;
   form.blocked_by_user = false;
   form.scheme = PasswordForm::Scheme::kHtml;
   EXPECT_EQ(AddChangeForForm(form), db().AddLogin(form));
@@ -1353,14 +1358,15 @@ TEST_F(LoginDatabaseTest, AddLoginWithEncryptedPasswordAndValue) {
   ASSERT_TRUE(db().GetLogins(PasswordFormDigest(form),
                              /*should_PSL_matching_apply=*/true, &result));
   ASSERT_EQ(1U, result.size());
-  EXPECT_NE(form.encrypted_password, result[0].get()->encrypted_password);
+  EXPECT_NE(form.keychain_identifier, result[0].get()->keychain_identifier);
 
   std::u16string decrypted;
-  EXPECT_EQ(
-      LoginDatabase::ENCRYPTION_RESULT_SUCCESS,
-      db().DecryptedString(result[0].get()->encrypted_password, &decrypted));
+  EXPECT_EQ(errSecSuccess,
+            GetTextFromKeychainIdentifier(result[0].get()->keychain_identifier,
+                                          &decrypted));
   EXPECT_EQ(u"my_password_value", decrypted);
 }
+#endif
 
 TEST_F(LoginDatabaseTest, UpdateLogin) {
   PasswordForm form;
@@ -2314,7 +2320,11 @@ TEST_F(LoginDatabaseTest, EncryptedPasswordAdd) {
   form.password_value = u"example";
   password_manager::PasswordStoreChangeList changes = db().AddLogin(form);
   ASSERT_EQ(1u, changes.size());
-  ASSERT_FALSE(changes[0].form().encrypted_password.empty());
+#if BUILDFLAG(IS_IOS)
+  ASSERT_FALSE(changes[0].form().keychain_identifier.empty());
+#else
+  ASSERT_TRUE(changes[0].form().keychain_identifier.empty());
+#endif
 }
 
 // Test encrypted passwords are present in add change lists, when the password
@@ -2335,7 +2345,11 @@ TEST_F(LoginDatabaseTest, EncryptedPasswordAddWithReplaceSemantics) {
   ASSERT_EQ(2u, changes.size());
   ASSERT_EQ(password_manager::PasswordStoreChange::Type::ADD,
             changes[1].type());
-  ASSERT_FALSE(changes[1].form().encrypted_password.empty());
+#if BUILDFLAG(IS_IOS)
+  ASSERT_FALSE(changes[1].form().keychain_identifier.empty());
+#else
+  ASSERT_TRUE(changes[1].form().keychain_identifier.empty());
+#endif
 }
 
 // Test encrypted passwords are present in update change lists.
@@ -2353,7 +2367,11 @@ TEST_F(LoginDatabaseTest, EncryptedPasswordUpdate) {
 
   password_manager::PasswordStoreChangeList changes = db().UpdateLogin(form);
   ASSERT_EQ(1u, changes.size());
-  ASSERT_FALSE(changes[0].form().encrypted_password.empty());
+#if BUILDFLAG(IS_IOS)
+  ASSERT_FALSE(changes[0].form().keychain_identifier.empty());
+#else
+  ASSERT_TRUE(changes[0].form().keychain_identifier.empty());
+#endif
 }
 
 // Test encrypted passwords are present when retrieving from DB.
@@ -2366,14 +2384,22 @@ TEST_F(LoginDatabaseTest, GetLoginsEncryptedPassword) {
   form.password_value = u"example";
   password_manager::PasswordStoreChangeList changes = db().AddLogin(form);
   ASSERT_EQ(1u, changes.size());
-  ASSERT_FALSE(changes[0].form().encrypted_password.empty());
+#if BUILDFLAG(IS_IOS)
+  ASSERT_FALSE(changes[0].form().keychain_identifier.empty());
+#else
+  ASSERT_TRUE(changes[0].form().keychain_identifier.empty());
+#endif
 
   std::vector<std::unique_ptr<PasswordForm>> forms;
   EXPECT_TRUE(db().GetLogins(PasswordFormDigest(form),
                              /*should_PSL_matching_apply=*/false, &forms));
 
   ASSERT_EQ(1U, forms.size());
-  ASSERT_FALSE(forms[0]->encrypted_password.empty());
+#if BUILDFLAG(IS_IOS)
+  ASSERT_FALSE(forms[0]->keychain_identifier.empty());
+#else
+  ASSERT_TRUE(forms[0]->keychain_identifier.empty());
+#endif
 }
 
 TEST_F(LoginDatabaseTest, RetrievesInsecureDataWithLogins) {

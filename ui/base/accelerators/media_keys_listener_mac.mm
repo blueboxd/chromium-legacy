@@ -8,9 +8,9 @@
 #import <Cocoa/Cocoa.h>
 #include <IOKit/hidsystem/ev_keymap.h>
 
+#include "base/apple/scoped_cftyperef.h"
 #include "base/containers/flat_set.h"
 #include "base/logging.h"
-#include "base/mac/scoped_cftyperef.h"
 #include "base/memory/raw_ptr.h"
 #include "ui/base/accelerators/accelerator.h"
 
@@ -66,8 +66,8 @@ class MediaKeysListenerImpl : public MediaKeysListener {
   raw_ptr<MediaKeysListener::Delegate> delegate_;
   const Scope scope_;
   // Event tap for intercepting mac media keys.
-  base::ScopedCFTypeRef<CFMachPortRef> event_tap_;
-  base::ScopedCFTypeRef<CFRunLoopSourceRef> event_tap_source_;
+  base::apple::ScopedCFTypeRef<CFMachPortRef> event_tap_;
+  base::apple::ScopedCFTypeRef<CFRunLoopSourceRef> event_tap_source_;
   base::flat_set<KeyboardCode> key_codes_;
 };
 

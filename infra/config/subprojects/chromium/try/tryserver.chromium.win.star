@@ -106,13 +106,14 @@ try_.compilator_builder(
     main_list_view = "try",
 )
 
-# TODO(b/277863839): remove Siso experimental builders after migrate
-# win-rel to Siso.
 try_.orchestrator_builder(
     name = "win-siso-rel",
+    description_html = """\
+This builder shadows win-rel builder to compare between Siso builds and Ninja builds.<br/>
+This builder should be removed after migrating win-rel from Ninja to Siso. b/277863839
+""",
     mirrors = builder_config.copy_from("try/win-rel"),
     try_settings = builder_config.try_settings(
-        is_compile_only = True,
         rts_config = builder_config.rts_config(
             condition = builder_config.rts_condition.QUICK_RUN_ONLY,
         ),
@@ -126,8 +127,9 @@ try_.orchestrator_builder(
     },
     main_list_view = "try",
     tryjob = try_.job(
-        # TODO(b/277863839): increase percentage.
-        experiment_percentage = 20,
+        # Decreasing the experiment percentage while enabling tests to reduce
+        # extra workloads on the test pool.
+        experiment_percentage = 10,
     ),
     use_clang_coverage = True,
 )
@@ -316,6 +318,7 @@ try_.gpu.optional_tests_builder(
     main_list_view = "try",
     tryjob = try_.job(
         location_filters = [
+            # Inclusion filters.
             cq.location_filter(path_regexp = "chrome/browser/media/.+"),
             cq.location_filter(path_regexp = "chrome/browser/vr/.+"),
             cq.location_filter(path_regexp = "components/cdm/renderer/.+"),
@@ -345,6 +348,9 @@ try_.gpu.optional_tests_builder(
             cq.location_filter(path_regexp = "tools/clang/scripts/update.py"),
             cq.location_filter(path_regexp = "tools/mb/mb_config_expectations/tryserver.chromium.win.json"),
             cq.location_filter(path_regexp = "ui/gl/.+"),
+
+            # Exclusion filters.
+            cq.location_filter(exclude = True, path_regexp = ".*\\.md"),
         ],
     ),
 )

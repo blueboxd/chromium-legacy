@@ -285,16 +285,22 @@ TEST_F(IntentUtilTest, AuthorityMatch) {
                                           GURL(url_spec));
   };
 
-  auto explicit_port = MakeAuthorityFilter(
-      apps_util::AuthorityView::Encode(GURL("https://example.com:1234")));
-  EXPECT_TRUE(
-      MakeViewIntent("https://example.com:1234")->MatchFilter(explicit_port));
-  EXPECT_FALSE(
-      MakeViewIntent("https://example.com")->MatchFilter(explicit_port));
-  EXPECT_FALSE(
-      MakeViewIntent("https://example.com:5678")->MatchFilter(explicit_port));
-  EXPECT_FALSE(
-      MakeViewIntent("https://example.org:1234")->MatchFilter(explicit_port));
+  std::vector<std::string> explicit_ports{
+      apps_util::AuthorityView::Encode(GURL("https://example.com:1234")),
+      apps_util::AuthorityView::Encode(
+          url::Origin::CreateFromNormalizedTuple("https", "example.com", 1234)),
+  };
+  for (const auto& explicit_port : explicit_ports) {
+    auto authority_filter = MakeAuthorityFilter(explicit_port);
+    EXPECT_TRUE(MakeViewIntent("https://example.com:1234")
+                    ->MatchFilter(authority_filter));
+    EXPECT_FALSE(
+        MakeViewIntent("https://example.com")->MatchFilter(authority_filter));
+    EXPECT_FALSE(MakeViewIntent("https://example.com:5678")
+                     ->MatchFilter(authority_filter));
+    EXPECT_FALSE(MakeViewIntent("https://example.org:1234")
+                     ->MatchFilter(authority_filter));
+  }
 
   auto implicit_port = MakeAuthorityFilter(
       apps_util::AuthorityView::Encode(GURL("https://example.com")));
@@ -316,12 +322,22 @@ TEST_F(IntentUtilTest, AuthorityMatch) {
       MakeViewIntent("file://test:1234")->MatchFilter(portless_scheme));
   EXPECT_FALSE(MakeViewIntent("file://other")->MatchFilter(portless_scheme));
 
-  auto host_only = MakeAuthorityFilter("example.com");
-  EXPECT_TRUE(MakeViewIntent("https://example.com")->MatchFilter(host_only));
-  EXPECT_TRUE(MakeViewIntent("https://example.com:80")->MatchFilter(host_only));
-  EXPECT_TRUE(
-      MakeViewIntent("https://example.com:1234")->MatchFilter(host_only));
-  EXPECT_FALSE(MakeViewIntent("https://example.org")->MatchFilter(host_only));
+  std::vector<std::string> host_onlys{
+      "example.com",
+      apps_util::AuthorityView::Encode(
+          url::Origin::CreateFromNormalizedTuple("https", "example.com", 0)),
+  };
+  for (const auto& host_only : host_onlys) {
+    auto authority_filter = MakeAuthorityFilter(host_only);
+    EXPECT_TRUE(
+        MakeViewIntent("https://example.com")->MatchFilter(authority_filter));
+    EXPECT_TRUE(MakeViewIntent("https://example.com:80")
+                    ->MatchFilter(authority_filter));
+    EXPECT_TRUE(MakeViewIntent("https://example.com:1234")
+                    ->MatchFilter(authority_filter));
+    EXPECT_FALSE(
+        MakeViewIntent("https://example.org")->MatchFilter(authority_filter));
+  }
 
   auto host_suffix = MakeAuthorityFilter(
       apps_util::AuthorityView::Encode(GURL("https://example.com:1234")),
@@ -786,6 +802,25 @@ TEST_F(IntentUtilTest, FileWithDlpSourceUrls) {
   EXPECT_EQ(file_url, intent->files[0]->url);
   EXPECT_EQ(dlp_source_url, intent->files[0]->dlp_source_url);
   EXPECT_TRUE(intent->MatchFilter(filter));
+}
+
+/*
+ * Tests that the MakeShareIntent function overload for making intent for a
+ * single files creates an intent with consistent mime types.
+ */
+TEST_F(IntentUtilTest, ShareSingleIntent) {
+  const std::string mime_type = "image/jpeg";
+  const GURL file_url = GURL("https://www.google.com/");
+  const GURL drive_share_url = GURL("https://drive.google.com/");
+
+  auto intent = apps_util::MakeShareIntent(file_url, mime_type, drive_share_url,
+                                           /* is_directory: */ false);
+
+  ASSERT_EQ(1u, intent->files.size());
+  ASSERT_TRUE(intent->mime_type);
+  EXPECT_EQ(mime_type, intent->mime_type.value());
+  ASSERT_TRUE(intent->files[0]->mime_type);
+  EXPECT_EQ(mime_type, intent->files[0]->mime_type.value());
 }
 
 TEST_F(IntentUtilTest, TextMatch) {

@@ -5,10 +5,10 @@
 #import "base/mac/launch_application.h"
 
 #include "base/apple/bridging.h"
+#include "base/apple/foundation_util.h"
 #include "base/command_line.h"
 #include "base/functional/callback.h"
 #include "base/logging.h"
-#include "base/mac/foundation_util.h"
 #include "base/mac/launch_services_spi.h"
 #include "base/mac/mac_util.h"
 #include "base/metrics/histogram_functions.h"
@@ -144,12 +144,12 @@ void LogResultAndInvokeCallback(const base::FilePath& app_bundle_path,
   // find a running application matching the app we were trying to launch.
   // Only do this if `options.create_new_instance` is false though, as
   // otherwise we wouldn't know which instance to return.
-  if (IsAtLeastOS11() && IsAtMostOS12() && !create_new_instance && !app &&
-      ShouldScanRunningAppsForError(error)) {
+  if ((MacOSMajorVersion() == 11 || MacOSMajorVersion() == 12) &&
+      !create_new_instance && !app && ShouldScanRunningAppsForError(error)) {
     NSArray<NSRunningApplication*>* all_apps =
         NSWorkspace.sharedWorkspace.runningApplications;
     for (NSRunningApplication* running_app in all_apps) {
-      if (NSURLToFilePath(running_app.bundleURL) == app_bundle_path) {
+      if (apple::NSURLToFilePath(running_app.bundleURL) == app_bundle_path) {
         LOG(ERROR) << "Launch succeeded despite error: "
                    << base::SysNSStringToUTF8(error.localizedDescription);
         app = running_app;
@@ -184,7 +184,7 @@ void LaunchApplication(const base::FilePath& app_bundle_path,
       base::BindOnce(&LogResultAndInvokeCallback, app_bundle_path,
                      options.create_new_instance, std::move(callback));
 
-  NSURL* bundle_url = FilePathToNSURL(app_bundle_path);
+  NSURL* bundle_url = apple::FilePathToNSURL(app_bundle_path);
   if (!bundle_url) {
     dispatch_async(dispatch_get_main_queue(), ^{
       std::move(callback_block_access)
@@ -221,7 +221,7 @@ void LaunchApplication(const base::FilePath& app_bundle_path,
 
       _LSOpenURLsWithCompletionHandler(
           base::apple::NSToCFPtrCast(ns_urls ? ns_urls : @[]),
-          mac::FilePathToCFURL(app_bundle_path),
+          apple::FilePathToCFURL(app_bundle_path),
           base::apple::NSToCFPtrCast(
               GetOpenOptions(options, command_line_args)),
           action_block);

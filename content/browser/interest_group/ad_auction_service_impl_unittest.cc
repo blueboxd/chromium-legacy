@@ -8,7 +8,6 @@
 #include <string>
 #include <vector>
 
-#include "ad_auction_page_data.h"
 #include "base/barrier_closure.h"
 #include "base/base64.h"
 #include "base/command_line.h"
@@ -1256,11 +1255,22 @@ TEST_F(AdAuctionServiceImplTest, FixExpiryOnJoin) {
   EXPECT_NE(interest_group.expiry, actual_expiry);
 }
 
-// These tests validate the `updateUrl` and navigator.updateAdInterestGroups()
+// These tests validate the `updateURL` and navigator.updateAdInterestGroups()
 // functionality.
 
 // The server JSON updates all fields that can be updated.
 TEST_F(AdAuctionServiceImplTest, UpdateAllUpdatableFields) {
+  constexpr blink::InterestGroup::AdditionalBidKey kAdditionalBidKey1 = {
+      0x7d, 0x4d, 0x0e, 0x7f, 0x61, 0x53, 0xa6, 0x9b, 0x62, 0x42, 0xb5,
+      0x22, 0xab, 0xbe, 0xe6, 0x85, 0xfd, 0xa4, 0x42, 0x0f, 0x88, 0x34,
+      0xb1, 0x08, 0xc3, 0xbd, 0xae, 0x36, 0x9e, 0xf5, 0x49, 0xfa};
+  constexpr blink::InterestGroup::AdditionalBidKey kAdditionalBidKey2 = {
+      0x10, 0x0f, 0xdf, 0x47, 0xfb, 0x94, 0xf1, 0x53, 0x6a, 0x4f, 0x7c,
+      0x3f, 0xda, 0x27, 0x38, 0x3f, 0xa0, 0x33, 0x75, 0xa8, 0xf5, 0x27,
+      0xc5, 0x37, 0xe6, 0xf1, 0x70, 0x3c, 0x47, 0xf9, 0x4f, 0x86};
+  constexpr char kAdditionalBidKey2Base64[] =
+      "EA/fR/uU8VNqT3w/2ic4P6Azdaj1J8U35vFwPEf5T4Y=";
+
   content_browser_client_.SetAllowList({kOriginF, kOriginG});
   // TODO(caraitto): Remove camelCase sellerCapabilities fields when no longer
   // supported.
@@ -1274,9 +1284,9 @@ TEST_F(AdAuctionServiceImplTest, UpdateAllUpdatableFields) {
                              "browserSignals.reserved":-1},
 "sellerCapabilities": {"%s": ["latency-stats"],
                        "*": ["interest-group-counts", "latencyStats"]},
-"biddingLogicUrl": "%s/interest_group/new_bidding_logic.js",
+"biddingLogicURL": "%s/interest_group/new_bidding_logic.js",
 "biddingWasmHelperUrl":"%s/interest_group/new_bidding_wasm_helper_url.wasm",
-"trustedBiddingSignalsUrl":
+"trustedBiddingSignalsURL":
   "%s/interest_group/new_trusted_bidding_signals_url.json",
 "trustedBiddingSignalsKeys": ["new_key"],
 "updateURL": "%s/interest_group/new_daily_update_partial.json",
@@ -1299,10 +1309,12 @@ TEST_F(AdAuctionServiceImplTest, UpdateAllUpdatableFields) {
                  }],
 "adSizes": {"size_new": {"width": "300px", "height": "150px"}},
 "sizeGroups": {"group_new": ["size_new"]},
-"auctionServerRequestFlags": ["omit-ads", "include-full-ads"]
+"auctionServerRequestFlags": ["omit-ads", "include-full-ads"],
+"additionalBidKey": "%s"
 })",
                          kOriginStringA, kOriginStringA, kOriginStringA,
-                         kOriginStringA, kOriginStringA, kOriginStringA));
+                         kOriginStringA, kOriginStringA, kOriginStringA,
+                         kAdditionalBidKey2Base64));
 
   blink::InterestGroup interest_group = CreateInterestGroup();
   interest_group.priority = 2.0;
@@ -1347,6 +1359,7 @@ TEST_F(AdAuctionServiceImplTest, UpdateAllUpdatableFields) {
   interest_group.size_groups.emplace();
   std::vector<std::string> size_list = {"size_old"};
   interest_group.size_groups->emplace("group_old", size_list);
+  interest_group.additional_bid_key = kAdditionalBidKey1;
   JoinInterestGroupAndFlush(interest_group);
   EXPECT_EQ(1, GetJoinCount(kOriginA, kInterestGroupName));
 
@@ -1443,6 +1456,7 @@ TEST_F(AdAuctionServiceImplTest, UpdateAllUpdatableFields) {
       blink::AuctionServerRequestFlagsEnum::kOmitAds));
   EXPECT_TRUE(group.auction_server_request_flags.Has(
       blink::AuctionServerRequestFlagsEnum::kIncludeFullAds));
+  EXPECT_EQ(*group.additional_bid_key, kAdditionalBidKey2);
 }
 
 // Only set the ads field -- the other fields shouldn't be changed.
@@ -1548,7 +1562,7 @@ TEST_F(AdAuctionServiceImplTest, UpdateDoesntChangeExpiration) {
 TEST_F(AdAuctionServiceImplTest, UpdateGroupWithNoAds) {
   network_responder_->RegisterUpdateResponse(
       kUpdateUrlPath, base::StringPrintf(R"({
-"trustedBiddingSignalsUrl":
+"trustedBiddingSignalsURL":
   "%s/interest_group/new_trusted_bidding_signals_url.json",
 "trustedBiddingSignalsKeys": ["new_key"]
 })",
@@ -2182,7 +2196,7 @@ TEST_F(AdAuctionServiceImplTest, UpdateInvalidFieldCancelsAllUpdates) {
     network_responder_->RegisterUpdateResponse(
         kUpdateUrlPath,
         base::StringPrintf(R"({
-"biddingLogicUrl": "%s/interest_group/new_bidding_logic.js",
+"biddingLogicURL": "%s/interest_group/new_bidding_logic.js",
 "ads": [{"renderURL": %s,
         "metadata": {"new_a": "b"},
         "allowedReportingOrigins": %s
@@ -2230,7 +2244,7 @@ TEST_F(AdAuctionServiceImplTest,
   content_browser_client_.SetAllowList({kOriginG});
   network_responder_->RegisterUpdateResponse(
       kUpdateUrlPath, base::StringPrintf(R"({
-"biddingLogicUrl": "%s/interest_group/new_bidding_logic.js",
+"biddingLogicURL": "%s/interest_group/new_bidding_logic.js",
 "ads": [{"renderURL": "https://test.com",
         "metadata": {"new_a": "b"},
         "allowedReportingOrigins": ["https://a.test", "https://g.test"]
@@ -2262,7 +2276,7 @@ TEST_F(AdAuctionServiceImplTest, UpdateInvalidPriorityCancelsAllUpdates) {
   network_responder_->RegisterUpdateResponse(
       kUpdateUrlPath, base::StringPrintf(R"({
 "priority": "high",
-"biddingLogicUrl": "%s/interest_group/new_bidding_logic.js"
+"biddingLogicURL": "%s/interest_group/new_bidding_logic.js"
 })",
                                          kOriginStringA));
 
@@ -4403,6 +4417,41 @@ TEST_F(AdAuctionServiceImplNoNegativeTargetingTest, RunAdAuctionNonceDisabled) {
   run_loop.Run();
 }
 
+// Passing in a config with `auction_nonce` set while
+// `kFledgeNegativeTargeting` feature is disabled should not be possible.
+TEST_F(AdAuctionServiceImplNoNegativeTargetingTest,
+       RunAdAuctionNonceOnComponentDisabled) {
+  mojo::Remote<blink::mojom::AdAuctionService> ad_auction_service;
+  AdAuctionServiceImpl::CreateMojoService(
+      main_rfh(), ad_auction_service.BindNewPipeAndPassReceiver());
+
+  blink::AuctionConfig auction_config;
+  auction_config.seller = kOriginA;
+  auction_config.decision_logic_url = kUrlA.Resolve(kDecisionUrlPath);
+
+  blink::AuctionConfig component_auction1;
+  component_auction1.seller = kOriginA;
+  component_auction1.decision_logic_url = kUrlA.Resolve(kDecisionUrlPath);
+  component_auction1.non_shared_params.interest_group_buyers = {kOriginA};
+  component_auction1.non_shared_params.auction_nonce =
+      base::Uuid::GenerateRandomV4();
+  auction_config.non_shared_params.component_auctions.emplace_back(
+      std::move(component_auction1));
+
+  base::RunLoop run_loop;
+  ad_auction_service.set_disconnect_handler(run_loop.QuitClosure());
+  ad_auction_service->RunAdAuction(
+      auction_config, mojo::NullReceiver(),
+      base::BindOnce(
+          [](bool manually_aborted,
+             const absl::optional<
+                 blink::FencedFrame::RedactedFencedFrameConfig>& config) {
+            ADD_FAILURE() << "Callback unexpectedly invoked.";
+          }));
+  ad_auction_service.FlushForTesting();
+  run_loop.Run();
+}
+
 // Add an interest group, and run an ad auction.
 TEST_F(AdAuctionServiceImplTest, RunAdAuction) {
   constexpr char kBiddingScript[] = R"(
@@ -5056,7 +5105,7 @@ function scoreAd(
 TEST_F(AdAuctionServiceImplTest, UpdatesInterestGroupsAfterAuctionNoAds) {
   network_responder_->RegisterUpdateResponse(
       kUpdateUrlPath, base::StringPrintf(R"({
-"trustedBiddingSignalsUrl":
+"trustedBiddingSignalsURL":
   "%s/interest_group/new_trusted_bidding_signals_url.json",
 "trustedBiddingSignalsKeys": ["new_key"]
 })",
@@ -6641,7 +6690,7 @@ class AdAuctionServiceImplRestrictedPermissionsPolicyTest
 TEST_F(AdAuctionServiceImplRestrictedPermissionsPolicyTest,
        APICallsFromTopFrame) {
   network_responder_->RegisterUpdateResponse(
-      kUpdateUrlPath, base::StringPrintf(R"({"biddingLogicUrl": "%s%s"})",
+      kUpdateUrlPath, base::StringPrintf(R"({"biddingLogicURL": "%s%s"})",
                                          kOriginStringA, kNewBiddingUrlPath));
   blink::InterestGroup interest_group = CreateInterestGroup();
   interest_group.update_url = kUpdateUrlA;
@@ -6670,7 +6719,7 @@ TEST_F(AdAuctionServiceImplRestrictedPermissionsPolicyTest,
 TEST_F(AdAuctionServiceImplRestrictedPermissionsPolicyTest,
        APICallsFromSameSiteIframe) {
   network_responder_->RegisterUpdateResponse(
-      kUpdateUrlPath, base::StringPrintf(R"({"biddingLogicUrl": "%s%s"})",
+      kUpdateUrlPath, base::StringPrintf(R"({"biddingLogicURL": "%s%s"})",
                                          kOriginStringA, kNewBiddingUrlPath));
   // Create a same site subframe and use it to send the interest group requests.
   content::RenderFrameHostTester* rfh_tester =
@@ -6707,7 +6756,7 @@ TEST_F(AdAuctionServiceImplRestrictedPermissionsPolicyTest,
 TEST_F(AdAuctionServiceImplRestrictedPermissionsPolicyTest,
        APICallsFromCrossSiteIFrame) {
   network_responder_->RegisterUpdateResponse(
-      kUpdateUrlPath, base::StringPrintf(R"({"biddingLogicUrl": "%s%s"})",
+      kUpdateUrlPath, base::StringPrintf(R"({"biddingLogicURL": "%s%s"})",
                                          kOriginStringC, kNewBiddingUrlPath));
 
   NavigateAndCommit(kUrlC);
@@ -8295,15 +8344,14 @@ TEST_F(AdAuctionServiceImplTest, SerializesAuctionBlob) {
       "AgAAASSlZ3ZlcnNpb24AaXB1Ymxpc2hlcm5odHRwczovL2EudGVzdGxnZW5lcmF0aW9uSWR4"
       "JDAwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMG5pbnRlcmVzdEdyb3Vwc6Fu"
       "aHR0cHM6Ly9hLnRlc3RYlx+"
-      "LCAAAAAAAAABVjTsOwjAQBfldKCH8WlJSUtBie1fOQrKO1gnIQhTxWRDnxEQ0NK+"
-      "Z0bzhbRT4CFm+LEyxWgOrBsEo8bWC0jWtY+TOD2az3bEWd/"
-      "coR7Ksav+yggbZhEWlKbk9d5OqFbydiH2Ms3Ocj1m6OOIRTyWJQGx/"
-      "hQOGdH3FkH0nlz7F93+Gfjw/"
-      "peXBi6IAAAB0ZW5hYmxlRGVidWdSZXBvcnRpbmf0AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+      "LCAAAAAAAAABVjTsOwjAQBfldKCH8WlJSUtBir1eOA1lHuwnIQhTxWRDnxEQ0NK+"
+      "Z0bzhDcpINFm+LKBYrQ2pBg0olhp803pC6mSAzXZHmv1dkI/OkrrKyzICEoRFpZ0pfU/"
+      "dpGoZbydHEuPsHOdj1NXe0YinnETjyP4KBwzp+IIh+07OfYrv/"
+      "wz9eH4AfEmO3aAAAAB0ZW5hYmxlRGVidWdSZXBvcnRpbmf0AAAAAAAAAAAAAAAAAAAAAAAAA"
       "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
       "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
       "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-      "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=";
+      "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=";
   EXPECT_EQ(1, absl::popcount(msg.size()));  // Should be a power of 2.
   EXPECT_EQ(expected, base::Base64Encode(msg));
   EXPECT_THAT(group_names, testing::ElementsAre(testing::Pair(
@@ -8442,18 +8490,18 @@ TEST_F(AdAuctionServiceImplTest, SerializesMultipleOwnersAuctionBlob) {
   run_loop.Run();
 
   std::string expected =
-      "AgAAAamlZ3ZlcnNpb24AaXB1Ymxpc2hlcm5odHRwczovL2EudGVzdGxnZW5lcmF0aW9uSWR4"
+      "AgAAAaelZ3ZlcnNpb24AaXB1Ymxpc2hlcm5odHRwczovL2EudGVzdGxnZW5lcmF0aW9uSWR4"
       "JDAwMDAwMDAwLTAwMDAtMDAwMC0wMDAwLTAwMDAwMDAwMDAwMG5pbnRlcmVzdEdyb3Vwc6Ju"
-      "aHR0cHM6Ly9hLnRlc3RYmR+"
-      "LCAAAAAAAAAB1zTsOwjAMBmAovVAfvFY4AgMrjmO1Qa1T2QHEBjlLD0oVBiQEi/"
-      "XLtv4vjghWI+08hCLN0jL0RGaK2oHd+37wTBz0mc4VG/"
-      "E3JTm4hqHTsRFCYrxnrXHT94XDrB2ErkfH+nBn7zgt52/IFmVVY71cJcUiyBeC6832H5H/"
-      "IGJcnGKeaj9Y9gJ1RE1p1wAAAG5odHRwczovL2IudGVzdFhyH4sIAAAAAAAAAGtckpyYUtyU"
-      "FlKUmJlnCKGMUvISc1PTSkDs4pzEFOf83IL8vNS8kuJGiALjvKSi/"
-      "PLi1KLgzPS8xJziJelFqcmpecmVjBlJmUDlpXklDBkFRall4UADGjKz8jPzwIKMAN+"
-      "hOshuAAAAdGVuYWJsZURlYnVnUmVwb3J0aW5n9AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-      "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
-      "AAAA=";
+      "aHR0cHM6Ly9hLnRlc3RYmB+LCAAAAAAAAAB1zUsOwjAMBFAovVA//"
+      "Lb0CCzY4jhWm4raVRxA7CBn6UFBYYGQYGONPNK8OCFYjbQTCEW6pWUYiMwrao8yjMLEQR+"
+      "prNh4uSr5vWsZTjq1npAYb1lnnG3kzGHWjZ4uB8d6d704Ts/"
+      "5m7FFWdVYL1fJsAj+i8D1ZvsPyH8AMS6OMU+"
+      "jHyp7AmqteTfTAAAAbmh0dHBzOi8vYi50ZXN0WHEfiwgAAAAAAAAAa1ySnJhS3JQWUpSYmWc"
+      "IoYxS8hJzU9NKQOzirOT83IL8vNS8kuJGiLRxXlJRfnlxalFwZnpeYk7xkvSi1OTUvORKxoy"
+      "kzBTn/NK8EoaMgqLUsnCg9obMrPzMPLAgIwAb/"
+      "vMybAAAAHRlbmFibGVEZWJ1Z1JlcG9ydGluZ/"
+      "QAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+      "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=";
   EXPECT_EQ(1, absl::popcount(msg.size()));  // Should be a power of 2.
   EXPECT_EQ(expected, base::Base64Encode(msg));
   EXPECT_THAT(
@@ -8759,11 +8807,11 @@ TEST_F(AdAuctionServiceImplBAndATest, EncryptsPayload) {
       testing::EndsWith(
           R"(", )"
           R"("interestGroups": {"https://a.test": )"
-          R"(h'1F8B080000000000000075CD3B0EC2300C06600A5CA80F5E2B3D02032B8E6)"
-          R"(3B541AD5DC501C406394B0F4A15168460B17ED9D6FFC511C16AA4BD40C8D32C)"
-          R"(2C434F64A6A81DD85AFA419838E8339D4B365E6E4AFEE01A864EC7C61312E33)"
-          R"(D6B8D9BBE2F1C66EDE0E97A74AC0F7716C76999BD219B176585D56A9D148BE0)"
-          R"(BF10DC6C77FF88E50F22C6F9292E52ED07F6021F82676FD7000000'}, )"
+          R"(h'1F8B080000000000000075CD4B0EC2300C04500A5CA81F7E5B38020BB6248E)"
+          R"(D5BAA276158756EC2067E941416103126CAC91479A1727304E23EEC5843CDDC2)"
+          R"(B1E910ED2B6A0BD2F5C2C8411FA92CD97A1915FD916A36179D6A8F800CB7ACB1)"
+          R"(E40E72E5306B7A8FC38958EFD40A717A666FC6E5455941B55A27C381F15F046C)"
+          R"(B6BB7FC0F20710E3FC1C1769F4837A02E2EDA5E5D3000000'}, )"
           R"("enableDebugReporting": false})"));
 
   AdAuctionPageData* page_data = PageUserData<AdAuctionPageData>::GetForPage(

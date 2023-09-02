@@ -48,6 +48,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/page_info/page_info_infobar_delegate.h"
+#include "chrome/browser/ui/safety_hub/notification_permission_review_service_factory.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/url_identity.h"
 #include "chrome/browser/ui/webui/settings/recent_site_settings_helper.h"
@@ -2271,19 +2272,6 @@ void SiteSettingsHandler::StopObservingSourcesForProfile(Profile* profile) {
   observed_profiles_.RemoveObservation(profile);
 }
 
-void SiteSettingsHandler::TreeNodesAdded(ui::TreeModel* model,
-                                         ui::TreeModelNode* parent,
-                                         size_t start,
-                                         size_t count) {}
-
-void SiteSettingsHandler::TreeNodesRemoved(ui::TreeModel* model,
-                                           ui::TreeModelNode* parent,
-                                           size_t start,
-                                           size_t count) {}
-
-void SiteSettingsHandler::TreeNodeChanged(ui::TreeModel* model,
-                                          ui::TreeModelNode* node) {}
-
 void SiteSettingsHandler::TreeModelEndBatchDeprecated(CookiesTreeModel* model) {
   ModelBuilt();
 }
@@ -2679,6 +2667,9 @@ void SiteSettingsHandler::SendNotificationPermissionReviewList() {
           features::kSafetyCheckNotificationPermissions)) {
     return;
   }
+  NotificationPermissionsReviewService* service =
+      NotificationPermissionsReviewServiceFactory::GetForProfile(profile_);
+  CHECK(service);
   // Notify observers that the permission review list could have changed. Note
   // that the list is not guaranteed to have changed. In places where
   // determining whether the list has changed is cause for performance concerns,
@@ -2687,7 +2678,7 @@ void SiteSettingsHandler::SendNotificationPermissionReviewList() {
   // HandleSetCategoryPermissionForPattern.
   FireWebUIListener(
       site_settings::kNotificationPermissionsReviewListMaybeChangedEvent,
-      site_settings::PopulateNotificationPermissionReviewData(profile_));
+      service->PopulateNotificationPermissionReviewData(profile_));
 }
 
 }  // namespace settings

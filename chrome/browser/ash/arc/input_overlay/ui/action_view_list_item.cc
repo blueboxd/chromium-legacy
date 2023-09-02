@@ -14,6 +14,8 @@
 #include "chrome/browser/ash/arc/input_overlay/ui/edit_labels.h"
 #include "chrome/browser/ash/arc/input_overlay/ui/name_tag.h"
 #include "chrome/browser/ash/arc/input_overlay/ui/ui_utils.h"
+#include "chrome/grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/chromeos/styles/cros_tokens_color_mappings.h"
 #include "ui/views/background.h"
 #include "ui/views/layout/table_layout.h"
@@ -22,7 +24,11 @@ namespace arc::input_overlay {
 
 ActionViewListItem::ActionViewListItem(DisplayOverlayController* controller,
                                        Action* action)
-    : controller_(controller), action_(action) {
+    : views::Button(
+          base::BindRepeating(&ActionViewListItem::ShowButtonOptionsMenu,
+                              base::Unretained(this))),
+      controller_(controller),
+      action_(action) {
   Init();
 }
 
@@ -33,12 +39,15 @@ void ActionViewListItem::OnActionInputBindingUpdated() {
 }
 
 void ActionViewListItem::OnActionNameUpdated() {
-  if (action_->name_label()) {
-    name_tag_->SetTitle(*(action_->name_label()));
-  }
+  auto action_name = GetActionNameAtIndex(controller_->action_name_list(),
+                                          action_->name_label_index());
+  name_tag_->SetTitle(action_name);
 }
 
 void ActionViewListItem::Init() {
+  // TODO(b/279117180): Replace with proper accessible name.
+  SetAccessibleName(
+      l10n_util::GetStringUTF16(IDS_INPUT_OVERLAY_GAME_CONTROLS_ALPHA));
   SetUseDefaultFillLayout(true);
   auto* container = AddChildView(std::make_unique<ash::RoundedContainer>());
   container->SetBorderInsets(gfx::Insets::VH(14, 16));
@@ -58,9 +67,15 @@ void ActionViewListItem::Init() {
       .AddRows(1, /*vertical_resize=*/views::TableLayout::kFixedSize);
 
   // TODO(b/270969479): Replace the hardcoded string.
-  name_tag_ = container->AddChildView(NameTag::CreateNameTag(u"title"));
+  auto title_string = GetActionNameAtIndex(controller_->action_name_list(),
+                                           action_->name_label_index());
+  name_tag_ = container->AddChildView(NameTag::CreateNameTag(title_string));
   labels_view_ = container->AddChildView(EditLabels::CreateEditLabels(
       controller_, action_, name_tag_, /*set_title=*/true));
+}
+
+void ActionViewListItem::ShowButtonOptionsMenu() {
+  controller_->AddButtonOptionsMenuWidget(action_);
 }
 
 }  // namespace arc::input_overlay

@@ -260,13 +260,6 @@ bool CanUseCachedIntrinsicInlineSizes(const NGConstraintSpace& constraint_space,
     return false;
   }
 
-  if (constraint_space.IsInFlexIntrinsicSizing() !=
-      node.GetLayoutBox()->IntrinsicLogicalWidthsInFlexIntrinsicSizing()) {
-    UseCounter::Count(node.GetDocument(),
-                      WebFeature::kFlexIntrinsicSizesCacheMiss);
-    return false;
-  }
-
   return true;
 }
 
@@ -467,8 +460,14 @@ const NGLayoutResult* NGBlockNode::Layout(
   // clamping the offset.
   PaintLayerScrollableArea::DelayScrollOffsetClampScope delay_clamp_scope;
 
+  absl::optional<PhysicalSize> optional_old_box_size;
+  if (layout_result->Status() == NGLayoutResult::kSuccess &&
+      !layout_result->PhysicalFragment().BreakToken()) {
+    optional_old_box_size = box_->Size();
+  }
+
   FinishLayout(block_flow, constraint_space, break_token, layout_result,
-               box_->Size());
+               optional_old_box_size);
 
   // We may be intrinsicly sized (shrink-to-fit), if our intrinsic logical
   // widths are now dirty, re-calculate our inline-size for comparison.
@@ -757,11 +756,12 @@ void NGBlockNode::PrepareForLayout() const {
     To<LayoutNGListItem>(box_.Get())->UpdateMarkerTextIfNeeded();
 }
 
-void NGBlockNode::FinishLayout(LayoutBlockFlow* block_flow,
-                               const NGConstraintSpace& constraint_space,
-                               const NGBlockBreakToken* break_token,
-                               const NGLayoutResult* layout_result,
-                               PhysicalSize old_box_size) const {
+void NGBlockNode::FinishLayout(
+    LayoutBlockFlow* block_flow,
+    const NGConstraintSpace& constraint_space,
+    const NGBlockBreakToken* break_token,
+    const NGLayoutResult* layout_result,
+    const absl::optional<PhysicalSize>& old_box_size) const {
   // Computing MinMax after layout. Do not modify the |LayoutObject| tree, paint
   // properties, and other global states.
   if (NGDisableSideEffectsScope::IsDisabled())
@@ -778,20 +778,21 @@ void NGBlockNode::FinishLayout(LayoutBlockFlow* block_flow,
   const auto& physical_fragment =
       To<NGPhysicalBoxFragment>(layout_result->PhysicalFragment());
 
-  if (box_->IsLayoutReplaced()) {
+  if (auto* replaced = DynamicTo<LayoutReplaced>(*box_)) {
     // NG replaced elements are painted with legacy painters. We need to force
     // a legacy "layout" so that paint invalidation flags are updated. But we
     // don't want to use the size that legacy calculates, so we force legacy to
     // use NG's size via BoxLayoutExtraInput's override fields.
-    BoxLayoutExtraInput input(*box_);
-    input.size = physical_fragment.Size();
-    input.border_padding_for_replaced =
-        physical_fragment.Borders() + physical_fragment.Padding();
+    BoxLayoutExtraInput input = {
+        physical_fragment.Size(),
+        physical_fragment.Borders() + physical_fragment.Padding()};
     if (!box_->NeedsLayout()) {
       box_->SetNeedsLayout(layout_invalidation_reason::kSizeChanged,
                            kMarkOnlyThis);
     }
+    replaced->SetBoxLayoutExtraInput(&input);
     box_->LayoutIfNeeded();
+    replaced->SetBoxLayoutExtraInput(nullptr);
   }
 
   // If we miss the cache for one result (fragment), we need to clear the
@@ -839,9 +840,11 @@ void NGBlockNode::FinishLayout(LayoutBlockFlow* block_flow,
   }
 
   if (RuntimeEnabledFeatures::LayoutNGNoCopyBackEnabled() &&
-      !layout_result->PhysicalFragment().BreakToken() &&
-      box_->Size() != old_box_size) {
-    box_->SizeChanged();
+      !layout_result->PhysicalFragment().BreakToken()) {
+    DCHECK(old_box_size);
+    if (box_->Size() != *old_box_size) {
+      box_->SizeChanged();
+    }
   }
   CopyFragmentDataToLayoutBox(constraint_space, *layout_result, break_token);
 }
@@ -1025,8 +1028,7 @@ MinMaxSizesResult NGBlockNode::ComputeMinMaxSizes(
   box_->SetIntrinsicLogicalWidthsFromNG(
       initial_block_size, depends_on_block_constraints,
       /* child_depends_on_block_constraints */
-      result.depends_on_block_constraints,
-      constraint_space.IsInFlexIntrinsicSizing(), &result.sizes);
+      result.depends_on_block_constraints, result.sizes);
 
   if (IsNGTableCell()) {
     To<LayoutNGTableCell>(box_.Get())

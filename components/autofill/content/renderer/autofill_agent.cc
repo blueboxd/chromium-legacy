@@ -97,7 +97,6 @@ using form_util::IsOwnedByFrame;
 using form_util::TraverseDomForFourDigitCombinations;
 using mojom::SubmissionSource;
 using ShowAll = PasswordAutofillAgent::ShowAll;
-using GenerationShowing = PasswordAutofillAgent::GenerationShowing;
 using mojom::FocusedFieldType;
 
 namespace {
@@ -209,9 +208,6 @@ class AutofillAgent::DeferringAutofillDriver : public mojom::AutofillDriver {
                                base::TimeTicks timestamp) override {
     DeferMsg(&mojom::AutofillDriver::DidFillAutofillFormData, form, timestamp);
   }
-  void DidPreviewAutofillFormData() override {
-    DeferMsg(&mojom::AutofillDriver::DidPreviewAutofillFormData);
-  }
   void DidEndTextFieldEditing() override {
     DeferMsg(&mojom::AutofillDriver::DidEndTextFieldEditing);
   }
@@ -307,7 +303,6 @@ AutofillAgent::AutofillAgent(content::RenderFrame* render_frame,
       password_generation_agent_(password_generation_agent),
       query_node_autofill_state_(WebAutofillState::kNotFilled),
       is_popup_possibly_visible_(false),
-      is_generation_popup_possibly_visible_(false),
       is_user_gesture_required_(true),
       is_secure_context_required_(false),
       form_tracker_(render_frame),
@@ -531,6 +526,11 @@ void AutofillAgent::OnTextFieldDidChange(const WebInputElement& element) {
   DCHECK(!unsafe_render_frame() ||
          IsOwnedByFrame(element, unsafe_render_frame()));
 
+  // The field might have changed while the user was hovering on a suggestion,
+  // the preview in that case should be cleared since new suggestions will be
+  // showing up.
+  ClearPreviewedForm();
+
   if (password_generation_agent_ &&
       password_generation_agent_->TextDidChangeInTextField(element)) {
     is_popup_possibly_visible_ = true;
@@ -670,17 +670,12 @@ void AutofillAgent::FillOrPreviewForm(
     return;
   }
 
-  // Clear anything that might have been previewing previously.
   ClearPreviewedForm();
 
   if (action_persistence == mojom::AutofillActionPersistence::kPreview) {
     query_node_autofill_state_ = element_.GetAutofillState();
     previewed_elements_ = form_util::ApplyAutofillAction(
         form, element_, mojom::AutofillActionType::kFill, action_persistence);
-
-    if (auto* autofill_driver = unsafe_autofill_driver()) {
-      autofill_driver->DidPreviewAutofillFormData();
-    }
   } else {
     was_last_action_fill_ = true;
 
@@ -708,7 +703,7 @@ void AutofillAgent::FillOrPreviewForm(
     TriggerRefillIfNeeded(form);
     SendPotentiallySubmittedFormToBrowser();
   }
-  last_autofill_action_ = mojom::AutofillActionType::kFill;
+  last_action_type_ = mojom::AutofillActionType::kFill;
 }
 
 void AutofillAgent::UndoAutofill(
@@ -741,7 +736,7 @@ void AutofillAgent::UndoAutofill(
     form_util::ApplyAutofillAction(
         form, element_, mojom::AutofillActionType::kUndo, action_persistence);
   }
-  last_autofill_action_ = mojom::AutofillActionType::kUndo;
+  last_action_type_ = mojom::AutofillActionType::kUndo;
 }
 
 void AutofillAgent::FieldTypePredictionsAvailable(
@@ -778,7 +773,7 @@ void AutofillAgent::ClearPreviewedForm() {
       password_generation_agent_->DidClearGenerationSuggestion(element_)) {
     return;
   }
-  form_util::ClearPreviewedElements(last_autofill_action_, previewed_elements_,
+  form_util::ClearPreviewedElements(last_action_type_, previewed_elements_,
                                     element_, query_node_autofill_state_);
   previewed_elements_ = {};
 }
@@ -805,8 +800,10 @@ void AutofillAgent::FillFieldWithValue(FieldRendererId field_id,
     return;
   }
 
-  if (form_util::IsTextAreaElementOrTextInput(element_))
+  if (form_util::IsTextAreaElementOrTextInput(element_)) {
+    ClearPreviewedForm();
     DoFillFieldWithValue(value, element_, WebAutofillState::kAutofilled);
+  }
 }
 
 void AutofillAgent::PreviewFieldWithValue(FieldRendererId field_id,
@@ -817,8 +814,17 @@ void AutofillAgent::PreviewFieldWithValue(FieldRendererId field_id,
   }
 
   WebInputElement input_element = element_.DynamicTo<WebInputElement>();
-  if (!input_element.IsNull())
-    DoPreviewFieldWithValue(value, input_element);
+  if (!input_element.IsNull()) {
+    DCHECK(!unsafe_render_frame() ||
+           IsOwnedByFrame(input_element, unsafe_render_frame()));
+    ClearPreviewedForm();
+
+    query_node_autofill_state_ = element_.GetAutofillState();
+    input_element.SetSuggestedValue(blink::WebString::FromUTF16(value));
+    form_util::PreviewSuggestion(input_element.SuggestedValue().Utf16(),
+                                 input_element.Value().Utf16(), &input_element);
+    previewed_elements_.push_back(input_element);
+  }
 }
 
 void AutofillAgent::SetSuggestionAvailability(
@@ -973,18 +979,21 @@ void AutofillAgent::ShowSuggestions(
   }
 
   element_ = element;
-  if (form_util::IsAutofillableInputElement(input_element) &&
-      password_autofill_agent_->ShowSuggestions(
-          input_element,
-          ShowAll(ShouldShowFullSuggestionListForPasswordManager(trigger_source,
-                                                                 element)),
-          GenerationShowing(is_generation_popup_possibly_visible_))) {
-    is_popup_possibly_visible_ = true;
-    return;
+  if (form_util::IsAutofillableInputElement(input_element)) {
+    if (password_generation_agent_ &&
+        password_generation_agent_->ShowPasswordGenerationSuggestions(
+            input_element)) {
+      is_popup_possibly_visible_ = true;
+      return;
+    }
+    if (password_autofill_agent_->ShowSuggestions(
+            input_element,
+            ShowAll(ShouldShowFullSuggestionListForPasswordManager(
+                trigger_source, element)))) {
+      is_popup_possibly_visible_ = true;
+      return;
+    }
   }
-
-  if (is_generation_popup_possibly_visible_)
-    return;
 
   // Password field elements should only have suggestions shown by the password
   // autofill agent.
@@ -1103,18 +1112,6 @@ void AutofillAgent::DoFillFieldWithValue(const std::u16string& value,
   form_tracker_.set_ignore_control_changes(false);
 }
 
-void AutofillAgent::DoPreviewFieldWithValue(const std::u16string& value,
-                                            WebInputElement& node) {
-  DCHECK(!unsafe_render_frame() || IsOwnedByFrame(node, unsafe_render_frame()));
-
-  ClearPreviewedForm();
-  query_node_autofill_state_ = element_.GetAutofillState();
-  node.SetSuggestedValue(blink::WebString::FromUTF16(value));
-  form_util::PreviewSuggestion(node.SuggestedValue().Utf16(),
-                               node.Value().Utf16(), &node);
-  previewed_elements_.push_back(node);
-}
-
 void AutofillAgent::TriggerFormExtraction() {
   ExtractForms(process_forms_form_extraction_timer_, /*callback=*/{});
 }
@@ -1169,7 +1166,6 @@ void AutofillAgent::HidePopup() {
     return;
   }
   is_popup_possibly_visible_ = false;
-  is_generation_popup_possibly_visible_ = false;
 
   // The keyboard accessory has a separate, more complex hiding logic.
   if (IsKeyboardAccessoryEnabled())
@@ -1348,12 +1344,6 @@ void AutofillAgent::HandleFocusChangeComplete() {
   }
 
   focused_node_was_last_clicked_ = false;
-
-  if (password_generation_agent_ &&
-      password_generation_agent_->HandleFocusChangeComplete(focused_element)) {
-    is_generation_popup_possibly_visible_ = true;
-    is_popup_possibly_visible_ = true;
-  }
 
   SendPotentiallySubmittedFormToBrowser();
 }

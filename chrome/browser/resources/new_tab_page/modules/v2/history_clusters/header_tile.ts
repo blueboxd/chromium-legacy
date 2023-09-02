@@ -8,23 +8,18 @@ import 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.js';
 import 'chrome://resources/cr_elements/cr_shared_style.css.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 
-import {CrActionMenuElement} from 'chrome://resources/cr_elements/cr_action_menu/cr_action_menu.js';
-import {assert} from 'chrome://resources/js/assert_ts.js';
-import {DomRepeatEvent, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {EventTracker} from 'chrome://resources/js/event_tracker.js';
+import {Url} from 'chrome://resources/mojo/url/mojom/url.mojom-webui.js';
+import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {I18nMixin, loadTimeData} from '../../../i18n_setup.js';
+import {MenuItem, ModuleHeaderElementV2} from '../module_header.js';
 
 import {getTemplate} from './header_tile.html.js';
 
-export interface MenuItem {
-  action: string;
-  icon: string;
-  text: string;
-}
-
 export interface HistoryClustersHeaderElementV2 {
   $: {
-    actionMenu: CrActionMenuElement,
+    moduleHeaderElementV2: ModuleHeaderElementV2,
   };
 }
 
@@ -46,31 +41,63 @@ export class HistoryClustersHeaderElementV2 extends I18nMixin
       /** Whether suggestion chip header will show. */
       suggestionChipHeaderEnabled_: {
         type: Boolean,
+        reflectToAttribute: true,
         value: () => loadTimeData.getBoolean(
             'historyClustersSuggestionChipHeaderEnabled'),
-        reflectToAttribute: true,
+      },
+
+      /* Whether the container is tabbable or not. If the suggestion chip
+       * feature is enabled, the container should not be tabbable.
+       */
+      containerTabIndex_: {
+        type: String,
+        value: () => loadTimeData.getBoolean(
+                         'historyClustersSuggestionChipHeaderEnabled') ?
+            '' :
+            '0',
       },
     };
   }
 
-  clusterLabel: string;
-  private suggestionChipHeaderEnabled_: boolean;
+clusterId:
+  number;
+clusterLabel:
+  string;
+normalizedUrl:
+  Url;
+private suggestionChipHeaderEnabled_:
+  boolean;
+private eventTracker_:
+  EventTracker = new EventTracker();
 
-  private onButtonClick_(e: DomRepeatEvent<MenuItem>) {
-    const {action} = e.model.item;
-    assert(action);
-    this.$.actionMenu.close();
-    if (action === 'customize-module') {
-      this.dispatchEvent(
-          new Event('customize-module', {bubbles: true, composed: true}));
-    } else {
-      this.dispatchEvent(new Event(
-          `${action}-button-click`, {bubbles: true, composed: true}));
+  override connectedCallback() {
+    super.connectedCallback();
+
+    if (!this.suggestionChipHeaderEnabled_) {
+      this.eventTracker_.add(this, 'click', this.onClick_);
     }
   }
 
+  override disconnectedCallback() {
+    super.disconnectedCallback();
+    this.eventTracker_.removeAll();
+  }
+
+  private onClick_(e: Event) {
+    e.stopPropagation();
+    this.dispatchEvent(new CustomEvent(
+        'show-all-button-click', {bubbles: true, composed: true}));
+  }
+
+  private onSuggestClick_(e: Event) {
+    e.stopPropagation();
+    this.dispatchEvent(
+        new CustomEvent('suggest-click', {bubbles: true, composed: true}));
+  }
+
   private onMenuButtonClick_(e: Event) {
-    this.$.actionMenu.showAt(e.target as HTMLElement);
+    e.stopPropagation();
+    this.$.moduleHeaderElementV2.showAt(e);
   }
 
   private getMenuItemGroups_(): MenuItem[][] {
@@ -90,7 +117,7 @@ export class HistoryClustersHeaderElementV2 extends I18nMixin
           action: 'disable',
           icon: 'modules:block',
           text: this.i18nRecursive(
-              '', 'modulesDisableButtonTextV2', 'modulesJourneyDisable'),
+              '', 'modulesDisableButtonTextV2', 'modulesThisTypeOfCardText'),
         },
         {
           action: 'show-all',
@@ -111,10 +138,6 @@ export class HistoryClustersHeaderElementV2 extends I18nMixin
         },
       ],
     ];
-  }
-
-  private showDivider_(index: number): boolean {
-    return index === 0;
   }
 }
 

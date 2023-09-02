@@ -6,6 +6,7 @@
 
 #import "base/notreached.h"
 #import "base/strings/utf_string_conversions.h"
+#import "components/safe_browsing/core/common/features.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/shared/ui/symbols/symbols.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_ui_features.h"
@@ -37,7 +38,7 @@ OmniboxSuggestionIconType GetOmniboxSuggestionIconTypeForAutocompleteMatchType(
     case AutocompleteMatchType::NAVSUGGEST:
     case AutocompleteMatchType::NAVSUGGEST_PERSONALIZED:
     case AutocompleteMatchType::OPEN_TAB:
-    case AutocompleteMatchType::PEDAL_DEPRECATED:
+    case AutocompleteMatchType::PEDAL:
     case AutocompleteMatchType::PHYSICAL_WEB_DEPRECATED:
     case AutocompleteMatchType::PHYSICAL_WEB_OVERFLOW_DEPRECATED:
     case AutocompleteMatchType::STARTER_PACK:
@@ -65,6 +66,8 @@ OmniboxSuggestionIconType GetOmniboxSuggestionIconTypeForAutocompleteMatchType(
     case AutocompleteMatchType::NULL_RESULT_MESSAGE:
     case AutocompleteMatchType::NUM_TYPES:
     case AutocompleteMatchType::TILE_SUGGESTION:
+    case AutocompleteMatchType::TILE_MOST_VISITED_SITE:
+    case AutocompleteMatchType::TILE_REPEATABLE_QUERY:
       NOTREACHED();
       return OmniboxSuggestionIconType::kDefaultFavicon;
   }
@@ -85,7 +88,13 @@ UIImage* GetLocationBarSecurityIcon(LocationBarSecurityIconType iconType) {
   if (!name) {
     return nil;
   }
-  return DefaultSymbolTemplateWithPointSize(name, kSymbolLocationBarPointSize);
+
+  if (iconType == DANGEROUS) {
+    return CustomSymbolTemplateWithPointSize(name, kSymbolLocationBarPointSize);
+  } else {
+    return DefaultSymbolTemplateWithPointSize(name,
+                                              kSymbolLocationBarPointSize);
+  }
 }
 
 // Converts the `security_level` to an appropriate security icon type.
@@ -95,6 +104,11 @@ LocationBarSecurityIconType GetLocationBarSecurityIconTypeForSecurityState(
     case security_state::NONE:
       return INFO;
     case security_state::DANGEROUS:
+      if (base::FeatureList::IsEnabled(
+              safe_browsing::kRedInterstitialFacelift)) {
+        return DANGEROUS;
+      }
+      return NOT_SECURE_WARNING;
     case security_state::WARNING:
       return NOT_SECURE_WARNING;
     case security_state::SECURE:

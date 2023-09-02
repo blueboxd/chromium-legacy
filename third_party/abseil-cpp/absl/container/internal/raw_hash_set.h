@@ -1990,17 +1990,6 @@ class raw_hash_set {
     common().set_reservation_size(0);
   }
 
-  inline void destroy_slots() {
-    const size_t cap = capacity();
-    const ctrl_t* ctrl = control();
-    slot_type* slot = slot_array();
-    for (size_t i = 0; i != cap; ++i) {
-      if (IsFull(ctrl[i])) {
-        PolicyTraits::destroy(&alloc_ref(), slot + i);
-      }
-    }
-  }
-
   // This overload kicks in when the argument is an rvalue of insertable and
   // decomposable type other than init_type.
   //
@@ -2453,8 +2442,10 @@ class raw_hash_set {
     const raw_hash_set* outer = &a;
     const raw_hash_set* inner = &b;
     if (outer->capacity() > inner->capacity()) std::swap(outer, inner);
-    for (const value_type& elem : *outer)
-      if (!inner->has_element(elem)) return false;
+    for (const value_type& elem : *outer) {
+      auto it = PolicyTraits::apply(FindElement{*inner}, elem);
+      if (it == inner->end() || !(*it == elem)) return false;
+    }
     return true;
   }
 
@@ -2535,6 +2526,17 @@ class raw_hash_set {
     // Constructed slot. Either moved into place or destroyed.
     slot_type&& slot;
   };
+
+  inline void destroy_slots() {
+    const size_t cap = capacity();
+    const ctrl_t* ctrl = control();
+    slot_type* slot = slot_array();
+    for (size_t i = 0; i != cap; ++i) {
+      if (IsFull(ctrl[i])) {
+        PolicyTraits::destroy(&alloc_ref(), slot + i);
+      }
+    }
+  }
 
   // Erases, but does not destroy, the value pointed to by `it`.
   //
@@ -2657,24 +2659,6 @@ class raw_hash_set {
       // Otherwise grow the container.
       resize(NextCapacity(cap));
     }
-  }
-
-  bool has_element(const value_type& elem) const {
-    size_t hash = PolicyTraits::apply(HashElement{hash_ref()}, elem);
-    auto seq = probe(common(), hash);
-    const ctrl_t* ctrl = control();
-    while (true) {
-      Group g{ctrl + seq.offset()};
-      for (uint32_t i : g.Match(H2(hash))) {
-        if (ABSL_PREDICT_TRUE(
-                PolicyTraits::element(slot_array() + seq.offset(i)) == elem))
-          return true;
-      }
-      if (ABSL_PREDICT_TRUE(g.MaskEmpty())) return false;
-      seq.next();
-      assert(seq.index() <= capacity() && "full table!");
-    }
-    return false;
   }
 
   // TODO(alkis): Optimize this assuming *this and that don't overlap.

@@ -15,10 +15,6 @@ BASE_FEATURE(kBeforeUnloadBrowserResponseQueue,
              "BeforeUnloadBrowserResponseQueue",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-BASE_FEATURE(kNavigationUpdatesChildViewsVisibility,
-             "NavigationUpdatesChildViewsVisibility",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 #if BUILDFLAG(IS_ANDROID)
 BASE_FEATURE(kOptimizeImmHideCalls,
              "OptimizeImmHideCalls",
@@ -41,7 +37,7 @@ BASE_FEATURE(kGpuInfoCollectionSeparatePrefetch,
 
 BASE_FEATURE(kRestrictCanAccessDataForOriginToUIThread,
              "RestrictCanAccessDataForOriginToUIThread",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kServiceWorkerAutoPreload,
              "ServiceWorkerAutoPreload",

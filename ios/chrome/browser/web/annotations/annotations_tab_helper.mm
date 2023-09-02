@@ -7,7 +7,6 @@
 #import "base/containers/contains.h"
 #import "base/metrics/histogram_functions.h"
 #import "base/metrics/user_metrics.h"
-#import "base/rand_util.h"
 #import "base/strings/string_util.h"
 #import "base/strings/sys_string_conversions.h"
 #import "base/strings/utf_string_conversions.h"
@@ -27,18 +26,8 @@
 #import "ios/web/public/js_messaging/web_frame.h"
 #import "ios/web/public/js_messaging/web_frames_manager.h"
 #import "ios/web/public/navigation/navigation_context.h"
-#import "ios/web/public/ui/crw_context_menu_item.h"
 #import "ios/web/public/ui/crw_web_view_proxy.h"
 #import "ios/web/public/web_state.h"
-#import "services/metrics/public/cpp/ukm_builders.h"
-
-namespace {
-
-// A subset of GCRTextClassifierTrackingCarrier enum types for the carriers
-// included in the feature.
-static const int kCGRTextClassifierTrackingCarriers[3] = {1, 2, 4};
-
-}  // namespace
 
 AnnotationsTabHelper::AnnotationsTabHelper(web::WebState* web_state)
     : web_state_(web_state) {
@@ -78,9 +67,17 @@ void AnnotationsTabHelper::WebStateDestroyed(web::WebState* web_state) {
 
 void AnnotationsTabHelper::OnTextExtracted(web::WebState* web_state,
                                            const std::string& text,
-                                           int seq_id) {
+                                           int seq_id,
+                                           const base::Value::Dict& metadata) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK_EQ(web_state_, web_state);
+
+  // Check if this page requested "nointentdetection"
+  absl::optional<bool> has_no_intent_detection =
+      metadata.FindBool("hasNoIntentDetection");
+  if (!has_no_intent_detection || has_no_intent_detection.value()) {
+    return;
+  }
 
   TextClassifierModelService* service =
       TextClassifierModelServiceFactory::GetForBrowserState(
@@ -94,6 +91,7 @@ void AnnotationsTabHelper::OnTextExtracted(web::WebState* web_state,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
       base::BindOnce(&ios::provider::ExtractDataElementsFromText, text,
                      ios::provider::GetHandledIntentTypesForOneTap(web_state),
+                     ukm::GetSourceIdForWebStateDocument(web_state),
                      std::move(model_path)),
       base::BindOnce(&AnnotationsTabHelper::ApplyDeferredProcessing,
                      weak_factory_.GetWeakPtr(), seq_id));
@@ -125,17 +123,8 @@ void AnnotationsTabHelper::OnClick(web::WebState* web_state,
   }
 
   NSString* ns_text = base::SysUTF8ToNSString(text);
-  if (!ios::provider::HandleIntentTypesForOneTap(web_state, match, ns_text,
-                                                 base_view_controller_,
-                                                 mini_map_handler_)) {
-    NSArray<CRWContextMenuItem*>* items =
-        ios::provider::GetContextMenuElementsToAdd(web_state, match, ns_text,
-                                                   base_view_controller_,
-                                                   mini_map_handler_);
-    if (items.count) {
-      [web_state_->GetWebViewProxy() showMenuWithItems:items rect:rect];
-    }
-  }
+  DCHECK(ios::provider::HandleIntentTypesForOneTap(
+      web_state, match, ns_text, base_view_controller_, mini_map_handler_));
 }
 
 #pragma mark - Private Methods
@@ -152,41 +141,6 @@ void AnnotationsTabHelper::ApplyDeferredProcessing(
   if (main_frame && deferred) {
     auto* manager = web::AnnotationsTextManager::FromWebState(web_state_);
     DCHECK(manager);
-
-    // (TODO:crbug.com/1464624): Remove after investigation is complete.
-    const base::Value::List& annotations_list = deferred.value().GetList();
-    for (size_t i = 0; i < annotations_list.size(); ++i) {
-      const base::Value::Dict& annotation = annotations_list[i].GetDict();
-      const std::string* type = annotation.FindString("type");
-
-      if (type && *type == "TRACKING_NUMBER") {
-        const std::string* carrier_num =
-            annotation.FindString("TRACKING_NUMBER");
-        int carrier_val = annotation.FindInt("TRACKING_CARRIER").value();
-        CHECK(!carrier_num->empty());
-
-        // Only log UKM metric for detected parcel numbers with certain carrier
-        // values.
-        if (base::Contains(kCGRTextClassifierTrackingCarriers, carrier_val)) {
-          int randomValue = base::RandInt(0, 9);
-          // Values are in range 0-9, so > 1 covers 80%.
-          // Log random carrier value 80% of the time.
-          if (randomValue > 1) {
-            int randIndex = base::RandInt(
-                0, std::size(kCGRTextClassifierTrackingCarriers) - 1);
-            carrier_val = kCGRTextClassifierTrackingCarriers[randIndex];
-          }
-          ukm::SourceId source_id =
-              ukm::GetSourceIdForWebStateDocument(web_state_);
-          if (source_id != ukm::kInvalidSourceId) {
-            ukm::builders::IOS_ParcelTrackingNumberDetected(source_id)
-                .SetParcelCarrier(carrier_val)
-                .Record(ukm::UkmRecorder::Get());
-          }
-        }
-      }
-    }
-
     base::Value annotations(std::move(deferred.value()));
     manager->DecorateAnnotations(web_state_, annotations, seq_id);
   }

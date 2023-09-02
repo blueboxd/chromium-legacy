@@ -8,6 +8,7 @@
 #import "base/metrics/histogram_functions.h"
 #import "base/metrics/user_metrics.h"
 #import "base/metrics/user_metrics_action.h"
+#import "components/signin/public/base/signin_metrics.h"
 #import "ios/chrome/browser/favicon/ios_chrome_favicon_loader_factory.h"
 #import "ios/chrome/browser/sessions/ios_chrome_tab_restore_service_factory.h"
 #import "ios/chrome/browser/shared/model/browser/browser.h"
@@ -207,13 +208,21 @@
 }
 
 - (void)showHistorySyncOptInAfterDedicatedSignIn:(BOOL)dedicatedSignInDone {
+  // Stop the previous coordinator since the user can tap on the promo button
+  // to open a new History Sync Page while the dismiss animation of the previous
+  // one is in progress.
+  _historySyncPopupCoordinator.delegate = nil;
+  [_historySyncPopupCoordinator stop];
+  _historySyncPopupCoordinator = nil;
   // Show the History Sync Opt-In screen. The coordinator will dismiss itself
   // if there is no signed-in account (eg. if sign-in unsuccessful) or if sync
   // is disabled by policies.
   _historySyncPopupCoordinator = [[HistorySyncPopupCoordinator alloc]
       initWithBaseViewController:self.recentTabsTableViewController
                          browser:self.browser
-             dedicatedSignInDone:dedicatedSignInDone];
+             dedicatedSignInDone:dedicatedSignInDone
+                     accessPoint:signin_metrics::AccessPoint::
+                                     ACCESS_POINT_RECENT_TABS];
   _historySyncPopupCoordinator.delegate = self;
   [_historySyncPopupCoordinator start];
 }

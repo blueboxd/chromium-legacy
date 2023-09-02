@@ -12,7 +12,8 @@
 #include "base/posix/eintr_wrapper.h"
 #include "gpu/vulkan/vulkan_image.h"
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
-#include "third_party/skia/include/gpu/GrBackendSurfaceMutableState.h"
+#include "third_party/skia/include/gpu/MutableTextureState.h"
+#include "third_party/skia/include/gpu/ganesh/vk/GrVkBackendSurface.h"
 #include "third_party/skia/include/gpu/vk/GrVkTypes.h"
 
 namespace gpu {
@@ -75,7 +76,7 @@ wgpu::Texture ExternalVkImageDawnImageRepresentation::BeginAccess(
 
   const GrBackendTexture& backend_texture = backing_impl()->backend_texture();
   GrVkImageInfo image_info;
-  backend_texture.getVkImageInfo(&image_info);
+  GrBackendTextures::GetVkImageInfo(backend_texture, &image_info);
   // We should either be importing the image from the external queue, or it
   // was just created with no queue ownership.
   DCHECK(image_info.fCurrentQueueFamily == VK_QUEUE_FAMILY_IGNORED ||
@@ -119,7 +120,7 @@ void ExternalVkImageDawnImageRepresentation::EndAccess() {
     // Save the layout on the GrBackendTexture. Other shared image
     // representations read it from here.
     GrBackendTexture backend_texture = backing_impl()->backend_texture();
-    backend_texture.setMutableState(GrBackendSurfaceMutableState(
+    backend_texture.setMutableState(skgpu::MutableTextureState(
         export_info.releasedNewLayout, VK_QUEUE_FAMILY_EXTERNAL));
 
     // TODO(enga): Handle waiting on multiple semaphores from dawn

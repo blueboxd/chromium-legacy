@@ -85,12 +85,20 @@ class IntegrationTestCommandsUser : public IntegrationTestCommands {
     updater::test::SetGroupPolicies(values);
   }
 
+  void SetPlatformPolicies(const base::Value::Dict& values) const override {
+    updater::test::SetPlatformPolicies(values);
+  }
+
   void SetMachineManaged(bool is_managed_device) const override {
     updater::test::SetMachineManaged(is_managed_device);
   }
 
   void ExpectUninstallPing(ScopedServer* test_server) const override {
     updater::test::ExpectUninstallPing(updater_scope_, test_server);
+  }
+
+  void ExpectUpdateCheckRequest(ScopedServer* test_server) const override {
+    updater::test::ExpectUpdateCheckRequest(updater_scope_, test_server);
   }
 
   void ExpectUpdateCheckSequence(
@@ -238,6 +246,10 @@ class IntegrationTestCommandsUser : public IntegrationTestCommands {
     updater::test::DeleteUpdaterDirectory(updater_scope_);
   }
 
+  void DeleteActiveUpdaterExecutable() const override {
+    updater::test::DeleteActiveUpdaterExecutable(updater_scope_);
+  }
+
   void DeleteFile(const base::FilePath& path) const override {
     updater::test::DeleteFile(updater_scope_, path);
   }
@@ -293,6 +305,13 @@ class IntegrationTestCommandsUser : public IntegrationTestCommands {
 
   void RunHandoff(const std::string& app_id) const override {
     updater::test::RunHandoff(updater_scope_, app_id);
+  }
+
+  void InstallAppViaService(
+      const std::string& app_id,
+      const base::Value::Dict& expected_final_values) const override {
+    updater::test::InstallAppViaService(updater_scope_, app_id,
+                                        expected_final_values);
   }
 #endif  // BUILDFLAG(IS_WIN)
 

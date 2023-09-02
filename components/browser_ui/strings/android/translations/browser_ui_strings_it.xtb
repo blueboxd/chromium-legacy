@@ -4,6 +4,7 @@
 <translation id="1006017844123154345">Apri online</translation>
 <translation id="1036348656032585052">Disattiva</translation>
 <translation id="1044891598689252897">I siti funzioneranno normalmente</translation>
+<translation id="1073417869336441572">Aiutaci a migliorare Chrome spiegandoci perché hai consentito i cookie di terze parti. <ph name="BEGIN_LINK" />Invia feedback<ph name="END_LINK" /></translation>
 <translation id="1124090076051167250">Verranno cancellati <ph name="DATASIZE" /> di dati e cookie memorizzati da siti e app nella schermata Home.</translation>
 <translation id="1178581264944972037">Pausa</translation>
 <translation id="1181037720776840403">Rimuovi</translation>
@@ -19,7 +20,6 @@
 <translation id="1371239764779356792">Consenti a un sito di salvare dati sul dispositivo</translation>
 <translation id="1383876407941801731">Cerca</translation>
 <translation id="1384959399684842514">Download sospeso</translation>
-<translation id="1409426117486808224">Visualizzazione semplificata delle schede aperte</translation>
 <translation id="1415402041810619267">URL troncato</translation>
 <translation id="1426410128494586442">Sì</translation>
 <translation id="1446450296470737166">Controllo completo dispos. MIDI</translation>
@@ -140,6 +140,7 @@
 <translation id="3386292677130313581">Chiedi conferma prima di consentire ai siti di conoscere la tua posizione (opzione consigliata)</translation>
 <translation id="3403537308306431953"><ph name="ZOOM_LEVEL" />%%</translation>
 <translation id="344449859752187052">Cookie di terze parti bloccati</translation>
+<translation id="3465378418721443318">{DAYS,plural, =1{Chrome bloccherà nuovamente i cookie domani}other{# giorni al nuovo blocco dei cookie in Chrome}}</translation>
 <translation id="3521663503435878242">Siti in <ph name="DOMAIN" /></translation>
 <translation id="3538390592868664640">Impedisci ai siti di creare una mappa 3D dell'ambiente circostante o di monitorare la posizione della fotocamera</translation>
 <translation id="3544058026430919413">Una società può definire un gruppo di siti che possono utilizzare i cookie per condividere la tua attività nel gruppo. Questa opzione è disattivata nella modalità di navigazione in incognito.</translation>
@@ -162,6 +163,7 @@
 <translation id="381841723434055211">Numeri di telefono</translation>
 <translation id="3826050100957962900">Accesso di terze parti</translation>
 <translation id="3835233591525155343">Utilizzo del tuo dispositivo</translation>
+<translation id="3843916486309149084">Chrome bloccherà nuovamente i cookie oggi</translation>
 <translation id="385051799172605136">Indietro</translation>
 <translation id="3859306556332390985">Posiziona avanti</translation>
 <translation id="3895926599014793903">Attivazione forzata dello zoom</translation>
@@ -301,6 +303,7 @@
 <translation id="6367753977865761591">Blocca l'accesso di terze parti per un sito specifico.</translation>
 <translation id="6388207532828177975">Cancella e reimposta</translation>
 <translation id="6398765197997659313">Esci da schermo intero</translation>
+<translation id="640163077447496506">Scade oggi</translation>
 <translation id="6405650995156823521"><ph name="FIRST_PART" /> • <ph name="SECOND_PART" /></translation>
 <translation id="6439114592976064011">Impedisci ai siti di usare i dati e dispositivi della realtà virtuale</translation>
 <translation id="6447842834002726250">Cookie</translation>
@@ -336,7 +339,6 @@
 <translation id="7000754031042624318">Disattivata nelle impostazioni Android</translation>
 <translation id="7016516562562142042">Consentita per il motore di ricerca corrente</translation>
 <translation id="702275896380648118">Questo sito stabilisce i tuoi interessi per poi suggerire annunci ad altri siti. Questo sito riceve anche gli argomenti degli annunci da Chrome per mostrarti annunci più pertinenti.</translation>
-<translation id="702463548815491781">Consigliata quando TalkBack o Switch Access sono attivi</translation>
 <translation id="7053983685419859001">Blocca</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 elemento selezionato}other{# elementi selezionati}}</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> elementi selezionati. Opzioni disponibili nella parte superiore dello schermo</translation>
@@ -396,6 +398,7 @@
 <translation id="8131740175452115882">Conferma</translation>
 <translation id="8154912474061769055">Le funzionalità su molti siti potrebbero non essere disponibili</translation>
 <translation id="8168435359814927499">Contenuti</translation>
+<translation id="8186479265534291036">Il sito non funziona? Cookie di terze parti bloccati</translation>
 <translation id="8197286292360124385">Autorizzazione <ph name="PERMISSION_1" /> consentita</translation>
 <translation id="8200772114523450471">Riprendi</translation>
 <translation id="8206354486702514201">Questa impostazione è stata applicata dall'amministratore.</translation>

@@ -165,7 +165,7 @@ NSString* const kCustomDetentIdentifier = @"customDetent";
 
 - (CGFloat)initialHeight {
   if (!self.minimizedStateHeight.has_value()) {
-    self.minimizedStateHeight = [super initialHeight];
+    self.minimizedStateHeight = [self preferredHeightForContent];
   }
   return self.minimizedStateHeight.value();
 }
@@ -195,20 +195,33 @@ NSString* const kCustomDetentIdentifier = @"customDetent";
     contextMenuConfigurationForRowAtIndexPath:(NSIndexPath*)indexPath
                                         point:(CGPoint)point {
   __weak __typeof(self) weakSelf = self;
-  UIContextMenuActionProvider actionProvider =
-      ^(NSArray<UIMenuElement*>* suggestedActions) {
-        NSMutableArray<UIMenuElement*>* menuElements =
-            [[NSMutableArray alloc] initWithArray:suggestedActions];
+  UIContextMenuActionProvider actionProvider = ^(
+      NSArray<UIMenuElement*>* suggestedActions) {
+    NSMutableArray<UIMenu*>* menuElements =
+        [[NSMutableArray alloc] initWithArray:suggestedActions];
 
-        PaymentsSuggestionBottomSheetViewController* strongSelf = weakSelf;
-        if (strongSelf) {
-          [menuElements addObject:[strongSelf openPaymentMethodsAction]];
-          [menuElements
-              addObject:[strongSelf openPaymentDetailsForIndexPath:indexPath]];
-        }
-
-        return [UIMenu menuWithTitle:@"" children:menuElements];
-      };
+    PaymentsSuggestionBottomSheetViewController* strongSelf = weakSelf;
+    if (strongSelf) {
+      [menuElements
+          addObject:[UIMenu menuWithTitle:@""
+                                    image:nil
+                               identifier:nil
+                                  options:UIMenuOptionsDisplayInline
+                                 children:@[
+                                   [strongSelf openPaymentMethodsAction]
+                                 ]]];
+      [menuElements
+          addObject:[UIMenu menuWithTitle:@""
+                                    image:nil
+                               identifier:nil
+                                  options:UIMenuOptionsDisplayInline
+                                 children:@[
+                                   [strongSelf
+                                       openPaymentDetailsForIndexPath:indexPath]
+                                 ]]];
+    }
+    return [UIMenu menuWithTitle:@"" children:menuElements];
+  };
 
   return
       [UIContextMenuConfiguration configurationWithIdentifier:nil
@@ -333,16 +346,17 @@ NSString* const kCustomDetentIdentifier = @"customDetent";
 
   if (_creditCardData.count) {
     [self.view layoutIfNeeded];
-    CGFloat fullHeight =
-        [self computeTableViewHeightForCellCount:_creditCardData.count];
+    CGFloat fullHeight = [self computeTableViewHeightForAllCells];
     if (fullHeight > 0) {
       // Update height constraints for the table view.
       _heightConstraint.constant = fullHeight;
 
-      NSUInteger minimizedCount =
-          _creditCardData.count <= 2 ? _creditCardData.count : 2;
-      _minimizedHeightConstraint.constant =
-          [self computeTableViewHeightForCellCount:minimizedCount];
+      if (_creditCardData.count > 2) {
+        _minimizedHeightConstraint.constant =
+            [self computeTableViewHeightForMinimizedState];
+      } else {
+        _minimizedHeightConstraint.constant = fullHeight;
+      }
 
       // Do not use minized state if it is larger than the superview height.
       useMinimizedState &=
@@ -386,11 +400,9 @@ NSString* const kCustomDetentIdentifier = @"customDetent";
   // Calculate the full height of the bottom sheet with the minimized height
   // constraint disabled.
   if (@available(iOS 16, *)) {
-    __typeof(self) __weak weakSelf = self;
+    CGFloat fullHeight = [self preferredHeightForContent];
     auto fullHeightBlock = ^CGFloat(
         id<UISheetPresentationControllerDetentResolutionContext> context) {
-      CGFloat fullHeight = [weakSelf detentForPreferredHeightInContext:context
-                                                        andIsContained:NO];
       self.expandSizeTooLarge = (fullHeight > context.maximumDetentValue);
       return self.expandSizeTooLarge ? context.maximumDetentValue : fullHeight;
     };
@@ -420,12 +432,12 @@ NSString* const kCustomDetentIdentifier = @"customDetent";
     weakSelf.disableBottomSheetOnExit = NO;
     [weakSelf.handler displayPaymentMethods];
   };
-  UIImage* listIcon =
-      CustomSymbolWithPointSize(kReadingListSymbol, kSymbolActionPointSize);
+  UIImage* creditCardIcon =
+      DefaultSymbolWithPointSize(kCreditCardSymbol, kSymbolActionPointSize);
   return [UIAction
       actionWithTitle:l10n_util::GetNSString(
                           IDS_IOS_PAYMENT_BOTTOM_SHEET_MANAGE_PAYMENT_METHODS)
-                image:listIcon
+                image:creditCardIcon
            identifier:nil
               handler:paymentMethodsButtonTapHandler];
 }
@@ -459,19 +471,40 @@ NSString* const kCustomDetentIdentifier = @"customDetent";
   return 2.5;
 }
 
-// Mocks the cells to calculate the real table view height.
-- (CGFloat)computeTableViewHeightForCellCount:(NSUInteger)count {
+- (CGFloat)computeTableViewCellHeightAtIndex:(NSUInteger)index {
+  TableViewDetailIconCell* cell = [[TableViewDetailIconCell alloc] init];
+  // Setup UI same as real cell.
+  cell = [self layoutCell:cell
+        forTableViewWidth:[self tableViewWidth]
+              atIndexPath:[NSIndexPath indexPathForRow:index inSection:0]];
+  return [cell systemLayoutSizeFittingSize:CGSizeMake([self tableViewWidth], 1)]
+      .height;
+}
+
+// Mocks the all the cells to calculate the real table view height.
+- (CGFloat)computeTableViewHeightForAllCells {
   CGFloat height = 0;
-  for (NSUInteger i = 0; i < count; i++) {
-    TableViewDetailIconCell* cell = [[TableViewDetailIconCell alloc] init];
-    // Setup UI same as real cell.
-    cell = [self layoutCell:cell
-          forTableViewWidth:[self tableViewWidth]
-                atIndexPath:[NSIndexPath indexPathForRow:i inSection:0]];
-    CGFloat cellHeight =
-        [cell systemLayoutSizeFittingSize:CGSizeMake([self tableViewWidth], 1)]
-            .height;
+  for (NSUInteger i = 0; i < _creditCardData.count; i++) {
+    CGFloat cellHeight = [self computeTableViewCellHeightAtIndex:i];
     height += cellHeight;
+  }
+  return height;
+}
+
+// Mocks the cells to calculate the real table view height in minized state.
+- (CGFloat)computeTableViewHeightForMinimizedState {
+  CHECK(_creditCardData.count > [self initialNumberOfVisibleCells]);
+  CGFloat height = 0;
+  NSInteger count =
+      static_cast<NSInteger>(floor([self initialNumberOfVisibleCells]));
+  for (NSInteger i = 0; i <= count; i++) {
+    CGFloat cellHeight = [self computeTableViewCellHeightAtIndex:i];
+    if (i == count) {
+      CGFloat diff = abs([self initialNumberOfVisibleCells] - count);
+      height += cellHeight * diff;
+    } else {
+      height += cellHeight;
+    }
   }
   return height;
 }

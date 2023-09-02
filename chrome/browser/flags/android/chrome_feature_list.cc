@@ -96,6 +96,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &autofill::features::kAutofillVirtualViewStructureAndroid,
     &autofill::features::kAutofillEnablePaymentsMandatoryReauth,
     &autofill::features::kAutofillEnableMovingGPayLogoToTheRightOnClank,
+    &autofill::features::kAutofillEnableCvcStorageAndFilling,
     &blink::features::kForceWebContentsDarkMode,
     &blink::features::kPrerender2,
     &commerce::kCommerceMerchantViewer,
@@ -141,7 +142,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &feed::kFeedPerformanceStudy,
     &feed::kFeedShowSignInCommand,
     &feed::kFeedSignedOutViewDemotion,
-    &feed::kFeedBoCSigninInterstitial,
     &feed::kFeedUserInteractionReliabilityReport,
     &feed::kInterestFeedContentSuggestions,
     &feed::kInterestFeedV2,
@@ -154,6 +154,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &feed::kWebFeedSort,
     &feed::kXsurfaceMetricsReporting,
     &history::kOrganicRepeatableQueries,
+    &history_clusters::kRenameJourneys,
     &history_clusters::internal::kJourneys,
     &history_clusters::internal::kOmniboxAction,
     &history_clusters::internal::kOmniboxHistoryClusterProvider,
@@ -170,6 +171,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kAndroidHatsRefactor,
     &kAndroidSearchEngineChoiceNotification,
     &kAndroidImprovedBookmarks,
+    &kAndroidVisibleUrlTruncation,
     &kAnimatedImageDragShadow,
     &kAppMenuMobileSiteOption,
     &kAvoidSelectedTabFocusOnLayoutDoneShowing,
@@ -190,10 +192,12 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kCCTBrandTransparency,
     &kCCTBrandTransparencyMemoryImprovement,
     &kCCTClientDataHeader,
+    &kCCTDeprecatedAPIs,
     &kCCTFeatureUsage,
     &kCCTIncognito,
     &kCCTIncognitoAvailableToThirdParty,
     &kCCTIntentFeatureOverrides,
+    &kCCTMinimized,
     &kCCTNewDownloadTab,
     &kCCTPageInsightsHub,
     &kCCTPostMessageAPI,
@@ -250,6 +254,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kInstantStart,
     &kLensCameraAssistedSearch,
     &kLensOnQuickActionSearchWidget,
+    &kNewTabSearchEngineUrlAndroid,
     &kNotificationPermissionVariant,
     &kNotificationPermissionBottomSheet,
     &kPageAnnotationsService,
@@ -292,6 +297,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kRequestDesktopSiteDefaultsLogging,
     &kRestoreTabsOnFRE,
     &kSafeModeForCachedFlags,
+    &kSearchEnginesPromoV3,
     &kShowScrollableMVTOnNTPAndroid,
     &kFeedPositionAndroid,
     &kSearchResumptionModuleAndroid,
@@ -307,8 +313,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kTabDragDropAndroid,
     &kTabAndLinkDragDropAndroid,
     &kTabEngagementReportingAndroid,
-    &kTabGroupsAndroid,
-    &kTabGroupsContinuationAndroid,
     &kTabStripRedesign,
     &kTabletToolbarReordering,
     &kTabStripStartupRefactoring,
@@ -319,7 +323,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kToolbarMicIphAndroid,
     &kToolbarScrollAblationAndroid,
     &kTrustedWebActivityPostMessage,
-    &kResizeOnlyActiveTab,
     &kSpareTab,
     &kStartSurfaceAndroid,
     &kStartSurfaceOnTablet,
@@ -337,6 +340,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kWebOtpCrossDeviceSimpleString,
     &content_creation::kWebNotesStylizeEnabled,
     &kWebApkAllowIconUpdate,
+    &kWebApkBackupAndRestoreBackend,
     &kWebApkInstallService,
     &kWebApkTrampolineOnInitialIntent,
     &features::kDnsOverHttps,
@@ -344,7 +348,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &paint_preview::kPaintPreviewDemo,
     &language::kCctAutoTranslate,
     &language::kDetailedLanguageSettings,
-    &media_router::kCafMRPDeferredDiscovery,
     &media_router::kCastAnotherContentWhileCasting,
     &messages::kMessagesForAndroidInfrastructure,
     &messages::kMessagesForAndroidSaveCard,
@@ -352,11 +355,14 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &offline_pages::kOfflinePagesDescriptiveFailStatusFeature,
     &offline_pages::kOfflinePagesDescriptivePendingStatusFeature,
     &offline_pages::kOfflinePagesLivePageSharingFeature,
+    &omnibox::kMostVisitedTilesHorizontalRenderGroup,
     &omnibox::kOmniboxMatchToolbarAndStatusBarColor,
     &omnibox::kOmniboxModernizeVisualUpdate,
     &omnibox::kOmniboxOnClobberFocusTypeOnContent,
+    &omnibox::kSearchReadyOmniboxAllowQueryEdit,
     &omnibox::kSuggestionAnswersColorReverse,
     &omnibox::kUpdatedConnectionSecurityIndicators,
+    &omnibox::kOmniboxTouchDownTriggerForPrefetch,
     &optimization_guide::features::kPushNotifications,
     &page_info::kPageInfoAboutThisSiteMoreLangs,
     &password_manager::features::kBiometricTouchToFill,
@@ -376,7 +382,10 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &query_tiles::features::kQueryTilesInNTP,
     &query_tiles::features::kQueryTilesOnStart,
     &query_tiles::features::kQueryTilesSegmentation,
+    &safe_browsing::kFriendlierSafeBrowsingSettingsEnhancedProtection,
     &safe_browsing::kFriendlierSafeBrowsingSettingsStandardProtection,
+    &safe_browsing::kHashPrefixRealTimeLookups,
+    &safe_browsing::kRedInterstitialFacelift,
     &segmentation_platform::features::kContextualPageActions,
     &segmentation_platform::features::kContextualPageActionPriceTracking,
     &segmentation_platform::features::kContextualPageActionReaderMode,
@@ -387,6 +396,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &switches::kForceStartupSigninPromo,
     &switches::kIdentityStatusConsistency,
     &switches::kForceDisableExtendedSyncPromos,
+    &switches::kSearchEngineChoice,
     &switches::kTangibleSync,
     &syncer::kSyncAndroidLimitNTPPromoImpressions,
     &syncer::kSyncEnableContactInfoDataTypeInTransportMode,
@@ -476,6 +486,10 @@ BASE_FEATURE(kAndroidImprovedBookmarks,
              "AndroidImprovedBookmarks",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+BASE_FEATURE(kAndroidVisibleUrlTruncation,
+             "AndroidVisibleUrlTruncation",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kAnimatedImageDragShadow,
              "AnimatedImageDragShadow",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -541,6 +555,10 @@ BASE_FEATURE(kCCTClientDataHeader,
              "CCTClientDataHeader",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+BASE_FEATURE(kCCTDeprecatedAPIs,
+             "CCTDeprecatedAPIs",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
 BASE_FEATURE(kCCTNewDownloadTab,
              "CCTNewDownloadTab",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -558,6 +576,8 @@ BASE_FEATURE(kCCTIncognitoAvailableToThirdParty,
 BASE_FEATURE(kCCTIntentFeatureOverrides,
              "CCTIntentFeatureOverrides",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kCCTMinimized, "CCTMinimized", base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kCCTPageInsightsHub,
              "CCTPageInsightsHub",
@@ -773,6 +793,10 @@ BASE_FEATURE(kInfobarScrollOptimization,
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kInstantStart, "InstantStart", base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kNewTabSearchEngineUrlAndroid,
+             "NewTabSearchEngineUrlAndroid",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kNotificationPermissionVariant,
              "NotificationPermissionVariant",
@@ -1003,21 +1027,6 @@ BASE_FEATURE(kTabEngagementReportingAndroid,
              "TabEngagementReportingAndroid",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Enabled, but used in tests to simulate behaviors for configurations where tab
-// groups are currently unsupported (low-end devices and users of the
-// accessibility tab switcher).
-BASE_FEATURE(kTabGroupsAndroid,
-             "TabGroupsAndroid",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-BASE_FEATURE(kTabGroupsContinuationAndroid,
-             "TabGroupsContinuationAndroid",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-BASE_FEATURE(kTabGridLayoutAndroid,
-             "TabGridLayoutAndroid",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 BASE_FEATURE(kTabStripRedesign,
              "TabStripRedesign",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -1060,9 +1069,11 @@ BASE_FEATURE(kTrustedWebActivityPostMessage,
              "TrustedWebActivityPostMessage",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-BASE_FEATURE(kResizeOnlyActiveTab,
-             "ResizeOnlyActiveTab",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+// This feature updates the triggering logic for the default search engine
+// choice promo. See crbug.com/1471643 for more details.
+BASE_FEATURE(kSearchEnginesPromoV3,
+             "SearchEnginesPromoV3",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // SpareTab is enabled by default for configuring renderer initialization
 // through field trial. Users of spareTab should declare their own field trial
@@ -1148,6 +1159,10 @@ BASE_FEATURE(kWebOtpCrossDeviceSimpleString,
 
 BASE_FEATURE(kWebApkAllowIconUpdate,
              "WebApkAllowIconUpdate",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kWebApkBackupAndRestoreBackend,
+             "WebApkBackupAndRestoreBackend",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables the Chrome Android WebAPK-install service.

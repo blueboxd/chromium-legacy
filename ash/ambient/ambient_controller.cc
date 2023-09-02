@@ -93,12 +93,6 @@ namespace {
 // Used by wake lock APIs.
 constexpr char kWakeLockReason[] = "AmbientMode";
 
-// Time taken from releasing wake lock to turning off display.
-// NOTE: This value was found experimentally and is temporarily here until the
-// source of the delay is resolved.
-// TODO(b/278939395): Find the code that causes this delay.
-constexpr base::TimeDelta kReleaseWakeLockDelay = base::Seconds(38);
-
 // kAmbientModeRunningDurationMinutes with value 0 means "forever".
 constexpr int kDurationForever = 0;
 
@@ -189,6 +183,7 @@ base::FilePath GetCacheRootPath() {
 class AmbientWidgetDelegate : public views::WidgetDelegate {
  public:
   AmbientWidgetDelegate() {
+    SetCanFullscreen(true);
     SetCanMaximize(true);
     SetOwnedByWidget(true);
   }
@@ -271,8 +266,7 @@ void AmbientController::RegisterProfilePrefs(PrefRegistrySimple* registry) {
       kManagedScreensaverImageRefreshInterval.InSeconds());
 
   registry->RegisterIntegerPref(
-      ambient::prefs::kAmbientModeRunningDurationMinutes,
-      kDefaultScreenSaverDuration.InMinutes());
+      ambient::prefs::kAmbientModeRunningDurationMinutes, kDurationForever);
 }
 
 AmbientController::AmbientController(
@@ -740,8 +734,8 @@ void AmbientController::SetScreenSaverDuration(int minutes) {
 }
 
 void AmbientController::StartTimerToReleaseWakeLock() {
-  DCHECK(ash::features::IsScreenSaverDurationEnabled());
-  DCHECK(!screensaver_running_timer_.IsRunning());
+  CHECK(ash::features::IsScreenSaverDurationEnabled());
+  CHECK(!screensaver_running_timer_.IsRunning());
 
   auto* pref_service = GetPrimaryUserPrefService();
   if (!pref_service) {
@@ -750,11 +744,10 @@ void AmbientController::StartTimerToReleaseWakeLock() {
 
   const int session_duration_in_minutes = pref_service->GetInteger(
       ambient::prefs::kAmbientModeRunningDurationMinutes);
-  DCHECK(session_duration_in_minutes >= 0);
+  CHECK(session_duration_in_minutes >= 0);
 
   if (session_duration_in_minutes != kDurationForever) {
-    const base::TimeDelta delay =
-        base::Minutes(session_duration_in_minutes) - kReleaseWakeLockDelay;
+    const base::TimeDelta delay = base::Minutes(session_duration_in_minutes);
     screensaver_running_timer_.Start(FROM_HERE, delay, this,
                                      &AmbientController::ReleaseWakeLock);
   }

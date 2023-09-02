@@ -5233,6 +5233,7 @@ interface IIRFilterNode : AudioNode
 interface IdentityCredential : Credential
     static method logoutRPs
     attribute @@toStringTag
+    getter isAccountAutoSelected
     getter token
     method constructor
 interface IdentityProvider
@@ -7392,6 +7393,7 @@ interface RTCEncodedAudioFrame
     method clone
     method constructor
     method getMetadata
+    method setMetadata
     method setTimestamp
     method toString
     setter data
@@ -8496,6 +8498,7 @@ interface SVGGraphicsElement : SVGElement
     method getScreenCTM
 interface SVGImageElement : SVGGraphicsElement
     attribute @@toStringTag
+    getter crossOrigin
     getter decoding
     getter height
     getter href
@@ -8505,6 +8508,7 @@ interface SVGImageElement : SVGGraphicsElement
     getter y
     method constructor
     method decode
+    setter crossOrigin
     setter decoding
 interface SVGLength
     attribute @@toStringTag
@@ -9473,11 +9477,8 @@ interface TextEvent : UIEvent
     method initTextEvent
 interface TextFormat
     attribute @@toStringTag
-    getter backgroundColor
     getter rangeEnd
     getter rangeStart
-    getter textColor
-    getter underlineColor
     getter underlineStyle
     getter underlineThickness
     method constructor
@@ -9492,13 +9493,15 @@ interface TextMetrics
     getter actualBoundingBoxLeft
     getter actualBoundingBoxRight
     getter advances
+    getter alphabeticBaseline
     getter emHeightAscent
     getter emHeightDescent
     getter fontBoundingBoxAscent
     getter fontBoundingBoxDescent
+    getter hangingBaseline
+    getter ideographicBaseline
     getter width
     method constructor
-    method getBaselines
 interface TextTrack : EventTarget
     attribute @@toStringTag
     getter activeCues

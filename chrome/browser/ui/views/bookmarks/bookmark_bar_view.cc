@@ -302,7 +302,7 @@ class BookmarkButton : public BookmarkButtonBase {
   }
 
   void MayRecordHoverDuration(bool taken) {
-    // Record once. `moouse_entered_time_` should not be set if
+    // Record once. `mouse_entered_time_` should not be set if
     // `OnButtonPressed` is called for keyboard events. We are not interested
     // in such cases.
     if (hover_duration_recorded_ || !mouse_entered_time_.has_value()) {
@@ -385,14 +385,30 @@ class BookmarkButton : public BookmarkButtonBase {
     BookmarkButtonBase::OnMouseEntered(event);
 
     if (base::FeatureList::IsEnabled(features::kBookmarkTriggerForPrerender2) &&
-        kPrerenderBookmarkBarOnMouseHoverTrigger.Get() &&
-        url_->SchemeIs("https")) {
+        kPrerenderBookmarkBarOnMouseHoverTrigger.Get()) {
       preloading_timer_.Start(
           FROM_HERE,
           base::Milliseconds(
               kPreconnectStartDelayOnMouseHoverByMiliseconds.Get()),
           base::BindRepeating(&BookmarkButton::StartPreconnecting,
                               base::Unretained(this), *url_));
+      // Now we should register the callback function that will be used to
+      // compute the preloading recall.
+      if (auto* web_contents =
+              browser_->tab_strip_model()->GetActiveWebContents()) {
+        content::PreloadingData* preloading_data =
+            content::PreloadingData::GetOrCreateForWebContents(web_contents);
+        preloading_data->SetIsNavigationInDomainCallback(
+            chrome_preloading_predictor::kPointerDownOnBookmarkBar,
+            base::BindRepeating(
+                [](content::NavigationHandle* navigation_handle) -> bool {
+                  return ui::PageTransitionCoreTypeIs(
+                             navigation_handle->GetPageTransition(),
+                             ui::PAGE_TRANSITION_AUTO_BOOKMARK) &&
+                         ui::PageTransitionIsNewNavigation(
+                             navigation_handle->GetPageTransition());
+                }));
+      }
     }
   }
 
@@ -1088,6 +1104,14 @@ void BookmarkBarView::Layout() {
     // Add the separator width even if its not shown for correct positioning of
     // the bookmark buttons.
     if (saved_tab_group_bar_width > 0) {
+      // Possibly update the paddings of the separator
+      if (saved_tab_group_bar_->IsOverflowButtonVisible()) {
+        saved_tab_groups_separator_view_->UpdateBorderAndPreferredSize(
+            gfx::Insets::TLBR(0, 8, 0, 8));
+      } else {
+        saved_tab_groups_separator_view_->UpdateBorderAndPreferredSize(
+            gfx::Insets::TLBR(0, 16, 0, 8));
+      }
       // Update the bounds for the separator.
       gfx::Size saved_tab_groups_separator_view_pref =
           saved_tab_groups_separator_view_->GetPreferredSize();
@@ -1722,7 +1746,6 @@ void BookmarkBarView::Init() {
   saved_tab_groups_separator_view_->SetVisible(
       base::FeatureList::IsEnabled(features::kTabGroupsSave) &&
       browser_->profile()->IsRegularProfile());
-
   profile_pref_registrar_.Add(
       bookmarks::prefs::kShowManagedBookmarksInBookmarkBar,
       base::BindRepeating(&BookmarkBarView::OnShowManagedBookmarksPrefChanged,
@@ -1859,6 +1882,8 @@ void BookmarkBarView::ConfigureButton(const BookmarkNode* node,
   if (cp) {
     text_color = cp->GetColor(kColorBookmarkBarForeground);
     button->SetEnabledTextColors(text_color);
+    button->SetTextColorId(views::Button::ButtonState::STATE_DISABLED,
+                           kColorBookmarkBarForegroundDisabled);
     if (node->is_folder()) {
       button->SetImageModel(
           views::Button::STATE_NORMAL,
@@ -2234,7 +2259,12 @@ void BookmarkBarView::UpdateBookmarksSeparatorVisibility() {
 #if BUILDFLAG(IS_CHROMEOS)
   // ChromeOS does not paint the bookmarks separator line because it looks odd
   // on the flat background. We keep it present for layout, but don't draw it.
-  bookmarks_separator_view_->SetVisible(false);
+  if (features::IsChromeRefresh2023()) {
+    bookmarks_separator_view_->SetVisible(
+        other_bookmarks_button_->GetVisible());
+  } else {
+    bookmarks_separator_view_->SetVisible(false);
+  }
 #else
   bookmarks_separator_view_->SetVisible(other_bookmarks_button_->GetVisible());
 #endif

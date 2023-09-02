@@ -9,7 +9,6 @@
 #include "components/autofill/core/browser/metrics/payments/mandatory_reauth_metrics.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/strings/grit/components_chromium_strings.h"
-#include "components/strings/grit/components_google_chrome_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
 namespace autofill::payments {
@@ -67,6 +66,7 @@ bool MandatoryReauthManager::ShouldOfferOptin(
 
   // If the user prefs denote that we should not display the re-auth opt-in
   // bubble, return that we should not offer mandatory re-auth opt-in.
+  // Pref-related decision logging also occurs within this function call.
   if (!client_->GetPersonalDataManager()
            ->ShouldShowPaymentMethodsMandatoryReauthPromo()) {
     return false;
@@ -175,19 +175,32 @@ bool MandatoryReauthManager::ShouldOfferOptin(
           // to check that the local card version of this card was the card most
           // recently filled into the form with non-interactive authentication,
           // as we should show the opt-in prompt in this case.
-          // Still use local card for metrics in this case.
-          opt_in_source_ = autofill_metrics::MandatoryReauthOptInOrOutSource::
-              kCheckoutLocalCard;
-          bool is_card_match = LastFilledCardMatchesSubmittedCard(
-              absl::get<FormDataImporter::CardGuid>(
-                  card_identifier_if_non_interactive_authentication_flow_completed
-                      .value()),
-              *local_card);
+          bool is_local_card_last_filled_card =
+              LastFilledCardMatchesSubmittedCard(
+                  absl::get<FormDataImporter::CardGuid>(
+                      card_identifier_if_non_interactive_authentication_flow_completed
+                          .value()),
+                  *local_card);
+
+          // We should only use local card for metrics if the last filled card
+          // was the local card, otherwise the last filled card is a server card
+          // which is not supported.
+          opt_in_source_ =
+              is_local_card_last_filled_card
+                  ? autofill_metrics::MandatoryReauthOptInOrOutSource::
+                        kCheckoutLocalCard
+                  : autofill_metrics::MandatoryReauthOptInOrOutSource::kUnknown;
+
+          // If `is_local_card_last_filled_card` is true, we should offer
+          // re-auth opt-in, so log that and return true. Otherwise we must have
+          // filled the server card (not local card), which is not supported, so
+          // log that and return false. Returning true implies we should offer
+          // re-auth opt-in, returning false implies we should not.
           LogMandatoryReauthOfferOptInDecision(
-              is_card_match ? MandatoryReauthOfferOptInDecision::kOffered
-                            : MandatoryReauthOfferOptInDecision::
-                                  kNoStoredCardForExtractedCard);
-          return is_card_match;
+              is_local_card_last_filled_card
+                  ? MandatoryReauthOfferOptInDecision::kOffered
+                  : MandatoryReauthOfferOptInDecision::kUnsupportedCardType);
+          return is_local_card_last_filled_card;
         }
       }
 

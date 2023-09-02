@@ -403,26 +403,15 @@ BASE_FEATURE(kEnableServiceWorkersForChromeScheme,
 // If this feature is enabled and device permission is not granted by the user,
 // media-device enumeration will provide at most one device per type and the
 // device IDs will not be available.
-// TODO(crbug.com/1019176): remove the feature in M89.
 BASE_FEATURE(kEnumerateDevicesHideDeviceIDs,
              "EnumerateDevicesHideDeviceIDs",
-#if BUILDFLAG(IS_ANDROID)
-             base::FEATURE_DISABLED_BY_DEFAULT
-#else
-             base::FEATURE_ENABLED_BY_DEFAULT
-#endif
-);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Content counterpart of ExperimentalContentSecurityPolicyFeatures in
 // third_party/blink/renderer/platform/runtime_enabled_features.json5. Enables
 // experimental Content Security Policy features ('navigate-to').
 BASE_FEATURE(kExperimentalContentSecurityPolicyFeatures,
              "ExperimentalContentSecurityPolicyFeatures",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Extra CORS safelisted headers. See https://crbug.com/999054.
-BASE_FEATURE(kExtraSafelistedRequestHeadersForOutOfBlinkCors,
-             "ExtraSafelistedRequestHeadersForOutOfBlinkCors",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables JavaScript API to intermediate federated identity requests.
@@ -435,6 +424,12 @@ BASE_FEATURE(kFedCm, "FedCm", base::FEATURE_ENABLED_BY_DEFAULT);
 // Field trial boolean parameter which indicates whether FedCM IDP sign-out
 // is enabled.
 const char kFedCmIdpSignoutFieldTrialParamName[] = "IdpSignout";
+
+// Enables usage of the FedCM AccountAutoSelectedFlag feature. ChromeStatus
+// entry: https://chromestatus.com/feature/5384360374566912
+BASE_FEATURE(kFedCmAccountAutoSelectedFlag,
+             "FedCmAccountAutoSelectedFlag",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables usage of the FedCM Authz API.
 BASE_FEATURE(kFedCmAuthz, "FedCmAuthz", base::FEATURE_DISABLED_BY_DEFAULT);
@@ -506,11 +501,6 @@ BASE_FEATURE(kFirstPartySets,
 // Controls whether to clear sites data on FPS transitions.
 const base::FeatureParam<bool> kFirstPartySetsClearSiteDataOnChangedSets{
     &kFirstPartySets, "FirstPartySetsClearSiteDataOnChangedSets", true};
-
-// Controls whether the client is considered a dogfooder for the FirstPartySets
-// feature.
-const base::FeatureParam<bool> kFirstPartySetsIsDogfooder{
-    &kFirstPartySets, "FirstPartySetsIsDogfooder", false};
 
 // Controls how many sites are allowed to be in the Associated subset (ignoring
 // ccTLD aliases).
@@ -745,20 +735,18 @@ BASE_FEATURE(kMojoVideoCapture,
              "MojoVideoCapture",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-// A secondary switch used in combination with kMojoVideoCapture.
-// This is intended as a kill switch to allow disabling the service on
-// particular groups of devices even if they forcibly enable kMojoVideoCapture
-// via a command-line argument.
-BASE_FEATURE(kMojoVideoCaptureSecondary,
-             "MojoVideoCaptureSecondary",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // When NavigationNetworkResponseQueue is enabled, the browser will schedule
 // some tasks related to navigation network responses in a kHigh priority
 // queue.
 BASE_FEATURE(kNavigationNetworkResponseQueue,
              "NavigationNetworkResponseQueue",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+// When enabled, RenderFrameHostManager::CommitPending will also update the
+// visibility of all child views, not just that of the main frame.
+BASE_FEATURE(kNavigationUpdatesChildViewsVisibility,
+             "NavigationUpdatesChildViewsVisibility",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // If the network service is enabled, runs it in process.
 BASE_FEATURE(kNetworkServiceInProcess,
@@ -1484,12 +1472,6 @@ BASE_FEATURE(kWebAssemblyTrapHandler,
 #endif
 );
 
-// Controls whether WebAuthn get requests for discoverable credentials use the
-// Touch To Fill bottom sheet on Android.
-BASE_FEATURE(kWebAuthnTouchToFillCredentialSelection,
-             "WebAuthnTouchToFillCredentialSelection",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
 // Controls whether the Web Bluetooth API is enabled:
 // https://webbluetoothcg.github.io/web-bluetooth/
 BASE_FEATURE(kWebBluetooth, "WebBluetooth", base::FEATURE_DISABLED_BY_DEFAULT);
@@ -1539,16 +1521,19 @@ BASE_FEATURE(kWebUsb, "WebUSB", base::FEATURE_ENABLED_BY_DEFAULT);
 BASE_FEATURE(kWebXr, "WebXR", base::FEATURE_ENABLED_BY_DEFAULT);
 
 #if BUILDFLAG(IS_ANDROID)
-// Allows the experimental approach of proactively generating an accessibility
-// tree asynchronously off the main thread, before the framework requests it.
-BASE_FEATURE(kAccessibilityAsyncTreeConstruction,
-             "AccessibilityAsyncTreeConstruction",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
 // Allows the use of page zoom in place of accessibility text autosizing, and
 // updated UI to replace existing Chrome Accessibility Settings.
 BASE_FEATURE(kAccessibilityPageZoom,
              "AccessibilityPageZoom",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Controls whether the OS-level font setting is adjusted for.
+const base::FeatureParam<bool> kAccessibilityPageZoomOSLevelAdjustment{
+    &kAccessibilityPageZoom, "AdjustForOSLevel", true};
+
+// Disables use of performance improvements for experimental testing/dev.
+BASE_FEATURE(kAccessibilityPerformanceTesting,
+             "AccessibilityPerformanceTesting",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Allows the use of "Smart Zoom", an alternative form of page zoom, and
@@ -1578,12 +1563,6 @@ BASE_FEATURE(kReduceGpuPriorityOnBackground,
 BASE_FEATURE(kMouseAndTrackpadDropdownMenu,
              "MouseAndTrackpadDropdownMenu",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Allows the use of an experimental feature to drop any AccessibilityEvents
-// that are not relevant to currently enabled accessibility services.
-BASE_FEATURE(kOnDemandAccessibilityEvents,
-             "OnDemandAccessibilityEvents",
-             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Request Desktop Site secondary settings for Android; including display
 // setting and peripheral setting.
@@ -1666,19 +1645,24 @@ BASE_FEATURE(kWebRtcPipeWireCapturer,
              base::FEATURE_ENABLED_BY_DEFAULT);
 #endif  // defined(WEBRTC_USE_PIPEWIRE)
 
+namespace {
 enum class VideoCaptureServiceConfiguration {
   kEnabledForOutOfProcess,
   kEnabledForBrowserProcess,
   kDisabled
 };
 
-bool ShouldEnableVideoCaptureService() {
-  return base::FeatureList::IsEnabled(features::kMojoVideoCapture) &&
-         base::FeatureList::IsEnabled(features::kMojoVideoCaptureSecondary);
-}
+// A secondary switch used in combination with kMojoVideoCapture.
+// This is intended as a kill switch to allow disabling the service on
+// particular groups of devices even if they forcibly enable kMojoVideoCapture
+// via a command-line argument.
+BASE_FEATURE(kMojoVideoCaptureSecondary,
+             "MojoVideoCaptureSecondary",
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 VideoCaptureServiceConfiguration GetVideoCaptureServiceConfiguration() {
-  if (!ShouldEnableVideoCaptureService()) {
+  if (!base::FeatureList::IsEnabled(features::kMojoVideoCapture) ||
+      !base::FeatureList::IsEnabled(features::kMojoVideoCaptureSecondary)) {
     return VideoCaptureServiceConfiguration::kDisabled;
   }
 
@@ -1694,6 +1678,8 @@ VideoCaptureServiceConfiguration GetVideoCaptureServiceConfiguration() {
              : VideoCaptureServiceConfiguration::kEnabledForOutOfProcess;
 #endif
 }
+
+}  // namespace
 
 bool IsVideoCaptureServiceEnabledForOutOfProcess() {
   return GetVideoCaptureServiceConfiguration() ==

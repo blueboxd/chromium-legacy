@@ -48,6 +48,7 @@
 #include "components/autofill/core/browser/manual_testing_import.h"
 #include "components/autofill/core/browser/metrics/autofill_metrics.h"
 #include "components/autofill/core/browser/metrics/payments/iban_metrics.h"
+#include "components/autofill/core/browser/metrics/payments/mandatory_reauth_metrics.h"
 #include "components/autofill/core/browser/metrics/payments/offers_metrics.h"
 #include "components/autofill/core/browser/metrics/payments/wallet_usage_data_metrics.h"
 #include "components/autofill/core/browser/metrics/stored_profile_metrics.h"
@@ -134,6 +135,9 @@ bool ShouldDedupeDuplicateCard(autofill::CreditCard* original_card,
 }  // namespace
 
 namespace autofill {
+
+using autofill_metrics::LogMandatoryReauthOfferOptInDecision;
+using autofill_metrics::MandatoryReauthOfferOptInDecision;
 
 namespace {
 
@@ -444,7 +448,6 @@ void PersonalDataManager::Init(
 PersonalDataManager::~PersonalDataManager() {
   CancelPendingLocalQuery(&pending_synced_local_profiles_query_);
   CancelPendingLocalQuery(&pending_creditcards_query_);
-  CancelPendingLocalQuery(&pending_upi_ids_query_);
   CancelPendingServerQueries();
 
   if (alternative_state_name_map_updater_)
@@ -506,8 +509,7 @@ void PersonalDataManager::OnWebDataServiceRequestDone(
          pending_creditcards_query_ || pending_server_creditcards_query_ ||
          pending_server_creditcard_cloud_token_data_query_ ||
          pending_ibans_query_ || pending_customer_data_query_ ||
-         pending_upi_ids_query_ || pending_offer_data_query_ ||
-         pending_virtual_card_usage_data_query_);
+         pending_offer_data_query_ || pending_virtual_card_usage_data_query_);
 
   if (!result) {
     // Error from the web database.
@@ -527,8 +529,6 @@ void PersonalDataManager::OnWebDataServiceRequestDone(
       pending_ibans_query_ = 0;
     else if (h == pending_customer_data_query_)
       pending_customer_data_query_ = 0;
-    else if (h == pending_upi_ids_query_)
-      pending_upi_ids_query_ = 0;
     else if (h == pending_offer_data_query_)
       pending_offer_data_query_ = 0;
     else if (h == pending_virtual_card_usage_data_query_) {
@@ -587,15 +587,6 @@ void PersonalDataManager::OnWebDataServiceRequestDone(
         payments_customer_data_ =
             static_cast<WDResult<std::unique_ptr<PaymentsCustomerData>>*>(
                 result.get())
-                ->GetValue();
-        break;
-      case AUTOFILL_UPI_RESULT:
-        DCHECK_EQ(h, pending_upi_ids_query_)
-            << "received UPI IDs from invalid request.";
-        pending_upi_ids_query_ = 0;
-
-        upi_ids_ =
-            static_cast<WDResult<std::vector<std::string>>*>(result.get())
                 ->GetValue();
         break;
       case AUTOFILL_OFFER_DATA:
@@ -666,6 +657,8 @@ void PersonalDataManager::OnStateChanged(syncer::SyncService* sync_service) {
   // feature explicitly. `sync_service` is nullptr-checked because this
   // method can also be used (apart from the Sync service observer's calls) in
   // SetSyncService() where setting a nullptr is possible.
+  // TODO(crbug.com/1462552): Simplify once ConsentLevel::kSync and
+  // SyncService::IsSyncFeatureEnabled() are deleted from the codebase.
   database_helper_->SetUseAccountStorageForServerData(
       sync_service && !sync_service->IsSyncFeatureEnabled());
 }
@@ -719,35 +712,61 @@ absl::optional<CoreAccountInfo> PersonalDataManager::GetPrimaryAccountInfo()
 }
 
 bool PersonalDataManager::IsPaymentsDownloadActive() const {
-  return GetSyncSigninState() ==
-             AutofillSyncSigninState::kSignedInAndSyncFeatureEnabled ||
-         GetSyncSigninState() ==
-             AutofillSyncSigninState::kSignedInAndWalletSyncTransportEnabled;
+  if (!sync_service_ || !identity_manager_ ||
+      sync_service_->GetAccountInfo().IsEmpty() ||
+      sync_service_->GetTransportState() ==
+          syncer::SyncService::TransportState::PAUSED) {
+    return false;
+  }
+  // TODO(crbug.com/1462552): Simplify (merge with
+  // IsPaymentsWalletSyncTransportEnabled()) once ConsentLevel::kSync and
+  // SyncService::IsSyncFeatureEnabled() are deleted from the codebase.
+  return sync_service_->IsSyncFeatureEnabled() ||
+         sync_service_->GetActiveDataTypes().Has(syncer::AUTOFILL_WALLET_DATA);
 }
 
-AutofillSyncSigninState PersonalDataManager::GetSyncSigninState() const {
+bool PersonalDataManager::IsPaymentsWalletSyncTransportEnabled() const {
+  if (!sync_service_ || !identity_manager_ ||
+      sync_service_->GetAccountInfo().IsEmpty() ||
+      sync_service_->GetTransportState() ==
+          syncer::SyncService::TransportState::PAUSED) {
+    return false;
+  }
+  // TODO(crbug.com/1462552): Simplify (merge with IsPaymentsDownloadActive())
+  // once ConsentLevel::kSync and SyncService::IsSyncFeatureEnabled() are
+  // deleted from the codebase.
+  return !sync_service_->IsSyncFeatureEnabled() &&
+         sync_service_->GetActiveDataTypes().Has(syncer::AUTOFILL_WALLET_DATA);
+}
+
+AutofillMetrics::PaymentsSigninState
+PersonalDataManager::GetPaymentsSigninStateForMetrics() const {
+  using PaymentsSigninState = AutofillMetrics::PaymentsSigninState;
+
   // Check if the user is signed out.
   if (!sync_service_ || !identity_manager_ ||
       sync_service_->GetAccountInfo().IsEmpty()) {
-    return AutofillSyncSigninState::kSignedOut;
+    return PaymentsSigninState::kSignedOut;
   }
 
   if (sync_service_->GetTransportState() ==
       syncer::SyncService::TransportState::PAUSED) {
-    return AutofillSyncSigninState::kSyncPaused;
+    return PaymentsSigninState::kSyncPaused;
   }
 
   // Check if the user has turned on sync.
+  // TODO(crbug.com/1462552): Simplify once ConsentLevel::kSync and
+  // SyncService::IsSyncFeatureEnabled() are deleted from the codebase.
   if (sync_service_->IsSyncFeatureEnabled()) {
-    return AutofillSyncSigninState::kSignedInAndSyncFeatureEnabled;
+    return PaymentsSigninState::kSignedInAndSyncFeatureEnabled;
   }
 
   // Check if Wallet data types are supported.
   if (sync_service_->GetActiveDataTypes().Has(syncer::AUTOFILL_WALLET_DATA)) {
-    return AutofillSyncSigninState::kSignedInAndWalletSyncTransportEnabled;
+    return PaymentsSigninState::kSignedInAndWalletSyncTransportEnabled;
   }
 
-  return AutofillSyncSigninState::kSignedIn;
+  return PaymentsSigninState::kSignedIn;
 }
 
 void PersonalDataManager::AddObserver(PersonalDataManagerObserver* observer) {
@@ -823,18 +842,7 @@ void PersonalDataManager::AddUpiId(const std::string& upi_id) {
     return;
   }
 
-  // Don't add a duplicate.
-  if (base::Contains(upi_ids_, upi_id))
-    return;
-
   database_helper_->GetLocalDatabase()->AddUpiId(upi_id);
-
-  // Refresh our local cache and send notifications to observers.
-  Refresh();
-}
-
-std::vector<std::string> PersonalDataManager::GetUpiIds() {
-  return upi_ids_;
 }
 
 void PersonalDataManager::AddProfile(const AutofillProfile& profile) {
@@ -1215,10 +1223,6 @@ void PersonalDataManager::ClearAllLocalData() {
   database_helper_->GetLocalDatabase()->ClearAllLocalData();
   local_credit_cards_.clear();
   synced_local_profiles_.clear();
-  // Even though `account_profiles_` are not "local", the local/server
-  // distinction in the PersonalDataManager only exists for historical reasons
-  // and all AutofillProfiles fall in the local category.
-  account_profiles_.clear();
 }
 
 void PersonalDataManager::AddServerCreditCardForTest(
@@ -1534,7 +1538,6 @@ void PersonalDataManager::Refresh() {
   LoadCreditCardCloudTokenData();
   LoadIbans();
   LoadPaymentsCustomerData();
-  LoadUpiIds();
   LoadAutofillOffers();
   LoadVirtualCardUsageData();
 }
@@ -1632,15 +1635,24 @@ std::vector<Suggestion> PersonalDataManager::GetProfileSuggestions(
   auto is_field_type_profile_related = [](ServerFieldType type) {
     FieldTypeGroup group = AutofillType(type).group();
     return group == FieldTypeGroup::kName ||
-           group == FieldTypeGroup::kAddressHome ||
-           group == FieldTypeGroup::kPhoneHome ||
-           group == FieldTypeGroup::kEmail;
+           group == FieldTypeGroup::kAddress ||
+           group == FieldTypeGroup::kPhone || group == FieldTypeGroup::kEmail;
   };
   if (base::ranges::count_if(field_types, is_field_type_profile_related) > 1) {
     for (auto& suggestion : unique_suggestions) {
-      suggestion.icon = "accountIcon";
+      // TODO(crbug.com/1459990): Remove this hardcoding once the last filling
+      // granularity is available to this method. Filling granularies different
+      // than full form will not have an icon.
+      const bool fill_full_form = true;
+      if (base::FeatureList::IsEnabled(
+              features::kAutofillGranularFillingAvailable)) {
+        suggestion.icon = fill_full_form ? "locationIcon" : "";
+      } else {
+        suggestion.icon = "accountIcon";
+      }
     }
   }
+
   return unique_suggestions;
 }
 
@@ -1733,6 +1745,8 @@ bool PersonalDataManager::ShouldSuggestServerCards() const {
   CHECK(sync_service_);
 
   // Check if the user is in sync transport mode for wallet data.
+  // TODO(crbug.com/1462552): Simplify once ConsentLevel::kSync and
+  // SyncService::IsSyncFeatureEnabled() are deleted from the codebase.
   if (!sync_service_->IsSyncFeatureEnabled()) {
     // For SyncTransport, only show server cards if the user has opted in to
     // seeing them in the dropdown.
@@ -2038,13 +2052,12 @@ void PersonalDataManager::RemoveStrikesToBlockProfileUpdate(
   GetProfileUpdateStrikeDatabase()->ClearStrikes(guid);
 }
 
-bool PersonalDataManager::IsSyncEnabledFor(
-    syncer::UserSelectableType data_type) const {
-  // TODO(crbug.com/1462286): Investigate usage of IsSyncFeatureEnabled() below
-  // and consider if it can be removed, since GetSelectedTypes() deals well
-  // with all sign-in states.
+bool PersonalDataManager::IsSyncFeatureEnabledForAutofill() const {
+  // TODO(crbug.com/1462552): Remove this method once ConsentLevel::kSync and
+  // SyncService::IsSyncFeatureEnabled() are deleted from the codebase.
   return sync_service_ != nullptr && sync_service_->IsSyncFeatureEnabled() &&
-         sync_service_->GetUserSettings()->GetSelectedTypes().Has(data_type);
+         sync_service_->GetUserSettings()->GetSelectedTypes().Has(
+             syncer::UserSelectableType::kAutofill);
 }
 
 void PersonalDataManager::SetPaymentMethodsMandatoryReauthEnabled(
@@ -2057,7 +2070,35 @@ bool PersonalDataManager::IsPaymentMethodsMandatoryReauthEnabled() {
 }
 
 bool PersonalDataManager::ShouldShowPaymentMethodsMandatoryReauthPromo() {
-  return prefs::ShouldShowPaymentMethodsMandatoryReauthPromo(pref_service_);
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_ANDROID)
+  if (!base::FeatureList::IsEnabled(
+          features::kAutofillEnablePaymentsMandatoryReauth)) {
+    return false;
+  }
+
+  // If the user has made a decision on this feature previously, then we should
+  // not show the opt-in promo.
+  if (prefs::IsPaymentMethodsMandatoryReauthSetExplicitly(pref_service_)) {
+    LogMandatoryReauthOfferOptInDecision(
+        prefs::IsPaymentMethodsMandatoryReauthEnabled(pref_service_)
+            ? MandatoryReauthOfferOptInDecision::kAlreadyOptedIn
+            : MandatoryReauthOfferOptInDecision::kAlreadyOptedOut);
+    return false;
+  }
+
+  // We should only show the opt-in promo if we have not reached the maximum
+  // number of shows for the promo.
+  bool allowed_by_strike_database =
+      prefs::IsPaymentMethodsMandatoryReauthPromoShownCounterBelowMaxCap(
+          pref_service_);
+  if (!allowed_by_strike_database) {
+    LogMandatoryReauthOfferOptInDecision(
+        MandatoryReauthOfferOptInDecision::kBlockedByStrikeDatabase);
+  }
+  return allowed_by_strike_database;
+#else
+  return false;
+#endif  // BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_ANDROID)
 }
 
 void PersonalDataManager::
@@ -2201,18 +2242,6 @@ void PersonalDataManager::LoadIbans() {
   CancelPendingLocalQuery(&pending_ibans_query_);
 
   pending_ibans_query_ = database_helper_->GetLocalDatabase()->GetIbans(this);
-}
-
-void PersonalDataManager::LoadUpiIds() {
-  if (!database_helper_->GetLocalDatabase()) {
-    NOTREACHED();
-    return;
-  }
-
-  CancelPendingLocalQuery(&pending_upi_ids_query_);
-
-  pending_upi_ids_query_ =
-      database_helper_->GetLocalDatabase()->GetAllUpiIds(this);
 }
 
 void PersonalDataManager::LoadAutofillOffers() {
@@ -2462,6 +2491,8 @@ bool PersonalDataManager::ShouldShowCardsFromAccountOption() const {
     BUILDFLAG(IS_WIN) || BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_FUCHSIA)
   // This option should only be shown for users that have not enabled the Sync
   // Feature and that have server credit cards available.
+  // TODO(crbug.com/1462552): Simplify once ConsentLevel::kSync and
+  // SyncService::IsSyncFeatureEnabled() are deleted from the codebase.
   if (!sync_service_ || sync_service_->IsSyncFeatureEnabled() ||
       GetServerCreditCards().empty()) {
     return false;
@@ -2479,8 +2510,7 @@ bool PersonalDataManager::ShouldShowCardsFromAccountOption() const {
 }
 
 void PersonalDataManager::OnUserAcceptedCardsFromAccountOption() {
-  DCHECK_EQ(AutofillSyncSigninState::kSignedInAndWalletSyncTransportEnabled,
-            GetSyncSigninState());
+  DCHECK(IsPaymentsWalletSyncTransportEnabled());
   prefs::SetUserOptedInWalletSyncTransport(
       pref_service_, sync_service_->GetAccountInfo().account_id,
       /*opted_in=*/true);
@@ -2490,7 +2520,7 @@ void PersonalDataManager::OnAutofillProfileChanged(
     const AutofillProfileDeepChange& change) {
   const auto& guid = change.key();
   const auto& change_type = change.type();
-  const auto& profile = *(change.profile());
+  const auto& profile = change.profile();
   DCHECK(guid == profile.guid());
   // Happens only in tests.
   if (!ProfileChangesAreOngoing(guid)) {
@@ -2539,13 +2569,12 @@ void PersonalDataManager::OnCardArtImagesFetched(
 }
 
 void PersonalDataManager::LogServerCardLinkClicked() const {
-  AutofillMetrics::LogServerCardLinkClicked(GetSyncSigninState());
+  AutofillMetrics::LogServerCardLinkClicked(GetPaymentsSigninStateForMetrics());
 }
 
 void PersonalDataManager::OnUserAcceptedUpstreamOffer() {
   // If the user is in sync transport mode for Wallet, record an opt-in.
-  if (GetSyncSigninState() ==
-      AutofillSyncSigninState::kSignedInAndWalletSyncTransportEnabled) {
+  if (IsPaymentsWalletSyncTransportEnabled()) {
     prefs::SetUserOptedInWalletSyncTransport(
         pref_service_, sync_service_->GetAccountInfo().account_id,
         /*opted_in=*/true);
@@ -2627,7 +2656,7 @@ void PersonalDataManager::RemoveProfileFromDB(const std::string& guid) {
     if (AutofillProfile* profile = GetProfileByGUID(guid))
       return profile;
     if (ProfileChangesAreOngoing(guid))
-      return ongoing_profile_changes_[guid].back().profile();
+      return &ongoing_profile_changes_[guid].back().profile();
     return nullptr;
   }();
   if (!profile) {
@@ -2654,7 +2683,7 @@ void PersonalDataManager::HandleNextProfileChange(const std::string& guid) {
   const auto& change_type = change.type();
   const auto* existing_profile = GetProfileByGUID(guid);
   const bool profile_exists = (existing_profile != nullptr);
-  const auto& profile = *(ongoing_profile_changes_[guid].front().profile());
+  const auto& profile = ongoing_profile_changes_[guid].front().profile();
 
   DCHECK(guid == profile.guid());
 
@@ -2728,8 +2757,7 @@ bool PersonalDataManager::HasPendingQueries() {
          pending_creditcard_billing_addresses_query_ != 0 ||
          pending_server_creditcards_query_ != 0 ||
          pending_server_creditcard_cloud_token_data_query_ != 0 ||
-         pending_customer_data_query_ != 0 || pending_upi_ids_query_ != 0 ||
-         pending_offer_data_query_ != 0 ||
+         pending_customer_data_query_ != 0 || pending_offer_data_query_ != 0 ||
          pending_virtual_card_usage_data_query_ != 0;
 }
 

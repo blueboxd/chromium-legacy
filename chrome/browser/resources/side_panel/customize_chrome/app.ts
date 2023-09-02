@@ -11,6 +11,7 @@ import './categories.js';
 import './chrome_colors.js';
 import './shortcuts.js';
 import './themes.js';
+import './wallpaper_search.js';
 
 import {ColorChangeUpdater} from 'chrome://resources/cr_components/color_change_listener/colors_css_updater.js';
 import {HelpBubbleMixin, HelpBubbleMixinInterface} from 'chrome://resources/cr_components/help_bubble/help_bubble_mixin.js';
@@ -81,6 +82,10 @@ export class AppElement extends AppElementBase {
       extensionsCardEnabled_: {
         type: Boolean,
         value: () => loadTimeData.getBoolean('extensionsCardEnabled'),
+      },
+      wallpaperSearchEnabled_: {
+        type: Boolean,
+        value: () => loadTimeData.getBoolean('wallpaperSearchEnabled'),
       },
     };
   }

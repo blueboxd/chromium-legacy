@@ -6,8 +6,8 @@ import {loadTimeData} from 'chrome://resources/ash/common/load_time_data.m.js';
 import {assertEquals, assertFalse} from 'chrome://webui-test/chai_assert.js';
 
 import {waitUntil} from '../common/js/test_error_reporting.js';
-import {updateBulkPinProgress} from '../state/actions/bulk_pinning.js';
-import {updatePreferences} from '../state/actions/preferences.js';
+import {updateBulkPinProgress} from '../state/ducks/bulk_pinning.js';
+import {updatePreferences} from '../state/ducks/preferences.js';
 import {waitDeepEquals} from '../state/for_tests.js';
 import {getEmptyState, getStore} from '../state/store.js';
 import {XfCloudPanel} from '../widgets/xf_cloud_panel.js';
@@ -77,6 +77,7 @@ export async function testProgressAndItemsArePassedToElement() {
     filesToPin: 24,
     remainingSeconds: 0,
     emptiedQueue: false,
+    listedFiles: 24,
   };
 
   // Dispatch an update to the store and wait for the panel to have the
@@ -109,6 +110,7 @@ export async function testOutOfBoundsValuesDoNotUpdateProgress() {
     filesToPin: -10,    // Negative number of files to pin.
     remainingSeconds: 0,
     emptiedQueue: false,
+    listedFiles: 24,
   };
 
   // Dispatch an update to the store and ensure the panel doesn't get
@@ -137,6 +139,7 @@ export async function testOtherStoreUpdatesDontCauseThisContainerToUpdate() {
     filesToPin: 24,
     remainingSeconds: 0,
     emptiedQueue: false,
+    listedFiles: 24,
   };
 
   // Dispatch an update to the store and ensure the panel does get attributes.
@@ -193,6 +196,7 @@ export async function testZeroBytesToPinShouldShowAllFilesSynced() {
     filesToPin: 0,
     remainingSeconds: 0,
     emptiedQueue: false,
+    listedFiles: 0,
   };
 
   // Dispatch an update to the store and wait for the panel to have the
@@ -254,6 +258,7 @@ testInProgressStateDoesNotUpdateThePanelWhenPrefDisabled() {
     filesToPin: 10,
     remainingSeconds: 0,
     emptiedQueue: false,
+    listedFiles: 10,
   };
 
   // Dispatch an update to the store, wait for the store to update before
@@ -295,6 +300,7 @@ testPausedStateAddsTypeAttributeAndSyncingRemovesAttribute() {
     filesToPin: 10,
     remainingSeconds: 0,
     emptiedQueue: false,
+    listedFiles: 10,
   };
 
   // Dispatch an update to the store and ensure the panel does get attributes.
@@ -359,6 +365,7 @@ testNotEnoughSpaceStateAddsTypeAttributeAndSyncingRemovesAttribute() {
     filesToPin: 10,
     remainingSeconds: 0,
     emptiedQueue: false,
+    listedFiles: 10,
   };
 
   // Dispatch an update to the store and ensure the panel does get attributes.
@@ -413,6 +420,7 @@ export async function testExistingPropertiesAreRemovedOnSubsequentSyncds() {
     filesToPin: 10,
     remainingSeconds: 0,
     emptiedQueue: false,
+    listedFiles: 10,
   };
 
   // Dispatch an update to the store and ensure the panel does get attributes.
@@ -457,6 +465,7 @@ export async function testNoBytesToPinButHasFilesAddsPercentage() {
     filesToPin: 1,
     remainingSeconds: 0,
     emptiedQueue: false,
+    listedFiles: 1,
   };
 
   store.dispatch(updateBulkPinProgress(bulkPinning));

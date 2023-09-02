@@ -43,8 +43,12 @@ extern const char kAutofillUploadEncodingSeed[];
 extern const char kAutofillUploadEvents[];
 extern const char kAutofillUploadEventsLastResetTimestamp[];
 extern const char kAutocompleteLastVersionRetentionPolicy[];
-#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_ANDROID)
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_ANDROID) || \
+    BUILDFLAG(IS_IOS)
 extern const char kAutofillPaymentMethodsMandatoryReauth[];
+#endif  // BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_ANDROID) ||
+        // BUILDFLAG(IS_IOS)
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_ANDROID)
 extern const char kAutofillPaymentMethodsMandatoryReauthPromoShownCounter[];
 #endif  // BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_ANDROID)
 #if BUILDFLAG(IS_ANDROID)
@@ -98,9 +102,15 @@ void SetAutofillProfileEnabled(PrefService* prefs, bool enabled);
 
 bool IsPaymentMethodsMandatoryReauthEnabled(const PrefService* prefs);
 
+// Returns true if the user has ever made an explicit decision for
+// this pref. Note that this function returns whether the user has set the pref,
+// not the value of the pref itself.
+bool IsPaymentMethodsMandatoryReauthSetExplicitly(const PrefService* prefs);
+
 void SetPaymentMethodsMandatoryReauthEnabled(PrefService* prefs, bool enabled);
 
-bool ShouldShowPaymentMethodsMandatoryReauthPromo(const PrefService* prefs);
+bool IsPaymentMethodsMandatoryReauthPromoShownCounterBelowMaxCap(
+    const PrefService* prefs);
 
 void IncrementPaymentMethodsMandatoryReauthPromoShownCounter(
     PrefService* prefs);

@@ -368,7 +368,7 @@ class ImportNotifierTest(unittest.TestCase):
             self.notifier.examine_metadata_changes(
                 'https://crrev.com/c/12345/3/')
 
-        # TODO(crbug.com/1464051): After the switch to wptrunner, check that
+        # TODO(crbug.com/1474702): After the switch to wptrunner, check that
         # non-wdspec tests can generate failures (i.e., delete the first
         # assertion, and turn the second one into `assertEqual`). For now,
         # require that no such failures are generated.
@@ -502,6 +502,11 @@ class ImportNotifierTest(unittest.TestCase):
         )
         self.assertIn('crbug.com/12345 external/wpt/foo/baz.html [ Fail ]',
                       bugs[0].body['description'].splitlines())
+        self.assertIn(
+            'This bug was filed automatically due to a new WPT test failure '
+            'for which you are marked an OWNER. If you do not want to receive '
+            'these reports, please add "wpt { notify: NO }"  to the relevant '
+            'DIR_METADATA file.', bugs[0].body['description'].splitlines())
 
     def test_file_bug_without_owners(self):
         """A bug should be filed, even without OWNERS next to DIR_METADATA."""

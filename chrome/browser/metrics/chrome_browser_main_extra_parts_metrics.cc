@@ -415,8 +415,6 @@ void RecordMicroArchitectureStats() {
   base::UmaHistogramEnumeration("Platform.IntelMaxMicroArchitecture", arch,
                                 base::CPU::MAX_INTEL_MICRO_ARCHITECTURE);
 #endif  // defined(ARCH_CPU_X86_FAMILY)
-  base::UmaHistogramSparse("Platform.LogicalCpuCount",
-                           base::SysInfo::NumberOfProcessors());
 }
 
 #if BUILDFLAG(IS_LINUX)
@@ -801,18 +799,8 @@ void AsynchronousTouchEventStateRecorder::OnDeviceListsComplete() {
 #endif  // BUILDFLAG(IS_OZONE)
 
 #if BUILDFLAG(IS_WIN)
-void RecordPinnedToTaskbarProcessError(bool error) {
-  base::UmaHistogramBoolean("Windows.IsPinnedToTaskbar.ProcessError", error);
-}
-
-void OnShellHandlerConnectionError() {
-  RecordPinnedToTaskbarProcessError(true);
-}
-
 // Record the UMA histogram when a response is received.
 void OnIsPinnedToTaskbarResult(bool succeeded, bool is_pinned_to_taskbar) {
-  RecordPinnedToTaskbarProcessError(false);
-
   // Used for histograms; do not reorder.
   enum Result { NOT_PINNED = 0, PINNED = 1, FAILURE = 2, NUM_RESULTS };
 
@@ -849,7 +837,6 @@ void OnIsPinnedToTaskbarResult(bool succeeded, bool is_pinned_to_taskbar) {
 // startup.
 void RecordIsPinnedToTaskbarHistogram() {
   shell_integration::win::GetIsPinnedToTaskbarState(
-      base::BindOnce(&OnShellHandlerConnectionError),
       base::BindOnce(&OnIsPinnedToTaskbarResult));
 }
 
@@ -1103,19 +1090,24 @@ void ChromeBrowserMainExtraPartsMetrics::PreBrowserStart() {
           base::android::BuildInfo::GetInstance()->package_version_code());
   if (is_device_of_interest) {
     uint32_t gws_experiment_id = 0;
+    uint32_t milestone_gws_experiment_id = 0;
     std::string trial_group;
     base::Version product_version(PRODUCT_VERSION);
 #if defined(ARCH_CPU_64_BITS)
     trial_group = "64bit";
+    gws_experiment_id = 3368915;
     if (product_version.IsValid()) {
       // For now, we only plan to run the experiment in Chrome 116 and 117, so
       // only send GWS IDs for those versions.
       switch (product_version.components()[0]) {
         case 116:
-          gws_experiment_id = 3367343;
+          milestone_gws_experiment_id = 3367343;
           break;
         case 117:
-          gws_experiment_id = 3367345;
+          milestone_gws_experiment_id = 3367345;
+          break;
+        case 118:
+          milestone_gws_experiment_id = 3368917;
           break;
         default:
             // Leave 0-initialized.
@@ -1123,16 +1115,20 @@ void ChromeBrowserMainExtraPartsMetrics::PreBrowserStart() {
       }
     }
 #else   // defined(ARCH_CPU_64_BITS)
+    gws_experiment_id = 3368914;
     trial_group = "32bit";
     if (product_version.IsValid()) {
       // For now, we only plan to run the experiment in Chrome 116 and 117, so
       // only send GWS IDs for those versions.
       switch (product_version.components()[0]) {
         case 116:
-          gws_experiment_id = 3367342;
+          milestone_gws_experiment_id = 3367342;
           break;
         case 117:
-          gws_experiment_id = 3367344;
+          milestone_gws_experiment_id = 3367344;
+          break;
+        case 118:
+          milestone_gws_experiment_id = 3368916;
           break;
         default:
             // Leave 0-initialized.
@@ -1147,8 +1143,9 @@ void ChromeBrowserMainExtraPartsMetrics::PreBrowserStart() {
         "BitnessForMidRangeRAM_wVersion",
         std::string(PRODUCT_VERSION) + "_" + trial_group,
         variations::SyntheticTrialAnnotationMode::kCurrentLog);
-    if (gws_experiment_id) {
-      std::vector<std::string> ids = {base::NumberToString(gws_experiment_id)};
+    std::vector<std::string> ids = {base::NumberToString(gws_experiment_id)};
+    if (milestone_gws_experiment_id) {
+      ids.push_back(base::NumberToString(milestone_gws_experiment_id));
       variations::VariationsIdsProvider::GetInstance()->ForceVariationIds(ids,
                                                                           "");
     }

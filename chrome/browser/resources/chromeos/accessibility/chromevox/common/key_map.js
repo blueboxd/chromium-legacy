@@ -16,18 +16,8 @@
  */
 import {KeyCode} from '../../common/key_code.js';
 
-import {Command} from './command_store.js';
-import {KeySequence} from './key_sequence.js';
-
-/**
- * @typedef {{
- *     command: !Command,
- *     sequence: !KeySequence,
- *     keySeq: (string|undefined),
- *     title: (string|undefined),
- * }}
- */
-export let KeyBinding;
+import {Command} from './command.js';
+import {KeyBinding, KeySequence, SerializedKeySequence} from './key_sequence.js';
 
 export class KeyMap {
   /**
@@ -178,9 +168,7 @@ export class KeyMap {
 /** @type {KeyMap} */
 KeyMap.instance;
 
-// This is intentionally not type-checked, as it is a serialized set of
-// KeySequence objects.
-/** @private {!Array} */
+/** @private {!Array<{command: !Command, sequence: !SerializedKeySequence}>} */
 KeyMap.BINDINGS_ = [
   {
     command: Command.PREVIOUS_OBJECT,

@@ -20,8 +20,9 @@
 #include "gpu/vulkan/vulkan_util.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColorSpace.h"
-#include "third_party/skia/include/gpu/GrBackendSurfaceMutableState.h"
+#include "third_party/skia/include/gpu/MutableTextureState.h"
 #include "third_party/skia/include/gpu/ganesh/SkSurfaceGanesh.h"
+#include "third_party/skia/include/gpu/ganesh/vk/GrVkBackendSurface.h"
 #include "third_party/skia/include/private/chromium/GrPromiseImageTexture.h"
 #include "ui/gl/egl_util.h"
 #include "ui/gl/gl_context.h"
@@ -119,7 +120,7 @@ class AngleVulkanImageBacking::SkiaAngleVulkanImageRepresentation
   std::vector<sk_sp<GrPromiseImageTexture>> BeginReadAccess(
       std::vector<GrBackendSemaphore>* begin_semaphores,
       std::vector<GrBackendSemaphore>* end_semaphores,
-      std::unique_ptr<GrBackendSurfaceMutableState>* end_state) override {
+      std::unique_ptr<skgpu::MutableTextureState>* end_state) override {
     if (!backing_impl()->BeginAccessSkia(/*readonly=*/true)) {
       return {};
     }
@@ -132,7 +133,7 @@ class AngleVulkanImageBacking::SkiaAngleVulkanImageRepresentation
   std::vector<sk_sp<GrPromiseImageTexture>> BeginWriteAccess(
       std::vector<GrBackendSemaphore>* begin_semaphores,
       std::vector<GrBackendSemaphore>* end_semaphores,
-      std::unique_ptr<GrBackendSurfaceMutableState>* end_state) override {
+      std::unique_ptr<skgpu::MutableTextureState>* end_state) override {
     if (!backing_impl()->BeginAccessSkia(/*readonly=*/false)) {
       return {};
     }
@@ -146,7 +147,7 @@ class AngleVulkanImageBacking::SkiaAngleVulkanImageRepresentation
       const gfx::Rect& update_rect,
       std::vector<GrBackendSemaphore>* begin_semaphores,
       std::vector<GrBackendSemaphore>* end_semaphores,
-      std::unique_ptr<GrBackendSurfaceMutableState>* end_state) override {
+      std::unique_ptr<skgpu::MutableTextureState>* end_state) override {
     auto promise_textures =
         BeginWriteAccess(begin_semaphores, end_semaphores, end_state);
     if (promise_textures.empty()) {
@@ -542,7 +543,8 @@ void AngleVulkanImageBacking::PrepareBackendTexture() {
 
   for (size_t i = 0; i < vk_textures_.size(); ++i) {
     auto vk_layout = GLImageLayoutToVkImageLayout(gl_layouts_[i]);
-    vk_textures_[i].backend_texture.setVkImageLayout(vk_layout);
+    GrBackendTextures::SetVkImageLayout(&vk_textures_[i].backend_texture,
+                                        vk_layout);
   }
 }
 

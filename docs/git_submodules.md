@@ -8,6 +8,9 @@ In 2023Q3, we started to move source of Git dependencies from DEPS files to Git
 submodules. While we do our best to hide complexities of submodules, some will
 be exposed.
 
+IMPORTANT NOTE: Due to a bug in fsmonitor, we encourage you to disable it until
+the underlying bug is fixed. More details in https://crbug.com/1475405.
+
 [TOC]
 
 ## A quick introduction to Git submoduldes
@@ -98,6 +101,21 @@ git add <file> # for each file you want to stage
 git commit -v -m "Fix foo/bar"
 ```
 
+NOTE: due to a bug in gclient (crbug.com/1475448), it's possible that gclient
+left unmanaged git repository. You may need to manually remove those unmanaged
+repositories.
+
+```
+# Inside chromium/src checkout:
+# This ensures that all managed dependencies are in sync:
+gclient sync -D
+# This moves all unused dependencies to ../unused directory in gclient root
+# (just outside of src directory). It then tells git to restore gitlink.
+for f in $( git status | grep '(new commits)' | awk '{print $2}' ); do mkdir -p "../unused/`dirname $f`" && mv $f "../unused/$f" && git checkout -- $f; done
+# inspect ../unused/ if you'd like, and remove it there's nothing useful there,
+# e.g. no non-uploaded commits.
+```
+
 If a submodule has uncommitted changes (i.e. you made some manual changes to the
 affected submodule), running `git status` in its parent repo will show them as
 unstaged changes:
@@ -124,9 +142,12 @@ restore --staged <path to submodule>`.
 We will need to create either a commit that sets it back to old value, or amend
 the commit that added it. You can try to run `gclient sync` to bring the commit
 back to what is expected. If that doesn't work, you can use `gclient setdep -r
-<path>@{old hash}`, run `gclient gitmodules` to sync all submodules commits back
+<path>@<old hash>`, run `gclient gitmodules` to sync all submodules commits back
 to what is in DEPS, or check detailed instructions in [Managing
 dependencies](dependencies.md).
+
+NOTE: setdep for chromium/src is always prefixed with src/. For example, if you
+are updating v8, the command would be `gclient setdep -r src/v8@<hash>.
 
 ## FAQ
 
@@ -137,7 +158,38 @@ massive switch, it's easier to transition to Git submodules this way. Moreover,
 unwanted Git submodule updates can be detected and developers can be warned.
 
 ### How do I manually roll Git submodule?
+
 See the [dependencies](dependencies.md) page.
+
+### I got a conflict on a submodule, how do I resolve it?
+
+First, you will need to determine what is the right commit hash. If you
+accidentally committed a gitlink, which got in the meantime updated, you most
+likely want to restore the original updated gitlink. You can run `gclient
+gitmodules`, which will take care of all unmerged submodule paths, and set it to
+match DEPS file.
+
+If you prefer to manually resolve it, under git status, you will see "Unmerged
+paths". If those are submodules, you want to restore them by running the
+following command:
+
+```
+git restore --staging <affected path>
+```
+
+### How do I see what revision is pinned?
+
+`gclient getdep` will return whatever commit is pinned for the deps in `DEPS`
+(unstaged, staged, or committed). If the repo is using git submodules only
+(and has no git deps in `DEPS`) it will return the whatever pinned commit is
+staged or committed.
+
+```
+gclient getdep -r <path>
+```
+
+
+If you want to keep your gitlink, then run `git add <affected path>`.
 
 ### How can I provide feedback?
 

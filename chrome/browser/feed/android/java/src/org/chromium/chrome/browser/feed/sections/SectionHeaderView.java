@@ -220,6 +220,10 @@ public class SectionHeaderView extends LinearLayout {
             int lateralPadding =
                     getResources().getDimensionPixelSize(R.dimen.feed_header_menu_end_margin);
             mContent.setPadding(lateralPadding, 0, lateralPadding, 0);
+            MarginLayoutParams contentMarginLayoutParams =
+                    (MarginLayoutParams) mContent.getLayoutParams();
+            contentMarginLayoutParams.topMargin =
+                    getResources().getDimensionPixelSize(R.dimen.feed_header_top_margin);
 
             MarginLayoutParams marginLayoutParams =
                     (MarginLayoutParams) mMenuView.getLayoutParams();
@@ -598,6 +602,11 @@ public class SectionHeaderView extends LinearLayout {
         tab.view.setClickable(mTextsEnabled);
         tab.view.setEnabled(mTextsEnabled);
         adjustTouchDelegate(tab.view);
+
+        // Unread indicator is removed in the updated UI.
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.FEED_FOLLOW_UI_UPDATE)) {
+            return;
+        }
 
         String contentDescription = state.text;
         if (state.hasUnreadContent && mTextsEnabled) {

@@ -7,9 +7,11 @@
 
 #import <UIKit/UIKit.h>
 
+#import <map>
 #import <set>
 
 #import "base/apple/backup_util.h"
+#import "base/apple/foundation_util.h"
 #import "base/base_paths.h"
 #import "base/containers/contains.h"
 #import "base/files/file_enumerator.h"
@@ -18,10 +20,10 @@
 #import "base/functional/bind.h"
 #import "base/ios/crb_protocol_observers.h"
 #import "base/logging.h"
-#import "base/mac/foundation_util.h"
 #import "base/metrics/histogram_functions.h"
 #import "base/path_service.h"
 #import "base/sequence_checker.h"
+#import "base/strings/stringprintf.h"
 #import "base/strings/sys_string_conversions.h"
 #import "base/task/sequenced_task_runner.h"
 #import "base/task/thread_pool.h"
@@ -29,6 +31,7 @@
 #import "base/time/time.h"
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/snapshots/snapshot_cache_observer.h"
+#import "ios/chrome/browser/snapshots/snapshot_id.h"
 #import "ios/chrome/browser/snapshots/snapshot_lru_cache.h"
 #import "ios/chrome/browser/tabs/features.h"
 #import "ui/base/device_form_factor.h"
@@ -66,7 +69,6 @@ const ImageType kImageTypes[] = {
     IMAGE_TYPE_COLOR, IMAGE_TYPE_GREYSCALE,
 };
 
-const NSUInteger kGreyInitialCapacity = 8;
 const CGFloat kJPEGImageQuality = 1.0;  // Highest quality. No compression.
 
 // Maximum size in number of elements that the LRU cache can hold before
@@ -85,34 +87,50 @@ const NSUInteger kLRUCacheMaxCapacity = 6;
 // for pinned tabs feature.
 const NSUInteger kLRUCacheMaxCapacityForPinnedTabsEnabled = 10;
 
+// Returns the suffix to append to image filename for `image_type`.
+const char* SuffixForImageType(ImageType image_type) {
+  switch (image_type) {
+    case IMAGE_TYPE_COLOR:
+      return "";
+    case IMAGE_TYPE_GREYSCALE:
+      return "Grey";
+  }
+}
+
+// Returns the suffix to append to image filename for `image_scale`.
+const char* SuffixForImageScale(ImageScale image_scale) {
+  switch (image_scale) {
+    case IMAGE_SCALE_1X:
+      return "";
+    case IMAGE_SCALE_2X:
+      return "@2x";
+    case IMAGE_SCALE_3X:
+      return "@3x";
+  }
+}
+
 // Returns the path of the image for `snapshot_id`, in `cache_directory`,
 // of type `image_type` and scale `image_scale`.
-base::FilePath ImagePath(NSString* snapshot_id,
+base::FilePath ImagePath(SnapshotID snapshot_id,
                          ImageType image_type,
                          ImageScale image_scale,
                          const base::FilePath& cache_directory) {
-  NSString* filename = snapshot_id;
-  switch (image_type) {
-    case IMAGE_TYPE_COLOR:
-      // no-op
-      break;
-    case IMAGE_TYPE_GREYSCALE:
-      filename = [filename stringByAppendingString:@"Grey"];
-      break;
-  }
-  switch (image_scale) {
-    case IMAGE_SCALE_1X:
-      // no-op
-      break;
-    case IMAGE_SCALE_2X:
-      filename = [filename stringByAppendingString:@"@2x"];
-      break;
-    case IMAGE_SCALE_3X:
-      filename = [filename stringByAppendingString:@"@3x"];
-      break;
-  }
-  filename = [filename stringByAppendingPathExtension:@"jpg"];
-  return cache_directory.Append(base::SysNSStringToUTF8(filename));
+  const std::string filename = base::StringPrintf(
+      "%08u%s%s.jpg", snapshot_id.identifier(), SuffixForImageType(image_type),
+      SuffixForImageScale(image_scale));
+  return cache_directory.Append(filename);
+}
+
+// Returns the path of the image for `snapshot_id`, in `cache_directory`,
+// of type `image_type` and scale `image_scale`.
+base::FilePath LegacyImagePath(NSString* snapshot_id,
+                               ImageType image_type,
+                               ImageScale image_scale,
+                               const base::FilePath& cache_directory) {
+  const std::string filename = base::StringPrintf(
+      "%s%s%s.jpg", base::SysNSStringToUTF8(snapshot_id).c_str(),
+      SuffixForImageType(image_type), SuffixForImageScale(image_scale));
+  return cache_directory.Append(filename);
 }
 
 ImageScale ImageScaleForDevice() {
@@ -138,7 +156,7 @@ CGFloat ScaleFromImageScale(ImageScale image_scale) {
   }
 }
 
-UIImage* ReadImageForSnapshotIDFromDisk(NSString* snapshot_id,
+UIImage* ReadImageForSnapshotIDFromDisk(SnapshotID snapshot_id,
                                         ImageType image_type,
                                         ImageScale image_scale,
                                         const base::FilePath& cache_directory) {
@@ -148,7 +166,7 @@ UIImage* ReadImageForSnapshotIDFromDisk(NSString* snapshot_id,
   // are fixed.
   base::FilePath file_path =
       ImagePath(snapshot_id, image_type, image_scale, cache_directory);
-  NSString* path = base::mac::FilePathToNSString(file_path);
+  NSString* path = base::apple::FilePathToNSString(file_path);
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::WILL_BLOCK);
   return [UIImage imageWithData:[NSData dataWithContentsOfFile:path]
@@ -173,7 +191,7 @@ void WriteImageToDisk(UIImage* image, const base::FilePath& file_path) {
     }
   }
 
-  NSString* path = base::mac::FilePathToNSString(file_path);
+  NSString* path = base::apple::FilePathToNSString(file_path);
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::WILL_BLOCK);
   NSData* data = UIImageJPEGRepresentation(image, kJPEGImageQuality);
@@ -200,7 +218,7 @@ void WriteImageToDisk(UIImage* image, const base::FilePath& file_path) {
   }
 }
 
-void ConvertAndSaveGreyImage(NSString* snapshot_id,
+void ConvertAndSaveGreyImage(SnapshotID snapshot_id,
                              ImageScale image_scale,
                              UIImage* color_image,
                              const base::FilePath& cache_directory) {
@@ -220,7 +238,7 @@ void ConvertAndSaveGreyImage(NSString* snapshot_id,
 }
 
 void DeleteImageWithSnapshotID(const base::FilePath& cache_directory,
-                               NSString* snapshot_id,
+                               SnapshotID snapshot_id,
                                ImageScale snapshot_scale) {
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::WILL_BLOCK);
@@ -250,7 +268,7 @@ void RemoveAllImages(const base::FilePath& cache_directory) {
 
 void PurgeCacheOlderThan(const base::FilePath& cache_directory,
                          const base::Time& threshold_date,
-                         NSSet<NSString*>* keep_alive_snapshot_ids,
+                         const std::vector<SnapshotID>& keep_alive_snapshot_ids,
                          ImageScale snapshot_scale) {
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::WILL_BLOCK);
@@ -259,7 +277,7 @@ void PurgeCacheOlderThan(const base::FilePath& cache_directory,
     return;
 
   std::set<base::FilePath> files_to_keep;
-  for (NSString* snapshot_id in keep_alive_snapshot_ids) {
+  for (SnapshotID snapshot_id : keep_alive_snapshot_ids) {
     for (const ImageType image_type : kImageTypes) {
       files_to_keep.insert(
           ImagePath(snapshot_id, image_type, snapshot_scale, cache_directory));
@@ -284,23 +302,23 @@ void PurgeCacheOlderThan(const base::FilePath& cache_directory,
 
 void RenameSnapshots(const base::FilePath& cache_directory,
                      NSArray<NSString*>* old_ids,
-                     NSArray<NSString*>* new_ids,
+                     const std::vector<SnapshotID>& new_ids,
                      ImageScale snapshot_scale) {
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::WILL_BLOCK);
 
   DCHECK(base::DirectoryExists(cache_directory));
-  DCHECK_EQ(old_ids.count, new_ids.count);
+  DCHECK_EQ(old_ids.count, new_ids.size());
 
   const NSUInteger count = old_ids.count;
   for (NSUInteger index = 0; index < count; ++index) {
     for (const ImageType image_type : kImageTypes) {
-      const base::FilePath old_image_path = ImagePath(
+      const base::FilePath old_image_path = LegacyImagePath(
           old_ids[index], image_type, snapshot_scale, cache_directory);
       const base::FilePath new_image_path = ImagePath(
           new_ids[index], image_type, snapshot_scale, cache_directory);
 
-      // Only migrate snapshots which are needed.
+      // Only migrate snapshots that are needed.
       if (!base::PathExists(old_image_path) ||
           base::PathExists(new_image_path)) {
         continue;
@@ -311,6 +329,19 @@ void RenameSnapshots(const base::FilePath& cache_directory,
                     << " to: " << new_image_path.AsUTF8Unsafe();
       }
     }
+  }
+}
+
+void CopyImageFile(const base::FilePath& old_image_path,
+                   const base::FilePath& new_image_path) {
+  // Only migrate files that are needed.
+  if (!base::PathExists(old_image_path) || base::PathExists(new_image_path)) {
+    return;
+  }
+
+  if (!base::CopyFile(old_image_path, new_image_path)) {
+    DLOG(ERROR) << "Error copying file: " << old_image_path.AsUTF8Unsafe()
+                << " to: " << new_image_path.AsUTF8Unsafe();
   }
 }
 
@@ -347,7 +378,7 @@ void CreateCacheDirectory(const base::FilePath& cache_directory,
 }
 
 UIImage* GreyImageFromCachedImage(const base::FilePath& cache_directory,
-                                  NSString* snapshot_id,
+                                  SnapshotID snapshot_id,
                                   ImageScale snapshot_scale,
                                   UIImage* cached_image) {
   // If the image is not in the cache, load it from disk.
@@ -368,21 +399,21 @@ UIImage* GreyImageFromCachedImage(const base::FilePath& cache_directory,
 @implementation SnapshotCache {
   // Cache to hold color snapshots in memory. n.b. Color snapshots are not
   // kept in memory on tablets.
-  SnapshotLRUCache* _lruCache;
+  SnapshotLRUCache<UIImage*>* _lruCache;
 
   // Temporary dictionary to hold grey snapshots for tablet side swipe. This
   // will be nil before -createGreyCache is called and after -removeGreyCache
   // is called.
-  NSMutableDictionary<NSString*, UIImage*>* _greyImageDictionary;
+  std::map<SnapshotID, UIImage*> _greyImageDictionary;
 
   // Snapshot ID of most recent pending grey snapshot request.
-  NSString* _mostRecentGreySnapshotID;
+  SnapshotID _mostRecentGreySnapshotID;
   // Block used by pending request for a grey snapshot.
   void (^_mostRecentGreyBlock)(UIImage*);
 
   // Snapshot ID and corresponding UIImage for the snapshot that will likely
   // be requested to be saved to disk when the application is backgrounded.
-  NSString* _backgroundingSnapshotID;
+  SnapshotID _backgroundingSnapshotID;
   UIImage* _backgroundingColorImage;
 
   // Scale for snapshot images. May be smaller than the screen scale in order
@@ -431,11 +462,6 @@ UIImage* GreyImageFromCachedImage(const base::FilePath& cache_directory,
            selector:@selector(handleEnterBackground)
                name:UIApplicationDidEnterBackgroundNotification
              object:nil];
-    [[NSNotificationCenter defaultCenter]
-        addObserver:self
-           selector:@selector(handleBecomeActive)
-               name:UIApplicationDidBecomeActiveNotification
-             object:nil];
   }
   return self;
 }
@@ -465,10 +491,10 @@ UIImage* GreyImageFromCachedImage(const base::FilePath& cache_directory,
   return ScaleFromImageScale(_snapshotsScale);
 }
 
-- (void)retrieveImageForSnapshotID:(NSString*)snapshotID
+- (void)retrieveImageForSnapshotID:(SnapshotID)snapshotID
                           callback:(void (^)(UIImage*))callback {
   DCHECK_CALLED_ON_VALID_SEQUENCE(_sequenceChecker);
-  DCHECK(snapshotID);
+  DCHECK(snapshotID.valid());
   DCHECK(callback);
 
   if (UIImage* image = [_lruCache objectForKey:snapshotID]) {
@@ -493,10 +519,11 @@ UIImage* GreyImageFromCachedImage(const base::FilePath& cache_directory,
       }));
 }
 
-- (void)setImage:(UIImage*)image withSnapshotID:(NSString*)snapshotID {
+- (void)setImage:(UIImage*)image withSnapshotID:(SnapshotID)snapshotID {
   DCHECK_CALLED_ON_VALID_SEQUENCE(_sequenceChecker);
-  if (!image || !snapshotID || !_taskRunner)
+  if (!image || !snapshotID.valid() || !_taskRunner) {
     return;
+  }
 
   [_lruCache setObject:image forKey:snapshotID];
 
@@ -514,7 +541,7 @@ UIImage* GreyImageFromCachedImage(const base::FilePath& cache_directory,
                                           _snapshotsScale, _cacheDirectory)));
 }
 
-- (void)removeImageWithSnapshotID:(NSString*)snapshotID {
+- (void)removeImageWithSnapshotID:(SnapshotID)snapshotID {
   DCHECK_CALLED_ON_VALID_SEQUENCE(_sequenceChecker);
 
   [_lruCache removeObjectForKey:snapshotID];
@@ -541,18 +568,23 @@ UIImage* GreyImageFromCachedImage(const base::FilePath& cache_directory,
                         base::BindOnce(&RemoveAllImages, _cacheDirectory));
 }
 
-- (base::FilePath)imagePathForSnapshotID:(NSString*)snapshotID {
+- (base::FilePath)imagePathForSnapshotID:(SnapshotID)snapshotID {
   return ImagePath(snapshotID, IMAGE_TYPE_COLOR, _snapshotsScale,
                    _cacheDirectory);
 }
 
-- (base::FilePath)greyImagePathForSnapshotID:(NSString*)snapshotID {
+- (base::FilePath)legacyImagePathForSnapshotID:(NSString*)snapshotID {
+  return LegacyImagePath(snapshotID, IMAGE_TYPE_COLOR, _snapshotsScale,
+                         _cacheDirectory);
+}
+
+- (base::FilePath)greyImagePathForSnapshotID:(SnapshotID)snapshotID {
   return ImagePath(snapshotID, IMAGE_TYPE_GREYSCALE, _snapshotsScale,
                    _cacheDirectory);
 }
 
-- (void)purgeCacheOlderThan:(const base::Time&)date
-                    keeping:(NSSet*)liveSnapshotIDs {
+- (void)purgeCacheOlderThan:(base::Time)date
+                    keeping:(const std::vector<SnapshotID>&)liveSnapshotIDs {
   DCHECK_CALLED_ON_VALID_SEQUENCE(_sequenceChecker);
 
   if (!_taskRunner)
@@ -564,41 +596,65 @@ UIImage* GreyImageFromCachedImage(const base::FilePath& cache_directory,
 }
 
 - (void)renameSnapshotsWithIDs:(NSArray<NSString*>*)oldIDs
-                         toIDs:(NSArray<NSString*>*)newIDs {
+                         toIDs:(const std::vector<SnapshotID>&)newIDs {
   DCHECK_CALLED_ON_VALID_SEQUENCE(_sequenceChecker);
   if (!_taskRunner) {
     return;
   }
 
-  DCHECK_EQ(oldIDs.count, newIDs.count);
+  DCHECK_EQ(oldIDs.count, newIDs.size());
   _taskRunner->PostTask(
       FROM_HERE, base::BindOnce(&RenameSnapshots, _cacheDirectory, oldIDs,
                                 newIDs, _snapshotsScale));
 }
 
-- (void)willBeSavedGreyWhenBackgrounding:(NSString*)snapshotID {
+- (void)migrateImageWithSnapshotID:(SnapshotID)snapshotID
+                   toSnapshotCache:(SnapshotCache*)destinationCache {
   DCHECK_CALLED_ON_VALID_SEQUENCE(_sequenceChecker);
-  if (!snapshotID)
+
+  // Copy to the destination cache.
+  if (UIImage* image = [_lruCache objectForKey:snapshotID]) {
+    // Copy both on-disk and in-memory versions.
+    [destinationCache setImage:image withSnapshotID:snapshotID];
+    // Copy the grey scale version, if available.
+    auto iterator = _greyImageDictionary.find(snapshotID);
+    if (iterator != _greyImageDictionary.end()) {
+      destinationCache->_greyImageDictionary.insert(
+          std::make_pair(snapshotID, iterator->second));
+    }
+  } else {
+    // Only copy on-disk.
+    if (_taskRunner) {
+      _taskRunner->PostTask(
+          FROM_HERE,
+          base::BindOnce(&CopyImageFile,
+                         [self imagePathForSnapshotID:snapshotID],
+                         [destinationCache imagePathForSnapshotID:snapshotID]));
+      _taskRunner->PostTask(
+          FROM_HERE,
+          base::BindOnce(
+              &CopyImageFile, [self greyImagePathForSnapshotID:snapshotID],
+              [destinationCache greyImagePathForSnapshotID:snapshotID]));
+    }
+  }
+
+  // Remove the snapshot from this cache.
+  [self removeImageWithSnapshotID:snapshotID];
+}
+
+- (void)willBeSavedGreyWhenBackgrounding:(SnapshotID)snapshotID {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(_sequenceChecker);
+  if (!snapshotID.valid()) {
     return;
-  _backgroundingSnapshotID = [snapshotID copy];
+  }
+  _backgroundingSnapshotID = snapshotID;
   _backgroundingColorImage = [_lruCache objectForKey:snapshotID];
 }
 
-// Remove all but adjacent UIImages from `lruCache_`.
+// Remove all UIImages from `lruCache_`.
 - (void)handleLowMemory {
   DCHECK_CALLED_ON_VALID_SEQUENCE(_sequenceChecker);
-  NSMutableDictionary<NSString*, UIImage*>* dictionary =
-      [NSMutableDictionary dictionaryWithCapacity:2];
-  for (NSString* snapshotID in self.pinnedSnapshotIDs) {
-    UIImage* image = [_lruCache objectForKey:snapshotID];
-    if (image)
-      [dictionary setObject:image forKey:snapshotID];
-  }
   [_lruCache removeAllObjects];
-  for (NSString* snapshotID in self.pinnedSnapshotIDs) {
-    [_lruCache setObject:[dictionary objectForKey:snapshotID]
-                  forKey:snapshotID];
-  }
 }
 
 // Remove all UIImages from `lruCache_`.
@@ -607,30 +663,21 @@ UIImage* GreyImageFromCachedImage(const base::FilePath& cache_directory,
   [_lruCache removeAllObjects];
 }
 
-// Restore adjacent UIImages to `lruCache_`.
-- (void)handleBecomeActive {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(_sequenceChecker);
-  for (NSString* snapshotID in self.pinnedSnapshotIDs) {
-    [self retrieveImageForSnapshotID:snapshotID
-                            callback:^(UIImage*){
-                            }];
-  }
-}
-
 // Save grey image to `greyImageDictionary_` and call into most recent
 // `_mostRecentGreyBlock` if `_mostRecentGreySnapshotID` matches `snapshotID`.
-- (void)saveGreyImage:(UIImage*)greyImage forSnapshotID:(NSString*)snapshotID {
+- (void)saveGreyImage:(UIImage*)greyImage forSnapshotID:(SnapshotID)snapshotID {
   DCHECK_CALLED_ON_VALID_SEQUENCE(_sequenceChecker);
-  if (greyImage)
-    [_greyImageDictionary setObject:greyImage forKey:snapshotID];
-  if ([snapshotID isEqualToString:_mostRecentGreySnapshotID]) {
+  if (greyImage) {
+    _greyImageDictionary.insert(std::make_pair(snapshotID, greyImage));
+  }
+  if (snapshotID == _mostRecentGreySnapshotID) {
     _mostRecentGreyBlock(greyImage);
     [self clearGreySnapshotInfo];
   }
 }
 
 // Load uncached snapshot image and convert image to grey.
-- (void)loadGreyImageAsync:(NSString*)snapshotID {
+- (void)loadGreyImageAsync:(SnapshotID)snapshotID {
   DCHECK_CALLED_ON_VALID_SEQUENCE(_sequenceChecker);
   // Don't call -retrieveImageForSnapshotID here because it caches the colored
   // image, which we don't need for the grey image cache. But if the image is
@@ -650,54 +697,37 @@ UIImage* GreyImageFromCachedImage(const base::FilePath& cache_directory,
       }));
 }
 
-- (void)createGreyCache:(NSArray*)snapshotIDs {
+- (void)createGreyCache:(const std::vector<SnapshotID>&)snapshotIDs {
   DCHECK_CALLED_ON_VALID_SEQUENCE(_sequenceChecker);
-  _greyImageDictionary =
-      [NSMutableDictionary dictionaryWithCapacity:kGreyInitialCapacity];
-  for (NSString* snapshotID in snapshotIDs)
+  _greyImageDictionary.clear();
+  for (SnapshotID snapshotID : snapshotIDs) {
     [self loadGreyImageAsync:snapshotID];
+  }
 }
 
 - (void)removeGreyCache {
   DCHECK_CALLED_ON_VALID_SEQUENCE(_sequenceChecker);
-  _greyImageDictionary = nil;
+  _greyImageDictionary.clear();
   [self clearGreySnapshotInfo];
 }
 
 // Clear most recent caller information.
 - (void)clearGreySnapshotInfo {
   DCHECK_CALLED_ON_VALID_SEQUENCE(_sequenceChecker);
-  _mostRecentGreySnapshotID = nil;
+  _mostRecentGreySnapshotID = SnapshotID();
   _mostRecentGreyBlock = nil;
 }
 
-- (void)greyImageForSnapshotID:(NSString*)snapshotID
-                      callback:(void (^)(UIImage*))callback {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(_sequenceChecker);
-  DCHECK(_greyImageDictionary);
-  DCHECK(snapshotID);
-  DCHECK(callback);
-
-  if (UIImage* image = [_greyImageDictionary objectForKey:snapshotID]) {
-    callback(image);
-    [self clearGreySnapshotInfo];
-  } else {
-    _mostRecentGreySnapshotID = [snapshotID copy];
-    _mostRecentGreyBlock = [callback copy];
-  }
-}
-
-- (void)retrieveGreyImageForSnapshotID:(NSString*)snapshotID
+- (void)retrieveGreyImageForSnapshotID:(SnapshotID)snapshotID
                               callback:(void (^)(UIImage*))callback {
   DCHECK_CALLED_ON_VALID_SEQUENCE(_sequenceChecker);
-  DCHECK(snapshotID);
+  DCHECK(snapshotID.valid());
   DCHECK(callback);
 
-  if (_greyImageDictionary) {
-    if (UIImage* image = [_greyImageDictionary objectForKey:snapshotID]) {
-      callback(image);
-      return;
-    }
+  auto iterator = _greyImageDictionary.find(snapshotID);
+  if (iterator != _greyImageDictionary.end()) {
+    callback(iterator->second);
+    return;
   }
 
   if (!_taskRunner) {
@@ -726,15 +756,16 @@ UIImage* GreyImageFromCachedImage(const base::FilePath& cache_directory,
       }));
 }
 
-- (void)saveGreyInBackgroundForSnapshotID:(NSString*)snapshotID {
+- (void)saveGreyInBackgroundForSnapshotID:(SnapshotID)snapshotID {
   DCHECK_CALLED_ON_VALID_SEQUENCE(_sequenceChecker);
-  if (!snapshotID)
+  if (!snapshotID.valid()) {
     return;
+  }
 
   // The color image may still be in memory.  Verify the snapshotID matches.
   if (_backgroundingColorImage) {
-    if (![_backgroundingSnapshotID isEqualToString:snapshotID]) {
-      _backgroundingSnapshotID = nil;
+    if (snapshotID != _backgroundingSnapshotID) {
+      _backgroundingSnapshotID = SnapshotID();
       _backgroundingColorImage = nil;
     }
   }
@@ -764,12 +795,28 @@ UIImage* GreyImageFromCachedImage(const base::FilePath& cache_directory,
 
 @implementation SnapshotCache (TestingAdditions)
 
-- (BOOL)hasImageInMemory:(NSString*)snapshotID {
+- (void)greyImageForSnapshotID:(SnapshotID)snapshotID
+                      callback:(void (^)(UIImage*))callback {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(_sequenceChecker);
+  DCHECK(snapshotID.valid());
+  DCHECK(callback);
+
+  auto iterator = _greyImageDictionary.find(snapshotID);
+  if (iterator != _greyImageDictionary.end()) {
+    callback(iterator->second);
+    [self clearGreySnapshotInfo];
+  } else {
+    _mostRecentGreySnapshotID = snapshotID;
+    _mostRecentGreyBlock = [callback copy];
+  }
+}
+
+- (BOOL)hasImageInMemory:(SnapshotID)snapshotID {
   return [_lruCache objectForKey:snapshotID] != nil;
 }
 
-- (BOOL)hasGreyImageInMemory:(NSString*)snapshotID {
-  return [_greyImageDictionary objectForKey:snapshotID] != nil;
+- (BOOL)hasGreyImageInMemory:(SnapshotID)snapshotID {
+  return base::Contains(_greyImageDictionary, snapshotID);
 }
 
 - (NSUInteger)lruCacheMaxSize {

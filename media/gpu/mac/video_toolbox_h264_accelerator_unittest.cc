@@ -44,8 +44,9 @@ class VideoToolboxH264AcceleratorTest : public testing::Test {
   ~VideoToolboxH264AcceleratorTest() override = default;
 
  protected:
-  MOCK_METHOD2(OnDecode,
-               void(base::ScopedCFTypeRef<CMSampleBufferRef>,
+  MOCK_METHOD3(OnDecode,
+               void(base::apple::ScopedCFTypeRef<CMSampleBufferRef>,
+                    VideoToolboxSessionMetadata,
                     scoped_refptr<CodecPicture>));
   MOCK_METHOD1(OnOutput, void(scoped_refptr<CodecPicture>));
 
@@ -78,8 +79,8 @@ TEST_F(VideoToolboxH264AcceleratorTest, DecodeOne) {
                             kSliceData, sizeof(kSliceData), subsamples);
 
   // Save the resulting sample.
-  base::ScopedCFTypeRef<CMSampleBufferRef> sample;
-  EXPECT_CALL(*this, OnDecode(_, _)).WillOnce(SaveArg<0>(&sample));
+  base::apple::ScopedCFTypeRef<CMSampleBufferRef> sample;
+  EXPECT_CALL(*this, OnDecode(_, _, _)).WillOnce(SaveArg<0>(&sample));
   accelerator_->SubmitDecode(pic);
 
   // Verify sample.
@@ -115,8 +116,8 @@ TEST_F(VideoToolboxH264AcceleratorTest, DecodeTwo) {
                             kSliceData, sizeof(kSliceData), subsamples);
 
   // Save the resulting sample.
-  base::ScopedCFTypeRef<CMSampleBufferRef> sample0;
-  EXPECT_CALL(*this, OnDecode(_, _)).WillOnce(SaveArg<0>(&sample0));
+  base::apple::ScopedCFTypeRef<CMSampleBufferRef> sample0;
+  EXPECT_CALL(*this, OnDecode(_, _, _)).WillOnce(SaveArg<0>(&sample0));
   accelerator_->SubmitDecode(pic0);
 
   // Second frame.
@@ -128,8 +129,8 @@ TEST_F(VideoToolboxH264AcceleratorTest, DecodeTwo) {
                             kSliceData, sizeof(kSliceData), subsamples);
 
   // Save the resulting sample.
-  base::ScopedCFTypeRef<CMSampleBufferRef> sample1;
-  EXPECT_CALL(*this, OnDecode(_, _)).WillOnce(SaveArg<0>(&sample1));
+  base::apple::ScopedCFTypeRef<CMSampleBufferRef> sample1;
+  EXPECT_CALL(*this, OnDecode(_, _, _)).WillOnce(SaveArg<0>(&sample1));
   accelerator_->SubmitDecode(pic1);
 
   // The two samples should have the same configuration.
@@ -156,8 +157,8 @@ TEST_F(VideoToolboxH264AcceleratorTest, DecodeTwo_Reset) {
                             kSliceData, sizeof(kSliceData), subsamples);
 
   // Save the resulting sample.
-  base::ScopedCFTypeRef<CMSampleBufferRef> sample0;
-  EXPECT_CALL(*this, OnDecode(_, _)).WillOnce(SaveArg<0>(&sample0));
+  base::apple::ScopedCFTypeRef<CMSampleBufferRef> sample0;
+  EXPECT_CALL(*this, OnDecode(_, _, _)).WillOnce(SaveArg<0>(&sample0));
   accelerator_->SubmitDecode(pic0);
 
   // Reset.
@@ -172,8 +173,8 @@ TEST_F(VideoToolboxH264AcceleratorTest, DecodeTwo_Reset) {
                             kSliceData, sizeof(kSliceData), subsamples);
 
   // Save the resulting sample.
-  base::ScopedCFTypeRef<CMSampleBufferRef> sample1;
-  EXPECT_CALL(*this, OnDecode(_, _)).WillOnce(SaveArg<0>(&sample1));
+  base::apple::ScopedCFTypeRef<CMSampleBufferRef> sample1;
+  EXPECT_CALL(*this, OnDecode(_, _, _)).WillOnce(SaveArg<0>(&sample1));
   accelerator_->SubmitDecode(pic1);
 
   // The two samples should have different configurations.
@@ -200,8 +201,8 @@ TEST_F(VideoToolboxH264AcceleratorTest, DecodeTwo_ConfigChange) {
                             kSliceData, sizeof(kSliceData), subsamples);
 
   // Save the resulting sample.
-  base::ScopedCFTypeRef<CMSampleBufferRef> sample0;
-  EXPECT_CALL(*this, OnDecode(_, _)).WillOnce(SaveArg<0>(&sample0));
+  base::apple::ScopedCFTypeRef<CMSampleBufferRef> sample0;
+  EXPECT_CALL(*this, OnDecode(_, _, _)).WillOnce(SaveArg<0>(&sample0));
   accelerator_->SubmitDecode(pic0);
 
   // Second frame.
@@ -213,8 +214,8 @@ TEST_F(VideoToolboxH264AcceleratorTest, DecodeTwo_ConfigChange) {
                             kSliceData, sizeof(kSliceData), subsamples);
 
   // Save the resulting sample.
-  base::ScopedCFTypeRef<CMSampleBufferRef> sample1;
-  EXPECT_CALL(*this, OnDecode(_, _)).WillOnce(SaveArg<0>(&sample1));
+  base::apple::ScopedCFTypeRef<CMSampleBufferRef> sample1;
+  EXPECT_CALL(*this, OnDecode(_, _, _)).WillOnce(SaveArg<0>(&sample1));
   accelerator_->SubmitDecode(pic1);
 
   // The two samples should have different configurations.

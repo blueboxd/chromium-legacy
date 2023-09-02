@@ -21,7 +21,6 @@
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/bluetooth/bluetooth_chooser_context_factory.h"
-#include "chrome/browser/content_settings/chrome_content_settings_utils.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/file_system_access/chrome_file_system_access_permission_context.h"
 #include "chrome/browser/file_system_access/file_system_access_permission_context_factory.h"
@@ -31,7 +30,6 @@
 #include "chrome/browser/serial/serial_chooser_context.h"
 #include "chrome/browser/serial/serial_chooser_context_factory.h"
 #include "chrome/browser/subresource_filter/subresource_filter_profile_context_factory.h"
-#include "chrome/browser/ui/safety_hub/notification_permission_review_service_factory.h"
 #include "chrome/browser/ui/url_identity.h"
 #include "chrome/browser/usb/usb_chooser_context.h"
 #include "chrome/browser/usb/usb_chooser_context_factory.h"
@@ -39,7 +37,6 @@
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
@@ -54,7 +51,6 @@
 #include "components/permissions/permissions_client.h"
 #include "components/prefs/pref_service.h"
 #include "components/privacy_sandbox/privacy_sandbox_features.h"
-#include "components/site_engagement/content/site_engagement_service.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/subresource_filter/content/browser/subresource_filter_content_settings_manager.h"
 #include "components/subresource_filter/content/browser/subresource_filter_profile_context.h"
@@ -138,6 +134,7 @@ const ContentSettingsTypeNameEntry kContentSettingsTypeGroupNames[] = {
      "private-network-devices-data"},
     {ContentSettingsType::ANTI_ABUSE, "anti-abuse"},
     {ContentSettingsType::STORAGE_ACCESS, "storage-access"},
+    {ContentSettingsType::AUTO_PICTURE_IN_PICTURE, "auto-picture-in-picture"},
 
     // Add new content settings here if a corresponding Javascript string
     // representation for it is not required, for example if the content setting
@@ -200,6 +197,7 @@ const ContentSettingsTypeNameEntry kContentSettingsTypeGroupNames[] = {
     {ContentSettingsType::ALL_SCREEN_CAPTURE, nullptr},
     {ContentSettingsType::COOKIE_CONTROLS_METADATA, nullptr},
     {ContentSettingsType::TPCD_SUPPORT, nullptr},
+    {ContentSettingsType::TPCD_METADATA_GRANTS, nullptr},
 };
 
 static_assert(std::size(kContentSettingsTypeGroupNames) ==
@@ -450,34 +448,6 @@ constexpr UrlIdentity::TypeSet kUrlIdentityAllowedTypes = {
     UrlIdentity::Type::kDefault, UrlIdentity::Type::kFile,
     UrlIdentity::Type::kIsolatedWebApp, UrlIdentity::Type::kChromeExtension};
 
-bool ShouldAddToNotificationPermissionReviewList(
-    site_engagement::SiteEngagementService* service,
-    GURL url,
-    int notification_count) {
-  // The notification permission should be added to the list if one of the
-  // criteria below holds:
-  // - Site engagement level is NONE OR MINIMAL and average daily notification
-  // count is more than 0.
-  // - Site engamment level is LOW and average daily notification count is
-  // more than 3. Otherwise, the notification permission should not be added
-  // to review list.
-  double score = service->GetScore(url);
-  int low_engagement_notification_limit =
-      features::kSafetyCheckNotificationPermissionsLowEnagementLimit.Get();
-  bool is_low_engagement =
-      !site_engagement::SiteEngagementService::IsEngagementAtLeast(
-          score, blink::mojom::EngagementLevel::MEDIUM) &&
-      notification_count > low_engagement_notification_limit;
-  int min_engagement_notification_limit =
-      features::kSafetyCheckNotificationPermissionsMinEnagementLimit.Get();
-  bool is_minimal_engagement =
-      !site_engagement::SiteEngagementService::IsEngagementAtLeast(
-          score, blink::mojom::EngagementLevel::LOW) &&
-      notification_count > min_engagement_notification_limit;
-
-  return is_minimal_engagement || is_low_engagement;
-}
-
 }  // namespace
 
 bool HasRegisteredGroupName(ContentSettingsType type) {
@@ -505,12 +475,18 @@ ContentSettingsType ContentSettingsTypeFromGroupName(base::StringPiece name) {
 }
 
 base::StringPiece ContentSettingsTypeToGroupName(ContentSettingsType type) {
-  for (size_t i = 0; i < std::size(kContentSettingsTypeGroupNames); ++i) {
-    if (type == kContentSettingsTypeGroupNames[i].type) {
-      const char* name = kContentSettingsTypeGroupNames[i].name;
-      if (name)
-        return name;
-      break;
+  for (const auto& entry : kContentSettingsTypeGroupNames) {
+    if (type == entry.type) {
+      // Content setting types that aren't represented in the settings UI
+      // will have `nullptr` as their `name`. Although they are valid content
+      // settings types, they don't have a readable name.
+      // TODO(crbug.com/1459305): Replace LOG with CHECK.
+      if (!entry.name) {
+        LOG(ERROR) << static_cast<int32_t>(type)
+                   << " does not have a readable name.";
+      }
+
+      return entry.name ? entry.name : base::StringPiece();
     }
   }
 
@@ -580,6 +556,11 @@ const std::vector<ContentSettingsType>& GetVisiblePermissionCategories() {
     if (base::FeatureList::IsEnabled(
             network::features::kPrivateNetworkAccessPermissionPrompt)) {
       base_types->push_back(ContentSettingsType::PRIVATE_NETWORK_GUARD);
+    }
+
+    if (base::FeatureList::IsEnabled(
+            blink::features::kMediaSessionEnterPictureInPicture)) {
+      base_types->push_back(ContentSettingsType::AUTO_PICTURE_IN_PICTURE);
     }
 
     initialized = true;
@@ -1284,63 +1265,6 @@ std::vector<web_app::IsolatedWebAppUrlInfo> GetInstalledIsolatedWebApps(
     }
   }
   return iwas;
-}
-
-// TODO(crbug.com/1444024): Migrate to NotificationPermissionsReviewService.
-base::Value::List PopulateNotificationPermissionReviewData(Profile* profile) {
-  base::Value::List result;
-  if (!base::FeatureList::IsEnabled(
-          features::kSafetyCheckNotificationPermissions)) {
-    return result;
-  }
-
-  auto* service =
-      NotificationPermissionsReviewServiceFactory::GetForProfile(profile);
-  if (!service) {
-    return result;
-  }
-
-  auto notification_permissions = service->GetNotificationSiteListForReview();
-
-  site_engagement::SiteEngagementService* engagement_service =
-      site_engagement::SiteEngagementService::Get(profile);
-
-  // Sort notification permissions by their priority for surfacing to the user.
-  auto notification_permission_ordering =
-      [](const NotificationPermissions& left,
-         const NotificationPermissions& right) {
-        return left.notification_count > right.notification_count;
-      };
-  std::sort(notification_permissions.begin(), notification_permissions.end(),
-            notification_permission_ordering);
-
-  for (const auto& notification_permission : notification_permissions) {
-    // Converting primary pattern to GURL should always be valid, since
-    // Notification Permission Review list only contains single origins. Those
-    // are filtered in
-    // NotificationPermissionsReviewService::GetNotificationSiteListForReview.
-    GURL url = GURL(notification_permission.primary_pattern.ToString());
-    DCHECK(url.is_valid());
-    if (!ShouldAddToNotificationPermissionReviewList(
-            engagement_service, url,
-            notification_permission.notification_count)) {
-      continue;
-    }
-
-    base::Value::Dict permission;
-    permission.Set(site_settings::kOrigin,
-                   notification_permission.primary_pattern.ToString());
-
-    std::string notification_info_string =
-        base::UTF16ToUTF8(l10n_util::GetPluralStringFUTF16(
-            IDS_SETTINGS_SAFETY_CHECK_REVIEW_NOTIFICATION_PERMISSIONS_COUNT_LABEL,
-            notification_permission.notification_count));
-    permission.Set(site_settings::kNotificationInfoString,
-                   notification_info_string);
-    result.Append(std::move(permission));
-  }
-
-  return result;
 }
 
 }  // namespace site_settings

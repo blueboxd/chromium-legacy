@@ -16,7 +16,7 @@
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/profile_picker.h"
+#include "chrome/browser/ui/profiles/profile_picker.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "components/signin/public/base/signin_metrics.h"
 #include "components/signin/public/identity_manager/access_token_info.h"
@@ -52,6 +52,8 @@ ForceSigninVerifier::ForceSigninVerifier(
   content::GetNetworkConnectionTracker()->AddNetworkConnectionObserver(this);
   // Most of time (~94%), sign-in token can be verified with server.
   SendRequest();
+
+  identity_manager_observer.Observe(identity_manager);
 }
 
 ForceSigninVerifier::~ForceSigninVerifier() {
@@ -95,8 +97,9 @@ void ForceSigninVerifier::OnConnectionChanged(
   // Try again immediately once the network is back and cancel any pending
   // request.
   backoff_entry_.Reset();
-  if (backoff_request_timer_.IsRunning())
+  if (backoff_request_timer_.IsRunning()) {
     backoff_request_timer_.Stop();
+  }
 
   SendRequestIfNetworkAvailable(type);
 }
@@ -124,7 +127,8 @@ void ForceSigninVerifier::SendRequest() {
 
 void ForceSigninVerifier::SendRequestIfNetworkAvailable(
     network::mojom::ConnectionType network_type) {
-  if (network_type == network::mojom::ConnectionType::CONNECTION_NONE ||
+  if (!identity_manager_ ||
+      network_type == network::mojom::ConnectionType::CONNECTION_NONE ||
       !ShouldSendRequest()) {
     return;
   }
@@ -136,11 +140,13 @@ void ForceSigninVerifier::SendRequestIfNetworkAvailable(
           "force_signin_verifier", identity_manager_, oauth2_scopes,
           base::BindOnce(&ForceSigninVerifier::OnAccessTokenFetchComplete,
                          weak_factory_.GetWeakPtr()),
-          signin::PrimaryAccountAccessTokenFetcher::Mode::kImmediate);
+          signin::PrimaryAccountAccessTokenFetcher::Mode::kImmediate,
+          signin::ConsentLevel::kSync);
 }
 
 bool ForceSigninVerifier::ShouldSendRequest() {
   return !has_token_verified_ && access_token_fetcher_.get() == nullptr &&
+         identity_manager_ &&
          identity_manager_->HasPrimaryAccount(signin::ConsentLevel::kSync);
 }
 
@@ -163,8 +169,9 @@ void ForceSigninVerifier::OnCloseBrowsersSuccess(
       g_browser_process->profile_manager()
           ->GetProfileAttributesStorage()
           .GetProfileAttributesWithPath(profile_path);
-  if (!entry)
+  if (!entry) {
     return;
+  }
   entry->LockForceSigninProfile(true);
   ProfilePicker::Show(ProfilePicker::Params::FromEntryPoint(
       ProfilePicker::EntryPoint::kProfileLocked));
@@ -181,4 +188,11 @@ net::BackoffEntry* ForceSigninVerifier::GetBackoffEntryForTesting() {
 
 base::OneShotTimer* ForceSigninVerifier::GetOneShotTimerForTesting() {
   return &backoff_request_timer_;
+}
+
+void ForceSigninVerifier::OnIdentityManagerShutdown(
+    signin::IdentityManager* identity_manager) {
+  identity_manager_observer.Reset();
+
+  identity_manager_ = nullptr;
 }

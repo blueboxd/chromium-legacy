@@ -1,7 +1,7 @@
 BEGIN TRANSACTION;
 CREATE TABLE meta(key LONGVARCHAR NOT NULL UNIQUE PRIMARY KEY, value LONGVARCHAR);
-INSERT INTO "meta" VALUES('last_compatible_version','36');
-INSERT INTO "meta" VALUES('version','37');
+INSERT INTO "meta" VALUES('last_compatible_version','38');
+INSERT INTO "meta" VALUES('version','38');
 CREATE TABLE logins (
 origin_url VARCHAR NOT NULL,
 action_url VARCHAR,

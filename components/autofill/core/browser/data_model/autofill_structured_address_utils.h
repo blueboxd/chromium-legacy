@@ -108,12 +108,12 @@ class Re2RegExCache {
 
   // Returns a pointer to a constant compiled expression that matches |pattern|
   // case-sensitively.
-  const RE2* GetRegEx(const std::string& pattern);
+  const RE2* GetRegEx(std::string_view pattern);
 
 #ifdef UNIT_TEST
   // Returns true if the compiled regular expression corresponding to |pattern|
   // is cached.
-  bool IsRegExCachedForTesting(const std::string& pattern) {
+  bool IsRegExCachedForTesting(std::string_view pattern) {
     return regex_map_.count(pattern) > 0;
   }
 #endif
@@ -126,39 +126,7 @@ class Re2RegExCache {
   friend class base::NoDestructor<Re2RegExCache>;
 
   // Stores a compiled regular expression keyed by its corresponding |pattern|.
-  std::map<std::string, std::unique_ptr<const RE2>> regex_map_;
-
-  // A lock to prevent concurrent access to the map.
-  base::Lock lock_;
-};
-
-// A cache for address rewriter for different countries.
-class RewriterCache {
- public:
-  RewriterCache& operator=(const RewriterCache&) = delete;
-  RewriterCache(const RewriterCache&) = delete;
-  ~RewriterCache() = delete;
-
-  // Returns a singleton instance.
-  static RewriterCache* GetInstance();
-
-  // Applies the rewriter to |text| for a specific county given by
-  // |country_code|.
-  static std::u16string Rewrite(const std::u16string& country_code,
-                                const std::u16string& text);
-
- private:
-  RewriterCache();
-
-  // Returns the Rewriter for |country_code|.
-  const AddressRewriter& GetRewriter(const std::u16string& country_code);
-
-  // Since the constructor is private, |base::NoDestructor| must be friend to be
-  // allowed to construct the cache.
-  friend class base::NoDestructor<RewriterCache>;
-
-  // Stores a country-specific Rewriter keyed by its corresponding |pattern|.
-  std::map<std::u16string, const AddressRewriter> rewriter_map_;
+  std::map<std::string, std::unique_ptr<const RE2>, std::less<>> regex_map_;
 
   // A lock to prevent concurrent access to the map.
   base::Lock lock_;
@@ -199,7 +167,7 @@ ParseValueByRegularExpression(const std::string& value,
                               const std::string& pattern);
 
 // Returns a compiled case sensitive regular expression for |pattern|.
-std::unique_ptr<const RE2> BuildRegExFromPattern(const std::string& pattern);
+std::unique_ptr<const RE2> BuildRegExFromPattern(std::string_view pattern);
 
 // Returns true if |value| can be matched by the enumuerated RegEx |regex|.
 bool IsPartialMatch(const std::string& value, RegEx regex);
@@ -272,6 +240,12 @@ std::string CaptureTypeWithPattern(
     const ServerFieldType& type,
     const std::string& pattern,
     const CaptureOptions options = CaptureOptions());
+
+// Normalizes and rewrites |text| using the rules for |country_code|.
+// If |country_code| is empty, it defaults to US.
+std::u16string NormalizeAndRewrite(const std::u16string& country_code,
+                                   const std::u16string& text,
+                                   bool keep_white_space);
 
 // Collapses white spaces and line breaks, converts the string to lower case and
 // removes diacritics.

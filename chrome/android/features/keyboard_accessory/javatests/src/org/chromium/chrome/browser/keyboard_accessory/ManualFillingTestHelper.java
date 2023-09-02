@@ -50,6 +50,7 @@ import org.junit.Assert;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.task.TaskTraits;
 import org.chromium.base.test.util.Criteria;
+import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.chrome.browser.ChromeKeyboardVisibilityDelegate;
 import org.chromium.chrome.browser.ChromeWindow;
 import org.chromium.chrome.browser.app.ChromeActivity;
@@ -94,6 +95,8 @@ public class ManualFillingTestHelper {
 
     private EmbeddedTestServer mEmbeddedTestServer;
 
+    private RecyclerView mKeyboardAccessoryBarItems;
+
     public FakeKeyboard getKeyboard() {
         return (FakeKeyboard) mActivityTestRule.getKeyboardDelegate();
     }
@@ -132,6 +135,11 @@ public class ManualFillingTestHelper {
         updateWebContentsDependentState();
         cacheCredentials("mpark@gmail.com", "S3cr3t"); // Providing suggestions ensures visibility.
         if (waitForNode) DOMUtils.waitForNonZeroNodeBounds(mWebContentsRef.get(), PASSWORD_NODE_ID);
+    }
+
+    public void loadUrl(String url) {
+        mActivityTestRule.loadUrl(mActivityTestRule.getTestServer().getURL(url));
+        mWebContentsRef.set(mActivityTestRule.getWebContents());
     }
 
     public void updateWebContentsDependentState() {
@@ -267,6 +275,14 @@ public class ManualFillingTestHelper {
     public void waitForKeyboardAccessoryToBeShown() {
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
         waitForKeyboardAccessoryToBeShown(false);
+    }
+
+    public void waitForKeyboardToShow() {
+        CriteriaHelper.pollUiThread(() -> {
+            boolean isKeyboardShowing = mActivityTestRule.getKeyboardDelegate().isKeyboardShowing(
+                    mActivityTestRule.getActivity(), mActivityTestRule.getActivity().getTabsView());
+            Criteria.checkThat(isKeyboardShowing, Matchers.is(true));
+        });
     }
 
     public void waitForKeyboardAccessoryToBeShown(boolean waitForSuggestionsToLoad) {

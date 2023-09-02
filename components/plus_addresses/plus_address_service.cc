@@ -79,20 +79,18 @@ bool PlusAddressService::SupportsPlusAddresses(url::Origin origin) {
 absl::optional<std::string> PlusAddressService::GetPlusAddress(
     url::Origin origin) {
   std::string etld_plus_one = GetEtldPlusOne(origin);
-  auto it = plus_profiles_.find(etld_plus_one);
-  if (it == plus_profiles_.end()) {
+  auto it = plus_address_by_site_.find(etld_plus_one);
+  if (it == plus_address_by_site_.end()) {
     return absl::nullopt;
   }
-  return absl::optional<std::string>(it->second.address);
+  return absl::optional<std::string>(it->second);
 }
 
 void PlusAddressService::SavePlusAddress(url::Origin origin,
                                          std::string plus_address) {
   std::string etld_plus_one = GetEtldPlusOne(origin);
-  PlusProfile profile;
-  profile.address = plus_address;
-  plus_profiles_[etld_plus_one] = profile;
-  plus_addresses_.insert(profile.address);
+  plus_address_by_site_[etld_plus_one] = plus_address;
+  plus_addresses_.insert(plus_address);
 }
 
 bool PlusAddressService::IsPlusAddress(std::string potential_plus_address) {
@@ -100,7 +98,7 @@ bool PlusAddressService::IsPlusAddress(std::string potential_plus_address) {
 }
 
 void PlusAddressService::OfferPlusAddressCreation(
-    url::Origin origin,
+    const url::Origin& origin,
     PlusAddressCallback callback) {
   if (!identity_manager_ ||
       !identity_manager_->HasPrimaryAccount(signin::ConsentLevel::kSignin)) {

@@ -51,6 +51,7 @@
 #include "chrome/browser/ash/child_accounts/child_policy_observer.h"
 #include "chrome/browser/ash/crosapi/browser_data_back_migrator.h"
 #include "chrome/browser/ash/crosapi/browser_data_migrator.h"
+#include "chrome/browser/ash/drive/file_system_util.h"
 #include "chrome/browser/ash/eol_notification.h"
 #include "chrome/browser/ash/first_run/first_run.h"
 #include "chrome/browser/ash/floating_workspace/floating_workspace_service.h"
@@ -2091,7 +2092,7 @@ void UserSessionManager::NotifyUserProfileLoaded(
       if (!token_handle_util_->HasToken(user_context_.GetAccountId())) {
         // New user.
         token_handle_fetcher_ = std::make_unique<TokenHandleFetcher>(
-            token_handle_util_.get(), user_context_.GetAccountId());
+            profile, token_handle_util_.get(), user_context_.GetAccountId());
         token_handle_fetcher_->FillForNewUser(
             user_context_.GetAccessToken(),
             base::BindOnce(&UserSessionManager::OnTokenHandleObtained,
@@ -2150,7 +2151,7 @@ void UserSessionManager::PerformPostBrowserLaunchOOBEActions(Profile* profile) {
   if (features::IsOobeDisplaySizeEnabled()) {
     DisplaySizeScreen::MaybeUpdateZoomFactor(profile);
   }
-  if (features::IsOobeDrivePinningEnabled()) {
+  if (drive::util::IsOobeDrivePinningEnabled(profile)) {
     DrivePinningScreen::ApplyDrivePinningPref(profile);
   }
 }
@@ -2613,10 +2614,10 @@ void UserSessionManager::UpdateTokenHandleIfRequired(
 void UserSessionManager::UpdateTokenHandle(Profile* const profile,
                                            const AccountId& account_id) {
   token_handle_fetcher_ = std::make_unique<TokenHandleFetcher>(
-      token_handle_util_.get(), account_id);
+      profile, token_handle_util_.get(), account_id);
   token_handle_fetcher_->BackfillToken(
-      profile, base::BindOnce(&UserSessionManager::OnTokenHandleObtained,
-                              GetUserSessionManagerAsWeakPtr()));
+      base::BindOnce(&UserSessionManager::OnTokenHandleObtained,
+                     GetUserSessionManagerAsWeakPtr()));
   token_handle_backfill_tried_for_testing_ = true;
 }
 

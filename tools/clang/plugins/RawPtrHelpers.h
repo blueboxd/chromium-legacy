@@ -84,7 +84,8 @@ AST_POLYMORPHIC_MATCHER(isNotSpelledInSource,
                                                         clang::TypeLoc)) {
   const clang::SourceManager& source_manager =
       Finder->getASTContext().getSourceManager();
-  const auto loc = source_manager.getSpellingLoc(Node.getEndLoc());
+  const auto loc =
+      source_manager.getSpellingLoc(getRepresentativeLocation(Node));
   // Returns true if `loc` is inside either one of followings:
   // - "<built-in>"
   // - "<command line>"
@@ -111,8 +112,8 @@ AST_POLYMORPHIC_MATCHER(isInThirdPartyLocation,
                         AST_POLYMORPHIC_SUPPORTED_TYPES(clang::Decl,
                                                         clang::Stmt,
                                                         clang::TypeLoc)) {
-  std::string filename =
-      GetFilename(Finder->getASTContext().getSourceManager(), Node.getEndLoc());
+  std::string filename = GetFilename(Finder->getASTContext().getSourceManager(),
+                                     getRepresentativeLocation(Node));
 
   // Blink is part of the Chromium git repo, even though it contains
   // "third_party" in its path.
@@ -141,12 +142,26 @@ AST_MATCHER(clang::Decl, isBeginInThirdPartyLocation) {
   return filename.find("/third_party/") != std::string::npos;
 }
 
+AST_MATCHER(clang::Stmt, isInStdBitCastHeader) {
+  std::string filename = GetFilename(Finder->getASTContext().getSourceManager(),
+                                     Node.getSourceRange().getBegin());
+  return filename.find("__bit/bit_cast.h") != std::string::npos;
+}
+
+AST_MATCHER(clang::Stmt, isInRawPtrCastHeader) {
+  std::string filename = GetFilename(Finder->getASTContext().getSourceManager(),
+                                     Node.getSourceRange().getBegin());
+  return filename.find(
+             "base/allocator/partition_allocator/pointers/raw_ptr_cast.h") !=
+         std::string::npos;
+}
+
 AST_POLYMORPHIC_MATCHER(isInGeneratedLocation,
                         AST_POLYMORPHIC_SUPPORTED_TYPES(clang::Decl,
                                                         clang::Stmt,
                                                         clang::TypeLoc)) {
-  std::string filename =
-      GetFilename(Finder->getASTContext().getSourceManager(), Node.getEndLoc());
+  std::string filename = GetFilename(Finder->getASTContext().getSourceManager(),
+                                     getRepresentativeLocation(Node));
 
   return filename.find("/gen/") != std::string::npos ||
          filename.rfind("gen/", 0) == 0;
@@ -172,7 +187,7 @@ AST_MATCHER_P(clang::Decl,
               isInLocationListedInFilterFile,
               const FilterFile*,
               Filter) {
-  clang::SourceLocation loc = Node.getLocation();
+  clang::SourceLocation loc = getRepresentativeLocation(Node);
   if (loc.isInvalid()) {
     return false;
   }
@@ -294,6 +309,9 @@ clang::ast_matchers::internal::Matcher<clang::Decl> AffectedRawRefFieldDecl(
 clang::ast_matchers::internal::Matcher<clang::TypeLoc>
 RawPtrToStackAllocatedTypeLoc(
     const chrome_checker::StackAllocatedPredicate* predicate);
+
+clang::ast_matchers::internal::Matcher<clang::Stmt> BadRawPtrCastExpr(
+    const CastingUnsafePredicate& casting_unsafe_predicate);
 
 // If `field_decl` declares a field in an implicit template specialization, then
 // finds and returns the corresponding FieldDecl from the template definition.
@@ -430,13 +448,14 @@ AST_POLYMORPHIC_MATCHER(isInMacroLocation,
 // Matches AST nodes that were spelled within system-header-files.
 // Unlike clang's `isExpansionInSystemHeader`, this is based on:
 // - spelling location
-// - Node's `getEndLoc()`, not `getBeginLoc()`
+// - `getRepresentativeLocation(Node)`, not `Node.getBeginLoc()`
 AST_POLYMORPHIC_MATCHER(isSpellingInSystemHeader,
                         AST_POLYMORPHIC_SUPPORTED_TYPES(clang::Decl,
                                                         clang::Stmt,
                                                         clang::TypeLoc)) {
   auto& source_manager = Finder->getASTContext().getSourceManager();
-  auto spelling_loc = source_manager.getSpellingLoc(Node.getEndLoc());
+  auto spelling_loc =
+      source_manager.getSpellingLoc(getRepresentativeLocation(Node));
   if (spelling_loc.isInvalid()) {
     return false;
   }
@@ -448,6 +467,17 @@ AST_MATCHER_P(clang::CXXRecordDecl,
               chrome_checker::StackAllocatedPredicate,
               checker) {
   return checker.IsStackAllocated(&Node);
+}
+
+AST_MATCHER_P(clang::Decl,
+              isDeclaredInStackAllocated,
+              chrome_checker::StackAllocatedPredicate,
+              checker) {
+  const auto* ctx = llvm::dyn_cast<clang::CXXRecordDecl>(Node.getDeclContext());
+  if (ctx == nullptr) {
+    return false;
+  }
+  return checker.IsStackAllocated(ctx);
 }
 
 AST_MATCHER_P(clang::Type, isCastingUnsafe, CastingUnsafePredicate, checker) {

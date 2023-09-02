@@ -124,6 +124,9 @@ class FilesPolicyNotificationManager
   // files.
   void ShowBlockedNotifications();
 
+  // Clears any info stored about the task with `task_id`.
+  void OnErrorItemDismissed(file_manager::io_task::IOTaskId task_id);
+
   std::map<DlpConfidentialFile, Policy> GetIOTaskBlockedFilesForTesting(
       file_manager::io_task::IOTaskId task_id) const;
   // Returns whether IO task has a warning timeout timer.
@@ -393,7 +396,8 @@ class FilesPolicyNotificationManager
   base::OnceCallback<void(gfx::NativeWindow)> pending_callback_;
 
   // Context for which the FPNM is created.
-  raw_ptr<content::BrowserContext, ExperimentalAsh> context_;
+  raw_ptr<content::BrowserContext, DanglingUntriaged | ExperimentalAsh>
+      context_;
 
   // A map from tracked IO tasks ids to their info.
   std::map<file_manager::io_task::IOTaskId, FileTaskInfo> io_tasks_;

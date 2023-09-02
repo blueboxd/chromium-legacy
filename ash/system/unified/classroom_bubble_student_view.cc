@@ -4,6 +4,7 @@
 
 #include "ash/system/unified/classroom_bubble_student_view.h"
 
+#include <algorithm>
 #include <array>
 #include <memory>
 #include <utility>
@@ -13,13 +14,18 @@
 #include "ash/glanceables/glanceables_v2_controller.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/style/combobox.h"
 #include "ash/system/tray/detailed_view_delegate.h"
 #include "base/check.h"
 #include "base/functional/bind.h"
+#include "base/metrics/user_metrics.h"
 #include "base/strings/string_piece_forward.h"
+#include "base/types/cxx23_to_underlying.h"
+#include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/pref_service.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
-#include "ui/views/controls/combobox/combobox.h"
+#include "ui/base/models/combobox_model.h"
 #include "ui/views/controls/label.h"
 #include "url/gurl.h"
 
@@ -60,6 +66,9 @@ constexpr char kClassroomWebUIMissingUrl[] =
 constexpr char kClassroomWebUIDoneUrl[] =
     "https://classroom.google.com/u/0/a/turned-in/all";
 
+const char kLastSelectedAssignmentsListPref[] =
+    "ash.glanceables.classroom.student.last_selected_assignments_list";
+
 std::u16string GetAssignmentListName(size_t index) {
   CHECK(index >= 0 || index < kStudentAssignmentsListTypeOrdered.size());
 
@@ -86,7 +95,17 @@ class ClassroomStudentComboboxModel : public ui::ComboboxModel {
     return GetAssignmentListName(index);
   }
 
-  absl::optional<size_t> GetDefaultIndex() const override { return 0; }
+  absl::optional<size_t> GetDefaultIndex() const override {
+    const auto selected_list_type = static_cast<StudentAssignmentsListType>(
+        Shell::Get()->session_controller()->GetActivePrefService()->GetInteger(
+            kLastSelectedAssignmentsListPref));
+    const auto* const iter =
+        std::find(kStudentAssignmentsListTypeOrdered.begin(),
+                  kStudentAssignmentsListTypeOrdered.end(), selected_list_type);
+    return iter != kStudentAssignmentsListTypeOrdered.end()
+               ? iter - kStudentAssignmentsListTypeOrdered.begin()
+               : 0;
+  }
 };
 
 }  // namespace
@@ -96,15 +115,26 @@ ClassroomBubbleStudentView::ClassroomBubbleStudentView(
     : ClassroomBubbleBaseView(
           delegate,
           std::make_unique<ClassroomStudentComboboxModel>()) {
-  combo_box_view_->SetCallback(base::BindRepeating(
+  combo_box_view_->SetSelectionChangedCallback(base::BindRepeating(
       &ClassroomBubbleStudentView::SelectedAssignmentListChanged,
-      base::Unretained(this)));
-  SelectedAssignmentListChanged();
+      base::Unretained(this),
+      /*initial_update=*/false));
+  SelectedAssignmentListChanged(/*initial_update=*/true);
 }
 
 ClassroomBubbleStudentView::~ClassroomBubbleStudentView() = default;
 
+// static
+void ClassroomBubbleStudentView::RegisterUserProfilePrefs(
+    PrefRegistrySimple* registry) {
+  registry->RegisterIntegerPref(
+      kLastSelectedAssignmentsListPref,
+      base::to_underlying(StudentAssignmentsListType::kAssigned));
+}
+
 void ClassroomBubbleStudentView::OnSeeAllPressed() {
+  base::RecordAction(
+      base::UserMetricsAction("Glanceables_Classroom_SeeAllPressed"));
   CHECK(combo_box_view_->GetSelectedIndex());
   const auto selected_index = combo_box_view_->GetSelectedIndex().value();
   CHECK(selected_index >= 0 ||
@@ -121,7 +151,12 @@ void ClassroomBubbleStudentView::OnSeeAllPressed() {
   }
 }
 
-void ClassroomBubbleStudentView::SelectedAssignmentListChanged() {
+void ClassroomBubbleStudentView::SelectedAssignmentListChanged(
+    bool initial_update) {
+  if (!initial_update) {
+    base::RecordAction(
+        base::UserMetricsAction("Glanceables_Classroom_SelectedListChanged"));
+  }
   auto* const client =
       Shell::Get()->glanceables_v2_controller()->GetClassroomClient();
   if (!client) {
@@ -135,14 +170,19 @@ void ClassroomBubbleStudentView::SelectedAssignmentListChanged() {
   CHECK(selected_index >= 0 ||
         selected_index < kStudentAssignmentsListTypeOrdered.size());
 
+  Shell::Get()->session_controller()->GetActivePrefService()->SetInteger(
+      kLastSelectedAssignmentsListPref,
+      base::to_underlying(kStudentAssignmentsListTypeOrdered[selected_index]));
+
   // Cancel any old pending assignment requests.
   weak_ptr_factory_.InvalidateWeakPtrs();
 
   AboutToRequestAssignments();
 
-  auto callback = base::BindOnce(&ClassroomBubbleStudentView::OnGetAssignments,
-                                 weak_ptr_factory_.GetWeakPtr(),
-                                 GetAssignmentListName(selected_index));
+  auto callback =
+      base::BindOnce(&ClassroomBubbleStudentView::OnGetAssignments,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     GetAssignmentListName(selected_index), initial_update);
   switch (kStudentAssignmentsListTypeOrdered[selected_index]) {
     case StudentAssignmentsListType::kAssigned:
       empty_list_label_->SetText(l10n_util::GetStringUTF16(

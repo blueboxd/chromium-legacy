@@ -48,6 +48,7 @@
 #include "components/autofill/core/common/autofill_internals/logging_scope.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/autofill/core/common/autofill_util.h"
+#include "components/plus_addresses/plus_address_service.h"
 
 namespace autofill {
 
@@ -74,8 +75,7 @@ bool IsValidFieldTypeAndValue(const ServerFieldTypeSet types_seen,
   if (types_seen.count(field_type) && field_type != EMAIL_ADDRESS &&
       (!base::FeatureList::IsEnabled(
            features::kAutofillEnableImportWhenMultiplePhoneNumbers) ||
-       (field_type_group != FieldTypeGroup::kPhoneBilling &&
-        field_type_group != FieldTypeGroup::kPhoneHome))) {
+       field_type_group != FieldTypeGroup::kPhone)) {
     LOG_AF(import_log_buffer)
         << LogMessage::kImportAddressProfileFromFormFailed
         << "Multiple fields of type "
@@ -467,6 +467,8 @@ bool FormDataImporter::ExtractAddressProfileFromSection(
   // Tracks if any of the fields belongs to FormType::kAddressForm.
   bool has_address_related_fields = false;
 
+  plus_addresses::PlusAddressService* plus_address_service =
+      client_->GetPlusAddressService();
   // Go through each |form| field and attempt to constitute a valid profile.
   for (const auto* field : section_fields) {
     std::u16string value;
@@ -476,6 +478,13 @@ bool FormDataImporter::ExtractAddressProfileFromSection(
     // information into the field, then skip it.
     if (!field->IsFieldFillable() || value.empty())
       continue;
+
+    // When the experimental plus addresses feature is enabled, and the value is
+    // a plus address, exclude it from the resulting address profile.
+    if (plus_address_service &&
+        plus_address_service->IsPlusAddress(base::UTF16ToUTF8(value))) {
+      continue;
+    }
 
     // When `kAutofillImportFromAutocompleteUnrecognized` is enabled, Autofill
     // imports from fields despite an unrecognized autocomplete attribute.
@@ -513,8 +522,7 @@ bool FormDataImporter::ExtractAddressProfileFromSection(
 
     // Found phone number component field.
     // TODO(crbug.com/1156315) Remove feature check when launched.
-    if ((field_type.group() == FieldTypeGroup::kPhoneBilling ||
-         field_type.group() == FieldTypeGroup::kPhoneHome) &&
+    if (field_type.group() == FieldTypeGroup::kPhone &&
         base::FeatureList::IsEnabled(
             features::kAutofillEnableImportWhenMultiplePhoneNumbers)) {
       if (ignore_phone_number_fields)

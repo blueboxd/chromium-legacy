@@ -4,9 +4,10 @@
 
 #import <XCTest/XCTest.h>
 
+#import "base/apple/foundation_util.h"
+#import "base/containers/contains.h"
 #import "base/functional/bind.h"
 #import "base/ios/ios_util.h"
-#import "base/mac/foundation_util.h"
 #import "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
 #import "build/build_config.h"
@@ -83,7 +84,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
 
   if (request.relative_url == kHeaderPageURL) {
     std::string result = kHeaderPageFailure;
-    if (request.headers.find("X-Client-Data") != request.headers.end()) {
+    if (base::Contains(request.headers, "X-Client-Data")) {
       result = kHeaderPageSuccess;
     }
     http_response->set_content("<html><body>" + result + "</body></html>");
@@ -400,7 +401,8 @@ void FocusFakebox() {
 
 // Tests that Search Copied Image menu button is shown with an image in the
 // clipboard and is starting an image search.
-- (void)testOmniboxMenuPasteImageToSearch {
+// TODO(crbug.com/1476912): Fix flakiness and re-enable.
+- (void)DISABLED_testOmniboxMenuPasteImageToSearch {
   [self copyImageIntoClipboard];
 
   // Wait for the context menu to dismiss, so the omnibox can be tapped.

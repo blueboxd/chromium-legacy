@@ -28,6 +28,7 @@
 #include "components/autofill/core/browser/data_model/iban.h"
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/geo/alternative_state_name_map_updater.h"
+#include "components/autofill/core/browser/metrics/autofill_metrics.h"
 #include "components/autofill/core/browser/payments/account_info_getter.h"
 #include "components/autofill/core/browser/payments/payments_customer_data.h"
 #include "components/autofill/core/browser/personal_data_manager_cleaner.h"
@@ -36,7 +37,6 @@
 #include "components/autofill/core/browser/strike_databases/autofill_profile_save_strike_database.h"
 #include "components/autofill/core/browser/strike_databases/autofill_profile_update_strike_database.h"
 #include "components/autofill/core/browser/strike_databases/strike_database_base.h"
-#include "components/autofill/core/browser/sync_utils.h"
 #include "components/autofill/core/browser/ui/suggestion.h"
 #include "components/autofill/core/browser/webdata/autofill_change.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
@@ -168,11 +168,17 @@ class PersonalDataManager : public KeyedService,
   // the user is not signed-in or the identity manager is not available.
   absl::optional<CoreAccountInfo> GetPrimaryAccountInfo() const;
 
-  // Returns whether credit card download is active (sync as a transport).
+  // Returns whether credit card download is active (meaning that wallet sync is
+  // running at least in transport mode).
   bool IsPaymentsDownloadActive() const;
 
-  // Returns the current sync status.
-  virtual AutofillSyncSigninState GetSyncSigninState() const;
+  // Returns true if wallet sync is running in transport mode (meaning that
+  // Sync-the-feature is disabled).
+  virtual bool IsPaymentsWalletSyncTransportEnabled() const;
+
+  // Returns the current sync status for the purpose of metrics only (do not
+  // guard actual logic behind this value).
+  AutofillMetrics::PaymentsSigninState GetPaymentsSigninStateForMetrics() const;
 
   // Adds a listener to be notified of PersonalDataManager events.
   virtual void AddObserver(PersonalDataManagerObserver* observer);
@@ -207,9 +213,6 @@ class PersonalDataManager : public KeyedService,
   // Triggered when the user accepts saving a UPI ID. Stores the |upi_id| to
   // the database.
   virtual void AddUpiId(const std::string& upi_id);
-
-  // Returns all the stored UPI IDs.
-  virtual std::vector<std::string> GetUpiIds();
 
   // Adds |profile| to the web database.
   virtual void AddProfile(const AutofillProfile& profile);
@@ -614,8 +617,11 @@ class PersonalDataManager : public KeyedService,
   // updates. Does nothing if the strike database is not available.
   void RemoveStrikesToBlockProfileUpdate(const std::string& guid);
 
-  // Returns true if Sync is enabled for `data_type`.
-  bool IsSyncEnabledFor(syncer::UserSelectableType data_type) const;
+  // Returns true if Sync-the-feature is enabled and
+  // UserSelectableType::kAutofill is among the user's selected data types.
+  // TODO(crbug.com/1462552): Remove this method once ConsentLevel::kSync and
+  // SyncService::IsSyncFeatureEnabled() are deleted from the codebase.
+  bool IsSyncFeatureEnabledForAutofill() const;
 
   // The functions below are related to the payments mandatory re-auth feature.
   // All of this functionality is done through per-profile per-device prefs.
@@ -757,9 +763,6 @@ class PersonalDataManager : public KeyedService,
   // Loads the payments customer data from the web database.
   virtual void LoadPaymentsCustomerData();
 
-  // Loads the saved UPI IDs from the web database.
-  virtual void LoadUpiIds();
-
   // Loads the autofill offer data from the web database.
   virtual void LoadAutofillOffers();
 
@@ -831,9 +834,6 @@ class PersonalDataManager : public KeyedService,
   // Cached versions of the local IBANs.
   std::vector<std::unique_ptr<Iban>> local_ibans_;
 
-  // Cached UPI IDs.
-  std::vector<std::string> upi_ids_;
-
   // Cached version of the CreditCardCloudTokenData obtained from the database.
   std::vector<std::unique_ptr<CreditCardCloudTokenData>>
       server_credit_card_cloud_token_data_;
@@ -863,7 +863,6 @@ class PersonalDataManager : public KeyedService,
       0;
   WebDataServiceBase::Handle pending_ibans_query_ = 0;
   WebDataServiceBase::Handle pending_customer_data_query_ = 0;
-  WebDataServiceBase::Handle pending_upi_ids_query_ = 0;
   WebDataServiceBase::Handle pending_offer_data_query_ = 0;
   WebDataServiceBase::Handle pending_virtual_card_usage_data_query_ = 0;
 

@@ -94,6 +94,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.IntentUtils;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.task.TaskTraits;
 import org.chromium.base.test.util.ApplicationTestUtils;
@@ -105,6 +106,7 @@ import org.chromium.base.test.util.CriteriaNotSatisfiedException;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.DoNotBatch;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.HistogramWatcher;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.AppHooks;
@@ -115,6 +117,7 @@ import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.LaunchIntentDispatcher;
 import org.chromium.chrome.browser.TabsOpenedFromExternalAppTest;
 import org.chromium.chrome.browser.WarmupManager;
+import org.chromium.chrome.browser.back_press.BackPressManager;
 import org.chromium.chrome.browser.browserservices.SessionDataHolder;
 import org.chromium.chrome.browser.browserservices.intents.BrowserServicesIntentDataProvider;
 import org.chromium.chrome.browser.browserservices.verification.ChromeOriginVerifier;
@@ -157,9 +160,11 @@ import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.R;
 import org.chromium.chrome.test.util.ActivityTestUtils;
 import org.chromium.chrome.test.util.ChromeTabUtils;
-import org.chromium.chrome.test.util.browser.Features;
+import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
+import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.chrome.test.util.browser.contextmenu.ContextMenuUtils;
 import org.chromium.components.browser_ui.widget.CoordinatorLayoutForPointer;
+import org.chromium.components.browser_ui.widget.gesture.BackPressHandler;
 import org.chromium.components.content_settings.CookieControlsMode;
 import org.chromium.components.embedder_support.util.Origin;
 import org.chromium.components.prefs.PrefService;
@@ -1778,8 +1783,9 @@ public class CustomTabActivityTest {
 
     @Test
     @SmallTest
-    @Features.EnableFeatures({ChromeFeatureList.CCT_RESIZABLE_FOR_THIRD_PARTIES})
-    @Features.DisableFeatures({ChromeFeatureList.CCT_RESIZABLE_SIDE_SHEET})
+    @Restriction(DeviceRestriction.RESTRICTION_TYPE_NON_AUTO)
+    @EnableFeatures({ChromeFeatureList.CCT_RESIZABLE_FOR_THIRD_PARTIES})
+    @DisableFeatures({ChromeFeatureList.CCT_RESIZABLE_SIDE_SHEET})
     public void testLaunchPartialCustomTabActivity_BottomSheet() throws Exception {
         WindowManager wm = (WindowManager) ContextUtils.getApplicationContext().getSystemService(
                 Context.WINDOW_SERVICE);
@@ -1793,7 +1799,8 @@ public class CustomTabActivityTest {
 
     @Test
     @SmallTest
-    @Features.EnableFeatures({ChromeFeatureList.CCT_RESIZABLE_FOR_THIRD_PARTIES,
+    @Restriction(DeviceRestriction.RESTRICTION_TYPE_NON_AUTO)
+    @EnableFeatures({ChromeFeatureList.CCT_RESIZABLE_FOR_THIRD_PARTIES,
             ChromeFeatureList.CCT_RESIZABLE_SIDE_SHEET,
             ChromeFeatureList.CCT_RESIZABLE_SIDE_SHEET_FOR_THIRD_PARTIES})
     public void
@@ -1855,7 +1862,8 @@ public class CustomTabActivityTest {
 
     @Test
     @SmallTest
-    @Features.EnableFeatures({ChromeFeatureList.CCT_RESIZABLE_FOR_THIRD_PARTIES,
+    @Restriction(DeviceRestriction.RESTRICTION_TYPE_NON_AUTO)
+    @EnableFeatures({ChromeFeatureList.CCT_RESIZABLE_FOR_THIRD_PARTIES,
             ChromeFeatureList.CCT_RESIZABLE_SIDE_SHEET,
             ChromeFeatureList.CCT_RESIZABLE_SIDE_SHEET_FOR_THIRD_PARTIES})
 
@@ -1915,7 +1923,7 @@ public class CustomTabActivityTest {
 
     @Test
     @SmallTest
-    @Features.EnableFeatures({ChromeFeatureList.CCT_RESIZABLE_FOR_THIRD_PARTIES,
+    @EnableFeatures({ChromeFeatureList.CCT_RESIZABLE_FOR_THIRD_PARTIES,
             ChromeFeatureList.CCT_RESIZABLE_SIDE_SHEET,
             ChromeFeatureList.CCT_RESIZABLE_SIDE_SHEET_FOR_THIRD_PARTIES})
     // Screen rotation is not relevant on automotive.
@@ -1963,7 +1971,8 @@ public class CustomTabActivityTest {
 
     @Test
     @SmallTest
-    @Features.EnableFeatures({ChromeFeatureList.CCT_RESIZABLE_FOR_THIRD_PARTIES,
+    @Restriction(DeviceRestriction.RESTRICTION_TYPE_NON_AUTO)
+    @EnableFeatures({ChromeFeatureList.CCT_RESIZABLE_FOR_THIRD_PARTIES,
             ChromeFeatureList.CCT_RESIZABLE_SIDE_SHEET,
             ChromeFeatureList.CCT_RESIZABLE_SIDE_SHEET_FOR_THIRD_PARTIES})
     public void
@@ -1997,7 +2006,8 @@ public class CustomTabActivityTest {
 
     @Test
     @SmallTest
-    @Features.EnableFeatures({ChromeFeatureList.CCT_RESIZABLE_FOR_THIRD_PARTIES,
+    @Restriction(DeviceRestriction.RESTRICTION_TYPE_NON_AUTO)
+    @EnableFeatures({ChromeFeatureList.CCT_RESIZABLE_FOR_THIRD_PARTIES,
             ChromeFeatureList.CCT_RESIZABLE_SIDE_SHEET,
             ChromeFeatureList.CCT_RESIZABLE_SIDE_SHEET_FOR_THIRD_PARTIES})
     public void
@@ -2067,28 +2077,28 @@ public class CustomTabActivityTest {
 
     @Test
     @LargeTest
-    @Features.EnableFeatures(ChromeFeatureList.OPAQUE_ORIGIN_FOR_INCOMING_INTENTS)
+    @EnableFeatures(ChromeFeatureList.OPAQUE_ORIGIN_FOR_INCOMING_INTENTS)
     public void testOpaqueOriginFromPrefetch_Enabled() throws Exception {
         doOpaqueOriginTest(true, true);
     }
 
     @Test
     @LargeTest
-    @Features.DisableFeatures(ChromeFeatureList.OPAQUE_ORIGIN_FOR_INCOMING_INTENTS)
+    @DisableFeatures(ChromeFeatureList.OPAQUE_ORIGIN_FOR_INCOMING_INTENTS)
     public void testOpaqueOriginFromPrefetch_Disabled() throws Exception {
         doOpaqueOriginTest(false, true);
     }
 
     @Test
     @LargeTest
-    @Features.EnableFeatures(ChromeFeatureList.OPAQUE_ORIGIN_FOR_INCOMING_INTENTS)
+    @EnableFeatures(ChromeFeatureList.OPAQUE_ORIGIN_FOR_INCOMING_INTENTS)
     public void testOpaqueOriginFromIntent_Enabled() throws Exception {
         doOpaqueOriginTest(true, false);
     }
 
     @Test
     @LargeTest
-    @Features.DisableFeatures(ChromeFeatureList.OPAQUE_ORIGIN_FOR_INCOMING_INTENTS)
+    @DisableFeatures(ChromeFeatureList.OPAQUE_ORIGIN_FOR_INCOMING_INTENTS)
     public void testOpaqueOriginFromIntent_Disabled() throws Exception {
         doOpaqueOriginTest(false, false);
     }
@@ -2260,7 +2270,8 @@ public class CustomTabActivityTest {
         // lifetime.
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             final CustomTabActivity activity = mCustomTabActivityTestRule.getActivity();
-            activity.getComponent().resolveNavigationController().navigate("about:blank");
+            activity.getComponent().resolveNavigationController().navigate(
+                    new LoadUrlParams("about:blank"), intent);
         });
 
         if (allowMetrics) {
@@ -2484,7 +2495,87 @@ public class CustomTabActivityTest {
 
     @Test
     @SmallTest
-    @Features.DisableFeatures(ChromeFeatureList.BACK_GESTURE_REFACTOR)
+    @EnableFeatures(ChromeFeatureList.BACK_GESTURE_REFACTOR)
+    public void testBackPressNavigationFailure_WithRecover() {
+        Context context = getInstrumentation().getTargetContext().getApplicationContext();
+        Intent intent = CustomTabsIntentTestUtils.createMinimalCustomTabIntent(context, mTestPage);
+        mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
+        final Tab tab = getActivity().getActivityTab();
+        BackPressManager.TAB_HISTORY_RECOVER.setForTesting(true);
+
+        TestThreadUtils.runOnUiThreadBlocking(
+                (Runnable) () -> tab.loadUrl(new LoadUrlParams(mTestPage2)));
+        ChromeTabUtils.waitForTabPageLoaded(tab, mTestPage2);
+
+        BackPressHandler navigationHandler =
+                getActivity()
+                        .getBackPressManagerForTesting()
+                        .getHandlersForTesting()[BackPressHandler.Type.TAB_HISTORY];
+        ObservableSupplierImpl<Boolean> handleBackPressChangedSupplier =
+                (ObservableSupplierImpl<Boolean>) (navigationHandler
+                                                           .getHandleBackPressChangedSupplier());
+        HistogramWatcher histogramWatcher =
+                HistogramWatcher.newSingleRecordWatcher("Android.BackPress.Failure",
+                        BackPressManager.getHistogramValueForTesting(
+                                BackPressHandler.Type.MINIMIZE_APP_AND_CLOSE_TAB));
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            handleBackPressChangedSupplier.set(false);
+            try {
+                getActivity().getOnBackPressedDispatcher().onBackPressed();
+            } catch (AssertionError ignored) {
+                if (!ignored.getMessage().contains("-1")) throw ignored;
+            }
+        });
+
+        histogramWatcher.assertExpected("Failure should be recorded");
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            Criteria.checkThat("Tab should be navigated when tab handler fails",
+                    ChromeTabUtils.getUrlStringOnUiThread(getActivity().getActivityTab()),
+                    is(mTestPage));
+        });
+        BackPressManager.TAB_HISTORY_RECOVER.setForTesting(false);
+    }
+
+    @Test
+    @SmallTest
+    @EnableFeatures(ChromeFeatureList.BACK_GESTURE_REFACTOR)
+    public void testBackPressNavigationFailure_WithoutRecover() {
+        Context context = getInstrumentation().getTargetContext().getApplicationContext();
+        Intent intent = CustomTabsIntentTestUtils.createMinimalCustomTabIntent(context, mTestPage);
+        mCustomTabActivityTestRule.startCustomTabActivityWithIntent(intent);
+        final Tab tab = getActivity().getActivityTab();
+        BackPressManager.TAB_HISTORY_RECOVER.setForTesting(false);
+
+        TestThreadUtils.runOnUiThreadBlocking(
+                (Runnable) () -> tab.loadUrl(new LoadUrlParams(mTestPage2)));
+        ChromeTabUtils.waitForTabPageLoaded(tab, mTestPage2);
+
+        BackPressHandler navigationHandler =
+                getActivity()
+                        .getBackPressManagerForTesting()
+                        .getHandlersForTesting()[BackPressHandler.Type.TAB_HISTORY];
+        ObservableSupplierImpl<Boolean> handleBackPressChangedSupplier =
+                (ObservableSupplierImpl<Boolean>) (navigationHandler
+                                                           .getHandleBackPressChangedSupplier());
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            handleBackPressChangedSupplier.set(false);
+            try {
+                getActivity().getOnBackPressedDispatcher().onBackPressed();
+            } catch (AssertionError ignored) {
+                if (!ignored.getMessage().contains("-1")) throw ignored;
+            }
+        });
+
+        CriteriaHelper.pollInstrumentationThread(() -> {
+            Criteria.checkThat("Tab should not be navigated when tab handler fails without recover",
+                    ChromeTabUtils.getUrlStringOnUiThread(getActivity().getActivityTab()),
+                    is(mTestPage2));
+        });
+    }
+
+    @Test
+    @SmallTest
+    @DisableFeatures(ChromeFeatureList.BACK_GESTURE_REFACTOR)
     public void testBackPressDismissTabModalDialog() {
         Context context = getInstrumentation().getTargetContext().getApplicationContext();
         Intent intent = CustomTabsIntentTestUtils.createMinimalCustomTabIntent(context, mTestPage);
@@ -2521,6 +2612,11 @@ public class CustomTabActivityTest {
         });
         CriteriaHelper.pollUiThread(() -> dialogManager.isShowing(), "Dialog should be displayed");
 
+        HistogramWatcher histogramWatcher =
+                HistogramWatcher.newSingleRecordWatcher("Android.BackPress.Intercept",
+                        BackPressManager.getHistogramValueForTesting(
+                                BackPressHandler.Type.TAB_MODAL_HANDLER));
+
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mCustomTabActivityTestRule.getActivity().getOnBackPressedDispatcher().onBackPressed();
         });
@@ -2533,13 +2629,14 @@ public class CustomTabActivityTest {
                     is(mTestPage2));
         });
 
+        histogramWatcher.assertExpected("Dialog should be dismissed by back press");
         CriteriaHelper.pollUiThread(
                 () -> !dialogManager.isShowing(), "Dialog should be dismissed by back press");
     }
 
     @Test
     @SmallTest
-    @Features.EnableFeatures(ChromeFeatureList.BACK_GESTURE_REFACTOR)
+    @EnableFeatures(ChromeFeatureList.BACK_GESTURE_REFACTOR)
     public void testBackPressDismissTabModalDialog_BackGestureRefactor() {
         testBackPressDismissTabModalDialog();
     }

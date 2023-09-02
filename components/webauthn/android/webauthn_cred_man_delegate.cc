@@ -5,12 +5,9 @@
 #include "components/webauthn/android/webauthn_cred_man_delegate.h"
 
 #include <utility>
+
 #include "base/android/build_info.h"
 #include "base/functional/callback.h"
-#include "base/logging.h"
-#include "base/memory/raw_ptr.h"
-#include "base/notreached.h"
-#include "base/supports_user_data.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "content/public/browser/web_contents.h"
 #include "device/fido/features.h"
@@ -29,10 +26,10 @@ WebAuthnCredManDelegate::WebAuthnCredManDelegate(
 WebAuthnCredManDelegate::~WebAuthnCredManDelegate() = default;
 
 void WebAuthnCredManDelegate::OnCredManConditionalRequestPending(
-    bool has_results,
+    bool has_passkeys,
     base::RepeatingCallback<void(bool)> full_assertion_request) {
-  has_results_ = has_results;
-  full_assertion_request_ = std::move(full_assertion_request);
+  has_passkeys_ = has_passkeys ? kHasPasskeys : kNoPasskeys;
+  show_cred_man_ui_callback_ = std::move(full_assertion_request);
 }
 
 void WebAuthnCredManDelegate::OnCredManUiClosed(bool success) {
@@ -41,23 +38,21 @@ void WebAuthnCredManDelegate::OnCredManUiClosed(bool success) {
   }
 }
 
-void WebAuthnCredManDelegate::TriggerFullRequest() {
-  if (full_assertion_request_.is_null() || !HasResults()) {
-    OnCredManUiClosed(false);
+void WebAuthnCredManDelegate::TriggerCredManUi() {
+  if (show_cred_man_ui_callback_.is_null()) {
     return;
   }
-
-  full_assertion_request_.Run(base::FeatureList::IsEnabled(
+  show_cred_man_ui_callback_.Run(base::FeatureList::IsEnabled(
       password_manager::features::kPasswordsInCredMan));
 }
 
-bool WebAuthnCredManDelegate::HasResults() {
-  return has_results_;
+WebAuthnCredManDelegate::State WebAuthnCredManDelegate::HasPasskeys() {
+  return has_passkeys_;
 }
 
 void WebAuthnCredManDelegate::CleanUpConditionalRequest() {
-  full_assertion_request_.Reset();
-  has_results_ = false;
+  show_cred_man_ui_callback_.Reset();
+  has_passkeys_ = kNotReady;
 }
 
 void WebAuthnCredManDelegate::SetRequestCompletionCallback(

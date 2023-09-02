@@ -40,6 +40,7 @@
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/style/ash_color_id.h"
+#include "ash/style/tab_slider_button.h"
 #include "ash/system/accessibility/autoclick_menu_bubble_controller.h"
 #include "ash/system/notification_center/notification_center_test_api.h"
 #include "ash/system/notification_center/notification_center_tray.h"
@@ -58,6 +59,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/timer/timer.h"
 #include "cc/paint/skia_paint_canvas.h"
+#include "chromeos/ui/frame/frame_header.h"
 #include "media/base/video_facing.h"
 #include "media/base/video_frame.h"
 #include "media/renderers/paint_canvas_video_renderer.h"
@@ -1099,11 +1101,14 @@ TEST_F(CaptureModeCameraTest, CameraPreviewWidgetBounds) {
   // Verifies the camera preview's alignment with `kTopRight` snap position and
   // `kWindow` capture source.
   StartRecordingFromSource(CaptureModeSource::kWindow);
-  const auto* window_being_recorded =
+  auto* window_being_recorded =
       controller->video_recording_watcher_for_testing()
           ->window_being_recorded();
   DCHECK(window_being_recorded);
-  VerifyPreviewAlignment(window_being_recorded->GetBoundsInScreen());
+  auto window_confine_bounds =
+      capture_mode_util::GetCaptureWindowConfineBounds(window_being_recorded);
+  wm::ConvertRectToScreen(window_being_recorded, &window_confine_bounds);
+  VerifyPreviewAlignment(window_confine_bounds);
 }
 
 TEST_F(CaptureModeCameraTest, MultiDisplayCameraPreviewWidgetBounds) {
@@ -2984,8 +2989,12 @@ class CaptureModeCameraPreviewTest
   }
 
   void ResizeWindowSoCameraPreviewBecomes(CameraPreviewState preview_state) {
-    window()->SetBounds(
-        gfx::Rect(GetMinSurfaceSizeSoCameraBecomes(preview_state)));
+    auto size = GetMinSurfaceSizeSoCameraBecomes(preview_state);
+    if (auto* frame_header =
+            capture_mode_util::GetWindowFrameHeader(window())) {
+      size.Enlarge(0, frame_header->GetHeaderHeight());
+    }
+    window()->SetBounds(gfx::Rect(size));
   }
 
   void ResizeSurfaceSoCameraPreviewBecomes(CameraPreviewState preview_state) {
@@ -3026,7 +3035,10 @@ class CaptureModeCameraPreviewTest
       }
 
       case CaptureModeSource::kWindow:
-        return window()->GetBoundsInScreen();
+        auto bounds =
+            capture_mode_util::GetCaptureWindowConfineBounds(window());
+        wm::ConvertRectToScreen(window(), &bounds);
+        return bounds;
     }
   }
 
@@ -3079,14 +3091,14 @@ TEST_P(CaptureModeCameraPreviewTest, PreviewVisibilityWhileFolderSelection) {
   CaptureModeSettingsTestApi settings_test_api;
   ClickOnView(settings_test_api.GetSelectFolderMenuItem(), event_generator);
   EXPECT_TRUE(session_test_api.IsFolderSelectionDialogShown());
-  EXPECT_FALSE(session_test_api.IsAllUisVisible());
+  EXPECT_FALSE(session_test_api.AreAllUisVisible());
   EXPECT_FALSE(preview_widget->IsVisible());
 
   // Dismiss the folder selection dialog, all capture UIs should show again,
   // including the camera preview.
   FakeFolderSelectionDialogFactory::Get()->CancelDialog();
   EXPECT_FALSE(session_test_api.IsFolderSelectionDialogShown());
-  EXPECT_TRUE(session_test_api.IsAllUisVisible());
+  EXPECT_TRUE(session_test_api.AreAllUisVisible());
   EXPECT_TRUE(preview_widget->IsVisible());
 }
 

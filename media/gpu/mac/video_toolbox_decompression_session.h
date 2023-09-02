@@ -10,8 +10,8 @@
 
 #include <memory>
 
+#include "base/apple/scoped_cftyperef.h"
 #include "base/functional/callback.h"
-#include "base/mac/scoped_cftyperef.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task/sequenced_task_runner.h"
@@ -31,7 +31,8 @@ class MEDIA_GPU_EXPORT VideoToolboxDecompressionSession {
   virtual ~VideoToolboxDecompressionSession() = default;
 
   virtual bool Create(CMFormatDescriptionRef format,
-                      CFMutableDictionaryRef decoder_config) = 0;
+                      CFDictionaryRef decoder_config,
+                      CFDictionaryRef image_config) = 0;
   virtual void Invalidate() = 0;
   virtual bool IsValid() = 0;
   virtual bool CanAcceptFormat(CMFormatDescriptionRef format) = 0;
@@ -44,11 +45,11 @@ class MEDIA_GPU_EXPORT VideoToolboxDecompressionSession {
 class MEDIA_GPU_EXPORT VideoToolboxDecompressionSessionImpl
     : public VideoToolboxDecompressionSession {
  public:
-  using OutputCB =
-      base::RepeatingCallback<void(void*,
-                                   OSStatus,
-                                   VTDecodeInfoFlags,
-                                   base::ScopedCFTypeRef<CVImageBufferRef>)>;
+  using OutputCB = base::RepeatingCallback<void(
+      void*,
+      OSStatus,
+      VTDecodeInfoFlags,
+      base::apple::ScopedCFTypeRef<CVImageBufferRef>)>;
 
   VideoToolboxDecompressionSessionImpl(
       scoped_refptr<base::SequencedTaskRunner> task_runner,
@@ -58,29 +59,31 @@ class MEDIA_GPU_EXPORT VideoToolboxDecompressionSessionImpl
 
   // VideoToolboxDecompressionSession implementation.
   bool Create(CMFormatDescriptionRef format,
-              CFMutableDictionaryRef decoder_config) override;
+              CFDictionaryRef decoder_config,
+              CFDictionaryRef image_config) override;
   void Invalidate() override;
   bool IsValid() override;
   bool CanAcceptFormat(CMFormatDescriptionRef format) override;
   bool DecodeFrame(CMSampleBufferRef sample, void* context) override;
 
   // Called by OnOutputThunk().
-  void OnOutputOnAnyThread(void* context,
-                           OSStatus status,
-                           VTDecodeInfoFlags flags,
-                           base::ScopedCFTypeRef<CVImageBufferRef> image);
+  void OnOutputOnAnyThread(
+      void* context,
+      OSStatus status,
+      VTDecodeInfoFlags flags,
+      base::apple::ScopedCFTypeRef<CVImageBufferRef> image);
 
  private:
   void OnOutput(void* context,
                 OSStatus status,
                 VTDecodeInfoFlags flags,
-                base::ScopedCFTypeRef<CVImageBufferRef> image);
+                base::apple::ScopedCFTypeRef<CVImageBufferRef> image);
 
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
   std::unique_ptr<MediaLog> media_log_;
   OutputCB output_cb_;
 
-  base::ScopedCFTypeRef<VTDecompressionSessionRef> session_;
+  base::apple::ScopedCFTypeRef<VTDecompressionSessionRef> session_;
 
   // Used in OnOutputOnAnyThread() to hop to |task_runner_|.
   base::WeakPtr<VideoToolboxDecompressionSessionImpl> weak_this_;

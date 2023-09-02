@@ -77,8 +77,7 @@ class AutofillProvider : public content::WebContentsUserData<AutofillProvider> {
 
   virtual void OnHidePopup(AndroidAutofillManager* manager) = 0;
 
-  virtual void OnServerPredictionsAvailable(
-      AndroidAutofillManager* manager) = 0;
+  virtual void OnServerPredictionsAvailable(FormGlobalId form) = 0;
 
   virtual void OnServerQueryRequestError(AndroidAutofillManager* manager,
                                          FormSignature form_signature) = 0;
@@ -103,8 +102,6 @@ class AutofillProvider : public content::WebContentsUserData<AutofillProvider> {
   // WebContents takes the ownership of AutofillProvider.
   explicit AutofillProvider(content::WebContents* web_contents);
   friend class content::WebContentsUserData<AutofillProvider>;
-
-  content::WebContents* web_contents() { return &GetWebContents(); }
 
  private:
   WEB_CONTENTS_USER_DATA_KEY_DECL();

@@ -13,13 +13,17 @@ struct OverflowMenuActionList: View {
   /// The metrics handler to alert when the user takes metrics actions.
   weak var metricsHandler: PopupMenuMetricsHandler?
 
+  /// The namespace for the animation of this view appearing or disappearing.
+  let namespace: Namespace.ID
+
   var body: some View {
     List {
-      ForEach(actionGroups) { actionGroup in
+      ForEach(actionGroups.filter({ !$0.actions.isEmpty })) { actionGroup in
         OverflowMenuActionSection(
           actionGroup: actionGroup, metricsHandler: metricsHandler)
       }
     }
+    .matchedGeometryEffect(id: MenuCustomizationAnimationID.actions, in: namespace)
     .simultaneousGesture(
       DragGesture().onChanged({ _ in
         metricsHandler?.popupMenuScrolledVertically()

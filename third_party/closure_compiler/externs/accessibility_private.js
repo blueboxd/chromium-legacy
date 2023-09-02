@@ -277,6 +277,7 @@ chrome.accessibilityPrivate.AccessibilityFeature = {
   GOOGLE_TTS_LANGUAGE_PACKS: 'googleTtsLanguagePacks',
   DICTATION_CONTEXT_CHECKING: 'dictationContextChecking',
   CHROMEVOX_SETTINGS_MIGRATION: 'chromevoxSettingsMigration',
+  GAME_FACE_INTEGRATION: 'gameFaceIntegration',
 };
 
 /**
@@ -337,6 +338,13 @@ chrome.accessibilityPrivate.DictationBubbleHintType = {
  * }}
  */
 chrome.accessibilityPrivate.DictationBubbleProperties;
+
+/**
+ * @enum {string}
+ */
+chrome.accessibilityPrivate.ToastType = {
+  DICTATION_NO_FOCUSED_TEXT_FIELD: 'dictationNoFocusedTextField',
+};
 
 /**
  * @enum {string}
@@ -655,6 +663,13 @@ chrome.accessibilityPrivate.getDlcContents = function(dlc, callback) {};
  *     result is returned.
  */
 chrome.accessibilityPrivate.isLacrosPrimary = function(callback) {};
+
+/**
+ * Displays an accessibility-related toast.
+ * @param {!chrome.accessibilityPrivate.ToastType} type The type of toast to
+ *     show.
+ */
+chrome.accessibilityPrivate.showToast = function(type) {};
 
 /**
  * Fired whenever ChromeVox should output introduction.

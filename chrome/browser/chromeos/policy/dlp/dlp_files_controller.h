@@ -66,21 +66,18 @@ class DlpFilesController {
 
   virtual ~DlpFilesController();
 
-  static bool kNewFilesPolicyUXEnabled;
-
-  static void SetNewFilesPolicyUXEnabledForTesting(bool is_enabled);
-
  protected:
   explicit DlpFilesController(const DlpRulesManager& rules_manager);
 
-  virtual absl::optional<data_controls::Component> MapFilePathtoPolicyComponent(
+  virtual absl::optional<data_controls::Component> MapFilePathToPolicyComponent(
       Profile* profile,
       const base::FilePath& file_path) = 0;
 
   // TODO(b/284122497): Remove testing friend.
   FRIEND_TEST_ALL_PREFIXES(DlpFilesControllerComponentsTest, TestConvert);
 
-  const raw_ref<const DlpRulesManager, ExperimentalAsh> rules_manager_;
+  const raw_ref<const DlpRulesManager, DanglingUntriaged | ExperimentalAsh>
+      rules_manager_;
 };
 
 }  // namespace policy

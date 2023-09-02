@@ -1,7 +1,6 @@
 "use strict;"
 
-const FULL_URL = window.location.href;
-const BASE_URL = FULL_URL.substring(0, FULL_URL.lastIndexOf('/') + 1);
+const BASE_URL = document.baseURI.substring(0, document.baseURI.lastIndexOf('/') + 1);
 const BASE_PATH = (new URL(BASE_URL)).pathname;
 
 const DEFAULT_INTEREST_GROUP_NAME = 'default name';
@@ -127,7 +126,7 @@ async function waitForObservedRequests(uuid, expectedRequests) {
 // run, unless it returns something or throws.
 //
 // The default reportWin() method is empty.
-function createBiddingScriptUrl(params = {}) {
+function createBiddingScriptURL(params = {}) {
   let url = new URL(`${BASE_URL}resources/bidding-logic.sub.py`);
   if (params.generateBid)
     url.searchParams.append('generateBid', params.generateBid);
@@ -147,7 +146,7 @@ function createBiddingScriptUrl(params = {}) {
 // returns something or throws.
 //
 // The default reportResult() method is empty.
-function createDecisionScriptUrl(uuid, params = {}) {
+function createDecisionScriptURL(uuid, params = {}) {
   let url = new URL(`${BASE_URL}resources/decision-logic.sub.py`);
   url.searchParams.append('uuid', uuid);
   if (params.scoreAd)
@@ -188,8 +187,8 @@ async function joinInterestGroup(test, uuid, interestGroupOverrides = {},
   let interestGroup = {
     owner: window.location.origin,
     name: DEFAULT_INTEREST_GROUP_NAME,
-    biddingLogicUrl: createBiddingScriptUrl(
-        { reportWin: `sendReportTo('${createBidderReportUrl(uuid)}');` }),
+    biddingLogicURL: createBiddingScriptURL(
+      { reportWin: `sendReportTo('${createBiddingScriptURL(uuid)}');` }),
     ads: [{renderUrl: createRenderUrl(uuid)}],
     ...interestGroupOverrides
   };
@@ -223,7 +222,7 @@ async function leaveInterestGroup(interestGroupOverrides = {}) {
 async function runBasicFledgeAuction(test, uuid, auctionConfigOverrides = {}) {
   let auctionConfig = {
     seller: window.location.origin,
-    decisionLogicUrl: createDecisionScriptUrl(
+    decisionLogicURL: createDecisionScriptURL(
         uuid,
         { reportResult: `sendReportTo('${createSellerReportUrl(uuid)}');` }),
     interestGroupBuyers: [window.location.origin],
@@ -317,16 +316,16 @@ async function runReportTest(test, uuid, codeToInsert, expectedReportUrls,
                     }
                     ${reportResult}`;
   }
-  let decisionScriptUrlParams = {};
+  let decisionScriptURLParams = {};
 
   if (scoreAd !== undefined) {
-    decisionScriptUrlParams.scoreAd = scoreAd;
+    decisionScriptURLParams.scoreAd = scoreAd;
   }
 
   if (reportResult !== null)
-    decisionScriptUrlParams.reportResult = reportResult;
+    decisionScriptURLParams.reportResult = reportResult;
   else
-    decisionScriptUrlParams.error = 'no-reportResult';
+    decisionScriptURLParams.error = 'no-reportResult';
 
   if (reportWinSuccessCondition) {
     reportWin = `if (!(${reportWinSuccessCondition})) {
@@ -335,26 +334,27 @@ async function runReportTest(test, uuid, codeToInsert, expectedReportUrls,
                  }
                  ${reportWin}`;
   }
-  let biddingScriptUrlParams = {};
+  let biddingScriptURLParams = {};
 
   if (generateBid !== undefined) {
-    biddingScriptUrlParams.generateBid = generateBid;
+    biddingScriptURLParams.generateBid = generateBid;
   }
 
   if (reportWin !== null)
-    biddingScriptUrlParams.reportWin = reportWin;
+    biddingScriptURLParams.reportWin = reportWin;
   else
-    biddingScriptUrlParams.error = 'no-reportWin';
+    biddingScriptURLParams.error = 'no-reportWin';
 
   let interestGroupOverrides =
-      { biddingLogicUrl: createBiddingScriptUrl(biddingScriptUrlParams) };
+    { biddingLogicURL: createBiddingScriptURL(biddingScriptURLParams) };
   if (renderUrlOverride)
     interestGroupOverrides.ads = [{renderUrl: renderUrlOverride}]
 
   await joinInterestGroup(test, uuid, interestGroupOverrides);
   await runBasicFledgeAuctionAndNavigate(
       test, uuid,
-      { decisionLogicUrl: createDecisionScriptUrl(
-                              uuid, decisionScriptUrlParams) });
+    {
+      decisionLogicURL: createDecisionScriptURL(
+                              uuid, decisionScriptURLParams) });
   await waitForObservedRequests(uuid, expectedReportUrls);
 }

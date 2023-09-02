@@ -42,6 +42,10 @@
 #include "third_party/blink/public/mojom/permissions_policy/permissions_policy_feature.mojom.h"
 #include "url/gurl.h"
 
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
+#include "components/guest_view/browser/guest_view_base.h"
+#endif
+
 namespace permissions {
 namespace {
 
@@ -111,6 +115,7 @@ PermissionContextBase::PermissionContextBase(
     : browser_context_(browser_context),
       content_settings_type_(content_settings_type),
       permissions_policy_feature_(permissions_policy_feature) {
+  CHECK(permissions::PermissionUtil::IsPermission(content_settings_type_));
   PermissionDecisionAutoBlocker::UpdateFromVariations();
 }
 
@@ -120,14 +125,12 @@ PermissionContextBase::~PermissionContextBase() {
 }
 
 void PermissionContextBase::RequestPermission(
-    const PermissionRequestID& id,
-    const GURL& requesting_frame,
-    bool user_gesture,
+    PermissionRequestData request_data,
     BrowserPermissionCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  content::RenderFrameHost* const rfh =
-      content::RenderFrameHost::FromID(id.global_render_frame_host_id());
+  content::RenderFrameHost* const rfh = content::RenderFrameHost::FromID(
+      request_data.id.global_render_frame_host_id());
 
   if (!rfh) {
     // Permission request is not allowed without a valid RenderFrameHost.
@@ -135,21 +138,25 @@ void PermissionContextBase::RequestPermission(
     return;
   }
 
-  const GURL requesting_origin = requesting_frame.DeprecatedGetOriginAsURL();
-  const GURL embedding_origin =
-      PermissionUtil::GetLastCommittedOriginAsURL(rfh->GetMainFrame());
+  request_data
+      .WithRequestingOrigin(
+          request_data.requesting_origin.DeprecatedGetOriginAsURL())
+      .WithEmbeddingOrigin(
+          PermissionUtil::GetLastCommittedOriginAsURL(rfh->GetMainFrame()));
 
-  if (!requesting_origin.is_valid() || !embedding_origin.is_valid()) {
+  if (!request_data.requesting_origin.is_valid() ||
+      !request_data.embedding_origin.is_valid()) {
     std::string type_name =
         PermissionUtil::GetPermissionString(content_settings_type_);
 
     DVLOG(1) << "Attempt to use " << type_name
-             << " from an invalid URL: " << requesting_origin << ","
-             << embedding_origin << " (" << type_name
+             << " from an invalid URL: " << request_data.requesting_origin
+             << "," << request_data.embedding_origin << " (" << type_name
              << " is not supported in popups)";
-    NotifyPermissionSet(id, requesting_origin, embedding_origin,
-                        std::move(callback), /*persist=*/false,
-                        CONTENT_SETTING_BLOCK, /*is_one_time=*/false,
+    NotifyPermissionSet(request_data.id, request_data.requesting_origin,
+                        request_data.embedding_origin, std::move(callback),
+                        /*persist=*/false, CONTENT_SETTING_BLOCK,
+                        /*is_one_time=*/false,
                         /*is_final_decision=*/true);
     return;
   }
@@ -157,8 +164,8 @@ void PermissionContextBase::RequestPermission(
   // Check the content setting to see if the user has already made a decision,
   // or if the origin is under embargo. If so, respect that decision.
   DCHECK(rfh);
-  content::PermissionResult result =
-      GetPermissionStatus(rfh, requesting_origin, embedding_origin);
+  content::PermissionResult result = GetPermissionStatus(
+      rfh, request_data.requesting_origin, request_data.embedding_origin);
 
   if (result.status == PermissionStatus::GRANTED ||
       result.status == PermissionStatus::DENIED) {
@@ -209,7 +216,8 @@ void PermissionContextBase::RequestPermission(
     // suppressed the prompt.
     PermissionUmaUtil::RecordEmbargoPromptSuppressionFromSource(result.source);
     NotifyPermissionSet(
-        id, requesting_origin, embedding_origin, std::move(callback),
+        request_data.id, request_data.requesting_origin,
+        request_data.embedding_origin, std::move(callback),
         /*persist=*/false,
         PermissionUtil::PermissionStatusToContentSetting(result.status),
         /*is_one_time=*/false,
@@ -225,8 +233,7 @@ void PermissionContextBase::RequestPermission(
   PermissionUmaUtil::RecordEmbargoPromptSuppression(
       PermissionEmbargoStatus::NOT_EMBARGOED);
 
-  DecidePermission(id, requesting_origin, embedding_origin, user_gesture,
-                   std::move(callback));
+  DecidePermission(std::move(request_data), std::move(callback));
 }
 
 bool PermissionContextBase::IsRestrictedToSecureOrigins() const {
@@ -241,15 +248,12 @@ void PermissionContextBase::UserMadePermissionDecision(
 
 std::unique_ptr<PermissionRequest>
 PermissionContextBase::CreatePermissionRequest(
-    const GURL& request_origin,
-    ContentSettingsType content_settings_type,
-    bool has_gesture,
     content::WebContents* web_contents,
+    PermissionRequestData request_data,
     PermissionRequest::PermissionDecidedCallback permission_decided_callback,
     base::OnceClosure delete_callback) const {
   return std::make_unique<PermissionRequest>(
-      request_origin, ContentSettingsTypeToRequestType(content_settings_type),
-      has_gesture, std::move(permission_decided_callback),
+      std::move(request_data), std::move(permission_decided_callback),
       std::move(delete_callback));
 }
 
@@ -301,6 +305,28 @@ content::PermissionResult PermissionContextBase::GetPermissionStatus(
       }
     }
   }
+
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
+  // Some GuestViews are loaded in a separate StoragePartition. Given that
+  // permissions are scoped to a BrowserContext, not a StoragePartition, we may
+  // have a situation where a user has granted a permission to an origin in a
+  // tab and then visits the same origin in a guest. This would lead to
+  // inappropriate sharing of the permission with the guest. To mitigate this,
+  // we drop permission requests from guests for cases where it's not possible
+  // for the guest to have been granted the permission. Note that sharing of
+  // permissions that the guest could legitimately be granted is still possible.
+  // TODO(crbug.com/1469672): Scope granted permissions to a StoragePartition.
+  if (base::FeatureList::IsEnabled(
+          features::kMitigateUnpartitionedWebviewPermissions)) {
+    guest_view::GuestViewBase* guest =
+        guest_view::GuestViewBase::FromRenderFrameHost(render_frame_host);
+    if (guest && !guest->IsPermissionRequestable(content_settings_type_)) {
+      return content::PermissionResult(
+          PermissionStatus::DENIED,
+          content::PermissionStatusSource::UNSPECIFIED);
+    }
+  }
+#endif
 
   ContentSetting content_setting = GetPermissionStatusInternal(
       render_frame_host, requesting_origin, embedding_origin);
@@ -383,10 +409,7 @@ ContentSetting PermissionContextBase::GetPermissionStatusInternal(
 }
 
 void PermissionContextBase::DecidePermission(
-    const PermissionRequestID& id,
-    const GURL& requesting_origin,
-    const GURL& embedding_origin,
-    bool user_gesture,
+    PermissionRequestData request_data,
     BrowserPermissionCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
@@ -395,12 +418,12 @@ void PermissionContextBase::DecidePermission(
   // origin. Storage access API requests are excluded as they are expected to
   // request permissions from the frame origin needing access.
   DCHECK(PermissionsClient::Get()->CanBypassEmbeddingOriginCheck(
-             requesting_origin, embedding_origin) ||
-         requesting_origin == embedding_origin ||
+             request_data.requesting_origin, request_data.embedding_origin) ||
+         request_data.requesting_origin == request_data.embedding_origin ||
          content_settings_type_ == ContentSettingsType::STORAGE_ACCESS);
 
-  content::RenderFrameHost* rfh =
-      content::RenderFrameHost::FromID(id.global_render_frame_host_id());
+  content::RenderFrameHost* rfh = content::RenderFrameHost::FromID(
+      request_data.id.global_render_frame_host_id());
   DCHECK(rfh);
 
   content::WebContents* web_contents =
@@ -409,24 +432,31 @@ void PermissionContextBase::DecidePermission(
       PermissionRequestManager::FromWebContents(web_contents);
   // TODO(felt): sometimes |permission_request_manager| is null. This check is
   // meant to prevent crashes. See crbug.com/457091.
-  if (!permission_request_manager)
+  if (!permission_request_manager) {
+    std::move(callback).Run(CONTENT_SETTING_ASK);
     return;
+  }
 
-  std::unique_ptr<PermissionRequest> request_ptr = CreatePermissionRequest(
-      requesting_origin, content_settings_type_, user_gesture, web_contents,
-      base::BindRepeating(&PermissionContextBase::PermissionDecided,
-                          weak_factory_.GetWeakPtr(), id, requesting_origin,
-                          embedding_origin),
-      base::BindOnce(&PermissionContextBase::CleanUpRequest,
-                     weak_factory_.GetWeakPtr(), id));
+  auto decided_cb = base::BindRepeating(
+      &PermissionContextBase::PermissionDecided, weak_factory_.GetWeakPtr(),
+      request_data.id, request_data.requesting_origin,
+      request_data.embedding_origin);
+  auto cleanup_cb = base::BindOnce(&PermissionContextBase::CleanUpRequest,
+                                   weak_factory_.GetWeakPtr(), request_data.id);
+  PermissionRequestID permission_request_id = request_data.id;
+
+  std::unique_ptr<PermissionRequest> request_ptr =
+      CreatePermissionRequest(web_contents, std::move(request_data),
+                              std::move(decided_cb), std::move(cleanup_cb));
   PermissionRequest* request = request_ptr.get();
 
-  bool inserted = pending_requests_
-                      .insert(std::make_pair(
-                          id.ToString(), std::make_pair(std::move(request_ptr),
-                                                        std::move(callback))))
-                      .second;
-  DCHECK(inserted) << "Duplicate id " << id.ToString();
+  bool inserted =
+      pending_requests_
+          .insert(std::make_pair(
+              permission_request_id.ToString(),
+              std::make_pair(std::move(request_ptr), std::move(callback))))
+          .second;
+  DCHECK(inserted) << "Duplicate id " << permission_request_id.ToString();
 
   permission_request_manager->AddRequest(rfh, request);
 }

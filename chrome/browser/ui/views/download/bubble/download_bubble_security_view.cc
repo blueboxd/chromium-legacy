@@ -7,13 +7,14 @@
 #include "base/containers/fixed_flat_map.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/strcat.h"
-#include "chrome/browser/download/bubble/download_bubble_ui_controller.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/download/download_commands.h"
 #include "chrome/browser/download/download_item_model.h"
-#include "chrome/browser/download/download_item_warning_data.h"
 #include "chrome/browser/download/download_ui_model.h"
+#include "chrome/browser/download/offline_item_utils.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
+#include "chrome/browser/ui/views/download/bubble/download_bubble_password_prompt_view.h"
 #include "chrome/browser/ui/views/download/bubble/download_bubble_row_view.h"
 #include "chrome/browser/ui/views/download/bubble/download_toolbar_button_view.h"
 #include "chrome/grit/generated_resources.h"
@@ -40,6 +41,8 @@
 #include "ui/views/window/dialog_client_view.h"
 
 namespace {
+using offline_items_collection::ContentId;
+
 constexpr int kCheckboxHeight = 32;
 constexpr int kProgressBarHeight = 3;
 // Num of columns in the table layout, the width of which progress bar will
@@ -64,32 +67,6 @@ enum class DownloadBubbleSubpageAction {
 };
 const char kSubpageActionHistogram[] = "Download.Bubble.SubpageAction";
 
-bool ShouldOpenPrimaryDialog(DownloadCommands::Command command) {
-  switch (command) {
-    case DownloadCommands::KEEP:
-    case DownloadCommands::DISCARD:
-    case DownloadCommands::REVIEW:
-    case DownloadCommands::RETRY:
-    case DownloadCommands::CANCEL:
-    case DownloadCommands::BYPASS_DEEP_SCANNING:
-    case DownloadCommands::RESUME:
-    case DownloadCommands::PAUSE:
-    case DownloadCommands::OPEN_WHEN_COMPLETE:
-    case DownloadCommands::SHOW_IN_FOLDER:
-    case DownloadCommands::ALWAYS_OPEN_TYPE:
-    case DownloadCommands::CANCEL_DEEP_SCAN:
-    case DownloadCommands::LEARN_MORE_SCANNING:
-      return true;
-    case DownloadCommands::DEEP_SCAN:
-      return !base::FeatureList::IsEnabled(
-          safe_browsing::kDeepScanningUpdatedUX);
-    default:
-      NOTREACHED() << "Unexpected button pressed on download bubble: "
-                   << command;
-      return true;
-  }
-}
-
 bool ShouldReturnToPrimaryDialog(download::DownloadDangerType danger_type) {
   // The only non-terminal danger type where the security subpage view shows is
   // `DOWNLOAD_DANGER_TYPE_ASYNC_SCANNING`. We should then return to the row
@@ -98,6 +75,17 @@ bool ShouldReturnToPrimaryDialog(download::DownloadDangerType danger_type) {
   // not scans that find malware.
   return danger_type == download::DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_SAFE ||
          danger_type == download::DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_FAILED;
+}
+
+bool HandleButtonClickWithDefaultClose(
+    base::WeakPtr<DownloadBubbleSecurityView> security_view_weak,
+    DownloadCommands::Command command,
+    bool is_secondary_button) {
+  if (!security_view_weak) {
+    // Close the dialog.
+    return true;
+  }
+  return security_view_weak->ProcessButtonClick(command, is_secondary_button);
 }
 
 }  // namespace
@@ -208,6 +196,10 @@ class ParagraphsView : public views::View {
 BEGIN_METADATA(ParagraphsView, View)
 END_METADATA
 
+bool DownloadBubbleSecurityView::IsInitialized() const {
+  return content_id_ != ContentId();
+}
+
 void DownloadBubbleSecurityView::AddHeader() {
   auto* header = AddChildView(std::make_unique<views::View>());
   header->SetLayoutManager(std::make_unique<views::FlexLayout>())
@@ -267,26 +259,23 @@ void DownloadBubbleSecurityView::AddHeader() {
 }
 
 void DownloadBubbleSecurityView::BackButtonPressed() {
-  DownloadItemWarningData::AddWarningActionEvent(
-      model_->GetDownloadItem(),
-      DownloadItemWarningData::WarningSurface::BUBBLE_SUBPAGE,
-      DownloadItemWarningData::WarningAction::BACK);
+  delegate_->AddSecuritySubpageWarningActionEvent(
+      content_id_, DownloadItemWarningData::WarningAction::BACK);
   did_log_action_ = true;
-  navigation_handler_->OpenPrimaryDialog();
   base::UmaHistogramEnumeration(
       kSubpageActionHistogram, DownloadBubbleSubpageAction::kPressedBackButton);
+  Reset();
+  navigation_handler_->OpenPrimaryDialog();
 }
 
 void DownloadBubbleSecurityView::UpdateHeader() {
-  title_->SetText(model_->GetFileNameToReportUser().LossyDisplayName());
+  title_->SetText(title_text_);
   title_->SizeToFit(GetMinimumTitleWidth());
 }
 
 void DownloadBubbleSecurityView::CloseBubble() {
-  DownloadItemWarningData::AddWarningActionEvent(
-      model_->GetDownloadItem(),
-      DownloadItemWarningData::WarningSurface::BUBBLE_SUBPAGE,
-      DownloadItemWarningData::WarningAction::CLOSE);
+  delegate_->AddSecuritySubpageWarningActionEvent(
+      content_id_, DownloadItemWarningData::WarningAction::CLOSE);
   did_log_action_ = true;
   // CloseDialog will delete the object. Do not access any members below.
   navigation_handler_->CloseDialog(
@@ -302,44 +291,42 @@ void DownloadBubbleSecurityView::OnCheckboxClicked() {
                                 DownloadBubbleSubpageAction::kClickedCheckbox);
 }
 
-DownloadUIModel::BubbleUIInfo& DownloadBubbleSecurityView::GetUiInfo() {
-  return download_row_view_->ui_info();
-}
-
 void DownloadBubbleSecurityView::UpdateIconAndText() {
-  DownloadUIModel::BubbleUIInfo& ui_info = GetUiInfo();
   icon_->SetImage(ui::ImageModel::FromVectorIcon(
-      *(ui_info.icon_model_override), ui_info.secondary_color,
+      *(ui_info_.icon_model_override), ui_info_.secondary_color,
       GetLayoutConstant(DOWNLOAD_ICON_SIZE)));
 
-  paragraphs_->SetText(ui_info.warning_summary);
+  paragraphs_->SetText(ui_info_.warning_summary);
 
   // The label defaults to a single line, which would force the dialog wider;
   // instead give it a width that's the minimum we want it to have. Then the
   // Layout will stretch it back out into any additional space available.
   paragraphs_->SizeToFit(GetMinimumLabelWidth());
 
-  checkbox_->SetVisible(ui_info.HasCheckbox());
-  if (ui_info.HasCheckbox()) {
+  checkbox_->SetVisible(ui_info_.HasCheckbox());
+  if (ui_info_.HasCheckbox()) {
     base::UmaHistogramEnumeration(kSubpageActionHistogram,
                                   DownloadBubbleSubpageAction::kShownCheckbox);
     checkbox_->SetChecked(false);
-    checkbox_->SetText(ui_info.checkbox_label);
+    checkbox_->SetText(ui_info_.checkbox_label);
   }
 
   // TODO(chlily): Implement deep_scanning_link_ as a learn_more_link_.
-  if (model_->GetDangerType() == download::DownloadDangerType::
-                                     DOWNLOAD_DANGER_TYPE_PROMPT_FOR_SCANNING &&
+  if (danger_type_ == download::DownloadDangerType::
+                          DOWNLOAD_DANGER_TYPE_PROMPT_FOR_SCANNING &&
       base::FeatureList::IsEnabled(safe_browsing::kDeepScanningUpdatedUX)) {
     std::u16string link_text = l10n_util::GetStringUTF16(
         IDS_DOWNLOAD_BUBBLE_SUBPAGE_DEEP_SCANNING_LINK);
     deep_scanning_link_->SetText(link_text);
     gfx::Range link_range(0, link_text.length());
+    // Unretained is safe because `delegate_` outlives this, which owns
+    // `deep_scanning_link_`.
     views::StyledLabel::RangeStyleInfo link_style =
-        views::StyledLabel::RangeStyleInfo::CreateForLink(base::BindRepeating(
-            &DownloadBubbleUIController::ProcessDownloadButtonPress,
-            bubble_controller_, model_.get(),
-            DownloadCommands::LEARN_MORE_SCANNING, /*is_main_view=*/false));
+        views::StyledLabel::RangeStyleInfo::CreateForLink(
+            base::BindRepeating(&DownloadBubbleSecurityView::Delegate::
+                                    ProcessSecuritySubpageButtonPress,
+                                base::Unretained(delegate_), content_id_,
+                                DownloadCommands::LEARN_MORE_SCANNING));
     deep_scanning_link_->AddStyleRange(link_range, link_style);
     deep_scanning_link_->SetVisible(true);
     deep_scanning_link_->SizeToFit(GetMinimumLabelWidth());
@@ -347,19 +334,21 @@ void DownloadBubbleSecurityView::UpdateIconAndText() {
     deep_scanning_link_->SetVisible(false);
   }
 
-  if (ui_info.learn_more_link) {
-    learn_more_link_->SetText(ui_info.learn_more_link->label_and_link_text);
+  if (ui_info_.learn_more_link) {
+    learn_more_link_->SetText(ui_info_.learn_more_link->label_and_link_text);
     size_t link_start_offset =
-        ui_info.learn_more_link->linked_range.start_offset;
+        ui_info_.learn_more_link->linked_range.start_offset;
     gfx::Range link_range{
         link_start_offset,
-        link_start_offset + ui_info.learn_more_link->linked_range.length};
+        link_start_offset + ui_info_.learn_more_link->linked_range.length};
+    // Unretained is safe because `delegate_` outlives this, which owns
+    // `learn_more_link_`.
     views::StyledLabel::RangeStyleInfo link_style =
         views::StyledLabel::RangeStyleInfo::CreateForLink(base::BindRepeating(
-            &DownloadBubbleUIController::ProcessDownloadButtonPress,
-            bubble_controller_, model_.get(),
-            ui_info.learn_more_link->linked_range.command,
-            /*is_main_view=*/false));
+            &DownloadBubbleSecurityView::Delegate::
+                ProcessSecuritySubpageButtonPress,
+            base::Unretained(delegate_), content_id_,
+            ui_info_.learn_more_link->linked_range.command));
     learn_more_link_->AddStyleRange(link_range, link_style);
     learn_more_link_->SetVisible(true);
     learn_more_link_->SizeToFit(GetMinimumLabelWidth());
@@ -369,20 +358,18 @@ void DownloadBubbleSecurityView::UpdateIconAndText() {
 }
 
 void DownloadBubbleSecurityView::UpdateSecondaryIconAndText() {
-  DownloadUIModel::BubbleUIInfo& ui_info = GetUiInfo();
+  secondary_icon_->SetVisible(!ui_info_.warning_secondary_text.empty());
+  secondary_styled_label_->SetVisible(!ui_info_.warning_secondary_text.empty());
 
-  secondary_icon_->SetVisible(!ui_info.warning_secondary_text.empty());
-  secondary_styled_label_->SetVisible(!ui_info.warning_secondary_text.empty());
-
-  if (ui_info.warning_secondary_text.empty()) {
+  if (ui_info_.warning_secondary_text.empty()) {
     return;
   }
 
   secondary_icon_->SetImage(ui::ImageModel::FromVectorIcon(
-      *ui_info.warning_secondary_icon, ui::kColorSecondaryForeground,
+      *ui_info_.warning_secondary_icon, ui::kColorSecondaryForeground,
       GetLayoutConstant(DOWNLOAD_ICON_SIZE)));
 
-  secondary_styled_label_->SetText(ui_info.warning_secondary_text);
+  secondary_styled_label_->SetText(ui_info_.warning_secondary_text);
   // The label defaults to a single line, which would force the dialog wider;
   // instead give it a width that's the minimum we want it to have. Then the
   // Layout will stretch it back out into any additional space available.
@@ -390,7 +377,7 @@ void DownloadBubbleSecurityView::UpdateSecondaryIconAndText() {
   secondary_styled_label_->PreferredSizeChanged();
 }
 
-void DownloadBubbleSecurityView::AddIconAndText() {
+void DownloadBubbleSecurityView::AddIconAndContents() {
   const int side_margin = ChromeLayoutProvider::Get()->GetDistanceMetric(
       views::DISTANCE_RELATED_CONTROL_VERTICAL);
   const int icon_label_spacing = ChromeLayoutProvider::Get()->GetDistanceMetric(
@@ -465,6 +452,8 @@ void DownloadBubbleSecurityView::AddIconAndText() {
                                /*adjust_height_for_width=*/true));
   // Set min height for checkbox, so that it can layout label accordingly.
   checkbox_->SetMinSize(gfx::Size(0, kCheckboxHeight));
+  // Will be updated later if checkbox should exist.
+  checkbox_->SetVisible(false);
 
   // TODO(chlily): Implement deep_scanning_link_ as a learn_more_link_.
   deep_scanning_link_ =
@@ -484,6 +473,8 @@ void DownloadBubbleSecurityView::AddIconAndText() {
   // paragraph spacing between them.
   learn_more_link_->SetProperty(views::kMarginsKey,
                                 gfx::Insets().set_top(kAfterParagraphSpacing));
+
+  AddPasswordPrompt(wrapper);
 }
 
 void DownloadBubbleSecurityView::AddSecondaryIconAndText() {
@@ -570,29 +561,48 @@ void DownloadBubbleSecurityView::AddProgressBar() {
   progress_bar_->SetVisible(false);
 }
 
+void DownloadBubbleSecurityView::AddPasswordPrompt(views::View* parent) {
+  password_prompt_ = parent->AddChildView(
+      std::make_unique<DownloadBubblePasswordPromptView>());
+  password_prompt_->SetVisible(false);
+  password_prompt_->SetProperty(
+      views::kFlexBehaviorKey,
+      views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToMinimum,
+                               views::MaximumFlexSizeRule::kUnbounded,
+                               /*adjust_height_for_width=*/false));
+  password_prompt_->SetProperty(
+      views::kMarginsKey,
+      gfx::Insets::VH(ChromeLayoutProvider::Get()->GetDistanceMetric(
+                          views::DISTANCE_RELATED_CONTROL_VERTICAL),
+                      0));
+  UpdatePasswordPrompt();
+}
+
 bool DownloadBubbleSecurityView::ProcessButtonClick(
     DownloadCommands::Command command,
     bool is_secondary_button) {
-  RecordWarningActionTime(is_secondary_button);
-  // First open primary dialog, and then execute the command. If a deletion
-  // happens leading to closure of the bubble, it will be called after primary
-  // dialog is opened.
-  if (navigation_handler_ && bubble_controller_) {
-    bool should_close = bubble_controller_->ProcessDownloadButtonPressWithClose(
-        model_.get(), command,
-        /*is_main_view=*/false);
-    if (ShouldOpenPrimaryDialog(command)) {
-      navigation_handler_->OpenPrimaryDialog();
-    } else {
-      navigation_handler_->OpenSecurityDialog(download_row_view_);
-    }
-    return should_close;
+  if (!IsInitialized()) {
+    return true;
+  }
+  if (!navigation_handler_) {
+    // If the navigation handler has gone away, close the dialog.
+    return true;
   }
 
+  if (command == DownloadCommands::DEEP_SCAN) {
+    return ProcessDeepScanClick();
+  }
+
+  // Record metrics only if we are actually processing the command.
+  RecordWarningActionTime(is_secondary_button);
   base::UmaHistogramEnumeration(
       kSubpageActionHistogram,
       is_secondary_button ? DownloadBubbleSubpageAction::kPressedSecondaryButton
                           : DownloadBubbleSubpageAction::kPressedPrimaryButton);
+
+  // Process the command first, since this may become uninitialized once the
+  // navigation occurs.
+  delegate_->ProcessSecuritySubpageButtonPress(content_id_, command);
   return true;
 }
 
@@ -603,8 +613,8 @@ void DownloadBubbleSecurityView::UpdateButton(
   ui::DialogButton button_type =
       is_secondary_button ? ui::DIALOG_BUTTON_CANCEL : ui::DIALOG_BUTTON_OK;
 
-  base::RepeatingCallback callback(base::BindRepeating(
-      &DownloadBubbleSecurityView::ProcessButtonClick, base::Unretained(this),
+  base::RepeatingCallback<bool()> callback(base::BindRepeating(
+      &HandleButtonClickWithDefaultClose, weak_factory_.GetWeakPtr(),
       button_info.command, is_secondary_button));
 
   if (button_type == ui::DIALOG_BUTTON_CANCEL) {
@@ -634,19 +644,18 @@ void DownloadBubbleSecurityView::UpdateButtons() {
   bubble_delegate_->SetButtons(ui::DIALOG_BUTTON_NONE);
   bubble_delegate_->SetDefaultButton(ui::DIALOG_BUTTON_NONE);
   secondary_button_ = nullptr;
-  DownloadUIModel::BubbleUIInfo& ui_info = GetUiInfo();
 
-  if (ui_info.subpage_buttons.size() > 0) {
+  if (ui_info_.subpage_buttons.size() > 0) {
     bubble_delegate_->SetButtons(ui::DIALOG_BUTTON_OK);
-    UpdateButton(ui_info.subpage_buttons[0], /*is_secondary_button=*/false,
-                 ui_info.HasCheckbox());
+    UpdateButton(ui_info_.subpage_buttons[0], /*is_secondary_button=*/false,
+                 ui_info_.HasCheckbox());
   }
 
-  if (ui_info.subpage_buttons.size() > 1) {
+  if (ui_info_.subpage_buttons.size() > 1) {
     bubble_delegate_->SetButtons(ui::DIALOG_BUTTON_OK |
                                  ui::DIALOG_BUTTON_CANCEL);
-    UpdateButton(ui_info.subpage_buttons[1], /*is_secondary_button=*/true,
-                 ui_info.HasCheckbox());
+    UpdateButton(ui_info_.subpage_buttons[1], /*is_secondary_button=*/true,
+                 ui_info_.HasCheckbox());
   }
   // After we have updated the buttons, set the minimum width to avoid the rest
   // of the contents stretching out the dialog unnecessarily.
@@ -655,15 +664,33 @@ void DownloadBubbleSecurityView::UpdateButtons() {
 }
 
 void DownloadBubbleSecurityView::UpdateProgressBar() {
-  DownloadUIModel::BubbleUIInfo& ui_info = GetUiInfo();
-  progress_bar_->SetVisible(ui_info.has_progress_bar);
+  progress_bar_->SetVisible(ui_info_.has_progress_bar);
   // The progress bar is only supported for deep scanning currently, which
   // requires a looping progress bar.
-  if (!ui_info.has_progress_bar || !ui_info.is_progress_bar_looping) {
+  if (!ui_info_.has_progress_bar || !ui_info_.is_progress_bar_looping) {
     return;
   }
 
   progress_bar_->SetValue(-1);
+}
+
+void DownloadBubbleSecurityView::UpdatePasswordPrompt() {
+  if (!base::FeatureList::IsEnabled(
+          safe_browsing::kDeepScanningEncryptedArchives)) {
+    return;
+  }
+
+  bool should_show =
+      danger_type_ == download::DOWNLOAD_DANGER_TYPE_PROMPT_FOR_SCANNING &&
+      delegate_->IsEncryptedArchive(content_id_);
+
+  DownloadBubblePasswordPromptView::State state =
+      delegate_->HasPreviousIncorrectPassword(content_id_)
+          ? DownloadBubblePasswordPromptView::State::kInvalid
+          : DownloadBubblePasswordPromptView::State::kValid;
+
+  password_prompt_->SetVisible(should_show);
+  password_prompt_->SetState(state);
 }
 
 void DownloadBubbleSecurityView::ClearWideFields() {
@@ -696,53 +723,79 @@ void DownloadBubbleSecurityView::RecordWarningActionTime(
   // Download.Bubble.Subpage.DangerousFile.SecondaryButtonActionTime
   std::string histogram = base::StrCat(
       {"Download.Bubble.Subpage.",
-       download::GetDownloadDangerTypeString(
-           model_->GetDownloadItem()->GetDangerType()),
-       ".", is_secondary_button ? "Secondary" : "Primary", "ButtonActionTime"});
+       download::GetDownloadDangerTypeString(danger_type_), ".",
+       is_secondary_button ? "Secondary" : "Primary", "ButtonActionTime"});
   base::UmaHistogramMediumTimes(histogram,
                                 base::Time::Now() - (*warning_time_));
+}
+
+void DownloadBubbleSecurityView::InitializeForDownload(DownloadUIModel& model) {
+  if (model.GetContentId() != content_id_) {
+    Reset();
+    download_item_observation_.Observe(model.GetDownloadItem());
+    base::UmaHistogramEnumeration(kSubpageActionHistogram,
+                                  DownloadBubbleSubpageAction::kShown);
+  }
+  OnDownloadUpdated(model.GetDownloadItem());
+}
+
+void DownloadBubbleSecurityView::Reset() {
+  content_id_ = ContentId();
+  ui_info_ = DownloadUIModel::BubbleUIInfo();
+  title_text_ = std::u16string();
+  download_item_observation_.Reset();
   warning_time_ = absl::nullopt;
 }
 
-void DownloadBubbleSecurityView::UpdateSecurityView(
-    DownloadBubbleRowView* download_row_view) {
-  if (!download_row_view) {
-    // Release the raw_ptr so that it is not dangling when the row view is
-    // destroyed.
-    download_row_view_ = nullptr;
-    warning_time_ = absl::nullopt;
-    model_ = nullptr;
-    return;
+void DownloadBubbleSecurityView::OnDownloadUpdated(
+    download::DownloadItem* download) {
+  ContentId content_id = OfflineItemUtils::GetContentIdForDownload(download);
+  bool is_different_download = content_id != content_id_;
+  bool danger_type_changed = danger_type_ != download->GetDangerType();
+  if (is_different_download) {
+    content_id_ = content_id;
+    title_text_ = download->GetFileNameToReportUser().LossyDisplayName();
+    // Reset this to false because now this represents a different instance of
+    // the security dialog. This should not be reset anywhere else. We only want
+    // to consider it a different instance of the dialog (and potentially log a
+    // new action) when the action is performed by a user, not when the browser
+    // changes the danger type (when a scan is finished, for instance).
+    did_log_action_ = false;
   }
-  warning_time_ = absl::optional<base::Time>(base::Time::Now());
-  download_row_view_ = download_row_view;
-  DCHECK(download_row_view_->model());
-  model_ =
-      DownloadItemModel::Wrap(download_row_view_->model()->GetDownloadItem());
-  model_->SetDelegate(this);
-  cached_danger_type_ = model_->GetDangerType();
-  did_log_action_ = false;
-
-  UpdateViews();
-  base::UmaHistogramEnumeration(kSubpageActionHistogram,
-                                DownloadBubbleSubpageAction::kShown);
+  if (is_different_download || danger_type_changed) {
+    warning_time_ = base::Time::Now();
+    ui_info_ = DownloadItemModel(download).GetBubbleUIInfo(is_bubble_v2_);
+    danger_type_ = download->GetDangerType();
+    // If this represents a "terminal" state of a deep scan, we return to the
+    // primary dialog. Note that we want this behavior even if
+    // `is_different_download` is true, e.g. user clicks on a different download
+    // via entry point external to the download bubble (e.g. notification on
+    // Lacros).
+    if (ShouldReturnToPrimaryDialog(danger_type_)) {
+      navigation_handler_->OpenPrimaryDialog();
+      // No need to update views here because we're resetting and returning to
+      // the primary dialog anyway.
+      return;
+    }
+    UpdateViews();
+  }
 }
 
-void DownloadBubbleSecurityView::OnDownloadUpdated() {
-  if (cached_danger_type_ == model_->GetDangerType()) {
-    return;
-  }
+void DownloadBubbleSecurityView::OnDownloadRemoved(
+    download::DownloadItem* download) {
+  CHECK(content_id_ == OfflineItemUtils::GetContentIdForDownload(download));
+  Reset();
+}
 
-  cached_danger_type_ = model_->GetDangerType();
-  if (ShouldReturnToPrimaryDialog(cached_danger_type_)) {
-    navigation_handler_->OpenPrimaryDialog();
-    return;
-  }
-
+void DownloadBubbleSecurityView::SetUIInfoForTesting(
+    const DownloadUIModel::BubbleUIInfo& ui_info) {
+  ui_info_ = ui_info;
   UpdateViews();
 }
 
 void DownloadBubbleSecurityView::UpdateViews() {
+  CHECK(IsInitialized());
+  CHECK(ui_info_.HasSubpage());
   // Our multiline labels need to know the width of the bubble in order to size
   // themselves appropriately (see `GetMinimumLabelWidth`). This means that we
   // must reset fields that increase the width of the bubble before update. This
@@ -755,6 +808,7 @@ void DownloadBubbleSecurityView::UpdateViews() {
   UpdateIconAndText();
   UpdateSecondaryIconAndText();
   UpdateProgressBar();
+  UpdatePasswordPrompt();
 
   bubble_delegate_->SizeToContents();
 }
@@ -763,15 +817,14 @@ void DownloadBubbleSecurityView::UpdateAccessibilityTextAndFocus() {
   if (!IsInitialized()) {
     return;
   }
-  DownloadUIModel::BubbleUIInfo& ui_info = GetUiInfo();
   // Announce that the subpage was opened to inform the user about the changes
   // in the UI.
 #if BUILDFLAG(IS_MAC)
   GetViewAccessibility().OverrideRole(ax::mojom::Role::kAlert);
-  GetViewAccessibility().OverrideName(ui_info.warning_summary);
+  GetViewAccessibility().OverrideName(ui_info_.warning_summary);
   NotifyAccessibilityEvent(ax::mojom::Event::kAlert, true);
 #else
-  GetViewAccessibility().AnnounceText(ui_info.warning_summary);
+  GetViewAccessibility().AnnounceText(ui_info_.warning_summary);
 #endif
 
   // Focus the back button by default to ensure that focus is set when new
@@ -780,33 +833,31 @@ void DownloadBubbleSecurityView::UpdateAccessibilityTextAndFocus() {
 }
 
 DownloadBubbleSecurityView::DownloadBubbleSecurityView(
-    base::WeakPtr<DownloadBubbleUIController> bubble_controller,
+    Delegate* delegate,
     base::WeakPtr<DownloadBubbleNavigationHandler> navigation_handler,
-    views::BubbleDialogDelegate* bubble_delegate)
-    : bubble_controller_(std::move(bubble_controller)),
+    views::BubbleDialogDelegate* bubble_delegate,
+    bool is_bubble_v2)
+    : delegate_(delegate),
+      is_bubble_v2_(is_bubble_v2),
       navigation_handler_(std::move(navigation_handler)),
       bubble_delegate_(bubble_delegate) {
+  CHECK(delegate_);
   SetLayoutManager(std::make_unique<views::FlexLayout>())
       ->SetOrientation(views::LayoutOrientation::kVertical);
   if (features::IsChromeRefresh2023()) {
     SetProperty(views::kMarginsKey, GetLayoutInsets(DOWNLOAD_ROW));
   }
   AddHeader();
-  AddIconAndText();
+  AddIconAndContents();
   AddSecondaryIconAndText();
   AddProgressBar();
 }
 
 DownloadBubbleSecurityView::~DownloadBubbleSecurityView() {
-  // Note that security view is created before it is navigated, so |model_| can
-  // be null.
-  if (!did_log_action_ && model_) {
-    DownloadItemWarningData::AddWarningActionEvent(
-        model_->GetDownloadItem(),
-        DownloadItemWarningData::WarningSurface::BUBBLE_SUBPAGE,
-        DownloadItemWarningData::WarningAction::DISMISS);
+  if (!did_log_action_ && IsInitialized()) {
+    delegate_->AddSecuritySubpageWarningActionEvent(
+        content_id_, DownloadItemWarningData::WarningAction::DISMISS);
   }
-  UpdateSecurityView(nullptr);
 }
 
 int DownloadBubbleSecurityView::GetMinimumBubbleWidth() const {
@@ -830,6 +881,24 @@ int DownloadBubbleSecurityView::GetMinimumLabelWidth() const {
   return GetMinimumBubbleWidth() - side_margin -
          GetLayoutConstant(DOWNLOAD_ICON_SIZE) -
          GetLayoutInsets(DOWNLOAD_ICON).width() - icon_label_spacing;
+}
+
+bool DownloadBubbleSecurityView::ProcessDeepScanClick() {
+  absl::optional<std::string> password;
+  if (base::FeatureList::IsEnabled(
+          safe_browsing::kDeepScanningEncryptedArchives)) {
+    password = base::UTF16ToUTF8(password_prompt_->GetText());
+    if (delegate_->IsEncryptedArchive(content_id_) && password->empty()) {
+      password_prompt_->SetState(
+          DownloadBubblePasswordPromptView::State::kInvalidEmpty);
+      bubble_delegate_->SizeToContents();
+      return false;
+    }
+  }
+
+  delegate_->ProcessDeepScanPress(content_id_, password);
+  bubble_delegate_->SizeToContents();
+  return !base::FeatureList::IsEnabled(safe_browsing::kDeepScanningUpdatedUX);
 }
 
 BEGIN_METADATA(DownloadBubbleSecurityView, views::View)

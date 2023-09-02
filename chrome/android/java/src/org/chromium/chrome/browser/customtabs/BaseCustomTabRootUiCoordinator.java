@@ -200,13 +200,13 @@ public class BaseCustomTabRootUiCoordinator extends RootUiCoordinator {
         if (intentDataProvider.get().getActivityType() == ActivityType.CUSTOM_TAB
                 && !intentDataProvider.get().isOpenedByChrome()
                 && !intentDataProvider.get().isIncognito()) {
-            String packageName = mIntentDataProvider.get().getClientPackageName();
-            if (TextUtils.isEmpty(packageName)) {
-                packageName = CustomTabIntentDataProvider.getReferrerPackageName(activity);
+            String appId = mIntentDataProvider.get().getClientPackageName();
+            if (TextUtils.isEmpty(appId)) {
+                appId = CustomTabIntentDataProvider.getAppIdFromReferrer(activity);
             }
-            String appName = activity.getResources().getString(R.string.app_name);
+            String browserName = activity.getResources().getString(R.string.app_name);
             mBrandingController = new BrandingController(
-                    activity, packageName, appName, new ChromePureJavaExceptionReporter());
+                    activity, appId, browserName, new ChromePureJavaExceptionReporter());
         }
         mTabController = tabController;
         mPageInsightsToken = TokenHolder.INVALID_TOKEN;
@@ -430,12 +430,16 @@ public class BaseCustomTabRootUiCoordinator extends RootUiCoordinator {
     @Override
     protected void onFindToolbarShown() {
         super.onFindToolbarShown();
+        CustomTabToolbar toolbar = mActivity.findViewById(R.id.toolbar);
+        toolbar.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO_HIDE_DESCENDANTS);
         mCustomTabHeightStrategy.onFindToolbarShown();
     }
 
     @Override
     protected void onFindToolbarHidden() {
         super.onFindToolbarHidden();
+        CustomTabToolbar toolbar = mActivity.findViewById(R.id.toolbar);
+        toolbar.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_YES);
         mCustomTabHeightStrategy.onFindToolbarHidden();
     }
 

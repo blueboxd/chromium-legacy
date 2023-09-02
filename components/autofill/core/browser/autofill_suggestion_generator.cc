@@ -127,7 +127,7 @@ std::vector<Suggestion> AutofillSuggestionGenerator::GetSuggestionsForProfiles(
       field_type, field.value, field.is_autofilled, field_types);
 
   // Adjust phone number to display in prefix/suffix case.
-  if (field_type.group() == FieldTypeGroup::kPhoneHome) {
+  if (field_type.group() == FieldTypeGroup::kPhone) {
     for (auto& suggestion : suggestions) {
       const AutofillProfile* profile = personal_data_->GetProfileByGUID(
           suggestion.GetPayload<Suggestion::BackendId>().value());
@@ -142,7 +142,14 @@ std::vector<Suggestion> AutofillSuggestionGenerator::GetSuggestionsForProfiles(
   }
 
   for (auto& suggestion : suggestions) {
-    suggestion.popup_item_id = PopupItemId::kAddressEntry;
+    // Granular filling handles assigning the popup type where the suggestion is
+    // created.
+    // TODO(crbug.com/1459990) Remove setting the popup type from here when
+    // granular filling clean up starts.
+    if (!base::FeatureList::IsEnabled(
+            features::kAutofillGranularFillingAvailable)) {
+      suggestion.popup_item_id = PopupItemId::kAddressEntry;
+    }
 
     // Populate feature IPH for externally created account profiles.
     const AutofillProfile* profile = personal_data_->GetProfileByGUID(
@@ -560,6 +567,10 @@ AutofillSuggestionGenerator::GetSuggestionMainTextAndMinorTextForCard(
       main_text = credit_card.CardNameAndLastFourDigits(nickname,
                                                         GetObfuscationLength());
     }
+  } else if (type.GetStorableType() == CREDIT_CARD_VERIFICATION_CODE) {
+    CHECK(!credit_card.cvc().empty());
+    main_text =
+        l10n_util::GetStringUTF16(IDS_AUTOFILL_CVC_SUGGESTION_MAIN_TEXT);
   } else {
     main_text = credit_card.GetInfo(type, app_locale);
   }

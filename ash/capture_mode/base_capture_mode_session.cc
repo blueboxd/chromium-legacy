@@ -10,11 +10,9 @@
 #include "ash/display/mouse_cursor_event_filter.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
-#include "ash/strings/grit/ash_strings.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_item.h"
 #include "ui/aura/client/capture_client.h"
-#include "ui/aura/window_tracker.h"
 #include "ui/compositor/layer.h"
 #include "ui/wm/core/coordinate_conversion.h"
 
@@ -119,7 +117,10 @@ gfx::Rect BaseCaptureModeSession::GetCaptureSurfaceConfineBounds() const {
           .work_area();
     }
     case CaptureModeSource::kWindow: {
-      return gfx::Rect(GetSelectedWindowBounds().size());
+      auto* selected_window = GetSelectedWindow();
+      return selected_window ? capture_mode_util::GetCaptureWindowConfineBounds(
+                                   selected_window)
+                             : gfx::Rect();
     }
     case CaptureModeSource::kRegion: {
       gfx::Rect capture_region = controller->user_capture_region();
@@ -161,7 +162,7 @@ void BaseCaptureModeSession::MaybeUpdateSelfieCamInSessionVisibility() {
   }
 }
 
-gfx::Rect BaseCaptureModeSession::GetSelectedWindowBounds() const {
+gfx::Rect BaseCaptureModeSession::GetSelectedWindowTargetBounds() const {
   auto* window = GetSelectedWindow();
   if (!window) {
     return gfx::Rect();
@@ -169,7 +170,7 @@ gfx::Rect BaseCaptureModeSession::GetSelectedWindowBounds() const {
 
   OverviewController* overview_controller = Shell::Get()->overview_controller();
   if (overview_controller->InOverviewSession()) {
-    if (OverviewItem* item =
+    if (auto* item =
             overview_controller->overview_session()->GetOverviewItemForWindow(
                 window)) {
       gfx::Rect target_bounds_in_root =

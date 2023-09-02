@@ -23,6 +23,7 @@ import androidx.annotation.VisibleForTesting;
 import org.chromium.base.Callback;
 import org.chromium.base.CommandLine;
 import org.chromium.base.PathUtils;
+import org.chromium.base.SysUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
@@ -37,7 +38,6 @@ import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.flags.PostNativeFlag;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabUtils;
-import org.chromium.chrome.browser.tasks.tab_management.TabUiFeatureUtilities;
 import org.chromium.chrome.browser.ui.native_page.FrozenNativePage;
 import org.chromium.chrome.browser.ui.native_page.NativePage;
 import org.chromium.ui.base.DeviceFormFactor;
@@ -56,6 +56,9 @@ import java.util.List;
  */
 @JNINamespace("android")
 public class TabContentManager {
+    private static final int WAIT_FOR_NATIVE_BACKOFF_MS = 50;
+    private static final int WAIT_FOR_NATIVE_MAX_BACKOFF_ATTEMPTS = 2;
+
     private static PostNativeFlag sThumbnailCacheRefactor =
             new PostNativeFlag(ChromeFeatureList.THUMBNAIL_CACHE_REFACTOR);
 
@@ -95,7 +98,7 @@ public class TabContentManager {
     private final ArrayList<ThumbnailChangeListener> mListeners =
             new ArrayList<ThumbnailChangeListener>();
 
-    private boolean mSnapshotsEnabled;
+    private final boolean mSnapshotsEnabled;
     private final TabFinder mTabFinder;
     private final Context mContext;
 
@@ -123,23 +126,11 @@ public class TabContentManager {
      */
     private static int getIntegerResourceWithOverride(Context context, int resourceId,
             String commandLineSwitch) {
-        int val = -1;
-        // TODO(crbug/959054): Convert this to Finch config.
-        if (TabUiFeatureUtilities.isGridTabSwitcherEnabled(context)) {
-            // With Grid Tab Switcher, we can greatly reduce the capacity of thumbnail cache.
-            // See crbug.com/959054 for more details.
-            if (resourceId == R.integer.default_thumbnail_cache_size) val = 2;
-            if (resourceId == R.integer.default_approximation_thumbnail_cache_size) val = 8;
-            assert val != -1;
-        } else {
-            val = context.getResources().getInteger(resourceId);
-        }
         String switchCount = CommandLine.getInstance().getSwitchValue(commandLineSwitch);
         if (switchCount != null) {
-            int count = Integer.parseInt(switchCount);
-            val = count;
+            return Integer.parseInt(switchCount);
         }
-        return val;
+        return context.getResources().getInteger(resourceId);
     }
 
     /**
@@ -195,11 +186,11 @@ public class TabContentManager {
         boolean useApproximationThumbnails =
                 !DeviceFormFactor.isNonMultiDisplayContextOnTablet(mContext)
                 && !sThumbnailCacheRefactor.isEnabled();
-        boolean saveJpegThumbnails = TabUiFeatureUtilities.isGridTabSwitcherEnabled(mContext);
 
         mNativeTabContentManager = TabContentManagerJni.get().init(TabContentManager.this,
                 mFullResThumbnailsMaxSize, approximationCacheSize, compressionQueueMaxSize,
-                writeQueueMaxSize, useApproximationThumbnails, saveJpegThumbnails);
+                writeQueueMaxSize, useApproximationThumbnails,
+                /*saveJpegThumbnails=*/!SysUtils.isLowEndDevice());
     }
 
     /**
@@ -347,12 +338,12 @@ public class TabContentManager {
             return;
         }
 
-        if (mNativeTabContentManager == 0) return;
-
         // Reading thumbnail from disk is faster than taking screenshot from live Tab, so fetch
         // that first even if |forceUpdate|.
         getTabThumbnailFromDisk(tabId, thumbnailSize, (diskBitmap) -> {
-            if (diskBitmap != null) callback.onResult(diskBitmap);
+            if (diskBitmap != null) {
+                callback.onResult(diskBitmap);
+            }
 
             Tab tab = getTabById(tabId);
             if (tab == null) return;
@@ -442,14 +433,27 @@ public class TabContentManager {
             return;
         }
 
+        getJpegForTabWithRefetch(tabId, thumbnailSize, /*attempts=*/0, callback);
+    }
+
+    /**
+     * Read the JPEG in java and report back with refetch.
+     * @param tabId The Tab ID to wait for a JPEG of.
+     * @param thumbnailSize The size of thumbnail that will be shown.
+     * @param attempts The number of pre-native refetch attempts.
+     * @param callback The callback to execute once native has finished any pending JPEG capture
+     *                 tasks for the tab.
+     */
+    private void getJpegForTabWithRefetch(int tabId, @NonNull Size thumbnailSize, int attempts,
+            @NonNull Callback<Bitmap> callback) {
         // Try JPEG thumbnail first before using the more costly
         // TabContentManagerJni.get().getEtc1TabThumbnail.
         TraceEvent.startAsync("GetTabThumbnailFromDisk", tabId);
-        PostTask.postTask(TaskTraits.USER_VISIBLE_MAY_BLOCK, () -> {
+        PostTask.postDelayedTask(TaskTraits.USER_VISIBLE_MAY_BLOCK, () -> {
             Bitmap bitmap = getJpegForTab(tabId, thumbnailSize);
             PostTask.postTask(TaskTraits.UI_USER_VISIBLE,
-                    () -> { onBitmapRead(tabId, thumbnailSize, bitmap, callback); });
-        });
+                    () -> { onBitmapRead(tabId, thumbnailSize, attempts, bitmap, callback); });
+        }, attempts == 0 ? 0 : WAIT_FOR_NATIVE_BACKOFF_MS);
     }
 
     /**
@@ -532,7 +536,7 @@ public class TabContentManager {
                 });
     }
 
-    private void onBitmapRead(@NonNull int tabId, @NonNull Size thumbnailSize, Bitmap jpeg,
+    private void onBitmapRead(int tabId, @NonNull Size thumbnailSize, int attempts, Bitmap jpeg,
             @NonNull Callback<Bitmap> callback) {
         TraceEvent.finishAsync("GetTabThumbnailFromDisk", tabId);
         if (jpeg != null) {
@@ -555,7 +559,15 @@ public class TabContentManager {
             callback.onResult(jpeg);
             return;
         }
-        if (mNativeTabContentManager == 0 || !mSnapshotsEnabled) return;
+        if (!mSnapshotsEnabled) return;
+
+        if (mNativeTabContentManager == 0) {
+            // Retry to wait for native to load.
+            if (attempts < WAIT_FOR_NATIVE_MAX_BACKOFF_ATTEMPTS) {
+                getJpegForTabWithRefetch(tabId, thumbnailSize, attempts + 1, callback);
+            }
+            return;
+        }
 
         // Generate a thumbnail from the ETC1. This masks a race condition between the thumbnail
         // being captured and an ETC1 or JPEG version of it being available.
@@ -694,8 +706,8 @@ public class TabContentManager {
                 mNativeTabContentManager, timeMs);
     }
 
-    public int getPendingReadbacksForTesting() {
-        return TabContentManagerJni.get().getPendingReadbacksForTesting(mNativeTabContentManager);
+    public int getInFlightCapturesForTesting() {
+        return TabContentManagerJni.get().getInFlightCapturesForTesting(mNativeTabContentManager);
     }
 
     @CalledByNative
@@ -730,7 +742,7 @@ public class TabContentManager {
         void getEtc1TabThumbnail(long nativeTabContentManager, int tabId, double aspectRatio,
                 Callback<Bitmap> callback);
         void setCaptureMinRequestTimeForTesting(long nativeTabContentManager, int timeMs);
-        int getPendingReadbacksForTesting(long nativeTabContentManager);
+        int getInFlightCapturesForTesting(long nativeTabContentManager);
         void destroy(long nativeTabContentManager);
     }
 }

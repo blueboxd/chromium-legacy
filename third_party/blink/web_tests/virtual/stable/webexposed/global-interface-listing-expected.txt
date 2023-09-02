@@ -682,6 +682,11 @@ interface CSSScale : CSSTransformComponent
     setter x
     setter y
     setter z
+interface CSSScopeRule : CSSConditionRule
+    attribute @@toStringTag
+    getter end
+    getter start
+    method constructor
 interface CSSSkew : CSSTransformComponent
     attribute @@toStringTag
     getter ax
@@ -5550,6 +5555,7 @@ interface NavigateEvent : Event
     getter destination
     getter downloadRequest
     getter formData
+    getter hasUAVisualTransition
     getter hashChange
     getter info
     getter navigationType
@@ -6318,6 +6324,7 @@ interface PointerEvent : MouseEvent
     method getPredictedEvents
 interface PopStateEvent : Event
     attribute @@toStringTag
+    getter hasUAVisualTransition
     getter state
     method constructor
 interface Presentation
@@ -7594,6 +7601,7 @@ interface SVGGraphicsElement : SVGElement
     method getScreenCTM
 interface SVGImageElement : SVGGraphicsElement
     attribute @@toStringTag
+    getter crossOrigin
     getter decoding
     getter height
     getter href
@@ -7603,6 +7611,7 @@ interface SVGImageElement : SVGGraphicsElement
     getter y
     method constructor
     method decode
+    setter crossOrigin
     setter decoding
 interface SVGLength
     attribute @@toStringTag
@@ -8491,8 +8500,11 @@ interface TextMetrics
     getter actualBoundingBoxDescent
     getter actualBoundingBoxLeft
     getter actualBoundingBoxRight
+    getter alphabeticBaseline
     getter fontBoundingBoxAscent
     getter fontBoundingBoxDescent
+    getter hangingBaseline
+    getter ideographicBaseline
     getter width
     method constructor
 interface TextTrack : EventTarget

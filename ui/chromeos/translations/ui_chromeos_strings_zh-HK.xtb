@@ -35,6 +35,7 @@
 <translation id="1280820357415527819">正在搜尋流動網絡</translation>
 <translation id="1293556467332435079">檔案</translation>
 <translation id="1297922636971898492">「Google 雲端硬碟」目前無法提供服務。一旦「Google 雲端硬碟」恢復正常，上載操作將會自動重新啟動。</translation>
+<translation id="1306130176943817227">無法刪除。項目正在使用中。</translation>
 <translation id="1307931752636661898">無法查看 Linux 檔案</translation>
 <translation id="1313405956111467313">自動 Proxy 設定</translation>
 <translation id="134645005685694099">裝置的儲存空間不足，無法開啟檔案同步功能，因此系統將不會自動同步新檔案。</translation>
@@ -94,6 +95,7 @@
 <translation id="174937106936716857">檔案總數</translation>
 <translation id="1755345808328621801">此檔案是專為使用 Windows 軟件的 PC 電腦而設，與運行 Chrome OS 的裝置並不相容。請前往「Chrome 網上應用程式商店」尋找適合的替代應用程式。</translation>
 <translation id="1757915090001272240">全形英數</translation>
+<translation id="1761091787730831947">與 <ph name="VM_NAME" /> 共用</translation>
 <translation id="1773212559869067373">本機已拒絕驗證憑證</translation>
 <translation id="1775381402323441512">影片資料</translation>
 <translation id="180035236176489073">您必須連接網絡才能存取這些檔案。</translation>
@@ -169,6 +171,7 @@
 <translation id="23721837607121582">下載流動裝置設定檔，<ph name="NETWORK_COUNT" /> 個網絡之中嘅第 <ph name="NETWORK_INDEX" /> 個，<ph name="NETWORK_NAME" /></translation>
 <translation id="2377319039870049694">切換至清單檢視</translation>
 <translation id="2377590462528165447">已與 Linux 共用 <ph name="NUMBER_OF_ITEMS" /> 個資料夾</translation>
+<translation id="2379576081295865700">正在檢查儲存空間… 找到 1 個項目</translation>
 <translation id="2383454254762599978">移至垃圾桶</translation>
 <translation id="2387458720915042159">Proxy 連接類型</translation>
 <translation id="2389832672041313158">緬甸文</translation>
@@ -210,6 +213,7 @@
 <translation id="2718540689505416944">透過 Linux 安裝應用程式</translation>
 <translation id="2719020180254996569">第 <ph name="NETWORK_INDEX" /> 個網絡，一共有 <ph name="NETWORK_COUNT" /> 個網絡，<ph name="NETWORK_NAME" />，<ph name="CONNECTION_STATUS" />，詳情</translation>
 <translation id="2724954091494693138">土耳其文 (F 鍵盤)</translation>
+<translation id="2732288874651063549">管理 <ph name="VM_NAME" /> 共用設定</translation>
 <translation id="2732839045120506979">越南文 (VNI)</translation>
 <translation id="2735623501230989521">授權 Parallels Desktop 存取「<ph name="FOLDER_NAME" />」資料夾中的檔案</translation>
 <translation id="2764206540577097904">您的個人 Google Workspace 儲存空間已全數用盡。</translation>
@@ -304,6 +308,7 @@
 <translation id="3509680540198371098">第 <ph name="NETWORK_INDEX" /> 個網絡，一共有 <ph name="NETWORK_COUNT" /> 個網絡，<ph name="NETWORK_NAME" />，<ph name="SECURITY_STATUS" />，<ph name="CONNECTION_STATUS" />，訊號強度係 <ph name="SIGNAL_STRENGTH" />%，詳情</translation>
 <translation id="3511705761158917664">正在準備同步 <ph name="NUMBER_OF_ITEMS" /> 個項目…</translation>
 <translation id="3522708245912499433">葡萄牙文</translation>
+<translation id="3523225005467146490">已與 <ph name="VM_NAME" /> 共用 1 個資料夾</translation>
 <translation id="3524311639100184459">注意：系統可能會自動刪除這些暫存檔案，以釋放磁碟空間。<ph name="BEGIN_LINK" />瞭解詳情<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">資料夾</translation>
 <translation id="3548125359243647069">您輸入錯誤 PIN 的次數過多。</translation>
@@ -537,6 +542,7 @@
 <translation id="5218183485292899140">瑞士法文</translation>
 <translation id="5234764350956374838">關閉</translation>
 <translation id="5253070652067921974">建立者</translation>
+<translation id="5254207638927440400">無法移動檔案。檔案正在使用中。</translation>
 <translation id="5257456363153333584">蜻蜓</translation>
 <translation id="5262311848634918433"><ph name="MARKUP_1" />隨時隨地存取檔案，甚至可離線存取。<ph name="MARKUP_2" />
     「Google 雲端硬碟」中的檔案永遠都是最新版本，並可透過任何裝置存取。<ph name="MARKUP_3" />
@@ -660,6 +666,8 @@
 <translation id="6164412158936057769">蝴蝶</translation>
 <translation id="6165508094623778733">瞭解更多資料</translation>
 <translation id="6170470584681422115">三文治</translation>
+<translation id="6177854567773392726">正在檢查儲存空間… 找到 <ph name="ITEMS_FOUND" /> 個項目</translation>
+<translation id="6181912134988520389">授權 <ph name="VM_NAME" /> 存取你的「Google 雲端硬碟」檔案。變更將會同步至你的其他裝置。</translation>
 <translation id="6187719147498869044">匈牙利文</translation>
 <translation id="6198252989419008588">變更 PIN</translation>
 <translation id="6199801702437275229">正在等待空間資料…</translation>
@@ -763,6 +771,7 @@
 <translation id="6989942356279143254">瑞典文</translation>
 <translation id="6990081529015358884">沒有可用的空間</translation>
 <translation id="6993826899923627728">這些項目在您的垃圾桶中</translation>
+<translation id="6996593023542748157">與 <ph name="VM_NAME" /> 共用資料夾</translation>
 <translation id="7008426324576352165">您的機構需要更多儲存空間才能完成上載。</translation>
 <translation id="7009985720488544166">管理員政策已禁止移動 <ph name="COUNT" /> 個檔案</translation>
 <translation id="7012943028104619157"><ph name="ROOT_TITLE" /> (<ph name="ROOT_SUMMARY" />)</translation>
@@ -852,6 +861,7 @@
 <translation id="76959938259365003">無法清空垃圾桶。</translation>
 <translation id="770015031906360009">希臘文</translation>
 <translation id="7705251383879779343">已複製 <ph name="FILE_NAME" />。</translation>
+<translation id="7707941139430559579">無法移動檔案。<ph name="ERROR_MESSAGE" /></translation>
 <translation id="7708271999969613024">如要使用此網絡，您需要輸入由流動網絡供應商提供的 8 位數個人解鎖金鑰 (PUK)。</translation>
 <translation id="7711920809702896782">圖片資料</translation>
 <translation id="7724603315864178912">剪下</translation>
@@ -948,6 +958,7 @@
 <translation id="8335837413233998004">白俄羅斯文</translation>
 <translation id="8336153091935557858">昨天<ph name="YESTERDAY_DAYTIME" /></translation>
 <translation id="8342318071240498787">已存在名稱相同的檔案或目錄。</translation>
+<translation id="83651606385705612">授權 <ph name="VM_NAME" /> 存取「<ph name="FOLDER_NAME" />」資料夾中的檔案</translation>
 <translation id="8372369524088641025">WEP 金鑰有誤</translation>
 <translation id="8372852072747894550">希臘文</translation>
 <translation id="8386903983509584791">掃瞄完成</translation>
@@ -957,6 +968,7 @@
 <translation id="8408068190360279472"><ph name="NETWORK_TYPE" />網絡，正在連線</translation>
 <translation id="8425213833346101688">變更</translation>
 <translation id="8428213095426709021">設定</translation>
+<translation id="8429998526804961548">已與 <ph name="VM_NAME" /> 共用 <ph name="NUMBER_OF_ITEMS" /> 個資料夾</translation>
 <translation id="8431909052837336408">變更 SIM 卡的 PIN</translation>
 <translation id="8437209419043462667">美式鍵盤</translation>
 <translation id="8452135315243592079">找不到 SIM 卡</translation>
@@ -1037,6 +1049,7 @@
 <translation id="9038620279323455325">名稱為「<ph name="FILE_NAME" />」的檔案已經存在，請選擇其他名稱。</translation>
 <translation id="9046895021617826162">連線失敗</translation>
 <translation id="9065512565307033593">如未完成驗證，您將無法存取網絡。</translation>
+<translation id="9083722265619106011">{0,plural, =1{1 個警告。}other{<ph name="COUNT" /> 個警告。}}</translation>
 <translation id="908378762078012445">俄文 (注音 AATSEEL 鍵盤)</translation>
 <translation id="9086302186042011942">正在同步處理</translation>
 <translation id="9099674669267916096">頁數</translation>

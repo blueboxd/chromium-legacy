@@ -6,13 +6,13 @@
 
 #import <WebKit/WebKit.h>
 
+#import "base/apple/foundation_util.h"
 #import "base/command_line.h"
 #import "base/containers/contains.h"
 #import "base/files/file.h"
 #import "base/files/file_util.h"
 #import "base/ios/ios_util.h"
 #import "base/json/json_string_value_serializer.h"
-#import "base/mac/foundation_util.h"
 #import "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
 #import "base/test/scoped_feature_list.h"
@@ -28,6 +28,8 @@
 #import "components/search_engines/template_url_service.h"
 #import "components/sync/base/features.h"
 #import "components/sync/base/pref_names.h"
+#import "components/sync/service/sync_service.h"
+#import "components/sync/service/sync_user_settings.h"
 #import "components/unified_consent/unified_consent_service.h"
 #import "components/variations/variations_associated_data.h"
 #import "components/variations/variations_ids_provider.h"
@@ -559,7 +561,7 @@ NSString* SerializedValue(const base::Value* value) {
   NSSet<UIScene*>* scenes = UIApplication.sharedApplication.connectedScenes;
   for (UIScene* scene in scenes) {
     UIWindowScene* windowScene =
-        base::mac::ObjCCastStrict<UIWindowScene>(scene);
+        base::apple::ObjCCastStrict<UIWindowScene>(scene);
 
     for (UIWindow* window in windowScene.windows) {
       if (window.isKeyWindow) {
@@ -744,7 +746,7 @@ NSString* SerializedValue(const base::Value* value) {
   // Attempt to deflake WebKit sometimes still holding on to the browser cache
   // with a larger hammer.
   base::ScopedAllowBlockingForTesting allow_blocking;
-  base::FilePath library_dir = base::mac::GetUserLibraryPath();
+  base::FilePath library_dir = base::apple::GetUserLibraryPath();
   base::FilePath webkit_cache_dir = library_dir.Append("WebKit");
   DeletePathRecursively(webkit_cache_dir);
 
@@ -1026,6 +1028,16 @@ NSString* SerializedValue(const base::Value* value) {
       base::SysNSStringToUTF8(syncPassphrase));
 }
 
++ (BOOL)isSyncHistoryDataTypeSelected {
+  ChromeBrowserState* browser_state =
+      chrome_test_util::GetOriginalBrowserState();
+  DCHECK(browser_state);
+  syncer::SyncService* syncService =
+      SyncServiceFactory::GetForBrowserState(browser_state);
+  return syncService->GetUserSettings()->GetSelectedTypes().Has(
+      syncer::UserSelectableType::kHistory);
+}
+
 #pragma mark - JavaScript Utilities (EG2)
 
 + (JavaScriptExecutionResult*)executeJavaScript:(NSString*)javaScript {
@@ -1128,6 +1140,11 @@ NSString* SerializedValue(const base::Value* value) {
 
 + (BOOL)isSyncHistoryDataTypeEnabled {
   return base::FeatureList::IsEnabled(syncer::kSyncEnableHistoryDataType);
+}
+
++ (BOOL)isReplaceSyncWithSigninEnabled {
+  return base::FeatureList::IsEnabled(
+      syncer::kReplaceSyncPromosWithSignInPromos);
 }
 
 + (BOOL)appHasLaunchSwitch:(NSString*)launchSwitch {
@@ -1395,7 +1412,7 @@ int watchRunNumber = 0;
           for (UIScene* scene in UIApplication.sharedApplication
                    .connectedScenes) {
             UIWindowScene* windowScene =
-                base::mac::ObjCCastStrict<UIWindowScene>(scene);
+                base::apple::ObjCCastStrict<UIWindowScene>(scene);
             [windows addObjectsFromArray:windowScene.windows];
           }
 
@@ -1462,12 +1479,16 @@ int watchRunNumber = 0;
   base::File::Error fileError;
   FirstRun::CreateSentinel(&fileError);
   FirstRun::LoadSentinelInfo();
+  FirstRun::ClearStateForTesting();
+  FirstRun::IsChromeFirstRun();
 }
 
 + (void)removeFirstRunSentinel {
   base::ScopedAllowBlockingForTesting allow_blocking;
   if (FirstRun::RemoveSentinel()) {
     FirstRun::LoadSentinelInfo();
+    FirstRun::ClearStateForTesting();
+    FirstRun::IsChromeFirstRun();
   }
 }
 

@@ -34,12 +34,23 @@ bool RarAnalyzer::ResumeExtraction() {
   while (reader_.ExtractNextEntry()) {
     const third_party_unrar::RarReader::EntryInfo& entry =
         reader_.current_entry();
-    if (!UpdateResultsForEntry(
-            temp_file_.Duplicate(), GetRootPath().Append(entry.file_path),
-            entry.file_size, entry.is_encrypted, entry.is_directory,
-            /*contents_valid=*/!entry.is_encrypted)) {
+    results()->encryption_info.is_encrypted |= entry.is_encrypted;
+    if (entry.is_encrypted && !entry.contents_valid) {
+      results()->encryption_info.password_status =
+          EncryptionInfo::kKnownIncorrect;
+    }
+    if (!UpdateResultsForEntry(temp_file_.Duplicate(),
+                               GetRootPath().Append(entry.file_path),
+                               entry.file_size, entry.is_encrypted,
+                               entry.is_directory, entry.contents_valid)) {
       return false;
     }
+  }
+
+  if (results()->encryption_info.password_status !=
+          EncryptionInfo::kKnownIncorrect &&
+      results()->encryption_info.is_encrypted) {
+    results()->encryption_info.password_status = EncryptionInfo::kKnownCorrect;
   }
 
   results()->success = true;
@@ -63,9 +74,22 @@ void RarAnalyzer::OnGetTempFile(base::File temp_file) {
     InitComplete(ArchiveAnalysisResult::kTooLarge);
     return;
   }
+
+  if (password()) {
+    reader_.SetPassword(*password());
+  }
+
   // `rar_file_` is consumed by the reader and cannot be used after
   // this point.
   if (!reader_.Open(std::move(GetArchiveFile()), temp_file_.Duplicate())) {
+    InitComplete(ArchiveAnalysisResult::kUnknown);
+    return;
+  }
+
+  results()->encryption_info.is_encrypted = reader_.HeadersEncrypted();
+  if (reader_.HeaderDecryptionFailed()) {
+    results()->encryption_info.password_status =
+        EncryptionInfo::kKnownIncorrect;
     InitComplete(ArchiveAnalysisResult::kUnknown);
     return;
   }

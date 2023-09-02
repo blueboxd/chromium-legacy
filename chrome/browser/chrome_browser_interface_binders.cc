@@ -326,6 +326,8 @@
 #include "chrome/browser/ui/webui/ash/parent_access/parent_access_ui.h"
 #include "chrome/browser/ui/webui/ash/parent_access/parent_access_ui.mojom.h"
 #include "chrome/browser/ui/webui/ash/set_time_ui.h"
+#include "chrome/browser/ui/webui/ash/settings/search/mojom/search.mojom.h"
+#include "chrome/browser/ui/webui/ash/settings/search/mojom/user_action_recorder.mojom.h"
 #include "chrome/browser/ui/webui/ash/smb_shares/smb_credentials_dialog.h"
 #include "chrome/browser/ui/webui/ash/smb_shares/smb_share_dialog.h"
 #include "chrome/browser/ui/webui/ash/vm/vm.mojom.h"
@@ -338,8 +340,6 @@
 #include "chrome/browser/ui/webui/settings/ash/input_device_settings/input_device_settings_provider.mojom.h"
 #include "chrome/browser/ui/webui/settings/ash/os_apps_page/mojom/app_notification_handler.mojom.h"
 #include "chrome/browser/ui/webui/settings/ash/os_settings_ui.h"
-#include "chrome/browser/ui/webui/settings/ash/search/mojom/search.mojom.h"
-#include "chrome/browser/ui/webui/settings/ash/search/mojom/user_action_recorder.mojom.h"
 #include "chromeos/ash/components/audio/public/mojom/cros_audio_config.mojom.h"
 #include "chromeos/ash/components/local_search_service/public/mojom/index.mojom.h"
 #include "chromeos/ash/services/auth_factor_config/public/mojom/auth_factor_config.mojom.h"
@@ -1084,7 +1084,8 @@ void PopulateChromeWebUIFrameBinders(
       ash::InternetConfigDialogUI, ash::InternetDetailDialogUI, ash::SetTimeUI,
       ash::BluetoothPairingDialogUI, nearby_share::NearbyShareDialogUI,
       ash::cloud_upload::CloudUploadUI, ash::office_fallback::OfficeFallbackUI,
-      ash::multidevice_setup::MultiDeviceSetupDialogUI,
+      ash::multidevice_setup::MultiDeviceSetupDialogUI, ash::ParentAccessUI,
+      ash::EmojiUI,
 #endif
       NewTabPageUI, OmniboxPopupUI, BookmarksSidePanelUI, CustomizeChromeUI,
       InternalsUI, ReadingListUI, TabSearchUI, WebuiGalleryUI,
@@ -1411,6 +1412,10 @@ void PopulateChromeWebUIFrameBinders(
       map);
 
   RegisterWebUIControllerInterfaceBinder<
+      ash::eche_app::mojom::KeyboardLayoutHandler, ash::eche_app::EcheAppUI>(
+      map);
+
+  RegisterWebUIControllerInterfaceBinder<
       ash::media_app_ui::mojom::PageHandlerFactory, ash::MediaAppUI>(map);
 
   RegisterWebUIControllerInterfaceBinder<
@@ -1464,11 +1469,9 @@ void PopulateChromeWebUIFrameBinders(
         ash::shortcut_customization::mojom::AcceleratorConfigurationProvider,
         ash::ShortcutCustomizationAppUI>(map);
 
-    if (ash::features::IsSearchInShortcutsAppEnabled()) {
-      RegisterWebUIControllerInterfaceBinder<
-          ash::shortcut_customization::mojom::SearchHandler,
-          ash::ShortcutCustomizationAppUI>(map);
-    }
+    RegisterWebUIControllerInterfaceBinder<
+        ash::shortcut_customization::mojom::SearchHandler,
+        ash::ShortcutCustomizationAppUI>(map);
   }
 
   RegisterWebUIControllerInterfaceBinder<
@@ -1597,11 +1600,9 @@ void PopulateChromeWebUIFrameBinders(
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if !BUILDFLAG(IS_CHROMEOS) && !BUILDFLAG(IS_ANDROID)
-  if (base::FeatureList::IsEnabled(features::kDesktopPWAsAppHomePage)) {
-    RegisterWebUIControllerInterfaceBinder<
-        ::app_home::mojom::PageHandlerFactory, webapps::AppHomeUI>(map);
-  }
-#endif
+  RegisterWebUIControllerInterfaceBinder<::app_home::mojom::PageHandlerFactory,
+                                         webapps::AppHomeUI>(map);
+#endif  // !BUILDFLAG(IS_CHROMEOS) && !BUILDFLAG(IS_ANDROID)
 
 #if !BUILDFLAG(IS_ANDROID)
   RegisterWebUIControllerInterfaceBinder<::mojom::WebAppInternalsHandler,

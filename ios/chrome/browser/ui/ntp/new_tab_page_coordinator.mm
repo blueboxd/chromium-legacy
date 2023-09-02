@@ -642,8 +642,10 @@
   self.feedHeaderViewController.feedControlDelegate = self;
   self.feedHeaderViewController.ntpDelegate = self;
   self.feedHeaderViewController.feedMetricsRecorder = self.feedMetricsRecorder;
-  self.feedHeaderViewController.followingFeedSortType =
-      self.followingFeedSortType;
+  if (!IsFollowUIUpdateEnabled()) {
+    self.feedHeaderViewController.followingFeedSortType =
+        self.followingFeedSortType;
+  }
   self.NTPViewController.feedHeaderViewController =
       self.feedHeaderViewController;
 
@@ -664,7 +666,7 @@
 
   // Feed top section visibility is based on feed visibility, so this should
   // always be below the block that sets `feedViewController`.
-  if ([self isFeedTopSectionVisible]) {
+  if ([self isFeedVisible]) {
     self.feedTopSectionCoordinator = [self createFeedTopSectionCoordinator];
   }
 }
@@ -734,7 +736,7 @@
       feedWrapperViewControllerWithDelegate:self
                          feedViewController:self.feedViewController];
 
-  if ([self isFeedTopSectionVisible]) {
+  if ([self isFeedVisible]) {
     self.NTPViewController.feedTopSectionViewController =
         self.feedTopSectionCoordinator.viewController;
   }
@@ -917,7 +919,7 @@
 
   // Scroll position resets when changing the feed, so we set it back to what it
   // was.
-  [self.NTPViewController setContentOffsetToTopOfFeed:scrollPosition];
+  [self.NTPViewController setContentOffsetToTopOfFeedOrLess:scrollPosition];
 }
 
 - (void)handleSortTypeForFollowingFeed:(FollowingFeedSortType)sortType {
@@ -941,7 +943,7 @@
 
   // Scroll position resets when changing the feed, so we set it back to what it
   // was.
-  [self.NTPViewController setContentOffsetToTopOfFeed:scrollPosition];
+  [self.NTPViewController setContentOffsetToTopOfFeedOrLess:scrollPosition];
 }
 
 - (BOOL)shouldFeedBeVisible {
@@ -1126,9 +1128,11 @@
 
 - (void)updateForSelectedFeed:(FeedType)selectedFeed {
   [self selectFeedType:selectedFeed];
-  // Reassign the sort type in case it changed in another tab.
-  self.feedHeaderViewController.followingFeedSortType =
-      self.followingFeedSortType;
+  if (!IsFollowUIUpdateEnabled()) {
+    // Reassign the sort type in case it changed in another tab.
+    self.feedHeaderViewController.followingFeedSortType =
+        self.followingFeedSortType;
+  }
   // Update the header so that it's synced with the currently selected
   // feed, which could have been changed when a new web state was
   // inserted.
@@ -1181,6 +1185,23 @@
 
 - (void)handleFeedTopSectionClosed {
   [self.NTPViewController updateScrollPositionForFeedTopSectionClosed];
+}
+
+- (BOOL)isSignInAllowed {
+  AuthenticationService::ServiceStatus statusService =
+      self.authService->GetServiceStatus();
+  switch (statusService) {
+    case AuthenticationService::ServiceStatus::SigninDisabledByPolicy:
+    case AuthenticationService::ServiceStatus::SigninDisabledByInternal:
+    case AuthenticationService::ServiceStatus::SigninDisabledByUser: {
+      return NO;
+    }
+    case AuthenticationService::ServiceStatus::SigninForcedByPolicy:
+    case AuthenticationService::ServiceStatus::SigninAllowed: {
+      break;
+    }
+  }
+  return YES;
 }
 
 #pragma mark - NewTabPageFollowDelegate
@@ -1272,8 +1293,7 @@
 
 - (UIView*)toolbarSnapshotViewForOverscrollActionsController:
     (OverscrollActionsController*)controller {
-  return [[self.headerViewController toolBarView]
-      snapshotViewAfterScreenUpdates:NO];
+  return nil;
 }
 
 - (UIView*)headerViewForOverscrollActionsController:
@@ -1458,7 +1478,7 @@
     self.feedHeaderViewController = nil;
   }
 
-  if ([self isFeedTopSectionVisible]) {
+  if ([self isFeedVisible]) {
     self.NTPViewController.feedTopSectionViewController =
         self.feedTopSectionCoordinator.viewController;
   }
@@ -1495,16 +1515,6 @@
 // Returns `YES` if the feed is currently visible on the NTP.
 - (BOOL)isFeedVisible {
   return [self shouldFeedBeVisible] && self.feedViewController;
-}
-
-// Whether the feed top section, which contains all content between the feed
-// header and the feed, is currently visible.
-// TODO(crbug.com/1331010): The feed top section may include content that is not
-// the signin promo, which may need to be visible when the user is signed in.
-- (BOOL)isFeedTopSectionVisible {
-  return IsDiscoverFeedTopSyncPromoEnabled() && [self isFeedVisible] &&
-         self.authService &&
-         !self.authService->HasPrimaryIdentity(signin::ConsentLevel::kSignin);
 }
 
 // Creates, configures and returns a feed view controller configuration.
@@ -1649,24 +1659,6 @@
       [self.feedMetricsRecorder recordNTPDidChangeVisibility:visible];
     }
   }
-}
-
-// Returns whether sign-in is enabled for the user.
-- (BOOL)isSignInAllowed {
-  AuthenticationService::ServiceStatus statusService =
-      self.authService->GetServiceStatus();
-  switch (statusService) {
-    case AuthenticationService::ServiceStatus::SigninDisabledByPolicy:
-    case AuthenticationService::ServiceStatus::SigninDisabledByInternal:
-    case AuthenticationService::ServiceStatus::SigninDisabledByUser: {
-      return NO;
-    }
-    case AuthenticationService::ServiceStatus::SigninForcedByPolicy:
-    case AuthenticationService::ServiceStatus::SigninAllowed: {
-      break;
-    }
-  }
-  return YES;
 }
 
 // Returns whether the user policies allow them to sync.

@@ -20,10 +20,77 @@
     ],
     "channel": "stable"
   },
-  "os.diagnostics.runBluetoothDiscoveryRoutine": {
-    "blocklist": [
-      "E3303523BFFD1014D4A9D480D692C8B22BE6176B" // http://crbug.com/1255653
+  "os.diagnostics.createMemoryRoutine": {
+    "dependencies": [
+      "permission:os.diagnostics"
     ],
+    "contexts": [
+      "blessed_extension"
+    ],
+    "platforms": [
+      "chromeos",
+      "lacros"
+    ],
+    "feature_flag": "TelemetryExtensionPendingApprovalApi",
+    "channel": "stable"
+  },
+  "os.diagnostics.onRoutineInitialized": {
+    "dependencies": [
+      "permission:os.diagnostics"
+    ],
+    "contexts": [
+      "blessed_extension"
+    ],
+    "platforms": [
+      "chromeos",
+      "lacros"
+    ],
+    "feature_flag": "TelemetryExtensionPendingApprovalApi",
+    "channel": "stable"
+  },
+  "os.diagnostics.onRoutineRunning": {
+    "dependencies": [
+      "permission:os.diagnostics"
+    ],
+    "contexts": [
+      "blessed_extension"
+    ],
+    "platforms": [
+      "chromeos",
+      "lacros"
+    ],
+    "feature_flag": "TelemetryExtensionPendingApprovalApi",
+    "channel": "stable"
+  },
+  "os.diagnostics.onRoutineWaiting": {
+    "dependencies": [
+      "permission:os.diagnostics"
+    ],
+    "contexts": [
+      "blessed_extension"
+    ],
+    "platforms": [
+      "chromeos",
+      "lacros"
+    ],
+    "feature_flag": "TelemetryExtensionPendingApprovalApi",
+    "channel": "stable"
+  },
+  "os.diagnostics.onMemoryRoutineFinished": {
+    "dependencies": [
+      "permission:os.diagnostics"
+    ],
+    "contexts": [
+      "blessed_extension"
+    ],
+    "platforms": [
+      "chromeos",
+      "lacros"
+    ],
+    "feature_flag": "TelemetryExtensionPendingApprovalApi",
+    "channel": "stable"
+  },
+  "os.diagnostics.runBluetoothDiscoveryRoutine": {
     "dependencies": [
       "permission:os.diagnostics.runBluetoothDiscoveryRoutine"
     ],
@@ -38,9 +105,6 @@
     "feature_flag": "TelemetryExtensionPendingApprovalApi"
   },
   "os.diagnostics.runBluetoothPairingRoutine": {
-    "blocklist": [
-      "E3303523BFFD1014D4A9D480D692C8B22BE6176B" // http://crbug.com/1255653
-    ],
     "dependencies": [
       "permission:os.diagnostics.runBluetoothPairingRoutine"
     ],
@@ -52,28 +116,9 @@
       "lacros"
     ],
     "channel": "stable",
-    "feature_flag": "TelemetryExtensionPendingApprovalApi" // TODO(b/294790547): Don't remove it before adding permission check.
-  },
-  "os.diagnostics.runBluetoothPowerRoutine": {
-    "blocklist": [
-      "E3303523BFFD1014D4A9D480D692C8B22BE6176B" // http://crbug.com/1255653
-    ],
-    "dependencies": [
-      "permission:os.diagnostics.runBluetoothPowerRoutine"
-    ],
-    "contexts": [
-      "blessed_extension"
-    ],
-    "platforms": [
-      "chromeos",
-      "lacros"
-    ],
-    "channel": "stable"
+    "feature_flag": "TelemetryExtensionPendingApprovalApi"
   },
   "os.diagnostics.runBluetoothScanningRoutine": {
-    "blocklist": [
-      "E3303523BFFD1014D4A9D480D692C8B22BE6176B" // http://crbug.com/1255653
-    ],
     "dependencies": [
       "permission:os.diagnostics.runBluetoothScanningRoutine"
     ],
@@ -85,7 +130,7 @@
       "lacros"
     ],
     "channel": "stable",
-    "feature_flag": "TelemetryExtensionPendingApprovalApi" // TODO(b/294790547): Don't remove it before adding permission check.
+    "feature_flag": "TelemetryExtensionPendingApprovalApi"
   },
   "os.events": {
     "dependencies": [
@@ -99,6 +144,34 @@
       "lacros"
     ],
     "channel": "stable"
+  },
+  "os.events.onTouchscreenTouchEvent": {
+    "dependencies": [
+      "permission:os.events"
+    ],
+    "contexts": [
+      "blessed_extension"
+    ],
+    "platforms": [
+      "chromeos",
+      "lacros"
+    ],
+    "channel": "stable",
+    "feature_flag": "TelemetryExtensionPendingApprovalApi"
+  },
+  "os.events.onTouchscreenConnectedEvent": {
+    "dependencies": [
+      "permission:os.events"
+    ],
+    "contexts": [
+      "blessed_extension"
+    ],
+    "platforms": [
+      "chromeos",
+      "lacros"
+    ],
+    "channel": "stable",
+    "feature_flag": "TelemetryExtensionPendingApprovalApi"
   },
   "os.telemetry": {
     "dependencies": [

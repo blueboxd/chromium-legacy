@@ -126,7 +126,7 @@ class FakeSelectFileDialog : public ui::SelectFileDialog {
   bool IsRunning(gfx::NativeWindow owning_window) const override {
     return true;
   }
-  void ListenerDestroyed() override {}
+  void ListenerDestroyed() override { listener_ = nullptr; }
   bool HasMultipleFileTypeChoicesImpl() override { return false; }
 
   void VerifyExtensions(const FileTypeInfo* file_types) {
@@ -274,7 +274,8 @@ class CupsPrintersHandlerTest : public testing::Test {
   base::RunLoop run_loop_;
   scoped_refptr<printing::TestPrintBackend> print_backend_ =
       base::MakeRefCounted<printing::TestPrintBackend>();
-  raw_ptr<MockNewWindowDelegate, ExperimentalAsh> new_window_delegate_primary_;
+  raw_ptr<MockNewWindowDelegate, DanglingUntriaged | ExperimentalAsh>
+      new_window_delegate_primary_;
   std::unique_ptr<TestNewWindowDelegateProvider> new_window_provider_;
   base::ScopedTempDir download_dir_;
   base::HistogramTester histogram_tester_;

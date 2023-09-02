@@ -922,8 +922,9 @@ bool NGLineBreaker::CanBreakAfterAtomicInline(const NGInlineItem& item) const {
   if (item.IsImage())
     return !sticky_images_quirk_;
 
-  if (item.IsRubyRun())
+  if (item.IsRubyColumn()) {
     return break_iterator_.IsBreakable(item.EndOffset());
+  }
 
   // Handles text combine
   // See "fast/writing-mode/text-combine-line-break.html".
@@ -970,8 +971,9 @@ bool NGLineBreaker::CanBreakAfter(const NGInlineItem& item) const {
   if (!atomic_inline_item)
     return can_break_after;
 
-  if (atomic_inline_item->IsRubyRun())
+  if (atomic_inline_item->IsRubyColumn()) {
     return can_break_after;
+  }
 
   // We can not break before sticky images quirk was applied.
   if (UNLIKELY(Text()[atomic_inline_item->StartOffset()] ==
@@ -2580,7 +2582,7 @@ void NGLineBreaker::HandleAtomicInline(const NGInlineItem& item,
 
   position_ += item_result->inline_size;
 
-  if (item.IsRubyRun()) {
+  if (item.IsRubyColumn()) {
     NGAnnotationOverhang overhang = GetOverhang(*item_result);
     if (overhang.end > LayoutUnit()) {
       item_result->pending_end_overhang = overhang.end;
@@ -3078,7 +3080,7 @@ void NGLineBreaker::HandleOverflow(NGLineInfo* line_info) {
           }
           continue;
         }
-        scoped_refptr<const ComputedStyle> was_current_style = current_style_;
+        const ComputedStyle* was_current_style = current_style_;
         SetCurrentStyle(*item.Style());
         const NGInlineItemResult item_result_before = *item_result;
         BreakText(item_result, item, *item.TextShapeResult(),
@@ -3424,7 +3426,7 @@ const ComputedStyle& NGLineBreaker::ComputeCurrentStyle(
 }
 
 void NGLineBreaker::SetCurrentStyle(const ComputedStyle& style) {
-  if (&style == current_style_.get()) {
+  if (&style == current_style_) {
 #if EXPENSIVE_DCHECKS_ARE_ON()
     // Check that cache fields are already setup correctly.
     DCHECK_EQ(auto_wrap_, ShouldAutoWrap(style));
@@ -3592,7 +3594,7 @@ const NGInlineBreakToken* NGLineBreaker::CreateBreakToken(
     // in inline in the current fragmentainer (and the block-in-inline part
     // won't be seen there).
     sub_break_token = NGInlineBreakToken::Create(
-        node_, current_style_.get(), current_, flags, sub_break_token);
+        node_, current_style_, current_, flags, sub_break_token);
 
     // Move past the block in inline, since we stopped at it. This is where
     // regular inline content will resume.
@@ -3600,8 +3602,8 @@ const NGInlineBreakToken* NGLineBreaker::CreateBreakToken(
     MoveToNextOf(items[current_.item_index]);
   }
 
-  return NGInlineBreakToken::Create(node_, current_style_.get(), current_,
-                                    flags, sub_break_token);
+  return NGInlineBreakToken::Create(node_, current_style_, current_, flags,
+                                    sub_break_token);
 }
 
 }  // namespace blink

@@ -27,16 +27,11 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.robolectric.Robolectric;
-import org.robolectric.annotation.Config;
-import org.robolectric.annotation.Implementation;
-import org.robolectric.annotation.Implements;
-import org.robolectric.annotation.RealObject;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.share.ChromeShareExtras;
-import org.chromium.chrome.browser.share.link_to_text.LinkToTextCoordinatorTest.SameOriginShadowGURL;
 import org.chromium.chrome.browser.share.share_sheet.ChromeOptionShareCallback;
 import org.chromium.chrome.browser.share.share_sheet.ShareSheetLinkToggleCoordinator.LinkToggleState;
 import org.chromium.chrome.browser.tab.Tab;
@@ -48,13 +43,11 @@ import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.url.GURL;
 import org.chromium.url.JUnitTestGURLs;
-import org.chromium.url.ShadowGURL;
 
 /**
  * Tests for {@link LinkToTextCoordinator}.
  */
 @RunWith(BaseRobolectricTestRunner.class)
-@Config(shadows = {SameOriginShadowGURL.class})
 public class LinkToTextCoordinatorTest {
     @Rule
     public JniMocker jniMocker = new JniMocker();
@@ -85,8 +78,8 @@ public class LinkToTextCoordinatorTest {
     private boolean mIsRemoteRequestResultSet;
 
     private static final String SELECTED_TEXT = "selection";
-    private static final String VISIBLE_URL = JUnitTestGURLs.EXAMPLE_URL;
-    private static final String BLOCKLIST_URL = JUnitTestGURLs.URL_1;
+    private static final String VISIBLE_URL = JUnitTestGURLs.EXAMPLE_URL.getSpec();
+    private static final String BLOCKLIST_URL = JUnitTestGURLs.URL_1.getSpec();
     private static final String SELECTED_TEXT_LONG =
             "This textbook has more freedom than most (but see some exceptions).";
     private static final long SHARE_START_TIME = 1L;
@@ -418,17 +411,5 @@ public class LinkToTextCoordinatorTest {
 
         // No new histogram is recorded.
         verify(mLinkToTextBridge, times(1)).logLinkToTextReshareStatus(anyInt());
-    }
-
-    /** Workaround shadow class to bypass #getOrigin */
-    @Implements(GURL.class)
-    public static class SameOriginShadowGURL extends ShadowGURL {
-        @RealObject
-        GURL mRealObj;
-
-        @Implementation
-        protected GURL getOrigin() {
-            return mRealObj;
-        }
     }
 }

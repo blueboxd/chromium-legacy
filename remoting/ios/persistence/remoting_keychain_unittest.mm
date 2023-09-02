@@ -7,8 +7,8 @@
 #import <Foundation/Foundation.h>
 #import <Security/Security.h>
 
+#include "base/apple/scoped_cftyperef.h"
 #include "base/base64.h"
-#include "base/mac/scoped_cftyperef.h"
 #include "base/rand_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -47,7 +47,7 @@ void VerifyNoKeychainForKey(Keychain::Key key) {
     (__bridge NSString*)kSecAttrService : KeyToService(key),
     (__bridge NSString*)kSecReturnData : @YES,
   };
-  base::ScopedCFTypeRef<CFTypeRef> cf_result;
+  base::apple::ScopedCFTypeRef<CFTypeRef> cf_result;
   OSStatus status = SecItemCopyMatching((__bridge CFDictionaryRef)get_all_query,
                                         cf_result.InitializeInto());
   ASSERT_EQ(errSecItemNotFound, status);

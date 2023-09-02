@@ -6,9 +6,9 @@
 
 #import <vector>
 
+#import "base/apple/foundation_util.h"
 #import "base/functional/bind.h"
 #import "base/ios/ios_util.h"
-#import "base/mac/foundation_util.h"
 #import "base/metrics/histogram_macros.h"
 #import "base/metrics/user_metrics.h"
 #import "base/metrics/user_metrics_action.h"
@@ -371,6 +371,8 @@ const CGFloat kIPHVerticalOffset = -5;
   UMA_HISTOGRAM_ENUMERATION(
       "PasswordManager.ManagePasswordsReferrer",
       password_manager::ManagePasswordsReferrer::kPasswordsAccessorySheet);
+  base::RecordAction(
+      base::UserMetricsAction("MobileKeyboardAccessoryOpenPasswordManager"));
 }
 
 - (void)openPasswordSettings {
@@ -595,8 +597,9 @@ const CGFloat kIPHVerticalOffset = -5;
 
   // Prepare the dismissal callback.
   __weak __typeof(self) weakSelf = self;
-  ProceduralBlockWithSnoozeAction dismissalCallback =
-      ^(feature_engagement::Tracker::SnoozeAction snoozeAction) {
+  CallbackWithIPHDismissalReasonType dismissalCallback =
+      ^(IPHDismissalReasonType IPHDismissalReasonType,
+        feature_engagement::Tracker::SnoozeAction snoozeAction) {
         [weakSelf IPHDidDismissWithSnoozeAction:snoozeAction];
       };
 

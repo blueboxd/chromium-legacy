@@ -5,7 +5,6 @@
 #include <memory>
 #include <set>
 
-#include "base/allocator/partition_allocator/pointers/raw_ptr.h"
 #include "base/containers/contains.h"
 #include "base/json/values_util.h"
 #include "base/memory/raw_ptr.h"
@@ -307,10 +306,10 @@ class WebsiteMetricsBrowserTest : public InProcessBrowserTest {
   WebsiteMetrics* website_metrics() {
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
     DCHECK(website_metrics_service_);
-    return website_metrics_service_->website_metrics_.get();
+    return website_metrics_service_->WebsiteMetrics();
 #else
     DCHECK(app_platform_metrics_service_);
-    return app_platform_metrics_service_->website_metrics_.get();
+    return app_platform_metrics_service_->WebsiteMetrics();
 #endif
   }
 
@@ -339,7 +338,7 @@ class WebsiteMetricsBrowserTest : public InProcessBrowserTest {
 
  protected:
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  raw_ptr<AppPlatformMetricsService, ExperimentalAsh>
+  raw_ptr<AppPlatformMetricsService, DanglingUntriaged | ExperimentalAsh>
       app_platform_metrics_service_ = nullptr;
 #else
   raw_ptr<WebsiteMetricsServiceLacros> website_metrics_service_ = nullptr;

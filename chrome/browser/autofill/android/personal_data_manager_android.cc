@@ -18,17 +18,12 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/android/resource_mapper.h"
-#include "chrome/browser/autofill/address_normalizer_factory.h"
 #include "chrome/browser/autofill/android/jni_headers/PersonalDataManager_jni.h"
-#include "chrome/browser/autofill/autofill_popup_controller_utils.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
-#include "chrome/browser/autofill/validation_rules_storage_factory.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/pref_names.h"
-#include "components/autofill/core/browser/address_normalizer.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/autofill_experiments.h"
 #include "components/autofill/core/browser/autofill_type.h"
@@ -38,6 +33,7 @@
 #include "components/autofill/core/browser/geo/autofill_country.h"
 #include "components/autofill/core/browser/geo/country_names.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
+#include "components/autofill/core/browser/ui/autofill_resource_utils.h"
 #include "components/autofill/core/browser/validation.h"
 #include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_constants.h"
@@ -45,10 +41,6 @@
 #include "components/autofill/core/common/autofill_prefs.h"
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/prefs/pref_service.h"
-#include "services/network/public/cpp/shared_url_loader_factory.h"
-#include "third_party/libaddressinput/chromium/chrome_metadata_source.h"
-#include "third_party/libaddressinput/chromium/chrome_storage_impl.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "url/android/gurl_android.h"
 
 namespace autofill {
@@ -70,41 +62,12 @@ PrefService* GetPrefs() {
   return GetProfile()->GetPrefs();
 }
 
-void OnSubKeysReceived(ScopedJavaGlobalRef<jobject> jdelegate,
-                       const std::vector<std::string>& subkeys_codes,
-                       const std::vector<std::string>& subkeys_names) {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  Java_GetSubKeysRequestDelegate_onSubKeysReceived(
-      env, jdelegate, base::android::ToJavaArrayOfStrings(env, subkeys_codes),
-      base::android::ToJavaArrayOfStrings(env, subkeys_names));
-}
-
-void OnAddressNormalized(ScopedJavaGlobalRef<jobject> jdelegate,
-                         bool success,
-                         const AutofillProfile& profile) {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  if (success) {
-    Java_NormalizedAddressRequestDelegate_onAddressNormalized(
-        env, jdelegate,
-        profile.CreateJavaObject(g_browser_process->GetApplicationLocale()));
-  } else {
-    Java_NormalizedAddressRequestDelegate_onCouldNotNormalize(
-        env, jdelegate,
-        profile.CreateJavaObject(g_browser_process->GetApplicationLocale()));
-  }
-}
-
 }  // namespace
 
 PersonalDataManagerAndroid::PersonalDataManagerAndroid(JNIEnv* env, jobject obj)
     : weak_java_obj_(env, obj),
       personal_data_manager_(PersonalDataManagerFactory::GetForProfile(
-          ProfileManager::GetActiveUserProfile())),
-      subkey_requester_(std::make_unique<ChromeMetadataSource>(
-                            I18N_ADDRESS_VALIDATION_DATA_URL,
-                            g_browser_process->system_network_context_manager()
-                                ->GetSharedURLLoaderFactory()),
-                        ValidationRulesStorageFactory::CreateStorage()) {
+          ProfileManager::GetActiveUserProfile())) {
   personal_data_manager_->AddObserver(this);
 }
 
@@ -604,39 +567,6 @@ void PersonalDataManagerAndroid::ClearServerDataForTesting(
   personal_data_manager_->NotifyPersonalDataObserver();
 }
 
-void PersonalDataManagerAndroid::LoadRulesForAddressNormalization(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& unused_obj,
-    const base::android::JavaParamRef<jstring>& jregion_code) {
-  AddressNormalizer* normalizer = AddressNormalizerFactory::GetInstance();
-  normalizer->LoadRulesForRegion(ConvertJavaStringToUTF8(env, jregion_code));
-}
-
-void PersonalDataManagerAndroid::LoadRulesForSubKeys(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& unused_obj,
-    const base::android::JavaParamRef<jstring>& jregion_code) {
-  subkey_requester_.LoadRulesForRegion(
-      ConvertJavaStringToUTF8(env, jregion_code));
-}
-
-void PersonalDataManagerAndroid::StartAddressNormalization(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& unused_obj,
-    const JavaParamRef<jobject>& jprofile,
-    jint jtimeout_seconds,
-    const JavaParamRef<jobject>& jdelegate) {
-  AutofillProfile profile = AutofillProfile::CreateFromJavaObject(
-      jprofile, g_browser_process->GetApplicationLocale());
-
-  // Start the normalization.
-  AddressNormalizer* normalizer = AddressNormalizerFactory::GetInstance();
-  normalizer->NormalizeAddressAsync(
-      profile, jtimeout_seconds,
-      base::BindOnce(&OnAddressNormalized,
-                     ScopedJavaGlobalRef<jobject>(jdelegate)));
-}
-
 jboolean PersonalDataManagerAndroid::HasProfiles(JNIEnv* env) {
   return !personal_data_manager_->GetProfiles().empty();
 }
@@ -653,30 +583,6 @@ jboolean PersonalDataManagerAndroid::IsFidoAuthenticationAvailable(
   }
   // Show the toggle switch only if FIDO authentication is available.
   return IsCreditCardFidoAuthenticationEnabled();
-}
-
-void PersonalDataManagerAndroid::StartRegionSubKeysRequest(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& unused_obj,
-    const JavaParamRef<jstring>& jregion_code,
-    jint jtimeout_seconds,
-    const JavaParamRef<jobject>& jdelegate) {
-  const std::string region_code = ConvertJavaStringToUTF8(env, jregion_code);
-
-  ScopedJavaGlobalRef<jobject> my_jdelegate;
-  my_jdelegate.Reset(env, jdelegate);
-
-  SubKeyReceiverCallback cb = base::BindOnce(
-      &OnSubKeysReceived, ScopedJavaGlobalRef<jobject>(my_jdelegate));
-
-  std::string language =
-      l10n_util::GetLanguage(g_browser_process->GetApplicationLocale());
-  subkey_requester_.StartRegionSubKeysRequest(region_code, language,
-                                              jtimeout_seconds, std::move(cb));
-}
-
-void PersonalDataManagerAndroid::CancelPendingGetSubKeys(JNIEnv* env) {
-  subkey_requester_.CancelPendingGetSubKeys();
 }
 
 void PersonalDataManagerAndroid::SetSyncServiceForTesting(JNIEnv* env) {

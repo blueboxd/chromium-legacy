@@ -9,7 +9,6 @@
 #include <string>
 #include <vector>
 
-#include "base/allocator/partition_allocator/pointers/raw_ptr.h"
 #include "base/check.h"
 #include "base/command_line.h"
 #include "base/containers/flat_set.h"

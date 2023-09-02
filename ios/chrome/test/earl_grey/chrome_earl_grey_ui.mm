@@ -12,6 +12,7 @@
 #import "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
+#import "ios/chrome/test/earl_grey/scoped_disable_timer_tracking.h"
 #import "ios/chrome/test/scoped_eg_synchronization_disabler.h"
 #import "ios/testing/earl_grey/earl_grey_test.h"
 #import "ui/base/l10n/l10n_util.h"
@@ -64,17 +65,6 @@ id<GREYAction> PageSheetScrollDown() {
   UIWindow* currentWindow = chrome_test_util::GetAnyKeyWindow();
   if (currentWindow.rootViewController.view.frame.size.height < 600)
     menu_scroll_displacement = 250;
-
-  // On iOS 17.0, the default origin position doesn't properly maximize the
-  // distance that an interaction can scroll. Therefore, we set the origin
-  // position to the middle which ensures scrolling works properly.
-  if (@available(iOS 17.0, *)) {
-    return grey_scrollInDirectionWithStartPoint(
-        kGREYDirectionDown, /*amount=*/menu_scroll_displacement,
-        /*xOriginStartPercentage=*/0.5,
-        /*yOriginStartPercentage=*/0.5);
-  }
-
   return grey_scrollInDirection(kGREYDirectionDown, menu_scroll_displacement);
 }
 
@@ -95,30 +85,6 @@ bool IsAppCompactWidth() {
 
   return sizeClass == UIUserInterfaceSizeClassCompact;
 }
-
-// Helper class to disable EarlGrey's NSTimer tracking.
-// TODO(crbug.com/1101608): This is a workaround that should be removed once a
-// proper fix lands in EarlGrey.
-class ScopedDisableTimerTracking {
- public:
-  ScopedDisableTimerTracking() {
-    original_interval_ =
-        GREY_CONFIG_DOUBLE(kGREYConfigKeyNSTimerMaxTrackableInterval);
-    [[GREYConfiguration sharedConfiguration]
-            setValue:@0
-        forConfigKey:kGREYConfigKeyNSTimerMaxTrackableInterval];
-  }
-
-  ~ScopedDisableTimerTracking() {
-    [[GREYConfiguration sharedConfiguration]
-            setValue:[NSNumber numberWithDouble:original_interval_]
-        forConfigKey:kGREYConfigKeyNSTimerMaxTrackableInterval];
-  }
-
- private:
-  // The original NSTimer max trackable interval.
-  double original_interval_;
-};
 
 // Maximum number of times `typeTextInOmnibox:andPressEnter:` will attempt to
 // type the given text in the Omnibox. If it still cannot be typed properly

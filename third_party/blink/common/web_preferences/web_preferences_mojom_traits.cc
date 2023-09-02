@@ -143,7 +143,6 @@ bool StructTraits<blink::mojom::WebPreferencesDataView,
       data.initialize_at_minimum_page_scale();
   out->smart_insert_delete_enabled = data.smart_insert_delete_enabled();
   out->spatial_navigation_enabled = data.spatial_navigation_enabled();
-  out->navigate_on_drag_drop = data.navigate_on_drag_drop();
   out->fake_no_alloc_direct_call_for_testing_enabled =
       data.fake_no_alloc_direct_call_for_testing_enabled();
   out->v8_cache_options = data.v8_cache_options();
@@ -162,6 +161,7 @@ bool StructTraits<blink::mojom::WebPreferencesDataView,
   out->text_autosizing_enabled = data.text_autosizing_enabled();
 #if BUILDFLAG(IS_ANDROID)
   out->font_scale_factor = data.font_scale_factor();
+  out->font_weight_adjustment = data.font_weight_adjustment();
   out->device_scale_adjustment = data.device_scale_adjustment();
   out->force_enable_zoom = data.force_enable_zoom();
   out->support_deprecated_target_density_dpi =

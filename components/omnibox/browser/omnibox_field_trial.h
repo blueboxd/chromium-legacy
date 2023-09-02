@@ -291,6 +291,11 @@ bool HUPSearchDatabase();
 
 // Returns true if the OmniboxActionsUISimplification feature is enabled.
 bool IsActionsUISimplificationEnabled();
+// Indicates whether to delete extra matches produced by splitting
+// actions out to become independent suggestions. Note, this will only
+// apply if `IsActionsUISimplificationEnabled` returns true and the
+// total number of matches exceeds the limit (i.e. there are extra matches).
+extern const base::FeatureParam<bool> kActionsUISimplificationTrimExtra;
 
 // Returns true if the fuzzy URL suggestions feature is enabled.
 bool IsFuzzyUrlSuggestionsEnabled();
@@ -367,6 +372,9 @@ bool IsChromeRefreshSuggestIconsEnabled();
 // Returns true if the feature to enable CR23 action chip icons is enabled.
 bool IsChromeRefreshActionChipIconsEnabled();
 
+// Omnibox CR23 - action chip shape.
+// Returns true if the feature to enable CR23 action chip shape is enabled.
+bool IsChromeRefreshActionChipShapeEnabled();
 // Omnibox CR23 - suggestion hover fill shape.
 // Returns true if the feature to enable CR23 suggestion hover fill shape is
 // enabled.
@@ -748,6 +756,11 @@ constexpr base::FeatureParam<bool> kActionsInSuggestPromoteReviewsAction(
 extern const base::FeatureParam<bool>
     kOmniboxModernizeVisualUpdateMergeClipboardOnNTP;
 // <- Android UI Revamp
+// ---------------------------------------------------------
+// Touch Down Trigger For Prefetch ->
+extern const base::FeatureParam<int>
+    kTouchDownTriggerForPrefetchMaxPrefetchesPerOmniboxSession;
+// <- Touch Down Trigger For Prefetch
 // ---------------------------------------------------------
 
 // New params should be inserted above this comment. They should be ordered

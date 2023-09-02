@@ -4,8 +4,8 @@
 
 #include "chrome/browser/web_applications/os_integration/web_app_shortcut_manager.h"
 
+#include "base/apple/foundation_util.h"
 #include "base/files/file_util.h"
-#include "base/mac/foundation_util.h"
 #include "base/test/bind.h"
 #include "chrome/browser/web_applications/os_integration/os_integration_manager.h"
 #include "chrome/browser/web_applications/test/fake_os_integration_manager.h"
@@ -33,7 +33,7 @@ class WebAppShortcutManagerMacTest : public WebAppTest {
   void SetUp() override {
     WebAppTest::SetUp();
 
-    base::mac::SetBaseBundleID(kFakeChromeBundleId);
+    base::apple::SetBaseBundleID(kFakeChromeBundleId);
     // Put shortcuts somewhere under the home dir, as otherwise LaunchServices
     // won't be able to find them.
     override_registration_ =
@@ -107,7 +107,7 @@ class WebAppShortcutManagerMacTest : public WebAppTest {
   std::unique_ptr<OsIntegrationTestOverrideImpl::BlockingRegistration>
       override_registration_;
 
-  raw_ptr<FakeWebAppProvider, DanglingUntriaged> provider_;
+  raw_ptr<FakeWebAppProvider, DanglingUntriaged> provider_ = nullptr;
 };
 
 TEST_F(WebAppShortcutManagerMacTest, InitialVersionIsStored) {

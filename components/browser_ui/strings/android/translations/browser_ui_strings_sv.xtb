@@ -4,6 +4,7 @@
 <translation id="1006017844123154345">Öppna onlineversionen</translation>
 <translation id="1036348656032585052">Inaktivera</translation>
 <translation id="1044891598689252897">Webbplatser fungerar som de ska</translation>
+<translation id="1073417869336441572">Hjälp oss att förbättra Chrome genom att berätta varför du har tillåtit cookies från tredje part. <ph name="BEGIN_LINK" />Skicka feedback<ph name="END_LINK" /></translation>
 <translation id="1124090076051167250"><ph name="DATASIZE" /> data och cookies som har sparats av webbplatser eller appar på startskärmen rensas.</translation>
 <translation id="1178581264944972037">Paus</translation>
 <translation id="1181037720776840403">Ta bort</translation>
@@ -19,7 +20,6 @@
 <translation id="1371239764779356792">Tillåt att en webbplats sparar data på enheten</translation>
 <translation id="1383876407941801731">Sök</translation>
 <translation id="1384959399684842514">Nedladdningen har pausats</translation>
-<translation id="1409426117486808224">Förenklad vy för öppna flikar</translation>
 <translation id="1415402041810619267">Webbadressen har trunkerats</translation>
 <translation id="1426410128494586442">Ja</translation>
 <translation id="1446450296470737166">Tillåt fullst. kontroll av MIDI</translation>
@@ -140,6 +140,7 @@
 <translation id="3386292677130313581">Fråga innan webbplatser tillåts att veta var du befinner dig (rekommenderas)</translation>
 <translation id="3403537308306431953"><ph name="ZOOM_LEVEL" /> %%</translation>
 <translation id="344449859752187052">Cookies från tredje part har blockerats</translation>
+<translation id="3465378418721443318">{DAYS,plural, =1{Cookies blockeras i Chrome igen i morgon}other{Cookies blockeras i Chrome igen om # dagar}}</translation>
 <translation id="3521663503435878242">Webbplatser under <ph name="DOMAIN" /></translation>
 <translation id="3538390592868664640">Blockera webbplatser från att skapa en 3D-karta över dina omgivningar eller registrera kamerans position</translation>
 <translation id="3544058026430919413">Ett företag kan definiera en grupp av webbplatser som kan använda cookies för att dela din aktivitet i gruppen. Detta är inaktiverat i inkognitoläge.</translation>
@@ -162,6 +163,7 @@
 <translation id="381841723434055211">Telefonnummer</translation>
 <translation id="3826050100957962900">Inloggning hos tredje part</translation>
 <translation id="3835233591525155343">Enhetsanvändning</translation>
+<translation id="3843916486309149084">Cookies blockeras i Chrome igen i dag</translation>
 <translation id="385051799172605136">Föregående</translation>
 <translation id="3859306556332390985">Sök framåt</translation>
 <translation id="3895926599014793903">Tvinga aktivering av zoom</translation>
@@ -301,6 +303,7 @@
 <translation id="6367753977865761591">Blockera inloggning hos tredje part på en viss webbplats.</translation>
 <translation id="6388207532828177975">Ta bort och återställ</translation>
 <translation id="6398765197997659313">Avsluta helskärmsläge</translation>
+<translation id="640163077447496506">Löper ut i dag</translation>
 <translation id="6405650995156823521"><ph name="FIRST_PART" /> • <ph name="SECOND_PART" /></translation>
 <translation id="6439114592976064011">Blockera webbplatser från att använda VR-enheter och VR-data</translation>
 <translation id="6447842834002726250">Cookies</translation>
@@ -336,7 +339,6 @@
 <translation id="7000754031042624318">Inaktiverad i Android-inställningarna</translation>
 <translation id="7016516562562142042">Tillåt för den nuvarande sökmotorn</translation>
 <translation id="702275896380648118">Den här webbplatsen avgör vad du gillar och föreslår sedan annonser till andra webbplatser. Webbplatsen hämtar dessutom dina annonsämnen från Chrome för att visa mer relevanta annonser för dig.</translation>
-<translation id="702463548815491781">Rekommenderas när TalkBack eller brytarstyrning är aktiverat</translation>
 <translation id="7053983685419859001">Blockera</translation>
 <translation id="7066151586745993502">{NUM_SELECTED,plural, =1{1 har valts}other{# har valts}}</translation>
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> har valts. Alternativ finns högt upp på skärmen</translation>
@@ -396,6 +398,7 @@
 <translation id="8131740175452115882">Bekräfta</translation>
 <translation id="8154912474061769055">Många webbplatsers funktioner kanske inte fungerar</translation>
 <translation id="8168435359814927499">Innehåll</translation>
+<translation id="8186479265534291036">Fungerar inte webbplatsen? Cookies från tredje part har blockerats</translation>
 <translation id="8197286292360124385"><ph name="PERMISSION_1" /> tillåts</translation>
 <translation id="8200772114523450471">Återuppta</translation>
 <translation id="8206354486702514201">Administratören har gjort den här inställningen obligatorisk.</translation>

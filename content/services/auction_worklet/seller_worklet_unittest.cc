@@ -366,7 +366,10 @@ class SellerWorkletTest : public testing::Test {
       base::OnceClosure done_closure) {
     seller_worklet->ScoreAd(
         ad_metadata_, bid_, bid_currency_, auction_ad_config_non_shared_params_,
-        direct_from_seller_seller_signals_, direct_from_seller_auction_signals_,
+        direct_from_seller_seller_signals_,
+        direct_from_seller_seller_signals_header_ad_slot_,
+        direct_from_seller_auction_signals_,
+        direct_from_seller_auction_signals_header_ad_slot_,
         browser_signals_other_seller_.Clone(), component_expect_bid_currency_,
         browser_signal_interest_group_owner_, browser_signal_render_url_,
         browser_signal_ad_components_, browser_signal_bidding_duration_msecs_,
@@ -458,7 +461,10 @@ class SellerWorkletTest : public testing::Test {
       mojom::SellerWorklet* seller_worklet) {
     seller_worklet->ScoreAd(
         ad_metadata_, bid_, bid_currency_, auction_ad_config_non_shared_params_,
-        direct_from_seller_seller_signals_, direct_from_seller_auction_signals_,
+        direct_from_seller_seller_signals_,
+        direct_from_seller_seller_signals_header_ad_slot_,
+        direct_from_seller_auction_signals_,
+        direct_from_seller_auction_signals_header_ad_slot_,
         browser_signals_other_seller_.Clone(), component_expect_bid_currency_,
         browser_signal_interest_group_owner_, browser_signal_render_url_,
         browser_signal_ad_components_, browser_signal_bidding_duration_msecs_,
@@ -579,7 +585,10 @@ class SellerWorkletTest : public testing::Test {
       base::OnceClosure done_closure) {
     seller_worklet->ReportResult(
         auction_ad_config_non_shared_params_,
-        direct_from_seller_seller_signals_, direct_from_seller_auction_signals_,
+        direct_from_seller_seller_signals_,
+        direct_from_seller_seller_signals_header_ad_slot_,
+        direct_from_seller_auction_signals_,
+        direct_from_seller_auction_signals_header_ad_slot_,
         browser_signals_other_seller_.Clone(),
         browser_signal_interest_group_owner_,
         browser_signal_buyer_and_seller_reporting_id_,
@@ -637,7 +646,10 @@ class SellerWorkletTest : public testing::Test {
       mojom::SellerWorklet* seller_worklet) {
     seller_worklet->ReportResult(
         auction_ad_config_non_shared_params_,
-        direct_from_seller_seller_signals_, direct_from_seller_auction_signals_,
+        direct_from_seller_seller_signals_,
+        direct_from_seller_seller_signals_header_ad_slot_,
+        direct_from_seller_auction_signals_,
+        direct_from_seller_auction_signals_header_ad_slot_,
         browser_signals_other_seller_.Clone(),
         browser_signal_interest_group_owner_,
         browser_signal_buyer_and_seller_reporting_id_,
@@ -768,7 +780,10 @@ class SellerWorkletTest : public testing::Test {
   absl::optional<GURL> trusted_scoring_signals_url_;
   blink::AuctionConfig::NonSharedParams auction_ad_config_non_shared_params_;
   absl::optional<GURL> direct_from_seller_seller_signals_;
+  absl::optional<std::string> direct_from_seller_seller_signals_header_ad_slot_;
   absl::optional<GURL> direct_from_seller_auction_signals_;
+  absl::optional<std::string>
+      direct_from_seller_auction_signals_header_ad_slot_;
   url::Origin top_window_origin_;
   mojom::AuctionWorkletPermissionsPolicyStatePtr permissions_policy_state_;
   absl::optional<uint16_t> experiment_group_id_;
@@ -1572,13 +1587,25 @@ TEST_F(SellerWorkletTest, ScoreAdBiddingDuration) {
 TEST_F(SellerWorkletTest, ScoreAdAuctionConfigParam) {
   decision_logic_url_ = GURL("https://url.test/");
   RunScoreAdWithReturnValueExpectingResult(
-      "auctionConfig.decisionLogicUrl.length",
+      "auctionConfig.decisionLogicURL.length",
       decision_logic_url_.spec().length());
 
   decision_logic_url_ = GURL("https://url.test/longer/url");
   RunScoreAdWithReturnValueExpectingResult(
-      "auctionConfig.decisionLogicUrl.length",
+      "auctionConfig.decisionLogicURL.length",
       decision_logic_url_.spec().length());
+
+  direct_from_seller_auction_signals_header_ad_slot_ = R"("abcde")";
+  RunScoreAdWithReturnValueExpectingResult(
+      "directFromSellerSignals.auctionSignals.length",
+      direct_from_seller_auction_signals_header_ad_slot_->length() -
+          std::string(R"("")").length());
+
+  direct_from_seller_seller_signals_header_ad_slot_ = R"("abcdefg")";
+  RunScoreAdWithReturnValueExpectingResult(
+      "directFromSellerSignals.sellerSignals.length",
+      direct_from_seller_seller_signals_header_ad_slot_->length() -
+          std::string(R"("")").length());
 }
 
 TEST_F(SellerWorkletTest, ScoreAdExperimentGroupIdParam) {
@@ -2742,7 +2769,7 @@ TEST_F(SellerWorkletTest, ReportResultRegisterAdBeacon) {
         'view': "https://view.example.com/",
       }))",
       /*expected_signals_for_winner=*/"5",
-      /*expected_report_url =*/absl::nullopt, expected_ad_beacon_map);
+      /*expected_report_url=*/absl::nullopt, expected_ad_beacon_map);
 
   browser_signal_render_url_ = GURL("https://foo/");
   RunReportResultCreatedScriptExpectingResult(
@@ -2753,7 +2780,7 @@ TEST_F(SellerWorkletTest, ReportResultRegisterAdBeacon) {
       });
       sendReportTo(browserSignals.renderURL))",
       /*expected_signals_for_winner=*/"5",
-      /*expected_report_url =*/browser_signal_render_url_,
+      /*expected_report_url=*/browser_signal_render_url_,
       expected_ad_beacon_map);
 
   RunReportResultCreatedScriptExpectingResult(
@@ -2764,7 +2791,7 @@ TEST_F(SellerWorkletTest, ReportResultRegisterAdBeacon) {
         'view': "https://view.example.com/",
       }))",
       /*expected_signals_for_winner=*/"5",
-      /*expected_report_url =*/browser_signal_render_url_,
+      /*expected_report_url=*/browser_signal_render_url_,
       expected_ad_beacon_map);
 
   // Don't call twice.
@@ -2776,7 +2803,7 @@ TEST_F(SellerWorkletTest, ReportResultRegisterAdBeacon) {
       });
       registerAdBeacon())",
       /*expected_signals_for_winner=*/{},
-      /*expected_report_url =*/absl::nullopt,
+      /*expected_report_url=*/absl::nullopt,
       /*expected_ad_beacon_map=*/{},
       /*expected_pa_requests=*/{},
       {"https://url.test/:14 Uncaught TypeError: registerAdBeacon may be "
@@ -2792,7 +2819,7 @@ TEST_F(SellerWorkletTest, ReportResultRegisterAdBeacon) {
          try { registerAdBeacon() }
          catch (e) {})",
       /*expected_signals_for_winner=*/"5",
-      /*expected_report_url =*/absl::nullopt, expected_ad_beacon_map);
+      /*expected_report_url=*/absl::nullopt, expected_ad_beacon_map);
 
   // If error on first call, can be called again.
   RunReportResultCreatedScriptExpectingResult(
@@ -2804,13 +2831,13 @@ TEST_F(SellerWorkletTest, ReportResultRegisterAdBeacon) {
            'view': "https://view.example.com/",
          }))",
       /*expected_signals_for_winner=*/"5",
-      /*expected_report_url =*/absl::nullopt, expected_ad_beacon_map);
+      /*expected_report_url=*/absl::nullopt, expected_ad_beacon_map);
 
   // Error if no parameters
   RunReportResultCreatedScriptExpectingResult(
       R"(5)", R"(registerAdBeacon())",
       /*expected_signals_for_winner=*/{},
-      /*expected_report_url =*/absl::nullopt,
+      /*expected_report_url=*/absl::nullopt,
       /*expected_ad_beacon_map=*/{},
       /*expected_pa_requests=*/{},
       {"https://url.test/:10 Uncaught TypeError: registerAdBeacon(): at least "
@@ -2820,7 +2847,7 @@ TEST_F(SellerWorkletTest, ReportResultRegisterAdBeacon) {
   RunReportResultCreatedScriptExpectingResult(
       R"(5)", R"(registerAdBeacon("foo"))",
       /*expected_signals_for_winner=*/{},
-      /*expected_report_url =*/absl::nullopt,
+      /*expected_report_url=*/absl::nullopt,
       /*expected_ad_beacon_map=*/{},
       /*expected_pa_requests=*/{},
       {"https://url.test/:10 Uncaught TypeError: registerAdBeacon(): Cannot "
@@ -2834,7 +2861,7 @@ TEST_F(SellerWorkletTest, ReportResultRegisterAdBeacon) {
         1: "https://view.example.com/",
       }))",
       /*expected_signals_for_winner=*/"5",
-      /*expected_report_url =*/absl::nullopt,
+      /*expected_report_url=*/absl::nullopt,
       /*expected_ad_beacon_map=*/
       {
           {"click", GURL("https://click.example.com/")},
@@ -2851,7 +2878,7 @@ TEST_F(SellerWorkletTest, ReportResultRegisterAdBeacon) {
          map[Symbol('a')] = "https://view.example.com/";
          registerAdBeacon(map))",
       /*expected_signals_for_winner=*/{},
-      /*expected_report_url =*/absl::nullopt,
+      /*expected_report_url=*/absl::nullopt,
       /*expected_ad_beacon_map=*/{},
       /*expected_pa_requests=*/{},
       {"https://url.test/:14 Uncaught TypeError: Cannot convert a Symbol value "
@@ -2865,7 +2892,7 @@ TEST_F(SellerWorkletTest, ReportResultRegisterAdBeacon) {
         'view': "gopher://view.example.com/",
       }))",
       /*expected_signals_for_winner=*/{},
-      /*expected_report_url =*/absl::nullopt,
+      /*expected_report_url=*/absl::nullopt,
       /*expected_ad_beacon_map=*/{},
       /*expected_pa_requests=*/{},
       {"https://url.test/:10 Uncaught TypeError: registerAdBeacon(): invalid "
@@ -2879,7 +2906,7 @@ TEST_F(SellerWorkletTest, ReportResultRegisterAdBeacon) {
         'view': "http://view.example.com/",
       }))",
       /*expected_signals_for_winner=*/{},
-      /*expected_report_url =*/absl::nullopt,
+      /*expected_report_url=*/absl::nullopt,
       /*expected_ad_beacon_map=*/{},
       /*expected_pa_requests=*/{},
       {"https://url.test/:10 Uncaught TypeError: registerAdBeacon(): invalid "
@@ -2892,7 +2919,7 @@ TEST_F(SellerWorkletTest, ReportResultRegisterAdBeacon) {
          '\ud835': "http://127.0.0.1/",
       }))",
       /*expected_signals_for_winner=*/{},
-      /*expected_report_url =*/absl::nullopt,
+      /*expected_report_url=*/absl::nullopt,
       /*expected_ad_beacon_map=*/{},
       /*expected_pa_requests=*/{},
       {"https://url.test/:10 Uncaught TypeError: registerAdBeacon(): invalid "
@@ -3084,6 +3111,19 @@ TEST_F(SellerWorkletTest, ReportResultAuctionConfigParam) {
       /*expected_report_url=*/absl::nullopt);
 }
 
+TEST_F(SellerWorkletTest,
+       ReportResultDirectFromSellerSignalsHeaderAdSlotParam) {
+  direct_from_seller_auction_signals_header_ad_slot_ = R"("abcde")";
+  direct_from_seller_seller_signals_header_ad_slot_ = R"("abcdefg")";
+
+  const char kExpectedJson[] =
+      R"({"auctionSignals":"abcde", "sellerSignals":"abcdefg"})";
+
+  RunReportResultCreatedScriptExpectingResult(
+      "directFromSellerSignals", /*extra_code=*/std::string(), kExpectedJson,
+      /*expected_report_url=*/absl::nullopt);
+}
+
 TEST_F(SellerWorkletTest, ReportResultAuctionConfigParamPerBuyerTimeouts) {
   // Empty AuctionAdConfig, with nothing filled in, except the seller and
   // decision logic URL.
@@ -3250,7 +3290,9 @@ TEST_F(SellerWorkletTest, ScriptIsolation) {
           ad_metadata_, bid_, bid_currency_,
           auction_ad_config_non_shared_params_,
           direct_from_seller_seller_signals_,
+          direct_from_seller_seller_signals_header_ad_slot_,
           direct_from_seller_auction_signals_,
+          direct_from_seller_auction_signals_header_ad_slot_,
           browser_signals_other_seller_.Clone(), component_expect_bid_currency_,
           browser_signal_interest_group_owner_, browser_signal_render_url_,
           browser_signal_ad_components_, browser_signal_bidding_duration_msecs_,
@@ -3282,7 +3324,9 @@ TEST_F(SellerWorkletTest, ScriptIsolation) {
       seller_worklet->ReportResult(
           auction_ad_config_non_shared_params_,
           direct_from_seller_seller_signals_,
+          direct_from_seller_seller_signals_header_ad_slot_,
           direct_from_seller_auction_signals_,
+          direct_from_seller_auction_signals_header_ad_slot_,
           browser_signals_other_seller_.Clone(),
           browser_signal_interest_group_owner_,
           browser_signal_buyer_and_seller_reporting_id_,
@@ -3320,7 +3364,10 @@ TEST_F(SellerWorkletTest, DeleteBeforeScoreAdCallback) {
   base::WaitableEvent* event_handle = WedgeV8Thread(v8_helper_.get());
   seller_worklet->ScoreAd(
       ad_metadata_, bid_, bid_currency_, auction_ad_config_non_shared_params_,
-      direct_from_seller_seller_signals_, direct_from_seller_auction_signals_,
+      direct_from_seller_seller_signals_,
+      direct_from_seller_seller_signals_header_ad_slot_,
+      direct_from_seller_auction_signals_,
+      direct_from_seller_auction_signals_header_ad_slot_,
       browser_signals_other_seller_.Clone(), component_expect_bid_currency_,
       browser_signal_interest_group_owner_, browser_signal_render_url_,
       browser_signal_ad_components_, browser_signal_bidding_duration_msecs_,
@@ -3346,7 +3393,9 @@ TEST_F(SellerWorkletTest, DeleteBeforeReportResultCallback) {
   base::WaitableEvent* event_handle = WedgeV8Thread(v8_helper_.get());
   seller_worklet->ReportResult(
       auction_ad_config_non_shared_params_, direct_from_seller_seller_signals_,
+      direct_from_seller_seller_signals_header_ad_slot_,
       direct_from_seller_auction_signals_,
+      direct_from_seller_auction_signals_header_ad_slot_,
       browser_signals_other_seller_.Clone(),
       browser_signal_interest_group_owner_,
       browser_signal_buyer_and_seller_reporting_id_, browser_signal_render_url_,
@@ -3991,7 +4040,10 @@ TEST_F(SellerWorkletTest, Cancelation) {
 
   seller_worklet->ScoreAd(
       ad_metadata_, bid_, bid_currency_, auction_ad_config_non_shared_params_,
-      direct_from_seller_seller_signals_, direct_from_seller_auction_signals_,
+      direct_from_seller_seller_signals_,
+      direct_from_seller_seller_signals_header_ad_slot_,
+      direct_from_seller_auction_signals_,
+      direct_from_seller_auction_signals_header_ad_slot_,
       browser_signals_other_seller_.Clone(), component_expect_bid_currency_,
       browser_signal_interest_group_owner_, browser_signal_render_url_,
       browser_signal_ad_components_, browser_signal_bidding_duration_msecs_,
@@ -4049,7 +4101,10 @@ TEST_F(SellerWorkletTest, CancelBeforeFetch) {
 
   seller_worklet->ScoreAd(
       ad_metadata_, bid_, bid_currency_, auction_ad_config_non_shared_params_,
-      direct_from_seller_seller_signals_, direct_from_seller_auction_signals_,
+      direct_from_seller_seller_signals_,
+      direct_from_seller_seller_signals_header_ad_slot_,
+      direct_from_seller_auction_signals_,
+      direct_from_seller_auction_signals_header_ad_slot_,
       browser_signals_other_seller_.Clone(), component_expect_bid_currency_,
       browser_signal_interest_group_owner_, browser_signal_render_url_,
       browser_signal_ad_components_, browser_signal_bidding_duration_msecs_,
@@ -4712,7 +4767,10 @@ TEST_F(SellerWorkletBiddingAndScoringDebugReportingAPIEnabledTest,
     seller_worklet->ScoreAd(
         ad_metadata_, i + 1, bid_currency_,
         auction_ad_config_non_shared_params_,
-        direct_from_seller_seller_signals_, direct_from_seller_auction_signals_,
+        direct_from_seller_seller_signals_,
+        direct_from_seller_seller_signals_header_ad_slot_,
+        direct_from_seller_auction_signals_,
+        direct_from_seller_auction_signals_header_ad_slot_,
         browser_signals_other_seller_.Clone(), component_expect_bid_currency_,
         browser_signal_interest_group_owner_, browser_signal_render_url_,
         browser_signal_ad_components_, browser_signal_bidding_duration_msecs_,

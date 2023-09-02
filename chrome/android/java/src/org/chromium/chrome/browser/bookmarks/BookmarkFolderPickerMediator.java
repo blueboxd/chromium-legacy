@@ -13,11 +13,13 @@ import org.chromium.chrome.browser.bookmarks.BookmarkUiPrefs.BookmarkRowDisplayP
 import org.chromium.chrome.browser.bookmarks.ImprovedBookmarkRowProperties.ImageVisibility;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.bookmarks.BookmarkItem;
+import org.chromium.components.commerce.core.ShoppingService;
 import org.chromium.ui.modelutil.MVCListAdapter.ListItem;
 import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
 import org.chromium.ui.modelutil.PropertyModel;
 
 import java.util.List;
+import java.util.Objects;
 
 /** Mediator for the folder picker activity. */
 class BookmarkFolderPickerMediator {
@@ -56,6 +58,7 @@ class BookmarkFolderPickerMediator {
     private final BookmarkAddNewFolderCoordinator mAddNewFolderCoordinator;
     private final ImprovedBookmarkRowCoordinator mImprovedBookmarkRowCoordinator;
     private final BookmarkUiPrefs mBookmarkUiPrefs;
+    private final boolean mAllMovedBookmarksMatchParent;
 
     private boolean mMovingAtLeastOneFolder;
     private boolean mMovingAtLeastOneBookmark;
@@ -64,25 +67,27 @@ class BookmarkFolderPickerMediator {
 
     BookmarkFolderPickerMediator(Context context, BookmarkModel bookmarkModel,
             BookmarkImageFetcher bookmarkImageFetcher, List<BookmarkId> bookmarkIds,
-            BookmarkId initialParentId, Runnable finishRunnable, BookmarkUiPrefs bookmarkUiPrefs,
-            PropertyModel model, ModelList modelList,
-            BookmarkAddNewFolderCoordinator addNewFolderCoordinator,
-            ImprovedBookmarkRowCoordinator improvedBookmarkRowCoordinator) {
+            Runnable finishRunnable, BookmarkUiPrefs bookmarkUiPrefs, PropertyModel model,
+            ModelList modelList, BookmarkAddNewFolderCoordinator addNewFolderCoordinator,
+            ImprovedBookmarkRowCoordinator improvedBookmarkRowCoordinator,
+            ShoppingService shoppingService) {
         mContext = context;
         mBookmarkModel = bookmarkModel;
         mBookmarkModel.addObserver(mBookmarkModelObserver);
         mBookmarkImageFetcher = bookmarkImageFetcher;
         mBookmarkIds = bookmarkIds;
         mFinishRunnable = finishRunnable;
-        mQueryHandler = new ImprovedBookmarkQueryHandler(mBookmarkModel, bookmarkUiPrefs);
+        mQueryHandler =
+                new ImprovedBookmarkQueryHandler(mBookmarkModel, bookmarkUiPrefs, shoppingService);
         mModel = model;
         mModelList = modelList;
         mAddNewFolderCoordinator = addNewFolderCoordinator;
         mImprovedBookmarkRowCoordinator = improvedBookmarkRowCoordinator;
-        mInitialParentId = initialParentId;
         mBookmarkUiPrefs = bookmarkUiPrefs;
         mBookmarkUiPrefs.addObserver(mBookmarkUiPrefsObserver);
 
+        boolean allMovedBookmarksMatchParent = true;
+        BookmarkId firstParent = mBookmarkModel.getBookmarkById(mBookmarkIds.get(0)).getParentId();
         for (BookmarkId id : mBookmarkIds) {
             BookmarkItem item = mBookmarkModel.getBookmarkById(id);
             if (item.isFolder()) {
@@ -90,7 +95,17 @@ class BookmarkFolderPickerMediator {
             } else {
                 mMovingAtLeastOneBookmark = true;
             }
+
+            // If all of the bookmarks being moved have the same parent, then that's used for the
+            // initial parent.
+            if (!Objects.equals(firstParent, item.getParentId())) {
+                allMovedBookmarksMatchParent = false;
+            }
         }
+        mAllMovedBookmarksMatchParent = allMovedBookmarksMatchParent;
+        // TODO(crbug.com/1473755): Implement lowest common ancestor here for the initial parent.
+        mInitialParentId =
+                mAllMovedBookmarksMatchParent ? firstParent : mBookmarkModel.getRootFolderId();
 
         mModel.set(BookmarkFolderPickerProperties.CANCEL_CLICK_LISTENER, this::onCancelClicked);
         mModel.set(BookmarkFolderPickerProperties.MOVE_CLICK_LISTENER, this::onMoveClicked);
@@ -111,7 +126,7 @@ class BookmarkFolderPickerMediator {
         updateButtonsForCurrentParent();
 
         List<BookmarkListEntry> children =
-                mQueryHandler.buildBookmarkListForParent(parentItem.getId());
+                mQueryHandler.buildBookmarkListForParent(parentItem.getId(), /*powerFilter*/ null);
 
         mModelList.clear();
         for (int i = 0; i < children.size(); i++) {
@@ -151,6 +166,9 @@ class BookmarkFolderPickerMediator {
                 ImprovedBookmarkRowProperties.END_IMAGE_VISIBILITY, ImageVisibility.DRAWABLE);
         propertyModel.set(ImprovedBookmarkRowProperties.ROW_CLICK_LISTENER,
                 (v) -> { populateFoldersForParentId(bookmarkId); });
+        // Intentionally ignore long clicks to prevent selection.
+        propertyModel.set(
+                ImprovedBookmarkRowProperties.ROW_LONG_CLICK_LISTENER, (v) -> { return true; });
 
         return new ListItem(FOLDER_ROW, propertyModel);
     }
@@ -166,8 +184,18 @@ class BookmarkFolderPickerMediator {
     }
 
     void updateButtonsForCurrentParent() {
+        BookmarkId currentParentId = mCurrentParentItem.getId();
+        // Folders are removed from the list in {@link #populateFoldersForParentId}, but it's still
+        // possible to get to invalid folders through hierarchy navigation (e.g. the root folder
+        // by navigating up all the way).
+        boolean isInvalidFolderLocation = (mMovingAtLeastOneFolder
+                && !BookmarkUtils.canAddFolderToParent(mBookmarkModel, currentParentId));
+        boolean isInvalidBookmarkLocation = (mMovingAtLeastOneBookmark
+                && !BookmarkUtils.canAddBookmarkToParent(mBookmarkModel, currentParentId));
+        boolean isInitialParent =
+                mAllMovedBookmarksMatchParent && Objects.equals(currentParentId, mInitialParentId);
         mModel.set(BookmarkFolderPickerProperties.MOVE_BUTTON_ENABLED,
-                mBookmarkIds.size() > 1 || !mCurrentParentItem.getId().equals(mInitialParentId));
+                !isInvalidFolderLocation && !isInvalidBookmarkLocation && !isInitialParent);
         updateToolbarButtons();
     }
 
@@ -208,6 +236,7 @@ class BookmarkFolderPickerMediator {
     private void onMoveClicked(View v) {
         BookmarkUtils.moveBookmarksToParent(
                 mBookmarkModel, mBookmarkIds, mCurrentParentItem.getId());
+        BookmarkUtils.setLastUsedParent(mContext, mCurrentParentItem.getId());
         mFinishRunnable.run();
     }
 }

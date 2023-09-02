@@ -89,6 +89,7 @@ class HardwareRenderer {
 
   void InitializeOnViz(RootFrameSinkGetter root_frame_sink_getter);
   bool IsUsingVulkan() const;
+  bool IsUsingANGLEOverGL() const;
   void MergeTransactionIfNeeded(
       OverlaysParams::MergeTransactionFn merge_transaction);
   void ReturnChildFrame(std::unique_ptr<ChildFrame> child_frame);
@@ -99,6 +100,7 @@ class HardwareRenderer {
   void ReportDrawMetric(const HardwareRendererDrawParams& params);
   void DrawAndSwap(const HardwareRendererDrawParams& params,
                    const OverlaysParams& overlays_params);
+  void MarkAllowContextLoss();
 
   THREAD_CHECKER(render_thread_checker_);
 

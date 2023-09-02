@@ -30,6 +30,8 @@ import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.browser_ui.modaldialog.AppModalPresenter;
+import org.chromium.components.browser_ui.util.GlobalDiscardableReferencePool;
+import org.chromium.components.commerce.core.ShoppingService;
 import org.chromium.components.favicon.LargeIconBridge;
 import org.chromium.components.image_fetcher.ImageFetcherConfig;
 import org.chromium.components.image_fetcher.ImageFetcherFactory;
@@ -50,7 +52,6 @@ public class BookmarkFolderPickerActivity extends SynchronousInitializationActiv
     private List<BookmarkId> mBookmarkIds;
     private BookmarkImageFetcher mBookmarkImageFetcher;
     private BookmarkFolderPickerCoordinator mCoordinator;
-    private BookmarkId mInitialParentId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,8 +70,8 @@ public class BookmarkFolderPickerActivity extends SynchronousInitializationActiv
         Resources res = getResources();
         Profile profile = Profile.getLastUsedRegularProfile();
         mBookmarkImageFetcher = new BookmarkImageFetcher(this, mBookmarkModel,
-                ImageFetcherFactory.createImageFetcher(
-                        ImageFetcherConfig.DISK_CACHE_ONLY, profile.getProfileKey()),
+                ImageFetcherFactory.createImageFetcher(ImageFetcherConfig.IN_MEMORY_WITH_DISK_CACHE,
+                        profile.getProfileKey(), GlobalDiscardableReferencePool.getReferencePool()),
                 new LargeIconBridge(profile),
                 BookmarkUtils.getRoundedIconGenerator(this, BookmarkRowDisplayPref.VISUAL),
                 BookmarkUtils.getImageIconSize(res, BookmarkRowDisplayPref.VISUAL),
@@ -81,14 +82,15 @@ public class BookmarkFolderPickerActivity extends SynchronousInitializationActiv
                         mBookmarkModel);
         BookmarkUiPrefs bookmarkUiPrefs =
                 new BookmarkUiPrefs(SharedPreferencesManager.getInstance());
-        mInitialParentId = mBookmarkModel.getBookmarkById(mBookmarkIds.get(0)).getParentId();
+        ShoppingService shoppingService = ShoppingServiceFactory.getForProfile(profile);
         // TODO(crbug.com/1472832): Consider initializing this in #onCreateOptionsMenu to avoid the
         // possibility that the menu is null when the first parent is set.
-        mCoordinator = new BookmarkFolderPickerCoordinator(this, mBookmarkModel,
-                mBookmarkImageFetcher, mBookmarkIds, mInitialParentId, this::finish,
-                addNewFolderCoordinator, bookmarkUiPrefs,
-                new ImprovedBookmarkRowCoordinator(this, mBookmarkImageFetcher, mBookmarkModel,
-                        bookmarkUiPrefs, ShoppingServiceFactory.getForProfile(profile)));
+        mCoordinator =
+                new BookmarkFolderPickerCoordinator(this, mBookmarkModel, mBookmarkImageFetcher,
+                        mBookmarkIds, this::finish, addNewFolderCoordinator, bookmarkUiPrefs,
+                        new ImprovedBookmarkRowCoordinator(this, mBookmarkImageFetcher,
+                                mBookmarkModel, bookmarkUiPrefs, shoppingService),
+                        shoppingService);
 
         if (BackPressManager.isSecondaryActivityEnabled()) {
             BackPressHelper.create(this, getOnBackPressedDispatcher(), mCoordinator,

@@ -27,6 +27,7 @@
 #include "chrome/browser/download/download_core_service_factory.h"
 #include "chrome/browser/download/download_crx_util.h"
 #include "chrome/browser/download/download_history.h"
+#include "chrome/browser/download/download_item_warning_data.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/download/download_stats.h"
 #include "chrome/browser/download/download_target_determiner.h"
@@ -834,13 +835,11 @@ void DownloadItemModel::ExecuteCommand(DownloadCommands* download_commands,
       SetOpenWhenComplete(true);
 #endif
       if (GetDangerType() == download::DOWNLOAD_DANGER_TYPE_ASYNC_SCANNING) {
-        base::UmaHistogramEnumeration(
-            "SBClientDownload.DeepScanEvent2",
-            safe_browsing::DeepScanEvent::kScanCanceled);
+        LogDeepScanEvent(download_,
+                         safe_browsing::DeepScanEvent::kScanCanceled);
       } else {
-        base::UmaHistogramEnumeration(
-            "SBClientDownload.DeepScanEvent2",
-            safe_browsing::DeepScanEvent::kPromptBypassed);
+        LogDeepScanEvent(download_,
+                         safe_browsing::DeepScanEvent::kPromptBypassed);
       }
       [[fallthrough]];
     case DownloadCommands::KEEP:
@@ -908,41 +907,8 @@ void DownloadItemModel::ExecuteCommand(DownloadCommands* download_commands,
       DownloadUIModel::ExecuteCommand(download_commands, command);
       break;
     case DownloadCommands::DEEP_SCAN: {
-      safe_browsing::SafeBrowsingService* sb_service =
-          g_browser_process->safe_browsing_service();
-      if (!sb_service)
-        break;
-      safe_browsing::DownloadProtectionService* protection_service =
-          sb_service->download_protection_service();
-      if (!protection_service)
-        break;
-      DownloadCoreService* download_core_service =
-          DownloadCoreServiceFactory::GetForBrowserContext(
-              content::DownloadItemUtils::GetBrowserContext(download_));
-      DCHECK(download_core_service);
-      ChromeDownloadManagerDelegate* delegate =
-          download_core_service->GetDownloadManagerDelegate();
-      DCHECK(delegate);
-
-      // Create an analysis settings object for UploadForDeepScanning().
-      // Make sure it specifies a cloud analysis is required and does not
-      // specify a DM token, which is what triggers an APP scan.
-      enterprise_connectors::AnalysisSettings settings;
-      settings.cloud_or_local_settings =
-          enterprise_connectors::CloudOrLocalAnalysisSettings(
-              enterprise_connectors::CloudAnalysisSettings());
-      settings.tags = {{"malware", enterprise_connectors::TagSettings()}};
-      protection_service->UploadForDeepScanning(
-          download_,
-          base::BindRepeating(
-              &ChromeDownloadManagerDelegate::CheckClientDownloadDone,
-              delegate->GetWeakPtr(), download_->GetId()),
-          safe_browsing::DeepScanningRequest::DeepScanTrigger::
-              TRIGGER_CONSUMER_PROMPT,
-          safe_browsing::DownloadCheckResult::UNKNOWN, std::move(settings));
-      base::UmaHistogramEnumeration(
-          "SBClientDownload.DeepScanEvent2",
-          safe_browsing::DeepScanEvent::kPromptAccepted);
+      safe_browsing::DownloadProtectionService::UploadForConsumerDeepScanning(
+          download_, /*password=*/absl::nullopt);
       break;
     }
     case DownloadCommands::CANCEL_DEEP_SCAN: {
@@ -1241,4 +1207,8 @@ void DownloadItemModel::DetermineAndSetShouldPreferOpeningInBrowser(
   }
 #endif
   SetShouldPreferOpeningInBrowser(false);
+}
+
+bool DownloadItemModel::IsEncryptedArchive() const {
+  return DownloadItemWarningData::IsEncryptedArchive(download_);
 }

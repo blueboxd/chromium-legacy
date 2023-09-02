@@ -87,13 +87,14 @@ try_.compilator_builder(
     main_list_view = "try",
 )
 
-# TODO(b/277863839): remove Siso experimental builders after migrate
-# android-12-x64-rel to Siso.
 try_.orchestrator_builder(
     name = "android-12-x64-siso-rel",
+    description_html = """\
+This builder shadows android-12-x64-rel builder to compare between Siso builds and Ninja builds.<br/>
+This builder should be removed after migrating android-12-x64-rel from Ninja to Siso. b/277863839
+""",
     mirrors = builder_config.copy_from("try/android-12-x64-rel"),
     try_settings = builder_config.try_settings(
-        is_compile_only = True,
         rts_config = builder_config.rts_config(
             condition = builder_config.rts_condition.QUICK_RUN_ONLY,
         ),
@@ -105,8 +106,9 @@ try_.orchestrator_builder(
     },
     main_list_view = "try",
     tryjob = try_.job(
-        # TODO(b/277863839): increase percentage.
-        experiment_percentage = 20,
+        # Decreasing the experiment percentage while enabling tests to reduce
+        # extra workloads on the test pool.
+        experiment_percentage = 10,
     ),
     use_java_coverage = True,
 )
@@ -165,13 +167,16 @@ try_.compilator_builder(
     main_list_view = "try",
 )
 
-# TODO(b/277863839): remove Siso experimental builders after migrate
-# android-arm64-rel to Siso.
 try_.orchestrator_builder(
     name = "android-arm64-siso-rel",
-    description_html = "This builder may trigger tests on multiple Android versions.",
+    description_html = """\
+This builder shadows android-arm64-rel builder to compare between Siso builds and Ninja builds.<br/>
+This builder should be removed after migrating android-arm64-rel from Ninja to Siso. b/277863839
+""",
     mirrors = builder_config.copy_from("try/android-arm64-rel"),
     try_settings = builder_config.try_settings(
+        # TODO: b/294287964 - waiting test devices to be allocated to handle
+        # extra traffic.
         is_compile_only = True,
         rts_config = builder_config.rts_config(
             condition = builder_config.rts_condition.QUICK_RUN_ONLY,
@@ -184,7 +189,6 @@ try_.orchestrator_builder(
     },
     main_list_view = "try",
     tryjob = try_.job(
-        # TODO(b/277863839): increase percentage.
         experiment_percentage = 20,
     ),
     use_clang_coverage = True,
@@ -284,6 +288,18 @@ try_.builder(
 try_.builder(
     name = "android-cronet-mainline-clang-arm64-rel",
     mirrors = ["ci/android-cronet-mainline-clang-arm64-rel"],
+    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
+)
+
+try_.builder(
+    name = "android-cronet-mainline-clang-x86-dbg",
+    mirrors = ["ci/android-cronet-mainline-clang-x86-dbg"],
+    reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
+)
+
+try_.builder(
+    name = "android-cronet-mainline-clang-x86-rel",
+    mirrors = ["ci/android-cronet-mainline-clang-x86-rel"],
     reclient_jobs = reclient.jobs.LOW_JOBS_FOR_CQ,
 )
 
@@ -409,10 +425,12 @@ try_.builder(
     mirrors = builder_config.copy_from("try/android-pie-x86-rel"),
 )
 
-# TODO(b/277863839): remove Siso experimental builders after migrate
-# android-nougat-x86-rel to Siso.
 try_.orchestrator_builder(
     name = "android-nougat-x86-siso-rel",
+    description_html = """\
+This builder shadows android-nougat-x86-rel builder to compare between Siso builds and Ninja builds.<br/>
+This builder should be removed after migrating android-nougat-x86-rel from Ninja to Siso. b/277863839
+""",
     mirrors = builder_config.copy_from("try/android-nougat-x86-rel"),
     try_settings = builder_config.try_settings(
         is_compile_only = True,
@@ -428,7 +446,6 @@ try_.orchestrator_builder(
     },
     main_list_view = "try",
     tryjob = try_.job(
-        # TODO(b/277863839): increase percentage.
         experiment_percentage = 20,
     ),
     use_java_coverage = True,
@@ -488,6 +505,8 @@ try_.builder(
     mirrors = [
         "ci/android-oreo-x86-rel",
     ],
+    coverage_test_types = ["unit", "overall"],
+    use_java_coverage = True,
 )
 
 try_.builder(
@@ -544,6 +563,11 @@ try_.builder(
 try_.builder(
     name = "android-chrome-pie-x86-wpt-fyi-rel",
     mirrors = ["ci/android-chrome-pie-x86-wpt-fyi-rel"],
+)
+
+try_.builder(
+    name = "android-chrome-pie-x86-wpt-android-specific",
+    mirrors = ["ci/android-chrome-pie-x86-wpt-android-specific"],
 )
 
 try_.builder(
@@ -788,6 +812,7 @@ try_.gpu.optional_tests_builder(
     main_list_view = "try",
     tryjob = try_.job(
         location_filters = [
+            # Inclusion filters.
             cq.location_filter(path_regexp = "cc/.+"),
             cq.location_filter(path_regexp = "chrome/browser/vr/.+"),
             cq.location_filter(path_regexp = "content/browser/xr/.+"),
@@ -813,6 +838,9 @@ try_.gpu.optional_tests_builder(
             cq.location_filter(path_regexp = "tools/clang/scripts/update.py"),
             cq.location_filter(path_regexp = "tools/mb/mb_config_expectations/tryserver.chromium.android.json"),
             cq.location_filter(path_regexp = "ui/gl/.+"),
+
+            # Exclusion filters.
+            cq.location_filter(exclude = True, path_regexp = ".*\\.md"),
         ],
     ),
 )
@@ -830,6 +858,7 @@ try_.gpu.optional_tests_builder(
     main_list_view = "try",
     tryjob = try_.job(
         location_filters = [
+            # Inclusion filters.
             cq.location_filter(path_regexp = "cc/.+"),
             cq.location_filter(path_regexp = "chrome/browser/vr/.+"),
             cq.location_filter(path_regexp = "content/browser/xr/.+"),
@@ -855,6 +884,9 @@ try_.gpu.optional_tests_builder(
             cq.location_filter(path_regexp = "tools/clang/scripts/update.py"),
             cq.location_filter(path_regexp = "tools/mb/mb_config_expectations/tryserver.chromium.android.json"),
             cq.location_filter(path_regexp = "ui/gl/.+"),
+
+            # Exclusion filters.
+            cq.location_filter(exclude = True, path_regexp = ".*\\.md"),
         ],
     ),
 )

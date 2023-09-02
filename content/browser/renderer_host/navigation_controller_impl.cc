@@ -63,6 +63,7 @@
 #include "content/browser/dom_storage/dom_storage_context_wrapper.h"
 #include "content/browser/dom_storage/session_storage_namespace_impl.h"
 #include "content/browser/process_lock.h"
+#include "content/browser/renderer_host/back_forward_cache_impl.h"
 #include "content/browser/renderer_host/debug_urls.h"
 #include "content/browser/renderer_host/frame_tree.h"
 #include "content/browser/renderer_host/frame_tree_node.h"
@@ -751,7 +752,8 @@ NavigationControllerImpl::NavigationControllerImpl(
       browser_context_(browser_context),
       delegate_(delegate),
       ssl_manager_(this),
-      get_timestamp_callback_(base::BindRepeating(&base::Time::Now)) {
+      get_timestamp_callback_(base::BindRepeating(&base::Time::Now)),
+      back_forward_cache_(browser_context) {
   DCHECK(browser_context_);
 }
 
@@ -2639,8 +2641,14 @@ void NavigationControllerImpl::NotifyUserActivation() {
   // When a user activation occurs, ensure that all adjacent entries for the
   // same document clear their skippable bit, so that the history manipulation
   // intervention does not apply to them.
-
+  const bool can_go_back = CanGoBack();
   SetSkippableForSameDocumentEntries(GetLastCommittedEntryIndex(), false);
+  // If the value of CanGoBack changes as a result of making some entries
+  // non-skippable, then we must let the delegate know to update its UI state.
+  // See https://crbug.com/1477784.
+  if (!can_go_back && CanGoBack()) {
+    delegate_->NotifyNavigationStateChangedFromController(INVALIDATE_TYPE_ALL);
+  }
 }
 
 bool NavigationControllerImpl::StartHistoryNavigationInNewSubframe(

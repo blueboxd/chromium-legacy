@@ -870,79 +870,6 @@ IN_PROC_BROWSER_TEST_F(HintsFetcherBrowserTest, HintsFetcherFetches) {
 }
 
 IN_PROC_BROWSER_TEST_F(HintsFetcherBrowserTest,
-                       OnDemandFetchRepeatedlyWithCache) {
-  SetNetworkConnectionOnline();
-
-  SetResponseType(
-      optimization_guide::HintsFetcherRemoteResponseType::kSuccessful);
-
-  OptimizationGuideKeyedService* ogks =
-      OptimizationGuideKeyedServiceFactory::GetForProfile(browser()->profile());
-  ogks->RegisterOptimizationTypes(
-      {optimization_guide::proto::OptimizationType::NOSCRIPT});
-
-  {
-    base::HistogramTester histogram_tester;
-    std::unique_ptr<base::RunLoop> run_loop = std::make_unique<base::RunLoop>();
-    CanApplyOptimizationOnDemand(
-        {search_results_page_url()},
-        {optimization_guide::proto::OptimizationType::NOSCRIPT},
-        base::BindRepeating(
-            [](base::RunLoop* run_loop, const GURL& url,
-               const base::flat_map<
-                   optimization_guide::proto::OptimizationType,
-                   optimization_guide::OptimizationGuideDecisionWithMetadata>&
-                   decisions) {
-              // Expect one decision per requested type.
-              EXPECT_EQ(decisions.size(), 1u);
-              auto it = decisions.find(
-                  optimization_guide::proto::OptimizationType::NOSCRIPT);
-              EXPECT_NE(it, decisions.end());
-              EXPECT_EQ(it->second.decision,
-                        optimization_guide::OptimizationGuideDecision::kTrue);
-
-              run_loop->Quit();
-            },
-            run_loop.get()));
-    run_loop->Run();
-
-    histogram_tester.ExpectUniqueSample(
-        "OptimizationGuide.HintsFetcher.RequestStatus.Bookmarks",
-        optimization_guide::HintsFetcherRequestStatus::kSuccess, 1);
-  }
-
-  {
-    base::HistogramTester histogram_tester;
-    std::unique_ptr<base::RunLoop> run_loop = std::make_unique<base::RunLoop>();
-    CanApplyOptimizationOnDemand(
-        {search_results_page_url()},
-        {optimization_guide::proto::OptimizationType::NOSCRIPT},
-        base::BindRepeating(
-            [](base::RunLoop* run_loop, const GURL& url,
-               const base::flat_map<
-                   optimization_guide::proto::OptimizationType,
-                   optimization_guide::OptimizationGuideDecisionWithMetadata>&
-                   decisions) {
-              // Expect one decision per requested type.
-              EXPECT_EQ(decisions.size(), 1u);
-              auto it = decisions.find(
-                  optimization_guide::proto::OptimizationType::NOSCRIPT);
-              EXPECT_NE(it, decisions.end());
-              EXPECT_EQ(it->second.decision,
-                        optimization_guide::OptimizationGuideDecision::kTrue);
-
-              run_loop->Quit();
-            },
-            run_loop.get()));
-    run_loop->Run();
-
-    // Second time should not refetch since have all the right info already.
-    histogram_tester.ExpectTotalCount(
-        "OptimizationGuide.HintsFetcher.RequestStatus.Bookmarks", 0);
-  }
-}
-
-IN_PROC_BROWSER_TEST_F(HintsFetcherBrowserTest,
                        OnDemandFetchRepeatedlyNoCache) {
   SetNetworkConnectionOnline();
 
@@ -1602,6 +1529,24 @@ IN_PROC_BROWSER_TEST_F(HintsFetcherSearchPageDisabledBrowserTest,
       "OptimizationGuide.HintsFetcher.RequestStatus.BatchUpdateGoogleSRP", 0);
 }
 
+// Tests that OptimizationGuideWebContentsObserver limits the results for SRP.
+//
+// Note that `OptimizationGuideWebContentsObserver::FetchHintsUsingManager`
+// limits the urls to `optimization_guide::features::MaxResultsForSRPFetch()`.
+// In this test, this method is called with the following URLs but the order
+// varies:
+//
+// - https://example.com/bar.html
+// - https://example.com/baz.html
+// - https://example.com/foo.html
+// - https://example2.com/foo.html
+// - https://example3.com/foo.html
+// - https://foo.com/
+// - https://foo.com/simple_page_with_anchors.html
+//
+// If we use `max_urls_for_srp_fetch > 1`, the result of
+// `OptimizationGuide.HintsFetcher.GetHintsRequest.HostCount` varies. So, we use
+// `max_urls_for_srp_fetch = 1`.
 class HintsFetcherSearchPageLimitedURLsBrowserTest
     : public HintsFetcherDisabledBrowserTest {
  public:
@@ -1619,7 +1564,7 @@ class HintsFetcherSearchPageLimitedURLsBrowserTest
          },
          {
              optimization_guide::features::kOptimizationGuideFetchingForSRP,
-             {{"max_urls_for_srp_fetch", "2"}},
+             {{"max_urls_for_srp_fetch", "1"}},
          }},
         // Disabled.
         {});
@@ -1673,9 +1618,9 @@ IN_PROC_BROWSER_TEST_F(HintsFetcherSearchPageLimitedURLsBrowserTest,
       1);
   EXPECT_EQ(1u, count_hints_requests_received());
   histogram_tester->ExpectBucketCount(
-      "OptimizationGuide.HintsFetcher.GetHintsRequest.HostCount", 2, 1);
+      "OptimizationGuide.HintsFetcher.GetHintsRequest.HostCount", 1, 1);
   histogram_tester->ExpectBucketCount(
-      "OptimizationGuide.HintsFetcher.GetHintsRequest.UrlCount", 2, 1);
+      "OptimizationGuide.HintsFetcher.GetHintsRequest.UrlCount", 1, 1);
   histogram_tester->ExpectTotalCount(
       "OptimizationGuide.HintsFetcher.RequestStatus.BatchUpdateGoogleSRP", 1);
 }

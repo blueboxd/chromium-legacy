@@ -36,9 +36,9 @@ BASE_DECLARE_FEATURE(kAutofillEnablePaymentsAndroidBottomSheet);
 
 BASE_DECLARE_FEATURE(kAutofillEnablePaymentsMandatoryReauth);
 BASE_DECLARE_FEATURE(kAutofillEnableRemadeDownstreamMetrics);
+BASE_DECLARE_FEATURE(kAutofillEnableServerIban);
 BASE_DECLARE_FEATURE(kAutofillEnableStickyManualFallbackForCards);
 BASE_DECLARE_FEATURE(kAutofillEnableUpdateVirtualCardEnrollment);
-BASE_DECLARE_FEATURE(kAutofillEnableVirtualCard);
 BASE_DECLARE_FEATURE(kAutofillEnableVirtualCardFidoEnrollment);
 BASE_DECLARE_FEATURE(kAutofillEnableVirtualCardManagementInDesktopSettingsPage);
 BASE_DECLARE_FEATURE(kAutofillEnableVirtualCardMetadata);
@@ -56,6 +56,10 @@ BASE_DECLARE_FEATURE(kAutofillUseEloRegexForBinMatching);
 #if BUILDFLAG(IS_IOS)
 BASE_DECLARE_FEATURE(kAutofillUseTwoDotsForLastFourDigits);
 BASE_DECLARE_FEATURE(kAutofillEnablePaymentsMandatoryReauthOnBling);
+#endif
+
+#if BUILDFLAG(IS_ANDROID)
+BASE_DECLARE_FEATURE(kEnablePixPayments);
 #endif
 
 // Return whether a [No thanks] button and new messaging is shown in the save

@@ -83,6 +83,8 @@ void AddLocalizedStrings(content::WebUIDataSource* source) {
        IDS_SHORTCUT_CUSTOMIZATION_MISSING_MODIFIER_STATUS_MESSAGE},
       {"keyNotAllowedStatusMessage",
        IDS_SHORTCUT_CUSTOMIZATION_KEY_NOT_ALLOWED_STATUS_MESSAGE},
+      {"warningSearchNotIncluded",
+       IDS_SHORTCUT_CUSTOMIZATION_NON_SEARCH_SHORTCUT_WARNING},
       {"searchNoResults", IDS_SHORTCUT_CUSTOMIZATION_SEARCH_NO_RESULTS},
       {"searchClearQueryLabel",
        IDS_SHORTCUT_CUSTOMIZATION_SEARCH_CLEAR_QUERY_LABEL},
@@ -139,10 +141,14 @@ void AddLocalizedStrings(content::WebUIDataSource* source) {
        IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_BROWSER_BACK},
       {"iconLabelBrowserForward",
        IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_BROWSER_FORWARD},
+      {"iconLabelBrowserHome",
+       IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_BROWSER_HOME},
       {"iconLabelBrowserRefresh",
        IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_BROWSER_REFRESH},
       {"iconLabelBrowserSearch",
        IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_BROWSER_SEARCH},
+      {"iconLabelContextMenu",
+       IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_CONTEXT_MENU},
       {"iconLabelEnableOrToggleDictation",
        IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_ENABLE_OR_TOGGLE_DICTATION},
       {"iconLabelEmojiPicker",
@@ -159,6 +165,8 @@ void AddLocalizedStrings(content::WebUIDataSource* source) {
        IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_LAUNCH_APPLICATION2},
       {"iconLabelLaunchAssistant",
        IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_LAUNCH_ASSISTANT},
+      {"iconLabelLaunchMail",
+       IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_LAUNCH_MAIL},
       {"iconLabelMediaFastForward",
        IDS_SHORTCUT_CUSTOMIZATION_ICON_LABEL_MEDIA_FAST_FORWARD},
       {"iconLabelMediaPause",
@@ -197,8 +205,6 @@ void AddLocalizedStrings(content::WebUIDataSource* source) {
 void AddFeatureFlags(content::WebUIDataSource* html_source) {
   html_source->AddBoolean("isCustomizationEnabled",
                           ::features::IsShortcutCustomizationEnabled());
-  html_source->AddBoolean("isSearchEnabled",
-                          features::IsSearchInShortcutsAppEnabled());
   html_source->AddBoolean(
       "isJellyEnabledForShortcutCustomization",
       ash::features::IsJellyEnabledForShortcutCustomization());
@@ -245,9 +251,6 @@ void ShortcutCustomizationAppUI::BindInterface(
 void ShortcutCustomizationAppUI::BindInterface(
     mojo::PendingReceiver<shortcut_customization::mojom::SearchHandler>
         receiver) {
-  // BindInterface should not be called unless the search flag is enabled.
-  DCHECK(features::IsSearchInShortcutsAppEnabled());
-
   shortcut_ui::SearchHandler* search_handler =
       shortcut_ui::ShortcutsAppManagerFactory::GetForBrowserContext(
           web_ui()->GetWebContents()->GetBrowserContext())

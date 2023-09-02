@@ -341,7 +341,7 @@ void SimulateMouseClickAt(WebContents* web_contents,
 // TODO(https://crbug.com/1199644): Make the Simulate* methods more user
 // friendly by taking zooming into account.
 gfx::PointF GetCenterCoordinatesOfElementWithId(
-    content::WebContents* web_contents,
+    const ToRenderFrameHost& adapter,
     base::StringPiece id);
 
 // Retrieves the center coordinates of the element with id |id| and simulates a
@@ -913,6 +913,10 @@ std::vector<RenderFrameHost*> CollectAllRenderFrameHosts(Page& page);
 // the same order.
 std::vector<RenderFrameHost*> CollectAllRenderFrameHosts(
     WebContents* web_contents);
+
+// Returns all WebContents. Note that this includes WebContents from any
+// BrowserContext.
+std::vector<WebContents*> GetAllWebContents();
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 // Executes the WebUI resource tests. Injects the test runner script prior to

@@ -19,8 +19,8 @@
 #import "components/safe_browsing/ios/browser/safe_browsing_url_allow_list.h"
 #import "components/supervised_user/core/common/features.h"
 #import "components/ukm/ios/ukm_url_recorder.h"
-#import "ios/chrome/browser/app_launcher/app_launcher_abuse_detector.h"
-#import "ios/chrome/browser/app_launcher/app_launcher_tab_helper.h"
+#import "ios/chrome/browser/app_launcher/model/app_launcher_abuse_detector.h"
+#import "ios/chrome/browser/app_launcher/model/app_launcher_tab_helper.h"
 #import "ios/chrome/browser/autofill/autofill_tab_helper.h"
 #import "ios/chrome/browser/autofill/bottom_sheet/autofill_bottom_sheet_tab_helper.h"
 #import "ios/chrome/browser/autofill/form_suggestion_tab_helper.h"
@@ -250,9 +250,7 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
     AutofillBottomSheetTabHelper::CreateForWebState(
         web_state, PasswordTabHelper::FromWebState(web_state)
                        ->GetPasswordsAccountStorageNoticeHandler());
-    AutofillTabHelper::CreateForWebState(
-        web_state,
-        PasswordTabHelper::FromWebState(web_state)->GetPasswordManager());
+    AutofillTabHelper::CreateForWebState(web_state);
 
     FormSuggestionTabHelper::CreateForWebState(web_state, @[
       PasswordTabHelper::FromWebState(web_state)->GetSuggestionProvider(),

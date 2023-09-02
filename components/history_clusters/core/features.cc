@@ -111,4 +111,8 @@ BASE_FEATURE(kSidePanelJourneys,
 const base::FeatureParam<bool> kSidePanelJourneysOpensFromOmnibox{
     &kSidePanelJourneys, "SidePanelJourneysOpensFromOmnibox", true};
 
+BASE_FEATURE(kRenameJourneys,
+             "RenameJourneys",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
 }  // namespace history_clusters

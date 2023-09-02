@@ -43,6 +43,7 @@
     margin: 6px auto;
     min-height: 103px;
     width: var(--downloads-card-width);
+    max-width: calc(100% - 2 * var(--downloads-card-margin));
   }
 
   #content.is-active {
@@ -120,13 +121,6 @@
 
   #file-icon-wrapper {
     overflow: hidden;  /* Reduces file icon flicker on initial load. */
-  }
-
-  #content:-webkit-any(.show-progress, .dangerous) #file-icon-wrapper {
-    /* TODO(dbeam): animate from top-aligned to centered when items finish?
-     */
-    align-self: flex-start;
-    padding-top: 16px;
   }
 
   #content:not(.is-active) .icon {
@@ -311,7 +305,7 @@
   <div id="details">
     <div id="title-area" role="gridcell"><!--
       Can't have any line breaks.
-      --><a is="action-link" id="file-link" href="[[data.url]]"
+      --><a is="action-link" id="file-link" href="[[data.url.url]]"
           on-click="onFileLinkClick_" focus-row-control
           focus-type="fileLink"
           hidden="[[!shouldLinkFilename_]]">[[data.fileName]]</a><!--
@@ -325,7 +319,7 @@
 
     <div role="gridcell">
       <a id="url" target="_blank" on-click="onUrlClick_" focus-row-control
-          focus-type="url">[[chopUrl_(data.url)]]</a>
+          focus-type="url">[[getDisplayUrlStr_(data.displayUrl)]]</a>
     </div>
 
     <div class="description" role="gridcell"

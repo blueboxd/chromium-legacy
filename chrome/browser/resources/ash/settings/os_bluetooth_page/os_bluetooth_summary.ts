@@ -38,7 +38,7 @@ enum LabelType {
 const SettingsBluetoothSummaryElementBase =
     RouteOriginMixin(I18nMixin(PolymerElement));
 
-class SettingsBluetoothSummaryElement extends
+export class SettingsBluetoothSummaryElement extends
     SettingsBluetoothSummaryElementBase {
   static get is() {
     return 'os-settings-bluetooth-summary' as const;
@@ -269,6 +269,14 @@ class SettingsBluetoothSummaryElement extends
                                     this.i18n('bluetoothDisabledA11YLabel'));
 
     this.browserProxy_.showBluetoothRevampHatsSurvey();
+  }
+
+  private shouldShowPairNewDevice_(): boolean {
+    if (!this.systemProperties) {
+      return false;
+    }
+
+    return this.systemProperties.systemState === BluetoothSystemState.kEnabled;
   }
 }
 

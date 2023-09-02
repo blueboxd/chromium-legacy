@@ -34,27 +34,31 @@ static_assert(V8_ARRAY_BUFFER_INTERNAL_FIELD_COUNT == 2,
 partition_alloc::PartitionRoot* ArrayBufferAllocator::partition_ = nullptr;
 
 void* ArrayBufferAllocator::Allocate(size_t length) {
-  unsigned int flags = partition_alloc::AllocFlags::kZeroFill |
-                       partition_alloc::AllocFlags::kReturnNull;
-  return AllocateInternal(length, flags);
+  constexpr unsigned int flags = partition_alloc::AllocFlags::kZeroFill |
+                                 partition_alloc::AllocFlags::kReturnNull;
+  return AllocateInternal<flags>(length);
 }
 
 void* ArrayBufferAllocator::AllocateUninitialized(size_t length) {
-  unsigned int flags = partition_alloc::AllocFlags::kReturnNull;
-  return AllocateInternal(length, flags);
+  constexpr unsigned int flags = partition_alloc::AllocFlags::kReturnNull;
+  return AllocateInternal<flags>(length);
 }
 
-void* ArrayBufferAllocator::AllocateInternal(size_t length,
-                                             unsigned int flags) {
+template <unsigned int flags>
+void* ArrayBufferAllocator::AllocateInternal(size_t length) {
 #ifdef V8_ENABLE_SANDBOX
   // The V8 sandbox requires all ArrayBuffer backing stores to be allocated
   // inside the sandbox address space. This isn't guaranteed if allocation
   // override hooks (which are e.g. used by GWP-ASan) are enabled or if a
   // memory tool (e.g. ASan) overrides malloc, so disable both.
-  flags |= partition_alloc::AllocFlags::kNoOverrideHooks;
-  flags |= partition_alloc::AllocFlags::kNoMemoryToolOverride;
+  constexpr auto new_flags = flags |
+                             partition_alloc::AllocFlags::kNoOverrideHooks |
+                             partition_alloc::AllocFlags::kNoMemoryToolOverride;
+#else
+  constexpr auto new_flags = flags;
 #endif
-  return partition_->AllocWithFlags(flags, length, "gin::ArrayBufferAllocator");
+  return partition_->AllocInline<new_flags>(length,
+                                            "gin::ArrayBufferAllocator");
 }
 
 void ArrayBufferAllocator::Free(void* data, size_t length) {
@@ -76,12 +80,9 @@ ArrayBufferAllocator* ArrayBufferAllocator::SharedInstance() {
 void ArrayBufferAllocator::InitializePartition() {
   static base::NoDestructor<partition_alloc::PartitionAllocator>
       partition_allocator(partition_alloc::PartitionOptions{
-          .star_scan_quarantine =
-              partition_alloc::PartitionOptions::StarScanQuarantine::kAllowed,
-          .backup_ref_ptr =
-              partition_alloc::PartitionOptions::BackupRefPtr::kDisabled,
-          .use_configurable_pool = partition_alloc::PartitionOptions::
-              UseConfigurablePool::kIfAvailable,
+          .star_scan_quarantine = partition_alloc::PartitionOptions::kAllowed,
+          .backup_ref_ptr = partition_alloc::PartitionOptions::kDisabled,
+          .use_configurable_pool = partition_alloc::PartitionOptions::kAllowed,
       });
 
   partition_ = partition_allocator->root();

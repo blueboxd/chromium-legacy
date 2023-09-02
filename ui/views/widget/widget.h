@@ -442,6 +442,12 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
     // even if it matches with the compositor's keyboard shortcuts.
     bool inhibit_keyboard_shortcuts = false;
 #endif
+
+    // Directly sets the NativeTheme used by the Widget. Providing the
+    // NativeTheme here vs setting afterwards potentially avoids lots of
+    // notifications of theme changes.
+    // A value of null results in the default theme being used.
+    raw_ptr<ui::NativeTheme> native_theme = nullptr;
   };
 
   // Represents a lock held on the widget's ShouldPaintAsActive() state. As
@@ -510,11 +516,15 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
 
   // Returns all Widgets in |native_view|'s hierarchy, including itself if
   // it is one.
+  // TODO(tluk): This API should be updated to return Widgets rather than take
+  // an out param.
   static void GetAllChildWidgets(gfx::NativeView native_view,
                                  Widgets* children);
 
   // Returns all Widgets owned by |native_view| (including child widgets, but
   // not including itself).
+  // TODO(tluk): This API should be updated to return Widgets rather than take
+  // an out param.
   static void GetAllOwnedWidgets(gfx::NativeView native_view, Widgets* owned);
 
   // Re-parent a NativeView and notify all Widgets in |native_view|'s hierarchy

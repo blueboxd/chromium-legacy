@@ -13,6 +13,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/autofill/core/browser/address_rewriter.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "components/autofill/core/browser/data_model/autofill_structured_address_component.h"
 #include "components/autofill/core/browser/data_model/autofill_structured_address_regex_provider.h"
@@ -25,20 +26,26 @@
 
 namespace autofill {
 
-namespace {
-// Applies the |country_code| specific rewriter to the normalized value. If
-// |country_code| is empty, it defaults to US.
-std::u16string RewriteValue(const std::u16string& value,
-                            const std::u16string& country_code) {
-  return RewriterCache::Rewrite(country_code.empty() ? u"US" : country_code,
-                                value);
-}
-}  // namespace
-
 std::u16string AddressComponentWithRewriter::GetValueForComparison(
     const std::u16string& value,
     const AddressComponent& other) const {
-  return RewriteValue(NormalizeValue(value), GetCommonCountry(other));
+  return NormalizeAndRewrite(GetCommonCountry(other), value,
+                             /*keep_white_space=*/true);
+}
+
+FeatureGuardedAddressComponent::FeatureGuardedAddressComponent(
+    raw_ptr<const base::Feature> feature,
+    ServerFieldType storage_type,
+    AddressComponent* parent,
+    unsigned int merge_mode)
+    : AddressComponent(storage_type, parent, merge_mode), feature_(feature) {}
+
+void FeatureGuardedAddressComponent::SetValue(std::u16string value,
+                                              VerificationStatus status) {
+  if (!base::FeatureList::IsEnabled(*feature_)) {
+    return;
+  }
+  AddressComponent::SetValue(value, status);
 }
 
 StreetNameNode::StreetNameNode(AddressComponent* parent)
@@ -291,20 +298,11 @@ StateNode::StateNode(AddressComponent* parent)
           ADDRESS_HOME_STATE,
           parent,
           kPickShorterIfOneContainsTheOther |
-              (base::FeatureList::IsEnabled(
-                   features::kAutofillUseAlternativeStateNameMap)
-                   ? MergeMode::kMergeBasedOnCanonicalizedValues
-                   : 0) |
-              kReplaceEmpty) {}
+              MergeMode::kMergeBasedOnCanonicalizedValues | kReplaceEmpty) {}
 
 StateNode::~StateNode() = default;
 
 absl::optional<std::u16string> StateNode::GetCanonicalizedValue() const {
-  if (!base::FeatureList::IsEnabled(
-          features::kAutofillUseAlternativeStateNameMap)) {
-    return absl::nullopt;
-  }
-
   std::string country_code =
       base::UTF16ToUTF8(GetRootNode().GetValueForType(ADDRESS_HOME_COUNTRY));
 
@@ -340,8 +338,8 @@ std::u16string PostalCodeNode::GetNormalizedValue() const {
 std::u16string PostalCodeNode::GetValueForComparison(
     const std::u16string& value,
     const AddressComponent& other) const {
-  return RewriteValue(NormalizeValue(value, /*keep_white_space=*/false),
-                      GetCommonCountry(other));
+  return NormalizeAndRewrite(GetCommonCountry(other), value,
+                             /*keep_white_space=*/false);
 }
 
 SortingCodeNode::SortingCodeNode(AddressComponent* parent)
@@ -352,23 +350,29 @@ SortingCodeNode::SortingCodeNode(AddressComponent* parent)
 SortingCodeNode::~SortingCodeNode() = default;
 
 LandmarkNode::LandmarkNode(AddressComponent* parent)
-    : AddressComponent(ADDRESS_HOME_LANDMARK,
-                       parent,
-                       MergeMode::kReplaceEmpty | kReplaceSubset) {}
+    : FeatureGuardedAddressComponent(
+          &features::kAutofillEnableSupportForLandmark,
+          ADDRESS_HOME_LANDMARK,
+          parent,
+          MergeMode::kReplaceEmpty | kReplaceSubset) {}
 
 LandmarkNode::~LandmarkNode() = default;
 
 BetweenStreetsNode::BetweenStreetsNode(AddressComponent* parent)
-    : AddressComponent(ADDRESS_HOME_BETWEEN_STREETS,
-                       parent,
-                       MergeMode::kReplaceEmpty | kReplaceSubset) {}
+    : FeatureGuardedAddressComponent(
+          &features::kAutofillEnableSupportForBetweenStreets,
+          ADDRESS_HOME_BETWEEN_STREETS,
+          parent,
+          MergeMode::kReplaceEmpty | kReplaceSubset) {}
 
 BetweenStreetsNode::~BetweenStreetsNode() = default;
 
 AdminLevel2Node::AdminLevel2Node(AddressComponent* parent)
-    : AddressComponent(ADDRESS_HOME_ADMIN_LEVEL2,
-                       parent,
-                       MergeMode::kReplaceEmpty | kReplaceSubset) {}
+    : FeatureGuardedAddressComponent(
+          &features::kAutofillEnableSupportForAdminLevel2,
+          ADDRESS_HOME_ADMIN_LEVEL2,
+          parent,
+          MergeMode::kReplaceEmpty | kReplaceSubset) {}
 
 AdminLevel2Node::~AdminLevel2Node() = default;
 

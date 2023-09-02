@@ -212,10 +212,6 @@ IN_PROC_BROWSER_TEST_F(SettingsTest, PaymentsSectionIban) {
   RunTest("settings/payments_section_iban_test.js", "mocha.run()");
 }
 
-IN_PROC_BROWSER_TEST_F(SettingsTest, PaymentsSectionUpi) {
-  RunTest("settings/payments_section_upi_test.js", "mocha.run()");
-}
-
 IN_PROC_BROWSER_TEST_F(SettingsTest, PeoplePage) {
   RunTest("settings/people_page_test.js", "mocha.run()");
 }
@@ -516,7 +512,7 @@ class SettingsCookiesPageTest : public SettingsBrowserTest {
             privacy_sandbox::kPrivacySandboxSettings4,
             privacy_sandbox::kPrivacySandboxFirstPartySetsUI,
         },
-        {});
+        {features::kPerformanceSettingsPreloadingSubpage});
   }
 
  private:
@@ -562,6 +558,12 @@ IN_PROC_BROWSER_TEST_F(SettingsCookiesPageTest,
                        MAYBE_PrivacySandboxSettings4Disabled2) {
   RunTest("settings/cookies_page_test.js",
           "runMochaSuite('PrivacySandboxSettings4Disabled')");
+}
+
+IN_PROC_BROWSER_TEST_F(SettingsCookiesPageTest,
+                       PreloadingSubpageMovedToPerformanceSettings) {
+  RunTest("settings/cookies_page_test.js",
+          "runMochaSuite('PreloadingSubpageMovedToPerformanceSettings')");
 }
 
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
@@ -744,6 +746,11 @@ IN_PROC_BROWSER_TEST_F(SettingsPrivacyGuideFragmentsTest,
 IN_PROC_BROWSER_TEST_F(SettingsPrivacyGuideFragmentsTest, CookiesFragment) {
   RunTest("settings/privacy_guide_fragments_test.js",
           "runMochaSuite('CookiesFragment')");
+}
+
+IN_PROC_BROWSER_TEST_F(SettingsPrivacyGuideFragmentsTest, PreloadFragment) {
+  RunTest("settings/privacy_guide_fragments_test.js",
+          "runMochaSuite('PreloadFragment')");
 }
 
 IN_PROC_BROWSER_TEST_F(SettingsPrivacyGuideFragmentsTest, CompletionFragment) {

@@ -310,27 +310,10 @@ void HeadlessCommandHandler::ProcessCommands(
         {base::MayBlock(), base::TaskPriority::USER_BLOCKING,
          base::TaskShutdownBehavior::BLOCK_SHUTDOWN});
   }
+
   // Headless Command Handler instance will self delete when done.
-  HeadlessCommandHandler* command_handler =
-      new HeadlessCommandHandler(web_contents, std::move(target_url),
-                                 std::move(done_callback), io_task_runner);
-
-  command_handler->ExecuteCommands();
-}
-
-void HeadlessCommandHandler::ExecuteCommands() {
-  // Expose DevTools protocol to the target.
-  base::Value::Dict params;
-  params.Set("targetId", devtools_client_.GetTargetId());
-  browser_devtools_client_.SendCommand("Target.exposeDevToolsProtocol",
-                                       std::move(params));
-
-  // Set up Inspector domain.
-  devtools_client_.AddEventHandler(
-      "Inspector.targetCrashed",
-      base::BindRepeating(&HeadlessCommandHandler::OnTargetCrashed,
-                          base::Unretained(this)));
-  devtools_client_.SendCommand("Inspector.enable");
+  new HeadlessCommandHandler(web_contents, std::move(target_url),
+                             std::move(done_callback), io_task_runner);
 }
 
 void HeadlessCommandHandler::DocumentOnLoadCompletedInPrimaryMainFrame() {
@@ -343,6 +326,19 @@ void HeadlessCommandHandler::DocumentOnLoadCompletedInPrimaryMainFrame() {
   }
 
   commands.Set("targetUrl", target_url_.spec());
+
+  // Expose DevTools protocol to the target.
+  base::Value::Dict expose_params;
+  expose_params.Set("targetId", devtools_client_.GetTargetId());
+  browser_devtools_client_.SendCommand("Target.exposeDevToolsProtocol",
+                                       std::move(expose_params));
+
+  // Set up Inspector domain.
+  devtools_client_.AddEventHandler(
+      "Inspector.targetCrashed",
+      base::BindRepeating(&HeadlessCommandHandler::OnTargetCrashed,
+                          base::Unretained(this)));
+  devtools_client_.SendCommand("Inspector.enable");
 
   std::string json_commands;
   base::JSONWriter::Write(commands, &json_commands);
@@ -369,8 +365,8 @@ void HeadlessCommandHandler::OnTargetCrashed(const base::Value::Dict&) {
 }
 
 void HeadlessCommandHandler::OnCommandsResult(base::Value::Dict result) {
-  if (absl::optional<bool> timeout =
-          result.FindBoolByDottedPath("result.result.value.pageLoadTimedOut")) {
+  if (result.FindBoolByDottedPath("result.result.value.pageLoadTimedOut")
+          .value_or(false)) {
     result_ = Result::kPageLoadTimeout;
     LOG(ERROR) << "Page load timed out.";
   }

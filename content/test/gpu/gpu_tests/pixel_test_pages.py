@@ -293,17 +293,6 @@ class PixelTestPages():
                 'media/test/data/four-colors-incompatible-stride.y4m'),
             test_rect=[0, 0, 240, 135],
             matching_algorithm=VERY_PERMISSIVE_SOBEL_ALGO),
-        PixelTestPage(
-            'pixel_media_foundation_clear_dcomp.html?src='
-            '/media/test/data/four-colors.mp4',
-            base_name + '_MediaFoundationClearDirectComposition',
-            test_rect=[0, 0, 256, 256],
-            browser_args=[
-                '--enable-features=MediaFoundationClearPlayback, \
-                MediaFoundationClearRendering:strategy/direct-composition'
-            ],
-            matching_algorithm=VERY_PERMISSIVE_SOBEL_ALGO,
-            grace_period_end=date(2022, 10, 24)),
 
         # The MP4 contains H.264 which is primarily hardware decoded on bots.
         PixelTestPage(
@@ -404,6 +393,10 @@ class PixelTestPages():
                       base_name + '_WebGLFloat',
                       test_rect=[0, 0, 200, 100],
                       browser_args=experimental_hdr_args),
+        PixelTestPage('pixel_offscreenCanvas_ibrc_worker.html',
+                      base_name + '_OffscreenCanvasIBRCWorker',
+                      test_rect=[0, 0, 100, 100],
+                      grace_period_end=date(2023, 8, 5)),
     ]
 
   @staticmethod
@@ -820,6 +813,8 @@ class PixelTestPages():
     # WebGL's back buffer.
     no_overlays_args = ['--disable-features=CoreAnimationRenderer']
 
+    angle_gl = ['--use-angle=gl']
+
     # The filter effect tests produce images with lots of gradients and blurs
     # which don't play nicely with Sobel filters, so a fuzzy algorithm instead
     # of Sobel. The images are also relatively large (360k pixels), and large
@@ -931,6 +926,13 @@ class PixelTestPages():
                       '_UnacceleratedOffscreenCanvasImageBitmapUsesOverlay',
                       test_rect=[0, 0, 100, 100],
                       browser_args=unaccelerated_2d_canvas_args),
+
+        # Regression test for crbug.com/1410696
+        PixelTestPage('pixel_offscreenCanvas_ibrc_worker.html',
+                      base_name + '_OffscreenCanvasIBRCWorkerAngleGL',
+                      test_rect=[0, 0, 100, 100],
+                      browser_args=angle_gl,
+                      grace_period_end=date(2023, 8, 5)),
     ]
 
   # Pages that should be run only on dual-GPU MacBook Pros (at the
@@ -1160,6 +1162,17 @@ class PixelTestPages():
                       test_rect=[0, 0, 240, 135],
                       browser_args=browser_args_sw_decode,
                       matching_algorithm=very_permissive_dc_sobel_algorithm),
+        PixelTestPage(
+            'pixel_media_foundation_clear_dcomp.html?src='
+            '/media/test/data/four-colors.mp4',
+            base_name + '_MediaFoundationClearDirectComposition',
+            test_rect=[0, 0, 256, 256],
+            browser_args=[
+                '--enable-features=MediaFoundationClearPlayback, \
+                MediaFoundationClearRendering:strategy/direct-composition'
+            ],
+            matching_algorithm=VERY_PERMISSIVE_SOBEL_ALGO,
+            grace_period_end=date(2022, 10, 24)),
     ]
 
   @staticmethod

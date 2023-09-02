@@ -47,6 +47,13 @@ bool ShouldDoScan(bool post_dialog_feature_enabled,
         return false;
       case PrintScanningContext::kSystemPrintBeforePrintDocument:
         return true;
+
+#if BUILDFLAG(IS_MAC)
+      // For the "Open PDF in Preview" option on Mac, scan right as it happens
+      // from the print preview dialog.
+      case PrintScanningContext::kOpenPdfInPreview:
+        return true;
+#endif  // BUILDFLAG(IS_MAC)
     }
   }
 
@@ -61,6 +68,9 @@ bool ShouldDoScan(bool post_dialog_feature_enabled,
     case PrintScanningContext::kSystemPrintAfterPreview:
     case PrintScanningContext::kNormalPrintBeforePrintDocument:
     case PrintScanningContext::kSystemPrintBeforePrintDocument:
+#if BUILDFLAG(IS_MAC)
+    case PrintScanningContext::kOpenPdfInPreview:
+#endif  // BUILDFLAG(IS_MAC)
       return false;
   }
 }
@@ -182,6 +192,23 @@ absl::optional<ContentAnalysisDelegate::Data> GetPrintAnalysisData(
     // leading to a scan, so logging the print type metric here will apply it to
     // every print content analysis workflow.
     RecordPrintType(context, scanning_data);
+
+    switch (context) {
+#if BUILDFLAG(IS_MAC)
+      case PrintScanningContext::kOpenPdfInPreview:
+#endif  // BUILDFLAG(IS_MAC)
+      case PrintScanningContext::kNormalPrintAfterPreview:
+      case PrintScanningContext::kBeforePreview:
+      case PrintScanningContext::kNormalPrintBeforePrintDocument:
+        scanning_data.reason = ContentAnalysisRequest::PRINT_PREVIEW_PRINT;
+        break;
+
+      case PrintScanningContext::kBeforeSystemDialog:
+      case PrintScanningContext::kSystemPrintAfterPreview:
+      case PrintScanningContext::kSystemPrintBeforePrintDocument:
+        scanning_data.reason = ContentAnalysisRequest::SYSTEM_DIALOG_PRINT;
+        break;
+    }
 
     return scanning_data;
   }

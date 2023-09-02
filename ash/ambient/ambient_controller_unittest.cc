@@ -1668,6 +1668,7 @@ class AmbientControllerForManagedScreensaverTest : public AmbientAshTestBase {
   void SimulateScreensaverStart() {
     LockScreen();
     FastForwardByLockScreenInactivityTimeout();
+    EXPECT_EQ(absl::nullopt, GetRemainingLockScreenTimeoutFraction());
     EXPECT_TRUE(ambient_controller()->ShouldShowAmbientUi());
   }
 
@@ -2057,6 +2058,48 @@ TEST_F(AmbientControllerForManagedScreensaverTest,
   EXPECT_FALSE(ambient_controller()->ShouldShowAmbientUi());
 }
 
+TEST_F(AmbientControllerForManagedScreensaverTest,
+       ManagedScreensaverAlwaysShowsFullImages) {
+  const gfx::Rect screen_bounds_landscape(/*width=*/320, /*height=*/180);
+  UpdateDisplay("320x180");
+  SetAmbientModeManagedScreensaverEnabled(/*enabled=*/true);
+
+  const base::FilePath image_large_1 =
+      temp_dir_.GetPath().Append(FILE_PATH_LITERAL("IMAGE_L.jpg"));
+  CreateTestImageJpegFile(image_large_1, 400, 180, SK_ColorRED);
+  const base::FilePath image_large_2 =
+      temp_dir_.GetPath().Append(FILE_PATH_LITERAL("IMAGE_L_2.jpg"));
+
+  CreateTestImageJpegFile(image_large_2, 400, 180, SK_ColorGREEN);
+
+  const std::vector<base::FilePath> images{image_large_1, image_large_2};
+  managed_policy_handler()->SetImagesForTesting(images);
+  SimulateScreensaverStart();
+  ASSERT_TRUE(GetContainerView());
+
+  const gfx::Rect image_bounds_landscape =
+      GetAmbientBackgroundImageView()->GetImageBoundsInScreenForTesting();
+  EXPECT_TRUE(screen_bounds_landscape.Contains(image_bounds_landscape));
+
+  // Top and bottom black bars of 18 pixels due to height scaling.
+  EXPECT_EQ(image_bounds_landscape,
+            gfx::Rect(/*x=*/0, /*y=*/18, /*width=*/320, /*height=*/144));
+
+  // Rotate screen
+  const gfx::Rect screen_bounds_portrait(/*width=*/180, /*height=*/320);
+  UpdateDisplay("180x320");
+  FastForwardByLockScreenInactivityTimeout();
+  ASSERT_TRUE(GetContainerView());
+
+  const gfx::Rect image_bounds_portrait =
+      GetAmbientBackgroundImageView()->GetImageBoundsInScreenForTesting();
+  EXPECT_TRUE(screen_bounds_portrait.Contains(image_bounds_portrait));
+
+  // Top and bottom black bars of 119 pixels due to height scaling.
+  EXPECT_EQ(image_bounds_portrait,
+            gfx::Rect(/*x=*/0, /*y=*/119, /*width=*/180, /*height=*/81));
+}
+
 TEST_F(AmbientControllerTest, RendersCorrectViewForVideo) {
   SetAmbientUiSettings(
       AmbientUiSettings(AmbientTheme::kVideo, AmbientVideo::kNewMexico));
@@ -2131,9 +2174,9 @@ class AmbientControllerDurationTest : public AmbientAshTestBase {
 TEST_F(AmbientControllerDurationTest, SetScreenSaverDuration) {
   EXPECT_TRUE(ash::features::IsScreenSaverDurationEnabled());
 
-  // Duration is default to 10 minutes.
+  // Duration is default to forever.
   SetAmbientModeEnabled(true);
-  EXPECT_EQ(10, GetScreenSaverDuration());
+  EXPECT_EQ(0, GetScreenSaverDuration());
 
   // Set screen saver duration.
   SetScreenSaverDuration(5);

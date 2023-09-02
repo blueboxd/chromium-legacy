@@ -12,7 +12,6 @@
 #include "components/password_manager/core/browser/password_manager.h"
 #import "components/password_manager/ios/ios_password_manager_driver_factory.h"
 #import "components/password_manager/ios/password_manager_java_script_feature.h"
-#import "ios/web/public/js_messaging/web_frames_manager.h"
 
 using password_manager::PasswordAutofillManager;
 using password_manager::PasswordManager;
@@ -120,10 +119,6 @@ bool IOSPasswordManagerDriver::IsInPrimaryMainFrame() const {
 
 bool IOSPasswordManagerDriver::CanShowAutofillUi() const {
   return true;
-}
-
-::ui::AXTreeID IOSPasswordManagerDriver::GetAxTreeId() const {
-  return {};
 }
 
 int IOSPasswordManagerDriver::GetFrameId() const {

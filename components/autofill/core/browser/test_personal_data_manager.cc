@@ -18,8 +18,11 @@ TestPersonalDataManager::TestPersonalDataManager()
 
 TestPersonalDataManager::~TestPersonalDataManager() = default;
 
-AutofillSyncSigninState TestPersonalDataManager::GetSyncSigninState() const {
-  return sync_and_signin_state_;
+bool TestPersonalDataManager::IsPaymentsWalletSyncTransportEnabled() const {
+  if (payments_wallet_sync_transport_enabled_.has_value()) {
+    return *payments_wallet_sync_transport_enabled_;
+  }
+  return PersonalDataManager::IsPaymentsWalletSyncTransportEnabled();
 }
 
 void TestPersonalDataManager::RecordUseOf(
@@ -235,17 +238,6 @@ void TestPersonalDataManager::LoadIbans() {
         std::make_unique<WDResult<std::vector<std::unique_ptr<Iban>>>>(
             AUTOFILL_IBANS_RESULT, std::move(ibans));
     OnWebDataServiceRequestDone(pending_ibans_query_, std::move(result));
-  }
-}
-
-void TestPersonalDataManager::LoadUpiIds() {
-  pending_upi_ids_query_ = 129;
-  {
-    std::vector<std::string> upi_ids = {"vpa@indianbank"};
-    std::unique_ptr<WDTypedResult> result =
-        std::make_unique<WDResult<std::vector<std::string>>>(
-            AUTOFILL_UPI_RESULT, std::move(upi_ids));
-    OnWebDataServiceRequestDone(pending_upi_ids_query_, std::move(result));
   }
 }
 

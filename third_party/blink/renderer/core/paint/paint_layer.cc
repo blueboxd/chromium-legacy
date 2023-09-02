@@ -73,7 +73,6 @@
 #include "third_party/blink/renderer/core/layout/layout_tree_as_text.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_fragmentation_utils.h"
-#include "third_party/blink/renderer/core/layout/svg/layout_svg_resource_clipper.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_root.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/page/scrolling/sticky_position_scrolling_constraints.h"
@@ -95,7 +94,6 @@
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/style/reference_clip_path_operation.h"
 #include "third_party/blink/renderer/core/style/reference_offset_path_operation.h"
-#include "third_party/blink/renderer/core/style/shape_clip_path_operation.h"
 #include "third_party/blink/renderer/core/view_transition/view_transition.h"
 #include "third_party/blink/renderer/core/view_transition/view_transition_utils.h"
 #include "third_party/blink/renderer/platform/bindings/runtime_call_stats.h"
@@ -104,6 +102,7 @@
 #include "third_party/blink/renderer/platform/graphics/compositor_filter_operations.h"
 #include "third_party/blink/renderer/platform/graphics/filters/filter.h"
 #include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/clear_collection_scope.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
@@ -1896,38 +1895,8 @@ bool PaintLayer::HitTestClippedOutByClipPath(
   PhysicalOffset origin = GetLayoutObject().LocalToAncestorPoint(
       PhysicalOffset(), &root_layer.GetLayoutObject());
 
-  gfx::PointF point(hit_test_location.Point() - origin);
-  gfx::RectF reference_box =
-      ClipPathClipper::LocalReferenceBox(GetLayoutObject());
-
-  ClipPathOperation* clip_path_operation =
-      GetLayoutObject().StyleRef().ClipPath();
-  DCHECK(clip_path_operation);
-  if (clip_path_operation->GetType() == ClipPathOperation::kShape) {
-    ShapeClipPathOperation* clip_path =
-        To<ShapeClipPathOperation>(clip_path_operation);
-    float zoom = GetLayoutObject().StyleRef().EffectiveZoom();
-    DCHECK(!GetLayoutObject().IsSVGChild() ||
-           GetLayoutObject().IsSVGForeignObject());
-    return !clip_path->GetPath(reference_box, zoom).Contains(point);
-  }
-  DCHECK_EQ(clip_path_operation->GetType(), ClipPathOperation::kReference);
-  LayoutSVGResourceClipper* clipper =
-      GetSVGResourceAsType(*ResourceInfo(), clip_path_operation);
-  if (!clipper)
-    return false;
-  // If the clipPath is using "userspace on use" units, then the origin of
-  // the coordinate system is the top-left of the reference box, so adjust
-  // the point accordingly.
-  if (clipper->ClipPathUnits() == SVGUnitTypes::kSvgUnitTypeUserspaceonuse)
-    point -= reference_box.OffsetFromOrigin();
-  // Unzoom the point and the reference box, since the <clipPath> geometry is
-  // not zoomed.
-  float inverse_zoom = 1 / GetLayoutObject().StyleRef().EffectiveZoom();
-  point.Scale(inverse_zoom, inverse_zoom);
-  reference_box.Scale(inverse_zoom);
-  HitTestLocation location(point);
-  return !clipper->HitTestClipContent(reference_box, location);
+  const HitTestLocation location_in_layer(hit_test_location, -origin);
+  return !ClipPathClipper::HitTest(GetLayoutObject(), location_in_layer);
 }
 
 PhysicalRect PaintLayer::LocalBoundingBox() const {
@@ -2069,7 +2038,7 @@ void PaintLayer::UpdateFilters(const ComputedStyle* old_style,
                                const ComputedStyle& new_style) {
   if (!filter_on_effect_node_dirty_) {
     filter_on_effect_node_dirty_ =
-        old_style ? !old_style->FilterDataEquivalent(new_style) ||
+        old_style ? old_style->Filter() != new_style.Filter() ||
                         !old_style->ReflectionDataEquivalent(new_style)
                   : new_style.HasFilterInducingProperty();
   }
@@ -2089,7 +2058,7 @@ void PaintLayer::UpdateBackdropFilters(const ComputedStyle* old_style,
                                        const ComputedStyle& new_style) {
   if (!backdrop_filter_on_effect_node_dirty_) {
     backdrop_filter_on_effect_node_dirty_ =
-        old_style ? !old_style->BackdropFilterDataEquivalent(new_style)
+        old_style ? old_style->BackdropFilter() != new_style.BackdropFilter()
                   : new_style.HasBackdropFilter();
   }
 }

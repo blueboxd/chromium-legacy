@@ -54,7 +54,6 @@ class NGLayoutResult;
 class ShapeOutsideInfo;
 class WritingModeConverter;
 enum class NGLayoutCacheStatus;
-struct BoxLayoutExtraInput;
 struct NGFragmentGeometry;
 struct NGPhysicalBoxStrut;
 struct NonOverflowingScrollRange;
@@ -744,15 +743,6 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
                      MapCoordinatesFlags mode = 0) const override;
   gfx::RectF LocalBoundingBoxRectForAccessibility() const override;
 
-  void SetBoxLayoutExtraInput(const BoxLayoutExtraInput* input) {
-    NOT_DESTROYED();
-    extra_input_ = input;
-  }
-  const BoxLayoutExtraInput* GetBoxLayoutExtraInput() const {
-    NOT_DESTROYED();
-    return extra_input_;
-  }
-
   void LayoutSubtreeRoot();
 
   void Paint(const PaintInfo&) const override;
@@ -874,7 +864,11 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
     wtf_size_t Size() const { return layout_results_.size(); }
     bool IsEmpty() const { return layout_results_.empty(); }
 
-    bool HasFragmentItems() const;
+    bool MayHaveFragmentItems() const;
+    bool HasFragmentItems() const {
+      return MayHaveFragmentItems() && SlowHasFragmentItems();
+    }
+    bool SlowHasFragmentItems() const;
 
     wtf_size_t IndexOf(const NGPhysicalBoxFragment& fragment) const;
     bool Contains(const NGPhysicalBoxFragment& fragment) const;
@@ -1293,7 +1287,7 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
     void ClearPreviousOverflowData() {
       DCHECK(!GetLayoutBox().HasVisualOverflow());
       DCHECK(!GetLayoutBox().HasLayoutOverflow());
-      GetLayoutBox().overflow_.reset();
+      GetLayoutBox().overflow_ = nullptr;
     }
     void SavePreviousContentBoxRect() {
       auto& rare_data = GetLayoutBox().EnsureRareData();
@@ -1376,18 +1370,15 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
       LayoutUnit intrinsic_logical_widths_initial_block_size,
       bool depends_on_block_constraints,
       bool child_depends_on_block_constraints,
-      bool flex_intrinsic_sizing,
-      const MinMaxSizes* sizes) {
+      const MinMaxSizes& sizes) {
     NOT_DESTROYED();
     intrinsic_logical_widths_initial_block_size_ =
         intrinsic_logical_widths_initial_block_size;
     SetIntrinsicLogicalWidthsDependsOnBlockConstraints(
         depends_on_block_constraints);
-    SetIntrinsicLogicalWidthsInFlexIntrinsicSizing(flex_intrinsic_sizing);
     SetIntrinsicLogicalWidthsChildDependsOnBlockConstraints(
         child_depends_on_block_constraints);
-    if (sizes)
-      intrinsic_logical_widths_ = *sizes;
+    intrinsic_logical_widths_ = sizes;
     ClearIntrinsicLogicalWidthsDirty();
   }
 
@@ -1419,10 +1410,21 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   // call SetBackgroundPaintLocation() with the value to be used for painting.
   BackgroundPaintLocation ComputeBackgroundPaintLocationIfComposited() const;
 
+  bool MayHaveFragmentItems() const {
+    NOT_DESTROYED();
+    // When the tree is not clean, `ChildrenInline()` is not reliable.
+    return (ChildrenInline() || NeedsLayout()) &&
+           PhysicalFragments().MayHaveFragmentItems();
+  }
   bool HasFragmentItems() const {
     NOT_DESTROYED();
-    return ChildrenInline() && PhysicalFragments().HasFragmentItems();
+    // See `MayHaveFragmentItems()`.
+    return (ChildrenInline() || NeedsLayout()) &&
+           PhysicalFragments().HasFragmentItems();
   }
+#if EXPENSIVE_DCHECKS_ARE_ON()
+  void CheckMayHaveFragmentItems() const;
+#endif
 
   // Returns true if this box is fixed position and will not move with
   // scrolling. If the caller can pre-calculate |container_for_fixed_position|,
@@ -1673,18 +1675,12 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   friend class LayoutBoxTest;
 
  private:
-  std::unique_ptr<BoxOverflowModel> overflow_;
-
-  // Extra layout input data. This one may be set during layout, and cleared
-  // afterwards. Always nullptr when this object isn't in the process of being
-  // laid out.
-  const BoxLayoutExtraInput* extra_input_ = nullptr;
-
   // The index of the first fragment item associated with this object in
   // |NGFragmentItems::Items()|. Zero means there are no such item.
   // Valid only when IsInLayoutNGInlineFormattingContext().
   wtf_size_t first_fragment_item_index_ = 0u;
 
+  Member<BoxOverflowModel> overflow_;
   Member<LayoutBoxRareData> rare_data_;
 
   FRIEND_TEST_ALL_PREFIXES(LayoutMultiColumnSetTest, ScrollAnchroingCrash);

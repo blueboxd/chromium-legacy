@@ -225,6 +225,23 @@ bool HttpsFirstModeService::MaybeEnableHttpsFirstModeForUser(
   constexpr char kTimestampKey[] = "timestamp";
   base::Time now = clock_->Now();
 
+  if (!base::FeatureList::IsEnabled(
+          features::kHttpsFirstModeV2ForTypicallySecureUsers)) {
+    // Temporary fix for users impacted by crbug.com/1475747:
+    // HFM-for-typically-secure-users has never been enabled intentionally. If
+    // we see that the preference has been set, that was by accident. Unset the
+    // relevant preferences to undo the damage.
+    if (profile_->GetPrefs()->HasPrefPath(prefs::kHttpsOnlyModeAutoEnabled)) {
+      profile_->GetPrefs()->SetBoolean(prefs::kHttpsOnlyModeAutoEnabled, false);
+      // If HFM had already been enabled, the code wouldn't have toggled
+      // kHttpsOnlyModeAutoEnabled. That means it's safe to disable HFM here --
+      // HFM can only be enabled because we set it that way.
+      profile_->GetPrefs()->SetBoolean(prefs::kHttpsOnlyModeEnabled, false);
+    }
+
+    return false;
+  }
+
   const base::Value::Dict& base_pref =
       profile_->GetPrefs()->GetDict(prefs::kHttpsUpgradeFallbacks);
 
@@ -376,7 +393,8 @@ HttpsFirstModeServiceFactory::HttpsFirstModeServiceFactory()
 
 HttpsFirstModeServiceFactory::~HttpsFirstModeServiceFactory() = default;
 
-KeyedService* HttpsFirstModeServiceFactory::BuildServiceInstanceFor(
+std::unique_ptr<KeyedService>
+HttpsFirstModeServiceFactory::BuildServiceInstanceForBrowserContext(
     content::BrowserContext* context) const {
-  return BuildService(context).release();
+  return BuildService(context);
 }

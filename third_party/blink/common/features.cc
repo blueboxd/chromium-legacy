@@ -277,7 +277,7 @@ BASE_FEATURE(kBlockingDownloadsInAdFrameWithoutUserActivation,
 // crbug.com/1431169
 BASE_FEATURE(kBoostImagePriority,
              "BoostImagePriority",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 // The number of images to bopost the priority of before returning
 // to the default (low) priority.
 const base::FeatureParam<int> kBoostImagePriorityImageCount{
@@ -399,12 +399,12 @@ BASE_FEATURE(kCORSErrorsIssueOnly,
 // (https://crbug.com/1260908).
 BASE_FEATURE(kCacheCodeOnIdle,
              "CacheCodeOnIdle",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 const base::FeatureParam<int> kCacheCodeOnIdleDelayParam{&kCacheCodeOnIdle,
-                                                         "delay-in-ms", 0};
+                                                         "delay-in-ms", 1};
 // Apply CacheCodeOnIdle only for service workers (https://crbug.com/1410082).
 const base::FeatureParam<bool> kCacheCodeOnIdleDelayServiceWorkerOnlyParam{
-    &kCacheCodeOnIdle, "service-worker-only", false};
+    &kCacheCodeOnIdle, "service-worker-only", true};
 
 // When enabled allows the header name used in the blink
 // CacheStorageCodeCacheHint runtime feature to be modified.  This runtime
@@ -472,6 +472,11 @@ BASE_FEATURE(kClientHintsDeviceMemory_DEPRECATED,
 // Enable `form-factor` client hint.
 BASE_FEATURE(kClientHintsFormFactor,
              "ClientHintsFormFactor",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enable `sec-ch-prefers-reduced-transparency` client hint.
+BASE_FEATURE(kClientHintsPrefersReducedTransparency,
+             "ClientHintsPrefersReducedTransparency",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enable `sec-ch-width` client hint.
@@ -554,19 +559,6 @@ BASE_FEATURE(kDOMContentLoadedWaitForAsyncScript,
 
 BASE_FEATURE(kDecodeScriptSourceOffThread,
              "DecodeScriptSourceOffThread",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-// Decodes jpeg 4:2:0 formatted images to YUV instead of RGBX and stores in this
-// format in the image decode cache. See crbug.com/919627 for details on the
-// feature.
-BASE_FEATURE(kDecodeJpeg420ImagesToYUV,
-             "DecodeJpeg420ImagesToYUV",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-// Decodes lossy WebP images to YUV instead of RGBX and stores in this format
-// in the image decode cache. See crbug.com/900264 for details on the feature.
-BASE_FEATURE(kDecodeLossyWebPImagesToYUV,
-             "DecodeLossyWebPImagesToYUV",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 // When enabled, pages that don't specify a layout width will default to the
@@ -1027,6 +1019,17 @@ const base::FeatureParam<bool> kLCPCriticalPathPredictorDryRun{
 const base::FeatureParam<int> kLCPCriticalPathPredictorMaxElementLocatorLength{
     &kLCPCriticalPathPredictor, "lcpp_max_element_locator_length", 1024};
 
+const base::FeatureParam<LcppImageLoadPriority>::Option
+    lcpp_image_load_priorities[] = {
+        {LcppImageLoadPriority::kMedium, "medium"},
+        {LcppImageLoadPriority::kHigh, "high"},
+        {LcppImageLoadPriority::kVeryHigh, "very_high"},
+};
+const base::FeatureParam<LcppImageLoadPriority>
+    kLCPCriticalPathPredictorImageLoadPriority{
+        &kLCPCriticalPathPredictor, "lcpp_image_load_priority",
+        LcppImageLoadPriority::kVeryHigh, &lcpp_image_load_priorities};
+
 BASE_FEATURE(kLCPScriptObserver,
              "LCPScriptObserver",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -1047,6 +1050,12 @@ BASE_FEATURE(kLightweightNoStatePrefetch,
 );
 
 BASE_FEATURE(kLinkPreview, "LinkPreview", base::FEATURE_DISABLED_BY_DEFAULT);
+
+// A feature to control whether the loading phase should be extended beyond
+// First Meaningful Paint by a configurable buffer.
+BASE_FEATURE(kLoadingPhaseBufferTimeAfterFirstMeaningfulPaint,
+             "LoadingPhaseBufferTimeAfterFirstMeaningfulPaint",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Makes network loading tasks unfreezable so that they can be processed while
 // the page is frozen.
@@ -1113,7 +1122,7 @@ const base::FeatureParam<bool> kLowPriorityScriptLoadingMainFrameOnlyParam{
 
 BASE_FEATURE(kMainThreadHighPriorityImageLoading,
              "MainThreadHighPriorityImageLoading",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // If enabled, the setTimeout(..., 0) will clamp to 4ms after a custom `nesting`
 // level.
@@ -1135,9 +1144,21 @@ BASE_FEATURE(kMemoryCacheStrongReferenceFilterScripts,
              "MemoryCacheStrongReferenceFilterScripts",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+BASE_FEATURE(kMemoryCacheStrongReferenceFilterCrossOriginScripts,
+             "MemoryCacheStrongReferenceFilterCrossOriginScripts",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kMemoryCacheStrongReference,
              "MemoryCacheStrongReference",
              base::FEATURE_DISABLED_BY_DEFAULT);
+const base::FeatureParam<int>
+    kMemoryCacheStrongReferenceTotalSizeThresholdParam{
+        &kMemoryCacheStrongReference,
+        "memory_cache_strong_ref_total_size_threshold", 10 * 1024 * 1024};
+const base::FeatureParam<int>
+    kMemoryCacheStrongReferenceResourceSizeThresholdParam{
+        &kMemoryCacheStrongReference,
+        "memory_cache_strong_ref_resource_size_threshold", 3 * 1024 * 1024};
 
 BASE_FEATURE(kMemoryCacheStrongReferenceSingleUnload,
              "MemoryCacheStrongReferenceSingleUnload",
@@ -1504,6 +1525,10 @@ BASE_FEATURE(kScopeMemoryCachePerContext,
              "ScopeMemoryCachePerContext",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+BASE_FEATURE(kPausePagesPerBrowsingContextGroup,
+             "PausePagesPerBrowsingContextGroup",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Controls script streaming.
 BASE_FEATURE(kScriptStreaming,
              "ScriptStreaming",
@@ -1527,7 +1552,7 @@ BASE_FEATURE(kSendCnameAliasesToSubresourceFilterFromRenderer,
 
 BASE_FEATURE(kSerializeAccessibilityPostLifecycle,
              "SerializeAccessibilityPostLifecycle",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Experiment of the delay from navigation to starting an update of a service
 // worker's script.

@@ -2547,7 +2547,7 @@ bool Internals::isPageBoxVisible(Document* document, int page_number) {
   DCHECK(document);
   // Named pages aren't supported here, because this function may be called
   // without laying out first.
-  scoped_refptr<const ComputedStyle> style =
+  const ComputedStyle* style =
       document->StyleForPage(page_number, /* page_name */ AtomicString());
   return style->Visibility() !=
          EVisibility::kHidden;  // display property doesn't apply to @page.
@@ -4044,6 +4044,11 @@ void Internals::setBackForwardCacheRestorationBufferSize(unsigned int maxSize) {
   WindowPerformance& perf =
       *DOMWindowPerformance::performance(*document_->domWindow());
   perf.setBackForwardCacheRestorationBufferSizeForTest(maxSize);
+}
+
+Vector<String> Internals::getCreatorScripts(HTMLImageElement* img) {
+  DCHECK(img);
+  return Vector<String>(img->creator_scripts());
 }
 
 }  // namespace blink

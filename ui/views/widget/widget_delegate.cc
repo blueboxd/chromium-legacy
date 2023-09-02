@@ -104,6 +104,10 @@ bool WidgetDelegate::CanMinimize() const {
   return params_.can_minimize;
 }
 
+bool WidgetDelegate::CanFullscreen() const {
+  return params_.can_fullscreen;
+}
+
 bool WidgetDelegate::CanActivate() const {
   return can_activate_;
 }
@@ -375,6 +379,14 @@ void WidgetDelegate::SetAccessibleTitle(std::u16string title) {
   params_.accessible_title = std::move(title);
 }
 
+void WidgetDelegate::SetCanFullscreen(bool can_fullscreen) {
+  bool old_can_fullscreen =
+      std::exchange(params_.can_fullscreen, can_fullscreen);
+  if (GetWidget() && params_.can_fullscreen != old_can_fullscreen) {
+    GetWidget()->OnSizeConstraintsChanged();
+  }
+}
+
 void WidgetDelegate::SetCanMaximize(bool can_maximize) {
   bool old_can_maximize = std::exchange(params_.can_maximize, can_maximize);
   if (GetWidget() && params_.can_maximize != old_can_maximize)
@@ -471,6 +483,7 @@ void WidgetDelegate::SetCenterTitle(bool center_title) {
 #endif
 
 void WidgetDelegate::SetHasWindowSizeControls(bool has_controls) {
+  SetCanFullscreen(has_controls);
   SetCanMaximize(has_controls);
   SetCanMinimize(has_controls);
   SetCanResize(has_controls);

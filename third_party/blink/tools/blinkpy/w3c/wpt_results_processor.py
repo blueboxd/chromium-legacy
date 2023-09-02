@@ -430,7 +430,7 @@ class WPTResultsProcessor:
         handler = self._event_handlers.get(event.action)
         if handler:
             handler(event, **raw_event)
-        elif event.action != 'log':
+        elif event.action not in ['log', 'add_subsuite']:
             _log.warning(
                 "%r event received, but not handled (event: %r, "
                 'extra: %r)', event.action, event, raw_event)
@@ -725,8 +725,10 @@ class WPTResultsProcessor:
         if not test_type:
             raise EventProcessingError(f'Unknown test type: {result.name!r}')
         actual = result.test_section(self.run_info)
-        html_diff_content = wpt_results_diff.wpt_results_diff(
-            actual, expected, test_type)
+        actual.set('type', test_type)
+        if expected:
+            expected.set('type', test_type)
+        html_diff_content = wpt_results_diff.wpt_results_diff(actual, expected)
 
         html_diff_subpath = self.port.output_filename(
             result.name, test_failures.FILENAME_SUFFIX_HTML_DIFF, '.html')
@@ -883,6 +885,9 @@ class WPTResultsProcessor:
         compact_results = []
         for result in results:
             compact_result = {'status': result['status']}
+            subsuite = result.get('subsuite', '')
+            if subsuite:
+                compact_result['subsuite'] = subsuite
             duration = result.get('duration')
             if duration:
                 compact_result['duration'] = duration

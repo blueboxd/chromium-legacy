@@ -275,10 +275,6 @@ int BrowserNonClientFrameViewMac::GetTopInset(bool restored) const {
   return y_offset + top_inset;
 }
 
-int BrowserNonClientFrameViewMac::GetThemeBackgroundXInset() const {
-  return 0;
-}
-
 void BrowserNonClientFrameViewMac::UpdateFullscreenTopUI() {
   // Update to the new toolbar style if needed.
   FullscreenToolbarStyle new_style;
@@ -465,7 +461,7 @@ void BrowserNonClientFrameViewMac::PaintChildren(const views::PaintInfo& info) {
 
 gfx::Insets BrowserNonClientFrameViewMac::GetCaptionButtonInsets() const {
   const int kCaptionButtonInset =
-      base::mac::IsOS10_15()
+      base::mac::MacOSMajorVersion() < 11
           ? kCaptionButtonsInsetsCatalinaOrOlder
           : (kCaptionButtonsWidth + (kCaptionButtonsLeadingPadding * 2) -
              TabStyle::Get()->GetBottomCornerRadius());
@@ -521,9 +517,17 @@ gfx::Rect BrowserNonClientFrameViewMac::GetCenteredTitleBounds(
 }
 
 void BrowserNonClientFrameViewMac::PaintThemedFrame(gfx::Canvas* canvas) {
+  // On macOS the origin of the BrowserNonClientFrameViewMac is (0,0) so no
+  // further modification is necessary. See
+  // TopContainerBackground::PaintThemeCustomImage for details.
+  gfx::Point theme_image_offset =
+      browser_view()->GetThemeOffsetFromBrowserView();
+
   gfx::ImageSkia image = GetFrameImage();
-  canvas->TileImageInt(image, 0, TopUIFullscreenYOffset(), width(),
-                       image.height());
+  canvas->TileImageInt(image, theme_image_offset.x(), theme_image_offset.y(), 0,
+                       TopUIFullscreenYOffset(), width(), image.height(),
+                       /*tile_scale=*/1.0f, SkTileMode::kRepeat,
+                       SkTileMode::kMirror);
   gfx::ImageSkia overlay = GetFrameOverlayImage();
   canvas->DrawImageInt(overlay, 0, 0);
 }

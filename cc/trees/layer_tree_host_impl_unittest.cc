@@ -1308,7 +1308,7 @@ TEST_F(LayerTreeHostImplTest, TargetMainThreadScroller) {
   // unless scroll unification is enabled - since all nodes can be scrolled
   // from the compositor in that mode.
   host_impl_->OuterViewportScrollNode()->main_thread_scrolling_reasons =
-      MainThreadScrollingReason::kThreadedScrollingDisabled;
+      MainThreadScrollingReason::kPreferNonCompositedScrolling;
 
   {
     InputHandler::ScrollStatus status = GetInputHandler().ScrollBegin(
@@ -1317,7 +1317,7 @@ TEST_F(LayerTreeHostImplTest, TargetMainThreadScroller) {
     EXPECT_EQ(MainThreadScrollingReason::kNotScrollingOnMain,
               status.main_thread_hit_test_reasons);
     EXPECT_EQ(
-        MainThreadScrollingReason::kThreadedScrollingDisabled,
+        MainThreadScrollingReason::kPreferNonCompositedScrolling,
         host_impl_->CurrentlyScrollingNode()->main_thread_scrolling_reasons);
   }
 }
@@ -2971,6 +2971,9 @@ TEST_F(LayerTreeHostImplTest, SnapFlingAnimationEndWithoutFinishing) {
 }
 
 TEST_F(LayerTreeHostImplTest, NativeFlingInSnapArea) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      features::kScrollSnapCoveringUseNativeFling);
   gfx::Size view_size(100, 100);
   gfx::Size overflow_size(100, 1000);
   gfx::RectF snap_area_1(0, 0, 100, 700);
@@ -14846,7 +14849,7 @@ TEST_F(LayerTreeHostImplTest, MainThreadFallback) {
 
   // Assign a main_thread_scrolling_reason to the scroll node.
   GetScrollNode(scroll_layer)->main_thread_scrolling_reasons =
-      MainThreadScrollingReason::kThreadedScrollingDisabled;
+      MainThreadScrollingReason::kPreferNonCompositedScrolling;
   compositor_threaded_scrolling_result = GetInputHandler().MouseDown(
       gfx::PointF(350, 500), /*jump_key_modifier*/ false);
   GetInputHandler().MouseUp(gfx::PointF(350, 500));

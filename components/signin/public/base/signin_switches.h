@@ -25,8 +25,6 @@ BASE_DECLARE_FEATURE(kIdentityStatusConsistency);
 
 extern const char kClearTokenService[];
 
-extern const char kDisableSigninScopedDeviceId[];
-
 #if BUILDFLAG(ENABLE_BOUND_SESSION_CREDENTIALS)
 BASE_DECLARE_FEATURE(kEnableBoundSessionCredentials);
 bool IsBoundSessionCredentialsEnabled();
@@ -38,11 +36,6 @@ BASE_DECLARE_FEATURE(kForceDisableExtendedSyncPromos);
 
 #if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
 BASE_DECLARE_FEATURE(kForceStartupSigninPromo);
-#endif
-
-#if BUILDFLAG(IS_IOS)
-// Experiment to test whether it's possible to finch FRE screen on iOS.
-BASE_DECLARE_FEATURE(kFinchIosFre);
 #endif
 
 BASE_DECLARE_FEATURE(kTangibleSync);

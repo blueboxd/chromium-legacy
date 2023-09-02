@@ -136,8 +136,15 @@ using DismissViewCallback = SystemIdentityManager::DismissViewCallback;
   self.mediator.forcedSigninEnabled =
       self.authService->GetServiceStatus() ==
       AuthenticationService::ServiceStatus::SigninForcedByPolicy;
-  self.viewController = [[ManageSyncSettingsTableViewController alloc]
-      initWithStyle:ChromeTableViewStyle()];
+
+  // For kSignedIn state the view will include the account details item with a
+  // transparent background, InsetGrouped should be used in this case to prevent
+  // grey lines from showing around this item with large fonts.
+  UITableViewStyle style = _accountState == SyncSettingsAccountState::kSignedIn
+                               ? UITableViewStyleInsetGrouped
+                               : ChromeTableViewStyle();
+  self.viewController =
+      [[ManageSyncSettingsTableViewController alloc] initWithStyle:style];
 
   NSString* title = self.mediator.overrideViewControllerTitle;
   if (!title) {
@@ -261,7 +268,12 @@ using DismissViewCallback = SystemIdentityManager::DismissViewCallback;
   [handler closeSettingsUIAndOpenURL:command];
 }
 
-- (void)showTurnOffSyncOptionsFromTargetRect:(CGRect)targetRect {
+- (void)signOutFromTargetRect:(CGRect)targetRect {
+  if (!self.authService->HasPrimaryIdentity(signin::ConsentLevel::kSignin)) {
+    // This could happen in very rare cases, if the account somehow got removed
+    // after the settings UI was created.
+    return;
+  }
   self.signoutActionSheetCoordinator = [[SignoutActionSheetCoordinator alloc]
       initWithBaseViewController:self.viewController
                          browser:self.browser
@@ -272,37 +284,12 @@ using DismissViewCallback = SystemIdentityManager::DismissViewCallback;
   self.signoutActionSheetCoordinator.delegate = self;
   __weak ManageSyncSettingsCoordinator* weakSelf = self;
   self.signoutActionSheetCoordinator.completion = ^(BOOL success) {
-    if (success) {
-      [weakSelf closeManageSyncSettings];
-    }
-  };
-  [self.signoutActionSheetCoordinator start];
-}
-
-- (void)signOut {
-  if (!self.authService->HasPrimaryIdentity(signin::ConsentLevel::kSignin)) {
-    // This could happen in very rare cases, if the account somehow got removed
-    // after the settings UI was created.
-    return;
-  }
-
-  self.signOutFlowInProgress = YES;
-  [self.viewController preventUserInteraction];
-  signin_metrics::RecordSignoutUserAction(/*force_clear_data=*/false);
-  __weak ManageSyncSettingsCoordinator* weakSelf = self;
-  ProceduralBlock signOutCompletion = ^() {
-    __strong ManageSyncSettingsCoordinator* strongSelf = weakSelf;
-    if (!strongSelf) {
+    if (!success) {
       return;
     }
-    [strongSelf.viewController allowUserInteraction];
-    strongSelf.signOutFlowInProgress = NO;
-    [strongSelf.delegate showSignOutToast];
-    [strongSelf closeManageSyncSettings];
+    [weakSelf closeManageSyncSettings];
   };
-  self.authService->SignOut(
-      signin_metrics::ProfileSignout::kUserClickedSignoutSettings,
-      /*force_clear_browsing_data=*/NO, signOutCompletion);
+  [self.signoutActionSheetCoordinator start];
 }
 
 - (void)showAccountsPage {

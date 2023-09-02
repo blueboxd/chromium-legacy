@@ -12,6 +12,7 @@
 #include "ui/gfx/native_widget_types.h"
 
 using Account = content::IdentityRequestAccount;
+using TokenError = content::IdentityCredentialTokenError;
 
 // This class represents the interface used for communicating between the
 // identity dialog controller with the Android frontend.
@@ -76,6 +77,14 @@ class AccountSelectionView {
       const std::string& idp_for_display,
       const blink::mojom::RpContext& rp_context,
       const content::IdentityProviderMetadata& idp_metadata) = 0;
+
+  virtual void ShowErrorDialog(
+      const std::string& top_frame_for_display,
+      const absl::optional<std::string>& iframe_for_display,
+      const std::string& idp_for_display,
+      const blink::mojom::RpContext& rp_context,
+      const content::IdentityProviderMetadata& idp_metadata,
+      const absl::optional<TokenError>& error) = 0;
 
   virtual std::string GetTitle() const = 0;
   virtual absl::optional<std::string> GetSubtitle() const = 0;

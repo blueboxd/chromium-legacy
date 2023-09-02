@@ -740,10 +740,9 @@ class CORE_EXPORT Document : public ContainerNode,
   // Get the computed style for a given page and name. Note that when using the
   // function that doesn't provide a page name, layout needs to be complete,
   // since page names are determined during layout.
-  scoped_refptr<const ComputedStyle> StyleForPage(uint32_t page_index);
-  scoped_refptr<const ComputedStyle> StyleForPage(
-      uint32_t page_index,
-      const AtomicString& page_name);
+  const ComputedStyle* StyleForPage(uint32_t page_index);
+  const ComputedStyle* StyleForPage(uint32_t page_index,
+                                    const AtomicString& page_name);
 
   // Ensures that location-based data will be valid for a given node.
   //
@@ -1618,6 +1617,8 @@ class CORE_EXPORT Document : public ContainerNode,
   // https://crbug.com/1453291
   // The DOM Parts API: https://github.com/tbondwilkinson/dom-parts.
   DocumentPartRoot& getPartRoot();
+  DocumentPartRoot& EnsureDocumentPartRoot();
+  bool DOMPartsInUse() const { return document_part_root_; }
 
   // A non-null template_document_host_ implies that |this| was created by
   // EnsureTemplateDocument().
@@ -1954,8 +1955,10 @@ class CORE_EXPORT Document : public ContainerNode,
     Document& document_;
   };
 
-  bool IsDirAttributeDirty() { return dir_attribute_dirty_; }
-  void SetDirAttributeDirty() { dir_attribute_dirty_ = true; }
+  // Does an element in this document have an HTML dir attribute (or its
+  // implicit equivalent)?
+  bool HasDirAttribute() const { return has_dir_attribute_; }
+  void SetHasDirAttribute() { has_dir_attribute_ = true; }
 
   ResizeObserver& EnsureResizeObserver();
 
@@ -2657,7 +2660,7 @@ class CORE_EXPORT Document : public ContainerNode,
   bool had_find_in_page_render_subtree_active_match_ = false;
   bool had_find_in_page_beforematch_expanded_hidden_matchable_ = false;
 
-  bool dir_attribute_dirty_ = false;
+  bool has_dir_attribute_ = false;
 
   // True if the developer supplied a media query indicating that
   // the site has support for reduced motion.

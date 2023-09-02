@@ -32,9 +32,12 @@ using testing::Eq;
 using testing::Field;
 using testing::Invoke;
 using testing::NiceMock;
+using testing::Pair;
+using testing::Property;
 using testing::Ref;
 using testing::Return;
 using testing::UnorderedElementsAreArray;
+using testing::VariantWith;
 
 namespace autofill {
 
@@ -104,14 +107,14 @@ class MockAutofillManager : public AutofillManager {
                const FormFieldData& field,
                const CreditCard& credit_card,
                const std::u16string& cvc,
-               const AutofillTriggerSource trigger_source),
+               const AutofillTriggerDetails& trigger_details),
               (override));
   MOCK_METHOD(void,
               FillProfileFormImpl,
               (const FormData& form,
                const FormFieldData& field,
                const AutofillProfile& profile,
-               const AutofillTriggerSource trigger_source),
+               const AutofillTriggerDetails& trigger_details),
               (override));
   MOCK_METHOD(void,
               OnFocusNoLongerOnFormImpl,
@@ -121,7 +124,6 @@ class MockAutofillManager : public AutofillManager {
               OnDidFillAutofillFormDataImpl,
               (const FormData& form, const base::TimeTicks timestamp),
               (override));
-  MOCK_METHOD(void, OnDidPreviewAutofillFormDataImpl, (), (override));
   MOCK_METHOD(void, OnDidEndTextFieldEditingImpl, (), (override));
   MOCK_METHOD(void, OnHidePopupImpl, (), (override));
   MOCK_METHOD(void,
@@ -133,10 +135,6 @@ class MockAutofillManager : public AutofillManager {
               (const FormData& form,
                const FormFieldData& field,
                const std::u16string& old_value),
-              (override));
-  MOCK_METHOD(void,
-              PropagateAutofillPredictionsDeprecated,
-              (const std::vector<FormStructure*>& forms),
               (override));
   MOCK_METHOD(void,
               OnFormSubmittedImpl,
@@ -372,6 +370,7 @@ TEST_F(AutofillManagerTest, ObserverReceiveCalls) {
   auto f = Eq(form.global_id());
   auto g = Eq(other_form.global_id());
   auto ff = Eq(field.global_id());
+  auto ff_property = Property(&FormFieldData::global_id, field.global_id());
   auto heuristics = Eq(FieldTypeSource::kHeuristicsOrAutocomplete);
 
   MockAutofillManagerObserver observer;
@@ -401,6 +400,7 @@ TEST_F(AutofillManagerTest, ObserverReceiveCalls) {
   EXPECT_CALL(observer, OnBeforeLoadedServerPredictions).Times(0);
   EXPECT_CALL(observer, OnAfterLoadedServerPredictions).Times(0);
   EXPECT_CALL(observer, OnFieldTypesDetermined).Times(0);
+  EXPECT_CALL(observer, OnFillOrPreviewDataModelForm).Times(0);
   EXPECT_CALL(observer, OnFormSubmitted).Times(0);
 
   EXPECT_CALL(*manager_, ShouldParseForms)
@@ -408,7 +408,6 @@ TEST_F(AutofillManagerTest, ObserverReceiveCalls) {
       .WillRepeatedly(Return(true));
   EXPECT_CALL(*manager_, OnFocusNoLongerOnFormImpl).Times(AtLeast(0));
   EXPECT_CALL(*manager_, OnDidFillAutofillFormDataImpl).Times(AtLeast(0));
-  EXPECT_CALL(*manager_, OnDidPreviewAutofillFormDataImpl).Times(AtLeast(0));
   EXPECT_CALL(*manager_, OnDidEndTextFieldEditingImpl).Times(AtLeast(0));
   EXPECT_CALL(*manager_, OnSelectOrSelectListFieldOptionsDidChangeImpl)
       .Times(AtLeast(0));
@@ -473,6 +472,9 @@ TEST_F(AutofillManagerTest, ObserverReceiveCalls) {
   EXPECT_CALL(observer, OnBeforeJavaScriptChangedAutofilledValue(m, f, ff));
   EXPECT_CALL(observer, OnAfterJavaScriptChangedAutofilledValue(m, f, ff));
   manager_->OnJavaScriptChangedAutofilledValue(form, field, {});
+
+  // TODO(crbug.com/) Test in browser_autofill_manager_unittest.cc that
+  // FillOrPreviewForm() triggers OnFillOrPreviewDataModelForm().
 
   EXPECT_CALL(observer, OnFormSubmitted(m, f));
   manager_->OnFormSubmitted(form, true,

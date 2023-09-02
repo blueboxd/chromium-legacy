@@ -42,8 +42,7 @@ constexpr auto kSupportedFormTypes = base::MakeFixedFlatSet<autofill::FormType>(
 constexpr auto kAddressFieldTypes =
     base::MakeFixedFlatSet<autofill::FieldTypeGroup>(
         {autofill::FieldTypeGroup::kName, autofill::FieldTypeGroup::kEmail,
-         autofill::FieldTypeGroup::kPhoneHome,
-         autofill::FieldTypeGroup::kAddressHome});
+         autofill::FieldTypeGroup::kPhone, autofill::FieldTypeGroup::kAddress});
 
 bool IsVisibleTextField(const autofill::AutofillField& field) {
   return field.IsFocusable() && field.IsTextInputElement();
@@ -66,8 +65,7 @@ autofill::AutofillField* GetFieldToFill(
 
 bool IsNameOrAddress(autofill::FieldTypeGroup type_group) {
   return type_group == autofill::FieldTypeGroup::kName ||
-         type_group == autofill::FieldTypeGroup::kAddressHome ||
-         type_group == autofill::FieldTypeGroup::kAddressBilling;
+         type_group == autofill::FieldTypeGroup::kAddress;
 }
 
 // Returns `true` if `form` is considered an address form containing only an
@@ -414,11 +412,11 @@ void FastCheckoutClientImpl::TryToFillForms() {
                                             autofill::FormType::kAddressForm)] =
             FillingState::kFilling;
         static_cast<autofill::BrowserAutofillManager*>(autofill_manager_.get())
-            ->SetFastCheckoutRunId(autofill::FieldTypeGroup::kAddressHome,
-                                   run_id_);
+            ->SetFastCheckoutRunId(autofill::FieldTypeGroup::kAddress, run_id_);
         autofill_manager_->FillProfileForm(
             *autofill_profile, form->ToFormData(), *field,
-            autofill::AutofillTriggerSource::kFastCheckout);
+            autofill::AutofillTriggerDetails(
+                autofill::AutofillTriggerSource::kFastCheckout));
       }
     }
 
@@ -457,7 +455,7 @@ void FastCheckoutClientImpl::FillCreditCardForm(
       ->SetFastCheckoutRunId(autofill::FieldTypeGroup::kCreditCard, run_id_);
   autofill_manager_->FillCreditCardForm(
       form.ToFormData(), field, credit_card, cvc,
-      autofill::AutofillTriggerSource::kFastCheckout);
+      {.trigger_source = autofill::AutofillTriggerSource::kFastCheckout});
 }
 
 autofill::AutofillProfile*

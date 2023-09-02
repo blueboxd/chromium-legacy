@@ -863,9 +863,7 @@ SkiaRenderer::SkiaRenderer(const RendererSettings* settings,
       can_skip_render_pass_overlay_(
           base::FeatureList::IsEnabled(features::kCanSkipRenderPassOverlay)),
 #endif
-      is_using_raw_draw_(features::IsUsingRawDraw()),
-      is_using_graphite_(
-          base::FeatureList::IsEnabled(features::kSkiaGraphite)) {
+      is_using_raw_draw_(features::IsUsingRawDraw()) {
   DCHECK(skia_output_surface_);
   lock_set_for_external_use_.emplace(resource_provider, skia_output_surface_);
 
@@ -1631,34 +1629,6 @@ void SkiaRenderer::PrepareColorOrCanvasForRPDQ(
   }
 }
 
-bool SkiaRenderer::NeedsFlipY(const DrawQuad* quad) const {
-  // TODO(crbug.com/1449764): remove this workaround when bottom left origin
-  // image is supported by graphite.
-  if (!is_using_graphite_) {
-    return false;
-  }
-  switch (quad->material) {
-    case DrawQuad::Material::kTextureContent:
-      return TextureDrawQuad::MaterialCast(quad)->y_flipped;
-    case DrawQuad::Material::kAggregatedRenderPass: {
-      auto* render_pass_quad = AggregatedRenderPassDrawQuad::MaterialCast(quad);
-      auto bypass =
-          render_pass_bypass_quads_.find(render_pass_quad->render_pass_id);
-      if (bypass == render_pass_bypass_quads_.end()) {
-        return false;
-      }
-      const DrawQuad* bypass_quad = bypass->second;
-      if (RenderPassRemainsTransparent(
-              bypass_quad->shared_quad_state->blend_mode)) {
-        return false;
-      }
-      return NeedsFlipY(bypass_quad);
-    }
-    default:
-      return false;
-  }
-}
-
 SkiaRenderer::DrawQuadParams SkiaRenderer::CalculateDrawQuadParams(
     const gfx::AxisTransform2d& target_to_device,
     const absl::optional<gfx::Rect>& scissor_rect,
@@ -1671,11 +1641,6 @@ SkiaRenderer::DrawQuadParams SkiaRenderer::CalculateDrawQuadParams(
       GetSampling(quad), draw_region);
 
   params.content_device_transform.PostConcat(target_to_device);
-  if (NeedsFlipY(quad)) {
-    float height = quad->visible_rect.height();
-    params.content_device_transform.Scale(1, -1);
-    params.content_device_transform.Translate(0, -height);
-  }
   params.content_device_transform.Flatten();
 
   // Respect per-quad setting overrides as highest priority setting
@@ -3042,17 +3007,6 @@ SkiaRenderer::DrawRPDQParams SkiaRenderer::CalculateRPDQParams(
   // TODO(weiliangc): ChromeOS would need backdrop_filter_quality implemented
   if (backdrop_filters) {
     DCHECK(!backdrop_filters->IsEmpty());
-    cc::FilterOperations filter_operations;
-    for (const cc::FilterOperation& op : backdrop_filters->operations()) {
-      if (op.type() == cc::FilterOperation::BLUR) {
-        cc::FilterOperation blur_op(op);
-        blur_op.set_amount(op.amount() * quad->backdrop_filter_quality);
-        filter_operations.Append(blur_op);
-      } else {
-        filter_operations.Append(op);
-      }
-    }
-
     rpdq_params.backdrop_filter_quality = quad->backdrop_filter_quality;
 
     // quad->rect represents the layer's bounds *after* any display scale has
@@ -3066,7 +3020,7 @@ SkiaRenderer::DrawRPDQParams SkiaRenderer::CalculateRPDQParams(
       SkIRect filter_rect =
           inv_local_matrix.mapRect(gfx::RectToSkRect(quad->rect)).roundOut();
       auto bg_paint_filter = cc::RenderSurfaceFilters::BuildImageFilter(
-          filter_operations, gfx::SkIRectToRect(filter_rect));
+          *backdrop_filters, gfx::SkIRectToRect(filter_rect));
 
       auto sk_bg_filter =
           bg_paint_filter ? bg_paint_filter->cached_sk_filter_ : nullptr;

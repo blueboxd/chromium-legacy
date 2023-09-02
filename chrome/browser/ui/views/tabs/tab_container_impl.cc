@@ -139,8 +139,11 @@ void TabContainerImpl::SetAvailableWidthCallback(
 Tab* TabContainerImpl::AddTab(std::unique_ptr<Tab> tab,
                               int model_index,
                               TabPinned pinned) {
+  // First add the tab to the view model, this is done because AddChildView sets
+  // some tooltip information which tries to calculate the hit test, which needs
+  // information about its adjacent tabs which it gets from the view model.
+  AddTabToViewModel(tab.get(), model_index, pinned);
   Tab* tab_ptr = AddChildView(std::move(tab));
-  AddTabToViewModel(tab_ptr, model_index, pinned);
   OrderTabSlotView(tab_ptr);
 
   // Don't animate the first tab, it looks weird, and don't animate anything
@@ -1116,8 +1119,7 @@ void TabContainerImpl::StartInsertTabAnimation(int model_index) {
   ExitTabClosingMode();
 
   gfx::Rect bounds = GetTabAtModelIndex(model_index)->bounds();
-  bounds.set_height(GetLayoutConstant(TAB_HEIGHT));
-  bounds.set_y(GetLayoutConstant(TAB_STRIP_PADDING));
+  bounds.set_height(GetLayoutConstant(TAB_STRIP_HEIGHT));
 
   // Adjust the starting bounds of the new tab.
   const int tab_overlap = TabStyle::Get()->GetTabOverlap();
@@ -1425,15 +1427,6 @@ bool TabContainerImpl::IsPointInTab(
 
   const gfx::Point point_in_tab_coords =
       View::ConvertPointToTarget(this, tab, point_in_tabstrip_coords);
-
-  if (point_in_tab_coords.y() < tab->bounds().y() &&
-      (GetWidget()->IsMaximized() || GetWidget()->IsFullscreen())) {
-    // In maximized and fullscreen windows, tab hit tests should reach the top
-    // of the screen to make it easier to click on tabs quickly (Fitt's law).
-    return tab->HitTestPoint(
-        gfx::Point(point_in_tab_coords.x(), tab->bounds().y()));
-  }
-
   return tab->HitTestPoint(point_in_tab_coords);
 }
 

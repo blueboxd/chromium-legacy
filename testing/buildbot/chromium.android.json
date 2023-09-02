@@ -9052,7 +9052,7 @@
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 3
+          "shards": 2
         },
         "test": "services_unittests",
         "test_id_prefix": "ninja://services:services_unittests/"
@@ -21208,6 +21208,32 @@
       "net_unittests"
     ]
   },
+  "android-cronet-mainline-clang-x86-dbg": {
+    "additional_compile_targets": [
+      "cronet_package",
+      "cronet_perf_test_apk",
+      "cronet_sample_test_apk",
+      "cronet_smoketests_missing_native_library_instrumentation_apk",
+      "cronet_smoketests_platform_only_instrumentation_apk",
+      "cronet_test_instrumentation_apk",
+      "cronet_tests_android",
+      "cronet_unittests_android",
+      "net_unittests"
+    ]
+  },
+  "android-cronet-mainline-clang-x86-rel": {
+    "additional_compile_targets": [
+      "cronet_package",
+      "cronet_perf_test_apk",
+      "cronet_sample_test_apk",
+      "cronet_smoketests_missing_native_library_instrumentation_apk",
+      "cronet_smoketests_platform_only_instrumentation_apk",
+      "cronet_test_instrumentation_apk",
+      "cronet_tests_android",
+      "cronet_unittests_android",
+      "net_unittests"
+    ]
+  },
   "android-cronet-x64-dbg": {
     "additional_compile_targets": [
       "cronet_package",
@@ -26210,7 +26236,7 @@
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 6
+          "shards": 5
         },
         "test": "content_shell_test_apk",
         "test_id_prefix": "ninja://content/shell/android:content_shell_test_apk/"
@@ -28584,7 +28610,7 @@
             }
           ],
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 21
+          "shards": 20
         },
         "test": "webview_instrumentation_test_apk",
         "test_id_prefix": "ninja://android_webview/test:webview_instrumentation_test_apk/"

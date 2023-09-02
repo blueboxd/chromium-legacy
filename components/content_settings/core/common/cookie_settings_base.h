@@ -87,6 +87,8 @@ class CookieSettingsBase {
 
   class CookieSettingWithMetadata {
    public:
+    CookieSettingWithMetadata() = default;
+
     CookieSettingWithMetadata(
         ContentSetting cookie_setting,
         absl::optional<ThirdPartyBlockingScope> third_party_blocking_scope,
@@ -142,7 +144,8 @@ class CookieSettingsBase {
       const GURL& url,
       const net::SiteForCookies& site_for_cookies,
       const absl::optional<url::Origin>& top_frame_origin,
-      net::CookieSettingOverrides overrides) const;
+      net::CookieSettingOverrides overrides,
+      CookieSettingWithMetadata* cookie_settings = nullptr) const;
 
   // Returns true if the cookie set by a page identified by |url| should be
   // session only. Querying this only makes sense if |IsFullCookieAccessAllowed|
@@ -215,6 +218,9 @@ class CookieSettingsBase {
   bool ShouldConsider3pcdSupportSettings(
       net::CookieSettingOverrides overrides) const;
 
+  bool ShouldConsider3pcdMetadataGrantsSettings(
+      net::CookieSettingOverrides overrides) const;
+
   // Returns a set of overrides that includes Storage Access API and Top-Level
   // Storage Access API overrides iff the config booleans indicate that Storage
   // Access API and Top-Level Storage Access API should unlock access to DOM
@@ -260,9 +266,8 @@ class CookieSettingsBase {
  private:
   // Returns a content setting for the requested parameters and populates |info|
   // if not null. Implementations might only implement a subset of all
-  // ContentSettingsTypes. Currently only COOKIES,
-  // TPCD_SUPPORT, STORAGE_ACCESS and TOP_LEVEL_STORAGE_ACCESS
-  // are required.
+  // ContentSettingsTypes. Currently only COOKIES, TPCD_SUPPORT, STORAGE_ACCESS,
+  // TPCD_METADATA_GRANTS, and TOP_LEVEL_STORAGE_ACCESS are required.
   virtual ContentSetting GetContentSetting(
       const GURL& primary_url,
       const GURL& secondary_url,

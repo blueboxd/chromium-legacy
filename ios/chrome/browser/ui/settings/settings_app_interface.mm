@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/settings/settings_app_interface.h"
 
+#import "base/containers/contains.h"
 #import "base/strings/sys_string_conversions.h"
 #import "components/browsing_data/core/pref_names.h"
 #import "components/metrics/metrics_pref_names.h"
@@ -11,9 +12,6 @@
 #import "components/prefs/pref_member.h"
 #import "components/prefs/pref_service.h"
 #import "components/search_engines/template_url_service.h"
-#import "components/supervised_user/core/browser/supervised_user_settings_service.h"
-#import "components/supervised_user/core/browser/supervised_user_url_filter.h"
-#import "components/supervised_user/core/common/supervised_user_constants.h"
 #import "ios/chrome/app/main_controller.h"
 #import "ios/chrome/browser/content_settings/host_content_settings_map_factory.h"
 #import "ios/chrome/browser/search_engines/template_url_service_factory.h"
@@ -21,7 +19,6 @@
 #import "ios/chrome/browser/shared/model/browser/browser_provider_interface.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/shared/model/prefs/pref_names.h"
-#import "ios/chrome/browser/supervised_user/supervised_user_settings_service_factory.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/app/tab_test_util.h"
 #import "ios/web/public/navigation/navigation_manager.h"
@@ -34,10 +31,9 @@ std::string portForRewrite;
 
 bool HostToLocalHostRewrite(GURL* url, web::BrowserState* browser_state) {
   DCHECK(url);
-  for (std::string host : listHosts) {
-    if (url->host().find(host) != std::string::npos) {
-      *url =
-          GURL(std::string("http://127.0.0.1:") + portForRewrite + "/" + host);
+  for (const std::string& host : listHosts) {
+    if (base::Contains(url->host(), host)) {
+      *url = GURL("http://127.0.0.1:" + portForRewrite + "/" + host);
       return true;
     }
   }
@@ -112,24 +108,6 @@ bool HostToLocalHostRewrite(GURL* url, web::BrowserState* browser_state) {
   service->SetUserSelectedDefaultSearchProvider(templateURL);
 }
 
-+ (void)setSupervisedUserURLFilterBehavior:
-    (supervised_user::SupervisedUserURLFilter::FilteringBehavior)behavior {
-  supervised_user::SupervisedUserSettingsService* settings_service =
-      SupervisedUserSettingsServiceFactory::GetForBrowserState(
-          chrome_test_util::GetOriginalBrowserState());
-  settings_service->SetLocalSetting(
-      supervised_user::kContentPackDefaultFilteringBehavior,
-      base::Value(behavior));
-}
-
-+ (void)resetSupervisedUserURLFilterBehavior {
-  supervised_user::SupervisedUserSettingsService* settings_service =
-      SupervisedUserSettingsServiceFactory::GetForBrowserState(
-          chrome_test_util::GetOriginalBrowserState());
-  settings_service->RemoveLocalSetting(
-      supervised_user::kContentPackDefaultFilteringBehavior);
-}
-
 + (void)addURLRewriterForHosts:(NSArray<NSString*>*)hosts
                         onPort:(NSString*)port {
   listHosts.clear();
@@ -141,6 +119,13 @@ bool HostToLocalHostRewrite(GURL* url, web::BrowserState* browser_state) {
   chrome_test_util::GetCurrentWebState()
       ->GetNavigationManager()
       ->AddTransientURLRewriter(&HostToLocalHostRewrite);
+}
+
++ (void)resetAddressBarPreference {
+  ChromeBrowserState* browserState =
+      chrome_test_util::GetOriginalBrowserState();
+  PrefService* preferences = browserState->GetPrefs();
+  preferences->SetBoolean(prefs::kBottomOmnibox, false);
 }
 
 @end

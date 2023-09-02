@@ -106,9 +106,6 @@ class BrowserFrame : public views::Widget, public views::ContextMenuController {
   // popups, the web contents for app windows and varies for fullscreen windows.
   int GetTopInset() const;
 
-  // Returns the amount that the theme background should be inset.
-  int GetThemeBackgroundXInset() const;
-
   // Tells the frame to update the throbber.
   void UpdateThrobber(bool running);
 
@@ -188,9 +185,6 @@ class BrowserFrame : public views::Widget, public views::ContextMenuController {
 
   // Callback for MenuRunner.
   void OnMenuClosed();
-
-  // Select a native theme that is appropriate for the current context.
-  void SelectNativeTheme();
 
   // Regenerate the frame on theme change if necessary. Returns true if
   // regenerated.

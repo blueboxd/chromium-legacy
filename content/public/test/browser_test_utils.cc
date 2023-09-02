@@ -170,7 +170,7 @@ void BuildSimpleWebKeyEvent(blink::WebInputEvent::Type type,
   event->native_key_code = ui::KeycodeConverter::DomCodeToNativeKeycode(code);
   event->windows_key_code = key_code;
   event->is_system_key = false;
-  event->skip_in_browser = true;
+  event->skip_if_unhandled = true;
 
   if (type == blink::WebInputEvent::Type::kChar ||
       type == blink::WebInputEvent::Type::kRawKeyDown) {
@@ -948,22 +948,22 @@ void SimulateMouseClickAt(WebContents* web_contents,
 }
 
 gfx::PointF GetCenterCoordinatesOfElementWithId(
-    content::WebContents* web_contents,
+    const ToRenderFrameHost& adapter,
     base::StringPiece id) {
-  float x = EvalJs(web_contents,
-                   JsReplace("const bounds = "
-                             "document.getElementById($1)."
-                             "getBoundingClientRect();"
-                             "Math.floor(bounds.left + bounds.width / 2)",
-                             id))
-                .ExtractDouble();
-  float y = EvalJs(web_contents,
-                   JsReplace("const bounds = "
-                             "document.getElementById($1)."
-                             "getBoundingClientRect();"
-                             "Math.floor(bounds.top + bounds.height / 2)",
-                             id))
-                .ExtractDouble();
+  float x =
+      EvalJs(adapter, JsReplace("const bounds = "
+                                "document.getElementById($1)."
+                                "getBoundingClientRect();"
+                                "Math.floor(bounds.left + bounds.width / 2)",
+                                id))
+          .ExtractDouble();
+  float y =
+      EvalJs(adapter, JsReplace("const bounds = "
+                                "document.getElementById($1)."
+                                "getBoundingClientRect();"
+                                "Math.floor(bounds.top + bounds.height / 2)",
+                                id))
+          .ExtractDouble();
   return gfx::PointF(x, y);
 }
 
@@ -1825,6 +1825,15 @@ std::vector<RenderFrameHost*> CollectAllRenderFrameHosts(
   web_contents->ForEachRenderFrameHost(
       [&](RenderFrameHost* rfh) { visited_frames.push_back(rfh); });
   return visited_frames;
+}
+
+std::vector<WebContents*> GetAllWebContents() {
+  std::vector<WebContentsImpl*> all_wci = WebContentsImpl::GetAllWebContents();
+  std::vector<WebContents*> all_wc;
+  std::transform(all_wci.cbegin(), all_wci.cend(), std::back_inserter(all_wc),
+                 [](WebContentsImpl* wc) { return wc; });
+
+  return all_wc;
 }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)

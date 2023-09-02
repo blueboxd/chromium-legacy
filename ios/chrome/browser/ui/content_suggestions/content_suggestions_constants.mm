@@ -20,21 +20,14 @@ NSString* const kContentSuggestionsShortcutsAccessibilityIdentifierPrefix =
 NSString* const kMagicStackScrollViewAccessibilityIdentifier =
     @"MagicStackScrollViewAccessibilityIdentifier";
 
+NSString* const kMagicStackViewAccessibilityIdentifier = @"kMagicStack";
+
 const CGFloat kMagicStackWideWidth = 430;
 
 const CGFloat kMostVisitedBottomMargin = 13;
 
-const int kTileAblationImpressionThresholdMinutes = 5;
-const int kTileAblationMinimumUseThresholdInDays = 7;
-const int kTileAblationMaximumUseThresholdInDays = 14;
-const int kMinimumImpressionThresholdTileAblation = 10;
-const int kMaximumImpressionThresholdTileAblation = 20;
-NSString* const kLastNTPImpressionRecordedKey = @"LastNTPImpressionRecorded";
-NSString* const kNumberOfNTPImpressionsRecordedKey =
-    @"NumberOfNTPImpressionsRecorded";
-NSString* const kFirstImpressionRecordedTileAblationKey =
-    @"kFirstImpressionRecordedTileAblationKey";
-NSString* const kDoneWithTileAblationKey = @"DoneWithTileAblation";
+const CGFloat kMagicStackFaviconWidth = 28;
+
 
 ContentSuggestionsModuleType SetUpListModuleTypeForSetUpListType(
     SetUpListItemType type) {

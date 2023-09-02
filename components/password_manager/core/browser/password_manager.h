@@ -191,6 +191,11 @@ class PasswordManager : public PasswordManagerInterface {
     return GetSubmittedManager();
   }
 
+  const std::map<autofill::FormSignature, FormPredictions>&
+  GetFormPredictionsForTesting() const {
+    return predictions_;
+  }
+
   void set_leak_factory(std::unique_ptr<LeakDetectionCheckFactory> factory) {
     leak_delegate_.set_leak_factory(std::move(factory));
   }
@@ -301,6 +306,12 @@ class PasswordManager : public PasswordManagerInterface {
   // determine the match. Returns nullptr when no matched manager is found.
   PasswordFormManager* GetMatchedManager(PasswordManagerDriver* driver,
                                          autofill::FormRendererId form_id);
+
+  // Finds FormPredictions for a form containing field identified by |field_id|
+  // and |driver_id|.
+  absl::optional<FormPredictions> FindPredictionsForField(
+      autofill::FieldRendererId field_id,
+      int driver_id);
 
   //  If |possible_username_.form_predictions| is missing, this functions tries
   //  to find predictions for the form which contains |possible_username_| in

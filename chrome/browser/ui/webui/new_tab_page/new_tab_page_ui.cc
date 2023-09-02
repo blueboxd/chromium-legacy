@@ -66,6 +66,7 @@
 #include "components/feed/feed_feature_list.h"
 #include "components/google/core/common/google_util.h"
 #include "components/grit/components_scaled_resources.h"
+#include "components/history_clusters/core/features.h"
 #include "components/page_image_service/image_service.h"
 #include "components/page_image_service/image_service_handler.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -235,6 +236,8 @@ content::WebUIDataSource* CreateAndAddNewTabPageUiHtmlSource(Profile* profile) {
                                                ntp_features::kNtpModulesLoad));
   source->AddInteger("modulesLoadTimeout",
                      ntp_features::GetModulesLoadTimeout().InMilliseconds());
+  source->AddInteger("modulesMaxColumnCount",
+                     ntp_features::GetModulesMaxColumnCount());
   source->AddBoolean("mostVisitedReflowOnOverflowEnabled",
                      base::FeatureList::IsEnabled(
                          ntp_features::kNtpMostVisitedReflowOnOverflow));
@@ -283,6 +286,7 @@ content::WebUIDataSource* CreateAndAddNewTabPageUiHtmlSource(Profile* profile) {
       {"backgroundsMenuItem", IDS_NTP_CUSTOMIZE_MENU_BACKGROUND_LABEL},
       {"cancelButton", IDS_CANCEL},
       {"colorPickerLabel", IDS_NTP_CUSTOMIZE_COLOR_PICKER_LABEL},
+      {"hueSliderTitle", IDS_NTP_CUSTOMIZE_COLOR_HUE_SLIDER_TITLE},
       {"customBackgroundDisabled",
        IDS_NTP_CUSTOMIZE_MENU_BACKGROUND_DISABLED_LABEL},
       {"customizeButton", IDS_NTP_CUSTOMIZE_BUTTON_LABEL},
@@ -403,7 +407,10 @@ content::WebUIDataSource* CreateAndAddNewTabPageUiHtmlSource(Profile* profile) {
       {"modulesCartLower", IDS_NTP_MODULES_CART_LOWER},
       {"modulesCartLowerThese", IDS_NTP_MODULES_CART_LOWER_THESE},
       {"modulesCartLowerYour", IDS_NTP_MODULES_CART_LOWER_YOUR},
+      {"modulesDisableToastMessage",
+       IDS_NTP_MODULES_HISTORY_CLUSTERS_DISABLE_TOAST_MESSAGE},
       {"modulesDriveSentence", IDS_NTP_MODULES_DRIVE_SENTENCE},
+      {"modulesDriveSentenceV2", IDS_NTP_MODULES_DRIVE_SENTENCE_V2},
       {"modulesDriveSentence2", IDS_NTP_MODULES_DRIVE_SENTENCE2},
       {"modulesDriveFilesSentence", IDS_NTP_MODULES_DRIVE_FILES_SENTENCE},
       {"modulesDriveFilesLower", IDS_NTP_MODULES_DRIVE_FILES_LOWER},
@@ -489,10 +496,10 @@ content::WebUIDataSource* CreateAndAddNewTabPageUiHtmlSource(Profile* profile) {
        IDS_NTP_MODULES_FIRST_RUN_EXPERIENCE_OPT_OUT},
       {"modulesFirstRunExperienceOptOutToast",
        IDS_NTP_MODULES_FIRST_RUN_EXPERIENCE_OPT_OUT_TOAST},
-      {"modulesJourneysResumeJourney", IDS_NTP_MODULES_RESUME_YOUR_JOURNEY},
       {"modulesJourneysShowAll", IDS_NTP_MODULES_SHOW_ALL},
       {"modulesJourneysInfo", IDS_NTP_MODULES_HISTORY_CLUSTERS_INFO},
-      {"modulesJourneysSentence2", IDS_NTP_MODULES_HISTORY_CLUSTERS_SENTENCE2},
+      {"modulesThisTypeOfCardText",
+       IDS_NTP_MODULES_HISTORY_CLUSTERS_DISABLE_TOAST_NAME},
       {"modulesJourneyDisable", IDS_NTP_MODULES_HISTORY_CLUSTERS_DISABLE_TEXT},
       {"modulesJourneysDismissButton",
        IDS_NTP_MODULES_HISTORY_CLUSTERS_DISMISS_BUTTON},
@@ -513,6 +520,8 @@ content::WebUIDataSource* CreateAndAddNewTabPageUiHtmlSource(Profile* profile) {
        IDS_NTP_MODULES_QUEST_CART_TILE_LABEL_SINGULAR},
       {"modulesJourneysCartTileLabelDefault",
        IDS_NTP_MODULES_QUEST_CART_TILE_LABEL_DEFAULT},
+      {"modulesJourneysResumeJourney",
+       IDS_NTP_MODULES_HISTORY_CLUSTERS_RESUME_BROWSING},
       {"modulesMoreActions", IDS_NTP_MODULES_MORE_ACTIONS},
 
       // Middle slot promo.
@@ -526,6 +535,14 @@ content::WebUIDataSource* CreateAndAddNewTabPageUiHtmlSource(Profile* profile) {
 
   source->AddBoolean("wideModulesEnabled", base::FeatureList::IsEnabled(
                                                ntp_features::kNtpWideModules));
+
+  if (base::FeatureList::IsEnabled(history_clusters::kRenameJourneys)) {
+    source->AddLocalizedString("modulesJourneysInfo",
+                               IDS_NTP_MODULES_HISTORY_CLUSTERS_INFO2);
+    source->AddLocalizedString(
+        "modulesJourneyDisable",
+        IDS_NTP_MODULES_HISTORY_CLUSTERS_DISABLE_DROPDOWN_TEXT);
+  }
 
   source->AddBoolean(
       "modulesHeaderIconEnabled",
@@ -575,9 +592,6 @@ content::WebUIDataSource* CreateAndAddNewTabPageUiHtmlSource(Profile* profile) {
       "moduleRecipeExtendedExperimentEnabled",
       !splitExperimentGroup.empty() && (splitExperimentGroup[0] == "historical" || splitExperimentGroup[0] == "mix"));
 
-  source->AddBoolean("removeScrim", base::FeatureList::IsEnabled(
-                                        ntp_features::kNtpRemoveScrim));
-
   source->AddBoolean("modulesChromeCartInHistoryClustersModuleEnabled",
                      base::FeatureList::IsEnabled(
                          ntp_features::kNtpChromeCartInHistoryClusterModule));
@@ -587,6 +601,10 @@ content::WebUIDataSource* CreateAndAddNewTabPageUiHtmlSource(Profile* profile) {
       IsCartModuleEnabled() &&
           base::FeatureList::IsEnabled(
               ntp_features::kNtpChromeCartInHistoryClusterModule));
+
+  source->AddBoolean("historyClustersModuleDiscountsEnabled",
+                     base::FeatureList::IsEnabled(
+                         ntp_features::kNtpHistoryClustersModuleDiscounts));
 
   webui::SetupChromeRefresh2023(source);
 

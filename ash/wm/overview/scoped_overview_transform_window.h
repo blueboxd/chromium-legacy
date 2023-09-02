@@ -11,6 +11,7 @@
 #include "ash/ash_export.h"
 #include "ash/wm/overview/overview_session.h"
 #include "ash/wm/overview/overview_types.h"
+#include "ash/wm/raster_scale/raster_scale_layer_observer.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -117,18 +118,16 @@ class ASH_EXPORT ScopedOverviewTransformWindow
   gfx::RectF ShrinkRectToFitPreservingAspectRatio(const gfx::RectF& rect,
                                                   const gfx::RectF& bounds,
                                                   int top_view_inset,
-                                                  int title_height);
+                                                  int title_height) const;
 
   // Returns the window used to show the content in overview mode.
   // For minimized window this will be a window that hosts mirrored layers.
-  aura::Window* GetOverviewWindow() const;
+  aura::Window* GetOverviewWindow();
 
   // Closes the transient root of the window managed by |this|.
   void Close();
 
-  // TODO(sammiequon): Rename this function as tucked floated windows behave the
-  // same way as minimized windows.
-  bool IsMinimized() const;
+  bool IsMinimizedOrTucked() const;
 
   // Ensures that a window is visible by setting its opacity to 1.
   void EnsureVisible();
@@ -161,12 +160,12 @@ class ASH_EXPORT ScopedOverviewTransformWindow
   OverviewGridWindowFillMode type() const { return type_; }
 
  private:
-  friend class OverviewHighlightControllerTest;
+  friend class OverviewFocusCyclerTest;
   friend class OverviewTestBase;
   FRIEND_TEST_ALL_PREFIXES(OverviewSessionTest, CloseAnimationShadow);
   class LayerCachingAndFilteringObserver;
 
-  // If true, makes Close() execute synchronously when used in tests.
+  // If true, makes `CloseWidget()` execute synchronously when used in tests.
   static void SetImmediateCloseForTests(bool immediate);
 
   // Closes the window managed by |this|.
@@ -216,6 +215,11 @@ class ASH_EXPORT ScopedOverviewTransformWindow
 
   base::ScopedMultiSourceObservation<aura::Window, aura::WindowObserver>
       window_observations_{this};
+
+  // While the transform window exists, apply dynamic raster scale to the
+  // underlying window.
+  absl::optional<ScopedRasterScaleLayerObserverLock>
+      raster_scale_observer_lock_;
 
   base::WeakPtrFactory<ScopedOverviewTransformWindow> weak_ptr_factory_{this};
 };

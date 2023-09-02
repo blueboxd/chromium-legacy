@@ -30,6 +30,7 @@
 #include "base/uuid.h"
 #include "components/aggregation_service/features.h"
 #include "components/attribution_reporting/destination_set.h"
+#include "components/attribution_reporting/event_report_windows.h"
 #include "components/attribution_reporting/filters.h"
 #include "components/attribution_reporting/source_registration.h"
 #include "components/attribution_reporting/source_type.mojom.h"
@@ -42,6 +43,7 @@
 #include "content/browser/attribution_reporting/attribution_reporting.pb.h"
 #include "content/browser/attribution_reporting/attribution_test_utils.h"
 #include "content/browser/attribution_reporting/attribution_trigger.h"
+#include "content/browser/attribution_reporting/sql_utils.h"
 #include "content/browser/attribution_reporting/storable_source.h"
 #include "content/browser/attribution_reporting/store_source_result.h"
 #include "content/browser/attribution_reporting/stored_source.h"
@@ -995,12 +997,10 @@ TEST_P(AttributionStorageSqlTest, ClearData_KeepRateLimitData) {
 
 TEST_P(AttributionStorageSqlTest, DeleteAttributionDataByDataKey) {
   OpenDatabase();
-  storage()->StoreSource(
-      SourceBuilder()
-          .SetReportingOrigin(
-              *attribution_reporting::SuitableOrigin::Deserialize(
-                  "https://report1.test"))
-          .Build());
+  storage()->StoreSource(SourceBuilder()
+                             .SetReportingOrigin(*SuitableOrigin::Deserialize(
+                                 "https://report1.test"))
+                             .Build());
 
   delegate()->set_null_aggregatable_reports(
       {AttributionStorageDelegate::NullAggregatableReport{
@@ -1009,8 +1009,7 @@ TEST_P(AttributionStorageSqlTest, DeleteAttributionDataByDataKey) {
   AttributionTrigger trigger =
       DefaultAggregatableTriggerBuilder()
           .SetReportingOrigin(
-              *attribution_reporting::SuitableOrigin::Deserialize(
-                  "https://report2.test"))
+              *SuitableOrigin::Deserialize("https://report2.test"))
           .Build();
   storage()->MaybeCreateAndStoreReport(trigger);
 
@@ -1579,7 +1578,7 @@ TEST_P(AttributionStorageSqlTest, ReportTimes) {
           .expiry = base::Days(4),
           .expected_expiry_time = kSourceTime + base::Days(4),
           .expected_event_report_windows =
-              *attribution_reporting::EventReportWindows::Create(
+              *attribution_reporting::EventReportWindows::CreateWindows(
                   base::Days(0), {base::Days(4)}),
           .expected_aggregatable_report_window_time =
               kSourceTime + base::Days(4),
@@ -1589,7 +1588,7 @@ TEST_P(AttributionStorageSqlTest, ReportTimes) {
           .event_report_window = base::Days(4),
           .expected_expiry_time = kSourceTime + base::Days(30),
           .expected_event_report_windows =
-              *attribution_reporting::EventReportWindows::Create(
+              *attribution_reporting::EventReportWindows::CreateWindows(
                   base::Days(0), {base::Days(4)}),
           .expected_aggregatable_report_window_time =
               kSourceTime + base::Days(30),
@@ -1600,7 +1599,7 @@ TEST_P(AttributionStorageSqlTest, ReportTimes) {
           .event_report_window = base::Days(30),
           .expected_expiry_time = kSourceTime + base::Days(4),
           .expected_event_report_windows =
-              *attribution_reporting::EventReportWindows::Create(
+              *attribution_reporting::EventReportWindows::CreateWindows(
                   base::Days(0), {base::Days(4)}),
           .expected_aggregatable_report_window_time =
               kSourceTime + base::Days(4),
@@ -1610,7 +1609,7 @@ TEST_P(AttributionStorageSqlTest, ReportTimes) {
           .aggregatable_report_window = base::Days(4),
           .expected_expiry_time = kSourceTime + base::Days(30),
           .expected_event_report_windows =
-              *attribution_reporting::EventReportWindows::Create(
+              *attribution_reporting::EventReportWindows::CreateWindows(
                   base::Days(0), {base::Days(30)}),
           .expected_aggregatable_report_window_time =
               kSourceTime + base::Days(4),
@@ -1621,7 +1620,7 @@ TEST_P(AttributionStorageSqlTest, ReportTimes) {
           .aggregatable_report_window = base::Days(30),
           .expected_expiry_time = kSourceTime + base::Days(4),
           .expected_event_report_windows =
-              *attribution_reporting::EventReportWindows::Create(
+              *attribution_reporting::EventReportWindows::CreateWindows(
                   base::Days(0), {base::Days(4)}),
           .expected_aggregatable_report_window_time =
               kSourceTime + base::Days(4),
@@ -1633,7 +1632,7 @@ TEST_P(AttributionStorageSqlTest, ReportTimes) {
           .aggregatable_report_window = base::Days(5),
           .expected_expiry_time = kSourceTime + base::Days(9),
           .expected_event_report_windows =
-              *attribution_reporting::EventReportWindows::Create(
+              *attribution_reporting::EventReportWindows::CreateWindows(
                   base::Days(0), {base::Days(7)}),
           .expected_aggregatable_report_window_time =
               kSourceTime + base::Days(5),
@@ -1643,7 +1642,9 @@ TEST_P(AttributionStorageSqlTest, ReportTimes) {
   for (const auto& test_case : kTestCases) {
     attribution_reporting::SourceRegistration reg(destinations);
     reg.expiry = test_case.expiry.value_or(base::Days(30));
-    reg.event_report_window = test_case.event_report_window;
+    reg.event_report_windows =
+        attribution_reporting::EventReportWindows::CreateSingularWindow(
+            test_case.event_report_window.value_or(*reg.expiry));
     reg.aggregatable_report_window = test_case.aggregatable_report_window;
 
     storage()->StoreSource(
@@ -1735,6 +1736,37 @@ TEST_P(AttributionStorageSqlTest,
       CloseDatabase();
     }
   }
+}
+
+TEST_P(AttributionStorageSqlTest,
+       RandomizedResponseRateNotStored_RecalculatedWhenHandled) {
+  {
+    OpenDatabase();
+    storage()->StoreSource(SourceBuilder().Build());
+    CloseDatabase();
+  }
+
+  {
+    sql::Database raw_db;
+    ASSERT_TRUE(raw_db.Open(db_path()));
+
+    static constexpr char kUpdateSql[] =
+        "UPDATE sources SET read_only_source_data=?";
+    sql::Statement statement(raw_db.GetUniqueStatement(kUpdateSql));
+    // `randomized_response_rate` field will not be set in the serialized proto.
+    statement.BindBlob(
+        0, SerializeReadOnlySourceData(
+               *attribution_reporting::EventReportWindows::CreateWindows(
+                   base::Seconds(0), {base::Days(1)}),
+               /*max_event_level_reports=*/3, /*randomized_response_rate=*/-1));
+    ASSERT_TRUE(statement.Run());
+  }
+
+  OpenDatabase();
+
+  delegate()->set_randomized_response_rate(0.2);
+  EXPECT_THAT(storage()->GetActiveSources(),
+              ElementsAre(RandomizedResponseRateIs(0.2)));
 }
 
 TEST_P(AttributionStorageSqlTest, InvalidReportingOrigin_FailsDeserializaiton) {

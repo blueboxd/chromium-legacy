@@ -60,11 +60,16 @@ void SegmentInfoCache::UpdateSegmentInfo(
     ModelSource model_source,
     absl::optional<SegmentInfo> segment_info) {
   if (segment_info.has_value()) {
+    segment_info->set_model_source(model_source);
     segment_info_cache_[std::make_pair(segment_id, model_source)] =
         std::move(segment_info.value());
   } else {
-    segment_info_cache_.erase(
-        segment_info_cache_.find(std::make_pair(segment_id, model_source)));
+    auto iter =
+        segment_info_cache_.find(std::make_pair(segment_id, model_source));
+    if (iter == segment_info_cache_.end()) {
+      return;
+    }
+    segment_info_cache_.erase(iter);
   }
 }
 

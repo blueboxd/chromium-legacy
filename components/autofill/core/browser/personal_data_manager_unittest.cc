@@ -37,8 +37,8 @@
 #include "components/autofill/core/browser/field_types.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/metrics/autofill_metrics.h"
+#include "components/autofill/core/browser/metrics/payments/mandatory_reauth_metrics.h"
 #include "components/autofill/core/browser/personal_data_manager_test_base.h"
-#include "components/autofill/core/browser/sync_utils.h"
 #include "components/autofill/core/browser/test_autofill_clock.h"
 #include "components/autofill/core/browser/ui/label_formatter_utils.h"
 #include "components/autofill/core/browser/ui/suggestion.h"
@@ -944,28 +944,60 @@ TEST_F(
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(
       features::kAutofillEnablePaymentsMandatoryReauth);
+  base::HistogramTester histogram_tester;
   for (int i = 0; i < prefs::kMaxValueForMandatoryReauthPromoShownCounter;
        i++) {
+    // This also verifies that ShouldShowPaymentMethodsMandatoryReauthPromo()
+    // works as expected when below the max cap.
     EXPECT_TRUE(personal_data_->ShouldShowPaymentMethodsMandatoryReauthPromo());
     personal_data_->IncrementPaymentMethodsMandatoryReauthPromoShownCounter();
   }
 
   EXPECT_FALSE(personal_data_->ShouldShowPaymentMethodsMandatoryReauthPromo());
+  histogram_tester.ExpectUniqueSample(
+      "Autofill.PaymentMethods.MandatoryReauth.CheckoutFlow."
+      "ReauthOfferOptInDecision",
+      autofill_metrics::MandatoryReauthOfferOptInDecision::
+          kBlockedByStrikeDatabase,
+      1);
 }
 
 // Test that
 // `PersonalDataManager::ShouldShowPaymentMethodsMandatoryReauthPromo()`
-// returns that we should not show the promo if the user has already made a
-// decision.
-TEST_F(
-    PersonalDataManagerTest,
-    ShouldShowPaymentMethodsMandatoryReauthPromo_UserHasMadeADecisionAlready) {
+// returns that we should not show the promo if the user already opted in.
+TEST_F(PersonalDataManagerTest,
+       ShouldShowPaymentMethodsMandatoryReauthPromo_UserOptedInAlready) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(
       features::kAutofillEnablePaymentsMandatoryReauth);
+  base::HistogramTester histogram_tester;
+  // Simulate user is already opted in.
   personal_data_->SetPaymentMethodsMandatoryReauthEnabled(true);
 
   EXPECT_FALSE(personal_data_->ShouldShowPaymentMethodsMandatoryReauthPromo());
+  histogram_tester.ExpectUniqueSample(
+      "Autofill.PaymentMethods.MandatoryReauth.CheckoutFlow."
+      "ReauthOfferOptInDecision",
+      autofill_metrics::MandatoryReauthOfferOptInDecision::kAlreadyOptedIn, 1);
+}
+
+// Test that
+// `PersonalDataManager::ShouldShowPaymentMethodsMandatoryReauthPromo()`
+// returns that we should not show the promo if the user has already opted out.
+TEST_F(PersonalDataManagerTest,
+       ShouldShowPaymentMethodsMandatoryReauthPromo_UserOptedOut) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      features::kAutofillEnablePaymentsMandatoryReauth);
+  base::HistogramTester histogram_tester;
+  // Simulate user is already opted out.
+  personal_data_->SetPaymentMethodsMandatoryReauthEnabled(false);
+
+  EXPECT_FALSE(personal_data_->ShouldShowPaymentMethodsMandatoryReauthPromo());
+  histogram_tester.ExpectUniqueSample(
+      "Autofill.PaymentMethods.MandatoryReauth.CheckoutFlow."
+      "ReauthOfferOptInDecision",
+      autofill_metrics::MandatoryReauthOfferOptInDecision::kAlreadyOptedOut, 1);
 }
 
 // Test that
@@ -1472,8 +1504,7 @@ TEST_F(PersonalDataManagerTest, KeepExistingLocalDataOnSignIn) {
   // Sign out.
   identity_test_env_.ClearPrimaryAccount();
   sync_service_.SetAccountInfo(CoreAccountInfo());
-  EXPECT_EQ(AutofillSyncSigninState::kSignedOut,
-            personal_data_->GetSyncSigninState());
+  EXPECT_TRUE(sync_service_.GetAccountInfo().IsEmpty());
   EXPECT_EQ(0U, personal_data_->GetCreditCards().size());
 
   // Add local card.
@@ -1495,8 +1526,9 @@ TEST_F(PersonalDataManagerTest, KeepExistingLocalDataOnSignIn) {
       identity_test_env_.identity_manager()->GetPrimaryAccountInfo(
           signin::ConsentLevel::kSync));
   sync_service_.SetHasSyncConsent(true);
-  EXPECT_EQ(AutofillSyncSigninState::kSignedInAndSyncFeatureEnabled,
-            personal_data_->GetSyncSigninState());
+  EXPECT_TRUE(
+      sync_service_.IsSyncFeatureEnabled() &&
+      sync_service_.GetActiveDataTypes().Has(syncer::AUTOFILL_WALLET_DATA));
   ASSERT_TRUE(TurnOnSyncFeature());
 
   // Check saved local card should be not lost.
@@ -4420,7 +4452,8 @@ TEST_F(PersonalDataManagerSyncTransportModeTest,
 #endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS) &&
         // !BUILDFLAG(IS_CHROMEOS_ASH)
 
-TEST_F(PersonalDataManagerSyncTransportModeTest, GetSyncSigninState) {
+TEST_F(PersonalDataManagerSyncTransportModeTest,
+       GetPaymentsSigninStateForMetrics) {
   // Make sure a non-sync-consented account is available for the first tests.
   ASSERT_TRUE(identity_test_env_.identity_manager()->HasPrimaryAccount(
       signin::ConsentLevel::kSignin));
@@ -4430,8 +4463,9 @@ TEST_F(PersonalDataManagerSyncTransportModeTest, GetSyncSigninState) {
       /*types=*/{syncer::UserSelectableType::kAutofill,
                  syncer::UserSelectableType::kPayments});
 
-  EXPECT_EQ(AutofillSyncSigninState::kSignedInAndWalletSyncTransportEnabled,
-            personal_data_->GetSyncSigninState());
+  EXPECT_EQ(AutofillMetrics::PaymentsSigninState::
+                kSignedInAndWalletSyncTransportEnabled,
+            personal_data_->GetPaymentsSigninStateForMetrics());
 
   // Check that the sync state is |SignedIn| if the sync service does not have
   // wallet data active.
@@ -4439,15 +4473,15 @@ TEST_F(PersonalDataManagerSyncTransportModeTest, GetSyncSigninState) {
       /*sync_everything=*/false,
       /*types=*/syncer::UserSelectableTypeSet(
           {syncer::UserSelectableType::kAutofill}));
-  EXPECT_EQ(AutofillSyncSigninState::kSignedIn,
-            personal_data_->GetSyncSigninState());
+  EXPECT_EQ(AutofillMetrics::PaymentsSigninState::kSignedIn,
+            personal_data_->GetPaymentsSigninStateForMetrics());
 
   // Nothing should change if |kAutofill| is also removed.
   sync_service_.GetUserSettings()->SetSelectedTypes(
       /*sync_everything=*/false,
       /*types=*/syncer::UserSelectableTypeSet());
-  EXPECT_EQ(AutofillSyncSigninState::kSignedIn,
-            personal_data_->GetSyncSigninState());
+  EXPECT_EQ(AutofillMetrics::PaymentsSigninState::kSignedIn,
+            personal_data_->GetPaymentsSigninStateForMetrics());
 
 // ClearPrimaryAccount is not supported on CrOS.
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
@@ -4456,8 +4490,8 @@ TEST_F(PersonalDataManagerSyncTransportModeTest, GetSyncSigninState) {
     identity_test_env_.ClearPrimaryAccount();
     sync_service_.SetAccountInfo(CoreAccountInfo());
     sync_service_.SetHasSyncConsent(false);
-    EXPECT_EQ(AutofillSyncSigninState::kSignedOut,
-              personal_data_->GetSyncSigninState());
+    EXPECT_EQ(AutofillMetrics::PaymentsSigninState::kSignedOut,
+              personal_data_->GetPaymentsSigninStateForMetrics());
   }
 #endif
 
@@ -4474,8 +4508,9 @@ TEST_F(PersonalDataManagerSyncTransportModeTest, GetSyncSigninState) {
 
   // Check that the sync state is |SignedInAndSyncFeature| if the sync feature
   // is enabled.
-  EXPECT_EQ(AutofillSyncSigninState::kSignedInAndSyncFeatureEnabled,
-            personal_data_->GetSyncSigninState());
+  EXPECT_EQ(
+      AutofillMetrics::PaymentsSigninState::kSignedInAndSyncFeatureEnabled,
+      personal_data_->GetPaymentsSigninStateForMetrics());
 }
 
 // On mobile, no dedicated opt-in is required for WalletSyncTransport - the
@@ -4508,8 +4543,9 @@ TEST_F(PersonalDataManagerSyncTransportModeTest, OnUserAcceptedUpstreamOffer) {
   // Account wallet storage only makes sense together with support for
   // unconsented primary accounts, i.e. on Win/Mac/Linux.
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
-  EXPECT_EQ(AutofillSyncSigninState::kSignedInAndWalletSyncTransportEnabled,
-            personal_data_->GetSyncSigninState());
+  EXPECT_TRUE(
+      !sync_service_.IsSyncFeatureEnabled() &&
+      sync_service_.GetActiveDataTypes().Has(syncer::AUTOFILL_WALLET_DATA));
 
   // Make sure an opt-in gets recorded if the user accepted an Upstream offer.
   personal_data_->OnUserAcceptedUpstreamOffer();
@@ -4529,9 +4565,7 @@ TEST_F(PersonalDataManagerSyncTransportModeTest, OnUserAcceptedUpstreamOffer) {
   sync_service_.GetUserSettings()->SetSelectedTypes(
       /*sync_everything=*/false,
       /*types=*/syncer::UserSelectableTypeSet());
-
-  EXPECT_EQ(AutofillSyncSigninState::kSignedIn,
-            personal_data_->GetSyncSigninState());
+  EXPECT_TRUE(!sync_service_.GetAccountInfo().IsEmpty());
 
   // Make sure an opt-in does not get recorded even if the user accepted an
   // Upstream offer.
@@ -4551,8 +4585,7 @@ TEST_F(PersonalDataManagerSyncTransportModeTest, OnUserAcceptedUpstreamOffer) {
   sync_service_.SetAccountInfo(CoreAccountInfo());
   sync_service_.SetHasSyncConsent(false);
   {
-    EXPECT_EQ(AutofillSyncSigninState::kSignedOut,
-              personal_data_->GetSyncSigninState());
+    EXPECT_TRUE(sync_service_.GetAccountInfo().IsEmpty());
 
     // Make sure an opt-in does not get recorded even if the user accepted an
     // Upstream offer.
@@ -4570,8 +4603,7 @@ TEST_F(PersonalDataManagerSyncTransportModeTest, OnUserAcceptedUpstreamOffer) {
   sync_service_.SetAccountInfo(active_info);
   sync_service_.SetHasSyncConsent(true);
   {
-    EXPECT_EQ(AutofillSyncSigninState::kSignedInAndSyncFeatureEnabled,
-              personal_data_->GetSyncSigninState());
+    EXPECT_TRUE(sync_service_.IsSyncFeatureEnabled());
 
     // Make sure an opt-in does not get recorded even if the user accepted an
     // Upstream offer.
@@ -4622,16 +4654,6 @@ TEST_F(PersonalDataManagerTest, RemoveObserverInOnPersonalDataChanged) {
   PersonalDataProfileTaskWaiter(*personal_data_).Wait();
 
   EXPECT_FALSE(observer.IsConnected()) << "Observer not called";
-}
-
-TEST_F(PersonalDataManagerTest, AddAndGetUpiId) {
-  constexpr char upi_id[] = "vpa@indianbank";
-  PersonalDataProfileTaskWaiter waiter(*personal_data_);
-  EXPECT_CALL(waiter.mock_observer(), OnPersonalDataChanged());
-  personal_data_->AddUpiId(upi_id);
-  waiter.Wait();
-  std::vector<std::string> all_upi_ids = personal_data_->GetUpiIds();
-  EXPECT_THAT(all_upi_ids, testing::ElementsAre(upi_id));
 }
 
 TEST_F(PersonalDataManagerTest, IsEligibleForAddressAccountStorage) {

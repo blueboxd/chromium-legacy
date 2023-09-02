@@ -6,6 +6,7 @@
 
 #include "base/test/scoped_feature_list.h"
 #include "components/autofill/core/browser/field_types.h"
+#include "components/autofill/core/browser/profile_token_quality_test_api.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -65,10 +66,11 @@ AutofillProfile ConstructCompleteProfile() {
                                            VerificationStatus::kObserved);
   profile.SetRawInfoWithVerificationStatus(ADDRESS_HOME_COUNTRY, u"US",
                                            VerificationStatus::kObserved);
-  profile.SetRawInfoWithVerificationStatus(ADDRESS_HOME_STREET_ADDRESS,
-                                           u"123 Fake St. Dep Premise\n"
-                                           u"Apt. 10 Floor 2",
-                                           VerificationStatus::kObserved);
+  profile.SetRawInfoWithVerificationStatus(
+      ADDRESS_HOME_STREET_ADDRESS,
+      u"123 Fake St. Dep Premise Marcos y Oliva\n"
+      u"Apt. 10 Floor 2 Red tree",
+      VerificationStatus::kObserved);
   profile.SetRawInfoWithVerificationStatus(ADDRESS_HOME_SORTING_CODE, u"CEDEX",
                                            VerificationStatus::kObserved);
   profile.SetRawInfoWithVerificationStatus(ADDRESS_HOME_DEPENDENT_LOCALITY,
@@ -94,10 +96,10 @@ AutofillProfile ConstructCompleteProfile() {
   profile.SetRawInfoWithVerificationStatus(ADDRESS_HOME_FLOOR, u"2",
                                            VerificationStatus::kParsed);
   profile.SetRawInfoWithVerificationStatus(ADDRESS_HOME_LANDMARK, u"Red tree",
-                                           VerificationStatus::kObserved);
+                                           VerificationStatus::kParsed);
   profile.SetRawInfoWithVerificationStatus(ADDRESS_HOME_BETWEEN_STREETS,
                                            u"Marcos y Oliva",
-                                           VerificationStatus::kObserved);
+                                           VerificationStatus::kParsed);
   profile.SetRawInfoWithVerificationStatus(ADDRESS_HOME_ADMIN_LEVEL2, u"Oxaca",
                                            VerificationStatus::kObserved);
 
@@ -111,6 +113,16 @@ AutofillProfile ConstructCompleteProfile() {
   profile.SetRawInfoAsInt(BIRTHDATE_DAY, 14);
   profile.SetRawInfoAsInt(BIRTHDATE_MONTH, 3);
   profile.SetRawInfoAsInt(BIRTHDATE_4_DIGIT_YEAR, 1997);
+
+  // Add some `ProfileTokenQuality` observations.
+  test_api(profile.token_quality())
+      .AddObservation(NAME_FIRST,
+                      ProfileTokenQuality::ObservationType::kAccepted,
+                      ProfileTokenQualityTestApi::FormSignatureHash(12));
+  test_api(profile.token_quality())
+      .AddObservation(ADDRESS_HOME_CITY,
+                      ProfileTokenQuality::ObservationType::kEditedFallback,
+                      ProfileTokenQualityTestApi::FormSignatureHash(21));
 
   return profile;
 }
@@ -170,8 +182,8 @@ ContactInfoSpecifics ConstructCompleteSpecifics() {
   SetToken(specifics.mutable_address_country(), "US",
            ContactInfoSpecifics::OBSERVED);
   SetToken(specifics.mutable_address_street_address(),
-           "123 Fake St. Dep Premise\n"
-           "Apt. 10 Floor 2",
+           "123 Fake St. Dep Premise Marcos y Oliva\n"
+           "Apt. 10 Floor 2 Red tree",
            ContactInfoSpecifics::OBSERVED);
   SetToken(specifics.mutable_address_sorting_code(), "CEDEX",
            ContactInfoSpecifics::OBSERVED);
@@ -195,9 +207,9 @@ ContactInfoSpecifics ConstructCompleteSpecifics() {
   SetToken(specifics.mutable_address_floor(), "2",
            ContactInfoSpecifics::PARSED);
   SetToken(specifics.mutable_address_landmark(), "Red tree",
-           ContactInfoSpecifics::OBSERVED);
+           ContactInfoSpecifics::PARSED);
   SetToken(specifics.mutable_address_between_streets(), "Marcos y Oliva",
-           ContactInfoSpecifics::OBSERVED);
+           ContactInfoSpecifics::PARSED);
   SetToken(specifics.mutable_address_admin_level_2(), "Oxaca",
            ContactInfoSpecifics::OBSERVED);
   // All of the following types don't store verification statuses in
@@ -218,6 +230,18 @@ ContactInfoSpecifics ConstructCompleteSpecifics() {
   SetToken(specifics.mutable_birthdate_year(), 1997,
            ContactInfoSpecifics::VERIFICATION_STATUS_UNSPECIFIED);
 
+  // Add some `ProfileTokenQuality` observations.
+  ContactInfoSpecifics::Observation* observation =
+      specifics.mutable_name_first()->mutable_metadata()->add_observations();
+  observation->set_type(
+      static_cast<int>(ProfileTokenQuality::ObservationType::kAccepted));
+  observation->set_form_hash(12);
+  observation =
+      specifics.mutable_address_city()->mutable_metadata()->add_observations();
+  observation->set_type(
+      static_cast<int>(ProfileTokenQuality::ObservationType::kEditedFallback));
+  observation->set_form_hash(21);
+
   return specifics;
 }
 
@@ -229,7 +253,8 @@ class ContactInfoSyncUtilTest : public testing::Test {
     features_.InitWithFeatures(
         {features::kAutofillEnableSupportForLandmark,
          features::kAutofillEnableSupportForBetweenStreets,
-         features::kAutofillEnableSupportForAdminLevel2},
+         features::kAutofillEnableSupportForAdminLevel2,
+         features::kAutofillTrackProfileTokenQuality},
         {});
   }
 

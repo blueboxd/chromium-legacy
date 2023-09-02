@@ -88,12 +88,16 @@ class ChannelIndicatorQuickSettingsViewPixelTest
 
  private:
   base::test::ScopedFeatureList feature_list_;
-  raw_ptr<TestSystemTrayClient, ExperimentalAsh> system_tray_client_ = nullptr;
+  raw_ptr<TestSystemTrayClient, DanglingUntriaged | ExperimentalAsh>
+      system_tray_client_ = nullptr;
   scoped_refptr<UnifiedSystemTrayModel> model_;
   std::unique_ptr<UnifiedSystemTrayController> controller_;
   std::unique_ptr<views::Widget> widget_;
-  raw_ptr<ChannelIndicatorQuickSettingsView, ExperimentalAsh> view_ = nullptr;
-  raw_ptr<QuickSettingsHeader, ExperimentalAsh> header_ = nullptr;
+  raw_ptr<ChannelIndicatorQuickSettingsView,
+          DanglingUntriaged | ExperimentalAsh>
+      view_ = nullptr;
+  raw_ptr<QuickSettingsHeader, DanglingUntriaged | ExperimentalAsh> header_ =
+      nullptr;
 };
 
 INSTANTIATE_TEST_SUITE_P(QsRevampEnabled,
@@ -116,7 +120,7 @@ TEST_P(ChannelIndicatorQuickSettingsViewPixelTest, FeedbackButtonVisible) {
   // `ChannelIndicatorQuickSettingsView`.
   EXPECT_TRUE(GetPixelDiffer()->CompareUiComponentsOnPrimaryScreen(
       "feedback_button_visible",
-      /*revision_number=*/5, view()));
+      /*revision_number=*/6, view()));
 }
 
 }  // namespace ash

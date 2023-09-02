@@ -2970,6 +2970,19 @@ EVENT_TYPE(SPECIFIC_NETWORK_MADE_DEFAULT)
 EVENT_TYPE(CERTIFICATE_DATABASE_TRUST_STORE_CHANGED)
 EVENT_TYPE(CERTIFICATE_DATABASE_CLIENT_CERT_STORE_CHANGED)
 
+// This event is logged when a request to conditionally clear the cached client
+// certificate for a specific host has been received. It contains the following
+// parameters:
+// {
+//    "host": <Serialized scheme/host/port of the request>,
+//    "certificates": <A list of PEM encoded certificates, the first one
+//                    being the new client certificate and the remaining
+//                    being intermediate certificates. May be an empty
+//                    list if no client certificate should be cached.>,
+//    "is_cleared": <boolean>,
+// }
+EVENT_TYPE(CLEAR_CACHED_CLIENT_CERT)
+
 // ------------------------------------------------------------------------
 // Exponential back-off throttling events
 // ------------------------------------------------------------------------
@@ -4297,3 +4310,12 @@ EVENT_TYPE(OBLIVIOUS_HTTP_RESPONSE_DATA)
 // OBLIVIOUS_HTTP_RESPONSE_HEADERS logs headers of the response, after
 // decryption.
 EVENT_TYPE(OBLIVIOUS_HTTP_RESPONSE_HEADERS)
+
+// This event is logged when First-Party Sets metadata is requested/received.
+// The following parameters are attached to the "end" event:
+//   {
+//     "cache_filter": <string>,
+//     "frame_entry": <string>,
+//     "top_frame_entry": <string>,
+//   }
+EVENT_TYPE(FIRST_PARTY_SETS_METADATA)

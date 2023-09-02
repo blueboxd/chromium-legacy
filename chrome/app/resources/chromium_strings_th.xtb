@@ -128,6 +128,7 @@
 <translation id="370962675267501463">{COUNT,plural, =0{ผู้ดูแลระบบขอให้คุณเปิด Chromium ขึ้นมาใหม่เพื่อใช้การอัปเดตนี้}=1{ผู้ดูแลระบบขอให้คุณเปิด Chromium ขึ้นมาใหม่เพื่อใช้การอัปเดตนี้ หน้าต่างที่ไม่ระบุตัวตนจะไม่เปิดให้อีก}other{ผู้ดูแลระบบขอให้คุณเปิด Chromium ขึ้นมาใหม่เพื่อใช้การอัปเดตนี้ หน้าต่างที่ไม่ระบุตัวตนจำนวน # หน้าต่างจะไม่เปิดให้อีก}}</translation>
 <translation id="3713809861844741608">เปิดลิงก์ใน Chromium แท็บใหม่</translation>
 <translation id="378917192836375108">Chromium ช่วยให้คุณสามารถคลิกหมายเลขโทรศัพท์บนเว็บและโทรออกด้วย Skype ได้!</translation>
+<translation id="3790262771324122253">ดูสาเหตุที่ Chromium บล็อกการดาวน์โหลดบางรายการ</translation>
 <translation id="3830894615770080216">ระบบ Chromium OS</translation>
 <translation id="3848258323044014972"><ph name="PAGE_TITLE" /> - Chromium</translation>
 <translation id="386822487697155367">รับความช่วยเหลือเกี่ยวกับ Chromium OS</translation>
@@ -153,6 +154,7 @@
 <translation id="4216212958613226427">นี่เป็นภาษาที่ใช้ในการแสดง UI ของ Chromium</translation>
 <translation id="4222932583846282852">กำลังยกเลิก...</translation>
 <translation id="4230135487732243613">เชื่อมโยงข้อมูล Chromium กับบัญชีนี้ไหม</translation>
+<translation id="4251772536351901305">เตือนคุณเกี่ยวกับเว็บไซต์ที่เป็นอันตราย แม้แต่เว็บไซต์ที่ Google ไม่เคยรู้จักมาก่อนด้วยการวิเคราะห์ข้อมูลจากเว็บไซต์มากกว่าการปกป้องแบบมาตรฐาน คุณเลือกข้ามคำเตือนของ Chromium ได้</translation>
 <translation id="4271805377592243930">รับความช่วยเหลือเกี่ยวกับ Chromium</translation>
 <translation id="4281844954008187215">ข้อกำหนดในการให้บริการ</translation>
 <translation id="4285930937574705105">การติดตั้งล้มเหลวเนื่องจากมีข้อผิดพลาดที่ไม่ได้ระบุ หาก Chromium ทำงานอยู่ในขณะนี้ โปรดปิดและลองอีกครั้ง</translation>
@@ -207,11 +209,13 @@
 <translation id="5527463683072221100">เปิด PDF ใน Chromium</translation>
 <translation id="5614091477838198795">หากเปิดใช้ คุณจะออกจากระบบของ Chromium ด้วย</translation>
 <translation id="5623402015214259806">{0,plural, =0{มีอัปเดต Chromium พร้อมให้ใช้งาน}=1{มีอัปเดต Chromium พร้อมให้ใช้งาน}other{อัปเดต Chromium พร้อมให้ใช้งานมาแล้ว # วัน}}</translation>
+<translation id="5643865575100044307">ลบข้อมูลเว็บไซต์จากอุปกรณ์เสมอเมื่อปิด Chromium</translation>
 <translation id="5653831366781983928">โปรดรีสตาร์ท Chromium ตอนนี้เลย</translation>
 <translation id="5690427481109656848">Google LLC</translation>
 <translation id="5698481217667032250">แสดง Chromium ในภาษานี้</translation>
 <translation id="5862307444128926510">ยินดีต้อนรับสู่ Chromium</translation>
 <translation id="5883558403894052917">Chromium พบว่ารายการเหล่านี้มีมัลแวร์</translation>
+<translation id="5889361821821684993">Chromium ดำเนินการตรวจสอบเป็นประจำเพื่อให้มั่นใจว่าเบราว์เซอร์มีการตั้งค่าที่ปลอดภัยที่สุด เราจะแจ้งให้คุณทราบหากมีสิ่งใดที่คุณต้องตรวจสอบ</translation>
 <translation id="5895138241574237353">ปิดแล้วเปิดอีกครั้ง</translation>
 <translation id="5903106910045431592"><ph name="PAGE_TITLE" /> - หน้าลงชื่อเข้าใช้ของเครือข่าย</translation>
 <translation id="5924017743176219022">กำลังเชื่อมต่ออินเทอร์เน็ต...</translation>
@@ -235,6 +239,7 @@
 <translation id="6132897690380286411">Chromium จะปิดและลบข้อมูลเร็วๆ นี้</translation>
 <translation id="6134968993075716475">Google Safe Browsing ปิดอยู่ Chromium ขอแนะนำให้เปิด</translation>
 <translation id="6145820983052037069">คุณสลับไปมาระหว่างโปรไฟล์ Chromium ได้ที่นี่</translation>
+<translation id="6175304430031192654">Chromium อาจส่งคุกกี้และ URL ปัจจุบันด้วย ซึ่งขึ้นอยู่กับการตั้งค่าของคุณ</translation>
 <translation id="6183079672144801177">ตรวจสอบว่าคุณลงชื่อเข้าใช้ Chromium ใน <ph name="TARGET_DEVICE_NAME" /> แล้วลองส่งอีกครั้ง</translation>
 <translation id="6212496753309875659">คอมพิวเตอร์เครื่องนี้ติดตั้ง Chromium รุ่นที่ใหม่กว่าอยู่แล้ว ถ้าซอฟต์แวร์ไม่ทำงาน โปรดถอนการติดตั้ง Chromium และลองอีกครั้ง</translation>
 <translation id="6219195342503754812">{0,plural, =0{Chromium จะเปิดขึ้นมาใหม่ตอนนี้}=1{Chromium จะเปิดขึ้นมาใหม่ใน 1 วินาที}other{Chromium จะเปิดขึ้นมาใหม่ใน # วินาที}}</translation>
@@ -255,6 +260,7 @@
 <translation id="6373523479360886564">คุณแน่ใจหรือไม่ว่าต้องการถอนการติดตั้ง Chromium</translation>
 <translation id="6375219077595103062">เพิ่มทางลัดไปยังเครื่องมือจัดการรหัสผ่าน</translation>
 <translation id="6384011394608460044"><ph name="BEGIN_BOLD" />วิธีที่เราใช้ข้อมูลนี้:<ph name="END_BOLD" /> Chromium สามารถคาดคะเนความสนใจของคุณได้ ภายหลัง เว็บไซต์ที่คุณเข้าชมอาจขอข้อมูลความสนใจจาก Chromium เพื่อปรับการแสดงโฆษณาให้เหมาะกับคุณ</translation>
+<translation id="6400112897226594999">โลโก้ Chromium ในหน้าจอคอมพิวเตอร์</translation>
 <translation id="6403826409255603130">Chromium เป็นเว็บเบราว์เซอร์ที่เรียกใช้หน้าเว็บและแอปพลิเคชันด้วยความเร็วสูง มีความรวดเร็ว เสถียร และง่ายในการใช้งาน เรียกดูเว็บได้อย่างปลอดภัยมากขึ้นด้วยการป้องกันมัลแวร์และฟิชชิงที่สร้างอยู่ภายใน Chromium</translation>
 <translation id="6442900851116057561">รีสตาร์ท Chromium OS</translation>
 <translation id="6455857529632101747">ยินดีต้อนรับสู่โปรไฟล์ Chromium</translation>
@@ -263,6 +269,7 @@
 <translation id="6510925080656968729">ถอนการติดตั้ง Chromium</translation>
 <translation id="6539122709674868420">องค์กรจะปิด Chromium เมื่อไม่มีการใช้งานเป็นเวลา <ph name="TIMEOUT_DURATION" /> ลบข้อมูลการท่องเว็บแล้ว ซึ่งอาจรวมถึงประวัติการเข้าชม การป้อนข้อความอัตโนมัติ และการดาวน์โหลด</translation>
 <translation id="6542839706527980775">แต่ละโปรไฟล์จะเก็บข้อมูล Chromium ของตัวเอง เช่น บุ๊กมาร์ก ประวัติการเข้าชม รหัสผ่าน และอื่นๆ</translation>
+<translation id="6563921047760808519">ดูข้อมูลเพิ่มเติมเกี่ยวกับ<ph name="BEGIN_LINK" />วิธีที่ Chromium ช่วยรักษาข้อมูลของคุณให้เป็นส่วนตัว<ph name="END_LINK" /></translation>
 <translation id="656935081669708576">คุณสามารถสลับเพื่อดูรหัสผ่านจากโปรไฟล์ Chromium อื่นได้</translation>
 <translation id="6570579332384693436">Chromium จะส่งข้อความที่คุณพิมพ์ในช่องข้อความไปยัง Google เพื่อแก้ไขข้อผิดพลาดของการสะกดคำ</translation>
 <translation id="6598877126913850652">ไปที่การตั้งค่าการแจ้งเตือน Chromium</translation>
@@ -303,6 +310,7 @@
 <translation id="718435575166326686">Chromium ต้องการสิทธิ์เข้าถึงกล้องสำหรับเว็บไซต์นี้</translation>
 <translation id="7196312274710523067">เปิด Chromium ไม่ได้ โปรดลองอีกครั้ง</translation>
 <translation id="7197677400338048821">Chromium ตรวจสอบรหัสผ่านของคุณไม่ได้ โปรดรอ 24 ชั่วโมงแล้วลองอีกครั้ง</translation>
+<translation id="7213407614656404070">ใช้ Chromium ทุกครั้งที่คุณคลิกลิงก์ในข้อความ เอกสาร และแอปอื่นๆ</translation>
 <translation id="7223968959479464213">ตัวจัดการงาน - Chromium</translation>
 <translation id="7246575524853130370">ความสนใจของคุณตามที่คาดคะเนโดย Chromium</translation>
 <translation id="7309928523159922338">การวัดผลโฆษณาจะให้เว็บไซต์ที่คุณเข้าชมสามารถขอข้อมูลจาก Chromium เพื่อช่วยในการวัดประสิทธิภาพโฆษณาของเว็บไซต์ดังกล่าวได้ การวัดผลโฆษณาจะจำกัดการติดตามข้ามเว็บไซต์โดยโอนข้อมูลระหว่างเว็บไซต์ให้น้อยที่สุด</translation>

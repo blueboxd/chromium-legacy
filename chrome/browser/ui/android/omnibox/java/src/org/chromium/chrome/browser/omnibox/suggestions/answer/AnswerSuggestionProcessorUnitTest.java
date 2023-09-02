@@ -41,6 +41,7 @@ import org.chromium.chrome.browser.omnibox.suggestions.SuggestionHost;
 import org.chromium.chrome.browser.omnibox.suggestions.base.BaseSuggestionViewProperties;
 import org.chromium.chrome.browser.omnibox.test.R;
 import org.chromium.chrome.test.util.browser.Features;
+import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.components.omnibox.AnswerTextStyle;
 import org.chromium.components.omnibox.AnswerTextType;
@@ -322,7 +323,7 @@ public class AnswerSuggestionProcessorUnitTest {
     }
 
     @Test
-    @Features.DisableFeatures(ChromeFeatureList.SUGGESTION_ANSWERS_COLOR_REVERSE)
+    @DisableFeatures(ChromeFeatureList.SUGGESTION_ANSWERS_COLOR_REVERSE)
     public void checkColorReversalRequired_ReturnsFalseIfOmniBoxAnswerColorReversalDisabled() {
         mProcessor.onNativeInitialized();
         for (@AnswerType int type : ANSWER_TYPES) {
@@ -377,12 +378,11 @@ public class AnswerSuggestionProcessorUnitTest {
 
     @Test
     public void fetchAnswerImage_withSupplier() {
-        var suggHelper =
-                createAnswerSuggestion(AnswerType.TOTAL_COUNT, "", 1, "", 1, JUnitTestGURLs.BLUE_1);
+        var suggHelper = createAnswerSuggestion(
+                AnswerType.TOTAL_COUNT, "", 1, "", 1, JUnitTestGURLs.BLUE_1.getSpec());
 
         ArgumentCaptor<Callback<Bitmap>> cb = ArgumentCaptor.forClass(Callback.class);
-        verify(mImageSupplier, times(1))
-                .fetchImage(eq(JUnitTestGURLs.getGURL(JUnitTestGURLs.BLUE_1)), cb.capture());
+        verify(mImageSupplier, times(1)).fetchImage(eq(JUnitTestGURLs.BLUE_1), cb.capture());
 
         var sds1 = suggHelper.mModel.get(BaseSuggestionViewProperties.ICON);
         Assert.assertNotNull(sds1);
@@ -401,8 +401,8 @@ public class AnswerSuggestionProcessorUnitTest {
         mProcessor = new AnswerSuggestionProcessor(ContextUtils.getApplicationContext(),
                 mSuggestionHost, mUrlStateProvider, /* imageSupplier=*/null);
 
-        var suggHelper =
-                createAnswerSuggestion(AnswerType.TOTAL_COUNT, "", 1, "", 1, JUnitTestGURLs.BLUE_1);
+        var suggHelper = createAnswerSuggestion(
+                AnswerType.TOTAL_COUNT, "", 1, "", 1, JUnitTestGURLs.BLUE_1.getSpec());
 
         var sds1 = suggHelper.mModel.get(BaseSuggestionViewProperties.ICON);
         Assert.assertNotNull(sds1);

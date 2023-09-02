@@ -132,9 +132,6 @@ class CORE_EXPORT NGBlockNode : public NGLayoutInputNode {
 
   bool IsNGTableCell() const { return box_->IsTableCell(); }
 
-  bool IsContainingBlockNGGrid() const {
-    return box_->ContainingBlock()->IsLayoutNGGrid();
-  }
   bool IsFrameSet() const { return box_->IsFrameSet(); }
   bool IsParentNGFrameSet() const { return box_->Parent()->IsFrameSet(); }
   bool IsParentNGGrid() const { return box_->Parent()->IsLayoutNGGrid(); }
@@ -255,7 +252,7 @@ class CORE_EXPORT NGBlockNode : public NGLayoutInputNode {
                     const NGConstraintSpace&,
                     const NGBlockBreakToken*,
                     const NGLayoutResult*,
-                    PhysicalSize old_box_size) const;
+                    const absl::optional<PhysicalSize>& old_box_size) const;
 
   // Update the layout results vector in LayoutBox with the new result.
   void StoreResultInLayoutBox(const NGLayoutResult*,

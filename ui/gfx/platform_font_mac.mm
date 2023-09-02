@@ -12,8 +12,8 @@
 
 #include "base/bit_cast.h"
 #include "base/apple/bridging.h"
-#import "base/mac/foundation_util.h"
-#include "base/mac/scoped_cftyperef.h"
+#import "base/apple/foundation_util.h"
+#include "base/apple/scoped_cftyperef.h"
 #include "base/memory/scoped_policy.h"
 #include "base/no_destructor.h"
 #include "base/notreached.h"
@@ -96,9 +96,9 @@ Weight GetFontWeightFromCTFont(CTFontRef font) {
       {0.60, 1.0, Weight::BLACK},           // NSFontWeightBlack
   };
 
-  base::ScopedCFTypeRef<CFDictionaryRef> traits(CTFontCopyTraits(font));
+  base::apple::ScopedCFTypeRef<CFDictionaryRef> traits(CTFontCopyTraits(font));
   DCHECK(traits);
-  CFNumberRef cf_weight = base::mac::GetValueFromDictionary<CFNumberRef>(
+  CFNumberRef cf_weight = base::apple::GetValueFromDictionary<CFNumberRef>(
       traits, kCTFontWeightTrait);
   // A missing weight attribute just means 0 -> NORMAL.
   if (!cf_weight)
@@ -107,7 +107,7 @@ Weight GetFontWeightFromCTFont(CTFontRef font) {
   // macOS 13.0 bug: For non-system fonts with 0-valued traits,
   // `kCFBooleanFalse` is used instead of a `CFNumberRef` of 0. See
   // https://crbug.com/1372420. Filed as FB11673021, fixed in macOS 13.1. In
-  // this code path, the `base::mac::GetValueFromDictionary` call above will
+  // this code path, the `base::apple::GetValueFromDictionary` call above will
   // DLOG for this case and return a null `CFNumberRef`, which will cause this
   // function to return `Weight::NORMAL`, which happens to be the correct thing
   // to do for a trait with value 0.
@@ -282,7 +282,7 @@ SystemFontTypeFromUndocumentedCTFontRefInternals(CTFontRef font) {
   // the provided font.
   //
   // TODO(avi, etienneb): Figure out this font stuff.
-  base::ScopedCFTypeRef<CTFontDescriptorRef> descriptor(
+  base::apple::ScopedCFTypeRef<CTFontDescriptorRef> descriptor(
       CTFontCopyFontDescriptor(font));
   if (@available(macOS 10.10, *) && CTFontDescriptorIsSystemUIFont(descriptor.get())) {
     // Assume it's the standard system font. The fact that this much is known is
@@ -396,7 +396,7 @@ Font PlatformFontMac::DeriveFont(int size_delta,
         base::apple::NSToCFPtrCast(derived), SystemFontType::kToolTip,
         {font_spec_.name, font_spec_.size + size_delta, style, weight}));
   } else {
-    base::ScopedCFTypeRef<CTFontRef> derived = CTFontWithSpec(
+    base::apple::ScopedCFTypeRef<CTFontRef> derived = CTFontWithSpec(
         {font_spec_.name, font_spec_.size + size_delta, style, weight});
     return Font(new PlatformFontMac(
         derived, absl::nullopt,
@@ -528,7 +528,7 @@ void PlatformFontMac::CalculateMetricsAndInitRenderParams() {
   render_params_ = gfx::GetFontRenderParams(query, nullptr);
 }
 
-base::ScopedCFTypeRef<CTFontRef> PlatformFontMac::CTFontWithSpec(
+base::apple::ScopedCFTypeRef<CTFontRef> PlatformFontMac::CTFontWithSpec(
     FontSpec font_spec) const {
   // One might think that a font descriptor with the NSFontWeightTrait/
   // kCTFontWeightTrait trait could be used to look up a font with a specific
@@ -553,7 +553,7 @@ base::ScopedCFTypeRef<CTFontRef> PlatformFontMac::CTFontWithSpec(
                             weight:ToNSFontManagerWeight(font_spec.weight)
                               size:font_spec.size];
   if (font) {
-    return base::ScopedCFTypeRef<CTFontRef>(
+    return base::apple::ScopedCFTypeRef<CTFontRef>(
         base::apple::NSToCFOwnershipCast(font));
   }
 
@@ -575,7 +575,7 @@ base::ScopedCFTypeRef<CTFontRef> PlatformFontMac::CTFontWithSpec(
 
   font = [NSFont fontWithDescriptor:descriptor size:font_spec.size];
   if (font) {
-    return base::ScopedCFTypeRef<CTFontRef>(
+    return base::apple::ScopedCFTypeRef<CTFontRef>(
         base::apple::NSToCFOwnershipCast(font));
   }
 
@@ -585,14 +585,14 @@ base::ScopedCFTypeRef<CTFontRef> PlatformFontMac::CTFontWithSpec(
     font = [NSFont systemFontOfSize:font_spec.size
                              weight:ToNSFontWeight(font_spec.weight)];
     font = [font_manager convertFont:font toHaveTrait:traits];
-    return base::ScopedCFTypeRef<CTFontRef>(
+    return base::apple::ScopedCFTypeRef<CTFontRef>(
         base::apple::NSToCFOwnershipCast(font));
   } else {
     font = [NSFont systemFontOfSize:font_spec.size];
     if (font_spec.weight >= Weight::BOLD)
       traits |= NSBoldFontMask;
     font = [font_manager convertFont:font toHaveTrait:traits];
-      return base::ScopedCFTypeRef<CTFontRef>(
+      return base::apple::ScopedCFTypeRef<CTFontRef>(
           base::apple::NSToCFOwnershipCast(font));
   }
 }

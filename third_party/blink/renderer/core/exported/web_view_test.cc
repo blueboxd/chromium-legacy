@@ -33,6 +33,7 @@
 #include <string>
 
 #include "base/functional/callback_helpers.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -48,6 +49,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/input/web_coalesced_input_event.h"
 #include "third_party/blink/public/common/input/web_input_event.h"
 #include "third_party/blink/public/common/input/web_keyboard_event.h"
@@ -127,6 +129,7 @@
 #include "third_party/blink/renderer/core/page/page_hidden_state.h"
 #include "third_party/blink/renderer/core/page/page_popup_client.h"
 #include "third_party/blink/renderer/core/page/print_context.h"
+#include "third_party/blink/renderer/core/page/scoped_browsing_context_group_pauser.h"
 #include "third_party/blink/renderer/core/page/scoped_page_pauser.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_painter.h"
@@ -222,6 +225,32 @@ class AutoResizeWebViewClient : public WebViewClient {
 
 class WebViewTest : public testing::Test {
  public:
+  // Observer that remembers the most recent visibility callback, if any.
+  class MockWebViewObserver : public WebViewObserver {
+   public:
+    explicit MockWebViewObserver(WebView* web_view)
+        : WebViewObserver(web_view) {}
+    ~MockWebViewObserver() override = default;
+
+    blink::mojom::PageVisibilityState page_visibility_and_clear() {
+      auto t = *page_visibility_;
+      page_visibility_.reset();
+      return t;
+    }
+
+    // WebViewObserver
+    void OnPageVisibilityChanged(
+        blink::mojom::PageVisibilityState page_visibility) override {
+      page_visibility_ = page_visibility;
+    }
+
+    // We live on the stack, so do nothing here.
+    void OnDestruct() override {}
+
+   private:
+    absl::optional<blink::mojom::PageVisibilityState> page_visibility_;
+  };
+
   explicit WebViewTest(frame_test_helpers::CreateTestWebFrameWidgetCallback
                            create_web_frame_callback = base::NullCallback())
       : web_view_helper_(std::move(create_web_frame_callback)) {}
@@ -2739,7 +2768,9 @@ TEST_F(WebViewTest, DragDropURL) {
             web_view->MainFrameImpl()->GetDocument().Url().GetString().Utf8());
 
   // Disable navigation on drag-and-drop.
-  web_view->SettingsImpl()->SetNavigateOnDragDrop(false);
+  auto renderer_preferences = web_view->GetRendererPreferences();
+  renderer_preferences.can_accept_load_drops = false;
+  web_view->SetRendererPreferences(renderer_preferences);
 
   // Attempt to drag and drop to barUrl and verify that no navigation has
   // occurred.
@@ -5259,6 +5290,10 @@ TEST_F(WebViewTest, PasswordFieldEditingIsUserGesture) {
 // Verify that a WebView created with a ScopedPagePauser already on the
 // stack defers its loads.
 TEST_F(WebViewTest, CreatedDuringPagePause) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(
+      features::kPausePagesPerBrowsingContextGroup);
+
   {
     WebViewImpl* web_view = web_view_helper_.Initialize();
     EXPECT_FALSE(web_view->GetPage()->Paused());
@@ -5269,6 +5304,37 @@ TEST_F(WebViewTest, CreatedDuringPagePause) {
     WebViewImpl* web_view = web_view_helper_.Initialize();
     EXPECT_TRUE(web_view->GetPage()->Paused());
   }
+}
+
+// Similar to CreatedDuringPagePause, but pauses only pages that belong to the
+// same browsing context group.
+TEST_F(WebViewTest, CreatedDuringBrowsingContextGroupPause) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      features::kPausePagesPerBrowsingContextGroup);
+
+  WebViewImpl* opener_webview = web_view_helper_.Initialize();
+  EXPECT_FALSE(opener_webview->GetPage()->Paused());
+
+  auto pauser = std::make_unique<ScopedBrowsingContextGroupPauser>(
+      *opener_webview->GetPage());
+  EXPECT_TRUE(opener_webview->GetPage()->Paused());
+
+  frame_test_helpers::WebViewHelper web_view_helper2;
+  WebViewImpl* webview2 =
+      web_view_helper2.InitializeWithOpener(opener_webview->MainFrame());
+  EXPECT_TRUE(webview2->GetPage()->Paused());
+
+  // The following page does not belong to the same browsing context group so
+  // it should not be paused.
+  frame_test_helpers::WebViewHelper web_view_helper3;
+  WebViewImpl* webview3 = web_view_helper3.Initialize();
+  EXPECT_FALSE(webview3->GetPage()->Paused());
+
+  // Removing the pauser should unpause pages.
+  pauser.reset();
+  EXPECT_FALSE(opener_webview->GetPage()->Paused());
+  EXPECT_FALSE(webview2->GetPage()->Paused());
 }
 
 // Make sure the SubframeBeforeUnloadUseCounter is only incremented on subframe
@@ -5315,9 +5381,13 @@ TEST_F(WebViewTest, SubframeBeforeUnloadUseCounter) {
   }
 }
 
-// Verify that page loads are deferred until all ScopedPageLoadDeferrers are
+// Verify that page loads are deferred until all ScopedPagePausers are
 // destroyed.
 TEST_F(WebViewTest, NestedPagePauses) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(
+      features::kPausePagesPerBrowsingContextGroup);
+
   WebViewImpl* web_view = web_view_helper_.Initialize();
   EXPECT_FALSE(web_view->GetPage()->Paused());
 
@@ -5327,6 +5397,31 @@ TEST_F(WebViewTest, NestedPagePauses) {
 
     {
       ScopedPagePauser pauser2;
+      EXPECT_TRUE(web_view->GetPage()->Paused());
+    }
+
+    EXPECT_TRUE(web_view->GetPage()->Paused());
+  }
+
+  EXPECT_FALSE(web_view->GetPage()->Paused());
+}
+
+// Similar to NestedPagePauses but uses ScopedBrowsingContextGroupPauser
+// instead.
+TEST_F(WebViewTest, NestedPagePausesPerBrowsingContextGroup) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      features::kPausePagesPerBrowsingContextGroup);
+
+  WebViewImpl* web_view = web_view_helper_.Initialize();
+  EXPECT_FALSE(web_view->GetPage()->Paused());
+
+  {
+    ScopedBrowsingContextGroupPauser pauser(*web_view->GetPage());
+    EXPECT_TRUE(web_view->GetPage()->Paused());
+
+    {
+      ScopedBrowsingContextGroupPauser pauser2(*web_view->GetPage());
       EXPECT_TRUE(web_view->GetPage()->Paused());
     }
 
@@ -6489,6 +6584,61 @@ TEST_F(WebViewTest, EmulatingPopupRect) {
 
     static_cast<WebPagePopupImpl*>(popup)->ClosePopup();
   }
+}
+
+TEST_F(WebViewTest, HiddenButPaintingIsSentToObservers) {
+  // kHiddenButPainting should be sent to observers from both the visible and
+  // hidden states.
+  WebViewImpl* web_view = web_view_helper_.Initialize();
+  MockWebViewObserver observer(web_view);
+
+  web_view->SetVisibilityState(mojom::blink::PageVisibilityState::kHidden,
+                               /*is_initial_state=*/false);
+  EXPECT_EQ(observer.page_visibility_and_clear(),
+            mojom::blink::PageVisibilityState::kHidden);
+
+  web_view->SetVisibilityState(
+      mojom::blink::PageVisibilityState::kHiddenButPainting,
+      /*is_initial_state=*/false);
+  EXPECT_EQ(observer.page_visibility_and_clear(),
+            mojom::blink::PageVisibilityState::kHiddenButPainting);
+
+  web_view->SetVisibilityState(mojom::blink::PageVisibilityState::kVisible,
+                               /*is_initial_state=*/false);
+  EXPECT_EQ(observer.page_visibility_and_clear(),
+            mojom::blink::PageVisibilityState::kVisible);
+
+  web_view->SetVisibilityState(
+      mojom::blink::PageVisibilityState::kHiddenButPainting,
+      /*is_initial_state=*/false);
+  EXPECT_EQ(observer.page_visibility_and_clear(),
+            mojom::blink::PageVisibilityState::kHiddenButPainting);
+
+  web_view->RemoveObserver(&observer);
+}
+
+TEST_F(WebViewTest, HiddenButPaintingPageIsntThrottled) {
+  // The PageScheduler should consider `kHiddenButPainting` to be visible so
+  // that the page is not throttled.
+  WebViewImpl* web_view = web_view_helper_.Initialize();
+  auto* const page = web_view->GetPage();
+  auto* const scheduler = page->GetPageScheduler();
+
+  // `kHidden` should mark the page as hidden for the scheduler.
+  web_view->SetVisibilityState(mojom::blink::PageVisibilityState::kHidden,
+                               /*is_initial_state=*/false);
+  EXPECT_FALSE(scheduler->IsPageVisible());
+
+  // `kVisible` should mark the page as visible for the scheduler.
+  web_view->SetVisibilityState(mojom::blink::PageVisibilityState::kVisible,
+                               /*is_initial_state=*/false);
+  EXPECT_TRUE(scheduler->IsPageVisible());
+
+  // `kHiddenButPainting` should also mark the page scheduler as visible.
+  web_view->SetVisibilityState(
+      mojom::blink::PageVisibilityState::kHiddenButPainting,
+      /*is_initial_state=*/false);
+  EXPECT_TRUE(scheduler->IsPageVisible());
 }
 
 }  // namespace blink

@@ -4,10 +4,12 @@
 
 #import "ios/chrome/browser/ui/settings/privacy/safe_browsing/safe_browsing_standard_protection_mediator.h"
 
-#import "base/mac/foundation_util.h"
+#import "base/apple/foundation_util.h"
 #import "base/notreached.h"
+#import "build/branding_buildflags.h"
 #import "components/password_manager/core/common/password_manager_pref_names.h"
 #import "components/prefs/pref_service.h"
+#import "components/safe_browsing/core/browser/hashprefix_realtime/hash_realtime_utils.h"
 #import "components/safe_browsing/core/common/features.h"
 #import "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #import "components/signin/public/identity_manager/objc/identity_manager_observer_bridge.h"
@@ -23,7 +25,7 @@
 #import "ios/chrome/browser/ui/settings/utils/observable_boolean.h"
 #import "ios/chrome/browser/ui/settings/utils/pref_backed_boolean.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
-#import "ios/chrome/grit/ios_google_chrome_strings.h"
+#import "ios/chrome/grit/ios_chromium_strings.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "ui/base/l10n/l10n_util.h"
 
@@ -198,10 +200,18 @@ const CGFloat kSymbolSize = 20;
   if (!_metricIconHeader) {
     UIImage* metricIcon =
         DefaultSymbolWithPointSize(kCheckmarkCircleSymbol, kSymbolSize);
+    NSInteger detailText = IDS_IOS_SAFE_BROWSING_STANDARD_PROTECTION_BULLET_TWO;
+
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+    if (safe_browsing::hash_realtime_utils::
+            IsHashRealTimeLookupEligibleInSession()) {
+      detailText = IDS_IOS_SAFE_BROWSING_STANDARD_PROTECTION_BULLET_TWO_PROXY;
+    }
+#endif
+
     SafeBrowsingHeaderItem* metricIconItem = [self
              detailItemWithType:ItemTypeMetricIcon
-                     detailText:
-                         IDS_IOS_SAFE_BROWSING_STANDARD_PROTECTION_BULLET_TWO
+                     detailText:detailText
                           image:metricIcon
         accessibilityIdentifier:kSafeBrowsingStandardProtectionMetricCellId];
     _metricIconHeader = metricIconItem;
@@ -309,14 +319,14 @@ const CGFloat kSymbolSize = 20;
         break;
       case ItemTypeSafeBrowsingExtendedReporting: {
         SyncSwitchItem* syncSwitchItem =
-            base::mac::ObjCCastStrict<SyncSwitchItem>(item);
+            base::apple::ObjCCastStrict<SyncSwitchItem>(item);
         syncSwitchItem.on =
             safe_browsing::IsExtendedReportingEnabled(*self.userPrefService);
         syncSwitchItem.enabled = self.inSafeBrowsingStandardProtection;
         break;
       }
       case ItemTypeSafeBrowsingManagedExtendedReporting:
-        base::mac::ObjCCastStrict<TableViewInfoButtonItem>(item).statusText =
+        base::apple::ObjCCastStrict<TableViewInfoButtonItem>(item).statusText =
             self.safeBrowsingExtendedReportingPreference.value
                 ? l10n_util::GetNSString(IDS_IOS_SETTING_ON)
                 : l10n_util::GetNSString(IDS_IOS_SETTING_OFF);
@@ -342,7 +352,7 @@ const CGFloat kSymbolSize = 20;
 // state.
 - (void)configureLeakCheckItem:(TableViewItem*)item {
   TableViewSwitchItem* leakCheckItem =
-      base::mac::ObjCCastStrict<TableViewSwitchItem>(item);
+      base::apple::ObjCCastStrict<TableViewSwitchItem>(item);
   leakCheckItem.enabled = self.inSafeBrowsingStandardProtection;
   leakCheckItem.on = [self passwordLeakCheckItemOnState];
   if (base::FeatureList::IsEnabled(
@@ -358,7 +368,7 @@ const CGFloat kSymbolSize = 20;
 #pragma mark - SafeBrowsingStandardProtectionViewControllerDelegate
 
 - (void)toggleSwitchItem:(TableViewItem*)item withValue:(BOOL)value {
-  SyncSwitchItem* syncSwitchItem = base::mac::ObjCCast<SyncSwitchItem>(item);
+  SyncSwitchItem* syncSwitchItem = base::apple::ObjCCast<SyncSwitchItem>(item);
   syncSwitchItem.on = value;
   ItemType type = static_cast<ItemType>(item.type);
   switch (type) {

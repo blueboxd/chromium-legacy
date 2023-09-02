@@ -706,7 +706,7 @@ int HistoryFuzzyProvider::AddConvertedMatches(const ACMatches& matches,
   // the corrected input. These scoring signals are inaccurate for the true
   // input, so clear them to prevent the ml model assigning an
   // artificially high confidence to this suggestion.
-  match.scoring_signals->Clear();
+  match.scoring_signals.reset();
 
   return 1;
 }

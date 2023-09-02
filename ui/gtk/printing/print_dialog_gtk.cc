@@ -108,15 +108,14 @@ class StickyPrintSettingGtk {
   StickyPrintSettingGtk(const StickyPrintSettingGtk&) = delete;
   StickyPrintSettingGtk& operator=(const StickyPrintSettingGtk&) = delete;
 
-  ~StickyPrintSettingGtk() {
-    NOTREACHED();  // Intended to be used with base::NoDestructor.
-  }
+  // Intended to be used with base::NoDestructor.
+  ~StickyPrintSettingGtk() = delete;
 
   GtkPrintSettings* settings() { return last_used_settings_; }
 
   void SetLastUsedSettings(GtkPrintSettings* settings) {
     DCHECK(last_used_settings_);
-    g_object_unref(last_used_settings_);
+    g_object_unref(last_used_settings_.ExtractAsDangling());
     last_used_settings_ = gtk_print_settings_copy(settings);
   }
 
@@ -175,6 +174,21 @@ class GtkPrinterList {
   raw_ptr<GtkPrinter> default_printer_ = nullptr;
 };
 
+#if BUILDFLAG(ENABLE_OOP_PRINTING_NO_OOP_BASIC_PRINT_DIALOG)
+ScopedGKeyFile GetGKeyFileFromDict(const base::Value::Dict& data,
+                                   base::StringPiece key) {
+  const std::string* data_string = data.FindString(key);
+  CHECK(data_string);
+
+  ScopedGKeyFile key_file = ScopedGKeyFile(g_key_file_new());
+  GError* error = nullptr;
+  CHECK(g_key_file_load_from_data(key_file.get(), data_string->c_str(),
+                                  data_string->size(), G_KEY_FILE_NONE, &error))
+      << error->message;
+  return key_file;
+}
+#endif
+
 }  // namespace
 
 // static
@@ -204,16 +218,13 @@ PrintDialogGtk::~PrintDialogGtk() {
     dialog_ = nullptr;
   }
   if (gtk_settings_) {
-    g_object_unref(gtk_settings_);
-    gtk_settings_ = nullptr;
+    g_object_unref(gtk_settings_.ExtractAsDangling());
   }
   if (page_setup_) {
-    g_object_unref(page_setup_);
-    page_setup_ = nullptr;
+    g_object_unref(page_setup_.ExtractAsDangling());
   }
   if (printer_) {
-    g_object_unref(printer_);
-    printer_ = nullptr;
+    g_object_unref(printer_.ExtractAsDangling());
   }
 }
 
@@ -369,6 +380,42 @@ void PrintDialogGtk::UpdateSettings(
   InitPrintSettings(std::move(settings));
 }
 
+#if BUILDFLAG(ENABLE_OOP_PRINTING_NO_OOP_BASIC_PRINT_DIALOG)
+void PrintDialogGtk::LoadPrintSettings(const PrintSettings& settings) {
+  const std::string* printer_name =
+      settings.system_print_dialog_data().FindString(
+          printing::kLinuxSystemPrintDialogDataPrinter);
+  CHECK(printer_name);
+
+  GError* error = nullptr;
+  auto printer_list = std::make_unique<GtkPrinterList>();
+  printer_ = printer_list->GetPrinterWithName(*printer_name);
+  CHECK(printer_);
+  g_object_ref(printer_);
+
+  if (!gtk_settings_) {
+    gtk_settings_ = gtk_print_settings_copy(GetLastUsedSettings().settings());
+  }
+  if (!page_setup_) {
+    page_setup_ = gtk_page_setup_new();
+  }
+
+  ScopedGKeyFile settings_key_file =
+      GetGKeyFileFromDict(settings.system_print_dialog_data(),
+                          printing::kLinuxSystemPrintDialogDataPrintSettings);
+  CHECK(gtk_print_settings_load_key_file(gtk_settings_, settings_key_file.get(),
+                                         /*group_name=*/nullptr, &error))
+      << error->message;
+
+  ScopedGKeyFile page_setup_key_file =
+      GetGKeyFileFromDict(settings.system_print_dialog_data(),
+                          printing::kLinuxSystemPrintDialogDataPageSetup);
+  CHECK(gtk_page_setup_load_key_file(page_setup_, page_setup_key_file.get(),
+                                     /*group_name=*/nullptr, &error))
+      << error->message;
+}
+#endif  // BUILDFLAG(ENABLE_OOP_PRINTING_NO_OOP_BASIC_PRINT_DIALOG)
+
 void PrintDialogGtk::ShowDialog(
     gfx::NativeView parent_view,
     bool has_selection,
@@ -395,8 +442,9 @@ void PrintDialogGtk::ShowDialog(
       gtk_print_settings_set_print_pages(gtk_settings_, GTK_PRINT_PAGES_ALL);
   }
 
-  // Set modal so user cannot focus the same tab and press print again.
-  gtk_window_set_modal(GTK_WINDOW(dialog_), TRUE);
+  // Disable input handling so the user cannot focus the same tab and press
+  // print again.
+  gtk::DisableHostInputHandling(dialog_, parent_view);
 
   // Since we only generate PDF, only show printers that support PDF.
   // TODO(thestig) Add more capabilities to support?
@@ -484,19 +532,22 @@ void PrintDialogGtk::OnResponse(GtkWidget* dialog, int response_id) {
         return;
       }
 
-      if (gtk_settings_)
-        g_object_unref(gtk_settings_);
+      if (gtk_settings_) {
+        g_object_unref(gtk_settings_.ExtractAsDangling());
+      }
       gtk_settings_ =
           gtk_print_unix_dialog_get_settings(GTK_PRINT_UNIX_DIALOG(dialog_));
 
-      if (printer_)
-        g_object_unref(printer_);
+      if (printer_) {
+        g_object_unref(printer_.ExtractAsDangling());
+      }
       printer_ = gtk_print_unix_dialog_get_selected_printer(
           GTK_PRINT_UNIX_DIALOG(dialog_));
       g_object_ref(printer_);
 
-      if (page_setup_)
-        g_object_unref(page_setup_);
+      if (page_setup_) {
+        g_object_unref(page_setup_.ExtractAsDangling());
+      }
       page_setup_ =
           gtk_print_unix_dialog_get_page_setup(GTK_PRINT_UNIX_DIALOG(dialog_));
       g_object_ref(page_setup_);

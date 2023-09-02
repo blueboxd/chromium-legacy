@@ -10,9 +10,9 @@
 #include <string>
 #include <utility>
 
-#include "base/allocator/partition_allocator/pointers/raw_ptr.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
+#include "base/memory/raw_ptr.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
@@ -53,11 +53,12 @@ class SelfOwnedMojoProxy : public SelfOwnedMojoProxyInterface {
       base::OnceCallback<void(SelfOwnedMojoProxyInterface*)>;
 
   template <typename... ImplArgs>
-  static raw_ptr<SelfOwnedMojoProxyInterface, ExperimentalAsh> Create(
-      mojo::PendingReceiver<ReceiverInterface> pending_receiver,
-      mojo::PendingRemote<RemoteInterface> pending_remote,
-      OnDisconnectCallback on_disconnect_callback,
-      ImplArgs... impl_args) {
+  static raw_ptr<SelfOwnedMojoProxyInterface,
+                 DanglingUntriaged | ExperimentalAsh>
+  Create(mojo::PendingReceiver<ReceiverInterface> pending_receiver,
+         mojo::PendingRemote<RemoteInterface> pending_remote,
+         OnDisconnectCallback on_disconnect_callback,
+         ImplArgs... impl_args) {
     auto impl = std::make_unique<ReceiverImpl>(std::move(pending_remote),
                                                std::forward(impl_args)...);
     return new SelfOwnedMojoProxy(std::move(impl), std::move(pending_receiver),

@@ -540,6 +540,8 @@ def BuildLLVMLibraries(skip_build, build_mac_arm):
             # PIC needed for Rust build (links LLVM into shared object)
             '--pic',
             '--with-ml-inliner-model=',
+            # Not using this in Rust yet, see also crbug.com/1476464.
+            '--without-zstd',
         ]
         if sys.platform.startswith('linux'):
             build_cmd.append('--without-android')
@@ -589,6 +591,18 @@ def BuildLLVMLibraries(skip_build, build_mac_arm):
         aarch64_llvm_config = os.path.join(target_llvm_install_dir, 'bin',
                                            'llvm-config')
     return (x86_64_llvm_config, aarch64_llvm_config, target_llvm_install_dir)
+
+
+def GitCherryPick(git_repository, commit):
+    print(f'Cherry-picking {commit} in {git_repository}')
+    if RunCommand([
+            'git', '-C', git_repository, 'merge-base', '--is-ancestor', commit,
+            'HEAD'
+    ],
+                  fail_hard=False):
+        print('Commit already an ancestor; skipping.')
+        return
+    RunCommand(['git', '-C', git_repository, 'cherry-pick', commit])
 
 
 def main():
@@ -719,6 +733,12 @@ def main():
 
     if not args.skip_checkout:
         CheckoutGitRepo('Rust', RUST_GIT_URL, checkout_revision, RUST_SRC_DIR)
+
+        # NOTE(b/276962533): We patch in riscv64-linux-android support
+        # (https://github.com/rust-lang/rust/commit/0081d64e4b8413219ddec5d1).
+        # TODO(crbug.com/1472655): Remove this cherrypicking after the
+        # cherrypicked commit is included in the checkout.
+        GitCherryPick(RUST_SRC_DIR, '0081d64e4b8413219ddec5d1013d522edbf132')
 
         path = FetchBetaPackage('cargo', checkout_revision)
         if sys.platform == 'win32':

@@ -23,14 +23,16 @@ class VideoToolboxVP9AcceleratorTest : public testing::Test {
   ~VideoToolboxVP9AcceleratorTest() override = default;
 
  protected:
-  MOCK_METHOD2(OnDecode,
-               void(base::ScopedCFTypeRef<CMSampleBufferRef>,
+  MOCK_METHOD3(OnDecode,
+               void(base::apple::ScopedCFTypeRef<CMSampleBufferRef>,
+                    VideoToolboxSessionMetadata,
                     scoped_refptr<CodecPicture>));
   MOCK_METHOD1(OnOutput, void(scoped_refptr<CodecPicture>));
 
   std::unique_ptr<VideoToolboxVP9Accelerator> accelerator_{
       std::make_unique<VideoToolboxVP9Accelerator>(
           std::make_unique<NullMediaLog>(),
+          absl::nullopt,
           base::BindRepeating(&VideoToolboxVP9AcceleratorTest::OnDecode,
                               base::Unretained(this)),
           base::BindRepeating(&VideoToolboxVP9AcceleratorTest::OnOutput,
@@ -54,8 +56,8 @@ TEST_F(VideoToolboxVP9AcceleratorTest, DecodeRaw) {
   pic->frame_hdr->frame_size = 1;
 
   // Save the resulting sample.
-  base::ScopedCFTypeRef<CMSampleBufferRef> sample;
-  EXPECT_CALL(*this, OnDecode(_, _)).WillOnce(SaveArg<0>(&sample));
+  base::apple::ScopedCFTypeRef<CMSampleBufferRef> sample;
+  EXPECT_CALL(*this, OnDecode(_, _, _)).WillOnce(SaveArg<0>(&sample));
   EXPECT_CALL(*this, OnOutput(_));
   accelerator_->SubmitDecode(pic, segm_params, lf_params, reference_frames,
                              std::move(done_cb));
@@ -90,8 +92,8 @@ TEST_F(VideoToolboxVP9AcceleratorTest, DecodeSuperframe) {
   pic2->frame_hdr->frame_size = sizeof(frame_data2);
 
   // Save the resulting sample.
-  base::ScopedCFTypeRef<CMSampleBufferRef> sample;
-  EXPECT_CALL(*this, OnDecode(_, _)).WillOnce(SaveArg<0>(&sample));
+  base::apple::ScopedCFTypeRef<CMSampleBufferRef> sample;
+  EXPECT_CALL(*this, OnDecode(_, _, _)).WillOnce(SaveArg<0>(&sample));
   EXPECT_CALL(*this, OnOutput(_));
   accelerator_->SubmitDecode(pic1, segm_params, lf_params, reference_frames,
                              std::move(done_cb));

@@ -6,7 +6,7 @@ import {FakeMethodResolver} from 'chrome://resources/ash/common/fake_method_reso
 import {FakeObservables} from 'chrome://resources/ash/common/fake_observables.js';
 import {assert} from 'chrome://resources/js/assert_ts.js';
 
-import {AcceleratorResultData, AcceleratorsUpdatedObserverRemote} from '../mojom-webui/ash/webui/shortcut_customization_ui/mojom/shortcut_customization.mojom-webui.js';
+import {AcceleratorResultData, AcceleratorsUpdatedObserverRemote, UserAction} from '../mojom-webui/ash/webui/shortcut_customization_ui/mojom/shortcut_customization.mojom-webui.js';
 
 import {Accelerator, AcceleratorConfigResult, AcceleratorSource, MojoAcceleratorConfig, MojoLayoutInfo, ShortcutProviderInterface} from './shortcut_types.js';
 
@@ -29,6 +29,8 @@ export class FakeShortcutProvider implements ShortcutProviderInterface {
   private restoreDefaultCallCount: number = 0;
   private preventProcessingAcceleratorsCallCount: number = 0;
   private addAcceleratorCallCount: number = 0;
+  private removeAcceleratorCallCount: number = 0;
+  private lastRecordedUserAction: UserAction;
 
   constructor() {
     this.methods = new FakeMethodResolver();
@@ -47,6 +49,7 @@ export class FakeShortcutProvider implements ShortcutProviderInterface {
     this.methods.register('preventProcessingAccelerators');
     this.methods.register('getConflictAccelerator');
     this.methods.register('getDefaultAcceleratorsForId');
+    this.methods.register('recordUserAction');
     this.registerObservables();
   }
 
@@ -59,6 +62,7 @@ export class FakeShortcutProvider implements ShortcutProviderInterface {
     this.restoreDefaultCallCount = 0;
     this.preventProcessingAcceleratorsCallCount = 0;
     this.addAcceleratorCallCount = 0;
+    this.removeAcceleratorCallCount = 0;
     this.observables = new FakeObservables();
     this.registerObservables();
   }
@@ -122,9 +126,7 @@ export class FakeShortcutProvider implements ShortcutProviderInterface {
 
   removeAccelerator(): Promise<{result: AcceleratorResultData}> {
     // Always return kSuccess in this fake.
-    const result:
-        AcceleratorResultData = {result: AcceleratorConfigResult.kSuccess};
-    this.methods.setResult('removeAccelerator', {result});
+    ++this.removeAcceleratorCallCount;
     return this.methods.resolveMethod('removeAccelerator');
   }
 
@@ -134,16 +136,20 @@ export class FakeShortcutProvider implements ShortcutProviderInterface {
     return this.methods.resolveMethod('restoreDefault');
   }
 
-  setRestoreDefault(result: AcceleratorResultData): void {
-    this.methods.setResult('restoreDefault', {result});
-  }
-
   restoreAllDefaults(): Promise<{result: AcceleratorResultData}> {
     // Always return kSuccess in this fake.
     const result:
         AcceleratorResultData = {result: AcceleratorConfigResult.kSuccess};
     this.methods.setResult('restoreAllDefaults', {result});
     return this.methods.resolveMethod('restoreAllDefaults');
+  }
+
+  recordUserAction(userAction: UserAction): void {
+    this.lastRecordedUserAction = userAction;
+  }
+
+  getLatestRecordedAction(): UserAction {
+    return this.lastRecordedUserAction;
   }
 
   preventProcessingAccelerators(_preventProcessingAccelerators: boolean):
@@ -208,6 +214,10 @@ export class FakeShortcutProvider implements ShortcutProviderInterface {
     return this.addAcceleratorCallCount;
   }
 
+  getRemoveAcceleratorCallCount(): number {
+    return this.removeAcceleratorCallCount;
+  }
+
   setFakeHasLauncherButton(hasLauncherButton: boolean): void {
     this.methods.setResult('hasLauncherButton', {hasLauncherButton});
   }
@@ -218,6 +228,14 @@ export class FakeShortcutProvider implements ShortcutProviderInterface {
 
   setFakeReplaceAcceleratorResult(result: AcceleratorResultData): void {
     this.methods.setResult('replaceAccelerator', {result});
+  }
+
+  setFakeRestoreDefaultResult(result: AcceleratorResultData): void {
+    this.methods.setResult('restoreDefault', {result});
+  }
+
+  setFakeRemoveAcceleratorResult(result: AcceleratorResultData): void {
+    this.methods.setResult('removeAccelerator', {result});
   }
 
   // Sets up an observer for methodName.

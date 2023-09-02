@@ -520,6 +520,9 @@ struct AutocompleteMatch {
   // providers.
   bool IsOnDeviceSearchSuggestion() const;
 
+  // Returns true if the match is eligible to be re-scored by ML Url scoring.
+  bool IsUrlScoringEligible() const;
+
   // Filter OmniboxActions based on the supplied qualifiers.
   // The order of the supplied qualifiers determines the preference.
   void FilterOmniboxActions(
@@ -618,6 +621,10 @@ struct AutocompleteMatch {
     auto it = base::ranges::find_if(actions, std::move(predicate));
     return it != actions.end() ? it->get() : nullptr;
   }
+
+  // Change this match's `contents` and other members to more accurately
+  // represent the `takeover_action` on this match.
+  void ConvertFromTakeoverAction();
 
   // The provider of this match, used to remember which provider the user had
   // selected when the input changes. This may be NULL, in which case there is

@@ -9,7 +9,7 @@ import {CustomizeChromePageCallbackRouter, CustomizeChromePageHandlerRemote, Cus
 import {CustomizeChromeApiProxy} from 'chrome://customize-chrome-side-panel.top-chrome/customize_chrome_api_proxy.js';
 import {ManagedDialogElement} from 'chrome://resources/cr_components/managed_dialog/managed_dialog.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
-import {assertEquals, assertTrue} from 'chrome://webui-test/chai_assert.js';
+import {assertEquals, assertNotEquals, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {waitAfterNextRender} from 'chrome://webui-test/polymer_test_util.js';
 import {TestMock} from 'chrome://webui-test/test_mock.js';
 import {eventToPromise} from 'chrome://webui-test/test_util.js';
@@ -193,6 +193,48 @@ suite('AppearanceTest', () => {
     });
   });
 
+  suite('showBottomDivider', () => {
+    ([
+      [true, true],
+      [true, false],
+      [false, true],
+      [false, false],
+    ] as boolean[][])
+        .forEach(([showClassicChromeButton, showDeviceThemeToggle]) => {
+          const showBottomDivider =
+              showClassicChromeButton || showDeviceThemeToggle;
+          const buttonString =
+              `showClassicChromeButton ${showClassicChromeButton}`;
+          const toggleString = `showDeviceThemeToggle ${showDeviceThemeToggle}`;
+
+          test(
+              `${showBottomDivider} when ${buttonString} and ${toggleString}`,
+              async () => {
+                loadTimeData.overrideValues({showDeviceThemeToggle});
+                const theme = createTheme();
+                if (showClassicChromeButton) {
+                  theme.backgroundImage =
+                      createBackgroundImage('chrome://theme/foo');
+                }
+
+                callbackRouterRemote.setTheme(theme);
+                await callbackRouterRemote.$.flushForTesting();
+
+                assertNotEquals(
+                    appearanceElement.$.setClassicChromeButton.hidden,
+                    showClassicChromeButton);
+                assertNotEquals(
+                    appearanceElement.$.followThemeToggle.hidden,
+                    showDeviceThemeToggle);
+                assertNotEquals(
+                    (appearanceElement.shadowRoot!.querySelectorAll(
+                         '.sp-hr')[1]! as HTMLElement)
+                        .hidden,
+                    showBottomDivider);
+              });
+        });
+  });
+
   suite('third party theme', () => {
     test('3P view shows when 3P theme info is set', async () => {
       const theme = createTheme();
@@ -220,6 +262,43 @@ suite('AppearanceTest', () => {
       // Assert.
       appearanceElement.$.thirdPartyLinkButton.click();
       assertEquals(1, handler.getCallCount('openThirdPartyThemePage'));
+    });
+  });
+
+  suite('GM3', async () => {
+    suiteSetup(() => {
+      document.documentElement.toggleAttribute('chrome-refresh-2023', true);
+    });
+
+    test('uploaded image shows button and no snapshot', async () => {
+      const theme = createTheme();
+      theme.backgroundImage = createBackgroundImage('local');
+      theme.backgroundImage.isUploadedImage = true;
+
+      callbackRouterRemote.setTheme(theme);
+      await callbackRouterRemote.$.flushForTesting();
+
+      assertStyle(appearanceElement.$.thirdPartyLinkButton, 'display', 'none');
+      assertNotStyle(
+          appearanceElement.$.uploadedImageButton, 'display', 'none');
+      assertNotStyle(
+          appearanceElement.$.setClassicChromeButton, 'display', 'none');
+      assertStyle(appearanceElement.$.themeSnapshot, 'display', 'none');
+      assertNotStyle(appearanceElement.$.chromeColors, 'display', 'none');
+    });
+
+    test('uploadedImageButton opens upload image dialog', async () => {
+      const theme = createTheme();
+      theme.backgroundImage = createBackgroundImage('local');
+      theme.backgroundImage.isUploadedImage = true;
+
+      callbackRouterRemote.setTheme(theme);
+      await callbackRouterRemote.$.flushForTesting();
+
+      assertNotStyle(
+          appearanceElement.$.uploadedImageButton, 'display', 'none');
+      appearanceElement.$.uploadedImageButton.click();
+      assertEquals(1, handler.getCallCount('chooseLocalCustomBackground'));
     });
   });
 });

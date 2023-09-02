@@ -129,6 +129,9 @@ void AddChromeColorMixer(ui::ColorProvider* provider,
   mixer[kColorAvatarStrokeLight] = {SK_ColorWHITE};
   mixer[kColorBookmarkBarBackground] = {kColorToolbar};
   mixer[kColorBookmarkBarForeground] = {kColorToolbarText};
+  // Uses the alpha of kColorToolbarButtonIconInactive.
+  mixer[kColorBookmarkBarForegroundDisabled] =
+      ui::SetAlpha(kColorBookmarkBarForeground, gfx::kGoogleGreyAlpha500);
   mixer[kColorBookmarkButtonIcon] = {kColorToolbarButtonIcon};
   mixer[kColorBookmarkDialogProductImageBorder] =
       ui::SetAlpha(gfx::kGoogleGrey900, 0x24);
@@ -371,6 +374,7 @@ void AddChromeColorMixer(ui::ColorProvider* provider,
   mixer[kColorSidePanelBackground] = {kColorToolbar};
   mixer[kColorSidePanelContentAreaSeparator] = {ui::kColorSeparator};
   mixer[kColorSidePanelEntryIcon] = {ui::kColorIcon};
+  mixer[kColorSidePanelEntryDropdownIcon] = {ui::kColorIcon};
   mixer[kColorSidePanelHeaderButtonIcon] = {ui::kColorIcon};
   mixer[kColorSidePanelHeaderButtonIconDisabled] = {ui::kColorIconDisabled};
   mixer[kColorSidePanelResizeAreaHandle] = {kColorToolbarContentAreaSeparator};

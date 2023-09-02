@@ -42,7 +42,7 @@ BASE_FEATURE(kIPHDesktopTabGroupsNewGroupFeature,
              base::FEATURE_DISABLED_BY_DEFAULT);
 BASE_FEATURE(kIPHDesktopCustomizeChromeFeature,
              "IPH_DesktopCustomizeChrome",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 BASE_FEATURE(kIPHDesktopCustomizeChromeRefreshFeature,
              "IPH_DesktopCustomizeChromeRefresh",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -467,7 +467,7 @@ BASE_FEATURE(kIPHFollowWhileBrowsingFeature,
              base::FEATURE_DISABLED_BY_DEFAULT);
 BASE_FEATURE(kIPHPriceNotificationsWhileBrowsingFeature,
              "IPH_PriceNotificationsWhileBrowsing",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 BASE_FEATURE(kIPHiOSDefaultBrowserBadgeEligibilityFeature,
              "IPH_iOSDefaultBrowserBadgeEligibility",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -510,8 +510,8 @@ BASE_FEATURE(kIPHiOSDefaultBrowserVideoPromoTriggerFeature,
 BASE_FEATURE(kIPHiOSPromoPostRestoreDefaultBrowserFeature,
              "IPH_iOSPromoPostRestoreDefaultBrowser",
              base::FEATURE_ENABLED_BY_DEFAULT);
-BASE_FEATURE(kIPHiOSPromoSearchPasswordsWidgetFeature,
-             "IPH_iOSPromoSearchPasswordsWidget",
+BASE_FEATURE(kIPHiOSPromoPasswordManagerWidgetFeature,
+             "IPH_iOSPromoPasswordManagerWidget",
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif  // BUILDFLAG(IS_IOS)
 

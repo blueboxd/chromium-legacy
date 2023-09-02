@@ -649,7 +649,7 @@
     },
     {
       name: "CompositeBackgroundAttachmentFixed",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "CompositeBGColorAnimation",
@@ -675,6 +675,13 @@
     {
       name: "CompositeScrollAfterPaint",
       status: "stable",
+    },
+    {
+      name: "CompositionForegroundMarkers",
+      status: {
+        "Android": "stable",
+        "default": "",
+      }
     },
     {
       name: "CompressionDictionaryTransport",
@@ -845,6 +852,10 @@
       name: "CSSDisplayAnimation",
       status: "stable",
     },
+    {
+      name: "CSSDynamicRangeLimit",
+      status: "experimental",
+    },
     // Exists so that we can run a reverse-Finch experiment to assess its performance.
     {
       name: "CSSEasySelectors",
@@ -860,6 +871,12 @@
     {
       name: "CSSExponentialFunctions",
       status: "experimental",
+    },
+    {
+      // Don't allow new line as preceding character for ::first-letter.
+      // See crbug.com/1477217
+      name: "CSSFirstLetterNoNewLineAsPrecedingChar",
+      status: "stable",
     },
     {
       name: "CSSFocusVisible",
@@ -1031,9 +1048,14 @@
       base_feature: "none",
     },
     {
+      // https://drafts.csswg.org/css-color-5/#relative-colors
+      name: "CSSRelativeColor",
+      status: "experimental",
+    },
+    {
       // https://drafts.csswg.org/css-cascade-6/#scoped-styles
       name: "CSSScope",
-      status: "experimental",
+      status: "stable",
     },
     {
       // https://drafts.csswg.org/css-scroll-snap-2
@@ -1055,6 +1077,10 @@
     },
     {
       name: "CSSSignRelatedFunctions",
+      status: "experimental",
+    },
+    {
+      name: "CSSSnapContainerQueries",
       status: "experimental",
     },
     {
@@ -1110,6 +1136,10 @@
       name: "CSSTextBoxTrim",
       status: "test",
     },
+    {
+      // crbug.com/1463891: CSS `text-spacing-trim` property
+      name: "CSSTextSpacingTrim",
+    },
     // Use the `NGSCoreLineBreaker` for `text-wrap: balance`. crbug.com/1451205
     {
       name: "CSSTextWrapBalanceByScore",
@@ -1141,7 +1171,7 @@
       // Support for the 'border-box', 'content-box' and 'stroke-box' keywords
       // for the 'transform-box' property.
       name: "CSSTransformBoxAdditionalKeywords",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "CSSTransitionDiscrete",
@@ -1202,6 +1232,14 @@
       base_feature: "none",
     },
     {
+      // The view-timeline shorthand includes the view-timeline-inset
+      // property.
+      //
+      // https://github.com/w3c/csswg-drafts/pull/9189
+      name: "CSSViewTimelineInsetShorthand",
+      status: "stable",
+    },
+    {
       // https://html.spec.whatwg.org/#dom-customelementregistry-getname
       name: "CustomElementsGetName",
       status: "stable",
@@ -1216,18 +1254,6 @@
     {
       name: "DateInputInlineBlock",
       status: "test",
-    },
-    {
-      name: "DecodeJpeg420ImagesToYUV",
-      public: true,
-      status: "stable",
-      base_feature: "none",
-    },
-    {
-      name: "DecodeLossyWebPImagesToYUV",
-      public: true,
-      status: "stable",
-      base_feature: "none",
     },
     {
       name: "DeflateRawCompressionFormat",
@@ -1372,16 +1398,6 @@
       name: "DisplayCutoutAPI",
       base_feature: "none",
       public: true,
-    },
-    {
-      // When a Web application calls getDisplayMedia() and asks for video,
-      // allow a hint to be provided as to whether it prefers that a
-      // certain surface type be more prominently offered to the user.
-      //
-      // https://github.com/w3c/mediacapture-screen-share/pull/186/files
-      name: "DisplaySurfaceConstraint",
-      status: "stable",
-      base_feature: "none",
     },
     {
       name: "DocumentCookie",
@@ -1558,6 +1574,13 @@
       name: "FedCm",
       public: true,
       status: "stable",
+      base_feature: "none",
+    },
+    {
+      name: "FedCmAccountAutoSelectedFlag",
+      depends_on: ["FedCm"],
+      public: true,
+      status: "test",
       base_feature: "none",
     },
     {
@@ -1841,7 +1864,16 @@
       name: "FormControlsVerticalWritingModeDirectionSupport",
     },
     {
+      // Allow these form controls to have vertical writing mode: select, meter,
+      // progress, button and non-text-based input types.
       name: "FormControlsVerticalWritingModeSupport",
+      status: "experimental",
+    },
+    {
+      // TODO(crbug.com/484651): Allow text-based form controls to have vertical
+      // writing mode: textarea and input types email, number, password, search,
+      // tel, text, url.
+      name: "FormControlsVerticalWritingModeTextSupport",
       status: "experimental",
     },
     {
@@ -1883,6 +1915,8 @@
     {
       name: "GetAllScreensMedia",
       depends_on: ["GetDisplayMedia"],
+      origin_trial_feature_name: "GetAllScreensMedia",
+      origin_trial_os: ["chromeos"],
       public: true,
       status: "test",
     },
@@ -1923,7 +1957,7 @@
     },
     {
       name: "HasUAVisualTransition",
-      status: "test",
+      status: "stable",
       base_feature: "none",
     },
     // HighlightAPI's custom highlights use HighlightInheritance's behavior even
@@ -1950,6 +1984,12 @@
     },
     {
       name: "HitTestOpaqueness",
+      implied_by: ["HitTestTransparency"],
+    },
+    {
+      // Whether we use cc::HitTestOpaqueness::kTransparent for
+      // non-hit-testable objects, e.g. with pointer-events:none.
+      name: "HitTestTransparency",
     },
     {
       name: "HrefTranslate",
@@ -1979,7 +2019,7 @@
     },
     {
       name: "HTMLSearchElement",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "HTMLSelectListElement",
@@ -2066,6 +2106,10 @@
       status: "experimental",
     },
     {
+      name: "InvisibleSVGAnimationThrottling",
+      status: "stable",
+    },
+    {
       name: "JavaScriptCompileHintsMagicRuntime",
       status: "experimental",
       origin_trial_feature_name: "JavaScriptCompileHintsMagic",
@@ -2089,13 +2133,6 @@
       status: "stable",
     },
     {
-      name: "LayoutFlexNewRowAlgorithm",
-      implied_by: ["LayoutFlexNewRowAlgorithmV2"],
-    },
-    {
-      name: "LayoutFlexNewRowAlgorithmV2",
-    },
-    {
       name: "LayoutFlexNewRowAlgorithmV3",
       status: "test",
     },
@@ -2105,10 +2142,6 @@
     },
     {
       name: "LayoutNewFixedPositionInvalidation",
-      status: "stable",
-    },
-    {
-      name: "LayoutNewGridStaticPosition",
       status: "stable",
     },
     {
@@ -2426,6 +2459,32 @@
       status: "stable",
     },
     {
+      // TODO(crbug.com/924486): This feature enables the deprecated values
+      // inner-spin-button, push-button, searchfield-cancel-button,
+      // slider-horizontal, square-button. Disable this feature to stop
+      // parsing or allowing these values.
+      // https://drafts.csswg.org/css-ui-4/#appearance-switching
+      name: "NonStandardAppearanceValuesHighUsage",
+      status: "stable",
+    },
+    {
+      // TODO(crbug.com/1426629): This feature enables the deprecated value
+      // slider-vertical. Disable this feature to stop parsing or allowing these
+      // values.
+      // https://drafts.csswg.org/css-ui-4/#appearance-switching
+      name: "NonStandardAppearanceValueSliderVertical",
+      status: "stable",
+    },
+    {
+      // TODO(crbug.com/924486): This feature enables the deprecated values
+      // media-slider, media-sliderthumb, media-volume-slider
+      // media-volume-sliderthumb, sliderthumb-horizontal, sliderthumb-vertical.
+      // Disable this feature to stop parsing or allowing these values.
+      // https://drafts.csswg.org/css-ui-4/#appearance-switching
+      name: "NonStandardAppearanceValuesLowUsage",
+      status: "stable",
+    },
+    {
       name: "NotificationConstructor",
       // Android won't be able to reliably support non-persistent notifications, the
       // intended behavior for which is in flux by itself.
@@ -2491,6 +2550,14 @@
     // no regressions are reported.
     {
       name: "OptimizedNodeCloneOrder",
+      status: "stable",
+    },
+    // This flag is a killswitch. It was only exists as a way for us to turn
+    // the feature off in the emergency that it breaks websites.
+    // TODO(http://crbug.com/1473340): Delete internal web_tests which are
+    // redundant with existing WPTs when we delete this flag.
+    {
+      name: "OptionElementAlwaysUseLabel",
       status: "stable",
     },
     {
@@ -2778,7 +2845,7 @@
     {
       name: "PermissionsPolicyUnload",
       origin_trial_feature_name: "PermissionsPolicyUnload",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "PermissionsRequestRevoke",
@@ -2946,6 +3013,10 @@
       origin_trial_feature_name: "ReduceAcceptLanguage"
     },
     {
+      name: "ReduceCookieIPCs",
+      status: "test",
+    },
+    {
       // If enabled, the deviceModel will be reduced to "K" and the
       // androidVersion will be reduced to a static "10" string in android
       // User-Agent string.
@@ -2999,22 +3070,6 @@
       public: true,
       status: "stable",
       base_feature: "none",
-    },
-    {
-      // Non-standard appearance values should be removed. This feature removes
-      // inner-spin-button, media-slider, media-sliderthumb, media-volume-slider
-      // media-volume-sliderthumb, push-button, searchfield-cancel-button,
-      // slider-horizontal, sliderthumb-horizontal, sliderthumb-vertical,
-      // square-button.
-      // https://drafts.csswg.org/css-ui-4/#appearance-switching
-      name: "RemoveNonStandardAppearanceValue",
-      status: "experimental",
-    },
-    {
-      // Non-standard appearance values should be removed. This feature removes
-      // slider-vertical.
-      // https://drafts.csswg.org/css-ui-4/#appearance-switching
-      name: "RemoveNonStandardAppearanceValueSliderVertical",
     },
     {
       name: "RenderBlockingStatus",
@@ -3094,6 +3149,11 @@
       status: "experimental",
       base_feature: "none",
     },
+    // Enables the use of |RTCRtpEncodingParameters.codec|
+    {
+      name: "RTCRtpEncodingParametersCodec",
+      status: "experimental",
+    },
     // Enables the use of |RTCRtpTransceiver::getHeaderExtensionsToNegotiate|,
     // |RTCRtpTransceiver::setHeaderExtensionsToNegotiate|, and
     // |RTCRtpTransceiver::getNegotiatedHeaderExtensions|.
@@ -3151,6 +3211,10 @@
       name: "ScriptElementSupports",
       status: "stable",
       base_feature: "none",
+    },
+    {
+      name: "ScriptingMediaFeature",
+      status: "stable",
     },
     {
       name: "ScrollableAreaNoSnapping",
@@ -3339,6 +3403,15 @@
       base_feature: "none",
     },
     {
+      // When hovering on an element that contains a title, skip converting the
+      // HitTestResult to the shadow host. This is used to ensure tooltips in
+      // the shadow tree appear correctly. This is to be used as a killswitch in
+      // case of any issues.
+      // TODO(crbug.com/1473774): Remove flag if no issues arise.
+      name: "SkipShadowHostWhenHoveringForTooltip",
+      status: "stable",
+    },
+    {
       // Skips the browser touch event filter, ensuring that events that reach
       // the queue and would otherwise be filtered out will instead be passed
       // onto the renderer compositor process as long as the page hasn't timed
@@ -3358,6 +3431,10 @@
       base_feature: "none",
       public: true,
       status: {"Android": "test"},
+    },
+    {
+      name: "SmilAutoSuspendOnLag",
+      status: "stable",
     },
     {
       // If enabled Border, Outline and Column-Rule Widths
@@ -3511,6 +3588,10 @@
       base_feature: "none",
     },
     {
+      name: "SvgCrossOriginAttribute",
+      status: "stable",
+    },
+    {
       name: "SvgMapLocalToAncestorFix",
       status: "stable",
     },
@@ -3581,6 +3662,10 @@
       name: "TextFragmentTapOpensContextMenu",
       status: {"Android": "stable"},
       base_feature: "none",
+    },
+    {
+      name: "TextMetricsBaselines",
+      status: "stable",
     },
     {
       // Support for the timeline-scope property.
@@ -3723,6 +3808,11 @@
     {
       name: "UserAgentClientHint",
       status: "stable",
+    },
+    {
+      // https://chromestatus.com/feature/5132477781245952
+      name: "UserValidUserInvalid",
+      status: "experimental",
     },
     {
       name: "V8IdleTasks",
@@ -4232,6 +4322,12 @@
     {
       name: "WindowPlacementFullscreenOnScreensChange",
       status: "experimental",
+    },
+    // Flag guard for change to XML parser to merge adjacent CDATA sections.
+    // See https://crrev.com/c/4790343.
+    {
+      name: "XMLParserMergeAdjacentCDataSections",
+      status: "stable",
     },
     {
       // If enabled, the `getDisplayMedia()` family of APIs will ask for NV12

@@ -22,9 +22,9 @@
 #include "chrome/browser/ash/policy/dlp/test/files_policy_notification_manager_test_utils.h"
 #include "chrome/browser/chromeos/policy/dlp/dialogs/policy_dialog_base.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_confidential_file.h"
-#include "chrome/browser/chromeos/policy/dlp/dlp_files_controller.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_files_utils.h"
 #include "chrome/browser/notifications/notification_display_service_tester.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "chromeos/ash/components/disks/disk_mount_manager.h"
@@ -134,8 +134,9 @@ class FilesPolicyNotificationManagerTest : public testing::Test {
   FilesPolicyNotificationManagerTest& operator=(
       const FilesPolicyNotificationManagerTest&) = delete;
   ~FilesPolicyNotificationManagerTest() override = default;
-
   void SetUp() override {
+    scoped_feature_list_.InitAndEnableFeature(features::kNewFilesPolicyUX);
+
     ASSERT_TRUE(profile_manager_.SetUp());
     profile_ = profile_manager_.CreateTestingProfile("test-user");
     file_manager::VolumeManagerFactory::GetInstance()->SetTestingFactory(
@@ -179,6 +180,7 @@ class FilesPolicyNotificationManagerTest : public testing::Test {
   }
 
  protected:
+  base::test::ScopedFeatureList scoped_feature_list_;
   std::unique_ptr<FilesPolicyNotificationManager> fpnm_;
   scoped_refptr<storage::FileSystemContext> file_system_context_;
   raw_ptr<file_manager::io_task::IOTaskController, DanglingUntriaged>
@@ -343,6 +345,28 @@ TEST_F(FPNMIOTaskTest, ShowBlockedNotifications_IgnoresWarnedFiles) {
 
   fpnm_->ShowBlockedNotifications();
   EXPECT_FALSE(display_service_tester.GetNotification(notification_id));
+}
+
+// Tests that calling FPNM::OnErrorItemDismissed() removes all stored info when
+// the task was tracked.
+TEST_F(FPNMIOTaskTest, OnErrorItemDismissedClearsInfoForTrackedTask) {
+  file_manager::io_task::IOTaskId task_id = 1;
+  ASSERT_FALSE(AddCopyOrMoveIOTask(task_id, /*is_copy=*/true).empty());
+  EXPECT_TRUE(fpnm_->HasIOTask(task_id));
+  AddBlockedFiles(Policy::kDlp, task_id,
+                  {base::FilePath(kFile1), base::FilePath(kFile2)},
+                  dlp::FileAction::kCopy);
+  fpnm_->OnErrorItemDismissed(task_id);
+  EXPECT_FALSE(fpnm_->HasIOTask(task_id));
+}
+
+// Tests that calling FPNM::OnErrorItemDismissed() for a non-tracked task
+// succeeds.
+TEST_F(FPNMIOTaskTest, OnErrorItemDismissedIgnoresNonTrackedTask) {
+  file_manager::io_task::IOTaskId task_id = 1;
+  EXPECT_FALSE(fpnm_->HasIOTask(task_id));
+  fpnm_->OnErrorItemDismissed(task_id);
+  EXPECT_FALSE(fpnm_->HasIOTask(task_id));
 }
 
 class FilesPolicyNotificationManagerDlpAndConnectorsTest
@@ -970,11 +994,7 @@ INSTANTIATE_TEST_SUITE_P(
 class FPNMShowBlockTest
     : public FilesPolicyNotificationManagerTest,
       public ::testing::WithParamInterface<std::tuple<dlp::FileAction, int>> {
-  void SetUp() override {
-    FilesPolicyNotificationManagerTest::SetUp();
-    DlpFilesController::SetNewFilesPolicyUXEnabledForTesting(
-        /*is_enabled=*/true);
-  }
+  void SetUp() override { FilesPolicyNotificationManagerTest::SetUp(); }
 };
 
 TEST_P(FPNMShowBlockTest, ShowDlpBlockNotification_Single) {
@@ -1048,11 +1068,7 @@ INSTANTIATE_TEST_SUITE_P(
 class FPNMShowWarningTest
     : public FilesPolicyNotificationManagerTest,
       public ::testing::WithParamInterface<dlp::FileAction> {
-  void SetUp() override {
-    FilesPolicyNotificationManagerTest::SetUp();
-    DlpFilesController::SetNewFilesPolicyUXEnabledForTesting(
-        /*is_enabled=*/true);
-  }
+  void SetUp() override { FilesPolicyNotificationManagerTest::SetUp(); }
 };
 
 TEST_P(FPNMShowWarningTest, ShowDlpWarningNotification_Single) {

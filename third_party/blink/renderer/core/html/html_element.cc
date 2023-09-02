@@ -835,15 +835,16 @@ void HTMLElement::AttributeChanged(const AttributeModificationParams& params) {
     }
     if (AdjustedFocusedElementInTreeScope() != this)
       return;
-    // The attribute change may cause supportsFocus() to return false
+    // The attribute change may cause IsFocusable() to return false
     // for the element which had focus.
     //
     // TODO(tkent): We should avoid updating style.  We'd like to check only
     // DOM-level focusability here.
     GetDocument().UpdateStyleAndLayoutTreeForNode(this,
                                                   DocumentUpdateReason::kFocus);
-    if (!SupportsFocus())
+    if (!IsFocusable()) {
       blur();
+    }
   }
 }
 
@@ -1222,9 +1223,7 @@ void HTMLElement::UpdatePopoverAttribute(const AtomicString& value) {
         "Found a 'popover' attribute with an invalid value."));
     UseCounter::Count(GetDocument(), WebFeature::kPopoverTypeInvalid);
   }
-  // The attribute might not be set here, so check GetPopoverData instead of
-  // HasPopoverAttribute.
-  if (GetPopoverData()) {
+  if (HasPopoverAttribute()) {
     if (PopoverType() == type)
       return;
     String original_type = FastGetAttribute(html_names::kPopoverAttr);
@@ -1243,9 +1242,7 @@ void HTMLElement::UpdatePopoverAttribute(const AtomicString& value) {
     }
   }
   if (type == PopoverValueType::kNone) {
-    // The attribute might not be set here, so check GetPopoverData instead of
-    // HasPopoverAttribute.
-    if (GetPopoverData()) {
+    if (HasPopoverAttribute()) {
       // If the popover attribute is being removed, remove the PopoverData.
       RemovePopoverData();
     }
@@ -1271,7 +1268,6 @@ void HTMLElement::UpdatePopoverAttribute(const AtomicString& value) {
 }
 
 bool HTMLElement::HasPopoverAttribute() const {
-  CHECK_EQ(FastHasAttribute(html_names::kPopoverAttr), !!GetPopoverData());
   return GetPopoverData();
 }
 
@@ -1326,14 +1322,12 @@ bool HTMLElement::IsPopoverReady(PopoverTriggerAction action,
     }
   };
 
-  if (!FastHasAttribute(html_names::kPopoverAttr)) {
+  if (!HasPopoverAttribute()) {
     maybe_throw_exception(DOMExceptionCode::kNotSupportedError,
                           "Not supported on elements that do not have a valid "
                           "value for the 'popover' attribute.");
     return false;
   }
-  CHECK(GetPopoverData());
-
   if (action == PopoverTriggerAction::kShow &&
       GetPopoverData()->visibilityState() != PopoverVisibilityState::kHidden) {
     if (!RuntimeEnabledFeatures::PopoverDialogDontThrowEnabled()) {
@@ -1861,8 +1855,7 @@ void HTMLElement::HidePopoverInternal(
       focus_options->setPreventScroll(true);
       previously_focused_element->Focus(FocusParams(
           SelectionBehaviorOnFocus::kRestore, mojom::blink::FocusType::kScript,
-          /*capabilities=*/nullptr, focus_options,
-          /*gate_on_user_activation=*/true));
+          /*capabilities=*/nullptr, focus_options));
     }
   }
 
@@ -1904,7 +1897,7 @@ void HTMLElement::SetPopoverFocusOnShow() {
     return;
 
   // 3. Run the focusing steps for control.
-  control->Focus(FocusParams(/*gate_on_user_activation=*/true));
+  control->Focus();
 
   // 4. Let topDocument be the active document of control's node document's
   // browsing context's top-level browsing context.
@@ -2433,7 +2426,7 @@ static inline bool ElementAffectsDirectionality(const Node* node) {
 void HTMLElement::ChildrenChanged(const ChildrenChange& change) {
   Element::ChildrenChanged(change);
 
-  if (GetDocument().IsDirAttributeDirty()) {
+  if (GetDocument().HasDirAttribute()) {
     AdjustDirectionalityIfNeededAfterChildrenChanged(change);
 
     if (change.IsChildInsertion() && !SelfOrAncestorHasDirAutoAttribute()) {
@@ -2457,6 +2450,9 @@ bool HTMLElement::HasDirectionAuto() const {
          EqualIgnoringASCIICase(direction, "auto");
 }
 
+// TODO(https://crbug.com/576815): Once the CSSPseudoDir flag is
+// removed, this function no longer needs to be templatized over
+// Traversal since it can always use NodeTraversal.
 template <typename Traversal>
 absl::optional<TextDirection> HTMLElement::ResolveAutoDirectionality(
     bool& is_deferred,
@@ -2484,7 +2480,7 @@ absl::optional<TextDirection> HTMLElement::ResolveAutoDirectionality(
     }
 
     auto* slot = ToHTMLSlotElementIfSupportsAssignmentOrNull(node);
-    if (slot) {
+    if (slot && !RuntimeEnabledFeatures::CSSPseudoDirEnabled()) {
       ShadowRoot* root = slot->ContainingShadowRoot();
       // Defer to adjust the directionality to avoid recalcuating slot
       // assignment in FlatTreeTraversal when updating slot.
@@ -2504,6 +2500,18 @@ absl::optional<TextDirection> HTMLElement::ResolveAutoDirectionality(
         node = Traversal::NextSkippingChildren(*node, stay_within);
         continue;
       }
+    }
+
+    // TODO(https://crbug.com/576815): Once we have final spec text for
+    // https://github.com/whatwg/html/issues/3699 we should recheck the
+    // relative order of this check and the "Skip elements with valid
+    // dir attribute" check above, and add tests for the case that
+    // exercises both.  (Note that if the order is switched, this test
+    // needs to consider the dir attribute on the slot element rather
+    // than just jumping to its shadow host.)
+    if (slot && RuntimeEnabledFeatures::CSSPseudoDirEnabled()) {
+      ShadowRoot* root = slot->ContainingShadowRoot();
+      return root->host().CachedDirectionality();
     }
 
     if (node->IsTextNode()) {
@@ -3116,10 +3124,17 @@ void HTMLElement::OnDirAttrChanged(const AttributeModificationParams& params) {
       !IsValidDirAttribute(params.new_value))
     return;
 
-  GetDocument().SetDirAttributeDirty();
+  GetDocument().SetHasDirAttribute();
 
   bool is_old_auto = SelfOrAncestorHasDirAutoAttribute();
   bool is_new_auto = HasDirectionAuto();
+
+  if (is_new_auto) {
+    if (auto* input_element = DynamicTo<HTMLInputElement>(*this)) {
+      input_element->EnsureShadowSubtree();
+    }
+  }
+
   bool needs_slot_assignment_recalc = false;
   auto* parent =
       GetParentForDirectionality(*this, needs_slot_assignment_recalc);
@@ -3306,7 +3321,7 @@ void HTMLElement::FinishParsingChildren() {
 void HTMLElement::ParserDidSetAttributes() {
   Element::ParserDidSetAttributes();
 
-  if (GetDocument().IsDirAttributeDirty() && !HasDirectionAuto() &&
+  if (GetDocument().HasDirAttribute() && !HasDirectionAuto() &&
       !ElementAffectsDirectionality(this)) {
     bool needs_slot_assignment_recalc = false;
     auto* parent =

@@ -22,6 +22,7 @@
 #include "ash/focus_cycler.h"
 #include "ash/frame/non_client_frame_view_ash.h"
 #include "ash/game_dashboard/game_dashboard_controller.h"
+#include "ash/glanceables/glanceables_v2_controller.h"
 #include "ash/ime/ime_controller_impl.h"
 #include "ash/keyboard/keyboard_controller_impl.h"
 #include "ash/media/media_controller_impl.h"
@@ -892,7 +893,7 @@ void MoveActiveItem(bool going_left) {
   const bool in_overview = overview_controller->InOverviewSession();
   if (in_overview) {
     window_to_move =
-        overview_controller->overview_session()->GetHighlightedWindow();
+        overview_controller->overview_session()->GetFocusedWindow();
   } else {
     window_to_move = GetTargetWindow();
   }
@@ -1267,8 +1268,21 @@ void ToggleCalendar() {
   aura::Window* target_root = Shell::GetRootWindowForNewWindows();
   StatusAreaWidget* status_area_widget =
       RootWindowController::ForWindow(target_root)->GetStatusAreaWidget();
-  UnifiedSystemTray* tray = status_area_widget->unified_system_tray();
 
+  DateTray* date_tray = status_area_widget->date_tray();
+  GlanceablesV2Controller* const glanceables_controller =
+      Shell::Get()->glanceables_v2_controller();
+  if (glanceables_controller &&
+      glanceables_controller->AreGlanceablesAvailable()) {
+    if (date_tray->is_active()) {
+      date_tray->HideGlanceableBubble();
+    } else {
+      date_tray->ShowGlanceableBubble(/*from_keyboard=*/true);
+    }
+    return;
+  }
+
+  UnifiedSystemTray* tray = status_area_widget->unified_system_tray();
   // If currently showing the calendar view, close it.
   if (tray->IsShowingCalendarView()) {
     tray->CloseBubble();

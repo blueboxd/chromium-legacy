@@ -23,6 +23,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
+import org.mockito.stubbing.Answer;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.Callback;
@@ -38,6 +39,8 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.state.CriticalPersistedTabData;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.test.util.browser.Features;
+import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
+import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.chrome.test.util.browser.tabmodel.MockTabModel;
 import org.chromium.url.GURL;
 
@@ -49,13 +52,14 @@ import java.util.HashSet;
  */
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
-@Features.EnableFeatures({ChromeFeatureList.ANDROID_APP_INTEGRATION})
-@Features.DisableFeatures({ChromeFeatureList.ANDROID_APP_INTEGRATION_SAFE_SEARCH})
+@EnableFeatures({ChromeFeatureList.ANDROID_APP_INTEGRATION})
+@DisableFeatures({ChromeFeatureList.ANDROID_APP_INTEGRATION_SAFE_SEARCH})
 public class AuxiliarySearchProviderTest {
     private static final String TAB_TITLE = "tab";
     private static final String TAB_URL = "https://tab.google.com/";
     private static final String BOOKMARK_TITLE = "bookmark";
     private static final String BOOKMARK_URL = "https://bookmark.google.com";
+    private static final String NEW_TAB_PAGE_URL = "chrome-native://newtab";
     private static final long FAKE_NATIVE_PROVIDER = 1;
 
     public @Rule JniMocker mJniMocker = new JniMocker();
@@ -72,6 +76,9 @@ public class AuxiliarySearchProviderTest {
     public void setUp() {
         mJniMocker.mock(AuxiliarySearchBridgeJni.TEST_HOOKS, mMockAuxiliarySearchBridgeJni);
         doReturn(FAKE_NATIVE_PROVIDER).when(mMockAuxiliarySearchBridgeJni).getForProfile(mProfile);
+        doAnswer((Answer<Object[]>) invocation -> ((Object[]) invocation.getArguments()[1]))
+                .when(mMockAuxiliarySearchBridgeJni)
+                .getSearchableTabs(eq(FAKE_NATIVE_PROVIDER), any(Tab[].class));
         mAuxiliarySearchProvider = new AuxiliarySearchProvider(mProfile, mTabModelSelector);
     }
 

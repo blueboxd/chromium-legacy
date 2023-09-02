@@ -212,10 +212,9 @@ extern const char kAppleCalendarExperienceKitDescription[] =
     "When enabled, long pressing on dates will trigger Experience Kit Apple "
     "Calendar event handling.";
 
-extern const char kConsistencyNewAccountInterfaceName[] =
-    "Consistency New Account Interface";
-extern const char kConsistencyNewAccountInterfaceDescription[] =
-    "Enables a sign-in only UI for users who need to add a new account.";
+const char kContentPushNotificationsName[] = "Content Push Notifications";
+const char kContentPushNotificationsDescription[] =
+    "Enables the content push notifications.";
 
 extern const char kEmailName[] = "Email experience enable";
 extern const char kEmailDescription[] =
@@ -246,6 +245,12 @@ const char kEnableFamilyLinkControlsDescription[] =
 extern const char kOneTapForMapsName[] = "Enable one Tap Experience for Maps";
 extern const char kOneTapForMapsDescription[] =
     "Enables the one tap experience for maps experience kit.";
+
+const char kUseAnnotationsForLanguageDetectionName[] =
+    "Enable Shared Web Page Text Fetching";
+const char kUseAnnotationsForLanguageDetectionDescription[] =
+    "When enabled, both full page intent detection and language detection will "
+    "use the same text manager to fetch web page text.";
 
 const char kEnablePopoutOmniboxIpadName[] = "Popout omnibox (iPad)";
 const char kEnablePopoutOmniboxIpadDescription[] =
@@ -541,6 +546,10 @@ const char kHideContentSuggestionTilesName[] = "Hide content suggestions tiles";
 const char kHideContentSuggestionTilesDescription[] =
     "Hides content suggestions tiles from the new tab page.";
 
+const char kInactiveTabsMoveLimitName[] = "Inactive tabs move limit";
+const char kInactiveTabsMoveLimitDescription[] =
+    "When enabled, limits the number of inactive tabs move.";
+
 const char kIncognitoNtpRevampName[] = "Revamped Incognito New Tab Page";
 const char kIncognitoNtpRevampDescription[] =
     "When enabled, Incognito new tab page will have an updated UI.";
@@ -587,6 +596,10 @@ const char kIOSNewPostRestoreExperienceDescription[] =
     "When enabled, a prompt will be presented after a device restore to "
     "allow the user to sign in again.";
 
+const char kIOSParcelTrackingName[] = "Parcel Tracking";
+const char kIOSParcelTrackingDescription[] =
+    "When enabled, the user will be able to track their packages.";
+
 const char kIOSPasswordAuthOnEntryName[] = "Password Manager Auth on Entry";
 const char kIOSPasswordAuthOnEntryDescription[] =
     "Requires Local Authentication before showing saved credentials in "
@@ -621,6 +634,12 @@ const char kIOSSetUpListDescription[] =
 const char kIOSPasswordBottomSheetName[] = "IOS Password Manager Bottom Sheet";
 const char kIOSPasswordBottomSheetDescription[] =
     "Enables the display of the password bottom sheet on IOS.";
+
+const char kIOSPasswordSettingsBulkUploadLocalPasswordsName[] =
+    "iOS Bulk Upload Local Passwords";
+const char kIOSPasswordSettingsBulkUploadLocalPasswordsDescription[] =
+    "Enables bulk uploading local passwords for eligible users in the iOS "
+    "password settings.";
 
 const char kIOSPaymentsBottomSheetName[] = "IOS Payments Manager Bottom Sheet";
 const char kIOSPaymentsBottomSheetDescription[] =
@@ -1001,6 +1020,11 @@ const char kNewOverflowMenuShareChromeActionName[] =
 const char kNewOverflowMenuShareChromeActionDescription[] =
     "Enables the Share Chrome App action in the new overflow menu.";
 
+const char kSyncEnableBatchUploadLocalDataName[] =
+    "Enable batch upload of local data";
+const char kSyncEnableBatchUploadLocalDataDescription[] =
+    "Allows batch upload of local data from the account settings panel.";
+
 const char kSyncSandboxName[] = "Use Chrome Sync sandbox";
 const char kSyncSandboxDescription[] =
     "Connects to the testing server for Chrome Sync.";
@@ -1015,10 +1039,6 @@ const char kSynthesizedRestoreSessionName[] =
 const char kSynthesizedRestoreSessionDescription[] =
     "Enable instant session restoration by synthesizing WKWebView session "
     "restoration data (iOS15 only).";
-
-const char kSyncEnableHistoryDataTypeName[] = "Enable History sync data type";
-const char kSyncEnableHistoryDataTypeDescription[] =
-    "Enables the History sync data type instead of TypedURLs";
 
 const char kStartSurfaceName[] = "Start Surface";
 const char kStartSurfaceDescription[] =

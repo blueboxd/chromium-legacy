@@ -784,22 +784,34 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
                                       const FocusOptions*);
   virtual void blur();
 
-  // Whether this element can receive focus at all. Most elements are not
-  // focusable but some elements, such as form controls and links, are. Unlike
-  // layoutObjectIsFocusable(), this method may be called when layout is not up
-  // to date, so it must not use the layoutObject to determine focusability.
+  // SupportsFocus is true if the element is *capable* of being focused. An
+  // element supports focus if, e.g. it has a tabindex attribute, or it is
+  // editable, or other conditions. Note that the element might *support* focus
+  // while not *being focusable*, for example if the element is disconnected
+  // from the document. This method can be called when layout is not clean, and
+  // it will *not* update layout itself.
+ protected:
   virtual bool SupportsFocus() const;
-  // IsFocusable(), IsKeyboardFocusable(), and IsMouseFocusable() check
-  // whether the element can actually be focused. Callers should ensure
-  // ComputedStyle is up to date;
-  // e.g. by calling Document::UpdateStyleAndLayoutTree().
-  bool IsFocusable() const;
-  virtual bool HasNoFocusableChildren() const;
+
+ public:
+  // IsFocusable is true if the element SupportsFocus(), and is currently
+  // focusable (using the mouse). This method can be called when layout is not
+  // clean, but the method might trigger a lifecycle update in that case. This
+  // method will not trigger a lifecycle update if layout is already clean.
+  virtual bool IsFocusable() const;
+
+  // IsKeyboardFocusable is true for the subset of mouse focusable elements (for
+  // which IsFocusable() is true) that are in the tab cycle. This method
+  // can be called when layout is not clean, but the method might trigger a
+  // lifecycle update in that case. This method will not trigger a lifecycle
+  // update if layout is already clean.
   virtual bool IsKeyboardFocusable() const;
-  virtual bool IsMouseFocusable() const;
-  // IsBaseElementFocusable() is used by some subclasses to check if the base
-  // element is focusable. This is used to avoid infinite recursion.
-  bool IsBaseElementFocusable() const;
+
+  // This checks whether the element is a scrollable container that should be
+  // made keyboard focusable. Note that this is slow, because it must do a tree
+  // walk to look for descendant focusable nodes.
+  bool IsScrollableContainerThatShouldBeKeyboardFocusable() const;
+
   bool IsFocusedElementInDocument() const;
   Element* AdjustedFocusedElementInTreeScope() const;
   bool IsAutofocusable() const;
@@ -903,17 +915,15 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   //
   // This is appropriate to use if the cached version is invalid in a given
   // situation.
-  scoped_refptr<const ComputedStyle> UncachedStyleForPseudoElement(
-      const StyleRequest&);
+  const ComputedStyle* UncachedStyleForPseudoElement(const StyleRequest&);
 
   // This is the same as UncachedStyleForPseudoElement, except that the caller
   // must provide an appropriate StyleRecalcContext such that e.g. @container
   // queries are evaluated correctly.
   //
   // See StyleRecalcContext for more information.
-  scoped_refptr<const ComputedStyle> StyleForPseudoElement(
-      const StyleRecalcContext&,
-      const StyleRequest&);
+  const ComputedStyle* StyleForPseudoElement(const StyleRecalcContext&,
+                                             const StyleRequest&);
 
   // Returns the ComputedStyle after applying the declarations in the @try block
   // at the given index. Returns nullptr if the current element doesn't use
@@ -1011,8 +1021,7 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   bool IsSpellCheckingEnabled() const;
 
   // FIXME: public for LayoutTreeBuilder, we shouldn't expose this though.
-  scoped_refptr<const ComputedStyle> StyleForLayoutObject(
-      const StyleRecalcContext&);
+  const ComputedStyle* StyleForLayoutObject(const StyleRecalcContext&);
 
   // Called by StyleAdjuster during style resolution. Provides an opportunity to
   // make final Element-specific adjustments to the ComputedStyle.
@@ -1242,7 +1251,7 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
 
   virtual void WillRecalcStyle(const StyleRecalcChange);
   virtual void DidRecalcStyle(const StyleRecalcChange);
-  virtual scoped_refptr<const ComputedStyle> CustomStyleForLayoutObject(
+  virtual const ComputedStyle* CustomStyleForLayoutObject(
       const StyleRecalcContext&);
   virtual void AdjustStyle(ComputedStyleBuilder&);
 
@@ -1283,8 +1292,7 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
 
   static bool AttributeValueIsJavaScriptURL(const Attribute&);
 
-  scoped_refptr<const ComputedStyle> OriginalStyleForLayoutObject(
-      const StyleRecalcContext&);
+  const ComputedStyle* OriginalStyleForLayoutObject(const StyleRecalcContext&);
 
   // Step 4 of http://domparsing.spec.whatwg.org/#insertadjacenthtml()
   Node* InsertAdjacent(const String& where, Node* new_child, ExceptionState&);
@@ -1340,11 +1348,13 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   void InlineStyleChanged();
   void SetInlineStyleFromString(const AtomicString&);
 
+  void NotifyAXOfAttachedSubtree();
+
   // If the only inherited changes in the parent element are independent,
   // these changes can be directly propagated to this element (the child).
   // If these conditions are met, propagates the changes to the current style
   // and returns the new style. Otherwise, returns null.
-  scoped_refptr<const ComputedStyle> PropagateInheritedProperties();
+  const ComputedStyle* PropagateInheritedProperties();
 
   const ComputedStyle* EnsureOwnComputedStyle(
       const StyleRecalcContext&,

@@ -25,6 +25,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "content/browser/fenced_frame/fenced_frame_reporter.h"
 #include "content/browser/interest_group/auction_worklet_manager.h"
+#include "content/browser/interest_group/header_direct_from_seller_signals.h"
 #include "content/browser/interest_group/interest_group_k_anonymity_manager.h"
 #include "content/browser/interest_group/interest_group_manager_impl.h"
 #include "content/browser/interest_group/mock_auction_process_manager.h"
@@ -65,6 +66,9 @@ InterestGroupAuctionReporter::SellerWinningBidInfo CreateSellerWinningBidInfo(
   // return nothing, though.
   out.subresource_url_builder = std::make_unique<SubresourceUrlBuilder>(
       /*direct_from_seller_signals=*/absl::nullopt);
+  // Also must not be null.
+  out.direct_from_seller_signals_header_ad_slot =
+      std::make_unique<HeaderDirectFromSellerSignals>();
 
   // The specific values these are assigned to don't matter for these tests, but
   // they don't have default initializers, so have to set them to placate memory
@@ -567,8 +571,13 @@ class InterestGroupAuctionReporterTest
       {"cluck", GURL("https://buyer.cluck.test/")},
   };
 
-  const FencedFrameReporter::ReportingMacroMap kAdMacroMap = {
+  const base::flat_map<std::string, std::string> kAdMacroMap = {
       {"campaign", "123"},
+  };
+
+  // The converted `kAdMacroMap` that is passed to fenced frame reporter.
+  const FencedFrameReporter::ReportingMacros kAdMacros = {
+      {"${campaign}", "123"},
   };
 
   base::HistogramTester histogram_tester_;
@@ -2024,11 +2033,11 @@ class InterestGroupAuctionReporterAdMacroReportingEnabledTest
 };
 
 TEST_F(InterestGroupAuctionReporterAdMacroReportingEnabledTest,
-       SingleSellerReportMacroMap) {
+       SingleSellerReportMacros) {
   SetUpAndStartSingleSellerAuction();
-  // The macro map should be empty from the start.
+  // The macros should be empty from the start.
   EXPECT_THAT(interest_group_auction_reporter_->fenced_frame_reporter()
-                  ->GetAdMacroMapForTesting(),
+                  ->GetAdMacrosForTesting(),
               testing::UnorderedElementsAre());
 
   WaitForReportResultAndRunCallback(kSellerScriptUrl,
@@ -2037,10 +2046,10 @@ TEST_F(InterestGroupAuctionReporterAdMacroReportingEnabledTest,
   WaitForReportWinAndRunCallback(/*report_url=*/absl::nullopt,
                                  /*ad_beacon_map=*/{}, kAdMacroMap);
   EXPECT_THAT(interest_group_auction_reporter_->fenced_frame_reporter()
-                  ->GetAdMacroMapForTesting(),
+                  ->GetAdMacrosForTesting(),
               testing::UnorderedElementsAre(testing::Pair(
                   blink::FencedFrame::ReportingDestination::kBuyer,
-                  testing::UnorderedElementsAreArray(kAdMacroMap))));
+                  testing::UnorderedElementsAreArray(kAdMacros))));
 
   // Invoking the callback has no effect on macro maps. Fenced frames navigated
   // to the winning ad use them to trigger reports, so no need to hold them back
@@ -2049,17 +2058,17 @@ TEST_F(InterestGroupAuctionReporterAdMacroReportingEnabledTest,
 
   WaitForCompletion();
   EXPECT_THAT(interest_group_auction_reporter_->fenced_frame_reporter()
-                  ->GetAdMacroMapForTesting(),
+                  ->GetAdMacrosForTesting(),
               testing::UnorderedElementsAre(testing::Pair(
                   blink::FencedFrame::ReportingDestination::kBuyer,
-                  testing::UnorderedElementsAreArray(kAdMacroMap))));
+                  testing::UnorderedElementsAreArray(kAdMacros))));
 }
 
 TEST_F(InterestGroupAuctionReporterAdMacroReportingEnabledTest,
-       ComponentAuctionReportMacroMap) {
+       ComponentAuctionReportMacros) {
   SetUpAndStartComponentAuction();
   EXPECT_THAT(interest_group_auction_reporter_->fenced_frame_reporter()
-                  ->GetAdMacroMapForTesting(),
+                  ->GetAdMacrosForTesting(),
               testing::UnorderedElementsAre());
 
   WaitForReportResultAndRunCallback(kSellerScriptUrl,
@@ -2071,10 +2080,10 @@ TEST_F(InterestGroupAuctionReporterAdMacroReportingEnabledTest,
   WaitForReportWinAndRunCallback(/*report_url=*/absl::nullopt,
                                  /*ad_beacon_map=*/{}, kAdMacroMap);
   EXPECT_THAT(interest_group_auction_reporter_->fenced_frame_reporter()
-                  ->GetAdMacroMapForTesting(),
+                  ->GetAdMacrosForTesting(),
               testing::UnorderedElementsAre(testing::Pair(
                   blink::FencedFrame::ReportingDestination::kBuyer,
-                  testing::UnorderedElementsAreArray(kAdMacroMap))));
+                  testing::UnorderedElementsAreArray(kAdMacros))));
 
   // Invoking the callback has no effect on per-destination reporting maps.
   // Fenced frames navigated to the winning ad use them to trigger reports, so
@@ -2084,10 +2093,10 @@ TEST_F(InterestGroupAuctionReporterAdMacroReportingEnabledTest,
 
   WaitForCompletion();
   EXPECT_THAT(interest_group_auction_reporter_->fenced_frame_reporter()
-                  ->GetAdMacroMapForTesting(),
+                  ->GetAdMacrosForTesting(),
               testing::UnorderedElementsAre(testing::Pair(
                   blink::FencedFrame::ReportingDestination::kBuyer,
-                  testing::UnorderedElementsAreArray(kAdMacroMap))));
+                  testing::UnorderedElementsAreArray(kAdMacros))));
 }
 
 }  // namespace

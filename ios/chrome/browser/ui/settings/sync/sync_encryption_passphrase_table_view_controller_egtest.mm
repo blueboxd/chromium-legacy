@@ -4,6 +4,7 @@
 
 #import <UIKit/UIKit.h>
 #import "base/ios/ios_util.h"
+#import "components/feature_engagement/public/feature_list.h"
 #import "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/metrics/metrics_app_interface.h"
 #import "ios/chrome/browser/signin/fake_system_identity.h"
@@ -20,6 +21,7 @@
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
+#import "ios/testing/earl_grey/app_launch_manager.h"
 #import "ios/testing/earl_grey/earl_grey_test.h"
 #import "ui/base/l10n/l10n_util.h"
 
@@ -33,8 +35,18 @@ using chrome_test_util::SettingsMenuBackButton;
 using chrome_test_util::SettingsSignInRowMatcher;
 
 namespace {
+
 NSString* const kPassphrase = @"hello";
+
+// Depending on whether feature kReplaceSyncPromosWithSignInPromos is enabled,
+// the label ID for the button to enter a passphrase differs.
+int GetInfoBarEnterPassphraseButtonLabelId() {
+  return [ChromeEarlGrey isReplaceSyncWithSigninEnabled]
+             ? IDS_IOS_IDENTITY_ERROR_INFOBAR_ENTER_BUTTON_LABEL
+             : IDS_IOS_SYNC_ENTER_PASSPHRASE_BUTTON;
 }
+
+}  // namespace
 
 @interface SyncEncryptionPassphraseTestCase : ChromeTestCase
 @end
@@ -63,9 +75,14 @@ NSString* const kPassphrase = @"hello";
 
 // Tests to open the sync passphrase view, and to close it.
 - (void)testShowSyncPassphraseAndDismiss {
-  // TODO(crbug.com/1469537): Test fails when run on iOS 17.
-  if (base::ios::IsRunningOnIOS17OrLater()) {
-    EARL_GREY_TEST_DISABLED(@"Fails on iOS 17.");
+  // TODO(crbug.com/1475088): Remove the disabling after fixing the root cause.
+  if (![ChromeEarlGrey isCompactWidth]) {
+    [[AppLaunchManager sharedManager]
+        ensureAppLaunchedWithFeaturesEnabled:{}
+                                    disabled:
+                                        {feature_engagement::
+                                             kIPHiOSTabGridToolbarItemFeature}
+                              relaunchPolicy:ForceRelaunchByCleanShutdown];
   }
 
   [ChromeEarlGrey addBookmarkWithSyncPassphrase:kPassphrase];
@@ -73,8 +90,9 @@ NSString* const kPassphrase = @"hello";
   FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
   [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity];
   [ChromeEarlGrey openNewTab];
-  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(
-                                          IDS_IOS_SYNC_ENTER_PASSPHRASE_BUTTON)]
+  [[EarlGrey
+      selectElementWithMatcher:ButtonWithAccessibilityLabelId(
+                                   GetInfoBarEnterPassphraseButtonLabelId())]
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:NavigationBarCancelButton()]
       performAction:grey_tap()];
@@ -97,11 +115,10 @@ NSString* const kPassphrase = @"hello";
   [ChromeEarlGrey waitUntilReadyWindowWithNumber:1];
   [ChromeEarlGrey waitForForegroundWindowCount:2];
 
-  [[EarlGrey
-      selectElementWithMatcher:MatchInWindowWithNumber(
-                                   1,
-                                   ButtonWithAccessibilityLabelId(
-                                       IDS_IOS_SYNC_ENTER_PASSPHRASE_BUTTON))]
+  [[EarlGrey selectElementWithMatcher:
+                 MatchInWindowWithNumber(
+                     1, ButtonWithAccessibilityLabelId(
+                            GetInfoBarEnterPassphraseButtonLabelId()))]
       performAction:grey_tap()];
   [[EarlGrey selectElementWithMatcher:MatchInWindowWithNumber(
                                           1, NavigationBarCancelButton())]
@@ -118,10 +135,15 @@ NSString* const kPassphrase = @"hello";
 
 // Tests Sync is on after opening settings from the Infobar and entering the
 // passphrase.
-- (void)testShowAddSyncPassphrphrase {
-  // TODO(crbug.com/1469537): Test fails when run on iOS 16 and iOS 17.
-  if (base::ios::IsRunningOnIOS16OrLater()) {
-    EARL_GREY_TEST_DISABLED(@"Fails on iOS 16 and iOS 17.");
+- (void)testShowAddSyncPassphrase {
+  // TODO(crbug.com/1475088): Remove the disabling after fixing the root cause.
+  if (![ChromeEarlGrey isCompactWidth]) {
+    [[AppLaunchManager sharedManager]
+        ensureAppLaunchedWithFeaturesEnabled:{}
+                                    disabled:
+                                        {feature_engagement::
+                                             kIPHiOSTabGridToolbarItemFeature}
+                              relaunchPolicy:ForceRelaunchByCleanShutdown];
   }
 
   [ChromeEarlGrey addBookmarkWithSyncPassphrase:kPassphrase];
@@ -129,15 +151,20 @@ NSString* const kPassphrase = @"hello";
   FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
   [SigninEarlGreyUI signinWithFakeIdentity:fakeIdentity];
   [ChromeEarlGrey openNewTab];
-  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(
-                                          IDS_IOS_SYNC_ENTER_PASSPHRASE_BUTTON)]
+  [[EarlGrey
+      selectElementWithMatcher:ButtonWithAccessibilityLabelId(
+                                   GetInfoBarEnterPassphraseButtonLabelId())]
       performAction:grey_tap()];
 
   // Type and submit the sync passphrase.
   [SigninEarlGreyUI submitSyncPassphrase:kPassphrase];
   [ChromeEarlGreyUI openSettingsMenu];
-  // Check Sync On label is visible and user is signed in.
+  // Check the user is signed in.
   [SigninEarlGrey verifySignedInWithFakeIdentity:fakeIdentity];
-  [SigninEarlGrey verifySyncUIEnabled:YES];
+
+  if (![ChromeEarlGrey isReplaceSyncWithSigninEnabled]) {
+    // Check Sync On label is visible.
+    [SigninEarlGrey verifySyncUIEnabled:YES];
+  }
 }
 @end

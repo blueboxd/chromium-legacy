@@ -3,9 +3,18 @@
     background: var(--color-new-tab-page-module-item-background);
     border-radius: var(--ntp-module-item-border-radius);
     display: inline-flex;
-    overflow: hidden;
     height: 100%;
+    min-width: 0;
     width: 100%;
+  }
+
+  .hover-layer {
+    display: none;
+    background: var(--color-new-tab-page-module-item-background-hovered);
+    border-radius: var(--ntp-module-item-border-radius);
+    inset: 0;
+    pointer-events: none;
+    position: absolute;
   }
 
   a:link,
@@ -15,14 +24,12 @@
     text-decoration: none;
   }
 
-  a:hover {
-    background: var(--color-sys-state-hover-dim-blend-protection);
-    border-radius: var(--ntp-module-item-border-radius);
+  a:hover .hover-layer {
+    display: block;
   }
 
-  a:active {
-    background-color: var(--color-new-tab-page-active-background);
-    border-radius: var(--ntp-module-item-border-radius);
+  a:active .hover-layer {
+    background: var(--color-new-tab-page-active-background);
   }
 
   :host-context(.focus-outline-visible) a:focus,
@@ -34,7 +41,7 @@
 
   #content {
     flex: 1;
-    overflow: hidden;
+    min-width: 0;
     position: relative;
   }
 
@@ -48,7 +55,10 @@
   }
 
   :host([images-enabled]) #label-container {
-    border-radius: var(--ntp-module-item-border-radius);
+    background: linear-gradient(0, rgba(0, 0, 0, 0) 0%,
+      rgba(0, 0, 0, 0.4) 69.79%);
+    border-radius: var(--ntp-module-item-border-radius)
+        var(--ntp-module-item-border-radius) 0 0;
     color: var(--color-new-tab-page-primary-foreground);
     display: flex;
     font-size: 11px;
@@ -57,11 +67,6 @@
     margin: 4px;
     width: calc(100% - 8px); /* Subtract parent margin */
     z-index: 1;
-  }
-
-  :host([images-enabled][image-url_]) #label-container {
-    background: linear-gradient(0, rgba(0, 0, 0, 0) 0%,
-      rgba(0, 0, 0, 0.4) 69.79%);
   }
 
   #label {
@@ -150,13 +155,36 @@
 
     /* Set outline since background isn't visible in hcm */
     a {
-      border-radius: 12px;
+      border-radius: var(--ntp-module-item-border-radius);
       outline: var(--cr-border-hcm);
     }
+  }
+
+  #discountChip {
+    background: var(--color-sys-tertiary-container);
+    border-radius: 4px;
+    color: var(--color-sys-on-tertiary-container);
+    display: inline-block;
+    font-weight: 500;
+    font-size: 11px;
+    height: 18px;
+    line-height: 18px;
+    margin-inline-start: 16px;
+    margin-top: 8px;
+    padding-inline-end: 4px;
+    padding-inline-start: 4px;
+    text-align: center;
+  }
+
+  :host([has-discount]) #title {
+    -webkit-line-clamp: 1;
+    height: 20px;
+    margin-bottom: 0;
   }
 </style>
 <a id="content" href="[[visit.normalizedUrl.url]]"
    aria-label$="[[visit.pageTitle]], [[label_]], [[visit.relativeDate]]">
+  <div class="hover-layer"></div>
   <div id="label-container">
     <page-favicon id="icon" url="[[visit.normalizedUrl]]"
                   is-known-to-sync="[[visit.isKnownToSync]]">
@@ -176,6 +204,9 @@
     </template>
   </div>
   <div id="title" class="truncate">[[visit.pageTitle]]</div>
+  <template is="dom-if" if="[[hasDiscount]]" restamp>
+    <div id="discountChip"></div>
+  </template>
   <template is="dom-if" if="[[annotation_]]">
         <div id="annotation">[[annotation_]]</div>
   </template>

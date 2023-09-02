@@ -1521,49 +1521,36 @@ CSSValue* ComputedStyleUtils::ValueForFont(const ComputedStyle& style) {
   return list;
 }
 
-CSSValue* SpecifiedValueForGridTrackBreadth(const GridLength& track_breadth,
-                                            const ComputedStyle& style) {
-  if (!track_breadth.IsLength()) {
-    return CSSNumericLiteralValue::Create(
-        track_breadth.Flex(), CSSPrimitiveValue::UnitType::kFraction);
-  }
-
-  const Length& track_breadth_length = track_breadth.length();
-  if (track_breadth_length.IsAuto()) {
-    return CSSIdentifierValue::Create(CSSValueID::kAuto);
-  }
-  return ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
-      track_breadth_length, style);
-}
-
 CSSValue* ComputedStyleUtils::SpecifiedValueForGridTrackSize(
     const GridTrackSize& track_size,
     const ComputedStyle& style) {
   switch (track_size.GetType()) {
     case kLengthTrackSizing:
-      return SpecifiedValueForGridTrackBreadth(track_size.MinTrackBreadth(),
-                                               style);
+      return ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
+          track_size.MinTrackBreadth(), style);
     case kMinMaxTrackSizing: {
       if (track_size.MinTrackBreadth().IsAuto() &&
           track_size.MaxTrackBreadth().IsFlex()) {
-        return CSSNumericLiteralValue::Create(
-            track_size.MaxTrackBreadth().Flex(),
-            CSSPrimitiveValue::UnitType::kFraction);
+        return ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
+            track_size.MaxTrackBreadth(), style);
       }
 
       auto* min_max_track_breadths =
           MakeGarbageCollected<CSSFunctionValue>(CSSValueID::kMinmax);
-      min_max_track_breadths->Append(*SpecifiedValueForGridTrackBreadth(
-          track_size.MinTrackBreadth(), style));
-      min_max_track_breadths->Append(*SpecifiedValueForGridTrackBreadth(
-          track_size.MaxTrackBreadth(), style));
+      min_max_track_breadths->Append(
+          *ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
+              track_size.MinTrackBreadth(), style));
+      min_max_track_breadths->Append(
+          *ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
+              track_size.MaxTrackBreadth(), style));
       return min_max_track_breadths;
     }
     case kFitContentTrackSizing: {
       auto* fit_content_track_breadth =
           MakeGarbageCollected<CSSFunctionValue>(CSSValueID::kFitContent);
-      fit_content_track_breadth->Append(*SpecifiedValueForGridTrackBreadth(
-          track_size.FitContentTrackBreadth(), style));
+      fit_content_track_breadth->Append(
+          *ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
+              track_size.FitContentTrackBreadth(), style));
       return fit_content_track_breadth;
     }
   }
@@ -2134,16 +2121,21 @@ CSSValue* ComputedStyleUtils::ValueForGridPosition(
   }
 
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
+  const bool has_named_line = !position.NamedGridLine().IsNull();
   if (position.IsSpan()) {
     list->Append(*CSSIdentifierValue::Create(CSSValueID::kSpan));
-    list->Append(*CSSNumericLiteralValue::Create(
-        position.SpanPosition(), CSSPrimitiveValue::UnitType::kNumber));
+
+    // Do not include the numeric value of 1 if followed by a line name.
+    if (position.SpanPosition() != 1 || !has_named_line) {
+      list->Append(*CSSNumericLiteralValue::Create(
+          position.SpanPosition(), CSSPrimitiveValue::UnitType::kNumber));
+    }
   } else {
     list->Append(*CSSNumericLiteralValue::Create(
         position.IntegerPosition(), CSSPrimitiveValue::UnitType::kNumber));
   }
 
-  if (!position.NamedGridLine().IsNull()) {
+  if (has_named_line) {
     list->Append(
         *MakeGarbageCollected<CSSCustomIdentValue>(position.NamedGridLine()));
   }
@@ -2631,13 +2623,29 @@ CSSValue* ComputedStyleUtils::ValueForAnimationTimelineList(
       &ValueForAnimationTimeline);
 }
 
+CSSValue* ComputedStyleUtils::ValueForTimelineInset(
+    const TimelineInset& inset,
+    const ComputedStyle& style) {
+  return MakeGarbageCollected<CSSValuePair>(
+      ComputedStyleUtils::ZoomAdjustedPixelValueForLength(inset.GetStart(),
+                                                          style),
+      ComputedStyleUtils::ZoomAdjustedPixelValueForLength(inset.GetEnd(),
+                                                          style),
+      CSSValuePair::kDropIdenticalValues);
+}
+
 CSSValue* ComputedStyleUtils::SingleValueForTimelineShorthand(
     const ScopedCSSName* name,
-    TimelineAxis axis) {
+    TimelineAxis axis,
+    absl::optional<TimelineInset> inset,
+    const ComputedStyle& style) {
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
   list->Append(*ValueForCustomIdentOrNone(name));
   if (axis != TimelineAxis::kBlock) {
     list->Append(*CSSIdentifierValue::Create(axis));
+  }
+  if (inset.value_or(TimelineInset()) != TimelineInset()) {
+    list->Append(*ValueForTimelineInset(inset.value(), style));
   }
   return list;
 }
@@ -3937,8 +3945,8 @@ CSSValue* ComputedStyleUtils::ValueForIntrinsicLength(
     list->Append(*CSSIdentifierValue::Create(CSSValueID::kAuto));
   }
 
-  if (const absl::optional<LayoutUnit>& length = intrinsic_length.GetLength()) {
-    list->Append(*ZoomAdjustedPixelValue(*length, style));
+  if (const absl::optional<Length>& length = intrinsic_length.GetLength()) {
+    list->Append(*ZoomAdjustedPixelValueForLength(*length, style));
   } else {
     list->Append(*CSSIdentifierValue::Create(CSSValueID::kNone));
   }

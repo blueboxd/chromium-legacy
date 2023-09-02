@@ -80,6 +80,7 @@ import org.chromium.chrome.browser.app.tab_activity_glue.TabReparentingControlle
 import org.chromium.chrome.browser.app.tabmodel.AsyncTabParamsManagerSingleton;
 import org.chromium.chrome.browser.app.tabmodel.TabModelOrchestrator;
 import org.chromium.chrome.browser.back_press.BackPressManager;
+import org.chromium.chrome.browser.back_press.CloseListenerManager;
 import org.chromium.chrome.browser.bookmarks.BookmarkModel;
 import org.chromium.chrome.browser.bookmarks.PowerBookmarkUtils;
 import org.chromium.chrome.browser.bookmarks.TabBookmarker;
@@ -120,6 +121,7 @@ import org.chromium.chrome.browser.gsa.GSAState;
 import org.chromium.chrome.browser.history.HistoryManagerUtils;
 import org.chromium.chrome.browser.init.AsyncInitializationActivity;
 import org.chromium.chrome.browser.init.ProcessInitializationHandler;
+import org.chromium.chrome.browser.intents.BrowserIntentUtils;
 import org.chromium.chrome.browser.keyboard_accessory.ManualFillingComponent;
 import org.chromium.chrome.browser.keyboard_accessory.ManualFillingComponentFactory;
 import org.chromium.chrome.browser.keyboard_accessory.ManualFillingComponentSupplier;
@@ -400,6 +402,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     private TextBubbleBackPressHandler mTextBubbleBackPressHandler;
     private SelectionPopupBackPressHandler mSelectionPopupBackPressHandler;
     private Callback<TabModelSelector> mSelectionPopupBackPressInitCallback;
+    private CloseListenerManager mCloseListenerManager;
     private StylusWritingCoordinator mStylusWritingCoordinator;
     private boolean mBlockingDrawForAppRestart;
     private Runnable mShowContentRunnable;
@@ -1321,7 +1324,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
                 onDeferredStartupForMultiWindowMode();
             }
 
-            long intentTimestamp = IntentHandler.getTimestampFromIntent(getIntent());
+            long intentTimestamp = BrowserIntentUtils.getStartupRealtimeMillis(getIntent());
             if (intentTimestamp != -1) {
                 recordIntentToCreationTime(getOnCreateTimestampMs() - intentTimestamp);
             }
@@ -1599,6 +1602,11 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         if (mSelectionPopupBackPressHandler != null) {
             mSelectionPopupBackPressHandler.destroy();
             mSelectionPopupBackPressHandler = null;
+        }
+
+        if (mCloseListenerManager != null) {
+            mCloseListenerManager.destroy();
+            mCloseListenerManager = null;
         }
 
         if (mStylusWritingCoordinator != null) {
@@ -2310,6 +2318,10 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
                         new FullscreenBackPressHandler(controlManager.getFullscreenManager()),
                         BackPressHandler.Type.FULLSCREEN);
             });
+
+            mCloseListenerManager = new CloseListenerManager(getActivityTabProvider());
+            mBackPressManager.addHandler(
+                    mCloseListenerManager, BackPressHandler.Type.CLOSE_WATCHER);
         } else {
             OnBackPressedCallback callback = new OnBackPressedCallback(true) {
                 @Override

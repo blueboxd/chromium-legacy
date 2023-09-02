@@ -83,6 +83,10 @@ if (is_ios) {
     testonly = true
     filelist_name = "data/language/unit_tests_bundle_data.filelist"
   }
+  bundle_data_from_filelist("paint_preview_test_bundle_data") {
+    testonly = true
+    filelist_name = "data/paint_preview/unit_tests_bundle_data.filelist"
+  }
   bundle_data_from_filelist("password_manager_test_bundle_data") {
     testonly = true
     filelist_name = "data/password_manager/unit_tests_bundle_data.filelist"
@@ -95,6 +99,10 @@ if (is_ios) {
     testonly = true
     filelist_name = "data/service_worker/unit_tests_bundle_data.filelist"
   }
+  bundle_data_from_filelist("subresource_filter_test_bundle_data") {
+    testonly = true
+    filelist_name = "data/subresource_filter/unit_tests_bundle_data.filelist"
+  }
   bundle_data_from_filelist("url_rewrite_test_bundle_data") {
     testonly = true
     filelist_name = "data/url_rewrite/unit_tests_bundle_data.filelist"
@@ -106,6 +114,10 @@ if (is_ios) {
   bundle_data_from_filelist("viz_test_bundle_data") {
     testonly = true
     filelist_name = "data/viz/unit_tests_bundle_data.filelist"
+  }
+  bundle_data_from_filelist("webapps_test_bundle_data") {
+    testonly = true
+    filelist_name = "data/webapps/unit_tests_bundle_data.filelist"
   }
   bundle_data_from_filelist("web_database_test_bundle_data") {
     testonly = true

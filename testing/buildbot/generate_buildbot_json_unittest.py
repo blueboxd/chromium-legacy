@@ -833,6 +833,18 @@ FOO_TEST_SUITE_WITH_SWARMING_DIMENSION_SETS = """\
 }
 """
 
+FOO_TEST_SUITE_WITH_NAME = """\
+{
+  'basic_suites': {
+    'foo_tests': {
+      'foo_test': {
+        'name': 'bar_test',
+      },
+    },
+  },
+}
+"""
+
 FOO_TEST_SUITE_WITH_SWARMING_NAMED_CACHES = """\
 {
   'basic_suites': {
@@ -1063,11 +1075,34 @@ REUSING_TEST_WITH_DIFFERENT_NAME = """\
 }
 """
 
-COMPOSITION_SUITE_WITH_NAME_NOT_ENDING_IN_TEST = """\
+COMPOSITION_SUITE_WITH_TELEMETRY_TEST_WITH_INVALID_NAME = """\
 {
   'basic_suites': {
     'foo_tests': {
       'foo': {
+        'telemetry_test_name': 'foo',
+        'swarming': {
+          'dimensions': {
+            'os': 'Linux',
+          },
+        },
+      },
+    },
+  },
+  'compound_suites': {
+    'composition_tests': [
+      'foo_tests',
+    ],
+  },
+}
+"""
+
+COMPOSITION_SUITE_WITH_TELEMETRY_TEST = """\
+{
+  'basic_suites': {
+    'foo_tests': {
+      'foo_tests': {
+        'telemetry_test_name': 'foo',
         'swarming': {
           'dimensions': {
             'os': 'Linux',
@@ -1098,7 +1133,8 @@ COMPOSITION_SUITE_WITH_GPU_ARGS = """\
 {
   'basic_suites': {
     'foo_tests': {
-      'foo': {
+      'foo_tests': {
+        'telemetry_test_name': 'foo',
         'swarming': {
           'dimensions': {
             'os': 'Linux',
@@ -1707,6 +1743,15 @@ class UnitTest(TestCase):
       fbb.check_output_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
 
+  def test_name_causes_error(self):
+    fbb = FakeBBGen(self.args, FOO_GTESTS_BUILDER_MIXIN_WATERFALL,
+                    FOO_TEST_SUITE_WITH_NAME, LUCI_MILO_CFG)
+    fbb.check_input_file_consistency(verbose=True)
+    with self.assertRaisesRegex(generate_buildbot_json.BBGenErr,
+                                r'.*name field is set*'):
+      fbb.check_output_file_consistency(verbose=True)
+    self.assertFalse(fbb.printed_lines)
+
   def test_good_test_suites_are_ok(self):
     fbb = FakeBBGen(self.args, FOO_GTESTS_WATERFALL, FOO_TEST_SUITE,
                     LUCI_MILO_CFG)
@@ -1958,10 +2003,23 @@ class UnitTest(TestCase):
     fbb.check_output_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
 
+  def test_gpu_telemetry_test_with_invalid_name(self):
+    fbb = FakeBBGen(self.args,
+                    FOO_GPU_TELEMETRY_TEST_WATERFALL,
+                    COMPOSITION_SUITE_WITH_TELEMETRY_TEST_WITH_INVALID_NAME,
+                    LUCI_MILO_CFG,
+                    exceptions=NO_BAR_TEST_EXCEPTIONS,
+                    gn_isolate_map=GPU_TELEMETRY_GN_ISOLATE_MAP)
+    with self.assertRaisesRegex(
+        generate_buildbot_json.BBGenErr,
+        'telemetry test names must end with test or tests.*'):
+      fbb.check_output_file_consistency(verbose=True)
+    self.assertFalse(fbb.printed_lines)
+
   def test_gpu_telemetry_tests(self):
     fbb = FakeBBGen(self.args,
                     FOO_GPU_TELEMETRY_TEST_WATERFALL,
-                    COMPOSITION_SUITE_WITH_NAME_NOT_ENDING_IN_TEST,
+                    COMPOSITION_SUITE_WITH_TELEMETRY_TEST,
                     LUCI_MILO_CFG,
                     exceptions=NO_BAR_TEST_EXCEPTIONS,
                     gn_isolate_map=GPU_TELEMETRY_GN_ISOLATE_MAP)
@@ -1971,7 +2029,7 @@ class UnitTest(TestCase):
   def test_gpu_telemetry_tests_android(self):
     fbb = FakeBBGen(self.args,
                     FOO_GPU_TELEMETRY_TEST_WATERFALL_ANDROID,
-                    COMPOSITION_SUITE_WITH_NAME_NOT_ENDING_IN_TEST,
+                    COMPOSITION_SUITE_WITH_TELEMETRY_TEST,
                     LUCI_MILO_CFG,
                     exceptions=NO_BAR_TEST_EXCEPTIONS,
                     gn_isolate_map=GPU_TELEMETRY_GN_ISOLATE_MAP_ANDROID)
@@ -1981,7 +2039,7 @@ class UnitTest(TestCase):
   def test_gpu_telemetry_tests_android_webview(self):
     fbb = FakeBBGen(self.args,
                     FOO_GPU_TELEMETRY_TEST_WATERFALL_ANDROID_WEBVIEW,
-                    COMPOSITION_SUITE_WITH_NAME_NOT_ENDING_IN_TEST,
+                    COMPOSITION_SUITE_WITH_TELEMETRY_TEST,
                     LUCI_MILO_CFG,
                     exceptions=NO_BAR_TEST_EXCEPTIONS,
                     gn_isolate_map=GPU_TELEMETRY_GN_ISOLATE_MAP_ANDROID_WEBVIEW)
@@ -1991,7 +2049,7 @@ class UnitTest(TestCase):
   def test_gpu_telemetry_tests_fuchsia(self):
     fbb = FakeBBGen(self.args,
                     FOO_GPU_TELEMETRY_TEST_WATERFALL_FUCHSIA,
-                    COMPOSITION_SUITE_WITH_NAME_NOT_ENDING_IN_TEST,
+                    COMPOSITION_SUITE_WITH_TELEMETRY_TEST,
                     LUCI_MILO_CFG,
                     exceptions=NO_BAR_TEST_EXCEPTIONS,
                     gn_isolate_map=GPU_TELEMETRY_GN_ISOLATE_MAP_FUCHSIA)
@@ -2001,7 +2059,7 @@ class UnitTest(TestCase):
   def test_gpu_telemetry_tests_cast_streaming(self):
     fbb = FakeBBGen(self.args,
                     FOO_GPU_TELEMETRY_TEST_WATERFALL_CAST_STREAMING,
-                    COMPOSITION_SUITE_WITH_NAME_NOT_ENDING_IN_TEST,
+                    COMPOSITION_SUITE_WITH_TELEMETRY_TEST,
                     LUCI_MILO_CFG,
                     exceptions=NO_BAR_TEST_EXCEPTIONS,
                     gn_isolate_map=GPU_TELEMETRY_GN_ISOLATE_MAP_CAST_STREAMING)
@@ -2011,7 +2069,7 @@ class UnitTest(TestCase):
   def test_gpu_telemetry_tests_skylab(self):
     fbb = FakeBBGen(self.args,
                     FOO_GPU_TELEMETRY_TEST_WATERFALL_SKYLAB,
-                    COMPOSITION_SUITE_WITH_NAME_NOT_ENDING_IN_TEST,
+                    COMPOSITION_SUITE_WITH_TELEMETRY_TEST,
                     LUCI_MILO_CFG,
                     exceptions=NO_BAR_TEST_EXCEPTIONS,
                     gn_isolate_map=GPU_TELEMETRY_GN_ISOLATE_MAP)
@@ -2936,7 +2994,6 @@ TEST_SUITE_WITH_PARAMS = """\
           },
         },
         'should_retry_with_patch': False,
-        'name': 'bar_test'
       },
       'bar_test_test': {
         'swarming': {
@@ -2962,10 +3019,9 @@ TEST_SUITE_WITH_PARAMS = """\
           'hard_timeout': 1800
         }
       },
-      'foo_test_test': {
+      'pls': {
         'swarming': {
         },
-        'name': 'pls'
       },
     },
   },
@@ -3716,17 +3772,17 @@ MATRIX_COMPOUND_MISSING_IDENTIFIER = """\
     'matrix_tests': {
       'foo_tests': {
         'variants': [
-          {
-            'swarming': {
-              'dimensions': {
-                'foo': 'bar',
-              },
-            },
-          },
+          'missing-identifier',
         ],
       },
     },
   },
+}
+"""
+
+VARIANTS_FILE_MISSING_IDENTIFIER = """\
+{
+  'missing-identifier': {}
 }
 """
 
@@ -3741,15 +3797,21 @@ MATRIX_COMPOUND_EMPTY_IDENTIFIER = """\
     'matrix_tests': {
       'foo_tests': {
         'variants': [
-          {
-            'identifier': '',
-            'swarming': {
-              'dimensions': {
-                'foo': 'empty identifier not allowed',
-              },
-            },
-          },
+          'empty-identifier',
         ],
+      },
+    },
+  },
+}
+"""
+
+EMPTY_IDENTIFIER_VARIANTS = """\
+{
+  'empty-identifier': {
+    'identifier': '',
+    'swarming': {
+      'dimensions': {
+        'foo': 'empty identifier not allowed',
       },
     },
   },
@@ -3767,27 +3829,21 @@ MATRIX_COMPOUND_TRAILING_IDENTIFIER = """\
     'matrix_tests': {
       'foo_tests': {
         'variants': [
-          {
-            'identifier': ' ',
-            'swarming': {
-              'dimensions': {
-                'foo': 'strip to empty not allowed',
-              },
-            },
-          },
+          'trailing-whitespace',
         ],
       },
-      'foo_tests': {
-        'variants': [
-          {
-            'identifier': 'id ',
-            'swarming': {
-              'dimensions': {
-                'foo': 'trailing whitespace not allowed',
-              },
-            },
-          },
-        ],
+    },
+  },
+}
+"""
+
+TRAILING_WHITESPACE_VARIANTS = """\
+{
+  'trailing-whitespace': {
+    'identifier': 'id ',
+    'swarming': {
+      'dimensions': {
+        'foo': 'trailing whitespace not allowed',
       },
     },
   },
@@ -3943,16 +3999,12 @@ MATRIX_COMPOUND_CONFLICTING_TEST_SUITES = """\
     'matrix_tests': {
       'bar_tests': {
         'variants': [
-          {
-            'identifier': 'bar',
-          }
+          'a_variant',
         ],
       },
       'foo_tests': {
         'variants': [
-          {
-            'identifier': 'foo'
-          }
+          'a_variant',
         ]
       }
     },
@@ -3975,28 +4027,21 @@ MATRIX_COMPOUND_TARGETS_ARGS = """\
     'matrix_tests': {
       'foo_tests': {
         'variants': [
-          {
-            'identifier': 'args',
-            'args': [
-              '--anarg',
-            ],
-          },
-          {
-            'identifier': 'swarming',
-            'swarming': {
-              'a': 'b',
-              'dimensions': {
-                'hello': 'world',
-              },
-            }
-          },
-          {
-            'identifier': 'mixins',
-            'mixins': [ 'dimension_mixin' ],
-          }
+          'an-arg',
         ],
       },
     },
+  },
+}
+"""
+
+ARGS_VARIANTS_FILE = """\
+{
+  'an-arg': {
+    'identifier': 'args',
+    'args': [
+      '--anarg',
+    ],
   },
 }
 """
@@ -4015,28 +4060,19 @@ MATRIX_COMPOUND_TARGETS_MIXINS = """\
       'foo_tests': {
         'mixins': [ 'random_mixin' ],
         'variants': [
-          {
-            'identifier': 'args',
-            'args': [
-              '--anarg',
-            ],
-          },
-          {
-            'identifier': 'swarming',
-            'swarming': {
-              'a': 'b',
-              'dimensions': {
-                'hello': 'world',
-              },
-            }
-          },
-          {
-            'identifier': 'mixins',
-            'mixins': [ 'dimension_mixin' ],
-          }
+          'mixins',
         ],
       },
     },
+  },
+}
+"""
+
+MIXINS_VARIANTS_FILE = """\
+{
+  'mixins': {
+    'identifier': 'mixins',
+    'mixins': [ 'dimension_mixin' ],
   },
 }
 """
@@ -4059,26 +4095,22 @@ MATRIX_COMPOUND_TARGETS_SWARMING = """\
     'matrix_tests': {
       'foo_tests': {
         'variants': [
-          {
-            'identifier': 'args',
-            'args': [
-              '--anarg',
-            ],
-          },
-          {
-            'identifier': 'swarming',
-            'swarming': {
-              'a': 'b',
-              'dimensions': {
-                'hello': 'world',
-              }
-            }
-          },
-          {
-            'identifier': 'mixins',
-            'mixins': [ 'dimension_mixin' ],
-          }
+          'swarming-variant',
         ],
+      },
+    },
+  },
+}
+"""
+
+SWARMING_VARIANTS_FILE = """\
+{
+  'swarming-variant': {
+    'identifier': 'swarming',
+    'swarming': {
+      'a': 'b',
+      'dimensions': {
+        'hello': 'world',
       },
     },
   },
@@ -4158,13 +4190,7 @@ MATRIX_COMPOUND_MIXED_VARIANTS_REF = """\
       'foo_tests': {
         'variants': [
           'a_variant',
-          {
-            'args': [
-              'a',
-              'b'
-            ],
-            'identifier': 'ab',
-          }
+          'b_variant',
         ],
       },
     },
@@ -4271,27 +4297,34 @@ MATRIX_COMPOUND_SKYLAB_REF = """\
     'cros_skylab_basic_x86': {
       'cros_skylab_basic': {
         'variants': [
-          {
-            'skylab': {
-              'cros_board': 'octopus',
-              'cros_chrome_version': '89.0.3234.0',
-              'cros_img': 'octopus-release/R89-13655.0.0',
-            },
-            'enabled': True,
-            'identifier': 'OCTOPUS_TOT',
-          },
-          {
-            'skylab': {
-              'cros_board': 'octopus',
-              'cros_chrome_version': '88.0.2324.0',
-              'cros_img': 'octopus-release/R88-13597.23.0',
-            },
-            'enabled': True,
-            'identifier': 'OCTOPUS_TOT-1',
-          },
-        ]
+          'octopus-89',
+          'octopus-88',
+        ],
       },
     },
+  },
+}
+"""
+
+SKYLAB_VARIANTS = """\
+{
+  'octopus-89': {
+    'skylab': {
+      'cros_board': 'octopus',
+      'cros_chrome_version': '89.0.3234.0',
+      'cros_img': 'octopus-release/R89-13655.0.0',
+    },
+    'enabled': True,
+    'identifier': 'OCTOPUS_TOT',
+  },
+  'octopus-88': {
+    'skylab': {
+      'cros_board': 'octopus',
+      'cros_chrome_version': '88.0.2324.0',
+      'cros_img': 'octopus-release/R88-13597.23.0',
+    },
+    'enabled': True,
+    'identifier': 'OCTOPUS_TOT-1',
   },
 }
 """
@@ -4315,27 +4348,34 @@ ENABLED_AND_DISABLED_MATRIX_COMPOUND_SKYLAB_REF = """\
     'cros_skylab_basic_x86': {
       'cros_skylab_basic': {
         'variants': [
-          {
-            'skylab': {
-              'cros_board': 'octopus',
-              'cros_chrome_version': '89.0.3234.0',
-              'cros_img': 'octopus-release/R89-13655.0.0',
-            },
-            'enabled': True,
-            'identifier': 'OCTOPUS_TOT',
-          },
-          {
-            'skylab': {
-              'cros_board': 'octopus',
-              'cros_chrome_version': '88.0.2324.0',
-              'cros_img': 'octopus-release/R88-13597.23.0',
-            },
-            'enabled': False,
-            'identifier': 'OCTOPUS_TOT-1',
-          },
-        ]
+          'enabled',
+          'disabled',
+        ],
       },
     },
+  },
+}
+"""
+
+ENABLED_AND_DISABLED_VARIANTS = """\
+{
+  'enabled': {
+    'skylab': {
+      'cros_board': 'octopus',
+      'cros_chrome_version': '89.0.3234.0',
+      'cros_img': 'octopus-release/R89-13655.0.0',
+    },
+    'enabled': True,
+    'identifier': 'OCTOPUS_TOT',
+  },
+  'disabled': {
+    'skylab': {
+      'cros_board': 'octopus',
+      'cros_chrome_version': '88.0.2324.0',
+      'cros_img': 'octopus-release/R88-13597.23.0',
+    },
+    'enabled': False,
+    'identifier': 'OCTOPUS_TOT-1',
   },
 }
 """
@@ -4366,8 +4406,11 @@ class MatrixCompositionTests(TestCase):
     """
     Variant is missing an identifier
     """
-    fbb = FakeBBGen(self.args, MATRIX_GTEST_SUITE_WATERFALL,
-                    MATRIX_COMPOUND_MISSING_IDENTIFIER, LUCI_MILO_CFG)
+    fbb = FakeBBGen(self.args,
+                    MATRIX_GTEST_SUITE_WATERFALL,
+                    MATRIX_COMPOUND_MISSING_IDENTIFIER,
+                    LUCI_MILO_CFG,
+                    variants=VARIANTS_FILE_MISSING_IDENTIFIER)
     with self.assertRaisesRegex(
         generate_buildbot_json.BBGenErr,
         'Missing required identifier field in matrix compound suite*'):
@@ -4377,8 +4420,11 @@ class MatrixCompositionTests(TestCase):
     """
     Variant identifier is empty.
     """
-    fbb = FakeBBGen(self.args, MATRIX_GTEST_SUITE_WATERFALL,
-                    MATRIX_COMPOUND_EMPTY_IDENTIFIER, LUCI_MILO_CFG)
+    fbb = FakeBBGen(self.args,
+                    MATRIX_GTEST_SUITE_WATERFALL,
+                    MATRIX_COMPOUND_EMPTY_IDENTIFIER,
+                    LUCI_MILO_CFG,
+                    variants=EMPTY_IDENTIFIER_VARIANTS)
     with self.assertRaisesRegex(
         generate_buildbot_json.BBGenErr,
         'Identifier field can not be "" in matrix compound suite*'):
@@ -4388,8 +4434,11 @@ class MatrixCompositionTests(TestCase):
     """
     Variant identifier has trailing whitespace.
     """
-    fbb = FakeBBGen(self.args, MATRIX_GTEST_SUITE_WATERFALL,
-                    MATRIX_COMPOUND_TRAILING_IDENTIFIER, LUCI_MILO_CFG)
+    fbb = FakeBBGen(self.args,
+                    MATRIX_GTEST_SUITE_WATERFALL,
+                    MATRIX_COMPOUND_TRAILING_IDENTIFIER,
+                    LUCI_MILO_CFG,
+                    variants=TRAILING_WHITESPACE_VARIANTS)
     with self.assertRaisesRegex(
         generate_buildbot_json.BBGenErr,
         'Identifier field can not have leading and trailing whitespace in'
@@ -4429,8 +4478,11 @@ class MatrixCompositionTests(TestCase):
       fbb.check_output_file_consistency(verbose=True)
 
   def test_conflicting_names(self):
-    fbb = FakeBBGen(self.args, MATRIX_GTEST_SUITE_WATERFALL,
-                    MATRIX_COMPOUND_CONFLICTING_TEST_SUITES, LUCI_MILO_CFG)
+    fbb = FakeBBGen(self.args,
+                    MATRIX_GTEST_SUITE_WATERFALL,
+                    MATRIX_COMPOUND_CONFLICTING_TEST_SUITES,
+                    LUCI_MILO_CFG,
+                    variants=VARIANTS_FILE)
     with self.assertRaisesRegex(generate_buildbot_json.BBGenErr,
                                 'Conflicting test definitions.*'):
       fbb.check_input_file_consistency(verbose=True)
@@ -4444,7 +4496,8 @@ class MatrixCompositionTests(TestCase):
                     MATRIX_GTEST_SUITE_WATERFALL,
                     MATRIX_COMPOUND_TARGETS_ARGS,
                     LUCI_MILO_CFG,
-                    mixins=SWARMING_MIXINS)
+                    mixins=SWARMING_MIXINS,
+                    variants=ARGS_VARIANTS_FILE)
     fbb.check_output_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
 
@@ -4456,7 +4509,8 @@ class MatrixCompositionTests(TestCase):
                     MATRIX_GTEST_SUITE_WATERFALL,
                     MATRIX_COMPOUND_TARGETS_MIXINS,
                     LUCI_MILO_CFG,
-                    mixins=SWARMING_MIXINS)
+                    mixins=SWARMING_MIXINS,
+                    variants=MIXINS_VARIANTS_FILE)
     fbb.check_output_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
 
@@ -4468,7 +4522,7 @@ class MatrixCompositionTests(TestCase):
                     MATRIX_GTEST_SUITE_WATERFALL,
                     MATRIX_COMPOUND_TARGETS_SWARMING,
                     LUCI_MILO_CFG,
-                    mixins=SWARMING_MIXINS)
+                    variants=SWARMING_VARIANTS_FILE)
     fbb.check_output_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
 
@@ -4526,7 +4580,7 @@ class MatrixCompositionTests(TestCase):
     """Test targets with variants in variants.pyl, unreferenced in tests"""
     fbb = FakeBBGen(self.args,
                     MATRIX_GTEST_SUITE_WATERFALL,
-                    MATRIX_COMPOUND_MIXED_VARIANTS_REF,
+                    MATRIX_COMPOUND_VARIANTS_REF,
                     LUCI_MILO_CFG,
                     variants=MULTI_VARIANTS_FILE)
     with self.assertRaisesRegex(generate_buildbot_json.BBGenErr,
@@ -4538,7 +4592,8 @@ class MatrixCompositionTests(TestCase):
                     MATRIX_SKYLAB_WATERFALL,
                     MATRIX_COMPOUND_SKYLAB_REF,
                     LUCI_MILO_CFG,
-                    exceptions=EMPTY_SKYLAB_TEST_EXCEPTIONS)
+                    exceptions=EMPTY_SKYLAB_TEST_EXCEPTIONS,
+                    variants=SKYLAB_VARIANTS)
     fbb.check_input_file_consistency(verbose=True)
     fbb.check_output_file_consistency(verbose=True)
     self.assertFalse(fbb.printed_lines)
@@ -4549,7 +4604,8 @@ class MatrixCompositionTests(TestCase):
                     MATRIX_SKYLAB_WATERFALL,
                     ENABLED_AND_DISABLED_MATRIX_COMPOUND_SKYLAB_REF,
                     LUCI_MILO_CFG,
-                    exceptions=EMPTY_SKYLAB_TEST_EXCEPTIONS)
+                    exceptions=EMPTY_SKYLAB_TEST_EXCEPTIONS,
+                    variants=ENABLED_AND_DISABLED_VARIANTS)
     # some skylab test variant is disabled; the corresponding skylab tests
     # is not generated.
     fbb.check_input_file_consistency(verbose=True)

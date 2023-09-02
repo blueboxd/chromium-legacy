@@ -1,4 +1,4 @@
-// Copyright 2022 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -48,7 +48,7 @@ class MockController : public DlpFilesController {
               (override));
 
   MOCK_METHOD(absl::optional<data_controls::Component>,
-              MapFilePathtoPolicyComponent,
+              MapFilePathToPolicyComponent,
               (Profile * profile, const base::FilePath& file_path),
               (override));
 };

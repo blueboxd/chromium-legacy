@@ -41,15 +41,13 @@ constexpr char kBadFakeEntryName2[] = "bad2";
 const base::FilePath::CharType kFakeFilePath[] =
     FILE_PATH_LITERAL("/hello.txt");
 
-FakeEntry::FakeEntry() {
-}
+FakeEntry::FakeEntry() {}
 
 FakeEntry::FakeEntry(std::unique_ptr<EntryMetadata> metadata,
                      const std::string& contents)
     : metadata(std::move(metadata)), contents(contents) {}
 
-FakeEntry::~FakeEntry() {
-}
+FakeEntry::~FakeEntry() {}
 
 FakeProvidedFileSystem::FakeProvidedFileSystem(
     const ProvidedFileSystemInfo& file_system_info)
@@ -80,7 +78,8 @@ void FakeProvidedFileSystem::AddEntry(const base::FilePath& entry_path,
                                       base::Time modification_time,
                                       std::string mime_type,
                                       std::string contents) {
-  DCHECK(entries_.find(entry_path) == entries_.end());
+  DCHECK(entries_.find(entry_path) == entries_.end())
+      << "Already present " << entry_path;
   std::unique_ptr<EntryMetadata> metadata(new EntryMetadata);
 
   metadata->is_directory = std::make_unique<bool>(is_directory);
@@ -111,9 +110,14 @@ base::File::Error FakeProvidedFileSystem::CopyOrMoveEntry(
   if (!source_entry) {
     return base::File::FILE_ERROR_NOT_FOUND;
   }
-  // Check that `target_path` doesn't exist.
-  if (GetEntry(target_path)) {
-    return base::File::FILE_ERROR_INVALID_OPERATION;
+  // Delete `target_path` if it already exists, since AddEntry DCHECKs that
+  // there's no existing entry.
+  switch (auto err = DoDeleteEntry(target_path, /*recursive=*/false)) {
+    case base::File::Error::FILE_OK:
+    case base::File::Error::FILE_ERROR_NOT_FOUND:
+      break;
+    default:
+      return err;
   }
   // Copy source entry.
   DCHECK_NE(source_entry->metadata, nullptr);
@@ -203,7 +207,7 @@ AbortCallback FakeProvidedFileSystem::ReadDirectory(
   for (Entries::const_iterator it = entries_.begin(); it != entries_.end();
        ++it) {
     const base::FilePath file_path = it->first;
-    if (file_path == directory_path || directory_path.IsParent(file_path)) {
+    if (directory_path == file_path.DirName()) {
       const EntryMetadata* const metadata = it->second->metadata.get();
       filesystem::mojom::FsFileType entry_type =
           *metadata->is_directory ? filesystem::mojom::FsFileType::DIRECTORY
@@ -345,10 +349,16 @@ AbortCallback FakeProvidedFileSystem::DeleteEntry(
     const base::FilePath& entry_path,
     bool recursive,
     storage::AsyncFileUtil::StatusCallback callback) {
+  auto err = DoDeleteEntry(entry_path, recursive);
+  return PostAbortableTask(base::BindOnce(std::move(callback), err));
+}
+
+base::File::Error FakeProvidedFileSystem::DoDeleteEntry(
+    const base::FilePath& entry_path,
+    bool recursive) {
   // Check that the entry to remove exists.
   if (!GetEntry(entry_path)) {
-    return PostAbortableTask(
-        base::BindOnce(std::move(callback), base::File::FILE_ERROR_NOT_FOUND));
+    return base::File::FILE_ERROR_NOT_FOUND;
   }
   // If `recursive` is false, check that `entry_path` is not parent of any entry
   // path in `entries_`.
@@ -358,8 +368,7 @@ AbortCallback FakeProvidedFileSystem::DeleteEntry(
           return entry_path.IsParent(entry_it.first);
         });
     if (it != entries_.end()) {
-      return PostAbortableTask(base::BindOnce(
-          std::move(callback), base::File::FILE_ERROR_INVALID_OPERATION));
+      return base::File::FILE_ERROR_INVALID_OPERATION;
     }
   }
   // Erase the entry with path `entry_path`, as well as all child entries.
@@ -371,8 +380,7 @@ AbortCallback FakeProvidedFileSystem::DeleteEntry(
       ++entry_it;
     }
   }
-  return PostAbortableTask(
-      base::BindOnce(std::move(callback), base::File::FILE_OK));
+  return base::File::FILE_OK;
 }
 
 AbortCallback FakeProvidedFileSystem::CreateFile(

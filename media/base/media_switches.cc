@@ -413,6 +413,13 @@ BASE_FEATURE(kUseDecoderStreamForWebRTC,
              "UseDecoderStreamForWebRTC",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// If enabled, element capture will be performed instead of region capture. Used
+// for testing until the restrictTo API is finished.
+// TODO(https://crbug.com/1473342): remove once restrictTo API is in place.
+BASE_FEATURE(kUseElementInsteadOfRegionCapture,
+             "UseElementInsteadOfRegionCapture",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // If enabled, when RTCVideoDecoderAdapter is used then SW decoders will be
 // exposed directly to WebRTC.
 BASE_FEATURE(kExposeSwDecodersToWebRTC,
@@ -548,6 +555,18 @@ BASE_FEATURE(kMemoryPressureBasedSourceBufferGC,
              "MemoryPressureBasedSourceBufferGC",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Enables writing pixels together for all planes to a multi-planar shared
+// image.
+BASE_FEATURE(kUseWritePixelsYUV,
+             "UseWritePixelsYUV",
+// Windows requires d3d11 write pixel support in angle.
+#if BUILDFLAG(IS_WIN)
+             base::FEATURE_DISABLED_BY_DEFAULT
+#else
+             base::FEATURE_ENABLED_BY_DEFAULT
+#endif
+);
+
 // Enables creating single shared image and mailbox for multi-planar formats for
 // hardware video decoders.
 BASE_FEATURE(kUseMultiPlaneFormatForHardwareVideo,
@@ -607,7 +626,7 @@ BASE_FEATURE(kOpenscreenVideoBitrateFactorInFrameDrops,
 // information on the quality of the session using RTCP logs.
 BASE_FEATURE(kEnableRtcpReporting,
              "EnableRtcpReporting",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Approach original pre-REC MSE object URL autorevoking behavior, though await
 // actual attempt to use the object URL for attachment to perform revocation.
@@ -899,6 +918,16 @@ BASE_FEATURE(kShareThisTabInsteadButtonGetDisplayMediaAudio,
 // the Speech On-Device API (SODA) detects a speaker change.
 BASE_FEATURE(kSpeakerChangeDetection,
              "SpeakerChangeDetection",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Log the amount of flickering between partial results. This measures how often
+// the system revises earlier outputs, to quantify the system's output
+// instability or flicker. Intuitively, it measures how many tokens must be
+// truncated from the previous text before appending any new text. The erasure
+// of the current timestep can be calculated from its longest common prefix with
+// the previous timestep.
+BASE_FEATURE(kLiveCaptionLogFlickerRate,
+             "LiveCaptionLogFlickerRate",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Live Caption can be used in multiple languages, as opposed to just English.
@@ -1599,6 +1628,11 @@ bool IsMultiPlaneFormatForHardwareVideoEnabled() {
 #endif
       base::FeatureList::IsEnabled(features::kPassthroughYuvRgbConversion) &&
       base::FeatureList::IsEnabled(kUseMultiPlaneFormatForHardwareVideo);
+}
+
+bool IsWritePixelsYUVEnabled() {
+  return IsMultiPlaneFormatForHardwareVideoEnabled() &&
+         base::FeatureList::IsEnabled(kUseWritePixelsYUV);
 }
 
 #if BUILDFLAG(IS_WIN)

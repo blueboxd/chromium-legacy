@@ -27,10 +27,10 @@
 #include "components/sync/engine/commit_contribution.h"
 #include "components/sync/engine/cycle/entity_change_metric_recording.h"
 #include "components/sync/engine/cycle/status_controller.h"
-#include "components/sync/engine/model_type_processor.h"
 #include "components/sync/protocol/autofill_specifics.pb.h"
 #include "components/sync/protocol/entity_specifics.pb.h"
 #include "components/sync/protocol/model_type_state.pb.h"
+#include "components/sync/protocol/password_sharing_invitation_specifics.pb.h"
 #include "components/sync/protocol/password_specifics.pb.h"
 #include "components/sync/protocol/sync.pb.h"
 #include "components/sync/protocol/sync_entity.pb.h"
@@ -86,6 +86,57 @@ sync_pb::EntitySpecifics EncryptPasswordSpecificsWithNthKey(
           unencrypted_password.SerializeAsString(),
           encrypted_specifics.mutable_password()->mutable_encrypted());
   return encrypted_specifics;
+}
+
+sync_pb::CrossUserSharingPublicKey PublicKeyToProto(
+    const CrossUserSharingPublicPrivateKeyPair& key_pair,
+    uint32_t version) {
+  sync_pb::CrossUserSharingPublicKey output;
+  std::array<uint8_t, X25519_PUBLIC_VALUE_LEN> key = key_pair.GetRawPublicKey();
+  output.set_x25519_public_key(std::string(key.begin(), key.end()));
+  output.set_version(version);
+  return output;
+}
+
+sync_pb::IncomingPasswordSharingInvitationSpecifics
+CreateIncomingPasswordSharingInvitation(const std::string& invitation_guid,
+                                        const std::string& signon_realm,
+                                        const std::string& username_value,
+                                        const std::string& password_value,
+                                        const std::string& sender_name,
+                                        uint32_t recipient_key_version,
+                                        FakeCryptographer* cryptographer) {
+  sync_pb::IncomingPasswordSharingInvitationSpecifics invitation;
+  // Set the unencrypted fields:
+  invitation.set_guid(invitation_guid);
+  invitation.set_recipient_key_version(recipient_key_version);
+  invitation.mutable_sender_info()
+      ->mutable_user_display_info()
+      ->set_display_name(sender_name);
+
+  // Set the encrypted fields and the encryption key version:
+  sync_pb::PasswordSharingInvitationData password_data;
+  password_data.mutable_password_data()->set_signon_realm(signon_realm);
+  password_data.mutable_password_data()->set_username_value(username_value);
+  password_data.mutable_password_data()->set_password_value(password_value);
+  std::string serialized_data;
+  bool success = password_data.SerializeToString(&serialized_data);
+  CHECK(success);
+
+  const CrossUserSharingPublicPrivateKeyPair& key_pair =
+      cryptographer->GetCrossUserSharingKeyPairForTesting(/*version=*/0);
+  absl::optional<std::vector<uint8_t>> encrypted_data =
+      cryptographer->AuthEncryptForCrossUserSharing(
+          base::as_bytes(base::make_span(serialized_data)),
+          key_pair.GetRawPublicKey());
+  CHECK(encrypted_data);
+
+  invitation.set_encrypted_password_sharing_invitation_data(
+      encrypted_data->data(), encrypted_data->size());
+  invitation.mutable_sender_info()
+      ->mutable_cross_user_sharing_public_key()
+      ->CopyFrom(PublicKeyToProto(key_pair, /*version=*/0));
+  return invitation;
 }
 
 ClientTagHash GeneratePreferenceTagHash(const std::string& tag) {
@@ -209,7 +260,7 @@ class ModelTypeWorkerTest : public ::testing::Test {
     initial_state.set_initial_sync_state(
         sync_pb::ModelTypeState_InitialSyncState_INITIAL_SYNC_DONE);
 
-    InitializeWithState(USER_EVENTS, initial_state);
+    InitializeWithState(model_type, initial_state);
   }
 
   // Initialize with a custom initial ModelTypeState and pending updates.
@@ -226,6 +277,11 @@ class ModelTypeWorkerTest : public ::testing::Test {
     processor->SetDisconnectCallback(base::BindOnce(
         &ModelTypeWorkerTest::DisconnectProcessor, base::Unretained(this)));
     worker_->ConnectSync(std::move(processor));
+  }
+
+  void NormalInitializeWithCustomPassphrase() {
+    NormalInitialize();
+    worker_->UpdatePassphraseType(PassphraseType::kCustomPassphrase);
   }
 
   // Mimic a Nigori update with a keybag that cannot be decrypted, which means
@@ -471,6 +527,7 @@ class ModelTypeWorkerTest : public ::testing::Test {
     worker_.reset();
   }
 
+  FakeCryptographer* cryptographer() { return &cryptographer_; }
   MockModelTypeProcessor* processor() { return mock_type_processor_; }
   ModelTypeWorker* worker() { return worker_.get(); }
   SingleTypeMockServer* server() { return mock_server_.get(); }
@@ -2053,6 +2110,7 @@ TEST_F(ModelTypeWorkerPasswordsTest, PasswordCommit) {
   sync_pb::PasswordSpecificsData* password_data =
       specifics.mutable_password()->mutable_client_only_encrypted_data();
   password_data->set_signon_realm("signon_realm");
+  specifics.mutable_password()->mutable_unencrypted_metadata()->set_url("url");
 
   // Normal commit request stuff.
   processor()->SetCommitRequest(GenerateCommitRequest(kHash1, specifics));
@@ -2060,14 +2118,66 @@ TEST_F(ModelTypeWorkerPasswordsTest, PasswordCommit) {
   ASSERT_EQ(1U, server()->GetNumCommitMessages());
   EXPECT_EQ(1, server()->GetNthCommitMessage(0).commit().entries_size());
   ASSERT_TRUE(server()->HasCommitEntity(kHash1));
-  const SyncEntity& tag1_entity = server()->GetLastCommittedEntity(kHash1);
+  const SyncEntity& entity = server()->GetLastCommittedEntity(kHash1);
 
-  EXPECT_FALSE(tag1_entity.specifics().has_encrypted());
-  EXPECT_TRUE(tag1_entity.specifics().has_password());
-  EXPECT_TRUE(tag1_entity.specifics().password().has_encrypted());
+  EXPECT_FALSE(entity.specifics().has_encrypted());
+  EXPECT_TRUE(entity.specifics().has_password());
+  EXPECT_TRUE(entity.specifics().password().has_encrypted());
+  EXPECT_FALSE(entity.specifics().password().encrypted().blob().empty());
 
   // The title should be overwritten.
-  EXPECT_EQ(tag1_entity.name(), "encrypted");
+  EXPECT_EQ(entity.name(), "encrypted");
+
+  // Exhaustively verify the populated SyncEntity.
+  EXPECT_EQ(entity.client_tag_hash(), kHash1.value());
+  EXPECT_FALSE(entity.deleted());
+  EXPECT_EQ(entity.specifics().password().unencrypted_metadata().url(), "url");
+  EXPECT_TRUE(entity.parent_id_string().empty());
+  EXPECT_FALSE(entity.unique_position().has_custom_compressed_v1());
+}
+
+// Same as above but uses custom passphrase. In this case, field
+// |unencrypted_metadata| should be cleared.
+TEST_F(ModelTypeWorkerPasswordsTest, PasswordCommitWithCustomPassphrase) {
+  NormalInitializeWithCustomPassphrase();
+
+  EXPECT_EQ(0U, processor()->GetNumUpdateResponses());
+
+  // Init the Cryptographer, it'll cause the EKN to be pushed.
+  AddPendingKey();
+  DecryptPendingKey();
+  ASSERT_EQ(1U, processor()->GetNumUpdateResponses());
+  EXPECT_EQ(default_encryption_key_name(),
+            processor()->GetNthUpdateState(0).encryption_key_name());
+
+  EntitySpecifics specifics;
+  sync_pb::PasswordSpecificsData* password_data =
+      specifics.mutable_password()->mutable_client_only_encrypted_data();
+  password_data->set_signon_realm("signon_realm");
+  specifics.mutable_password()->mutable_unencrypted_metadata()->set_url("url");
+
+  // Normal commit request stuff.
+  processor()->SetCommitRequest(GenerateCommitRequest(kHash1, specifics));
+  DoSuccessfulCommit();
+  ASSERT_EQ(1U, server()->GetNumCommitMessages());
+  EXPECT_EQ(1, server()->GetNthCommitMessage(0).commit().entries_size());
+  ASSERT_TRUE(server()->HasCommitEntity(kHash1));
+  const SyncEntity& entity = server()->GetLastCommittedEntity(kHash1);
+
+  EXPECT_FALSE(entity.specifics().has_encrypted());
+  EXPECT_TRUE(entity.specifics().has_password());
+  EXPECT_TRUE(entity.specifics().password().has_encrypted());
+  EXPECT_FALSE(entity.specifics().password().encrypted().blob().empty());
+
+  // The title should be overwritten.
+  EXPECT_EQ(entity.name(), "encrypted");
+
+  // Exhaustively verify the populated SyncEntity.
+  EXPECT_EQ(entity.client_tag_hash(), kHash1.value());
+  EXPECT_FALSE(entity.deleted());
+  EXPECT_FALSE(entity.specifics().password().has_unencrypted_metadata());
+  EXPECT_TRUE(entity.parent_id_string().empty());
+  EXPECT_FALSE(entity.unique_position().has_custom_compressed_v1());
 }
 
 // Similar to ReceiveDecryptableEntities but for PASSWORDS, which have a custom
@@ -2705,6 +2815,67 @@ TEST_F(ModelTypeWorkerPasswordsTestWithNotes, ShouldEmitNotesBackupCorrupted) {
       syncer::PasswordNotesStateForUMA::kSetOnlyInBackupButCorrupted, 1);
 }
 
+TEST_F(ModelTypeWorkerPasswordsTestWithNotes,
+       ShouldPopulatePasswordNotesBackup) {
+  const std::string kPasswordInSpecificsNote = "Note Value";
+  NormalInitialize();
+
+  // Create a new Nigori and allow the cryptographer to decrypt it.
+  AddPendingKey();
+  DecryptPendingKey();
+
+  // Set a value for the note in the PasswordSpecificsData.
+  EntitySpecifics specifics;
+  sync_pb::PasswordSpecificsData* unencrypted_password =
+      specifics.mutable_password()->mutable_client_only_encrypted_data();
+  unencrypted_password->set_password_value(kPassword);
+  unencrypted_password->mutable_notes()->add_note()->set_value(
+      kPasswordInSpecificsNote);
+
+  // Normal commit request stuff.
+  processor()->SetCommitRequest(GenerateCommitRequest(kHash1, specifics));
+  DoSuccessfulCommit();
+  ASSERT_EQ(1U, server()->GetNumCommitMessages());
+  EXPECT_EQ(1, server()->GetNthCommitMessage(0).commit().entries_size());
+  ASSERT_TRUE(server()->HasCommitEntity(kHash1));
+  const SyncEntity& entity = server()->GetLastCommittedEntity(kHash1);
+
+  ASSERT_TRUE(entity.specifics().has_password());
+  // Verify the contents of the encrypted notes backup blob.
+  sync_pb::PasswordSpecificsData_Notes decrypted_notes;
+  cryptographer()->Decrypt(
+      entity.specifics().password().encrypted_notes_backup(), &decrypted_notes);
+  ASSERT_EQ(1, decrypted_notes.note_size());
+  EXPECT_EQ(kPasswordInSpecificsNote, decrypted_notes.note(0).value());
+}
+
+TEST_F(ModelTypeWorkerPasswordsTestWithNotes,
+       ShouldPopulatePasswordNotesBackupWhenNoLocalNotes) {
+  NormalInitialize();
+
+  // Create a new Nigori and allow the cryptographer to decrypt it.
+  AddPendingKey();
+  DecryptPendingKey();
+
+  // Set a value for the note in the PasswordSpecificsData.
+  EntitySpecifics specifics;
+  sync_pb::PasswordSpecificsData* unencrypted_password =
+      specifics.mutable_password()->mutable_client_only_encrypted_data();
+  unencrypted_password->set_password_value(kPassword);
+
+  // Normal commit request stuff.
+  processor()->SetCommitRequest(GenerateCommitRequest(kHash1, specifics));
+  DoSuccessfulCommit();
+  ASSERT_EQ(1U, server()->GetNumCommitMessages());
+  EXPECT_EQ(1, server()->GetNthCommitMessage(0).commit().entries_size());
+  ASSERT_TRUE(server()->HasCommitEntity(kHash1));
+  const SyncEntity& entity = server()->GetLastCommittedEntity(kHash1);
+
+  ASSERT_TRUE(entity.specifics().has_password());
+  EXPECT_FALSE(
+      entity.specifics().password().encrypted_notes_backup().blob().empty());
+}
+
 // Verifies persisting invalidations load from the ModelTypeProcessor.
 TEST_F(ModelTypeWorkerTest, LoadInvalidations) {
   base::test::ScopedFeatureList feature;
@@ -2884,6 +3055,122 @@ TEST_F(ModelTypeWorkerTest, DropHintsAtServer_WithOtherInvalidations) {
     EXPECT_FALSE(gu_trigger.server_dropped_hints());
     ASSERT_EQ(0, gu_trigger.notification_hint_size());
   }
+}
+
+TEST_F(ModelTypeWorkerTest, ShouldEncryptOutgoingPasswordSharingInvitation) {
+  InitializeCommitOnly(OUTGOING_PASSWORD_SHARING_INVITATION);
+
+  EntitySpecifics specifics;
+  specifics.mutable_outgoing_password_sharing_invitation()
+      ->mutable_client_only_unencrypted_data()
+      ->mutable_password_data()
+      ->set_password_value("password");
+  processor()->SetCommitRequest(GenerateCommitRequest(kHash1, specifics));
+  DoSuccessfulCommit();
+
+  ASSERT_EQ(1U, server()->GetNumCommitMessages());
+  ASSERT_EQ(1, server()->GetNthCommitMessage(0).commit().entries_size());
+  const SyncEntity& entity =
+      server()->GetNthCommitMessage(0).commit().entries(0);
+
+  EXPECT_TRUE(entity.specifics()
+                  .outgoing_password_sharing_invitation()
+                  .has_encrypted_password_sharing_invitation_data());
+  EXPECT_FALSE(entity.specifics()
+                   .outgoing_password_sharing_invitation()
+                   .has_client_only_unencrypted_data());
+}
+
+class ModelTypeWorkerIncomingPasswordSharingInvitationTest
+    : public ModelTypeWorkerTest {
+ public:
+  ModelTypeWorkerIncomingPasswordSharingInvitationTest()
+      : ModelTypeWorkerTest(INCOMING_PASSWORD_SHARING_INVITATION,
+                            /*is_encrypted_type=*/false) {}
+};
+
+TEST_F(ModelTypeWorkerIncomingPasswordSharingInvitationTest,
+       ShouldDecryptIncomingPasswordSharingInvitation) {
+  const std::string kSignonRealm = "http://www.example.com";
+  const std::string kUsernameValue = "good username";
+  const std::string kPasswordValue = "very strong password";
+  const std::string kInvitationGUID = "some guid";
+  const std::string kSenderName = "Sender Name";
+  const uint32_t kRecipientKeyVersion = 0;
+  NormalInitialize();
+
+  sync_pb::EntitySpecifics invitation_with_encrypted_data;
+  *invitation_with_encrypted_data
+       .mutable_incoming_password_sharing_invitation() =
+      CreateIncomingPasswordSharingInvitation(
+          kInvitationGUID, kSignonRealm, kUsernameValue, kPasswordValue,
+          kSenderName, kRecipientKeyVersion, cryptographer());
+
+  // Receive an encrypted password sharing invitation.
+  SyncEntity entity = server()->UpdateFromServer(
+      /*version_offset=*/10, kHash1, invitation_with_encrypted_data);
+  worker()->ProcessGetUpdatesResponse(server()->GetProgress(),
+                                      server()->GetContext(), {&entity},
+                                      status_controller());
+  worker()->ApplyUpdates(status_controller(), /*cycle_done=*/true);
+
+  ASSERT_TRUE(processor()->HasUpdateResponse(kHash1));
+  const UpdateResponseData& update = processor()->GetUpdateResponse(kHash1);
+
+  // The encrypted fields should have been decrypted by the worker, and
+  // unencrypted fields should have been carried over.
+  EXPECT_FALSE(update.entity.specifics.incoming_password_sharing_invitation()
+                   .has_encrypted_password_sharing_invitation_data());
+  EXPECT_FALSE(update.entity.specifics.has_encrypted());
+  const sync_pb::IncomingPasswordSharingInvitationSpecifics&
+      invitation_with_unencrypted_data =
+          update.entity.specifics.incoming_password_sharing_invitation();
+  EXPECT_EQ(invitation_with_unencrypted_data.guid(), kInvitationGUID);
+  EXPECT_EQ(invitation_with_unencrypted_data.recipient_key_version(),
+            kRecipientKeyVersion);
+  EXPECT_EQ(invitation_with_unencrypted_data.sender_info()
+                .user_display_info()
+                .display_name(),
+            kSenderName);
+
+  EXPECT_TRUE(
+      invitation_with_unencrypted_data.has_client_only_unencrypted_data());
+  const sync_pb::PasswordSharingInvitationData& received_password_data =
+      invitation_with_unencrypted_data.client_only_unencrypted_data();
+  EXPECT_EQ(received_password_data.password_data().username_value(),
+            kUsernameValue);
+  EXPECT_EQ(received_password_data.password_data().password_value(),
+            kPasswordValue);
+  EXPECT_EQ(received_password_data.password_data().signon_realm(),
+            kSignonRealm);
+}
+
+TEST_F(ModelTypeWorkerIncomingPasswordSharingInvitationTest,
+       ShouldIgnoreCorruptedInvitation) {
+  NormalInitialize();
+
+  sync_pb::IncomingPasswordSharingInvitationSpecifics invitation =
+      CreateIncomingPasswordSharingInvitation(
+          "guid", "signon_realm", "username_value", "password_value",
+          "sender_name", /*recipient_key_version=*/0, cryptographer());
+  invitation.set_encrypted_password_sharing_invitation_data("corrupted blob");
+
+  sync_pb::EntitySpecifics encrypted_specifics;
+  *encrypted_specifics.mutable_incoming_password_sharing_invitation() =
+      invitation;
+
+  // Receive an invalid encrypted password sharing invitation.
+  SyncEntity entity = server()->UpdateFromServer(
+      /*version_offset=*/10, kHash1, encrypted_specifics);
+  worker()->ProcessGetUpdatesResponse(server()->GetProgress(),
+                                      server()->GetContext(), {&entity},
+                                      status_controller());
+  worker()->ApplyUpdates(status_controller(), /*cycle_done=*/true);
+
+  // No updates should have reached the processor and the worker is not blocked
+  // for encyprion (and should never be for incoming invitations).
+  EXPECT_FALSE(processor()->HasUpdateResponse(kHash1));
+  EXPECT_FALSE(worker()->BlockForEncryption());
 }
 
 class ModelTypeWorkerAckTrackingTest : public ModelTypeWorkerTest {

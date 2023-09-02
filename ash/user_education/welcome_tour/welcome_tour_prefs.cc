@@ -17,9 +17,9 @@ namespace {
 
 // Constants -------------------------------------------------------------------
 
-constexpr char kTimeOfFirstInteractionPrefPrefix[] =
+static constexpr char kTimeOfFirstInteractionPrefPrefix[] =
     "ash.welcome_tour.interaction_time.";
-constexpr char kTimeOfFirstTourCompletion[] =
+static constexpr char kTimeOfFirstTourCompletion[] =
     "ash.welcome_tour.completed.first_time";
 static constexpr char kTimeOfFirstTourPrevention[] =
     "ash.welcome_tour.prevented.first_time";
@@ -113,7 +113,7 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterTimePref(kTimeOfFirstTourPrevention, base::Time());
   registry->RegisterIntegerPref(kReasonForFirstTourPrevention, -1);
 
-  for (const auto interaction : welcome_tour_metrics::AllInteractionsSet()) {
+  for (const auto interaction : welcome_tour_metrics::kAllInteractionsSet) {
     registry->RegisterTimePref(GetTimeOfFirstInteractionPrefName(interaction),
                                base::Time());
   }

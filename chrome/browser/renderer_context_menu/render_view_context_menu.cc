@@ -493,6 +493,7 @@ const std::map<int, int>& GetIdcToUmaMap(UmaEnumIdLookupType type) {
        {IDC_CONTENT_CONTEXT_SAVEPLUGINAS, 133},
        {IDC_CONTENT_CONTEXT_AUTOFILL_FALLBACK_AUTOCOMPLETE_UNRECOGNIZED, 134},
        {IDC_CONTENT_CONTEXT_SEARCHWEBFORNEWTAB, 135},
+       {IDC_CONTENT_CONTEXT_ORCA, 136},
        {IDC_CONTENT_CONTEXT_RUN_LAYOUT_EXTRACTION, 137},
        {IDC_CONTENT_PASTE_FROM_CLIPBOARD, 138},
        // To add new items:
@@ -1631,7 +1632,7 @@ void RenderViewContextMenu::AppendLinkItems() {
       // least one open window.
       std::vector<ProfileAttributesEntry*> entries =
           profile_manager->GetProfileAttributesStorage()
-              .GetAllProfilesAttributesSortedByName();
+              .GetAllProfilesAttributesSortedByNameWithCheck();
       std::vector<ProfileAttributesEntry*> target_profiles_entries;
       bool has_active_profiles = false;
       for (ProfileAttributesEntry* entry : entries) {
@@ -1872,7 +1873,7 @@ void RenderViewContextMenu::AppendSearchWebForImageItems() {
   }
 
   menu_model_.AddItem(GetSearchForImageIdc(), menu_string);
-  if (companion::IsSearchImageInCompanionSidePanelSupported(GetBrowser())) {
+  if (companion::IsNewBadgeEnabledForSearchImageMenuItem(GetBrowser())) {
     menu_model_.SetIsNewFeatureAt(menu_model_.GetItemCount() - 1, true);
   }
 
@@ -2168,7 +2169,9 @@ void RenderViewContextMenu::AppendSearchProvider() {
                                      default_provider->short_name(),
                                      printable_selection_text));
       if (companion::IsSearchWebInCompanionSidePanelSupported(GetBrowser())) {
-        menu_model_.SetIsNewFeatureAt(menu_model_.GetItemCount() - 1, true);
+        if (companion::IsNewBadgeEnabledForSearchWebMenuItem(GetBrowser())) {
+          menu_model_.SetIsNewFeatureAt(menu_model_.GetItemCount() - 1, true);
+        }
         // Add an "in new tab" item performing the non-side panel behavior.
         if (base::FeatureList::IsEnabled(
                 companion::features::
@@ -2467,7 +2470,7 @@ void RenderViewContextMenu::AppendRegionSearchItem() {
     menu_model_.AddItem(GetRegionSearchIdc(),
                         l10n_util::GetStringFUTF16(
                             resource_id, GetImageSearchProviderName(provider)));
-    if (companion::IsSearchImageInCompanionSidePanelSupported(GetBrowser())) {
+    if (companion::IsNewBadgeEnabledForSearchImageMenuItem(GetBrowser())) {
       menu_model_.SetIsNewFeatureAt(menu_model_.GetItemCount() - 1, true);
     }
   }

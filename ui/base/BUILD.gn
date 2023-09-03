@@ -630,11 +630,14 @@ component("base") {
       "Accelerate.framework",
       "AppKit.framework",
       "AudioUnit.framework",
-      "AVFAudio.framework",
       "Carbon.framework",
       "CoreVideo.framework",
       "Foundation.framework",
       "QuartzCore.framework",
+    ]
+
+    weak_frameworks = [
+      "AVFAudio.framework",
     ]
   }
 

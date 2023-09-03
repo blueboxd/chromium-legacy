@@ -1508,13 +1508,15 @@ component("net") {
   if (is_mac) {
     libs = [ "resolv" ]
     frameworks = [
-      "CFNetwork.framework",
       "CoreServices.framework",
       "Foundation.framework",
       "Security.framework",
       "SystemConfiguration.framework",
       "UniformTypeIdentifiers.framework",
     ]
+    weak_frameworks = [
+    "CFNetwork.framework",
+  ]
   }
 
   if (is_ios) {

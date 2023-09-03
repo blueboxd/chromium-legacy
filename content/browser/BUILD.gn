@@ -2681,7 +2681,6 @@ source_set("browser") {
     ]
     frameworks += [
       "AppKit.framework",
-      "AVFAudio.framework",
       "Carbon.framework",
       "CoreGraphics.framework",
       "QuartzCore.framework",
@@ -2689,6 +2688,7 @@ source_set("browser") {
     ]
     weak_frameworks = [
       "UniformTypeIdentifiers.framework",  # macOS 11
+      "AVFAudio.framework",
     ]
   } else if (is_ios) {
     sources += [

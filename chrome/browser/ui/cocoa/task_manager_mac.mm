@@ -622,7 +622,9 @@ NSString* ColumnIdentifier(int id) {
                                      column:tableColumn.identifier.intValue];
     NSColor* textColor = [tableView isRowSelected:rowIndex]
                              ? NSColor.alternateSelectedControlTextColor
-                             : NSColor.labelColor;
+                         : @available(macOS 10.10, *)
+                             ? NSColor.labelColor
+                             : NSColor.textColor;
     NSAttributedString* attributedTitle = [[NSAttributedString alloc]
         initWithString:title
             attributes:@{

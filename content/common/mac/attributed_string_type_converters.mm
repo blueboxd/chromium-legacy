@@ -6,6 +6,10 @@
 
 #include <AppKit/AppKit.h>
 
+OBJC_EXPORT id _Nullable objc_msgSend(id _Nullable self, SEL _Nonnull op, ...)
+    OBJC_AVAILABLE(10.0, 2.0, 9.0, 1.0, 2.0);
+#include <objc/objc.h>
+
 #include "base/apple/bridging.h"
 #include "base/check.h"
 #include "base/mac/foundation_util.h"
@@ -58,8 +62,13 @@ TypeConverter<CFAttributedStringRef, ui::mojom::AttributedStringPtr>::Convert(
                 range:range.ToNSRange()];
   }
 
-  return static_cast<CFAttributedStringRef>(
-      CFAutorelease(base::apple::NSToCFOwnershipCast(decoded_string)));
+  if (@available(macOS 10.9, *)) {
+    return static_cast<CFAttributedStringRef>(
+        CFAutorelease(base::apple::NSToCFOwnershipCast(decoded_string)));
+  } else {
+    objc_msgSend((id)decoded_string, sel_getUid("autorelease"));
+    return static_cast<CFAttributedStringRef>(base::apple::NSToCFOwnershipCast(decoded_string));
+  }
 }
 
 ui::mojom::AttributedStringPtr

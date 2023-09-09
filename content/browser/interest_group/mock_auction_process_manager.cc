@@ -31,6 +31,7 @@
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/blink/public/common/interest_group/ad_display_size.h"
 #include "third_party/blink/public/common/interest_group/auction_config.h"
 #include "third_party/blink/public/mojom/devtools/devtools_agent.mojom.h"
 #include "url/gurl.h"
@@ -78,6 +79,7 @@ void MockBidderWorklet::BeginGenerateBid(
     const base::TimeDelta browser_signal_recency,
     auction_worklet::mojom::BiddingBrowserSignalsPtr bidding_browser_signals,
     base::Time auction_start_time,
+    const absl::optional<blink::AdSize>& requested_ad_size,
     uint64_t trace_id,
     mojo::PendingAssociatedRemote<auction_worklet::mojom::GenerateBidClient>
         generate_bid_client,
@@ -120,7 +122,11 @@ void MockBidderWorklet::ReportWin(
     const absl::optional<std::string>& auction_signals_json,
     const absl::optional<std::string>& per_buyer_signals_json,
     const absl::optional<GURL>& direct_from_seller_per_buyer_signals,
+    const absl::optional<std::string>&
+        direct_from_seller_per_buyer_signals_header_ad_slot,
     const absl::optional<GURL>& direct_from_seller_auction_signals,
+    const absl::optional<std::string>&
+        direct_from_seller_auction_signals_header_ad_slot,
     const std::string& seller_signals_json,
     auction_worklet::mojom::KAnonymityBidMode kanon_mode,
     bool bid_is_kanon,
@@ -162,7 +168,11 @@ void MockBidderWorklet::FinishGenerateBid(
     const absl::optional<base::TimeDelta> per_buyer_timeout,
     const absl::optional<blink::AdCurrency>& per_buyer_currency,
     const absl::optional<GURL>& direct_from_seller_per_buyer_signals,
-    const absl::optional<GURL>& direct_from_seller_auction_signals) {
+    const absl::optional<std::string>&
+        direct_from_seller_per_buyer_signals_header_ad_slot,
+    const absl::optional<GURL>& direct_from_seller_auction_signals,
+    const absl::optional<std::string>&
+        direct_from_seller_auction_signals_header_ad_slot) {
   // per_buyer_timeout passed to GenerateBid() should not be empty, because
   // auction_config's all_buyers_timeout (which is the key of '*' in
   // perBuyerTimeouts) is set in the AuctionRunnerTest.
@@ -286,13 +296,14 @@ void MockBidderWorklet::WaitForReportWin() {
 void MockBidderWorklet::InvokeReportWinCallback(
     absl::optional<GURL> report_url,
     base::flat_map<std::string, GURL> ad_beacon_map,
+    base::flat_map<std::string, std::string> ad_macro_map,
     std::vector<auction_worklet::mojom::PrivateAggregationRequestPtr>
         pa_requests,
     std::vector<std::string> errors) {
   DCHECK(report_win_callback_);
   std::move(report_win_callback_)
-      .Run(report_url, ad_beacon_map, std::move(pa_requests),
-           reporting_latency_, std::move(errors));
+      .Run(report_url, std::move(ad_beacon_map), std::move(ad_macro_map),
+           std::move(pa_requests), reporting_latency_, std::move(errors));
 }
 
 void MockBidderWorklet::Flush() {
@@ -339,7 +350,11 @@ void MockSellerWorklet::ScoreAd(
     const blink::AuctionConfig::NonSharedParams&
         auction_ad_config_non_shared_params,
     const absl::optional<GURL>& direct_from_seller_seller_signals,
+    const absl::optional<std::string>&
+        direct_from_seller_seller_signals_header_ad_slot,
     const absl::optional<GURL>& direct_from_seller_auction_signals,
+    const absl::optional<std::string>&
+        direct_from_seller_auction_signals_header_ad_slot,
     auction_worklet::mojom::ComponentAuctionOtherSellerPtr
         browser_signals_other_seller,
     const absl::optional<blink::AdCurrency>& component_expect_bid_currency,
@@ -383,7 +398,11 @@ void MockSellerWorklet::ReportResult(
     const blink::AuctionConfig::NonSharedParams&
         auction_ad_config_non_shared_params,
     const absl::optional<GURL>& direct_from_seller_seller_signals,
+    const absl::optional<std::string>&
+        direct_from_seller_seller_signals_header_ad_slot,
     const absl::optional<GURL>& direct_from_seller_auction_signals,
+    const absl::optional<std::string>&
+        direct_from_seller_auction_signals_header_ad_slot,
     auction_worklet::mojom::ComponentAuctionOtherSellerPtr
         browser_signals_other_seller,
     const url::Origin& browser_signal_interest_group_owner,

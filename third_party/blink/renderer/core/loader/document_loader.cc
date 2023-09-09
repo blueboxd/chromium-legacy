@@ -151,6 +151,7 @@
 #include "third_party/blink/renderer/platform/network/http_parsers.h"
 #include "third_party/blink/renderer/platform/network/network_utils.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/scheduler/main_thread/frame_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/public/event_loop.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
 #include "third_party/blink/renderer/platform/storage/blink_storage_key.h"
@@ -835,6 +836,15 @@ void DocumentLoader::UpdateForSameDocumentNavigation(
 
   bool send_loading_notifications = base::FeatureList::IsEnabled(
       kLoadNotificationsForSameDocumentNavigations);
+
+  // Spec "URL and history update steps", step 4 [1]:
+  // " If document's is initial about:blank is true, then set historyHandling to
+  // 'replace'."
+  // [1]: https://html.spec.whatwg.org/C/#url-and-history-update-steps
+  if (type == WebFrameLoadType::kStandard &&
+      GetFrameLoader().IsOnInitialEmptyDocument()) {
+    type = WebFrameLoadType::kReplaceCurrentItem;
+  }
 
   // Generate start and stop notifications only when loader is completed so that
   // we don't fire them for fragment redirection that happens in window.onload
@@ -1910,12 +1920,26 @@ void DocumentLoader::DidCommitNavigation() {
   if (commit_reason_ != CommitReason::kRegular)
     return;
 
+  // When committing a new document, the FrameScheduler might need to carry over
+  // the previous document's FrameScheduler's `unreported_task_time()`, as that
+  // value should be aggregated across all documents that ever committed in the
+  // same frame.
+  base::TimeDelta previous_document_unreported_task_time =
+      static_cast<scheduler::FrameSchedulerImpl*>(frame_->GetFrameScheduler())
+          ->unreported_task_time();
+  if (OldDocumentInfoForCommit* old_document_info =
+          ScopedOldDocumentInfoForCommitCapturer::CurrentInfo()) {
+    previous_document_unreported_task_time =
+        old_document_info->frame_scheduler_unreported_task_time;
+  }
   WebHistoryCommitType commit_type = LoadTypeToCommitType(load_type_);
   frame_->GetFrameScheduler()->DidCommitProvisionalLoad(
       commit_type == kWebHistoryInertCommit,
       load_type_ == WebFrameLoadType::kReload
           ? FrameScheduler::NavigationType::kReload
-          : FrameScheduler::NavigationType::kOther);
+          : FrameScheduler::NavigationType::kOther,
+      {previous_document_unreported_task_time});
+
   if (response_.CacheControlContainsNoCache()) {
     GetFrame()->GetFrameScheduler()->RegisterStickyFeature(
         SchedulingPolicy::Feature::kMainResourceHasCacheControlNoCache,
@@ -1962,7 +1986,7 @@ Frame* DocumentLoader::CalculateOwnerFrame() {
   DCHECK(url_.ProtocolIsAbout() || url_.IsEmpty()) << "url_ = " << url_;
   Frame* owner_frame = frame_->Tree().Parent();
   if (!owner_frame)
-    owner_frame = frame_->Loader().Opener();
+    owner_frame = frame_->Opener();
 
   // No other checks are needed for the initial empty document.
   if (url_.IsEmpty())
@@ -2561,8 +2585,7 @@ void DocumentLoader::CommitNavigation() {
   }
 
   bool should_clear_window_name =
-      previous_window && frame_->IsOutermostMainFrame() &&
-      !frame_->Loader().Opener() &&
+      previous_window && frame_->IsOutermostMainFrame() && !frame_->Opener() &&
       !frame_->DomWindow()->GetSecurityOrigin()->IsSameOriginWith(
           previous_window->GetSecurityOrigin());
   if (should_clear_window_name) {

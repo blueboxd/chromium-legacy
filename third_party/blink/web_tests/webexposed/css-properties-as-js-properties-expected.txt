@@ -432,7 +432,6 @@ tableLayout
 textAlign
 textAlignLast
 textAnchor
-textAutospace
 textBoxTrim
 textCombineUpright
 textDecoration
@@ -468,7 +467,7 @@ transformBox
 transformOrigin
 transformStyle
 transition
-transitionAnimationType
+transitionBehavior
 transitionDelay
 transitionDuration
 transitionProperty

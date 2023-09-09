@@ -105,7 +105,6 @@ static_library("content_shell_app") {
     ]
   }
   if (is_apple) {
-    configs += [ "//build/config/compiler:enable_arc" ]
     sources += [
       "app/paths_mac.h",
       "app/paths_mac.mm",
@@ -209,7 +208,6 @@ static_library("content_shell_lib") {
       "browser/shell_platform_delegate_mac.mm",
       "browser/shell_web_contents_view_delegate_mac.mm",
     ]
-    configs += [ "//build/config/compiler:enable_arc" ]
   }
 
   if (is_ios) {
@@ -226,13 +224,14 @@ static_library("content_shell_lib") {
       "browser/bluetooth/ios/shell_bluetooth_device_list_view_controller.mm",
       "browser/bluetooth/shell_bluetooth_delegate_impl_client.cc",
       "browser/bluetooth/shell_bluetooth_delegate_impl_client.h",
+      "browser/color_chooser/shell_color_chooser_ios.h",
+      "browser/color_chooser/shell_color_chooser_ios.mm",
       "browser/shell_browser_main_parts_ios.mm",
       "browser/shell_file_select_helper.cc",
       "browser/shell_file_select_helper.h",
       "browser/shell_platform_delegate_ios.mm",
       "browser/shell_web_contents_view_delegate_ios.mm",
     ]
-    configs += [ "//build/config/compiler:enable_arc" ]
   }
 
   if (is_win) {
@@ -636,8 +635,6 @@ if (is_android) {
     ]
     entitlements_path = ios_content_shell_entitlements_path
     bundle_identifier = ios_content_shell_bundle_identifier
-
-    configs += [ "//build/config/compiler:enable_arc" ]
   }
 } else {
   executable("content_shell") {
@@ -676,6 +673,9 @@ if (is_android) {
         configs -= [ "//build/config/win:console" ]
         configs += [ "//build/config/win:windowed" ]
       }
+
+      # Limit pre-loaded modules to improve sandbox coverage in content_shell.
+      configs += [ "//build/config/win:delayloads" ]
 
       # Increase the initial stack size. The default is 1MB, this is 8MB.
       # This matches the chrome.exe.

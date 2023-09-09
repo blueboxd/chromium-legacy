@@ -37,17 +37,16 @@
 #include "url/url_constants.h"
 
 using base::SysNSStringToUTF8;
-using base::SysUTF8ToNSString;
 using base::SysUTF16ToNSString;
+using base::SysUTF8ToNSString;
 using content::DropData;
 
-@interface WebDragSource(Private)
+@interface WebDragSource (Private)
 
 - (void)fillPasteboard;
 - (NSImage*)dragImage;
 
 @end  // @interface WebDragSource(Private)
-
 
 @implementation WebDragSource
 
@@ -110,7 +109,7 @@ using content::DropData;
     [pboard setString:SysUTF16ToNSString(kHtmlHeader + *_dropData->html)
               forType:type];
 
-  // URL.
+    // URL.
   } else if ([type isEqualToString:NSURLPboardType] ||
              [type isEqualToString:base::apple::CFToNSPtrCast(kUTTypeURL)]) {
     DCHECK(_dropData->url.is_valid());
@@ -125,37 +124,36 @@ using content::DropData;
       url = [NSURL URLWithString:SysUTF8ToNSString(escapedUrlString)];
     }
     [url writeToPasteboard:pboard];
-  // URL title.
+    // URL title.
   } else if ([type isEqualToString:ui::kUTTypeURLName]) {
     [pboard setString:SysUTF16ToNSString(_dropData->url_title)
               forType:ui::kUTTypeURLName];
 
-  // File contents.
+    // File contents.
   } else if ([type isEqualToString:base::apple::CFToNSPtrCast(_fileUTI)]) {
     [pboard setData:[NSData dataWithBytes:_dropData->file_contents.data()
                                    length:_dropData->file_contents.length()]
             forType:base::apple::CFToNSPtrCast(_fileUTI)];
 
-  // Plain text.
+    // Plain text.
   } else if ([type isEqualToString:NSStringPboardType]) {
     DCHECK(_dropData->text && !_dropData->text->empty());
     [pboard setString:SysUTF16ToNSString(*_dropData->text)
               forType:NSStringPboardType];
 
-  // Custom MIME data.
+    // Custom MIME data.
   } else if ([type isEqualToString:ui::kWebCustomDataPboardType]) {
     base::Pickle pickle;
     ui::WriteCustomDataToPickle(_dropData->custom_data, &pickle);
     [pboard setData:[NSData dataWithBytes:pickle.data() length:pickle.size()]
             forType:ui::kWebCustomDataPboardType];
 
-  // Dummy type.
+    // Dummy type.
   } else if ([type isEqualToString:ui::kChromeDragDummyPboardType]) {
     // The dummy type _was_ promised and someone decided to call the bluff.
-    [pboard setData:[NSData data]
-            forType:ui::kChromeDragDummyPboardType];
+    [pboard setData:[NSData data] forType:ui::kChromeDragDummyPboardType];
 
-  // Oops!
+    // Oops!
   } else {
     // Unknown drag pasteboard type.
     NOTREACHED();
@@ -170,8 +168,9 @@ using content::DropData;
 }
 
 - (void)startDrag {
-  if (!_contentsView)
+  if (!_contentsView) {
     return;
+  }
 
   NSEvent* currentEvent = [NSApp currentEvent];
 
@@ -206,10 +205,10 @@ using content::DropData;
           slideBack:YES];
 }
 
-- (void)endDragAt:(NSPoint)screenPoint
-        operation:(NSDragOperation)operation {
-  if (!_host || !_contentsView)
+- (void)endDragAt:(NSPoint)screenPoint operation:(NSDragOperation)operation {
+  if (!_host || !_contentsView) {
     return;
+  }
 
   if (_dragImage) {
     screenPoint.x += _imageOffset.x;
@@ -219,8 +218,9 @@ using content::DropData;
 
   // Convert |screenPoint| to view coordinates and flip it.
   NSPoint localPoint = NSZeroPoint;
-  if ([_contentsView window])
+  if ([_contentsView window]) {
     localPoint = [self convertScreenPoint:screenPoint];
+  }
   NSRect viewFrame = [_contentsView frame];
   // Flip |screenPoint|.
   NSRect screenFrame = [[[_contentsView window] screen] frame];
@@ -228,8 +228,9 @@ using content::DropData;
   // If AppKit returns a copy and move operation, mask off the move bit
   // because WebCore does not understand what it means to do both, which
   // results in an assertion failure/renderer crash.
-  if (operation == (NSDragOperationMove | NSDragOperationCopy))
+  if (operation == (NSDragOperationMove | NSDragOperationCopy)) {
     operation &= ~NSDragOperationMove;
+  }
 
   _host->EndDrag(
       operation,
@@ -247,8 +248,9 @@ using content::DropData;
 }
 
 - (NSString*)dragPromisedFileTo:(NSString*)path {
-  if (!_host)
+  if (!_host) {
     return nil;
+  }
   // Be extra paranoid; avoid crashing.
   if (!_dropData) {
     NOTREACHED() << "No drag-and-drop data available for promised file.";
@@ -265,8 +267,9 @@ using content::DropData;
 @implementation WebDragSource (Private)
 
 - (void)fillPasteboard {
-  if (!_contentsView)
+  if (!_contentsView) {
     return;
+  }
 
   DCHECK(_pasteboard);
 
@@ -276,7 +279,8 @@ using content::DropData;
   // URL (and title).
   if (_dropData->url.is_valid()) {
     [_pasteboard addTypes:@[
-      NSURLPboardType, ui::kUTTypeURLName, base::apple::CFToNSPtrCast(kUTTypeURL)
+      NSURLPboardType, ui::kUTTypeURLName,
+      base::apple::CFToNSPtrCast(kUTTypeURL)
     ]
                     owner:self];
   }
@@ -299,11 +303,9 @@ using content::DropData;
     } else {
       std::u16string mimeType16;
       base::FilePath fileName;
-      if (content::ParseDownloadMetadata(
-              _dropData->download_metadata,
-              &mimeType16,
-              &fileName,
-              &_downloadURL)) {
+      if (content::ParseDownloadMetadata(_dropData->download_metadata,
+                                         &mimeType16, &fileName,
+                                         &_downloadURL)) {
         // Generate the file name based on both mime type and proposed file
         // name.
         std::string defaultName = content::GetContentClient()->browser()
@@ -313,20 +315,16 @@ using content::DropData;
                                       : std::string();
         mimeType = base::UTF16ToUTF8(mimeType16);
         _downloadFileName =
-            net::GenerateFileName(_downloadURL,
-                                  std::string(),
-                                  std::string(),
-                                  fileName.value(),
-                                  mimeType,
-                                  defaultName);
+            net::GenerateFileName(_downloadURL, std::string(), std::string(),
+                                  fileName.value(), mimeType, defaultName);
       }
     }
 
     if (!mimeType.empty()) {
       base::ScopedCFTypeRef<CFStringRef> mimeTypeCF(
           base::SysUTF8ToCFStringRef(mimeType));
-      _fileUTI = UTTypeCreatePreferredIdentifierForTag(
-          kUTTagClassMIMEType, mimeTypeCF, NULL);
+      _fileUTI = UTTypeCreatePreferredIdentifierForTag(kUTTagClassMIMEType,
+                                                       mimeTypeCF, NULL);
 
       // File (HFS) promise.
       // There are two ways to drag/drop files. NSFilesPromisePboardType is the
@@ -353,8 +351,9 @@ using content::DropData;
       [_pasteboard setPropertyList:fileUTIList
                            forType:NSFilesPromisePboardType];
 
-      if (!_dropData->file_contents.empty())
+      if (!_dropData->file_contents.empty()) {
         [_pasteboard addTypes:fileUTIList owner:self];
+      }
     }
   }
 
@@ -367,8 +366,7 @@ using content::DropData;
   //
   // (The only time that Blink fills in the DropData::file_contents is with
   // an image drop, but the MIME time is tested anyway for paranoia's sake.)
-  bool hasImageData = !_dropData->file_contents.empty() &&
-                      _fileUTI &&
+  bool hasImageData = !_dropData->file_contents.empty() && _fileUTI &&
                       UTTypeConformsTo(_fileUTI, kUTTypeImage);
   if (hasHTMLData) {
     if (hasImageData) {
@@ -389,12 +387,14 @@ using content::DropData;
 }
 
 - (NSImage*)dragImage {
-  if (_dragImage)
+  if (_dragImage) {
     return _dragImage;
+  }
 
   // Default to returning a generic image.
-  return content::GetContentClient()->GetNativeImageNamed(
-      IDR_DEFAULT_FAVICON).ToNSImage();
+  return content::GetContentClient()
+      ->GetNativeImageNamed(IDR_DEFAULT_FAVICON)
+      .ToNSImage();
 }
 
 - (void)dealloc {

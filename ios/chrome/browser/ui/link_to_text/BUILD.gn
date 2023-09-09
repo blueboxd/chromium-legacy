@@ -20,11 +20,9 @@ source_set("link_to_text") {
     "//ios/web/public",
     "//ui/strings",
   ]
-  configs += [ "//build/config/compiler:enable_arc" ]
 }
 
 source_set("unit_tests") {
-  configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [ "link_to_text_mediator_unittest.mm" ]
   deps = [
@@ -47,10 +45,7 @@ source_set("unit_tests") {
 }
 
 source_set("eg2_tests") {
-  configs += [
-    "//build/config/compiler:enable_arc",
-    "//build/config/ios:xctest_config",
-  ]
+  configs += [ "//build/config/ios:xctest_config" ]
   testonly = true
   sources = [ "link_to_text_egtest.mm" ]
   deps = [
@@ -58,6 +53,7 @@ source_set("eg2_tests") {
     "//base/test:test_support",
     "//components/shared_highlighting/core/common",
     "//ios/chrome/browser/shared/public/features",
+    "//ios/chrome/browser/ui/browser_container:eg_test_support+eg2",
     "//ios/chrome/test:eg_test_support+eg2",
     "//ios/chrome/test/earl_grey:eg_test_support+eg2",
     "//ios/testing/earl_grey:eg_test_support+eg2",

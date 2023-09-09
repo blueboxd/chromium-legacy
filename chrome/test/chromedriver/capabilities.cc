@@ -812,7 +812,7 @@ Status ParseWindowTypes(const base::Value& option, Capabilities* capabilities) {
       return Status(kInvalidArgument, "each window type must be a string");
     }
     WebViewInfo::Type type;
-    Status status = ParseType(window_type.GetString(), &type);
+    Status status = WebViewInfo::ParseType(window_type.GetString(), &type);
     if (status.IsError())
       return status;
     window_types_tmp.insert(type);
@@ -893,6 +893,8 @@ Status ParseChromeOptions(
     parser_map["prefs"] = base::BindRepeating(&ParseDict, &capabilities->prefs);
     parser_map["useAutomationExtension"] =
         base::BindRepeating(&IgnoreDeprecatedOption, "useAutomationExtension");
+    parser_map["browserStartupTimeout"] = base::BindRepeating(
+        &ParseTimeDelta, &capabilities->browser_startup_timeout);
   }
 
   for (const auto item : *chrome_options) {

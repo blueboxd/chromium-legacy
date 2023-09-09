@@ -7,11 +7,13 @@
 #include <utility>
 
 #include "ash/components/arc/arc_browser_context_keyed_service_factory_base.h"
+#include "ash/components/arc/arc_util.h"
 #include "ash/components/arc/session/arc_bridge_service.h"
 #include "base/functional/bind.h"
 #include "base/memory/singleton.h"
 #include "chromeos/ash/components/dbus/spaced/spaced_client.h"
 #include "chromeos/ash/components/dbus/userdataauth/arc_quota_client.h"
+#include "chromeos/ash/components/dbus/userdataauth/userdataauth_client.h"
 
 namespace arc {
 
@@ -40,7 +42,10 @@ class ArcDiskQuotaBridgeFactory
 };
 
 bool IsAndroidUid(uint32_t uid) {
-  return kAndroidUidStart <= uid && uid <= kAndroidUidEnd;
+  const uint32_t android_uid_end = GetArcAndroidSdkVersionAsInt() < kArcVersionT
+                                       ? kAndroidUidEndBeforeT
+                                       : kAndroidUidEndAfterT;
+  return kAndroidUidStart <= uid && uid <= android_uid_end;
 }
 
 bool IsAndroidGid(uint32_t gid) {
@@ -48,10 +53,28 @@ bool IsAndroidGid(uint32_t gid) {
 }
 
 bool IsAndroidProjectId(uint32_t project_id) {
+  const uint32_t project_id_for_android_apps_end =
+      GetArcAndroidSdkVersionAsInt() < kArcVersionT
+          ? kProjectIdForAndroidAppsEndBeforeT
+          : kProjectIdForAndroidAppsEndAfterT;
   return (project_id >= kProjectIdForAndroidFilesStart &&
           project_id <= kProjectIdForAndroidFilesEnd) ||
          (project_id >= kProjectIdForAndroidAppsStart &&
-          project_id <= kProjectIdForAndroidAppsEnd);
+          project_id <= project_id_for_android_apps_end);
+}
+
+void IsQuotaSupportedOnArcDiskHome(
+    ArcDiskQuotaBridge::IsQuotaSupportedCallback callback) {
+  ash::SpacedClient::Get()->IsQuotaSupported(
+      kArcDiskHome,
+      base::BindOnce(
+          [](ArcDiskQuotaBridge::IsQuotaSupportedCallback callback,
+             absl::optional<bool> reply) {
+            LOG_IF(ERROR, !reply.has_value())
+                << "Failed to retrieve result from IsQuotaSupported";
+            std::move(callback).Run(reply.value_or(false));
+          },
+          std::move(callback)));
 }
 
 }  // namespace
@@ -83,18 +106,22 @@ void ArcDiskQuotaBridge::SetAccountId(const AccountId& account_id) {
 }
 
 void ArcDiskQuotaBridge::IsQuotaSupported(IsQuotaSupportedCallback callback) {
-  ash::ArcQuotaClient::Get()->GetArcDiskFeatures(
+  // Whether ARC quota is supported is an AND of the following two booleans:
+  // * Whether there are no unmounted Android users (from cryptohome)
+  // * Whether |kArcDiskHome| is mounted with quota enabled (from spaced)
+  // Query cryptohome first, as the first one is more likely to be false.
+  ash::UserDataAuthClient::Get()->GetArcDiskFeatures(
       user_data_auth::GetArcDiskFeaturesRequest(),
       base::BindOnce(
           [](IsQuotaSupportedCallback callback,
              absl::optional<user_data_auth::GetArcDiskFeaturesReply> reply) {
             LOG_IF(ERROR, !reply.has_value())
-                << "Failed to retrieve result from IsQuotaSupported call.";
-            bool result = false;
-            if (reply.has_value()) {
-              result = reply->quota_supported();
+                << "Failed to retrieve result from GetArcDiskFeatures call.";
+            if (!reply.has_value() || !reply->quota_supported()) {
+              std::move(callback).Run(false);
+              return;
             }
-            std::move(callback).Run(result);
+            IsQuotaSupportedOnArcDiskHome(std::move(callback));
           },
           std::move(callback)));
 }

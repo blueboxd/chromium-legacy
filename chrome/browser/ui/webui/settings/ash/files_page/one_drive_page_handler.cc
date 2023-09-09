@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/webui/ash/cloud_upload/cloud_upload_dialog.h"
 #include "chrome/browser/ui/webui/ash/cloud_upload/cloud_upload_util.h"
 #include "chrome/browser/ui/webui/settings/ash/files_page/mojom/one_drive_handler.mojom.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace ash::settings {
@@ -70,15 +71,14 @@ OneDrivePageHandler::~OneDrivePageHandler() {
 
 void OneDrivePageHandler::GetUserEmailAddress(
     GetUserEmailAddressCallback callback) {
-  absl::optional<file_system_provider::ProvidedFileSystemInterface*>
-      file_system = cloud_upload::GetODFS(profile_);
-  if (!file_system.has_value()) {
+  file_system_provider::ProvidedFileSystemInterface* file_system =
+      cloud_upload::GetODFS(profile_);
+  if (!file_system) {
     std::move(callback).Run(absl::nullopt);
     return;
   }
   cloud_upload::GetODFSMetadata(
-      file_system.value(),
-      base::BindOnce(&OnGetEmailAddress, std::move(callback)));
+      file_system, base::BindOnce(&OnGetEmailAddress, std::move(callback)));
 }
 
 void OneDrivePageHandler::ConnectToOneDrive(
@@ -103,43 +103,29 @@ void OneDrivePageHandler::ConnectToOneDrive(
 
 void OneDrivePageHandler::DisconnectFromOneDrive(
     DisconnectFromOneDriveCallback callback) {
-  file_system_provider::Service* service =
-      file_system_provider::Service::Get(profile_);
-  CHECK(service);
-  file_system_provider::ProviderId provider_id =
-      file_system_provider::ProviderId::CreateFromExtensionId(
-          file_manager::file_tasks::GetODFSExtensionId(profile_));
-  std::vector<file_system_provider::ProvidedFileSystemInfo>
-      odfs_file_system_infos =
-          service->GetProvidedFileSystemInfoList(provider_id);
-  if (odfs_file_system_infos.size() == 0) {
+  absl::optional<file_system_provider::ProvidedFileSystemInfo> file_system =
+      cloud_upload::GetODFSInfo(profile_);
+  if (!file_system) {
     // ODFS is not mounted.
     std::move(callback).Run(false);
     return;
   }
-  std::move(callback).Run(
-      service->RequestUnmount(odfs_file_system_infos[0].provider_id(),
-                              odfs_file_system_infos[0].file_system_id()));
+  auto* service = file_system_provider::Service::Get(profile_);
+  std::move(callback).Run(service->RequestUnmount(
+      file_system->provider_id(), file_system->file_system_id()));
 }
 
 void OneDrivePageHandler::OpenOneDriveFolder(
     OpenOneDriveFolderCallback callback) {
-  file_system_provider::Service* service =
-      file_system_provider::Service::Get(profile_);
-  CHECK(service);
-  file_system_provider::ProviderId provider_id =
-      file_system_provider::ProviderId::CreateFromExtensionId(
-          file_manager::file_tasks::GetODFSExtensionId(profile_));
-  std::vector<file_system_provider::ProvidedFileSystemInfo>
-      odfs_file_system_infos =
-          service->GetProvidedFileSystemInfoList(provider_id);
-  if (odfs_file_system_infos.size() == 0) {
+  absl::optional<file_system_provider::ProvidedFileSystemInfo> file_system =
+      cloud_upload::GetODFSInfo(profile_);
+  if (!file_system) {
     // ODFS is not mounted.
     std::move(callback).Run(false);
     return;
   }
   file_manager::util::ShowItemInFolder(
-      profile_, odfs_file_system_infos[0].mount_path(),
+      profile_, file_system->mount_path(),
       base::BindOnce(&OnShowItemInFolder, std::move(callback)));
 }
 
@@ -149,7 +135,7 @@ void OneDrivePageHandler::OnProvidedFileSystemMount(
     base::File::Error error) {
   file_system_provider::ProviderId odfs_provider_id =
       file_system_provider::ProviderId::CreateFromExtensionId(
-          file_manager::file_tasks::GetODFSExtensionId(profile_));
+          extension_misc::kODFSExtensionId);
   // Only observe successful mount events for ODFS.
   if (file_system_info.provider_id() != odfs_provider_id ||
       error != base::File::FILE_OK) {
@@ -163,7 +149,7 @@ void OneDrivePageHandler::OnProvidedFileSystemUnmount(
     base::File::Error error) {
   file_system_provider::ProviderId odfs_provider_id =
       file_system_provider::ProviderId::CreateFromExtensionId(
-          file_manager::file_tasks::GetODFSExtensionId(profile_));
+          extension_misc::kODFSExtensionId);
   // Only observe successful unmount events for ODFS.
   if (file_system_info.provider_id() != odfs_provider_id ||
       error != base::File::FILE_OK) {

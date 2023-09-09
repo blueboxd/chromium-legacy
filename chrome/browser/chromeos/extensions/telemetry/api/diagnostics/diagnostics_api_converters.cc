@@ -8,7 +8,7 @@
 #include "chrome/common/chromeos/extensions/api/diagnostics.h"
 #include "chromeos/crosapi/mojom/diagnostics_service.mojom.h"
 
-namespace chromeos::converters {
+namespace chromeos::converters::diagnostics {
 
 namespace {
 
@@ -153,10 +153,7 @@ crosapi::DiagnosticsRoutineCommandEnum ConvertRoutineCommand(
     case cx_diag::RoutineCommandType::kNone:
       break;
   }
-
-  NOTREACHED() << "Unknown command type: " << ToString(commandType);
-  return static_cast<crosapi::DiagnosticsRoutineCommandEnum>(
-      static_cast<int>(crosapi::DiagnosticsRoutineCommandEnum::kMaxValue) + 1);
+  NOTREACHED_NORETURN();
 }
 
 crosapi::DiagnosticsAcPowerStatusEnum ConvertAcPowerStatusRoutineType(
@@ -169,11 +166,7 @@ crosapi::DiagnosticsAcPowerStatusEnum ConvertAcPowerStatusRoutineType(
     case cx_diag::AcPowerStatus::kNone:
       break;
   }
-
-  NOTREACHED() << "Unknown ac power status routine type: "
-               << ToString(routineType);
-  return static_cast<crosapi::DiagnosticsAcPowerStatusEnum>(
-      static_cast<int>(crosapi::DiagnosticsAcPowerStatusEnum::kMaxValue) + 1);
+  NOTREACHED_NORETURN();
 }
 
 cx_diag::UserMessageType ConvertRoutineUserMessage(
@@ -200,11 +193,7 @@ crosapi::DiagnosticsDiskReadRoutineTypeEnum ConvertDiskReadRoutineType(
     case cx_diag::DiskReadRoutineType::kNone:
       break;
   }
-
-  NOTREACHED() << "Unknown disk read routine type: " << ToString(routineType);
-  return static_cast<crosapi::DiagnosticsDiskReadRoutineTypeEnum>(
-      static_cast<int>(crosapi::DiagnosticsDiskReadRoutineTypeEnum::kMaxValue) +
-      1);
+  NOTREACHED_NORETURN();
 }
 
 crosapi::DiagnosticsNvmeSelfTestTypeEnum ConvertNvmeSelfTestRoutineType(
@@ -219,4 +208,4 @@ crosapi::DiagnosticsNvmeSelfTestTypeEnum ConvertNvmeSelfTestRoutineType(
   }
 }
 
-}  // namespace chromeos::converters
+}  // namespace chromeos::converters::diagnostics

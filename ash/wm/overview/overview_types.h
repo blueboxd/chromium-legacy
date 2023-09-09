@@ -7,6 +7,12 @@
 
 namespace ash {
 
+// Defines the overview item types.
+enum class OverviewItemType {
+  kSingleItem,
+  kGroupItem,
+};
+
 // Enumeration of the different overview mode animations.
 enum OverviewAnimationType {
   OVERVIEW_ANIMATION_NONE,
@@ -92,11 +98,6 @@ enum class OverviewEnterExitType {
   // on the trackpad, each window will be put in an "in-between" state, between
   // their current and final state, according to the scroll offset.
   kContinuousAnimationEnterOnScrollUpdate,
-  // Used only when `kContinuousAnimationScrollUpdate` was used to trigger a
-  // continuous scroll, but the user has now ended the scroll. This type will
-  // enter or exit overview mode and animate the windows into their final state
-  // based on the state when the scroll has ended.
-  kContinuousAnimationEnterOnScrollEnd
 };
 
 // Overview items have certain properties if their aspect ratio exceeds a

@@ -1700,7 +1700,6 @@ void QuicChromiumClientSession::OnConnectionClosed(
     const quic::QuicConnectionCloseFrame& frame,
     quic::ConnectionCloseSource source) {
   DCHECK(!connection()->connected());
-
   logger_->OnConnectionClosed(frame, source);
 
   UMA_HISTOGRAM_COUNTS_1000("Net.QuicSession.NumDefaultPathDegrading",
@@ -1988,7 +1987,7 @@ void QuicChromiumClientSession::OnConnectionClosed(
     // writer is set with the same type originally.
     socket_found_in_writer |=
         static_cast<QuicChromiumPacketWriter*>(connection()->writer())
-            ->OnSocketClosed(std::move(socket));
+            ->OnSocketClosed(socket.get());
   }
   CHECK(socket_found_in_writer);
   DCHECK(!HasActiveRequestStreams());
@@ -2767,7 +2766,6 @@ void QuicChromiumClientSession::CloseSessionOnErrorLater(
     std::move(callback_).Run(net_error);
   }
   NotifyAllStreamsOfError(net_error);
-  CloseAllHandles(net_error);
   net_log_.AddEventWithIntParams(NetLogEventType::QUIC_SESSION_CLOSE_ON_ERROR,
                                  "net_error", net_error);
 
@@ -2775,6 +2773,7 @@ void QuicChromiumClientSession::CloseSessionOnErrorLater(
     connection()->CloseConnection(quic_error, "net error", behavior);
   DCHECK(!connection()->connected());
 
+  CloseAllHandles(net_error);
   NotifyFactoryOfSessionClosedLater();
 }
 

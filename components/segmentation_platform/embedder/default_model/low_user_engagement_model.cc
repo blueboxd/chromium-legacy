@@ -41,11 +41,16 @@ LowUserEngagementModel::LowUserEngagementModel()
     : DefaultModelProvider(kChromeStartSegmentId) {}
 
 std::unique_ptr<Config> LowUserEngagementModel::GetConfig() {
+  if (!base::FeatureList::IsEnabled(
+          features::kSegmentationPlatformLowEngagementFeature)) {
+    return nullptr;
+  }
   auto config = std::make_unique<Config>();
   config->segmentation_key = kChromeLowUserEngagementSegmentationKey;
   config->segmentation_uma_name = kChromeLowUserEngagementUmaName;
   config->AddSegmentId(kChromeStartSegmentId,
                        std::make_unique<LowUserEngagementModel>());
+  config->auto_execute_and_cache = true;
 
   int segment_selection_ttl_days = base::GetFieldTrialParamByFeatureAsInt(
       features::kSegmentationPlatformLowEngagementFeature,

@@ -1422,10 +1422,6 @@ void ScrollTree::CopyCompleteTreeState(const ScrollTree& other) {
 }
 #endif  // DCHECK_IS_ON()
 
-bool ScrollTree::IsComposited(const ScrollNode& node) const {
-  return node.is_composited;
-}
-
 bool ScrollTree::CanRealizeScrollsOnCompositor(const ScrollNode& node) const {
   return GetMainThreadRepaintReasons(node) ==
          MainThreadScrollingReason::kNotScrollingOnMain;
@@ -2453,14 +2449,14 @@ DrawTransformData& PropertyTrees::FetchDrawTransformsDataFromCache(
 ClipRectData* PropertyTrees::FetchClipRectFromCache(int clip_id,
                                                     int target_id) {
   ClipNode* clip_node = clip_tree_mutable().Node(clip_id);
-  for (size_t i = 0; i < clip_node->cached_clip_rects->size(); ++i) {
+  for (size_t i = 0; i < clip_node->cached_clip_rects.size(); ++i) {
     auto& data = clip_node->cached_clip_rects[i];
     if (data.target_id == target_id || data.target_id == kInvalidPropertyNodeId)
       return &data;
   }
-  clip_node->cached_clip_rects->emplace_back();
-  clip_node->cached_clip_rects->back().target_id = kInvalidPropertyNodeId;
-  return &clip_node->cached_clip_rects->back();
+  clip_node->cached_clip_rects.emplace_back();
+  clip_node->cached_clip_rects.back().target_id = kInvalidPropertyNodeId;
+  return &clip_node->cached_clip_rects.back();
 }
 
 bool PropertyTrees::HasElement(ElementId element_id) const {

@@ -7,7 +7,6 @@
 #import "ios/chrome/browser/feature_engagement/tracker_util.h"
 #import "ios/chrome/browser/metrics/new_tab_page_uma.h"
 #import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
-#import "ios/chrome/browser/sessions/session_restoration_browser_agent.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/shared/model/web_state_list/all_web_state_observation_forwarder.h"
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_list.h"
@@ -26,14 +25,6 @@
 #import "ios/web/public/ui/crw_web_view_proxy.h"
 #import "ios/web/public/web_state.h"
 #import "ios/web/public/web_state_observer_bridge.h"
-
-// To get access to UseSessionSerializationOptimizations().
-// TODO(crbug.com/1383087): remove once the feature is fully launched.
-#import "ios/web/common/features.h"
-
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
 
 @interface TabEventsMediator () <CRWWebStateObserver,
                                  WebStateListObserving,
@@ -58,15 +49,12 @@
 
   WebStateList* _webStateList;
   __weak NewTabPageCoordinator* _ntpCoordinator;
-  SessionRestorationBrowserAgent* _sessionRestorationBrowserAgent;
   UrlLoadingNotifierBrowserAgent* _loadingNotifier;
   ChromeBrowserState* _browserState;
 }
 
 - (instancetype)initWithWebStateList:(WebStateList*)webStateList
                       ntpCoordinator:(NewTabPageCoordinator*)ntpCoordinator
-                    restorationAgent:(SessionRestorationBrowserAgent*)
-                                         sessionRestorationBrowserAgent
                         browserState:(ChromeBrowserState*)browserState
                      loadingNotifier:
                          (UrlLoadingNotifierBrowserAgent*)urlLoadingNotifier {
@@ -75,7 +63,6 @@
     // TODO(crbug.com/1348459): Stop lazy loading in NTPCoordinator and remove
     // this dependency.
     _ntpCoordinator = ntpCoordinator;
-    _sessionRestorationBrowserAgent = sessionRestorationBrowserAgent;
     _browserState = browserState;
 
     _webStateObserverBridge =
@@ -144,12 +131,10 @@
 - (void)didChangeWebStateList:(WebStateList*)webStateList
                        change:(const WebStateListChange&)change
                        status:(const WebStateListStatus&)status {
+  BOOL isActivationHandled = NO;
   switch (change.type()) {
     case WebStateListChange::Type::kStatusOnly:
-      // TODO(crbug.com/1442546): Move the implementation from
-      // webStateList:didChangeActiveWebState:oldWebState:atIndex:reason to
-      // here. Note that here is reachable only when `reason` ==
-      // ActiveWebStateChangeReason::Activated.
+      // The activation is handled after this switch statement.
       break;
     case WebStateListChange::Type::kDetach: {
       // When an NTP web state is closed, check if the coordinator should be
@@ -159,6 +144,16 @@
       if (detachChange.is_closing()) {
         NewTabPageTabHelper* NTPTabHelper = NewTabPageTabHelper::FromWebState(
             detachChange.detached_web_state());
+        if (status.active_web_state_change()) {
+          // The active WebState can be updated when multiple WebStates are
+          // closed by `CloseAllWebStates()` or `CloseAllNonPinnedWebStates()`.
+          // Call `-didNavigateAwayFromNTP:` to update NTP and record metrics
+          // before stopping NTP.
+          [self didChangeActiveWebState:status.new_active_web_state
+                      oldActiveWebState:status.old_active_web_state
+                             isInserted:NO];
+          isActivationHandled = YES;
+        }
         if (NTPTabHelper->IsActive()) {
           [self stopNTPIfNeeded];
         }
@@ -198,53 +193,60 @@
       break;
     }
   }
+
+  if (!isActivationHandled && status.active_web_state_change()) {
+    [self didChangeActiveWebState:status.new_active_web_state
+                oldActiveWebState:status.old_active_web_state
+                       isInserted:change.type() ==
+                                  WebStateListChange::Type::kInsert];
+  }
 }
 
-- (void)webStateList:(WebStateList*)webStateList
-    didChangeActiveWebState:(web::WebState*)newWebState
-                oldWebState:(web::WebState*)oldWebState
-                    atIndex:(int)atIndex
-                     reason:(ActiveWebStateChangeReason)reason {
+#pragma mark - WebStateListObserving helpers (Private)
+
+- (void)didChangeActiveWebState:(web::WebState*)newActiveWebState
+              oldActiveWebState:(web::WebState*)oldActiveWebState
+                     isInserted:(bool)isInserted {
   // If the user is leaving an NTP web state, trigger a visibility change.
-  if (oldWebState && _ntpCoordinator.started) {
+  if (oldActiveWebState && _ntpCoordinator.started) {
     NewTabPageTabHelper* NTPHelper =
-        NewTabPageTabHelper::FromWebState(oldWebState);
+        NewTabPageTabHelper::FromWebState(oldActiveWebState);
     if (NTPHelper->IsActive()) {
       [_ntpCoordinator didNavigateAwayFromNTP];
     }
   }
 
-  if (oldWebState) {
+  if (oldActiveWebState) {
     [self.consumer prepareForNewTabAnimation];
   }
-  if (newWebState) {
+  if (newActiveWebState) {
     // Activating without inserting an NTP requires starting it in two
     // scenarios: 1) After doing a batch tab restore (i.e. undo tab removals,
     // initial startup). 2) After re-activating the Browser and a non-active
     // WebState is showing the NTP. BrowserCoordinator's -setActive: only starts
     // the NTP if it is the active view.
-    [self startNTPIfNeededForActiveWebState:newWebState];
+    [self startNTPIfNeededForActiveWebState:newActiveWebState];
 
     // If the user is entering an NTP web state, trigger a visibility change.
     NewTabPageTabHelper* NTPHelper =
-        NewTabPageTabHelper::FromWebState(newWebState);
+        NewTabPageTabHelper::FromWebState(newActiveWebState);
     if (NTPHelper->IsActive()) {
-      [_ntpCoordinator didNavigateToNTPInWebState:newWebState];
+      [_ntpCoordinator didNavigateToNTPInWebState:newActiveWebState];
     }
 
-    if (reason == ActiveWebStateChangeReason::Inserted) {
+    if (isInserted) {
       // This starts the new tab animation. It is important for the
       // NTPCoordinator to know about the new web state
       // (via the call to `-didNavigateToNTPInWebState:` above) before this is
       // called.
-      [self didInsertActiveWebState:newWebState];
+      if (!_webStateList->IsBatchInProgress()) {
+        [self didInsertActiveWebState:newActiveWebState];
+      }
     }
 
     [self.consumer webStateSelected];
   }
 }
-
-#pragma mark - WebStateListObserving helpers (Private)
 
 - (void)startNTPIfNeededForActiveWebState:(web::WebState*)webState {
   NewTabPageTabHelper* NTPHelper = NewTabPageTabHelper::FromWebState(webState);
@@ -266,10 +268,6 @@
 
 - (void)didInsertActiveWebState:(web::WebState*)newWebState {
   DCHECK(newWebState);
-  if (web::features::UseSessionSerializationOptimizations() ||
-      _sessionRestorationBrowserAgent->IsRestoringSession()) {
-    return;
-  }
   auto* animationTabHelper =
       NewTabAnimationTabHelper::FromWebState(newWebState);
   BOOL animated =
@@ -343,6 +341,28 @@
                           newTabPageTabHelper:NTPHelper
                               topToolbarImage:topToolbarImage
                            bottomToolbarImage:bottomToolbarImage];
+}
+
+#pragma mark - NewTabPageTabHelperDelegate
+
+- (void)newTabPageHelperDidChangeVisibility:(NewTabPageTabHelper*)NTPHelper
+                                forWebState:(web::WebState*)webState {
+  if (webState != _webStateList->GetActiveWebState()) {
+    // In the instance that a pageload starts while the WebState is not the
+    // active WebState anymore, do nothing.
+    return;
+  }
+  // Handle NTP visibility changes within a web state.
+  if (NTPHelper->IsActive()) {
+    if (!_ntpCoordinator.started) {
+      [_ntpCoordinator start];
+    }
+    [_ntpCoordinator didNavigateToNTPInWebState:webState];
+  } else {
+    [_ntpCoordinator didNavigateAwayFromNTP];
+    [_ntpCoordinator stopIfNeeded];
+  }
+  [self.consumer displayTabViewIfActive];
 }
 
 @end

@@ -64,14 +64,25 @@ export class ShoppingInsightsHistoryGraphElement extends PolymerElement {
   currency: string;
   private points: Array<{date: Date, price: number}>;
   private isGraphInteracted_: boolean = false;
+  private currentPricePointIndex_?: number;
 
   override connectedCallback() {
     super.connectedCallback();
 
-    this.points =
-        this.data.map(d => ({date: new Date(d.date), price: d.price}));
+    this.points = this.data.map(
+        d => ({date: this.stringToDate_(d.date), price: d.price}));
 
     this.drawHistoryGraph_();
+  }
+
+  private stringToDate_(s: string): Date {
+    // When compiled, new Date('yyyy-mm-dd') does not return a valid Date
+    // object. Using Date(year, monthIndex, day) protects against that.
+    const [yearStr, monthStr, dayStr] = s.split('-');
+    const year: number = parseInt(yearStr, 10);
+    const month: number = parseInt(monthStr, 10);
+    const day: number = parseInt(dayStr, 10);
+    return new Date(year, month - 1, day);
   }
 
   private getTooltipText_(i: number): string {
@@ -79,7 +90,8 @@ export class ShoppingInsightsHistoryGraphElement extends PolymerElement {
 
     const previousDay = new Date();
     previousDay.setDate(previousDay.getDate() - 1);
-    if (this.points[i].date.getDate() === previousDay.getDate() &&
+    if (i === this.points.length - 1 &&
+        this.points[i].date.getDate() === previousDay.getDate() &&
         this.points[i].date.getMonth() === previousDay.getMonth()) {
       formattedDate = loadTimeData.getString('yesterday');
     }
@@ -224,6 +236,25 @@ export class ShoppingInsightsHistoryGraphElement extends PolymerElement {
           xScale(this.points[nearestIndex].date),
           yScale(this.points[nearestIndex].price), graphWidthPx);
     });
+
+    this.$.historyGraph.addEventListener('keydown', (e: KeyboardEvent) => {
+      if (this.currentPricePointIndex_ != null) {
+        let nextIndex = -1;
+
+        if (e.key === 'ArrowLeft') {
+          nextIndex = this.currentPricePointIndex_ - 1;
+        } else if (e.key === 'ArrowRight') {
+          nextIndex = this.currentPricePointIndex_ + 1;
+        }
+
+        if (nextIndex >= 0 && nextIndex <= this.points.length - 1) {
+          this.showTooltip_(
+              verticalLine, circle, bubble, tooltip, nextIndex,
+              xScale(this.points[nextIndex].date),
+              yScale(this.points[nextIndex].price), graphWidthPx);
+        }
+      }
+    });
   }
 
   // Calculate y-axis ticks.
@@ -234,12 +265,16 @@ export class ShoppingInsightsHistoryGraphElement extends PolymerElement {
     const ticks: number[] = [];
     const formattedTicks: string[] = [];
 
-    const minPrice = this.points.reduce((min, value) => {
+    let minPrice = this.points.reduce((min, value) => {
       return Math.min(min, value.price);
     }, this.points[0].price);
-    const maxPrice = this.points.reduce((max, value) => {
+    let maxPrice = this.points.reduce((max, value) => {
       return Math.max(max, value.price);
     }, this.points[0].price);
+
+    // Ensure the line is in the middle of the graph.
+    minPrice = Math.max(minPrice - 1, 0);
+    maxPrice = maxPrice + 1;
     const valueRange = maxPrice - minPrice;
     let tickInterval = valueRange / (TICK_COUNT_Y - 1);
 
@@ -372,6 +407,9 @@ export class ShoppingInsightsHistoryGraphElement extends PolymerElement {
     }
     tooltip.attr('x', bubbleStart + bubbleWidth / 2).attr('opacity', 1);
     bubble.attr('x', bubbleStart).attr('width', bubbleWidth).attr('opacity', 1);
+
+    this.$.historyGraph.setAttribute('aria-label', this.getTooltipText_(index));
+    this.currentPricePointIndex_ = index;
   }
 }
 

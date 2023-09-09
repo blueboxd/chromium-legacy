@@ -144,6 +144,11 @@ const char kDownloadInterruptedLearnMoreURL[] =
 const char kDownloadScanningLearnMoreURL[] =
     "https://support.google.com/chrome/?p=ib_download_blocked";
 
+// Note: This is the same as the above URL. This is done to decouple the URLs,
+// in case the support page is split apart into separate pages in the future.
+const char kDownloadBlockedLearnMoreURL[] =
+    "https://support.google.com/chrome/?p=ib_download_blocked";
+
 const char kExtensionControlledSettingLearnMoreURL[] =
     "https://support.google.com/chrome/?p=ui_settings_api_extension";
 
@@ -435,6 +440,10 @@ const char kLinuxAppsLearnMoreURL[] =
     "https://support.google.com/chromebook?p=chromebook_linuxapps";
 
 const char kNaturalScrollHelpURL[] =
+    "https://support.google.com/chromebook/?p=simple_scrolling";
+
+// TODO(zhangwenyu): Update link once confirmed.
+const char kScrollAccelerationHelpURL[] =
     "https://support.google.com/chromebook/?p=simple_scrolling";
 
 const char kHapticFeedbackHelpURL[] =

@@ -736,7 +736,13 @@ class CORE_EXPORT Document : public ContainerNode,
   void UpdateStyleAndLayoutForNode(const Node*, DocumentUpdateReason);
   void UpdateStyleAndLayoutForRange(const Range*, DocumentUpdateReason);
 
+  // Get the computed style for a given page and name. Note that when using the
+  // function that doesn't provide a page name, layout needs to be complete,
+  // since page names are determined during layout.
   scoped_refptr<const ComputedStyle> StyleForPage(uint32_t page_index);
+  scoped_refptr<const ComputedStyle> StyleForPage(
+      uint32_t page_index,
+      const AtomicString& page_name);
 
   // Ensures that location-based data will be valid for a given node.
   //
@@ -748,18 +754,14 @@ class CORE_EXPORT Document : public ContainerNode,
   // data, otherwise use one of the |UpdateStyleAndLayout...| methods above.
   void EnsurePaintLocationDataValidForNode(const Node*,
                                            DocumentUpdateReason reason);
-  void EnsurePaintLocationDataValidForNode(const Node*,
-                                           DocumentUpdateReason reason,
-                                           CSSPropertyID property_id);
-
-  // Returns true if page box (margin boxes and page borders) is visible.
-  bool IsPageBoxVisible(uint32_t page_index);
 
   // Gets the description for the specified page. This includes preferred page
   // size and margins in pixels, assuming 96 pixels per inch. The size and
   // margins must be initialized to the default values that are used if auto is
-  // specified.
+  // specified. Note that, if the |page_index| variant of the function is used,
+  // layout needs to be complete, since page names are determined during layout.
   void GetPageDescription(uint32_t page_index, WebPrintPageDescription*);
+  void GetPageDescription(const ComputedStyle&, WebPrintPageDescription*);
 
   ResourceFetcher* Fetcher() const { return fetcher_.Get(); }
 
@@ -2108,7 +2110,10 @@ class CORE_EXPORT Document : public ContainerNode,
 
   String nodeName() const final;
   bool ChildTypeAllowed(NodeType) const final;
-  Node* Clone(Document&, NodeCloningData&) const override;
+  Node* Clone(Document& factory,
+              NodeCloningData& data,
+              ContainerNode* append_to,
+              ExceptionState& append_exception_state) const override;
   void CloneDataFromDocument(const Document&);
 
   void UpdateTitle(const String&);
@@ -2182,14 +2187,6 @@ class CORE_EXPORT Document : public ContainerNode,
 
   void RunPostPrerenderingActivationSteps();
 
-  // Resolves/rejects the promise if an existing permission grant can
-  // approve/deny; otherwise rejects if without user gesture, or
-  // resolves/rejects based on the requested status.
-  void OnGotExistingStorageAccessPermissionState(
-      ScriptPromiseResolver* resolver,
-      bool has_user_gesture,
-      mojom::blink::PermissionStatus previous_status);
-
   // Similar to `OnGotExistingStorageAccessPermissionState`, but for the
   // top-level variant. Allows bypassing user activation checks in the event
   // that the permission is already granted.
@@ -2198,12 +2195,6 @@ class CORE_EXPORT Document : public ContainerNode,
       bool has_user_gesture,
       mojom::blink::PermissionDescriptorPtr descriptor,
       mojom::blink::PermissionStatus previous_status);
-
-  // Wraps `ProcessStorageAccessPermissionState` to handle the requested
-  // permission status.
-  void OnRequestedStorageAccessPermissionState(
-      ScriptPromiseResolver* resolver,
-      mojom::blink::PermissionStatus status);
 
   // Similar to `OnRequestedStorageAccessPermissionState`, but for the top-level
   // variant. Used to react to the result of a permission request.
@@ -2215,7 +2206,6 @@ class CORE_EXPORT Document : public ContainerNode,
   // otherwise, and consumes user activation.
   void ProcessStorageAccessPermissionState(
       ScriptPromiseResolver* resolver,
-      bool use_existing_status,
       mojom::blink::PermissionStatus status);
 
   // Similar to `ProcessStorageAccessPermissionState`, but for the top-level

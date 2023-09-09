@@ -607,7 +607,9 @@ void EditingStyle::Init(Node* node, PropertiesToInclude properties_to_include) {
     }
   }
 
-  if (const ComputedStyle* computed_style = node->GetComputedStyle()) {
+  const ComputedStyle* computed_style =
+      node ? node->GetComputedStyle() : nullptr;
+  if (computed_style) {
     // Fix for crbug.com/768261: due to text-autosizing, reading the current
     // computed font size and re-writing it to an element may actually cause the
     // font size to become larger (since the autosizer will run again on the new
@@ -683,10 +685,12 @@ void EditingStyle::ReplaceFontSizeByKeywordIfPossible(
     CSSComputedStyleDeclaration* css_computed_style) {
   DCHECK(computed_style);
   if (computed_style->GetFontDescription().KeywordSize()) {
-    mutable_style_->ParseAndSetProperty(
-        CSSPropertyID::kFontSize,
-        css_computed_style->GetFontSizeCSSValuePreferringKeyword()->CssText(),
-        /* important */ false, secure_context_mode);
+    if (const CSSValue* keyword =
+            css_computed_style->GetFontSizeCSSValuePreferringKeyword()) {
+      mutable_style_->ParseAndSetProperty(
+          CSSPropertyID::kFontSize, keyword->CssText(),
+          /* important */ false, secure_context_mode);
+    }
   }
 }
 
@@ -1780,18 +1784,6 @@ StyleChange::StyleChange(EditingStyle* style, const Position& position)
   if (!document->GetFrame()->GetEditor().ShouldStyleWithCSS())
     ExtractTextStyles(document, mutable_style,
                       computed_style->IsMonospaceFont());
-
-  // Disables this use of `white-space` as this doesn't look effective any more.
-  // See crbug.com/1417543 and crrev.com/c/4289333.
-  if (!RuntimeEnabledFeatures::EditingStyleWhiteSpaceEnabled()) {
-    // Changing the whitespace style in a tab span would collapse the tab into a
-    // space.
-    if (IsTabHTMLSpanElementTextNode(position.AnchorNode()) ||
-        IsTabHTMLSpanElement((position.AnchorNode()))) {
-      mutable_style->RemoveProperty(CSSPropertyID::kWhiteSpace);
-      mutable_style->RemoveProperty(CSSPropertyID::kAlternativeWhiteSpace);
-    }
-  }
 
   // If unicode-bidi is present in mutableStyle and direction is not, then add
   // direction to mutableStyle.

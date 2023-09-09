@@ -60,8 +60,12 @@ class FakePageLoadMetricsObserverDelegate
   // returned.
   const NormalizedCLSData& GetNormalizedCLSData(
       BfcacheStrategy bfcache_strategy) const override;
+  const NormalizedCLSData& GetSoftNavigationIntervalNormalizedCLSData()
+      const override;
   const NormalizedResponsivenessMetrics& GetNormalizedResponsivenessMetrics()
       const override;
+  const NormalizedResponsivenessMetrics&
+  GetSoftNavigationIntervalNormalizedResponsivenessMetrics() const override;
   const mojom::InputTiming& GetPageInputTiming() const override;
   const absl::optional<blink::SubresourceLoadMetrics>&
   GetSubresourceLoadMetrics() const override;

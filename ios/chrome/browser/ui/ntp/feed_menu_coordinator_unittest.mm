@@ -26,10 +26,6 @@
 #import "ui/base/l10n/l10n_util_mac.h"
 #import "ui/strings/grit/ui_strings.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 namespace {
 
 // Contains the attributes of a UIAlertAction that will be checked.
@@ -153,6 +149,20 @@ TEST_F(FeedMenuCoordinatorTest, FeedOff) {
 
 // Tests the menu actions when the user is signed-in.
 TEST_F(FeedMenuCoordinatorTest, SignedIn) {
+  SetFeedEnabled(true);
+  SignInFakeIdentity();
+  OpenFeedMenu();
+  ExpectActions({{IDS_IOS_DISCOVER_FEED_MENU_TURN_OFF_ITEM,
+                  UIAlertActionStyleDestructive},
+                 {IDS_IOS_DISCOVER_FEED_MENU_MANAGE_ACTIVITY_ITEM},
+                 {IDS_IOS_DISCOVER_FEED_MENU_MANAGE_INTERESTS_ITEM},
+                 {IDS_IOS_DISCOVER_FEED_MENU_LEARN_MORE_ITEM},
+                 {IDS_APP_CANCEL, UIAlertActionStyleCancel}});
+}
+
+// Tests the menu actions when the user is signed-in.
+TEST_F(FeedMenuCoordinatorTest, SignedInFollowFeedEnabled) {
+  scoped_feature_list_.InitWithFeatures({kEnableWebChannels}, {});
   SetFeedEnabled(true);
   SignInFakeIdentity();
   OpenFeedMenu();

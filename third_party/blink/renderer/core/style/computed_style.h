@@ -319,7 +319,10 @@ class ComputedStyle : public ComputedStyleBase,
  private:
   // TODO(sashab): Move these private members to the bottom of ComputedStyle.
   ALWAYS_INLINE ComputedStyle();
-  ALWAYS_INLINE ComputedStyle(const ComputedStyle&);
+  ALWAYS_INLINE ComputedStyle(const ComputedStyle& initial_style);
+  ALWAYS_INLINE ComputedStyle(const ComputedStyle& initial_style,
+                              const ComputedStyle& parent_style,
+                              ComputedStyleAccessFlags& access);
 
  public:
   using PassKey = base::PassKey<ComputedStyle>;
@@ -343,7 +346,11 @@ class ComputedStyle : public ComputedStyleBase,
     }
   }
 
-  ALWAYS_INLINE ComputedStyle(PassKey, const ComputedStyle&);
+  ALWAYS_INLINE ComputedStyle(PassKey, const ComputedStyle& initial_style);
+  ALWAYS_INLINE ComputedStyle(PassKey,
+                              const ComputedStyle& initial_style,
+                              const ComputedStyle& parent_style,
+                              ComputedStyleAccessFlags& access);
   ALWAYS_INLINE explicit ComputedStyle(PassKey);
 
   // Create the per-document/context singleton that is used for shallow-copying
@@ -956,7 +963,7 @@ class ComputedStyle : public ComputedStyleBase,
   void CopyChildDependentFlagsFrom(const ComputedStyle&) const;
 
   // Counters.
-  CORE_EXPORT const CounterDirectiveMap* GetCounterDirectives() const;
+  const CounterDirectiveMap* GetCounterDirectives() const;
   const CounterDirectives GetCounterDirectives(
       const AtomicString& identifier) const;
   bool CounterDirectivesEqual(const ComputedStyle& other) const {
@@ -1254,12 +1261,6 @@ class ComputedStyle : public ComputedStyleBase,
   const Length& MarginAfter() const { return MarginAfterUsing(*this); }
   const Length& MarginStart() const { return MarginStartUsing(*this); }
   const Length& MarginEnd() const { return MarginEndUsing(*this); }
-  const Length& MarginOver() const {
-    return PhysicalMarginToLogical(*this).Over();
-  }
-  const Length& MarginUnder() const {
-    return PhysicalMarginToLogical(*this).Under();
-  }
   const Length& MarginStartUsing(const ComputedStyle& other) const {
     return PhysicalMarginToLogical(other).Start();
   }
@@ -1290,12 +1291,6 @@ class ComputedStyle : public ComputedStyleBase,
     return PhysicalPaddingToLogical().Start();
   }
   const Length& PaddingEnd() const { return PhysicalPaddingToLogical().End(); }
-  const Length& PaddingOver() const {
-    return PhysicalPaddingToLogical().Over();
-  }
-  const Length& PaddingUnder() const {
-    return PhysicalPaddingToLogical().Under();
-  }
   bool PaddingEqual(const ComputedStyle& other) const {
     return PaddingTop() == other.PaddingTop() &&
            PaddingLeft() == other.PaddingLeft() &&
@@ -1370,12 +1365,6 @@ class ComputedStyle : public ComputedStyleBase,
   }
   LayoutUnit BorderStartWidth() const {
     return PhysicalBorderWidthToLogical().Start();
-  }
-  LayoutUnit BorderOverWidth() const {
-    return PhysicalBorderWidthToLogical().Over();
-  }
-  LayoutUnit BorderUnderWidth() const {
-    return PhysicalBorderWidthToLogical().Under();
   }
 
   EBorderStyle BorderAfterStyle() const {
@@ -1657,12 +1646,6 @@ class ComputedStyle : public ComputedStyleBase,
   const Length& LogicalInlineEnd() const {
     return PhysicalBoundsToLogical().InlineEnd();
   }
-  const Length& LogicalLeft() const {
-    return PhysicalBoundsToLogical().LineLeft();
-  }
-  const Length& LogicalRight() const {
-    return PhysicalBoundsToLogical().LineRight();
-  }
   const Length& LogicalTop() const {
     return PhysicalBoundsToLogical().Before();
   }
@@ -1868,15 +1851,15 @@ class ComputedStyle : public ComputedStyleBase,
   }
   EResize UnresolvedResize() const { return Resize(); }
 
-  EResize Resize(const ComputedStyle& cb_style) const {
+  EResize UsedResize() const {
     EResize value = Resize();
     switch (value) {
       case EResize::kBlock:
-        return cb_style.IsHorizontalWritingMode() ? EResize::kVertical
-                                                  : EResize::kHorizontal;
+        return IsHorizontalWritingMode() ? EResize::kVertical
+                                         : EResize::kHorizontal;
       case EResize::kInline:
-        return cb_style.IsHorizontalWritingMode() ? EResize::kHorizontal
-                                                  : EResize::kVertical;
+        return IsHorizontalWritingMode() ? EResize::kHorizontal
+                                         : EResize::kVertical;
       default:
         return value;
     }
@@ -2898,7 +2881,16 @@ class ComputedStyleBuilder final : public ComputedStyleBuilderBase {
   // Access to UserModify().
   friend class MatchedPropertiesCache;
 
+  // Creates a new ComputedStyle based on the given initial style.
   CORE_EXPORT explicit ComputedStyleBuilder(const ComputedStyle& style);
+
+  // Creates a new ComputedStyle based on the given initial style,
+  // but with all inheritable properties from the given parent style.
+  CORE_EXPORT ComputedStyleBuilder(
+      const ComputedStyle& initial_style,
+      const ComputedStyle& parent_style,
+      IsAtShadowBoundary is_at_shadow_boundary = kNotAtShadowBoundary);
+
   ComputedStyleBuilder(const ComputedStyleBuilder& builder) = delete;
   ComputedStyleBuilder(ComputedStyleBuilder&&) = default;
   ComputedStyleBuilder& operator=(const ComputedStyleBuilder&) = delete;
@@ -2908,36 +2900,6 @@ class ComputedStyleBuilder final : public ComputedStyleBuilderBase {
 
   // NOTE: Prefer `TakeStyle()` if possible.
   CORE_EXPORT scoped_refptr<const ComputedStyle> CloneStyle() const;
-
-  CORE_EXPORT void InheritFrom(
-      const ComputedStyle& inherit_parent,
-      IsAtShadowBoundary is_at_shadow_boundary = kNotAtShadowBoundary) {
-    EUserModify current_user_modify = UserModify();
-    EUserSelect current_user_select = UserSelect();
-    ComputedStyleBuilderBase::InheritFrom(inherit_parent);
-
-    // Even if surrounding content is user-editable, shadow DOM should act as a
-    // single unit, and not necessarily be editable
-    if (is_at_shadow_boundary == kAtShadowBoundary) {
-      SetUserModify(current_user_modify);
-    }
-
-    // TODO(crbug.com/1410068): Once `user-select` isn't inherited, we should
-    // get rid of following if-statement.
-    if (inherit_parent.UserSelect() == EUserSelect::kContain) {
-      SetUserSelect(current_user_select);
-    }
-
-    SetBaseTextDecorationData(inherit_parent.AppliedTextDecorationData());
-  }
-
-  void CopyNonInheritedFromCached(const ComputedStyle& other) {
-#if DCHECK_IS_ON()
-    ComputedStyleBuilder builder(other);
-    DCHECK(MatchedPropertiesCache::IsStyleCacheable(builder));
-#endif
-    ComputedStyleBuilderBase::CopyNonInheritedFromCached(other);
-  }
 
   // Copies the values of any independent inherited properties from the parent
   // that are not explicitly set in this style.

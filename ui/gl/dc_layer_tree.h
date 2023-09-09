@@ -82,7 +82,8 @@ class DCLayerTree {
   ~DCLayerTree();
 
   // Returns true on success.
-  bool Initialize(HWND window);
+  bool Initialize(HWND window,
+                  Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device);
 
   // Present pending overlay layers, and perform a direct composition commit if
   // necessary.  Returns true if presentation and commit succeeded.
@@ -208,18 +209,20 @@ class DCLayerTree {
       VisualSubtree& operator=(VisualSubtree& other) = delete;
 
       // Returns true if something was changed.
-      bool Update(IDCompositionDevice3* dcomp_device,
-                  Microsoft::WRL::ComPtr<IUnknown> dcomp_visual_content,
-                  uint64_t dcomp_surface_serial,
-                  const gfx::Size& image_size,
-                  absl::optional<SkColor4f> content_tint_color,
-                  const gfx::Rect& content_rect,
-                  const gfx::Rect& quad_rect,
-                  bool nearest_neighbor_filter,
-                  const gfx::Transform& quad_to_root_transform,
-                  const gfx::RRectF& rounded_corner_bounds,
-                  float opacity,
-                  const absl::optional<gfx::Rect>& clip_rect_in_root);
+      bool Update(
+          IDCompositionDevice3* dcomp_device,
+          Microsoft::WRL::ComPtr<IUnknown> dcomp_visual_content,
+          uint64_t dcomp_surface_serial,
+          const gfx::Size& image_size,
+          const gfx::Rect& content_rect,
+          Microsoft::WRL::ComPtr<IDCompositionSurface> solid_white_surface,
+          const SkColor4f& background_color,
+          const gfx::Rect& quad_rect,
+          bool nearest_neighbor_filter,
+          const gfx::Transform& quad_to_root_transform,
+          const gfx::RRectF& rounded_corner_bounds,
+          float opacity,
+          const absl::optional<gfx::Rect>& clip_rect_in_root);
 
       IDCompositionVisual2* container_visual() const {
         return clip_visual_.Get();
@@ -252,11 +255,14 @@ class DCLayerTree {
       // |IDCompositionVisual::SetOffset[XY]| are applied in the opposite order
       // than we want.
       Microsoft::WRL::ComPtr<IDCompositionVisual2> transform_visual_;
-      // The child of |transform_visual_|. In quad space, holds
+      // A child of |transform_visual_|. In quad space, holds
+      // |dcomp_visual_content_|. Visually, this is behind |content_visual_|.
+      Microsoft::WRL::ComPtr<IDCompositionVisual2> background_color_visual_;
+      // A child of |transform_visual_|. In quad space, holds
       // |dcomp_visual_content_|.
       Microsoft::WRL::ComPtr<IDCompositionVisual2> content_visual_;
 
-      // The content to be placed at the leaf of the visual subtree. Either an
+      // The content to be placed at a leaf of the visual subtree. Either an
       // IDCompositionSurface or an IDXGISwapChain.
       Microsoft::WRL::ComPtr<IUnknown> dcomp_visual_content_;
       // |dcomp_surface_serial_| is associated with |dcomp_visual_content_| of
@@ -264,14 +270,19 @@ class DCLayerTree {
       // is updated.
       uint64_t dcomp_surface_serial_ = 0;
 
-      // True if |content_visual_| has soft borders. This is required for
-      // anti-aliasing when |transform_| makes |quad_rect_| not have
-      // axis-aligned integer bounds in root space.
-      bool content_soft_borders_ = false;
-
       // The portion of |dcomp_visual_content_| to display. This area will be
       // mapped to |quad_rect_|'s bounds.
       gfx::Rect content_rect_;
+
+      // The surface containing solid white for the background color fill to be
+      // placed at a leaf of the visual subtree. Will be tinted by
+      // |background_color_|. Must be present if |background_color_| is
+      // non-transparent. Must be created from |GetOrCreateSolidWhiteTexture|.
+      Microsoft::WRL::ComPtr<IDCompositionSurface> solid_white_surface_;
+
+      // The color of the surface that will be placed on
+      // |background_color_visual_|.
+      SkColor4f background_color_;
 
       // The bounds which contain this overlay. When mapped by |transform_|,
       // this is the bounds of the overlay in root space.
@@ -283,21 +294,16 @@ class DCLayerTree {
       bool nearest_neighbor_filter_ = false;
 
       // Transform from quad space to root space.
-      gfx::Transform transform_;
+      gfx::Transform quad_to_root_transform_;
 
       // Clip rect in root space.
-      absl::optional<gfx::Rect> clip_rect_;
+      absl::optional<gfx::Rect> clip_rect_in_root_;
 
       // Rounded corner clip in root space
       gfx::RRectF rounded_corner_bounds_;
 
       // The opacity of the entire visual subtree
       float opacity_ = 1.0;
-
-      // A color that will tint this visual's content. Each channel of the color
-      // will be multiplied by the respective channel in this visual's output.
-      // A white tint is a no-op.
-      absl::optional<SkColor4f> content_tint_color_;
 
       // The size of overlay image in |dcomp_visual_content_| which is in
       // pixels.
@@ -338,9 +344,8 @@ class DCLayerTree {
   // set up the delegated ink visual and delegated ink trail object.
   bool InitializeInkRenderer();
 
-  // Returns the size of the surface to |resource_size_in_pixels|.
-  raw_ptr<IDCompositionSurface> GetOrCreateSolidWhiteTexture(
-      gfx::Size& resource_size_in_pixels);
+  // Returns nullptr if the surface could not be created.
+  raw_ptr<IDCompositionSurface> GetOrCreateSolidWhiteTexture();
 
   const bool disable_nv12_dynamic_textures_;
   const bool disable_vp_auto_hdr_;

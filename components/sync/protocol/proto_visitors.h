@@ -536,6 +536,7 @@ VISIT_PROTO_FIELDS(const sync_pb::PhoneAsASecurityKeySpecificFields& proto) {
   VISIT_BYTES(contact_id);
   VISIT(id);
   VISIT_BYTES(peer_public_key_x962);
+  VISIT_BYTES(google_credential_id);
   // |secret| is deliberately omitted to avoid including sensitive information
   // in debugging output, which might be included in bug reports etc.
 }
@@ -569,6 +570,7 @@ VISIT_PROTO_FIELDS(const sync_pb::EntityMetadata& proto) {
   VISIT(specifics_hash);
   VISIT(base_specifics_hash);
   VISIT(possibly_trimmed_base_specifics);
+  VISIT(deleted_by_version);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::EntitySpecifics& proto) {
@@ -1608,6 +1610,7 @@ VISIT_PROTO_FIELDS(const sync_pb::WorkspaceDeskSpecifics::App& proto) {
   VISIT_ENUM(disposition);
   VISIT(app_name);
   VISIT(title);
+  VISIT(override_url);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::WorkspaceDeskSpecifics::AppOneOf& proto) {

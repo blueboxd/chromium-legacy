@@ -520,6 +520,9 @@ struct AutocompleteMatch {
   // providers.
   bool IsOnDeviceSearchSuggestion() const;
 
+  // Returns true if the match is eligible to be re-scored by ML Url scoring.
+  bool IsUrlScoringEligible() const;
+
   // Filter OmniboxActions based on the supplied qualifiers.
   // The order of the supplied qualifiers determines the preference.
   void FilterOmniboxActions(
@@ -637,6 +640,10 @@ struct AutocompleteMatch {
   // its value is -1.  At the time of writing this comment, it is only
   // set for matches from HistoryURL and HistoryQuickProvider.
   int typed_count = -1;
+
+  // The percentage deducted from the relevance score by the history fuzzy
+  // provider.  This is currently used to re-apply the penalty after ML scoring.
+  int fuzzy_match_penalty = 0;
 
   // True if the user should be able to delete this match.
   bool deletable = false;

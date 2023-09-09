@@ -436,21 +436,6 @@ export class StatsRatesCalculator {
         },
       },
       {
-        type: 'track',
-        metricCalculators: {
-          framesSent: new RateCalculator('framesSent', 'timestamp'),
-          framesReceived: [
-            new RateCalculator('framesReceived', 'timestamp'),
-            new DifferenceCalculator('framesReceived',
-                'framesDecoded', 'framesDropped'),
-          ],
-          totalAudioEnergy: new AudioLevelRmsCalculator(),
-          jitterBufferDelay: new RateCalculator(
-              'jitterBufferDelay', 'jitterBufferEmittedCount',
-              CalculatorModifier.kMillisecondsFromSeconds),
-        },
-      },
-      {
         type: 'outbound-rtp',
         metricCalculators: {
           bytesSent: new RateCalculator(
@@ -530,6 +515,12 @@ export class StatsRatesCalculator {
           totalAudioEnergy: new AudioLevelRmsCalculator(),
           jitterBufferDelay: new RateCalculator(
               'jitterBufferDelay', 'jitterBufferEmittedCount',
+              CalculatorModifier.kMillisecondsFromSeconds),
+          jitterBufferTargetDelay: new RateCalculator(
+              'jitterBufferTargetDelay', 'jitterBufferEmittedCount',
+              CalculatorModifier.kMillisecondsFromSeconds),
+          jitterBufferMinimumDelay: new RateCalculator(
+              'jitterBufferMinimumDelay', 'jitterBufferEmittedCount',
               CalculatorModifier.kMillisecondsFromSeconds),
           lastPacketReceivedTimestamp: new DateCalculator(
               'lastPacketReceivedTimestamp'),

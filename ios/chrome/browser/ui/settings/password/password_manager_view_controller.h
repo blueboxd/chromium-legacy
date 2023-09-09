@@ -27,12 +27,10 @@ struct CredentialUIEntry;
                                        SettingsControllerProtocol>
 
 // The designated initializer.
-// requireAuth: Whether the content should be blocked until the user passes
-// Biometric Authentication.
 - (instancetype)initWithChromeAccountManagerService:
                     (ChromeAccountManagerService*)accountManagerService
                                         prefService:(PrefService*)prefService
-                                        requireAuth:(BOOL)requireAuth
+                             shouldOpenInSearchMode:(BOOL)shouldOpenInSearchMode
     NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)initWithStyle:(UITableViewStyle)style NS_UNAVAILABLE;

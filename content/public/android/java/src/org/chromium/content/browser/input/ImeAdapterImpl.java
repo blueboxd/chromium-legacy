@@ -42,6 +42,7 @@ import android.view.inputmethod.RemoveSpaceGesture;
 import android.view.inputmethod.SelectGesture;
 import android.view.inputmethod.SelectRangeGesture;
 
+import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 import androidx.core.view.inputmethod.EditorInfoCompat;
 
@@ -297,8 +298,7 @@ public class ImeAdapterImpl
 
         // Offset the gesture rectangles to convert from screen coordinates to window coordinates.
         int[] screenLocation = new int[2];
-        mWebContents.getViewAndroidDelegate().getContainerView().getLocationOnScreen(
-                screenLocation);
+        getContainerView().getLocationOnScreen(screenLocation);
         request.getGestureData().startRect.x -= screenLocation[0];
         request.getGestureData().startRect.y -= screenLocation[1];
         if (request.getGestureData().endRect != null) {
@@ -1084,7 +1084,8 @@ public class ImeAdapterImpl
         if (!ViewUtils.hasFocus(containerView)) ViewUtils.requestFocus(containerView);
 
         updateInputStateForStylusWriting();
-        return mWebContents.getStylusWritingHandler().requestStartStylusWriting();
+        return mWebContents.getStylusWritingHandler().requestStartStylusWriting(
+                getStylusWritingImeCallback());
     }
 
     @CalledByNative
@@ -1096,8 +1097,7 @@ public class ImeAdapterImpl
         Point cursorPosition = new Point(caretX, caretY);
         if (!focusedEditBounds.isEmpty()) {
             int[] screenLocation = new int[2];
-            mWebContents.getViewAndroidDelegate().getContainerView().getLocationOnScreen(
-                    screenLocation);
+            getContainerView().getLocationOnScreen(screenLocation);
             int contentOffsetY = mWebContents.getRenderCoordinates().getContentOffsetYPixInt();
             focusedEditBounds.offset(0, contentOffsetY);
             cursorPosition.offset(screenLocation[0], screenLocation[1] + contentOffsetY);
@@ -1144,7 +1144,7 @@ public class ImeAdapterImpl
     }
 
     /** Lazily creates/returns a StylusWritingImeCallback object. */
-    public StylusWritingImeCallback getStylusWritingImeCallback() {
+    private StylusWritingImeCallback getStylusWritingImeCallback() {
         if (mStylusWritingImeCallback == null) {
             mStylusWritingImeCallback = new StylusWritingImeCallback() {
                 @Override
@@ -1178,7 +1178,7 @@ public class ImeAdapterImpl
 
                 @Override
                 public View getContainerView() {
-                    return mWebContents.getViewAndroidDelegate().getContainerView();
+                    return ImeAdapterImpl.this.getContainerView();
                 }
 
                 @Override
@@ -1345,9 +1345,8 @@ public class ImeAdapterImpl
     }
 
     @CalledByNative
-    private void setCharacterBounds(float[] characterBounds) {
-        mCursorAnchorInfoController.setCompositionCharacterBounds(
-                characterBounds, getContainerView());
+    private void setBounds(@Nullable float[] characterBounds, @Nullable float[] lineBounds) {
+        mCursorAnchorInfoController.setBounds(characterBounds, lineBounds, getContainerView());
     }
 
     @CalledByNative

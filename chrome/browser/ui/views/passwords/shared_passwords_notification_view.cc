@@ -4,11 +4,18 @@
 
 #include "chrome/browser/ui/views/passwords/shared_passwords_notification_view.h"
 
+#include <memory>
+
 #include "chrome/browser/ui/passwords/bubble_controllers/shared_passwords_notifications_bubble_controller.h"
 #include "chrome/browser/ui/passwords/passwords_model_delegate.h"
 #include "chrome/browser/ui/passwords/ui_utils.h"
 #include "chrome/grit/generated_resources.h"
+#include "ui/base/interaction/element_identifier.h"
 #include "ui/base/ui_base_types.h"
+#include "ui/gfx/text_constants.h"
+#include "ui/views/controls/styled_label.h"
+#include "ui/views/layout/box_layout.h"
+#include "ui/views/view_class_properties.h"
 
 SharedPasswordsNotificationView::SharedPasswordsNotificationView(
     content::WebContents* web_contents,
@@ -34,6 +41,28 @@ SharedPasswordsNotificationView::SharedPasswordsNotificationView(
   SetCancelCallback(base::BindOnce(
       &SharedPasswordsNotificationBubbleController::OnManagePasswordsClicked,
       base::Unretained(&controller_)));
+  SetCloseCallback(base::BindOnce(
+      &SharedPasswordsNotificationBubbleController::OnCloseBubbleClicked,
+      base::Unretained(&controller_)));
+
+  SetLayoutManager(std::make_unique<views::BoxLayout>());
+
+  views::StyledLabel* styled_label =
+      AddChildView(views::Builder<views::StyledLabel>()
+                       .SetText(controller_.GetNotificationBody())
+                       .SetHorizontalAlignment(gfx::ALIGN_LEFT)
+                       .Build());
+
+  gfx::Range sender_name_range = controller_.GetSenderNameRange();
+  if (!sender_name_range.is_empty()) {
+    views::StyledLabel::RangeStyleInfo bold_style;
+    bold_style.custom_font = styled_label->GetFontList().Derive(
+        /*size_delta=*/0, gfx::Font::FontStyle::NORMAL,
+        gfx::Font::Weight::BOLD);
+    styled_label->AddStyleRange(sender_name_range, bold_style);
+  }
+
+  SetProperty(views::kElementIdentifierKey, kTopView);
 }
 
 SharedPasswordsNotificationView::~SharedPasswordsNotificationView() = default;
@@ -52,3 +81,6 @@ ui::ImageModel SharedPasswordsNotificationView::GetWindowIcon() {
   return ui::ImageModel::FromVectorIcon(GooglePasswordManagerVectorIcon(),
                                         ui::kColorIcon);
 }
+
+DEFINE_CLASS_ELEMENT_IDENTIFIER_VALUE(SharedPasswordsNotificationView,
+                                      kTopView);

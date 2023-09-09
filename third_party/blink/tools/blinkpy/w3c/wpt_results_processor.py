@@ -11,8 +11,8 @@ import logging
 import math
 import os
 import queue
-import threading
 import signal
+import threading
 import time
 from typing import (
     Any,
@@ -30,10 +30,11 @@ from urllib.parse import urlsplit
 import mozinfo
 
 from blinkpy.common import path_finder
-from blinkpy.common.wpt_results_diff import wpt_results_diff
+from blinkpy.common import wpt_results_diff
 from blinkpy.common.memoized import memoized
 from blinkpy.common.system.filesystem import FileSystem
 from blinkpy.common.unified_diff import unified_diff
+from blinkpy.w3c.wpt_metadata import RunInfo
 from blinkpy.web_tests.port.base import Port
 from blinkpy.web_tests.models import test_failures
 from blinkpy.web_tests.models.test_run_results import convert_to_hierarchical_view
@@ -46,8 +47,9 @@ from blinkpy.web_tests.models.typ_types import (
 
 path_finder.bootstrap_wpt_imports()
 from wptrunner import manifestexpected, wptmanifest
+from wptrunner.manifestexpected import TestNode
 from wptrunner.wptmanifest import node as wptnode
-from wptrunner.wptmanifest.backends.base import ManifestItem
+from wptrunner.wptmanifest.backends import static
 
 _log = logging.getLogger(__name__)
 
@@ -166,11 +168,20 @@ class WPTResult(Result):
         self._maybe_set_statuses(status, expected)
 
     @property
-    def actual_metadata(self):
+    def actual_metadata(self) -> str:
         return wptmanifest.serialize(self._test_section)
 
-    def test_section(self):
-        return self._test_section
+    def test_section(self, run_info: RunInfo) -> TestNode:
+        # Wrap the test AST node in a root node representing a metadata file,
+        # which is the shape `static.compile_ast(...)` expects.
+        root = wptnode.DataNode()
+        root.append(self._test_section)
+        test_file_expectations = static.compile_ast(
+            root,
+            run_info,
+            manifestexpected.data_cls_getter,
+            test_path=self.file_path)
+        return test_file_expectations.get_test(self._test_section.data)
 
 
 def _test_basename(test_id: str) -> str:
@@ -202,7 +213,7 @@ class StreamShutdown(Exception):
     """Exception to halt event processing."""
 
 
-def update_with_static_expectations(test_or_subtest: ManifestItem):
+def update_with_static_expectations(test_or_subtest: TestNode):
     """Update a (sub)test's metadata with evaluated expectations.
 
     wptrunner manages test expectations with a high-level API (i.e.,
@@ -274,10 +285,8 @@ class WPTResultsProcessor:
         if test_name_prefix and not test_name_prefix.endswith('/'):
             test_name_prefix += '/'
         self.test_name_prefix = test_name_prefix
-        # Manifests should include `jsshell` tests, which wptrunner will report
-        # as skipped. See crbug.com/1431514#c3.
-        self.wpt_manifest = self.port.wpt_manifest('external/wpt', False)
-        self.internal_manifest = self.port.wpt_manifest('wpt_internal', False)
+        self.wpt_manifest = self.port.wpt_manifest('external/wpt')
+        self.internal_manifest = self.port.wpt_manifest('wpt_internal')
         self.path_finder = path_finder.PathFinder(self.fs)
         # Provide placeholder properties until the `suite_start` events are
         # processed.
@@ -382,6 +391,7 @@ class WPTResultsProcessor:
         finally:
             # Send a shutdown event, if one has not been sent already, to tell
             # the worker to exit.
+            _log.error('Send shutdown event to stop the workers...')
             events.put({'action': 'shutdown'}, timeout=timeout)
             worker.join(timeout=timeout)
 
@@ -394,7 +404,7 @@ class WPTResultsProcessor:
                 _log.info('Stopping results stream worker thread.')
                 return
             except Exception as error:
-                _log.error('Unable to process event %r: %s', event, error)
+                _log.exception('Unable to process event %r: %s', event, error)
 
     def process_event(self, raw_event: Dict[str, Any]):
         raw_event = dict(raw_event)
@@ -402,8 +412,12 @@ class WPTResultsProcessor:
                       raw_event.pop('thread'), raw_event.pop('pid'),
                       raw_event.pop('source'))
         test = raw_event.pop('test', None)
+        subsuite = raw_event.pop('subsuite', '')
         if test:
-            raw_event['test'] = test[1:] if test.startswith('/') else test
+            test = test[1:] if test.startswith('/') else test
+            if not self.run_info.get('used_upstream'):
+                test = self._get_chromium_test_name(test, subsuite)
+            raw_event['test'] = test
         status = raw_event.get('status')
         if status:
             expected = {raw_event.get('expected', status)}
@@ -419,13 +433,20 @@ class WPTResultsProcessor:
 
     def suite_start(self,
                     event: Event,
-                    run_info: Optional[Dict[str, Any]] = None,
+                    run_info: Optional[RunInfo] = None,
                     **_):
         if run_info:
             self.run_info.update(run_info)
 
     def suite_end(self, event: Event, **_):
         self._iteration += 1
+
+    def _get_chromium_test_name(self, test: str, subsuite: str):
+        if not self.path_finder.is_wpt_internal_path(test):
+            test = self.path_finder.wpt_prefix() + test
+        if subsuite:
+            test = f'virtual/{subsuite}/{test}'
+        return test
 
     def test_start(self, event: Event, test: str, **_):
         self._results[test] = WPTResult(
@@ -445,23 +466,26 @@ class WPTResultsProcessor:
                 test[len('wpt_internal/'):])
         else:
             path_from_test_root = self.wpt_manifest.file_path_for_test_url(
-                test)
+                test[len(self.path_finder.wpt_prefix()):])
         return path_from_test_root
 
     @memoized
     def _file_path_for_test(self, test: str) -> str:
+        _, test = self.port.get_suite_name_and_base_test(test)
         path_from_test_root = self.get_path_from_test_root(test)
-        if self.path_finder.is_wpt_internal_path(test):
-            prefix = 'wpt_internal'
-        else:
-            prefix = self.path_finder.wpt_prefix()
         if not path_from_test_root:
             raise EventProcessingError(
                 'Test ID %r does not exist in the manifest' % test)
+        if self.path_finder.is_wpt_internal_path(test):
+            prefix = 'wpt_internal'
+        else:
+            prefix = self.fs.join('external', 'wpt')
         return self.path_finder.path_from_web_tests(prefix,
                                                     path_from_test_root)
 
-    def get_test_type(self, test_path: str) -> str:
+    def get_test_type(self, test: str) -> str:
+        _, test = self.port.get_suite_name_and_base_test(test)
+        test_path = self.get_path_from_test_root(test)
         if self.path_finder.is_wpt_internal_path(test_path):
             return self.internal_manifest.get_test_type(test_path)
         else:
@@ -568,10 +592,8 @@ class WPTResultsProcessor:
             if rounded_run_time:
                 test_dict['time'] = rounded_run_time
 
-            manifest = (self.internal_manifest
-                        if test_name.startswith('wpt_internal/') else
-                        self.wpt_manifest)
-            if manifest.is_slow_test(test_name):
+            if (not self.run_info.get('used_upstream')
+                    and self.port.is_slow_wpt_test(test_name)):
                 test_dict['is_slow_test'] = True
 
             if is_unexpected:
@@ -623,7 +645,8 @@ class WPTResultsProcessor:
             data = json.dumps(data, sort_keys=True)
         self._crash_log.append(data + '\n')
 
-    def _read_expected_metadata(self, test_name: str, file_path: str):
+    def _read_expected_metadata(self, test_name: str,
+                                file_path: str) -> TestNode:
         """Try to locate the expected output of this test, if it exists.
 
         The expected output of a test is checked in to the source tree beside
@@ -637,9 +660,7 @@ class WPTResultsProcessor:
             metadata_root = self.path_finder.path_from_web_tests(
                 'wpt_internal')
         else:
-            # TODO(crbug.com/1299650): Support virtual tests and metadata fallback.
-            metadata_root = self.path_finder.path_from_web_tests(
-                'external', 'wpt')
+            metadata_root = self.path_finder.path_from_wpt_tests()
         test_file_subpath = self.fs.relpath(file_path, metadata_root)
         manifest = manifestexpected.get_manifest(metadata_root,
                                                  test_file_subpath,
@@ -652,42 +673,38 @@ class WPTResultsProcessor:
         update_with_static_expectations(test_manifest)
         return test_manifest
 
-    def _write_text_results(self, test_name: str, artifacts: Artifacts,
-                            actual_text: str, file_path: str,
-                            actual_node: Any):
+    def _write_text_results(self, result: WPTResult, artifacts: Artifacts):
         """Write actual, expected, and diff text outputs to disk, if possible.
 
         If the expected output (WPT metadata) is missing, this method will not
         produce diff, but will still produce pretty diff.
 
         Arguments:
-            test_name: Web test name (a path).
+            result: WPT test result.
             artifacts: Artifact manager (note that this is not the artifact ID
                 to paths mapping itself).
-            actual_text: (Sub)test results in the WPT metadata format. There
-                should be no conditions (i.e., no `if <expr>: <value>`).
         """
         actual_subpath = self.port.output_filename(
-            test_name, test_failures.FILENAME_SUFFIX_ACTUAL, '.txt')
+            result.name, test_failures.FILENAME_SUFFIX_ACTUAL, '.txt')
+        actual_text = result.actual_metadata
         artifacts.CreateArtifact('actual_text', actual_subpath,
                                  actual_text.encode())
-        expected_file_exists = True
 
+        expected = None
         try:
-            expected_manifest = self._read_expected_metadata(
-                test_name, file_path)
+            expected = self._read_expected_metadata(result.name,
+                                                    result.file_path)
         except FileNotFoundError:
-            _log.debug('".ini" file for "%s" does not exist.', file_path)
-            expected_file_exists = False
+            _log.debug('".ini" file for "%s" does not exist.',
+                       result.file_path)
         except (ValueError, KeyError, wptmanifest.parser.ParseError) as error:
-            _log.warning('Unable to parse metadata for %s: %s', test_name,
+            _log.warning('Unable to parse metadata for %s: %s', result.name,
                          error)
-            expected_file_exists = False
 
-        if expected_file_exists:
-            expected_text = wptmanifest.serialize(expected_manifest.node)
+        if expected:
+            expected_text = wptmanifest.serialize(expected.node)
             expected_subpath = self.port.output_filename(
-                test_name, test_failures.FILENAME_SUFFIX_EXPECTED, '.txt')
+                result.name, test_failures.FILENAME_SUFFIX_EXPECTED, '.txt')
             artifacts.CreateArtifact('expected_text', expected_subpath,
                                      expected_text.encode())
 
@@ -698,22 +715,17 @@ class WPTResultsProcessor:
                 actual_subpath,
             )
             diff_subpath = self.port.output_filename(
-                test_name, test_failures.FILENAME_SUFFIX_DIFF, '.txt')
+                result.name, test_failures.FILENAME_SUFFIX_DIFF, '.txt')
             artifacts.CreateArtifact('text_diff', diff_subpath,
                                      diff_content.encode())
 
-        expected_node = None
-        if expected_file_exists:
-            expected_node = expected_manifest.node
+        test_type = self.get_test_type(result.name)
+        actual = result.test_section(self.run_info)
+        html_diff_content = wpt_results_diff.wpt_results_diff(
+            actual, expected, test_type)
 
-        path_from_test_root = self.get_path_from_test_root(test_name)
-
-        test_type = self.get_test_type(path_from_test_root)
-
-        html_diff_content = wpt_results_diff(expected_node, actual_node,
-                                             file_path, test_type)
         html_diff_subpath = self.port.output_filename(
-            test_name, test_failures.FILENAME_SUFFIX_HTML_DIFF, '.html')
+            result.name, test_failures.FILENAME_SUFFIX_HTML_DIFF, '.html')
         artifacts.CreateArtifact('pretty_text_diff', html_diff_subpath,
                                  html_diff_content.encode())
 
@@ -731,6 +743,8 @@ class WPTResultsProcessor:
             The diff stats if the screenshots are different.
         """
         # Remember the two images so we can diff them later.
+        _, test_url = self.port.get_suite_name_and_base_test(test_name)
+        test_url = self.path_finder.strip_wpt_path(test_url)
         actual_image_bytes = b''
         expected_image_bytes = b''
 
@@ -747,7 +761,7 @@ class WPTResultsProcessor:
 
             screenshot_key = 'expected_image'
             file_suffix = test_failures.FILENAME_SUFFIX_EXPECTED
-            if test_name == url:
+            if url == test_url:
                 screenshot_key = 'actual_image'
                 file_suffix = test_failures.FILENAME_SUFFIX_ACTUAL
                 actual_image_bytes = image_bytes
@@ -792,9 +806,7 @@ class WPTResultsProcessor:
                                   self.artifacts_dir))
         image_diff_stats = None
         if result.actual not in [ResultType.Pass, ResultType.Skip]:
-            self._write_text_results(result.name, artifacts,
-                                     result.actual_metadata, result.file_path,
-                                     result.test_section())
+            self._write_text_results(result, artifacts)
             screenshots = (extra or {}).get('reftest_screenshots') or []
             if screenshots:
                 image_diff_stats = self._write_screenshots(

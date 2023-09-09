@@ -10,6 +10,7 @@ import './share_password_family_picker_dialog.js';
 import './share_password_loading_dialog.js';
 import './share_password_error_dialog.js';
 import './share_password_no_members_dialog.js';
+import './share_password_confirmation_dialog.js';
 
 import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
 import {assertNotReached} from 'chrome://resources/js/assert_ts.js';
@@ -25,6 +26,7 @@ export enum ShareFlowState {
   ERROR,
   NO_MEMBERS,
   FAMILY_PICKER,
+  CONFIRMATION,
 }
 
 const SharePasswordFlowElementBase = I18nMixin(PolymerElement);
@@ -41,8 +43,16 @@ export class SharePasswordFlowElement extends SharePasswordFlowElementBase {
   static get properties() {
     return {
       passwordName: String,
+      passwordId: Number,
 
       flowState: Number,
+
+      fetchResults_: Object,
+
+      recipients_: {
+        type: Array,
+        value: [],
+      },
 
       flowStateEnum_: {
         type: Object,
@@ -53,7 +63,10 @@ export class SharePasswordFlowElement extends SharePasswordFlowElementBase {
   }
 
   passwordName: string;
+  passwordId: number;
   flowState: ShareFlowState = ShareFlowState.NO_DIALOG;
+  private recipients_: chrome.passwordsPrivate.RecipientInfo[];
+  private fetchResults_: chrome.passwordsPrivate.FamilyFetchResults|null = null;
   private passwordManager_: PasswordManagerProxy =
       PasswordManagerImpl.getInstance();
 
@@ -67,8 +80,8 @@ export class SharePasswordFlowElement extends SharePasswordFlowElementBase {
     // TODO(crbug/1445526): Add timeout to avoid flickering.
     this.flowState = ShareFlowState.FETCHING;
 
-    const results = await this.passwordManager_.fetchFamilyMembers();
-    switch (results.status) {
+    this.fetchResults_ = await this.passwordManager_.fetchFamilyMembers();
+    switch (this.fetchResults_.status) {
       case chrome.passwordsPrivate.FamilyFetchStatus.UNKNOWN_ERROR:
         this.flowState = ShareFlowState.ERROR;
         break;
@@ -95,6 +108,10 @@ export class SharePasswordFlowElement extends SharePasswordFlowElementBase {
     this.dispatchEvent(
         new CustomEvent('share-flow-done', {bubbles: true, composed: true}));
     this.flowState = ShareFlowState.NO_DIALOG;
+  }
+
+  private onStartShare_() {
+    this.flowState = ShareFlowState.CONFIRMATION;
   }
 }
 

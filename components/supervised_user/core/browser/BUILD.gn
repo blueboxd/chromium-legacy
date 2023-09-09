@@ -28,12 +28,25 @@ static_library("list_family_members_service") {
   ]
 
   deps = [
+    ":fetcher",
+    ":fetcher_config",
     "//base",
     "//components/keyed_service/core",
     "//components/prefs",
     "//components/signin/public/identity_manager",
-    "//components/supervised_user/core/browser:fetcher",
     "//components/supervised_user/core/browser/proto",
+    "//components/supervised_user/core/common:features",
+  ]
+}
+
+static_library("fetcher_config") {
+  sources = [
+    "fetcher_config.cc",
+    "fetcher_config.h",
+  ]
+  deps = [
+    "//google_apis",
+    "//net/traffic_annotation",
   ]
 }
 
@@ -41,15 +54,17 @@ static_library("fetcher") {
   sources = [
     "api_access_token_fetcher.cc",
     "api_access_token_fetcher.h",
-    "fetcher_config.cc",
-    "fetcher_config.h",
     "proto_fetcher.cc",
     "proto_fetcher.h",
   ]
   deps = [
+    ":fetcher_config",
     "//base",
     "//components/signin/public/identity_manager",
     "//components/supervised_user/core/browser/proto",
+
+    # TODO(b/293824572): Remove when all templated code is in headers.
+    "//components/supervised_user/core/browser/proto:test_support",
     "//components/supervised_user/core/common",
     "//google_apis",
     "//net/traffic_annotation",
@@ -72,6 +87,8 @@ static_library("browser") {
     "permission_request_creator_impl.h",
     "remote_web_approvals_manager.cc",
     "remote_web_approvals_manager.h",
+    "supervised_user_content_settings_provider.cc",
+    "supervised_user_content_settings_provider.h",
     "supervised_user_error_page.cc",
     "supervised_user_error_page.h",
     "supervised_user_interstitial.cc",
@@ -107,9 +124,11 @@ static_library("browser") {
 
   deps = [
     ":fetcher",
+    ":fetcher_config",
     ":list_family_members_service",
     ":supervised_user_preferences",
     "//base",
+    "//components/content_settings/core/browser",
     "//components/feed/core/shared_prefs:feed_shared_prefs",
     "//components/google/core/common",
     "//components/prefs",
@@ -130,27 +149,6 @@ static_library("browser") {
   ]
 }
 
-source_set("test_support") {
-  testonly = true
-  sources = [
-    "fetcher_config_test_utils.cc",
-    "fetcher_config_test_utils.h",
-    "kids_chrome_management_test_utils.cc",
-    "kids_chrome_management_test_utils.h",
-  ]
-  deps = [
-    ":fetcher",
-    "//base",
-    "//components/safe_search_api",
-    "//components/signin/public/identity_manager",
-    "//components/supervised_user/core/browser",
-    "//components/supervised_user/core/browser/proto",
-    "//net/traffic_annotation",
-    "//services/network/public/cpp",
-    "//url",
-  ]
-}
-
 source_set("unit_tests") {
   testonly = true
   sources = [
@@ -161,6 +159,7 @@ source_set("unit_tests") {
     "parental_control_metrics_unittest.cc",
     "proto_fetcher_unittest.cc",
     "remote_web_approvals_manager_unittest.cc",
+    "supervised_user_content_settings_provider_unittest.cc",
     "supervised_user_error_page_unittest.cc",
     "supervised_user_metrics_service_unittest.cc",
     "supervised_user_pref_store_unittest.cc",
@@ -174,11 +173,12 @@ source_set("unit_tests") {
   deps = [
     ":browser",
     ":fetcher",
+    ":fetcher_config",
     ":list_family_members_service",
     ":supervised_user_preferences",
-    ":test_support",
     "//base",
     "//base/test:test_support",
+    "//components/content_settings/core/browser:test_support",
     "//components/prefs:test_support",
     "//components/resources:components_resources",
     "//components/signin/public/base",
@@ -187,7 +187,10 @@ source_set("unit_tests") {
     "//components/signin/public/identity_manager:test_support",
     "//components/strings:components_strings_grit",
     "//components/supervised_user/core/browser/proto",
+    "//components/supervised_user/core/browser/proto:test_support",
     "//components/supervised_user/core/common",
+    "//components/supervised_user/test_support",
+    "//components/supervised_user/test_support",
     "//components/sync:test_support",
     "//components/sync_preferences:test_support",
     "//services/network:test_support",

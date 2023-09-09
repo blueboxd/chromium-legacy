@@ -29,7 +29,7 @@ consoles.console_view(
     branch_selector = branches.selector.ANDROID_BRANCHES,
     ordering = {
         None: ["cronet", "builder", "tester"],
-        "*cpu*": ["arm", "arm64", "x86"],
+        "*cpu*": ["arm", "arm64", "x86", "x64"],
         "cronet": "*cpu*",
         "builder": "*cpu*",
         "builder|det": consoles.ordering(short_names = ["rel", "dbg"]),
@@ -89,7 +89,7 @@ ci.thin_tester(
         chromium_config = builder_config.chromium_config(
             config = "android",
             apply_configs = [
-                "download_vr_test_apks",
+                "download_xr_test_apks",
             ],
             build_config = builder_config.build_config.DEBUG,
             target_bits = 64,
@@ -125,7 +125,7 @@ ci.thin_tester(
         chromium_config = builder_config.chromium_config(
             config = "android",
             apply_configs = [
-                "download_vr_test_apks",
+                "download_xr_test_apks",
             ],
             build_config = builder_config.build_config.DEBUG,
             target_bits = 64,
@@ -161,7 +161,7 @@ ci.thin_tester(
         chromium_config = builder_config.chromium_config(
             config = "android",
             apply_configs = [
-                "download_vr_test_apks",
+                "download_xr_test_apks",
             ],
             build_config = builder_config.build_config.DEBUG,
             target_bits = 64,
@@ -195,7 +195,7 @@ ci.builder(
         chromium_config = builder_config.chromium_config(
             config = "android",
             apply_configs = [
-                "download_vr_test_apks",
+                "download_xr_test_apks",
             ],
             build_config = builder_config.build_config.DEBUG,
             target_bits = 32,
@@ -229,7 +229,7 @@ ci.builder(
         chromium_config = builder_config.chromium_config(
             config = "android",
             apply_configs = [
-                "download_vr_test_apks",
+                "download_xr_test_apks",
             ],
             build_config = builder_config.build_config.DEBUG,
             target_bits = 64,
@@ -274,7 +274,7 @@ ci.builder(
         chromium_config = builder_config.chromium_config(
             config = "android",
             apply_configs = [
-                "download_vr_test_apks",
+                "download_xr_test_apks",
             ],
             build_config = builder_config.build_config.DEBUG,
             target_bits = 64,
@@ -510,7 +510,7 @@ ci.thin_tester(
         chromium_config = builder_config.chromium_config(
             config = "android",
             apply_configs = [
-                "download_vr_test_apks",
+                "download_xr_test_apks",
             ],
             build_config = builder_config.build_config.DEBUG,
             target_bits = 64,
@@ -543,7 +543,7 @@ ci.thin_tester(
         chromium_config = builder_config.chromium_config(
             config = "android",
             apply_configs = [
-                "download_vr_test_apks",
+                "download_xr_test_apks",
             ],
             build_config = builder_config.build_config.DEBUG,
             target_bits = 64,
@@ -575,7 +575,7 @@ ci.builder(
         chromium_config = builder_config.chromium_config(
             config = "android",
             apply_configs = [
-                "download_vr_test_apks",
+                "download_xr_test_apks",
                 "mb",
             ],
             build_config = builder_config.build_config.RELEASE,
@@ -607,7 +607,7 @@ ci.builder(
         chromium_config = builder_config.chromium_config(
             config = "android",
             apply_configs = [
-                "download_vr_test_apks",
+                "download_xr_test_apks",
             ],
             build_config = builder_config.build_config.DEBUG,
             target_bits = 64,
@@ -636,7 +636,7 @@ ci.builder(
         chromium_config = builder_config.chromium_config(
             config = "android",
             apply_configs = [
-                "download_vr_test_apks",
+                "download_xr_test_apks",
                 "mb",
             ],
             build_config = builder_config.build_config.RELEASE,
@@ -776,7 +776,7 @@ ci.builder(
                 "mb",
             ],
             build_config = builder_config.build_config.DEBUG,
-            target_bits = 32,
+            target_bits = 64,
             target_platform = builder_config.target_platform.ANDROID,
         ),
         android_config = builder_config.android_config(config = "main_builder"),
@@ -804,7 +804,7 @@ ci.builder(
                 "mb",
             ],
             build_config = builder_config.build_config.RELEASE,
-            target_bits = 32,
+            target_bits = 64,
             target_platform = builder_config.target_platform.ANDROID,
         ),
         android_config = builder_config.android_config(config = "main_builder"),
@@ -841,6 +841,64 @@ ci.builder(
     sheriff_rotations = args.ignore_default(None),
     console_view_entry = consoles.console_view_entry(
         category = "cronet|asan",
+    ),
+    notifies = ["cronet"],
+)
+
+# Compiles with Android Mainline Clang
+ci.builder(
+    name = "android-cronet-mainline-clang-arm64-dbg",
+    builder_spec = builder_config.builder_spec(
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+            apply_configs = ["android"],
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "android",
+            apply_configs = [
+                "cronet_builder",
+                "mb",
+            ],
+            build_config = builder_config.build_config.DEBUG,
+            target_bits = 64,
+            target_platform = builder_config.target_platform.ANDROID,
+        ),
+        android_config = builder_config.android_config(config = "main_builder"),
+        build_gs_bucket = "chromium-android-archive",
+    ),
+    sheriff_rotations = args.ignore_default(None),
+    console_view_entry = consoles.console_view_entry(
+        category = "cronet|mainline_clang|arm64",
+        short_name = "dbg",
+    ),
+    notifies = ["cronet"],
+)
+
+# Compiles with Android Mainline Clang
+ci.builder(
+    name = "android-cronet-mainline-clang-arm64-rel",
+    builder_spec = builder_config.builder_spec(
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+            apply_configs = ["android"],
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "android",
+            apply_configs = [
+                "cronet_builder",
+                "mb",
+            ],
+            build_config = builder_config.build_config.RELEASE,
+            target_bits = 64,
+            target_platform = builder_config.target_platform.ANDROID,
+        ),
+        android_config = builder_config.android_config(config = "main_builder"),
+        build_gs_bucket = "chromium-android-archive",
+    ),
+    sheriff_rotations = args.ignore_default(None),
+    console_view_entry = consoles.console_view_entry(
+        category = "cronet|mainline_clang|arm64",
+        short_name = "rel",
     ),
     notifies = ["cronet"],
 )
@@ -890,6 +948,107 @@ ci.builder(
     console_view_entry = consoles.console_view_entry(
         category = "cronet|x86",
         short_name = "dbg",
+    ),
+    notifies = ["cronet"],
+)
+
+ci.builder(
+    name = "android-cronet-x64-dbg",
+    branch_selector = branches.selector.ANDROID_BRANCHES,
+    builder_spec = builder_config.builder_spec(
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+            apply_configs = [
+                "android",
+            ],
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "android",
+            apply_configs = [
+                "cronet_builder",
+                "mb",
+            ],
+            build_config = builder_config.build_config.DEBUG,
+            target_bits = 64,
+            target_platform = builder_config.target_platform.ANDROID,
+        ),
+        android_config = builder_config.android_config(
+            config = "x64_builder",
+        ),
+        build_gs_bucket = "chromium-android-archive",
+    ),
+    sheriff_rotations = args.ignore_default(None),
+    console_view_entry = consoles.console_view_entry(
+        category = "cronet|x64",
+        short_name = "dbg",
+    ),
+    notifies = ["cronet"],
+)
+
+ci.thin_tester(
+    name = "android-cronet-x64-dbg-12-tests",
+    triggered_by = ["ci/android-cronet-x64-dbg"],
+    builder_spec = builder_config.builder_spec(
+        execution_mode = builder_config.execution_mode.TEST,
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+            apply_configs = [
+                "android",
+            ],
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "android",
+            apply_configs = [
+                "cronet_builder",
+                "mb",
+            ],
+            build_config = builder_config.build_config.DEBUG,
+            target_bits = 64,
+            target_platform = builder_config.target_platform.ANDROID,
+        ),
+        android_config = builder_config.android_config(
+            config = "x64_builder",
+        ),
+        build_gs_bucket = "chromium-android-archive",
+    ),
+    sheriff_rotations = args.ignore_default(None),
+    console_view_entry = consoles.console_view_entry(
+        category = "cronet|test",
+        short_name = "s",
+    ),
+    notifies = ["cronet"],
+)
+
+ci.thin_tester(
+    name = "android-cronet-x64-dbg-13-tests",
+    triggered_by = ["ci/android-cronet-x64-dbg"],
+    builder_spec = builder_config.builder_spec(
+        execution_mode = builder_config.execution_mode.TEST,
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+            apply_configs = [
+                "android",
+            ],
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "android",
+            apply_configs = [
+                "cronet_builder",
+                "mb",
+            ],
+            build_config = builder_config.build_config.DEBUG,
+            target_bits = 64,
+            target_platform = builder_config.target_platform.ANDROID,
+        ),
+        android_config = builder_config.android_config(
+            config = "x64_builder",
+        ),
+        build_gs_bucket = "chromium-android-archive",
+    ),
+    sheriff_rotations = args.ignore_default(None),
+    console_view_entry = consoles.console_view_entry(
+        category = "cronet|test",
+        short_name = "t",
     ),
     notifies = ["cronet"],
 )
@@ -958,6 +1117,40 @@ ci.thin_tester(
     console_view_entry = consoles.console_view_entry(
         category = "cronet|test",
         short_name = "m",
+    ),
+    notifies = ["cronet"],
+)
+
+ci.thin_tester(
+    name = "android-cronet-x86-dbg-nougat-tests",
+    triggered_by = ["ci/android-cronet-x86-dbg"],
+    builder_spec = builder_config.builder_spec(
+        execution_mode = builder_config.execution_mode.TEST,
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+            apply_configs = [
+                "android",
+            ],
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "android",
+            apply_configs = [
+                "cronet_builder",
+                "mb",
+            ],
+            build_config = builder_config.build_config.DEBUG,
+            target_bits = 32,
+            target_platform = builder_config.target_platform.ANDROID,
+        ),
+        android_config = builder_config.android_config(
+            config = "x86_builder",
+        ),
+        build_gs_bucket = "chromium-android-archive",
+    ),
+    sheriff_rotations = args.ignore_default(None),
+    console_view_entry = consoles.console_view_entry(
+        category = "cronet|test",
+        short_name = "n",
     ),
     notifies = ["cronet"],
 )
@@ -1127,11 +1320,9 @@ ci.builder(
     notifies = ["cronet"],
 )
 
-ci.thin_tester(
-    name = "android-cronet-x86-rel-kitkat-tests",
-    triggered_by = ["ci/android-cronet-x86-rel"],
+ci.builder(
+    name = "android-cronet-x64-rel",
     builder_spec = builder_config.builder_spec(
-        execution_mode = builder_config.execution_mode.TEST,
         gclient_config = builder_config.gclient_config(
             config = "chromium",
             apply_configs = ["android"],
@@ -1143,16 +1334,16 @@ ci.thin_tester(
                 "mb",
             ],
             build_config = builder_config.build_config.RELEASE,
-            target_bits = 32,
+            target_bits = 64,
             target_platform = builder_config.target_platform.ANDROID,
         ),
-        android_config = builder_config.android_config(config = "x86_builder"),
+        android_config = builder_config.android_config(config = "x64_builder"),
         build_gs_bucket = "chromium-android-archive",
     ),
     sheriff_rotations = args.ignore_default(None),
     console_view_entry = consoles.console_view_entry(
-        category = "cronet|test",
-        short_name = "k",
+        category = "cronet|x64",
+        short_name = "rel",
     ),
     notifies = ["cronet"],
 )
@@ -1184,8 +1375,7 @@ ci.builder(
     execution_timeout = 4 * time.hour,
 )
 
-# TODO(crbug.com/1459433): Enable the branch, sheriff and tree_closing
-# once the builder is stable.
+# TODO(crbug.com/1459433): Enable the branch once the builder is ready.
 ci.builder(
     name = "android-oreo-x86-rel",
     builder_spec = builder_config.builder_spec(
@@ -1204,12 +1394,13 @@ ci.builder(
         ),
         build_gs_bucket = "chromium-android-archive",
     ),
-    sheriff_rotations = args.ignore_default(None),
+    tree_closing = True,
     # TODO(crbug.com/1459433): Update the console view config once on CQ
     console_view_entry = consoles.console_view_entry(
         category = "builder_tester|x86",
         short_name = "O",
     ),
+    execution_timeout = 4 * time.hour,
 )
 
 ci.thin_tester(
@@ -1227,7 +1418,7 @@ ci.thin_tester(
         chromium_config = builder_config.chromium_config(
             config = "android",
             apply_configs = [
-                "download_vr_test_apks",
+                "download_xr_test_apks",
             ],
             build_config = builder_config.build_config.DEBUG,
             target_bits = 64,
@@ -1258,7 +1449,7 @@ ci.builder(
         chromium_config = builder_config.chromium_config(
             config = "android",
             apply_configs = [
-                "download_vr_test_apks",
+                "download_xr_test_apks",
                 "mb",
             ],
             build_config = builder_config.build_config.RELEASE,

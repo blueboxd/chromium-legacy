@@ -51,10 +51,11 @@ void TouchToFillController::Show(
     base::span<const UiCredential> credentials,
     base::span<PasskeyCredential> passkey_credentials,
     std::unique_ptr<TouchToFillControllerDelegate> delegate,
-    raw_ptr<content::RenderWidgetHost> render_widget_host) {
+    base::WeakPtr<password_manager::ContentPasswordManagerDriver>
+        frame_driver) {
   DCHECK(!delegate_);
   delegate_ = std::move(delegate);
-  visibility_controller_->SetVisible(render_widget_host);
+  visibility_controller_->SetVisible(std::move(frame_driver));
 
   delegate_->OnShow(credentials, passkey_credentials);
   if (credentials.empty() && passkey_credentials.empty()) {
@@ -136,10 +137,9 @@ gfx::NativeView TouchToFillController::GetNativeView() {
 }
 
 void TouchToFillController::Close() {
-  view_.reset();
-  // Unretained is safe here because TouchToFillController owns the delegate.
-  delegate_->OnDismiss(base::BindOnce(&TouchToFillController::ActionCompleted,
-                                      base::Unretained(this)));
+  // TODO(crbug/1468487). This is a duplicate of `OnDismiss`. Merge the two
+  // functions.
+  OnDismiss();
 }
 
 void TouchToFillController::Reset() {

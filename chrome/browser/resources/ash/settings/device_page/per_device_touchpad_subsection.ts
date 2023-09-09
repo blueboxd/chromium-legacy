@@ -25,6 +25,7 @@ import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {PolymerElementProperties} from 'chrome://resources/polymer/v3_0/polymer/interfaces.js';
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
+import {isRevampWayfindingEnabled} from '../common/load_time_booleans.js';
 import {DeepLinkingMixin} from '../deep_linking_mixin.js';
 import {Setting} from '../mojom-webui/setting.mojom-webui.js';
 import {RouteObserverMixin} from '../route_observer_mixin.js';
@@ -144,8 +145,8 @@ export class SettingsPerDeviceTouchpadSubsectionElement extends
           return [
             {
               value: SimulateRightClickModifier.kNone,
-              name:
-                  loadTimeData.getString('touchpadSimulateRightClickOptionOff'),
+              name: loadTimeData.getString(
+                  'touchpadSimulateRightClickOptionDisabled'),
             },
             {
               value: SimulateRightClickModifier.kSearch,
@@ -164,10 +165,10 @@ export class SettingsPerDeviceTouchpadSubsectionElement extends
       /**
        * TODO(khorimoto): Remove this conditional once the feature is launched.
        */
-      allowScrollSettings_: {
+      allowTouchpadScrollSettings_: {
         type: Boolean,
         value() {
-          return loadTimeData.getBoolean('allowScrollSettings');
+          return loadTimeData.getBoolean('allowTouchpadScrollSettings');
         },
       },
 
@@ -197,6 +198,13 @@ export class SettingsPerDeviceTouchpadSubsectionElement extends
           ];
         },
         readOnly: true,
+      },
+
+      isRevampWayfindingEnabled_: {
+        type: Boolean,
+        value: () => {
+          return isRevampWayfindingEnabled();
+        },
       },
 
       reverseScrollValue: {
@@ -293,6 +301,7 @@ export class SettingsPerDeviceTouchpadSubsectionElement extends
   private touchpadIndex: number;
   private isLastDevice: boolean;
   isAltClickAndSixPackCustomizationEnabled: boolean;
+  private isRevampWayfindingEnabled_: boolean;
 
   private updateSettingsToCurrentPrefs(): void {
     // `updateSettingsToCurrentPrefs` gets called when the `keyboard` object
@@ -396,6 +405,27 @@ export class SettingsPerDeviceTouchpadSubsectionElement extends
     });
 
     return tempEl.innerHTML;
+  }
+
+  private getTouchpadAccelerationDescription(): string {
+    if (this.isRevampWayfindingEnabled_) {
+      return this.i18n('touchpadAccelerationDescription');
+    }
+    return '';
+  }
+
+  private getTouchpadTapDraggingDescription(): string {
+    if (this.isRevampWayfindingEnabled_) {
+      return this.i18n('tapDraggingDescription');
+    }
+    return '';
+  }
+
+  private getTouchpadTapToClickDescription(): string {
+    if (this.isRevampWayfindingEnabled_) {
+      return this.i18n('touchpadTapToClickDescription');
+    }
+    return '';
   }
 }
 

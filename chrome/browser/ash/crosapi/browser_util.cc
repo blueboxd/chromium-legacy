@@ -120,7 +120,7 @@ bool IsUserTypeAllowed(const User& user) {
   switch (user.GetType()) {
     case user_manager::USER_TYPE_REGULAR:
     case user_manager::USER_TYPE_PUBLIC_ACCOUNT:
-    // Note: Lacros will not be enabled for Guest users unless LacrosSupport
+    // Note: Lacros will not be enabled for Guest users unless LacrosOnly
     // flag is passed in --enable-features. See https://crbug.com/1294051#c25.
     case user_manager::USER_TYPE_GUEST:
       return true;
@@ -211,11 +211,9 @@ bool IsLacrosAllowedInternal(const User* user,
 
   switch (lacros_availability) {
     case LacrosAvailability::kLacrosDisallowed:
-      return false;
     case LacrosAvailability::kSideBySide:
     case LacrosAvailability::kLacrosPrimary:
-      return !base::FeatureList::IsEnabled(
-          ash::features::kLacrosSxSPrimaryRemove);
+      return false;
     case LacrosAvailability::kUserChoice:
     case LacrosAvailability::kLacrosOnly:
       return true;
@@ -246,33 +244,6 @@ LacrosMode GetLacrosModeInternal(const User* user,
     }
   }
 
-  if (base::FeatureList::IsEnabled(ash::features::kLacrosSxSPrimaryRemove)) {
-    switch (lacros_availability) {
-      case LacrosAvailability::kUserChoice:
-        break;
-      case LacrosAvailability::kLacrosDisallowed:
-        NOTREACHED();  // Guarded by IsLacrosAllowedInternal.
-        return LacrosMode::kDisabled;
-      case LacrosAvailability::kSideBySide:
-      case LacrosAvailability::kLacrosPrimary:
-        return LacrosMode::kDisabled;
-      case LacrosAvailability::kLacrosOnly:
-        return LacrosMode::kOnly;
-    }
-
-    if (base::FeatureList::IsEnabled(ash::features::kLacrosOnly)) {
-      return LacrosMode::kOnly;
-    }
-
-    return LacrosMode::kDisabled;
-  }
-
-  // Lacros-chrome will always be the primary browser if Lacros is enabled
-  // in Kiosk session.
-  bool in_kiosk = user->GetType() == user_manager::USER_TYPE_KIOSK_APP ||
-                  user->GetType() == user_manager::USER_TYPE_WEB_KIOSK_APP;
-
-  // Check the
   switch (lacros_availability) {
     case LacrosAvailability::kUserChoice:
       break;
@@ -280,48 +251,17 @@ LacrosMode GetLacrosModeInternal(const User* user,
       NOTREACHED();  // Guarded by IsLacrosAllowedInternal.
       return LacrosMode::kDisabled;
     case LacrosAvailability::kSideBySide:
-      // In Kiosk-mode, even if policy says side-by-side, it is stepped
-      // into at least LacrosPrimary. This is for backward compatibility
-      // for transition period.
-      if (!in_kiosk) {
-        return LacrosMode::kSideBySide;
-      }
-
-      // Note that for this *ForMigration variant, since there might not be a
-      // logged in user yet, the user's email address has to be passed
-      // explicitly. Normally, policy should override Finch. Due to
-      // complications in the Google rollout, in the short term Finch will
-      // override policy if Finch is enabling this feature.
-      if (IsGoogleInternal(user) &&
-          base::FeatureList::IsEnabled(ash::features::kLacrosOnly)) {
-        return LacrosMode::kOnly;
-      }
-      return LacrosMode::kPrimary;
     case LacrosAvailability::kLacrosPrimary:
-      // Same as Side-By-Side policy. Please find the comment above.
-      if (IsGoogleInternal(user) &&
-          base::FeatureList::IsEnabled(ash::features::kLacrosOnly)) {
-        return LacrosMode::kOnly;
-      }
-      return LacrosMode::kPrimary;
+      return LacrosMode::kDisabled;
     case LacrosAvailability::kLacrosOnly:
       return LacrosMode::kOnly;
   }
 
-  if (!base::FeatureList::IsEnabled(ash::features::kLacrosSupport)) {
-    return LacrosMode::kDisabled;
+  if (base::FeatureList::IsEnabled(ash::features::kLacrosOnly)) {
+    return LacrosMode::kOnly;
   }
 
-  if (!base::FeatureList::IsEnabled(ash::features::kLacrosPrimary) &&
-      !in_kiosk) {
-    return LacrosMode::kSideBySide;
-  }
-
-  if (!base::FeatureList::IsEnabled(ash::features::kLacrosOnly)) {
-    return LacrosMode::kPrimary;
-  }
-
-  return LacrosMode::kOnly;
+  return LacrosMode::kDisabled;
 }
 
 bool IsLacrosEnabledInternal(const User* user,
@@ -368,37 +308,6 @@ bool IsAshWebBrowserEnabledInternal(const User* user,
     case LacrosMode::kOnly:
       return false;
   }
-}
-
-// Called from `IsDataWipeRequired()` or `IsDataWipeRequiredForTesting()`.
-// data_version` is the version of last data wipe. `current_version` is the
-// version of ash-chrome. `required_version` is the version that introduces some
-// breaking change. `data_version` needs to be greater or equal to
-// `required_version`. If `required_version` is newer than `current_version`,
-// data wipe is not required.
-bool IsDataWipeRequiredInternal(base::Version data_version,
-                                const base::Version& current_version,
-                                const base::Version& required_version) {
-  // `data_version` is invalid if any wipe has not been recorded yet. In
-  // such a case, assume that the last data wipe happened significantly long
-  // time ago.
-  if (!data_version.IsValid())
-    data_version = base::Version("0");
-
-  if (current_version < required_version) {
-    // If `current_version` is smaller than the `required_version`, that means
-    // that the data wipe doesn't need to happen yet.
-    return false;
-  }
-
-  if (data_version >= required_version) {
-    // If `data_version` is greater or equal to `required_version`, this means
-    // data wipe has already happened and that user data is compatible with the
-    // current lacros.
-    return false;
-  }
-
-  return true;
 }
 
 // Returns the string value for the kLacrosStabilitySwitch if present.
@@ -514,9 +423,8 @@ const char kLacrosAvailabilityPolicyLacrosPrimary[] = "lacros_primary";
 const char kLacrosAvailabilityPolicyLacrosOnly[] = "lacros_only";
 
 const char kLaunchOnLoginPref[] = "lacros.launch_on_login";
-const char kClearUserDataDir1Pref[] = "lacros.clear_user_data_dir_1";
+// Marks the Chrome version at which profile migration was completed.
 const char kDataVerPref[] = "lacros.data_version";
-const char kRequiredDataVersion[] = "92.0.0.0";
 const char kProfileDataBackwardMigrationCompletedForUserPref[] =
     "lacros.profile_data_backward_migration_completed_for_user";
 // This pref is to record whether the user clicks "Go to files" button
@@ -527,8 +435,6 @@ const char kProfileMigrationCompletionTimeForUserPref[] =
 
 void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(kLaunchOnLoginPref, /*default_value=*/false);
-  registry->RegisterBooleanPref(kClearUserDataDir1Pref,
-                                /*default_value=*/false);
 }
 
 void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
@@ -601,12 +507,6 @@ bool IsProfileMigrationAvailable() {
   return true;
 }
 
-bool IsLacrosSupportFlagAllowed() {
-  return IsLacrosAllowedToBeEnabled() &&
-         (GetCachedLacrosAvailability() == LacrosAvailability::kUserChoice) &&
-         !base::FeatureList::IsEnabled(ash::features::kLacrosSxSPrimaryRemove);
-}
-
 bool IsAshWebBrowserEnabled() {
   return IsAshWebBrowserEnabledInternal(GetPrimaryUser(),
                                         GetCachedLacrosAvailability(),
@@ -647,12 +547,6 @@ bool IsLacrosPrimaryBrowserAllowedForMigration(
     const user_manager::User* user,
     LacrosAvailability lacros_availability) {
   return IsLacrosAllowedInternal(user, lacros_availability);
-}
-
-bool IsLacrosPrimaryFlagAllowed() {
-  return IsLacrosPrimaryBrowserAllowed() &&
-         (GetCachedLacrosAvailability() == LacrosAvailability::kUserChoice) &&
-         !base::FeatureList::IsEnabled(ash::features::kLacrosSxSPrimaryRemove);
 }
 
 bool IsLacrosOnlyBrowserAllowed() {
@@ -748,24 +642,6 @@ void RecordDataVer(PrefService* local_state,
   ScopedDictPrefUpdate update(local_state, kDataVerPref);
   base::Value::Dict& dict = update.Get();
   dict.Set(user_id_hash, version.GetString());
-}
-
-bool IsDataWipeRequired(PrefService* local_state,
-                        const std::string& user_id_hash) {
-  base::Version data_version = GetDataVer(local_state, user_id_hash);
-  const base::Version& current_version = version_info::GetVersion();
-  base::Version required_version =
-      base::Version(base::StringPiece(kRequiredDataVersion));
-
-  return IsDataWipeRequiredInternal(data_version, current_version,
-                                    required_version);
-}
-
-bool IsDataWipeRequiredForTesting(base::Version data_version,
-                                  const base::Version& current_version,
-                                  const base::Version& required_version) {
-  return IsDataWipeRequiredInternal(data_version, current_version,
-                                    required_version);
 }
 
 base::Version GetRootfsLacrosVersionMayBlock(
@@ -1180,9 +1056,6 @@ base::StringPiece GetLacrosSelectionPolicyName(LacrosSelectionPolicy value) {
 bool IsAshBrowserSyncEnabled() {
   // Turn off sync from Ash if Lacros is enabled and Ash web browser is
   // disabled.
-  // TODO(crbug.com/1293250): We must check whether profile migration is
-  // completed or not here. Currently that is checked inside `IsLacrosEnabled()`
-  // but it is planned to be decoupled with the function in the future.
   if (IsLacrosEnabled() && !IsAshWebBrowserEnabled())
     return false;
 

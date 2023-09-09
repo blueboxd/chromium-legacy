@@ -105,7 +105,6 @@
 <translation id="4266252015790371705">{MONTHS,plural, =1{1 個月前}other{# 個月前}}</translation>
 <translation id="4289300219472526559">開始說</translation>
 <translation id="4289540628985791613">概覽</translation>
-<translation id="4306392492252714209">喺剪貼簿度移除。</translation>
 <translation id="4491109536499578614">圖片</translation>
 <translation id="4565377596337484307">隱藏密碼</translation>
 <translation id="4588090240171750605">向右捲動</translation>
@@ -126,6 +125,7 @@
 <translation id="5329858601952122676">刪除(&amp;D)</translation>
 <translation id="5361107212971249203">文字</translation>
 <translation id="5463830097259460683">Emoji 和符號</translation>
+<translation id="5505748296268090374">移除<ph name="ITEM_TEXT" />。</translation>
 <translation id="5528053674512161860">由於未安裝開發人員使用者介面模組 (dev_ui)，因此無法載入網頁</translation>
 <translation id="5574202486608032840"><ph name="IDS_SHORT_PRODUCT_OS_NAME" /></translation>
 <translation id="5583640892426849032">Backspace</translation>
@@ -175,6 +175,7 @@
 <translation id="7170202025028120564">應用程式的顯示設定將在下次重新啟動時生效。</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{還有 1 分鐘}other{還有 # 分鐘}}</translation>
+<translation id="7363164521834647158">傳送回覆</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{1 分鐘前}other{# 分鐘前}}</translation>
 <translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{還有 1 分鐘}other{還有 # 分鐘}}</translation>

@@ -41,6 +41,7 @@ using RoundedDisplayMasksInfo = TextureDrawQuad::RoundedDisplayMasksInfo;
 constexpr OverlayCandidateFactory::OverlayContext kOverlayContextForTesting{
     .is_delegated_context = true,
     .supports_clip_rect = true,
+    .supports_out_of_window_clip_rect = true,
     .supports_arbitrary_transform = true,
     .supports_rounded_display_masks = false};
 
@@ -269,13 +270,13 @@ class OverlayCandidateFactoryArbitraryTransformTest
   }
 };
 
-// Check that even axis-aligned transforms are stored separately from the
-// display rect.
+// Check that axis-aligned transforms are stored as OverlayTransforms when
+// possible.
 TEST_F(OverlayCandidateFactoryArbitraryTransformTest,
        AxisAlignedNotBakedIntoDisplayRect) {
   AggregatedRenderPass render_pass;
   render_pass.SetNew(AggregatedRenderPassId::FromUnsafeValue(1),
-                     gfx::Rect(0, 0, 1, 1), gfx::Rect(), gfx::Transform());
+                     gfx::Rect(0, 0, 10, 10), gfx::Rect(), gfx::Transform());
 
   OverlayCandidateFactory factory =
       CreateCandidateFactory(render_pass, gfx::RectF(render_pass.output_rect),
@@ -290,8 +291,9 @@ TEST_F(OverlayCandidateFactoryArbitraryTransformTest,
   OverlayCandidate::CandidateStatus result =
       factory.FromDrawQuad(&quad, candidate);
   ASSERT_EQ(result, OverlayCandidate::CandidateStatus::kSuccess);
-  EXPECT_EQ(absl::get<gfx::Transform>(candidate.transform), transform);
-  EXPECT_EQ(candidate.display_rect, gfx::RectF(0, 0, 1, 1));
+  EXPECT_EQ(absl::get<gfx::OverlayTransform>(candidate.transform),
+            gfx::OverlayTransform::OVERLAY_TRANSFORM_NONE);
+  EXPECT_EQ(candidate.display_rect, gfx::RectF(1, 2, 3, 4));
 }
 
 // Check that even arbitrary transforms are preserved on the overlay
@@ -330,6 +332,9 @@ TEST_F(OverlayCandidateFactoryArbitraryTransformTest, TransformIncludesYFlip) {
                              kOverlayContextForTesting);
 
   gfx::Transform transform;
+  // Use a non-axis aligned transform so it can't be converted to an
+  // OverlayTransform.
+  transform.SkewX(45.0);
   auto quad = CreateUnclippedDrawQuad(render_pass, gfx::Rect(1, 1), transform);
   quad.y_flipped = true;
 
@@ -339,6 +344,7 @@ TEST_F(OverlayCandidateFactoryArbitraryTransformTest, TransformIncludesYFlip) {
   ASSERT_EQ(result, OverlayCandidate::CandidateStatus::kSuccess);
 
   gfx::Transform transform_y_flipped;
+  transform_y_flipped.SkewX(45.0);
   transform_y_flipped.Translate(0, 1);
   transform_y_flipped.Scale(1, -1);
   EXPECT_EQ(absl::get<gfx::Transform>(candidate.transform),
@@ -346,7 +352,8 @@ TEST_F(OverlayCandidateFactoryArbitraryTransformTest, TransformIncludesYFlip) {
   gfx::PointF display_rect_origin =
       absl::get<gfx::Transform>(candidate.transform)
           .MapPoint(candidate.display_rect.origin());
-  EXPECT_EQ(display_rect_origin, gfx::PointF(0, 1));
+  // Flip moves the origin to 0,1. The skew slides it out to 1,1.
+  EXPECT_EQ(display_rect_origin, gfx::PointF(1, 1));
   EXPECT_EQ(candidate.display_rect, gfx::RectF(0, 0, 1, 1));
 }
 
@@ -364,37 +371,13 @@ TEST_F(OverlayCandidateFactoryArbitraryTransformTest, DeathOnNoClipSupport) {
   const OverlayCandidateFactory::OverlayContext context = {
       .is_delegated_context = true,
       .supports_clip_rect = false,
+      .supports_out_of_window_clip_rect = false,
       .supports_arbitrary_transform = true};
 
   EXPECT_DEATH(CreateCandidateFactory(
                    render_pass, gfx::RectF(render_pass.output_rect), context),
                "context_.supports_clip_rect \\|\\| "
                "!context_.supports_arbitrary_transform");
-}
-
-// Resource-less overlays use the overlay quad in target space for damage
-// calculation. This doesn't make sense with arbitrary transforms, so we expect
-// a DCHECK to trip.
-TEST_F(OverlayCandidateFactoryArbitraryTransformTest,
-       DeathOnResourcelessAndArbitraryTransform) {
-  AggregatedRenderPass render_pass;
-  render_pass.SetNew(AggregatedRenderPassId::FromUnsafeValue(1),
-                     gfx::Rect(0, 0, 2, 2), gfx::Rect(0, 0, 1, 1),
-                     gfx::Transform());
-
-  OverlayCandidateFactory factory =
-      CreateCandidateFactory(render_pass, gfx::RectF(render_pass.output_rect),
-                             kOverlayContextForTesting);
-
-  SharedQuadState* sqs = render_pass.CreateAndAppendSharedQuadState();
-  sqs->quad_to_target_transform.Rotate(1);
-
-  SolidColorDrawQuad quad;
-  quad.SetNew(sqs, gfx::Rect(0, 0, 1, 1), gfx::Rect(0, 0, 1, 1), SkColors::kRed,
-              true);
-  OverlayCandidate candidate;
-  EXPECT_DEATH(factory.FromDrawQuad(&quad, candidate),
-               "absl::holds_alternative<gfx::OverlayTransform>");
 }
 #endif
 
@@ -744,20 +727,22 @@ TEST_F(OverlayCandidateFactoryTest, ClipDelegation_OutOfWindow) {
   AggregatedRenderPass render_pass;
   render_pass.SetNew(AggregatedRenderPassId::FromUnsafeValue(1),
                      gfx::Rect(0, 0, 100, 100), gfx::Rect(), gfx::Transform());
-  gfx::Rect rect(0, 0, 75, 75);
-  gfx::Rect clip(0, 0, 50, 50);
+  constexpr gfx::Rect kRect(0, 0, 75, 75);
+  constexpr gfx::Rect kClip(0, 0, 50, 50);
   // Transform up, outside the window.
   gfx::Transform transform;
   transform.Translate(gfx::Vector2dF(0, -30));
-  auto* quad = AddQuad(rect, transform, &render_pass, clip, rect);
+  auto* quad = AddQuad(kRect, transform, &render_pass, kClip, kRect);
 
   OverlayCandidateFactory noclip_factory = CreateCandidateFactory(
       render_pass, gfx::RectF(render_pass.output_rect),
       OverlayCandidateFactory::OverlayContext{.is_delegated_context = true});
-  OverlayCandidateFactory clip_factory = CreateCandidateFactory(
-      render_pass, gfx::RectF(render_pass.output_rect),
-      OverlayCandidateFactory::OverlayContext{.is_delegated_context = true,
-                                              .supports_clip_rect = true});
+  OverlayCandidateFactory clip_factory =
+      CreateCandidateFactory(render_pass, gfx::RectF(render_pass.output_rect),
+                             OverlayCandidateFactory::OverlayContext{
+                                 .is_delegated_context = true,
+                                 .supports_clip_rect = true,
+                                 .supports_out_of_window_clip_rect = true});
 
   OverlayCandidate no_clip_cand;
   OverlayCandidate clip_cand;
@@ -766,12 +751,13 @@ TEST_F(OverlayCandidateFactoryTest, ClipDelegation_OutOfWindow) {
   ASSERT_EQ(clip_factory.FromDrawQuad(quad, clip_cand),
             OverlayCandidate::CandidateStatus::kSuccess);
 
-  // Clip rect can't be delegated because it's no within the window.
-  gfx::RectF clipped(0, 0, 50, 45);
-  EXPECT_RECTF_EQ(no_clip_cand.display_rect, clipped);
+  // Clip rect can be delegated if supported.
+  constexpr gfx::RectF kTransformedClip(0, 0, 50, 45);
+  constexpr gfx::RectF kTransformedRect(0, -30, 75, 75);
+  EXPECT_RECTF_EQ(no_clip_cand.display_rect, kTransformedClip);
   EXPECT_FALSE(no_clip_cand.clip_rect.has_value());
-  EXPECT_RECTF_EQ(clip_cand.display_rect, clipped);
-  EXPECT_FALSE(clip_cand.clip_rect.has_value());
+  EXPECT_RECTF_EQ(clip_cand.display_rect, kTransformedRect);
+  EXPECT_EQ(clip_cand.clip_rect.value(), kClip);
 }
 
 TEST_F(OverlayCandidateFactoryTest, ClipDelegation_VisibleRect) {
@@ -781,7 +767,7 @@ TEST_F(OverlayCandidateFactoryTest, ClipDelegation_VisibleRect) {
   gfx::Rect rect(0, 0, 75, 75);
   gfx::Rect clip(0, 0, 50, 50);
   // Use content clipping.
-  gfx::Rect visible_rect = gfx::Rect(0, 10, 65, 75);
+  gfx::Rect visible_rect = gfx::Rect(0, 10, 65, 65);
   gfx::Transform identity;
   auto* quad = AddQuad(rect, identity, &render_pass, clip, visible_rect);
 
@@ -800,12 +786,12 @@ TEST_F(OverlayCandidateFactoryTest, ClipDelegation_VisibleRect) {
   ASSERT_EQ(clip_factory.FromDrawQuad(quad, clip_cand),
             OverlayCandidate::CandidateStatus::kSuccess);
 
-  // Clip rect can't be delegated because the quad has content clipping.
+  // Clip rect can be delegated when the quad has content clipping.
   gfx::RectF clipped2(0, 10, 50, 40);
   EXPECT_RECTF_EQ(no_clip_cand.display_rect, clipped2);
   EXPECT_FALSE(no_clip_cand.clip_rect.has_value());
-  EXPECT_RECTF_EQ(clip_cand.display_rect, clipped2);
-  EXPECT_FALSE(clip_cand.clip_rect.has_value());
+  EXPECT_RECTF_EQ(clip_cand.display_rect, gfx::RectF(visible_rect));
+  EXPECT_EQ(clip_cand.clip_rect.value(), clip);
 }
 
 }  // namespace

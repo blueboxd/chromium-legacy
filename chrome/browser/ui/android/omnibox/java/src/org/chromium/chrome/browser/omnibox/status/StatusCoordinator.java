@@ -161,6 +161,11 @@ public class StatusCoordinator implements View.OnClickListener, LocationBarDataP
         mMediator.setUrlFocusChangePercent(percent);
     }
 
+    /** Set the x translation of the status view. */
+    public void setTranslationX(float translationX) {
+        mMediator.setTranslationX(translationX);
+    }
+
     /**
      * @param brandedColorScheme The {@link BrandedColorScheme} to use for the status icon and text.
      */
@@ -191,6 +196,16 @@ public class StatusCoordinator implements View.OnClickListener, LocationBarDataP
     public void onSecurityStateChanged() {
         updateSecurityIcon();
         updateVerboseStatusVisibility();
+    }
+
+    @Override
+    public void onUrlChanged() {
+        mMediator.onUrlChanged();
+    }
+
+    @Override
+    public void onPageLoadStopped() {
+        mMediator.onPageLoadStopped();
     }
 
     /** Returns the resource identifier of the current security icon drawable. */

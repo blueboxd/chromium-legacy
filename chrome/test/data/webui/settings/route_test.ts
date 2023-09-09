@@ -9,7 +9,7 @@ import {flushTasks} from 'chrome://webui-test/polymer_test_util.js';
 
 // clang-format on
 
-suite('route', function() {
+suite('Basic', function() {
   /**
    * Returns a new promise that resolves after a window 'popstate' event.
    */
@@ -363,7 +363,7 @@ suite('NonExistentRoute', function() {
   });
 });
 
-suite('SafetyHubReachableTests', function() {
+suite('SafetyHubReachable', function() {
   let routes: SettingsRoutes;
 
   setup(function() {
@@ -386,9 +386,14 @@ suite('SafetyHubReachableTests', function() {
     path = Router.getInstance().getCurrentRoute().path;
     assertEquals('/safetyHub', path);
   });
+
+  test('SafetyCheckRouteNotReachable', async function() {
+    // When Safety Hub is enabled, SafetyCheck is not reachable.
+    assertEquals(routes.SAFETY_CHECK, undefined);
+  });
 });
 
-suite('SafetyHubNotReachableTests', function() {
+suite('SafetyHubNotReachable', function() {
   let routes: SettingsRoutes;
 
   setup(function() {
@@ -399,7 +404,19 @@ suite('SafetyHubNotReachableTests', function() {
   });
 
   test('SafetyHubRouteNotReachable', async function() {
-    // Assert that safety hub route is not reachable.
+    // Safety Hub should not be reachable.
     assertEquals(routes.SAFETY_HUB, undefined);
+  });
+
+  test('SafetyCheckRouteReachable', async function() {
+    let path = Router.getInstance().getCurrentRoute().path;
+    assertEquals('/', path);
+
+    Router.getInstance().navigateTo(routes.SAFETY_CHECK);
+    await flushTasks();
+
+    // Assert that the route is changed to SafetyCheck.
+    path = Router.getInstance().getCurrentRoute().path;
+    assertEquals('/safetyCheck', path);
   });
 });

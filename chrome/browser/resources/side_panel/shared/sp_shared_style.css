@@ -139,25 +139,3 @@
   border-radius: 12px;
   box-shadow: var(--cr-elevation-3);
 }
-
-:host-context([chrome-refresh-2023]) cr-action-menu {
-  --cr-hairline: 1px solid var(--color-side-panel-menu-divider);
-  --cr-action-menu-disabled-item-color: var(--color-side-panel-menu-disabled);
-  --cr-action-menu-disabled-item-opacity: 1;
-  --cr-menu-background-color: var(--color-side-panel-menu-background);
-  --cr-menu-background-focus-color: var(--cr-hover-background-color);
-  --cr-menu-shadow: var(--cr-elevation-2);
-  --cr-primary-text-color: var(--color-side-panel-menu-foreground);
-}
-
-:host-context([chrome-refresh-2023]) cr-toast {
-  --cr-toast-background: var(--color-side-panel-toast-background);
-  --cr-toast-button-color: var(--color-side-panel-toast-button);
-  --cr-toast-text-color: var(--color-side-panel-toast-foreground);
-  border-radius: 8px;
-  padding: 0 16px;
-}
-
-:host-context([chrome-refresh-2023]) cr-toast:has(cr-button) {
-  padding-inline-end: 4px;
-}

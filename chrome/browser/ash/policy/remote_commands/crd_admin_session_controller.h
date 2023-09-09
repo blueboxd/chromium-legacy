@@ -8,7 +8,8 @@
 #include <memory>
 
 #include "base/functional/callback_forward.h"
-#include "chrome/browser/ash/policy/remote_commands/device_command_start_crd_session_job.h"
+#include "chrome/browser/ash/policy/remote_commands/start_crd_session_job_delegate.h"
+#include "components/prefs/pref_registry_simple.h"
 #include "remoting/host/chromeos/chromeos_enterprise_params.h"
 #include "remoting/host/chromeos/remote_support_host_ash.h"
 #include "remoting/host/chromeos/session_id.h"
@@ -20,8 +21,7 @@ namespace policy {
 //
 // Will keep the session alive and active as long as this class lives.
 // Deleting this class object will forcefully interrupt the active CRD session.
-class CrdAdminSessionController
-    : public DeviceCommandStartCrdSessionJob::Delegate {
+class CrdAdminSessionController : private StartCrdSessionJobDelegate {
  public:
   // Proxy class to establish a connection with the Remoting service.
   // Overwritten in unittests to inject a test service.
@@ -60,19 +60,21 @@ class CrdAdminSessionController
       delete;
   ~CrdAdminSessionController() override;
 
-  // DeviceCommandStartCrdSessionJob::Delegate implementation:
+  static void RegisterLocalStatePrefs(PrefRegistrySimple* registry);
+  StartCrdSessionJobDelegate& GetDelegate();
+
+ private:
+  class CrdHostSession;
+
+  // `DeviceCommandStartCrdSessionJob::Delegate` implementation:
   bool HasActiveSession() const override;
   void TerminateSession(base::OnceClosure callback) override;
   void TryToReconnect(base::OnceClosure done_callback) override;
   void StartCrdHostAndGetCode(
       const SessionParameters& parameters,
-      DeviceCommandStartCrdSessionJob::AccessCodeCallback success_callback,
-      DeviceCommandStartCrdSessionJob::ErrorCallback error_callback,
-      DeviceCommandStartCrdSessionJob::SessionEndCallback
-          session_finished_callback) override;
-
- private:
-  class CrdHostSession;
+      AccessCodeCallback success_callback,
+      ErrorCallback error_callback,
+      SessionEndCallback session_finished_callback) override;
 
   std::unique_ptr<RemotingServiceProxy> remoting_service_;
   std::unique_ptr<CrdHostSession> active_session_;

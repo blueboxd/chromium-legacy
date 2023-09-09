@@ -74,21 +74,6 @@ void WebIDBDatabase::Get(
                  std::move(result_callback));
 }
 
-void WebIDBDatabase::BatchGetAll(
-    int64_t transaction_id,
-    int64_t object_store_id,
-    int64_t index_id,
-    Vector<mojom::blink::IDBKeyRangePtr> key_range_ptrs,
-    uint32_t max_count,
-    IDBRequest* request) {
-  IndexedDBDispatcher::ResetCursorPrefetchCaches(transaction_id, nullptr);
-
-  database_->BatchGetAll(
-      transaction_id, object_store_id, index_id, std::move(key_range_ptrs),
-      max_count,
-      WTF::BindOnce(&IDBRequest::OnBatchGetAll, WrapWeakPersistent(request)));
-}
-
 void WebIDBDatabase::GetAll(int64_t transaction_id,
                             int64_t object_store_id,
                             int64_t index_id,
@@ -224,16 +209,6 @@ void WebIDBDatabase::Abort(int64_t transaction_id) {
 
 void WebIDBDatabase::DidBecomeInactive() {
   database_->DidBecomeInactive();
-}
-
-mojo::PendingAssociatedRemote<mojom::blink::IDBCallbacks>
-WebIDBDatabase::GetCallbacksProxy(
-    std::unique_ptr<WebIDBCallbacksImpl> callbacks_impl) {
-  mojo::PendingAssociatedRemote<mojom::blink::IDBCallbacks> pending_callbacks;
-  mojo::MakeSelfOwnedAssociatedReceiver(
-      std::move(callbacks_impl),
-      pending_callbacks.InitWithNewEndpointAndPassReceiver(), task_runner_);
-  return pending_callbacks;
 }
 
 }  // namespace blink

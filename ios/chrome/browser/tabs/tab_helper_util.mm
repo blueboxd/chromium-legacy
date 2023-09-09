@@ -4,10 +4,6 @@
 
 #import "ios/chrome/browser/tabs/tab_helper_util.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 #import "base/feature_list.h"
 #import "components/autofill/ios/form_util/unique_id_data_tab_helper.h"
 #import "components/breadcrumbs/core/breadcrumbs_status.h"
@@ -304,7 +300,7 @@ void AttachTabHelpers(web::WebState* web_state, bool for_prerender) {
         HttpsUpgradeServiceFactory::GetForBrowserState(browser_state));
   }
 
-  if (IsWebChannelsEnabled() && !is_off_the_record) {
+  if (!is_off_the_record) {
     FollowTabHelper::CreateForWebState(web_state);
   }
 

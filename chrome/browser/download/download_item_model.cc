@@ -18,6 +18,7 @@
 #include "base/supports_user_data.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/bubble/download_bubble_prefs.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
@@ -742,6 +743,8 @@ bool DownloadItemModel::IsCommandEnabled(
     case DownloadCommands::LEARN_MORE_SCANNING:
     case DownloadCommands::LEARN_MORE_INTERRUPTED:
     case DownloadCommands::LEARN_MORE_INSECURE_DOWNLOAD:
+    case DownloadCommands::LEARN_MORE_DOWNLOAD_BLOCKED:
+    case DownloadCommands::OPEN_SAFE_BROWSING_SETTING:
     case DownloadCommands::DEEP_SCAN:
     case DownloadCommands::BYPASS_DEEP_SCANNING:
     case DownloadCommands::REVIEW:
@@ -783,6 +786,8 @@ bool DownloadItemModel::IsCommandChecked(
     case DownloadCommands::LEARN_MORE_SCANNING:
     case DownloadCommands::LEARN_MORE_INTERRUPTED:
     case DownloadCommands::LEARN_MORE_INSECURE_DOWNLOAD:
+    case DownloadCommands::LEARN_MORE_DOWNLOAD_BLOCKED:
+    case DownloadCommands::OPEN_SAFE_BROWSING_SETTING:
     case DownloadCommands::COPY_TO_CLIPBOARD:
     case DownloadCommands::DEEP_SCAN:
     case DownloadCommands::BYPASS_DEEP_SCANNING:
@@ -830,11 +835,11 @@ void DownloadItemModel::ExecuteCommand(DownloadCommands* download_commands,
 #endif
       if (GetDangerType() == download::DOWNLOAD_DANGER_TYPE_ASYNC_SCANNING) {
         base::UmaHistogramEnumeration(
-            "SBClientDownload.DeepScanEvent",
+            "SBClientDownload.DeepScanEvent2",
             safe_browsing::DeepScanEvent::kScanCanceled);
       } else {
         base::UmaHistogramEnumeration(
-            "SBClientDownload.DeepScanEvent",
+            "SBClientDownload.DeepScanEvent2",
             safe_browsing::DeepScanEvent::kPromptBypassed);
       }
       [[fallthrough]];
@@ -893,6 +898,8 @@ void DownloadItemModel::ExecuteCommand(DownloadCommands* download_commands,
     case DownloadCommands::CANCEL:
     case DownloadCommands::LEARN_MORE_INTERRUPTED:
     case DownloadCommands::LEARN_MORE_INSECURE_DOWNLOAD:
+    case DownloadCommands::LEARN_MORE_DOWNLOAD_BLOCKED:
+    case DownloadCommands::OPEN_SAFE_BROWSING_SETTING:
     case DownloadCommands::PAUSE:
     case DownloadCommands::RESUME:
     case DownloadCommands::COPY_TO_CLIPBOARD:
@@ -934,7 +941,7 @@ void DownloadItemModel::ExecuteCommand(DownloadCommands* download_commands,
               TRIGGER_CONSUMER_PROMPT,
           safe_browsing::DownloadCheckResult::UNKNOWN, std::move(settings));
       base::UmaHistogramEnumeration(
-          "SBClientDownload.DeepScanEvent",
+          "SBClientDownload.DeepScanEvent2",
           safe_browsing::DeepScanEvent::kPromptAccepted);
       break;
     }
@@ -964,21 +971,11 @@ DownloadItemModel::GetBubbleUIInfoForTailoredWarning() const {
   if (danger_type == download::DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT &&
       tailored_verdict.tailored_verdict_type() ==
           TailoredVerdict::SUSPICIOUS_ARCHIVE) {
-    return DownloadUIModel::BubbleUIInfo()
-        .AddSubpageSummary(l10n_util::GetStringUTF16(
-            IDS_DOWNLOAD_BUBBLE_SUBPAGE_SUMMARY_SUSPICIOUS_ARCHIVE))
-        .AddIconAndColor(features::IsChromeRefresh2023()
-                             ? vector_icons::kNotSecureWarningChromeRefreshIcon
-                             : vector_icons::kNotSecureWarningIcon,
-                         ui::kColorAlertMediumSeverityIcon)
-        .AddSecondaryTextColor(ui::kColorAlertMediumSeverityText)
-        .AddPrimaryButton(DownloadCommands::Command::DISCARD)
-        .AddPrimarySubpageButton(
-            l10n_util::GetStringUTF16(IDS_DOWNLOAD_BUBBLE_DELETE),
-            DownloadCommands::Command::DISCARD)
-        .AddSecondarySubpageButton(
-            l10n_util::GetStringUTF16(IDS_DOWNLOAD_BUBBLE_CONTINUE),
-            DownloadCommands::Command::KEEP, ui::kColorAlertMediumSeverityText);
+    return DownloadUIModel::BubbleUIInfo::SuspiciousUiPattern(
+        l10n_util::GetStringUTF16(
+            IDS_DOWNLOAD_BUBBLE_SUBPAGE_SUMMARY_WARNING_MALWARE),
+        l10n_util::GetStringUTF16(
+            IDS_DOWNLOAD_BUBBLE_CONTINUE_SUSPICIOUS_FILE));
   }
 
   // Cookie theft
@@ -999,31 +996,15 @@ DownloadItemModel::GetBubbleUIInfoForTailoredWarning() const {
           "SBClientDownload.TailoredWarning.HasVaidEmailForAccountInfo",
           !email.empty());
       if (!email.empty()) {
-        return DownloadUIModel::BubbleUIInfo()
-            .AddSubpageSummary(l10n_util::GetStringFUTF16(
-                IDS_DOWNLOAD_BUBBLE_SUBPAGE_SUMMARY_COOKIE_THEFT_AND_ACCOUNT,
-                base::ASCIIToUTF16(email)))
-            .AddIconAndColor(features::IsChromeRefresh2023()
-                                 ? vector_icons::kDangerousChromeRefreshIcon
-                                 : vector_icons::kDangerousIcon,
-                             ui::kColorAlertHighSeverity)
-            .AddPrimaryButton(DownloadCommands::Command::DISCARD)
-            .AddPrimarySubpageButton(
-                l10n_util::GetStringUTF16(IDS_DOWNLOAD_BUBBLE_DELETE),
-                DownloadCommands::Command::DISCARD);
+        return DownloadUIModel::BubbleUIInfo::DangerousUiPattern(
+            l10n_util::GetStringFUTF16(
+                IDS_DOWNLOAD_BUBBLE_SUBPAGE_SUMMARY_WARNING_COOKIE_THEFT_AND_ACCOUNT,
+                base::ASCIIToUTF16(email)));
       }
     }
-    return DownloadUIModel::BubbleUIInfo()
-        .AddSubpageSummary(l10n_util::GetStringUTF16(
-            IDS_DOWNLOAD_BUBBLE_SUBPAGE_SUMMARY_COOKIE_THEFT))
-        .AddIconAndColor(features::IsChromeRefresh2023()
-                             ? vector_icons::kDangerousChromeRefreshIcon
-                             : vector_icons::kDangerousIcon,
-                         ui::kColorAlertHighSeverity)
-        .AddPrimaryButton(DownloadCommands::Command::DISCARD)
-        .AddPrimarySubpageButton(
-            l10n_util::GetStringUTF16(IDS_DOWNLOAD_BUBBLE_DELETE),
-            DownloadCommands::Command::DISCARD);
+    return DownloadUIModel::BubbleUIInfo::DangerousUiPattern(
+        l10n_util::GetStringUTF16(
+            IDS_DOWNLOAD_BUBBLE_SUBPAGE_SUMMARY_WARNING_COOKIE_THEFT));
   }
 
   NOTREACHED();

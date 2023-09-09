@@ -286,6 +286,31 @@ void MaybeLogGetHintRequestInfo(
   }
 }
 
+// Returns whether the context should be used to seed the hint cache.
+bool ShouldContextResponsePopulateHintCache(
+    proto::RequestContext request_context) {
+  switch (request_context) {
+    case proto::RequestContext::CONTEXT_UNSPECIFIED:
+    case proto::RequestContext::CONTEXT_BATCH_UPDATE_MODELS:
+      NOTREACHED();
+      return false;
+    case proto::RequestContext::CONTEXT_PAGE_NAVIGATION:
+      return true;
+    case proto::RequestContext::CONTEXT_BATCH_UPDATE_GOOGLE_SRP:
+      return true;
+    case proto::RequestContext::CONTEXT_BATCH_UPDATE_ACTIVE_TABS:
+      return true;
+    case proto::RequestContext::CONTEXT_BOOKMARKS:
+      return false;
+    case proto::RequestContext::CONTEXT_JOURNEYS:
+      return false;
+    case proto::RequestContext::CONTEXT_NEW_TAB_PAGE:
+      return false;
+  }
+  NOTREACHED();
+  return false;
+}
+
 }  // namespace
 
 HintsManager::HintsManager(
@@ -303,6 +328,7 @@ HintsManager::HintsManager(
           GetPendingOptimizationHintsComponentVersionFromPref(pref_service)),
       is_off_the_record_(is_off_the_record),
       application_locale_(application_locale),
+      oauth_scopes_(features::OAuthScopesForPersonalizedMetadata()),
       pref_service_(pref_service),
       hint_cache_(
           std::make_unique<HintCache>(hint_store,
@@ -758,6 +784,7 @@ void HintsManager::FetchHintsForActiveTabs() {
   active_tabs_batch_update_hints_fetcher_->FetchOptimizationGuideServiceHints(
       top_hosts, active_tab_urls_to_refresh, registered_optimization_types_,
       proto::CONTEXT_BATCH_UPDATE_ACTIVE_TABS, application_locale_,
+      absl::nullopt,
       /*skip_cache=*/false,
       base::BindOnce(&HintsManager::OnHintsForActiveTabsFetched,
                      weak_ptr_factory_.GetWeakPtr(), top_hosts_set,
@@ -930,6 +957,7 @@ void HintsManager::FetchHintsForURLs(const std::vector<GURL>& urls,
   request_id_and_fetcher.second->FetchOptimizationGuideServiceHints(
       target_hosts.vector(), target_urls.vector(),
       registered_optimization_types_, request_context, application_locale_,
+      absl::nullopt,
       /*skip_cache=*/false,
       base::BindOnce(
           &HintsManager::OnBatchUpdateHintsFetched,
@@ -1064,75 +1092,33 @@ void HintsManager::CanApplyOptimizationOnDemand(
     OnDemandOptimizationGuideDecisionRepeatingCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  // This set contains URLs that require some information to be fetched, whether
-  // that be a URL-keyed hint or a host-keyed hint.
-  base::flat_set<proto::OptimizationType> unregistered_optimization_types;
-  for (const auto& type : optimization_types) {
-    if (registered_optimization_types_.find(type) ==
-        registered_optimization_types_.end()) {
-      unregistered_optimization_types.insert(type);
-    }
-  }
-
-  base::flat_set<GURL> urls_with_pending_callback;
   InsertionOrderedSet<GURL> urls_to_fetch;
   InsertionOrderedSet<std::string> hosts_to_fetch;
   for (const auto& url : urls) {
-    // Only do cache checks when all optimization types requested are
-    // registered.
-    if (!unregistered_optimization_types.empty()) {
-      urls_to_fetch.insert(url);
-      hosts_to_fetch.insert(url.host());
-      urls_with_pending_callback.insert(url);
-    } else {
-      if (!hint_cache_->HasURLKeyedEntryForURL(url)) {
-        urls_to_fetch.insert(url);
-        urls_with_pending_callback.insert(url);
-      }
-      // We check for the hint being loaded mostly for code simplicity. If we
-      // just check for the presence in the cache and the hint wasn't loaded, we
-      // need to run the load callback and then invoke the callbacks. However,
-      // as the fetch will just ignore the host if cached, this is ok since the
-      // callback from the fetch will initiate the loading of the hint and the
-      // resulting callback to be run.
-      if (!hint_cache_->HasHint(url.host()) ||
-          (hint_cache_->GetHostKeyedHintIfLoaded(url.host()) == nullptr)) {
-        hosts_to_fetch.insert(url.host());
-        urls_with_pending_callback.insert(url);
-      }
-
-      if (!urls_with_pending_callback.contains(url)) {
-        // Only get decisions if we know we do not need to fetch for anything.
-        base::flat_map<proto::OptimizationType,
-                       OptimizationGuideDecisionWithMetadata>
-            decisions =
-                GetDecisionsWithCachedInformationForURLAndOptimizationTypes(
-                    url, optimization_types);
-        callback.Run(url, decisions);
-      }
-    }
-  }
-
-  if (urls_with_pending_callback.empty()) {
-    // Nothing to fetch for.
-    return;
+    urls_to_fetch.insert(url);
+    hosts_to_fetch.insert(url.host());
   }
 
   MaybeLogGetHintRequestInfo(request_context, optimization_types,
                              urls_to_fetch.vector(), hosts_to_fetch.vector(),
                              optimization_guide_logger_);
 
+  absl::optional<std::string> access_token;
+  if (!features::EnabledPersonalizedMetadata(request_context) &&
+      !oauth_scopes_.empty()) {
+    // TODO(b/280082735): Get access token and include here.
+  }
   // Fetch the data for the entries we don't have all information for.
   std::pair<int32_t, HintsFetcher*> request_id_and_fetcher =
       CreateAndTrackBatchUpdateHintsFetcher();
   request_id_and_fetcher.second->FetchOptimizationGuideServiceHints(
       hosts_to_fetch.vector(), urls_to_fetch.vector(), optimization_types,
-      request_context, application_locale_, /*skip_cache=*/true,
+      request_context, application_locale_, access_token, /*skip_cache=*/true,
       base::BindOnce(&HintsManager::OnBatchUpdateHintsFetched,
                      weak_ptr_factory_.GetWeakPtr(),
                      request_id_and_fetcher.first, request_context,
                      hosts_to_fetch.set(), urls_to_fetch.set(),
-                     urls_with_pending_callback, optimization_types, callback));
+                     urls_to_fetch.vector(), optimization_types, callback));
 }
 
 // TODO(1313521): Improve metrics coverage between all of these apis.
@@ -1238,19 +1224,18 @@ void HintsManager::OnBatchUpdateHintsFetched(
           optimization_guide_logger_)
           << "OnBatchUpdateHintsFetched failed for " << request_context;
     }
-    OnBatchUpdateHintsStored(urls_with_pending_callback, optimization_types,
-                             callback);
+    if (ShouldContextResponsePopulateHintCache(request_context)) {
+      OnBatchUpdateHintsStored(urls_with_pending_callback, optimization_types,
+                               callback);
+    } else {
+      ProcessAndInvokeOnDemandHintsCallbacks(
+          std::make_unique<proto::GetHintsResponse>(), urls_requested,
+          optimization_types, callback);
+    }
     return;
   }
 
-  base::flat_set<proto::OptimizationType> unregistered_optimization_types;
-  for (const auto& type : optimization_types) {
-    if (registered_optimization_types_.find(type) ==
-        registered_optimization_types_.end()) {
-      unregistered_optimization_types.insert(type);
-    }
-  }
-  if (!unregistered_optimization_types.empty()) {
+  if (!ShouldContextResponsePopulateHintCache(request_context)) {
     // When opt types are not registered, process and return decisions directly
     // without caching.
     ProcessAndInvokeOnDemandHintsCallbacks(std::move(*get_hints_response),
@@ -1673,7 +1658,8 @@ void HintsManager::MaybeFetchHintsForNavigation(
                              optimization_guide_logger_);
   bool fetch_attempted = it->second->FetchOptimizationGuideServiceHints(
       hosts, urls, registered_optimization_types_,
-      proto::CONTEXT_PAGE_NAVIGATION, application_locale_, /*skip_cache=*/false,
+      proto::CONTEXT_PAGE_NAVIGATION, application_locale_, absl::nullopt,
+      /*skip_cache=*/false,
       base::BindOnce(&HintsManager::OnPageNavigationHintsFetched,
                      weak_ptr_factory_.GetWeakPtr(),
                      navigation_data->GetWeakPtr(), url,

@@ -44,7 +44,7 @@ function pagePrefs() {
   };
 }
 
-suite('SecurityPage', function() {
+suite('Main', function() {
   let testMetricsBrowserProxy: TestMetricsBrowserProxy;
   let testPrivacyBrowserProxy: TestPrivacyPageBrowserProxy;
   let page: SettingsSecurityPageElement;
@@ -55,9 +55,8 @@ suite('SecurityPage', function() {
   suiteSetup(function() {
     loadTimeData.overrideValues({
       enableSecurityKeysSubpage: true,
-      showHttpsOnlyModeSetting: true,
       showChromeRootStoreCertificates: true,
-      enableFriendlierSafeBrowsingSettings: true,
+      enableFriendlierSafeBrowsingSettingsStandardProtection: true,
     });
   });
 
@@ -171,17 +170,15 @@ suite('SecurityPage', function() {
         'passwordsLeakDetectionGeneralDescriptionUpdated');
     assertEquals(updatedPasswordLeakSubLabel, passwordsLeakToggle.subLabel);
   });
-
 });
 
-suite('SecurityPage_FlagsDisabled', function() {
+suite('FlagsDisabled', function() {
   let page: SettingsSecurityPageElement;
 
   suiteSetup(function() {
     loadTimeData.overrideValues({
       enableSecurityKeysSubpage: false,
-      showHttpsOnlyModeSetting: false,
-      enableFriendlierSafeBrowsingSettings: false,
+      enableFriendlierSafeBrowsingSettingsStandardProtection: false,
     });
   });
 
@@ -216,12 +213,8 @@ suite('SecurityPage_FlagsDisabled', function() {
   });
   // </if>
 
-  test('HttpsOnlyModeSettingHidden', function() {
-    assertFalse(isChildVisible(page, '#httpsOnlyModeToggle'));
-  });
-
   // TODO(crbug.com/1466292): Remove once friendlier safe browsing settings
-  // launched.
+  // standard protection is launched.
   test('NotUpdatedStandardProtectionDropdown', function() {
     const standardProtection = page.$.safeBrowsingStandard;
     const spSubLabel = loadTimeData.getString('safeBrowsingStandardDesc');
@@ -239,7 +232,7 @@ suite('SecurityPage_FlagsDisabled', function() {
 });
 
 // Separate test suite for tests specifically related to Safe Browsing controls.
-suite('SecurityPage_SafeBrowsing', function() {
+suite('SafeBrowsing', function() {
   let testMetricsBrowserProxy: TestMetricsBrowserProxy;
   let testPrivacyBrowserProxy: TestPrivacyPageBrowserProxy;
   let page: SettingsSecurityPageElement;
@@ -755,5 +748,4 @@ suite('SecurityPage_SafeBrowsing', function() {
     assertFalse(page.$.safeBrowsingEnhanced.expanded);
     assertFalse(page.$.safeBrowsingStandard.expanded);
   });
-
 });

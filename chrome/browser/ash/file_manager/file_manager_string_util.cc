@@ -13,6 +13,7 @@
 #include "ash/system/time/date_helper.h"
 #include "base/feature_list.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/ash/bruschetta/bruschetta_util.h"
@@ -378,6 +379,10 @@ void AddStringsGeneric(base::Value::Dict* dict) {
   SET_STRING("BULK_PINNING_GET_STARTED",
              IDS_FILE_BROWSER_BULK_PINNING_GET_STARTED);
   SET_STRING("BULK_PINNING_LISTING", IDS_FILE_BROWSER_BULK_PINNING_LISTING);
+  SET_STRING("BULK_PINNING_LISTING_WITH_MULTIPLE_ITEMS",
+             IDS_FILE_BROWSER_BULK_PINNING_LISTING_WITH_MULTIPLE_ITEMS);
+  SET_STRING("BULK_PINNING_LISTING_WITH_SINGLE_ITEM",
+             IDS_FILE_BROWSER_BULK_PINNING_LISTING_WITH_SINGLE_ITEM);
   SET_STRING("BULK_PINNING_NOT_ENOUGH_SPACE",
              IDS_FILE_BROWSER_BULK_PINNING_NOT_ENOUGH_SPACE);
   SET_STRING("BULK_PINNING_OFFLINE", IDS_FILE_BROWSER_BULK_PINNING_OFFLINE);
@@ -558,10 +563,6 @@ void AddStringsGeneric(base::Value::Dict* dict) {
              IDS_FILE_BROWSER_FOLDER_SHARED_WITH_PLUGIN_VM);
   SET_STRING("FOLDER_SHARED_WITH_PLUGIN_VM_PLURAL",
              IDS_FILE_BROWSER_FOLDER_SHARED_WITH_PLUGIN_VM_PLURAL);
-  SET_STRING("FOLDER_SHARED_WITH_BRUSCHETTA",
-             IDS_FILE_BROWSER_FOLDER_SHARED_WITH_BRUSCHETTA);
-  SET_STRING("FOLDER_SHARED_WITH_BRUSCHETTA_PLURAL",
-             IDS_FILE_BROWSER_FOLDER_SHARED_WITH_BRUSCHETTA_PLURAL);
   SET_STRING("FORMATTING_FINISHED_FAILURE_MESSAGE",
              IDS_FORMATTING_FINISHED_FAILURE_MESSAGE);
   SET_STRING("FORMATTING_FINISHED_SUCCESS_MESSAGE",
@@ -902,10 +903,6 @@ void AddStringsGeneric(base::Value::Dict* dict) {
              IDS_FILE_BROWSER_SHARE_WITH_PLUGIN_VM_BUTTON_LABEL);
   SET_STRING("MANAGE_PLUGIN_VM_SHARING_BUTTON_LABEL",
              IDS_FILE_BROWSER_MANAGE_PLUGIN_VM_SHARING_BUTTON_LABEL);
-  SET_STRING("SHARE_WITH_BRUSCHETTA_BUTTON_LABEL",
-             IDS_FILE_BROWSER_SHARE_WITH_BRUSCHETTA_BUTTON_LABEL);
-  SET_STRING("MANAGE_BRUSCHETTA_SHARING_BUTTON_LABEL",
-             IDS_FILE_BROWSER_MANAGE_BRUSCHETTA_SHARING_BUTTON_LABEL);
   SET_STRING(
       "UNABLE_TO_DROP_IN_PLUGIN_VM_DIRECTORY_NOT_SHARED_MESSAGE",
       IDS_FILE_BROWSER_UNABLE_TO_DROP_IN_PLUGIN_VM_DIRECTORY_NOT_SHARED_MESSAGE);
@@ -943,12 +940,6 @@ void AddStringsGeneric(base::Value::Dict* dict) {
              IDS_FILE_BROWSER_SHARE_ROOT_FOLDER_WITH_PLUGIN_VM);
   SET_STRING("SHARE_ROOT_FOLDER_WITH_PLUGIN_VM_DRIVE",
              IDS_FILE_BROWSER_SHARE_ROOT_FOLDER_WITH_PLUGIN_VM_DRIVE);
-  SET_STRING("SHARE_ROOT_FOLDER_WITH_BRUSCHETTA_TITLE",
-             IDS_FILE_BROWSER_SHARE_ROOT_FOLDER_WITH_BRUSCHETTA_TITLE);
-  SET_STRING("SHARE_ROOT_FOLDER_WITH_BRUSCHETTA",
-             IDS_FILE_BROWSER_SHARE_ROOT_FOLDER_WITH_BRUSCHETTA);
-  SET_STRING("SHARE_ROOT_FOLDER_WITH_BRUSCHETTA_DRIVE",
-             IDS_FILE_BROWSER_SHARE_ROOT_FOLDER_WITH_BRUSCHETTA_DRIVE);
   SET_STRING("SIZE_BYTES", IDS_FILE_BROWSER_SIZE_BYTES);
   SET_STRING("SIZE_COLUMN_LABEL", IDS_FILE_BROWSER_SIZE_COLUMN_LABEL);
   SET_STRING("COLUMN_ASC_SORT_MESSAGE",
@@ -1124,7 +1115,29 @@ void AddStringsGeneric(base::Value::Dict* dict) {
                     IDS_POLICY_DLP_FILES_WARN_MESSAGE, 1);
   SET_STRING_PLURAL("DLP_FILES_WARN_MESSAGE_MULTIPLE",
                     IDS_POLICY_DLP_FILES_WARN_MESSAGE, 2);
+  SET_STRING_PLURAL("DLP_FILES_MOVE_BLOCKED_TITLE_SINGLE",
+                    IDS_POLICY_DLP_FILES_MOVE_BLOCKED_TITLE, 1);
+  SET_STRING_PLURAL("DLP_FILES_MOVE_BLOCKED_TITLE_MULTIPLE",
+                    IDS_POLICY_DLP_FILES_MOVE_BLOCKED_TITLE, 2);
+  SET_STRING_PLURAL("DLP_FILES_COPY_BLOCKED_TITLE_SINGLE",
+                    IDS_POLICY_DLP_FILES_COPY_BLOCKED_TITLE, 1);
+  SET_STRING_PLURAL("DLP_FILES_COPY_BLOCKED_TITLE_MULTIPLE",
+                    IDS_POLICY_DLP_FILES_COPY_BLOCKED_TITLE, 2);
+  SET_STRING_PLURAL("DLP_FILES_BLOCKED_MESSAGE_POLICY_SINGLE",
+                    IDS_POLICY_DLP_FILES_POLICY_BLOCK_MESSAGE, 1);
+  SET_STRING_PLURAL("DLP_FILES_BLOCKED_MESSAGE_CONTENT_SINGLE",
+                    IDS_POLICY_DLP_FILES_CONTENT_BLOCK_MESSAGE, 1);
+  SET_STRING("DLP_FILES_BLOCKED_MESSAGE_MULTIPLE",
+             IDS_POLICY_DLP_FILES_BLOCK_MESSAGE);
   SET_STRING("DLP_FILES_REVIEW_BUTTON", IDS_POLICY_DLP_FILES_REVIEW_BUTTON);
+  SET_STRING("DLP_FILES_MOVE_TIMEOUT_TITLE",
+             IDS_POLICY_DLP_FILES_MOVE_TIMEOUT_TITLE);
+  SET_STRING("DLP_FILES_MOVE_TIMEOUT_MESSAGE",
+             IDS_POLICY_DLP_FILES_MOVE_TIMEOUT_MESSAGE);
+  SET_STRING("DLP_FILES_COPY_TIMEOUT_TITLE",
+             IDS_POLICY_DLP_FILES_COPY_TIMEOUT_TITLE);
+  SET_STRING("DLP_FILES_COPY_TIMEOUT_MESSAGE",
+             IDS_POLICY_DLP_FILES_COPY_TIMEOUT_MESSAGE);
   SET_STRING("ONE_DRIVE_MOVED_FILE_NUDGE",
              IDS_FILE_BROWSER_ONE_DRIVE_MOVED_FILE_NUDGE);
   SET_STRING("DRIVE_MOVED_FILE_NUDGE", IDS_FILE_BROWSER_DRIVE_MOVED_FILE_NUDGE);
@@ -1139,6 +1152,25 @@ void AddStringsGeneric(base::Value::Dict* dict) {
 
 #undef SET_STRING
 
+// Attempts to get the current user profile, may return nullptr.
+Profile* GetProfile() {
+  if (!user_manager::UserManager::IsInitialized()) {
+    return nullptr;
+  }
+
+  user_manager::UserManager* user_manager = user_manager::UserManager::Get();
+  if (!user_manager) {
+    return nullptr;
+  }
+
+  user_manager::User* user = user_manager->GetActiveUser();
+  if (!user) {
+    return nullptr;
+  }
+
+  return ash::ProfileHelper::Get()->GetProfileByUser(user);
+}
+
 bool IsEligibleAndEnabledGoogleOneOfferFilesBanner() {
   // Google One offer is for a device, not for an account. Do not show a banner
   // if a device is enrolled.
@@ -1148,17 +1180,7 @@ bool IsEligibleAndEnabledGoogleOneOfferFilesBanner() {
     return false;
   }
 
-  user_manager::UserManager* user_manager = user_manager::UserManager::Get();
-  if (!user_manager) {
-    return false;
-  }
-
-  user_manager::User* user = user_manager->GetActiveUser();
-  if (!user) {
-    return false;
-  }
-
-  Profile* profile = ash::ProfileHelper::Get()->GetProfileByUser(user);
+  Profile* profile = GetProfile();
   if (!profile) {
     return false;
   }
@@ -1183,6 +1205,39 @@ bool IsEligibleAndEnabledGoogleOneOfferFilesBanner() {
       ash::features::kGoogleOneOfferFilesBanner);
 }
 
+void AddStringsForVms(base::Value::Dict* dict) {
+  auto* profile = GetProfile();
+  std::u16string overall_name = bruschetta::GetOverallVmName(profile);
+
+  dict->Set("FOLDER_SHARED_WITH_BRUSCHETTA",
+            l10n_util::GetStringFUTF16(
+                IDS_FILE_BROWSER_FOLDER_SHARED_WITH_BRUSCHETTA, overall_name));
+  dict->Set(
+      "FOLDER_SHARED_WITH_BRUSCHETTA_PLURAL",
+      l10n_util::GetStringFUTF16(
+          IDS_FILE_BROWSER_FOLDER_SHARED_WITH_BRUSCHETTA_PLURAL, overall_name));
+  dict->Set(
+      "SHARE_WITH_BRUSCHETTA_BUTTON_LABEL",
+      l10n_util::GetStringFUTF16(
+          IDS_FILE_BROWSER_SHARE_WITH_BRUSCHETTA_BUTTON_LABEL, overall_name));
+  dict->Set("MANAGE_BRUSCHETTA_SHARING_BUTTON_LABEL",
+            l10n_util::GetStringFUTF16(
+                IDS_FILE_BROWSER_MANAGE_BRUSCHETTA_SHARING_BUTTON_LABEL,
+                overall_name));
+  dict->Set("SHARE_ROOT_FOLDER_WITH_BRUSCHETTA_TITLE",
+            l10n_util::GetStringFUTF16(
+                IDS_FILE_BROWSER_SHARE_ROOT_FOLDER_WITH_BRUSCHETTA_TITLE,
+                overall_name));
+  dict->Set(
+      "SHARE_ROOT_FOLDER_WITH_BRUSCHETTA",
+      l10n_util::GetStringFUTF16(
+          IDS_FILE_BROWSER_SHARE_ROOT_FOLDER_WITH_BRUSCHETTA, overall_name));
+  dict->Set("SHARE_ROOT_FOLDER_WITH_BRUSCHETTA_DRIVE",
+            l10n_util::GetStringFUTF16(
+                IDS_FILE_BROWSER_SHARE_ROOT_FOLDER_WITH_BRUSCHETTA_DRIVE,
+                overall_name));
+}
+
 }  // namespace
 
 base::Value::Dict GetFileManagerStrings() {
@@ -1198,6 +1253,7 @@ base::Value::Dict GetFileManagerStrings() {
   AddStringsForHoldingSpace(&dict);
   AddStringsForPhotos(&dict);
   AddStringsGeneric(&dict);
+  AddStringsForVms(&dict);
 
   dict.Set(
       "DOWNLOADS_LOW_SPACE_WARNING_HELP_URL",
@@ -1289,6 +1345,8 @@ void AddFileManagerFeatureStrings(const std::string& locale,
 
   dict->Set("DRIVE_FS_BULK_PINNING",
             drive::util::IsDriveFsBulkPinningEnabled(profile));
+
+  dict->Set("CROS_COMPONENTS", chromeos::features::IsCrosComponentsEnabled());
 
   if (base::FeatureList::IsEnabled(features::kDataLeakPreventionPolicy) &&
       base::FeatureList::IsEnabled(

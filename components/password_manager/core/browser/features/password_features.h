@@ -26,7 +26,9 @@ BASE_DECLARE_FEATURE(kDisablePasswordsDropdownForCvcFields);
 
 BASE_DECLARE_FEATURE(kEnablePasswordsAccountStorage);
 
-BASE_DECLARE_FEATURE(kFillingAcrossAffiliatedWebsites);
+#if BUILDFLAG(IS_ANDROID)
+BASE_DECLARE_FEATURE(kFillingAcrossAffiliatedWebsitesAndroid);
+#endif
 BASE_DECLARE_FEATURE(kFillingAcrossGroupedSites);
 
 BASE_DECLARE_FEATURE(kFillOnAccountSelect);
@@ -35,6 +37,10 @@ BASE_DECLARE_FEATURE(kSharedPasswordNotificationUI);
 
 BASE_DECLARE_FEATURE(kPasswordManagerEnableReceiverService);
 BASE_DECLARE_FEATURE(kPasswordManagerEnableSenderService);
+
+BASE_DECLARE_FEATURE(kPasswordManagerLogToTerminal);
+
+BASE_DECLARE_FEATURE(kUseExtensionListForPSLMatching);
 
 }  // namespace password_manager::features
 

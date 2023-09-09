@@ -159,8 +159,8 @@ class MainPartitionConstructor {
             .aligned_alloc =
                 partition_alloc::PartitionOptions::AlignedAlloc::kAllowed,
             .thread_cache = thread_cache,
-            .quarantine =
-                partition_alloc::PartitionOptions::Quarantine::kAllowed,
+            .star_scan_quarantine =
+                partition_alloc::PartitionOptions::StarScanQuarantine::kAllowed,
             .backup_ref_ptr =
                 partition_alloc::PartitionOptions::BackupRefPtr::kDisabled,
         });
@@ -324,7 +324,7 @@ void* PartitionAlignedRealloc(const AllocatorDispatch* dispatch,
   } else {
     // size == 0 and address != null means just "free(address)".
     if (address) {
-      partition_alloc::PartitionRoot::FreeNoHooks(address);
+      partition_alloc::PartitionRoot::FreeNoHooksInUnknownRoot(address);
     }
   }
   // The original memory block (specified by address) is unchanged if ENOMEM.
@@ -338,7 +338,7 @@ void* PartitionAlignedRealloc(const AllocatorDispatch* dispatch,
     size_t copy_size = usage > size ? size : usage;
     memcpy(new_ptr, address, copy_size);
 
-    partition_alloc::PartitionRoot::FreeNoHooks(address);
+    partition_alloc::PartitionRoot::FreeNoHooksInUnknownRoot(address);
   }
   return new_ptr;
 }
@@ -398,7 +398,7 @@ void PartitionFree(const AllocatorDispatch*, void* object, void* context) {
   }
 #endif  // BUILDFLAG(PA_IS_CAST_ANDROID)
 
-  partition_alloc::PartitionRoot::FreeNoHooks(object);
+  partition_alloc::PartitionRoot::FreeNoHooksInUnknownRoot(object);
 }
 
 #if BUILDFLAG(IS_APPLE)
@@ -415,7 +415,7 @@ void PartitionFreeDefiniteSize(const AllocatorDispatch*,
   partition_alloc::ScopedDisallowAllocations guard{};
   // TODO(lizeb): Optimize PartitionAlloc to use the size information. This is
   // still useful though, as we avoid double-checking that the address is owned.
-  partition_alloc::PartitionRoot::FreeNoHooks(address);
+  partition_alloc::PartitionRoot::FreeNoHooksInUnknownRoot(address);
 }
 #endif  // BUILDFLAG(IS_APPLE)
 
@@ -500,7 +500,7 @@ void PartitionTryFreeDefault(const AllocatorDispatch*,
     return allocator_shim::TryFreeDefaultFallbackToFindZoneAndFree(address);
   }
 
-  partition_alloc::PartitionRoot::FreeNoHooks(address);
+  partition_alloc::PartitionRoot::FreeNoHooksInUnknownRoot(address);
 }
 #endif  // BUILDFLAG(IS_APPLE)
 
@@ -549,10 +549,11 @@ void EnablePartitionAllocMemoryReclaimer() {
 void ConfigurePartitions(
     EnableBrp enable_brp,
     EnableMemoryTagging enable_memory_tagging,
+    partition_alloc::TagViolationReportingMode memory_tagging_reporting_mode,
     SplitMainPartition split_main_partition,
     UseDedicatedAlignedPartition use_dedicated_aligned_partition,
     size_t ref_count_size,
-    AlternateBucketDistribution use_alternate_bucket_distribution) {
+    BucketDistribution distribution) {
   // BRP cannot be enabled without splitting the main partition. Furthermore, in
   // the "before allocation" mode, it can't be enabled without further splitting
   // out the aligned partition.
@@ -571,11 +572,11 @@ void ConfigurePartitions(
   PA_DCHECK(current_root == current_aligned_root);
 
   if (!split_main_partition) {
-    switch (use_alternate_bucket_distribution) {
-      case AlternateBucketDistribution::kDefault:
+    switch (distribution) {
+      case BucketDistribution::kNeutral:
         // We start in the 'default' case.
         break;
-      case AlternateBucketDistribution::kDenser:
+      case BucketDistribution::kDenser:
         current_root->SwitchToDenserBucketDistribution();
         break;
     }
@@ -602,17 +603,20 @@ void ConfigurePartitions(
                         kDisallowed,
           .thread_cache =
               partition_alloc::PartitionOptions::ThreadCache::kDisabled,
-          .quarantine = partition_alloc::PartitionOptions::Quarantine::kAllowed,
+          .star_scan_quarantine =
+              partition_alloc::PartitionOptions::StarScanQuarantine::kAllowed,
           .backup_ref_ptr =
               enable_brp
                   ? partition_alloc::PartitionOptions::BackupRefPtr::kEnabled
                   : partition_alloc::PartitionOptions::BackupRefPtr::kDisabled,
           .ref_count_size = ref_count_size,
-          .memory_tagging =
-              enable_memory_tagging
-                  ? partition_alloc::PartitionOptions::MemoryTagging::kEnabled
-                  : partition_alloc::PartitionOptions::MemoryTagging::
-                        kDisabled});
+          .memory_tagging = {
+              .enabled = enable_memory_tagging
+                             ? partition_alloc::PartitionOptions::
+                                   MemoryTagging::kEnabled
+                             : partition_alloc::PartitionOptions::
+                                   MemoryTagging::kDisabled,
+              .reporting_mode = memory_tagging_reporting_mode}});
   partition_alloc::PartitionRoot* new_root = new_main_allocator->root();
 
   partition_alloc::PartitionRoot* new_aligned_root;
@@ -626,8 +630,8 @@ void ConfigurePartitions(
                 partition_alloc::PartitionOptions::AlignedAlloc::kAllowed,
             .thread_cache =
                 partition_alloc::PartitionOptions::ThreadCache::kDisabled,
-            .quarantine =
-                partition_alloc::PartitionOptions::Quarantine::kAllowed,
+            .star_scan_quarantine =
+                partition_alloc::PartitionOptions::StarScanQuarantine::kAllowed,
             .backup_ref_ptr =
                 partition_alloc::PartitionOptions::BackupRefPtr::kDisabled,
         });
@@ -651,11 +655,11 @@ void ConfigurePartitions(
       partition_alloc::PurgeFlags::kDecommitEmptySlotSpans |
       partition_alloc::PurgeFlags::kDiscardUnusedSystemPages);
 
-  switch (use_alternate_bucket_distribution) {
-    case AlternateBucketDistribution::kDefault:
+  switch (distribution) {
+    case BucketDistribution::kNeutral:
       // We start in the 'default' case.
       break;
-    case AlternateBucketDistribution::kDenser:
+    case BucketDistribution::kDenser:
       new_root->SwitchToDenserBucketDistribution();
       if (new_aligned_root != new_root) {
         new_aligned_root->SwitchToDenserBucketDistribution();
@@ -664,6 +668,28 @@ void ConfigurePartitions(
   }
 
   PA_CHECK(!g_roots_finalized.exchange(true));  // Ensure configured once.
+}
+
+PA_COMPONENT_EXPORT(PARTITION_ALLOC)
+void ConfigurePartitions(
+    EnableBrp enable_brp,
+    EnableMemoryTagging enable_memory_tagging,
+    SplitMainPartition split_main_partition,
+    UseDedicatedAlignedPartition use_dedicated_aligned_partition,
+    size_t ref_count_size,
+    BucketDistribution distribution) {
+  // Since the only user of this function is a test function, we use synchronous
+  // testing mode.
+  const partition_alloc::TagViolationReportingMode
+      memory_tagging_reporting_mode =
+          enable_memory_tagging
+              ? partition_alloc::TagViolationReportingMode::kSynchronous
+              : partition_alloc::TagViolationReportingMode::kDisabled;
+
+  ConfigurePartitions(enable_brp, enable_memory_tagging,
+                      memory_tagging_reporting_mode, split_main_partition,
+                      use_dedicated_aligned_partition, ref_count_size,
+                      distribution);
 }
 
 // No synchronization provided: `PartitionRoot.flags` is only written

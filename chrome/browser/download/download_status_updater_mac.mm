@@ -14,10 +14,6 @@
 #include "components/download/public/common/download_item.h"
 #include "url/gurl.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 namespace {
 
 // These are not the keys themselves; they are the names for dynamic lookup via

@@ -19,7 +19,9 @@ class PrefService;
 
 namespace user_manager {
 
-class ScopedUserManager;
+namespace internal {
+class ScopedUserManagerImpl;
+}  // namespace internal
 
 // A list pref of the the regular users known on this device, arranged in LRU
 // order, stored in local state.
@@ -204,11 +206,9 @@ class USER_MANAGER_EXPORT UserManager {
   virtual const AccountId& GetOwnerAccountId() const = 0;
 
   // Provides the caller with account Id of the Owner user once it is loaded.
-  // The provided callback will only be executed when the definitive owner is
-  // determined (either through first user login or successful enterprise
-  // enrollment). Would provide empty account id if there is no owner on the
-  // device (e.g. if device is enterprise-owned).
-  virtual void RequestOwnerAccountId(
+  // Would provide empty account id if there is no owner on the device (e.g.
+  // if device is enterprise-owned).
+  virtual void GetOwnerAccountIdAsync(
       base::OnceCallback<void(const AccountId&)> callback) const = 0;
 
   // Returns account Id of the user that was active in the previous session.
@@ -366,8 +366,8 @@ class USER_MANAGER_EXPORT UserManager {
   // Returns true if we're logged in as a child user.
   virtual bool IsLoggedInAsChildUser() const = 0;
 
-  // Returns true if we're logged in as a public account.
-  virtual bool IsLoggedInAsPublicAccount() const = 0;
+  // Returns true if we're logged in as a managed guest session.
+  virtual bool IsLoggedInAsManagedGuestSession() const = 0;
 
   // Returns true if we're logged in as a Guest.
   virtual bool IsLoggedInAsGuest() const = 0;
@@ -503,7 +503,7 @@ class USER_MANAGER_EXPORT UserManager {
   static UserManager* instance;
 
  private:
-  friend class ScopedUserManager;
+  friend class internal::ScopedUserManagerImpl;
 
   // Same as Get() but doesn't won't crash is current instance is NULL.
   static UserManager* GetForTesting();

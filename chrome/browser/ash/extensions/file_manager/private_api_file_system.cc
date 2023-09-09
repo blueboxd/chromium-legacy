@@ -8,7 +8,6 @@
 #include <sys/xattr.h>
 
 #include <algorithm>
-#include <cctype>
 #include <cstdint>
 #include <iterator>
 #include <memory>
@@ -69,6 +68,7 @@
 #include "chrome/browser/chromeos/policy/dlp/dlp_file_destination.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager_factory.h"
+#include "chrome/browser/enterprise/data_controls/component.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -332,8 +332,7 @@ ExtensionFunction::ResponseAction FileManagerPrivateGrantAccessFunction::Run() {
       file_manager::util::GetFileSystemContextForRenderFrameHost(
           Profile::FromBrowserContext(browser_context()), render_frame_host());
 
-  storage::ExternalFileSystemBackend* const backend =
-      file_system_context->external_backend();
+  auto* const backend = ash::FileSystemBackend::Get(*file_system_context);
   DCHECK(backend);
 
   const std::vector<Profile*>& profiles =
@@ -1171,8 +1170,8 @@ FileManagerPrivateGetDialogCallerFunction::Run() {
           GetSenderWebContents());
   base::Value::Dict info;
   if (caller.has_value()) {
-    if (caller->url_or_path().has_value()) {
-      info.Set("url", caller->url_or_path().value());
+    if (caller->url().has_value()) {
+      info.Set("url", caller->url()->spec());
     }
     if (caller->component().has_value()) {
       info.Set("component",
@@ -1196,8 +1195,8 @@ FileManagerPrivateInternalResolveIsolatedEntriesFunction::Run() {
           profile, render_frame_host());
   DCHECK(file_system_context.get());
 
-  const storage::ExternalFileSystemBackend* external_backend =
-      file_system_context->external_backend();
+  const auto* external_backend =
+      ash::FileSystemBackend::Get(*file_system_context);
   DCHECK(external_backend);
 
   file_manager::util::FileDefinitionList file_definition_list;
@@ -1325,7 +1324,7 @@ FileManagerPrivateSearchFilesByHashesFunction::Run() {
   Profile* const profile = Profile::FromBrowserContext(browser_context());
   drive::EventLogger* const logger = file_manager::util::GetLogger(profile);
   if (logger) {
-    logger->Log(logging::LOG_INFO,
+    logger->Log(logging::LOGGING_INFO,
                 "%s[%s] called. (volume id: %s, number of hashes: %zd)", name(),
                 request_uuid().AsLowercaseString().c_str(),
                 params->volume_id.c_str(), params->hash_list.size());

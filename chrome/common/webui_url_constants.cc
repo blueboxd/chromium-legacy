@@ -532,6 +532,8 @@ const char kChromeUIEnterpriseProfileWelcomeURL[] =
     "chrome://enterprise-profile-welcome/";
 const char kChromeUIIntroHost[] = "intro";
 const char kChromeUIIntroURL[] = "chrome://intro";
+const char kChromeUIIntroDefaultBrowserSubPage[] = "default-browser";
+const char kChromeUIIntroDefaultBrowserURL[] = "chrome://intro/default-browser";
 const char kChromeUIProfileCustomizationHost[] = "profile-customization";
 const char kChromeUIProfileCustomizationURL[] =
     "chrome://profile-customization";
@@ -633,9 +635,9 @@ const char kCleanupSubPage[] = "cleanup";
 const char kChromeUICastFeedbackHost[] = "cast-feedback";
 #endif
 
-#if BUILDFLAG(ENABLE_WAFFLE_DESKTOP)
-const char kChromeUIWaffleHost[] = "waffle";
-const char kChromeUIWaffleURL[] = "chrome://waffle";
+#if BUILDFLAG(ENABLE_SEARCH_ENGINE_CHOICE)
+const char kChromeUISearchEngineChoiceHost[] = "search-engine-choice";
+const char kChromeUISearchEngineChoiceURL[] = "chrome://search-engine-choice";
 #endif
 
 #if BUILDFLAG(ENABLE_LENS_DESKTOP_GOOGLE_BRANDED_FEATURES)
@@ -737,7 +739,7 @@ const char* const kChromeHostURLs[] = {
     content::kChromeUIWebXrInternalsHost,
 #endif
 #if !BUILDFLAG(IS_ANDROID)
-#if !BUILDFLAG(IS_CHROMEOS_ASH)
+#if !BUILDFLAG(IS_CHROMEOS)
     kChromeUIAppLauncherPageHost,
 #endif
     kChromeUIBookmarksHost,

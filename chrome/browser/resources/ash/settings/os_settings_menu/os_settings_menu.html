@@ -42,7 +42,6 @@
     border-style: solid;
     color: var(--cros-text-color-primary);
     display: flex;
-    font-weight: 500;
     margin-bottom: 8px;
     margin-inline-end: 2px;
     min-height: 32px;
@@ -53,6 +52,14 @@
   :host-context([dir=rtl]) a.item {
     /* Chrome doesn't support border-start-end-radius, so override. */
     border-radius: 20px 0 0 20px;
+  }
+
+  :host-context(body:not(.jelly-enabled)) a.item {
+    font-weight: 500;
+  }
+
+  :host-context(body.jelly-enabled) a.item {
+    font: var(--cros-button-1-font);
   }
 
   a.item.iron-selected {
@@ -100,13 +107,20 @@
     box-shadow: none;
     color: var(--cros-text-color-primary);
     display: flex;
-    font-weight: 500;
     height: unset;
     margin-inline-end: 2px;
     margin-top: 8px;
     padding-inline-end: 0;
     padding-inline-start: 20px;
     text-transform: none;
+  }
+
+  :host-context(body:not(.jelly-enabled)) #advancedButton {
+    font-weight: 500;
+  }
+
+  :host-context(body.jelly-enabled) #advancedButton {
+    font: var(--cros-button-1-font);
   }
 
   #advancedButton:focus {
@@ -163,30 +177,37 @@
       [[item.label]]
     </a>
   </template>
-  <cr-button id="advancedButton"
-      aria-expanded$="[[boolToString_(advancedOpened)]]"
-      on-click="onAdvancedButtonToggle_">
-    <span>$i18n{advancedPageTitle}</span>
-    <iron-icon icon="[[arrowState_(advancedOpened)]]" slot="suffix-icon">
+
+  <template is="dom-if" if="[[!isRevampWayfindingEnabled_]]">
+    <cr-button id="advancedButton"
+        aria-expanded$="[[boolToString_(advancedOpened)]]"
+        on-click="onAdvancedButtonToggle_">
+      <span>$i18n{advancedPageTitle}</span>
+      <iron-icon icon="[[arrowState_(advancedOpened)]]" slot="suffix-icon">
+      </iron-icon>
+    </cr-button>
+    <iron-collapse id="advancedCollapse" opened="[[advancedOpened]]">
+      <iron-selector id="advancedSubmenu"
+          selectable="a.item"
+          attr-for-selected="href"
+          role="navigation"
+          on-click="onLinkClick_"
+          selected="[[selectedUrl_]]">
+        <template is="dom-repeat" items="[[advancedMenuItems_]]">
+          <a href="[[item.href]]" class="item">
+            <iron-icon icon="[[item.icon]]"></iron-icon>
+            [[item.label]]
+          </a>
+        </template>
+      </iron-selector>
+    </iron-collapse>
+    <div id="menuSeparator"></div>
+  </template>
+
+  <a id="aboutItem" href="[[aboutMenuItemHref_]]" class="item">
+    <iron-icon icon="os-settings:chrome"
+        hidden="[[!isRevampWayfindingEnabled_]]">
     </iron-icon>
-  </cr-button>
-  <iron-collapse id="advancedSubmenu" opened="[[advancedOpened]]">
-    <iron-selector id="subMenu"
-        selectable="a.item"
-        attr-for-selected="href"
-        role="navigation"
-        on-click="onLinkClick_"
-        selected="[[selectedUrl_]]">
-      <template is="dom-repeat" items="[[advancedMenuItems_]]">
-        <a href="[[item.href]]" class="item">
-          <iron-icon icon="[[item.icon]]"></iron-icon>
-          [[item.label]]
-        </a>
-      </template>
-    </iron-selector>
-  </iron-collapse>
-  <div id="menuSeparator"></div>
-  <a id="aboutItem" href="[[aboutMenuItemHref_]]" class="item" >
     $i18n{aboutOsPageTitle}
   </a>
 </iron-selector>

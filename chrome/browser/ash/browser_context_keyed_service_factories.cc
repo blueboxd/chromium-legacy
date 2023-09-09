@@ -16,6 +16,7 @@
 #include "chrome/browser/ash/android_sms/android_sms_service_factory.h"
 #include "chrome/browser/ash/app_list/app_sync_ui_state_factory.h"
 #include "chrome/browser/ash/app_list/arc/arc_vpn_provider_manager_factory.h"
+#include "chrome/browser/ash/app_list/search/local_image_search/local_image_search_service_factory.h"
 #include "chrome/browser/ash/app_mode/arc/arc_kiosk_app_service_factory.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_update_service.h"
 #include "chrome/browser/ash/app_restore/app_restore_arc_task_handler_factory.h"
@@ -43,6 +44,7 @@
 #include "chrome/browser/ash/crostini/crostini_shared_devices.h"
 #include "chrome/browser/ash/crostini/crostini_upgrader.h"
 #include "chrome/browser/ash/crostini/throttle/crostini_throttle.h"
+#include "chrome/browser/ash/early_prefs/early_prefs_export_service_factory.h"
 #include "chrome/browser/ash/eche_app/eche_app_manager_factory.h"
 #include "chrome/browser/ash/extensions/file_manager/event_router_factory.h"
 #include "chrome/browser/ash/extensions/input_method_api.h"
@@ -133,6 +135,7 @@ void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   android_sms::AndroidSmsServiceFactory::GetInstance();
   ApkWebAppServiceFactory::GetInstance();
   app_list::ArcVpnProviderManagerFactory::GetInstance();
+  app_list::LocalImageSearchServiceFactory::GetInstance();
   app_restore::AppRestoreArcTaskHandlerFactory::GetInstance();
   apps::AppDiscoveryServiceFactory::GetInstance();
   apps::ArcAppsFactory::GetInstance();
@@ -168,6 +171,7 @@ void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
 #if BUILDFLAG(USE_CUPS)
   CupsProxyServiceManagerFactory::GetInstance();
 #endif
+  EarlyPrefsExportServiceFactory::GetInstance();
   EasyUnlockServiceFactory::GetInstance();
   eche_app::EcheAppManagerFactory::GetInstance();
   EventBasedStatusReportingServiceFactory::GetInstance();

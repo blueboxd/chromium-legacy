@@ -667,6 +667,9 @@ AshNotificationView::AshNotificationView(
                     gfx::Font::Weight::NORMAL),
       gfx::Insets(), true);
 
+  // This view should not be focusable since it does not act as a button.
+  header_row()->SetFocusBehavior(views::View::FocusBehavior::NEVER);
+
   // Corner radius for popups is handled below. We do not set corner radius if
   // the view is  in the message center here. Rounded corners for message_views
   // in the message center view are handled in `UnifiedMessageListView`.
@@ -834,6 +837,10 @@ void AshNotificationView::AnimateSingleToGroup(
 }
 
 void AshNotificationView::ToggleExpand() {
+  if (disable_expand_collapse_) {
+    return;
+  }
+
   const bool target_expanded_state = !IsExpanded();
 
   SetManuallyExpandedOrCollapsed(
@@ -972,7 +979,7 @@ void AshNotificationView::AddGroupNotification(
   notification_view->SetGroupedChildExpanded(IsExpanded());
   notification_view->set_parent_message_view(this);
   notification_view->set_scroller(
-      scroller() ? scroller() : grouped_notifications_scroll_view_);
+      scroller() ? scroller() : grouped_notifications_scroll_view_.get());
 
   header_row()->SetTimestamp(notification.timestamp());
 
@@ -1016,7 +1023,7 @@ void AshNotificationView::PopulateGroupNotifications(
 
     notification_view->set_parent_message_view(this);
     notification_view->set_scroller(
-        scroller() ? scroller() : grouped_notifications_scroll_view_);
+        scroller() ? scroller() : grouped_notifications_scroll_view_.get());
 
     grouped_notifications_container_->AddChildView(
         std::move(notification_view));
@@ -1390,8 +1397,8 @@ bool AshNotificationView::IsIconViewShown() const {
   return NotificationViewBase::IsIconViewShown() && !is_grouped_child_view_;
 }
 
-void AshNotificationView::SetExpandButtonEnabled(bool enabled) {
-  expand_button_->SetVisible(enabled);
+void AshNotificationView::SetExpandButtonVisibility(bool visible) {
+  expand_button_->SetVisible(visible);
 }
 
 bool AshNotificationView::IsExpandable() const {
@@ -1559,6 +1566,25 @@ void AshNotificationView::OnInlineReplyUpdated() {
       inline_reply(), kActionButtonsFadeOutAnimationDurationMs,
       kInlineReplyFadeInAnimationDurationMs, gfx::Tween::LINEAR,
       "Ash.NotificationView.InlineReply.FadeIn.AnimationSmoothness");
+}
+
+void AshNotificationView::SetExpandCollapseEnabled(bool enabled) {
+  if (disable_expand_collapse_ == !enabled) {
+    return;
+  }
+
+  disable_expand_collapse_ = !enabled;
+
+  expand_button_->SetExpandCollapseEnabled(enabled);
+
+  for (auto* child_notification :
+       grouped_notifications_container_->children()) {
+    auto* notification_view =
+        static_cast<AshNotificationView*>(child_notification);
+    if (notification_view) {
+      notification_view->SetExpandCollapseEnabled(enabled);
+    }
+  }
 }
 
 views::View* AshNotificationView::FindGroupNotificationView(
@@ -2125,8 +2151,8 @@ void AshNotificationView::PerformToggleInlineSettingsAnimation(
 }
 
 void AshNotificationView::AnimateSingleToGroupFadeIn() {
-  auto* fade_in_view = shown_in_popup_ ? grouped_notifications_scroll_view_
-                                       : grouped_notifications_container_;
+  auto fade_in_view = shown_in_popup_ ? grouped_notifications_scroll_view_
+                                      : grouped_notifications_container_;
   message_center_utils::InitLayerForAnimations(fade_in_view);
   message_center_utils::FadeInView(
       fade_in_view, /*delay_in_ms=*/0,

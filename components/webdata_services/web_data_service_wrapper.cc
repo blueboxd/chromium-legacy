@@ -169,20 +169,20 @@ WebDataServiceWrapper::WebDataServiceWrapper(
         base::BindOnce(&InitWalletUsageDataSyncBridgeOnDBSequence,
                        db_task_runner, profile_autofill_web_data_));
   }
-  if (base::FeatureList::IsEnabled(
-          autofill::features::kAutofillEnableCvcStorageAndFilling) &&
-      base::FeatureList::IsEnabled(syncer::kSyncAutofillWalletCredentialData)) {
+  if (base::FeatureList::IsEnabled(syncer::kSyncAutofillWalletCredentialData)) {
     profile_autofill_web_data_->GetAutofillBackend(
         base::BindOnce(&InitWalletCredentialSyncBridgeOnDBSequence,
                        db_task_runner, profile_autofill_web_data_));
   }
 
   base::FilePath account_storage_path;
-#if BUILDFLAG(IS_ANDROID) || !BUILDFLAG(USE_BLINK)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
+  // On Android and iOS, the account storage is persisted on disk.
   account_storage_path = context_path.Append(kAccountWebDataFilename);
 #else
+  // On other (desktop) platforms, the account storage is in-memory.
   account_storage_path = base::FilePath(WebDatabase::kInMemoryPath);
-#endif  // BUILDFLAG(IS_ANDROID) || !BUILDFLAG(USE_BLINK)
+#endif  // BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
   account_database_ = base::MakeRefCounted<WebDatabaseService>(
       account_storage_path, ui_task_runner, db_task_runner);
   account_database_->AddTable(std::make_unique<autofill::AutofillTable>());
@@ -204,9 +204,7 @@ WebDataServiceWrapper::WebDataServiceWrapper(
         base::BindOnce(&InitWalletUsageDataSyncBridgeOnDBSequence,
                        db_task_runner, account_autofill_web_data_));
   }
-  if (base::FeatureList::IsEnabled(
-          autofill::features::kAutofillEnableCvcStorageAndFilling) &&
-      base::FeatureList::IsEnabled(syncer::kSyncAutofillWalletCredentialData)) {
+  if (base::FeatureList::IsEnabled(syncer::kSyncAutofillWalletCredentialData)) {
     account_autofill_web_data_->GetAutofillBackend(
         base::BindOnce(&InitWalletCredentialSyncBridgeOnDBSequence,
                        db_task_runner, account_autofill_web_data_));

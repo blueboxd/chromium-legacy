@@ -6,6 +6,7 @@
 
 #import "base/check.h"
 #import "base/check_op.h"
+#import "base/strings/sys_string_conversions.h"
 #import "components/signin/public/identity_manager/objc/identity_manager_observer_bridge.h"
 #import "components/sync/service/sync_service.h"
 #import "components/sync/service/sync_user_settings.h"
@@ -13,10 +14,8 @@
 #import "ios/chrome/browser/signin/authentication_service.h"
 #import "ios/chrome/browser/signin/chrome_account_manager_service.h"
 #import "ios/chrome/browser/ui/authentication/history_sync/history_sync_consumer.h"
-
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
+#import "ios/chrome/grit/ios_strings.h"
+#import "ui/base/l10n/l10n_util.h"
 
 @interface HistorySyncMediator () <IdentityManagerObserverBridgeDelegate>
 @end
@@ -29,6 +28,8 @@
       _identityManagerObserver;
   // Sync service.
   syncer::SyncService* _syncService;
+  // `YES` if the user's email should be shown in the footer text.
+  BOOL _showUserEmail;
 }
 
 - (instancetype)
@@ -36,7 +37,8 @@
       chromeAccountManagerService:
           (ChromeAccountManagerService*)chromeAccountManagerService
                   identityManager:(signin::IdentityManager*)identityManager
-                      syncService:(syncer::SyncService*)syncService {
+                      syncService:(syncer::SyncService*)syncService
+                    showUserEmail:(BOOL)showUserEmail {
   self = [super init];
   if (self) {
     _authenticationService = authenticationService;
@@ -45,13 +47,9 @@
         std::make_unique<signin::IdentityManagerObserverBridge>(identityManager,
                                                                 self);
     _syncService = syncService;
+    _showUserEmail = showUserEmail;
   }
   return self;
-}
-
-- (void)dealloc {
-  // TODO(crbug.com/1454777)
-  DUMP_WILL_BE_CHECK(!_accountManagerService);
 }
 
 - (void)disconnect {
@@ -65,7 +63,8 @@
   id<SystemIdentity> identity =
       _authenticationService->GetPrimaryIdentity(signin::ConsentLevel::kSignin);
   CHECK(identity);
-  // TODO(crbug.com/1447014): Should we record the history sync opt-in?
+  // TODO(crbug.com/1467853): Record the history sync opt-in when the new
+  // consent type will be available.
   syncer::SyncUserSettings* syncUserSettings = _syncService->GetUserSettings();
   syncUserSettings->SetSelectedType(syncer::UserSelectableType::kHistory, true);
   syncUserSettings->SetSelectedType(syncer::UserSelectableType::kTabs, true);
@@ -86,7 +85,15 @@
     // dialog will be automatically closed.
     return;
   }
+
   [self updateAvatarImageWithIdentity:identity];
+  NSString* footerText =
+      _showUserEmail
+          ? l10n_util::GetNSStringF(
+                IDS_IOS_HISTORY_SYNC_FOOTER_WITH_EMAIL,
+                base::SysNSStringToUTF16(identity.userEmail))
+          : l10n_util::GetNSString(IDS_IOS_HISTORY_SYNC_FOOTER_WITHOUT_EMAIL);
+  [_consumer setFooterText:footerText];
 }
 
 #pragma mark - IdentityManagerObserverBridgeDelegate

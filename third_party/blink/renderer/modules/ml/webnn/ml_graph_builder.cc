@@ -116,6 +116,21 @@ webnn::InputOperandLayout BlinkInputOperandLayoutToComponent(
   NOTREACHED_NORETURN();
 }
 
+webnn::Conv2dFilterOperandLayout BlinkConv2dFilterLayoutToComponent(
+    blink::V8MLConv2dFilterOperandLayout::Enum type) {
+  switch (type) {
+    case blink::V8MLConv2dFilterOperandLayout::Enum::kOihw:
+      return webnn::Conv2dFilterOperandLayout::kOihw;
+    case blink::V8MLConv2dFilterOperandLayout::Enum::kHwio:
+      return webnn::Conv2dFilterOperandLayout::kHwio;
+    case blink::V8MLConv2dFilterOperandLayout::Enum::kOhwi:
+      return webnn::Conv2dFilterOperandLayout::kOhwi;
+    case blink::V8MLConv2dFilterOperandLayout::Enum::kIhwo:
+      return webnn::Conv2dFilterOperandLayout::kIhwo;
+  }
+  NOTREACHED_NORETURN();
+}
+
 webnn::RoundingType BlinkRoundingTypeToComponent(
     blink::V8MLRoundingType::Enum type) {
   switch (type) {
@@ -125,6 +140,47 @@ webnn::RoundingType BlinkRoundingTypeToComponent(
       return webnn::RoundingType::kCeil;
   }
   NOTREACHED_NORETURN();
+}
+
+base::expected<webnn::Conv2dAttributes, String> ConvertToConv2dAttributes(
+    const blink::MLConv2dOptions* options) {
+  CHECK(options);
+  webnn::Conv2dAttributes attributes;
+  // If padding is not present, the values are assumed to be [0,0,0,0].
+  auto padding = options->getPaddingOr({0, 0, 0, 0});
+  if (padding.size() != 4) {
+    return base::unexpected("The length of padding should be 4.");
+  }
+  // The order of padding array is [beginning_height, ending_height,
+  // beginning_width, ending_width].
+  attributes.padding = webnn::Padding2d{
+      .beginning = webnn::Size2d{.height = padding[0], .width = padding[2]},
+      .ending = webnn::Size2d{.height = padding[1], .width = padding[3]}};
+
+  // If strides is not present, the values are assumed to be [1,1].
+  auto strides = options->getStridesOr({1, 1});
+  if (strides.size() != 2) {
+    return base::unexpected("The length of strides should be 2.");
+  }
+  attributes.strides = webnn::Size2d{.height = strides[0], .width = strides[1]};
+
+  // If dilations is not present, the values are assumed to be [1,1].
+  auto dilations = options->getDilationsOr({1, 1});
+  if (dilations.size() != 2) {
+    return base::unexpected("The length of dilations should be 2.");
+  }
+  attributes.dilations =
+      webnn::Size2d{.height = dilations[0], .width = dilations[1]};
+  attributes.auto_pad = BlinkAutoPadToComponent(options->autoPad().AsEnum());
+  attributes.groups = options->groups();
+  attributes.input_layout =
+      BlinkInputOperandLayoutToComponent(options->inputLayout().AsEnum());
+  attributes.filter_layout =
+      BlinkConv2dFilterLayoutToComponent(options->filterLayout().AsEnum());
+  if (options->hasBias()) {
+    attributes.bias_operand = ConvertToComponentOperand(options->bias());
+  }
+  return attributes;
 }
 
 base::expected<webnn::Pool2dAttributes, std::string> ConvertToPool2dAttributes(
@@ -178,6 +234,20 @@ base::expected<webnn::Pool2dAttributes, std::string> ConvertToPool2dAttributes(
     attributes.output_sizes =
         webnn::Size2d{.height = output_size[0], .width = output_size[1]};
   }
+  return attributes;
+}
+
+webnn::GemmAttributes ConvertToGemmAttributes(
+    const blink::MLGemmOptions* options) {
+  CHECK(options);
+  webnn::GemmAttributes attributes;
+  if (options->hasC()) {
+    attributes.c_operand = ConvertToComponentOperand(options->c());
+  }
+  attributes.alpha = options->alpha();
+  attributes.beta = options->beta();
+  attributes.a_transpose = options->aTranspose();
+  attributes.b_transpose = options->bTranspose();
   return attributes;
 }
 
@@ -757,162 +827,21 @@ MLOperand* MLGraphBuilder::conv2d(const MLOperand* input,
                                   const MLOperand* filter,
                                   const MLConv2dOptions* options,
                                   ExceptionState& exception_state) {
-  // Validate input operand and set its sizes.
-  const auto input_shape = input->Dimensions();
-  if (input_shape.size() != 4) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kDataError,
-                                      "The input should be a 4-D tensor.");
+  auto conv2d_attributes = ConvertToConv2dAttributes(options);
+  if (!conv2d_attributes.has_value()) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kDataError, conv2d_attributes.error());
     return nullptr;
-  }
-  // The input layout option specifies the layout format of the input tensor.
-  uint32_t input_batches, input_channels, input_height, input_width;
-  switch (options->inputLayout().AsEnum()) {
-    case V8MLInputOperandLayout::Enum::kNchw:
-      // "nchw": [batches, input_channels, height, width]
-      input_batches = input_shape[0];
-      input_channels = input_shape[1];
-      input_height = input_shape[2];
-      input_width = input_shape[3];
-      break;
-    case V8MLInputOperandLayout::Enum::kNhwc:
-      // "nhwc": [batches, height, width, input_channels]
-      input_batches = input_shape[0];
-      input_height = input_shape[1];
-      input_width = input_shape[2];
-      input_channels = input_shape[3];
-      break;
   }
 
-  // Validate filter operand and set its sizes.
-  if (filter->Type() != input->Type()) {
+  auto validated_output = webnn::ValidateConv2dAndInferOutput(
+      ConvertToComponentOperand(input), ConvertToComponentOperand(filter),
+      std::move(conv2d_attributes.value()));
+  if (!validated_output.has_value()) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kDataError,
-        "The filter type doesn't match the input type.");
+        WTF::String::FromUTF8(validated_output.error()));
     return nullptr;
-  }
-  const auto filter_shape = filter->Dimensions();
-  if (filter_shape.size() != 4) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kDataError,
-                                      "The filter should be a 4-D tensor.");
-    return nullptr;
-  }
-  // The filter layout specifies the filter layout format.
-  uint32_t filter_height, filter_width, output_channels, filter_input_channels;
-  switch (options->filterLayout().AsEnum()) {
-    case V8MLConv2dFilterOperandLayout::Enum::kHwio:
-      // "hwio": [height, width, input_channels/groups, output_channels]
-      filter_height = filter_shape[0];
-      filter_width = filter_shape[1];
-      filter_input_channels = filter_shape[2];
-      output_channels = filter_shape[3];
-      break;
-    case V8MLConv2dFilterOperandLayout::Enum::kOhwi:
-      // "ohwi": [output_channels, height, width, input_channels/groups]
-      output_channels = filter_shape[0];
-      filter_height = filter_shape[1];
-      filter_width = filter_shape[2];
-      filter_input_channels = filter_shape[3];
-      break;
-    case V8MLConv2dFilterOperandLayout::Enum::kIhwo:
-      // "ihwo": [input_channels/groups, height, width, output_channels]
-      filter_input_channels = filter_shape[0];
-      filter_height = filter_shape[1];
-      filter_width = filter_shape[2];
-      output_channels = filter_shape[3];
-      break;
-    case V8MLConv2dFilterOperandLayout::Enum::kOihw:
-      // "oihw": [output_channels, input_channels/groups, height, width]
-      output_channels = filter_shape[0];
-      filter_input_channels = filter_shape[1];
-      filter_height = filter_shape[2];
-      filter_width = filter_shape[3];
-      break;
-  }
-  // Validate bias operand if it is present.
-  if (options->hasBias()) {
-    const auto bias_shape = options->bias()->Dimensions();
-    if (bias_shape.size() != 1) {
-      exception_state.ThrowDOMException(DOMExceptionCode::kDataError,
-                                        "The bias should be a 1-D tensor.");
-      return nullptr;
-    }
-    if (bias_shape[0] != output_channels) {
-      exception_state.ThrowDOMException(
-          DOMExceptionCode::kDataError,
-          String::Format("The bias shape should be [%u].", output_channels));
-      return nullptr;
-    }
-    if (options->bias()->Type() != input->Type()) {
-      exception_state.ThrowDOMException(
-          DOMExceptionCode::kDataError,
-          "The bias type doesn't match input type.");
-      return nullptr;
-    }
-  }
-  // Validate groups.
-  if (options->groups() == 0) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kDataError,
-                                      "The groups should be greater than 0.");
-    return nullptr;
-  }
-  if (input_channels % options->groups() != 0 ||
-      filter_input_channels != input_channels / options->groups()) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kDataError,
-                                      "The groups must evenly divide the input "
-                                      "channels to filter input channels.");
-    return nullptr;
-  }
-  // If padding is not present, the values are assumed to be [0,0,0,0].
-  auto padding = options->getPaddingOr({0, 0, 0, 0});
-  if (padding.size() != 4) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kDataError,
-                                      "The length of padding should be 4.");
-    return nullptr;
-  }
-  // If strides is not present, the values are assumed to be [1,1].
-  auto strides = options->getStridesOr({1, 1});
-  if (strides.size() != 2) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kDataError,
-                                      "The length of strides should be 2.");
-    return nullptr;
-  }
-  // If dilations is not present, the values are assumed to be [1,1].
-  auto dilations = options->getDilationsOr({1, 1});
-  if (dilations.size() != 2) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kDataError,
-                                      "The length of dilations should be 2.");
-    return nullptr;
-  }
-  const auto output_sizes = ValidateAndCalculateConv2dOutputSizes(
-      input_height, input_width, filter_height, filter_width,
-      webnn::Padding2d{
-          .beginning = webnn::Size2d{.height = padding[0], .width = padding[2]},
-          .ending = webnn::Size2d{.height = padding[1], .width = padding[3]}},
-      webnn::Size2d{.height = strides[0], .width = strides[1]},
-      webnn::Size2d{.height = dilations[0], .width = dilations[1]},
-      BlinkAutoPadToComponent(options->autoPad().AsEnum()));
-  if (!output_sizes.has_value()) {
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kDataError,
-        WTF::String::FromUTF8(output_sizes.error()));
-    return nullptr;
-  }
-  const uint32_t output_height =
-      base::ClampFloor<uint32_t>(output_sizes->height);
-  const uint32_t output_width = base::ClampFloor<uint32_t>(output_sizes->width);
-  // The input layout option specifies the layout format of the output tensor.
-  Vector<uint32_t> output_shape;
-  switch (options->inputLayout().AsEnum()) {
-    case V8MLInputOperandLayout::Enum::kNchw:
-      // "nchw": [batches, output_channels, height, width]
-      output_shape = {input_batches, output_channels, output_height,
-                      output_width};
-      break;
-    case V8MLInputOperandLayout::Enum::kNhwc:
-      // "nhwc": [batches, height, width, output_channels]
-      output_shape = {input_batches, output_height, output_width,
-                      output_channels};
-      break;
   }
   // Create conv2d operator and its output operand. Connect the conv2d operator
   // to its input and output operands.
@@ -923,7 +852,8 @@ MLOperand* MLGraphBuilder::conv2d(const MLOperand* input,
     inputs.push_back(options->bias());
   }
   auto output = MLOperand::ValidateAndCreateOutput(
-      this, input->Type(), std::move(output_shape), conv2d);
+      this, ComponentOperandTypeToBlink(validated_output.value().data_type),
+      Vector<uint32_t>(validated_output.value().dimensions), conv2d);
   if (!output.has_value()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kDataError,
                                       output.error());
@@ -1227,74 +1157,14 @@ MLOperand* MLGraphBuilder::gemm(const MLOperand* a,
                                 const MLOperand* b,
                                 const MLGemmOptions* options,
                                 ExceptionState& exception_state) {
-  if (a->Type() != b->Type()) {
+  auto validated_output = webnn::ValidateGemmAndInferOutput(
+      ConvertToComponentOperand(a), ConvertToComponentOperand(b),
+      ConvertToGemmAttributes(options));
+  if (!validated_output.has_value()) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kDataError,
-        "The types of first two inputs don't match.");
+        WTF::String::FromUTF8(validated_output.error()));
     return nullptr;
-  }
-  // According to WebNN spec:
-  // https://www.w3.org/TR/webnn/#api-mlgraphbuilder-gemm, the first input 2-D
-  // tensor with shape [M, K] if aTranspose is false, or [K, M] if aTranspose is
-  // true.
-  auto shape_a = a->Dimensions();
-  if (shape_a.size() != 2) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kDataError,
-                                      "The first input must be a 2-D tensor.");
-    return nullptr;
-  }
-  if (options->aTranspose()) {
-    shape_a.Reverse();
-  }
-  // The second input 2-D tensor with shape [K, N] if bTranspose is false, or
-  // [N, K] if bTranspose is true.
-  auto shape_b = b->Dimensions();
-  if (shape_b.size() != 2) {
-    exception_state.ThrowDOMException(DOMExceptionCode::kDataError,
-                                      "The second input must be a 2-D tensor.");
-    return nullptr;
-  }
-  if (options->bTranspose()) {
-    shape_b.Reverse();
-  }
-  // The number of columns in the first matrix must be equal to the number of
-  // rows in the second matrix.
-  if (shape_a[1] != shape_b[0]) {
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kDataError,
-        String::Format(
-            "The number of columns (%u) in the %sfirst matrix isn't equal to "
-            "the number of rows (%u) in the %ssecond matrix.",
-            shape_a[1], options->aTranspose() ? "transposed " : "", shape_b[0],
-            options->bTranspose() ? "transposed " : ""));
-    return nullptr;
-  };
-  // The output is 2-D tensor of shape [M, N].
-  Vector<uint32_t> output_shape = {shape_a[0], shape_b[1]};
-  // The third input tensor c is either a scalar, or of the shape that is
-  // unidirectionally broadcastable to the output shape [M, N].
-  if (options->hasC()) {
-    const auto* c = options->c();
-    if (c->Type() != a->Type()) {
-      exception_state.ThrowDOMException(
-          DOMExceptionCode::kDataError,
-          "The third input type doesn't match other inputs' type.");
-      return nullptr;
-    }
-    const auto shape_c = options->c()->Dimensions();
-    if (shape_c.size() > 2) {
-      exception_state.ThrowDOMException(
-          DOMExceptionCode::kDataError,
-          "The third input tensor should be either a scalar or a 2-D tensor.");
-      return nullptr;
-    }
-    if (!BroadcastShapes(shape_c, output_shape, false)) {
-      exception_state.ThrowDOMException(
-          DOMExceptionCode::kDataError,
-          "The third input tensor isn't unidirectionally broadcastable to the "
-          "output tensor.");
-      return nullptr;
-    }
   }
   auto* gemm = MakeGarbageCollected<MLOperator>(
       this, MLOperator::OperatorKind::kGemm, options);
@@ -1303,7 +1173,8 @@ MLOperand* MLGraphBuilder::gemm(const MLOperand* a,
     inputs.push_back(options->c());
   }
   auto output = MLOperand::ValidateAndCreateOutput(
-      this, a->Type(), std::move(output_shape), gemm);
+      this, ComponentOperandTypeToBlink(validated_output.value().data_type),
+      Vector<uint32_t>(validated_output.value().dimensions), gemm);
   if (!output.has_value()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kDataError,
                                       output.error());

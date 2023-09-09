@@ -274,7 +274,11 @@ void PageInfoCookiesContentView::SetThirdPartyCookiesInfo(
   third_party_cookies_row_->SetIcon(
       PageInfoViewFactory::GetThirdPartyCookiesIcon(
           !are_third_party_cookies_blocked));
+  third_party_cookies_row_->SetID(
+      PageInfoViewFactory::VIEW_ID_PAGE_INFO_THIRD_PARTY_COOKIES_ROW);
   third_party_cookies_toggle_->SetIsOn(!are_third_party_cookies_blocked);
+  third_party_cookies_toggle_->SetID(
+      PageInfoViewFactory::VIEW_ID_PAGE_INFO_THIRD_PARTY_COOKIES_TOGGLE);
 
   const std::u16string toggle_subtitle =
       are_third_party_cookies_blocked
@@ -285,6 +289,16 @@ void PageInfoCookiesContentView::SetThirdPartyCookiesInfo(
                 IDS_PAGE_INFO_COOKIES_ALLOWED_SITES_COUNT,
                 cookie_info.allowed_third_party_sites_count);
   third_party_cookies_toggle_subtitle_->SetText(toggle_subtitle);
+
+  const std::u16string toggle_a11y_name =
+      are_third_party_cookies_blocked
+          ? l10n_util::GetPluralStringFUTF16(
+                IDS_PAGE_INFO_COOKIES_THIRD_PARTY_COOKIES_BLOCKED_TOGGLE_A11Y,
+                cookie_info.blocked_third_party_sites_count)
+          : l10n_util::GetPluralStringFUTF16(
+                IDS_PAGE_INFO_COOKIES_THIRD_PARTY_COOKIES_ALLOWED_TOGGLE_A11Y,
+                cookie_info.allowed_third_party_sites_count);
+  third_party_cookies_toggle_->SetAccessibleName(toggle_a11y_name);
 
   // In the enforced state, the toggle buttons and labels are hidden; enforced
   // icon is shown instead of the toggle button.
@@ -529,11 +543,8 @@ void PageInfoCookiesContentView::AddThirdPartyCookiesContainer() {
       std::make_unique<views::ToggleButton>(base::BindRepeating(
           &PageInfoCookiesContentView::OnToggleButtonPressed,
           base::Unretained(this))));
-  // TODO(crbug.com/1446230): Use correct tooltip.
-  third_party_cookies_toggle_->SetAccessibleName(l10n_util::GetStringUTF16(
-      IDS_PAGE_INFO_COOKIES_THIRD_PARTY_COOKIES_LABEL));
   third_party_cookies_enforced_icon_ = third_party_cookies_row_->AddControl(
-      std::make_unique<NonAccessibleImageView>());
+      std::make_unique<views::ImageView>());
 
   third_party_cookies_container_->AddChildView(
       PageInfoViewFactory::CreateSeparator());

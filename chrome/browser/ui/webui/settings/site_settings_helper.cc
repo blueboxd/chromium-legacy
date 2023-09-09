@@ -60,6 +60,7 @@
 #include "components/subresource_filter/content/browser/subresource_filter_content_settings_manager.h"
 #include "components/subresource_filter/content/browser/subresource_filter_profile_context.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
+#include "components/url_formatter/elide_url.h"
 #include "components/url_formatter/url_formatter.h"
 #include "content/public/browser/permission_controller.h"
 #include "content/public/browser/permission_result.h"
@@ -196,6 +197,8 @@ const ContentSettingsTypeNameEntry kContentSettingsTypeGroupNames[] = {
      nullptr},
     {ContentSettingsType::THIRD_PARTY_STORAGE_PARTITIONING, nullptr},
     {ContentSettingsType::ALL_SCREEN_CAPTURE, nullptr},
+    {ContentSettingsType::COOKIE_CONTROLS_METADATA, nullptr},
+    {ContentSettingsType::TPCD_SUPPORT, nullptr},
 };
 
 static_assert(std::size(kContentSettingsTypeGroupNames) ==
@@ -315,8 +318,8 @@ bool PatternAppliesToWebUISchemes(const ContentSettingPatternSource& pattern) {
 std::string GetDisplayNameForPattern(Profile* profile,
                                      const ContentSettingsPattern& pattern) {
   GURL url(pattern.ToString());
-  if (url.SchemeIs(extensions::kExtensionScheme) ||
-      url.SchemeIs(chrome::kIsolatedAppScheme)) {
+  if (url.is_valid() && (url.SchemeIs(extensions::kExtensionScheme) ||
+                         url.SchemeIs(chrome::kIsolatedAppScheme))) {
     return GetDisplayNameForGURL(profile, url, /*hostname_only=*/false);
   }
   return pattern.ToString();
@@ -364,7 +367,9 @@ void GetPolicyAllowedUrls(ContentSettingsType type,
     exceptions->push_back(GetExceptionForPage(
         type, profile, pattern, ContentSettingsPattern(), display_name,
         CONTENT_SETTING_ALLOW,
-        SiteSettingSourceToString(SiteSettingSource::kPolicy), incognito));
+        SiteSettingSourceToString(SiteSettingSource::kPolicy),
+        // Pass base::Time() to indicate the exceptions do not expire.
+        base::Time(), incognito));
   }
 }
 
@@ -500,12 +505,18 @@ ContentSettingsType ContentSettingsTypeFromGroupName(base::StringPiece name) {
 }
 
 base::StringPiece ContentSettingsTypeToGroupName(ContentSettingsType type) {
-  for (size_t i = 0; i < std::size(kContentSettingsTypeGroupNames); ++i) {
-    if (type == kContentSettingsTypeGroupNames[i].type) {
-      const char* name = kContentSettingsTypeGroupNames[i].name;
-      if (name)
-        return name;
-      break;
+  for (const auto& entry : kContentSettingsTypeGroupNames) {
+    if (type == entry.type) {
+      // Content setting types that aren't represented in the settings UI
+      // will have `nullptr` as their `name`. Although they are valid content
+      // settings types, they don't have a readable name.
+      // TODO(crbug.com/1459305): Replace LOG with CHECK.
+      if (!entry.name) {
+        LOG(ERROR) << static_cast<int32_t>(type)
+                   << " does not have a readable name.";
+      }
+
+      return entry.name ? entry.name : base::StringPiece();
     }
   }
 
@@ -637,6 +648,22 @@ base::Value::Dict GetFileSystemExceptionForPage(
   return exception;
 }
 
+std::u16string GetExpirationDescription(const base::Time& expiration) {
+  CHECK(!expiration.is_null());
+
+  const base::TimeDelta time_diff =
+      expiration.LocalMidnight() - base::Time::Now().LocalMidnight();
+
+  // Only exceptions that haven't expired should reach this function.
+  // However, there is an edge case where an exception could expire between
+  // being fetched and this calculation. So let's always return a valid
+  // number, zero.
+  int days = std::max(time_diff.InDays(), 0);
+
+  return l10n_util::GetPluralStringFUTF16(IDS_SETTINGS_EXPIRES_AFTER_TIME_LABEL,
+                                          days);
+}
+
 // Create a base::Value::Dict that will act as a data source for a single row
 // in a HostContentSettingsMap-controlled exceptions table (e.g., cookies).
 base::Value::Dict GetExceptionForPage(
@@ -647,6 +674,7 @@ base::Value::Dict GetExceptionForPage(
     const std::string& display_name,
     const ContentSetting& setting,
     const std::string& provider_name,
+    const base::Time& expiration,
     bool incognito,
     bool is_embargoed) {
   base::Value::Dict exception;
@@ -662,10 +690,51 @@ base::Value::Dict GetExceptionForPage(
   DCHECK(!setting_string.empty());
   exception.Set(kSetting, setting_string);
 
+  // Cookie exception types may have an expiration that should be shown.
+  if (content_type == ContentSettingsType::COOKIES && !expiration.is_null() &&
+      !incognito) {
+    exception.Set(kDescription, GetExpirationDescription(expiration));
+  }
+
   exception.Set(kSource, provider_name);
   exception.Set(kIncognito, incognito);
   exception.Set(kIsEmbargoed, is_embargoed);
   return exception;
+}
+
+std::u16string GetStorageAccessEmbeddingDescription(
+    StorageAccessEmbeddingException embedding_sa_exception) {
+  if (embedding_sa_exception.is_embargoed) {
+    return l10n_util::GetStringUTF16(
+        IDS_PAGE_INFO_PERMISSION_AUTOMATICALLY_BLOCKED);
+  }
+
+  if (embedding_sa_exception.expiration.is_null()) {
+    return std::u16string();
+  }
+
+  return GetExpirationDescription(embedding_sa_exception.expiration);
+}
+
+// If the given `pattern` represents an individual origin, Isolated Web App, or
+// extension, retrieve a string to display it as such. If not, return the
+// pattern without wildcards as a string.
+std::string GetStorageAccessDisplayNameForPattern(
+    Profile* profile,
+    ContentSettingsPattern pattern) {
+  GURL url(pattern.ToString());
+  if (url.is_valid() && (url.SchemeIs(extensions::kExtensionScheme) ||
+                         url.SchemeIs(chrome::kIsolatedAppScheme))) {
+    return GetDisplayNameForGURL(profile, url, /*hostname_only=*/false);
+  }
+
+  GURL url2 = pattern.ToRepresentativeUrl();
+  if (url2.is_valid()) {
+    return base::UTF16ToUTF8(FormatUrlForSecurityDisplay(
+        url2, url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC));
+  }
+
+  return pattern.ToString();
 }
 
 base::Value::Dict GetStorageAccessExceptionForPage(
@@ -679,32 +748,59 @@ base::Value::Dict GetStorageAccessExceptionForPage(
   base::Value::Dict exception;
   exception.Set(kOrigin, pattern.ToString());
   exception.Set(kDisplayName, display_name);
-  exception.Set(kDescription,
-                l10n_util::GetPluralStringFUTF16(IDS_DEL_SITE_SETTINGS_COUNTER,
-                                                 exceptions.size()));
-
   std::string setting_string =
       content_settings::ContentSettingToString(setting);
   DCHECK(!setting_string.empty());
   exception.Set(kSetting, setting_string);
+
+  // If there is only one exception and that exception applies everywhere,
+  // i.e. `secondary_pattern` is empty, then don't return exceptions and a
+  // static row should be displayed. In practice, this only applies to embargoed
+  // sites.
+  if (exceptions.size() == 1 &&
+      exceptions[0].secondary_pattern == ContentSettingsPattern::Wildcard()) {
+    auto& embedding_sa_exception = exceptions[0];
+
+    std::u16string description =
+        GetStorageAccessEmbeddingDescription(embedding_sa_exception);
+    if (!description.empty()) {
+      exception.Set(kDescription, description);
+    }
+
+    exception.Set(kIncognito, embedding_sa_exception.is_incognito);
+    exception.Set(kExceptions, base::Value::List());
+    return exception;
+  }
+
+  exception.Set(kCloseDescription,
+                l10n_util::GetPluralStringFUTF16(IDS_DEL_SITE_SETTINGS_COUNTER,
+                                                 exceptions.size()));
+  const int open_description_id =
+      (setting == ContentSetting::CONTENT_SETTING_ALLOW)
+          ? IDS_SETTINGS_STORAGE_ACCESS_ALLOWED_SITE_LABEL
+          : IDS_SETTINGS_STORAGE_ACCESS_BLOCKED_SITE_LABEL;
+  exception.Set(kOpenDescription,
+                l10n_util::GetStringUTF16(open_description_id));
 
   base::Value::List embedding_origins;
   for (auto& embedding_sa_exception : exceptions) {
     ContentSettingsPattern secondary_pattern =
         embedding_sa_exception.secondary_pattern;
     base::Value::Dict embedding_exception;
-    std::string embedding_exception_origin =
+    embedding_exception.Set(
+        kEmbeddingOrigin,
         secondary_pattern == ContentSettingsPattern::Wildcard()
             ? std::string()
-            : secondary_pattern.ToString();
+            : secondary_pattern.ToString());
+    embedding_exception.Set(
+        kEmbeddingDisplayName,
+        GetStorageAccessDisplayNameForPattern(profile, secondary_pattern));
 
-    embedding_exception.Set(kEmbeddingOrigin, embedding_exception_origin);
-    // TODO(http://b/289788055): Remove wildcards.
-    embedding_exception.Set(kEmbeddingDisplayName, embedding_exception_origin);
-
-    // TODO(http://b/288405540): Add correct description according to expiration
-    // and embargoed status.
-    embedding_exception.Set(kDescription, "");
+    std::u16string description =
+        GetStorageAccessEmbeddingDescription(embedding_sa_exception);
+    if (!description.empty()) {
+      embedding_exception.Set(kDescription, description);
+    }
     embedding_exception.Set(kIncognito, embedding_sa_exception.is_incognito);
     embedding_origins.Append(std::move(embedding_exception));
   }
@@ -736,8 +832,8 @@ std::string GetDisplayNameForGURL(Profile* profile,
       GetUrlIdentityForGURL(profile, url, hostname_only).name);
 }
 
-// Fills in |all_patterns_settings| with site exceptions information for the
-// given |type| from |profile|.
+// Fills in `all_patterns_settings` with site exceptions information for the
+// given `type` from `profile`.
 void GetRawExceptionsForContentSettingsType(
     ContentSettingsType type,
     Profile* profile,
@@ -766,6 +862,13 @@ void GetRawExceptionsForContentSettingsType(
       continue;
     }
 
+    // Don't add auto granted permissions for storage access exceptions.
+    if (type == ContentSettingsType::STORAGE_ACCESS &&
+        setting.metadata.session_model() ==
+            content_settings::SessionModel::NonRestorableUserSession) {
+      continue;
+    }
+
     auto content_setting = setting.GetContentSetting();
 
     if (type == ContentSettingsType::COOKIES &&
@@ -783,9 +886,9 @@ void GetRawExceptionsForContentSettingsType(
       }
     }
 
-    all_patterns_settings[{setting.primary_pattern, setting.source}]
-                         [{setting.secondary_pattern, setting.incognito}] = {
-                             content_setting, /*is_embargoed=*/false};
+    all_patterns_settings[{setting.primary_pattern, setting.source}][{
+        setting.secondary_pattern, setting.incognito}] = {
+        content_setting, /*is_embargoed=*/false, setting.metadata.expiration()};
   }
 
   permissions::PermissionDecisionAutoBlocker* auto_blocker =
@@ -809,7 +912,8 @@ void GetRawExceptionsForContentSettingsType(
                                   type)) {
       all_patterns_settings[{setting.primary_pattern, setting.source}]
                            [{setting.secondary_pattern, setting.incognito}] = {
-                               CONTENT_SETTING_BLOCK, /*is_embargoed=*/true};
+                               CONTENT_SETTING_BLOCK, /*is_embargoed=*/true,
+                               setting.metadata.expiration()};
       ;
     }
   }
@@ -846,7 +950,8 @@ void GetExceptionsForContentType(ContentSettingsType type,
       this_provider_exceptions.push_back(GetExceptionForPage(
           type, profile, primary_pattern, secondary_pattern,
           std::move(display_name), site_exception_info.content_setting, source,
-          is_incognito, site_exception_info.is_embargoed));
+          site_exception_info.expiration, is_incognito,
+          site_exception_info.is_embargoed));
     }
   }
 
@@ -911,8 +1016,9 @@ void GetStorageAccessExceptions(ContentSetting content_setting,
         continue;
       }
 
-      sa_exceptions.push_back(
-          {secondary_pattern, is_incognito, site_exception_info.is_embargoed});
+      sa_exceptions.push_back({secondary_pattern, is_incognito,
+                               site_exception_info.is_embargoed,
+                               site_exception_info.expiration});
     }
 
     if (sa_exceptions.empty()) {
@@ -921,7 +1027,7 @@ void GetStorageAccessExceptions(ContentSetting content_setting,
 
     // TODO(http://b/289788055): Remove wildcards.
     const std::string display_name =
-        GetDisplayNameForPattern(profile, primary_pattern);
+        GetStorageAccessDisplayNameForPattern(profile, primary_pattern);
 
     exceptions->Append(GetStorageAccessExceptionForPage(
         profile, primary_pattern, std::move(display_name), content_setting,

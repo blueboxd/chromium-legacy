@@ -281,7 +281,12 @@ public class AddressEditor
                 mEditorModel, mEditorDialog, EditorDialogViewBinder::bindEditorDialogView);
 
         loadAdminAreasForCountry(mCountryField.get(VALUE));
-        mEditorModel.set(FORM_VALID, mAddressErrors == null || validateForm(mEditorModel));
+        boolean formValid = mAddressErrors == null;
+        if (!mAddressNew) {
+            // Form validation must be performed only for non-empty address profiles.
+            formValid |= validateForm(mEditorModel);
+        }
+        mEditorModel.set(FORM_VALID, formValid);
     }
 
     private void onDone() {
@@ -339,6 +344,9 @@ public class AddressEditor
 
     /** Saves the edited profile on disk. */
     private void commitChanges(AutofillProfile profile) {
+        // Clear field values that change among countries so that invisible fields
+        // do not get forwarded to the backend.
+        profile.resetDynamicFields();
         // Country code and phone number are always required and are always collected from the
         // editor model.
         profile.setInfo(ServerFieldType.ADDRESS_HOME_COUNTRY, mCountryField.get(VALUE));

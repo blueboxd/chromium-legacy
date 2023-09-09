@@ -15,7 +15,6 @@
 #include "ash/app_list/model/app_list_model_export.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "base/observer_list.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/range/range.h"
 
@@ -169,9 +168,34 @@ class APP_LIST_MODEL_EXPORT SearchResult {
                .has_value();
   }
 
+  bool has_extra_system_data_details() const {
+    return metadata_->system_info_answer_card_data.has_value() &&
+           metadata_->system_info_answer_card_data->extra_details.has_value();
+  }
+
+  absl::optional<std::u16string> system_info_extra_details() const {
+    return has_extra_system_data_details()
+               ? metadata_->system_info_answer_card_data->extra_details
+               : absl::nullopt;
+  }
+
   absl::optional<double> bar_chart_value() const {
     return is_system_info_card_bar_chart()
                ? metadata_->system_info_answer_card_data->bar_chart_percentage
+               : absl::nullopt;
+  }
+
+  absl::optional<double> upper_limit_for_bar_chart() const {
+    return is_system_info_card_bar_chart()
+               ? metadata_->system_info_answer_card_data
+                     ->upper_warning_limit_bar_chart
+               : absl::nullopt;
+  }
+
+  absl::optional<double> lower_limit_for_bar_chart() const {
+    return is_system_info_card_bar_chart()
+               ? metadata_->system_info_answer_card_data
+                     ->lower_warning_limit_bar_chart
                : absl::nullopt;
   }
 
@@ -189,6 +213,15 @@ class APP_LIST_MODEL_EXPORT SearchResult {
   void set_system_info_answer_card_data(
       const ash::SystemInfoAnswerCardData& system_info_data) {
     metadata_->system_info_answer_card_data = system_info_data;
+  }
+
+  base::FilePath file_path() const { return metadata_->file_path; }
+
+  ash::FileMetadataLoader* file_metadata_loader() {
+    return &metadata_->file_metadata_loader;
+  }
+  void set_file_metadata_loader_for_test(ash::FileMetadataLoader* loader) {
+    metadata_->file_metadata_loader = *loader;
   }
 
   void AddObserver(SearchResultObserver* observer);

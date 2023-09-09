@@ -423,6 +423,7 @@ class ASH_EXPORT AccessibilityControllerImpl : public AccessibilityController,
       int point_scan_speed_dips_per_second) override;
   void SetDictationActive(bool is_active) override;
   void ToggleDictationFromSource(DictationToggleSource source) override;
+  void EnableOrToggleDictationFromSource(DictationToggleSource source) override;
   void ShowDictationLanguageUpgradedNudge(
       const std::string& dictation_locale,
       const std::string& application_locale) override;
@@ -460,8 +461,11 @@ class ASH_EXPORT AccessibilityControllerImpl : public AccessibilityController,
   // magnifier, docked magnifier and screen rotation and when requested by the
   // AccessibilityPrivate extension API. The shown dialog is stored as a weak
   // pointer in the variable |confirmation_dialog_| below.
+  // This is also used to show the dialog for Select to Speak's enhanced network
+  // voices.
   void ShowConfirmationDialog(const std::u16string& title,
                               const std::u16string& description,
+                              const std::u16string& cancel_name,
                               base::OnceClosure on_accept_callback,
                               base::OnceClosure on_cancel_callback,
                               base::OnceClosure on_close_callback) override;
@@ -497,6 +501,16 @@ class ASH_EXPORT AccessibilityControllerImpl : public AccessibilityController,
   }
 
   DictationBubbleController* GetDictationBubbleControllerForTest();
+
+  bool IsDictationKeyboardDialogShowingForTesting() {
+    return dictation_keyboard_dialog_showing_for_testing_;
+  }
+  void AcceptDictationKeyboardDialogForTesting() {
+    OnDictationKeyboardDialogAccepted();
+  }
+  void DismissDictationKeyboardDialogForTesting() {
+    OnDictationKeyboardDialogDismissed();
+  }
 
  private:
   // Populate |features_| with the feature of the correct type.
@@ -543,9 +557,15 @@ class ASH_EXPORT AccessibilityControllerImpl : public AccessibilityController,
   void SyncSwitchAccessPrefsToSignInProfile();
   void UpdateKeyCodesAfterSwitchAccessEnabled();
 
+  void ShowDictationKeyboardDialog();
+  void OnDictationKeyboardDialogAccepted();
+  void OnDictationKeyboardDialogDismissed();
+
   // Dictation's SODA download progress. Values are between 0 and 100. Tracked
   // for testing purposes only.
   int dictation_soda_download_progress_ = 0;
+
+  bool dictation_keyboard_dialog_showing_for_testing_ = false;
 
   // Client interface in chrome browser.
   raw_ptr<AccessibilityControllerClient, ExperimentalAsh> client_ = nullptr;

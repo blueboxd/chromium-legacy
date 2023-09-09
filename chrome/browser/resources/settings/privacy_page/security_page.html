@@ -111,13 +111,13 @@
             pref="[[prefs.generated.safe_browsing]]"
             label="$i18n{safeBrowsingStandard}"
             sub-label="[[getSafeBrowsingStandardSubLabel_(
-                        enableFriendlierSafeBrowsingSettings_)]]"
+                        enableFriendlierSafeBrowsingSettingsStandardProtection_)]]"
             indicator-aria-label="$i18n{controlledSettingPolicy}"
             expand-aria-label="$i18n{safeBrowsingStandardExpandA11yLabel}"
             info-opened="{{infoOpened_}}"
             on-expand-clicked="onStandardProtectionExpandButtonClicked_"
             no-automatic-collapse>
-          <template is="dom-if" if="[[!enableFriendlierSafeBrowsingSettings_]]">
+          <template is="dom-if" if="[[!enableFriendlierSafeBrowsingSettingsStandardProtection_]]">
             <div slot="collapse">
               <div class="bullet-line">
                 <iron-icon icon="cr:security"></iron-icon>
@@ -144,10 +144,10 @@
             </settings-toggle-button>
             <settings-toggle-button id="passwordsLeakToggle"
                 label="[[getPasswordsLeakToggleLabel_(
-                        enableFriendlierSafeBrowsingSettings_)]]"
+                        enableFriendlierSafeBrowsingSettingsStandardProtection_)]]"
                 pref="{{prefs.generated.password_leak_detection}}"
                 sub-label="[[getPasswordsLeakToggleSubLabel_(
-                              enableFriendlierSafeBrowsingSettings_,
+                              enableFriendlierSafeBrowsingSettingsStandardProtection_,
                               prefs.profile.password_manager_leak_detection.*,
                               prefs.generated.password_leak_detection.*)]]">
             </settings-toggle-button>
@@ -165,15 +165,12 @@
     <div class="cr-row first">
       <h2>$i18n{advancedPageTitle}</h2>
     </div>
-    <template is="dom-if" if="[[showHttpsOnlyModeSetting_]]">
-      <settings-toggle-button
-         id="httpsOnlyModeToggle"
-         pref="{{prefs.generated.https_first_mode_enabled}}"
-         label="$i18n{httpsOnlyModeTitle}"
-         sub-label="[[getHttpsFirstModeSubLabel_(
-                        prefs.generated.https_first_mode_enabled.*)]]">
-      </settings-toggle-button>
-    </template>
+    <settings-toggle-button id="httpsOnlyModeToggle"
+        pref="{{prefs.generated.https_first_mode_enabled}}"
+        label="$i18n{httpsOnlyModeTitle}"
+        sub-label="[[getHttpsFirstModeSubLabel_(
+                       prefs.generated.https_first_mode_enabled.*)]]">
+    </settings-toggle-button>
     <template is="dom-if" if="[[showSecureDnsSetting_]]">
       <settings-secure-dns prefs="{{prefs}}"></settings-secure-dns>
     </template>

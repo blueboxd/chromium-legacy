@@ -40,10 +40,6 @@
 #include "url/gurl.h"
 #include "url/origin.h"
 
-#if !BUILDFLAG(IS_IOS)
-#include "components/webauthn/core/browser/internal_authenticator.h"
-#endif
-
 class PrefService;
 
 namespace signin {
@@ -61,6 +57,12 @@ class UkmRecorder;
 namespace version_info {
 enum class Channel;
 }
+
+#if !BUILDFLAG(IS_IOS)
+namespace webauthn {
+class InternalAuthenticator;
+}
+#endif
 
 namespace autofill {
 
@@ -384,6 +386,7 @@ class AutofillClient : public RiskDataLoader {
   // To distinguish between (non-)incognito mode when deciding to persist data,
   // use the client's `IsOffTheRecord()` function.
   virtual PersonalDataManager* GetPersonalDataManager() = 0;
+  const PersonalDataManager* GetPersonalDataManager() const;
 
   // Gets the AutofillOptimizationGuide instance associated with the client.
   virtual AutofillOptimizationGuide* GetAutofillOptimizationGuide() const;
@@ -799,19 +802,17 @@ class AutofillClient : public RiskDataLoader {
 
   // Pass the form structures to the password manager to choose correct username
   // and to the password generation manager to detect account creation forms.
-  virtual void PropagateAutofillPredictions(
+  //
+  // TODO(crbug.com/1466435): Do not use or rely on this function anymore.
+  virtual void PropagateAutofillPredictionsDeprecated(
       AutofillDriver* driver,
       const std::vector<FormStructure*>& forms) = 0;
 
-  // Handle the parsed forms for the provided driver.
-  virtual void HandleParsedForms(
-      AutofillDriver* driver,
-      const std::vector<autofill::FormStructure*>& forms);
-
   // Inform the client that the form has been filled.
-  virtual void DidFillOrPreviewForm(mojom::RendererFormDataAction action,
-                                    AutofillTriggerSource trigger_source,
-                                    bool is_refill) = 0;
+  virtual void DidFillOrPreviewForm(
+      mojom::AutofillActionPersistence action_persistence,
+      AutofillTriggerSource trigger_source,
+      bool is_refill) = 0;
 
   // Inform the client that the field has been filled.
   virtual void DidFillOrPreviewField(

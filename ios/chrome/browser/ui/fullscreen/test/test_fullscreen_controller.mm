@@ -9,10 +9,6 @@
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_model.h"
 #import "ios/chrome/browser/ui/fullscreen/fullscreen_model_observer.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 TestFullscreenController::TestFullscreenController(FullscreenModel* model)
     : FullscreenController(),
       model_(model),
@@ -30,14 +26,6 @@ ChromeBroadcaster* TestFullscreenController::broadcaster() {
 
 void TestFullscreenController::SetWebStateList(WebStateList* web_state_list) {
   web_state_list_ = web_state_list;
-}
-
-const WebStateList* TestFullscreenController::GetWebStateList() const {
-  return web_state_list_;
-}
-
-WebStateList* TestFullscreenController::GetWebStateList() {
-  return web_state_list_;
 }
 
 void TestFullscreenController::AddObserver(
@@ -101,6 +89,12 @@ void TestFullscreenController::ExitFullscreen() {
 void TestFullscreenController::ForceEnterFullscreen() {
   if (model_) {
     model_->ForceEnterFullscreen();
+  }
+}
+
+void TestFullscreenController::ExitFullscreenWithoutAnimation() {
+  if (model_) {
+    model_->ResetForNavigation();
   }
 }
 

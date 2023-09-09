@@ -9,14 +9,14 @@ namespace password_manager::features {
 // Enables biometric authentication before form filling.
 BASE_FEATURE(kBiometricAuthenticationForFilling,
              "BiometricAuthenticationForFilling",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 #endif
 
 #if BUILDFLAG(IS_MAC)
 // Enables biometric authentication in settings.
 BASE_FEATURE(kBiometricAuthenticationInSettings,
              "BiometricAuthenticationInSettings",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 #endif
 
 // Enables Biometrics for the Touch To Fill feature. This only effects Android.
@@ -41,13 +41,11 @@ BASE_FEATURE(kEnablePasswordsAccountStorage,
 #endif
 );
 
+#if BUILDFLAG(IS_ANDROID)
 // Enables filling password on a website when there is saved password on
 // affiliated website.
-BASE_FEATURE(kFillingAcrossAffiliatedWebsites,
-             "FillingAcrossAffiliatedWebsites",
-#if !BUILDFLAG(IS_ANDROID)  // Desktop and iOS
-             base::FEATURE_ENABLED_BY_DEFAULT);
-#else
+BASE_FEATURE(kFillingAcrossAffiliatedWebsitesAndroid,
+             "FillingAcrossAffiliatedWebsitesAndroid",
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif
 
@@ -80,5 +78,22 @@ BASE_FEATURE(kPasswordManagerEnableReceiverService,
 BASE_FEATURE(kPasswordManagerEnableSenderService,
              "PasswordManagerEnableSenderService",
              base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enables logging the content of chrome://password-manager-internals to the
+// terminal.
+BASE_FEATURE(kPasswordManagerLogToTerminal,
+             "PasswordManagerLogToTerminal",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Improves PSL matching capabilities by utilizing PSL-extension list from
+// affiliation service. It fixes problem with incorrect password suggestions on
+// websites like slack.com.
+BASE_FEATURE(kUseExtensionListForPSLMatching,
+             "UseExtensionListForPSLMatching",
+#if BUILDFLAG(IS_ANDROID)
+             base::FEATURE_DISABLED_BY_DEFAULT);
+#else
+             base::FEATURE_ENABLED_BY_DEFAULT);
+#endif
 
 }  // namespace password_manager::features

@@ -8,8 +8,8 @@
 #include "components/viz/common/gpu/vulkan_context_provider.h"
 #include "components/viz/common/resources/shared_image_format_utils.h"
 #include "gpu/command_buffer/common/shared_image_usage.h"
-#include "gpu/command_buffer/service/shared_image/gl_texture_image_backing_helper.h"
 #include "gpu/command_buffer/service/shared_image/shared_image_format_service_utils.h"
+#include "gpu/command_buffer/service/shared_image/shared_image_gl_utils.h"
 #include "gpu/command_buffer/service/shared_image/shared_image_representation.h"
 #include "gpu/command_buffer/service/shared_image/skia_gl_image_representation.h"
 #include "gpu/command_buffer/service/skia_utils.h"
@@ -36,8 +36,6 @@ namespace gpu {
 
 namespace {
 
-using ScopedRestoreTexture = GLTextureImageBackingHelper::ScopedRestoreTexture;
-
 gl::ScopedEGLImage CreateEGLImage(VkImage image,
                                   const VkImageCreateInfo* create_info,
                                   unsigned int internal_format) {
@@ -61,6 +59,49 @@ gl::ScopedEGLImage CreateEGLImage(VkImage image,
 }
 
 }  // namespace
+
+// GLTexturePassthroughImageRepresentation implementation.
+class AngleVulkanImageBacking::
+    GLTexturePassthroughAngleVulkanImageRepresentation
+    : public GLTexturePassthroughImageRepresentation {
+ public:
+  GLTexturePassthroughAngleVulkanImageRepresentation(
+      SharedImageManager* manager,
+      AngleVulkanImageBacking* backing,
+      MemoryTypeTracker* tracker,
+      std::vector<scoped_refptr<gles2::TexturePassthrough>> textures)
+      : GLTexturePassthroughImageRepresentation(manager, backing, tracker),
+        textures_(std::move(textures)) {
+    DCHECK_EQ(textures_.size(), NumPlanesExpected());
+  }
+
+  ~GLTexturePassthroughAngleVulkanImageRepresentation() override = default;
+
+ private:
+  AngleVulkanImageBacking* backing_impl() {
+    return static_cast<AngleVulkanImageBacking*>(backing());
+  }
+
+  // GLTexturePassthroughImageRepresentation:
+  const scoped_refptr<gles2::TexturePassthrough>& GetTexturePassthrough(
+      int plane_index) override {
+    DCHECK(format().IsValidPlaneIndex(plane_index));
+    return textures_[plane_index];
+  }
+  bool BeginAccess(GLenum mode) override {
+    DCHECK(mode_ == 0);
+    mode_ = mode;
+    return backing_impl()->BeginAccessGLTexturePassthrough(mode_);
+  }
+  void EndAccess() override {
+    DCHECK(mode_ != 0);
+    backing_impl()->EndAccessGLTexturePassthrough(mode_);
+    mode_ = 0;
+  }
+
+  std::vector<scoped_refptr<gles2::TexturePassthrough>> textures_;
+  GLenum mode_ = 0;
+};
 
 class AngleVulkanImageBacking::SkiaAngleVulkanImageRepresentation
     : public SkiaGaneshImageRepresentation {
@@ -348,8 +389,8 @@ AngleVulkanImageBacking::ProduceGLTexturePassthrough(
     textures.push_back(gl_texture.passthrough_texture);
   }
 
-  return std::make_unique<GLTexturePassthroughGLCommonRepresentation>(
-      manager, this, this, tracker, std::move(textures));
+  return std::make_unique<GLTexturePassthroughAngleVulkanImageRepresentation>(
+      manager, this, tracker, std::move(textures));
 }
 
 std::unique_ptr<SkiaGaneshImageRepresentation>
@@ -374,8 +415,8 @@ AngleVulkanImageBacking::ProduceSkiaGanesh(
                                            this, tracker);
 }
 
-bool AngleVulkanImageBacking::GLTextureImageRepresentationBeginAccess(
-    bool readonly) {
+bool AngleVulkanImageBacking::BeginAccessGLTexturePassthrough(GLenum mode) {
+  bool readonly = mode != GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM;
   if (!readonly) {
     // For GL write access.
     if (is_gl_write_in_process_) {
@@ -433,8 +474,8 @@ bool AngleVulkanImageBacking::GLTextureImageRepresentationBeginAccess(
   return true;
 }
 
-void AngleVulkanImageBacking::GLTextureImageRepresentationEndAccess(
-    bool readonly) {
+void AngleVulkanImageBacking::EndAccessGLTexturePassthrough(GLenum mode) {
+  bool readonly = mode != GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM;
   if (readonly) {
     // For GL read access.
     if (gl_reads_in_process_ == 0) {
@@ -614,11 +655,9 @@ bool AngleVulkanImageBacking::InitializePassthroughTexture() {
     }
 
     scoped_refptr<gles2::TexturePassthrough> passthrough_texture;
-    GLuint texture_id =
-        GLTextureImageBackingHelper::MakeTextureAndSetParameters(
-            GL_TEXTURE_2D,
-            /*framebuffer_attachment_angle=*/true, &passthrough_texture,
-            nullptr);
+    GLuint texture_id = MakeTextureAndSetParameters(
+        GL_TEXTURE_2D,
+        /*framebuffer_attachment_angle=*/true, &passthrough_texture, nullptr);
     passthrough_texture->SetEstimatedSize(GetEstimatedSize());
 
     gl::GLApi* api = gl::g_current_gl_context;

@@ -204,8 +204,8 @@ class PasswordStoreTest : public testing::Test {
   scoped_refptr<PasswordStore> CreatePasswordStore() {
     return new PasswordStore(std::make_unique<PasswordStoreBuiltInBackend>(
         std::make_unique<LoginDatabase>(
-            test_login_db_file_path(),
-            password_manager::IsAccountStore(false))));
+            test_login_db_file_path(), password_manager::IsAccountStore(false)),
+        syncer::WipeModelUponSyncDisabledBehavior::kNever));
   }
 
   TestingPrefServiceSimple* pref_service() { return &pref_service_; }
@@ -1082,12 +1082,11 @@ class PasswordStoreGroupsTest : public PasswordStoreTest,
     feature_list_.Reset();
     if (GetParam()) {
       feature_list_.InitWithFeatures(
-          /*enabled_features=*/{features::kFillingAcrossGroupedSites,
-                                features::kFillingAcrossAffiliatedWebsites},
+          /*enabled_features=*/{features::kFillingAcrossGroupedSites},
           /*disabled_features=*/{});
     } else {
       feature_list_.InitWithFeatures(
-          /*enabled_features=*/{features::kFillingAcrossAffiliatedWebsites},
+          /*enabled_features=*/{},
           /*disabled_features=*/{features::kFillingAcrossGroupedSites});
     }
     store_ = CreatePasswordStore();
@@ -1658,73 +1657,6 @@ TEST_F(PasswordStoreTest, RemoveInsecureCredentialsSyncOnUpdate) {
 
   store->ShutdownOnUIThread();
 }
-
-#if !BUILDFLAG(IS_ANDROID)
-// TODO(https://crbug.com/1051914): Enable on Android after making local
-// heuristics reliable.
-TEST_F(PasswordStoreTest, GetAllFieldInfo) {
-  FieldInfo field_info1{autofill::FormSignature(1001),
-                        autofill::FieldSignature(1), autofill::USERNAME,
-                        base::Time::FromTimeT(1)};
-  FieldInfo field_info2{autofill::FormSignature(1002),
-                        autofill::FieldSignature(10), autofill::PASSWORD,
-                        base::Time::FromTimeT(2)};
-  scoped_refptr<PasswordStore> store = CreatePasswordStore();
-  store->Init(/*prefs=*/nullptr, /*affiliated_match_helper=*/nullptr);
-
-  FieldInfoStore* field_info_store = store->GetFieldInfoStore();
-
-  field_info_store->AddFieldInfo(field_info1);
-  field_info_store->AddFieldInfo(field_info2);
-  MockPasswordStoreConsumer consumer;
-  EXPECT_CALL(consumer, OnGetAllFieldInfo(
-                            UnorderedElementsAre(field_info1, field_info2)));
-  field_info_store->GetAllFieldInfo(consumer.GetWeakPtr());
-  WaitForPasswordStore();
-
-  store->ShutdownOnUIThread();
-}
-
-TEST_F(PasswordStoreTest, RemoveFieldInfo) {
-  FieldInfo field_info1{autofill::FormSignature(1001),
-                        autofill::FieldSignature(1), autofill::USERNAME,
-                        base::Time::FromTimeT(100)};
-  FieldInfo field_info2{autofill::FormSignature(1002),
-                        autofill::FieldSignature(10), autofill::PASSWORD,
-                        base::Time::FromTimeT(200)};
-
-  FieldInfo field_info3{autofill::FormSignature(1003),
-                        autofill::FieldSignature(11), autofill::PASSWORD,
-                        base::Time::FromTimeT(300)};
-
-  scoped_refptr<PasswordStore> store = CreatePasswordStore();
-  store->Init(/*prefs=*/nullptr, /*affiliated_match_helper=*/nullptr);
-
-  FieldInfoStore* field_info_store = store->GetFieldInfoStore();
-
-  field_info_store->AddFieldInfo(field_info1);
-  field_info_store->AddFieldInfo(field_info2);
-  field_info_store->AddFieldInfo(field_info3);
-
-  MockPasswordStoreConsumer consumer;
-  EXPECT_CALL(consumer, OnGetAllFieldInfo(UnorderedElementsAre(
-                            field_info1, field_info2, field_info3)));
-  field_info_store->GetAllFieldInfo(consumer.GetWeakPtr());
-  WaitForPasswordStore();
-  testing::Mock::VerifyAndClearExpectations(&consumer);
-
-  field_info_store->RemoveFieldInfoByTime(base::Time::FromTimeT(150),
-                                          base::Time::FromTimeT(250),
-                                          base::DoNothing());
-
-  EXPECT_CALL(consumer, OnGetAllFieldInfo(
-                            UnorderedElementsAre(field_info1, field_info3)));
-  field_info_store->GetAllFieldInfo(consumer.GetWeakPtr());
-  WaitForPasswordStore();
-
-  store->ShutdownOnUIThread();
-}
-#endif  // !BUILDFLAG(IS_ANDROID)
 
 TEST_F(PasswordStoreTest, TestGetLoginRequestCancelable) {
   scoped_refptr<PasswordStore> store = CreatePasswordStore();

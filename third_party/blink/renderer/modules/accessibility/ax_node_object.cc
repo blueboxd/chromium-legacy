@@ -327,6 +327,21 @@ String GetTitle(blink::Element* element) {
   return element->title();
 }
 
+bool CanHaveInlineTextBoxChildren(blink::AXObject* obj) {
+  if (!ui::CanHaveInlineTextBoxChildren(obj->RoleValue())) {
+    return false;
+  }
+
+  // Inline textboxes are included if and only if the parent is unignored.
+  // If the parent is ignored but included in tree, the inline textbox is
+  // still withheld.
+  if (obj->LastKnownIsIgnoredValue()) {
+    return false;
+  }
+
+  return obj->GetLayoutObject() && obj->GetLayoutObject()->IsText();
+}
+
 }  // namespace
 
 namespace blink {
@@ -3138,6 +3153,23 @@ int AXNodeObject::SetSize() const {
 bool AXNodeObject::ValueForRange(float* out_value) const {
   float value_now;
   if (HasAOMPropertyOrARIAAttribute(AOMFloatProperty::kValueNow, value_now)) {
+    // Adjustment when the aria-valuenow is less than aria-valuemin or greater
+    // than the aria-valuemax value.
+    // See https://w3c.github.io/aria/#authorErrorDefaultValuesTable.
+    float min_value, max_value;
+    if (MinValueForRange(&min_value)) {
+      if (value_now < min_value) {
+        *out_value = min_value;
+        return true;
+      }
+    }
+    if (MaxValueForRange(&max_value)) {
+      if (value_now > max_value) {
+        *out_value = max_value;
+        return true;
+      }
+    }
+
     *out_value = value_now;
     return true;
   }
@@ -4329,7 +4361,7 @@ void AXNodeObject::LoadInlineTextBoxes() {
     if (!work_obj || !work_obj->AccessibilityIsIncludedInTree())
       continue;
 
-    if (ui::CanHaveInlineTextBoxChildren(work_obj->RoleValue())) {
+    if (CanHaveInlineTextBoxChildren(work_obj)) {
       if (work_obj->CachedChildrenIncludingIgnored().empty()) {
         // We only need to add inline textbox children if they aren't present.
         // Although some platforms (e.g. Android), load inline text boxes
@@ -4346,30 +4378,35 @@ void AXNodeObject::LoadInlineTextBoxes() {
 }
 
 void AXNodeObject::ForceAddInlineTextBoxChildren() {
-  AddInlineTextBoxChildren(true /*force*/);
-  children_dirty_ = false;  // Avoid adding these children twice.
+  // The inline textbox children start empty.
+  DCHECK(CachedChildrenIncludingIgnored().empty());
+  AddInlineTextBoxChildren();
+  // Avoid adding these children twice.
+  children_dirty_ = false;
+#if BUILDFLAG(IS_ANDROID)
+  // Keep inline text box children up-to-date for this object in the future.
+  // This is only necessary on Android, which tries to skip inline text boxes
+  // for most objects.
+  always_load_inline_text_boxes_ = true;
+#endif
+
+  // If inline text box children were added, mark the node dirty so that the
+  // results are serialized.
+  if (!CachedChildrenIncludingIgnored().empty()) {
+    AXObjectCache().MarkAXObjectDirtyWithDetails(
+        this, /*subtree*/ false, ax::mojom::blink::EventFrom::kNone,
+        ax::mojom::blink::Action::kNone, {});
+  }
 }
 
-void AXNodeObject::AddInlineTextBoxChildren(bool force) {
+void AXNodeObject::AddInlineTextBoxChildren() {
   DCHECK(GetDocument());
-
-  Settings* settings = GetDocument()->GetSettings();
-  if (!force &&
-      (!settings || !settings->GetInlineTextBoxAccessibilityEnabled())) {
-    return;
-  }
-
-  if (!GetLayoutObject() || !GetLayoutObject()->IsText())
-    return;
-
+  DCHECK(CanHaveInlineTextBoxChildren(this));
   DCHECK(!GetLayoutObject()->NeedsLayout());
-
-  if (LastKnownIsIgnoredValue()) {
-    // Inline textboxes are included if and only if the parent is unignored.
-    // If the parent is ignored but included in tree, the inline textbox is
-    // still withheld.
-    return;
-  }
+  DCHECK(AXObjectCache().GetAXMode().has_mode(ui::AXMode::kInlineTextBoxes));
+  DCHECK(!AXObjectCache().GetAXMode().HasExperimentalFlags(
+      ui::AXMode::kExperimentalFormControls))
+      << "Form controls mode should not have inline text boxes turned on.";
 
   auto* layout_text = To<LayoutText>(GetLayoutObject());
   for (auto* box = layout_text->FirstAbstractInlineTextBox(); box;
@@ -4531,10 +4568,22 @@ void AXNodeObject::AddChildrenImpl() {
     return;
   }
 
-  if (ui::CanHaveInlineTextBoxChildren(RoleValue())) {
-    AddInlineTextBoxChildren();
-    CHECK_ATTACHED();
-    return;
+  if (CanHaveInlineTextBoxChildren(this)) {
+#if BUILDFLAG(IS_ANDROID)
+    // On Android, once an object has loaded inline text boxes, it will keep
+    // them refreshed.
+    bool load_inline_text_box_children = always_load_inline_text_boxes_;
+#else
+    // Other platforms keep all inline text boxes in the tree and refreshed.
+    bool load_inline_text_box_children =
+        GetDocument()->GetSettings() &&
+        GetDocument()->GetSettings()->GetInlineTextBoxAccessibilityEnabled();
+#endif
+    if (load_inline_text_box_children) {
+      AddInlineTextBoxChildren();
+      CHECK_ATTACHED();
+      return;
+    }
   }
 
   if (IsA<HTMLImageElement>(GetNode())) {
@@ -5465,7 +5514,7 @@ String AXNodeObject::NativeTextAlternative(
       name_sources->push_back(NameSource(*found_text_alternative, kAltAttr));
       name_sources->back().type = name_from;
     }
-    if (!alt.IsNull()) {
+    if (!alt.empty() && !alt.IsNull()) {
       text_alternative = alt;
       if (name_sources) {
         NameSource& source = name_sources->back();

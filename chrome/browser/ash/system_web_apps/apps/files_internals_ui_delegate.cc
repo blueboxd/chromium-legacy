@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ash/system_web_apps/apps/files_internals_ui_delegate.h"
 
+#include "base/barrier_callback.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/ash/extensions/file_manager/event_router.h"
@@ -24,16 +25,51 @@ ChromeFilesInternalsUIDelegate::ChromeFilesInternalsUIDelegate(
 
 ChromeFilesInternalsUIDelegate::~ChromeFilesInternalsUIDelegate() = default;
 
-base::Value ChromeFilesInternalsUIDelegate::GetDebugJSON() const {
-  base::Value::Dict dict;
+void ChromeFilesInternalsUIDelegate::GetDebugJSON(
+    base::OnceCallback<void(const base::Value&)> callback) const {
+  using JSONKeyValuePair =
+      ash::FilesInternalsDebugJSONProvider::JSONKeyValuePair;
 
-  if (fusebox::Server* fusebox_server = fusebox::Server::GetInstance()) {
-    dict.Set("fusebox", fusebox_server->GetDebugJSON());
-  } else {
-    dict.Set("fusebox", base::Value());
+  std::tuple<std::string_view,
+             ash::FilesInternalsDebugJSONProvider::FunctionPointerType,
+             ash::FilesInternalsDebugJSONProvider*>
+      named_providers[] = {
+          {
+              "execute_file_task",
+              &file_manager::file_tasks::GetDebugJSONForKeyForExecuteFileTask,
+              nullptr,
+          },
+          {
+              "fusebox",
+              nullptr,
+              fusebox::Server::GetInstance(),
+          },
+      };
+
+  base::RepeatingCallback<void(JSONKeyValuePair)> barrier_callback =
+      base::BarrierCallback<JSONKeyValuePair>(
+          std::size(named_providers),
+          base::BindOnce(
+              [](base::OnceCallback<void(const base::Value&)> callback,
+                 std::vector<JSONKeyValuePair> key_value_pairs) {
+                base::Value::Dict dict;
+                for (auto& kvp : key_value_pairs) {
+                  dict.Set(kvp.first, std::move(kvp.second));
+                }
+                std::move(callback).Run(base::Value(std::move(dict)));
+              },
+              std::move(callback)));
+
+  for (auto& i : named_providers) {
+    std::string_view key = std::get<0>(i);
+    if (auto* function_ptr = std::get<1>(i)) {
+      (*function_ptr)(key, barrier_callback);
+    } else if (auto* object_ptr = std::get<2>(i)) {
+      object_ptr->GetDebugJSONForKey(key, barrier_callback);
+    } else {
+      barrier_callback.Run(std::make_pair(key, base::Value()));
+    }
   }
-
-  return base::Value(std::move(dict));
 }
 
 bool ChromeFilesInternalsUIDelegate::GetSmbfsEnableVerboseLogging() const {

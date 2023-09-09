@@ -4,6 +4,10 @@
 
 package org.chromium.chrome.features.start_surface;
 
+import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
+import static androidx.test.espresso.matcher.ViewMatchers.withId;
+
+import static org.hamcrest.Matchers.allOf;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -11,6 +15,7 @@ import static org.junit.Assert.fail;
 import static org.chromium.chrome.browser.tasks.ReturnToChromeUtil.HOME_SURFACE_SHOWN_AT_STARTUP_UMA;
 import static org.chromium.chrome.browser.tasks.ReturnToChromeUtil.HOME_SURFACE_SHOWN_UMA;
 import static org.chromium.chrome.features.start_surface.StartSurfaceTestUtils.START_SURFACE_ON_TABLET_TEST_PARAMS;
+import static org.chromium.ui.test.util.ViewUtils.onViewWaiting;
 
 import android.content.pm.ActivityInfo;
 import android.content.res.Resources;
@@ -210,6 +215,7 @@ public class StartSurfaceOnTabletTest {
     @Test
     @MediumTest
     @Feature({"StartSurface"})
+    @DisableFeatures({ChromeFeatureList.SURFACE_POLISH})
     @CommandLineFlags.Add({START_SURFACE_ON_TABLET_TEST_PARAMS})
     public void testSingleTabCardGoneAfterTabClosed() throws IOException {
         StartSurfaceTestUtils.prepareTabStateMetadataFile(
@@ -225,6 +231,8 @@ public class StartSurfaceOnTabletTest {
 
         NewTabPage ntp = (NewTabPage) cta.getActivityTab().getNativePage();
         Assert.assertTrue(ntp.isSingleTabCardVisibleForTesting());
+        View singleTabModule = cta.findViewById(R.id.single_tab_view);
+        Assert.assertNull(singleTabModule.findViewById(R.id.tab_thumbnail));
 
         // Verifies that closing the tracking Tab will remove the "continue browsing" card from
         // the NTP.
@@ -248,10 +256,35 @@ public class StartSurfaceOnTabletTest {
     @Test
     @MediumTest
     @Feature({"StartSurface"})
+    @EnableFeatures({ChromeFeatureList.SURFACE_POLISH + "<Study"})
+    @CommandLineFlags.Add({START_SURFACE_ON_TABLET_TEST_PARAMS + "/polish_single_tab_card/true"})
+    public void testSingleTabModule() throws IOException {
+        StartSurfaceTestUtils.prepareTabStateMetadataFile(
+                new int[] {0, 1}, new String[] {TAB_URL, TAB_URL_1}, 0);
+        StartSurfaceTestUtils.startMainActivityFromLauncher(mActivityTestRule);
+        ChromeTabbedActivity cta = mActivityTestRule.getActivity();
+        StartSurfaceTestUtils.waitForTabModel(cta);
+
+        // Verifies that a new NTP is created and set as the active Tab.
+        verifyTabCountAndActiveTabUrl(
+                cta, 3, UrlConstants.NTP_URL, true /* expectHomeSurfaceUiShown */);
+        waitForNtpLoaded(cta.getActivityTab());
+
+        NewTabPage ntp = (NewTabPage) cta.getActivityTab().getNativePage();
+        Assert.assertTrue(ntp.isSingleTabCardVisibleForTesting());
+        onViewWaiting(allOf(withId(R.id.single_tab_view), isDisplayed()));
+        View singleTabModule = cta.findViewById(R.id.single_tab_view);
+        Assert.assertEquals(
+                View.VISIBLE, singleTabModule.findViewById(R.id.tab_thumbnail).getVisibility());
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"StartSurface"})
     @EnableFeatures({ChromeFeatureList.SHOW_SCROLLABLE_MVT_ON_NTP_ANDROID,
-            ChromeFeatureList.FEED_MULTI_COLUMN, ChromeFeatureList.START_SURFACE_ON_TABLET})
+            ChromeFeatureList.START_SURFACE_ON_TABLET})
     // clang-format off
-    public void testFakeSearchBoxWidthShortenedWith1RowMvTitlesAndMultiColumnFeeds() {
+    public void testFakeSearchBoxWidthShortenedWith1RowMvTitles() {
         // clang-format on
         mActivityTestRule.startMainActivityWithURL(UrlConstants.NTP_URL);
         ChromeTabbedActivity cta = mActivityTestRule.getActivity();
@@ -281,40 +314,10 @@ public class StartSurfaceOnTabletTest {
     @Test
     @MediumTest
     @Feature({"StartSurface"})
-    @EnableFeatures({ChromeFeatureList.SHOW_SCROLLABLE_MVT_ON_NTP_ANDROID,
-            ChromeFeatureList.START_SURFACE_ON_TABLET})
-    @DisableFeatures({ChromeFeatureList.FEED_MULTI_COLUMN})
-    // clang-format off
-    public void testFakeSearchBoxWidthNotChangeWith1RowMvTitlesAndMultiColumnFeedsDisabled() {
-        // clang-format on
-        mActivityTestRule.startMainActivityWithURL(UrlConstants.NTP_URL);
-        ChromeTabbedActivity cta = mActivityTestRule.getActivity();
-        StartSurfaceTestUtils.waitForTabModel(cta);
-        waitForNtpLoaded(cta.getActivityTab());
-
-        NewTabPage ntp = (NewTabPage) cta.getActivityTab().getNativePage();
-        ViewGroup mvTilesLayout =
-                ntp.getView().findViewById(org.chromium.chrome.test.R.id.mv_tiles_layout);
-        // Verifies that 1 row MV tiles are shown when "Start surface on tablet" flag is enabled.
-        Assert.assertTrue(mvTilesLayout instanceof MostVisitedTilesCarouselLayout);
-
-        Resources res = cta.getResources();
-        int expectedMargin =
-                res.getDimensionPixelSize(org.chromium.chrome.R.dimen.tile_grid_layout_bleed);
-
-        // Verifies there isn't additional margin added for the fake search box in bot landscape and
-        // portrait mode when multiple Column Feeds is disabled.
-        verifyFakeSearchBoxWidth(expectedMargin, expectedMargin, ntp);
-    }
-
-    @Test
-    @MediumTest
-    @Feature({"StartSurface"})
     @DisableFeatures({ChromeFeatureList.SHOW_SCROLLABLE_MVT_ON_NTP_ANDROID})
-    @EnableFeatures(
-            {ChromeFeatureList.START_SURFACE_ON_TABLET, ChromeFeatureList.FEED_MULTI_COLUMN})
+    @EnableFeatures({ChromeFeatureList.START_SURFACE_ON_TABLET})
     // clang-format off
-    public void testFakeSearchBoxWidthShortenedWith2RowMvTitlesAndMultiColumnFeeds() {
+    public void testFakeSearchBoxWidthShortenedWith2RowMvTitles() {
         // clang-format on
         mActivityTestRule.startMainActivityWithURL(UrlConstants.NTP_URL);
         ChromeTabbedActivity cta = mActivityTestRule.getActivity();
@@ -336,35 +339,6 @@ public class StartSurfaceOnTabletTest {
         // Verifies there is additional margin added for the fake search box in both landscape
         // and portrait modes.
         verifyFakeSearchBoxWidth(expectedTwoSideMargin, expectedTwoSideMargin, ntp);
-    }
-
-    @Test
-    @MediumTest
-    @Feature({"StartSurface"})
-    @DisableFeatures({ChromeFeatureList.SHOW_SCROLLABLE_MVT_ON_NTP_ANDROID,
-            ChromeFeatureList.FEED_MULTI_COLUMN})
-    @EnableFeatures({ChromeFeatureList.START_SURFACE_ON_TABLET})
-    // clang-format off
-    public void testFakeSearchBoxWidthNotChangeWith2RowMvTitlesAndMultiColumnFeedsDisabled() {
-        // clang-format on
-        mActivityTestRule.startMainActivityWithURL(UrlConstants.NTP_URL);
-        ChromeTabbedActivity cta = mActivityTestRule.getActivity();
-        StartSurfaceTestUtils.waitForTabModel(cta);
-        waitForNtpLoaded(cta.getActivityTab());
-
-        NewTabPage ntp = (NewTabPage) cta.getActivityTab().getNativePage();
-        ViewGroup mvTilesLayout =
-                ntp.getView().findViewById(org.chromium.chrome.test.R.id.mv_tiles_layout);
-        // Verifies that 2 row MV tiles are shown when "Start surface on tablet" flag is disabled.
-        Assert.assertTrue(mvTilesLayout instanceof MostVisitedTilesGridLayout);
-
-        Resources res = cta.getResources();
-        int expectedMargin =
-                res.getDimensionPixelSize(org.chromium.chrome.R.dimen.tile_grid_layout_bleed);
-
-        // Verifies there isn't additional margin added for the fake search box in bot landscape and
-        // portrait mode when multiple Column Feeds is disabled.
-        verifyFakeSearchBoxWidth(expectedMargin, expectedMargin, ntp);
     }
 
     @Test
@@ -427,42 +401,10 @@ public class StartSurfaceOnTabletTest {
     @MediumTest
     @Feature({"StartSurface"})
     @CommandLineFlags.Add({START_SURFACE_ON_TABLET_TEST_PARAMS})
-    @DisableFeatures({ChromeFeatureList.FEED_MULTI_COLUMN})
-    // clang-format off
-    public void testDefaultSingleTabViewMargin() throws IOException {
-        // clang-format on
-        StartSurfaceTestUtils.prepareTabStateMetadataFile(new int[] {0}, new String[] {TAB_URL}, 0);
-        StartSurfaceTestUtils.startMainActivityFromLauncher(mActivityTestRule);
-        ChromeTabbedActivity cta = mActivityTestRule.getActivity();
-        StartSurfaceTestUtils.waitForTabModel(cta);
-
-        // Verifies that a new NTP is created and set as the active Tab.
-        verifyTabCountAndActiveTabUrl(
-                cta, 2, UrlConstants.NTP_URL, true /* expectHomeSurfaceUiShown */);
-        waitForNtpLoaded(cta.getActivityTab());
-
-        NewTabPage ntp = (NewTabPage) cta.getActivityTab().getNativePage();
-        View singleTabView = ntp.getView().findViewById(R.id.single_tab_view);
-
-        Resources res = cta.getResources();
-        int defaultLateralMargin =
-                res.getDimensionPixelSize(R.dimen.single_tab_card_lateral_margin);
-
-        // Verifies that the single Tab card has its original margins.
-        MarginLayoutParams marginLayoutParams =
-                (MarginLayoutParams) singleTabView.getLayoutParams();
-        Assert.assertEquals(defaultLateralMargin, marginLayoutParams.getMarginStart());
-        Assert.assertEquals(defaultLateralMargin, marginLayoutParams.getMarginEnd());
-    }
-
-    @Test
-    @MediumTest
-    @Feature({"StartSurface"})
-    @CommandLineFlags.Add({START_SURFACE_ON_TABLET_TEST_PARAMS})
     @EnableFeatures({ChromeFeatureList.SHOW_SCROLLABLE_MVT_ON_NTP_ANDROID,
-            ChromeFeatureList.FEED_MULTI_COLUMN, ChromeFeatureList.START_SURFACE_ON_TABLET})
+            ChromeFeatureList.START_SURFACE_ON_TABLET})
     // clang-format off
-    public void test1RowMvtMarginWithMultiColumnFeedsOnNtpHomePage() throws IOException{
+    public void test1RowMvtMarginOnNtpHomePage() throws IOException{
         // clang-format on
         StartSurfaceTestUtils.prepareTabStateMetadataFile(new int[] {0}, new String[] {TAB_URL}, 0);
         StartSurfaceTestUtils.startMainActivityFromLauncher(mActivityTestRule);
@@ -509,9 +451,9 @@ public class StartSurfaceOnTabletTest {
     @MediumTest
     @Feature({"StartSurface"})
     @EnableFeatures({ChromeFeatureList.SHOW_SCROLLABLE_MVT_ON_NTP_ANDROID,
-            ChromeFeatureList.FEED_MULTI_COLUMN, ChromeFeatureList.START_SURFACE_ON_TABLET})
+            ChromeFeatureList.START_SURFACE_ON_TABLET})
     // clang-format off
-    public void test1RowMvtMarginWithMultiColumnFeedsOnEmptyNtp() {
+    public void test1RowMvtMarginOnEmptyNtp() {
         // clang-format on
         mActivityTestRule.startMainActivityWithURL(UrlConstants.NTP_URL);
         ChromeTabbedActivity cta = mActivityTestRule.getActivity();
@@ -532,11 +474,10 @@ public class StartSurfaceOnTabletTest {
     @MediumTest
     @Feature({"StartSurface"})
     @CommandLineFlags.Add({START_SURFACE_ON_TABLET_TEST_PARAMS})
-    @EnableFeatures(
-            {ChromeFeatureList.FEED_MULTI_COLUMN, ChromeFeatureList.START_SURFACE_ON_TABLET})
+    @EnableFeatures({ChromeFeatureList.START_SURFACE_ON_TABLET})
     @DisableFeatures(ChromeFeatureList.SHOW_SCROLLABLE_MVT_ON_NTP_ANDROID)
     // clang-format off
-    public void test2RowMvtMarginWithMultiColumnFeedsOnNtpHomePage() throws IOException {
+    public void test2RowMvtMarginOnNtpHomePage() throws IOException {
         // clang-format on
         StartSurfaceTestUtils.prepareTabStateMetadataFile(new int[] {0}, new String[] {TAB_URL}, 0);
         StartSurfaceTestUtils.startMainActivityFromLauncher(mActivityTestRule);
@@ -593,7 +534,6 @@ public class StartSurfaceOnTabletTest {
                 cta, 2, UrlConstants.NTP_URL, true /* expectHomeSurfaceUiShown */);
         waitForNtpLoaded(cta.getActivityTab());
 
-        NewTabPage ntp = (NewTabPage) cta.getActivityTab().getNativePage();
         try {
             TestThreadUtils.runOnUiThreadBlocking(
                     () -> cta.findViewById(R.id.single_tab_view).performClick());

@@ -16,16 +16,22 @@
 #include "base/debug/dump_without_crashing.h"
 #include "base/environment.h"
 #include "base/feature_list.h"
+#include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
+#include "base/functional/callback_helpers.h"
+#include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/task/sequenced_task_runner.h"
+#include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
 #include "base/timer/timer.h"
+#include "base/types/pass_key.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "build/chromecast_buildflags.h"
@@ -222,6 +228,16 @@ void HandleBadMessage(const std::string& error) {
   network::debug::ClearDeserializationCrashKeyString();
 }
 
+// Runs `results_cb` on `sequenced_task_runner` with an empty result and
+// net::ERR_ABORTED.
+void AsyncResolveSystemDnsWithEmptyResult(
+    scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner,
+    net::SystemDnsResultsCallback results_cb) {
+  sequenced_task_runner->PostTask(
+      FROM_HERE, base::BindOnce(std::move(results_cb), net::AddressList(), 0,
+                                net::ERR_ABORTED));
+}
+
 void ResolveSystemDnsWithMojo(
     const mojo::Remote<mojom::SystemDnsResolver>& system_dns_override,
     const absl::optional<std::string>& hostname,
@@ -229,10 +245,17 @@ void ResolveSystemDnsWithMojo(
     net::HostResolverFlags flags,
     net::SystemDnsResultsCallback results_cb,
     net::handles::NetworkHandle network) {
-  auto results_cb_with_default_invoke =
-      mojo::WrapCallbackWithDefaultInvokeIfNotRun(
-          std::move(results_cb), net::AddressList(), 0,
-          net::ERR_DNS_REQUEST_CANCELLED);
+  std::pair<net::SystemDnsResultsCallback, net::SystemDnsResultsCallback>
+      duplicated_results_cbs = base::SplitOnceCallback(std::move(results_cb));
+  // In the case that the callback is dropped without ever being run (if
+  // `system_dns_override` disconnects), `results_cb` should run asynchronously
+  // with an empty result. `results_cb` should never be run synchronously.
+  base::OnceClosure drop_handler =
+      base::BindOnce(&AsyncResolveSystemDnsWithEmptyResult,
+                     base::SequencedTaskRunner::GetCurrentDefault(),
+                     std::move(duplicated_results_cbs.second));
+  auto results_cb_with_default_invoke = mojo::WrapCallbackWithDropHandler(
+      std::move(duplicated_results_cbs.first), std::move(drop_handler));
   system_dns_override->Resolve(hostname, addr_family, flags, network,
                                std::move(results_cb_with_default_invoke));
 }
@@ -489,6 +512,8 @@ NetworkService::~NetworkService() {
 
   if (initialized_)
     trace_net_log_observer_.StopWatchForTraceStart();
+
+  net::SetSystemDnsResolverOverride(base::NullCallback());
 }
 
 void NetworkService::ReplaceSystemDnsConfigForTesting(
@@ -599,15 +624,15 @@ void NetworkService::SetSystemDnsResolver(
 }
 
 void NetworkService::StartNetLog(base::File file,
+                                 uint64_t max_total_size,
                                  net::NetLogCaptureMode capture_mode,
-                                 base::Value::Dict client_constants) {
-  base::Value::Dict constants = net::GetNetConstants();
-  constants.Merge(std::move(client_constants));
-
-  file_net_log_observer_ = net::FileNetLogObserver::CreateUnboundedPreExisting(
-      std::move(file), capture_mode,
-      std::make_unique<base::Value::Dict>(std::move(constants)));
-  file_net_log_observer_->StartObserving(net_log_);
+                                 base::Value::Dict constants) {
+  if (max_total_size == net::FileNetLogObserver::kNoLimit) {
+    StartNetLogUnbounded(std::move(file), capture_mode, std::move(constants));
+  } else {
+    StartNetLogBounded(std::move(file), max_total_size, capture_mode,
+                       std::move(constants));
+  }
 }
 
 void NetworkService::AttachNetLogProxy(
@@ -935,6 +960,54 @@ void NetworkService::SetFirstPartySets(net::GlobalFirstPartySets sets) {
 void NetworkService::SetExplicitlyAllowedPorts(
     const std::vector<uint16_t>& ports) {
   net::SetExplicitlyAllowedPorts(ports);
+}
+
+void NetworkService::StartNetLogBounded(base::File file,
+                                        uint64_t max_total_size,
+                                        net::NetLogCaptureMode capture_mode,
+                                        base::Value::Dict client_constants) {
+  base::Value::Dict constants = net::GetNetConstants();
+  constants.Merge(std::move(client_constants));
+
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE,
+      {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
+      base::BindOnce(&NetLogExporter::CreateScratchDirForNetworkService,
+                     base::PassKey<NetworkService>()),
+
+      base::BindOnce(
+          &NetworkService::OnStartNetLogBoundedScratchDirectoryCreated,
+          base::Unretained(this), std::move(file), max_total_size, capture_mode,
+          std::move(constants)));
+}
+
+void NetworkService::OnStartNetLogBoundedScratchDirectoryCreated(
+    base::File file,
+    uint64_t max_total_size,
+    net::NetLogCaptureMode capture_mode,
+    base::Value::Dict constants,
+    const base::FilePath& inprogress_dir_path) {
+  if (inprogress_dir_path.empty()) {
+    LOG(ERROR) << "Unable to create scratch directory for net-log.";
+    return;
+  }
+
+  file_net_log_observer_ = net::FileNetLogObserver::CreateBoundedPreExisting(
+      inprogress_dir_path, std::move(file), max_total_size, capture_mode,
+      std::make_unique<base::Value::Dict>(std::move(constants)));
+  file_net_log_observer_->StartObserving(net_log_);
+}
+
+void NetworkService::StartNetLogUnbounded(base::File file,
+                                          net::NetLogCaptureMode capture_mode,
+                                          base::Value::Dict client_constants) {
+  base::Value::Dict constants = net::GetNetConstants();
+  constants.Merge(std::move(client_constants));
+
+  file_net_log_observer_ = net::FileNetLogObserver::CreateUnboundedPreExisting(
+      std::move(file), capture_mode,
+      std::make_unique<base::Value::Dict>(std::move(constants)));
+  file_net_log_observer_->StartObserving(net_log_);
 }
 
 std::unique_ptr<net::HttpAuthHandlerFactory>

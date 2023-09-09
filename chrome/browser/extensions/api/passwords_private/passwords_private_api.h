@@ -124,7 +124,6 @@ class PasswordsPrivateGetSavedPasswordListFunction : public ExtensionFunction {
   ResponseAction Run() override;
 
  private:
-  void GetList();
   void GotList(const PasswordsPrivateDelegate::UiEntries& entries);
 };
 
@@ -153,7 +152,6 @@ class PasswordsPrivateGetPasswordExceptionListFunction
   ResponseAction Run() override;
 
  private:
-  void GetList();
   void GotList(const PasswordsPrivateDelegate::ExceptionEntries& entries);
 };
 
@@ -184,6 +182,18 @@ class PasswordsPrivateFetchFamilyMembersFunction : public ExtensionFunction {
  private:
   void FamilyFetchCompleted(
       const api::passwords_private::FamilyFetchResults& results);
+};
+
+class PasswordsPrivateSharePasswordFunction : public ExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("passwordsPrivate.sharePassword",
+                             PASSWORDSPRIVATE_SHAREPASSWORD)
+
+ protected:
+  ~PasswordsPrivateSharePasswordFunction() override = default;
+
+  // ExtensionFunction overrides.
+  ResponseAction Run() override;
 };
 
 class PasswordsPrivateImportPasswordsFunction : public ExtensionFunction {

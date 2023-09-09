@@ -700,6 +700,7 @@ bool AcceleratorControllerImpl::CanPerformAction(
     case AcceleratorAction::kDebugSystemUiStyleViewer:
     case AcceleratorAction::kDebugToggleDarkMode:
     case AcceleratorAction::kDebugToggleDynamicColor:
+    case AcceleratorAction::kDebugClearUseKMeansPref:
     case AcceleratorAction::kDebugToggleGlanceables:
     case AcceleratorAction::kDebugTogglePowerButtonMenu:
     case AcceleratorAction::kDebugToggleShowDebugBorders:
@@ -769,8 +770,8 @@ bool AcceleratorControllerImpl::CanPerformAction(
           accelerator_history_->currently_pressed_keys());
     case AcceleratorAction::kToggleClipboardHistory:
       return true;
-    case AcceleratorAction::kToggleDictation:
-      return accelerators::CanToggleDictation();
+    case AcceleratorAction::kEnableOrToggleDictation:
+      return accelerators::CanEnableOrToggleDictation();
     case AcceleratorAction::kToggleDockedMagnifier:
       return true;
     case AcceleratorAction::kToggleFloating:
@@ -978,6 +979,7 @@ void AcceleratorControllerImpl::PerformAction(
     case AcceleratorAction::kDebugShowToast:
     case AcceleratorAction::kDebugToggleDarkMode:
     case AcceleratorAction::kDebugToggleDynamicColor:
+    case AcceleratorAction::kDebugClearUseKMeansPref:
     case AcceleratorAction::kDebugToggleGlanceables:
     case AcceleratorAction::kDebugTogglePowerButtonMenu:
     case AcceleratorAction::kDebugToggleVideoConferenceCameraTrayIcon:
@@ -1316,9 +1318,9 @@ void AcceleratorControllerImpl::PerformAction(
     case AcceleratorAction::kToggleClipboardHistory:
       accelerators::ToggleClipboardHistory(/*is_plain_text_paste=*/false);
       break;
-    case AcceleratorAction::kToggleDictation:
-      base::RecordAction(UserMetricsAction("Accel_Toggle_Dictation"));
-      accelerators::ToggleDictation();
+    case AcceleratorAction::kEnableOrToggleDictation:
+      // UMA metrics are recorded later in the call stack.
+      accelerators::EnableOrToggleDictation();
       break;
     case AcceleratorAction::kToggleDockedMagnifier:
       base::RecordAction(UserMetricsAction("Accel_Toggle_Docked_Magnifier"));

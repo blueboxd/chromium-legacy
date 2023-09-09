@@ -15,10 +15,10 @@ import '../settings_shared.css.js';
 import '../os_settings_icons.html.js';
 
 import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
-import {IronCollapseElement} from 'chrome://resources/polymer/v3_0/iron-collapse/iron-collapse.js';
 import {IronSelectorElement} from 'chrome://resources/polymer/v3_0/iron-selector/iron-selector.js';
 import {DomRepeat, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
+import {isRevampWayfindingEnabled} from '../common/load_time_booleans.js';
 import * as routesMojom from '../mojom-webui/routes.mojom-webui.js';
 import {OsPageAvailability} from '../os_page_availability.js';
 import {RouteObserverMixin} from '../route_observer_mixin.js';
@@ -39,8 +39,6 @@ export interface OsSettingsMenuElement {
   $: {
     topMenu: IronSelectorElement,
     topMenuRepeat: DomRepeat,
-    subMenu: IronSelectorElement,
-    advancedSubmenu: IronCollapseElement,
   };
 }
 
@@ -95,6 +93,14 @@ export class OsSettingsMenuElement extends OsSettingsMenuElementBase {
         type: String,
         value: `/${routesMojom.ABOUT_CHROME_OS_SECTION_PATH}`,
       },
+
+      isRevampWayfindingEnabled_: {
+        type: Boolean,
+        value: () => {
+          return isRevampWayfindingEnabled();
+        },
+        readOnly: true,
+      },
     };
   }
 
@@ -102,6 +108,7 @@ export class OsSettingsMenuElement extends OsSettingsMenuElementBase {
   pageAvailability: OsPageAvailability;
   private basicMenuItems_: MenuItemData[];
   private advancedMenuItems_: MenuItemData[];
+  private isRevampWayfindingEnabled_: boolean;
   private selectedUrl_: string;
 
   override ready(): void {
@@ -144,80 +151,157 @@ export class OsSettingsMenuElement extends OsSettingsMenuElementBase {
   }
 
   private computeBasicMenuItems_(): MenuItemData[] {
-    const basicMenuItems: MenuItemData[] = [
-      {
-        section: Section.kNetwork,
-        href: `/${routesMojom.NETWORK_SECTION_PATH}`,
-        icon: 'os-settings:network-wifi',
-        label: this.i18n('internetPageTitle'),
-      },
-      {
-        section: Section.kBluetooth,
-        href: `/${routesMojom.BLUETOOTH_SECTION_PATH}`,
-        icon: 'cr:bluetooth',
-        label: this.i18n('bluetoothPageTitle'),
-      },
-      {
-        section: Section.kMultiDevice,
-        href: `/${routesMojom.MULTI_DEVICE_SECTION_PATH}`,
-        icon: 'os-settings:multidevice-better-together-suite',
-        label: this.i18n('multidevicePageTitle'),
-      },
-      {
-        section: Section.kPeople,
-        href: `/${routesMojom.PEOPLE_SECTION_PATH}`,
-        icon: 'cr:person',
-        label: this.i18n('osPeoplePageTitle'),
-      },
-      {
-        section: Section.kKerberos,
-        href: `/${routesMojom.KERBEROS_SECTION_PATH}`,
-        icon: 'os-settings:auth-key',
-        label: this.i18n('kerberosPageTitle'),
-      },
-      {
-        section: Section.kDevice,
-        href: `/${routesMojom.DEVICE_SECTION_PATH}`,
-        icon: 'os-settings:laptop-chromebook',
-        label: this.i18n('devicePageTitle'),
-      },
-      {
-        section: Section.kPersonalization,
-        href: `/${routesMojom.PERSONALIZATION_SECTION_PATH}`,
-        icon: 'os-settings:paint-brush',
-        label: this.i18n('personalizationPageTitle'),
-      },
-      {
-        section: Section.kSearchAndAssistant,
-        href: `/${routesMojom.SEARCH_AND_ASSISTANT_SECTION_PATH}`,
-        icon: 'cr:search',
-        label: this.i18n('osSearchPageTitle'),
-      },
-      {
-        section: Section.kPrivacyAndSecurity,
-        href: `/${routesMojom.PRIVACY_AND_SECURITY_SECTION_PATH}`,
-        icon: 'cr:security',
-        label: this.i18n('privacyPageTitle'),
-      },
-      {
-        section: Section.kApps,
-        href: `/${routesMojom.APPS_SECTION_PATH}`,
-        icon: 'os-settings:apps',
-        label: this.i18n('appsPageTitle'),
-      },
-      {
-        section: Section.kAccessibility,
-        href: `/${routesMojom.ACCESSIBILITY_SECTION_PATH}`,
-        icon: 'os-settings:accessibility',
-        label: this.i18n('a11yPageTitle'),
-      },
-    ];
+    let basicMenuItems: MenuItemData[];
+    if (this.isRevampWayfindingEnabled_) {
+      basicMenuItems = [
+        {
+          section: Section.kNetwork,
+          href: `/${routesMojom.NETWORK_SECTION_PATH}`,
+          icon: 'os-settings:network-wifi',
+          label: this.i18n('internetPageTitle'),
+        },
+        {
+          section: Section.kBluetooth,
+          href: `/${routesMojom.BLUETOOTH_SECTION_PATH}`,
+          icon: 'cr:bluetooth',
+          label: this.i18n('bluetoothPageTitle'),
+        },
+        {
+          section: Section.kMultiDevice,
+          href: `/${routesMojom.MULTI_DEVICE_SECTION_PATH}`,
+          icon: 'os-settings:connected-devices',
+          label: this.i18n('multidevicePageTitle'),
+        },
+        {
+          section: Section.kPeople,
+          href: `/${routesMojom.PEOPLE_SECTION_PATH}`,
+          icon: 'os-settings:account',
+          label: this.i18n('osPeoplePageTitle'),
+        },
+        {
+          section: Section.kKerberos,
+          href: `/${routesMojom.KERBEROS_SECTION_PATH}`,
+          icon: 'os-settings:auth-key',
+          label: this.i18n('kerberosPageTitle'),
+        },
+        {
+          section: Section.kDevice,
+          href: `/${routesMojom.DEVICE_SECTION_PATH}`,
+          icon: 'os-settings:laptop-chromebook',
+          label: this.i18n('devicePageTitle'),
+        },
+        {
+          section: Section.kPersonalization,
+          href: `/${routesMojom.PERSONALIZATION_SECTION_PATH}`,
+          icon: 'os-settings:personalization',
+          label: this.i18n('personalizationPageTitle'),
+        },
+        {
+          section: Section.kPrivacyAndSecurity,
+          href: `/${routesMojom.PRIVACY_AND_SECURITY_SECTION_PATH}`,
+          icon: 'cr:security',
+          label: this.i18n('privacyPageTitle'),
+        },
+        {
+          section: Section.kApps,
+          href: `/${routesMojom.APPS_SECTION_PATH}`,
+          icon: 'os-settings:apps',
+          label: this.i18n('appsPageTitle'),
+        },
+        {
+          section: Section.kAccessibility,
+          href: `/${routesMojom.ACCESSIBILITY_SECTION_PATH}`,
+          icon: 'os-settings:accessibility-revamp',
+          label: this.i18n('a11yPageTitle'),
+        },
+        {
+          section: Section.kSystemPreferences,
+          href: `/${routesMojom.SYSTEM_PREFERENCES_SECTION_PATH}`,
+          icon: 'os-settings:system-preferences',
+          label: this.i18n('systemPreferencesTitle'),
+        },
+      ];
+    } else {
+      basicMenuItems = [
+        {
+          section: Section.kNetwork,
+          href: `/${routesMojom.NETWORK_SECTION_PATH}`,
+          icon: 'os-settings:network-wifi',
+          label: this.i18n('internetPageTitle'),
+        },
+        {
+          section: Section.kBluetooth,
+          href: `/${routesMojom.BLUETOOTH_SECTION_PATH}`,
+          icon: 'cr:bluetooth',
+          label: this.i18n('bluetoothPageTitle'),
+        },
+        {
+          section: Section.kMultiDevice,
+          href: `/${routesMojom.MULTI_DEVICE_SECTION_PATH}`,
+          icon: 'os-settings:multidevice-better-together-suite',
+          label: this.i18n('multidevicePageTitle'),
+        },
+        {
+          section: Section.kPeople,
+          href: `/${routesMojom.PEOPLE_SECTION_PATH}`,
+          icon: 'cr:person',
+          label: this.i18n('osPeoplePageTitle'),
+        },
+        {
+          section: Section.kKerberos,
+          href: `/${routesMojom.KERBEROS_SECTION_PATH}`,
+          icon: 'os-settings:auth-key',
+          label: this.i18n('kerberosPageTitle'),
+        },
+        {
+          section: Section.kDevice,
+          href: `/${routesMojom.DEVICE_SECTION_PATH}`,
+          icon: 'os-settings:laptop-chromebook',
+          label: this.i18n('devicePageTitle'),
+        },
+        {
+          section: Section.kPersonalization,
+          href: `/${routesMojom.PERSONALIZATION_SECTION_PATH}`,
+          icon: 'os-settings:paint-brush',
+          label: this.i18n('personalizationPageTitle'),
+        },
+        {
+          section: Section.kSearchAndAssistant,
+          href: `/${routesMojom.SEARCH_AND_ASSISTANT_SECTION_PATH}`,
+          icon: 'cr:search',
+          label: this.i18n('osSearchPageTitle'),
+        },
+        {
+          section: Section.kPrivacyAndSecurity,
+          href: `/${routesMojom.PRIVACY_AND_SECURITY_SECTION_PATH}`,
+          icon: 'cr:security',
+          label: this.i18n('privacyPageTitle'),
+        },
+        {
+          section: Section.kApps,
+          href: `/${routesMojom.APPS_SECTION_PATH}`,
+          icon: 'os-settings:apps',
+          label: this.i18n('appsPageTitle'),
+        },
+        {
+          section: Section.kAccessibility,
+          href: `/${routesMojom.ACCESSIBILITY_SECTION_PATH}`,
+          icon: 'os-settings:accessibility',
+          label: this.i18n('a11yPageTitle'),
+        },
+      ];
+    }
 
     return basicMenuItems.filter(
         ({section}) => !!this.pageAvailability[section]);
   }
 
   private computeAdvancedMenuItems_(): MenuItemData[] {
+    // When OsSettingsRevampWayfinding is enabled, there is no Advanced menu.
+    if (this.isRevampWayfindingEnabled_) {
+      return [];
+    }
+
     const advancedMenuItems: MenuItemData[] = [
       {
         section: Section.kDateAndTime,

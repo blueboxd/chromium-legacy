@@ -451,6 +451,7 @@ void FakeDriveFs::GetMetadata(const base::FilePath& path,
   }
 
   const auto& stored_metadata = metadata_[path];
+  metadata->item_id = stored_metadata.doc_id;
   metadata->pinned = stored_metadata.pinned;
   metadata->dirty = stored_metadata.dirty;
   metadata->available_offline =
@@ -644,15 +645,24 @@ void FakeDriveFs::GetQuotaUsage(
                           mojom::QuotaUsage::New());
 }
 
+void FakeDriveFs::SetPooledStorageQuotaUsage(int64_t used_user_bytes,
+                                             int64_t total_user_bytes,
+                                             bool organization_limit_exceeded) {
+  pooled_quota_usage_.used_user_bytes = used_user_bytes;
+  pooled_quota_usage_.total_user_bytes = total_user_bytes;
+  pooled_quota_usage_.organization_limit_exceeded = organization_limit_exceeded;
+}
+
 void FakeDriveFs::GetPooledQuotaUsage(
     drivefs::mojom::DriveFs::GetPooledQuotaUsageCallback callback) {
   auto usage = mojom::PooledQuotaUsage::New();
 
-  usage->user_type = mojom::UserType::kUnmanaged;
-  usage->used_user_bytes = 1 * 1024 * 1024;
-  usage->total_user_bytes = 2 * 1024 * 1024;
-  usage->organization_limit_exceeded = false;
-  usage->organization_name = "Test Organization";
+  usage->user_type = pooled_quota_usage_.user_type;
+  usage->used_user_bytes = pooled_quota_usage_.used_user_bytes;
+  usage->total_user_bytes = pooled_quota_usage_.total_user_bytes;
+  usage->organization_limit_exceeded =
+      pooled_quota_usage_.organization_limit_exceeded;
+  usage->organization_name = "Test organization";
 
   std::move(callback).Run(drive::FileError::FILE_ERROR_OK, std::move(usage));
 }

@@ -5,12 +5,15 @@
 #ifndef CHROME_BROWSER_ANDROID_PERSISTED_TAB_DATA_PERSISTED_TAB_DATA_ANDROID_H_
 #define CHROME_BROWSER_ANDROID_PERSISTED_TAB_DATA_PERSISTED_TAB_DATA_ANDROID_H_
 
+#include <deque>
 #include <vector>
 
 #include "base/functional/callback_forward.h"
 #include "base/memory/raw_ptr.h"
 #include "chrome/browser/android/tab_android_user_data.h"
+#include "chrome/browser/profiles/profile_manager.h"
 
+class PersistedTabDataAndroidHelper;
 class PersistedTabDataStorageAndroid;
 class TabAndroid;
 
@@ -50,9 +53,24 @@ class PersistedTabDataAndroid
   // destroyed)
   void Remove();
 
+  // Remove all PersistedTabDataAndroid entries stored for |tab_id| related
+  // to a given |profile|.
+  static void RemoveAll(int tab_id, Profile* profile);
+
+  // Determines if PersistedTabDataAndroid exists for the corresponding
+  // |tab_android| and |user_data_key|. Returns true/false in
+  // |exists_callback|.
+  static void ExistsForTesting(TabAndroid* tab_android,
+                               const void* user_data_key,
+                               base::OnceCallback<void(bool)> exists_callback);
+
  private:
-  friend class TabAndroidUserData<PersistedTabDataAndroid>;
+  friend class AuxiliarySearchProviderBrowserTest;
+  friend class PersistedTabDataAndroidBrowserTest;
+  friend class PersistedTabDataAndroidHelper;
+  friend class SensitivityPersistedTabDataAndroid;
   friend class SensitivityPersistedTabDataAndroidBrowserTest;
+  friend class TabAndroidUserData<PersistedTabDataAndroid>;
 
   // Storage implementation for PersistedTabData (currently only LevelDB is
   // supported) However, support may be added for other storage modes (e.g.
@@ -60,9 +78,38 @@ class PersistedTabDataAndroid
   raw_ptr<PersistedTabDataStorageAndroid> persisted_tab_data_storage_android_;
 
   // Identifier for the PersistedTabData which all keys are prepended with
-  const std::string data_id_;
+  raw_ptr<const char> data_id_;
 
   int tab_id_;
+
+  // Called when a Tab is closed.
+  static void OnTabClose(TabAndroid* tab_android);
+
+  // Called when deferred startup occurs.
+  static void OnDeferredStartup();
+
+  static std::map<std::string,
+                  std::vector<PersistedTabDataAndroid::FromCallback>>*
+  GetCachedCallbackMap();
+
+  static void RunCallbackOnUIThread(
+      TabAndroid* tab_android,
+      const void* user_data_key,
+      PersistedTabDataAndroid* persisted_tab_data_android);
+
+  // PersistedTabData::From requests are delayed until deferred
+  // startup occurs to mitigate the risk of jank.
+  struct DeferredRequest {
+    DeferredRequest();
+    ~DeferredRequest();
+    raw_ptr<TabAndroid> tab_android;
+    raw_ptr<const void> user_data_key;
+    SupplierCallback supplier_callback;
+    FromCallback from_callback;
+  };
+  static std::deque<std::unique_ptr<DeferredRequest>>* GetDeferredRequests();
+  static bool deferred_startup_complete_;
+
   TAB_ANDROID_USER_DATA_KEY_DECL();
 };
 

@@ -15,6 +15,7 @@
 #include "gpu/command_buffer/service/context_state.h"
 #include "gpu/command_buffer/service/gl_context_virtual.h"
 #include "gpu/command_buffer/service/gr_shader_cache.h"
+#include "gpu/command_buffer/service/graphite_image_provider.h"
 #include "gpu/command_buffer/service/service_transfer_cache.h"
 #include "gpu/command_buffer/service/service_utils.h"
 #include "gpu/command_buffer/service/skia_utils.h"
@@ -25,8 +26,6 @@
 #include "gpu/vulkan/buildflags.h"
 #include "skia/buildflags.h"
 #include "third_party/skia/include/gpu/graphite/Context.h"
-#include "third_party/skia/include/gpu/graphite/Image.h"
-#include "third_party/skia/include/gpu/graphite/ImageProvider.h"
 #include "third_party/skia/include/gpu/mock/GrMockTypes.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
@@ -42,6 +41,7 @@
 #include "gpu/command_buffer/service/external_semaphore_pool.h"
 #include "gpu/vulkan/vulkan_device_queue.h"
 #include "gpu/vulkan/vulkan_implementation.h"
+#include "gpu/vulkan/vulkan_util.h"
 #endif
 
 #if BUILDFLAG(IS_FUCHSIA)
@@ -78,34 +78,12 @@ size_t MaxNumSkSurface() {
 #endif
 }
 
-// This class is used by Graphite to create Graphite-backed SkImages from non-
-// Graphite-backed SkImages. It is given to a Graphite Recorder on creation. If
-// no ImageProvider is given to a Recorder, then any non-Graphite-backed SkImage
-// draws on that Recorder will fail.
-//
-// See https://crsrc.org/c/third_party/skia/include/gpu/graphite/ImageProvider.h
-// for details on Skia's requirements for ImageProvider.
-//
-// TODO(https://crbug.com/1457525): Currently this class uploads every image it
-// encounters to a new texture. Instead, it could do some caching to avoid
-// redundant work.
-class GraphiteImageProvider : public skgpu::graphite::ImageProvider {
- public:
-  ~GraphiteImageProvider() override = default;
-
-  sk_sp<SkImage> findOrCreate(
-      skgpu::graphite::Recorder* recorder,
-      const SkImage* image,
-      SkImage::RequiredProperties requiredProps) override {
-    return SkImages::TextureFromImage(recorder, image, requiredProps);
-  }
-};
-
 // Creates a Graphite recorder, supplying it with a GraphiteImageProvider.
 std::unique_ptr<skgpu::graphite::Recorder>
 MakeGraphiteRecorderWithImageProvider(skgpu::graphite::Context* context) {
   skgpu::graphite::RecorderOptions options;
-  options.fImageProvider = sk_make_sp<GraphiteImageProvider>();
+  options.fImageProvider = sk_make_sp<gpu::GraphiteImageProvider>(
+      gpu::DetermineGraphiteImageProviderCacheLimitFromAvailableMemory());
   return context->makeRecorder(options);
 }
 
@@ -290,7 +268,7 @@ bool SharedContextState::InitializeSkia(
 
   if (gr_context_type_ == GrContextType::kGraphiteDawn ||
       gr_context_type_ == GrContextType::kGraphiteMetal) {
-    return InitializeGraphite(gpu_preferences);
+    return InitializeGraphite(gpu_preferences, workarounds);
   }
 
   return InitializeGanesh(gpu_preferences, workarounds, cache, activity_flags,
@@ -404,9 +382,10 @@ bool SharedContextState::InitializeGanesh(
 }
 
 bool SharedContextState::InitializeGraphite(
-    const GpuPreferences& gpu_preferences) {
+    const GpuPreferences& gpu_preferences,
+    const GpuDriverBugWorkarounds& workarounds) {
   [[maybe_unused]] skgpu::graphite::ContextOptions context_options =
-      GetDefaultGraphiteContextOptions();
+      GetDefaultGraphiteContextOptions(workarounds);
   if (gr_context_type_ == GrContextType::kGraphiteDawn) {
 #if BUILDFLAG(SKIA_USE_DAWN)
     if (dawn_context_provider_ &&
@@ -564,38 +543,22 @@ bool SharedContextState::InitializeGL(
         vk_context_provider_->GetVulkanImplementation()->use_swiftshader()
             ? gpu::VulkanImplementationName::kSwiftshader
             : gpu::VulkanImplementationName::kNative;
-    const auto& extensions =
-        vk_context_provider_->GetDeviceQueue()->enabled_extensions();
+    auto* device_queue = vk_context_provider_->GetDeviceQueue();
 #if BUILDFLAG(IS_WIN)
     vk_supports_external_memory =
-        gfx::HasExtension(extensions, VK_KHR_EXTERNAL_MEMORY_EXTENSION_NAME) &&
-        gfx::HasExtension(extensions,
+        gfx::HasExtension(device_queue->enabled_extensions(),
                           VK_KHR_EXTERNAL_MEMORY_WIN32_EXTENSION_NAME);
-    vk_supports_external_semaphore =
-        gfx::HasExtension(extensions,
-                          VK_KHR_EXTERNAL_SEMAPHORE_EXTENSION_NAME) &&
-        gfx::HasExtension(extensions,
-                          VK_KHR_EXTERNAL_SEMAPHORE_WIN32_EXTENSION_NAME);
 #elif BUILDFLAG(IS_FUCHSIA)
     vk_supports_external_memory =
-        gfx::HasExtension(extensions, VK_KHR_EXTERNAL_MEMORY_EXTENSION_NAME) &&
-        gfx::HasExtension(extensions,
+        gfx::HasExtension(device_queue->enabled_extensions(),
                           VK_FUCHSIA_EXTERNAL_MEMORY_EXTENSION_NAME);
-    vk_supports_external_semaphore =
-        gfx::HasExtension(extensions,
-                          VK_KHR_EXTERNAL_SEMAPHORE_EXTENSION_NAME) &&
-        gfx::HasExtension(extensions,
-                          VK_FUCHSIA_EXTERNAL_SEMAPHORE_EXTENSION_NAME);
 #else
     vk_supports_external_memory =
-        gfx::HasExtension(extensions, VK_KHR_EXTERNAL_MEMORY_EXTENSION_NAME) &&
-        gfx::HasExtension(extensions, VK_KHR_EXTERNAL_MEMORY_FD_EXTENSION_NAME);
-    vk_supports_external_semaphore =
-        gfx::HasExtension(extensions,
-                          VK_KHR_EXTERNAL_SEMAPHORE_EXTENSION_NAME) &&
-        gfx::HasExtension(extensions,
-                          VK_KHR_EXTERNAL_SEMAPHORE_FD_EXTENSION_NAME);
+        gfx::HasExtension(device_queue->enabled_extensions(),
+                          VK_KHR_EXTERNAL_MEMORY_FD_EXTENSION_NAME);
 #endif
+    vk_supports_external_semaphore =
+        IsVkOpaqueExternalSemaphoreSupported(device_queue);
   }
 #endif  // BUILDFLAG(ENABLE_VULKAN)
 

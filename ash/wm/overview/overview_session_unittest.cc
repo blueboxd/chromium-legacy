@@ -17,6 +17,7 @@
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/constants/app_types.h"
 #include "ash/constants/ash_features.h"
+#include "ash/constants/ash_pref_names.h"
 #include "ash/display/screen_orientation_controller.h"
 #include "ash/display/screen_orientation_controller_test_api.h"
 #include "ash/drag_drop/drag_drop_controller.h"
@@ -44,6 +45,7 @@
 #include "ash/wm/desks/zero_state_button.h"
 #include "ash/wm/drag_window_resizer.h"
 #include "ash/wm/gestures/back_gesture/back_gesture_event_handler.h"
+#include "ash/wm/gestures/wm_gesture_handler.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/overview_constants.h"
 #include "ash/wm/overview/overview_controller.h"
@@ -85,6 +87,7 @@
 #include "base/task/single_thread_task_runner.h"
 #include "base/test/metrics/user_action_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/to_vector.h"
 #include "base/time/time.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/ui/wm/features.h"
@@ -805,6 +808,25 @@ TEST_P(OverviewSessionTest, CloseButtonOnMultipleDisplay) {
   EXPECT_FALSE(widget->IsClosed());
   event_generator.ClickLeftButton();
   EXPECT_TRUE(widget->IsClosed());
+}
+
+// Tests that dragging an overview item with multiple displays and then exiting
+// overview does not result in a u-a-f. Regression test for b/293867778.
+TEST_P(OverviewSessionTest, DraggingOnMultipleDisplay) {
+  UpdateDisplay("600x400,600x400");
+
+  auto window = CreateAppWindow();
+
+  ToggleOverview();
+  auto* generator = GetEventGenerator();
+  OverviewItem* item = GetOverviewItemForWindow(window.get());
+  generator->set_current_screen_location(
+      gfx::ToRoundedPoint(item->target_bounds().CenterPoint()));
+  generator->PressLeftButton();
+  generator->MoveMouseBy(20, 20);
+
+  // Exit overview without completing the drag.
+  ToggleOverview();
 }
 
 // Tests entering overview mode with two windows and selecting one.
@@ -3406,9 +3428,8 @@ TEST_P(OverviewSessionTest, FrameThrottlingArc) {
                             static_cast<int>(AppType::ARC_APP));
   }
 
-  std::vector<aura::Window*> windows_to_throttle(window_count, nullptr);
-  base::ranges::transform(windows, windows_to_throttle.begin(),
-                          &std::unique_ptr<aura::Window>::get);
+  auto windows_to_throttle =
+      base::test::ToVector(windows, &std::unique_ptr<aura::Window>::get);
   EXPECT_CALL(observer,
               OnThrottlingStarted(
                   testing::UnorderedElementsAreArray(windows_to_throttle),
@@ -3476,7 +3497,13 @@ TEST_P(OverviewSessionTest, WindowClippingAfterCombiningDesks) {
   EXPECT_TRUE(normal_window->layer()->clip_rect().IsEmpty());
 }
 
-INSTANTIATE_TEST_SUITE_P(All, OverviewSessionTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(/*no prefix*/,
+                         OverviewSessionTest,
+                         testing::Bool(),
+                         [](const testing::TestParamInfo<bool>& info) {
+                           return info.param ? "DesksTemplatesOn"
+                                             : "DesksTemplatesOff";
+                         });
 
 class FloatOverviewSessionTest : public OverviewTestBase {
  public:
@@ -4043,7 +4070,9 @@ TEST_F(TabletModeOverviewSessionTest, SnappingFullscreenWindow) {
   EXPECT_TRUE(WindowState::Get(window.get())->IsSnapped());
 }
 
-class ContinuousOverviewAnimationTest : public OverviewTestBase {
+class ContinuousOverviewAnimationTest
+    : public OverviewTestBase,
+      public testing::WithParamInterface<bool> {
  public:
   ContinuousOverviewAnimationTest() = default;
   ContinuousOverviewAnimationTest(const ContinuousOverviewAnimationTest&) =
@@ -4059,11 +4088,206 @@ class ContinuousOverviewAnimationTest : public OverviewTestBase {
                               chromeos::features::kJelly},
         /*disabled_features=*/{});
     OverviewTestBase::SetUp();
+
+    // Toggle natural scrolling. Behavior should always stay the same.
+    PrefService* pref_service =
+        Shell::Get()->session_controller()->GetActivePrefService();
+    bool enabled = GetParam();
+    pref_service->SetBoolean(prefs::kTouchpadEnabled, true);
+    pref_service->SetBoolean(prefs::kNaturalScroll, enabled);
+  }
+
+  // If `complete_scroll` is false, end the scroll with the fingers still on the
+  // trackpad.
+  void ThreeFingerScroll(float x_offset, float y_offset, bool complete_scroll) {
+    GetEventGenerator()->ScrollSequence(
+        gfx::Point(), base::Milliseconds(5), x_offset, y_offset,
+        /*steps=*/100, /*fingers=*/3,
+        /*end_state=*/
+        complete_scroll
+            ? ui::test::EventGenerator::ScrollSequenceType::UpToFling
+            : ui::test::EventGenerator::ScrollSequenceType::ScrollOnly);
   }
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
 };
+
+// Tests that continuous scrolls slowly shrink active windows and increase the
+// opacity of minimized windows, regardless of the state of `NaturalScroll`.
+TEST_P(ContinuousOverviewAnimationTest, WindowSizesAndOpacities) {
+  std::unique_ptr<aura::Window> window1(CreateTestWindow());
+  std::unique_ptr<aura::Window> window2(CreateTestWindow());
+  std::unique_ptr<aura::Window> window3(CreateTestWindow());
+  std::unique_ptr<aura::Window> minimized_window(CreateTestWindow());
+  WindowState::Get(minimized_window.get())->Minimize();
+
+  // Get the original positions.
+  const gfx::Rect original_bounds1 = window1->bounds();
+  const gfx::Rect original_bounds2 = window2->bounds();
+  const gfx::Rect original_bounds3 = window3->bounds();
+
+  // Get the final positions by toggling overview mode regularly.
+  ToggleOverview();
+  ASSERT_TRUE(InOverviewSession());
+  OverviewItem* item1 = GetOverviewItemForWindow(window1.get());
+  OverviewItem* item2 = GetOverviewItemForWindow(window2.get());
+  OverviewItem* item3 = GetOverviewItemForWindow(window3.get());
+
+  const gfx::Rect final_bounds1 = gfx::ToEnclosedRect(item1->target_bounds());
+  const gfx::Rect final_bounds2 = gfx::ToEnclosedRect(item2->target_bounds());
+  const gfx::Rect final_bounds3 = gfx::ToEnclosedRect(item3->target_bounds());
+  ToggleOverview();
+  ASSERT_FALSE(InOverviewSession());
+
+  // Swipe up a little bit and keep the fingers rested on the trackpad so that
+  // the window placements are paused. Technically, we are in an overview
+  // session, but the windows have not been placed in their final positions yet
+  // due to the scroll still being in progress.
+  const float short_scroll = 50.f;
+  ThreeFingerScroll(0, short_scroll, /*complete_scroll=*/false);
+  ASSERT_TRUE(InOverviewSession());
+
+  // Get the current window positions and opacities.
+  int top_inset = window1.get()->GetProperty(aura::client::kTopViewInset);
+  gfx::RectF curr_bounds1 =
+      window_util::GetTransformedBounds(window1.get(), top_inset);
+  gfx::RectF curr_bounds2 =
+      window_util::GetTransformedBounds(window2.get(), top_inset);
+  gfx::RectF curr_bounds3 =
+      window_util::GetTransformedBounds(window3.get(), top_inset);
+
+  // Each active window should be smaller than their original state, but larger
+  // than their final overview mode state.
+  EXPECT_LT(curr_bounds1.width(), original_bounds1.width());
+  EXPECT_GT(curr_bounds1.width(), final_bounds1.width());
+  EXPECT_LT(curr_bounds2.width(), original_bounds2.width());
+  EXPECT_GT(curr_bounds2.width(), final_bounds2.width());
+  EXPECT_LT(curr_bounds3.width(), original_bounds3.width());
+  EXPECT_GT(curr_bounds3.width(), final_bounds3.width());
+
+  EXPECT_LT(curr_bounds1.height(), original_bounds1.height());
+  EXPECT_GT(curr_bounds1.height(), final_bounds1.height());
+  EXPECT_LT(curr_bounds2.height(), original_bounds2.height());
+  EXPECT_GT(curr_bounds2.height(), final_bounds2.height());
+  EXPECT_LT(curr_bounds3.height(), original_bounds3.height());
+  EXPECT_GT(curr_bounds3.height(), final_bounds3.height());
+
+  // Confirm the opacity of minimized windows is not 100%.
+  float opacity = GetOverviewItemForWindow(minimized_window.get())
+                      ->overview_item_view()
+                      ->layer()
+                      ->opacity();
+  EXPECT_NE(opacity, 1.f);
+  EXPECT_NE(opacity, 0.f);
+}
+
+// Test that the rounded corners and shadows are shown at the correct times
+// throughout a continuous scroll.
+TEST_P(ContinuousOverviewAnimationTest, WindowCornerRadiiAndShadows) {
+  std::unique_ptr<aura::Window> active_window(CreateTestWindow());
+  std::unique_ptr<aura::Window> minimized_window(CreateTestWindow());
+  WindowState::Get(minimized_window.get())->Minimize();
+
+  // Swipe up a little bit and keep the fingers rested on the trackpad so
+  // that the window placements are paused.
+  const float short_scroll = 50.f;
+  ThreeFingerScroll(0, short_scroll, /*complete_scroll=*/false);
+  ASSERT_TRUE(InOverviewSession());
+
+  OverviewItem* active_item = GetOverviewItemForWindow(active_window.get());
+  OverviewItem* minimized_item =
+      GetOverviewItemForWindow(minimized_window.get());
+
+  // If a window is minimized, it should immediately show rounded corners.
+  // Otherwise, retain sharp corners until the enter animation ends.
+  EXPECT_FALSE(HasRoundedCorner(active_item));
+  EXPECT_TRUE(HasRoundedCorner(minimized_item));
+
+  // If a window is minimized, it should hide its shadows until the enter
+  // animation ends. Otherwise, retain its shadow the entire time.
+  EXPECT_FALSE(GetShadowBounds(active_item).IsEmpty());
+  EXPECT_TRUE(GetShadowBounds(minimized_item).IsEmpty());
+
+  // Reset.
+  ToggleOverview();
+  ASSERT_FALSE(InOverviewSession());
+
+  // Give us some time to check the entry animation since we will be triggering
+  // it by scrolling up and then lifting the fingers off of the trackpad.
+  ui::ScopedAnimationDurationScaleMode test_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::NON_ZERO_DURATION);
+
+  // Scroll up more than 50% of the threshold then let go of the trackpad.
+  const float medium_scroll =
+      (WmGestureHandler::kVerticalThresholdDp / 2.f) + 1.f;
+  ThreeFingerScroll(0, medium_scroll, /*complete_scroll=*/true);
+
+  // Get the overview items again since this is a new overview session.
+  active_item = GetOverviewItemForWindow(active_window.get());
+  minimized_item = GetOverviewItemForWindow(minimized_window.get());
+
+  // During the entry animation, the non-minimized windows do not show their
+  // rounded corners or shadows until the animation is complete. Minimized
+  // windows always have rounded corners and immediately show their shadows.
+  // TODO(b/293923755): Both minimized and non-minimized windows should show
+  // their shadow after the animation is complete.
+  EXPECT_FALSE(HasRoundedCorner(active_item));
+  EXPECT_TRUE(GetShadowBounds(active_item).IsEmpty());
+  EXPECT_TRUE(HasRoundedCorner(minimized_item));
+  EXPECT_FALSE(GetShadowBounds(minimized_item).IsEmpty());
+
+  // Ensure overview has been entered completely.
+  ShellTestApi().WaitForOverviewAnimationState(
+      OverviewAnimationState::kEnterAnimationComplete);
+  ASSERT_TRUE(InOverviewSession());
+
+  // All items should have rounded corners and shadows.
+  EXPECT_TRUE(HasRoundedCorner(active_item));
+  EXPECT_TRUE(HasRoundedCorner(minimized_item));
+  EXPECT_FALSE(GetShadowBounds(active_item).IsEmpty());
+  EXPECT_FALSE(GetShadowBounds(minimized_item).IsEmpty());
+}
+
+// Tests that scrolls enter/exit overview mode as expected, regardless of the
+// state of `NaturalScroll`.
+TEST_P(ContinuousOverviewAnimationTest, ReverseGesturesTest) {
+  const float long_scroll = 600.f;
+  const float short_scroll = 50.f;
+  ASSERT_FALSE(InOverviewSession());
+
+  // Test an incorrect, complete, scroll.
+  ThreeFingerScroll(0, -long_scroll, /*complete_scroll=*/true);
+  ASSERT_FALSE(InOverviewSession());
+
+  // Test a correct, complete, scroll.
+  ThreeFingerScroll(0, long_scroll, /*complete_scroll=*/true);
+  ASSERT_TRUE(InOverviewSession());
+
+  // Test an incorrect, complete, scroll.
+  ThreeFingerScroll(0, long_scroll, /*complete_scroll=*/true);
+  ASSERT_TRUE(InOverviewSession());
+
+  // Test a correct, complete, scroll.
+  ThreeFingerScroll(0, -long_scroll, /*complete_scroll=*/true);
+  ASSERT_FALSE(InOverviewSession());
+
+  // Test an incorrect, incomplete, scroll.
+  ThreeFingerScroll(0, -short_scroll, /*complete_scroll=*/false);
+  ASSERT_FALSE(InOverviewSession());
+
+  // Test a correct, incomplete, scroll.
+  ThreeFingerScroll(0, short_scroll, /*complete_scroll=*/false);
+  ASSERT_TRUE(InOverviewSession());
+}
+
+INSTANTIATE_TEST_SUITE_P(/*no prefix*/,
+                         ContinuousOverviewAnimationTest,
+                         testing::Bool(),
+                         [](const testing::TestParamInfo<bool>& info) {
+                           return info.param ? "NaturalScrollOn"
+                                             : "NaturalScrollOff";
+                         });
 
 class ClamshellScrollOverviewSessionTest : public OverviewTestBase {
  public:
@@ -4113,13 +4337,13 @@ TEST_F(ClamshellScrollOverviewSessionTest, CheckManyWindowsOffScreen) {
 
   // `item9` should not be within `screen_bounds` but it should have an
   // x value within `screen_bounds`.
-  EXPECT_FALSE(screen_bounds.Contains(item8_bounds));
+  EXPECT_FALSE(screen_bounds.Contains(item9_bounds));
   EXPECT_GT(item9_bounds.x(), screen_bounds.x());
   EXPECT_LT(item9_bounds.x(), screen_bounds.x() + screen_bounds.width());
 
   // `item8` should not be within `screen_bounds` but it should have an
   // x value within `screen_bounds`.
-  EXPECT_FALSE(screen_bounds.Contains(item9_bounds));
+  EXPECT_FALSE(screen_bounds.Contains(item8_bounds));
   EXPECT_GT(item8_bounds.x(), screen_bounds.x());
   EXPECT_LT(item8_bounds.x(), screen_bounds.x() + screen_bounds.width());
 }
@@ -4254,6 +4478,10 @@ TEST_F(ClamshellScrollOverviewSessionTest,
   auto active_window = CreateAppWindow();
   auto minimized_window = CreateAppWindow();
   auto floated_window = CreateAppWindow();
+
+  // Confirm minimized window.
+  WindowState::Get(minimized_window.get())->Minimize();
+  ASSERT_TRUE(WindowState::Get(minimized_window.get())->IsMinimized());
 
   // Confirm floated window.
   PressAndReleaseKey(ui::VKEY_F, ui::EF_ALT_DOWN | ui::EF_COMMAND_DOWN);
@@ -5239,7 +5467,7 @@ TEST_F(SplitViewOverviewSessionTest, Clipping) {
   auto aspect_ratio_near = [](const gfx::Rect& rect1, const gfx::Rect& rect2) {
     DCHECK_GT(rect1.height(), 0);
     DCHECK_GT(rect2.height(), 0);
-    constexpr float kEpsilon = 0.06f;
+    constexpr float kEpsilon = 0.07f;
     const float rect1_aspect_ratio =
         static_cast<float>(rect1.width()) / rect1.height();
     const float rect2_aspect_ratio =

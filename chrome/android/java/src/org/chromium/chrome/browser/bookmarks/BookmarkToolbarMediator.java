@@ -79,8 +79,8 @@ class BookmarkToolbarMediator implements BookmarkUiObserver, DragListener,
         }
         bookmarkDelegateSupplier.onAvailable((bookmarkDelegate) -> {
             mBookmarkDelegate = bookmarkDelegate;
-            mModel.set(
-                    BookmarkToolbarProperties.OPEN_FOLDER_CALLBACK, mBookmarkDelegate::openFolder);
+            mModel.set(BookmarkToolbarProperties.NAVIGATE_BACK_RUNNABLE,
+                    this::openParentForCurrentFolder);
             mBookmarkDelegate.addUiObserver(this);
             mBookmarkDelegate.notifyStateChange(this);
         });
@@ -100,6 +100,10 @@ class BookmarkToolbarMediator implements BookmarkUiObserver, DragListener,
             return true;
         } else if (id == R.id.sort_by_oldest) {
             mBookmarkUiPrefs.setBookmarkRowSortOrder(BookmarkRowSortOrder.CHRONOLOGICAL);
+            mModel.set(BookmarkToolbarProperties.CHECKED_SORT_MENU_ID, id);
+            return true;
+        } else if (id == R.id.sort_by_last_opened) {
+            mBookmarkUiPrefs.setBookmarkRowSortOrder(BookmarkRowSortOrder.RECENTLY_USED);
             mModel.set(BookmarkToolbarProperties.CHECKED_SORT_MENU_ID, id);
             return true;
         } else if (id == R.id.sort_by_alpha) {
@@ -146,8 +150,13 @@ class BookmarkToolbarMediator implements BookmarkUiObserver, DragListener,
         } else if (id == R.id.selection_mode_move_menu_id) {
             List<BookmarkId> list = mSelectionDelegate.getSelectedItemsAsList();
             if (list.size() >= 1) {
-                BookmarkFolderSelectActivity.startFolderSelectActivity(
-                        mContext, list.toArray(new BookmarkId[0]));
+                if (BookmarkFeatures.isAndroidImprovedBookmarksEnabled()) {
+                    BookmarkUtils.startFolderPickerActivity(
+                            mContext, list.toArray(new BookmarkId[0]));
+                } else {
+                    BookmarkFolderSelectActivity.startFolderSelectActivity(
+                            mContext, list.toArray(new BookmarkId[0]));
+                }
                 RecordUserAction.record("MobileBookmarkManagerMoveToFolderBulk");
             }
             return true;
@@ -274,7 +283,8 @@ class BookmarkToolbarMediator implements BookmarkUiObserver, DragListener,
 
         // New folder button.
         if (BookmarkFeatures.isAndroidImprovedBookmarksEnabled()) {
-            mModel.set(BookmarkToolbarProperties.NEW_FOLDER_BUTTON_VISIBLE,
+            mModel.set(BookmarkToolbarProperties.NEW_FOLDER_BUTTON_VISIBLE, true);
+            mModel.set(BookmarkToolbarProperties.NEW_FOLDER_BUTTON_ENABLED,
                     BookmarkUtils.canAddFolderWhileViewingParent(mBookmarkModel, mCurrentFolder));
         }
     }
@@ -306,7 +316,16 @@ class BookmarkToolbarMediator implements BookmarkUiObserver, DragListener,
                 return R.id.sort_by_alpha;
             case BookmarkRowSortOrder.REVERSE_ALPHABETICAL:
                 return R.id.sort_by_reverse_alpha;
+            case BookmarkRowSortOrder.RECENTLY_USED:
+                return R.id.sort_by_last_opened;
         }
         return ResourcesCompat.ID_NULL;
+    }
+
+    // Private methods.
+
+    private void openParentForCurrentFolder() {
+        mBookmarkDelegate.openFolder(
+                BookmarkUtils.getParentFolderForViewing(mBookmarkModel, mCurrentFolder));
     }
 }

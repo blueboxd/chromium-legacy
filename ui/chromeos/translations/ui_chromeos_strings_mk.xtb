@@ -94,6 +94,7 @@
 <translation id="174937106936716857">Вкупен број датотеки</translation>
 <translation id="1755345808328621801">Датотекава е создадена за компјутер што користи софтвер на Windows. Таа не е компатибилна со вашиот уред што извршува Chrome OS. Пребарајте ја „Веб-продавницата на Chrome“ за да најдете соодветна апликација за замена.</translation>
 <translation id="1757915090001272240">Широка латиница</translation>
+<translation id="1761091787730831947">Споделете со <ph name="VM_NAME" /></translation>
 <translation id="1773212559869067373">Одбиена локална автентикација на сертификат</translation>
 <translation id="1775381402323441512">Информации за видеото</translation>
 <translation id="180035236176489073">Мора да сте поврзани на интернет за да пристапите до датотеките.</translation>
@@ -166,11 +167,11 @@
 <translation id="2312704192806647271">{COUNT,plural, =1{Не може да се лоцира екстензија со ID-бројот <ph name="BEGIN_LIST" /><ph name="END_LIST" />. Контактирајте со администраторот.}one{Не може да се лоцираат екстензии со ID-броевите <ph name="BEGIN_LIST" /><ph name="END_LIST" />. Контактирајте со администраторот.}other{Не може да се лоцираат екстензии со ID-броевите <ph name="BEGIN_LIST" /><ph name="END_LIST" />. Контактирајте со администраторот.}}</translation>
 <translation id="2325650632570794183">Овој тип датотека не е поддржан. Посетете ја веб-продавницата на Chrome за да најдете апликација што може да го отвори овој тип датотека.</translation>
 <translation id="2326539130272988168">бугарски</translation>
-<translation id="2337715497728194187">Споделете со Bruschetta</translation>
 <translation id="233822363739146957">Нема доволно простор за складирање за синхронизација на сите ваши датотеки</translation>
 <translation id="23721837607121582">Преземи го профилот на мобилниот уред, мрежа <ph name="NETWORK_INDEX" /> од <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" /></translation>
 <translation id="2377319039870049694">Префрли на режим за преглед во список</translation>
 <translation id="2377590462528165447"><ph name="NUMBER_OF_ITEMS" /> папки се споделени со Linux</translation>
+<translation id="2379576081295865700">Се проверува просторот за складирање… Најдена е 1 ставка</translation>
 <translation id="2383454254762599978">Премести во корпата</translation>
 <translation id="2387458720915042159">Тип на врска прокси</translation>
 <translation id="2389832672041313158">бурмански (Мјанмар)</translation>
@@ -197,7 +198,6 @@
 <translation id="2544853746127077729">Мрежата го отфрли сертификатот за автентикација</translation>
 <translation id="255937426064304553">Меѓународен англиски (САД)</translation>
 <translation id="2563185590376525700">Жаба</translation>
-<translation id="2574327434504608656">Се споделува 1 папка со Bruschetta</translation>
 <translation id="2578394532502990878">фонетски тамилски</translation>
 <translation id="2579959351793446050">одија</translation>
 <translation id="2587195714949534472">Се подготвува синхронизација на <ph name="FILE_NAME" />…</translation>
@@ -213,6 +213,7 @@
 <translation id="2718540689505416944">Инсталирајте ја апликацијата со Linux</translation>
 <translation id="2719020180254996569">Мрежа <ph name="NETWORK_INDEX" /> од <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, детали</translation>
 <translation id="2724954091494693138">турски со F-тастатура</translation>
+<translation id="2732288874651063549">Управувајте со споделувањето со <ph name="VM_NAME" /></translation>
 <translation id="2732839045120506979">виетнамски VNI</translation>
 <translation id="2735623501230989521">Дајте ѝ дозвола на Parallels Desktop да пристапува до датотеките во папката „<ph name="FOLDER_NAME" />“</translation>
 <translation id="2764206540577097904">Го искористивте целиот ваш индивидуален капацитет на Google Workspace.</translation>
@@ -297,7 +298,6 @@
 <translation id="3408072735282270043">Активирај, <ph name="NETWORK_NAME" /></translation>
 <translation id="3408236822532681288">германски (Германија) со тастатура Neo 2</translation>
 <translation id="3414856743105198592">Со форматирање на преносливиот медиум ќе се избришат сите податоци. Дали сакате да продолжите?</translation>
-<translation id="3435143625481187092">Дајте дозавола на Bruschetta да пристапи до датотеките во папката <ph name="FOLDER_NAME" /></translation>
 <translation id="3437801641691368414">Време на создавање</translation>
 <translation id="343907260260897561">Инстант камера</translation>
 <translation id="3455931012307786678">естонски</translation>
@@ -308,6 +308,7 @@
 <translation id="3509680540198371098">Мрежа <ph name="NETWORK_INDEX" /> од <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, јачина на сигналот: <ph name="SIGNAL_STRENGTH" /> %, детали</translation>
 <translation id="3511705761158917664">Се подготвува синхронизација на <ph name="NUMBER_OF_ITEMS" /> ставки…</translation>
 <translation id="3522708245912499433">португалски</translation>
+<translation id="3523225005467146490">1 папка е споделена со <ph name="VM_NAME" /></translation>
 <translation id="3524311639100184459">Внимание: датотекиве се привремени и може да се бришат автоматски за да се ослободи простор на дискот.  <ph name="BEGIN_LINK" />Дознајте повеќе<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">Папка</translation>
 <translation id="3548125359243647069">Внесовте погрешен PIN премногу пати.</translation>
@@ -385,7 +386,6 @@
 <translation id="4159731583141908892">Преместено: <ph name="FILE_NAME" />.</translation>
 <translation id="4176286497474237543">Испразни ја корпата веднаш</translation>
 <translation id="4179621117429069925">Ставкава е во корпата</translation>
-<translation id="4181839429935094755"><ph name="NUMBER_OF_ITEMS" /> папки се споделени со Bruschetta</translation>
 <translation id="4186579485882418952">Овозможи офлајн</translation>
 <translation id="4193154014135846272">Документ на Google</translation>
 <translation id="4197674956721858839">Избор на пакување</translation>
@@ -452,7 +452,6 @@
 <translation id="4646813851450205600">чешки со тастатура Qwerty</translation>
 <translation id="4656777537938206294">Направете датотеките да се достапни офлајн</translation>
 <translation id="4658782175094886150">Човек во снег</translation>
-<translation id="466782788172479199">Дајте дозвола на Bruschetta да пристапува до датотеките во вашиот Google Drive. Промените ќе се синхронизираат со другите уреди.</translation>
 <translation id="4669606053856530811">Членовите на „<ph name="SOURCE_NAME" />“ ќе изгубат пристап освен ако ставкиве се споделени со нив.</translation>
 <translation id="467809019005607715">Google Slides</translation>
 <translation id="4690246192099372265">шведски</translation>
@@ -563,7 +562,6 @@
 <translation id="5323213332664049067">Латиноамерикански</translation>
 <translation id="5330145655348521461">Датотеките се отворија на друга работна површина. Поместете ја на <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />) за да се прикаже.</translation>
 <translation id="5330512191124428349">Земете информации</translation>
-<translation id="5344246330454251646">Управувајте со споделувањето со Bruschetta</translation>
 <translation id="535792325654997756">Човек со мачки</translation>
 <translation id="5358764674931277">Стапка на слики</translation>
 <translation id="5363339716524495120">Јазикот за внесување е кинески</translation>
@@ -669,6 +667,8 @@
 <translation id="6164412158936057769">Пеперутки</translation>
 <translation id="6165508094623778733">Дознајте повеќе</translation>
 <translation id="6170470584681422115">Сендвич</translation>
+<translation id="6177854567773392726">Се проверува просторот за складирање… Најдени се <ph name="ITEMS_FOUND" /> ставки</translation>
+<translation id="6181912134988520389">Дозволете <ph name="VM_NAME" /> да пристапува до датотеките во вашиот Google Drive. Промените ќе се синхронизираат со другите ваши уреди.</translation>
 <translation id="6187719147498869044">унгарски</translation>
 <translation id="6198252989419008588">Промена на PIN</translation>
 <translation id="6199801702437275229">Се чекаат информации за простор…</translation>
@@ -731,7 +731,6 @@
 <translation id="6710213216561001401">Претходно</translation>
 <translation id="6732801395666424405">Нема вчитано сертификати</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />]</translation>
-<translation id="6740270213273127264">Споделете папка со Bruschetta</translation>
 <translation id="6750737795876287924">Тековен директориум</translation>
 <translation id="6751256176799620176">Избрана е 1 папка</translation>
 <translation id="6755827872271341378">Уред со ChromeOS Flex</translation>
@@ -773,6 +772,7 @@
 <translation id="6989942356279143254">шведски</translation>
 <translation id="6990081529015358884">Немате веќе простор</translation>
 <translation id="6993826899923627728">Ставкиве се во корпата</translation>
+<translation id="6996593023542748157">Споделете ја папката со <ph name="VM_NAME" /></translation>
 <translation id="7008426324576352165">Вашата организација има потреба од повеќе капацитет за да го заврши прикачувањево.</translation>
 <translation id="7009985720488544166">Администраторското правило го блокира преместувањето на <ph name="COUNT" /> датотеки</translation>
 <translation id="7012943028104619157"><ph name="ROOT_TITLE" /> (<ph name="ROOT_SUMMARY" />)</translation>
@@ -958,6 +958,7 @@
 <translation id="8335837413233998004">белоруски</translation>
 <translation id="8336153091935557858">Вчера <ph name="YESTERDAY_DAYTIME" /></translation>
 <translation id="8342318071240498787">Веќе постои датотека или директориум со истото име.</translation>
+<translation id="83651606385705612">Дозволете <ph name="VM_NAME" /> да пристапува до датотеките во папката <ph name="FOLDER_NAME" /></translation>
 <translation id="8372369524088641025">Погрешен клуч WEP</translation>
 <translation id="8372852072747894550">грчки</translation>
 <translation id="8386903983509584791">Скенирањето заврши</translation>
@@ -967,6 +968,7 @@
 <translation id="8408068190360279472">Мрежа со <ph name="NETWORK_TYPE" />, се поврзува</translation>
 <translation id="8425213833346101688">Промени</translation>
 <translation id="8428213095426709021">Поставки</translation>
+<translation id="8429998526804961548"><ph name="NUMBER_OF_ITEMS" /> папки се споделени со <ph name="VM_NAME" /></translation>
 <translation id="8431909052837336408">Променете PIN на SIM-картичката</translation>
 <translation id="8437209419043462667">US</translation>
 <translation id="8452135315243592079">Недостасува SIM-картичка</translation>

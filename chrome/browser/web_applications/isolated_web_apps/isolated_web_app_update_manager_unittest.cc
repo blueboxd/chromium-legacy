@@ -14,6 +14,7 @@
 #include "base/strings/string_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
+#include "chrome/browser/ui/web_applications/test/isolated_web_app_builder.h"
 #include "chrome/browser/ui/web_applications/test/isolated_web_app_test_utils.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_location.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_url_info.h"
@@ -28,6 +29,7 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "components/nacl/common/buildflags.h"
 #include "content/public/common/content_features.h"
 #include "net/http/http_status_code.h"
 #include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
@@ -35,6 +37,11 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/origin.h"
+
+#if BUILDFLAG(ENABLE_NACL)
+#include "chrome/browser/nacl_host/nacl_browser_delegate_impl.h"
+#include "components/nacl/browser/nacl_browser.h"
+#endif  // BUILDFLAG(ENABLE_NACL)
 
 namespace web_app {
 namespace {
@@ -67,6 +74,20 @@ MATCHER_P(IsInDir, directory, "") {
   return arg.DirName() == directory;
 }
 
+#if BUILDFLAG(ENABLE_NACL)
+class ScopedNaClBrowserDelegate {
+ public:
+  ~ScopedNaClBrowserDelegate() {
+    nacl::NaClBrowser::ClearAndDeleteDelegateForTest();
+  }
+
+  void Init(ProfileManager* profile_manager) {
+    nacl::NaClBrowser::SetDelegate(
+        std::make_unique<NaClBrowserDelegateImpl>(profile_manager));
+  }
+};
+#endif  // BUILDFLAG(ENABLE_NACL)
+
 class IsolatedWebAppUpdateManagerTest : public WebAppTest {
  public:
   explicit IsolatedWebAppUpdateManagerTest(
@@ -75,6 +96,14 @@ class IsolatedWebAppUpdateManagerTest : public WebAppTest {
       : WebAppTest(WebAppTest::WithTestUrlLoaderFactory(),
                    base::test::TaskEnvironment::TimeSource::MOCK_TIME) {
     scoped_feature_list_.InitWithFeatureStates(feature_states);
+  }
+
+  void SetUp() override {
+    WebAppTest::SetUp();
+#if BUILDFLAG(ENABLE_NACL)
+    // Clearing Cache will clear PNACL cache, which needs this delegate set.
+    nacl_browser_delegate_.Init(profile_manager().profile_manager());
+#endif  // BUILDFLAG(ENABLE_NACL)
   }
 
  protected:
@@ -89,6 +118,9 @@ class IsolatedWebAppUpdateManagerTest : public WebAppTest {
 
   base::test::ScopedFeatureList scoped_feature_list_;
   data_decoder::test::InProcessDataDecoder data_decoder_;
+#if BUILDFLAG(ENABLE_NACL)
+  ScopedNaClBrowserDelegate nacl_browser_delegate_;
+#endif  // BUILDFLAG(ENABLE_NACL)
 };
 
 class IsolatedWebAppUpdateManagerUpdateDiscoveryTest
@@ -102,7 +134,7 @@ class IsolatedWebAppUpdateManagerUpdateDiscoveryTest
 
     base::Version update_version("2.0.0");
     TestSignedWebBundle bundle =
-        BuildDefaultTestSignedWebBundle(update_version);
+        TestSignedWebBundleBuilder::BuildDefault({.version = update_version});
 
     profile_url_loader_factory().AddResponse(
         "https://example.com/update_manifest.json",

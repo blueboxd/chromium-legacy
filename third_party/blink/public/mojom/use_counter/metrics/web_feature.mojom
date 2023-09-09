@@ -2623,9 +2623,9 @@ enum WebFeature {
   kRubyTextWithNonDefaultTextAlign = 3313,
   kHTMLMetaElementReferrerPolicyOutsideHead = 3314,
   kHTMLMetaElementReferrerPolicyMultipleTokens = 3315,
-  kV8WasmBulkMemory = 3320,
+  kOBSOLETE_V8WasmBulkMemory = 3320,
   kV8WasmRefTypes = 3321,
-  kV8WasmMultiValue = 3322,
+  kOBSOLETE_V8WasmMultiValue = 3322,
   kHiddenBackfaceWithPossible3D = 3323,
   kHiddenBackfaceWithPreserve3D = 3324,
   kCSSAtRuleScrollTimeline = 3325,
@@ -3946,6 +3946,15 @@ enum WebFeature {
   kPriceChangeConfirmation = 4606,
   kPaymentRequestActivationlessShow = 4607,
   kWebAppTabbed = 4608,
+  kFetchLater = 4609,
+  kURLPatternReliantOnImplicitURLComponentsInString = 4610,
+  kURLPatternReliantOnLaterComponentFromBaseURL = 4611,
+  kV8Navigator_CreateAuctionNonce_Method = 4612,
+  kCrossOriginWindowFrameElement = 4613,
+  kQuirksModeAboutBlankDocument = 4614,
+  kV8WasmMemory64 = 4615,
+  kV8WasmMultiMemory = 4616,
+  kV8WasmGC = 4617,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

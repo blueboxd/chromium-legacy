@@ -31,6 +31,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/sad_tab_helper.h"
+#include "chrome/browser/ui/tabs/organization/metrics.h"
 #include "chrome/browser/ui/tabs/saved_tab_groups/saved_tab_group_keyed_service.h"
 #include "chrome/browser/ui/tabs/saved_tab_groups/saved_tab_group_service_factory.h"
 #include "chrome/browser/ui/tabs/tab_group.h"
@@ -377,7 +378,7 @@ void TabDragController::Init(TabDragContext* source_context,
   presentation_time_recorder_ = ui::CreatePresentationTimeHistogramRecorder(
       source_context->GetWidget()->GetCompositor(),
       kTabDraggingPresentationTimeHistogram,
-      kTabDraggingPresentationTimeMaxHistogram);
+      kTabDraggingPresentationTimeMaxHistogram, base::Seconds(10));
   // Do not release capture when transferring capture between widgets on:
   // - Desktop Linux
   //     Mouse capture is not synchronous on desktop Linux. Chrome makes
@@ -2129,6 +2130,12 @@ void TabDragController::CompleteDrag() {
       model->SetSelectionFromModel(selection);
     }
   }
+
+  if (source_context_ == attached_context_) {
+    LogTabStripOrganizationUKM(
+        attached_context_->GetTabStripModel(),
+        SuggestedTabStripOrganizationReason::DRAGGED_WITHIN_SAME_TABSTRIP);
+  }
 }
 
 void TabDragController::MaximizeAttachedWindow() {
@@ -2237,7 +2244,8 @@ gfx::Rect TabDragController::CalculateDraggedBrowserBounds(
     TabDragContext* source,
     const gfx::Point& point_in_screen,
     std::vector<gfx::Rect>* drag_bounds) {
-  gfx::Point center(0, source->height() / 2);
+  // Vertically center the dragged tabs around the mouse.
+  gfx::Point center(0, drag_bounds->front().CenterPoint().y());
   views::View::ConvertPointToWidget(source, &center);
   gfx::Rect new_bounds(source->GetWidget()->GetRestoredBounds());
 

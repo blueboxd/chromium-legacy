@@ -73,11 +73,6 @@ class CORE_EXPORT CanvasAsyncBlobCreator
 
   virtual void Trace(Visitor*) const;
 
-  bool EncodeImageForConvertToBlobTest();
-  Vector<unsigned char> GetEncodedImageForConvertToBlobTest() {
-    return encoded_image_;
-  }
-
  protected:
   static ImageEncodeOptions* GetImageEncodeOptionsForMimeType(
       ImageEncodingMimeType);
@@ -88,7 +83,7 @@ class CORE_EXPORT CanvasAsyncBlobCreator
                                               base::OnceClosure,
                                               double delay_ms);
   virtual void SignalAlternativeCodePathFinishedForTesting() {}
-  virtual void CreateBlobAndReturnResult();
+  virtual void CreateBlobAndReturnResult(Vector<unsigned char> encoded_image);
   virtual void CreateNullAndReturnResult();
 
   void InitiateEncoding(double quality, base::TimeTicks deadline);
@@ -111,9 +106,7 @@ class CORE_EXPORT CanvasAsyncBlobCreator
 
   SkPixmap src_data_;
   ImageEncodingMimeType mime_type_;
-  Member<const ImageEncodeOptions> encode_options_;
   ToBlobFunctionType function_type_;
-  sk_sp<SkData> png_data_helper_;
 
   // Chrome metrics use
   base::TimeTicks start_time_;
@@ -130,12 +123,14 @@ class CORE_EXPORT CanvasAsyncBlobCreator
   // Used for OffscreenCanvas only
   Member<ScriptPromiseResolver> script_promise_resolver_;
 
-  bool EncodeImage(const double&);
+  static bool EncodeImage(const SkPixmap& src_data,
+                          ImageEncodingMimeType,
+                          const double& quality,
+                          Vector<unsigned char>* encoded_image);
 
   // PNG, JPEG
   bool InitializeEncoder(double quality);
-  void ForceEncodeRowsOnCurrentThread();  // Similar to IdleEncodeRows
-                                          // without deadline
+  void ForceEncodeRows();  // Similar to IdleEncodeRows without deadline.
 
   // WEBP
   void EncodeImageOnEncoderThread(double quality);

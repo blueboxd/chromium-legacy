@@ -13,7 +13,6 @@
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/public/platform/web_blob_info.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
-#include "third_party/blink/renderer/modules/indexeddb/idb_any.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
@@ -178,8 +177,9 @@ class MODULES_EXPORT IDBValueWrapper {
  private:
   // Tries to compress `wire_bytes_` via Snappy, storing the output in
   // `wire_data_buffer_`. If the compression effect is small, the compression
-  // will be discarded and an uncompressed value will be stored (mainly to avoid
-  // an extra memory allocation when later reading the value).
+  // will be discarded and an uncompressed value will be stored in
+  // `wire_data_buffer_` (mainly to avoid an extra memory allocation when later
+  // reading the value).
   void MaybeCompress();
 
   // Stores `wire_bytes_` in a Blob if it is over the size threshold.
@@ -232,8 +232,6 @@ class MODULES_EXPORT IDBValueUnwrapper {
 
   // True if at least one of the IDBValues' data was wrapped in a Blob.
   static bool IsWrapped(const Vector<std::unique_ptr<IDBValue>>&);
-
-  static bool IsWrapped(const Vector<Vector<std::unique_ptr<IDBValue>>>&);
 
   // Unwraps an IDBValue that has wrapped Blob data.
   //

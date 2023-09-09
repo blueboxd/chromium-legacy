@@ -109,6 +109,14 @@ std::string GetStringNameForOptimizationTarget(
       return "VisualSearchClassification";
     case proto::OPTIMIZATION_TARGET_SEGMENTATION_BOTTOM_TOOLBAR:
       return "SegmentationBottomToolbar";
+    case proto::OPTIMIZATION_TARGET_AUTOFILL_FIELD_CLASSIFICATION:
+      return "AutofillFieldTypeClassification";
+    case proto::OPTIMIZATION_TARGET_SEGMENTATION_IOS_MODULE_RANKER:
+      return "SegmentationIosModuleRanker";
+    case proto::OPTIMIZATION_TARGET_SEGMENTATION_DESKTOP_NTP_MODULE:
+      return "SegmentationDesktopNtpModule";
+    case proto::OPTIMIZATION_TARGET_PRELOADING_HEURISTICS:
+      return "PreloadingHeuristics";
       // Whenever a new value is added, make sure to add it to the OptTarget
       // variant list in
       // //tools/metrics/histograms/metadata/optimization/histograms.xml.
@@ -245,9 +253,14 @@ std::string GetModelCacheKeyHash(proto::ModelCacheKey model_cache_key) {
 }
 
 void RecordPredictionModelStoreModelRemovalVersionHistogram(
+    proto::OptimizationTarget optimization_target,
     PredictionModelStoreModelRemovalReason model_removal_reason) {
   base::UmaHistogramEnumeration(
       "OptimizationGuide.PredictionModelStore.ModelRemovalReason",
+      model_removal_reason);
+  base::UmaHistogramEnumeration(
+      "OptimizationGuide.PredictionModelStore.ModelRemovalReason." +
+          GetStringNameForOptimizationTarget(optimization_target),
       model_removal_reason);
 }
 

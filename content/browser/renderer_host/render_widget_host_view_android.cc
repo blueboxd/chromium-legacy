@@ -1241,19 +1241,24 @@ void RenderWidgetHostViewAndroid::OnUpdateTextInputStateCalled(
 
 void RenderWidgetHostViewAndroid::OnImeCompositionRangeChanged(
     TextInputManager* text_input_manager,
-    RenderWidgetHostViewBase* updated_view) {
+    RenderWidgetHostViewBase* updated_view,
+    bool character_bounds_changed,
+    const absl::optional<std::vector<gfx::Rect>>& line_bounds) {
   DCHECK_EQ(text_input_manager_, text_input_manager);
-  const TextInputManager::CompositionRangeInfo* info =
-      text_input_manager_->GetCompositionRangeInfo();
-  if (!info)
+  if (!ime_adapter_android_) {
     return;
+  }
 
-  std::vector<gfx::RectF> character_bounds;
-  for (const gfx::Rect& rect : info->character_bounds)
-    character_bounds.emplace_back(rect);
+  if (character_bounds_changed) {
+    const TextInputManager::CompositionRangeInfo* info =
+        text_input_manager_->GetCompositionRangeInfo();
+    ime_adapter_android_->SetBounds(
+        info ? info->character_bounds : std::vector<gfx::Rect>(),
+        character_bounds_changed, line_bounds);
+    return;
+  }
 
-  if (ime_adapter_android_)
-    ime_adapter_android_->SetCharacterBounds(character_bounds);
+  ime_adapter_android_->SetBounds(std::vector<gfx::Rect>(), false, line_bounds);
 }
 
 void RenderWidgetHostViewAndroid::OnImeCancelComposition(
@@ -1612,7 +1617,27 @@ void RenderWidgetHostViewAndroid::CopyFromSurface(
                 "cc", "RenderWidgetHostViewAndroid::CopyFromSurface finished");
             std::move(callback).Run(bitmap);
           },
-          std::move(callback)));
+          std::move(callback)),
+      /*capture_exact_surface_id=*/false);
+}
+
+void RenderWidgetHostViewAndroid::CopyFromExactSurface(
+    const gfx::Rect& src_rect,
+    const gfx::Size& output_size,
+    base::OnceCallback<void(const SkBitmap&)> callback) {
+  CHECK(IsSurfaceAvailableForCopy())
+      << "To copy the exact surface, it must be available for copy (embedded "
+         "via the browser).";
+  CHECK(using_browser_compositor_);
+  CHECK(delegated_frame_host_);
+
+  delegated_frame_host_->CopyFromCompositingSurface(
+      src_rect, output_size,
+      base::BindOnce(
+          [](base::OnceCallback<void(const SkBitmap&)> callback,
+             const SkBitmap& bitmap) { std::move(callback).Run(bitmap); },
+          std::move(callback)),
+      /*capture_exact_surface_id=*/true);
 }
 
 void RenderWidgetHostViewAndroid::EnsureSurfaceSynchronizedForWebTest() {
@@ -3266,6 +3291,9 @@ void RenderWidgetHostViewAndroid::WasEvicted() {
         local_surface_id_allocator_.GetCurrentLocalSurfaceId());
   } else {
     EvictInternal();
+  }
+  if (sync_compositor_) {
+    sync_compositor_->WasEvicted();
   }
 }
 

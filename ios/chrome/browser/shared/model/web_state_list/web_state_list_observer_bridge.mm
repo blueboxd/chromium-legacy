@@ -4,10 +4,6 @@
 
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_list_observer_bridge.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 WebStateListObserverBridge::WebStateListObserverBridge(
     id<WebStateListObserving> observer)
     : observer_(observer) {}
@@ -32,53 +28,12 @@ void WebStateListObserverBridge::WebStateListDidChange(
     WebStateList* web_state_list,
     const WebStateListChange& change,
     const WebStateListStatus& status) {
-  switch (change.type()) {
-    case WebStateListChange::Type::kStatusOnly: {
-      if (!status.pinned_state_change) {
-        // TODO(crbug.com/1442546): Move the implementation from
-        // WebStateActivatedAt() to here. Note that here is reachable only when
-        // `reason` == ActiveWebStateChangeReason::Activated.
-        return;
-      }
-      [[fallthrough]];
-    }
-    case WebStateListChange::Type::kDetach:
-      [[fallthrough]];
-    case WebStateListChange::Type::kMove:
-      [[fallthrough]];
-    case WebStateListChange::Type::kReplace:
-      [[fallthrough]];
-    case WebStateListChange::Type::kInsert: {
-      const SEL selector = @selector(didChangeWebStateList:change:status:);
-      if (![observer_ respondsToSelector:selector]) {
-        return;
-      }
-
-      [observer_ didChangeWebStateList:web_state_list
-                                change:change
-                                status:status];
-      break;
-    }
-  }
-}
-
-void WebStateListObserverBridge::WebStateActivatedAt(
-    WebStateList* web_state_list,
-    web::WebState* old_web_state,
-    web::WebState* new_web_state,
-    int active_index,
-    ActiveWebStateChangeReason reason) {
-  const SEL selector = @selector(webStateList:
-                      didChangeActiveWebState:oldWebState:atIndex:reason:);
+  const SEL selector = @selector(didChangeWebStateList:change:status:);
   if (![observer_ respondsToSelector:selector]) {
     return;
   }
 
-  [observer_ webStateList:web_state_list
-      didChangeActiveWebState:new_web_state
-                  oldWebState:old_web_state
-                      atIndex:active_index
-                       reason:reason];
+  [observer_ didChangeWebStateList:web_state_list change:change status:status];
 }
 
 void WebStateListObserverBridge::WillBeginBatchOperation(

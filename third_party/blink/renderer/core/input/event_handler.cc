@@ -510,7 +510,7 @@ absl::optional<ui::Cursor> EventHandler::SelectCursor(
   const LayoutObject& layout_object = *node->GetLayoutObject();
   if (ShouldShowResizeForNode(layout_object, location)) {
     const LayoutBox* box = layout_object.EnclosingLayer()->GetLayoutBox();
-    EResize resize = box->StyleRef().Resize(box->ContainingBlock()->StyleRef());
+    EResize resize = box->StyleRef().UsedResize();
     switch (resize) {
       case EResize::kVertical:
         return NorthSouthResizeCursor();
@@ -597,8 +597,10 @@ absl::optional<ui::Cursor> EventHandler::SelectCursor(
             PhysicalOffset(hot_spot);
         PhysicalRect cursor_rect(cursor_offset,
                                  PhysicalSize::FromSizeFFloor(size));
-        if (!PhysicalRect(page->GetVisualViewport().VisibleContentRect())
-                 .Contains(cursor_rect)) {
+        PhysicalRect frame_rect(page->GetVisualViewport().VisibleContentRect());
+        frame_->ContentLayoutObject()->MapToVisualRectInAncestorSpace(
+            nullptr, frame_rect);
+        if (!frame_rect.Contains(cursor_rect)) {
           continue;
         }
       }

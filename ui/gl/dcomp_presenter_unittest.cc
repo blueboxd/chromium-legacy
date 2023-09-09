@@ -128,7 +128,7 @@ void ClearRect(IDCompositionSurface* surface,
                const gfx::Rect& update_rect,
                SkColor4f update_color) {
   Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device =
-      gl::QueryD3D11DeviceObjectFromANGLE();
+      GetDirectCompositionD3D11Device();
   Microsoft::WRL::ComPtr<ID3D11DeviceContext> immediate_context;
   d3d11_device->GetImmediateContext(&immediate_context);
 
@@ -190,7 +190,8 @@ class DCompPresenterTest : public testing::Test {
  public:
   DCompPresenterTest() : parent_window_(ui::GetHiddenWindow()) {}
 
-  static void SetUpTestSuite() {
+ protected:
+  void SetUp() override {
     // Without this, the following check always fails.
     display_ = gl::init::InitializeGLNoExtensionsOneOff(
         /*init_bindings=*/true, /*gpu_preference=*/gl::GpuPreference::kDefault);
@@ -202,17 +203,7 @@ class DCompPresenterTest : public testing::Test {
         nullptr, gl_surface_.get(), GLContextAttribs());
     EXPECT_TRUE(context->MakeCurrent(gl_surface_.get()));
     context_ = std::move(context);
-  }
 
-  static void TearDownTestSuite() {
-    context_.reset();
-    gl_surface_.reset();
-    gl::init::ShutdownGL(display_, false);
-    display_ = nullptr;
-  }
-
- protected:
-  void SetUp() override {
     // These tests are assumed to run on battery.
     fake_power_monitor_source_.SetOnBatteryPower(true);
 
@@ -229,6 +220,11 @@ class DCompPresenterTest : public testing::Test {
     if (presenter_) {
       DestroyPresenter(std::move(presenter_));
     }
+
+    context_.reset();
+    gl_surface_.reset();
+    gl::init::ShutdownGL(display_, false);
+    display_ = nullptr;
   }
 
   scoped_refptr<DCompPresenter> CreateDCompPresenter() {
@@ -265,23 +261,19 @@ class DCompPresenterTest : public testing::Test {
     wait_for_present.Run();
   }
 
-  static raw_ptr<GLDisplay> display_;
-  static scoped_refptr<GLSurface> gl_surface_;
-  static scoped_refptr<GLContext> context_;
+  raw_ptr<GLDisplay> display_ = nullptr;
+  scoped_refptr<GLSurface> gl_surface_;
+  scoped_refptr<GLContext> context_;
 
   base::test::ScopedPowerMonitorTestSource fake_power_monitor_source_;
   HWND parent_window_;
   scoped_refptr<DCompPresenter> presenter_;
 };
 
-raw_ptr<GLDisplay> DCompPresenterTest::display_ = nullptr;
-scoped_refptr<GLSurface> DCompPresenterTest::gl_surface_;
-scoped_refptr<GLContext> DCompPresenterTest::context_;
-
 // Ensure that the overlay image isn't presented again unless it changes.
 TEST_F(DCompPresenterTest, NoPresentTwice) {
   Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device =
-      QueryD3D11DeviceObjectFromANGLE();
+      GetDirectCompositionD3D11Device();
 
   gfx::Size texture_size(50, 50);
   Microsoft::WRL::ComPtr<ID3D11Texture2D> texture =
@@ -361,7 +353,7 @@ TEST_F(DCompPresenterTest, NoPresentTwice) {
 // is support - swapchain should be set to the onscreen video size.
 TEST_F(DCompPresenterTest, SwapchainSizeWithScaledOverlays) {
   Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device =
-      QueryD3D11DeviceObjectFromANGLE();
+      GetDirectCompositionD3D11Device();
 
   gfx::Size texture_size(64, 64);
   Microsoft::WRL::ComPtr<ID3D11Texture2D> texture =
@@ -428,7 +420,7 @@ TEST_F(DCompPresenterTest, SwapchainSizeWithScaledOverlays) {
 // is not support - swapchain should be the onscreen video size.
 TEST_F(DCompPresenterTest, SwapchainSizeWithoutScaledOverlays) {
   Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device =
-      QueryD3D11DeviceObjectFromANGLE();
+      GetDirectCompositionD3D11Device();
 
   gfx::Size texture_size(80, 80);
   Microsoft::WRL::ComPtr<ID3D11Texture2D> texture =
@@ -484,7 +476,7 @@ TEST_F(DCompPresenterTest, SwapchainSizeWithoutScaledOverlays) {
 // Test protected video flags
 TEST_F(DCompPresenterTest, ProtectedVideos) {
   Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device =
-      QueryD3D11DeviceObjectFromANGLE();
+      GetDirectCompositionD3D11Device();
 
   gfx::Size texture_size(1280, 720);
   Microsoft::WRL::ComPtr<ID3D11Texture2D> texture =
@@ -586,7 +578,7 @@ class DCompPresenterPixelTest : public DCompPresenterTest {
     InitializeRootAndScheduleRootSurface(window_size, SkColors::kBlack);
 
     Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device =
-        QueryD3D11DeviceObjectFromANGLE();
+        GetDirectCompositionD3D11Device();
 
     Microsoft::WRL::ComPtr<ID3D11Texture2D> texture =
         CreateNV12Texture(d3d11_device, texture_size);
@@ -748,7 +740,7 @@ class DCompPresenterVideoPixelTest : public DCompPresenterPixelTest {
     EXPECT_TRUE(presenter_->Resize(window_size, 1.0, gfx::ColorSpace(), true));
 
     Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device =
-        QueryD3D11DeviceObjectFromANGLE();
+        GetDirectCompositionD3D11Device();
 
     gfx::Size texture_size(50, 50);
     Microsoft::WRL::ComPtr<ID3D11Texture2D> texture =
@@ -819,7 +811,7 @@ TEST_F(DCompPresenterPixelTest, SoftwareVideoSwapchain) {
   EXPECT_TRUE(presenter_->Resize(window_size, 1.0, gfx::ColorSpace(), true));
 
   Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device =
-      QueryD3D11DeviceObjectFromANGLE();
+      GetDirectCompositionD3D11Device();
 
   gfx::Size y_size(50, 50);
   size_t stride = y_size.width();
@@ -886,7 +878,7 @@ TEST_F(DCompPresenterPixelTest, SkipVideoLayerEmptyContentsRect) {
   InitializeRootAndScheduleRootSurface(window_size, SkColors::kBlack);
 
   Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device =
-      QueryD3D11DeviceObjectFromANGLE();
+      GetDirectCompositionD3D11Device();
 
   gfx::Size texture_size(50, 50);
   Microsoft::WRL::ComPtr<ID3D11Texture2D> texture =
@@ -1033,7 +1025,7 @@ TEST_F(DCompPresenterPixelTest, ResizeVideoLayer) {
   InitializeRootAndScheduleRootSurface(window_size, SkColors::kBlack);
 
   Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device =
-      QueryD3D11DeviceObjectFromANGLE();
+      GetDirectCompositionD3D11Device();
 
   gfx::Size texture_size(50, 50);
   Microsoft::WRL::ComPtr<ID3D11Texture2D> texture =
@@ -1151,7 +1143,7 @@ TEST_F(DCompPresenterPixelTest, SwapChainImage) {
   }
 
   Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device =
-      QueryD3D11DeviceObjectFromANGLE();
+      GetDirectCompositionD3D11Device();
   ASSERT_TRUE(d3d11_device);
   Microsoft::WRL::ComPtr<IDXGIDevice> dxgi_device;
   d3d11_device.As(&dxgi_device);
@@ -1462,10 +1454,9 @@ TEST_F(DCompPresenterPixelTest, ContentRectClipsAndScalesBuffer) {
 }
 
 class DCompPresenterSkiaGoldTest : public DCompPresenterPixelTest {
- public:
-  static void SetUpTestSuite() {
-    DCompPresenterPixelTest::SetUpTestSuite();
-
+ protected:
+  void SetUp() override {
+    DCompPresenterPixelTest::SetUp();
     ASSERT_TRUE(context_);
     const ui::test::TestEnvironmentMap test_environment = {
         {ui::test::TestEnvironmentKey::kSystemVersion,
@@ -1478,16 +1469,10 @@ class DCompPresenterSkiaGoldTest : public DCompPresenterPixelTest {
 
     };
 
-    pixel_diff_.Init(
-        ::testing::UnitTest::GetInstance()->current_test_suite()->name(),
+    pixel_diff_ = ui::test::SkiaGoldPixelDiff::GetSession(
         kSkiaGoldPixelDiffCorpus, test_environment);
   }
 
-  static void TearDownTestSuite() {
-    DCompPresenterPixelTest::TearDownTestSuite();
-  }
-
- protected:
   void TearDown() override {
     DCompPresenterPixelTest::TearDown();
     test_initialized_ = false;
@@ -1534,17 +1519,15 @@ class DCompPresenterSkiaGoldTest : public DCompPresenterPixelTest {
 
     PresentAndCheckSwapResult(gfx::SwapResult::SWAP_ACK);
 
-    std::string screenshot_name =
-        ::testing::UnitTest::GetInstance()->current_test_info()->name();
-    if (!capture_name.empty()) {
-      screenshot_name = base::StringPrintf("%s/%s", screenshot_name.c_str(),
-                                           capture_name.c_str());
-    }
-
     SkBitmap window_readback =
         GLTestHelper::ReadBackWindow(window_.hwnd(), window_size_);
-    if (!pixel_diff_.CompareScreenshot(screenshot_name, window_readback,
-                                       matching_algorithm_.get())) {
+    CHECK(pixel_diff_);
+    if (!pixel_diff_->CompareScreenshot(
+            ui::test::SkiaGoldPixelDiff::GetGoldenImageName(
+                ::testing::UnitTest::GetInstance()->current_test_info(),
+                capture_name.empty() ? absl::nullopt
+                                     : absl::make_optional(capture_name)),
+            window_readback, matching_algorithm_.get())) {
       ADD_FAILURE_AT(caller_location.file_name(), caller_location.line_number())
           << "Screenshot mismatch for "
           << (capture_name.empty() ? "(unnamed capture)" : capture_name);
@@ -1573,7 +1556,7 @@ class DCompPresenterSkiaGoldTest : public DCompPresenterPixelTest {
   }
 
  private:
-  static ui::test::SkiaGoldPixelDiff pixel_diff_;
+  base::raw_ptr<ui::test::SkiaGoldPixelDiff> pixel_diff_ = nullptr;
 
   // The matching algorithm for goldctl to use.
   std::unique_ptr<ui::test::SkiaGoldMatchingAlgorithm> matching_algorithm_;
@@ -1588,8 +1571,6 @@ class DCompPresenterSkiaGoldTest : public DCompPresenterPixelTest {
   // seen in the test so far.
   base::flat_set<std::string> capture_names_in_test_;
 };
-
-ui::test::SkiaGoldPixelDiff DCompPresenterSkiaGoldTest::pixel_diff_;
 
 // Check that a translation transform works.
 TEST_F(DCompPresenterSkiaGoldTest, TransformTranslate) {
@@ -2015,6 +1996,31 @@ TEST_F(DCompPresenterSkiaGoldTest, OverlaysAreSortedByZOrder) {
   PresentAndCheckScreenshot();
 }
 
+// Check that an overlay with a non-opaque image can show a background color.
+TEST_F(DCompPresenterSkiaGoldTest, ImageWithBackgroundColor) {
+  InitializeTest(gfx::Size(100, 100));
+
+  InitializeRootAndScheduleRootSurface(current_window_size(), SkColors::kBlack);
+
+  auto overlay = std::make_unique<DCLayerOverlayParams>();
+  overlay->content_rect = gfx::Rect(100, 50);
+  overlay->quad_rect = gfx::Rect(100, 50);
+  overlay->overlay_image = CreateDCompSurface(
+      gfx::Size(100, 50), SkColors::kTransparent,
+      {
+          {gfx::Rect(5, 5, 20, 20),
+           SkColor4f::FromColor(SkColorSetA(SK_ColorRED, 0x80))},
+          {gfx::Rect(15, 15, 20, 20),
+           SkColor4f::FromColor(SkColorSetA(SK_ColorBLUE, 0x80))},
+      });
+  overlay->background_color = SkColors::kGreen;
+  overlay->z_order = 1;
+
+  EXPECT_TRUE(presenter_->ScheduleDCLayer(std::move(overlay)));
+
+  PresentAndCheckScreenshot();
+}
+
 class DCompPresenterBufferCountTest : public DCompPresenterTest,
                                       public testing::WithParamInterface<bool> {
  public:
@@ -2049,7 +2055,7 @@ TEST_P(DCompPresenterBufferCountTest, VideoSwapChainBufferCount) {
   constexpr gfx::Size texture_size(50, 50);
 
   Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device =
-      QueryD3D11DeviceObjectFromANGLE();
+      GetDirectCompositionD3D11Device();
   ASSERT_TRUE(d3d11_device);
 
   Microsoft::WRL::ComPtr<ID3D11Texture2D> texture =

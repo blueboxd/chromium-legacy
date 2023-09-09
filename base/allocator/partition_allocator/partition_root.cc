@@ -876,7 +876,7 @@ void PartitionRoot::Init(PartitionOptions opts) {
     settings.allow_aligned_alloc =
         opts.aligned_alloc == PartitionOptions::AlignedAlloc::kAllowed;
 #if BUILDFLAG(PA_DCHECK_IS_ON)
-    settings.use_cookie = opts.cookie == PartitionOptions::Cookie::kAllowed;
+    settings.use_cookie = true;
 #else
     static_assert(!Settings::use_cookie);
 #endif  // BUILDFLAG(PA_DCHECK_IS_ON)
@@ -896,7 +896,8 @@ void PartitionRoot::Init(PartitionOptions opts) {
     PA_DCHECK(!settings.use_configurable_pool || IsConfigurablePoolAvailable());
 #if PA_CONFIG(HAS_MEMORY_TAGGING)
     settings.memory_tagging_enabled_ =
-        opts.memory_tagging == PartitionOptions::MemoryTagging::kEnabled;
+        opts.memory_tagging.enabled ==
+        PartitionOptions::MemoryTagging::kEnabled;
     // Memory tagging is not supported in the configurable pool because MTE
     // stores tagging information in the high bits of the pointer, it causes
     // issues with components like V8's ArrayBuffers which use custom pointer
@@ -904,6 +905,9 @@ void PartitionRoot::Init(PartitionOptions opts) {
     // "is in configurable pool?" check, so we use that as a proxy.
     PA_CHECK(!settings.memory_tagging_enabled_ ||
              !settings.use_configurable_pool);
+
+    settings.memory_tagging_reporting_mode_ =
+        opts.memory_tagging.reporting_mode;
 #endif  // PA_CONFIG(HAS_MEMORY_TAGGING)
 
     // brp_enabled() is not supported in the configurable pool because
@@ -963,7 +967,8 @@ void PartitionRoot::Init(PartitionOptions opts) {
 
     settings.quarantine_mode =
 #if BUILDFLAG(USE_STARSCAN)
-        (opts.quarantine == PartitionOptions::Quarantine::kDisallowed
+        (opts.star_scan_quarantine ==
+                 PartitionOptions::StarScanQuarantine::kDisallowed
              ? QuarantineMode::kAlwaysDisabled
              : QuarantineMode::kDisabledByDefault);
 #else
@@ -1269,7 +1274,7 @@ void* PartitionRoot::ReallocWithFlags(unsigned int flags,
   }
 
   if (PA_UNLIKELY(!new_size)) {
-    Free(ptr);
+    FreeInUnknownRoot(ptr);
     return nullptr;
   }
 
@@ -1310,8 +1315,9 @@ void* PartitionRoot::ReallocWithFlags(unsigned int flags,
     }
     if (success) {
       if (PA_UNLIKELY(!no_hooks && hooks_enabled)) {
-        PartitionAllocHooks::ReallocObserverHookIfEnabled(ptr, ptr, new_size,
-                                                          type_name);
+        PartitionAllocHooks::ReallocObserverHookIfEnabled(
+            CreateFreeNotificationData(ptr),
+            CreateAllocationNotificationData(ptr, new_size, type_name));
       }
       return ptr;
     }
@@ -1338,7 +1344,7 @@ void* PartitionRoot::ReallocWithFlags(unsigned int flags,
   }
 
   memcpy(ret, ptr, std::min(old_usable_size, new_size));
-  Free(ptr);  // Implicitly protects the old ptr on MTE systems.
+  FreeInUnknownRoot(ptr);  // Implicitly protects the old ptr on MTE systems.
   return ret;
 #endif
 }

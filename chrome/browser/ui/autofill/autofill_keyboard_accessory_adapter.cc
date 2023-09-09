@@ -115,9 +115,9 @@ AutofillKeyboardAccessoryAdapter::GetWeakPtr() {
 // AutofillPopupController implementation.
 
 void AutofillKeyboardAccessoryAdapter::AcceptSuggestion(int index) {
-  // Suggestions inside the keyboard accessory adapter are accepted without
-  // requiring a minimum time threshold.
-  NOTREACHED();
+  if (controller_) {
+    controller_->AcceptSuggestion(OffsetIndexFor(index));
+  }
 }
 
 void AutofillKeyboardAccessoryAdapter::AcceptSuggestionWithoutThreshold(
@@ -166,6 +166,13 @@ AutofillKeyboardAccessoryAdapter::GetAutofillSuggestionTriggerSource() const {
   CHECK(controller_)
       << "Call GetAutofillSuggestionTriggerSource only from its owner!";
   return controller_->GetAutofillSuggestionTriggerSource();
+}
+
+bool AutofillKeyboardAccessoryAdapter::
+    ShouldIgnoreMouseObservedOutsideItemBoundsCheck() const {
+  CHECK(controller_) << "Call ShouldIgnoreMouseObservedOutsideItemBoundsCheck "
+                        "only from its owner!";
+  return controller_->ShouldIgnoreMouseObservedOutsideItemBoundsCheck();
 }
 
 bool AutofillKeyboardAccessoryAdapter::GetRemovalConfirmationText(

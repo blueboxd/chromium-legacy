@@ -5257,21 +5257,8 @@ const CSSValue* MarginRight::CSSValueFromComputedStyleInternal(
     return ComputedStyleUtils::ZoomAdjustedPixelValueForLength(margin_right,
                                                                style);
   }
-  float value;
-  const auto& box = *To<LayoutBox>(layout_object);
-  if (margin_right.IsPercentOrCalc()) {
-    // LayoutBox gives a marginRight() that is the distance between the
-    // right-edge of the child box and the right-edge of the containing box,
-    // when display == EDisplay::kBlock. Let's calculate the absolute value
-    // of the specified margin-right % instead of relying on LayoutBox's
-    // marginRight() value.
-    value = MinimumValueForLength(margin_right,
-                                  box.ContainingBlockLogicalWidthForContent())
-                .ToFloat();
-  } else {
-    value = box.MarginRight().ToFloat();
-  }
-  return ZoomAdjustedPixelValue(value, style);
+  return ZoomAdjustedPixelValue(To<LayoutBox>(layout_object)->MarginRight(),
+                                style);
 }
 
 const CSSValue* MarginTop::ParseSingleValue(
@@ -8539,30 +8526,27 @@ CSSIdentifierValue* ConsumeIdentNoTemplate(CSSParserTokenRange& range,
 }
 }  // namespace
 
-const CSSValue* TransitionAnimationType::ParseSingleValue(
+const CSSValue* TransitionBehavior::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
   CSSValueList* list = css_parsing_utils::ConsumeCommaSeparatedList(
       ConsumeIdentNoTemplate, range, context);
-  if (!list || !css_parsing_utils::IsValidTransitionAnimationTypeList(*list)) {
+  if (!list || !css_parsing_utils::IsValidTransitionBehaviorList(*list)) {
     return nullptr;
   }
   return list;
 }
 
-const CSSValue* TransitionAnimationType::CSSValueFromComputedStyleInternal(
+const CSSValue* TransitionBehavior::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const LayoutObject*,
     bool allow_visited_style) const {
-  return ComputedStyleUtils::ValueForTransitionAnimationType(
-      style.Transitions());
+  return ComputedStyleUtils::ValueForTransitionBehavior(style.Transitions());
 }
 
-const CSSValue* TransitionAnimationType::InitialValue() const {
-  CSSValueList* list = CSSValueList::CreateCommaSeparated();
-  list->Append(*CSSIdentifierValue::Create(CSSValueID::kNormal));
-  return list;
+const CSSValue* TransitionBehavior::InitialValue() const {
+  return CSSIdentifierValue::Create(CSSValueID::kNormal);
 }
 
 const CSSValue* TransitionTimingFunction::ParseSingleValue(
@@ -10310,8 +10294,6 @@ void WillChange::ApplyInitial(StyleResolverState& state) const {
   builder.SetWillChangeContents(false);
   builder.SetWillChangeScrollPosition(false);
   builder.SetWillChangeProperties(Vector<CSSPropertyID>());
-  builder.SetSubtreeWillChangeContents(
-      state.ParentStyle()->SubtreeWillChangeContents());
 }
 
 void WillChange::ApplyInherit(StyleResolverState& state) const {
@@ -10320,8 +10302,6 @@ void WillChange::ApplyInherit(StyleResolverState& state) const {
   builder.SetWillChangeScrollPosition(
       state.ParentStyle()->WillChangeScrollPosition());
   builder.SetWillChangeProperties(state.ParentStyle()->WillChangeProperties());
-  builder.SetSubtreeWillChangeContents(
-      state.ParentStyle()->SubtreeWillChangeContents());
 }
 
 void WillChange::ApplyValue(StyleResolverState& state,
@@ -10520,7 +10500,8 @@ const CSSValue* BackgroundRepeatX::CSSValueFromComputedStyleInternal(
     const LayoutObject*,
     bool allow_visited_style) const {
   CSSValueList* list = CSSValueList::CreateCommaSeparated();
-  for (const FillLayer* curr_layer = &style.BackgroundLayers(); curr_layer; curr_layer = curr_layer->Next()) {
+  for (const FillLayer* curr_layer = &style.BackgroundLayers(); curr_layer;
+       curr_layer = curr_layer->Next()) {
     list->Append(*CSSIdentifierValue::Create(curr_layer->RepeatX()));
   }
   return list;
@@ -10531,7 +10512,8 @@ const CSSValue* BackgroundRepeatY::CSSValueFromComputedStyleInternal(
     const LayoutObject*,
     bool allow_visited_style) const {
   CSSValueList* list = CSSValueList::CreateCommaSeparated();
-  for (const FillLayer* curr_layer = &style.BackgroundLayers(); curr_layer; curr_layer = curr_layer->Next()) {
+  for (const FillLayer* curr_layer = &style.BackgroundLayers(); curr_layer;
+       curr_layer = curr_layer->Next()) {
     list->Append(*CSSIdentifierValue::Create(curr_layer->RepeatY()));
   }
   return list;

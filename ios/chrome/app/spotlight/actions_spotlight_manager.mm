@@ -21,10 +21,6 @@
 #import "ui/base/l10n/l10n_util.h"
 #import "url/gurl.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 namespace {
 
 NSString* SpotlightActionFromString(NSString* query) {
@@ -132,17 +128,18 @@ BOOL SetStartupParametersForSpotlightAction(
 
 + (ActionsSpotlightManager*)actionsSpotlightManager {
   return [[ActionsSpotlightManager alloc]
-      initWithspotlightInterface:[SpotlightInterface defaultInterface]
+      initWithSpotlightInterface:[SpotlightInterface defaultInterface]
            searchableItemFactory:
                [[SearchableItemFactory alloc]
                    initWithLargeIconService:nil
-                                     domain:spotlight::DOMAIN_ACTIONS]];
+                                     domain:spotlight::DOMAIN_ACTIONS
+                      useTitleInIdentifiers:YES]];
 }
 
 #pragma mark public methods
 
 - (instancetype)
-    initWithspotlightInterface:(SpotlightInterface*)spotlightInterface
+    initWithSpotlightInterface:(SpotlightInterface*)spotlightInterface
          searchableItemFactory:(SearchableItemFactory*)searchableItemFactory {
   self = [super init];
   if (self) {

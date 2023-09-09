@@ -23,15 +23,20 @@ void DocumentPartRoot::Trace(Visitor* visitor) const {
   PartRoot::Trace(visitor);
 }
 
-PartRootUnion* DocumentPartRoot::clone(ExceptionState&) const {
+PartRootUnion* DocumentPartRoot::clone(ExceptionState&) {
   NodeCloningData data{CloneOption::kIncludeDescendants,
                        CloneOption::kPreserveDOMParts};
-  Node* clone = rootContainer()->Clone(rootContainer()->GetDocument(), data);
-  if (clone->IsDocumentNode()) {
-    return PartRoot::GetUnionFromPartRoot(&To<Document>(clone)->getPartRoot());
+  Node* clone = rootContainer()->Clone(rootContainer()->GetDocument(), data,
+                                       /*append_to*/ nullptr);
+  // http://crbug.com/1467847: clone may be null and can be hit by clusterfuzz.
+  if (!clone) {
+    return nullptr;
   }
-  return PartRoot::GetUnionFromPartRoot(
-      &To<DocumentFragment>(clone)->getPartRoot());
+  DocumentPartRoot* part_root =
+      clone->IsDocumentNode() ? &To<Document>(clone)->getPartRoot()
+                              : &To<DocumentFragment>(clone)->getPartRoot();
+  part_root->CachePartOrderAfterClone();
+  return PartRoot::GetUnionFromPartRoot(part_root);
 }
 
 }  // namespace blink

@@ -4,14 +4,18 @@
 
 source_set("toolbars") {
   sources = [
+    "tab_grid_toolbars_configuration.h",
+    "tab_grid_toolbars_configuration.mm",
     "tab_grid_toolbars_coordinator.h",
     "tab_grid_toolbars_coordinator.mm",
+    "tab_grid_toolbars_mediator.h",
+    "tab_grid_toolbars_mediator.mm",
   ]
-  configs += [ "//build/config/compiler:enable_arc" ]
   deps = [
     ":toolbars_ui",
     "//ios/chrome/browser/shared/coordinator/chrome_coordinator",
     "//ios/chrome/browser/ui/menu",
+    "//ios/chrome/browser/ui/tab_switcher/tab_grid/grid:grid_toolbars_mutator",
   ]
 }
 
@@ -31,11 +35,9 @@ source_set("toolbars_ui") {
     "tab_grid_top_toolbar.h",
     "tab_grid_top_toolbar.mm",
   ]
-  configs += [ "//build/config/compiler:enable_arc" ]
 
   deps = [
     "//base",
-    "//base/ios",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/shared/public/features",
     "//ios/chrome/browser/shared/ui/symbols",

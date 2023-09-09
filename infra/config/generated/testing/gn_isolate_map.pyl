@@ -438,13 +438,6 @@
       "--log-path=${ISOLATED_OUTDIR}/chromedriver.log",
     ],
   },
-  "chrome_variations_tast_tests": {
-    "label": "//chromeos:chrome_variations_tast_tests",
-    "type": "generated_script",
-    "args": [
-      "--logs-dir=${ISOLATED_OUTDIR}",
-    ],
-  },
   "chromedriver_webview_shell_apk": {
     "label": "//chrome/test/chromedriver/test/webview_shell:chromedriver_webview_shell_apk",
     "type": "additional_compile_target",
@@ -457,12 +450,8 @@
     "label": "//:webdriver_wpt_tests",
     "type": "generated_script",
     "args": [
-      "../../chrome/test/chromedriver/test/run_webdriver_tests.py",
-      "-v",
-      "--chromedriver=chromedriver",
-      "--log-path=${ISOLATED_OUTDIR}/chromedriver.log",
-      "--output-dir=${ISOLATED_OUTDIR}",
-      "--test-path=../../third_party/blink/web_tests/external/wpt/webdriver/tests/",
+      "--results-directory",
+      "${ISOLATED_OUTDIR}",
     ],
   },
   "chrome_wpt": {
@@ -515,12 +504,7 @@
   },
   "variations_desktop_smoke_tests": {
     "label": "//chrome/test/variations:variations_desktop_smoke_tests",
-    "type": "script",
-    "script": "//testing/scripts/run_isolated_script_test.py",
-    "args": [
-      "--xvfb",
-      "../../chrome/test/variations/run_variations_tests.py",
-    ],
+    "type": "generated_script",
   },
   "chromedriver_replay_unittests": {
     "label": "//chrome/test/chromedriver:chromedriver_replay_unittests",
@@ -1165,6 +1149,10 @@
       "../../chrome/test/mini_installer/run_mini_installer_tests.py",
       "--output-dir=${ISOLATED_OUTDIR}",
     ],
+  },
+  "minidump_uploader_test": {
+    "label": "//components/minidump_uploader:minidump_uploader_test",
+    "type": "console_test_launcher",
   },
   "module_installer_junit_tests": {
     "label": "//components/module_installer/android:module_installer_junit_tests",
@@ -2038,6 +2026,7 @@
       "--enable-gpu",
       "--test-launcher-bot-mode",
       "--test-launcher-jobs=1",
+      "--test-launcher-retry-limit=0",
       "--enable-pixel-output-in-tests",
     ],
   },

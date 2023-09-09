@@ -7,23 +7,37 @@
 #include "ash/shell.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/snap_group/snap_group.h"
-#include "ash/wm/splitview/split_view_constants.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
-#include "ash/wm/wm_event.h"
 #include "base/check.h"
-#include "base/containers/contains.h"
-#include "base/containers/cxx20_erase.h"
+#include "base/check_op.h"
 #include "base/containers/unique_ptr_adapters.h"
 
 namespace ash {
 
+namespace {
+
+SnapGroupController* g_instance = nullptr;
+
+}  // namespace
+
 SnapGroupController::SnapGroupController() {
   Shell::Get()->overview_controller()->AddObserver(this);
+  CHECK_EQ(g_instance, nullptr);
+  g_instance = this;
 }
 
 SnapGroupController::~SnapGroupController() {
   Shell::Get()->overview_controller()->RemoveObserver(this);
+  CHECK_EQ(g_instance, this);
+  g_instance = nullptr;
+}
+
+// static
+SnapGroupController* SnapGroupController::Get() {
+  // TODO(michelefan): Add CHECK(g_instance) after the snap group controller
+  // feature is enabled by default.
+  return g_instance;
 }
 
 bool SnapGroupController::AreWindowsInSnapGroup(aura::Window* window1,
@@ -73,7 +87,10 @@ bool SnapGroupController::RemoveSnapGroup(SnapGroup* snap_group) {
         window_to_snap_group_map_.find(window2) !=
             window_to_snap_group_map_.end());
 
-  snap_group->RestoreWindowsBoundsOnSnapGroupRemoved();
+  if (!Shell::Get()->IsInTabletMode()) {
+    snap_group->RestoreWindowsBoundsOnSnapGroupRemoved();
+  }
+
   window_to_snap_group_map_.erase(window1);
   window_to_snap_group_map_.erase(window2);
   snap_group->StopObservingWindows();

@@ -66,9 +66,9 @@ class ResourceError;
 class ResourceFetcher;
 class ResponseBodyLoader;
 
-// Struct for keeping variables used in recording CNAME alias metrics bundled
+// Struct for keeping variables used in testing CNAME alias info bundled
 // together.
-struct CnameAliasMetricInfo {
+struct CnameAliasInfoForTesting {
   bool has_aliases = false;
   bool was_ad_tagged_based_on_alias = false;
   bool was_blocked_based_on_alias = false;
@@ -154,9 +154,7 @@ class PLATFORM_EXPORT ResourceLoader final
   void DidFinishLoading(base::TimeTicks response_end_time,
                         int64_t encoded_data_length,
                         uint64_t encoded_body_length,
-                        int64_t decoded_body_length,
-                        absl::optional<bool> pervasive_payload_requested =
-                            absl::nullopt) override;
+                        int64_t decoded_body_length) override;
   void DidFail(const WebURLError&,
                base::TimeTicks response_end_time,
                int64_t encoded_data_length,
@@ -179,6 +177,7 @@ class PLATFORM_EXPORT ResourceLoader final
  private:
   friend class SubresourceIntegrityTest;
   friend class ResourceLoaderIsolatedCodeCacheTest;
+  friend class ResourceLoaderSubresourceFilterCnameAliasTest;
   class CodeCacheRequest;
 
   void DidStartLoadingResponseBodyInternal(BytesConsumer& bytes_consumer);
@@ -242,8 +241,7 @@ class PLATFORM_EXPORT ResourceLoader final
       ResourceType resource_type,
       const ResourceRequestHead& initial_request,
       const ResourceLoaderOptions& options,
-      const ResourceRequest::RedirectInfo redirect_info,
-      CnameAliasMetricInfo* out_metric_info);
+      const ResourceRequest::RedirectInfo redirect_info);
 
   // Increments the right UseCounter for the given PNA preflight result, if any.
   void CountPrivateNetworkAccessPreflightResult(
@@ -282,7 +280,6 @@ class PLATFORM_EXPORT ResourceLoader final
   // when the blob is finished too.
   struct DeferredFinishLoadingInfo {
     base::TimeTicks response_end_time;
-    absl::optional<bool> pervasive_payload_requested;
   };
   absl::optional<DeferredFinishLoadingInfo> deferred_finish_loading_info_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_for_body_loader_;
@@ -302,6 +299,7 @@ class PLATFORM_EXPORT ResourceLoader final
   base::TimeTicks request_start_time_;
   base::TimeTicks code_cache_arrival_time_;
   int64_t received_body_length_from_service_worker_ = 0;
+  CnameAliasInfoForTesting cname_alias_info_for_testing_;
 };
 
 }  // namespace blink

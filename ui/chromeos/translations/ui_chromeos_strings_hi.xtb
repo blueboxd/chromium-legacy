@@ -94,6 +94,7 @@
 <translation id="174937106936716857">फ़ाइलों की कुल संख्या</translation>
 <translation id="1755345808328621801">इस फ़ाइल को Windows सॉफ़्टवेयर का इस्तेमाल करने वाले कंप्यूटर के लिए डिज़ाइन किया गया है. यह आपके ChromeOS वाले डिवाइस के साथ काम नहीं करती. कृपया Chrome वेब स्टोर पर कोई ऐसा ऐप्लिकेशन खोजें जिसके साथ यह फ़ाइल काम करती हो.</translation>
 <translation id="1757915090001272240">Wide Latin</translation>
+<translation id="1761091787730831947"><ph name="VM_NAME" /> से शेयर करें</translation>
 <translation id="1773212559869067373">प्रमाणीकरण प्रमाणपत्र को स्थानीय रूप से अस्वीकार कर दिया गया</translation>
 <translation id="1775381402323441512">वीडियो की जानकारी</translation>
 <translation id="180035236176489073">इन फ़ाइलों को एक्सेस करने के लिए आपका ऑनलाइन होना ज़रूरी है.</translation>
@@ -166,11 +167,11 @@
 <translation id="2312704192806647271">{COUNT,plural, =1{<ph name="BEGIN_LIST" /><ph name="END_LIST" /> आईडी वाला एक्सटेंशन नहीं मिला. अपने एडमिन से संपर्क करें.}one{<ph name="BEGIN_LIST" /><ph name="END_LIST" /> आईडी वाला एक्सटेंशन नहीं मिला. अपने एडमिन से संपर्क करें.}other{<ph name="BEGIN_LIST" /><ph name="END_LIST" /> आईडी वाले एक्सटेंशन नहीं मिले. अपने एडमिन से संपर्क करें.}}</translation>
 <translation id="2325650632570794183">इस तरह की फ़ाइल नहीं खुल सकती है. वैसा ऐप्लिकेशन जिसमें ऐसी फ़ाइल खुल सके, उसे ढूंढने के लिए कृपया 'Chrome वेब स्टोर' पर जाएं.</translation>
 <translation id="2326539130272988168">बुल्गेरियन</translation>
-<translation id="2337715497728194187">Bruschetta के साथ शेयर करें</translation>
 <translation id="233822363739146957">आपकी सभी फ़ाइलों को सिंक करने के लिए, डिवाइस में ज़रूरत के मुताबिक स्टोरेज उपलब्ध नहीं है</translation>
 <translation id="23721837607121582">मोबाइल प्रोफ़ाइल डाउनलोड करें. यह <ph name="NETWORK_COUNT" /> <ph name="NETWORK_NAME" /> नेटवर्क में से नेटवर्क <ph name="NETWORK_INDEX" /> है</translation>
 <translation id="2377319039870049694">'सूची की तरह देखें' पर स्विच करें</translation>
 <translation id="2377590462528165447"><ph name="NUMBER_OF_ITEMS" /> फ़ोल्डर Linux के साथ शेयर किए गए</translation>
+<translation id="2379576081295865700">स्टोरेज के लिए बची जगह की जांच की जा रही है… 1 आइटम मिला</translation>
 <translation id="2383454254762599978">ट्रैश में भेजें</translation>
 <translation id="2387458720915042159">प्रॉक्सी कनेक्शन प्रकार</translation>
 <translation id="2389832672041313158">बर्मीज़/म्यांमार</translation>
@@ -197,7 +198,6 @@
 <translation id="2544853746127077729">नेटवर्क द्वारा प्रमाणीकरण प्रमाणपत्र अस्वीकार किया गया</translation>
 <translation id="255937426064304553">यूएस अंतर्राष्ट्रीय</translation>
 <translation id="2563185590376525700">मेढक</translation>
-<translation id="2574327434504608656">Bruschetta के साथ एक फ़ोल्डर शेयर किया गया</translation>
 <translation id="2578394532502990878">तमिल फ़ोनेटिक</translation>
 <translation id="2579959351793446050">ओडिया</translation>
 <translation id="2587195714949534472"><ph name="FILE_NAME" /> को सिंक किया जा रहा है...</translation>
@@ -213,6 +213,7 @@
 <translation id="2718540689505416944">Linux पर ऐप्लिकेशन की मदद से इंस्टॉल करें</translation>
 <translation id="2719020180254996569"><ph name="NETWORK_COUNT" /> में से <ph name="NETWORK_INDEX" /> नेटवर्क, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, जानकारी</translation>
 <translation id="2724954091494693138">एफ़-कीबोर्ड के साथ टर्किश</translation>
+<translation id="2732288874651063549"><ph name="VM_NAME" /> के साथ शेयर करने की सुविधा मैनेज करें</translation>
 <translation id="2732839045120506979">वियतनामीज़ वीएनआई</translation>
 <translation id="2735623501230989521">Parallels Desktop को <ph name="FOLDER_NAME" /> फ़ोल्डर की फ़ाइलें ऐक्सेस करने की अनुमति दें</translation>
 <translation id="2764206540577097904">आपने Google Workspace के अपने निजी स्टोरेज का पूरा इस्तेमाल कर लिया है.</translation>
@@ -297,7 +298,6 @@
 <translation id="3408072735282270043"><ph name="NETWORK_NAME" /> चालू करें</translation>
 <translation id="3408236822532681288">नियो 2 कीबोर्ड के साथ जर्मन (जर्मनी)</translation>
 <translation id="3414856743105198592">निकालने योग्य मीडिया को स्‍वरूपित करने से संपूर्ण डेटा मिट जाएगा. क्‍या आप जारी रखना चाहते हैं?</translation>
-<translation id="3435143625481187092">Bruschetta को <ph name="FOLDER_NAME" /> फ़ोल्डर में, फ़ाइलें ऐक्सेस करने की अनुमति दें</translation>
 <translation id="3437801641691368414">बनाने का समय</translation>
 <translation id="343907260260897561">इंस्टैंट कैमरा</translation>
 <translation id="3455931012307786678">एस्टोनियान</translation>
@@ -308,6 +308,7 @@
 <translation id="3509680540198371098"><ph name="NETWORK_COUNT" /> में से <ph name="NETWORK_INDEX" /> नेटवर्क, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, सिग्नल की क्षमता <ph name="SIGNAL_STRENGTH" />%, जानकारी</translation>
 <translation id="3511705761158917664"><ph name="NUMBER_OF_ITEMS" /> आइटम को सिंक किया जा रहा है...</translation>
 <translation id="3522708245912499433">पुर्तगाली</translation>
+<translation id="3523225005467146490"><ph name="VM_NAME" /> के साथ एक फ़ोल्डर शेयर किया गया</translation>
 <translation id="3524311639100184459">चेतावनी: ये फ़ाइलें अस्थायी हैं और डिस्क की जगह खाली करने के लिए अपने-आप मिटाई जा सकती हैं.  <ph name="BEGIN_LINK" />ज़्यादा जानें<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">फ़ोल्डर</translation>
 <translation id="3548125359243647069">कई बार गलत पिन डाला गया.</translation>
@@ -385,7 +386,6 @@
 <translation id="4159731583141908892"><ph name="FILE_NAME" /> को भेज दिया गया.</translation>
 <translation id="4176286497474237543">ट्रैश अभी खाली करें</translation>
 <translation id="4179621117429069925">यह आइटम आपके ट्रैश में है</translation>
-<translation id="4181839429935094755">Bruschetta के साथ <ph name="NUMBER_OF_ITEMS" /> फ़ोल्डर शेयर किए गए</translation>
 <translation id="4186579485882418952">ऑफ़लाइन मोड चालू करें</translation>
 <translation id="4193154014135846272">Google दस्‍तावेज़</translation>
 <translation id="4197674956721858839">ज़िप चुनें</translation>
@@ -452,7 +452,6 @@
 <translation id="4646813851450205600">क्वर्टी कीबोर्ड के साथ चेक</translation>
 <translation id="4656777537938206294">फ़ाइलों को ऑफ़लाइन उपलब्ध कराएं</translation>
 <translation id="4658782175094886150">गिरती हुई बर्फ़ में खड़ा व्यक्ति</translation>
-<translation id="466782788172479199">Bruschetta को अपने Google Drive में मौजूद फ़ाइलें ऐक्सेस करने की अनुमति दें. बदलावों को आपके अन्य डिवाइसों में सिंक कर दिया जाएगा.</translation>
 <translation id="4669606053856530811">'<ph name="SOURCE_NAME" />' के सदस्यों को तब तक एक्सेस नहीं मिलेगा जब तक कि ये आइटम उनके साथ शेयर नहीं किए जाते.</translation>
 <translation id="467809019005607715">Google Slides</translation>
 <translation id="4690246192099372265">स्वीडिश</translation>
@@ -564,7 +563,6 @@
 <translation id="5323213332664049067">लैटिन अमेरिकी</translation>
 <translation id="5330145655348521461">ये फ़ाइलें किसी अलग डेस्कटॉप पर खुली हैं. उसे देखने के लिए <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />)  पर जाएं.</translation>
 <translation id="5330512191124428349">जानकारी पाएं</translation>
-<translation id="5344246330454251646">Bruschetta के साथ फ़ाइलें और फ़ोल्डर शेयर करने की सुविधा मैनेज करें</translation>
 <translation id="535792325654997756">बिल्लियों के साथ व्यक्ति</translation>
 <translation id="5358764674931277">फ़्रेम दर</translation>
 <translation id="5363339716524495120">इनपुट भाषा चाइनीज़ है</translation>
@@ -670,6 +668,8 @@
 <translation id="6164412158936057769">तितलियां</translation>
 <translation id="6165508094623778733">ज़्यादा जानें</translation>
 <translation id="6170470584681422115">सैंडविच</translation>
+<translation id="6177854567773392726">स्टोरेज के लिए बची जगह की जांच की जा रही है… <ph name="ITEMS_FOUND" /> आइटम मिले</translation>
+<translation id="6181912134988520389"><ph name="VM_NAME" /> को अपने Google Drive में मौजूद फ़ाइलें ऐक्सेस करने की अनुमति दें. बदलावों को आपके दूसरे डिवाइस में सिंक किया जाएगा.</translation>
 <translation id="6187719147498869044">हंगेरियन</translation>
 <translation id="6198252989419008588">पिन बदलें</translation>
 <translation id="6199801702437275229">स्थान जानकारी की प्रतीक्षा कर रहा है...</translation>
@@ -732,7 +732,6 @@
 <translation id="6710213216561001401">पिछला</translation>
 <translation id="6732801395666424405">प्रमाणपत्र लोड नहीं किए गए हैं</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />]</translation>
-<translation id="6740270213273127264">Bruschetta के साथ फ़ोल्डर को शेयर करें</translation>
 <translation id="6750737795876287924">मौजूदा डायरेक्ट्री</translation>
 <translation id="6751256176799620176">1 फ़ोल्डर चयनित</translation>
 <translation id="6755827872271341378">ChromeOS Flex वाला डिवाइस</translation>
@@ -774,6 +773,7 @@
 <translation id="6989942356279143254">स्वीडिश</translation>
 <translation id="6990081529015358884">अब आपके पास और स्‍थान शेष नहीं है</translation>
 <translation id="6993826899923627728">ये आइटम आपके ट्रैश में हैं</translation>
+<translation id="6996593023542748157"><ph name="VM_NAME" /> के साथ फ़ोल्डर शेयर करें</translation>
 <translation id="7008426324576352165">अपलोड को पूरा करने के लिए, आपके संगठन को ज़्यादा स्टोरेज की ज़रूरत है.</translation>
 <translation id="7009985720488544166">एडमिन नीति के तहत, <ph name="COUNT" /> फ़ाइलों को ट्रांसफ़र करने की अनुमति नहीं है</translation>
 <translation id="7012943028104619157"><ph name="ROOT_TITLE" /> (<ph name="ROOT_SUMMARY" />)</translation>
@@ -959,6 +959,7 @@
 <translation id="8335837413233998004">बेलारशियन</translation>
 <translation id="8336153091935557858">कल <ph name="YESTERDAY_DAYTIME" /></translation>
 <translation id="8342318071240498787">समान नाम वाली फ़ाइल या निर्देशिका पहले से ही मौजूद है.</translation>
+<translation id="83651606385705612"><ph name="VM_NAME" /> को <ph name="FOLDER_NAME" /> फ़ोल्डर में मौजूद फ़ाइलें ऐक्सेस करने की अनुमति दें</translation>
 <translation id="8372369524088641025">ख़राब WEP कुंजी</translation>
 <translation id="8372852072747894550">ग्रीक</translation>
 <translation id="8386903983509584791">स्कैन पूरा हुआ</translation>
@@ -968,6 +969,7 @@
 <translation id="8408068190360279472"><ph name="NETWORK_TYPE" /> नेटवर्क, कनेक्ट हो रहा है</translation>
 <translation id="8425213833346101688">बदलें</translation>
 <translation id="8428213095426709021">सेटिंग</translation>
+<translation id="8429998526804961548"><ph name="VM_NAME" /> के साथ <ph name="NUMBER_OF_ITEMS" /> फ़ोल्डर शेयर किए गए</translation>
 <translation id="8431909052837336408">SIM पिन बदलें</translation>
 <translation id="8437209419043462667">यूएस</translation>
 <translation id="8452135315243592079">अनुपलब्ध SIM कार्ड</translation>

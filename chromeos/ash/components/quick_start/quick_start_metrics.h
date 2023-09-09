@@ -6,6 +6,7 @@
 #define CHROMEOS_ASH_COMPONENTS_QUICK_START_QUICK_START_METRICS_H_
 
 #include "base/time/time.h"
+#include "chromeos/ash/components/quick_start/quick_start_response_type.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace ash::quick_start::quick_start_metrics {
@@ -61,21 +62,44 @@ enum class NearbyConnectionsAdvertisingErrorCode {
   kFailedToStart,
 };
 
+// This enum is tied directly to a UMA enum defined in
+// //tools/metrics/histograms/enums.xml, and should always reflect it (do not
+// change one without changing the other). Entries should be never modified
+// or deleted. Only additions possible.
 enum class HandshakeErrorCode {
-  kFailedToReadResponse,
+  kFailedToReadResponse = 0,
+  kFailedToParse = 1,
+  kFailedToDecryptAuthPayload = 2,
+  kFailedToParseAuthPayload = 3,
+  kUnexpectedAuthPayloadRole = 4,
+  kUnexpectedAuthPayloadAuthToken = 5,
+  kInvalidHandshakeErrorCode = 6,
+  kMaxValue = kInvalidHandshakeErrorCode,
 };
 
+// This enum is tied directly to a UMA enum defined in
+// //tools/metrics/histograms/enums.xml, and should always reflect it (do not
+// change one without changing the other). Entries should be never modified
+// or deleted. Only additions possible.
 enum class MessageType {
-  kWifiCredentials,
-  kBootstrapConfigurations,
-  kAttestationRequest,
-  kFido,
+  kWifiCredentials = 0,
+  kBootstrapConfigurations = 1,
+  kHandshake = 2,
+  kNotifySourceOfUpdate = 3,
+  kGetInfo = 4,
+  kAssertion = 5,
+  kMaxValue = kAssertion,
 };
 
+// This enum is tied directly to a UMA enum defined in
+// //tools/metrics/histograms/enums.xml, and should always reflect it (do not
+// change one without changing the other). Entries should be never modified
+// or deleted. Only additions possible.
 enum class MessageReceivedErrorCode {
-  kTimeOut,
-  kDeserializationFailure,
-  kUnknownError,
+  kTimeOut = 0,
+  kDeserializationFailure = 1,
+  kUnknownError = 2,
+  kMaxValue = kUnknownError,
 };
 
 enum class AttestationCertificateRequestErrorCode {
@@ -101,10 +125,25 @@ enum class WifiTransferResultFailureReason {
   kMaxValue = kWifiHideStatusNotFound,
 };
 
+// This enum is tied directly to a UMA enum defined in
+// //tools/metrics/histograms/enums.xml, and should always reflect it (do not
+// change one without changing the other). Entries should be never modified
+// or deleted. Only additions possible.
 enum class GaiaTransferResultFailureReason {
-  kNoAccountsReceivedFromPhone,
-  kIneligibleAccount,
-  kFailedToSignIn,
+  kNoAccountsReceivedFromPhone = 0,
+  kIneligibleAccount = 1,
+  kFailedToSignIn = 2,
+  kEmptyResponseBytes = 3,
+  kUnableToReadAsJSON = 4,
+  kUnexpectedResponseSize = 5,
+  kUnsuccessfulCtapDeviceResponseStatus = 6,
+  kCborDecodingError = 7,
+  kInvalidCborDecodedValuesMap = 8,
+  kEmptyCredentialId = 9,
+  kEmptyAuthData = 10,
+  kEmptySignature = 11,
+  kEmptyEmail = 12,
+  kMaxValue = kEmptyEmail,
 };
 
 enum class EntryPoint {
@@ -147,19 +186,17 @@ void RecordNearbyConnectionsAdvertisementEnded(
     int duration,
     absl::optional<NearbyConnectionsAdvertisingErrorCode> error_code);
 
-void RecordHandshakeStarted(int32_t session_id);
+void RecordHandshakeStarted(bool handshake_started);
 
-void RecordHandshakeResult(int32_t session_id,
-                           bool succeeded,
-                           int duration,
+void RecordHandshakeResult(bool succeeded,
+                           base::TimeDelta duration,
                            absl::optional<HandshakeErrorCode> error_code);
 
-void RecordMessageSent(int32_t session_id, MessageType message_type);
+void RecordMessageSent(MessageType message_type);
 
-void RecordMessageReceived(int32_t session_id,
-                           MessageType desired_message_type,
+void RecordMessageReceived(MessageType desired_message_type,
                            bool succeeded,
-                           int listen_duration,
+                           base::TimeDelta listen_duration,
                            absl::optional<MessageReceivedErrorCode> error_code);
 
 void RecordAttestationCertificateRequested(int32_t session_id);
@@ -174,14 +211,17 @@ void RecordWifiTransferResult(
     bool succeeded,
     absl::optional<WifiTransferResultFailureReason> failure_reason);
 
-void RecordGaiaTransferAttempted(int32_t session_id);
+void RecordGaiaTransferAttempted(bool attempted);
 
 void RecordGaiaTransferResult(
-    int32_t session_id,
     bool succeeded,
     absl::optional<GaiaTransferResultFailureReason> failure_reason);
 
 void RecordEntryPoint(EntryPoint entry_point);
+
+// Helper function that returns the MessageType equivalent of
+// QuickStartResponseType.
+MessageType MapResponseToMessageType(QuickStartResponseType response_type);
 
 }  // namespace ash::quick_start::quick_start_metrics
 

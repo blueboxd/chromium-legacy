@@ -16,10 +16,6 @@
 #include "ui/color/color_recipe.h"
 #include "ui/gfx/color_palette.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 namespace ui {
 
 namespace {
@@ -82,8 +78,6 @@ void AddNativeCoreColorMixer(ColorProvider* provider,
     mixer[kColorItemHighlight] = {SkColorSetA(
         skia::NSSystemColorToSkColor(NSColor.keyboardFocusIndicatorColor),
         0x66)};
-    mixer[kColorTextSelectionBackground] = {
-        skia::NSSystemColorToSkColor(NSColor.selectedTextBackgroundColor)};
   };
 
   if (@available(macOS 11, *)) {
@@ -129,11 +123,22 @@ void AddNativeUiColorMixer(ColorProvider* provider,
           NSColor.controlAlternatingRowBackgroundColors[1])};
     }
 
+    if (!key.user_color.has_value()) {
+      mixer[kColorSysStateFocusRing] = {SkColorSetA(
+          skia::NSSystemColorToSkColor(NSColor.keyboardFocusIndicatorColor),
+          0x66)};
+    }
+
     if (!features::IsChromeRefresh2023()) {
       SkColor menu_separator_color =
           properties.dark ? SkColorSetA(gfx::kGoogleGrey800, 0xCC)
                           : SkColorSetA(SK_ColorBLACK, 0x26);
       mixer[kColorMenuSeparator] = {menu_separator_color};
+    }
+
+    if (!features::IsChromeRefresh2023() || !key.user_color.has_value()) {
+      mixer[kColorTextSelectionBackground] = {
+          skia::NSSystemColorToSkColor(NSColor.selectedTextBackgroundColor)};
     }
 
     if (!properties.high_contrast) {
@@ -164,8 +169,9 @@ void AddNativePostprocessingMixer(ColorProvider* provider,
 
   for (ColorId id = kUiColorsStart; id < kUiColorsEnd; ++id) {
     // Apply system tint to non-OS colors.
-    if (!kNativeOSColorIds.contains(id))
+    if (!kNativeOSColorIds.contains(id)) {
       mixer[id] += ApplySystemControlTintIfNeeded();
+    }
   }
 }
 

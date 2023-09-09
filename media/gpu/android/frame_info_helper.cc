@@ -52,6 +52,8 @@ class FrameInfoHelperImpl : public FrameInfoHelper,
       ProcessRequestsQueue();
   }
 
+  bool IsStalled() const override { return waiting_for_real_frame_info_; }
+
  private:
   struct Request {
     std::unique_ptr<CodecOutputBufferRenderer> buffer_renderer;
@@ -97,8 +99,7 @@ class FrameInfoHelperImpl : public FrameInfoHelper,
 
       absl::optional<FrameInfo> info;
 
-      if (buffer_renderer->RenderToTextureOwnerFrontBuffer(
-              CodecOutputBufferRenderer::BindingsMode::kDontBindImage, 0)) {
+      if (buffer_renderer->RenderToTextureOwnerFrontBuffer()) {
         gfx::Size coded_size;
         gfx::Rect visible_rect;
         if (texture_owner->GetCodedSizeAndVisibleRect(

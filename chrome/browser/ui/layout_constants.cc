@@ -91,7 +91,15 @@ int GetLayoutConstant(LayoutConstant constant) {
     case TAB_CLOSE_BUTTON_SIZE:
       return touch_ui ? 24 : 16;
     case TAB_HEIGHT:
+      if (features::IsChromeRefresh2023()) {
+        return 34 + GetLayoutConstant(TABSTRIP_TOOLBAR_OVERLAP);
+      }
       return (touch_ui ? 41 : 34) + GetLayoutConstant(TABSTRIP_TOOLBAR_OVERLAP);
+    case TAB_STRIP_HEIGHT:
+      return GetLayoutConstant(TAB_HEIGHT) +
+             GetLayoutConstant(TAB_STRIP_PADDING);
+    case TAB_STRIP_PADDING:
+      return features::IsChromeRefresh2023() ? 6 : 0;
     case TAB_SEPARATOR_HEIGHT:
       // TODO (crbug.com/1451400): ChromeRefresh2023 needs different values for
       // this constant.

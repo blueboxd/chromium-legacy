@@ -46,6 +46,12 @@ class PasswordFormPredictionWaiter {
 
   void StartTimer();
 
+  // Resets the timer and `outstanding_closures_`.
+  void Reset();
+
+  // Returns whether the waiter is currently active and waiting.
+  bool IsActive() const;
+
   // Issues a new closure that should be invoked when a task is completed.
   // When the timer is active, all issued closures have to be invoked before
   // the Client's OnWaitCompleted() method is called.

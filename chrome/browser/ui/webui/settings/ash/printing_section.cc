@@ -319,6 +319,8 @@ void PrintingSection::AddLoadTimeData(content::WebUIDataSource* html_source) {
                           features::IsPrinterSettingsRevampEnabled());
   html_source->AddBoolean("isPrinterSettingsPrinterStatusEnabled",
                           features::IsPrinterSettingsPrinterStatusEnabled());
+  html_source->AddBoolean("isPrintPreviewDiscoveredPrintersEnabled",
+                          features::IsPrintPreviewDiscoveredPrintersEnabled());
 }
 
 void PrintingSection::AddHandlers(content::WebUI* web_ui) {
@@ -338,7 +340,7 @@ mojom::SearchResultIcon PrintingSection::GetSectionIcon() const {
   return mojom::SearchResultIcon::kPrinter;
 }
 
-std::string PrintingSection::GetSectionPath() const {
+const char* PrintingSection::GetSectionPath() const {
   return mojom::kPrintingSectionPath;
 }
 

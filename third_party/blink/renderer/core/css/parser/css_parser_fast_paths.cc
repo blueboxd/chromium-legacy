@@ -1532,7 +1532,6 @@ bool CSSParserFastPaths::IsValidKeywordPropertyAndValue(
       return value_id == CSSValueID::kDisc || value_id == CSSValueID::kCircle ||
              value_id == CSSValueID::kSquare || value_id == CSSValueID::kNone;
     case CSSPropertyID::kTextWrap:
-      DCHECK(RuntimeEnabledFeatures::CSSTextWrapEnabled());
       if (!RuntimeEnabledFeatures::CSSWhiteSpaceShorthandEnabled()) {
         return value_id == CSSValueID::kWrap ||
                value_id == CSSValueID::kBalance;
@@ -1597,10 +1596,17 @@ bool CSSParserFastPaths::IsValidKeywordPropertyAndValue(
              value_id == CSSValueID::kPreserveBreaks ||
              value_id == CSSValueID::kBreakSpaces;
     case CSSPropertyID::kWordBreak:
+      if (!RuntimeEnabledFeatures::CSSPhraseLineBreakEnabled()) {
+        return value_id == CSSValueID::kNormal ||
+               value_id == CSSValueID::kBreakAll ||
+               value_id == CSSValueID::kKeepAll ||
+               value_id == CSSValueID::kBreakWord;
+      }
       return value_id == CSSValueID::kNormal ||
              value_id == CSSValueID::kBreakAll ||
              value_id == CSSValueID::kKeepAll ||
-             value_id == CSSValueID::kBreakWord;
+             value_id == CSSValueID::kBreakWord ||
+             value_id == CSSValueID::kAutoPhrase;
     case CSSPropertyID::kScrollbarWidth:
       return value_id == CSSValueID::kAuto || value_id == CSSValueID::kThin ||
              value_id == CSSValueID::kNone;

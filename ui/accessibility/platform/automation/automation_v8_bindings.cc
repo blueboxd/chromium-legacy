@@ -565,8 +565,8 @@ void AutomationV8Bindings::SendGetTextLocationResult(
     const ui::AXActionData& data,
     const absl::optional<gfx::Rect>& rect) {
   base::Value::Dict params;
-  params.Set("tree_id", data.target_tree_id.ToString());
-  params.Set("node_id", data.target_node_id);
+  params.Set("treeID", data.target_tree_id.ToString());
+  params.Set("nodeID", data.target_node_id);
   params.Set("result", false);
   if (rect) {
     params.Set("left", rect.value().x());
@@ -575,7 +575,7 @@ void AutomationV8Bindings::SendGetTextLocationResult(
     params.Set("height", rect.value().height());
     params.Set("result", true);
   }
-  params.Set("request_id", data.request_id);
+  params.Set("requestID", data.request_id);
 
   base::Value::List args;
   args.Append(std::move(params));
@@ -1163,49 +1163,6 @@ void AutomationV8Bindings::AddV8Routes() {
         result.Set(v8::String::NewFromUtf8(isolate, detectedLanguage.c_str())
                        .ToLocalChecked());
       }));
-
-  RouteNodeIDPlusAttributeFunction(
-      "GetLanguageAnnotationForStringAttribute",
-      [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result, AXTree* tree,
-         AXNode* node, const std::string& attribute_name) {
-        auto attr =
-            ParseAXEnum<ax::mojom::StringAttribute>(attribute_name.c_str());
-        if (attr == ax::mojom::StringAttribute::kNone) {
-          // Set result as empty array.
-          result.Set(v8::Array::New(isolate, 0));
-          return;
-        }
-        std::vector<AXLanguageSpan> language_annotation =
-            tree->language_detection_manager
-                ->GetLanguageAnnotationForStringAttribute(*node, attr);
-        const std::string& attribute_value = node->GetStringAttribute(attr);
-        // Build array.
-        v8::Local<v8::Context> context = isolate->GetCurrentContext();
-        v8::Local<v8::Array> array_result(
-            v8::Array::New(isolate, language_annotation.size()));
-        std::vector<size_t> offsets_for_adjustment(2, 0);
-        for (size_t i = 0; i < language_annotation.size(); ++i) {
-          offsets_for_adjustment[0] =
-              static_cast<size_t>(language_annotation[i].start_index);
-          offsets_for_adjustment[1] =
-              static_cast<size_t>(language_annotation[i].end_index);
-          // Convert UTF-8 offsets into UTF-16 offsets, since these objects
-          // will be used in Javascript.
-          base::UTF8ToUTF16AndAdjustOffsets(attribute_value,
-                                            &offsets_for_adjustment);
-
-          gin::DataObjectBuilder span(isolate);
-          span.Set("startIndex", static_cast<int>(offsets_for_adjustment[0]));
-          span.Set("endIndex", static_cast<int>(offsets_for_adjustment[1]));
-          span.Set("language", language_annotation[i].language);
-          span.Set("probability", language_annotation[i].probability);
-          array_result
-              ->CreateDataProperty(context, static_cast<uint32_t>(i),
-                                   span.Build())
-              .Check();
-        }
-        result.Set(array_result);
-      });
 
   RouteNodeIDFunction(
       "GetCustomActions",

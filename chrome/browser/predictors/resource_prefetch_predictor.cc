@@ -280,7 +280,7 @@ void ResourcePrefetchPredictor::StartInitialization() {
       tables_, tables_->origin_table(), config_.max_hosts_to_track,
       base::Seconds(config_.flush_data_to_disk_delay_seconds));
   auto lcpp_data = std::make_unique<LcppDataMap>(
-      tables_, tables_->lcpp_table(), config_.max_hosts_to_track,
+      tables_, tables_->lcpp_table(), config_.max_hosts_to_track_for_lcpp,
       base::Seconds(config_.flush_data_to_disk_delay_seconds));
 
   // Get raw pointers to pass to the first task. Ownership of the unique_ptrs
@@ -309,27 +309,37 @@ void ResourcePrefetchPredictor::Shutdown() {
   history_service_observation_.Reset();
 }
 
-void ResourcePrefetchPredictor::RecordPageRequestSummary(
-    std::unique_ptr<PageRequestSummary> summary) {
+bool ResourcePrefetchPredictor::TryEnsureRecordingPrecondition() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
   // Make sure initialization is done or start initialization if necessary.
   if (initialization_state_ == NOT_INITIALIZED) {
     StartInitialization();
-    return;
+    return false;
   } else if (initialization_state_ == INITIALIZING) {
-    return;
+    return false;
   } else if (initialization_state_ != INITIALIZED) {
     NOTREACHED() << "Unexpected initialization_state_: "
                  << initialization_state_;
+    return false;
+  }
+
+  CHECK(host_redirect_data_);
+  CHECK(origin_data_);
+  CHECK(lcpp_data_);
+  return true;
+}
+
+void ResourcePrefetchPredictor::RecordPageRequestSummary(
+    std::unique_ptr<PageRequestSummary> summary) {
+  if (!TryEnsureRecordingPrecondition()) {
     return;
   }
 
-  LearnRedirect(summary->initial_url.host(), summary->main_frame_url,
-                host_redirect_data_.get());
+  LearnRedirect(summary->initial_url.host(), summary->main_frame_url);
   LearnOrigins(summary->main_frame_url.host(),
                summary->main_frame_url.DeprecatedGetOriginAsURL(),
                summary->origins);
-  LearnLcpp(summary->main_frame_url.host(), summary->lcp_element_locator);
 
   if (observer_)
     observer_->OnNavigationLearned(*summary);
@@ -391,6 +401,46 @@ bool ResourcePrefetchPredictor::PredictPreconnectOrigins(
   return has_any_prediction;
 }
 
+std::vector<std::string> ResourcePrefetchPredictor::PredictLcpElementLocators(
+    const GURL& url) const {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  // The `initialization_state_` can be not `INITIALIZED` in the very first
+  // navigation on browser startup. Because this object is initialized on the
+  // first navigation.
+  if (initialization_state_ != INITIALIZED) {
+    return {};
+  }
+
+  if (!url.is_valid() || url.host().empty()) {
+    return {};
+  }
+
+  LcppData data;
+  if (!lcpp_data_->TryGetData(url.host(), &data)) {
+    return {};
+  }
+
+  const auto& buckets =
+      data.lcpp_stat().lcp_element_locator_stat().lcp_element_locator_buckets();
+  std::vector<std::pair<double, std::string>>
+      lcp_element_locators_with_frequency;
+  lcp_element_locators_with_frequency.reserve(buckets.size());
+  for (const auto& bucket : buckets) {
+    lcp_element_locators_with_frequency.emplace_back(
+        bucket.frequency(), bucket.lcp_element_locator());
+  }
+
+  std::sort(lcp_element_locators_with_frequency.rbegin(),
+            lcp_element_locators_with_frequency.rend());
+
+  std::vector<std::string> lcp_element_locators;
+  lcp_element_locators.reserve(lcp_element_locators_with_frequency.size());
+  for (auto& bucket : lcp_element_locators_with_frequency) {
+    lcp_element_locators.push_back(std::move(bucket.second));
+  }
+  return lcp_element_locators;
+}
+
 void ResourcePrefetchPredictor::CreateCaches(
     std::unique_ptr<RedirectDataMap> host_redirect_data,
     std::unique_ptr<OriginDataMap> origin_data,
@@ -446,8 +496,7 @@ void ResourcePrefetchPredictor::DeleteUrls(const history::URLRows& urls) {
 }
 
 void ResourcePrefetchPredictor::LearnRedirect(const std::string& key,
-                                              const GURL& final_redirect,
-                                              RedirectDataMap* redirect_data) {
+                                              const GURL& final_redirect) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   // If the primary key is too long reject it.
@@ -455,7 +504,7 @@ void ResourcePrefetchPredictor::LearnRedirect(const std::string& key,
     return;
 
   RedirectData data;
-  bool exists = redirect_data->TryGetData(key, &data);
+  bool exists = host_redirect_data_->TryGetData(key, &data);
   if (!exists) {
     data.set_primary_key(key);
     data.set_last_visit_time(base::Time::Now().ToInternalValue());
@@ -521,9 +570,9 @@ void ResourcePrefetchPredictor::LearnRedirect(const std::string& key,
       &data, config_.max_redirect_consecutive_misses);
 
   if (data.redirect_endpoints_size() == 0)
-    redirect_data->DeleteData({key});
+    host_redirect_data_->DeleteData({key});
   else
-    redirect_data->UpdateData(key, data);
+    host_redirect_data_->UpdateData(key, data);
 }
 
 void ResourcePrefetchPredictor::LearnOrigins(
@@ -622,8 +671,14 @@ void ResourcePrefetchPredictor::LearnOrigins(
 void ResourcePrefetchPredictor::LearnLcpp(
     const std::string& host,
     const std::string& lcp_element_locator) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (host.size() > ResourcePrefetchPredictorTables::kMaxStringLength) {
+  if (!TryEnsureRecordingPrecondition()) {
+    return;
+  }
+
+  if (host.size() > ResourcePrefetchPredictorTables::kMaxStringLength ||
+      lcp_element_locator.size() >
+          ResourcePrefetchPredictorTables::kMaxStringLength ||
+      lcp_element_locator.empty()) {
     return;
   }
 
@@ -757,8 +812,9 @@ void ResourcePrefetchPredictor::LearnLcpp(
 
     // Now we have one free space to store a new lcp_element_locator.
     // (`SumOfFrequency()` takes time. Hence `DCHECK_LE` is used.)
+    // Adds `1e-5` to avoid floating point errors.
     DCHECK_LE(1 + SumOfFrequency(histogram, other_bucket_frequency),
-              kSlidingWindowSize);
+              kSlidingWindowSize + 1e-5);
 
     // Store new lcp_element_locator.
     {
@@ -795,6 +851,9 @@ void ResourcePrefetchPredictor::LearnLcpp(
 
   // Update the database.
   lcpp_data_->UpdateData(host, data);
+  if (observer_) {
+    observer_->OnLcppLearned();
+  }
 }
 
 void ResourcePrefetchPredictor::OnURLsDeleted(

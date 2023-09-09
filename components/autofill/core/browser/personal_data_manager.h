@@ -158,9 +158,8 @@ class PersonalDataManager : public KeyedService,
   void OnSyncShutdown(syncer::SyncService* sync) override;
 
   // AccountInfoGetter:
-  // TODO(1411720): Make it return absl::optional.
   CoreAccountInfo GetAccountInfoForPaymentsServer() const override;
-  bool IsSyncFeatureEnabled() const override;
+  bool IsSyncFeatureEnabledForPaymentsServerMetrics() const override;
 
   // signin::IdentityManager::Observer:
   void OnAccountsCookieDeletedByUserAction() override;
@@ -168,6 +167,9 @@ class PersonalDataManager : public KeyedService,
   // Returns the account info of currently signed-in user, or absl::nullopt if
   // the user is not signed-in or the identity manager is not available.
   absl::optional<CoreAccountInfo> GetPrimaryAccountInfo() const;
+
+  // Returns whether credit card download is active (sync as a transport).
+  bool IsPaymentsDownloadActive() const;
 
   // Returns the current sync status.
   virtual AutofillSyncSigninState GetSyncSigninState() const;
@@ -187,13 +189,6 @@ class PersonalDataManager : public KeyedService,
   virtual void RecordUseOf(
       absl::variant<const AutofillProfile*, const CreditCard*>
           profile_or_credit_card);
-
-  // Saves `imported_profile` to the WebDB if it exists. Returns the guid of
-  // the new or updated profile, or the empty string if no profile was saved.
-  // This function is only used for tests and is a leftover from pre-explicit
-  // save prompt times.
-  virtual std::string SaveImportedProfile(
-      const AutofillProfile& imported_profile);
 
   // Called when the user accepts the prompt to save the credit card locally.
   // Records some metrics and attempts to save the imported card. Returns the
@@ -636,7 +631,7 @@ class PersonalDataManager : public KeyedService,
   // increments the counter that denotes the number of times that the promo has
   // been shown, and this counter is used very similarly to a strike database
   // when it comes time to check whether we should show the promo.
-  void SetPaymentMethodsMandatoryReauthEnabled(bool enabled);
+  virtual void SetPaymentMethodsMandatoryReauthEnabled(bool enabled);
   virtual bool IsPaymentMethodsMandatoryReauthEnabled();
   bool ShouldShowPaymentMethodsMandatoryReauthPromo();
   void IncrementPaymentMethodsMandatoryReauthPromoShownCounter();
@@ -710,7 +705,6 @@ class PersonalDataManager : public KeyedService,
   friend class PersonalDataManagerTestBase;
   friend class PersonalDataManagerHelper;
   friend class PersonalDataManagerMockTest;
-  friend class SaveImportedProfileTest;
   friend class VirtualCardEnrollmentManagerTest;
   friend class ::RemoveAutofillTester;
   friend std::default_delete<PersonalDataManager>;

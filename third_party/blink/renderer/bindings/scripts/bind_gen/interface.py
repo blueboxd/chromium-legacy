@@ -1713,13 +1713,6 @@ def make_v8_set_return_value(cg_context):
         return T("bindings::V8SetReturnValue(${info}, ${return_value}, "
                  "${isolate}, ${blink_receiver});")
 
-    if return_type.is_typedef and return_type.identifier == "SyncIteratorType":
-        # Sync iterator objects (default iterator objects, map iterator objects,
-        # and set iterator objects) are implemented as ScriptWrappable
-        # instances.
-        return T("bindings::V8SetReturnValue(${info}, ${return_value}, "
-                 "${blink_receiver});")
-
     # [CheckSecurity=ReturnValue]
     #
     # The returned object must be wrapped in its own realm instead of the
@@ -1729,26 +1722,26 @@ def make_v8_set_return_value(cg_context):
     # and 'getSVGDocument' operation of HTML{IFrame,Frame,Object,Embed}Element
     # interfaces, and Window.frameElement attribute, so far.
     #
-    # All the interfaces above except for Window support 'contentWindow'
-    # attribute and that's the global object of the creation context of the
-    # returned V8 wrapper.  Window.frameElement is implemented with [Custom]
-    # for now and there is no need to support it.
-    #
     # Note that the global object has its own context and there is no need to
     # pass the creation context to ToV8.
     if (cg_context.member_like.extended_attributes.value_of("CheckSecurity") ==
             "ReturnValue"):
-        condition = F(
-            "!ToV8Traits<{}>::ToV8(ToScriptState(To<LocalFrame>("
-            "${blink_receiver}->contentWindow()->GetFrame()), "
-            "${script_state}->World()), ${return_value})"
-            ".ToLocal(&v8_value)", native_value_tag(return_type))
         node = CxxBlockNode([
             T("// [CheckSecurity=ReturnValue]"),
-            T("DCHECK(IsA<LocalFrame>("
-              "${blink_receiver}->contentWindow()->GetFrame()));"),
+            F(
+                "Frame* blink_frame = {};",
+                "${blink_receiver}->GetFrame()->Parent()"
+                if cg_context.member_like.identifier == "frameElement" else
+                "${blink_receiver}->contentWindow()->GetFrame()"),
+            T("DCHECK(IsA<LocalFrame>(blink_frame));"),
             T("v8::Local<v8::Value> v8_value;"),
-            CxxUnlikelyIfNode(cond=condition, body=T("return;")),
+            CxxUnlikelyIfNode(cond=F(
+                "!ToV8Traits<{}>::ToV8("
+                "ToScriptState(To<LocalFrame>(blink_frame), "
+                "${script_state}->World()),"
+                "${return_value}).ToLocal(&v8_value)",
+                native_value_tag(return_type)),
+                              body=T("return;")),
             T("bindings::V8SetReturnValue(${info}, v8_value);"),
         ])
         node.accumulate(
@@ -1793,9 +1786,10 @@ def make_v8_set_return_value(cg_context):
 
     if return_type_body.is_interface:
         args = ["${info}", "${return_value}"]
-        if return_type_body.identifier == "Window":
+        if (return_type_body.identifier == "Window"
+                or return_type_body.identifier == "Location"):
             args.append("${blink_receiver}")
-            args.append("bindings::V8ReturnValue::kMaybeCrossOriginWindow")
+            args.append("bindings::V8ReturnValue::kMaybeCrossOrigin")
         elif cg_context.constructor or cg_context.member_like.is_static:
             args.append("${creation_context}")
         elif cg_context.for_world == cg_context.MAIN_WORLD:
@@ -1809,7 +1803,17 @@ def make_v8_set_return_value(cg_context):
                  "(${info}, ${return_value}->GetExoticObject(), "
                  "${blink_receiver});")
 
+    if return_type_body.is_sync_iterator:
+        # Sync iterator objects (default iterator objects, map iterator
+        # objects, and set iterator objects) are implemented as ScriptWrappable
+        # instances.
+        return T("bindings::V8SetReturnValue(${info}, ${return_value}, "
+                 "${blink_receiver});")
+
     if return_type.is_promise:
+        return T("bindings::V8SetReturnValue(${info}, ${return_value});")
+
+    if return_type.is_any or return_type_body.is_object:
         return T("bindings::V8SetReturnValue(${info}, ${return_value});")
 
     return T("bindings::V8SetReturnValue(${info}, ${v8_return_value});")
@@ -3224,7 +3228,7 @@ def make_named_property_getter_callback(cg_context, function_name):
     # existence by heuristics.
     type = cg_context.return_type.unwrap()
     if type.is_any or type.is_object:
-        not_found_expr = "${return_value}.empty()"
+        not_found_expr = "${return_value}.IsEmpty()"
     elif type.is_string:
         not_found_expr = "${return_value}.IsNull()"
     elif type.is_interface:
@@ -3350,8 +3354,10 @@ if (!is_creating) {
                             EmptyNode(),
                             make_v8_set_return_value(cg_context),
                             TextNode("""\
-% if interface.identifier == "CSSStyleDeclaration":
-// CSSStyleDeclaration is abusing named properties.
+% if interface.identifier == "CSSStyleDeclaration" or \
+     interface.identifier == "HTMLEmbedElement" or \
+     interface.identifier == "HTMLObjectElement":
+// ${interface.identifier} is abusing named properties.
 // Do not intercept if the property is not found.
 % else:
 bindings::V8SetReturnValue(${info}, nullptr);
@@ -5437,10 +5443,18 @@ def make_property_entries_and_callback_defs(cg_context, attribute_entries,
         for member in members:
             is_context_dependent = member.exposure.is_context_dependent(
                 global_names)
-            exposure_conditional = expr_from_exposure(
-                member.exposure,
-                global_names=global_names,
-                may_use_feature_selector=True)
+            if isinstance(member, web_idl.OverloadGroup):
+                exposure_conditional = expr_or([
+                    expr_from_exposure(overload.exposure,
+                                       global_names=global_names,
+                                       may_use_feature_selector=True)
+                    for overload in member
+                ])
+            else:
+                exposure_conditional = expr_from_exposure(
+                    member.exposure,
+                    global_names=global_names,
+                    may_use_feature_selector=True)
 
             if "PerWorldBindings" in member.extended_attributes:
                 worlds = (CodeGenContext.MAIN_WORLD,

@@ -30,6 +30,7 @@
 #include "components/attribution_reporting/aggregation_keys.h"
 #include "components/attribution_reporting/destination_set.h"
 #include "components/attribution_reporting/event_trigger_data.h"
+#include "components/attribution_reporting/filters.h"
 #include "components/attribution_reporting/registration_eligibility.mojom.h"
 #include "components/attribution_reporting/source_registration.h"
 #include "components/attribution_reporting/source_registration_error.mojom.h"
@@ -78,6 +79,7 @@ using ::attribution_reporting::mojom::SourceRegistrationError;
 using ::attribution_reporting::mojom::SourceType;
 
 using AttributionFilters = ::attribution_reporting::FiltersDisjunction;
+using FilterConfig = ::attribution_reporting::FilterConfig;
 
 using ::testing::_;
 using ::testing::AllOf;
@@ -226,10 +228,10 @@ TEST_F(AttributionDataHostManagerImplTest, TriggerDataHost_TriggerRegistered) {
   auto reporting_origin =
       *SuitableOrigin::Deserialize("https://reporter.example");
 
-  auto filters = AttributionFilters({{{"a", {"b"}}}});
+  auto filters = AttributionFilters({*FilterConfig::Create({{"a", {"b"}}})});
   FilterPair event_trigger_data_filters(
-      /*positive=*/{{{"c", {"d"}}}},
-      /*negative=*/{{{"e", {"f"}}}});
+      /*positive=*/{*FilterConfig::Create({{"c", {"d"}}})},
+      /*negative=*/{*FilterConfig::Create({{"e", {"f"}}})});
 
   std::vector<attribution_reporting::AggregatableDedupKey>
       aggregatable_dedup_keys = {attribution_reporting::AggregatableDedupKey(
@@ -1372,11 +1374,6 @@ TEST_F(AttributionDataHostManagerImplTest,
   const auto reporter = *SuitableOrigin::Create(reporter_url);
   auto source_site = *SuitableOrigin::Deserialize("https://source.test");
 
-  EXPECT_CALL(mock_manager_, NotifyFailedSourceRegistration(
-                                 "!!!invalid json", source_site, reporter,
-                                 SourceType::kNavigation,
-                                 SourceRegistrationError::kInvalidJson));
-
   const blink::AttributionSrcToken attribution_src_token;
   data_host_manager_.NotifyNavigationRegistrationStarted(
       attribution_src_token, AttributionInputEvent(), source_site,
@@ -1402,7 +1399,7 @@ TEST_F(AttributionDataHostManagerImplTest,
   // Wait for parsing to finish.
   task_environment_.FastForwardBy(base::TimeDelta());
 
-  histograms.ExpectUniqueSample("Conversions.SourceRegistrationError3",
+  histograms.ExpectUniqueSample("Conversions.SourceRegistrationError5",
                                 SourceRegistrationError::kInvalidJson, 1);
 }
 
@@ -1962,12 +1959,6 @@ TEST_F(AttributionDataHostManagerImplTest,
 
   GURL reporting_url("https://report.test");
   auto source_origin = *SuitableOrigin::Deserialize("https://source.test");
-
-  EXPECT_CALL(mock_manager_, NotifyFailedSourceRegistration(
-                                 "!!!invalid json", source_origin,
-                                 *SuitableOrigin::Create(reporting_url),
-                                 SourceType::kNavigation,
-                                 SourceRegistrationError::kInvalidJson));
 
   data_host_manager_.NotifyFencedFrameReportingBeaconStarted(
       kBeaconId, kNavigationId, source_origin, /*is_within_fenced_frame=*/false,

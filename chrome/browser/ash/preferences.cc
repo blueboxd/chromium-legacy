@@ -280,6 +280,10 @@ void Preferences::RegisterProfilePrefs(
   // devices.
   registry->RegisterBooleanPref(drive::prefs::kDriveFsBulkPinningEnabled,
                                 false);
+  // Do not sync kDriveFsBulkPinningMaxQueueSize as the queue size is set
+  // per-device and should not sync the state across multiple devices.
+  registry->RegisterIntegerPref(drive::prefs::kDriveFsBulkPinningMaxQueueSize,
+                                5);
   // We don't sync ::prefs::kLanguageCurrentInputMethod and PreviousInputMethod
   // because they're just used to track the logout state of the device.
   registry->RegisterStringPref(::prefs::kLanguageCurrentInputMethod, "");
@@ -483,10 +487,10 @@ void Preferences::RegisterProfilePrefs(
 
   registry->RegisterBooleanPref(::prefs::kHatsPeripheralsIsSelected, false);
 
-  registry->RegisterBooleanPref(::prefs::kHatsPrivacyHubBaselineIsSelected,
+  registry->RegisterBooleanPref(::prefs::kHatsPrivacyHubPostLaunchIsSelected,
                                 false);
 
-  registry->RegisterInt64Pref(::prefs::kHatsPrivacyHubBaselineCycleEndTs, 0);
+  registry->RegisterInt64Pref(::prefs::kHatsPrivacyHubPostLaunchCycleEndTs, 0);
 
   // Personalization HaTS survey prefs for avatar, screensaver, and wallpaper
   // features.
@@ -1116,7 +1120,7 @@ void Preferences::ApplyPreferences(ApplyReason reason,
       split_values = base::SplitString(value, ",", base::TRIM_WHITESPACE,
                                        base::SPLIT_WANT_ALL);
     }
-    ime_state_->SetEnabledExtensionImes(&split_values);
+    ime_state_->SetEnabledExtensionImes(split_values);
   }
 
   if (pref_name == ::prefs::kLanguageImeMenuActivated &&

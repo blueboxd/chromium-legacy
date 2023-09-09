@@ -12,8 +12,10 @@
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/functional/callback_helpers.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/bind.h"
@@ -109,6 +111,7 @@ class IntegrationTest : public ::testing::Test {
     ASSERT_NO_FATAL_FAILURE(EnterTestMode(
         GURL("http://localhost:1234"), GURL("http://localhost:1235"),
         GURL("http://localhost:1236"), base::Minutes(5)));
+    ASSERT_NO_FATAL_FAILURE(SetMachineManaged(false));
 #if BUILDFLAG(IS_LINUX)
     // On LUCI the XDG_RUNTIME_DIR and DBUS_SESSION_BUS_ADDRESS environment
     // variables may not be set. These are required for systemctl to connect to
@@ -191,6 +194,10 @@ class IntegrationTest : public ::testing::Test {
 
   void SetGroupPolicies(const base::Value::Dict& values) {
     test_commands_->SetGroupPolicies(values);
+  }
+
+  void SetMachineManaged(bool is_managed_device) {
+    test_commands_->SetMachineManaged(is_managed_device);
   }
 
   void ExpectVersionActive(const std::string& version) {
@@ -291,8 +298,11 @@ class IntegrationTest : public ::testing::Test {
     test_commands_->ExpectAppVersion(app_id, version);
   }
 
-  void InstallApp(const std::string& app_id) {
-    test_commands_->InstallApp(app_id);
+  void InstallApp(const std::string& app_id,
+                  const base::Version& version = base::Version("0.1"),
+                  base::OnceClosure post_install_action = base::DoNothing()) {
+    test_commands_->InstallApp(app_id, version);
+    std::move(post_install_action).Run();
   }
 
   void UninstallApp(const std::string& app_id) {
@@ -374,6 +384,17 @@ class IntegrationTest : public ::testing::Test {
                                          from_version, to_version);
   }
 
+  void ExpectUpdateSequenceBadHash(ScopedServer* test_server,
+                                   const std::string& app_id,
+                                   const std::string& install_data_index,
+                                   UpdateService::Priority priority,
+                                   const base::Version& from_version,
+                                   const base::Version& to_version) {
+    test_commands_->ExpectUpdateSequenceBadHash(test_server, app_id,
+                                                install_data_index, priority,
+                                                from_version, to_version);
+  }
+
   void ExpectSelfUpdateSequence(ScopedServer* test_server) {
     test_commands_->ExpectSelfUpdateSequence(test_server);
   }
@@ -451,11 +472,20 @@ class IntegrationTest : public ::testing::Test {
   DISABLED_UninstallIfUnusedSelfAndOldReal
 #else
 #define MAYBE_InstallLowerVersion InstallLowerVersion
-#define MAYBE_OverinstallBroken OverinstallBroken
-#define MAYBE_OverinstallWorking OverinstallWorking
 #define MAYBE_SelfUpdateFromOldReal SelfUpdateFromOldReal
 #define MAYBE_UninstallIfUnusedSelfAndOldReal UninstallIfUnusedSelfAndOldReal
 #define MAYBE_OverinstallBrokenSameVersion OverinstallBrokenSameVersion
+
+// OverinstallWorking can be re-enabled on POSIX after the CIPD updater version
+// uses ipcz.
+#if BUILDFLAG(IS_POSIX)
+#define MAYBE_OverinstallWorking DISABLED_OverinstallWorking
+#define MAYBE_OverinstallBroken DISABLED_OverinstallBroken
+#else
+#define MAYBE_OverinstallWorking OverinstallWorking
+#define MAYBE_OverinstallBroken OverinstallBroken
+#endif  // BUILDFLAG(IS_POSIX)
+
 #endif  // BUILDFLAG(IS_WIN) && defined(ARCH_CPU_ARM64)
 
 // The project's position is that component builds are not portable outside of
@@ -747,6 +777,21 @@ TEST_F(IntegrationTest, CheckForUpdate) {
   ASSERT_NO_FATAL_FAILURE(Uninstall());
 }
 
+TEST_F(IntegrationTest, UpdateBadHash) {
+  ScopedServer test_server(test_commands_);
+  ASSERT_NO_FATAL_FAILURE(Install());
+
+  const std::string kAppId("test");
+  ASSERT_NO_FATAL_FAILURE(InstallApp(kAppId));
+  ASSERT_NO_FATAL_FAILURE(ExpectUpdateSequenceBadHash(
+      &test_server, kAppId, "", UpdateService::Priority::kBackground,
+      base::Version("0.1"), base::Version("1")));
+  ASSERT_NO_FATAL_FAILURE(RunWake(0));
+
+  ASSERT_NO_FATAL_FAILURE(ExpectUninstallPing(&test_server));
+  ASSERT_NO_FATAL_FAILURE(Uninstall());
+}
+
 TEST_F(IntegrationTest, UpdateApp) {
   ScopedServer test_server(test_commands_);
   ASSERT_NO_FATAL_FAILURE(Install());
@@ -873,6 +918,8 @@ TEST_F(IntegrationTest, GetAppStates) {
   const base::Version v1("0.1");
   ASSERT_NO_FATAL_FAILURE(InstallApp(kAppId));
 
+  ASSERT_NO_FATAL_FAILURE(ExpectAppVersion(kAppId, v1));
+
   base::Value::Dict expected_app_state;
   expected_app_state.Set("app_id", kAppId);
   expected_app_state.Set("version", v1.GetString());
@@ -897,6 +944,11 @@ TEST_F(IntegrationTest, MarshalInterface) {
 }
 
 TEST_F(IntegrationTest, LegacyProcessLauncher) {
+  // TODO(crbug.com/1453749): Remove procmon logging once flakiness is fixed.
+  const base::ScopedClosureRunner stop_procmon_logging(
+      base::BindOnce(&updater::test::StopProcmonLogging,
+                     updater::test::StartProcmonLogging()));
+
   ASSERT_NO_FATAL_FAILURE(Install());
   ASSERT_NO_FATAL_FAILURE(ExpectLegacyProcessLauncherSucceeds());
   ASSERT_NO_FATAL_FAILURE(Uninstall());
@@ -1252,7 +1304,7 @@ TEST_F(IntegrationTest, RecoveryNoUpdater) {
   ASSERT_NO_FATAL_FAILURE(Uninstall());
 }
 
-#if BUILDFLAG(IS_WIN)
+#if BUILDFLAG(IS_WIN) && !defined(COMPONENT_BUILD)
 // TODO(crbug.com/1281688): standalone installers are supported on Windows only.
 TEST_F(IntegrationTest, OfflineInstall) {
   ASSERT_NO_FATAL_FAILURE(Install());
@@ -1304,7 +1356,7 @@ TEST_F(IntegrationTest, OfflineInstallOsNotSupportedSilentLegacy) {
                                       /*is_silent_install=*/true));
   ASSERT_NO_FATAL_FAILURE(Uninstall());
 }
-#endif  // BUILDFLAG(IS_WIN)
+#endif  // BUILDFLAG(IS_WIN) && !defined(COMPONENT_BUILD)
 
 TEST_F(IntegrationTest, CrashUsageStatsEnabled) {
 #if BUILDFLAG(IS_WIN) && defined(ADDRESS_SANITIZER)
@@ -1461,6 +1513,7 @@ class IntegrationTestDeviceManagement : public IntegrationTest {
     IntegrationTest::SetUp();
     DMCleanup();
     test_server_ = std::make_unique<ScopedServer>(test_commands_);
+    ASSERT_NO_FATAL_FAILURE(SetMachineManaged(true));
   }
 
   void TearDown() override {
@@ -1474,6 +1527,19 @@ class IntegrationTestDeviceManagement : public IntegrationTest {
     EXPECT_TRUE(storage->DeleteDMToken());
   }
 
+  void ExpectAppInstalled(const std::string& appid,
+                          const base::Version& expected_version) {
+    ASSERT_NO_FATAL_FAILURE(ExpectAppVersion(appid, expected_version));
+
+    std::wstring pv;
+    EXPECT_EQ(
+        ERROR_SUCCESS,
+        base::win::RegKey(UpdaterScopeToHKeyRoot(UpdaterScope::kSystem),
+                          GetAppClientsKey(appid).c_str(), Wow6432(KEY_READ))
+            .ReadValue(kRegValuePV, &pv));
+    EXPECT_EQ(pv, base::ASCIIToWide(expected_version.GetString()));
+  }
+
   std::unique_ptr<ScopedServer> test_server_;
   static constexpr char kEnrollmentToken[] = "integration-enrollment-token";
   static constexpr char kDMToken[] = "integration-dm-token";
@@ -1482,7 +1548,7 @@ class IntegrationTestDeviceManagement : public IntegrationTest {
 
 TEST_F(IntegrationTestDeviceManagement, PolicyFetchBeforeInstall) {
   if (!IsSystemInstall(GetTestScope())) {
-    return;
+    GTEST_SKIP();
   }
 
   ::wireless_android_enterprise_devicemanagement::OmahaSettingsClientProto
@@ -1527,8 +1593,73 @@ TEST_F(IntegrationTestDeviceManagement, PolicyFetchBeforeInstall) {
   ASSERT_NO_FATAL_FAILURE(Uninstall());
 }
 
-#endif  // BUILDFLAG(IS_WIN)
+#if !defined(COMPONENT_BUILD)
+TEST_F(IntegrationTestDeviceManagement, RollbackToTargetVersion) {
+  if (!IsSystemInstall(GetTestScope())) {
+    GTEST_SKIP();
+  }
 
+  constexpr char kTargetVersionPrefix[] = "1.0.";
+  const base::Version kAppInitialVersion = base::Version("2.3.1.0");
+  const base::Version kAppRollbackVersion = base::Version("1.0.1.2");
+
+  ASSERT_NO_FATAL_FAILURE(Install());
+  ASSERT_NO_FATAL_FAILURE(InstallApp(
+      kAppId, kAppInitialVersion, base::BindLambdaForTesting([&]() {
+        // Run test app installer to set app `pv` value to its initial version.
+        base::FilePath exe_path;
+        ASSERT_TRUE(base::PathService::Get(base::DIR_EXE, &exe_path));
+        base::CommandLine command(exe_path.AppendASCII("test_installer")
+                                      .AppendASCII("TestApp2Setup.exe"));
+        command.AppendArg("--system");
+        command.AppendSwitchASCII("--company", COMPANY_SHORTNAME_STRING);
+        command.AppendSwitchASCII("--appid", kAppId);
+        command.AppendSwitchASCII("--product_version",
+                                  kAppInitialVersion.GetString());
+        VLOG(2) << "Launch app setup command: "
+                << command.GetCommandLineString();
+
+        base::Process process = base::LaunchProcess(command, {});
+        if (!process.IsValid()) {
+          VLOG(2) << "Invalid process launching command: "
+                  << command.GetCommandLineString();
+        }
+
+        int exit_code = -1;
+        EXPECT_TRUE(process.WaitForExitWithTimeout(
+            TestTimeouts::action_timeout(), &exit_code));
+        EXPECT_EQ(0, exit_code);
+      })));
+  ASSERT_NO_FATAL_FAILURE(ExpectInstalled());
+  ASSERT_NO_FATAL_FAILURE(ExpectAppInstalled(kAppId, kAppInitialVersion));
+
+  PushEnrollmentToken(kEnrollmentToken);
+  ExpectDeviceManagementRegistrationRequest(test_server_.get(),
+                                            kEnrollmentToken, kDMToken);
+  ::wireless_android_enterprise_devicemanagement::OmahaSettingsClientProto
+      omaha_settings;
+  ::wireless_android_enterprise_devicemanagement::ApplicationSettings app;
+  app.set_app_guid(kAppId);
+  app.set_target_version_prefix(kTargetVersionPrefix);
+  app.set_rollback_to_target_version(
+      ::wireless_android_enterprise_devicemanagement::
+          ROLLBACK_TO_TARGET_VERSION_ENABLED);
+  omaha_settings.mutable_application_settings()->Add(std::move(app));
+  ExpectDeviceManagementPolicyFetchRequest(test_server_.get(), kDMToken,
+                                           omaha_settings);
+  ExpectAppRollbackUpdateSequence(UpdaterScope::kSystem, test_server_.get(),
+                                  kAppId,
+                                  /*allow_rollback=*/true, kTargetVersionPrefix,
+                                  kAppInitialVersion, kAppRollbackVersion);
+  ASSERT_NO_FATAL_FAILURE(RunWake(0));
+  ASSERT_TRUE(WaitForUpdaterExit());
+  ASSERT_NO_FATAL_FAILURE(ExpectAppInstalled(kAppId, kAppRollbackVersion));
+
+  ASSERT_NO_FATAL_FAILURE(ExpectUninstallPing(test_server_.get()));
+  ASSERT_NO_FATAL_FAILURE(Uninstall());
+}
+#endif  // !defined(COMPONENT_BUILD)
+#endif  // BUILDFLAG(IS_WIN)
 #endif  // BUILDFLAG(IS_WIN) || !defined(COMPONENT_BUILD)
 
 }  // namespace updater::test

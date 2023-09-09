@@ -38,6 +38,7 @@
 #include "chromeos/dbus/dlp/dlp_client.h"
 #include "components/arc/intent_helper/arc_intent_helper_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/services/app_service/public/cpp/app_registry_cache.h"
 #include "extensions/browser/extension_registry_observer.h"
 #include "storage/browser/file_system/file_system_operation.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -51,11 +52,13 @@ using OutputsType =
     extensions::api::file_manager_private::ProgressStatus::OutputsType;
 using file_manager::util::EntryDefinition;
 
-namespace file_manager {
+namespace ash::file_system_provider {
 
-namespace {
-class RecalculateTasksObserver;
-}  // namespace
+class ScopedUserInteraction;
+
+}
+
+namespace file_manager {
 
 // Monitors changes in disk mounts, network connection state and preferences
 // affecting File Manager. Dispatches appropriate File Browser events.
@@ -69,7 +72,8 @@ class EventRouter : public KeyedService,
                     public ash::TabletModeObserver,
                     public file_manager::io_task::IOTaskController::Observer,
                     public guest_os::GuestOsMountProviderRegistry::Observer,
-                    public chromeos::DlpClient::Observer {
+                    public chromeos::DlpClient::Observer,
+                    public apps::AppRegistryCache::Observer {
  public:
   using DispatchDirectoryChangeEventImplCallback =
       base::RepeatingCallback<void(const base::FilePath& virtual_path,
@@ -203,6 +207,11 @@ class EventRouter : public KeyedService,
   void OnFilesAddedToDlpDaemon(
       const std::vector<base::FilePath>& files) override;
 
+  // apps::AppRegistryCache::Observer:
+  void OnAppUpdate(const apps::AppUpdate& update) override;
+  void OnAppRegistryCacheWillBeDestroyed(
+      apps::AppRegistryCache* cache) override;
+
   // Use this method for unit tests to bypass checking if there are any SWA
   // windows.
   void ForceBroadcastingForTesting(bool enabled) {
@@ -319,13 +328,21 @@ class EventRouter : public KeyedService,
   std::unique_ptr<SystemNotificationManager> notification_manager_;
   std::unique_ptr<DeviceEventRouter> device_event_router_;
   std::unique_ptr<DriveFsEventRouter> drivefs_event_router_;
-  std::unique_ptr<RecalculateTasksObserver> recalculate_tasks_observer_;
 
   DispatchDirectoryChangeEventImplCallback
       dispatch_directory_change_event_impl_;
 
+  // Keeps track of IO tasks interacting with ODFS.
+  std::map<io_task::IOTaskId,
+           std::unique_ptr<ash::file_system_provider::ScopedUserInteraction>>
+      odfs_interactions_;
+
   // Set this to true to ignore the DoFilesSwaWindowsExist check for testing.
   bool force_broadcasting_for_testing_ = false;
+
+  base::ScopedObservation<apps::AppRegistryCache,
+                          apps::AppRegistryCache::Observer>
+      app_registry_cache_observer_{this};
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate the weak pointers before any other members are destroyed.

@@ -12,35 +12,74 @@
 
 namespace autofill::autofill_metrics {
 
-void AutocompleteUnrecognizedFallbackMetricLogger::ContextMenuEntryShown(
-    bool field_has_ac_unrecognized) {
-  CHECK_EQ(state_, State::kFallbackNotShown);
-  state_ = field_has_ac_unrecognized
-               ? State::kShownOnAutocompleteUnrecognizedField
-               : State::kShownOnAutocompleteRecognizedField;
+AutocompleteUnrecognizedFallbackEventLogger::
+    ~AutocompleteUnrecognizedFallbackEventLogger() {
+  // Emit the explicit triggering metric for recognized and unrecognized fields.
+  EmitExplicitlyTriggeredMetric(ac_unrecognized_context_menu_state,
+                                "ClassifiedFieldAutocompleteUnrecognized");
+  EmitExplicitlyTriggeredMetric(ac_recognized_context_menu_state,
+                                "ClassifiedFieldAutocompleteRecognized");
+  EmitFillAfterSuggestionMetric();
 }
 
-void AutocompleteUnrecognizedFallbackMetricLogger::ContextMenuEntryAccepted() {
-  CHECK_NE(state_, State::kFallbackNotShown);
-  was_accepted_ = true;
+void AutocompleteUnrecognizedFallbackEventLogger::OnDidShowSuggestions() {
+  if (suggestion_state_ == SuggestionState::kNotShown) {
+    suggestion_state_ = SuggestionState::kShown;
+  }
 }
 
-void AutocompleteUnrecognizedFallbackMetricLogger::ContextMenuClosed() {
-  if (state_ == State::kFallbackNotShown) {
+void AutocompleteUnrecognizedFallbackEventLogger::OnDidFillSuggestion() {
+  CHECK_NE(suggestion_state_, SuggestionState::kNotShown);
+  if (suggestion_state_ != SuggestionState::kFilled) {
+    suggestion_state_ = SuggestionState::kFilled;
+  }
+}
+
+void AutocompleteUnrecognizedFallbackEventLogger::ContextMenuEntryShown(
+    bool address_field_has_ac_unrecognized) {
+  ContextMenuEntryState& state = address_field_has_ac_unrecognized
+                                     ? ac_unrecognized_context_menu_state
+                                     : ac_recognized_context_menu_state;
+  if (state != ContextMenuEntryState::kAccepted) {
+    state = ContextMenuEntryState::kShown;
+  }
+}
+
+void AutocompleteUnrecognizedFallbackEventLogger::ContextMenuEntryAccepted(
+    bool address_field_has_ac_unrecognized) {
+  ContextMenuEntryState& state = address_field_has_ac_unrecognized
+                                     ? ac_unrecognized_context_menu_state
+                                     : ac_recognized_context_menu_state;
+  CHECK_NE(state, ContextMenuEntryState::kNotShown);
+  state = ContextMenuEntryState::kAccepted;
+}
+
+void AutocompleteUnrecognizedFallbackEventLogger::EmitExplicitlyTriggeredMetric(
+    ContextMenuEntryState state,
+    std::string_view bucket) {
+  if (state == ContextMenuEntryState::kNotShown) {
     return;
   }
 
-  auto metric_name = [](std::string_view bucket) {
-    return base::StrCat({"Autofill.ManualFallback.Funnel.ExplicitTriggering.",
-                         bucket, ".Address"});
+  auto metric_name = [](std::string_view token) {
+    return base::StrCat(
+        {"Autofill.ManualFallback.ExplicitlyTriggered.", token, ".Address"});
   };
   // Emit to the bucket corresponding to the `state` and to the "Total" bucket.
+  const bool was_accepted = state == ContextMenuEntryState::kAccepted;
+  base::UmaHistogramBoolean(metric_name(bucket), was_accepted);
+  base::UmaHistogramBoolean(metric_name("Total"), was_accepted);
+}
+
+void AutocompleteUnrecognizedFallbackEventLogger::
+    EmitFillAfterSuggestionMetric() {
+  if (suggestion_state_ == SuggestionState::kNotShown) {
+    return;
+  }
   base::UmaHistogramBoolean(
-      metric_name(state_ == State::kShownOnAutocompleteRecognizedField
-                      ? "ClassifiedFieldAutocompleteRecognized"
-                      : "ClassifiedFieldAutocompleteUnrecognized"),
-      was_accepted_);
-  base::UmaHistogramBoolean(metric_name("Total"), was_accepted_);
+      "Autofill.Funnel.ClassifiedFieldAutocompleteUnrecognized."
+      "FillAfterSuggestion.Address",
+      suggestion_state_ == SuggestionState::kFilled);
 }
 
 }  // namespace autofill::autofill_metrics

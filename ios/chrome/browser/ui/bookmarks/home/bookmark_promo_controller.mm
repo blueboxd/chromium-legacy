@@ -25,10 +25,6 @@
 #import "ios/chrome/browser/ui/authentication/signin_promo_view_mediator.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_utils_ios.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 @interface BookmarkPromoController () <SigninPromoViewConsumer,
                                        IdentityManagerObserverBridgeDelegate>
 
@@ -58,30 +54,24 @@
         new signin::IdentityManagerObserverBridge(
             IdentityManagerFactory::GetForBrowserState(browserState), self));
     _signinPromoViewMediator = [[SigninPromoViewMediator alloc]
-              initWithBrowser:browser
-        accountManagerService:ChromeAccountManagerServiceFactory::
-                                  GetForBrowserState(browserState)
-                  authService:AuthenticationServiceFactory::GetForBrowserState(
-                                  browserState)
-                  prefService:browserState->GetPrefs()
-                  syncService:syncService
-                  accessPoint:signin_metrics::AccessPoint::
-                                  ACCESS_POINT_BOOKMARK_MANAGER
-                    presenter:presenter
-           baseViewController:baseViewController];
+        initWithAccountManagerService:ChromeAccountManagerServiceFactory::
+                                          GetForBrowserState(browserState)
+                          authService:AuthenticationServiceFactory::
+                                          GetForBrowserState(browserState)
+                          prefService:browserState->GetPrefs()
+                          syncService:syncService
+                          accessPoint:signin_metrics::AccessPoint::
+                                          ACCESS_POINT_BOOKMARK_MANAGER
+                            presenter:presenter
+                   baseViewController:baseViewController];
     _signinPromoViewMediator.consumer = self;
     if (base::FeatureList::IsEnabled(syncer::kEnableBookmarksAccountStorage)) {
-      [_signinPromoViewMediator
-          setDataTypeToWaitForInitialSync:syncer::ModelType::BOOKMARKS];
+      _signinPromoViewMediator.dataTypeToWaitForInitialSync =
+          syncer::ModelType::BOOKMARKS;
     }
     [self updateShouldShowSigninPromo];
   }
   return self;
-}
-
-- (void)dealloc {
-  // TODO(crbug.com/1454777)
-  DUMP_WILL_BE_CHECK(!_browser);
 }
 
 - (void)shutdown {
@@ -151,7 +141,9 @@
   }
   syncer::SyncService* syncService =
       SyncServiceFactory::GetForBrowserState(browserState);
-  if (!bookmark_utils_ios::IsAccountBookmarkStorageOptedIn(syncService)) {
+  if (!base::FeatureList::IsEnabled(
+          syncer::kReplaceSyncPromosWithSignInPromos) &&
+      !bookmark_utils_ios::IsAccountBookmarkStorageOptedIn(syncService)) {
     // The user signed in, but not opted into syncing bookmarks - show sync
     // promo.
     self.shouldShowSigninPromo = YES;
@@ -159,7 +151,7 @@
     return;
   }
 
-  if (self.signinPromoViewMediator.signinInProgress) {
+  if (self.signinPromoViewMediator.showSpinner) {
     // The user is opted into syncing bookmarks, but the first sync is not
     // finished yet - keep the promo visible to show the spinner.
     self.shouldShowSigninPromo = YES;
@@ -220,7 +212,7 @@
                       consentLevel:(signin::ConsentLevel)consentLevel {
   switch (event.GetEventTypeFor(consentLevel)) {
     case signin::PrimaryAccountChangeEvent::Type::kSet:
-      if (!self.signinPromoViewMediator.signinInProgress) {
+      if (!self.signinPromoViewMediator.showSpinner) {
         self.shouldShowSigninPromo = NO;
       }
       break;

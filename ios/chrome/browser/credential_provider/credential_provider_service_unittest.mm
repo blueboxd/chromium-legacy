@@ -35,10 +35,6 @@
 #import "testing/gtest_mac.h"
 #import "testing/platform_test.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 namespace {
 
 using testing::UnorderedElementsAre;
@@ -70,6 +66,13 @@ class MockLargeIconService : public favicon::LargeIconService {
                int,
                int,
                favicon_base::LargeIconImageCallback,
+               base::CancelableTaskTracker*),
+              (override));
+  MOCK_METHOD(base::CancelableTaskTracker::TaskId,
+              GetLargeIconRawBitmapForPageUrl,
+              (const GURL&,
+               int,
+               favicon_base::FaviconRawBitmapCallback,
                base::CancelableTaskTracker*),
               (override));
   MOCK_METHOD(base::CancelableTaskTracker::TaskId,
@@ -157,7 +160,7 @@ TEST_F(CredentialProviderServiceTest, FirstSync) {
   password_manager::PasswordForm form;
   form.url = GURL("http://g.com");
   form.username_value = u"user";
-  form.encrypted_password = "encrypted-pwd";
+  form.keychain_identifier = "encrypted-pwd";
   password_store_->AddLogin(form);
   base::RunLoop().RunUntilIdle();
 
@@ -177,7 +180,7 @@ TEST_F(CredentialProviderServiceTest, TwoStores) {
   password_manager::PasswordForm local_form;
   local_form.url = GURL("http://local.com");
   local_form.username_value = u"user";
-  local_form.encrypted_password = "encrypted-pwd";
+  local_form.keychain_identifier = "encrypted-pwd";
   password_store_->AddLogin(local_form);
   password_manager::PasswordForm account_form = local_form;
   account_form.url = GURL("http://account.com");
@@ -227,7 +230,7 @@ TEST_F(CredentialProviderServiceTest, PasswordChanges) {
   form.signon_realm = "http://www.example.com/";
   form.action = GURL("http://www.example.com/action");
   form.password_element = u"pwd";
-  form.encrypted_password = "example";
+  form.keychain_identifier = "example";
   password_store_->AddLogin(form);
   task_environment_.RunUntilIdle();
 
@@ -236,7 +239,7 @@ TEST_F(CredentialProviderServiceTest, PasswordChanges) {
   NSString* keychainIdentifier =
       credential_store_.credentials[0].keychainIdentifier;
 
-  form.encrypted_password = "secret";
+  form.keychain_identifier = "secret";
   password_store_->UpdateLogin(form);
   task_environment_.RunUntilIdle();
 

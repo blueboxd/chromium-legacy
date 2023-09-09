@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #import <UIKit/UIKit.h>
+#import "base/ios/ios_util.h"
+#import "components/feature_engagement/public/feature_list.h"
 #import "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/metrics/metrics_app_interface.h"
 #import "ios/chrome/browser/signin/fake_system_identity.h"
@@ -19,12 +21,9 @@
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
+#import "ios/testing/earl_grey/app_launch_manager.h"
 #import "ios/testing/earl_grey/earl_grey_test.h"
 #import "ui/base/l10n/l10n_util.h"
-
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
 
 using chrome_test_util::ButtonWithAccessibilityLabel;
 using chrome_test_util::ButtonWithAccessibilityLabelId;
@@ -66,6 +65,16 @@ NSString* const kPassphrase = @"hello";
 
 // Tests to open the sync passphrase view, and to close it.
 - (void)testShowSyncPassphraseAndDismiss {
+  // TODO(crbug.com/1475088): Remove the disabling after fixing the root cause.
+  if (![ChromeEarlGrey isCompactWidth]) {
+    [[AppLaunchManager sharedManager]
+        ensureAppLaunchedWithFeaturesEnabled:{}
+                                    disabled:
+                                        {feature_engagement::
+                                             kIPHiOSTabGridToolbarItemFeature}
+                              relaunchPolicy:ForceRelaunchByCleanShutdown];
+  }
+
   [ChromeEarlGrey addBookmarkWithSyncPassphrase:kPassphrase];
   // Signin.
   FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];
@@ -117,6 +126,16 @@ NSString* const kPassphrase = @"hello";
 // Tests Sync is on after opening settings from the Infobar and entering the
 // passphrase.
 - (void)testShowAddSyncPassphrphrase {
+  // TODO(crbug.com/1475088): Remove the disabling after fixing the root cause.
+  if (![ChromeEarlGrey isCompactWidth]) {
+    [[AppLaunchManager sharedManager]
+        ensureAppLaunchedWithFeaturesEnabled:{}
+                                    disabled:
+                                        {feature_engagement::
+                                             kIPHiOSTabGridToolbarItemFeature}
+                              relaunchPolicy:ForceRelaunchByCleanShutdown];
+  }
+
   [ChromeEarlGrey addBookmarkWithSyncPassphrase:kPassphrase];
   // Signin.
   FakeSystemIdentity* fakeIdentity = [FakeSystemIdentity fakeIdentity1];

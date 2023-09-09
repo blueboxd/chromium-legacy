@@ -4,11 +4,13 @@
 
 #include "third_party/blink/renderer/modules/smart_card/smart_card_context.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_smart_card_connect_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_smart_card_connect_result.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_smart_card_get_status_change_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_smart_card_reader_state_flags.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_smart_card_reader_state_in.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_smart_card_reader_state_out.h"
+#include "third_party/blink/renderer/modules/smart_card/smart_card_cancel_algorithm.h"
 #include "third_party/blink/renderer/modules/smart_card/smart_card_connection.h"
 #include "third_party/blink/renderer/modules/smart_card/smart_card_error.h"
 #include "third_party/blink/renderer/modules/smart_card/smart_card_util.h"
@@ -89,39 +91,7 @@ HeapVector<Member<SmartCardReaderStateOut>> ToV8ReaderStatesOut(
   return reader_states;
 }
 
-void RejectWithAbortionReason(ScriptPromiseResolver* resolver,
-                              AbortSignal* signal) {
-  CHECK(signal->aborted());
-
-  ScriptState* script_state = resolver->GetScriptState();
-  if (!IsInParallelAlgorithmRunnable(resolver->GetExecutionContext(),
-                                     script_state)) {
-    return;
-  }
-
-  ScriptState::Scope script_state_scope(script_state);
-  resolver->Reject(signal->reason(script_state));
-}
-
 }  // anonymous namespace
-
-class SmartCardContext::GetStatusChangeAbortAlgorithm final
-    : public AbortSignal::Algorithm {
- public:
-  explicit GetStatusChangeAbortAlgorithm(SmartCardContext* blink_scard_context)
-      : blink_scard_context_(blink_scard_context) {}
-  ~GetStatusChangeAbortAlgorithm() override = default;
-
-  void Run() override { blink_scard_context_->AbortGetStatusChange(); }
-
-  void Trace(Visitor* visitor) const override {
-    visitor->Trace(blink_scard_context_);
-    Algorithm::Trace(visitor);
-  }
-
- private:
-  Member<SmartCardContext> blink_scard_context_;
-};
 
 SmartCardContext::SmartCardContext(
     mojo::PendingRemote<device::mojom::blink::SmartCardContext> pending_context,
@@ -163,22 +133,20 @@ ScriptPromise SmartCardContext::getStatusChange(
     return ScriptPromise();
   }
 
-  if (options->hasSignal()) {
-    if (options->signal()->aborted()) {
-      return ScriptPromise::Reject(
-          script_state, get_status_change_abort_signal_->reason(script_state));
-    }
-    CHECK(!get_status_change_abort_signal_);
-    CHECK(!get_status_change_abort_handle_);
-    get_status_change_abort_signal_ = options->signal();
-    get_status_change_abort_handle_ =
-        get_status_change_abort_signal_->AddAlgorithm(
-            MakeGarbageCollected<GetStatusChangeAbortAlgorithm>(this));
+  AbortSignal* signal = options->getSignalOr(nullptr);
+  if (signal && signal->aborted()) {
+    return ScriptPromise::Reject(script_state, signal->reason(script_state));
   }
 
   base::TimeDelta timeout = base::TimeDelta::Max();
   if (options->hasTimeout()) {
     timeout = base::Milliseconds(options->timeout());
+  }
+
+  AbortSignal::AlgorithmHandle* abort_handle = nullptr;
+  if (signal) {
+    abort_handle = signal->AddAlgorithm(
+        MakeGarbageCollected<SmartCardCancelAlgorithm>(this));
   }
 
   ScriptPromiseResolver* resolver = MakeGarbageCollected<ScriptPromiseResolver>(
@@ -188,17 +156,17 @@ ScriptPromise SmartCardContext::getStatusChange(
   scard_context_->GetStatusChange(
       timeout, ToMojomReaderStatesIn(reader_states),
       WTF::BindOnce(&SmartCardContext::OnGetStatusChangeDone,
-                    WrapPersistent(this), WrapPersistent(resolver)));
+                    WrapPersistent(this), WrapPersistent(resolver),
+                    WrapPersistent(signal), WrapPersistent(abort_handle)));
 
   return resolver->Promise();
 }
 
-ScriptPromise SmartCardContext::connect(
-    ScriptState* script_state,
-    const String& reader_name,
-    V8SmartCardAccessMode access_mode,
-    const Vector<V8SmartCardProtocol>& preferred_protocols,
-    ExceptionState& exception_state) {
+ScriptPromise SmartCardContext::connect(ScriptState* script_state,
+                                        const String& reader_name,
+                                        V8SmartCardAccessMode access_mode,
+                                        SmartCardConnectOptions* options,
+                                        ExceptionState& exception_state) {
   if (!EnsureMojoConnection(exception_state) ||
       !EnsureNoOperationInProgress(exception_state)) {
     return ScriptPromise();
@@ -206,6 +174,9 @@ ScriptPromise SmartCardContext::connect(
 
   ScriptPromiseResolver* resolver = MakeGarbageCollected<ScriptPromiseResolver>(
       script_state, exception_state.GetContext());
+
+  Vector<V8SmartCardProtocol> preferred_protocols =
+      options->getPreferredProtocolsOr(Vector<V8SmartCardProtocol>());
 
   request_ = resolver;
   scard_context_->Connect(
@@ -217,21 +188,19 @@ ScriptPromise SmartCardContext::connect(
   return resolver->Promise();
 }
 
-ScriptPromise SmartCardContext::connect(ScriptState* script_state,
-                                        const String& reader_name,
-                                        V8SmartCardAccessMode access_mode,
-                                        ExceptionState& exception_state) {
-  return connect(script_state, reader_name, access_mode,
-                 Vector<V8SmartCardProtocol>(), exception_state);
-}
-
 void SmartCardContext::Trace(Visitor* visitor) const {
   visitor->Trace(scard_context_);
   visitor->Trace(request_);
-  visitor->Trace(get_status_change_abort_signal_);
-  visitor->Trace(get_status_change_abort_handle_);
   ScriptWrappable::Trace(visitor);
   ExecutionContextClient::Trace(visitor);
+}
+
+void SmartCardContext::Cancel() {
+  if (!scard_context_.is_bound()) {
+    return;
+  }
+  scard_context_->Cancel(
+      WTF::BindOnce(&SmartCardContext::OnCancelDone, WrapPersistent(this)));
 }
 
 void SmartCardContext::CloseMojoConnection() {
@@ -251,19 +220,7 @@ void SmartCardContext::CloseMojoConnection() {
                                      kContextUnavailable);
   };
 
-  ResetAbortSignal();
-
   reject(request_.Release());
-}
-
-void SmartCardContext::ResetAbortSignal() {
-  if (get_status_change_abort_handle_) {
-    CHECK(get_status_change_abort_signal_);
-    get_status_change_abort_signal_->RemoveAlgorithm(
-        get_status_change_abort_handle_);
-    get_status_change_abort_handle_ = nullptr;
-  }
-  get_status_change_abort_signal_ = nullptr;
 }
 
 bool SmartCardContext::EnsureNoOperationInProgress(
@@ -312,25 +269,26 @@ void SmartCardContext::OnListReadersDone(
 
 void SmartCardContext::OnGetStatusChangeDone(
     ScriptPromiseResolver* resolver,
+    AbortSignal* signal,
+    AbortSignal::AlgorithmHandle* abort_handle,
     device::mojom::blink::SmartCardStatusChangeResultPtr result) {
   CHECK_EQ(request_, resolver);
   request_ = nullptr;
 
+  if (signal && abort_handle) {
+    signal->RemoveAlgorithm(abort_handle);
+  }
+
   if (result->is_error()) {
-    if (get_status_change_abort_signal_ &&
-        get_status_change_abort_signal_->aborted() &&
+    if (signal && signal->aborted() &&
         result->get_error() ==
             device::mojom::blink::SmartCardError::kCancelled) {
-      CHECK(!get_status_change_abort_handle_);
-      RejectWithAbortionReason(resolver, get_status_change_abort_signal_);
+      RejectWithAbortionReason(resolver, signal);
     } else {
       resolver->Reject(SmartCardError::Create(result->get_error()));
     }
-    ResetAbortSignal();
     return;
   }
-
-  ResetAbortSignal();
 
   resolver->Resolve(ToV8ReaderStatesOut(result->get_reader_states()));
 }
@@ -358,7 +316,7 @@ void SmartCardContext::OnConnectDone(
       result->get_success();
 
   auto* connection = MakeGarbageCollected<SmartCardConnection>(
-      std::move(success->connection), success->active_protocol,
+      std::move(success->connection), success->active_protocol, this,
       GetExecutionContext());
 
   auto* blink_result = SmartCardConnectResult::Create();
@@ -380,22 +338,6 @@ void SmartCardContext::OnConnectDone(
   }
 
   resolver->Resolve(blink_result);
-}
-
-void SmartCardContext::AbortGetStatusChange() {
-  CHECK(get_status_change_abort_signal_);
-  CHECK(get_status_change_abort_handle_);
-  // Aborting shouldn't be possible if there's no ongoing getStatusChange()
-  // request in the first place.
-  CHECK(request_);
-
-  // You can only abort once.
-  get_status_change_abort_signal_->RemoveAlgorithm(
-      get_status_change_abort_handle_);
-  get_status_change_abort_handle_ = nullptr;
-
-  scard_context_->Cancel(
-      WTF::BindOnce(&SmartCardContext::OnCancelDone, WrapPersistent(this)));
 }
 
 }  // namespace blink

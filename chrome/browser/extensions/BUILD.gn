@@ -1198,6 +1198,7 @@ static_library("extensions") {
       "//chromeos/ash/components/login/auth",
       "//chromeos/ash/components/login/login_state",
       "//chromeos/ash/components/network",
+      "//chromeos/ash/components/osauth/public",
       "//chromeos/ash/components/proximity_auth",
       "//chromeos/ash/components/settings",
       "//chromeos/ash/components/system",
@@ -1291,7 +1292,6 @@ static_library("extensions") {
       "system_display/display_info_provider_mac.cc",
       "system_display/display_info_provider_mac.h",
     ]
-    configs += [ "//build/config/compiler:enable_arc" ]
   }
 
   if (is_linux || is_chromeos_lacros) {

@@ -19,6 +19,7 @@
 #include "chromeos/ash/components/nearby/presence/credentials/nearby_presence_server_client_impl.h"
 #include "chromeos/ash/components/nearby/presence/credentials/prefs.h"
 #include "chromeos/ash/components/nearby/presence/credentials/proto_conversions.h"
+#include "chromeos/ash/components/nearby/presence/metrics/nearby_presence_metrics.h"
 #include "chromeos/ash/components/nearby/presence/proto/list_public_certificates_rpc.pb.h"
 #include "chromeos/ash/components/nearby/presence/proto/rpc_resources.pb.h"
 #include "chromeos/ash/components/nearby/presence/proto/update_device_rpc.pb.h"
@@ -38,6 +39,17 @@ const char kUploadCredentialsFieldMaskPath[] = "certificates";
 const base::TimeDelta kServerResponseTimeout = base::Seconds(5);
 constexpr int kServerCommunicationMaxAttempts = 5;
 const base::TimeDelta kSyncCredentialsDailyTimePeriod = base::Hours(24);
+constexpr int kMaxUpdateCredentialRequestCount = 6;
+std::vector<base::TimeDelta> kUpdateCredentialCoolDownPeriods = {
+    base::Seconds(0), base::Seconds(15), base::Seconds(30), base::Minutes(1),
+    base::Minutes(2), base::Minutes(5),  base::Minutes(10)};
+
+bool HasCoolOffPeriodPassed(int update_credential_request_count,
+                            base::Time last_daily_sync_success_time) {
+  CHECK(update_credential_request_count <= kMaxUpdateCredentialRequestCount);
+  return (base::Time::Now() - last_daily_sync_success_time) >=
+         kUpdateCredentialCoolDownPeriods[update_credential_request_count];
+}
 
 }  // namespace
 
@@ -73,7 +85,8 @@ void NearbyPresenceCredentialManagerImpl::Creator::Create(
     const mojo::SharedRemote<mojom::NearbyPresence>& nearby_presence,
     std::unique_ptr<LocalDeviceDataProvider> local_device_data_provider,
     CreateCallback on_created) {
-  CHECK(!has_credential_manager_been_created_);
+  CHECK(!has_credential_manager_been_created_ ||
+        g_is_credential_manager_set_for_testing_);
   has_credential_manager_been_created_ = true;
 
   on_created_ = (std::move(on_created));
@@ -204,7 +217,33 @@ void NearbyPresenceCredentialManagerImpl::RegisterPresence(
 }
 
 void NearbyPresenceCredentialManagerImpl::UpdateCredentials() {
-  // TODO(b/276307539): Implement `UpdateCredentials`.
+  if (is_daily_sync_in_progress_) {
+    return;
+  }
+
+  // Reset the request counter if we are at the max request count and the max
+  // request cooloff period has passed.
+  if (update_credential_request_count_ >= kMaxUpdateCredentialRequestCount) {
+    CHECK(last_daily_sync_success_time_.has_value());
+    if (HasCoolOffPeriodPassed(kMaxUpdateCredentialRequestCount,
+                               last_daily_sync_success_time_.value())) {
+      update_credential_request_count_ = 0;
+    } else {
+      // We're still in a cool-off period. Don't continue yet.
+      return;
+    }
+  }
+
+  // Trigger daily sync if:
+  //   a. No daily sync has yet occurred during this profile session lifetime
+  //      (signaled by `last_daily_sync_success_time_` being unset).
+  //   b. The cool-off period between successful daily sync attempts has passed.
+  if (!last_daily_sync_success_time_.has_value() ||
+      HasCoolOffPeriodPassed(update_credential_request_count_,
+                             last_daily_sync_success_time_.value())) {
+    update_credential_request_count_++;
+    daily_credential_sync_scheduler_->MakeImmediateRequest();
+  }
 }
 
 void NearbyPresenceCredentialManagerImpl::InitializeDeviceMetadata(
@@ -416,6 +455,8 @@ void NearbyPresenceCredentialManagerImpl::StartDailySync() {
     return;
   }
 
+  is_daily_sync_in_progress_ = true;
+
   // The flow for first time registration is as follows:
   //      1. Fetch this device's credentials.
   //      2. Upload this device's credentials if they have changed.
@@ -549,6 +590,9 @@ void NearbyPresenceCredentialManagerImpl::OnDailySyncRemoteCredentialsSaved(
   // Signal success to the scheduler, which causes it to reschedule for the
   // next daily sync.
   daily_credential_sync_scheduler_->HandleResult(/*success=*/true);
+
+  is_daily_sync_in_progress_ = false;
+  last_daily_sync_success_time_ = base::Time::Now();
 }
 
 void NearbyPresenceCredentialManagerImpl::ScheduleUploadCredentials(
@@ -588,6 +632,7 @@ void NearbyPresenceCredentialManagerImpl::ScheduleDownloadCredentials(
 void NearbyPresenceCredentialManagerImpl::UploadCredentials(
     std::vector<::nearby::internal::SharedCredential> credentials,
     base::RepeatingCallback<void(bool)> upload_credentials_result_callback) {
+  upload_credentials_attempts_needed_count_++;
   ash::nearby::proto::UpdateDeviceRequest request;
   request.mutable_device()->set_name(
       kDeviceIdPrefix + local_device_data_provider_->GetDeviceId());
@@ -626,13 +671,13 @@ void NearbyPresenceCredentialManagerImpl::UploadCredentials(
 
 void NearbyPresenceCredentialManagerImpl::HandleUploadCredentialsResult(
     base::RepeatingCallback<void(bool)> upload_credentials_callback,
-    bool success) {
-  // TODO(b/276307539): Add metrics to record success and failures.
-
+    ash::nearby::NearbyHttpResult result) {
   server_client_.reset();
 
   CHECK(upload_on_demand_scheduler_);
-  if (!success) {
+  if (result != ash::nearby::NearbyHttpResult::kSuccess) {
+    metrics::RecordSharedCredentialUploadAttemptFailureReason(result);
+
     // Allow the scheduler to exponentially attempt uploading credentials
     // until the max. Once it reaches the max attempts, notify consumers of
     // failure.
@@ -645,14 +690,20 @@ void NearbyPresenceCredentialManagerImpl::HandleUploadCredentialsResult(
 
     // We've exceeded the max attempts; registration has failed.
     upload_on_demand_scheduler_->Stop();
+    metrics::RecordSharedCredentialUploadResult(/*success=*/false);
     upload_on_demand_scheduler_.reset();
     CHECK(upload_credentials_callback);
     upload_credentials_callback.Run(/*success=*/false);
+    upload_credentials_attempts_needed_count_ = 0;
     return;
   }
 
   upload_on_demand_scheduler_->HandleResult(/*success=*/true);
+  metrics::RecordSharedCredentialUploadResult(/*success=*/true);
+  metrics::RecordSharedCredentialUploadTotalAttemptsNeededCount(
+      upload_credentials_attempts_needed_count_);
   upload_on_demand_scheduler_.reset();
+  upload_credentials_attempts_needed_count_ = 0;
   CHECK(upload_credentials_callback);
   upload_credentials_callback.Run(/*success=*/true);
 }
@@ -660,8 +711,9 @@ void NearbyPresenceCredentialManagerImpl::HandleUploadCredentialsResult(
 void NearbyPresenceCredentialManagerImpl::OnUploadCredentialsTimeout(
     base::RepeatingCallback<void(bool)> upload_credentials_callback) {
   // TODO(b/276307539): Add metrics to record timeout.
-  HandleUploadCredentialsResult(upload_credentials_callback,
-                                /*success=*/false);
+  HandleUploadCredentialsResult(
+      upload_credentials_callback,
+      /*result=*/ash::nearby::NearbyHttpResult::kTimeout);
 }
 
 void NearbyPresenceCredentialManagerImpl::OnUploadCredentialsSuccess(
@@ -671,18 +723,18 @@ void NearbyPresenceCredentialManagerImpl::OnUploadCredentialsSuccess(
   // image url returned from the server.
 
   server_response_timer_.Stop();
-  HandleUploadCredentialsResult(upload_credentials_callback,
-                                /*success=*/true);
+  HandleUploadCredentialsResult(
+      upload_credentials_callback,
+      /*result=*/ash::nearby::NearbyHttpResult::kSuccess);
 }
 
 void NearbyPresenceCredentialManagerImpl::OnUploadCredentialsFailure(
     base::RepeatingCallback<void(bool)> upload_credentials_callback,
     ash::nearby::NearbyHttpError error) {
-  // TODO(b/276307539): Add metrics to record the type of NearbyHttpError.
-
   server_response_timer_.Stop();
-  HandleUploadCredentialsResult(upload_credentials_callback,
-                                /*success=*/false);
+  HandleUploadCredentialsResult(
+      upload_credentials_callback,
+      /*result=*/ash::nearby::NearbyHttpErrorToResult(error));
 }
 
 void NearbyPresenceCredentialManagerImpl::DownloadCredentials(

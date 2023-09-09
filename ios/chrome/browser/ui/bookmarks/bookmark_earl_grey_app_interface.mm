@@ -12,6 +12,7 @@
 #import "components/bookmarks/browser/bookmark_model.h"
 #import "components/bookmarks/browser/titled_url_match.h"
 #import "components/bookmarks/common/bookmark_metrics.h"
+#import "components/bookmarks/common/storage_type.h"
 #import "components/prefs/pref_service.h"
 #import "components/query_parser/query_parser.h"
 #import "ios/chrome/browser/bookmarks/account_bookmark_model_factory.h"
@@ -25,10 +26,6 @@
 #import "ios/testing/nserror_util.h"
 #import "ui/base/models/tree_node_iterator.h"
 #import "url/gurl.h"
-
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
 
 @implementation BookmarkEarlGreyAppInterface
 
@@ -44,134 +41,135 @@
 + (NSError*)setupStandardBookmarksUsingFirstURL:(NSString*)firstURL
                                       secondURL:(NSString*)secondURL
                                        thirdURL:(NSString*)thirdURL
-                                      fourthURL:(NSString*)fourthURL {
-  if (![BookmarkEarlGreyAppInterface waitForBookmarkModelLoaded]) {
-    return testing::NSErrorWithLocalizedDescription(
-        @"Bookmark model was not loaded");
+                                      fourthURL:(NSString*)fourthURL
+                                      inStorage:
+                                          (bookmarks::StorageType)storageType {
+  NSError* bookmarkModelsLoadedError =
+      [BookmarkEarlGreyAppInterface waitForBookmarkModelsLoaded];
+  if (bookmarkModelsLoadedError) {
+    return bookmarkModelsLoadedError;
   }
-
-  bookmarks::BookmarkModel* localOrSyncableBookmarkModel =
-      [BookmarkEarlGreyAppInterface localOrSyncableBookmarkModel];
+  bookmarks::BookmarkModel* bookmarkModel =
+      [BookmarkEarlGreyAppInterface bookmarkModelOfStorage:storageType];
 
   NSString* firstTitle = @"First URL";
   const GURL firstGURL = GURL(base::SysNSStringToUTF8(firstURL));
-  localOrSyncableBookmarkModel->AddURL(
-      localOrSyncableBookmarkModel->mobile_node(), 0,
-      base::SysNSStringToUTF16(firstTitle), firstGURL);
+  bookmarkModel->AddURL(bookmarkModel->mobile_node(), 0,
+                        base::SysNSStringToUTF16(firstTitle), firstGURL);
 
   NSString* secondTitle = @"Second URL";
   const GURL secondGURL = GURL(base::SysNSStringToUTF8(secondURL));
-  localOrSyncableBookmarkModel->AddURL(
-      localOrSyncableBookmarkModel->mobile_node(), 0,
-      base::SysNSStringToUTF16(secondTitle), secondGURL);
+  bookmarkModel->AddURL(bookmarkModel->mobile_node(), 0,
+                        base::SysNSStringToUTF16(secondTitle), secondGURL);
 
   NSString* frenchTitle = @"French URL";
   const GURL thirdGURL = GURL(base::SysNSStringToUTF8(thirdURL));
-  localOrSyncableBookmarkModel->AddURL(
-      localOrSyncableBookmarkModel->mobile_node(), 0,
-      base::SysNSStringToUTF16(frenchTitle), thirdGURL);
+  bookmarkModel->AddURL(bookmarkModel->mobile_node(), 0,
+                        base::SysNSStringToUTF16(frenchTitle), thirdGURL);
 
   NSString* folderTitle = @"Folder 1";
-  const bookmarks::BookmarkNode* folder1 =
-      localOrSyncableBookmarkModel->AddFolder(
-          localOrSyncableBookmarkModel->mobile_node(), 0,
-          base::SysNSStringToUTF16(folderTitle));
+  const bookmarks::BookmarkNode* folder1 = bookmarkModel->AddFolder(
+      bookmarkModel->mobile_node(), 0, base::SysNSStringToUTF16(folderTitle));
   folderTitle = @"Folder 1.1";
-  localOrSyncableBookmarkModel->AddFolder(
-      localOrSyncableBookmarkModel->mobile_node(), 0,
-      base::SysNSStringToUTF16(folderTitle));
+  bookmarkModel->AddFolder(bookmarkModel->mobile_node(), 0,
+                           base::SysNSStringToUTF16(folderTitle));
 
   folderTitle = @"Folder 2";
-  const bookmarks::BookmarkNode* folder2 =
-      localOrSyncableBookmarkModel->AddFolder(
-          folder1, 0, base::SysNSStringToUTF16(folderTitle));
+  const bookmarks::BookmarkNode* folder2 = bookmarkModel->AddFolder(
+      folder1, 0, base::SysNSStringToUTF16(folderTitle));
 
   folderTitle = @"Folder 3";
-  const bookmarks::BookmarkNode* folder3 =
-      localOrSyncableBookmarkModel->AddFolder(
-          folder2, 0, base::SysNSStringToUTF16(folderTitle));
+  const bookmarks::BookmarkNode* folder3 = bookmarkModel->AddFolder(
+      folder2, 0, base::SysNSStringToUTF16(folderTitle));
 
   NSString* thirdTitle = @"Third URL";
   const GURL fourthGURL = GURL(base::SysNSStringToUTF8(fourthURL));
-  localOrSyncableBookmarkModel->AddURL(
-      folder3, 0, base::SysNSStringToUTF16(thirdTitle), fourthGURL);
+  bookmarkModel->AddURL(folder3, 0, base::SysNSStringToUTF16(thirdTitle),
+                        fourthGURL);
   return nil;
 }
 
-+ (NSError*)setupBookmarksWhichExceedsScreenHeightUsingURL:(NSString*)URL {
-  if (![BookmarkEarlGreyAppInterface waitForBookmarkModelLoaded]) {
-    return testing::NSErrorWithLocalizedDescription(
-        @"Bookmark model was not loaded");
++ (NSError*)setupBookmarksWhichExceedsScreenHeightUsingURL:(NSString*)URL
+                                                 inStorage:
+                                                     (bookmarks::StorageType)
+                                                         storageType {
+  NSError* waitForBookmarkModelsLoadedError =
+      [BookmarkEarlGreyAppInterface waitForBookmarkModelsLoaded];
+  if (waitForBookmarkModelsLoadedError) {
+    return waitForBookmarkModelsLoadedError;
   }
-
-  bookmarks::BookmarkModel* localOrSyncableBookmarkModel =
-      [BookmarkEarlGreyAppInterface localOrSyncableBookmarkModel];
+  bookmarks::BookmarkModel* bookmarkModel =
+      [BookmarkEarlGreyAppInterface bookmarkModelOfStorage:storageType];
 
   const GURL dummyURL = GURL(base::SysNSStringToUTF8(URL));
-  localOrSyncableBookmarkModel->AddURL(
-      localOrSyncableBookmarkModel->mobile_node(), 0,
-      base::SysNSStringToUTF16(@"Bottom URL"), dummyURL);
+  bookmarkModel->AddURL(bookmarkModel->mobile_node(), 0,
+                        base::SysNSStringToUTF16(@"Bottom URL"), dummyURL);
 
   NSString* dummyTitle = @"Dummy URL";
   for (int i = 0; i < 20; i++) {
-    localOrSyncableBookmarkModel->AddURL(
-        localOrSyncableBookmarkModel->mobile_node(), 0,
-        base::SysNSStringToUTF16(dummyTitle), dummyURL);
+    bookmarkModel->AddURL(bookmarkModel->mobile_node(), 0,
+                          base::SysNSStringToUTF16(dummyTitle), dummyURL);
   }
   NSString* folderTitle = @"Folder 1";
-  const bookmarks::BookmarkNode* folder1 =
-      localOrSyncableBookmarkModel->AddFolder(
-          localOrSyncableBookmarkModel->mobile_node(), 0,
-          base::SysNSStringToUTF16(folderTitle));
-  localOrSyncableBookmarkModel->AddURL(
-      localOrSyncableBookmarkModel->mobile_node(), 0,
-      base::SysNSStringToUTF16(@"Top URL"), dummyURL);
+  const bookmarks::BookmarkNode* folder1 = bookmarkModel->AddFolder(
+      bookmarkModel->mobile_node(), 0, base::SysNSStringToUTF16(folderTitle));
+  bookmarkModel->AddURL(bookmarkModel->mobile_node(), 0,
+                        base::SysNSStringToUTF16(@"Top URL"), dummyURL);
 
   // Add URLs to Folder 1.
-  localOrSyncableBookmarkModel->AddURL(
-      folder1, 0, base::SysNSStringToUTF16(dummyTitle), dummyURL);
-  localOrSyncableBookmarkModel->AddURL(
-      folder1, 0, base::SysNSStringToUTF16(@"Bottom 1"), dummyURL);
+  bookmarkModel->AddURL(folder1, 0, base::SysNSStringToUTF16(dummyTitle),
+                        dummyURL);
+  bookmarkModel->AddURL(folder1, 0, base::SysNSStringToUTF16(@"Bottom 1"),
+                        dummyURL);
   for (int i = 0; i < 20; i++) {
-    localOrSyncableBookmarkModel->AddURL(
-        folder1, 0, base::SysNSStringToUTF16(dummyTitle), dummyURL);
+    bookmarkModel->AddURL(folder1, 0, base::SysNSStringToUTF16(dummyTitle),
+                          dummyURL);
   }
   return nil;
 }
 
-+ (BOOL)waitForBookmarkModelLoaded {
++ (NSError*)waitForBookmarkModelsLoaded {
   bookmarks::BookmarkModel* localOrSyncableBookmarkModel =
       [BookmarkEarlGreyAppInterface localOrSyncableBookmarkModel];
-  bookmarks::BookmarkModel* accountBookmarkModel =
-      [BookmarkEarlGreyAppInterface accountBookmarkModel];
 
   BOOL localOrSyncableModelSuccess =
       base::test::ios::WaitUntilConditionOrTimeout(
           base::test::ios::kWaitForUIElementTimeout, ^{
-            return localOrSyncableBookmarkModel->loaded() == YES;
+            return localOrSyncableBookmarkModel->loaded();
           });
-
-  if (!localOrSyncableModelSuccess || !accountBookmarkModel) {
-    return localOrSyncableModelSuccess;
+  if (!localOrSyncableModelSuccess) {
+    return testing::NSErrorWithLocalizedDescription(
+        @"Local/Syncable bookmark model did not load");
   }
-  return base::test::ios::WaitUntilConditionOrTimeout(
+  bookmarks::BookmarkModel* accountBookmarkModel =
+      [BookmarkEarlGreyAppInterface accountBookmarkModel];
+
+  if (!accountBookmarkModel) {
+    return nil;
+  }
+  BOOL accountSuccess = base::test::ios::WaitUntilConditionOrTimeout(
       base::test::ios::kWaitForUIElementTimeout, ^{
-        return accountBookmarkModel->loaded() == YES;
+        return accountBookmarkModel->loaded();
       });
+  if (!accountSuccess) {
+    return testing::NSErrorWithLocalizedDescription(
+        @"Account bookmark model exists but did not load");
+  }
+  return nil;
 }
 
-// TODO(crbug.com/1434501): Add account BookmarkModel support.
 + (NSError*)verifyBookmarksWithTitle:(NSString*)title
-                       expectedCount:(NSUInteger)expectedCount {
+                       expectedCount:(NSUInteger)expectedCount
+                           inStorage:(bookmarks::StorageType)storageType {
   // Get BookmarkModel and wait for it to be loaded.
-  bookmarks::BookmarkModel* localOrSyncableBookmarkModel =
-      [BookmarkEarlGreyAppInterface localOrSyncableBookmarkModel];
+  bookmarks::BookmarkModel* bookmarkModel =
+      [BookmarkEarlGreyAppInterface bookmarkModelOfStorage:storageType];
 
   // Verify the correct number of bookmarks exist.
   std::u16string matchString = base::SysNSStringToUTF16(title);
   int const kMaxCountOfBookmarks = 50;
   std::vector<bookmarks::TitledUrlMatch> matches =
-      localOrSyncableBookmarkModel->GetBookmarksMatching(
+      bookmarkModel->GetBookmarksMatching(
           matchString, kMaxCountOfBookmarks,
           query_parser::MatchingAlgorithm::DEFAULT);
   if (matches.size() != expectedCount) {
@@ -182,35 +180,36 @@
   return nil;
 }
 
-// TODO(crbug.com/1434501): Add account BookmarkModel support.
-+ (NSError*)addBookmarkWithTitle:(NSString*)title URL:(NSString*)url {
-  if (![BookmarkEarlGreyAppInterface waitForBookmarkModelLoaded]) {
-    return testing::NSErrorWithLocalizedDescription(
-        @"Bookmark model was not loaded");
++ (NSError*)addBookmarkWithTitle:(NSString*)title
+                             URL:(NSString*)url
+                       inStorage:(bookmarks::StorageType)storageType {
+  NSError* waitForBookmarkModelsLoadedError =
+      [BookmarkEarlGreyAppInterface waitForBookmarkModelsLoaded];
+  if (waitForBookmarkModelsLoadedError) {
+    return waitForBookmarkModelsLoadedError;
   }
 
   GURL bookmarkURL = GURL(base::SysNSStringToUTF8(url));
-  bookmarks::BookmarkModel* localOrSyncableBookmarkModel =
-      [BookmarkEarlGreyAppInterface localOrSyncableBookmarkModel];
-  localOrSyncableBookmarkModel->AddNewURL(
-      localOrSyncableBookmarkModel->mobile_node(), 0,
-      base::SysNSStringToUTF16(title), bookmarkURL);
+  bookmarks::BookmarkModel* bookmarkModel =
+      [BookmarkEarlGreyAppInterface bookmarkModelOfStorage:storageType];
+  bookmarkModel->AddNewURL(bookmarkModel->mobile_node(), 0,
+                           base::SysNSStringToUTF16(title), bookmarkURL);
 
   return nil;
 }
 
-// TODO(crbug.com/1434501): Add account BookmarkModel support.
-+ (NSError*)removeBookmarkWithTitle:(NSString*)title {
++ (NSError*)removeBookmarkWithTitle:(NSString*)title
+                          inStorage:(bookmarks::StorageType)storageType {
   std::u16string name16(base::SysNSStringToUTF16(title));
-  bookmarks::BookmarkModel* localOrSyncableBookmarkModel =
-      [BookmarkEarlGreyAppInterface localOrSyncableBookmarkModel];
+  bookmarks::BookmarkModel* bookmarkModel =
+      [BookmarkEarlGreyAppInterface bookmarkModelOfStorage:storageType];
   ui::TreeNodeIterator<const bookmarks::BookmarkNode> iterator(
-      localOrSyncableBookmarkModel->root_node());
+      bookmarkModel->root_node());
   while (iterator.has_next()) {
     const bookmarks::BookmarkNode* bookmark = iterator.Next();
     if (bookmark->GetTitle() == name16) {
-      localOrSyncableBookmarkModel->Remove(
-          bookmark, bookmarks::metrics::BookmarkEditSource::kUser);
+      bookmarkModel->Remove(bookmark,
+                            bookmarks::metrics::BookmarkEditSource::kUser);
       return nil;
     }
   }
@@ -218,14 +217,14 @@
       stringWithFormat:@"Could not remove bookmark with name %@", title]);
 }
 
-// TODO(crbug.com/1434501): Add account BookmarkModel support.
 + (NSError*)moveBookmarkWithTitle:(NSString*)bookmarkTitle
-                toFolderWithTitle:(NSString*)newFolder {
+                toFolderWithTitle:(NSString*)newFolder
+                        inStorage:(bookmarks::StorageType)storageType {
   std::u16string name16(base::SysNSStringToUTF16(bookmarkTitle));
-  bookmarks::BookmarkModel* localOrSyncableBookmarkModel =
-      [BookmarkEarlGreyAppInterface localOrSyncableBookmarkModel];
+  bookmarks::BookmarkModel* bookmarkModel =
+      [BookmarkEarlGreyAppInterface bookmarkModelOfStorage:storageType];
   ui::TreeNodeIterator<const bookmarks::BookmarkNode> iterator(
-      localOrSyncableBookmarkModel->root_node());
+      bookmarkModel->root_node());
   const bookmarks::BookmarkNode* bookmark = iterator.Next();
   while (iterator.has_next()) {
     if (bookmark->GetTitle() == name16) {
@@ -236,7 +235,7 @@
 
   std::u16string folderName16(base::SysNSStringToUTF16(newFolder));
   ui::TreeNodeIterator<const bookmarks::BookmarkNode> iteratorFolder(
-      localOrSyncableBookmarkModel->root_node());
+      bookmarkModel->root_node());
   const bookmarks::BookmarkNode* folder = iteratorFolder.Next();
   while (iteratorFolder.has_next()) {
     if (folder->GetTitle() == folderName16) {
@@ -247,7 +246,7 @@
   std::vector<const bookmarks::BookmarkNode*> toMove{bookmark};
   bookmarks::BookmarkModel* accountBookmarkModel =
       [BookmarkEarlGreyAppInterface accountBookmarkModel];
-  if (!bookmark_utils_ios::MoveBookmarks(toMove, localOrSyncableBookmarkModel,
+  if (!bookmark_utils_ios::MoveBookmarks(toMove, bookmarkModel,
                                          accountBookmarkModel, folder)) {
     return testing::NSErrorWithLocalizedDescription(
         [NSString stringWithFormat:@"Could not move bookmark with name %@",
@@ -257,14 +256,15 @@
   return nil;
 }
 
-// TODO(crbug.com/1434501): Add account BookmarkModel support.
-+ (NSError*)verifyChildCount:(size_t)count inFolderWithName:(NSString*)name {
++ (NSError*)verifyChildCount:(size_t)count
+            inFolderWithName:(NSString*)name
+                   inStorage:(bookmarks::StorageType)storageType {
   std::u16string name16(base::SysNSStringToUTF16(name));
-  bookmarks::BookmarkModel* localOrSyncableBookmarkModel =
-      [BookmarkEarlGreyAppInterface localOrSyncableBookmarkModel];
+  bookmarks::BookmarkModel* bookmarkModel =
+      [BookmarkEarlGreyAppInterface bookmarkModelOfStorage:storageType];
 
   ui::TreeNodeIterator<const bookmarks::BookmarkNode> iterator(
-      localOrSyncableBookmarkModel->root_node());
+      bookmarkModel->root_node());
 
   const bookmarks::BookmarkNode* folder = nullptr;
   while (iterator.has_next()) {
@@ -290,12 +290,14 @@
   return nil;
 }
 
-// TODO(crbug.com/1434501): Add account BookmarkModel support.
 + (NSError*)verifyExistenceOfBookmarkWithURL:(NSString*)URL
-                                        name:(NSString*)name {
+                                        name:(NSString*)name
+                                   inStorage:
+                                       (bookmarks::StorageType)storageType {
   const bookmarks::BookmarkNode* bookmark =
-      [self localOrSyncableBookmarkModel]->GetMostRecentlyAddedUserNodeForURL(
-          GURL(base::SysNSStringToUTF16(URL)));
+      [self bookmarkModelOfStorage:storageType]
+          ->GetMostRecentlyAddedUserNodeForURL(
+              GURL(base::SysNSStringToUTF16(URL)));
   if (!bookmark ||
       bookmark->GetTitle().compare(base::SysNSStringToUTF16(name)) != 0) {
     return testing::NSErrorWithLocalizedDescription(
@@ -306,11 +308,12 @@
   return nil;
 }
 
-// TODO(crbug.com/1434501): Add account BookmarkModel support.
-+ (NSError*)verifyAbsenceOfBookmarkWithURL:(NSString*)URL {
++ (NSError*)verifyAbsenceOfBookmarkWithURL:(NSString*)URL
+                                 inStorage:(bookmarks::StorageType)storageType {
   const bookmarks::BookmarkNode* bookmark =
-      [self localOrSyncableBookmarkModel]->GetMostRecentlyAddedUserNodeForURL(
-          GURL(base::SysNSStringToUTF16(URL)));
+      [self bookmarkModelOfStorage:storageType]
+          ->GetMostRecentlyAddedUserNodeForURL(
+              GURL(base::SysNSStringToUTF16(URL)));
   if (bookmark) {
     return testing::NSErrorWithLocalizedDescription(
         [NSString stringWithFormat:@"There is a bookmark for %@", URL]);
@@ -319,12 +322,13 @@
   return nil;
 }
 
-// TODO(crbug.com/1434501): Add account BookmarkModel support.
-+ (NSError*)verifyExistenceOfFolderWithTitle:(NSString*)title {
++ (NSError*)verifyExistenceOfFolderWithTitle:(NSString*)title
+                                   inStorage:
+                                       (bookmarks::StorageType)storageType {
   std::u16string folderTitle16(base::SysNSStringToUTF16(title));
 
   ui::TreeNodeIterator<const bookmarks::BookmarkNode> iterator(
-      [self localOrSyncableBookmarkModel]->root_node());
+      [self bookmarkModelOfStorage:storageType]->root_node());
   BOOL folderExists = NO;
 
   while (iterator.has_next()) {
@@ -374,7 +378,6 @@
   PrefService* prefs = chrome_test_util::GetOriginalBrowserState()->GetPrefs();
   return prefs->GetInteger(prefs::kIosBookmarkSigninPromoDisplayedCount);
 }
-
 #pragma mark - Helpers
 
 + (bookmarks::BookmarkModel*)localOrSyncableBookmarkModel {
@@ -385,6 +388,16 @@
 + (bookmarks::BookmarkModel*)accountBookmarkModel {
   return ios::AccountBookmarkModelFactory::GetForBrowserState(
       chrome_test_util::GetOriginalBrowserState());
+}
+
++ (bookmarks::BookmarkModel*)bookmarkModelOfStorage:
+    (bookmarks::StorageType)storageType {
+  switch (storageType) {
+    case bookmarks::StorageType::kLocalOrSyncable:
+      return [BookmarkEarlGreyAppInterface localOrSyncableBookmarkModel];
+    case bookmarks::StorageType::kAccount:
+      return [BookmarkEarlGreyAppInterface accountBookmarkModel];
+  }
 }
 
 @end

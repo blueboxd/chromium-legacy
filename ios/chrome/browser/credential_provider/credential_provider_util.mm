@@ -24,10 +24,6 @@
 #import "ios/chrome/common/ui/favicon/favicon_constants.h"
 #import "net/base/mac/url_conversions.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 using base::SysUTF16ToNSString;
 using base::UTF8ToUTF16;
 
@@ -256,6 +252,10 @@ void UpdateFaviconsStorage(FaviconLoader* favicon_loader, bool sync_enabled) {
 
   for (id<Credential> credential : all_credentials_rank) {
     GURL url = GURL(base::SysNSStringToUTF8(credential.serviceIdentifier));
+    if (!url.is_valid()) {
+      // Skip fetching the favicon for credential with invalid URL.
+      continue;
+    }
     NSString* filename = credential.favicon;
     if (!credential.favicon) {
       // Add favicon name to the credential and update the store.

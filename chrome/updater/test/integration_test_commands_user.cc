@@ -85,6 +85,10 @@ class IntegrationTestCommandsUser : public IntegrationTestCommands {
     updater::test::SetGroupPolicies(values);
   }
 
+  void SetMachineManaged(bool is_managed_device) const override {
+    updater::test::SetMachineManaged(is_managed_device);
+  }
+
   void ExpectUninstallPing(ScopedServer* test_server) const override {
     updater::test::ExpectUninstallPing(updater_scope_, test_server);
   }
@@ -109,6 +113,18 @@ class IntegrationTestCommandsUser : public IntegrationTestCommands {
     updater::test::ExpectUpdateSequence(updater_scope_, test_server, app_id,
                                         install_data_index, priority,
                                         from_version, to_version);
+  }
+
+  void ExpectUpdateSequenceBadHash(
+      ScopedServer* test_server,
+      const std::string& app_id,
+      const std::string& install_data_index,
+      UpdateService::Priority priority,
+      const base::Version& from_version,
+      const base::Version& to_version) const override {
+    updater::test::ExpectUpdateSequenceBadHash(
+        updater_scope_, test_server, app_id, install_data_index, priority,
+        from_version, to_version);
   }
 
   void ExpectInstallSequence(ScopedServer* test_server,
@@ -226,8 +242,9 @@ class IntegrationTestCommandsUser : public IntegrationTestCommands {
     updater::test::DeleteFile(updater_scope_, path);
   }
 
-  void InstallApp(const std::string& app_id) const override {
-    updater::test::InstallApp(updater_scope_, app_id);
+  void InstallApp(const std::string& app_id,
+                  const base::Version& version) const override {
+    updater::test::InstallApp(updater_scope_, app_id, version);
   }
 
   bool WaitForUpdaterExit() const override {

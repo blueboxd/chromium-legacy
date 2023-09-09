@@ -41,6 +41,8 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_OSAUTH) AuthPartsImpl
   GetEngineFactories() override;
   void RegisterEarlyLoginAuthPolicyConnector(
       std::unique_ptr<AuthPolicyConnector> connector) override;
+  void ReleaseEarlyLoginAuthPolicyConnector() override;
+
   void SetProfilePrefsAuthPolicyConnector(
       AuthPolicyConnector* connector) override;
   AuthPolicyConnector* GetAuthPolicyConnector() override;
@@ -48,6 +50,7 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_OSAUTH) AuthPartsImpl
 
   // Test-related setters:
   void SetAuthHub(std::unique_ptr<AuthHub> auth_hub);
+  void SetAuthSessionStorage(std::unique_ptr<AuthSessionStorage> storage);
 
  private:
   friend class AuthParts;

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 package org.chromium.components.page_info;
 
+import android.app.Activity;
 import android.app.Dialog;
 import android.os.Bundle;
 import android.text.format.DateUtils;
@@ -21,6 +22,7 @@ import org.chromium.components.browser_ui.site_settings.FPSCookieInfo;
 import org.chromium.components.browser_ui.site_settings.ForwardingManagedPreferenceDelegate;
 import org.chromium.components.browser_ui.site_settings.SiteSettingsPreferenceFragment;
 import org.chromium.components.browser_ui.site_settings.WebsitePreferenceBridge;
+import org.chromium.components.browser_ui.util.date.CalendarUtils;
 import org.chromium.components.content_settings.ContentSettingsType;
 import org.chromium.components.content_settings.CookieControlsStatus;
 import org.chromium.ui.text.NoUnderlineClickableSpan;
@@ -43,6 +45,7 @@ public class PageInfoCookiesPreference extends SiteSettingsPreferenceFragment {
     private TextMessagePreference mThirdPartyCookiesTitle;
     private TextMessagePreference mThirdPartyCookiesSummary;
     private Runnable mOnClearCallback;
+    private Callback<Activity> mOnFeedbackClicked;
     private Dialog mConfirmationDialog;
     private boolean mDeleteDisabled;
     private boolean mDataUsed;
@@ -55,9 +58,10 @@ public class PageInfoCookiesPreference extends SiteSettingsPreferenceFragment {
     public static class PageInfoCookiesViewParams {
         // Called when the toggle controlling third-party cookie blocking changes.
         public boolean thirdPartyCookieBlockingEnabled;
-        public Callback<Boolean> onCheckedChangedCallback;
+        public Callback<Boolean> onThirdPartyCookieToggleChanged;
         public Runnable onClearCallback;
         public Runnable onCookieSettingsLinkClicked;
+        public Callback<Activity> onFeedbackLinkClicked;
         public boolean disableCookieDeletion;
         public CharSequence hostName;
     }
@@ -102,17 +106,23 @@ public class PageInfoCookiesPreference extends SiteSettingsPreferenceFragment {
         // TODO(crbug.com/1077766): Set a ManagedPreferenceDelegate?
         mCookieSwitch.setVisible(params.thirdPartyCookieBlockingEnabled);
         mCookieSwitch.setOnPreferenceChangeListener((preference, newValue) -> {
-            params.onCheckedChangedCallback.onResult((Boolean) newValue);
+            boolean boolValue = (Boolean) newValue;
+            // Invert when the flag is on, since the switch is inverted.
+            if (PageInfoFeatures.USER_BYPASS_UI.isEnabled()) {
+                boolValue = !boolValue;
+            }
+            params.onThirdPartyCookieToggleChanged.onResult(boolValue);
             return true;
         });
         boolean areAllCookiesBlocked = !WebsitePreferenceBridge.isCategoryEnabled(
                 getSiteSettingsDelegate().getBrowserContextHandle(), ContentSettingsType.COOKIES);
-        if (areAllCookiesBlocked) {
+        if (areAllCookiesBlocked && !PageInfoFeatures.USER_BYPASS_UI.isEnabled()) {
             mCookieSwitch.setTitle(R.string.page_info_all_cookies_block);
         }
 
-        mCookieInUse.setIcon(
-                SettingsUtils.getTintedIcon(getContext(), R.drawable.permission_cookie));
+        mCookieInUse.setIcon(SettingsUtils.getTintedIcon(getContext(),
+                PageInfoFeatures.USER_BYPASS_UI.isEnabled() ? R.drawable.gm_database_24
+                                                            : R.drawable.permission_cookie));
         mCookieInUse.setImageView(
                 R.drawable.ic_delete_white_24dp, R.string.page_info_cookies_clear, null);
         // Disabling enables passthrough of clicks to the main preference.
@@ -125,6 +135,7 @@ public class PageInfoCookiesPreference extends SiteSettingsPreferenceFragment {
         updateCookieDeleteButton();
 
         mOnClearCallback = params.onClearCallback;
+        mOnFeedbackClicked = params.onFeedbackLinkClicked;
         mHostName = params.hostName;
     }
 
@@ -146,6 +157,9 @@ public class PageInfoCookiesPreference extends SiteSettingsPreferenceFragment {
 
     // Only used when UserBypassUI flag is off.
     public void setCookieBlockingStatus(@CookieControlsStatus int status, boolean isEnforced) {
+        assert !PageInfoFeatures.USER_BYPASS_UI.isEnabled()
+            : "This should only be invoked when UserBypassUI is off.";
+
         boolean visible = status != CookieControlsStatus.DISABLED;
         boolean enabled = status == CookieControlsStatus.ENABLED;
         mCookieSwitch.setVisible(visible);
@@ -159,7 +173,10 @@ public class PageInfoCookiesPreference extends SiteSettingsPreferenceFragment {
 
     // Only used when UserBypassUI flag is on.
     public void setCookieStatus(
-            @CookieControlsStatus int status, boolean isEnforced, long expiration) {
+            @CookieControlsStatus int status, final boolean isEnforced, long expiration) {
+        assert PageInfoFeatures.USER_BYPASS_UI.isEnabled()
+            : "This should only be invoked when UserBypassUI is enabled.";
+
         boolean visible = status != CookieControlsStatus.DISABLED;
         boolean blockingEnabled = status == CookieControlsStatus.ENABLED;
 
@@ -169,15 +186,23 @@ public class PageInfoCookiesPreference extends SiteSettingsPreferenceFragment {
 
         if (!visible) return;
 
-        mCookieSwitch.setIcon(SettingsUtils.getTintedIcon(getContext(), R.drawable.ic_eye_crossed));
-        mCookieSwitch.setChecked(blockingEnabled);
+        mCookieSwitch.setIcon(SettingsUtils.getTintedIcon(getContext(),
+                blockingEnabled ? R.drawable.ic_visibility_off_black
+                                : R.drawable.ic_visibility_black));
+        mCookieSwitch.setChecked(!blockingEnabled);
         mCookieSwitch.setEnabled(!isEnforced);
+        mCookieSwitch.setManagedPreferenceDelegate(new ForwardingManagedPreferenceDelegate(
+                getSiteSettingsDelegate().getManagedPreferenceDelegate()) {
+            @Override
+            public boolean isPreferenceControlledByPolicy(Preference preference) {
+                return isEnforced;
+            }
+        });
 
         boolean permanentException = (expiration == 0);
 
-        // TODO(crbug.com/1446230): Implement feedback click handling.
-        NoUnderlineClickableSpan feedbackSpan =
-                new NoUnderlineClickableSpan(getContext(), (view) -> {});
+        NoUnderlineClickableSpan feedbackSpan = new NoUnderlineClickableSpan(
+                getContext(), (view) -> { mOnFeedbackClicked.onResult(this.getActivity()); });
 
         if (blockingEnabled) {
             mThirdPartyCookiesTitle.setTitle(
@@ -193,11 +218,13 @@ public class PageInfoCookiesPreference extends SiteSettingsPreferenceFragment {
                     getContext().getString(R.string.page_info_cookies_send_feedback_description),
                     new SpanApplier.SpanInfo("<link>", "</link>", feedbackSpan)));
         } else { // Not blocking and temporary exception.
-            // Calculate the days to expiration.
-            long currentTime = TimeUtils.currentTimeMillis();
-            int days = (int) ((expiration - currentTime) / DateUtils.DAY_IN_MILLIS);
-            mThirdPartyCookiesTitle.setTitle(getContext().getResources().getQuantityString(
-                    R.plurals.page_info_cookies_blocking_restart_title, days, days));
+            int days = calculateDaysUntilExpiration(TimeUtils.currentTimeMillis(), expiration);
+            mThirdPartyCookiesTitle.setTitle(days == 0
+                            ? getContext().getString(
+                                    R.string.page_info_cookies_blocking_restart_today_title)
+                            : getContext().getResources().getQuantityString(
+                                    R.plurals.page_info_cookies_blocking_restart_title, days,
+                                    days));
             mThirdPartyCookiesSummary.setSummary(SpanApplier.applySpans(
                     getContext().getString(R.string.page_info_cookies_send_feedback_description),
                     new SpanApplier.SpanInfo("<link>", "</link>", feedbackSpan)));
@@ -277,25 +304,35 @@ public class PageInfoCookiesPreference extends SiteSettingsPreferenceFragment {
         return true;
     }
 
+    /**
+     * Returns the number of days left until the exception expiration.
+     * @param currentTime Current timestamps (can be obtained using TimeUtils.currentTimeMillis())
+     * @param expiration A timestamp for the expiration.
+     * @return Number of days until expiration. Day boundary is considered to be the local midnight.
+     */
+    public static int calculateDaysUntilExpiration(long currentTime, long expiration) {
+        long currentMidnight = CalendarUtils.getStartOfDay(currentTime).getTime().getTime();
+        long expirationMidnight = CalendarUtils.getStartOfDay(expiration).getTime().getTime();
+        return (int) ((expirationMidnight - currentMidnight) / DateUtils.DAY_IN_MILLIS);
+    }
+
     private void updateCookieDeleteButton() {
         mCookieInUse.setImageColor(!mDeleteDisabled && mDataUsed
                         ? R.color.default_icon_color_accent1_tint_list
                         : R.color.default_icon_color_disabled);
     }
 
-    // TODO(crbug.com/1446230): Invert the cookie switch.
+    // Only invoked when UserBypassUI is on.
     private void updateCookieSwitch() {
+        assert PageInfoFeatures.USER_BYPASS_UI.isEnabled()
+            : "This should only be invoked when UserBypassUI is enabled.";
         // TODO(crbug.com/1446230): Update the strings for when FPS are on.
-        if (mCookieSwitch.isChecked()) {
-            mCookieSwitch.setSummary(mBlockedSites > 0
-                            ? getContext().getResources().getQuantityString(
-                                    R.plurals.page_info_sites_blocked, mBlockedSites, mBlockedSites)
-                            : null);
+        if (!mCookieSwitch.isChecked()) {
+            mCookieSwitch.setSummary(getContext().getResources().getQuantityString(
+                    R.plurals.page_info_sites_blocked, mBlockedSites, mBlockedSites));
         } else {
-            mCookieSwitch.setSummary(mAllowedSites > 0
-                            ? getContext().getResources().getQuantityString(
-                                    R.plurals.page_info_sites_allowed, mAllowedSites, mAllowedSites)
-                            : null);
+            mCookieSwitch.setSummary(getContext().getResources().getQuantityString(
+                    R.plurals.page_info_sites_allowed, mAllowedSites, mAllowedSites));
         }
     }
 

@@ -6,21 +6,14 @@
 #define CHROME_BROWSER_WEB_APPLICATIONS_WEB_APP_PROVIDER_H_
 
 #include <memory>
-#include <vector>
 
 #include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/one_shot_event.h"
-#include "chrome/browser/web_applications/externally_managed_app_manager.h"
-#include "chrome/browser/web_applications/file_utils_wrapper.h"
-#include "chrome/browser/web_applications/web_app_id.h"
-#include "chrome/browser/web_applications/web_app_registrar.h"
+#include "base/types/pass_key.h"
+#include "build/build_config.h"
 #include "components/keyed_service/core/keyed_service.h"
-
-#if (BUILDFLAG(IS_CHROMEOS))
-#include "chrome/browser/web_applications/web_app_run_on_os_login_manager.h"
-#endif  // BUILDFLAG(IS_CHROMEOS)
 
 class Profile;
 
@@ -28,18 +21,13 @@ namespace content {
 class WebContents;
 }
 
-namespace user_prefs {
-class PrefRegistrySyncable;
-}
-
 namespace web_app {
 
 class AbstractWebAppDatabaseFactory;
 class ExtensionsManager;
+class ExternallyManagedAppManager;
+class FileUtilsWrapper;
 class IsolatedWebAppCommandLineInstallManager;
-#if (BUILDFLAG(IS_CHROMEOS))
-class IsolatedWebAppUpdateManager;
-#endif
 class ManifestUpdateManager;
 class OsIntegrationManager;
 class PreinstalledWebAppManager;
@@ -51,10 +39,17 @@ class WebAppInstallFinalizer;
 class WebAppInstallManager;
 class WebAppOriginAssociationManager;
 class WebAppPolicyManager;
+class WebAppRegistrar;
+class WebAppRegistrarMutable;
 class WebAppSyncBridge;
 class WebAppTranslationManager;
 class WebAppUiManager;
 class WebContentsManager;
+
+#if BUILDFLAG(IS_CHROMEOS)
+class IsolatedWebAppUpdateManager;
+class WebAppRunOnOsLoginManager;
+#endif
 
 // WebAppProvider is the heart of Chrome web app code.
 //
@@ -154,7 +149,7 @@ class WebAppProvider : public KeyedService {
   // Clients can use `IsolatedWebAppCommandLineInstallManager` to request the
   // installation of IWAs based on command line switches.
   IsolatedWebAppCommandLineInstallManager& iwa_command_line_install_manager();
-#if (BUILDFLAG(IS_CHROMEOS))
+#if BUILDFLAG(IS_CHROMEOS)
   // Keeps Isolated Web Apps up to date by regularly checking for updates,
   // downloading them, and applying them.
   // TODO(crbug.com/1458725): We currently only support automatic updates on
@@ -210,6 +205,8 @@ class WebAppProvider : public KeyedService {
   // Returns whether the app registry is ready.
   bool is_registry_ready() const { return is_registry_ready_; }
 
+  base::WeakPtr<WebAppProvider> AsWeakPtr();
+
  protected:
   virtual void StartImpl();
 
@@ -245,7 +242,7 @@ class WebAppProvider : public KeyedService {
   std::unique_ptr<WebAppPolicyManager> web_app_policy_manager_;
   std::unique_ptr<IsolatedWebAppCommandLineInstallManager>
       iwa_command_line_install_manager_;
-#if (BUILDFLAG(IS_CHROMEOS))
+#if BUILDFLAG(IS_CHROMEOS)
   std::unique_ptr<IsolatedWebAppUpdateManager> iwa_update_manager_;
   std::unique_ptr<WebAppRunOnOsLoginManager> web_app_run_on_os_login_manager_;
 #endif  // BUILDFLAG(IS_CHROMEOS)

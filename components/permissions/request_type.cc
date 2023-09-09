@@ -122,8 +122,7 @@ const gfx::VectorIcon& GetIconIdDesktop(RequestType type) {
       return vector_icons::kProtocolHandlerIcon;
     case RequestType::kStorageAccess:
     case RequestType::kTopLevelStorageAccess:
-      return cr23 ? vector_icons::kCookieChromeRefreshIcon
-                  : vector_icons::kCookieIcon;
+      return vector_icons::kStorageAccessIcon;
     case RequestType::kWindowManagement:
       return cr23 ? vector_icons::kSelectWindowChromeRefreshIcon
                   : vector_icons::kSelectWindowIcon;
@@ -163,7 +162,7 @@ const gfx::VectorIcon& GetBlockedIconIdDesktop(RequestType type) {
       return cr23 ? vector_icons::kMidiOffChromeRefreshIcon
                   : vector_icons::kMidiOffIcon;
     case RequestType::kStorageAccess:
-      return vector_icons::kCookieOffChromeRefreshIcon;
+      return vector_icons::kStorageAccessOffIcon;
     default:
       NOTREACHED();
   }

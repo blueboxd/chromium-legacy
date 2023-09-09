@@ -54,14 +54,14 @@ sys.path.append(
                  'scripts'))
 
 from build import (AddCMakeToPath, AddZlibToPath, CheckoutGitRepo,
-                   GetLibXml2Dirs, LLVM_BUILD_TOOLS_DIR, MaybeDownloadHostGcc,
+                   DownloadDebianSysroot, GetLibXml2Dirs, LLVM_BUILD_TOOLS_DIR,
                    RunCommand)
 from update import (CHROMIUM_DIR, DownloadAndUnpack, EnsureDirExists,
                     GetDefaultHostOs, RmTree, UpdatePackage)
 
 from update_rust import (RUST_REVISION, RUST_TOOLCHAIN_OUT_DIR,
-                         STAGE0_JSON_SHA256, THIRD_PARTY_DIR,
-                         VERSION_STAMP_PATH, GetRustClangRevision)
+                         STAGE0_JSON_SHA256, THIRD_PARTY_DIR, VERSION_SRC_PATH,
+                         GetRustClangRevision)
 
 EXCLUDED_TESTS = [
     # https://github.com/rust-lang/rust/issues/45222 which appears to have
@@ -70,10 +70,6 @@ EXCLUDED_TESTS = [
     os.path.join('tests', 'codegen', 'issue-45222.rs'),
     # https://github.com/rust-lang/rust/issues/96497
     os.path.join('tests', 'codegen', 'issue-96497-slice-size-nowrap.rs'),
-    # TODO(crbug.com/1347563): Re-enable when fixed.
-    os.path.join('tests', 'codegen', 'sanitizer-cfi-emit-type-checks.rs'),
-    os.path.join('tests', 'codegen',
-                 'sanitizer-cfi-emit-type-metadata-itanium-cxx-abi.rs'),
     # https://github.com/rust-lang/rust/issues/109671 the test is being
     # optimized in newer LLVM which breaks its expectations.
     os.path.join('tests', 'ui', 'abi', 'stack-protector.rs'),
@@ -301,8 +297,8 @@ class XPy:
     ''' Runner for x.py, Rust's build script. Holds shared state between x.py
     runs. '''
 
-    def __init__(self, zlib_path, libxml2_dirs, build_mac_arm,
-                 gcc_toolchain_path, verbose):
+    def __init__(self, zlib_path, libxml2_dirs, build_mac_arm, debian_sysroot,
+                 verbose):
         self._env = collections.defaultdict(str, os.environ)
         self._build_mac_arm = build_mac_arm
         self._verbose = verbose
@@ -378,23 +374,23 @@ class XPy:
             self._env['RUSTFLAGS_NOT_BOOTSTRAP'] += (
                 f' -Clink-arg={LD_PATH_FLAG}{libxml2_dirs.lib_dir}')
 
-        if gcc_toolchain_path:
-            # We use these flags to avoid linking with the system libstdc++.
-            gcc_toolchain_flag = f'--gcc-toolchain={gcc_toolchain_path}'
-            self._env['CFLAGS'] += f' {gcc_toolchain_flag}'
-            self._env['CXXFLAGS'] += f' {gcc_toolchain_flag}'
-            self._env['LDFLAGS'] += f' {gcc_toolchain_flag}'
-            # A `-Clink-arg=<foo>` arg passes `foo`` to the linker invovation.
-            self._env['RUSTFLAGS_BOOTSTRAP'] += (
-                f' -Clink-arg={gcc_toolchain_flag}')
-            self._env['RUSTFLAGS_NOT_BOOTSTRAP'] += (
-                f' -Clink-arg={gcc_toolchain_flag}')
-            self._env['RUSTFLAGS_BOOTSTRAP'] += (
-                f' -L native={gcc_toolchain_path}/lib64')
-            self._env['CARGO_TARGET_I686_UNKNOWN_LINUX_GNU_RUSTFLAGS'] += (
-                f' -L native={gcc_toolchain_path}/lib32')
-            self._env['CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU_RUSTFLAGS'] += (
-                f' -L native={gcc_toolchain_path}/lib64')
+        if debian_sysroot:
+            # This mainly influences the glibc version that rustc itself needs.
+            sysroot_cflag = f'--sysroot={debian_sysroot}'
+
+            self._env['CFLAGS'] += f' {sysroot_cflag}'
+            self._env['CXXFLAGS'] += f' {sysroot_cflag}'
+            self._env['LDFLAGS'] += f' {sysroot_cflag}'
+
+            self._env['RUSTFLAGS'] += f' -Clink-arg={sysroot_cflag}'
+
+            # pkg-config will by default look for system-wide libs. This tells
+            # it to look exclusively in the sysroot instead.
+            self._env['PKG_CONFIG_SYSROOT_DIR'] = debian_sysroot
+
+            # Due to an interaction with the above flags, we must tell lzma-sys
+            # explicitly to build it from source.
+            self._env['LZMA_API_STATIC'] = '1'
 
         # TODO(danakj): On windows we point the to lld-link in config.toml so
         # we don't (and can't) specify -fuse-ld=lld, as lld-link doesn't know
@@ -466,6 +462,10 @@ class XPy:
         RunCommand(cmd + args, setenv=True, env=self._env)
         os.chdir(CHROMIUM_DIR)
 
+    def get_env(self):
+        ''' The environment variables set for x.py invocations, as a dict. '''
+        return self._env
+
 
 # Get arguments to run desired test suites, minus disabled tests.
 def GetTestArgs():
@@ -504,30 +504,23 @@ def GetLatestRustCommit():
     return main['commit']
 
 
-def RustTargetTriple(build_mac_arm=False, target_x86=False):
+def RustTargetTriple(build_mac_arm=False):
     if sys.platform == 'darwin':
-        assert not target_x86  # No cross-compile to x86 on MacOS.
         if platform.machine() == 'arm64' or build_mac_arm:
             return 'aarch64-apple-darwin'
         else:
             return 'x86_64-apple-darwin'
     elif sys.platform == 'win32':
-        if target_x86:
-            return 'i686-pc-windows-msvc'
-        else:
-            return 'x86_64-pc-windows-msvc'
+        return 'x86_64-pc-windows-msvc'
     else:
-        if target_x86:
-            return 'i686-unknown-linux-gnu'
-        else:
-            return 'x86_64-unknown-linux-gnu'
+        return 'x86_64-unknown-linux-gnu'
 
 
 # Fetch or build the LLVM libraries, for the host machine and when
 # cross-compiling for the target machine.
 #
 # Returns the path to llvm-config for x86_64 and aarch64 targets.
-def BuildLLVMLibraries(skip_build, build_mac_arm, gcc_toolchain):
+def BuildLLVMLibraries(skip_build, build_mac_arm):
     # LLVM libraries for the target machine. Usually the same as the host,
     # unless we are cross-compiling.
     if build_mac_arm:
@@ -553,8 +546,6 @@ def BuildLLVMLibraries(skip_build, build_mac_arm, gcc_toolchain):
             build_cmd.append('--without-fuchsia')
         if sys.platform == 'darwin':
             build_cmd.append('--without-fuchsia')
-        if gcc_toolchain:
-            build_cmd.extend(['--gcc-toolchain', gcc_toolchain])
         RunCommand(build_cmd + [
             '--build-dir', RUST_HOST_LLVM_BUILD_DIR, '--install-dir',
             RUST_HOST_LLVM_INSTALL_DIR
@@ -616,6 +607,12 @@ def main():
         help=
         'checkout Rust, verify the stage0 hash, then quit without building. '
         'Will print the actual hash if different than expected.')
+    parser.add_argument(
+        '--dump-env',
+        action='store_true',
+        help=
+        'dump all environment variables set for x.py to a file `rust-build-env`'
+    )
     parser.add_argument('--skip-checkout',
                         action='store_true',
                         help='do not create or update any checkouts')
@@ -660,12 +657,12 @@ def main():
         print('--build-mac-arm only valid on intel to cross-build arm')
         return 1
 
-    args.gcc_toolchain = None
+    debian_sysroot = None
     if sys.platform.startswith('linux') and not args.sync_for_gnrt:
-        # Fetch GCC package here and pass it to build.py to avoid it doing the
-        # same again. Used for the LLVM build and for any C/C++ targets inside
-        # the Rust toolchain build.
-        MaybeDownloadHostGcc(args)
+        # Fetch sysroot we build rustc against. This ensures a minimum supported
+        # host (not Chromium target). Since the rustc linux package is for
+        # x86_64 only, that is the sole needed sysroot.
+        debian_sysroot = DownloadDebianSysroot('amd64')
 
     # Require zlib compression.
     if sys.platform == 'win32':
@@ -687,8 +684,13 @@ def main():
         # Building cargo depends on OpenSSL.
         AddOpenSSLToEnv(args.build_mac_arm)
 
-    xpy = XPy(zlib_path, libxml2_dirs, args.build_mac_arm, args.gcc_toolchain,
+    xpy = XPy(zlib_path, libxml2_dirs, args.build_mac_arm, debian_sysroot,
               args.verbose)
+
+    if args.dump_env:
+        with open('rust-build-env', 'w') as f:
+            for name, val in xpy.get_env().items():
+                print(f'{name}={val}', file=f)
 
     # Assume the checkout has already been prepared. A full build or a
     # --prepare-run-xpy run will set it up.
@@ -740,8 +742,7 @@ def main():
 
     (x86_64_llvm_config, aarch64_llvm_config,
      target_llvm_dir) = BuildLLVMLibraries(args.skip_llvm_build,
-                                           args.build_mac_arm,
-                                           args.gcc_toolchain)
+                                           args.build_mac_arm)
 
     AddCMakeToPath()
 
@@ -764,20 +765,6 @@ def main():
             # The compiler will build stuff for ARM.
             '--target',
             building_for_host_triple
-        ])
-    elif sys.platform.startswith('linux'):
-        # We have Linux x86 machines, and they need the prebuilt stdlib to be
-        # available for them in the same package.
-        #
-        # TODO(crbug.com/1448334): or sys.platform == 'win32':
-        # Windows x64 targeting x86 uses x86 as the host toolchain too in our
-        # GN rules, so we need the stdlib to be available for x86.
-        x86_target_triple = RustTargetTriple(target_x86=True)
-        xpy_args.extend([
-            # The compiler will build stuff for the host, and
-            # the compiler can also build stuff for x86 targets.
-            '--target',
-            f'{building_on_host_triple},{x86_target_triple}'
         ])
 
     if not args.skip_clean:
@@ -817,7 +804,7 @@ def main():
     print(f'Copying vendored dependencies to {RUST_TOOLCHAIN_OUT_DIR} ...')
     shutil.copytree(RUST_SRC_VENDOR_DIR, RUST_TOOLCHAIN_SRC_DIST_VENDOR_DIR)
 
-    with open(VERSION_STAMP_PATH, 'w') as stamp:
+    with open(VERSION_SRC_PATH, 'w') as stamp:
         stamp.write(MakeVersionStamp(checkout_revision))
 
     return 0

@@ -394,10 +394,11 @@ enum class RequestStorageResult {
   REJECTED_INSECURE_CONTEXT = 9,
   APPROVED_PRIMARY_FRAME = 10,
   REJECTED_CREDENTIALLESS_IFRAME = 11,
-  kMaxValue = REJECTED_CREDENTIALLESS_IFRAME,
+  APPROVED_NEW_OR_EXISTING_GRANT = 12,
+  kMaxValue = APPROVED_NEW_OR_EXISTING_GRANT,
 };
 void FireRequestStorageAccessHistogram(RequestStorageResult result) {
-  base::UmaHistogramEnumeration("API.StorageAccess.RequestStorageAccess",
+  base::UmaHistogramEnumeration("API.StorageAccess.RequestStorageAccess2",
                                 result);
 }
 
@@ -963,10 +964,14 @@ void Document::SetCompatibilityMode(CompatibilityMode mode) {
   if (compatibility_mode_locked_ || mode == compatibility_mode_)
     return;
 
-  if (compatibility_mode_ == kQuirksMode)
+  if (mode == kQuirksMode) {
     UseCounter::Count(*this, WebFeature::kQuirksModeDocument);
-  else if (compatibility_mode_ == kLimitedQuirksMode)
+    if (urlForBinding().IsAboutBlankURL()) {
+      UseCounter::Count(*this, WebFeature::kQuirksModeAboutBlankDocument);
+    }
+  } else if (mode == kLimitedQuirksMode) {
     UseCounter::Count(*this, WebFeature::kLimitedQuirksModeDocument);
+  }
 
   compatibility_mode_ = mode;
   GetSelectorQueryCache().Invalidate();
@@ -1356,7 +1361,7 @@ Node* Document::importNode(Node* imported_node,
       data.Put(CloneOption::kIncludeShadowRoots);
     }
   }
-  return imported_node->Clone(*this, data);
+  return imported_node->Clone(*this, data, /*append_to*/ nullptr);
 }
 
 Node* Document::adoptNode(Node* source, ExceptionState& exception_state) {
@@ -2710,6 +2715,12 @@ scoped_refptr<const ComputedStyle> Document::StyleForPage(uint32_t page_index) {
   AtomicString page_name;
   if (const LayoutView* layout_view = GetLayoutView())
     page_name = layout_view->NamedPageAtIndex(page_index);
+  return StyleForPage(page_index, page_name);
+}
+
+scoped_refptr<const ComputedStyle> Document::StyleForPage(
+    uint32_t page_index,
+    const AtomicString& page_name) {
   GetStyleEngine().UpdateViewportSize();
   GetStyleEngine().UpdateActiveStyle();
   return GetStyleEngine().GetStyleResolver().StyleForPage(page_index,
@@ -2731,31 +2742,16 @@ void Document::EnsurePaintLocationDataValidForNode(
   UpdateStyleAndLayout(reason);
 }
 
-void Document::EnsurePaintLocationDataValidForNode(const Node* node,
-                                                   DocumentUpdateReason reason,
-                                                   CSSPropertyID property_id) {
-  DCHECK(node);
-  if (!node->InActiveDocument())
-    return;
-
-  DisplayLockUtilities::ScopedForcedUpdate scoped_update_forced(
-      node, DisplayLockContext::ForcedPhase::kLayout);
-
-  // For all nodes we must have up-to-date style and have performed layout to do
-  // any location-based calculation.
-  UpdateStyleAndLayout(reason);
-}
-
-bool Document::IsPageBoxVisible(uint32_t page_index) {
-  return StyleForPage(page_index)->Visibility() !=
-         EVisibility::kHidden;  // display property doesn't apply to @page.
-}
-
 void Document::GetPageDescription(uint32_t page_index,
                                   WebPrintPageDescription* description) {
-  scoped_refptr<const ComputedStyle> style = StyleForPage(page_index);
+  GetPageDescription(*StyleForPage(page_index), description);
+}
 
-  switch (style->GetPageSizeType()) {
+void Document::GetPageDescription(const ComputedStyle& style,
+                                  WebPrintPageDescription* description) {
+  const WebPrintPageDescription input_description = *description;
+
+  switch (style.GetPageSizeType()) {
     case PageSizeType::kAuto:
       break;
     case PageSizeType::kLandscape:
@@ -2767,28 +2763,50 @@ void Document::GetPageDescription(uint32_t page_index,
         description->size.Transpose();
       break;
     case PageSizeType::kFixed:
-      description->size = style->PageSize();
+      if (!description->ignore_page_size) {
+        description->size = style.PageSize();
+      }
       break;
     default:
       NOTREACHED();
   }
 
-  // The percentage is calculated with respect to the width even for margin top
-  // and bottom.
-  // http://www.w3.org/TR/CSS2/box.html#margin-properties
-  float width = description->size.width();
-  if (!style->MarginTop().IsAuto())
-    description->margin_top = IntValueForLength(style->MarginTop(), width);
-  if (!style->MarginRight().IsAuto())
-    description->margin_right = IntValueForLength(style->MarginRight(), width);
-  if (!style->MarginBottom().IsAuto()) {
-    description->margin_bottom =
-        IntValueForLength(style->MarginBottom(), width);
+  if (!description->ignore_css_margins) {
+    // The percentage is calculated with respect to the width even for margin
+    // top and bottom.
+    // http://www.w3.org/TR/CSS2/box.html#margin-properties
+    float width = description->size.width();
+    if (!style.MarginTop().IsAuto()) {
+      description->margin_top = IntValueForLength(style.MarginTop(), width);
+    }
+    if (!style.MarginRight().IsAuto()) {
+      description->margin_right = IntValueForLength(style.MarginRight(), width);
+    }
+    if (!style.MarginBottom().IsAuto()) {
+      description->margin_bottom =
+          IntValueForLength(style.MarginBottom(), width);
+    }
+    if (!style.MarginLeft().IsAuto()) {
+      description->margin_left = IntValueForLength(style.MarginLeft(), width);
+    }
   }
-  if (!style->MarginLeft().IsAuto())
-    description->margin_left = IntValueForLength(style->MarginLeft(), width);
 
-  description->orientation = style->GetPageOrientation();
+  float page_area_width =
+      description->size.width() -
+      (description->margin_left + description->margin_right);
+  float page_area_height =
+      description->size.height() -
+      (description->margin_top + description->margin_bottom);
+
+  if (page_area_width < 1 || page_area_height < 1) {
+    // The resulting page area size would become zero (or very close to
+    // it). Ignore CSS, and use the default values provided as input. There are
+    // tests that currently expect this behavior. But see
+    // https://github.com/w3c/csswg-drafts/issues/8335
+    *description = input_description;
+  }
+
+  description->orientation = style.GetPageOrientation();
 }
 
 void Document::SetIsXrOverlay(bool val, Element* overlay_element) {
@@ -2985,7 +3003,7 @@ void Document::Shutdown() {
       // This is a popup document. Clear all accessibility state related to it
       // by removing the AXObject for its root. The AXObjectCache is
       // retrieved from the main document, but it maintains both documents.
-      cache->Remove(this);
+      cache->RemovePopup(this);
     }
   }
 
@@ -3905,6 +3923,7 @@ bool Document::CheckCompletedInternal() {
 
   DCHECK(fetcher_);
   fetcher_->ScheduleWarnUnusedPreloads();
+  fetcher_->RecordLCPPSubresourceMetrics();
 
   // The readystatechanged or load event may have disconnected this frame.
   if (!GetFrame() || !GetFrame()->IsAttached())
@@ -4899,10 +4918,14 @@ bool Document::CanAcceptChild(const Node& new_child,
   return true;
 }
 
-Node* Document::Clone(Document& factory, NodeCloningData& data) const {
+Node* Document::Clone(Document& factory,
+                      NodeCloningData& data,
+                      ContainerNode* append_to,
+                      ExceptionState& append_exception_state) const {
   DCHECK_EQ(this, &factory)
       << "Document::Clone() doesn't support importNode mode.";
-
+  DCHECK_EQ(append_to, nullptr)
+      << "Document::Clone() doesn't support append_to";
   if (!execution_context_)
     return nullptr;
   Document* clone = CloneDocumentWithoutChildren();
@@ -6255,25 +6278,13 @@ ScriptPromise Document::hasStorageAccess(ScriptState* script_state) {
       return false;
     }
 
-    // #6: if doc's browsing context is a top-level browsing context, return
-    // true.
-    if (IsInOutermostMainFrame()) {
-      return true;
-    }
-
-    // #7: if the top-level origin of doc's relevant settings object is an
+    // #6: if the top-level origin of doc's relevant settings object is an
     // opaque origin, return false.
     if (TopFrameOrigin()->IsOpaque()) {
       return false;
     }
 
-    // #8: if doc's origin is in the first-party context with the top-level
-    // origin of doc's relevant settings object, return true.
-    if (!SiteForCookies().IsNull()) {
-      return true;
-    }
-
-    // #9 & #10: checks unpartitioned cookie availability with global's `has
+    // #7 - #10: checks unpartitioned cookie availability with global's `has
     // storage access`.
     return CookiesEnabled();
   }());
@@ -6471,21 +6482,6 @@ ScriptPromise Document::requestStorageAccess(ScriptState* script_state) {
     return promise;
   }
 
-  // TODO(https://crbug.com/1441133): we should not return early here since 3p
-  // cookies could be blocked by user explicitly.
-  if (GetExecutionContext()->GetSecurityOrigin()->IsSameSiteWith(
-          &*TopFrameOrigin())) {
-    FireRequestStorageAccessHistogram(
-        RequestStorageResult::APPROVED_PRIMARY_FRAME);
-
-    // If this frame is same-site with the outermost frame we no longer need
-    // to make a request and can resolve the promise.
-    dom_window_->SetHasStorageAccess();
-
-    resolver->Resolve();
-    return promise;
-  }
-
   if (dom_window_->IsSandboxed(network::mojom::blink::WebSandboxFlags::
                                    kStorageAccessByUserActivation)) {
     AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
@@ -6507,66 +6503,18 @@ ScriptPromise Document::requestStorageAccess(ScriptState* script_state) {
         "requestStorageAccess not allowed"));
     return promise;
   }
-
-  // TODO(https://crbug.com/1441133): we should not return early based on the
-  // per-frame bit since 3p cookies could be blocked by user explicitly.
-  if (dom_window_->HasStorageAccess()) {
-    FireRequestStorageAccessHistogram(
-        RequestStorageResult::APPROVED_EXISTING_ACCESS);
-
-    // If there is current access to storage for this document we no longer need
-    // to make a request and can resolve the promise.
-    resolver->Resolve();
-    return promise;
-  }
-
-  auto descriptor = mojom::blink::PermissionDescriptor::New();
-  descriptor->name = mojom::blink::PermissionName::STORAGE_ACCESS;
-  GetPermissionService(ExecutionContext::From(script_state))
-      ->HasPermission(
-          std::move(descriptor),
-          WTF::BindOnce(&Document::OnGotExistingStorageAccessPermissionState,
-                        WrapPersistent(this), WrapPersistent(resolver),
-                        LocalFrame::HasTransientUserActivation(GetFrame())));
-
-  return promise;
-}
-
-void Document::OnGotExistingStorageAccessPermissionState(
-    ScriptPromiseResolver* resolver,
-    bool has_user_gesture,
-    mojom::blink::PermissionStatus previous_status) {
-  DCHECK(resolver);
-  DCHECK(GetFrame());
-  ScriptState* script_state = resolver->GetScriptState();
-  DCHECK(script_state);
-  ScriptState::Scope scope(script_state);
-
-  // TODO(crbug.com/1433644): We can avoid querying the current permission state
-  // by handling the user gesture requirement in
-  // StorageAccessGrantPermissionContext::DecidePermission
-  if (previous_status == mojom::blink::PermissionStatus::ASK &&
-      !has_user_gesture) {
-    AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
-        mojom::blink::ConsoleMessageSource::kSecurity,
-        mojom::blink::ConsoleMessageLevel::kError,
-        "requestStorageAccess: Must be handling a user gesture to use."));
-    FireRequestStorageAccessHistogram(
-        RequestStorageResult::REJECTED_NO_USER_GESTURE);
-
-    resolver->Reject(V8ThrowDOMException::CreateOrEmpty(
-        script_state->GetIsolate(), DOMExceptionCode::kNotAllowedError,
-        "requestStorageAccess not allowed"));
-    return;
-  }
-
+  // RequestPermission may return `GRANTED` without actually creating a
+  // permission grant if cookies are already accessible.
   auto descriptor = mojom::blink::PermissionDescriptor::New();
   descriptor->name = mojom::blink::PermissionName::STORAGE_ACCESS;
   GetPermissionService(ExecutionContext::From(resolver->GetScriptState()))
       ->RequestPermission(
-          std::move(descriptor), has_user_gesture,
-          WTF::BindOnce(&Document::OnRequestedStorageAccessPermissionState,
+          std::move(descriptor),
+          LocalFrame::HasTransientUserActivation(GetFrame()),
+          WTF::BindOnce(&Document::ProcessStorageAccessPermissionState,
                         WrapPersistent(this), WrapPersistent(resolver)));
+
+  return promise;
 }
 
 void Document::OnGotExistingTopLevelStorageAccessPermissionState(
@@ -6608,19 +6556,6 @@ void Document::OnGotExistingTopLevelStorageAccessPermissionState(
               WrapPersistent(this), WrapPersistent(resolver)));
 }
 
-void Document::OnRequestedStorageAccessPermissionState(
-    ScriptPromiseResolver* resolver,
-    mojom::blink::PermissionStatus status) {
-  DCHECK(resolver);
-  DCHECK(GetFrame());
-  ScriptState* script_state = resolver->GetScriptState();
-  DCHECK(script_state);
-  ScriptState::Scope scope(script_state);
-
-  ProcessStorageAccessPermissionState(resolver,
-                                      /*use_existing_status=*/false, status);
-}
-
 void Document::OnRequestedTopLevelStorageAccessPermissionState(
     ScriptPromiseResolver* resolver,
     mojom::blink::PermissionStatus status) {
@@ -6637,19 +6572,16 @@ void Document::OnRequestedTopLevelStorageAccessPermissionState(
 
 void Document::ProcessStorageAccessPermissionState(
     ScriptPromiseResolver* resolver,
-    bool use_existing_status,
     mojom::blink::PermissionStatus status) {
   DCHECK(resolver);
   DCHECK(GetFrame());
+  ScriptState* script_state = resolver->GetScriptState();
+  DCHECK(script_state);
+  ScriptState::Scope scope(script_state);
 
   if (status == mojom::blink::PermissionStatus::GRANTED) {
-    if (use_existing_status) {
-      FireRequestStorageAccessHistogram(
-          RequestStorageResult::APPROVED_EXISTING_ACCESS);
-    } else {
-      FireRequestStorageAccessHistogram(
-          RequestStorageResult::APPROVED_NEW_GRANT);
-    }
+    FireRequestStorageAccessHistogram(
+        RequestStorageResult::APPROVED_NEW_OR_EXISTING_GRANT);
     dom_window_->SetHasStorageAccess();
     resolver->Resolve();
   } else {
@@ -6660,8 +6592,6 @@ void Document::ProcessStorageAccessPermissionState(
         mojom::blink::ConsoleMessageSource::kSecurity,
         mojom::blink::ConsoleMessageLevel::kError,
         "requestStorageAccess: Permission denied."));
-    ScriptState* script_state = resolver->GetScriptState();
-    DCHECK(script_state);
     resolver->Reject(V8ThrowDOMException::CreateOrEmpty(
         script_state->GetIsolate(), DOMExceptionCode::kNotAllowedError,
         "requestStorageAccess not allowed"));
@@ -7522,8 +7452,18 @@ void Document::FinishedParsing() {
   // dispatched in a queued task, see https://crbug.com/961428
   if (document_timing_.DomContentLoadedEventStart().is_null())
     document_timing_.MarkDomContentLoadedEventStart();
-  if (!ScriptForbiddenScope::IsScriptForbidden())
+  if (!ScriptForbiddenScope::IsScriptForbidden()) {
     DispatchEvent(*Event::CreateBubble(event_type_names::kDOMContentLoaded));
+
+    if (LocalFrame* frame = GetFrame()) {
+      if (frame->IsAttached()) {
+        DEVTOOLS_TIMELINE_TRACE_EVENT_INSTANT(
+            "MarkDOMContent", inspector_mark_load_event::Data, frame);
+        probe::DomContentLoadedEventFired(frame);
+      }
+    }
+  }
+
   if (document_timing_.DomContentLoadedEventEnd().is_null())
     document_timing_.MarkDomContentLoadedEventEnd();
   SetParsingState(kFinishedParsing);
@@ -7561,17 +7501,13 @@ void Document::FinishedParsing() {
 
     BeginLifecycleUpdatesIfRenderingReady();
 
-    frame->Loader().FinishedParsing();
-
-    if (ShouldMarkFontPerformance())
-      FontPerformance::MarkDomContentLoaded();
-
-    if (frame->IsAttached()) {
-      DEVTOOLS_TIMELINE_TRACE_EVENT_INSTANT(
-          "MarkDOMContent", inspector_mark_load_event::Data, frame);
-      probe::DomContentLoadedEventFired(frame);
-    }
     frame->GetIdlenessDetector()->DomContentLoadedEventFired();
+
+    if (ShouldMarkFontPerformance()) {
+      FontPerformance::MarkDomContentLoaded();
+    }
+
+    frame->Loader().FinishedParsing();
   }
 
   // Schedule dropping of the ElementDataCache. We keep it alive for a while

@@ -23,6 +23,7 @@
 #include "components/optimization_guide/core/model_enums.h"
 #include "components/optimization_guide/core/optimization_guide_enums.h"
 #include "components/optimization_guide/core/prediction_model_download_observer.h"
+#include "components/optimization_guide/core/prediction_model_fetch_timer.h"
 #include "components/optimization_guide/core/prediction_model_store.h"
 #include "components/optimization_guide/optimization_guide_internals/webui/optimization_guide_internals.mojom.h"
 #include "components/optimization_guide/proto/models.pb.h"
@@ -41,7 +42,6 @@ class PrefService;
 
 namespace optimization_guide {
 
-enum class OptimizationGuideDecision;
 class OptimizationGuideStore;
 class OptimizationTargetModelObserver;
 class PredictionModelDownloadManager;
@@ -148,11 +148,20 @@ class PredictionManager : public PredictionModelDownloadObserver {
   void MaybeInitializeModelDownloads(
       download::BackgroundDownloadService* background_download_service);
 
+  PredictionModelFetchTimer* GetPredictionModelFetchTimerForTesting() {
+    return &prediction_model_fetch_timer_;
+  }
+
  protected:
-  // Process |prediction_models| to be stored in the in memory optimization
+  // Process `prediction_models` to be stored in the in memory optimization
   // target prediction model map for immediate use and asynchronously write the
   // models to the model and features store to be persisted.
+  // `models_request_info` is the list of models the fetch request was made
+  // for, and `prediction_models` is the models received in response. Any models
+  // missing in the response will be deleted from the store, since the remote
+  // optimization guide service has no models for them.
   void UpdatePredictionModels(
+      const std::vector<proto::ModelInfo>& models_request_info,
       const google::protobuf::RepeatedPtrField<proto::PredictionModel>&
           prediction_models);
 
@@ -168,9 +177,7 @@ class PredictionManager : public PredictionModelDownloadObserver {
 
   // Called to make a request to fetch models from the remote Optimization Guide
   // Service. Used to fetch models for the registered optimization targets.
-  // |is_first_model_fetch| indicates whether this is the first model fetch
-  // happening at startup, and is used to record metrics.
-  void FetchModels(bool is_first_model_fetch);
+  void FetchModels();
 
   // Callback when the models have been fetched from the remote Optimization
   // Guide Service and are ready for parsing. Processes the prediction models in
@@ -214,6 +221,12 @@ class PredictionManager : public PredictionModelDownloadObserver {
   // Process loaded |model| into memory. Return true if a prediction
   // model object was created and successfully stored, otherwise false.
   bool ProcessAndStoreLoadedModel(const proto::PredictionModel& model);
+
+  // Removes the model for `optimization_target` from store, for the
+  // `model_removal_reason`.
+  void RemoveModelFromStore(
+      proto::OptimizationTarget optimization_target,
+      PredictionModelStoreModelRemovalReason model_removal_reason);
 
   // Return whether the model stored in memory for |optimization_target| should
   // be updated based on what's currently stored and |new_version|.
@@ -344,9 +357,8 @@ class PredictionManager : public PredictionModelDownloadObserver {
   // is launched.
   base::TimeTicks init_time_;
 
-  // The timer used to schedule fetching prediction models and host model
-  // features from the remote Optimization Guide Service.
-  base::OneShotTimer fetch_timer_;
+  PredictionModelFetchTimer prediction_model_fetch_timer_
+      GUARDED_BY_CONTEXT(sequence_checker_);
 
   // The clock used to schedule fetching from the remote Optimization Guide
   // Service.

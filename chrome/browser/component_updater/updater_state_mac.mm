@@ -14,10 +14,6 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/version.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 namespace component_updater {
 
 namespace {
@@ -114,13 +110,10 @@ int UpdaterState::StateReaderKeystone::GetUpdatePolicy() const {
 bool UpdaterState::IsAutoupdateCheckEnabled() {
   // Auto-update check period override (in seconds).
   // Applies only to older versions of Keystone.
-  NSNumber* timeInterval = GetUpdaterSettingsValue<NSNumber>(@"checkInterval");
-  if (!timeInterval) {
-    return true;
-  }
-  int value = [timeInterval intValue];
-
-  return 0 < value && value < (24 * 60 * 60);
+  Boolean foundValue = false;
+  long value = CFPreferencesGetAppIntegerValue(
+      CFSTR("checkInterval"), CFSTR("com.google.Keystone.Agent"), &foundValue);
+  return !foundValue || (0 < value && value < (24 * 60 * 60));
 }
 
 int UpdaterState::GetUpdatePolicy() {

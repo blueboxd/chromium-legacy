@@ -105,7 +105,6 @@
 <translation id="4266252015790371705">{MONTHS,plural, =1{ပြီးခံသည့် ၁ လ}other{ပြီးခဲ့သည့် # လ}}</translation>
 <translation id="4289300219472526559">စတင် စကားပြော</translation>
 <translation id="4289540628985791613">အကျဉ်းချုပ်</translation>
-<translation id="4306392492252714209">ကလစ်ဘုတ်မှ ဖယ်ရှားလိုက်သည်။</translation>
 <translation id="4491109536499578614">ပုံ</translation>
 <translation id="4565377596337484307">စကားဝှက်ကို ဖျောက်ရန်</translation>
 <translation id="4588090240171750605">ညာဖက်သို့ ရွှေ့ရန်</translation>
@@ -126,6 +125,7 @@
 <translation id="5329858601952122676">&amp;ဖျက်ရန်</translation>
 <translation id="5361107212971249203">စာတို</translation>
 <translation id="5463830097259460683">အီမိုဂျီနှင့် သင်္ကေတများ</translation>
+<translation id="5505748296268090374"><ph name="ITEM_TEXT" /> ကို ဖယ်ရှားရန်။</translation>
 <translation id="5528053674512161860">ဆော့ဖ်ဝဲအင်ဂျင်နီယာ UI မော်ဂျူး (dev_ui) ထည့်သွင်းမထားသောကြောင့် စာမျက်နှာကို ဖွင့်၍မရပါ</translation>
 <translation id="5574202486608032840"><ph name="IDS_SHORT_PRODUCT_OS_NAME" /> စနစ်</translation>
 <translation id="5583640892426849032">နောက်ပြန်</translation>
@@ -175,6 +175,7 @@
 <translation id="7170202025028120564">သင့်အပလီကေးရှင်း၏ ဖန်သားပြင်ပြသမှုဆက်တင်များသည် နောက်တစ်ကြိမ် ပြန်လည်စတင်သည့်အခါ အကျိုးသက်ရောက်မှုရှိပါမည်။</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{၁ မိနစ်ကျန်၏}other{# မိနစ်ကျန်၏}}</translation>
+<translation id="7363164521834647158">ပြန်ကြားချက်ပို့ရန်</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{၁ မိနစ်အကြာက}other{# မိနစ်အကြာက}}</translation>
 <translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{၁ မိနစ်ကျန်၏}other{# မိနစ်ကျန်၏}}</translation>

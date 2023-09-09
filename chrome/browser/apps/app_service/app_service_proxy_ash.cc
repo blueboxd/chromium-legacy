@@ -129,7 +129,11 @@ void AppServiceProxyAsh::Initialize() {
 
   AppServiceProxyBase::Initialize();
 
-  AppRegistryCache::Observer::Observe(&AppRegistryCache());
+  auto* cache = &AppRegistryCache();
+  if (!app_registry_cache_observer_.IsObservingSource(cache)) {
+    app_registry_cache_observer_.Reset();
+    app_registry_cache_observer_.Observe(cache);
+  }
 
   publisher_host_ = std::make_unique<PublisherHost>(this);
 
@@ -153,7 +157,8 @@ void AppServiceProxyAsh::Initialize() {
                                   weak_ptr_factory_.GetWeakPtr()));
   }
   if (ash::features::ArePromiseIconsEnabled()) {
-    promise_app_service_ = std::make_unique<apps::PromiseAppService>(profile_);
+    promise_app_service_ = std::make_unique<apps::PromiseAppService>(
+        profile_, app_registry_cache_);
   }
   if (base::FeatureList::IsEnabled(features::kCrosWebAppShortcutUiUpdate)) {
     shortcut_registry_cache_ = std::make_unique<apps::ShortcutRegistryCache>();
@@ -680,7 +685,7 @@ void AppServiceProxyAsh::OnAppUpdate(const apps::AppUpdate& update) {
 
 void AppServiceProxyAsh::OnAppRegistryCacheWillBeDestroyed(
     apps::AppRegistryCache* cache) {
-  AppRegistryCache::Observer::Observe(nullptr);
+  app_registry_cache_observer_.Reset();
 }
 
 void AppServiceProxyAsh::RecordAppPlatformMetrics(

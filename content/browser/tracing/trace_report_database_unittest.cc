@@ -9,6 +9,7 @@
 #include "base/files/scoped_file.h"
 #include "base/functional/bind.h"
 #include "base/strings/string_util.h"
+#include "base/time/time.h"
 #include "base/uuid.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -17,18 +18,16 @@ namespace content {
 
 class TraceReportDatabaseTest : public testing::Test {
  protected:
-  void SetUp() override { trace_report_.OpenDatabaseForTesting(); }
+  void SetUp() override { ASSERT_TRUE(trace_report_.OpenDatabaseForTesting()); }
 
   TraceReportDatabase trace_report_;
 };
 
 TEST_F(TraceReportDatabaseTest, CreatingAndDroppingLocalTraceTable) {
-  ASSERT_TRUE(trace_report_.EnsureTableCreatedForTesting());
   EXPECT_TRUE(trace_report_.GetAllReports().size() == 0);
 }
 
 TEST_F(TraceReportDatabaseTest, AddingNewReport) {
-  ASSERT_TRUE(trace_report_.EnsureTableCreatedForTesting());
   EXPECT_TRUE(trace_report_.GetAllReports().size() == 0);
 
   // Create Report for the local traces database.
@@ -52,8 +51,6 @@ TEST_F(TraceReportDatabaseTest, AddingNewReport) {
 }
 
 TEST_F(TraceReportDatabaseTest, RetreiveProtoFromTrace) {
-  ASSERT_TRUE(trace_report_.EnsureTableCreatedForTesting());
-
   // Create Report for the local traces database.
   TraceReportDatabase::NewReport new_report;
   new_report.uuid = base::Uuid::GenerateRandomV4();
@@ -74,7 +71,6 @@ TEST_F(TraceReportDatabaseTest, RetreiveProtoFromTrace) {
 }
 
 TEST_F(TraceReportDatabaseTest, DeletingSingleTrace) {
-  ASSERT_TRUE(trace_report_.EnsureTableCreatedForTesting());
   EXPECT_TRUE(trace_report_.GetAllReports().size() == 0);
 
   // Create Report for the local traces database.
@@ -95,7 +91,6 @@ TEST_F(TraceReportDatabaseTest, DeletingSingleTrace) {
 }
 
 TEST_F(TraceReportDatabaseTest, DeletingAllTraces) {
-  ASSERT_TRUE(trace_report_.EnsureTableCreatedForTesting());
   EXPECT_TRUE(trace_report_.GetAllReports().size() == 0);
 
   // Create multiple NewReport and add to the local_traces table.
@@ -117,8 +112,58 @@ TEST_F(TraceReportDatabaseTest, DeletingAllTraces) {
   EXPECT_TRUE(trace_report_.GetAllReports().size() == 0);
 }
 
+TEST_F(TraceReportDatabaseTest, DeletingTracesInRange) {
+  EXPECT_TRUE(trace_report_.GetAllReports().size() == 0);
+
+  const base::Time today = base::Time::Now();
+  // Create multiple NewReport and add to the local_traces table.
+
+  for (int i = 0; i < 5; i++) {
+    TraceReportDatabase::NewReport new_report;
+    new_report.uuid = base::Uuid::GenerateRandomV4();
+    new_report.creation_time = today;
+    new_report.scenario_name = "scenario";
+    new_report.upload_rule_name = "rules";
+    new_report.total_size = 23192873129873128;
+    new_report.proto = "Proto";
+
+    ASSERT_TRUE(trace_report_.AddTrace(std::move(new_report)));
+  }
+
+  for (int i = 0; i < 3; i++) {
+    TraceReportDatabase::NewReport new_report;
+    new_report.uuid = base::Uuid::GenerateRandomV4();
+    new_report.creation_time = base::Time(today - base::Days(20));
+    new_report.scenario_name = "scenario";
+    new_report.upload_rule_name = "rules";
+    new_report.total_size = 23192873129873128;
+    new_report.proto = "Proto";
+
+    ASSERT_TRUE(trace_report_.AddTrace(std::move(new_report)));
+  }
+
+  for (int i = 0; i < 2; i++) {
+    TraceReportDatabase::NewReport new_report;
+    new_report.uuid = base::Uuid::GenerateRandomV4();
+    new_report.creation_time = base::Time(today - base::Days(10));
+    new_report.scenario_name = "scenario";
+    new_report.upload_rule_name = "rules";
+    new_report.total_size = 23192873129873128;
+    new_report.proto = "Proto";
+
+    ASSERT_TRUE(trace_report_.AddTrace(std::move(new_report)));
+  }
+
+  EXPECT_TRUE(trace_report_.GetAllReports().size() == 10);
+
+  const base::Time start = base::Time(today - base::Days(20));
+  const base::Time end = base::Time(today - base::Days(10));
+
+  ASSERT_TRUE(trace_report_.DeleteTracesInDateRange(start, end));
+  EXPECT_TRUE(trace_report_.GetAllReports().size() == 5);
+}
+
 TEST_F(TraceReportDatabaseTest, UserRequestedUpload) {
-  ASSERT_TRUE(trace_report_.EnsureTableCreatedForTesting());
   EXPECT_TRUE(trace_report_.GetAllReports().size() == 0);
 
   // Create Report for the local traces database.
@@ -143,7 +188,6 @@ TEST_F(TraceReportDatabaseTest, UserRequestedUpload) {
 }
 
 TEST_F(TraceReportDatabaseTest, UploadComplete) {
-  ASSERT_TRUE(trace_report_.EnsureTableCreatedForTesting());
   EXPECT_TRUE(trace_report_.GetAllReports().size() == 0);
 
   // Create Report for the local traces database.

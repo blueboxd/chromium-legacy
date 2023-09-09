@@ -631,12 +631,20 @@ bool Element::IsBaseElementFocusableStyle() const {
   return false;
 }
 
-Node* Element::Clone(Document& factory, NodeCloningData& data) const {
+Node* Element::Clone(Document& factory,
+                     NodeCloningData& data,
+                     ContainerNode* append_to,
+                     ExceptionState& append_exception_state) const {
   if (!data.Has(CloneOption::kIncludeDescendants)) {
     CHECK(!data.Has(CloneOption::kIncludeShadowRoots));
-    return &CloneWithoutChildren(data, &factory);
+    Element* copy = &CloneWithoutChildren(data, &factory);
+    if (append_to) {
+      append_to->AppendChild(copy, append_exception_state);
+    }
+    return copy;
   }
-  Element* copy = &CloneWithChildren(data, &factory);
+  Element* copy =
+      &CloneWithChildren(data, &factory, append_to, append_exception_state);
   // 7. If node is a shadow host and the clone shadows flag is set, run these
   // steps:
   if (data.Has(CloneOption::kIncludeShadowRoots)) {
@@ -672,8 +680,11 @@ Node* Element::Clone(Document& factory, NodeCloningData& data) const {
   return copy;
 }
 
-Element& Element::CloneWithChildren(NodeCloningData& data,
-                                    Document* nullable_factory) const {
+Element& Element::CloneWithChildren(
+    NodeCloningData& data,
+    Document* nullable_factory,
+    ContainerNode* append_to,
+    ExceptionState& append_exception_state) const {
   Element& clone = CloneWithoutAttributesAndChildren(
       nullable_factory ? *nullable_factory : GetDocument());
   // This will catch HTML elements in the wrong namespace that are not correctly
@@ -683,7 +694,21 @@ Element& Element::CloneWithChildren(NodeCloningData& data,
   clone.CloneAttributesFrom(*this);
   clone.CloneNonAttributePropertiesFrom(*this, data);
   clone.ClonePartsFrom(*this, data);
-  clone.CloneChildNodesFrom(*this, data);
+
+  // - (With OptimizedNodeCloneOrder enabled) Append the clone to its parent
+  //   first, before cloning children. If this is done in the reverse order,
+  //   each new child will receive treeDepth calls to Node::InsertedInto().
+  // - (With OptimizedNodeCloneOrder DISABLED) Clone children first, then append
+  //   them.
+  if (!RuntimeEnabledFeatures::OptimizedNodeCloneOrderEnabled()) {
+    clone.CloneChildNodesFrom(*this, data);
+  }
+  if (append_to) {
+    append_to->AppendChild(&clone, append_exception_state);
+  }
+  if (RuntimeEnabledFeatures::OptimizedNodeCloneOrderEnabled()) {
+    clone.CloneChildNodesFrom(*this, data);
+  }
   return clone;
 }
 
@@ -2470,17 +2495,6 @@ static inline ClassStringContent ClassStringHasClassName(
 
 void Element::ClassAttributeChanged(const AtomicString& new_class_string) {
   DCHECK(HasElementData());
-  if (!element_data_->IsUnique()) {
-    ShareableElementData* shareable_element_data =
-        To<ShareableElementData>(element_data_.Get());
-    if (!shareable_element_data->class_is_dirty() && !InActiveDocument()) {
-      // `element_data` is shared, class related state is up to date, and
-      // this is not in the active document. No additional processing is
-      // necessary (because ClassChangedForElement() does nothing if not
-      // in an active document).
-      return;
-    }
-  }
   ClassStringContent class_string_content_type =
       ClassStringHasClassName(new_class_string);
   const bool should_fold_case = GetDocument().InQuirksMode();
@@ -2498,9 +2512,6 @@ void Element::ClassAttributeChanged(const AtomicString& new_class_string) {
     } else {
       GetElementData()->ClearClass();
     }
-  }
-  if (!element_data_->IsUnique()) {
-    To<ShareableElementData>(element_data_.Get())->SetClassIsDirty(false);
   }
 }
 
@@ -2564,14 +2575,14 @@ void Element::ParserSetAttributes(
   DCHECK(!element_data_);
 
   if (!attribute_vector.empty()) {
-    if (auto* cache = GetDocument().GetElementDataCache()) {
-      element_data_ = cache->ElementDataWithAttributes(attribute_vector);
-    } else if (attribute_vector.size() <=
-               ShareableElementData::kMaxNumberOfAttributes) {
+    if (GetDocument().GetElementDataCache()) {
+      element_data_ =
+          GetDocument()
+              .GetElementDataCache()
+              ->CachedShareableElementDataWithAttributes(attribute_vector);
+    } else {
       element_data_ =
           ShareableElementData::CreateWithAttributes(attribute_vector);
-    } else {
-      element_data_ = MakeGarbageCollected<UniqueElementData>(attribute_vector);
     }
   }
 

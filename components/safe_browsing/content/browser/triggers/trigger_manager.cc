@@ -75,6 +75,16 @@ bool CanSendReport(const SBErrorOptions& error_display_options,
 DataCollectorsContainer::DataCollectorsContainer() {}
 DataCollectorsContainer::~DataCollectorsContainer() {}
 
+TriggerManager::FinishCollectingThreatDetailsResult::
+    FinishCollectingThreatDetailsResult(bool should_send_report,
+                                        bool are_threat_details_available)
+    : should_send_report(should_send_report),
+      are_threat_details_available(are_threat_details_available) {}
+
+bool TriggerManager::FinishCollectingThreatDetailsResult::IsReportSent() {
+  return should_send_report && are_threat_details_available;
+}
+
 TriggerManager::TriggerManager(BaseUIManager* ui_manager,
                                PrefService* local_state_prefs)
     : ui_manager_(ui_manager),
@@ -203,13 +213,15 @@ void TriggerManager::SetInterstitialInteractions(
   interstitial_interactions_ = std::move(interstitial_interactions);
 }
 
-bool TriggerManager::FinishCollectingThreatDetails(
+TriggerManager::FinishCollectingThreatDetailsResult
+TriggerManager::FinishCollectingThreatDetails(
     const TriggerType trigger_type,
     WebContentsKey web_contents_key,
     const base::TimeDelta& delay,
     bool did_proceed,
     int num_visits,
-    const SBErrorOptions& error_display_options) {
+    const SBErrorOptions& error_display_options,
+    bool is_hats_candidate) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   // Determine whether a report should be sent.
   bool should_send_report = CanSendReport(error_display_options, trigger_type);
@@ -230,7 +242,9 @@ bool TriggerManager::FinishCollectingThreatDetails(
 
   // Make sure there's a ThreatDetails collector running on this tab.
   if (!has_threat_details_in_map)
-    return false;
+    return FinishCollectingThreatDetailsResult(
+        should_send_report,
+        /*are_threat_details_available=*/false);
   DataCollectorsContainer* collectors = &data_collectors_map_[web_contents_key];
   bool has_threat_details = !!collectors->threat_details;
 
@@ -243,13 +257,18 @@ bool TriggerManager::FinishCollectingThreatDetails(
   }
 
   if (!has_threat_details) {
-    return false;
+    return FinishCollectingThreatDetailsResult(
+        should_send_report,
+        /*are_threat_details_available=*/false);
   }
 
-  if (should_send_report) {
+  // Trigger finishing the ThreatDetails collection if we should send the
+  // report to SB or if the user may see a HaTS survey.
+  if (should_send_report || is_hats_candidate) {
     // Find the data collector and tell it to finish collecting data. We expect
     // it to notify us when it's finished so we can clean up references to it.
-
+    collectors->threat_details->SetIsHatsCandidate(is_hats_candidate);
+    collectors->threat_details->SetShouldSendReport(should_send_report);
     base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
         FROM_HERE,
         base::BindOnce(&ThreatDetails::FinishCollection,
@@ -265,7 +284,9 @@ bool TriggerManager::FinishCollectingThreatDetails(
     ThreatDetailsDone(web_contents_key);
   }
 
-  return should_send_report;
+  return FinishCollectingThreatDetailsResult(
+      should_send_report,
+      /*are_threat_details_available=*/true);
 }
 
 void TriggerManager::ThreatDetailsDone(WebContentsKey web_contents_key) {

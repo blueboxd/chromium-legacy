@@ -79,7 +79,7 @@ const test::UIPath kSplashScreenLaunchText = {"app-launch-splash",
 // Webstore data json is in
 //     chrome/test/data/chromeos/app_mode/webstore/inlineinstall/
 //         detail/enelnimkndkcejhjnpaofdlbbfmdnagi
-const char kTestGetVolumeListKioskApp[] = "enelnimkndkcejhjnpaofdlbbfmdnagi";
+const char kTestGetVolumeListKioskAppId[] = "enelnimkndkcejhjnpaofdlbbfmdnagi";
 
 constexpr char kSettingsPage1[] = "chrome://os-settings/manageAccessibility";
 constexpr char kSettingsPage2[] =
@@ -156,7 +156,11 @@ class ExtensionReadyObserver : public extensions::ExtensionRegistryObserver {
 // Kiosk tests with a fake device owner setup.
 class KioskDeviceOwnedTest : public KioskBaseTest {
  public:
-  KioskDeviceOwnedTest() { login_manager_.AppendRegularUsers(1); }
+  KioskDeviceOwnedTest() {
+    settings_helper_.Set(kDeviceOwner,
+                         base::Value(test_owner_account_id_.GetUserEmail()));
+    login_manager_.AppendRegularUsers(1);
+  }
 
   void SetUp() override {
     KioskBaseTest::SetUp();
@@ -313,7 +317,8 @@ IN_PROC_BROWSER_TEST_F(KioskDeviceOwnedTest, LaunchAppNetworkDown) {
 
 IN_PROC_BROWSER_TEST_F(KioskDeviceOwnedTest,
                        LaunchAppNetworkDownConfigureNotAllowed) {
-  ScopedCanConfigureNetwork can_configure_network(false);
+  auto auto_reset =
+      NetworkUiController::SetCanConfigureNetworkForTesting(false);
 
   // Start app launch and wait for network connectivity timeout.
   StartAppLaunchFromLoginScreen(
@@ -333,9 +338,7 @@ IN_PROC_BROWSER_TEST_F(KioskDeviceOwnedTest,
 
 // Verifies available volumes for kiosk apps in kiosk session.
 IN_PROC_BROWSER_TEST_F(KioskDeviceOwnedTest, GetVolumeList) {
-  set_test_app_id(kTestGetVolumeListKioskApp);
-  set_test_app_version("0.1");
-  set_test_crx_file(test_app_id() + ".crx");
+  SetTestApp(kTestGetVolumeListKioskAppId, /*version=*/"0.1");
 
   extensions::ResultCatcher catcher;
   StartAppLaunchFromLoginScreen(

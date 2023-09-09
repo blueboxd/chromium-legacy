@@ -883,6 +883,54 @@ TEST_F(DualLayerUserPrefStoreTest, ShouldCommitPendingWritesForBothStores) {
   EXPECT_TRUE(account_store()->committed());
 }
 
+// Tests that notifications are not sent out if the same value already exists in
+// the local store, i.e. the effective value is unchanged.
+TEST_F(
+    DualLayerUserPrefStoreTest,
+    ShouldNotNotifyIfEffectiveValueIsUnchangedUponSetValueInAccountStoreOnly) {
+  store()->GetLocalPrefStore()->SetValueSilently(kPrefName,
+                                                 base::Value("value"), 0);
+
+  testing::StrictMock<MockPrefStoreObserver> observer;
+  store()->AddObserver(&observer);
+
+  testing::StrictMock<MockPrefStoreObserver> account_store_observer;
+  store()->GetAccountPrefStore()->AddObserver(&account_store_observer);
+
+  // Effective value in the dual pref store is unchanged, so there shouldn't be
+  // any calls to the observer.
+  EXPECT_CALL(observer, OnPrefValueChanged).Times(0);
+  // Since a new pref is added to the account store, its observers are still
+  // notified.
+  EXPECT_CALL(account_store_observer, OnPrefValueChanged);
+
+  store()->SetValueInAccountStoreOnly(kPrefName, base::Value("value"), 0);
+
+  store()->GetAccountPrefStore()->RemoveObserver(&account_store_observer);
+  store()->RemoveObserver(&observer);
+}
+
+TEST_F(DualLayerUserPrefStoreTest,
+       ShouldNotifyIfEffectiveValueChangesUponSetValueInAccountStoreOnly) {
+  store()->GetLocalPrefStore()->SetValueSilently(kPrefName,
+                                                 base::Value("value"), 0);
+
+  testing::StrictMock<MockPrefStoreObserver> observer;
+  store()->AddObserver(&observer);
+
+  testing::StrictMock<MockPrefStoreObserver> account_store_observer;
+  store()->GetAccountPrefStore()->AddObserver(&account_store_observer);
+
+  // Effective value is changing, so observers should be notified.
+  EXPECT_CALL(observer, OnPrefValueChanged);
+  EXPECT_CALL(account_store_observer, OnPrefValueChanged);
+
+  store()->SetValueInAccountStoreOnly(kPrefName, base::Value("new value"), 0);
+
+  store()->GetAccountPrefStore()->RemoveObserver(&account_store_observer);
+  store()->RemoveObserver(&observer);
+}
+
 class DualLayerUserPrefStoreTestForTypes
     : public DualLayerUserPrefStoreTestBase {
  public:
@@ -1069,6 +1117,59 @@ TEST_F(DualLayerUserPrefStoreTestForTypes,
   EXPECT_TRUE(ValueInStoreIsAbsent(*account_store(), kNonSyncablePrefName));
 
   store()->RemoveObserver(&observer);
+}
+
+TEST_F(DualLayerUserPrefStoreTestForTypes,
+       ShouldSetAccountValueForNotActiveTypesIfAlreadyExists) {
+  account_store()->SetValueSilently(kPrefName, base::Value("account_value"), 0);
+  ASSERT_TRUE(ValueInStoreIs(*account_store(), kPrefName, "account_value"));
+
+  // PREFERENCES type is not active.
+  ASSERT_EQ(0u, store()->GetActiveTypesForTest().count(syncer::PREFERENCES));
+
+  // `kPrefName` is set to the account store even if PREFERENCES type is not
+  // active since it already exists in the account store.
+  {
+    store()->SetValue(kPrefName, base::Value("new_value1"), 0);
+    EXPECT_TRUE(ValueInStoreIs(*account_store(), kPrefName, "new_value1"));
+  }
+  {
+    store()->SetValueSilently(kPrefName, base::Value("new_value2"), 0);
+    EXPECT_TRUE(ValueInStoreIs(*account_store(), kPrefName, "new_value2"));
+  }
+  {
+    base::Value* value = nullptr;
+    ASSERT_TRUE(store()->GetMutableValue(kPrefName, &value));
+    *value = base::Value("new_value3");
+    store()->ReportValueChanged(kPrefName, 0);
+    EXPECT_TRUE(ValueInStoreIs(*account_store(), kPrefName, "new_value3"));
+  }
+}
+
+TEST_F(DualLayerUserPrefStoreTestForTypes,
+       ShouldNotSetAccountValueForNotActiveTypesIfNotAlreadyExists) {
+  ASSERT_TRUE(ValueInStoreIsAbsent(*account_store(), kPrefName));
+
+  // PREFERENCES type is not active.
+  ASSERT_EQ(0u, store()->GetActiveTypesForTest().count(syncer::PREFERENCES));
+
+  // `kPrefName` is not set to the account store since PREFERENCES type is not
+  // active and the pref does not already exist in the account store.
+  {
+    store()->SetValue(kPrefName, base::Value("new_value1"), 0);
+    EXPECT_TRUE(ValueInStoreIsAbsent(*account_store(), kPrefName));
+  }
+  {
+    store()->SetValueSilently(kPrefName, base::Value("new_value2"), 0);
+    EXPECT_TRUE(ValueInStoreIsAbsent(*account_store(), kPrefName));
+  }
+  {
+    base::Value* value = nullptr;
+    ASSERT_TRUE(store()->GetMutableValue(kPrefName, &value));
+    *value = base::Value("new_value3");
+    store()->ReportValueChanged(kPrefName, 0);
+    EXPECT_TRUE(ValueInStoreIsAbsent(*account_store(), kPrefName));
+  }
 }
 
 class MergeTestPrefModelAssociatorClient : public PrefModelAssociatorClient {

@@ -231,8 +231,9 @@ AXNode* AXTreeManager::GetLastFocusedNode() {
 
 AXTreeManager::~AXTreeManager() {
   AXNode* parent = nullptr;
-  if (connected_to_parent_tree_node_)
+  if (connected_to_parent_tree_node_) {
     parent = GetParentNodeFromParentTree();
+  }
 
   // Fire any events that need to be fired when tree nodes get deleted. For
   // example, events that fire every time "OnSubtreeWillBeDeleted" is called.

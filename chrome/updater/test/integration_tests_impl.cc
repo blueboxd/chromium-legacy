@@ -115,7 +115,8 @@ std::string GetUpdateResponse(const std::string& app_id,
                               const base::Version& version,
                               const base::FilePath& update_file,
                               const std::string& run_action,
-                              const std::string& arguments) {
+                              const std::string& arguments,
+                              const std::string& file_hash) {
   return base::StringPrintf(
       ")]}'\n"
       R"({"response":{)"
@@ -152,7 +153,19 @@ std::string GetUpdateResponse(const std::string& app_id,
           : "",
       codebase.c_str(), version.GetString().c_str(), run_action.c_str(),
       arguments.c_str(), update_file.BaseName().AsUTF8Unsafe().c_str(),
-      GetHashHex(update_file).c_str());
+      file_hash.c_str());
+}
+
+std::string GetUpdateResponse(const std::string& app_id,
+                              const std::string& install_data_index,
+                              const std::string& codebase,
+                              const base::Version& version,
+                              const base::FilePath& update_file,
+                              const std::string& run_action,
+                              const std::string& arguments) {
+  return GetUpdateResponse(app_id, install_data_index, codebase, version,
+                           update_file, run_action, arguments,
+                           GetHashHex(update_file));
 }
 
 void RunUpdaterWithSwitch(const base::Version& version,
@@ -289,11 +302,13 @@ int CountDirectoryFiles(const base::FilePath& dir) {
   return res;
 }
 
-void RegisterApp(UpdaterScope scope, const std::string& app_id) {
+void RegisterApp(UpdaterScope scope,
+                 const std::string& app_id,
+                 const base::Version& version) {
   scoped_refptr<UpdateService> update_service = CreateUpdateServiceProxy(scope);
   RegistrationRequest registration;
   registration.app_id = app_id;
-  registration.version = base::Version("0.1");
+  registration.version = version;
   base::RunLoop loop;
   update_service->RegisterApp(registration,
                               base::BindLambdaForTesting([&loop](int result) {
@@ -305,6 +320,11 @@ void RegisterApp(UpdaterScope scope, const std::string& app_id) {
 
 void SetGroupPolicies(const base::Value::Dict& values) {
   ASSERT_TRUE(ExternalConstantsBuilder().SetGroupPolicies(values).Modify());
+}
+
+void SetMachineManaged(bool is_managed_device) {
+  ASSERT_TRUE(
+      ExternalConstantsBuilder().SetMachineManaged(is_managed_device).Modify());
 }
 
 void ExpectVersionActive(UpdaterScope scope, const std::string& version) {
@@ -424,6 +444,57 @@ void ExpectNoCrashes(UpdaterScope scope) {
 
   EXPECT_EQ(count, 0) << ": " << count << " crashes found";
 }
+
+#if BUILDFLAG(IS_WIN)
+void ExpectAppRollbackUpdateSequence(UpdaterScope scope,
+                                     ScopedServer* test_server,
+                                     const std::string& app_id,
+                                     bool rollback_allowed,
+                                     const std::string& target_version_prefix,
+                                     const base::Version& from_version,
+                                     const base::Version& to_version) {
+  base::FilePath exe_path;
+  ASSERT_TRUE(base::PathService::Get(base::DIR_EXE, &exe_path));
+  base::FilePath crx_path = exe_path.Append(FILE_PATH_LITERAL("test_installer"))
+                                .AppendASCII("TestApp2Setup.crx3");
+  ASSERT_TRUE(base::PathExists(crx_path));
+
+  // First request: update check.
+  test_server->ExpectOnce(
+      {request::GetPathMatcher(test_server->update_path()),
+       request::GetContentMatcher({
+           base::StringPrintf(R"("appid":"%s")", app_id.c_str()),
+           rollback_allowed ? "\"rollback_allowed\":true" : "",
+           target_version_prefix.empty()
+               ? ""
+               : base::StringPrintf(R"("targetversionprefix":"%s")",
+                                    target_version_prefix.c_str()),
+       }),
+       request::GetScopeMatcher(scope)},
+      GetUpdateResponse(
+          app_id, "", test_server->update_url().spec(), to_version, crx_path,
+          "TestApp2Setup.exe",
+          base::StringPrintf("%s --appid=%s --company=%s --product_version=%s",
+                             IsSystemInstall(scope) ? "--system" : "",
+                             app_id.c_str(), COMPANY_SHORTNAME_STRING,
+                             to_version.GetString().c_str())));
+
+  // Second request: update download.
+  std::string crx_bytes;
+  base::ReadFileToString(crx_path, &crx_bytes);
+  test_server->ExpectOnce({request::GetContentMatcher({""})}, crx_bytes);
+
+  // Third request: event ping.
+  test_server->ExpectOnce(
+      {request::GetPathMatcher(test_server->update_path()),
+       request::GetContentMatcher({base::StringPrintf(
+           R"(.*"eventresult":1,"eventtype":3,)"
+           R"("nextversion":"%s","previousversion":"%s".*)",
+           to_version.GetString().c_str(), from_version.GetString().c_str())}),
+       request::GetScopeMatcher(scope)},
+      ")]}'\n");
+}
+#endif  // BUILDFLAG(IS_WIN)
 
 void RunWake(UpdaterScope scope, int expected_exit_code) {
   RunUpdaterWithSwitch(base::Version(kUpdaterVersion), scope, kWakeSwitch,
@@ -712,6 +783,53 @@ void ExpectUpdateSequence(UpdaterScope scope,
                        /*event_type=*/3, from_version, to_version);
 }
 
+void ExpectUpdateSequenceBadHash(UpdaterScope scope,
+                                 ScopedServer* test_server,
+                                 const std::string& app_id,
+                                 const std::string& install_data_index,
+                                 UpdateService::Priority priority,
+                                 const base::Version& from_version,
+                                 const base::Version& to_version) {
+  base::FilePath test_data_path;
+  ASSERT_TRUE(base::PathService::Get(chrome::DIR_TEST_DATA, &test_data_path));
+  base::FilePath crx_path = test_data_path.Append(FILE_PATH_LITERAL("updater"))
+                                .AppendASCII(kDoNothingCRXName);
+  ASSERT_TRUE(base::PathExists(crx_path));
+
+  // First request: update check.
+  test_server->ExpectOnce(
+      {request::GetPathMatcher(test_server->update_path()),
+       request::GetContentMatcher(
+           {base::StringPrintf(R"("appid":"%s")", app_id.c_str()),
+            install_data_index.empty()
+                ? ""
+                : base::StringPrintf(
+                      R"("data":\[{"index":"%s","name":"install"}],.*)",
+                      install_data_index.c_str())
+                      .c_str()}),
+       request::GetScopeMatcher(scope),
+       request::GetAppPriorityMatcher(app_id, priority)},
+      GetUpdateResponse(
+          app_id, install_data_index, test_server->update_url().spec(),
+          to_version, crx_path, kDoNothingCRXRun, {},
+          "badbadbadbadbadbadbadbadbadbadbadbadbadbadbadbadbadbadbadbadbad1"));
+
+  // Second request: update download.
+  std::string crx_bytes;
+  base::ReadFileToString(crx_path, &crx_bytes);
+  test_server->ExpectOnce({request::GetContentMatcher({""})}, crx_bytes);
+
+  // Third request: event ping.
+  test_server->ExpectOnce(
+      {request::GetPathMatcher(test_server->update_path()),
+       request::GetContentMatcher({base::StringPrintf(
+           R"(.*"errorcat":1,"errorcode":12,"eventresult":0,"eventtype":3,)"
+           R"("nextversion":"%s","previousversion":"%s".*)",
+           to_version.GetString().c_str(), from_version.GetString().c_str())}),
+       request::GetScopeMatcher(scope)},
+      ")]}'\n");
+}
+
 void ExpectInstallSequence(UpdaterScope scope,
                            ScopedServer* test_server,
                            const std::string& app_id,
@@ -916,7 +1034,7 @@ void DMCleanup(UpdaterScope scope) {
     return;
   }
   scoped_refptr<DMStorage> storage = GetDefaultDMStorage();
-  EXPECT_TRUE(storage->StoreEnrollmentToken(""));
+  EXPECT_TRUE(storage->DeleteEnrollmentToken());
   EXPECT_TRUE(storage->DeleteDMToken());
   EXPECT_TRUE(base::DeletePathRecursively(storage->policy_cache_folder()));
 

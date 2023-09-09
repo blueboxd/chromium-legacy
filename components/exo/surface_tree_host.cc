@@ -28,7 +28,6 @@
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "third_party/skia/include/core/SkPath.h"
-#include "ui/accessibility/aura/aura_window_properties.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
@@ -170,11 +169,8 @@ void SurfaceTreeHost::SetRootSurface(Surface* root_surface) {
     if (client_submits_surfaces_in_pixel_coordinates_) {
       SetScaleFactorTransform(GetScaleFactor());
     }
-    // TODO(oshima): Investigate if we can set this to `host_window`.
-    root_surface_->window()->SetProperty(
-        ui::kAXConsiderInvisibleAndIgnoreChildren, true);
     host_window_->AddChild(root_surface_->window());
-    UpdateHostWindowBounds();
+    UpdateHostWindowSizeAndRootSurfaceOrigin();
   }
   set_bounds_is_dirty(true);
 }
@@ -239,7 +235,7 @@ void SurfaceTreeHost::SetLayerTreeFrameSinkHolderFactoryForTesting(
 
 void SurfaceTreeHost::OnSurfaceCommit() {
   root_surface_->CommitSurfaceHierarchy(false);
-  UpdateHostWindowBounds();
+  UpdateHostWindowSizeAndRootSurfaceOrigin();
 }
 
 bool SurfaceTreeHost::IsSurfaceSynchronized() const {
@@ -403,10 +399,11 @@ void SurfaceTreeHost::SubmitEmptyCompositorFrame() {
   frame_callbacks_.emplace();
   active_presentation_callbacks_[frame.metadata.frame_token] =
       PresentationCallbacks();
-  layer_tree_frame_sink_holder_->SubmitCompositorFrame(std::move(frame));
+  layer_tree_frame_sink_holder_->SubmitCompositorFrame(std::move(frame),
+                                                       /*submit_now=*/true);
 }
 
-void SurfaceTreeHost::UpdateHostWindowBounds() {
+void SurfaceTreeHost::UpdateHostWindowSizeAndRootSurfaceOrigin() {
   // This method applies multiple changes to the window tree. Use ScopedPause
   // to ensure that occlusion isn't recomputed before all changes have been
   // applied.
@@ -594,14 +591,10 @@ viz::CompositorFrame SurfaceTreeHost::PrepareToSubmitCompositorFrame() {
                       gfx::Rect(), gfx::Transform());
   frame.metadata.device_scale_factor = device_scale_factor;
 
-  // TODO(crbug.com/1464991): if the frame is throttled by
-  // ReactiveFrameSubmission, `LastSubmittedSizeInPixels()` and
-  // `LastSubmittedDeviceScaleFactor()` does not represent the properties of the
-  // last frame pushed to the queue.
   if (output_surface_size_in_pixels !=
-          layer_tree_frame_sink_holder_->LastSubmittedSizeInPixels() ||
+          layer_tree_frame_sink_holder_->LastSizeInPixels() ||
       device_scale_factor !=
-          layer_tree_frame_sink_holder_->LastSubmittedDeviceScaleFactor()) {
+          layer_tree_frame_sink_holder_->LastDeviceScaleFactor()) {
     AllocateLocalSurfaceId();
   }
   layer_tree_frame_sink_holder_->SetLocalSurfaceId(GetCurrentLocalSurfaceId());
@@ -630,17 +623,11 @@ void SurfaceTreeHost::HandleContextLost() {
 }
 
 float SurfaceTreeHost::GetScaleFactor() const {
-  if (scale_factor_) {
-    // TODO(crbug.com/1412420): Remove this once the scale factor precision
-    // issue is fixed.
-    if (std::abs(scale_factor_.value() -
-                 host_window_->layer()->device_scale_factor()) <
-        display::kDeviceScaleFactorErrorTolerance) {
-      return host_window_->layer()->device_scale_factor();
-    }
-    return scale_factor_.value();
-  }
-  return host_window_->layer()->device_scale_factor();
+  return CalculateScaleFactor(scale_factor_);
+}
+
+float SurfaceTreeHost::GetPendingScaleFactor() const {
+  return CalculateScaleFactor(pending_scale_factor_);
 }
 
 void SurfaceTreeHost::CleanUpCallbacks() {
@@ -665,6 +652,21 @@ std::unique_ptr<LayerTreeFrameSinkHolder>
 SurfaceTreeHost::CreateLayerTreeFrameSinkHolder() {
   return std::make_unique<LayerTreeFrameSinkHolder>(this,
                                                     CreateLayerTreeFrameSink());
+}
+
+float SurfaceTreeHost::CalculateScaleFactor(
+    const absl::optional<float>& scale_factor) const {
+  if (scale_factor) {
+    // TODO(crbug.com/1412420): Remove this once the scale factor precision
+    // issue is fixed for ARC.
+    if (std::abs(scale_factor.value() -
+                 host_window_->layer()->device_scale_factor()) <
+        display::kDeviceScaleFactorErrorTolerance) {
+      return host_window_->layer()->device_scale_factor();
+    }
+    return scale_factor.value();
+  }
+  return host_window_->layer()->device_scale_factor();
 }
 
 void SurfaceTreeHost::SetScaleFactorTransform(float scale_factor) {

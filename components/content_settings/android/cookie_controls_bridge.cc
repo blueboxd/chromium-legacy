@@ -24,15 +24,33 @@ CookieControlsBridge::CookieControlsBridge(
     const base::android::JavaParamRef<jobject>&
         joriginal_browser_context_handle)
     : jobject_(obj) {
+  UpdateWebContents(env, jweb_contents_android,
+                    joriginal_browser_context_handle);
+}
+
+void CookieControlsBridge::UpdateWebContents(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& jweb_contents_android,
+    const base::android::JavaParamRef<jobject>&
+        joriginal_browser_context_handle) {
   content::WebContents* web_contents =
       content::WebContents::FromJavaWebContents(jweb_contents_android);
+
   content::BrowserContext* original_context =
       content::BrowserContextFromJavaHandle(joriginal_browser_context_handle);
+
+  content::BrowserContext* context = web_contents->GetBrowserContext();
   auto* permissions_client = permissions::PermissionsClient::Get();
+
+  old_observation_.Reset();
+  observation_.Reset();
+
   controller_ = std::make_unique<CookieControlsController>(
-      permissions_client->GetCookieSettings(web_contents->GetBrowserContext()),
+      permissions_client->GetCookieSettings(context),
       original_context ? permissions_client->GetCookieSettings(original_context)
-                       : nullptr);
+                       : nullptr,
+      permissions_client->GetSettingsMap(context));
+
   old_observation_.Observe(controller_.get());
   observation_.Observe(controller_.get());
   controller_->Update(web_contents);
@@ -130,6 +148,18 @@ void CookieControlsBridge::SetThirdPartyCookieBlockingEnabledForSite(
 
 void CookieControlsBridge::OnUiClosing(JNIEnv* env) {
   controller_->OnUiClosing();
+}
+
+void CookieControlsBridge::OnEntryPointAnimated(JNIEnv* env) {
+  controller_->OnEntryPointAnimated();
+}
+
+int CookieControlsBridge::GetCookieControlsStatus(JNIEnv* env) {
+  return static_cast<int>(controller_->GetCookieControlsStatus());
+}
+
+int CookieControlsBridge::GetBreakageConfidenceLevel(JNIEnv* env) {
+  return static_cast<int>(controller_->GetBreakageConfidenceLevel());
 }
 
 CookieControlsBridge::~CookieControlsBridge() = default;

@@ -116,7 +116,7 @@ class IbanBubbleViewFullFormBrowserTest
     // Set up this class as the ObserverForTest implementation.
     iban_save_manager_ = autofill_manager()
                              ->client()
-                             ->GetFormDataImporter()
+                             .GetFormDataImporter()
                              ->iban_save_manager_for_testing();
     iban_save_manager_->SetEventObserverForTesting(this);
     AddEventObserverToController();
@@ -419,6 +419,32 @@ IN_PROC_BROWSER_TEST_F(IbanBubbleViewFullFormBrowserTest,
   histogram_tester.ExpectUniqueSample(
       "Autofill.SaveIbanPromptResult.Local.FirstShow",
       autofill_metrics::SaveIbanBubbleResult::kCancelled, 1);
+}
+
+// Tests the local save bubble. Ensures that clicking the [X] button
+// successfully causes the bubble to go away, and causes a strike to be added.
+IN_PROC_BROWSER_TEST_F(IbanBubbleViewFullFormBrowserTest,
+                       Local_ClickingXIconClosesBubble) {
+  base::HistogramTester histogram_tester;
+  FillForm(kIbanValue);
+  SubmitFormAndWaitForIbanLocalSaveBubble();
+
+  // Clicking [X] should close the bubble.
+  ResetEventWaiterForSequence({DialogEvent::DECLINE_SAVE_IBAN_COMPLETE});
+  ClickOnCloseButton();
+  ASSERT_TRUE(WaitForObservedEvent());
+
+  EXPECT_FALSE(GetSaveIbanBubbleView());
+  EXPECT_EQ(
+      1, iban_save_manager_->GetIBANSaveStrikeDatabaseForTesting()->GetStrikes(
+             IBANSaveManager::GetPartialIbanHashString(
+                 kIbanValueWithoutWhitespaces)));
+  histogram_tester.ExpectUniqueSample(
+      "Autofill.SaveIbanPromptOffer.Local.FirstShow",
+      autofill_metrics::SaveIbanPromptOffer::kShown, 1);
+  histogram_tester.ExpectUniqueSample(
+      "Autofill.SaveIbanPromptResult.Local.FirstShow",
+      autofill_metrics::SaveIbanBubbleResult::kClosed, 1);
 }
 
 // Tests overall StrikeDatabase interaction with the local save bubble. Runs an

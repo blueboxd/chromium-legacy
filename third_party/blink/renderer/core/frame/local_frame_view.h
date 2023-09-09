@@ -422,8 +422,7 @@ class CORE_EXPORT LocalFrameView final
   void EnableAutoSizeMode(const gfx::Size& min_size, const gfx::Size& max_size);
   void DisableAutoSizeMode();
 
-  void ForceLayoutForPagination(const gfx::SizeF& page_size,
-                                float maximum_shrink_factor);
+  void ForceLayoutForPagination(float maximum_shrink_factor);
 
   // Updates the fragment anchor element based on URL's fragment identifier.
   // Updates corresponding ':target' CSS pseudo class on the anchor element.
@@ -642,7 +641,6 @@ class CORE_EXPORT LocalFrameView final
   // Viewport size that should be used for viewport units (i.e. 'vh'/'vw').
   // May include the size of browser controls. See implementation for further
   // documentation.
-  gfx::SizeF ViewportSizeForViewportUnits() const;
   // https://drafts.csswg.org/css-values-4/#small-viewport-size
   gfx::SizeF SmallViewportSizeForViewportUnits() const;
   // https://drafts.csswg.org/css-values-4/#large-viewport-size
@@ -771,6 +769,9 @@ class CORE_EXPORT LocalFrameView final
 
   void RemoveAllPendingUpdates();
   bool ExecuteAllPendingUpdates();
+
+  void AddPendingStickyUpdate(PaintLayerScrollableArea*);
+  void ExecutePendingStickyUpdates();
 
   void ForAllChildLocalFrameViews(base::FunctionRef<void(LocalFrameView&)>);
 
@@ -1188,6 +1189,10 @@ class CORE_EXPORT LocalFrameView final
   // TODO(yotha): unify these into one HeapHashMap.
   Member<HeapHashSet<Member<LayoutObject>>> pending_transform_updates_;
   Member<HeapHashSet<Member<LayoutObject>>> pending_opacity_updates_;
+
+  // A set of objects needing sticky constraint updates. These updates are
+  // registered during layout deferred until the end of layout.
+  Member<HeapHashSet<Member<PaintLayerScrollableArea>>> pending_sticky_updates_;
 
   // These are elements that were disconnected while having a remembered
   // size. We need to clear the remembered at resize observer timing,

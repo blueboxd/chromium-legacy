@@ -25,6 +25,10 @@ const destination_dialog_cros_test = {
         'PrinterSetupAssistanceHasDestinations',
     PrinterSetupAssistanceHasNoDestinations:
         'PrinterSetupAssistanceHasNoDestinations',
+    ManagePrintersMetrics_HasDestinations:
+        'ManagePrintersMetrics_HasDestinations',
+    ManagePrintersMetrics_HasNoDestinations:
+        'ManagePrintersMetrics_HasNoDestinations',
   },
 };
 
@@ -81,6 +85,46 @@ suite(destination_dialog_cros_test.suiteName, function() {
         .then(function() {
           flush();
         });
+  }
+
+  /**
+   * Remove and recreate destination-dialog-cros then return `finishSetup`. If
+   * `removeDestinations` is set, also overrides destination-store to be empty.
+   */
+  function recreateElementAndFinishSetup(removeDestinations: boolean):
+      Promise<void> {
+    // Remove existing dialog.
+    dialog.remove();
+    flush();
+
+    if (removeDestinations) {
+      // Re-create data classes with no destinations.
+      destinationStore = createDestinationStore();
+      nativeLayer.setLocalDestinations([]);
+      destinationStore.init(
+          false /* pdfPrinterDisabled */, false /* saveToDriveDisabled */,
+          'FooDevice' /* printerName */,
+          '' /* serializedDefaultDestinationSelectionRulesStr */,
+          [] /* recentDestinations */);
+    }
+
+    // Set up dialog.
+    dialog = document.createElement('print-preview-destination-dialog-cros');
+    dialog.destinationStore = destinationStore;
+    return finishSetup();
+  }
+
+  /**
+   * Checks that `recordInHistogram` is called with expected bucket.
+   */
+  function verifyRecordInHistogramCall(
+      callIndex: number, expectedBucket: number): void {
+    const calls = nativeLayer.getArgs('recordInHistogram');
+    assertTrue(!!calls && calls.length > 0);
+    assertTrue(callIndex < calls.length);
+    const [histogramName, bucket] = calls[callIndex];
+    assertEquals('PrintPreview.PrinterSettingsLaunchSource', histogramName);
+    assertEquals(expectedBucket, bucket);
   }
 
   // Test that clicking a provisional destination shows the provisional
@@ -204,17 +248,7 @@ suite(destination_dialog_cros_test.suiteName, function() {
         loadTimeData.overrideValues({
           isPrintPreviewSetupAssistanceEnabled: true,
         });
-
-        // Remove existing dialog to set `isPrintPreviewSetupAssistanceEnabled`
-        // flag for testing.
-        dialog.remove();
-        await flush();
-
-        // Set up dialog.
-        dialog =
-            document.createElement('print-preview-destination-dialog-cros');
-        dialog.destinationStore = destinationStore;
-        await finishSetup();
+        await recreateElementAndFinishSetup(/*removeDestinations=*/ false);
 
         // Manage printers button hidden when there are valid destinations.
         const managePrintersButton =
@@ -238,7 +272,6 @@ suite(destination_dialog_cros_test.suiteName, function() {
         const searchBox = dialog.shadowRoot!.querySelector<HTMLElement>(
             'print-preview-search-box');
         assertTrue(isVisible(searchBox));
-
       });
 
   // Test that the correct elements are displayed when the printer setup
@@ -251,26 +284,7 @@ suite(destination_dialog_cros_test.suiteName, function() {
         loadTimeData.overrideValues({
           isPrintPreviewSetupAssistanceEnabled: true,
         });
-
-        // Remove existing dialog to set `isPrintPreviewSetupAssistanceEnabled`
-        // flag for testing.
-        dialog.remove();
-        await flush();
-
-        // Re-create data classes with no destinations.
-        destinationStore = createDestinationStore();
-        nativeLayer.setLocalDestinations([]);
-        destinationStore.init(
-            false /* pdfPrinterDisabled */, false /* saveToDriveDisabled */,
-            'FooDevice' /* printerName */,
-            '' /* serializedDefaultDestinationSelectionRulesStr */,
-            [] /* recentDestinations */);
-
-        // Set up dialog.
-        dialog =
-            document.createElement('print-preview-destination-dialog-cros');
-        dialog.destinationStore = destinationStore;
-        await finishSetup();
+        await recreateElementAndFinishSetup(/*removeDestinations=*/ true);
 
         // Manage printers button hidden when there are no destinations.
         const managePrintersButton =
@@ -299,5 +313,59 @@ suite(destination_dialog_cros_test.suiteName, function() {
         const searchBox = dialog.shadowRoot!.querySelector<HTMLElement>(
             'print-preview-search-box');
         assertFalse(isVisible(searchBox));
+      });
+
+  // Test that `PrintPreview.PrinterSettingsLaunchSource` metric is recorded
+  // with bucket `DESTINATION_DIALOG_CROS_HAS_PRINTERS` when flag is on and
+  // destination store has destinations.
+  test(
+      destination_dialog_cros_test.TestNames
+          .ManagePrintersMetrics_HasDestinations,
+      async () => {
+        // Set flag enabled.
+        loadTimeData.overrideValues({
+          isPrintPreviewSetupAssistanceEnabled: true,
+        });
+        await recreateElementAndFinishSetup(/*removeDestinations=*/ false);
+
+        assertEquals(0, nativeLayer.getCallCount('recordInHistogram'));
+
+        // Manage printers button hidden when there are valid destinations.
+        const managePrintersButton =
+            dialog.shadowRoot!.querySelector<HTMLElement>(
+                'cr-button:not(.cancel-button)')!;
+        managePrintersButton.click();
+
+        // Call should use bucket `DESTINATION_DIALOG_CROS_HAS_PRINTERS`.
+        verifyRecordInHistogramCall(/*callIndex=*/ 0, /*bucket=*/ 2);
+      });
+
+  // Test that `PrintPreview.PrinterSettingsLaunchSource` metric is recorded
+  // with bucket `DESTINATION_DIALOG_CROS_NO_PRINTERS` when flag is on and
+  // destination store has no destinations.
+  test(
+      destination_dialog_cros_test.TestNames
+          .ManagePrintersMetrics_HasNoDestinations,
+      async () => {
+        // Set flag enabled.
+        loadTimeData.overrideValues({
+          isPrintPreviewSetupAssistanceEnabled: true,
+        });
+        await recreateElementAndFinishSetup(/*removeDestinations=*/ true);
+
+        assertEquals(0, nativeLayer.getCallCount('recordInHistogram'));
+
+        // Manage printers button hidden when there are no destinations.
+        const printerSetupInfo =
+            dialog.shadowRoot!
+                .querySelector<PrintPreviewPrinterSetupInfoCrosElement>(
+                    PrintPreviewPrinterSetupInfoCrosElement.is)!;
+        const managePrintersButton =
+            printerSetupInfo.shadowRoot!.querySelector<HTMLElement>(
+                'cr-button')!;
+        managePrintersButton.click();
+
+        // Call should use bucket `DESTINATION_DIALOG_CROS_NO_PRINTERS`.
+        verifyRecordInHistogramCall(/*callIndex=*/ 0, /*bucket=*/ 1);
       });
 });

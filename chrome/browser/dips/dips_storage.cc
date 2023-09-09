@@ -147,7 +147,7 @@ void DIPSStorage::RemoveRows(const std::vector<std::string>& sites) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(db_);
 
-  db_->RemoveRows(sites);
+  db_->RemoveRows(DIPSDatabaseTable::kBounces, sites);
 }
 
 void DIPSStorage::RemoveRowsWithoutInteractionOrWaa(
@@ -296,9 +296,17 @@ std::vector<std::string> DIPSStorage::GetSitesToClear(
 
 bool DIPSStorage::DidSiteHaveInteractionSince(const GURL& url,
                                               base::Time bound) {
+  auto last_user_interaction_time = LastInteractionTime(url);
+  return last_user_interaction_time.has_value() &&
+         last_user_interaction_time >= bound;
+}
+
+absl::optional<base::Time> DIPSStorage::LastInteractionTime(const GURL& url) {
   const DIPSState state = Read(url);
-  return state.user_interaction_times().has_value() &&
-         state.user_interaction_times()->second >= bound;
+  if (!state.user_interaction_times().has_value()) {
+    return absl::nullopt;
+  }
+  return state.user_interaction_times()->second;
 }
 
 /* static */

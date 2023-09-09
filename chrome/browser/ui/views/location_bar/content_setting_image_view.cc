@@ -132,7 +132,10 @@ void ContentSettingImageView::Update() {
 
   // Calling Update() with a nullptr WebContents will hide the image.
   content_setting_image_model_->Update(
-      delegate_->ShouldHideContentSettingImage() ? nullptr : web_contents);
+      delegate_->ShouldHideContentSettingImage(
+          content_setting_image_model_->image_type())
+          ? nullptr
+          : web_contents);
   SetTooltipText(content_setting_image_model_->get_tooltip());
 
   if (!content_setting_image_model_->is_visible()) {
@@ -145,17 +148,13 @@ void ContentSettingImageView::Update() {
   UpdateImage();
   SetVisible(true);
   GetViewAccessibility().OverrideIsIgnored(false);
+  // An alert role is required in order to fire the alert event.
+  SetAccessibleRole(ax::mojom::Role::kAlert);
 
   if (content_setting_image_model_->ShouldNotifyAccessibility(web_contents)) {
     auto name = l10n_util::GetStringUTF16(
         content_setting_image_model_->AccessibilityAnnouncementStringId());
     SetAccessibleName(name);
-#if BUILDFLAG(IS_MAC)
-    NotifyAccessibilityEvent(ax::mojom::Event::kAlert, true);
-#else
-    GetViewAccessibility().AnnounceText(l10n_util::GetStringFUTF16(
-        IDS_CONCAT_TWO_STRINGS_WITH_COMMA, name, GetAccessibleDescription()));
-#endif
     NotifyAccessibilityEvent(ax::mojom::Event::kAlert, true);
     content_setting_image_model_->AccessibilityWasNotified(web_contents);
   }

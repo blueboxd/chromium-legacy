@@ -7,7 +7,7 @@ import("//build/config/gclient_args.gni")
 
 # Uncomment these to specify a different NDK location and version in
 # non-Chromium builds.
-# default_android_ndk_root = "//third_party/android_toolchain"
+# default_android_ndk_root = "//third_party/android_toolchain/ndk"
 # default_android_ndk_version = "r10e"
 
 # Some non-Chromium builds don't support building java targets.
@@ -53,6 +53,13 @@ declare_args() {
   # Allows third-party repositories to use C++17 for MSVC builds
   # TODO(https://crbug.com/pdfium/1932) Remove once pdfium builds on MSVC C++20
   msvc_use_cxx17 = false
+}
+
+# Features used by //base/trace_event.
+declare_args() {
+  # Use Perfetto's trace processor for converting protobuf-encoded traces to
+  # the legacy JSON format in base::TraceLog.
+  use_perfetto_trace_processor = use_perfetto_client_library && !is_nacl
 }
 
 # Allows different projects to specify their own suppression/ignore lists for

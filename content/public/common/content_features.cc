@@ -71,6 +71,18 @@ BASE_FEATURE(kAudioServiceSandbox,
 #endif
 );
 
+// Controls whether Autofill may fill across origins.
+// In payment forms, the cardholder name field is often on the merchant's origin
+// while the credit card number and CVC are in iframes hosted by a payment
+// service provider. By enabling the policy-controlled feature "shared-autofill"
+// in those iframes, the merchant's website enable Autofill to fill the credit
+// card number and CVC fields from the cardholder name field, even though this
+// autofill operation crosses origins.
+// TODO(crbug.com/1304721): Enable this feature.
+BASE_FEATURE(kAutofillSharedAutofill,
+             "AutofillSharedAutofill",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // The following two features, when enabled, result in the browser process only
 // asking the renderer process to run beforeunload handlers if it knows such
 // handlers are registered. The two slightly differ in what they do and how
@@ -164,7 +176,6 @@ BASE_FEATURE(kBackForwardCacheMemoryControls,
 //  - https://wicg.github.io/private-network-access/#integration-fetch
 //  - kBlockInsecurePrivateNetworkRequestsFromPrivate
 //  - kBlockInsecurePrivateNetworkRequestsFromUnknown
-//  - kBlockInsecurePrivateNetworkRequestsForNavigations
 BASE_FEATURE(kBlockInsecurePrivateNetworkRequests,
              "BlockInsecurePrivateNetworkRequests",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -194,14 +205,6 @@ BASE_FEATURE(kBlockInsecurePrivateNetworkRequestsFromUnknown,
 BASE_FEATURE(kBlockInsecurePrivateNetworkRequestsDeprecationTrial,
              "BlockInsecurePrivateNetworkRequestsDeprecationTrial",
              base::FEATURE_ENABLED_BY_DEFAULT);
-
-// When both kBlockInsecurePrivateNetworkRequestsForNavigations and
-// kBlockInsecurePrivateNetworkRequests are enabled, navigations initiated
-// by documents in a less-private network may only target a more-private network
-// if the initiating context is secure.
-BASE_FEATURE(kBlockInsecurePrivateNetworkRequestsForNavigations,
-             "BlockInsecurePrivateNetworkRequestsForNavigations",
-             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Broker file operations on disk cache in the Network Service.
 // This is no-op if the network service is hosted in the browser process.
@@ -261,12 +264,6 @@ BASE_FEATURE(kCodeCacheDeletionWithoutFilter,
 BASE_FEATURE(kConsolidatedMovementXY,
              "ConsolidatedMovementXY",
              base::FEATURE_ENABLED_BY_DEFAULT);
-
-// When enabled, the Clear-Site-Data HTTP Response header supports clearing the
-// client hints cache. When disabled, this header cannot clear the cache.
-BASE_FEATURE(kClearSiteDataClientHintsSupport,
-             "ClearSiteDataClientHintsSupport",
-             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables Blink cooperative scheduling.
 BASE_FEATURE(kCooperativeScheduling,
@@ -625,12 +622,7 @@ BASE_FEATURE(kMacImeLiveConversionFix,
 // Uses ThreadType::kCompositing for the main thread
 BASE_FEATURE(kMainThreadCompositingPriority,
              "MainThreadCompositingPriority",
-#if BUILDFLAG(IS_MAC)
-             base::FEATURE_ENABLED_BY_DEFAULT
-#else
-             base::FEATURE_DISABLED_BY_DEFAULT
-#endif
-);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // The MBI mode controls whether or not communication over the
 // AgentSchedulingGroup is ordered with respect to the render-process-global
@@ -787,6 +779,12 @@ BASE_FEATURE(kHighPriorityBeforeUnload,
              "HighPriorityBeforeUnload",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// If enabled, then an updated prefetch request limit policy will be used that
+// separates eager and non-eager prefetches, and allows for evictions.
+BASE_FEATURE(kPrefetchNewLimits,
+             "PrefetchNewLimits",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Preload cookie database on NetworkContext creation.
 BASE_FEATURE(kPreloadCookies,
              "PreloadCookies",
@@ -802,12 +800,6 @@ BASE_FEATURE(kPreloadCookies,
 BASE_FEATURE(kPreloadingConfig,
              "PreloadingConfig",
              base::FEATURE_ENABLED_BY_DEFAULT);
-
-// Please note this feature is only used for experimental purposes, please don't
-// enable this feature by default.
-BASE_FEATURE(kPreloadingHoldback,
-             "PreloadingHoldback",
-             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables exposure of the core milestone 1 (M1) APIs in the renderer without an
 // origin trial token: Attribution Reporting, FLEDGE, Topics.
@@ -841,11 +833,36 @@ BASE_FEATURE(kPrivateNetworkAccessForWorkers,
 // Enables Private Network Access checks in warning mode for all types of web
 // workers.
 //
-// Similar to `kPrivateNetworkAccessForWorkers`, except that it does not require
-// CORS preflight requests to succeed, and shows a warning in devtools instead.
+// Does nothing if `kPrivateNetworkAccessForWorkers` is disabled.
+//
+// If both this and `kPrivateNetworkAccessForWorkers` are enabled, then PNA
+// preflight requests for workers are not required to succeed. If one fails, a
+// warning is simply displayed in DevTools.
 BASE_FEATURE(kPrivateNetworkAccessForWorkersWarningOnly,
              "PrivateNetworkAccessForWorkersWarningOnly",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Enables Private Network Access checks for iframe navigations.
+//
+// The exact checks run are the same as for document subresources, and depend on
+// the state of other Private Network Access feature flags:
+//  - `kBlockInsecurePrivateNetworkRequests`
+//  - `kPrivateNetworkAccessSendPreflights`
+//  - `kPrivateNetworkAccessRespectPreflightResults`
+BASE_FEATURE(kPrivateNetworkAccessForIframes,
+             "PrivateNetworkAccessForIframes",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// Enables Private Network Access checks in warning mode for iframe navigations.
+//
+// Does nothing if `kPrivateNetworkAccessForIframes` is disabled.
+//
+// If both this and `kPrivateNetworkAccessForIframes` are enabled, then PNA
+// preflight requests for iframe navigations are not required to succeed. If
+// one fails, a warning is simply displayed in DevTools.
+BASE_FEATURE(kPrivateNetworkAccessForIframesWarningOnly,
+             "PrivateNetworkAccessForIframesWarningOnly",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Requires that CORS preflight requests succeed before sending private network
 // requests. This flag implies `kPrivateNetworkAccessSendPreflights`.
@@ -1467,6 +1484,10 @@ BASE_FEATURE(kAccessibilityPageZoom,
              "AccessibilityPageZoom",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Controls whether the OS-level font setting is adjusted for.
+const base::FeatureParam<bool> kAccessibilityPageZoomOSLevelAdjustment{
+    &kAccessibilityPageZoom, "AdjustForOSLevel", true};
+
 // Allows the use of "Smart Zoom", an alternative form of page zoom, and
 // enables the associated UI.
 BASE_FEATURE(kSmartZoom, "SmartZoom", base::FEATURE_DISABLED_BY_DEFAULT);
@@ -1493,7 +1514,7 @@ BASE_FEATURE(kReduceGpuPriorityOnBackground,
 // clicks (i.e. right click) with respect to text selection.
 BASE_FEATURE(kMouseAndTrackpadDropdownMenu,
              "MouseAndTrackpadDropdownMenu",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Allows the use of an experimental feature to drop any AccessibilityEvents
 // that are not relevant to currently enabled accessibility services.

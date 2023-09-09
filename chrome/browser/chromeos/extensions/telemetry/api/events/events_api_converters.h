@@ -11,11 +11,12 @@
 
 #include "chrome/common/chromeos/extensions/api/events.h"
 #include "chromeos/crosapi/mojom/nullable_primitives.mojom.h"
+#include "chromeos/crosapi/mojom/probe_service.mojom.h"
 #include "chromeos/crosapi/mojom/telemetry_event_service.mojom.h"
 #include "chromeos/crosapi/mojom/telemetry_keyboard_event.mojom.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
-namespace chromeos::converters {
+namespace chromeos::converters::events {
 
 namespace unchecked {
 
@@ -34,8 +35,11 @@ api::os_events::LidEventInfo UncheckedConvertPtr(
 api::os_events::UsbEventInfo UncheckedConvertPtr(
     crosapi::mojom::TelemetryUsbEventInfoPtr ptr);
 
-api::os_events::HdmiEventInfo UncheckedConvertPtr(
-    crosapi::mojom::TelemetryHdmiEventInfoPtr ptr);
+api::os_events::ExternalDisplayEventInfo UncheckedConvertPtr(
+    crosapi::mojom::TelemetryExternalDisplayEventInfoPtr ptr);
+
+api::os_events::ExternalDisplayInfo UncheckedConvertPtr(
+    crosapi::mojom::ProbeExternalDisplayInfoPtr input);
 
 api::os_events::SdCardEventInfo UncheckedConvertPtr(
     crosapi::mojom::TelemetrySdCardEventInfoPtr ptr);
@@ -102,8 +106,8 @@ api::os_events::LidEvent Convert(
 api::os_events::UsbEvent Convert(
     crosapi::mojom::TelemetryUsbEventInfo::State state);
 
-api::os_events::HdmiEvent Convert(
-    crosapi::mojom::TelemetryHdmiEventInfo::State state);
+api::os_events::ExternalDisplayEvent Convert(
+    crosapi::mojom::TelemetryExternalDisplayEventInfo::State state);
 
 api::os_events::SdCardEvent Convert(
     crosapi::mojom::TelemetrySdCardEventInfo::State state);
@@ -119,6 +123,9 @@ api::os_events::InputTouchButton Convert(
 
 api::os_events::InputTouchButtonState Convert(
     crosapi::mojom::TelemetryTouchpadButtonEventInfo::State state);
+
+api::os_events::DisplayInputType Convert(
+    crosapi::mojom::ProbeDisplayInputType input);
 
 crosapi::mojom::TelemetryEventCategoryEnum Convert(
     api::os_events::EventCategory input);
@@ -156,6 +163,6 @@ std::vector<OutputT> ConvertStructPtrVector(std::vector<InputT> input) {
   return output;
 }
 
-}  // namespace chromeos::converters
+}  // namespace chromeos::converters::events
 
 #endif  // CHROME_BROWSER_CHROMEOS_EXTENSIONS_TELEMETRY_API_EVENTS_EVENTS_API_CONVERTERS_H_

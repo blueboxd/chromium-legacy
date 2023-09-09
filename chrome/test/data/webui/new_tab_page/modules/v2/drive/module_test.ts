@@ -5,13 +5,13 @@
 import {DriveHandlerRemote} from 'chrome://new-tab-page/drive.mojom-webui.js';
 import {DisableModuleEvent, DriveProxy, driveV2Descriptor, DriveV2ModuleElement} from 'chrome://new-tab-page/lazy_load.js';
 import {$$, CrAutoImgElement} from 'chrome://new-tab-page/new_tab_page.js';
-import {assertEquals, assertTrue} from 'chrome://webui-test/chai_assert.js';
+import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {TestMock} from 'chrome://webui-test/test_mock.js';
 import {eventToPromise, isVisible} from 'chrome://webui-test/test_util.js';
 
 import {installMock} from '../../../test_support.js';
 
-suite('NewTabPageModulesDriveModuleTest', () => {
+suite('DriveV2Module', () => {
   let handler: TestMock<DriveHandlerRemote>;
 
   setup(() => {
@@ -19,7 +19,7 @@ suite('NewTabPageModulesDriveModuleTest', () => {
     handler = installMock(DriveHandlerRemote, DriveProxy.setHandler);
   });
 
-  test('module appears on render', async () => {
+  test('shows all retrieved files on render', async () => {
     const data = {
       files: [
         {
@@ -32,16 +32,70 @@ suite('NewTabPageModulesDriveModuleTest', () => {
         {
           justificationText: 'Edited yesterday',
           title: 'Bar',
-          id: '234',
+          id: '132',
           mimeType: 'application/vnd.google-apps.document',
           itemUrl: {url: 'https://bar.com'},
         },
         {
           justificationText: 'Created today',
-          title: 'Caz',
-          id: '345',
+          title: 'Baz',
+          id: '213',
           mimeType: 'application/vnd.google-apps.presentation',
-          itemUrl: {url: 'https://caz.com'},
+          itemUrl: {url: 'https://baz.com'},
+        },
+        {
+          justificationText: 'Created yesterday',
+          title: 'Qux',
+          id: '231',
+          mimeType: 'application/vnd.google-apps.presentation',
+          itemUrl: {url: 'https://qux.com'},
+        },
+        {
+          justificationText: 'Edited last week',
+          title: 'FooBar',
+          id: '312',
+          mimeType: 'application/vnd.google-apps.spreadsheet',
+          itemUrl: {url: 'https://foo.com'},
+        },
+        {
+          justificationText: 'Edited yesterday',
+          title: 'BazQux',
+          id: '321',
+          mimeType: 'application/vnd.google-apps.document',
+          itemUrl: {url: 'https://bar.com'},
+        },
+      ],
+    };
+    handler.setResultFor('getFiles', Promise.resolve(data));
+
+    const module =
+        await driveV2Descriptor.initialize(0) as DriveV2ModuleElement;
+    assertTrue(!!module);
+    document.body.append(module);
+    await handler.whenCalled('getFiles');
+    module.$.fileRepeat.render();
+    const items = Array.from(module.shadowRoot!.querySelectorAll('.file'));
+
+    assertTrue(isVisible(module.$.files));
+    assertEquals(6, items.length);
+  });
+
+  test('parses file data correctly', async () => {
+    const data = {
+      files: [
+        {
+          justificationText: 'Edited last week',
+          title: 'Foo',
+          id: '123',
+          mimeType: 'application/vnd.google-apps.spreadsheet',
+          itemUrl: {url: 'https://foo.com'},
+        },
+        {
+          justificationText: 'Edited yesterday',
+          title: 'Bar',
+          id: '132',
+          mimeType: 'application/vnd.google-apps.document',
+          itemUrl: {url: 'https://bar.com'},
         },
       ],
     };
@@ -75,57 +129,13 @@ suite('NewTabPageModulesDriveModuleTest', () => {
     assertEquals('https://bar.com/', urls[1]!.href);
   });
 
-  test('empty module shows without data', async () => {
+  test('module does not render if there are no files', async () => {
     handler.setResultFor('getFiles', Promise.resolve({files: []}));
 
     const module = await driveV2Descriptor.initialize(0);
     await handler.whenCalled('getFiles');
-    assertTrue(!!module);
+    assertFalse(!!module);
   });
-
-  test('module has height of 86 with only one file', async () => {
-    const data = {
-      files: [
-        {
-          title: 'Abc',
-        },
-      ],
-    };
-    handler.setResultFor('getFiles', Promise.resolve(data));
-
-    const module =
-        await driveV2Descriptor.initialize(0) as DriveV2ModuleElement;
-    assertTrue(!!module);
-    document.body.append(module);
-    await handler.whenCalled('getFiles');
-    module.$.fileRepeat.render();
-
-    assertEquals(86, module.offsetHeight);
-  });
-
-  test('module has height of 142 with two files', async () => {
-    const data = {
-      files: [
-        {
-          title: 'Abc',
-        },
-        {
-          title: 'Def',
-        },
-      ],
-    };
-    handler.setResultFor('getFiles', Promise.resolve(data));
-
-    const module =
-        await driveV2Descriptor.initialize(0) as DriveV2ModuleElement;
-    assertTrue(!!module);
-    document.body.append(module);
-    await handler.whenCalled('getFiles');
-    module.$.fileRepeat.render();
-
-    assertEquals(142, module.offsetHeight);
-  });
-
 
   test('clicking the info button opens the ntp info dialog box', async () => {
     // Arrange.
@@ -147,7 +157,7 @@ suite('NewTabPageModulesDriveModuleTest', () => {
     document.body.append(driveModule);
 
     // Act.
-    ($$(driveModule, 'ntp-module-header')!
+    ($$(driveModule, 'ntp-module-header-v2')!
      ).dispatchEvent(new Event('info-button-click'));
 
     // Assert.
@@ -176,7 +186,7 @@ suite('NewTabPageModulesDriveModuleTest', () => {
 
         // Act.
         const whenFired = eventToPromise('disable-module', driveModule);
-        ($$(driveModule, 'ntp-module-header')!
+        ($$(driveModule, 'ntp-module-header-v2')!
          ).dispatchEvent(new Event('disable-button-click'));
 
         // Assert.

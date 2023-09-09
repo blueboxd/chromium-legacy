@@ -17,10 +17,6 @@
 #include "base/mac/scoped_cftyperef.h"
 #include "base/notreached.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 @interface URLAndTitle ()
 
 @property(copy) NSString* URL;

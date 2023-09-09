@@ -334,6 +334,7 @@ public final class ProductionSupportedFlagList {
                             + " including synchronized decoding."),
             Flag.baseFeature(BlinkFeatures.THREADED_BODY_LOADER,
                     "If enabled, reads and decodes navigation body data off the main thread."),
+            Flag.baseFeature(BlinkFeatures.SPARSE_OBJECT_PAINT_PROPERTIES),
             Flag.baseFeature(BlinkFeatures.SVG_RASTER_OPTIMIZATIONS),
             Flag.baseFeature(BlinkFeatures.COMPOSITE_BACKGROUND_ATTACHMENT_FIXED),
             Flag.baseFeature(BlinkFeatures.COMPOSITE_SCROLL_AFTER_PAINT),
@@ -392,6 +393,10 @@ public final class ProductionSupportedFlagList {
                     "Enables downloading TrustTokenKeyCommitmentsComponent by the component"
                             + " updater downloading service in nonembedded WebView."
                             + " See https://crbug.com/1170468."),
+            Flag.baseFeature(BlinkFeatures.REPORT_VISIBLE_LINE_BOUNDS,
+                    "When enabled, WebView reports rectangles which surround each line of"
+                            + " text in the currently focused element to Android. These rectangles "
+                            + "are sent for <input> and <textarea> elements."),
             Flag.baseFeature(BlinkFeatures.STYLUS_POINTER_ADJUSTMENT,
                     "When enabled, a hover icon is shown over editable HTML elements when"
                             + " using a stylus and the rectangle to trigger stylus writing on"
@@ -407,8 +412,8 @@ public final class ProductionSupportedFlagList {
             Flag.baseFeature(BlinkFeatures.RENDER_BLOCKING_FONTS,
                     "When enabled, blocks rendering on font preloads to reduce CLS. "
                             + "See go/critical-font-analysis"),
-            Flag.baseFeature(AwFeatures.WEBVIEW_SERVER_SIDE_SAMPLING,
-                    "If enabled, the client side sampling for user metrics will be turned off."
+            Flag.baseFeature(AwFeatures.WEBVIEW_METRICS_FILTERING,
+                    "If enabled, clients used to be out-sampled will report filtered metrics."
                             + " This has no effect if metrics reporting is disabled"),
             Flag.baseFeature("SafeBrowsingOnUIThread"),
             Flag.baseFeature(BlinkFeatures.ANDROID_EXTENDED_KEYBOARD_SHORTCUTS,
@@ -475,6 +480,10 @@ public final class ProductionSupportedFlagList {
             Flag.baseFeature(BlinkFeatures.WEB_ENVIRONMENT_INTEGRITY,
                     "Enables Web Environment Integrity APIs. "
                             + "See https://chromestatus.com/feature/5796524191121408."),
+            Flag.baseFeature(ContentFeatures.PREFETCH_NEW_LIMITS,
+                    "Enables new limits policy for SpeculationRules Prefetch."),
+            Flag.baseFeature(BlinkFeatures.FORM_CONTROLS_VERTICAL_WRITING_MODE_SUPPORT,
+                    "Enables support for CSS vertical writing mode on form controls"),
             // Add new commandline switches and features above. The final entry should have a
             // trailing comma for cleaner diffs.
     };

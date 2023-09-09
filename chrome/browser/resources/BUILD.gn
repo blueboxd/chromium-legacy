@@ -7,7 +7,6 @@ import("//build/config/chromeos/ui_mode.gni")
 import("//chrome/browser/buildflags.gni")
 import("//chrome/common/features.gni")
 import("//chrome/test/base/js2gtest.gni")
-import("//chrome/test/include_js_tests.gni")
 import("//components/signin/features.gni")
 import("//pdf/features.gni")
 import("//printing/buildflags/buildflags.gni")
@@ -117,8 +116,8 @@ group("resources") {
     ]
   }
 
-  if (enable_waffle_desktop) {
-    public_deps += [ "waffle:resources" ]
+  if (enable_search_engine_choice) {
+    public_deps += [ "search_engine_choice:resources" ]
   }
 
   if (enable_webui_tab_strip) {

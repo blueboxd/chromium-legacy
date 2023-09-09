@@ -41,16 +41,13 @@
 #import "ios/chrome/browser/shared/public/features/system_flags.h"
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/bookmarks/undo_manager_wrapper.h"
+#import "ios/chrome/browser/ui/ntp/metrics/home_metrics.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #import "ios/chrome/grit/ios_strings.h"
 #import "third_party/skia/include/core/SkColor.h"
 #import "ui/base/l10n/l10n_util.h"
 #import "ui/base/l10n/l10n_util_mac.h"
 #import "ui/base/models/tree_node_iterator.h"
-
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
 
 using bookmarks::BookmarkNode;
 
@@ -203,6 +200,8 @@ bool IsAccountBookmarkStorageOptedIn(syncer::SyncService* sync_service) {
   if (sync_service->GetAccountInfo().IsEmpty()) {
     return false;
   }
+  // TODO(crbug.com/1462552): Remove this after UNO phase 3. See
+  // ConsentLevel::kSync documentation for more details.
   if (sync_service->HasSyncConsent()) {
     return false;
   }
@@ -272,6 +271,7 @@ bool CreateOrUpdateBookmark(const BookmarkNode* node,
   bookmarks::BookmarkModel* folder_model =
       GetBookmarkModelForNode(folder, local_or_syncable_model, account_model);
   if (!node) {  // Create a new bookmark.
+    RecordModuleFreshnessSignal(ContentSuggestionsModuleType::kShortcuts);
     base::RecordAction(base::UserMetricsAction("BookmarkAdded"));
     node = folder_model->AddNewURL(folder, folder->children().size(),
                                    titleString, url);
@@ -349,6 +349,7 @@ MDCSnackbarMessage* CreateBookmarkAtPositionWithUndoToast(
       [[UndoManagerWrapper alloc] initWithBrowserState:browser_state];
   [wrapper startGroupingActions];
 
+  RecordModuleFreshnessSignal(ContentSuggestionsModuleType::kShortcuts);
   base::RecordAction(base::UserMetricsAction("BookmarkAdded"));
   bookmarks::BookmarkModel* folder_model =
       GetBookmarkModelForNode(folder, local_or_syncable_model, account_model);

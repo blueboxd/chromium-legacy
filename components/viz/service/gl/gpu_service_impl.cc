@@ -134,6 +134,10 @@
 #include "components/viz/common/gpu/vulkan_in_process_context_provider.h"
 #endif
 
+#if BUILDFLAG(IS_OZONE)
+#include "ui/ozone/public/ozone_platform.h"
+#endif  // BUILDFLAG(IS_OZONE)
+
 namespace viz {
 
 namespace {
@@ -308,6 +312,20 @@ base::OnceCallback<void(Params&&...)> WrapCallback(
                                         std::forward<Params>(params)...));
       },
       base::RetainedRef(std::move(runner)), std::move(callback));
+}
+
+bool WillGetGmbConfigFromGpu() {
+#if BUILDFLAG(IS_OZONE)
+  // Ozone/X11 requires gpu initialization to be done before it can determine
+  // what formats gmb can use. This limitation comes from the requirement to
+  // have GLX bindings initialized. The buffer formats will be passed through
+  // gpu extra info.
+  return ui::OzonePlatform::GetInstance()
+      ->GetPlatformProperties()
+      .fetch_buffer_formats_for_gmb_on_gpu;
+#else
+  return false;
+#endif
 }
 
 }  // namespace
@@ -645,6 +663,16 @@ void GpuServiceImpl::InitializeWithHost(
   // initialized.
   gl::DirectCompositionOverlayCapsMonitor::GetInstance()->AddObserver(this);
 #endif
+
+  if (in_host_process() &&
+      gpu_channel_manager_->use_passthrough_cmd_decoder()) {
+    // Check `kCrashOnInProcessANGLEContextLoss` to ensure registration within
+    // the experiment - the check done at the time of MaybeExitOnContextLost()
+    // doesn't cause clients in the enabled arm to become registered in the
+    // experiment due to it being followed by an immediate crash.
+    [[maybe_unused]] bool unused =
+        base::FeatureList::IsEnabled(kCrashOnInProcessANGLEContextLoss);
+  }
 }
 
 void GpuServiceImpl::Bind(
@@ -1110,6 +1138,7 @@ void GpuServiceImpl::EstablishGpuChannel(int32_t client_id,
 
   media_gpu_channel_manager_->AddChannel(client_id, channel_token);
 
+  gpu_channel->SetGpuExtraInfo(gpu_extra_info_);
   std::move(callback).Run(std::move(pipe.handle1), gpu_info_,
                           gpu_feature_info_);
 }
@@ -1443,14 +1472,21 @@ bool GpuServiceImpl::IsNativeBufferSupported(gfx::BufferFormat format,
   // process to GPU process for wayland.
   if (!supported_gmb_configurations_inited_) {
     supported_gmb_configurations_inited_ = true;
+    if (WillGetGmbConfigFromGpu()) {
+      // Note that Chrome can be compiled with multiple OZONE platforms but
+      // actual OZONE platform is chosen at run-time. Eg: Chrome can be
+      // compiled with X11 and Wayland but Wayland can be chosen at runtime.
+      // Hence using WillGetGmbConfigFromGpu() which will determine
+      // configurations based on actual platform chosen at runtime.
 #if defined(USE_OZONE_PLATFORM_X11)
-    for (const auto& config : gpu_extra_info_.gpu_memory_buffer_support_x11) {
-      supported_gmb_configurations_.emplace(config);
-    }
-#else
-    supported_gmb_configurations_ =
-        gpu::GpuMemoryBufferSupport::GetNativeGpuMemoryBufferConfigurations();
+      for (const auto& config : gpu_extra_info_.gpu_memory_buffer_support_x11) {
+        supported_gmb_configurations_.emplace(config);
+      }
 #endif
+    } else {
+      supported_gmb_configurations_ =
+          gpu::GpuMemoryBufferSupport::GetNativeGpuMemoryBufferConfigurations();
+    }
   }
   return supported_gmb_configurations_.find(gfx::BufferUsageAndFormat(
              usage, format)) != supported_gmb_configurations_.end();

@@ -144,7 +144,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Browser.ERP.EventEnqueueResult"
-    enum="EnterpriseCloudReportingStatusCode" expires_after="2023-11-17">
+    enum="EnterpriseCloudReportingStatusCode" expires_after="2024-01-21">
   <owner>lbaraz@chromium.org</owner>
   <owner>xuhong@chromium.org</owner>
   <owner>src/components/reporting/OWNERS</owner>
@@ -181,6 +181,16 @@ chromium-metrics-reviews@google.com.
   <owner>cros-reporting-team@google.com</owner>
   <summary>
     Records whether an event is filtered out by FilteredReportQueue.
+  </summary>
+</histogram>
+
+<histogram name="Browser.ERP.PsrResult" enum="EnterpriseReportingPsrResult"
+    expires_after="2024-07-31">
+  <owner>xuhong@chromium.org</owner>
+  <owner>cros-reporting-team@google.com</owner>
+  <summary>
+    Records the result of obtaining PSR info from healthd in the metrics
+    pipeline.
   </summary>
 </histogram>
 
@@ -490,7 +500,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Browser.PaintPreview.Player.TimeToFirstBitmap" units="ms"
-    expires_after="2023-11-27">
+    expires_after="2024-02-04">
   <owner>ckitagawa@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
   <owner>chrome-fdt@google.com</owner>
@@ -558,7 +568,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Browser.PaintPreview.TabbedPlayer.TimeToFirstBitmap"
-    units="ms" expires_after="2023-11-27">
+    units="ms" expires_after="2024-02-04">
   <owner>ckitagawa@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
   <owner>chrome-fdt@google.com</owner>
@@ -904,7 +914,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="BrowserRenderProcessHost.LabeledInTaskManager"
-    enum="BooleanLabeledRendererTask" expires_after="2023-12-04">
+    enum="BooleanLabeledRendererTask" expires_after="2024-02-04">
   <owner>creis@chromium.org</owner>
   <owner>avi@chromium.org</owner>
   <summary>
@@ -977,7 +987,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="BrowserServices.TwaOpenTime.V2" units="ms"
-    expires_after="M120">
+    expires_after="2024-02-04">
   <owner>peconn@chromium.org</owner>
   <owner>peter@chromium.org</owner>
   <summary>
@@ -1255,6 +1265,17 @@ chromium-metrics-reviews@google.com.
     when the side panel is triggered to be opened. Note this might be different
     than when the side panel becomes visible due to delays for loading content.
     Recorded when the side panel is closed.
+  </summary>
+</histogram>
+
+<histogram name="SidePanel.OpenOrChangeEntryTrigger"
+    enum="SidePanelOpenTrigger" expires_after="2023-12-10">
+  <owner>corising@chromium.org</owner>
+  <owner>chrome-desktop-ui-sea@google.com</owner>
+  <summary>
+    Logs the UI location from which the side panel is triggered to be opened or
+    to change the entry shown. Recorded when the side panel is shown or the
+    entry changed and a trigger is provided.
   </summary>
 </histogram>
 

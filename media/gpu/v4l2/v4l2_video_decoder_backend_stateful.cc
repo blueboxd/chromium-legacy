@@ -211,10 +211,16 @@ void V4L2StatefulVideoDecoderBackend::DoDecodeWork() {
 
     // Record timestamp of the input buffer so it propagates to the decoded
     // frames.
-    const auto buffer_timestamp = current_decode_request_->buffer->timestamp();
-    current_input_buffer_->SetTimeStamp(TimeDeltaToTimeVal(buffer_timestamp));
+    const struct timespec timespec =
+        current_decode_request_->buffer->timestamp().ToTimeSpec();
+    struct timeval timestamp = {
+        .tv_sec = timespec.tv_sec,
+        .tv_usec = timespec.tv_nsec / 1000,
+    };
+    current_input_buffer_->SetTimeStamp(timestamp);
 
-    const int64_t flat_timespec = buffer_timestamp.InMilliseconds();
+    const int64_t flat_timespec =
+        base::TimeDelta::FromTimeSpec(timespec).InMilliseconds();
     encoding_timestamps_[flat_timespec] = base::TimeTicks::Now();
   }
 
@@ -432,9 +438,14 @@ void V4L2StatefulVideoDecoderBackend::OnOutputBufferDequeued(
 
   // Zero-bytes buffers are returned as part of a flush and can be dismissed.
   if (buffer->GetPlaneBytesUsed(0) > 0) {
-    const base::TimeDelta timestamp =
-        TimeValToTimeDelta(buffer->GetTimeStamp());
-    const int64_t flat_timespec = timestamp.InMilliseconds();
+    const struct timeval timeval = buffer->GetTimeStamp();
+    const struct timespec timespec = {
+        .tv_sec = timeval.tv_sec,
+        .tv_nsec = timeval.tv_usec * 1000,
+    };
+
+    const int64_t flat_timespec =
+        base::TimeDelta::FromTimeSpec(timespec).InMilliseconds();
     // TODO(b/190615065) |flat_timespec| might be repeated with H.264
     // bitstreams, investigate why, and change the if() to DCHECK().
     if (base::Contains(encoding_timestamps_, flat_timespec)) {
@@ -468,6 +479,7 @@ void V4L2StatefulVideoDecoderBackend::OnOutputBufferDequeued(
         NOTREACHED();
     }
 
+    const base::TimeDelta timestamp = base::TimeDelta::FromTimeSpec(timespec);
     // TODO(b/214190092): Get color space from the buffer.
     client_->OutputFrame(std::move(frame), *visible_rect_, color_space_,
                          timestamp);
@@ -491,19 +503,6 @@ void V4L2StatefulVideoDecoderBackend::OnOutputBufferDequeued(
   }
 
   EnqueueOutputBuffers();
-}
-
-bool V4L2StatefulVideoDecoderBackend::SendStopCommand() {
-  struct v4l2_decoder_cmd cmd;
-  memset(&cmd, 0, sizeof(cmd));
-  cmd.cmd = V4L2_DEC_CMD_STOP;
-  if (device_->Ioctl(VIDIOC_DECODER_CMD, &cmd) != 0) {
-    LOG(ERROR) << "Failed to issue STOP command";
-    client_->OnBackendError();
-    return false;
-  }
-
-  return true;
 }
 
 bool V4L2StatefulVideoDecoderBackend::InitiateFlush(
@@ -538,7 +537,7 @@ bool V4L2StatefulVideoDecoderBackend::InitiateFlush(
     // If the CAPTURE queue is streaming, send the STOP command to the V4L2
     // device. The device will let us know that the flush is completed by
     // sending us a CAPTURE buffer with the LAST flag set.
-    return SendStopCommand();
+    return output_queue_->SendStopCommand();
   } else {
     // If the CAPTURE queue is not streaming, this means we received the flush
     // request before the initial resolution has been established. The flush
@@ -560,16 +559,11 @@ bool V4L2StatefulVideoDecoderBackend::CompleteFlush() {
 
   // If CAPTURE queue is streaming, send the START command to the V4L2 device
   // to signal that we are resuming decoding with the same state.
-  if (output_queue_->IsStreaming()) {
-    struct v4l2_decoder_cmd cmd;
-    memset(&cmd, 0, sizeof(cmd));
-    cmd.cmd = V4L2_DEC_CMD_START;
-    if (device_->Ioctl(VIDIOC_DECODER_CMD, &cmd) != 0) {
-      LOG(ERROR) << "Failed to issue START command";
-      std::move(flush_cb_).Run(DecoderStatus::Codes::kFailed);
-      client_->OnBackendError();
-      return false;
-    }
+  if (output_queue_->IsStreaming() && !output_queue_->SendStartCommand()) {
+    LOG(ERROR) << "Failed to issue START command";
+    std::move(flush_cb_).Run(DecoderStatus::Codes::kFailed);
+    client_->OnBackendError();
+    return false;
   }
 
   client_->CompleteFlush();
@@ -718,8 +712,9 @@ void V4L2StatefulVideoDecoderBackend::OnChangeResolutionDone(CroStatus status) {
     DVLOGF(2) << "Processing pending flush request...";
 
     client_->InitiateFlush();
-    if (!SendStopCommand())
+    if (!output_queue_->SendStopCommand()) {
       return;
+    }
   }
 
   // Also try to progress on our work.

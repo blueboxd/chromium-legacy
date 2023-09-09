@@ -15,6 +15,7 @@
 #include "base/test/test_future.h"
 #include "base/time/time.h"
 #include "base/version.h"
+#include "chrome/browser/ui/web_applications/test/isolated_web_app_builder.h"
 #include "chrome/browser/ui/web_applications/test/isolated_web_app_test_utils.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_location.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_trust_checker.h"
@@ -332,8 +333,8 @@ class IsolatedWebAppUpdateDiscoveryTaskPrepareUpdateTest
                                         {available_version.GetString()},
                                         nullptr));
 
-    TestSignedWebBundle bundle =
-        BuildDefaultTestSignedWebBundle(available_version);
+    TestSignedWebBundle bundle = TestSignedWebBundleBuilder::BuildDefault(
+        {.version = available_version});
     profile_url_loader_factory().AddResponse(
         "https://example.com/bundle.swbn",
         std::string(bundle.data.begin(), bundle.data.end()));

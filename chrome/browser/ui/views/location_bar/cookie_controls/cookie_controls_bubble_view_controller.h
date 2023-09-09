@@ -20,8 +20,7 @@
 class CookieControlsBubbleView;
 
 class CookieControlsBubbleViewController
-    : public content_settings::CookieControlsObserver,
-      public content::WebContentsObserver {
+    : public content_settings::CookieControlsObserver {
  public:
   CookieControlsBubbleViewController(
       CookieControlsBubbleView* bubble_view,
@@ -40,6 +39,7 @@ class CookieControlsBubbleViewController
                            int blocked_third_party_sites_count) override;
   void OnBreakageConfidenceLevelChanged(
       CookieControlsBreakageConfidenceLevel level) override;
+  void OnFinishedPageReloadWithChangedSettings() override;
 
   void SetSubjectUrlNameForTesting(const std::u16string& name);
 
@@ -61,10 +61,11 @@ class CookieControlsBubbleViewController
 
   void FetchFaviconFrom(content::WebContents* web_contents);
 
-  // content::WebContentsObserver
-  void DidStopLoading() override;
-
   std::u16string GetSubjectUrlName(content::WebContents* web_contents) const;
+
+  // The most recent status provided by the CookieControlsController. Cached
+  // so that updates to site counts can use the appropriate label.
+  CookieControlsStatus latest_status_ = CookieControlsStatus::kUninitialized;
 
   raw_ptr<CookieControlsBubbleView> bubble_view_ = nullptr;
 
@@ -75,11 +76,10 @@ class CookieControlsBubbleViewController
   base::CallbackListSubscription toggle_button_callback_;
   base::CallbackListSubscription feedback_button_callback_;
   base::WeakPtr<content_settings::CookieControlsController> controller_;
+  base::WeakPtr<content::WebContents> web_contents_;
   base::ScopedObservation<content_settings::CookieControlsController,
                           content_settings::CookieControlsObserver>
       controller_observation_{this};
-
-  bool waiting_for_reload_ = false;
 
   // Testing override for GetSubjectUrlName().
   absl::optional<std::u16string> subject_url_name_for_testing_;

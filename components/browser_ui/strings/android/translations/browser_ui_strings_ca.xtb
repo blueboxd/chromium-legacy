@@ -4,6 +4,7 @@
 <translation id="1006017844123154345">Obre en línia</translation>
 <translation id="1036348656032585052">Desactiva</translation>
 <translation id="1044891598689252897">Els llocs web funcionaran amb normalitat</translation>
+<translation id="1073417869336441572">Ajuda'ns a millorar Chrome explicant-nos per què has permès les galetes de tercers. <ph name="BEGIN_LINK" />Envia suggeriments<ph name="END_LINK" /></translation>
 <translation id="1124090076051167250">Amb aquesta acció s'esborraran dades i galetes emmagatzemades pels llocs web o les aplicacions de la pantalla d'inici (<ph name="DATASIZE" />).</translation>
 <translation id="1178581264944972037">Posa en pausa</translation>
 <translation id="1181037720776840403">Suprimeix</translation>
@@ -50,6 +51,7 @@
 <translation id="1984937141057606926">Permeses, excepte les de tercers</translation>
 <translation id="1989112275319619282">Examina</translation>
 <translation id="1994173015038366702">URL del lloc web</translation>
+<translation id="1999195646219379110">{COUNT,plural, =1{Caduca d'aquí a 1 dia}other{Caduca d'aquí a # dies}}</translation>
 <translation id="2004697686368036666">Pot ser que les funcions d'alguns llocs web no funcionin</translation>
 <translation id="2025115093177348061">Realitat augmentada</translation>
 <translation id="2030769033451695672">Toca per tornar a <ph name="URL_OF_THE_CURRENT_TAB" /></translation>
@@ -99,6 +101,7 @@
 <translation id="2621115761605608342">Permet JavaScript en un lloc web concret.</translation>
 <translation id="2653659639078652383">Envia</translation>
 <translation id="2677748264148917807">Surt</translation>
+<translation id="2678468611080193228">Prova de permetre temporalment les galetes de tercers; la protecció serà menor, però és més probable que les funcions del lloc web estiguin disponibles</translation>
 <translation id="2687403674020088961">Bloqueja totes les galetes (opció no recomanada)</translation>
 <translation id="2713106313042589954">Desactiva la càmera</translation>
 <translation id="2717722538473713889">Adreces electròniques</translation>
@@ -138,6 +141,8 @@
 <translation id="3362437373201486687">S'estan cercant dispositius Bluetooth</translation>
 <translation id="3386292677130313581">Pregunta abans de permetre que els llocs web sàpiguen la teva ubicació (opció recomanada)</translation>
 <translation id="3403537308306431953"><ph name="ZOOM_LEVEL" /> %%</translation>
+<translation id="344449859752187052">Galetes de tercers bloquejades</translation>
+<translation id="3465378418721443318">{DAYS,plural, =1{Chrome tornarà a bloquejar les galetes demà}other{# dies perquè Chrome torni a bloquejar les galetes}}</translation>
 <translation id="3521663503435878242">Llocs web a <ph name="DOMAIN" /></translation>
 <translation id="3538390592868664640">Impedeix que els llocs web creïn un mapa en 3D del teu entorn o que facin un seguiment de la posició de la càmera</translation>
 <translation id="3544058026430919413">Una empresa pot definir un grup de llocs web que poden utilitzar galetes per compartir la teva activitat al grup. Aquesta opció està desactivada en mode d'incògnit.</translation>
@@ -160,6 +165,7 @@
 <translation id="381841723434055211">Números de telèfon</translation>
 <translation id="3826050100957962900">Inici de sessió de tercers</translation>
 <translation id="3835233591525155343">L'ús que fas del dispositiu</translation>
+<translation id="3843916486309149084">Chrome tornarà a bloquejar les galetes avui</translation>
 <translation id="385051799172605136">Enrere</translation>
 <translation id="3859306556332390985">Avança</translation>
 <translation id="3895926599014793903">Força l'activació del zoom</translation>
@@ -212,6 +218,7 @@
 <translation id="4962975101802056554">Revoca tots els permisos del dispositiu</translation>
 <translation id="497421865427891073">Ves endavant</translation>
 <translation id="4976702386844183910">Darrera visita: <ph name="DATE" /></translation>
+<translation id="4985206706500620449">Has permès les galetes de tercers en aquest lloc web</translation>
 <translation id="4994033804516042629">No s'ha trobat cap contacte</translation>
 <translation id="4996978546172906250">Comparteix mitjançant</translation>
 <translation id="5001526427543320409">Galetes de tercers</translation>
@@ -256,6 +263,7 @@
 <translation id="5677928146339483299">Bloquejat</translation>
 <translation id="5689516760719285838">Ubicació</translation>
 <translation id="5690795753582697420">La càmera està desactivada a la configuració d'Android</translation>
+<translation id="5700761515355162635">Galetes de tercers permeses</translation>
 <translation id="5706552988683188916">Aquesta acció suprimeix les galetes i altres dades de llocs web per a <ph name="WEBSITE" /></translation>
 <translation id="5719847187258001597">Amb aquesta acció s'esborraran totes les dades i galetes emmagatzemades per <ph name="ORIGIN" /> o per la seva aplicació de la pantalla d'inici.</translation>
 <translation id="5723967018671998714">Les galetes de tercers estan bloquejades en mode d'incògnit</translation>
@@ -297,11 +305,14 @@
 <translation id="6367753977865761591">Bloqueja l'inici de sessió de tercers en un lloc web concret.</translation>
 <translation id="6388207532828177975">Esborra i restableix</translation>
 <translation id="6398765197997659313">Surt del mode de pantalla completa</translation>
+<translation id="640163077447496506">Caduca avui</translation>
 <translation id="6405650995156823521"><ph name="FIRST_PART" /> • <ph name="SECOND_PART" /></translation>
 <translation id="6439114592976064011">Impedeix que els llocs web utilitzin les teves dades i el teu dispositiu de realitat virtual</translation>
 <translation id="6447842834002726250">Galetes</translation>
 <translation id="6467852467360539617">Esborra les dades i restableix els permisos</translation>
+<translation id="6500423977866688905">Si la finestra és estreta, sol·licita la visualització per a mòbils</translation>
 <translation id="6527303717912515753">Comparteix</translation>
+<translation id="652937045869844725">Prova de permetre les galetes de tercers; la protecció serà menor, però és més probable que les funcions del lloc web estiguin disponibles</translation>
 <translation id="6545864417968258051">Cerca de dispositius Bluetooth</translation>
 <translation id="6552800053856095716">{PERMISSIONS_SUMMARY_BLOCKED,plural, =1{S'han bloquejat <ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> i <ph name="NUM_MORE" /> més}other{S'han bloquejat <ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> i <ph name="NUM_MORE" /> més}}</translation>
 <translation id="6554732001434021288">Darrera visita: fa <ph name="NUM_DAYS" /> dies</translation>
@@ -390,6 +401,7 @@
 <translation id="8131740175452115882">Confirma</translation>
 <translation id="8154912474061769055">Pot ser que les funcions de molts llocs web no funcionin</translation>
 <translation id="8168435359814927499">Contingut</translation>
+<translation id="8186479265534291036">El lloc web no funciona? Les galetes de tercers estan bloquejades.</translation>
 <translation id="8197286292360124385">S'ha permès <ph name="PERMISSION_1" /></translation>
 <translation id="8200772114523450471">Reprèn</translation>
 <translation id="8206354486702514201">L'administrador aplica aquesta opció de configuració.</translation>
@@ -434,6 +446,7 @@
 <translation id="8736193154595564524">{NUM_SELECTED,plural, =1{Es permet 1 lloc web}other{Es permeten # llocs web}}</translation>
 <translation id="8737217482364735741">Amb aquesta acció s'esborraran totes les dades i galetes emmagatzemades per <ph name="ORIGIN" />.</translation>
 <translation id="8751914237388039244">Selecciona una imatge</translation>
+<translation id="8800034312320686233">El lloc web no funciona?</translation>
 <translation id="8801436777607969138">Bloqueja JavaScript en un lloc web concret.</translation>
 <translation id="8803526663383843427">Quan està activada</translation>
 <translation id="8805385115381080995">La navegació és més ràpida perquè és menys probable que un lloc web et demani que verifiquis que ets una persona real</translation>

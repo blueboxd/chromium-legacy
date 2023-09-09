@@ -31,8 +31,8 @@
 <translation id="1830179671306812954">{HOURS,plural, =1{1 ಗಂಟೆ ಮತ್ತು }one{# ಗಂಟೆಗಳು ಮತ್ತು }other{# ಗಂಟೆಗಳು ಮತ್ತು }}</translation>
 <translation id="185013357618350178">&amp;ಆಯ್ಕೆಮಾಡಿ</translation>
 <translation id="1859234291848436338">ಬರವಣಿಗೆ ನಿರ್ದೇಶನ</translation>
-<translation id="1860796786778352021">ಅಧಿಸೂಚನೆ ಮುಚ್ಚು</translation>
-<translation id="186476001994626254">ವೆಬ್ ಸ್ಮಾರ್ಟ್ ಅಂಟಿಸುವ ವಿಷಯ</translation>
+<translation id="1860796786778352021">ನೋಟಿಫಿಕೇಶನ್ ಮುಚ್ಚಿ</translation>
+<translation id="186476001994626254">ವೆಬ್ ಸ್ಮಾರ್ಟ್ ಅಂಟಿಸುವ ಕಂಟೆಂಟ್‍</translation>
 <translation id="1871244248791675517">Ins</translation>
 <translation id="1901303067676059328">&amp;ಎಲ್ಲ ಆಯ್ಕೆ ಮಾಡಿ</translation>
 <translation id="19085484004813472">ಇದೊಂದು ಹೊಸ ಫೀಚರ್</translation>
@@ -105,7 +105,6 @@
 <translation id="4266252015790371705">{MONTHS,plural, =1{1 ತಿಂಗಳ ಹಿಂದೆ}one{# ತಿಂಗಳುಗಳ ಹಿಂದೆ}other{# ತಿಂಗಳುಗಳ ಹಿಂದೆ}}</translation>
 <translation id="4289300219472526559">ಮಾತನಾಡುವುದನ್ನು ಪ್ರಾರಂಭಿಸಿ</translation>
 <translation id="4289540628985791613">ಅವಲೋಕನ</translation>
-<translation id="4306392492252714209">ಕ್ಲಿಪ್‌ಬೋರ್ಡ್‌ನಿಂದ ತೆಗೆದುಹಾಕಿ.</translation>
 <translation id="4491109536499578614">ಚಿತ್ರ</translation>
 <translation id="4565377596337484307">ಪಾಸ್‌ವರ್ಡ್ ಮರೆಮಾಡಿ</translation>
 <translation id="4588090240171750605">ಬಲಕ್ಕೆ ಸ್ಕ್ರೋಲ್ ಮಾಡಿ</translation>
@@ -126,6 +125,7 @@
 <translation id="5329858601952122676">&amp;ಅಳಿಸು</translation>
 <translation id="5361107212971249203">ಪಠ್ಯ</translation>
 <translation id="5463830097259460683">ಎಮೋಜಿ ಮತ್ತು ಸಂಕೇತಗಳು</translation>
+<translation id="5505748296268090374"><ph name="ITEM_TEXT" /> ತೆಗೆದುಹಾಕಿ.</translation>
 <translation id="5528053674512161860">ಡೆವಲಪರ್ UI ಮಾಡ್ಯುಲ್‌ (dev_ui) ಅನ್ನು ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಲಾಗಿಲ್ಲದಿರುವುದರಿಂದ ಪುಟ ಲೋಡ್ ಮಾಡಲು ವಿಫಲವಾಗಿದೆ</translation>
 <translation id="5574202486608032840"><ph name="IDS_SHORT_PRODUCT_OS_NAME" /> ಸಿಸ್ಟಂ</translation>
 <translation id="5583640892426849032">Backspace</translation>
@@ -155,7 +155,7 @@
 <translation id="6404817160109697034">{SECONDS,plural, =1{1 ಸೆಕೆಂ ಹಿಂದೆ}one{# ಸೆಕೆಂಡುಗಳ ಹಿಂದೆ}other{# ಸೆಕೆಂಡುಗಳ ಹಿಂದೆ}}</translation>
 <translation id="6430678249303439055">ಈ ಅಪ್ಲಿಕೇಶನ್‌ನಿಂದ ಎಲ್ಲಾ ಅಧಿಸೂಚನೆಗಳನ್ನು ನಿರ್ಬಂಧಿಸಿ</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{1 ಸೆಕೆಂಡ್ ಹಿಂದೆ}one{# ಸೆಕೆಂಡುಗಳ ಹಿಂದೆ}other{# ಸೆಕೆಂಡುಗಳ ಹಿಂದೆ}}</translation>
-<translation id="6503257047630241175">RTF ವಿಷಯ</translation>
+<translation id="6503257047630241175">RTF ಕಂಟೆಂಟ್‍</translation>
 <translation id="6539092367496845964">ಏನೋ ತಪ್ಪಾಗಿದೆ. ನಂತರ ಪುನಃ ಪ್ರಯತ್ನಿಸಿ.</translation>
 <translation id="654149438358937226">ಎಲ್ಲಾ ಅಧಿಸೂಚನೆಗಳನ್ನು ನಿರ್ಬಂಧಿಸಿ</translation>
 <translation id="6612467943526193239">ಮಾಪನಾಂಕದಿಂದ ನಿರ್ಗಮಿಸಲು Esc ಒತ್ತಿರಿ.</translation>
@@ -175,6 +175,7 @@
 <translation id="7170202025028120564">ಮುಂದಿನ ಬಾರಿ ನೀವು ಅಪ್ಲಿಕೇಶನ್‌ ಅನ್ನು ಮರುಪ್ರಾರಂಭಿಸಿದಾಗ, ಅದರ ಡಿಸ್‌ಪ್ಲೇ ಸೆಟ್ಟಿಂಗ್‌ಗಳು ಕಾರ್ಯಗತಗೊಳ್ಳುತ್ತವೆ.</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{1 ನಿಮಿಷ ಬಾಕಿ ಉಳಿದಿದೆ}one{# ನಿಮಿಷಗಳು ಬಾಕಿ ಉಳಿದಿವೆ}other{# ನಿಮಿಷಗಳು ಬಾಕಿ ಉಳಿದಿವೆ}}</translation>
+<translation id="7363164521834647158">ಪ್ರತ್ಯುತ್ತರ ಕಳುಹಿಸಿ</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{1 ನಿಮಿ ಹಿಂದೆ}one{# ನಿಮಿಷಗಳ ಹಿಂದೆ}other{# ನಿಮಿಷಗಳ ಹಿಂದೆ}}</translation>
 <translation id="7389409599945284130"><ph name="MESSAGE" /> -</translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{1 ನಿಮಿಷ ಉಳಿದಿದೆ}one{# ನಿಮಿಷಗಳು ಉಳಿದಿವೆ}other{# ನಿಮಿಷಗಳು ಉಳಿದಿವೆ}}</translation>

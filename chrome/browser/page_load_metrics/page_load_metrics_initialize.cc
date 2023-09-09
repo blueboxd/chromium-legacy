@@ -21,6 +21,7 @@
 #include "chrome/browser/page_load_metrics/observers/gws_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/https_engagement_metrics/https_engagement_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/javascript_frameworks_ukm_observer.h"
+#include "chrome/browser/page_load_metrics/observers/lcp_critical_path_predictor_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/loading_predictor_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/local_network_requests_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/multi_tab_loading_page_load_metrics_observer.h"
@@ -44,7 +45,6 @@
 #include "components/no_state_prefetch/browser/no_state_prefetch_contents.h"
 #include "components/page_load_metrics/browser/metrics_web_contents_observer.h"
 #include "components/page_load_metrics/browser/observers/ad_metrics/ads_page_load_metrics_observer.h"
-#include "components/page_load_metrics/browser/observers/cache_transparency_page_load_metrics_observer.h"
 #include "components/page_load_metrics/browser/observers/zstd_page_load_metrics_observer.h"
 #include "components/page_load_metrics/browser/page_load_metrics_embedder_base.h"
 #include "components/page_load_metrics/browser/page_load_metrics_memory_tracker.h"
@@ -173,6 +173,8 @@ void PageLoadMetricsEmbedder::RegisterEmbedderObservers(
     if (loading_predictor_observer)
       tracker->AddObserver(std::move(loading_predictor_observer));
     tracker->AddObserver(
+        std::make_unique<LcpCriticalPathPredictorPageLoadMetricsObserver>());
+    tracker->AddObserver(
         std::make_unique<LocalNetworkRequestsPageLoadMetricsObserver>());
     tracker->AddObserver(
         std::make_unique<TabStripPageLoadMetricsObserver>(web_contents()));
@@ -189,8 +191,6 @@ void PageLoadMetricsEmbedder::RegisterEmbedderObservers(
           tracker->GetWebContents());
   if (translate_observer)
     tracker->AddObserver(std::move(translate_observer));
-  tracker->AddObserver(
-      std::make_unique<CacheTransparencyPageLoadMetricsObserver>());
   tracker->AddObserver(std::make_unique<ZstdPageLoadMetricsObserver>());
 }
 

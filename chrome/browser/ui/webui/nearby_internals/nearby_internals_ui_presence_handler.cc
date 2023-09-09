@@ -119,6 +119,11 @@ void NearbyInternalsPresenceHandler::RegisterMessages() {
       base::BindRepeating(
           &NearbyInternalsPresenceHandler::HandleFirstTimePresenceFlow,
           base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "ConnectToPresenceDevice",
+      base::BindRepeating(
+          &NearbyInternalsPresenceHandler::HandleConnectToPresenceDevice,
+          base::Unretained(this)));
 }
 
 void NearbyInternalsPresenceHandler::OnJavascriptAllowed() {}
@@ -160,7 +165,7 @@ void NearbyInternalsPresenceHandler::HandleSyncPresenceCredentials(
   if (service) {
     NS_LOG(VERBOSE) << __func__
                     << ": NearbyPresenceService was retrieved successfully";
-    // TODO(b/276307539): Call NPS function to sync credentials.
+    service->UpdateCredentials();
   }
 }
 
@@ -181,7 +186,10 @@ void NearbyInternalsPresenceHandler::HandleFirstTimePresenceFlow(
     pref_service->SetBoolean(ash::nearby::presence::prefs::
                                  kNearbyPresenceFirstTimeRegistrationComplete,
                              false);
-    service->Initialize();
+    service->Initialize(
+        base::BindOnce(&NearbyInternalsPresenceHandler::
+                           OnNearbyPresenceCredentialManagerInitialized,
+                       weak_ptr_factory_.GetWeakPtr()));
   }
 }
 
@@ -197,6 +205,11 @@ void NearbyInternalsPresenceHandler::OnScanStarted(
     // TODO(b/276307539): Pass error status back to WebUI.
     return;
   }
+}
+
+void NearbyInternalsPresenceHandler::
+    OnNearbyPresenceCredentialManagerInitialized() {
+  NS_LOG(VERBOSE) << __func__;
 }
 
 void NearbyInternalsPresenceHandler::OnPresenceDeviceFound(
@@ -223,4 +236,12 @@ void NearbyInternalsPresenceHandler::OnPresenceDeviceLost(
 void NearbyInternalsPresenceHandler::OnScanSessionInvalidated() {
   scan_session_.reset();
   HandleStartPresenceScan(/*args=*/{});
+}
+
+void NearbyInternalsPresenceHandler::HandleConnectToPresenceDevice(
+    const base::Value::List& args) {
+  // TODO(b/276642472): Add connect functionality.
+  NS_LOG(VERBOSE) << __func__
+                  << ": Connection attempt for device with endpoint id: "
+                  << args[0].GetString();
 }

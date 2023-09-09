@@ -219,6 +219,33 @@ void CheckSoftNavigationHeuristicsTracking(const Document& document,
   }
 }
 
+class PopoverCloseWatcherEventListener : public NativeEventListener {
+ public:
+  explicit PopoverCloseWatcherEventListener(HTMLElement* popover)
+      : popover_(popover) {}
+
+  void Invoke(ExecutionContext*, Event* event) override {
+    if (!popover_) {
+      return;
+    }
+    // Don't do anything in response to cancel events, as per the HTML spec
+    if (event->type() == event_type_names::kClose) {
+      popover_->HidePopoverInternal(
+          HidePopoverFocusBehavior::kFocusPreviousElement,
+          HidePopoverTransitionBehavior::kFireEventsAndWaitForTransitions,
+          /*exception_state=*/nullptr);
+    }
+  }
+
+  void Trace(Visitor* visitor) const override {
+    visitor->Trace(popover_);
+    NativeEventListener::Trace(visitor);
+  }
+
+ private:
+  WeakMember<HTMLElement> popover_;
+};
+
 }  // anonymous namespace
 
 String HTMLElement::nodeName() const {
@@ -1548,6 +1575,20 @@ void HTMLElement::ShowPopoverInternal(Element* invoker,
       CHECK(RuntimeEnabledFeatures::HTMLPopoverHintEnabled());
       original_document.SetPopoverHintShowing(this);
     }
+
+    if (RuntimeEnabledFeatures::CloseWatcherEnabled()) {
+      auto* close_watcher = CloseWatcher::Create(
+          GetDocument().domWindow(), /*dialog_for_use_counters=*/nullptr);
+      if (close_watcher) {
+        auto* event_listener =
+            MakeGarbageCollected<PopoverCloseWatcherEventListener>(this);
+        close_watcher->addEventListener(event_type_names::kClose,
+                                        event_listener);
+        close_watcher->addEventListener(event_type_names::kCancel,
+                                        event_listener);
+      }
+      GetPopoverData()->setCloseWatcher(close_watcher);
+    }
   }
 
   MarkPopoverInvokersDirty(*this);
@@ -1871,6 +1912,11 @@ void HTMLElement::HidePopoverInternal(
       selectmenu->ListboxWasClosed();
     }
   }
+
+  if (auto* close_watcher = GetPopoverData()->closeWatcher()) {
+    close_watcher->destroy();
+    GetPopoverData()->setCloseWatcher(nullptr);
+  }
 }
 
 void HTMLElement::SetPopoverFocusOnShow() {
@@ -2136,6 +2182,10 @@ void HTMLElement::HandlePopoverLightDismiss(const Event& event,
       }
     }
   } else if (event_type == event_type_names::kKeydown) {
+    // TODO(http://crbug.com/1171318): Remove this keydown branch once
+    // CloseWatcher has been fully enabled. CloseWatcher will handle escape key
+    // presses instead of this.
+    DCHECK(!RuntimeEnabledFeatures::CloseWatcherEnabled());
     const KeyboardEvent* key_event = DynamicTo<KeyboardEvent>(event);
     if (key_event && key_event->key() == "Escape") {
       CHECK(!event.GetEventPath().IsEmpty());
@@ -3007,7 +3057,7 @@ int HTMLElement::offsetTopForBinding() {
 
 int HTMLElement::offsetWidthForBinding() {
   GetDocument().EnsurePaintLocationDataValidForNode(
-      this, DocumentUpdateReason::kJavaScript, CSSPropertyID::kWidth);
+      this, DocumentUpdateReason::kJavaScript);
   int result = 0;
   if (const auto* layout_object = GetLayoutBoxModelObject()) {
     result = AdjustedOffsetForZoom(layout_object->OffsetWidth());
@@ -3020,7 +3070,7 @@ int HTMLElement::offsetWidthForBinding() {
 DISABLE_CFI_PERF
 int HTMLElement::offsetHeightForBinding() {
   GetDocument().EnsurePaintLocationDataValidForNode(
-      this, DocumentUpdateReason::kJavaScript, CSSPropertyID::kHeight);
+      this, DocumentUpdateReason::kJavaScript);
   int result = 0;
   if (const auto* layout_object = GetLayoutBoxModelObject()) {
     result = AdjustedOffsetForZoom(layout_object->OffsetHeight());
@@ -3123,6 +3173,13 @@ void HTMLElement::OnDirAttrChanged(const AttributeModificationParams& params) {
 
   bool is_old_auto = SelfOrAncestorHasDirAutoAttribute();
   bool is_new_auto = HasDirectionAuto();
+
+  if (is_new_auto) {
+    if (auto* input_element = DynamicTo<HTMLInputElement>(*this)) {
+      input_element->EnsureShadowSubtree();
+    }
+  }
+
   bool needs_slot_assignment_recalc = false;
   auto* parent =
       GetParentForDirectionality(*this, needs_slot_assignment_recalc);

@@ -4,13 +4,7 @@
 
 #include "chrome/browser/ash/app_list/search/local_image_search/annotation_storage.h"
 
-#include <algorithm>
-#include <iterator>
-#include <map>
-#include <string>
-
 #include "base/logging.h"
-#include "base/memory/scoped_refptr.h"
 #include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/sequenced_task_runner.h"
@@ -18,8 +12,6 @@
 #include "chrome/browser/ash/app_list/search/local_image_search/image_annotation_worker.h"
 #include "chrome/browser/ash/app_list/search/local_image_search/sql_database.h"
 #include "chromeos/ash/components/string_matching/fuzzy_tokenized_string_match.h"
-#include "chromeos/ash/components/string_matching/tokenized_string.h"
-#include "sql/database.h"
 #include "sql/statement.h"
 
 namespace app_list {
@@ -34,6 +26,9 @@ constexpr int kVersionNumber = 3;
 // The table cannot exist when calling this function.
 int CreateNewSchema(SqlDatabase* db) {
   DVLOG(1) << "Making a table";
+  if (!db) {
+    return 0;
+  }
 
   static constexpr char kQuery[] =
       // clang-format off
@@ -43,24 +38,27 @@ int CreateNewSchema(SqlDatabase* db) {
           "last_modified_time INTEGER NOT NULL,"
           "is_ignored INTEGER NOT NULL)";
   // clang-format on
-  sql::Statement statement = db->GetStatementForQuery(SQL_FROM_HERE, kQuery);
-  if (!statement.Run()) {
+  std::unique_ptr<sql::Statement> statement =
+      db->GetStatementForQuery(SQL_FROM_HERE, kQuery);
+  if (!statement || !statement->Run()) {
     return 0;
   }
 
   static constexpr char kQuery1[] =
       "CREATE INDEX ind_annotations_label ON annotations(label)";
 
-  sql::Statement statement1 = db->GetStatementForQuery(SQL_FROM_HERE, kQuery1);
-  if (!statement1.Run()) {
+  std::unique_ptr<sql::Statement> statement1 =
+      db->GetStatementForQuery(SQL_FROM_HERE, kQuery1);
+  if (!statement1 || !statement1->Run()) {
     return 0;
   }
 
   static constexpr char kQuery2[] =
       "CREATE INDEX ind_annotations_image_path ON annotations(image_path)";
 
-  sql::Statement statement2 = db->GetStatementForQuery(SQL_FROM_HERE, kQuery2);
-  if (!statement2.Run()) {
+  std::unique_ptr<sql::Statement> statement2 =
+      db->GetStatementForQuery(SQL_FROM_HERE, kQuery2);
+  if (!statement2 || !statement2->Run()) {
     return 0;
   }
 
@@ -68,13 +66,18 @@ int CreateNewSchema(SqlDatabase* db) {
 }
 
 int MigrateSchema(SqlDatabase* db, int current_version_number) {
+  if (!db) {
+    return 0;
+  }
+
   if (current_version_number == kVersionNumber) {
     return current_version_number;
   }
 
   static constexpr char kQuery[] = "DROP TABLE IF EXISTS annotations";
-  sql::Statement statement = db->GetStatementForQuery(SQL_FROM_HERE, kQuery);
-  if (!statement.Run()) {
+  std::unique_ptr<sql::Statement> statement =
+      db->GetStatementForQuery(SQL_FROM_HERE, kQuery);
+  if (!statement || !statement->Run()) {
     return 0;
   }
 
@@ -154,15 +157,18 @@ void AnnotationStorage::Insert(const ImageInfo& image_info) {
   // clang-format on
 
   for (const auto& annotation : image_info.annotations) {
-    sql::Statement statement =
+    std::unique_ptr<sql::Statement> statement =
         sql_database_->GetStatementForQuery(SQL_FROM_HERE, kQuery);
+    if (!statement) {
+      return;
+    }
     DVLOG(1) << annotation;
-    statement.BindString(0, annotation);
-    statement.BindString(1, image_info.path.value());
-    statement.BindTime(2, image_info.last_modified);
-    statement.BindInt(3, image_info.is_ignored);
+    statement->BindString(0, annotation);
+    statement->BindString(1, image_info.path.value());
+    statement->BindTime(2, image_info.last_modified);
+    statement->BindInt(3, image_info.is_ignored);
 
-    if (!statement.Run()) {
+    if (!statement->Run()) {
       // TODO(b/260646344): log to UMA instead.
       return;
     }
@@ -176,11 +182,15 @@ void AnnotationStorage::Remove(const base::FilePath& image_path) {
 
   static constexpr char kQuery[] = "DELETE FROM annotations WHERE image_path=?";
 
-  sql::Statement statement =
+  std::unique_ptr<sql::Statement> statement =
       sql_database_->GetStatementForQuery(SQL_FROM_HERE, kQuery);
-  statement.BindString(0, image_path.value());
+  if (!statement) {
+    return;
+  }
 
-  statement.Run();
+  statement->BindString(0, image_path.value());
+
+  statement->Run();
 }
 
 std::vector<ImageInfo> AnnotationStorage::GetAllAnnotations() {
@@ -194,17 +204,20 @@ std::vector<ImageInfo> AnnotationStorage::GetAllAnnotations() {
           "ORDER BY label";
   // clang-format on
 
-  sql::Statement statement =
+  std::unique_ptr<sql::Statement> statement =
       sql_database_->GetStatementForQuery(SQL_FROM_HERE, kQuery);
+  if (!statement) {
+    return {};
+  }
 
   std::vector<ImageInfo> matched_paths;
-  while (statement.Step()) {
-    const base::FilePath path = base::FilePath(statement.ColumnString(1));
-    const base::Time time = statement.ColumnTime(2);
-    const bool is_ignored = statement.ColumnBool(3);
-    DVLOG(1) << "Select find: " << statement.ColumnString(0) << ", " << path
+  while (statement->Step()) {
+    const base::FilePath path = base::FilePath(statement->ColumnString(1));
+    const base::Time time = statement->ColumnTime(2);
+    const bool is_ignored = statement->ColumnBool(3);
+    DVLOG(1) << "Select find: " << statement->ColumnString(0) << ", " << path
              << ", " << time;
-    matched_paths.push_back({{statement.ColumnString(0)},
+    matched_paths.push_back({{statement->ColumnString(0)},
                              std::move(path),
                              std::move(time),
                              is_ignored});
@@ -227,18 +240,21 @@ std::vector<ImageInfo> AnnotationStorage::FindImagePath(
           "ORDER BY label";
   // clang-format on
 
-  sql::Statement statement =
+  std::unique_ptr<sql::Statement> statement =
       sql_database_->GetStatementForQuery(SQL_FROM_HERE, kQuery);
-  statement.BindString(0, image_path.value());
+  if (!statement) {
+    return {};
+  }
+  statement->BindString(0, image_path.value());
 
   std::vector<ImageInfo> matched_paths;
-  while (statement.Step()) {
-    const base::FilePath path = base::FilePath(statement.ColumnString(1));
-    const base::Time time = statement.ColumnTime(2);
-    const bool is_ignored = statement.ColumnBool(3);
-    DVLOG(1) << "Select find: " << statement.ColumnString(0) << ", " << path
+  while (statement->Step()) {
+    const base::FilePath path = base::FilePath(statement->ColumnString(1));
+    const base::Time time = statement->ColumnTime(2);
+    const bool is_ignored = statement->ColumnBool(3);
+    DVLOG(1) << "Select find: " << statement->ColumnString(0) << ", " << path
              << ", " << time;
-    matched_paths.push_back({{statement.ColumnString(0)},
+    matched_paths.push_back({{statement->ColumnString(0)},
                              std::move(path),
                              std::move(time),
                              is_ignored});
@@ -247,11 +263,12 @@ std::vector<ImageInfo> AnnotationStorage::FindImagePath(
   return matched_paths;
 }
 
-std::vector<FileSearchResult> AnnotationStorage::Search(
+std::vector<FileSearchResult> AnnotationStorage::PrefixSearch(
     const std::u16string& query) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DVLOG(1) << "Search";
   using TokenizedString = ash::string_matching::TokenizedString;
+  using Mode = ash::string_matching::TokenizedString::Mode;
 
   // LIKE is 10 times faster than the linear search.
   static constexpr char kQuery[] =
@@ -263,25 +280,29 @@ std::vector<FileSearchResult> AnnotationStorage::Search(
           "ORDER BY image_path";
   // clang-format on
 
-  sql::Statement statement =
+  std::unique_ptr<sql::Statement> statement =
       sql_database_->GetStatementForQuery(SQL_FROM_HERE, kQuery);
-  statement.BindString(0, base::StrCat({"%", base::UTF16ToUTF8(query), "%"}));
+  if (!statement) {
+    return {};
+  }
+  statement->BindString(0, base::StrCat({base::UTF16ToUTF8(query), "%"}));
 
   std::vector<FileSearchResult> matched_paths;
-  TokenizedString tokenized_query(query);
-  ash::string_matching::FuzzyTokenizedStringMatch fuzzy_match;
-  while (statement.Step()) {
-    double relevance = fuzzy_match.Relevance(
-        tokenized_query,
-        TokenizedString(base::UTF8ToUTF16(statement.ColumnString(0))),
-        /*use_weighted_ratio=*/true);
+  TokenizedString tokenized_query(query, Mode::kWords);
+  while (statement->Step()) {
+    double relevance =
+        ash::string_matching::FuzzyTokenizedStringMatch::TokenSetRatio(
+            tokenized_query,
+            TokenizedString(base::UTF8ToUTF16(statement->ColumnString(0)),
+                            Mode::kWords),
+            /*partial=*/false);
     if (relevance < kRelevanceThreshold) {
       continue;
     }
 
-    const base::FilePath path = base::FilePath(statement.ColumnString(1));
-    const base::Time time = statement.ColumnTime(2);
-    DVLOG(1) << "Select: " << statement.ColumnString(0) << ", " << path << ", "
+    const base::FilePath path = base::FilePath(statement->ColumnString(1));
+    const base::Time time = statement->ColumnTime(2);
+    DVLOG(1) << "Select: " << statement->ColumnString(0) << ", " << path << ", "
              << time << " rl: " << relevance;
 
     if (matched_paths.empty() || matched_paths.back().file_path != path) {

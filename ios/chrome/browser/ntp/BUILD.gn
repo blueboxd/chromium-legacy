@@ -6,11 +6,12 @@ source_set("ntp") {
   sources = [
     "browser_policy_new_tab_page_rewriter.h",
     "browser_policy_new_tab_page_rewriter.mm",
+    "new_tab_page_state.h",
+    "new_tab_page_state.mm",
     "new_tab_page_tab_helper.h",
     "new_tab_page_tab_helper.mm",
     "new_tab_page_tab_helper_delegate.h",
   ]
-  configs += [ "//build/config/compiler:enable_arc" ]
   deps = [
     ":features",
     "//base:base",
@@ -32,7 +33,6 @@ source_set("ntp") {
 }
 
 source_set("util") {
-  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "new_tab_page_util.h",
     "new_tab_page_util.mm",
@@ -49,11 +49,12 @@ source_set("features") {
     "features.h",
     "features.mm",
   ]
-  configs += [ "//build/config/compiler:enable_arc" ]
   deps = [
     "//base",
+    "//components/variations/service",
     "//components/version_info:channel",
     "//ios/chrome/app:background_mode_buildflags",
+    "//ios/chrome/browser/shared/model/application_context",
     "//ios/chrome/browser/shared/public/features:system_flags",
     "//ios/chrome/common",
   ]
@@ -67,7 +68,6 @@ source_set("set_up_list") {
     "set_up_list_item.h",
     "set_up_list_item.mm",
   ]
-  configs += [ "//build/config/compiler:enable_arc" ]
   deps = [
     ":features",
     ":set_up_list_item_type",
@@ -77,6 +77,8 @@ source_set("set_up_list") {
     "//components/password_manager/core/browser",
     "//components/prefs:prefs",
     "//components/prefs/ios",
+    "//components/sync/base",
+    "//components/sync/service",
     "//ios/chrome/browser/default_browser:utils",
     "//ios/chrome/browser/signin",
   ]
@@ -84,7 +86,6 @@ source_set("set_up_list") {
 
 source_set("set_up_list_item_type") {
   sources = [ "set_up_list_item_type.h" ]
-  configs += [ "//build/config/compiler:enable_arc" ]
 }
 
 source_set("set_up_list_metrics") {
@@ -92,7 +93,6 @@ source_set("set_up_list_metrics") {
     "set_up_list_metrics.h",
     "set_up_list_metrics.mm",
   ]
-  configs += [ "//build/config/compiler:enable_arc" ]
   deps = [
     ":set_up_list_item_type",
     "//base",
@@ -104,7 +104,6 @@ source_set("set_up_list_prefs") {
     "set_up_list_prefs.h",
     "set_up_list_prefs.mm",
   ]
-  configs += [ "//build/config/compiler:enable_arc" ]
   deps = [
     ":set_up_list_item_type",
     ":set_up_list_metrics",
@@ -115,7 +114,6 @@ source_set("set_up_list_prefs") {
 }
 
 source_set("unit_tests") {
-  configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
     "browser_policy_new_tab_page_rewriter_unittest.mm",
@@ -147,6 +145,7 @@ source_set("unit_tests") {
     "//ios/chrome/browser/signin:fake_system_identity",
     "//ios/chrome/browser/signin:fake_system_identity_manager",
     "//ios/chrome/browser/signin:test_support",
+    "//ios/chrome/browser/sync",
     "//ios/chrome/test:test_support",
     "//ios/web/public/test:test",
     "//ios/web/public/test/fakes",

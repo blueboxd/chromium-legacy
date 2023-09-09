@@ -78,7 +78,7 @@ class ScalableIph : public KeyedService,
                     public IphSession::Delegate {
  public:
   // List of events ScalableIph supports.
-  enum class Event { kFiveMinTick };
+  enum class Event { kFiveMinTick = 0, kUnlocked, kAppListShown };
 
   ScalableIph(feature_engagement::Tracker* tracker,
               std::unique_ptr<ScalableIphDelegate> delegate);
@@ -93,6 +93,9 @@ class ScalableIph : public KeyedService,
 
   // ScalableIphDelegate::Observer:
   void OnConnectionChanged(bool online) override;
+  void OnLockStateChanged(bool locked) override;
+  void OnSuspendDoneWithoutLockScreen() override;
+  void OnAppListVisibilityChanged(bool shown) override;
 
   // IphSession::Delegate:
   void PerformActionForIphSession(ActionType action_type) override;
@@ -101,6 +104,10 @@ class ScalableIph : public KeyedService,
       const std::vector<const base::Feature*> features);
   void OverrideTaskRunnerForTesting(
       scoped_refptr<base::SequencedTaskRunner> task_runner);
+
+  // Called for a user action in the help app. All the logging related to
+  // help app action events will be done here before calling `PerformAction`.
+  void PerformActionForHelpApp(ActionType action_type);
 
   // Perform `action_type` as a result of a user action, e.g. A link click in a
   // help app, etc. This notifies a corresponding IPH event to the feature
@@ -113,6 +120,7 @@ class ScalableIph : public KeyedService,
  private:
   void EnsureTimerStarted();
   void RecordTimeTickEvent();
+  void RecordUnlockedEvent();
   void RecordEventInternal(Event event, bool init_success);
   void CheckTriggerConditionsOnInitSuccess(bool init_success);
   void CheckTriggerConditions();
@@ -130,11 +138,13 @@ class ScalableIph : public KeyedService,
   std::unique_ptr<ScalableIphDelegate> delegate_;
   base::RepeatingTimer timer_;
   bool online_ = false;
+  bool locked_ = false;
 
   std::vector<const base::Feature*> feature_list_for_testing_;
 
   base::ScopedObservation<ScalableIphDelegate, ScalableIph>
       delegate_observation_{this};
+
   base::WeakPtrFactory<ScalableIph> weak_ptr_factory_{this};
 };
 

@@ -1779,6 +1779,16 @@ config("default_warnings") {
         ]
       }
     }
+
+    # Some builders, such as Cronet, use a different version of Clang than
+    # Chromium. This can cause minor errors when compiling Chromium changes. We
+    # want to avoid these errors.
+    if (use_lenient_compiler_flags) {
+      cflags += [
+        "-Wno-error=unknown-warning-option",
+        "-Wno-error=unused-command-line-argument",
+      ]
+    }
   }
 
   # Rust warnings
@@ -1907,8 +1917,9 @@ config("chromium_code") {
 
     # TODO(thakis): Enable this more often, https://crbug.com/346399
     # use_fuzzing_engine_with_lpm: https://crbug.com/1063180
-    if ((!is_nacl || is_nacl_saigo) && !use_fuzzing_engine_with_lpm) {
-#      cflags += [ "-Wunreachable-code-aggressive" ]
+    if ((!is_nacl || is_nacl_saigo) &&
+        !(is_win && use_fuzzing_engine_with_lpm)) {
+      # cflags += [ "-Wunreachable-code-aggressive" ]
     }
 
     # Thread safety analysis is broken under nacl: https://crbug.com/982423.

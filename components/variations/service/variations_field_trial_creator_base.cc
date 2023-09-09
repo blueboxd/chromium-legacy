@@ -201,9 +201,9 @@ VariationsFieldTrialCreatorBase::VariationsFieldTrialCreatorBase(
 VariationsFieldTrialCreatorBase::~VariationsFieldTrialCreatorBase() = default;
 
 std::string VariationsFieldTrialCreatorBase::GetLatestCountry() const {
-  const std::string override_country =
+  const std::string override_country = base::ToLowerASCII(
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kVariationsOverrideCountry);
+          switches::kVariationsOverrideCountry));
   return !override_country.empty()
              ? override_country
              : local_state()->GetString(prefs::kVariationsCountry);
@@ -216,7 +216,7 @@ bool VariationsFieldTrialCreatorBase::SetUpFieldTrials(
     std::unique_ptr<base::FeatureList> feature_list,
     metrics::MetricsStateManager* metrics_state_manager,
     PlatformFieldTrials* platform_field_trials,
-    SafeSeedManager* safe_seed_manager,
+    SafeSeedManagerInterface* safe_seed_manager,
     bool add_entropy_source_to_variations_ids) {
   DCHECK(feature_list);
   DCHECK(metrics_state_manager);
@@ -289,9 +289,9 @@ bool VariationsFieldTrialCreatorBase::SetUpFieldTrials(
                            switches::kEnableFieldTrialTestingConfig));
   }
 #endif  // BUILDFLAG(FIELDTRIAL_TESTING_ENABLED)
-  if (command_line->HasSwitch(switches::kVariationsTestSeedPath)) {
-    LoadSeedFromFile(
-        command_line->GetSwitchValuePath(switches::kVariationsTestSeedPath));
+  if (command_line->HasSwitch(switches::kVariationsTestSeedJsonPath)) {
+    LoadSeedFromJsonFile(
+        command_line->GetSwitchValuePath(switches::kVariationsTestSeedJsonPath));
   }
 
   auto entropy_providers = metrics_state_manager->CreateEntropyProviders();
@@ -371,9 +371,9 @@ std::string VariationsFieldTrialCreatorBase::LoadPermanentConsistencyCountry(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(version.IsValid());
 
-  const std::string override_country =
+  const std::string override_country = base::ToLowerASCII(
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kVariationsOverrideCountry);
+          switches::kVariationsOverrideCountry));
   if (!override_country.empty()) {
     return override_country;
   }
@@ -584,7 +584,7 @@ VariationsFieldTrialCreatorBase::GetGoogleGroupsFromPrefs() {
 bool VariationsFieldTrialCreatorBase::CreateTrialsFromSeed(
     const EntropyProviders& entropy_providers,
     base::FeatureList* feature_list,
-    SafeSeedManager* safe_seed_manager) {
+    SafeSeedManagerInterface* safe_seed_manager) {
   // This histogram name uses "VariationsFieldTrialCreator" rather than
   // "VariationsFieldTrialCreatorBase" for consistency with historical data
   TRACE_EVENT0("startup", "VariationsFieldTrialCreator::CreateTrialsFromSeed");
@@ -676,10 +676,10 @@ bool VariationsFieldTrialCreatorBase::CreateTrialsFromSeed(
   return true;
 }
 
-void VariationsFieldTrialCreatorBase::LoadSeedFromFile(
-    const base::FilePath& seed_path) {
-  VLOG(1) << "Loading seed from file:" << seed_path;
-  JSONFileValueDeserializer file_deserializer(seed_path);
+void VariationsFieldTrialCreatorBase::LoadSeedFromJsonFile(
+    const base::FilePath& json_seed_path) {
+  VLOG(1) << "Loading seed from JSON file:" << json_seed_path;
+  JSONFileValueDeserializer file_deserializer(json_seed_path);
   int error_code;
   std::string error_message;
   std::unique_ptr<base::Value> json_contents =
@@ -687,7 +687,7 @@ void VariationsFieldTrialCreatorBase::LoadSeedFromFile(
 
   if (!json_contents) {
     ExitWithMessage(base::StringPrintf("Failed to load \"%s\" %s (%i)",
-                                       seed_path.AsUTF8Unsafe().c_str(),
+                                       json_seed_path.AsUTF8Unsafe().c_str(),
                                        error_message.c_str(), error_code));
   }
 
@@ -699,13 +699,13 @@ void VariationsFieldTrialCreatorBase::LoadSeedFromFile(
   if (!seed_data || !seed_data->is_string()) {
     ExitWithMessage(
         base::StringPrintf("Missing or invalid seed data in contents of \"%s\"",
-                           seed_path.AsUTF8Unsafe().c_str()));
+                           json_seed_path.AsUTF8Unsafe().c_str()));
   }
 
   if (!seed_signature || !seed_signature->is_string()) {
     ExitWithMessage(base::StringPrintf(
         "Missing or invalid seed signature in contents of \"%s\"",
-        seed_path.AsUTF8Unsafe().c_str()));
+        json_seed_path.AsUTF8Unsafe().c_str()));
   }
 
   // Set fail counters to 0 to make sure Chrome doesn't run in variations safe

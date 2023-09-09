@@ -253,6 +253,9 @@ export class PaymentsManagerExpectations {
 export class TestPaymentsManager extends TestBrowserProxy implements
     PaymentsManagerProxy {
   private isUserVerifyingPlatformAuthenticatorAvailable_: boolean|null = null;
+  // <if expr="is_win or is_macosx">
+  private isDeviceAuthAvailable_: boolean = false;
+  // </if>
 
   data: {
     creditCards: chrome.autofillPrivate.CreditCardEntry[],
@@ -349,7 +352,6 @@ export class TestPaymentsManager extends TestBrowserProxy implements
     return Promise.resolve(true);
   }
 
-
   setIsUserVerifyingPlatformAuthenticatorAvailable(available: boolean|null) {
     this.isUserVerifyingPlatformAuthenticatorAvailable_ = available;
   }
@@ -366,6 +368,16 @@ export class TestPaymentsManager extends TestBrowserProxy implements
     this.methodCalled('authenticateUserToEditLocalCard');
     return Promise.resolve(true);
   }
+
+  // <if expr="is_win or is_macosx">
+  setIsDeviceAuthAvailable(available: boolean) {
+    this.isDeviceAuthAvailable_ = available;
+  }
+
+  checkIfDeviceAuthAvailable() {
+    return Promise.resolve(this.isDeviceAuthAvailable_);
+  }
+  // </if>
 
   /**
    * Verifies expectations.

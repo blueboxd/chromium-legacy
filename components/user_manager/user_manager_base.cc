@@ -202,7 +202,7 @@ const AccountId& UserManagerBase::GetOwnerAccountId() const {
   return *owner_account_id_;
 }
 
-void UserManagerBase::RequestOwnerAccountId(
+void UserManagerBase::GetOwnerAccountIdAsync(
     base::OnceCallback<void(const AccountId&)> callback) const {
   if (owner_account_id_.has_value()) {
     std::move(callback).Run(*owner_account_id_);
@@ -725,7 +725,7 @@ bool UserManagerBase::IsLoggedInAsChildUser() const {
   return IsUserLoggedIn() && active_user_->GetType() == USER_TYPE_CHILD;
 }
 
-bool UserManagerBase::IsLoggedInAsPublicAccount() const {
+bool UserManagerBase::IsLoggedInAsManagedGuestSession() const {
   DCHECK(!task_runner_ || task_runner_->RunsTasksInCurrentSequence());
   return IsUserLoggedIn() &&
          active_user_->GetType() == USER_TYPE_PUBLIC_ACCOUNT;
@@ -960,8 +960,11 @@ void UserManagerBase::SetIsCurrentUserNew(bool is_new) {
   is_current_user_new_ = is_new;
 }
 
+void UserManagerBase::ResetOwnerId() {
+  owner_account_id_ = absl::nullopt;
+}
+
 void UserManagerBase::SetOwnerId(const AccountId& owner_account_id) {
-  // TODO(crbug.com/1466440): Add a check that this is only called once.
   owner_account_id_ = owner_account_id;
   pending_owner_callbacks_.Notify(owner_account_id);
   NotifyLoginStateUpdated();

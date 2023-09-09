@@ -109,6 +109,12 @@ class DummySharedDictionaryStorage : public SharedDictionaryStorage {
       const std::string& match) override {
     return nullptr;
   }
+  bool IsAlreadyRegistered(const GURL& url,
+                           base::Time response_time,
+                           base::TimeDelta expiration,
+                           const std::string& match) override {
+    return false;
+  }
 
   void set_on_deleted_closure_runner(base::ScopedClosureRunner closure_runner) {
     on_deleted_closure_runner_ = std::move(closure_runner);
@@ -153,6 +159,11 @@ class DummySharedDictionaryManager : public SharedDictionaryManager {
       const net::SharedDictionaryIsolationKey& isolation_key,
       base::OnceCallback<
           void(std::vector<network::mojom::SharedDictionaryInfoPtr>)> callback)
+      override {}
+  void GetOriginsBetween(
+      base::Time start_time,
+      base::Time end_time,
+      base::OnceCallback<void(const std::vector<url::Origin>&)> callback)
       override {}
 
   bool create_storage_called() const { return create_storage_called_; }

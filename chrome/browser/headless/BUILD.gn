@@ -55,6 +55,7 @@ source_set("command_processor") {
   deps = [
     ":headless",
     "//base",
+    "//chrome/common:non_code_constants",
     "//components/headless/command_handler",
     "//content/public/browser",
   ]
@@ -90,10 +91,6 @@ if (!is_android) {
       sources += [ "headless_mode_browsertest_win.cc" ]
     }
 
-    if (is_apple) {
-      configs += [ "//build/config/compiler:enable_arc" ]
-    }
-
     if (is_mac) {
       sources += [ "headless_mode_browsertest_mac.mm" ]
     }
@@ -104,6 +101,7 @@ if (!is_android) {
       "//chrome/browser",
       "//chrome/test:test_support",
       "//content/test:test_support",
+      "//pdf",
       "//testing/gtest",
     ]
 

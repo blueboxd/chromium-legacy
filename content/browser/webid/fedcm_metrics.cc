@@ -81,6 +81,52 @@ void FedCmMetrics::RecordCancelOnDialogTime(base::TimeDelta duration) {
   base::UmaHistogramMediumTimes("Blink.FedCm.Timing.CancelOnDialog", duration);
 }
 
+void FedCmMetrics::RecordAccountsDialogShownDuration(base::TimeDelta duration) {
+  if (is_disabled_) {
+    return;
+  }
+  auto RecordUkm = [&](auto& ukm_builder) {
+    ukm_builder.SetTiming_AccountsDialogShownDuration(
+        ukm::GetExponentialBucketMinForUserTiming(duration.InMilliseconds()));
+    ukm_builder.SetFedCmSessionID(session_id_);
+    ukm_builder.Record(ukm::UkmRecorder::Get());
+  };
+  ukm::builders::Blink_FedCm fedcm_builder(page_source_id_);
+  RecordUkm(fedcm_builder);
+  ukm::builders::Blink_FedCmIdp fedcm_idp_builder(provider_source_id_);
+  RecordUkm(fedcm_idp_builder);
+
+  // Samples are at most 10 minutes. This metric is used to determine a
+  // reasonable minimum duration for the accounts dialog to be shown to
+  // prevent abuse through flashing UI so a higher maximum is not needed.
+  base::UmaHistogramCustomTimes(
+      "Blink.FedCm.Timing.AccountsDialogShownDuration2", duration,
+      base::Milliseconds(1), base::Minutes(10), 50);
+}
+
+void FedCmMetrics::RecordMismatchDialogShownDuration(base::TimeDelta duration) {
+  if (is_disabled_) {
+    return;
+  }
+  auto RecordUkm = [&](auto& ukm_builder) {
+    ukm_builder.SetTiming_MismatchDialogShownDuration(
+        ukm::GetExponentialBucketMinForUserTiming(duration.InMilliseconds()));
+    ukm_builder.SetFedCmSessionID(session_id_);
+    ukm_builder.Record(ukm::UkmRecorder::Get());
+  };
+  ukm::builders::Blink_FedCm fedcm_builder(page_source_id_);
+  RecordUkm(fedcm_builder);
+  ukm::builders::Blink_FedCmIdp fedcm_idp_builder(provider_source_id_);
+  RecordUkm(fedcm_idp_builder);
+
+  // Samples are at most 10 minutes. This metric is used to determine a
+  // reasonable minimum duration for the mismatch dialog to be shown to
+  // prevent abuse through flashing UI so a higher maximum is not needed.
+  base::UmaHistogramCustomTimes(
+      "Blink.FedCm.Timing.MismatchDialogShownDuration", duration,
+      base::Milliseconds(1), base::Minutes(10), 50);
+}
+
 void FedCmMetrics::RecordCancelReason(
     IdentityRequestDialogController::DismissReason dismiss_reason) {
   if (is_disabled_)
@@ -273,6 +319,76 @@ void FedCmMetrics::RecordAutoReauthnMetrics(
       requires_user_mediation);
   ukm_builder.SetFedCmSessionID(session_id_);
   ukm_builder.Record(ukm::UkmRecorder::Get());
+}
+
+void FedCmMetrics::RecordAccountsDialogShown() {
+  if (is_disabled_) {
+    return;
+  }
+  auto RecordUkm = [&](auto& ukm_builder) {
+    ukm_builder.SetAccountsDialogShown(true);
+    ukm_builder.SetFedCmSessionID(session_id_);
+    ukm_builder.Record(ukm::UkmRecorder::Get());
+  };
+  ukm::builders::Blink_FedCm fedcm_builder(page_source_id_);
+  RecordUkm(fedcm_builder);
+
+  ukm::builders::Blink_FedCmIdp fedcm_idp_builder(provider_source_id_);
+  RecordUkm(fedcm_idp_builder);
+
+  base::UmaHistogramBoolean("Blink.FedCm.AccountsDialogShown", true);
+}
+
+void FedCmMetrics::RecordMismatchDialogShown() {
+  if (is_disabled_) {
+    return;
+  }
+  auto RecordUkm = [&](auto& ukm_builder) {
+    ukm_builder.SetMismatchDialogShown(true);
+    ukm_builder.SetFedCmSessionID(session_id_);
+    ukm_builder.Record(ukm::UkmRecorder::Get());
+  };
+  ukm::builders::Blink_FedCm fedcm_builder(page_source_id_);
+  RecordUkm(fedcm_builder);
+
+  ukm::builders::Blink_FedCmIdp fedcm_idp_builder(provider_source_id_);
+  RecordUkm(fedcm_idp_builder);
+
+  base::UmaHistogramBoolean("Blink.FedCm.MismatchDialogShown", true);
+}
+
+void FedCmMetrics::RecordAccountsRequestSent() {
+  if (is_disabled_) {
+    return;
+  }
+  auto RecordUkm = [&](auto& ukm_builder) {
+    ukm_builder.SetAccountsRequestSent(true);
+    ukm_builder.SetFedCmSessionID(session_id_);
+    ukm_builder.Record(ukm::UkmRecorder::Get());
+  };
+  ukm::builders::Blink_FedCm fedcm_builder(page_source_id_);
+  RecordUkm(fedcm_builder);
+
+  ukm::builders::Blink_FedCmIdp fedcm_idp_builder(provider_source_id_);
+  RecordUkm(fedcm_idp_builder);
+
+  base::UmaHistogramBoolean("Blink.FedCm.AccountsRequestSent", true);
+}
+
+void FedCmMetrics::RecordNumRequestsPerDocument(const int num_requests) {
+  if (is_disabled_) {
+    return;
+  }
+  auto RecordUkm = [&](auto& ukm_builder) {
+    ukm_builder.SetNumRequestsPerDocument(num_requests);
+    ukm_builder.SetFedCmSessionID(session_id_);
+    ukm_builder.Record(ukm::UkmRecorder::Get());
+  };
+  ukm::builders::Blink_FedCm fedcm_builder(page_source_id_);
+  RecordUkm(fedcm_builder);
+
+  base::UmaHistogramCounts100("Blink.FedCm.NumRequestsPerDocument",
+                              num_requests);
 }
 
 void RecordPreventSilentAccess(RenderFrameHost& rfh,

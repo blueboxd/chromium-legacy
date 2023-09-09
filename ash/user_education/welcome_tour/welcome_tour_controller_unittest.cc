@@ -9,9 +9,12 @@
 #include <string>
 #include <utility>
 
+#include "ash/accelerators/ash_accelerator_configuration.h"
+#include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/ash_element_identifiers.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/notifier_catalogs.h"
+#include "ash/public/cpp/accelerator_actions.h"
 #include "ash/public/cpp/system_notification_builder.h"
 #include "ash/public/cpp/tablet_mode.h"
 #include "ash/session/test_session_controller_client.h"
@@ -24,6 +27,7 @@
 #include "ash/user_education/user_education_types.h"
 #include "ash/user_education/user_education_util.h"
 #include "ash/user_education/welcome_tour/mock_welcome_tour_controller_observer.h"
+#include "ash/user_education/welcome_tour/welcome_tour_accelerator_handler.h"
 #include "ash/user_education/welcome_tour/welcome_tour_controller_observer.h"
 #include "ash/user_education/welcome_tour/welcome_tour_dialog.h"
 #include "ash/user_education/welcome_tour/welcome_tour_test_util.h"
@@ -31,15 +35,14 @@
 #include "base/functional/callback.h"
 #include "base/functional/overloaded.h"
 #include "base/scoped_observation.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/test/bind.h"
 #include "base/test/gmock_callback_support.h"
 #include "base/test/gmock_move_support.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_future.h"
 #include "components/account_id/account_id.h"
-#include "components/user_education/common/help_bubble.h"
 #include "components/user_education/common/tutorial_description.h"
+#include "components/user_manager/user_type.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
@@ -72,6 +75,7 @@ using ::testing::NotNull;
 using ::testing::Pair;
 using ::testing::Property;
 using ::testing::Return;
+using ::testing::ReturnRefOfCopy;
 using ::testing::StrictMock;
 using ::user_education::HelpBubbleArrow;
 using ::user_education::TutorialDescription;
@@ -119,12 +123,15 @@ MATCHER_P6(BubbleStep,
            has_next_button,
            "") {
   namespace util = user_education_util;
+  const auto& ext_props = arg.extended_properties();
   return arg.step_type() == ui::InteractionSequence::StepType::kShown &&
          Matches(ElementSpecifierEq(element_specifier))(arg) &&
          arg.context_mode() == context_mode &&
-         util::GetHelpBubbleId(arg.extended_properties()) == help_bubble_id &&
+         util::GetHelpBubbleId(ext_props) == help_bubble_id &&
          arg.body_text_id() == body_text_id && arg.arrow() == arrow &&
-         arg.next_button_callback().is_null() != has_next_button;
+         arg.next_button_callback().is_null() != has_next_button &&
+         util::GetHelpBubbleModalType(ext_props) == ui::MODAL_TYPE_SYSTEM &&
+         &util::GetHelpBubbleBodyIcon(ext_props)->get() == &gfx::kNoneIcon;
 }
 
 MATCHER_P2(HiddenStep, element_specifier, context_mode, "") {
@@ -150,11 +157,31 @@ MATCHER_P2(ShownStep, element_specifier, context_mode, "") {
          arg.context_mode() == context_mode;
 }
 
+// MockPretargetEventHandler ---------------------------------------------------
+
+// A mock pre-target event handler to expose the received events.
+class MockPretargetEventHandler : public ui::EventHandler {
+ public:
+  MockPretargetEventHandler() {
+    Shell::Get()->AddPreTargetHandler(this, ui::EventTarget::Priority::kSystem);
+  }
+
+  ~MockPretargetEventHandler() override {
+    Shell::Get()->RemovePreTargetHandler(this);
+  }
+
+  // ui::EventHandler:
+  MOCK_METHOD(void, OnKeyEvent, (ui::KeyEvent*), (override));
+};
+
 // MockView --------------------------------------------------------------------
 
 // A mocked view to expose received events.
 class MockView : public views::View {
  public:
+  MockView() { SetFocusBehavior(views::View::FocusBehavior::ALWAYS); }
+
+  // views::View:
   MOCK_METHOD(void, OnEvent, (ui::Event*), (override));
 };
 
@@ -205,6 +232,19 @@ class WelcomeTourControllerTest : public UserEducationAshTestBase {
     scoped_feature_list_.InitAndEnableFeature(features::kWelcomeTour);
   }
 
+ protected:
+  // UserEducationAshTestBase:
+  void SetUp() override {
+    UserEducationAshTestBase::SetUp();
+
+    // Most tests of the `WelcomeTourController` are not concerned with user
+    // eligibility, so provide a default implementation of `IsNewUser()` which
+    // returns that the given user is "new" on invocation. "New"-ness is
+    // required for the user to be eligible for the Welcome Tour.
+    ON_CALL(*user_education_delegate(), IsNewUser)
+        .WillByDefault(ReturnRefOfCopy(absl::make_optional(true)));
+  }
+
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
 };
@@ -237,7 +277,7 @@ TEST_F(WelcomeTourControllerTest, GetTutorialDescriptions) {
                              ContextMode::kInitial,
                              HelpBubbleId::kWelcomeTourShelf,
                              IDS_ASH_WELCOME_TOUR_SHELF_BUBBLE_BODY_TEXT,
-                             HelpBubbleArrow::kTopRight,
+                             HelpBubbleArrow::kBottomCenter,
                              /*has_next_button=*/true),
                   EventStep(ElementSpecifier(kShelfViewElementId),
                             ContextMode::kFromPreviousStep,
@@ -246,7 +286,7 @@ TEST_F(WelcomeTourControllerTest, GetTutorialDescriptions) {
                              ContextMode::kAny,
                              HelpBubbleId::kWelcomeTourStatusArea,
                              IDS_ASH_WELCOME_TOUR_STATUS_AREA_BUBBLE_BODY_TEXT,
-                             HelpBubbleArrow::kTopRight,
+                             HelpBubbleArrow::kBottomRight,
                              /*has_next_button=*/true),
                   EventStep(ElementSpecifier(kUnifiedSystemTrayElementName),
                             ContextMode::kFromPreviousStep,
@@ -255,13 +295,13 @@ TEST_F(WelcomeTourControllerTest, GetTutorialDescriptions) {
                              ContextMode::kAny,
                              HelpBubbleId::kWelcomeTourHomeButton,
                              IDS_ASH_WELCOME_TOUR_HOME_BUTTON_BUBBLE_BODY_TEXT,
-                             HelpBubbleArrow::kTopRight,
+                             HelpBubbleArrow::kBottomLeft,
                              /*has_next_button=*/true),
                   BubbleStep(ElementSpecifier(kSearchBoxViewElementId),
                              ContextMode::kAny,
                              HelpBubbleId::kWelcomeTourSearchBox,
                              IDS_ASH_WELCOME_TOUR_SEARCH_BOX_BUBBLE_BODY_TEXT,
-                             HelpBubbleArrow::kTopRight,
+                             HelpBubbleArrow::kTopCenter,
                              /*has_next_button=*/true),
                   EventStep(ElementSpecifier(kSearchBoxViewElementId),
                             ContextMode::kFromPreviousStep,
@@ -270,7 +310,7 @@ TEST_F(WelcomeTourControllerTest, GetTutorialDescriptions) {
                              ContextMode::kFromPreviousStep,
                              HelpBubbleId::kWelcomeTourSettingsApp,
                              IDS_ASH_WELCOME_TOUR_SETTINGS_APP_BUBBLE_BODY_TEXT,
-                             HelpBubbleArrow::kTopRight,
+                             HelpBubbleArrow::kBottomLeft,
                              /*has_next_button=*/true),
                   EventStep(ElementSpecifier(kSettingsAppElementId),
                             ContextMode::kFromPreviousStep,
@@ -279,7 +319,7 @@ TEST_F(WelcomeTourControllerTest, GetTutorialDescriptions) {
                              ContextMode::kFromPreviousStep,
                              HelpBubbleId::kWelcomeTourExploreApp,
                              IDS_ASH_WELCOME_TOUR_EXPLORE_APP_BUBBLE_BODY_TEXT,
-                             HelpBubbleArrow::kTopRight,
+                             HelpBubbleArrow::kBottomLeft,
                              /*has_next_button=*/false))))));
 }
 
@@ -306,12 +346,15 @@ TEST_F(WelcomeTourControllerTest, StartsTourAndPropagatesEvents) {
       observation{&observer};
   observation.Observe(welcome_tour_controller);
 
-  // Add a primary and secondary user session. This should *not* trigger the
-  // Welcome Tour to start.
+  // Add a primary and secondary user session for the first time. This should
+  // *not* trigger the Welcome Tour to start.
   auto* const session_controller_client = GetSessionControllerClient();
-  session_controller_client->AddUserSession(primary_account_id.GetUserEmail());
   session_controller_client->AddUserSession(
-      secondary_account_id.GetUserEmail());
+      primary_account_id.GetUserEmail(), user_manager::USER_TYPE_REGULAR,
+      /*provide_pref_service=*/true, /*is_new_profile=*/true);
+  session_controller_client->AddUserSession(
+      secondary_account_id.GetUserEmail(), user_manager::USER_TYPE_REGULAR,
+      /*provide_pref_service=*/true, /*is_new_profile=*/true);
 
   // Activate the primary user session. This *should* trigger the Welcome Tour
   // to start as well as notify observers. Note that completed/aborted
@@ -381,8 +424,8 @@ TEST_F(WelcomeTourControllerTest, AbortsTourAndPropagatesEvents) {
               StartTutorial(_, Eq(TutorialId::kWelcomeTourPrototype1), _, _, _))
       .WillOnce(MoveArg<4>(&aborted_callback));
 
-  // Start the Welcome Tour by logging in the primary user.
-  SimulateUserLogin("primary@test");
+  // Start the Welcome Tour by logging in the primary user for the first time.
+  SimulateNewUserFirstLogin("primary@test");
 
   // Observe the `WelcomeTourController` for end events.
   StrictMock<MockWelcomeTourControllerObserver> observer;
@@ -406,6 +449,218 @@ TEST_F(WelcomeTourControllerTest, AbortsTourAndPropagatesEvents) {
   ASSERT_TRUE(cancel_button);
   LeftClickOn(cancel_button);
   EXPECT_TRUE(ended_future.Wait());
+}
+
+// Verifies the Welcome Tour to be aborted if ChromeVox is enabled during tour.
+TEST_F(WelcomeTourControllerTest, AbortTourIfChromeVoxEnabledDuringTour) {
+  // Start the Welcome Tour by logging in the primary user for the first time.
+  SimulateNewUserFirstLogin("primary@test");
+
+  // Observe the `WelcomeTourController` for end events.
+  StrictMock<MockWelcomeTourControllerObserver> observer;
+  base::ScopedObservation<WelcomeTourController, WelcomeTourControllerObserver>
+      observation{&observer};
+  observation.Observe(WelcomeTourController::Get());
+
+  // Satisfy `ended_future` when an end event is received.
+  base::test::TestFuture<void> ended_future;
+  EXPECT_CALL(observer, OnWelcomeTourEnded)
+      .WillOnce(RunOnceClosure(ended_future.GetCallback()));
+
+  // Expect the Welcome Tour to be aborted when enabling ChromeVox during tour.
+  EXPECT_CALL(*user_education_delegate(),
+              AbortTutorial(_, Eq(TutorialId::kWelcomeTourPrototype1)));
+
+  auto* const a11y_controller = Shell::Get()->accessibility_controller();
+  a11y_controller->SetSpokenFeedbackEnabled(true, A11Y_NOTIFICATION_NONE);
+  Mock::VerifyAndClearExpectations(user_education_delegate());
+  EXPECT_TRUE(a11y_controller->spoken_feedback().enabled());
+}
+
+// Checks that the Welcome Tour should NOT start if ChromeVox is enabled.
+TEST_F(WelcomeTourControllerTest, PreventTourFromStartingIfChromeVoxEnabled) {
+  TestSessionControllerClient* const session = GetSessionControllerClient();
+  constexpr char kUserEmail[] = "primary@test";
+  session->AddUserSession(kUserEmail, user_manager::USER_TYPE_REGULAR);
+  session->SwitchActiveUser(AccountId::FromUserEmail(kUserEmail));
+
+  // Enable the spoken feedback after the pref service is ready and before the
+  // session becomes active.
+  auto* const a11y_controller = Shell::Get()->accessibility_controller();
+  a11y_controller->SetSpokenFeedbackEnabled(true, A11Y_NOTIFICATION_NONE);
+  EXPECT_TRUE(a11y_controller->spoken_feedback().enabled());
+
+  // Start the Welcome Tour by activating the user session. Expect that the
+  // Welcome Tour is NOT started.
+  EXPECT_CALL(*user_education_delegate(), StartTutorial).Times(0);
+  session->SetSessionState(SessionState::ACTIVE);
+  Mock::VerifyAndClearExpectations(user_education_delegate());
+}
+
+// WelcomeTourControllerCounterfactualTest -------------------------------------
+
+// Base class for tests of the `WelcomeTourController` which are concerned with
+// the behavior of counterfactual experiment arms, parameterized by whether the
+// Welcome Tour feature is enabled counterfactually.
+class WelcomeTourControllerCounterfactualTest
+    : public WelcomeTourControllerTest,
+      public ::testing::WithParamInterface<
+          /*is_counterfactual=*/absl::optional<bool>> {
+ public:
+  WelcomeTourControllerCounterfactualTest() {
+    if (const auto& is_counterfactual = IsCounterfactual()) {
+      scoped_feature_list_.InitAndEnableFeatureWithParameters(
+          features::kWelcomeTour,
+          {{"is-counterfactual", *is_counterfactual ? "true" : "false"}});
+    }
+  }
+
+  // Returns whether the Welcome Tour is enabled counterfactually as part of an
+  // experiment arm given test parameterization.
+  const absl::optional<bool>& IsCounterfactual() const { return GetParam(); }
+
+ private:
+  // Used to conditionally enable the Welcome Tour counterfactually as part of
+  // an experiment arm given test parameterization.
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         WelcomeTourControllerCounterfactualTest,
+                         /*is_counterfactual=*/
+                         ::testing::Values(absl::make_optional(true),
+                                           absl::make_optional(false),
+                                           absl::nullopt));
+
+// Tests -----------------------------------------------------------------------
+
+// Verifies that the Welcome Tour is prevented from running if enabled
+// counterfactually as part of an experiment arm.
+TEST_P(WelcomeTourControllerCounterfactualTest,
+       PreventsWelcomeTourForCounterfactualArms) {
+  // Set expectations for whether the Welcome Tour will run.
+  EXPECT_CALL(*user_education_delegate(),
+              StartTutorial(_, Eq(TutorialId::kWelcomeTourPrototype1), _, _, _))
+      .Times(IsCounterfactual().value_or(false) ? 0u : 1u);
+
+  // Login the primary user for the first time and verify expectations.
+  SimulateNewUserFirstLogin("primary@test");
+  Mock::VerifyAndClearExpectations(user_education_delegate());
+}
+
+// WelcomeTourControllerUserEligibilityTest ------------------------------------
+
+// Base class for tests of the `WelcomeTourController` which are concerned with
+// user eligibility, parameterized by:
+// (a) whether to force user eligibility via feature flag
+// (b) whether the user should be considered "new" cross-device
+// (c) whether the user should be considered "new" locally
+// (d) whether the user is managed
+// (e) the user type.
+class WelcomeTourControllerUserEligibilityTest
+    : public WelcomeTourControllerTest,
+      public ::testing::WithParamInterface<std::tuple<
+          /*force_user_eligibility=*/bool,
+          /*is_new_user_cross_device=*/absl::optional<bool>,
+          /*is_new_user_locally=*/bool,
+          /*is_managed_user=*/bool,
+          user_manager::UserType>> {
+ public:
+  WelcomeTourControllerUserEligibilityTest() {
+    // Conditionally force user eligibility based on test parameterization.
+    scoped_feature_list_.InitWithFeatureState(
+        features::kWelcomeTourForceUserEligibility, ForceUserEligibility());
+  }
+
+  // Returns whether user eligibility is forced based on test parameterization.
+  bool ForceUserEligibility() const { return std::get<0>(GetParam()); }
+
+  // Returns the user type based on test parameterization.
+  user_manager::UserType GetUserType() const { return std::get<4>(GetParam()); }
+
+  // Returns whether the user is managed based on test parameterization.
+  bool IsManagedUser() const { return std::get<3>(GetParam()); }
+
+  // Returns whether the user should be considered "new" cross-device based on
+  // test parameterization.
+  const absl::optional<bool>& IsNewUserCrossDevice() const {
+    return std::get<1>(GetParam());
+  }
+
+  // Returns whether the user should be considered "new" locally based on test
+  // parameterization.
+  bool IsNewUserLocally() const { return std::get<2>(GetParam()); }
+
+ private:
+  // WelcomeTourControllerTest:
+  void SetUp() override {
+    WelcomeTourControllerTest::SetUp();
+
+    // Provide an implementation of `IsNewUser()` which returns whether a given
+    // user should be considered "new" cross-device based on test
+    // parameterization.
+    ON_CALL(*user_education_delegate(), IsNewUser)
+        .WillByDefault(ReturnRefOfCopy(IsNewUserCrossDevice()));
+
+    // Add a user based on test parameterization.
+    TestSessionControllerClient* const session = GetSessionControllerClient();
+    constexpr char kUserEmail[] = "primary@test";
+    session->AddUserSession(kUserEmail, GetUserType(),
+                            /*provide_pref_service=*/true,
+                            /*is_new_profile=*/IsNewUserLocally(),
+                            /*given_name=*/std::string(), IsManagedUser());
+    session->SwitchActiveUser(AccountId::FromUserEmail(kUserEmail));
+  }
+
+  // Used to conditionally force user eligibility based on test
+  // parameterization.
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+INSTANTIATE_TEST_SUITE_P(
+    All,
+    WelcomeTourControllerUserEligibilityTest,
+    ::testing::Combine(
+        /*force_user_eligibility=*/::testing::Bool(),
+        /*is_new_user_cross_device=*/
+        ::testing::Values(absl::make_optional(true),
+                          absl::make_optional(false),
+                          absl::nullopt),
+        /*is_new_user_locally=*/::testing::Bool(),
+        /*is_managed_user=*/::testing::Bool(),
+        ::testing::Values(user_manager::UserType::USER_TYPE_ACTIVE_DIRECTORY,
+                          user_manager::UserType::USER_TYPE_ARC_KIOSK_APP,
+                          user_manager::UserType::USER_TYPE_CHILD,
+                          user_manager::UserType::USER_TYPE_GUEST,
+                          user_manager::UserType::USER_TYPE_KIOSK_APP,
+                          user_manager::UserType::USER_TYPE_PUBLIC_ACCOUNT,
+                          user_manager::UserType::USER_TYPE_REGULAR,
+                          user_manager::UserType::USER_TYPE_WEB_KIOSK_APP)));
+
+// Tests -----------------------------------------------------------------------
+
+// Verifies that user eligibility for the Welcome Tour is enforced as expected.
+TEST_P(WelcomeTourControllerUserEligibilityTest, EnforcesUserEligibility) {
+  // A user is eligible for the Welcome Tour if and only if:
+  // (a) user eligibility is being explicitly forced, or
+  // (b) the user satisfies the following conditions:
+  //     (1) known to be "new" cross-device on session activation, and
+  //     (2) known to be "new" locally, and
+  //     (3) not a managed user, and
+  //     (4) a regular user.
+  const bool is_user_eligibility_expected =
+      ForceUserEligibility() ||
+      (IsNewUserCrossDevice().value_or(false) && IsNewUserLocally() &&
+       !IsManagedUser() && GetUserType() == user_manager::USER_TYPE_REGULAR);
+
+  // Set expectations for whether the Welcome Tour will run.
+  EXPECT_CALL(*user_education_delegate(),
+              StartTutorial(_, Eq(TutorialId::kWelcomeTourPrototype1), _, _, _))
+      .Times(is_user_eligibility_expected ? 1u : 0u);
+
+  // Activate the user session and verify expectations.
+  GetSessionControllerClient()->SetSessionState(SessionState::ACTIVE);
+  Mock::VerifyAndClearExpectations(user_education_delegate());
 }
 
 // WelcomeTourControllerRunTest ------------------------------------------------
@@ -449,10 +704,10 @@ class WelcomeTourControllerRunTest : public WelcomeTourControllerTest {
         StartTutorial(_, Eq(TutorialId::kWelcomeTourPrototype1), _, _, _))
         .WillOnce(MoveArg<3>(&completed_callback));
 
-    // Simulate login of the primary user. Note that this should trigger the
-    // Welcome Tour to start automatically.
+    // Simulate login of the primary user for the first time. Note that this
+    // should trigger the Welcome Tour to start automatically.
     const auto primary_account_id = AccountId::FromUserEmail("primary@test");
-    SimulateUserLogin(primary_account_id);
+    SimulateNewUserFirstLogin(primary_account_id.GetUserEmail());
     EXPECT_TRUE(started_future.Wait());
 
     // Invoke the `in_progress_callback` so that tests can assert expectations
@@ -646,6 +901,168 @@ TEST_F(WelcomeTourControllerRunTest, Scrim) {
   ExpectScrimsOnAllRootWindows(false);
 }
 
+// Verifies accelerator actions before/during/after the Welcome Tour.
+class WelcomeTourAcceleratorHandlerRunTest
+    : public WelcomeTourControllerRunTest {
+ public:
+  // WelcomeTourControllerRunTest:
+  void SetUp() override {
+    WelcomeTourControllerRunTest::SetUp();
+
+    // Create a mock pre-target event handler that always consumes key events.
+    mock_pretarget_event_handler_ =
+        std::make_unique<MockPretargetEventHandler>();
+    ON_CALL(*mock_pretarget_event_handler_, OnKeyEvent)
+        .WillByDefault(
+            [](ui::KeyEvent* key_event) { key_event->StopPropagation(); });
+  }
+
+  void TearDown() override {
+    mock_pretarget_event_handler_.reset();
+    WelcomeTourControllerRunTest::TearDown();
+  }
+
+  // Peforms the specified accelerator action. Then checks the key events
+  // received as expected.
+  void PerformActionAndCheckKeyEvents(AcceleratorAction action, bool received) {
+    // Get the accelerators corresponding to `action`.
+    const std::vector<ui::Accelerator>& accelerators =
+        Shell::Get()->ash_accelerator_configuration()->GetAcceleratorsForAction(
+            action);
+    ASSERT_FALSE(accelerators.empty());
+
+    for (const ui::Accelerator& accelerator : accelerators) {
+      // If `received` is true, then `accelerator` should be received;
+      // otherwise, `accelerator` should NOT be received.
+      EXPECT_CALL(
+          *mock_pretarget_event_handler_,
+          OnKeyEvent(AllOf(
+              Property(&ui::KeyEvent::type,
+                       Eq(accelerator.key_state() ==
+                                  ui::Accelerator::KeyState::PRESSED
+                              ? ui::ET_KEY_PRESSED
+                              : ui::ET_KEY_RELEASED)),
+              Property(&ui::KeyEvent::key_code, Eq(accelerator.key_code())))))
+          .Times(received ? 1u : 0u);
+
+      // The key event that does NOT trigger `action` should be received.
+      EXPECT_CALL(
+          *mock_pretarget_event_handler_,
+          OnKeyEvent(AllOf(
+              Property(&ui::KeyEvent::type,
+                       Eq(accelerator.key_state() ==
+                                  ui::Accelerator::KeyState::PRESSED
+                              ? ui::ET_KEY_RELEASED
+                              : ui::ET_KEY_PRESSED)),
+              Property(&ui::KeyEvent::key_code, Eq(accelerator.key_code())))));
+
+      // Press and release `accelerator`.
+      PressAndReleaseKey(accelerator.key_code(), accelerator.modifiers());
+      Mock::VerifyAndClearExpectations(mock_pretarget_event_handler_.get());
+    }
+  }
+
+  void VerifyActionsInAllowedList() {
+    for (auto allowed_action : WelcomeTourAcceleratorHandler::kAllowedActions) {
+      PerformActionAndCheckKeyEvents(allowed_action.action,
+                                     /*received=*/true);
+    }
+  }
+
+  std::unique_ptr<MockPretargetEventHandler> mock_pretarget_event_handler_;
+};
+
+// Tests -----------------------------------------------------------------------
+
+// Verifies that the key events that trigger the allowed accelerator actions are
+// received during the Welcome Tour.
+TEST_F(WelcomeTourAcceleratorHandlerRunTest, AllowActionsInAllowedList) {
+  // Verify that before the Welcome Tour, the key events for the actions in the
+  // allowed list are received by the mock event handler.
+  VerifyActionsInAllowedList();
+
+  // Verify that during the Welcome Tour, the key events for these actions are
+  // received by the mock event handler.
+  ASSERT_NO_FATAL_FAILURE(
+      Run(/*in_progress_callback=*/base::BindLambdaForTesting(
+          [&]() { VerifyActionsInAllowedList(); })));
+
+  // Verify that after the Welcome Tour, the key events for these actions are
+  // received by the mock event handler.
+  VerifyActionsInAllowedList();
+}
+
+// Verifies that the accelerator actions NOT in the allowed list should be
+// blocked during the Welcome Tour.
+TEST_F(WelcomeTourAcceleratorHandlerRunTest, BlockActionsNotInAllowedList) {
+  // Verify that before the Welcome Tour, the key events for the actions that
+  // are NOT in the allowed list are received by the mock event handler.
+  PerformActionAndCheckKeyEvents(AcceleratorAction::kTakePartialScreenshot,
+                                 /*received=*/true);
+
+  ASSERT_NO_FATAL_FAILURE(
+      Run(/*in_progress_callback=*/base::BindLambdaForTesting([&]() {
+        // During the Welcome Tour, the key events that trigger these actions
+        // should NOT be received by the mock event handler.
+        PerformActionAndCheckKeyEvents(
+            AcceleratorAction::kTakePartialScreenshot,
+            /*received=*/false);
+      })));
+
+  // Verify that after the Welcome Tour, these key events are received by
+  // the mock event handler.
+  PerformActionAndCheckKeyEvents(AcceleratorAction::kTakePartialScreenshot,
+                                 /*received=*/true);
+}
+
+// Verifies the accelerator actions that abort the Welcome Tour when performed.
+TEST_F(WelcomeTourAcceleratorHandlerRunTest, CheckActionsThatAbortTour) {
+  ASSERT_NO_FATAL_FAILURE(
+      Run(/*in_progress_callback=*/base::BindLambdaForTesting([&]() {
+        for (const auto& allowed_action :
+             WelcomeTourAcceleratorHandler::kAllowedActions) {
+          if (!allowed_action.aborts_tour) {
+            // Skip `allowed_action` if it does not need to abort the tour.
+            continue;
+          }
+
+          base::test::TestFuture<void> aborted_future;
+          EXPECT_CALL(*user_education_delegate(), AbortTutorial)
+              .WillOnce(RunOnceClosure(aborted_future.GetCallback()));
+
+          // During the Welcome Tour, the key events for `action` should be
+          // received by the mock event handler.
+          PerformActionAndCheckKeyEvents(allowed_action.action,
+                                         /*received=*/true);
+
+          // The delegate API that aborts the Welcome Tour should be called.
+          EXPECT_TRUE(aborted_future.Wait());
+          Mock::VerifyAndClearExpectations(user_education_delegate());
+        }
+      })));
+}
+
+// Verifies that windows are minimized iff the Welcome Tour is in progress.
+TEST_F(WelcomeTourControllerRunTest, WindowMinimizer) {
+  auto window_1 = CreateAppWindow();
+
+  // Case: Before Welcome Tour.
+  EXPECT_THAT(window_1, Minimized(Eq(false)));
+
+  // Case: During Welcome Tour.
+  ASSERT_NO_FATAL_FAILURE(
+      Run(/*in_progress_callback=*/base::BindLambdaForTesting([&]() {
+        EXPECT_TRUE(WaitUntilMinimized(window_1.get()));
+        auto window_2 = CreateAppWindow();
+        EXPECT_TRUE(WaitUntilMinimized(window_2.get()));
+      })));
+
+  // Case: After Welcome Tour.
+  EXPECT_THAT(window_1, Minimized(Eq(true)));
+  auto window_3 = CreateAppWindow();
+  EXPECT_THAT(window_3, Minimized(Eq(false)));
+}
+
 // WelcomeTourControllerTabletTest ---------------------------------------------
 
 // Base class for tests of the `WelcomeTourController` that verify the tour does
@@ -684,11 +1101,11 @@ TEST_F(WelcomeTourControllerTabletTest, DoesNotStart) {
   // Force tablet mode on.
   TabletMode::Get()->SetEnabledForTest(true);
 
-  // Activate the primary user session. Since tablet mode is enabled, the
-  // Welcome Tour should not start, the dialog should not show, and no start or
-  // end calls should be made.
+  // Activate the primary user session for the first time. Since tablet mode is
+  // enabled, the Welcome Tour should not start, the dialog should not show, and
+  // no start or end calls should be made.
   EXPECT_CALL(*user_education_delegate(), StartTutorial).Times(0);
-  SimulateUserLogin("user@test");
+  SimulateNewUserFirstLogin("user@test");
   EXPECT_FALSE(WelcomeTourDialog::Get());
   Mock::VerifyAndClearExpectations(user_education_delegate());
   Mock::VerifyAndClearExpectations(observer());
@@ -696,9 +1113,9 @@ TEST_F(WelcomeTourControllerTabletTest, DoesNotStart) {
 
 // Verifies that the tour will abort if we enter tablet mode.
 TEST_F(WelcomeTourControllerTabletTest, TriggersAbort) {
-  // Activate the user session to trigger the Welcome Tour to start, as well as
-  // notify observers. Note that the aborted callback is cached for later
-  // verification.
+  // Activate the user session for the first time to trigger the Welcome Tour to
+  // start, as well as notify observers. Note that the aborted callback is
+  // cached for later verification.
   base::OnceClosure aborted_callback;
   EXPECT_CALL(
       *user_education_delegate(),
@@ -708,7 +1125,7 @@ TEST_F(WelcomeTourControllerTabletTest, TriggersAbort) {
                     /*aborted_callback=*/_))
       .WillOnce(MoveArgs<4>(&aborted_callback));
   EXPECT_CALL(*observer(), OnWelcomeTourStarted);
-  SimulateUserLogin("user@test");
+  SimulateNewUserFirstLogin("user@test");
   Mock::VerifyAndClearExpectations(user_education_delegate());
   Mock::VerifyAndClearExpectations(observer());
   ASSERT_FALSE(aborted_callback.is_null());

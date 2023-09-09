@@ -15,6 +15,7 @@
 #import "components/pref_registry/pref_registry_syncable.h"
 #import "components/prefs/pref_service.h"
 #import "components/signin/ios/browser/features.h"
+#import "components/signin/public/base/gaia_id_hash.h"
 #import "components/signin/public/base/signin_pref_names.h"
 #import "components/signin/public/identity_manager/account_info.h"
 #import "components/signin/public/identity_manager/device_accounts_synchronizer.h"
@@ -38,24 +39,7 @@
 #import "ios/chrome/browser/sync/sync_setup_service.h"
 #import "ios/chrome/browser/ui/authentication/signin/signin_utils.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 namespace {
-
-// Enum describing the different sync states per login methods.
-enum LoginMethodAndSyncState {
-  // Legacy values retained to keep definitions in histograms.xml in sync.
-  CLIENT_LOGIN_SYNC_OFF,
-  CLIENT_LOGIN_SYNC_ON,
-  SHARED_AUTHENTICATION_SYNC_OFF,
-  SHARED_AUTHENTICATION_SYNC_ON,
-  // NOTE: Add new login methods and sync states only immediately above this
-  // line. Also, make sure the enum list in tools/histogram/histograms.xml is
-  // updated with any change in here.
-  LOGIN_METHOD_AND_SYNC_STATE_COUNT
-};
 
 // Enum for Signin.IOSDeviceRestoreSignedInState histogram.
 // Entries should not be renumbered and numeric values should never be reused.
@@ -133,6 +117,10 @@ void AuthenticationService::Initialize(
     // See crbug.com/3862523.
     user_approved_account_list_manager_.ClearApprovedAccountList();
   }
+
+  // Clean up account-scoped settings, in case any accounts were removed from
+  // the device while Chrome wasn't running.
+  ClearAccountSettingsPrefsOfRemovedAccounts();
 
   crash_keys::SetCurrentlySignedIn(
       HasPrimaryIdentity(signin::ConsentLevel::kSignin));
@@ -234,15 +222,6 @@ AuthenticationService::ServiceStatus AuthenticationService::GetServiceStatus() {
 }
 
 void AuthenticationService::OnApplicationWillEnterForeground() {
-  if (HasPrimaryIdentity(signin::ConsentLevel::kSignin)) {
-    bool can_sync_start = sync_setup_service_->IsSyncFeatureEnabled();
-    LoginMethodAndSyncState loginMethodAndSyncState =
-        can_sync_start ? SHARED_AUTHENTICATION_SYNC_ON
-                       : SHARED_AUTHENTICATION_SYNC_OFF;
-    UMA_HISTOGRAM_ENUMERATION("Signin.IOSLoginMethodAndSyncState",
-                              loginMethodAndSyncState,
-                              LOGIN_METHOD_AND_SYNC_STATE_COUNT);
-  }
   if (GetServiceStatus() !=
       AuthenticationService::ServiceStatus::SigninDisabledByInternal) {
     UMA_HISTOGRAM_COUNTS_100(
@@ -540,6 +519,8 @@ void AuthenticationService::OnPrimaryAccountChanged(
 }
 
 void AuthenticationService::OnIdentityListChanged(bool need_user_approval) {
+  ClearAccountSettingsPrefsOfRemovedAccounts();
+
   if (!identity_manager_->HasPrimaryAccount(signin::ConsentLevel::kSignin)) {
     // IdentityManager::HasPrimaryAccount() needs to be called instead of
     // AuthenticationService::HasPrimaryIdentity() or
@@ -634,8 +615,16 @@ void AuthenticationService::HandleForgottenIdentity(
     return;
   }
 
+  // YES if the primary identity should be ignore to simulate a backup/restore
+  // of the device.
+  bool simulate_identity_lost_for_restore =
+      device_restore && experimental_flags::SimulatePostDeviceRestore();
+  // If the restore shorty is needs to be simulated, the primary identity should
+  // not found.
   id<SystemIdentity> authenticated_identity =
-      GetPrimaryIdentity(signin::ConsentLevel::kSignin);
+      simulate_identity_lost_for_restore
+          ? nil
+          : GetPrimaryIdentity(signin::ConsentLevel::kSignin);
   if (authenticated_identity &&
       ![authenticated_identity isEqual:invalid_identity]) {
     // `authenticated_identity` exists and is a valid identity. Nothing to do
@@ -650,11 +639,14 @@ void AuthenticationService::HandleForgottenIdentity(
 
   // Reauth prompt should only be set when the user is syncing, since reauth
   // turns on sync by default.
-  // TODO(crbug.com/1463438): Requires additional investigation regarding
-  // whether to remove kSync or replace it with kSignin. See
-  // ConsentLevel::kSync for details.
-  should_prompt = should_prompt && identity_manager_->HasPrimaryAccount(
-                                       signin::ConsentLevel::kSync);
+  if (base::FeatureList::IsEnabled(
+          syncer::kReplaceSyncPromosWithSignInPromos)) {
+    should_prompt = should_prompt && identity_manager_->HasPrimaryAccount(
+                                         signin::ConsentLevel::kSignin);
+  } else {
+    should_prompt = should_prompt && identity_manager_->HasPrimaryAccount(
+                                         signin::ConsentLevel::kSync);
+  }
 
   // Metrics.
   signin_metrics::ProfileSignout signout_source;
@@ -686,7 +678,10 @@ void AuthenticationService::HandleForgottenIdentity(
 
   if (should_prompt && account_filtered_out) {
     FirePrimaryAccountRestricted();
-  } else if (should_prompt) {
+  } else if (should_prompt &&
+             IsFirstSessionAfterDeviceRestore() != signin::Tribool::kTrue) {
+    // If the device is restored, the restore shorty UI will be shown.
+    // Therefore, the reauth UI should be skipped.
     SetReauthPromptForSignInAndSync();
   }
 }
@@ -737,4 +732,16 @@ void AuthenticationService::FireServiceStatusNotification() {
   for (auto& observer : observer_list_) {
     observer.OnServiceStatusChanged();
   }
+}
+
+void AuthenticationService::ClearAccountSettingsPrefsOfRemovedAccounts() {
+  std::vector<signin::GaiaIdHash> available_gaia_ids;
+  for (id<SystemIdentity> identity in account_manager_service_
+           ->GetAllIdentities()) {
+    signin::GaiaIdHash gaia_id_hash = signin::GaiaIdHash::FromGaiaId(
+        base::SysNSStringToUTF8(identity.gaiaID));
+    available_gaia_ids.push_back(gaia_id_hash);
+  }
+  sync_service_->GetUserSettings()->KeepAccountSettingsPrefsOnlyForUsers(
+      available_gaia_ids);
 }

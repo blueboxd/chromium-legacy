@@ -121,7 +121,9 @@ BASE_DECLARE_FEATURE(kUseExistingAutocompleteClient);
 // popup.
 BASE_DECLARE_FEATURE(kOmniboxModernizeVisualUpdate);
 
-// Experiment to introduce new security indicators for HTTPS.
+// Android only flag that controls whether the new security indicator should be
+// used, on non-Android platforms this is controlled through the
+// ChromeRefresh2023 flag.
 BASE_DECLARE_FEATURE(kUpdatedConnectionSecurityIndicators);
 
 // Navigation experiments.
@@ -146,6 +148,11 @@ BASE_DECLARE_FEATURE(kActionsInSuggest);
 
 // Adds support for categorical suggestion type.
 BASE_DECLARE_FEATURE(kCategoricalSuggestions);
+BASE_DECLARE_FEATURE(kMergeSubtypes);
+
+// Returns true if the Omnibox CR23 `feature`, which depends on customize
+// chrome, should be enabled.
+bool IsOmniboxCr23CustomizeGuardedFeatureEnabled(const base::Feature& feature);
 
 }  // namespace omnibox
 

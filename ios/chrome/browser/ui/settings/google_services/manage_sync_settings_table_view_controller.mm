@@ -19,10 +19,6 @@
 #import "net/base/mac/url_conversions.h"
 #import "ui/base/l10n/l10n_util.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 namespace {
 
 // Table view customized header heights.
@@ -32,7 +28,6 @@ CGFloat kAdvancedSettingsSectionHeaderHeightPointSize = 26.;
 
 // Table view customized footer heights.
 CGFloat kAccountSectionFooterHeightPointSize = 16.;
-CGFloat kSyncDataTypeSectionFooterHeightPointSize = 50.;
 CGFloat kDefaultSectionFooterHeightPointSize = 10.;
 
 }  // namespace
@@ -208,7 +203,7 @@ CGFloat kDefaultSectionFooterHeightPointSize = 10.;
       case AccountSectionIdentifier:
         return kAccountSectionFooterHeightPointSize;
       case SyncDataTypeSectionIdentifier:
-        return kSyncDataTypeSectionFooterHeightPointSize;
+        return UITableViewAutomaticDimension;
       case AdvancedSettingsSectionIdentifier:
       case SyncErrorsSectionIdentifier:
       case SignOutSectionIdentifier:

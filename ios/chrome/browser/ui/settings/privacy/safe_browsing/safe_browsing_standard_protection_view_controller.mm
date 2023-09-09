@@ -20,10 +20,6 @@
 #import "ios/chrome/grit/ios_strings.h"
 #import "ui/base/l10n/l10n_util_mac.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 using ItemArray = NSArray<TableViewItem*>*;
 
 namespace {
@@ -209,7 +205,7 @@ const CGFloat kSafeBrowsingStandardProtectionContentInset = 16;
   TableViewModel* model = self.tableViewModel;
 
   if (!base::FeatureList::IsEnabled(
-          safe_browsing::kFriendlierSafeBrowsingSettings)) {
+          safe_browsing::kFriendlierSafeBrowsingSettingsStandardProtection)) {
     [model addSectionWithIdentifier:SectionIdentifierHeaderShield];
     [model addSectionWithIdentifier:SectionIdentifierHeaderMetric];
     [model setHeader:self.shieldIconHeader

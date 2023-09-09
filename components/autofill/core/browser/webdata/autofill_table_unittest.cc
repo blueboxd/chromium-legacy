@@ -37,6 +37,7 @@
 #include "components/autofill/core/common/autofill_clock.h"
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/autofill_features.h"
+#include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/autofill/core/common/autofill_util.h"
 #include "components/autofill/core/common/form_field_data.h"
@@ -1133,6 +1134,8 @@ TEST_F(AutofillTableTest, IBAN) {
 }
 
 TEST_F(AutofillTableTest, CreditCard) {
+  base::test::ScopedFeatureList features(
+      features::kAutofillEnableCvcStorageAndFilling);
   // Add a 'Work' credit card.
   CreditCard work_creditcard;
   work_creditcard.set_origin("https://www.example.com/");
@@ -1241,8 +1244,25 @@ TEST_F(AutofillTableTest, CreditCard) {
   EXPECT_FALSE(db_creditcard);
 }
 
+TEST_F(AutofillTableTest, AddCreditCardCvcWithFlagOff) {
+  base::test::ScopedFeatureList features;
+  features.InitAndDisableFeature(features::kAutofillEnableCvcStorageAndFilling);
+  CreditCard card = test::GetCreditCard();
+  card.set_cvc(u"123");
+  EXPECT_TRUE(table_->AddCreditCard(card));
+  std::unique_ptr<CreditCard> db_card = table_->GetCreditCard(card.guid());
+  EXPECT_EQ(u"", db_card->cvc());
+
+  card.set_cvc(u"234");
+  EXPECT_TRUE(table_->UpdateCreditCard(card));
+  db_card = table_->GetCreditCard(card.guid());
+  EXPECT_EQ(u"", db_card->cvc());
+}
+
 // Tests that verify ClearCreditCards function working as expected.
 TEST_F(AutofillTableTest, ClearCreditCards) {
+  base::test::ScopedFeatureList features(
+      features::kAutofillEnableCvcStorageAndFilling);
   CreditCard card = test::GetCreditCard();
   card.set_cvc(u"123");
   EXPECT_TRUE(table_->AddCreditCard(card));
@@ -1264,6 +1284,8 @@ TEST_F(AutofillTableTest, ClearCreditCards) {
 // credit card with only cvc change will not update credit_card table
 // modification_date.
 TEST_F(AutofillTableTest, CreditCardCvc) {
+  base::test::ScopedFeatureList features(
+      features::kAutofillEnableCvcStorageAndFilling);
   const base::Time arbitrary_time = base::Time::FromDoubleT(25);
   // Create the test clock and set the time to a specific value.
   TestAutofillClock test_clock;
@@ -1323,48 +1345,57 @@ TEST_F(AutofillTableTest, CreditCardCvc) {
   EXPECT_FALSE(cvc_removed_statement.Step());
 }
 
+// Tests that update a credit card CVC that doesn't have CVC set initially.
+TEST_F(AutofillTableTest, UpdateCvcForExistingCreditCardWithoutCvc) {
+  base::test::ScopedFeatureList features(
+      features::kAutofillEnableCvcStorageAndFilling);
+  CreditCard card = test::GetCreditCard();
+  EXPECT_TRUE(table_->AddCreditCard(card));
+
+  std::unique_ptr<CreditCard> db_card = table_->GetCreditCard(card.guid());
+  EXPECT_EQ(u"", db_card->cvc());
+
+  // Update the credit card CVC, we should expect success and CVC gets updated.
+  card.set_cvc(u"123");
+  EXPECT_TRUE(table_->UpdateCreditCard(card));
+  db_card = table_->GetCreditCard(card.guid());
+  EXPECT_EQ(u"123", db_card->cvc());
+}
+
 // Tests that verify add, update and clear server cvc function working as
 // expected.
 TEST_F(AutofillTableTest, ServerCvc) {
   const base::Time kArbitraryTime = base::Time::FromDoubleT(25);
-  TestAutofillClock test_clock;
-  test_clock.SetNow(kArbitraryTime);
-
   int64_t kInstrumentId = 1111;
   const std::u16string kCvc = u"123";
-  EXPECT_TRUE(table_->AddServerCvc(kInstrumentId, kCvc));
+  const ServerCvc kServerCvc{kInstrumentId, kCvc, kArbitraryTime};
+  EXPECT_TRUE(table_->AddServerCvc(kServerCvc));
   // Database does not allow adding same instrument_id twice.
-  EXPECT_FALSE(table_->AddServerCvc(kInstrumentId, kCvc));
-  EXPECT_EQ(table_->GetServerCvcForTesting(kInstrumentId), kCvc);
-  // Verify last_updated_timestamp in server_stored_cvc table is set correctly.
-  EXPECT_EQ(GetDateModified("server_stored_cvc", "last_updated_timestamp",
-                            kInstrumentId),
-            kArbitraryTime.ToTimeT());
+  EXPECT_FALSE(table_->AddServerCvc(kServerCvc));
+  EXPECT_THAT(table_->GetAllServerCvcs(),
+              UnorderedElementsAre(testing::Pointee(kServerCvc)));
 
-  // Set the current time to another value.
   const base::Time kSomeLaterTime = base::Time::FromDoubleT(1000);
-  test_clock.SetNow(kSomeLaterTime);
-
   const std::u16string kNewCvc = u"234";
-  EXPECT_TRUE(table_->UpdateServerCvc(kInstrumentId, kNewCvc));
-  EXPECT_EQ(table_->GetServerCvcForTesting(kInstrumentId), kNewCvc);
-  // Verify last_updated_timestamp in server_stored_cvc table is set correctly.
-  EXPECT_EQ(GetDateModified("server_stored_cvc", "last_updated_timestamp",
-                            kInstrumentId),
-            kSomeLaterTime.ToTimeT());
+  const ServerCvc kNewServerCvcUnderSameInstrumentId{kInstrumentId, kNewCvc,
+                                                     kSomeLaterTime};
+  EXPECT_TRUE(table_->UpdateServerCvc(kNewServerCvcUnderSameInstrumentId));
+  EXPECT_THAT(table_->GetAllServerCvcs(),
+              UnorderedElementsAre(
+                  testing::Pointee(kNewServerCvcUnderSameInstrumentId)));
 
   // Remove the server cvc. It should also remove cvc from server_stored_cvc
   // table.
   EXPECT_TRUE(table_->RemoveServerCvc(kInstrumentId));
-  EXPECT_TRUE(table_->GetServerCvcForTesting(kInstrumentId).empty());
+  EXPECT_TRUE(table_->GetAllServerCvcs().empty());
 
   // Remove non-exist cvc will return false.
   EXPECT_FALSE(table_->RemoveServerCvc(kInstrumentId));
 
   // Clear the server_stored_cvc table.
-  table_->AddServerCvc(kInstrumentId, kCvc);
+  table_->AddServerCvc(kServerCvc);
   EXPECT_TRUE(table_->ClearServerCvcs());
-  EXPECT_TRUE(table_->GetAllServerCvcsForTesting().empty());
+  EXPECT_TRUE(table_->GetAllServerCvcs().empty());
 
   // Clear the server_stored_cvc table when table is empty will return false.
   EXPECT_FALSE(table_->ClearServerCvcs());
@@ -1372,6 +1403,7 @@ TEST_F(AutofillTableTest, ServerCvc) {
 
 // Tests that verify reconcile server cvc function working as expected.
 TEST_F(AutofillTableTest, ReconcileServerCvcs) {
+  const base::Time kArbitraryTime = base::Time::FromDoubleT(25);
   // Add 2 server credit cards.
   CreditCard card1 = test::GetMaskedServerCard();
   card1.set_cvc(u"123");
@@ -1379,15 +1411,15 @@ TEST_F(AutofillTableTest, ReconcileServerCvcs) {
   card2.set_cvc(u"234");
   test::SetServerCreditCards(table_.get(), {card1, card2});
 
-  // Add 1 server cvc that doesn't have a credit card associate with. We should
-  // have 3 cvcs in server_stored_cvc table.
-  EXPECT_TRUE(table_->AddServerCvc(3333, u"456"));
-  EXPECT_EQ(3U, table_->GetAllServerCvcsForTesting().size());
+  // Add 1 server cvc that doesn't have a credit card associate with. We
+  // should have 3 cvcs in server_stored_cvc table.
+  EXPECT_TRUE(table_->AddServerCvc(ServerCvc{3333, u"456", kArbitraryTime}));
+  EXPECT_EQ(3U, table_->GetAllServerCvcs().size());
 
   // After we reconcile server cvc, we should only see 2 cvcs in
   // server_stored_cvc table because obsolete cvc has been reconciled.
   EXPECT_TRUE(table_->ReconcileServerCvcs());
-  EXPECT_EQ(2U, table_->GetAllServerCvcsForTesting().size());
+  EXPECT_EQ(2U, table_->GetAllServerCvcs().size());
 }
 
 TEST_F(AutofillTableTest, AddFullServerCreditCard) {
@@ -1474,6 +1506,8 @@ TEST_P(AutofillTableProfileTest, UpdateAutofillProfile) {
 }
 
 TEST_F(AutofillTableTest, UpdateCreditCard) {
+  base::test::ScopedFeatureList features(
+      features::kAutofillEnableCvcStorageAndFilling);
   // Add a credit card to the db.
   CreditCard credit_card;
   credit_card.SetRawInfo(CREDIT_CARD_NAME_FULL, u"Jack Torrance");
@@ -1545,6 +1579,8 @@ TEST_F(AutofillTableTest, UpdateCreditCard) {
 }
 
 TEST_F(AutofillTableTest, UpdateCreditCardOriginOnly) {
+  base::test::ScopedFeatureList features(
+      features::kAutofillEnableCvcStorageAndFilling);
   // Add a credit card to the db.
   CreditCard credit_card;
   credit_card.SetRawInfo(CREDIT_CARD_NAME_FULL, u"Jack Torrance");

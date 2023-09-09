@@ -10,6 +10,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/check_op.h"
 #include "base/containers/contains.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
@@ -19,6 +20,7 @@
 #include "base/ranges/algorithm.h"
 #include "base/strings/string_util.h"
 #include "base/types/expected.h"
+#include "base/types/expected_macros.h"
 #include "base/values.h"
 #include "content/public/browser/first_party_sets_handler.h"
 #include "content/public/common/content_features.h"
@@ -41,25 +43,79 @@ using Aliases = FirstPartySetParser::Aliases;
 using SetsAndAliases = FirstPartySetParser::SetsAndAliases;
 using SetsMap = FirstPartySetParser::SetsMap;
 
+// Class representing the results of validating a given site.
+class ValidateSiteResult {
+ public:
+  explicit ValidateSiteResult(net::SchemefulSite site)
+      : ValidateSiteResult(std::move(site), absl::nullopt) {}
+
+  explicit ValidateSiteResult(ParseErrorType error_type)
+      : ValidateSiteResult(absl::nullopt, error_type) {}
+
+  ValidateSiteResult(absl::optional<net::SchemefulSite> site,
+                     absl::optional<ParseErrorType> error_type)
+      : site_(std::move(site)), error_type_(error_type) {
+    // One or both of the fields must be populated.
+    CHECK(site_.has_value() || error_type_.has_value());
+    if (site_.has_value() && error_type_.has_value()) {
+      CHECK_EQ(error_type_.value(), ParseErrorType::kInvalidDomain);
+    }
+  }
+
+  bool has_site() const { return site_.has_value(); }
+  bool has_error() const { return error_type_.has_value(); }
+
+  const net::SchemefulSite& site() const {
+    // Either there's no error, or it was because the site didn't have a
+    // registerable domain (so we were still able to parse it).
+    CHECK(!has_error() || error_type_ == ParseErrorType::kInvalidDomain);
+    return site_.value();
+  }
+
+  ParseErrorType error_type() const { return error_type_.value(); }
+
+ private:
+  absl::optional<net::SchemefulSite> site_ = absl::nullopt;
+  absl::optional<ParseErrorType> error_type_ = absl::nullopt;
+};
+
+bool IsFatalError(ParseErrorType error_type) {
+  switch (error_type) {
+    case FirstPartySetsHandler::ParseErrorType::kInvalidType:
+    case FirstPartySetsHandler::ParseErrorType::kInvalidOrigin:
+    case FirstPartySetsHandler::ParseErrorType::kNonHttpsScheme:
+    case FirstPartySetsHandler::ParseErrorType::kNonDisjointSets:
+    case FirstPartySetsHandler::ParseErrorType::kRepeatedDomain:
+      // Fatal errors indicate that something is wrong with the data source,
+      // since it could never have been valid.
+      return true;
+    case FirstPartySetsHandler::ParseErrorType::kInvalidDomain:
+    case FirstPartySetsHandler::ParseErrorType::kSingletonSet:
+      // Nonfatal errors may arise over time (as the Public Suffix List changes,
+      // or due to other nonfatal errors), so they don't indicate a problem with
+      // the data source.
+      return false;
+  }
+}
+
 // Ensures that the string represents an origin that is non-opaque and HTTPS.
 // Returns the registered domain.
-base::expected<net::SchemefulSite, ParseErrorType> Canonicalize(
-    base::StringPiece origin_string,
-    bool emit_errors) {
+ValidateSiteResult Canonicalize(base::StringPiece origin_string,
+                                bool emit_errors) {
   const url::Origin origin(url::Origin::Create(GURL(origin_string)));
   if (origin.opaque()) {
     if (emit_errors) {
       LOG(ERROR) << "First-Party Set origin " << origin_string
                  << " is not valid; ignoring.";
     }
-    return base::unexpected(ParseErrorType::kInvalidOrigin);
+    return ValidateSiteResult(ParseErrorType::kInvalidOrigin);
   }
   if (origin.scheme() != "https") {
     if (emit_errors) {
       LOG(ERROR) << "First-Party Set origin " << origin_string
                  << " is not HTTPS; ignoring.";
     }
-    return base::unexpected(ParseErrorType::kNonHttpsScheme);
+    return ValidateSiteResult(ParseErrorType::kNonHttpsScheme);
   }
   absl::optional<net::SchemefulSite> site =
       net::SchemefulSite::CreateIfHasRegisterableDomain(origin);
@@ -68,10 +124,11 @@ base::expected<net::SchemefulSite, ParseErrorType> Canonicalize(
       LOG(ERROR) << "First-Party Set origin " << origin_string
                  << " does not have a valid registered domain; ignoring.";
     }
-    return base::unexpected(ParseErrorType::kInvalidDomain);
+    return ValidateSiteResult(net::SchemefulSite(origin),
+                              ParseErrorType::kInvalidDomain);
   }
 
-  return site.value();
+  return ValidateSiteResult(std::move(site).value());
 }
 
 // Struct to hold metadata describing a particular "subset" during parsing.
@@ -96,30 +153,32 @@ bool IsSingletonSet(const std::vector<SetsMap::value_type>& set_entries,
 
 // Parses a single base::Value into a net::SchemefulSite, and verifies that it
 // is not already included in this set or any other.
-base::expected<net::SchemefulSite, ParseErrorType> ParseSiteAndValidate(
+ValidateSiteResult ParseSiteAndValidate(
     const base::Value& item,
     const std::vector<std::pair<net::SchemefulSite, net::FirstPartySetEntry>>&
         set_entries,
     const base::flat_set<net::SchemefulSite>& other_sets_sites,
     bool emit_errors) {
-  if (!item.is_string())
-    return base::unexpected(ParseErrorType::kInvalidType);
-
-  const base::expected<net::SchemefulSite, ParseErrorType> maybe_site =
-      Canonicalize(item.GetString(), emit_errors);
-  if (!maybe_site.has_value())
-    return base::unexpected(maybe_site.error());
-  const net::SchemefulSite& site = *maybe_site;
-  if (base::Contains(
-          set_entries, site,
-          &std::pair<net::SchemefulSite, net::FirstPartySetEntry>::first)) {
-    return base::unexpected(ParseErrorType::kRepeatedDomain);
+  if (!item.is_string()) {
+    return ValidateSiteResult(ParseErrorType::kInvalidType);
   }
 
-  if (other_sets_sites.contains(site))
-    return base::unexpected(ParseErrorType::kNonDisjointSets);
+  const ValidateSiteResult result = Canonicalize(item.GetString(), emit_errors);
 
-  return site;
+  if (result.has_site()) {
+    const net::SchemefulSite& site = result.site();
+    if (base::Contains(
+            set_entries, site,
+            &std::pair<net::SchemefulSite, net::FirstPartySetEntry>::first)) {
+      return ValidateSiteResult(ParseErrorType::kRepeatedDomain);
+    }
+
+    if (other_sets_sites.contains(site)) {
+      return ValidateSiteResult(ParseErrorType::kNonDisjointSets);
+    }
+  }
+
+  return result;
 }
 
 // Removes the TLD from a SchemefulSite, if possible. (It is not possible if the
@@ -177,14 +236,17 @@ base::expected<Aliases, ParseError> ParseCctlds(
 
     const base::Value::List& site_aliases = site_alias_list.GetList();
     for (size_t i = 0; i < site_aliases.size(); ++i) {
-      const base::expected<net::SchemefulSite, ParseErrorType> alias_or_error =
-          ParseSiteAndValidate(site_aliases[i], set_entries, elements,
-                               emit_errors);
-      if (!alias_or_error.has_value()) {
+      const ValidateSiteResult alias_result = ParseSiteAndValidate(
+          site_aliases[i], set_entries, elements, emit_errors);
+      if (alias_result.has_error()) {
+        if (!IsFatalError(alias_result.error_type())) {
+          continue;
+        }
         return base::unexpected(
-            ParseError(alias_or_error.error(), {kCCTLDsField, site, static_cast<int>(i)}));
+            ParseError(alias_result.error_type(),
+                       {kCCTLDsField, site, static_cast<int>(i)}));
       }
-      net::SchemefulSite alias = alias_or_error.value();
+      net::SchemefulSite alias = alias_result.site();
       const absl::optional<std::string> alias_site_without_tld =
           RemoveTldFromSite(alias);
       if (!alias_site_without_tld.has_value())
@@ -228,17 +290,21 @@ base::expected<void, ParseError> ParseSubset(
   // Add each site to our mapping (after validating).
   uint32_t index = 0;
   for (const auto& item : field_value->GetList()) {
-    base::expected<net::SchemefulSite, ParseErrorType> site_or_error =
+    ValidateSiteResult site_result =
         ParseSiteAndValidate(item, set_entries, other_sets_sites, emit_errors);
-    if (!site_or_error.has_value()) {
+    if (site_result.has_error()) {
+      if (!IsFatalError(site_result.error_type())) {
+        ++index;
+        continue;
+      }
       return base::unexpected(
-          ParseError(site_or_error.error(),
+          ParseError(site_result.error_type(),
                      {descriptor.field_name, static_cast<int>(index)}));
     }
     if (!descriptor.size_limit.has_value() ||
         static_cast<int>(index) < descriptor.size_limit.value()) {
       set_entries.emplace_back(
-          site_or_error.value(),
+          site_result.site(),
           net::FirstPartySetEntry(
               primary, descriptor.site_type,
               descriptor.size_limit.has_value()
@@ -290,14 +356,15 @@ base::expected<SetsAndAliases, ParseError> ParseSet(
         ParseError(ParseErrorType::kInvalidType, {kFirstPartySetPrimaryField}));
   }
 
-  base::expected<net::SchemefulSite, ParseErrorType> primary_or_error =
-      ParseSiteAndValidate(*primary_item, /*set_entries=*/{}, elements,
-                           emit_errors);
-  if (!primary_or_error.has_value()) {
+  ValidateSiteResult primary_result = ParseSiteAndValidate(
+      *primary_item, /*set_entries=*/{}, elements, emit_errors);
+  if (primary_result.has_error()) {
+    // Primaries that exhibit any error (fatal or nonfatal) invalidate the whole
+    // set.
     return base::unexpected(
-        ParseError(primary_or_error.error(), {kFirstPartySetPrimaryField}));
+        ParseError(primary_result.error_type(), {kFirstPartySetPrimaryField}));
   }
-  const net::SchemefulSite& primary = primary_or_error.value();
+  const net::SchemefulSite& primary = primary_result.site();
 
   std::vector<std::pair<net::SchemefulSite, net::FirstPartySetEntry>>
       set_entries(
@@ -320,19 +387,13 @@ base::expected<SetsAndAliases, ParseError> ParseSet(
               .size_limit = absl::nullopt,
            },
        }) {
-    if (base::expected<void, ParseError> result =
-            ParseSubset(set_declaration, primary, descriptor, elements,
-                        emit_errors, set_entries);
-        !result.has_value()) {
-      return base::unexpected(result.error());
-    }
+    RETURN_IF_ERROR(ParseSubset(set_declaration, primary, descriptor, elements,
+                                emit_errors, set_entries));
   }
 
-  const base::expected<Aliases, ParseError> aliases_or_error = ParseCctlds(
-      set_declaration, set_entries, elements, emit_errors, warnings);
-  if (!aliases_or_error.has_value())
-    return base::unexpected(aliases_or_error.error());
-  const Aliases& aliases = aliases_or_error.value();
+  ASSIGN_OR_RETURN(const Aliases& aliases,
+                   ParseCctlds(set_declaration, set_entries, elements,
+                               emit_errors, warnings));
 
   if (IsSingletonSet(set_entries, aliases)) {
     return base::unexpected(ParseError(ParseErrorType::kSingletonSet,
@@ -373,6 +434,9 @@ GetPolicySetsFromList(const base::Value::List* policy_sets,
       it->PrependPath({SetTypeToString(set_type), i});
     }
     if (!parsed.has_value()) {
+      if (!IsFatalError(parsed.error().type())) {
+        continue;
+      }
       ParseError error = parsed.error();
       error.PrependPath({SetTypeToString(set_type), i});
       return base::unexpected(error);
@@ -422,12 +486,11 @@ absl::optional<net::SchemefulSite>
 FirstPartySetParser::CanonicalizeRegisteredDomain(
     const base::StringPiece origin_string,
     bool emit_errors) {
-  base::expected<net::SchemefulSite, ParseErrorType> maybe_site =
-      Canonicalize(origin_string, emit_errors);
-  if (!maybe_site.has_value()) {
+  ValidateSiteResult result = Canonicalize(origin_string, emit_errors);
+  if (result.has_error()) {
     return absl::nullopt;
   }
-  return maybe_site.value();
+  return result.site();
 }
 
 SetsAndAliases FirstPartySetParser::ParseSetsFromStream(std::istream& input,
@@ -456,9 +519,7 @@ SetsAndAliases FirstPartySetParser::ParseSetsFromStream(std::istream& input,
         *maybe_value, /*exempt_from_limits=*/false, emit_errors, elements,
         /*warnings=*/nullptr);
     if (!parsed.has_value()) {
-      if (parsed.error().type() == ParseErrorType::kInvalidDomain) {
-        // Ignore sets that include an invalid domain (which might have been
-        // caused by a PSL update), but don't let that break other sets.
+      if (!IsFatalError(parsed.error().type())) {
         nonfatal_errors++;
         continue;
       }
@@ -506,22 +567,15 @@ FirstPartySetParser::ParseSetsFromEnterprisePolicy(
       [&]() -> base::expected<ParsedPolicySetLists,
                               FirstPartySetsHandler::ParseError> {
     base::flat_set<net::SchemefulSite> elements;
-    base::expected<std::vector<SingleSet>, ParseError> parsed_replacements =
-        GetPolicySetsFromList(
-            policy.FindList(kFirstPartySetPolicyReplacementsField), elements,
-            PolicySetType::kReplacement, warnings);
-    if (!parsed_replacements.has_value()) {
-      return base::unexpected(parsed_replacements.error());
-    }
-    base::expected<std::vector<SingleSet>, ParseError> parsed_additions =
-        GetPolicySetsFromList(
-            policy.FindList(kFirstPartySetPolicyAdditionsField), elements,
-            PolicySetType::kAddition, warnings);
-    if (!parsed_additions.has_value()) {
-      return base::unexpected(parsed_additions.error());
-    }
-    return ParsedPolicySetLists(std::move(parsed_replacements.value()),
-                                std::move(parsed_additions.value()));
+    ASSIGN_OR_RETURN(std::vector<SingleSet> replacements,
+                     GetPolicySetsFromList(
+                         policy.FindList(kFirstPartySetPolicyReplacementsField),
+                         elements, PolicySetType::kReplacement, warnings));
+    ASSIGN_OR_RETURN(std::vector<SingleSet> additions,
+                     GetPolicySetsFromList(
+                         policy.FindList(kFirstPartySetPolicyAdditionsField),
+                         elements, PolicySetType::kAddition, warnings));
+    return ParsedPolicySetLists(std::move(replacements), std::move(additions));
   };
   return FirstPartySetParser::PolicyParseResult(get_set_lists(), warnings);
 }

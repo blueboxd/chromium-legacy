@@ -13,6 +13,7 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "chromeos/ash/components/mojo_service_manager/mojom/mojo_service_manager.mojom.h"
+#include "chromeos/ash/services/cros_healthd/public/cpp/fake_routine_control.h"
 #include "chromeos/ash/services/cros_healthd/public/mojom/cros_healthd.mojom.h"
 #include "chromeos/ash/services/cros_healthd/public/mojom/cros_healthd_diagnostics.mojom.h"
 #include "chromeos/ash/services/cros_healthd/public/mojom/cros_healthd_events.mojom.h"
@@ -143,6 +144,17 @@ class FakeCrosHealthd final : public mojom::CrosHealthdDiagnosticsService,
 
   // Set the result for a call to `IsEventSupported`.
   void SetIsEventSupportedResponseForTesting(mojom::SupportStatusPtr& result);
+
+  // Flushes the service provider for routines.
+  void FlushRoutineServiceForTesting();
+
+  // Gets the `FakeRoutineController` for a certain type of routine. The
+  // returned object allows for setting expectations in tests and accessing
+  // certain properties that might change during tests. If there is no
+  // `FakeRoutineController` registered for a certain type of routine, this
+  // returns `nullptr`.
+  FakeRoutineControl* GetRoutineControlForArgumentTag(
+      mojom::RoutineArgument::Tag tag);
 
   // Set expectation about the parameter that is passed to a call of
   // a Diagnostics routine (`Run*Routine`) and `GetRoutineUpdate`.
@@ -340,6 +352,12 @@ class FakeCrosHealthd final : public mojom::CrosHealthdDiagnosticsService,
       bool ignore_single_process_error,
       ProbeMultipleProcessInfoCallback callback) override;
 
+  // CrosHealthdRoutinesService overrides:
+  void CreateRoutine(
+      mojom::RoutineArgumentPtr argument,
+      mojo::PendingReceiver<mojom::RoutineControl> pending_receiver,
+      mojo::PendingRemote<mojom::RoutineObserver> observer) override;
+
   // Used as the response to any GetAvailableRoutines IPCs received.
   std::vector<mojom::DiagnosticRoutineEnum> available_routines_;
   // Used to store last created routine by any Run*Routine method.
@@ -377,6 +395,8 @@ class FakeCrosHealthd final : public mojom::CrosHealthdDiagnosticsService,
   // Collection of registered general observers grouped by category.
   std::map<mojom::EventCategoryEnum, mojo::RemoteSet<mojom::EventObserver>>
       event_observers_;
+  std::map<mojom::RoutineArgument::Tag, FakeRoutineControl>
+      routine_controllers_;
 
   // Contains the most recent params passed to `GetRoutineUpdate`, if it has
   // been called.

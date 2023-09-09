@@ -20,6 +20,7 @@
 #include "gpu/command_buffer/service/shared_context_state.h"
 #include "gpu/command_buffer/service/shared_image/iosurface_image_backing_factory.h"
 #include "gpu/command_buffer/service/shared_image/shared_image_format_service_utils.h"
+#include "gpu/command_buffer/service/shared_image/shared_image_gl_utils.h"
 #include "gpu/command_buffer/service/shared_image/skia_graphite_dawn_image_representation.h"
 #include "gpu/command_buffer/service/skia_utils.h"
 #include "third_party/skia/include/core/SkColorSpace.h"
@@ -46,8 +47,6 @@
 namespace gpu {
 
 namespace {
-
-using ScopedRestoreTexture = GLTextureImageBackingHelper::ScopedRestoreTexture;
 
 // Returns BufferFormat for given multiplanar `format`.
 gfx::BufferFormat GetBufferFormatForPlane(viz::SharedImageFormat format,
@@ -768,8 +767,8 @@ IOSurfaceImageBacking::RetainGLTexture() {
        plane_index++) {
     // Allocate the GL texture.
     scoped_refptr<gles2::TexturePassthrough> gl_texture;
-    GLTextureImageBackingHelper::MakeTextureAndSetParameters(
-        gl_target_, framebuffer_attachment_angle_, &gl_texture, nullptr);
+    MakeTextureAndSetParameters(gl_target_, framebuffer_attachment_angle_,
+                                &gl_texture, nullptr);
     // Set the IOSurface to be initially unbound from the GL texture.
     gl_texture->SetEstimatedSize(GetEstimatedSize());
     gl_texture->set_bind_pending();

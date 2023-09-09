@@ -468,6 +468,10 @@ public class OmniboxResourceProvider {
      * focused.
      */
     public static @Px int getFocusedStatusViewLeftSpacing(Context context) {
+        if (!OmniboxFeatures.shouldShowModernizeVisualUpdate(context)) {
+            return 0;
+        }
+
         return context.getResources().getDimensionPixelSize(
                 selectMarginDimen(context, R.dimen.location_bar_status_view_left_space_width,
                         R.dimen.location_bar_status_view_left_space_width_bigger,
@@ -498,6 +502,15 @@ public class OmniboxResourceProvider {
                                 R.dimen.toolbar_edge_padding_modern_smaller,
                                 R.dimen.toolbar_edge_padding)
                         : R.dimen.toolbar_edge_padding);
+    }
+
+    /** Return the width of the Omnibox Suggestion decoration icon. */
+    public static @Px int getSuggestionDecorationIconSizeWidth(Context context) {
+        return context.getResources().getDimensionPixelSize(
+                (OmniboxFeatures.shouldShowModernizeVisualUpdate(context)
+                        && OmniboxFeatures.shouldShowSmallBottomMargin())
+                        ? R.dimen.omnibox_suggestion_icon_area_size_modern
+                        : R.dimen.omnibox_suggestion_icon_area_size);
     }
 
     /** */

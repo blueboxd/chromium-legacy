@@ -41,8 +41,11 @@ bool AllowWorkerStorageAccess(
 
   for (const auto& it : render_frames) {
     auto* rfh = content::RenderFrameHost::FromID(it);
+    if (!rfh) {
+      continue;
+    }
     content_settings::PageSpecificContentSettings::StorageAccessed(
-        storage_type, it.child_id, it.frame_routing_id, rfh->storage_key(),
+        storage_type, it.child_id, it.frame_routing_id, rfh->GetStorageKey(),
         !allow);
   }
 

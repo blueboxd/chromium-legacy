@@ -29,10 +29,6 @@
 #import "ui/base/l10n/l10n_util_mac.h"
 #import "url/gurl.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 @interface BookmarksEditorCoordinator () <
     BookmarksEditorViewControllerDelegate,
     BookmarksEditorMediatorDelegate,
@@ -88,7 +84,7 @@
   _viewController.delegate = self;
   ChromeBrowserState* browserState =
       self.browser->GetBrowserState()->GetOriginalChromeBrowserState();
-  bookmarks::BookmarkModel* profileBookmarkModel =
+  bookmarks::BookmarkModel* localOrSyncableBookmarkModel =
       ios::LocalOrSyncableBookmarkModelFactory::GetForBrowserState(
           browserState);
   bookmarks::BookmarkModel* accountBookmarkModel =
@@ -97,12 +93,12 @@
       SyncServiceFactory::GetForBrowserState(browserState);
 
   _mediator = [[BookmarksEditorMediator alloc]
-      initWithProfileBookmarkModel:profileBookmarkModel
-              accountBookmarkModel:accountBookmarkModel
-                      bookmarkNode:_node
-                             prefs:browserState->GetPrefs()
-                       syncService:syncService
-                      browserState:browserState];
+      initWithLocalOrSyncableBookmarkModel:localOrSyncableBookmarkModel
+                      accountBookmarkModel:accountBookmarkModel
+                              bookmarkNode:_node
+                                     prefs:browserState->GetPrefs()
+                               syncService:syncService
+                              browserState:browserState];
   _mediator.consumer = _viewController;
   _mediator.delegate = self;
   _viewController.mutator = _mediator;

@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_BROWSER_DIALOGS_H_
 #define CHROME_BROWSER_UI_BROWSER_DIALOGS_H_
 
+#include <map>
 #include <memory>
 #include <string>
 #include <utility>
@@ -16,10 +17,13 @@
 #include "chrome/browser/ui/bookmarks/bookmark_editor.h"
 #include "chrome/browser/web_applications/web_app_callback_app_identity.h"
 #include "chrome/browser/web_applications/web_app_id.h"
+#include "chrome/browser/web_applications/web_app_install_info.h"
+#include "components/webapps/browser/installable/installable_metrics.h"
 #include "content/public/browser/bluetooth_delegate.h"
 #include "content/public/browser/login_delegate.h"
 #include "extensions/buildflags/buildflags.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/interaction/element_identifier.h"
 #include "ui/base/models/dialog_model.h"
@@ -169,6 +173,17 @@ void ShowWebAppInstallDialog(
     std::unique_ptr<webapps::MlInstallOperationTracker> install_tracker,
     AppInstallationAcceptanceCallback callback);
 
+// Creates a dialog that requests the consent from the user to install the
+// requested apps as sub apps to the named parent app. This is triggered by
+// an app calling the Multi App API add() function. The dialog is modal to
+// the browser containing the app calling the API. |sub_apps| contains the
+// information to represent each app to the user.
+views::Widget* CreateSubAppsInstallDialogWidget(
+    const std::string_view parent_app_name,
+    const std::string_view parent_app_scope,
+    const std::vector<std::unique_ptr<web_app::WebAppInstallInfo>>& sub_apps,
+    gfx::NativeWindow window);
+
 // When an app changes its icon or name, that is considered an app identity
 // change which (for some types of apps) needs confirmation from the user.
 // This function shows that confirmation dialog. |app_id| is the unique id of
@@ -187,6 +202,16 @@ void ShowWebAppIdentityUpdateDialog(
     const SkBitmap& new_icon,
     content::WebContents* web_contents,
     web_app::AppIdentityDialogCallback callback);
+
+// Shows the web app uninstallation dialog on a page whenever user has decided
+// to uninstall an installed dPWA from a variety of OS surfaces and chrome.
+void ShowWebAppUninstallDialog(
+    Profile* profile,
+    const web_app::AppId& app_id,
+    webapps::WebappUninstallSource uninstall_source,
+    gfx::NativeWindow parent,
+    std::map<SquareSizePx, SkBitmap> icon_bitmaps,
+    base::OnceCallback<void(bool)> uninstall_dialog_result_callback);
 
 #if !BUILDFLAG(IS_ANDROID)
 // Callback used to indicate whether a user has accepted the launch of a

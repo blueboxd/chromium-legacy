@@ -34,10 +34,6 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 @class BridgedContentView;
 @class ModalShowAnimationWithLayer;
 @class NativeWidgetMacNSWindow;
@@ -144,8 +140,8 @@ class REMOTE_COCOA_APP_SHIM_EXPORT NativeWidgetNSWindowBridge
   // being reordered in (or out of) the screen list.
   void OnVisibilityChanged();
 
-  // Called by the NSWindowDelegate when the system control tint changes.
-  void OnSystemControlTintChanged();
+  // Called by the NSWindowDelegate when the system colors change.
+  void OnSystemColorsChanged();
 
   // Called by the NSWindowDelegate on screen, scale, or color space changes.
   void OnScreenOrBackingPropertiesChanged();

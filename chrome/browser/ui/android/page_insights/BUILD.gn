@@ -48,6 +48,7 @@ android_resources("java_resources") {
   sources = [
     "java/res/drawable/page_insights_icon.xml",
     "java/res/layout/page_insights_sheet_toolbar.xml",
+    "java/res/values/dimens.xml",
   ]
   deps = [
     "//chrome/browser/ui/android/strings:ui_strings_grd",
@@ -67,6 +68,7 @@ robolectric_library("junit") {
     "//base:base_java",
     "//base:base_java_test_support",
     "//base:base_junit_test_support",
+    "//base:jni_java",
     "//chrome/browser/preferences:java",
     "//chrome/browser/profiles/android:java",
     "//chrome/browser/signin/services/android:java",
@@ -108,5 +110,6 @@ android_library("unit_device_javatests") {
     "//ui/android:ui_java_test_support",
     "//ui/android:ui_no_recycler_view_java",
     "//ui/android:ui_utils_java",
+    "//url:gurl_java",
   ]
 }

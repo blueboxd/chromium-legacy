@@ -486,12 +486,23 @@ ResourceLoadPriority ResourceFetcher::ComputeLoadPriority(
   if (visibility == ResourcePriority::kVisible)
     priority = ResourceLoadPriority::kHigh;
 
-  // LCP Critical Path Predictor identified previous LCP images get a boost
-  // to VeryHigh priority.
+  // LCP Critical Path Predictor identified previous LCP images get a higher
+  // priority.
   // Note: The `priority` set here may be overridden by the logic below,
   //       while that is not the case as of July 2023.
   if (is_potentially_lcp_element) {
-    priority = ResourceLoadPriority::kVeryHigh;
+    ++potentially_lcp_resource_priority_boosts_;
+    switch (features::kLCPCriticalPathPredictorImageLoadPriority.Get()) {
+      case features::LcppImageLoadPriority::kMedium:
+        priority = std::max(priority, ResourceLoadPriority::kMedium);
+        break;
+      case features::LcppImageLoadPriority::kHigh:
+        priority = std::max(priority, ResourceLoadPriority::kHigh);
+        break;
+      case features::LcppImageLoadPriority::kVeryHigh:
+        priority = std::max(priority, ResourceLoadPriority::kVeryHigh);
+        break;
+    }
   }
 
   // Resources before the first image are considered "early" in the document and
@@ -2196,9 +2207,7 @@ void ResourceFetcher::WarnUnusedPreloads() {
 void ResourceFetcher::HandleLoaderFinish(Resource* resource,
                                          base::TimeTicks response_end,
                                          LoaderFinishType type,
-                                         uint32_t inflight_keepalive_bytes,
-                                         bool pervasive_payload_requested,
-                                         int64_t bytes_fetched) {
+                                         uint32_t inflight_keepalive_bytes) {
   DCHECK(resource);
 
   // kRaw might not be subresource, and we do not need them.
@@ -2222,15 +2231,6 @@ void ResourceFetcher::HandleLoaderFinish(Resource* resource,
     UpdateServiceWorkerSubresourceMetrics(
         resource->GetType(),
         resource->GetResponse().WasFetchedViaServiceWorker());
-  }
-
-  subresource_load_metrics_.pervasive_payload_requested |=
-      pervasive_payload_requested;
-  if (bytes_fetched > 0) {
-    subresource_load_metrics_.total_bytes_fetched += bytes_fetched;
-    if (pervasive_payload_requested) {
-      subresource_load_metrics_.pervasive_bytes_fetched += bytes_fetched;
-    }
   }
 
   context_->UpdateSubresourceLoadMetrics(subresource_load_metrics_);
@@ -2872,6 +2872,15 @@ void ResourceFetcher::OnResourceCacheContainsFinished(
       base::StrCat({"Blink.MemoryCache.Remote.", visibility, lifecycle,
                     ".IPCRecvDelay"}),
       recv_delay);
+}
+
+void ResourceFetcher::RecordLCPPSubresourceMetrics() {
+  if (!context_->DoesLCPPHaveAnyHintData()) {
+    return;
+  }
+
+  base::UmaHistogramCounts100("Blink.LCPP.PotentiallyLCPResourcePriorityBoosts",
+                              potentially_lcp_resource_priority_boosts_);
 }
 
 void ResourceFetcher::Trace(Visitor* visitor) const {

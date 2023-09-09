@@ -23,9 +23,9 @@
 #import "services/metrics/public/cpp/ukm_builders.h"
 #import "ui/base/page_transition_types.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
+// To get access to UseSessionSerializationOptimizations().
+// TODO(crbug.com/1383087): remove once the feature is fully launched.
+#import "ios/web/common/features.h"
 
 BROWSER_USER_DATA_KEY_IMPL(TabUsageRecorderBrowserAgent)
 
@@ -43,10 +43,13 @@ TabUsageRecorderBrowserAgent::TabUsageRecorderBrowserAgent(Browser* browser)
     web_state->AddObserver(this);
   }
 
-  SessionRestorationBrowserAgent* restoration_agent =
-      SessionRestorationBrowserAgent::FromBrowser(browser);
-  if (restoration_agent)
-    restoration_agent->AddObserver(this);
+  if (!web::features::UseSessionSerializationOptimizations()) {
+    SessionRestorationBrowserAgent* restoration_agent =
+        SessionRestorationBrowserAgent::FromBrowser(browser);
+    if (restoration_agent) {
+      restoration_agent->AddObserver(this);
+    }
+  }
 
   // Register for backgrounding and foregrounding notifications. It is safe for
   // the block to capture a pointer to `this` as they are unregistered in the
@@ -82,10 +85,13 @@ void TabUsageRecorderBrowserAgent::BrowserDestroyed(Browser* browser) {
 
   web_state_list_->RemoveObserver(this);
   browser->RemoveObserver(this);
-  SessionRestorationBrowserAgent* restoration_agent =
-      SessionRestorationBrowserAgent::FromBrowser(browser);
-  if (restoration_agent)
-    restoration_agent->RemoveObserver(this);
+  if (!web::features::UseSessionSerializationOptimizations()) {
+    SessionRestorationBrowserAgent* restoration_agent =
+        SessionRestorationBrowserAgent::FromBrowser(browser);
+    if (restoration_agent) {
+      restoration_agent->RemoveObserver(this);
+    }
+  }
   if (application_backgrounding_observer_) {
     [[NSNotificationCenter defaultCenter]
         removeObserver:application_backgrounding_observer_];
@@ -531,9 +537,7 @@ void TabUsageRecorderBrowserAgent::WebStateListDidChange(
     const WebStateListStatus& status) {
   switch (change.type()) {
     case WebStateListChange::Type::kStatusOnly:
-      // TODO(crbug.com/1442546): Move the implementation from
-      // WebStateActivatedAt() to here. Note that here is reachable only when
-      // `reason` == ActiveWebStateChangeReason::Activated.
+      // The activation is handled after this switch statement.
       break;
     case WebStateListChange::Type::kDetach: {
       const WebStateListChangeDetach& detach_change =
@@ -563,18 +567,11 @@ void TabUsageRecorderBrowserAgent::WebStateListDidChange(
       break;
     }
   }
-}
 
-void TabUsageRecorderBrowserAgent::WebStateActivatedAt(
-    WebStateList* web_state_list,
-    web::WebState* old_web_state,
-    web::WebState* new_web_state,
-    int active_index,
-    ActiveWebStateChangeReason reason) {
-  if (reason == ActiveWebStateChangeReason::Replaced)
-    return;
-
-  RecordTabSwitched(old_web_state, new_web_state);
+  if (status.active_web_state_change() &&
+      change.type() != WebStateListChange::Type::kReplace) {
+    RecordTabSwitched(status.old_active_web_state, status.new_active_web_state);
+  }
 }
 
 void TabUsageRecorderBrowserAgent::SessionRestorationFinished(

@@ -6,17 +6,11 @@
 #define CHROME_BROWSER_PREDICTORS_LOADING_PREDICTOR_CONFIG_H_
 
 #include <cstddef>
-
-#include "base/feature_list.h"
+#include <string>
 
 class Profile;
 
 namespace predictors {
-
-BASE_DECLARE_FEATURE(kSpeculativePreconnectFeature);
-
-// Returns whether the speculative preconnect feature is enabled.
-bool IsPreconnectFeatureEnabled();
 
 // Returns whether the Loading Predictor is enabled for the given |profile|. If
 // true, the predictor can observe page load events, build historical database
@@ -74,6 +68,10 @@ struct LoadingPredictorConfig {
 
   // Size of LRU caches for the host data.
   size_t max_hosts_to_track;
+
+  // Size of LRU caches for the host data for LCP critical path predictor
+  // (LCPP).
+  size_t max_hosts_to_track_for_lcpp;
 
   // The maximum number of origins to store per entry.
   size_t max_origins_per_entry;

@@ -33,7 +33,21 @@ TabSearchButton::TabSearchButton(TabStrip* tab_strip)
           this,
           tab_strip->controller()->GetProfile())) {
   SetProperty(views::kElementIdentifierKey, kTabSearchButtonElementId);
-  SetFocusRingCornerRadius(GetCornerRadius());
+
+  UpdateForegroundFrameActiveColorId(kColorNewTabButtonForegroundFrameActive);
+  UpdateForegroundFrameInactiveColorId(
+      kColorNewTabButtonForegroundFrameInactive);
+  if (features::IsChromeRefresh2023()) {
+    UpdateBackgroundFrameActiveColorId(
+        kColorNewTabButtonCRBackgroundFrameActive);
+    UpdateBackgroundFrameInactiveColorId(
+        kColorNewTabButtonCRBackgroundFrameInactive);
+  }
+
+  const bool paint_transparent_for_custom_image_theme =
+      features::IsChromeRefresh2023() ? false : true;
+  SetPaintTransparentForCustomImageTheme(
+      paint_transparent_for_custom_image_theme);
 
   UpdateColors();
 }
@@ -49,16 +63,7 @@ void TabSearchButton::NotifyClick(const ui::Event& event) {
       ->Activate(&event);
 }
 
-void TabSearchButton::UpdateColors() {
-  TabStripControlButton::UpdateColors();
-
-  if (features::IsChromeRefresh2023()) {
-    SetBackground(views::CreateThemedRoundedRectBackground(GetBackgroundColor(),
-                                                           GetCornerRadius()));
-  }
-}
-
-int TabSearchButton::GetCornerRadius() {
+int TabSearchButton::GetCornerRadius() const {
   return features::IsChromeRefresh2023()
              ? kCRTabSearchCornerRadius
              : TabStripControlButton::kButtonSize.width() / 2;

@@ -99,7 +99,7 @@ CloudUploadNotificationManager::CreateUploadProgressNotification() {
       /*type=*/message_center::NOTIFICATION_TYPE_PROGRESS,
       /*id=*/notification_id_, title,
       // TODO(b/272601262) Display or delete this message.
-      message, /*display_source=*/display_source_,
+      /*message=*/{}, /*display_source=*/display_source_,
       /*origin_url=*/GURL(), /*notifier_id=*/message_center::NotifierId(),
       /*optional_fields=*/{},
       /*delegate=*/
@@ -109,6 +109,11 @@ CloudUploadNotificationManager::CreateUploadProgressNotification() {
               weak_ptr_factory_.GetWeakPtr())),
       /*small_image=*/ash::kFolderIcon,
       /*warning_level=*/message_center::SystemNotificationWarningLevel::NORMAL);
+
+  // For a progress notification the message parameter won't be displayed in the
+  // notification. Therefore, its value is passed to progress_status which will
+  // be displayed.
+  notification->set_progress_status(message);
 
   // Add "Cancel" button if upload still cancellable.
   if (CanCancel() && cancel_callback_) {
@@ -224,6 +229,10 @@ void CloudUploadNotificationManager::ShowCompleteNotification() {
   std::unique_ptr<message_center::Notification> notification =
       CreateUploadCompleteNotification();
   notification->set_never_timeout(true);
+  // Close the progress notification before displaying the completed
+  // notification.
+  GetNotificationDisplayService()->Close(NotificationHandler::Type::TRANSIENT,
+                                         notification_id_);
   GetNotificationDisplayService()->Display(NotificationHandler::Type::TRANSIENT,
                                            *notification,
                                            /*metadata=*/nullptr);

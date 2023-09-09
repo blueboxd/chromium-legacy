@@ -1759,6 +1759,18 @@ IN_PROC_BROWSER_TEST_F(DevToolsExtensionTest,
                         extension_id, "/simple_test_page.html"}));
 }
 
+IN_PROC_BROWSER_TEST_F(DevToolsExtensionTest,
+                       CantInspectFileUrlWithoutFileAccess) {
+  LoadExtension("can_inspect_url");
+  std::string file_url =
+      net::FilePathToFileURL(
+          base::PathService::CheckedGet(base::DIR_SOURCE_ROOT)
+              .AppendASCII("content/test/data/devtools/navigation.html"))
+          .spec();
+  RunTest("waitForTestResultsAsMessage",
+          base::StrCat({kArbitraryPage, "#", file_url}));
+}
+
 class DevToolsExtensionSidePanelTest
     : public DevToolsExtensionTest,
       public ::testing::WithParamInterface<bool> {
@@ -2812,7 +2824,15 @@ IN_PROC_BROWSER_TEST_F(DevToolsTest,
   DevToolsWindowTesting::CloseDevToolsWindowSync(window);
 }
 
-IN_PROC_BROWSER_TEST_F(DevToolsTest, TestRawHeadersWithRedirectAndHSTS) {
+// TODO(crbug.com/1471349): The bug is flaky on chromeos (mostly dbg).
+#if BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_MAC)
+#define MAYBE_TestRawHeadersWithRedirectAndHSTS \
+  DISABLED_TestRawHeadersWithRedirectAndHSTS
+#else
+#define MAYBE_TestRawHeadersWithRedirectAndHSTS \
+  TestRawHeadersWithRedirectAndHSTS
+#endif
+IN_PROC_BROWSER_TEST_F(DevToolsTest, MAYBE_TestRawHeadersWithRedirectAndHSTS) {
   net::EmbeddedTestServer https_test_server(
       net::EmbeddedTestServer::TYPE_HTTPS);
   https_test_server.SetSSLConfig(
@@ -3538,8 +3558,9 @@ IN_PROC_BROWSER_TEST_F(DevToolsProcessPerSiteUpToMainFrameThresholdTest,
                 ->GetProcess());
 }
 
+// TODO(crbug.com/1468206): The test is failing on multiple builders.
 IN_PROC_BROWSER_TEST_F(DevToolsProcessPerSiteUpToMainFrameThresholdTest,
-                       DontReuseProcess) {
+                       DISABLED_DontReuseProcess) {
   OpenDevToolsWindow(kDebuggerTestPage, false);
   DevToolsWindow* window =
       DevToolsWindowTesting::OpenDevToolsWindowSync(main_web_contents(), true);

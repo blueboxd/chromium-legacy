@@ -24,9 +24,13 @@ source_set("webnn") {
       "dml/command_queue.h",
       "dml/command_recorder.cc",
       "dml/command_recorder.h",
+      "dml/context_impl.cc",
+      "dml/context_impl.h",
       "dml/error.h",
       "dml/graph_builder.cc",
       "dml/graph_builder.h",
+      "dml/graph_impl.cc",
+      "dml/graph_impl.h",
       "dml/platform_functions.cc",
       "dml/platform_functions.h",
       "dml/tensor_desc.cc",
@@ -42,14 +46,23 @@ source_set("webnn") {
     "//mojo/public/cpp/bindings",
     "//services/webnn/public/mojom",
   ]
+
+  if (is_win) {
+    deps += [
+      "//ui/gl",
+      "//ui/gl/init",
+    ]
+  }
 }
 
 source_set("tests") {
   testonly = true
 
   sources = [
-    "webnn_context_impl_unittest.cc",
+    "webnn_context_provider_impl_unittest.cc",
     "webnn_graph_impl_unittest.cc",
+    "webnn_test_utils.cc",
+    "webnn_test_utils.h",
   ]
 
   if (is_win) {
@@ -57,7 +70,9 @@ source_set("tests") {
       "dml/adapter_test.cc",
       "dml/command_queue_test.cc",
       "dml/command_recorder_test.cc",
+      "dml/context_impl_test.cc",
       "dml/graph_builder_test.cc",
+      "dml/graph_impl_test.cc",
       "dml/platform_functions_test.cc",
       "dml/tensor_desc_test.cc",
       "dml/test_base.cc",

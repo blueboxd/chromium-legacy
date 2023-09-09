@@ -97,6 +97,7 @@ extern const base::FeatureParam<bool> kPriceInsightsChipLabelExpandOnHighPrice;
 extern const char kPriceInsightsShowFeedbackParam[];
 extern const base::FeatureParam<bool> kPriceInsightsShowFeedback;
 
+BASE_DECLARE_FEATURE(kShoppingCollection);
 BASE_DECLARE_FEATURE(kShoppingList);
 BASE_DECLARE_FEATURE(kShoppingListRegionLaunched);
 BASE_DECLARE_FEATURE(kShoppingListTrackByDefault);
@@ -250,6 +251,10 @@ constexpr base::FeatureParam<std::string> kSkipHeuristicsDomainPattern{
     &kChromeCartDomBasedHeuristics, "skip-heuristics-domain-pattern",
     // This regex does not match anything.
     "\\b\\B"};
+
+constexpr base::FeatureParam<base::TimeDelta> kHeuristicsExecutionGapTime{
+    &kChromeCartDomBasedHeuristics, "heuristics-execution-gap-time",
+    base::Seconds(1)};
 
 // The following are Feature params for Discount user consent v2.
 // This indicates the Discount Consent v2 variation on the NTP Cart module.

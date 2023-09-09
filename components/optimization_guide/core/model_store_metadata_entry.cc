@@ -48,6 +48,19 @@ std::string GetServerModelCacheKeyHash(
   return client_model_cache_key_hash;
 }
 
+absl::optional<proto::OptimizationTarget> ParseOptimizationTarget(
+    const std::string& optimization_target_str) {
+  int optimization_target_number;
+  if (!base::StringToInt(optimization_target_str,
+                         &optimization_target_number)) {
+    return absl::nullopt;
+  }
+  if (!proto::OptimizationTarget_IsValid(optimization_target_number)) {
+    return absl::nullopt;
+  }
+  return static_cast<proto::OptimizationTarget>(optimization_target_number);
+}
+
 }  // namespace
 
 // static
@@ -71,6 +84,36 @@ ModelStoreMetadataEntry::GetModelMetadataEntryIfExists(
   }
 
   return ModelStoreMetadataEntry(metadata_entry);
+}
+
+// static
+std::set<base::FilePath> ModelStoreMetadataEntry::GetValidModelDirs(
+    PrefService* local_state) {
+  std::set<base::FilePath> valid_model_dirs;
+  for (const auto optimization_target_entry :
+       local_state->GetDict(prefs::localstate::kModelStoreMetadata)) {
+    if (!optimization_target_entry.second.is_dict()) {
+      continue;
+    }
+    auto optimization_target =
+        ParseOptimizationTarget(optimization_target_entry.first);
+    if (!optimization_target) {
+      continue;
+    }
+    for (auto model_cache_key_hash :
+         optimization_target_entry.second.GetDict()) {
+      if (!model_cache_key_hash.second.is_dict()) {
+        continue;
+      }
+      auto metadata =
+          ModelStoreMetadataEntry(&model_cache_key_hash.second.GetDict());
+      auto model_base_dir = metadata.GetModelBaseDir();
+      if (model_base_dir) {
+        valid_model_dirs.insert(*model_base_dir);
+      }
+    }
+  }
+  return valid_model_dirs;
 }
 
 ModelStoreMetadataEntry::ModelStoreMetadataEntry(
@@ -173,6 +216,11 @@ ModelStoreMetadataEntryUpdater::PurgeAllInactiveMetadata(
     if (!optimization_target_entry.second.is_dict()) {
       continue;
     }
+    auto optimization_target =
+        ParseOptimizationTarget(optimization_target_entry.first);
+    if (!optimization_target) {
+      continue;
+    }
     for (auto model_cache_key_hash :
          optimization_target_entry.second.GetDict()) {
       if (!model_cache_key_hash.second.is_dict()) {
@@ -188,6 +236,7 @@ ModelStoreMetadataEntryUpdater::PurgeAllInactiveMetadata(
           metadata.GetExpiryTime() <= base::Time::Now()) {
         should_remove_model = true;
         RecordPredictionModelStoreModelRemovalVersionHistogram(
+            *optimization_target,
             PredictionModelStoreModelRemovalReason::kModelExpired);
       }
 

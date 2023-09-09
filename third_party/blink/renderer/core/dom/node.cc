@@ -46,6 +46,7 @@
 #include "third_party/blink/renderer/core/dom/child_node_list.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/document_fragment.h"
+#include "third_party/blink/renderer/core/dom/document_part_root.h"
 #include "third_party/blink/renderer/core/dom/document_type.h"
 #include "third_party/blink/renderer/core/dom/dom_node_ids.h"
 #include "third_party/blink/renderer/core/dom/element.h"
@@ -1002,7 +1003,7 @@ Node* Node::cloneNode(bool deep, ExceptionState& exception_state) const {
       data.Put(CloneOption::kIncludeShadowRoots);
     }
   }
-  return Clone(GetDocument(), data);
+  return Clone(GetDocument(), data, /*append_to*/ nullptr);
 }
 
 Node* Node::cloneNode(bool deep) const {
@@ -2234,12 +2235,18 @@ void Node::InvalidateIfHasEffectiveAppearance() const {
   layout_object->SetSubtreeShouldDoFullPaintInvalidation();
 }
 
-void Node::InvalidateDOMParts() {
+void Node::UpdateForRemovedDOMParts(ContainerNode& insertion_point) {
   if (UNLIKELY(RuntimeEnabledFeatures::DOMPartsAPIEnabled() && HasDOMParts())) {
     for (Part* part : GetDOMParts()) {
-      if (part->root()) {
-        part->root()->MarkPartsDirty();
-      }
+      part->PartDisconnected();
+    }
+  }
+}
+
+void Node::UpdateForInsertedDOMParts(ContainerNode& insertion_point) {
+  if (UNLIKELY(RuntimeEnabledFeatures::DOMPartsAPIEnabled() && HasDOMParts())) {
+    for (Part* part : GetDOMParts()) {
+      part->PartConnected(insertion_point);
     }
   }
 }
@@ -2256,7 +2263,7 @@ Node::InsertionNotificationRequest Node::InsertedInto(
     insertion_point.GetDocument().IncrementNodeCount();
 #endif
   }
-  InvalidateDOMParts();
+  UpdateForInsertedDOMParts(insertion_point);
   if (ParentOrShadowHostNode()->IsInShadowTree())
     SetFlag(kIsInShadowTreeFlag);
   if (auto* cache = GetDocument().ExistingAXObjectCache()) {
@@ -2278,7 +2285,7 @@ void Node::RemovedFrom(ContainerNode& insertion_point) {
     insertion_point.GetDocument().DecrementNodeCount();
 #endif
   }
-  InvalidateDOMParts();
+  UpdateForRemovedDOMParts(insertion_point);
   if (IsInShadowTree() && !ContainingTreeScope().RootNode().IsShadowRoot())
     ClearFlag(kIsInShadowTreeFlag);
   if (auto* cache = GetDocument().ExistingAXObjectCache()) {

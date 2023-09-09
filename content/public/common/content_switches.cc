@@ -422,9 +422,6 @@ const char kEnableStrictMixedContentChecking[] =
 const char kEnableStrictPowerfulFeatureRestrictions[] =
     "enable-strict-powerful-feature-restrictions";
 
-// Enabled threaded compositing for web tests.
-const char kEnableThreadedCompositing[]     = "enable-threaded-compositing";
-
 // When specified along with a value in the range (0,1] will --enable-tracing
 // for (roughly) that percentage of tests being run. This is done in a stable
 // manner such that the same tests are chosen each run, and under the assumption
@@ -627,6 +624,12 @@ const char kProcessPerTab[]                 = "process-per-tab";
 // The value of this switch determines whether the process is started as a
 // renderer or plugin host.  If it's empty, it's the browser.
 const char kProcessType[]                   = "type";
+
+// Causes Protected Audiences Bidding and Auction API to supply the provided
+// debugging key to the trusted auction server. This tells the server that it
+// okay to log information about this user's auction to help with debugging.
+const char kProtectedAudiencesConsentedDebugToken[] =
+    "protected-audiences-consented-debug-token";
 
 // Uses a specified proxy server, overrides system settings. This switch only
 // affects HTTP and HTTPS requests. ARC-apps use only HTTP proxy server with the

@@ -10,6 +10,7 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/gtest_util.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/third_party/mozilla/url_parse.h"
@@ -1279,8 +1280,8 @@ DualComponentCase kCommonPathCases[] = {
     // Funny characters that are unescaped should be escaped
     {"/foo\x09\x91%91", nullptr, "/foo%09%91%91", Component(0, 13), true},
     {nullptr, L"/foo\x09\x91%91", "/foo%09%C2%91%91", Component(0, 16), true},
-    // Invalid characters that are escaped should cause a failure.
-    {"/foo%00%51", L"/foo%00%51", "/foo%00Q", Component(0, 8), false},
+    // %00 should not cause failures.
+    {"/foo%00%51", L"/foo%00%51", "/foo%00Q", Component(0, 8), true},
     // Some characters should be passed through unchanged regardless of esc.
     {"/(%28:%3A%29)", L"/(%28:%3A%29)", "/(%28:%3A%29)", Component(0, 13),
      true},
@@ -1386,7 +1387,7 @@ TEST(URLCanonTest, Path) {
              CanonicalizePath);
 
   // Manual test: embedded NULLs should be escaped and the URL should be marked
-  // as invalid.
+  // as valid.
   const char path_with_null[] = "/ab\0c";
   Component in_comp(0, 5);
   Component out_comp;
@@ -1395,7 +1396,7 @@ TEST(URLCanonTest, Path) {
   StdStringCanonOutput output(&out_str);
   bool success = CanonicalizePath(path_with_null, in_comp, &output, &out_comp);
   output.Complete();
-  EXPECT_FALSE(success);
+  EXPECT_TRUE(success);
   EXPECT_EQ("/ab%00c", out_str);
 }
 
@@ -2739,6 +2740,29 @@ TEST(URLCanonTest, IDNToASCII) {
   str = u"xn--1⁄4";
   EXPECT_FALSE(IDNToASCII(str.data(), str.length(), &output));
   output.set_length(0);
+}
+
+TEST(URLCanonTest, UnescapePathCharHistogram) {
+  struct TestCase {
+    base::StringPiece path;
+    base::HistogramBase::Count cnt;
+  } cases[] = {
+      {"/a", 0},
+      {"/%61", 1},
+      {"/%61%61", 1},
+  };
+
+  for (const auto& c : cases) {
+    base::HistogramTester histogram_tester;
+    Component in_comp(0, c.path.size());
+    Component out_comp;
+    std::string out_str;
+    StdStringCanonOutput output(&out_str);
+    bool success = CanonicalizePath(c.path.data(), in_comp, &output, &out_comp);
+    ASSERT_TRUE(success);
+    histogram_tester.ExpectBucketCount("URL.Path.UnescapeEscapedChar", 1,
+                                       c.cnt);
+  }
 }
 
 }  // namespace url

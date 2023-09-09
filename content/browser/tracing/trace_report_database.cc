@@ -11,15 +11,17 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/uuid.h"
 #include "sql/database.h"
+#include "sql/meta_table.h"
 #include "sql/statement.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace content {
 
 namespace {
+
 const base::FilePath::CharType kLocalTracesDatabaseName[] =
     FILE_PATH_LITERAL("LocalTraces.db");
-}  // namespace
+constexpr int kCurrentVersionNumber = 1;
 
 // create table `local_traces` with following columns:
 // `uuid` is the unique ID of the trace.
@@ -43,6 +45,8 @@ static constexpr char kLocalTracesTableSql[] = R"sql(
     proto BLOB NOT NULL,
     file_size INTEGER NOT NULL)
 )sql";
+
+}  // namespace
 
 TraceReportDatabase::TraceReportDatabase()
     : database_(sql::DatabaseOptions{.exclusive_locking = true,
@@ -78,11 +82,7 @@ bool TraceReportDatabase::OpenDatabase(const base::FilePath& path) {
     return false;
   }
 
-  if (!EnsureTableCreated()) {
-    database_.Close();
-    return false;
-  }
-  return true;
+  return EnsureTableCreated();
 }
 
 bool TraceReportDatabase::OpenDatabaseForTesting() {
@@ -90,21 +90,13 @@ bool TraceReportDatabase::OpenDatabaseForTesting() {
     return true;
   }
 
-  if (database_.OpenInMemory()) {
-    return true;
-  }
-
-  if (!EnsureTableCreated()) {
-    database_.Close();
+  if (!database_.OpenInMemory()) {
     return false;
   }
 
-  return true;
+  return EnsureTableCreated();
 }
 
-// TODO (aattar): Add database clean up solution and/or quota. Currently there's
-// no solution for cleaning up the database and/or how many trace reports it
-// can hold at once. Therefore, this method needs to be used carefully.
 bool TraceReportDatabase::AddTrace(NewReport new_report) {
   if (!database_.is_open()) {
     return false;
@@ -229,18 +221,34 @@ bool TraceReportDatabase::DeleteAllTraces() {
   return delete_all_traces.Run();
 }
 
-bool TraceReportDatabase::EnsureTableCreated() {
+bool TraceReportDatabase::DeleteTracesInDateRange(const base::Time start,
+                                                  const base::Time end) {
   if (!database_.is_open()) {
     return false;
   }
-  return database_.Execute(kLocalTracesTableSql);
+
+  sql::Statement delete_traces_in_range(database_.GetCachedStatement(
+      SQL_FROM_HERE,
+      "DELETE FROM local_traces WHERE creation_time BETWEEN ? AND ?"));
+
+  delete_traces_in_range.BindTime(0, start);
+  delete_traces_in_range.BindTime(1, end);
+
+  CHECK(delete_traces_in_range.is_valid());
+
+  return delete_traces_in_range.Run();
 }
 
-bool TraceReportDatabase::EnsureTableCreatedForTesting() {
-  if (!database_.is_open()) {
+bool TraceReportDatabase::EnsureTableCreated() {
+  DCHECK(database_.is_open());
+
+  sql::MetaTable meta_table;
+  if (!meta_table.Init(&database_, kCurrentVersionNumber,
+                       kCurrentVersionNumber)) {
     return false;
   }
-  return database_.ExecuteScriptForTesting(kLocalTracesTableSql);  // IN-TEST
+
+  return database_.Execute(kLocalTracesTableSql);
 }
 
 std::vector<TraceReportDatabase::ClientReport>

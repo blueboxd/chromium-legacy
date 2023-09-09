@@ -5902,20 +5902,22 @@ class AssertForegroundHelper {
   // Asserts that |renderer_process| isn't backgrounded and reposts self to
   // check again shortly. |renderer_process| must outlive this
   // AssertForegroundHelper instance.
-  void AssertForegroundAndRepost(const base::Process& renderer_process,
-                                 base::PortProvider* port_provider) {
-    ASSERT_FALSE(renderer_process.IsProcessBackgrounded(port_provider));
+  void AssertForegroundAndRepost(const base::Process& renderer_process) {
+    ASSERT_EQ(renderer_process.GetPriority(
+                  BrowserChildProcessHost::GetPortProvider()),
+              base::Process::Priority::kUserBlocking);
     base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
         FROM_HERE,
         base::BindOnce(&AssertForegroundHelper::AssertForegroundAndRepost,
                        weak_ptr_factory_.GetWeakPtr(),
-                       std::cref(renderer_process), port_provider),
+                       std::cref(renderer_process)),
         base::Milliseconds(1));
   }
 #else   // BUILDFLAG(IS_APPLE)
   // Same as above without the Mac specific base::PortProvider.
   void AssertForegroundAndRepost(const base::Process& renderer_process) {
-    ASSERT_FALSE(renderer_process.IsProcessBackgrounded());
+    ASSERT_EQ(renderer_process.GetPriority(),
+              base::Process::Priority::kUserBlocking);
     base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
         FROM_HERE,
         base::BindOnce(&AssertForegroundHelper::AssertForegroundAndRepost,
@@ -5951,11 +5953,6 @@ IN_PROC_BROWSER_TEST_P(
   StartEmbeddedServer();
   WebContentsImpl* web_contents =
       static_cast<WebContentsImpl*>(shell()->web_contents());
-
-#if BUILDFLAG(IS_APPLE)
-  base::PortProvider* port_provider =
-      BrowserChildProcessHost::GetPortProvider();
-#endif  //  BUILDFLAG(IS_APPLE)
 
   // Start off navigating to a.com and capture the process used to commit.
   EXPECT_TRUE(NavigateToURL(
@@ -6002,11 +5999,7 @@ IN_PROC_BROWSER_TEST_P(
   const base::Process& process = speculative_rph->GetProcess();
   EXPECT_TRUE(process.IsValid());
   AssertForegroundHelper assert_foreground_helper;
-#if BUILDFLAG(IS_APPLE)
-  assert_foreground_helper.AssertForegroundAndRepost(process, port_provider);
-#else
   assert_foreground_helper.AssertForegroundAndRepost(process);
-#endif
 
   // The process should be foreground priority before commit because it is
   // pending, and foreground after commit because it has a visible widget.
@@ -6027,11 +6020,6 @@ IN_PROC_BROWSER_TEST_P(
   StartEmbeddedServer();
   WebContentsImpl* web_contents =
       static_cast<WebContentsImpl*>(shell()->web_contents());
-
-#if BUILDFLAG(IS_APPLE)
-  base::PortProvider* port_provider =
-      BrowserChildProcessHost::GetPortProvider();
-#endif  //  BUILDFLAG(IS_APPLE)
 
   // Start off navigating to a.com and capture the process used to commit.
   EXPECT_TRUE(NavigateToURL(
@@ -6088,11 +6076,7 @@ IN_PROC_BROWSER_TEST_P(
   const base::Process& process = spare_rph->GetProcess();
   EXPECT_TRUE(process.IsValid());
   AssertForegroundHelper assert_foreground_helper;
-#if BUILDFLAG(IS_APPLE)
-  assert_foreground_helper.AssertForegroundAndRepost(process, port_provider);
-#else
   assert_foreground_helper.AssertForegroundAndRepost(process);
-#endif
 
   // The process should be foreground priority before commit because it is
   // pending, and foreground after commit because it has a visible widget.
@@ -6518,13 +6502,15 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerNoSiteIsolationTest,
 IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
                        RemoveSubframeInUnload_SameSite) {
   // TODO(https://crbug.com/1148793): Remove this early return. This doesn't
-  // work for RenderDocumentLevel::kSubframe or greater because cancelling the
-  // navigation when detaching the subtree tries to restore the replaced
-  // `blink::RemoteFrame` (which doesn't exist in the same-site RenderDocument
-  // case because the replaced object wasn't a `blink::RemoteFrame`, but instead
-  // a RenderFrame).
-  if (ShouldCreateNewHostForSameSiteSubframe())
+  // work for RenderDocumentLevel::kNonLocalRootSubframe or greater because
+  // cancelling the navigation when detaching the subtree tries to restore the
+  // replaced `blink::RemoteFrame` (which doesn't exist in the same-site
+  // RenderDocument case because the replaced object wasn't a
+  // `blink::RemoteFrame`, but instead a RenderFrame).
+  if (ShouldCreateNewRenderFrameHostOnSameSiteNavigation(
+          /*is_main_frame=*/false, /*is_local_root=*/false)) {
     return;
+  }
   AssertCanRemoveSubframeInUnload(/*same_site=*/true);
 }
 
@@ -6532,9 +6518,11 @@ IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
 IN_PROC_BROWSER_TEST_P(RenderFrameHostManagerTest,
                        RemoveSubframeInUnload_CrossSite) {
   // TODO(https://crbug.com/1148793): Remove this early return.
-  if (ShouldCreateNewHostForSameSiteSubframe() &&
-      !AreAllSitesIsolatedForTesting())
+  if (ShouldCreateNewRenderFrameHostOnSameSiteNavigation(
+          /*is_main_frame=*/false, /*is_local_root=*/false) &&
+      !AreAllSitesIsolatedForTesting()) {
     return;
+  }
   AssertCanRemoveSubframeInUnload(/*same_site=*/false);
 }
 

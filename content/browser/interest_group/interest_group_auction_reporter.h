@@ -46,6 +46,7 @@ namespace content {
 class AuctionWorkletManager;
 struct BiddingAndAuctionResponse;
 class BrowserContext;
+class HeaderDirectFromSellerSignals;
 class InterestGroupManagerImpl;
 class PrivateAggregationManager;
 
@@ -118,6 +119,8 @@ class CONTENT_EXPORT InterestGroupAuctionReporter {
         auction_config;
 
     std::unique_ptr<SubresourceUrlBuilder> subresource_url_builder;
+    std::unique_ptr<HeaderDirectFromSellerSignals>
+        direct_from_seller_signals_header_ad_slot;
 
     // Bid fed as input to the seller. If this is the top level seller and the
     // bid came from a component auction, it's the (optionally) modified bid
@@ -158,6 +161,7 @@ class CONTENT_EXPORT InterestGroupAuctionReporter {
 
     GURL render_url;
     std::vector<GURL> ad_components;
+    absl::optional<std::vector<url::Origin>> allowed_reporting_origins;
 
     // Bid returned by the bidder.
     double bid;
@@ -372,6 +376,7 @@ class CONTENT_EXPORT InterestGroupAuctionReporter {
       double highest_scoring_other_bid,
       const absl::optional<GURL>& bidder_report_url,
       const base::flat_map<std::string, GURL>& bidder_ad_beacon_map,
+      const base::flat_map<std::string, std::string>& bidder_ad_macro_map,
       PrivateAggregationRequests pa_requests,
       base::TimeDelta reporting_latency,
       const std::vector<std::string>& errors);
@@ -379,9 +384,14 @@ class CONTENT_EXPORT InterestGroupAuctionReporter {
   // Invoked with the results from ReportWin. Split out as a separate function
   // from OnBidderReportWinComplete since this is also called by
   // `InitializeFromServerResponse()`.
+  // `bidder_ad_macro_map` is always absl::nullopt from
+  // `InitializeFromServerResponse()` since macro expanded reporting is not
+  // supported from server auction.
   bool AddReportWinResult(
       const absl::optional<GURL>& bidder_report_url,
       const base::flat_map<std::string, GURL>& bidder_ad_beacon_map,
+      const absl::optional<base::flat_map<std::string, std::string>>&
+          bidder_ad_macro_map,
       std::vector<std::string>& errors_out);
 
   // Sets `reporting_complete_` to true an invokes MaybeCompleteCallback().

@@ -24,10 +24,6 @@
 #import "ios/testing/earl_grey/earl_grey_test.h"
 #import "ui/base/l10n/l10n_util.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 using chrome_test_util::ButtonWithAccessibilityLabelId;
 using chrome_test_util::SettingsDoneButton;
 using chrome_test_util::SettingsMenuPrivacyButton;
@@ -194,7 +190,7 @@ namespace {
 
   // Check all rows exist.
   if (base::FeatureList::IsEnabled(
-          safe_browsing::kFriendlierSafeBrowsingSettings)) {
+          safe_browsing::kFriendlierSafeBrowsingSettingsEnhancedProtection)) {
     // Check that headers and footer exist.
     [[self elementInteractionWithGreyMatcher:
                grey_accessibilityID(
@@ -289,7 +285,7 @@ namespace {
 
   // Check all rows exist.
   if (!base::FeatureList::IsEnabled(
-          safe_browsing::kFriendlierSafeBrowsingSettings)) {
+          safe_browsing::kFriendlierSafeBrowsingSettingsStandardProtection)) {
     [[self elementInteractionWithGreyMatcher:
                grey_accessibilityID(kSafeBrowsingStandardProtectionShieldCellId)
                            scrollViewMatcher:

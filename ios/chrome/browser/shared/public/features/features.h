@@ -152,12 +152,6 @@ BASE_DECLARE_FEATURE(kEnableShortenedPasswordAutoFillInstruction);
 // Feature flag to enable Apple Calendar event in experience kit.
 BASE_DECLARE_FEATURE(kEnableExpKitAppleCalendar);
 
-// When enabled sort tab by last usage in the TabGrid.
-BASE_DECLARE_FEATURE(kTabGridRecencySort);
-
-// Whether the tab grid tabs should be sorted by recency.
-bool IsTabGridSortedByRecency();
-
 // When enabled uses new transitions in the TabGrid.
 BASE_DECLARE_FEATURE(kTabGridNewTransitions);
 
@@ -198,6 +192,15 @@ BASE_DECLARE_FEATURE(kNewNTPOmniboxLayout);
 
 // Feature flag to move the steady-state (unfocused) omnibox to the bottom.
 BASE_DECLARE_FEATURE(kBottomOmniboxSteadyState);
+
+// Feature param under kBottomOmniboxDefaultSetting to select the default
+// setting.
+extern const char kBottomOmniboxDefaultSettingParam[];
+extern const char kBottomOmniboxDefaultSettingParamTop[];
+extern const char kBottomOmniboxDefaultSettingParamBottom[];
+extern const char kBottomOmniboxDefaultSettingParamSafariSwitcher[];
+// Feature flag to change the default position of the omnibox.
+BASE_DECLARE_FEATURE(kBottomOmniboxDefaultSetting);
 
 // Returns true if `kBottomOmniboxSteadyState` feature flag is enabled and the
 // current device is a phone. This checks that the flag is enabled, not that the

@@ -8,6 +8,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros_local.h"
 #include "base/task/thread_pool.h"
+#include "chrome/browser/companion/core/companion_metrics_logger.h"
 #include "chrome/browser/companion/visual_search/features.h"
 #include "chrome/browser/companion/visual_search/visual_search_suggestions_service.h"
 #include "content/public/browser/render_frame_host.h"
@@ -54,18 +55,32 @@ void CloseModelFile(base::File model_file) {
   }
   model_file.Close();
 }
+
+// Convert metrics map from Mojom IPC to |VisualSuggestionMetrics|.
+VisualSuggestionsMetrics GenerateMetrics(const ClassificationStats& stats) {
+  VisualSuggestionsMetrics metrics;
+  metrics.eligible_count = stats->eligible_count;
+  metrics.shoppy_count = stats->shoppy_count;
+  metrics.sensitive_count = stats->sensitive_count;
+  metrics.shoppy_nonsensitive_count = stats->shoppy_nonsensitive_count;
+  metrics.results_count = stats->results_count;
+  return metrics;
+}
+
 }  // namespace
 
 VisualSearchClassifierHost::VisualSearchClassifierHost(
     VisualSearchSuggestionsService* visual_search_service)
-    : visual_search_service_(visual_search_service) {}
+    : visual_search_service_(visual_search_service),
+      current_result_(VisualSearchResultPair()) {}
 
 VisualSearchClassifierHost::~VisualSearchClassifierHost() = default;
 
 void VisualSearchClassifierHost::HandleClassification(
-    std::vector<mojom::VisualSearchSuggestionPtr> results) {
-  LOCAL_HISTOGRAM_COUNTS_100("Companion.VisualSearch.ClassificationResultsSize",
-                             results.size());
+    std::vector<mojom::VisualSearchSuggestionPtr> results,
+    mojom::ClassificationStatsPtr classification_stats) {
+  base::UmaHistogramCounts100("Companion.VisualQuery.ClassificationResultsSize",
+                              results.size());
   std::vector<std::string> data_uris;
   data_uris.reserve(results.size());
 
@@ -77,10 +92,15 @@ void VisualSearchClassifierHost::HandleClassification(
     }
   }
 
+  // We store the result part of the pair.
+  current_result_->second = data_uris;
+  waiting_for_result_ = false;
+
   LOCAL_HISTOGRAM_BOOLEAN("Companion.VisualSearch.EndClassificationSuccess",
                           !result_callback_.is_null());
   if (!result_callback_.is_null()) {
-    std::move(result_callback_).Run(std::move(data_uris));
+    std::move(result_callback_)
+        .Run(std::move(data_uris), GenerateMetrics(classification_stats));
   }
   // Log latency from the time the companion page handler called
   // StartClassification to now, after the classification results have been
@@ -111,6 +131,9 @@ void VisualSearchClassifierHost::StartClassification(
     RecordStatusChange(InitStatus::kOngoingClassification);
     return;
   }
+
+  // We store the current url being processed in the last result pair.
+  current_result_->first = validated_url;
 
   // We set the callback so that we know where to send back the results.
   result_callback_ = std::move(callback);
@@ -159,6 +182,9 @@ void VisualSearchClassifierHost::StartClassificationWithModel(
         std::move(model), base64_config,
         result_handler_.BindNewPipeAndPassRemote());
 
+    // Keep track that we sent IPC and waiting on renderer.
+    waiting_for_result_ = true;
+
     // Log latency from the time the companion page handler called
     // StartClassification to now, after the proper checks and sets have
     // completed and classification has actually started.
@@ -177,6 +203,17 @@ void VisualSearchClassifierHost::StartClassificationWithModel(
 
 void VisualSearchClassifierHost::CancelClassification(const GURL& visible_url) {
   result_callback_.Reset();
+  waiting_for_result_ = false;
   RecordStatusChange(InitStatus::kQueryCancelled);
+}
+
+absl::optional<VisualSearchResultPair>
+VisualSearchClassifierHost::GetVisualResult(const GURL& url) {
+  // We only send back results if we have received result from the renderer.
+  if (!waiting_for_result_ && current_result_ &&
+      url.GetContent() == current_result_->first.GetContent()) {
+    return current_result_;
+  }
+  return absl::nullopt;
 }
 }  // namespace companion::visual_search

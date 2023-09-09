@@ -193,7 +193,7 @@ function validateBrowserSignals(browserSignals, isGenerateBid) {
     if (browserSignals.prevWinsMs.length !== 0)
       throw 'Wrong prevWinsMs ' + JSON.stringify(browserSignals.prevWinsMs);
   } else {
-    if (Object.keys(browserSignals).length !== 16) {
+    if (Object.keys(browserSignals).length !== 15) {
       throw 'Wrong number of browser signals fields ' +
           JSON.stringify(browserSignals);
     }
@@ -219,8 +219,6 @@ function validateBrowserSignals(browserSignals, isGenerateBid) {
     }
     if (browserSignals.adCost !== 3)
       throw 'Wrong adCost ' + browserSignals.adCost;
-    if (!browserSignals.hasOwnProperty("kAnonStatus"))
-      throw 'Missing kAnonStatus';
   }
 }
 
@@ -233,14 +231,17 @@ function validateSellerSignals(sellerSignals) {
 function validateDirectFromSellerSignals(directFromSellerSignals) {
   const perBuyerSignalsJSON =
       JSON.stringify(directFromSellerSignals.perBuyerSignals);
-  if (perBuyerSignalsJSON !== '{"from":"component","json":"for","buyer":[1]}') {
+  if (perBuyerSignalsJSON !== '{"from":"component","json":"for","buyer":[1]}' &&
+      perBuyerSignalsJSON !== '{"buyer":[1],"from":"component","json":"for"}') {
     throw 'Wrong directFromSellerSignals.perBuyerSignals ' +
         perBuyerSignalsJSON;
   }
   const auctionSignalsJSON =
       JSON.stringify(directFromSellerSignals.auctionSignals);
   if (auctionSignalsJSON !==
-      '{"from":"component","json":"for","all":["parties"]}') {
+          '{"from":"component","json":"for","all":["parties"]}' &&
+      auctionSignalsJSON !==
+          '{"all":["parties"],"from":"component","json":"for"}') {
     throw 'Wrong directFromSellerSignals.auctionSignals ' +
         auctionSignalsJSON;
   }

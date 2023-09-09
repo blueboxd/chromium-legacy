@@ -27,6 +27,7 @@ source_set("android") {
     "//base",
     "//components/browsing_data/content",
     "//components/cdm/browser",
+    "//components/content_settings/browser/ui",
     "//components/content_settings/core/browser",
     "//components/permissions",
     "//components/subresource_filter/android",
@@ -157,6 +158,7 @@ android_library("javatests") {
     ":java",
     "//base:base_java",
     "//base:base_java_test_support",
+    "//base:jni_java",
     "//components/browser_ui/settings/android:test_support_java",
     "//content/public/android:content_java",
     "//third_party/androidx:androidx_test_runner_java",
@@ -179,6 +181,7 @@ robolectric_library("junit") {
     "//base:base_java",
     "//base:base_java_test_support",
     "//base:base_junit_test_support",
+    "//base:jni_java",
     "//components/content_settings/android:content_settings_enums_java",
     "//content/public/android:content_java",
     "//third_party/junit",
@@ -242,6 +245,7 @@ android_resources("java_resources") {
     "java/res/layout/tri_state_cookie_settings_preference.xml",
     "java/res/layout/tri_state_site_settings_preference.xml",
     "java/res/layout/website_features.xml",
+    "java/res/layout/zoom_preferences_view.xml",
     "java/res/menu/website_preferences_menu.xml",
     "java/res/values/dimens.xml",
     "java/res/values/ids.xml",
@@ -256,6 +260,7 @@ android_resources("java_resources") {
   ]
 
   deps = [
+    "//components/browser_ui/accessibility/android:java_resources",
     "//components/browser_ui/settings/android:java_resources",
     "//components/browser_ui/strings/android:browser_ui_strings_grd",
     "//components/browser_ui/styles/android:java_resources",

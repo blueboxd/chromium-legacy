@@ -25,10 +25,16 @@ class GURL;
 
 - (instancetype)initWithLargeIconService:
                     (favicon::LargeIconService*)largeIconService
-                                  domain:(spotlight::Domain)domain;
+                                  domain:(spotlight::Domain)domain
+                   useTitleInIdentifiers:(BOOL)useTitleInIdentifiers;
+
+// When set to NO, items with same URL but different titles will use the same ID
+// in the spotlight index.
+@property(nonatomic, assign) BOOL useTitleInIdentifiers;
 
 // Fetch a favicon for a given URL and creates a searchable item that points to
-// URLToRefresh and have a given title.
+// URLToRefresh and have a given title. The URL should be valid and the
+// title should not be empty.
 - (void)generateSearchableItem:(const GURL&)URLToRefresh
                          title:(NSString*)title
             additionalKeywords:(NSArray<NSString*>*)keywords

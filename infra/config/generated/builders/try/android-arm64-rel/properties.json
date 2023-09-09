@@ -11,7 +11,7 @@
             "builder_id": {
               "bucket": "ci",
               "builder": "Android Release (Nexus 5X)",
-              "project": "chromium"
+              "project": "chromium-m117"
             },
             "builder_spec": {
               "build_gs_bucket": "chromium-gpu-archive",
@@ -22,7 +22,7 @@
               },
               "legacy_chromium_config": {
                 "apply_configs": [
-                  "download_vr_test_apks",
+                  "download_xr_test_apks",
                   "mb"
                 ],
                 "build_config": "Release",
@@ -42,7 +42,7 @@
             "builder_id": {
               "bucket": "ci",
               "builder": "android-pie-arm64-rel",
-              "project": "chromium"
+              "project": "chromium-m117"
             },
             "builder_spec": {
               "build_gs_bucket": "chromium-android-archive",
@@ -53,7 +53,7 @@
               },
               "legacy_chromium_config": {
                 "apply_configs": [
-                  "download_vr_test_apks",
+                  "download_xr_test_apks",
                   "mb"
                 ],
                 "build_config": "Release",
@@ -75,12 +75,12 @@
         {
           "bucket": "ci",
           "builder": "Android Release (Nexus 5X)",
-          "project": "chromium"
+          "project": "chromium-m117"
         },
         {
           "bucket": "ci",
           "builder": "android-pie-arm64-rel",
-          "project": "chromium"
+          "project": "chromium-m117"
         }
       ],
       "rts_config": {
@@ -96,7 +96,7 @@
     "use_clang_coverage": true
   },
   "$build/flakiness": {
-    "check_for_flakiness": true
+    "check_for_flakiness_with_resultdb": true
   },
   "$recipe_engine/resultdb/test_presentation": {
     "column_keys": [],

@@ -127,7 +127,8 @@ class PasswordStoreBuiltInBackendTest : public testing::Test {
                                                  IsAccountStore(false));
     }
 
-    store_ = std::make_unique<PasswordStoreBuiltInBackend>(std::move(database));
+    store_ = std::make_unique<PasswordStoreBuiltInBackend>(
+        std::move(database), syncer::WipeModelUponSyncDisabledBehavior::kNever);
     PasswordStoreBackend* backend = store_.get();
     backend->InitBackend(affiliated_match_helper,
                          /*remote_form_changes_received=*/base::DoNothing(),
@@ -748,12 +749,6 @@ TEST_F(PasswordStoreBuiltInBackendTest,
 }
 
 TEST_F(PasswordStoreBuiltInBackendTest, GetLoginsWithAffiliations) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatures(
-      /*enabled_features=*/{features::kFillingAcrossGroupedSites,
-                            features::kFillingAcrossAffiliatedWebsites},
-      /*disabled_features=*/{});
-
   FakeAffiliationService fake_affiliation_service;
   MockAffiliatedMatchHelper mock_affiliated_match_helper(
       &fake_affiliation_service);

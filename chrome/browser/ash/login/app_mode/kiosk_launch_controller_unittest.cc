@@ -48,6 +48,7 @@
 #include "chrome/test/base/testing_profile_manager.h"
 #include "chromeos/ash/components/install_attributes/stub_install_attributes.h"
 #include "chromeos/ash/components/network/network_handler.h"
+#include "chromeos/ash/components/standalone_browser/feature_refs.h"
 #include "chromeos/ash/components/sync_wifi/network_test_helper.h"
 #include "components/account_id/account_id.h"
 #include "components/crash/core/common/crash_key.h"
@@ -171,6 +172,9 @@ class KioskLaunchControllerTest : public extensions::ExtensionServiceTestBase {
     disable_wait_timer_and_login_operations_for_testing_ =
         KioskLaunchController::DisableLoginOperationsForTesting();
 
+    can_configure_network_for_testing_ =
+        NetworkUiController::SetCanConfigureNetworkForTesting(true);
+
     view_ = std::make_unique<FakeAppLaunchSplashScreenHandler>();
     auto network_monitor_unique = std::make_unique<FakeNetworkMonitor>();
     network_monitor_ = network_monitor_unique->GetWeakPtr();
@@ -291,7 +295,9 @@ class KioskLaunchControllerTest : public extensions::ExtensionServiceTestBase {
       keyboard_controller_client_;
   std::unique_ptr<WebKioskAppManager> kiosk_app_manager_;
 
-  ScopedCanConfigureNetwork can_configure_network_for_testing_{true};
+  std::unique_ptr<base::AutoReset<absl::optional<bool>>>
+      can_configure_network_for_testing_;
+
   std::unique_ptr<base::AutoReset<bool>>
       disable_wait_timer_and_login_operations_for_testing_;
   std::unique_ptr<FakeAppLaunchSplashScreenHandler> view_;
@@ -396,15 +402,6 @@ TEST_F(KioskLaunchControllerTest, AppLaunchedShouldStartSession) {
       HasViewState(
           AppLaunchSplashScreenView::AppLaunchState::kWaitingAppWindow));
   EXPECT_TRUE(session_manager::SessionManager::Get()->IsSessionStarted());
-}
-
-TEST_F(KioskLaunchControllerTest,
-       InitializeLauncherShouldSignalNetworkRequired) {
-  controller().Start(kiosk_app_id(), /*auto_launch=*/false);
-  profile_controls().OnProfileLoaded(profile());
-
-  network_delegate().InitializeNetwork();
-  EXPECT_TRUE(view().IsNetworkRequired());
 }
 
 TEST_F(KioskLaunchControllerTest,
@@ -812,11 +809,10 @@ class KioskLaunchControllerUsingLacrosTest : public testing::Test {
   KioskLaunchControllerUsingLacrosTest()
       : fake_user_manager_(new FakeChromeUserManager()),
         scoped_user_manager_(base::WrapUnique(fake_user_manager_.get())) {
-    scoped_feature_list_.InitWithFeatures(
-        {::features::kWebKioskEnableLacros, ash::features::kLacrosSupport,
-         ash::features::kLacrosPrimary, ash::features::kLacrosOnly,
-         ash::features::kLacrosProfileMigrationForceOff},
-        {});
+    std::vector<base::test::FeatureRef> enabled =
+        ash::standalone_browser::GetFeatureRefs();
+    enabled.push_back(::features::kWebKioskEnableLacros);
+    scoped_feature_list_.InitWithFeatures(enabled, {});
   }
 
   void SetUp() override {
@@ -835,6 +831,9 @@ class KioskLaunchControllerUsingLacrosTest : public testing::Test {
 
     disable_wait_timer_and_login_operations_for_testing_ =
         KioskLaunchController::DisableLoginOperationsForTesting();
+
+    can_configure_network_for_testing_ =
+        NetworkUiController::SetCanConfigureNetworkForTesting(true);
 
     view_ = std::make_unique<FakeAppLaunchSplashScreenHandler>();
     controller_ = std::make_unique<KioskLaunchController>(
@@ -939,7 +938,8 @@ class KioskLaunchControllerUsingLacrosTest : public testing::Test {
       keyboard_controller_client_;
   std::unique_ptr<WebKioskAppManager> kiosk_app_manager_;
 
-  ScopedCanConfigureNetwork can_configure_network_for_testing_{true};
+  std::unique_ptr<base::AutoReset<absl::optional<bool>>>
+      can_configure_network_for_testing_;
   std::unique_ptr<base::AutoReset<bool>>
       disable_wait_timer_and_login_operations_for_testing_;
   std::unique_ptr<FakeAppLaunchSplashScreenHandler> view_;

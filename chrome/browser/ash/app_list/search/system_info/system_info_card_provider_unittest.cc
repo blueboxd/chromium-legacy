@@ -392,7 +392,7 @@ TEST_F(SystemInfoCardProviderTest, Version) {
   ASSERT_EQ(results()[0]->details_text_vector().size(), 1u);
   const auto& details = results()[0]->details_text_vector()[0];
   ASSERT_EQ(details.GetType(), ash::SearchResultTextItemType::kString);
-  EXPECT_EQ(details.GetText(), u"Check for updates");
+  EXPECT_EQ(details.GetText(), u"Click to check for details");
   EXPECT_TRUE(details.GetTextTags().empty());
 }
 
@@ -559,6 +559,10 @@ TEST_F(SystemInfoCardProviderTest, Memory) {
   EXPECT_EQ(details2.GetText(), u"Memory 1.9 GB | 7.6 GB total");
   EXPECT_EQ(results()[0]->system_info_answer_card_data()->bar_chart_percentage,
             75);
+  EXPECT_EQ(results()[0]
+                ->system_info_answer_card_data()
+                ->upper_warning_limit_bar_chart.value(),
+            90);
 }
 
 TEST_F(SystemInfoCardProviderTest, MemoryProbeError) {
@@ -632,9 +636,8 @@ TEST_F(SystemInfoCardProviderTest, Battery) {
   EXPECT_EQ(details.GetText(), u"Battery 94% | 17 minutes until full");
   EXPECT_TRUE(details.GetTextTags().empty());
 
-  EXPECT_EQ(
-      results()[0]->system_info_answer_card_data()->right_hand_description,
-      u"Battery health 76% | Cycle count 500");
+  EXPECT_EQ(results()[0]->system_info_answer_card_data()->extra_details,
+            u"Battery health 76% | Cycle count 500");
 
   const int64_t new_time_to_full_secs = time_to_full_secs - 100;
   const double new_battery_percent = 96.0;

@@ -60,6 +60,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/theme_provider.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/color/color_mixer.h"
 #include "ui/color/color_provider_source.h"
 #include "ui/color/color_recipe.h"
@@ -94,6 +95,7 @@ class MockPage : public new_tab_page::mojom::Page {
   MOCK_METHOD(void, SetModulesFreVisibility, (bool));
   MOCK_METHOD(void, SetCustomizeChromeSidePanelVisibility, (bool));
   MOCK_METHOD(void, SetPromo, (new_tab_page::mojom::PromoPtr));
+  MOCK_METHOD(void, ShowWebstoreToast, ());
 
   mojo::Receiver<new_tab_page::mojom::Page> receiver_{this};
 };
@@ -392,9 +394,9 @@ class NewTabPageHandlerThemeTest
     }
 
     if (CustomizeChromeSidePanel()) {
-      enabled_features.push_back(ntp_features::kCustomizeChromeSidePanel);
+      enabled_features.push_back(features::kCustomizeChromeSidePanel);
     } else {
-      disabled_features.push_back(ntp_features::kCustomizeChromeSidePanel);
+      disabled_features.push_back(features::kCustomizeChromeSidePanel);
     }
 
     if (BackgroundImageErrorDetection()) {
@@ -1187,5 +1189,19 @@ TEST_F(NewTabPageHandlerTest,
 
   handler_->MaybeShowCustomizeChromeFeaturePromo();
 
+  mock_page_.FlushForTesting();
+}
+
+TEST_F(NewTabPageHandlerTest, ShowWebstoreToast) {
+  profile_->GetPrefs()->SetInteger(prefs::kSeedColorChangeCount, 1);
+
+  EXPECT_CALL(mock_page_, ShowWebstoreToast).Times(1);
+  mock_page_.FlushForTesting();
+}
+
+TEST_F(NewTabPageHandlerTest, DoNotShowWebstoreToastOnCountExceeded) {
+  profile_->GetPrefs()->SetInteger(prefs::kSeedColorChangeCount, 4);
+
+  EXPECT_CALL(mock_page_, ShowWebstoreToast).Times(0);
   mock_page_.FlushForTesting();
 }

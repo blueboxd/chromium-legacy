@@ -13,10 +13,6 @@
 #include "content/browser/browser_child_process_host_impl.h"
 #include "content/public/browser/child_process_data.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 namespace content {
 
 namespace {
@@ -79,8 +75,9 @@ void BrowserChildProcessBackgroundedBridge::Initialize() {
   // Do the initial adjustment based on the initial value of the
   // TASK_CATEGORY_POLICY role of the browser process.
   base::SelfPortProvider self_port_provider;
-  process_->SetProcessBackgrounded(
-      base::Process::Current().IsProcessBackgrounded(&self_port_provider));
+  const base::Process::Priority browser_process_priority =
+      base::Process::Current().GetPriority(&self_port_provider);
+  process_->SetProcessPriority(browser_process_priority);
 
   if (!g_notifications_enabled) {
     return;
@@ -122,11 +119,11 @@ void BrowserChildProcessBackgroundedBridge::OnReceivedTaskPort(
 }
 
 void BrowserChildProcessBackgroundedBridge::OnBrowserProcessForegrounded() {
-  process_->SetProcessBackgrounded(false);
+  process_->SetProcessPriority(base::Process::Priority::kUserBlocking);
 }
 
 void BrowserChildProcessBackgroundedBridge::OnBrowserProcessBackgrounded() {
-  process_->SetProcessBackgrounded(true);
+  process_->SetProcessPriority(base::Process::Priority::kBestEffort);
 }
 
 }  // namespace content

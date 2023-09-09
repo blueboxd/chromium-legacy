@@ -61,6 +61,7 @@
 #include "extensions/common/constants.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/color/color_provider.h"
 #include "ui/gfx/vector_icon_types.h"
 #include "url/gurl.h"
@@ -328,10 +329,11 @@ bool SearchTabHelper::IsInputInProgress() const {
 
 void SearchTabHelper::CloseNTPCustomizeChromeFeaturePromo() {
   const base::Feature& customize_chrome_feature =
-      feature_engagement::kIPHDesktopCustomizeChromeFeature;
-  if (!base::FeatureList::IsEnabled(customize_chrome_feature) ||
-      web_contents()->GetController().GetVisibleEntry()->GetURL() ==
-          GURL(chrome::kChromeUINewTabPageURL)) {
+      features::IsChromeRefresh2023()
+          ? feature_engagement::kIPHDesktopCustomizeChromeRefreshFeature
+          : feature_engagement::kIPHDesktopCustomizeChromeFeature;
+  if (web_contents()->GetController().GetVisibleEntry()->GetURL() ==
+      GURL(chrome::kChromeUINewTabPageURL)) {
     return;
   }
   auto* browser_window =

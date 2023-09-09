@@ -29,17 +29,6 @@ BASE_FEATURE(kAutofillGivePrecedenceToNumericQuantities,
              "AutofillGivePrecedenceToNumericQuantities",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-// Controls if `kAccount` profiles are loaded from AutofillTable and
-// consequently suggested for filling.
-// TODO(crbug.com/1348294): Remove once launched.
-BASE_FEATURE(kAutofillAccountProfilesUnionView,
-             "AutofillAccountProfilesUnionView",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-// Account profiles are not considered for regular updates on import, but if
-// this parameter is enabled, they are considered for silent updates.
-const base::FeatureParam<bool> kAutofillEnableSilentUpdatesForAccountProfiles{
-    &kAutofillAccountProfilesUnionView, "enable_silent_updates", true};
-
 // When enabled, creating new kAccount profiles becomes possible for eligible
 // users. Moreover, users are prompted to migrate existing kLocalOrSyncable
 // profiles to the kAccount storage.
@@ -309,6 +298,13 @@ BASE_FEATURE(kAutofillFeedback,
              "AutofillFeedback",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Enables using the newer i18n address model, overriding the legacy one.
+// This includes:
+// - Using newer i18n address format strings.
+BASE_FEATURE(kAutofillUseI18nAddressModel,
+             "AutofillUseI18nAddressModel",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Changes Autofill Clear Form into Undo Autofill.
 BASE_FEATURE(kAutofillUndo, "AutofillUndo", base::FEATURE_DISABLED_BY_DEFAULT);
 
@@ -456,6 +452,13 @@ BASE_FEATURE(kAutofillAlwaysParsePlaceholders,
              "AutofillAlwaysParsePlaceholders",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// If the feature is enabled, browser forms for which Autofill has received
+// predictions, are split into renderer forms before passing them on to password
+// manager.
+BASE_FEATURE(kAutofillPassRendererFormsToPasswordManager,
+             "AutofillPassRendererFormsToPasswordManager",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
 // If the feature is enabled, FormTracker's probable-form-submission detection
 // is disabled and replaced with browser-side detection.
 // TODO(crbug/1117451): Remove once it works.
@@ -489,12 +492,6 @@ BASE_FEATURE(kAutofillServerBehaviors,
 // belongs to.
 const base::FeatureParam<int> kAutofillServerBehaviorsParam{
     &kAutofillServerBehaviors, "server_prediction_source", 0};
-
-// Controls whether Autofill may fill across origins.
-// TODO(crbug.com/1304721): Clean up when launched.
-BASE_FEATURE(kAutofillSharedAutofill,
-             "AutofillSharedAutofill",
-             base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Controls whether to offer a delete button for Autocomplete entries in the
 // Autofill popup.
@@ -538,6 +535,13 @@ BASE_FEATURE(kAutofillSplitCreditCardNumbersCautiously,
 // filtering profiles, or only on prefixes of the whole string.
 BASE_FEATURE(kAutofillTokenPrefixMatching,
              "AutofillTokenPrefixMatching",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+// When enabled, on form submit, observations for every used profile are
+// collected into the profile's `token_quality()`.
+// TODO(crbug.com/1453650): Remove when launched.
+BASE_FEATURE(kAutofillTrackProfileTokenQuality,
+             "AutofillTrackProfileTokenQuality",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Controls whether to use the AutofillUseAlternativeStateNameMap for filling
@@ -642,6 +646,13 @@ BASE_FEATURE(kAutofillKeyboardAccessory,
              "AutofillKeyboardAccessory_LAUNCHED",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+// When enabled, Autofill suggestions from keyboard accessory chips are only
+// accepted if at least 500ms have passed between showing the accessory and
+// interacting with the accessory chip.
+BASE_FEATURE(kAutofillKeyboardAccessoryAcceptanceDelayThreshold,
+             "AutofillKeyboardAccessoryAcceptanceDelayThreshold",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
 // Controls whether the touch to fill surface is shown for credit cards on
 // Android.
 BASE_FEATURE(kAutofillTouchToFillForCreditCardsAndroid,
@@ -663,6 +674,17 @@ BASE_FEATURE(kAutofillUseMobileLabelDisambiguation,
 const char kAutofillUseMobileLabelDisambiguationParameterName[] = "variant";
 const char kAutofillUseMobileLabelDisambiguationParameterShowAll[] = "show-all";
 const char kAutofillUseMobileLabelDisambiguationParameterShowOne[] = "show-one";
+
+// When enabled, the keyboard accessory is shown for autocomplete=unrecognized
+// fields. Selecting a keyboard accessory suggestion will fill the triggering
+// field (independently of the autocomplete attribute) and all
+// autocomplete != unrecognized fields in the triggering field's section.
+// Note that this only affects address fields, since credit cards already ignore
+// autocomplete=unrecognized.
+// TODO(crbug.com/1446318): Remove when launched.
+BASE_FEATURE(kAutofillSuggestionsForAutocompleteUnrecognizedFieldsOnMobile,
+             "AutofillSuggestionsForAutocompleteUnrecognizedFieldsOnMobile",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 #endif  // BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
 
 namespace test {

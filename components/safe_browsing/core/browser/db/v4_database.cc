@@ -124,8 +124,15 @@ void V4Database::CreateOnTaskRunner(
   base::UmaHistogramExactLinear(
       "SafeBrowsing.V4Database.DirectoryCreationResult", -error,
       -base::File::FILE_ERROR_MAX);
+  if (error == base::File::FILE_ERROR_NOT_A_DIRECTORY) {
+    base::DeleteFile(base_path);
+    success = base::CreateDirectoryAndGetError(base_path, &error);
+    base::UmaHistogramExactLinear(
+        "SafeBrowsing.V4Database.DirectoryCreationResultAfterRetry", -error,
+        -base::File::FILE_ERROR_MAX);
+  }
   if (!success) {
-    NOTREACHED();
+    return;
   }
 
 #if BUILDFLAG(IS_APPLE)
@@ -386,6 +393,24 @@ void V4Database::RecordFileSizeHistograms() {
       static_cast<int64_t>(db_size_kilobytes / 1024);
   UMA_HISTOGRAM_EXACT_LINEAR(kV4DatabaseSizeLinearMetric, db_size_megabytes,
                              50);
+}
+
+HashPrefixMap::MigrateResult V4Database::GetMigrateResult() {
+  HashPrefixMap::MigrateResult final_result =
+      HashPrefixMap::MigrateResult::kUnknown;
+  for (const auto& store_map_iter : *store_map_) {
+    auto result = store_map_iter.second->migrate_result();
+    if (result == HashPrefixMap::MigrateResult::kFailure) {
+      return result;
+    }
+
+    if (final_result == HashPrefixMap::MigrateResult::kUnknown) {
+      final_result = result;
+    } else if (result != final_result) {
+      return HashPrefixMap::MigrateResult::kUnknown;
+    }
+  }
+  return final_result;
 }
 
 void V4Database::RecordDatabaseUpdateLatency() {

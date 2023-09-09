@@ -6,11 +6,11 @@
 
 #include "base/files/file_util.h"
 #include "base/functional/bind.h"
-#include "base/logging.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/types/expected_macros.h"
 #include "base/values.h"
 #include "chrome/browser/apps/user_type_filter.h"
 #include "chrome/browser/profiles/profile.h"
@@ -21,6 +21,7 @@
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/webapps/common/constants.h"
 #include "third_party/blink/public/common/manifest/manifest_util.h"
+#include "ui/events/devices/device_data_manager.h"
 #include "ui/gfx/codec/png_codec.h"
 
 namespace web_app {
@@ -587,13 +588,10 @@ WebAppInstallInfoFactoryOrError ParseOfflineManifest(
                            kOfflineManifestIconAnyPngs, " empty."});
     }
 
-    auto any_bitmaps = ParseOfflineManifestIconBitmaps(
-        file_utils, dir, file, kOfflineManifestIconAnyPngs, *icon_any_files);
-    if (!any_bitmaps.has_value()) {
-      return std::move(any_bitmaps.error());
-    }
-
-    app_info.icon_bitmaps.any = std::move(any_bitmaps.value());
+    ASSIGN_OR_RETURN(app_info.icon_bitmaps.any,
+                     ParseOfflineManifestIconBitmaps(
+                         file_utils, dir, file, kOfflineManifestIconAnyPngs,
+                         *icon_any_files));
   }
 
   if (icon_maskable_files) {
@@ -602,14 +600,11 @@ WebAppInstallInfoFactoryOrError ParseOfflineManifest(
                            kOfflineManifestIconMaskablePngs, " empty."});
     }
 
-    auto maskable_bitmaps = ParseOfflineManifestIconBitmaps(
-        file_utils, dir, file, kOfflineManifestIconMaskablePngs,
-        *icon_maskable_files);
-    if (!maskable_bitmaps.has_value()) {
-      return std::move(maskable_bitmaps.error());
-    }
-
-    app_info.icon_bitmaps.maskable = maskable_bitmaps.value();
+    ASSIGN_OR_RETURN(
+        app_info.icon_bitmaps.maskable,
+        ParseOfflineManifestIconBitmaps(file_utils, dir, file,
+                                        kOfflineManifestIconMaskablePngs,
+                                        *icon_maskable_files));
   }
 
   // theme_color_argb_hex (optional)
@@ -731,4 +726,21 @@ void MarkPreinstalledAppAsUninstalled(Profile* profile,
                               prefs::kWebAppsUninstalledDefaultChromeApps);
   EnsureContains(update.Get(), app_id);
 }
+
+absl::optional<bool> DeviceHasStylusEnabledTouchscreen() {
+  if (!ui::DeviceDataManager::HasInstance() ||
+      !ui::DeviceDataManager::GetInstance()->AreDeviceListsComplete()) {
+    return absl::nullopt;
+  }
+
+  for (const ui::TouchscreenDevice& device :
+       ui::DeviceDataManager::GetInstance()->GetTouchscreenDevices()) {
+    if (device.has_stylus &&
+        device.type == ui::InputDeviceType::INPUT_DEVICE_INTERNAL) {
+      return true;
+    }
+  }
+  return false;
+}
+
 }  // namespace web_app

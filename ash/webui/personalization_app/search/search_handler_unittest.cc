@@ -14,6 +14,7 @@
 #include "ash/constants/ash_pref_names.h"
 #include "ash/public/cpp/ambient/ambient_prefs.h"
 #include "ash/public/cpp/personalization_app/enterprise_policy_delegate.h"
+#include "ash/public/cpp/personalization_app/time_of_day_test_utils.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/webui/personalization_app/personalization_app_url_constants.h"
 #include "ash/webui/personalization_app/search/search.mojom-shared.h"
@@ -163,7 +164,10 @@ class TestEnterprisePolicyDelegate : public EnterprisePolicyDelegate {
 
 class PersonalizationAppSearchHandlerTest : public AshTestBase {
  protected:
-  PersonalizationAppSearchHandlerTest() = default;
+  PersonalizationAppSearchHandlerTest() {
+    scoped_feature_list_.InitWithFeatures(
+        {}, personalization_app::GetTimeOfDayDisabledFeatures());
+  }
 
   ~PersonalizationAppSearchHandlerTest() override = default;
 
@@ -250,6 +254,7 @@ class PersonalizationAppSearchHandlerTest : public AshTestBase {
   }
 
  private:
+  base::test::ScopedFeatureList scoped_feature_list_;
   std::unique_ptr<local_search_service::LocalSearchServiceProxy>
       local_search_service_proxy_;
   std::unique_ptr<TestingPrefServiceSimple> test_pref_service_;
@@ -522,9 +527,7 @@ class PersonalizationAppSearchHandlerTimeOfDayTest
  public:
   PersonalizationAppSearchHandlerTimeOfDayTest() {
     scoped_feature_list_.InitWithFeatures(
-        {::ash::features::kTimeOfDayWallpaper,
-         ::ash::features::kTimeOfDayScreenSaver},
-        {});
+        personalization_app::GetTimeOfDayEnabledFeatures(), {});
   }
 
  private:

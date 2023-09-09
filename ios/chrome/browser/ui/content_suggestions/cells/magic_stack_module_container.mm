@@ -18,10 +18,6 @@
 #import "ios/chrome/grit/ios_strings.h"
 #import "ui/base/l10n/l10n_util_mac.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 namespace {
 
 // The horizontal inset for the content within this container.
@@ -43,6 +39,8 @@ const float kCornerRadius = 24;
 // The width of the modules.
 const int kModuleWidthCompact = 343;
 const int kModuleWidthRegular = 382;
+// The max height of the modules.
+const int kModuleMaxHeight = 150;
 
 const CGFloat kSeparatorHeight = 0.5;
 
@@ -106,6 +104,13 @@ const CGFloat kTitleStackViewTrailingMargin = 16.0f;
     _title.accessibilityIdentifier =
         [MagicStackModuleContainer titleStringForModule:type];
     [titleStackView addArrangedSubview:_title];
+    // `setContentHuggingPriority:` does not guarantee that titleStackView
+    // completely resists vertical expansion since UIStackViews do not have
+    // intrinsic contentSize. Constraining the title label to the StackView will
+    // ensure contentView expands.
+    [NSLayoutConstraint activateConstraints:@[
+      [_title.bottomAnchor constraintEqualToAnchor:titleStackView.bottomAnchor]
+    ]];
 
     if ([self shouldShowSeeMore]) {
       UIButton* showMoreButton = [[UIButton alloc] init];
@@ -168,6 +173,25 @@ const CGFloat kTitleStackViewTrailingMargin = 16.0f;
     _contentViewWidthAnchor = [contentView.widthAnchor
         constraintEqualToConstant:[self contentViewWidth]];
     [NSLayoutConstraint activateConstraints:@[ _contentViewWidthAnchor ]];
+    // Configures `contentView` to be the view willing to expand if needed to
+    // fill extra vertical space in the container.
+    [contentView
+        setContentCompressionResistancePriority:UILayoutPriorityDefaultLow
+                                        forAxis:UILayoutConstraintAxisVertical];
+    // Ensures that the modules conforms to a height of kModuleMaxHeight. For
+    // the MVT when it lives outside of the Magic Stack to stay as close to its
+    // intrinsic size as possible, the constraint is configured to be less than
+    // or equal to.
+    if (_type == ContentSuggestionsModuleType::kMostVisited &&
+        !ShouldPutMostVisitedSitesInMagicStack()) {
+      [NSLayoutConstraint activateConstraints:@[
+        [self.heightAnchor constraintLessThanOrEqualToConstant:kModuleMaxHeight]
+      ]];
+    } else {
+      [NSLayoutConstraint activateConstraints:@[
+        [self.heightAnchor constraintEqualToConstant:kModuleMaxHeight]
+      ]];
+    }
 
     [self addSubview:stackView];
     AddSameConstraintsWithInsets(stackView, self, [self contentMargins]);

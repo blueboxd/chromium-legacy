@@ -57,8 +57,6 @@ using autofill::FormFieldData;
 using autofill::FormRendererId;
 using autofill::FormSignature;
 using autofill::FormStructure;
-using autofill::NOT_USERNAME;
-using autofill::SINGLE_USERNAME;
 using autofill::password_generation::PasswordGenerationType;
 using base::TimeTicks;
 using signin::GaiaIdHash;
@@ -70,33 +68,6 @@ namespace password_manager {
 bool PasswordFormManager::wait_for_server_predictions_for_filling_ = true;
 
 namespace {
-
-// Returns bit masks with differences in forms attributes which are important
-// for parsing. Bits are set according to enum FormDataDifferences.
-uint32_t FindFormsDifferences(const FormData& lhs, const FormData& rhs) {
-  if (lhs.fields.size() != rhs.fields.size())
-    return PasswordFormMetricsRecorder::kFieldsNumber;
-  size_t differences_bitmask = 0;
-  for (size_t i = 0; i < lhs.fields.size(); ++i) {
-    const FormFieldData& lhs_field = lhs.fields[i];
-    const FormFieldData& rhs_field = rhs.fields[i];
-
-    if (lhs_field.unique_renderer_id != rhs_field.unique_renderer_id)
-      differences_bitmask |= PasswordFormMetricsRecorder::kRendererFieldIDs;
-
-    if (lhs_field.form_control_type != rhs_field.form_control_type)
-      differences_bitmask |= PasswordFormMetricsRecorder::kFormControlTypes;
-
-    if (lhs_field.autocomplete_attribute != rhs_field.autocomplete_attribute) {
-      differences_bitmask |=
-          PasswordFormMetricsRecorder::kAutocompleteAttributes;
-    }
-
-    if (lhs_field.name != rhs_field.name)
-      differences_bitmask |= PasswordFormMetricsRecorder::kFormFieldNames;
-  }
-  return differences_bitmask;
-}
 
 bool FormContainsFieldWithName(const FormData& form,
                                const std::u16string& element) {
@@ -298,10 +269,6 @@ bool PasswordFormManager::IsBlocklisted() const {
   return form_fetcher_->IsBlocklisted() || newly_blocklisted_;
 }
 
-bool PasswordFormManager::WasUnblocklisted() const {
-  return was_unblocklisted_while_on_page_;
-}
-
 bool PasswordFormManager::IsMovableToAccountStore() const {
   DCHECK(
       client_->GetPasswordFeatureManager()->ShouldShowAccountStorageBubbleUi())
@@ -411,11 +378,13 @@ void PasswordFormManager::OnUpdatePasswordFromPrompt(
   DCHECK(parsed_submitted_form_);
   parsed_submitted_form_->password_value = new_password;
   parsed_submitted_form_->password_element.clear();
+  parsed_submitted_form_->password_element_renderer_id = FieldRendererId();
 
   // The user updated a password from the prompt. It means that heuristics were
   // wrong. So clear new password, since it is likely wrong.
   parsed_submitted_form_->new_password_value.clear();
   parsed_submitted_form_->new_password_element.clear();
+  parsed_submitted_form_->new_password_element_renderer_id = FieldRendererId();
 
   const AlternativeElementVector& alternative_passwords =
       parsed_submitted_form_->all_alternative_passwords;
@@ -549,9 +518,10 @@ void PasswordFormManager::SetGenerationElement(
   votes_uploader_.set_generation_element(generation_element);
 }
 
-bool PasswordFormManager::HasLikelyChangePasswordFormSubmitted() const {
+bool PasswordFormManager::HasLikelyChangeOrResetFormSubmitted() const {
   return parsed_submitted_form_ &&
-         parsed_submitted_form_->IsLikelyChangePasswordForm();
+         (parsed_submitted_form_->IsLikelyChangePasswordForm() ||
+          parsed_submitted_form_->IsLikelyResetPasswordForm());
 }
 
 bool PasswordFormManager::IsPasswordUpdate() const {
@@ -681,7 +651,6 @@ PasswordFormManager::PasswordFormManager(
 }
 
 void PasswordFormManager::DelayFillForServerSidePredictions() {
-  waiting_for_server_predictions_ = true;
   async_predictions_waiter_.StartTimer();
   server_predictions_closure_ = async_predictions_waiter_.CreateClosure();
 }
@@ -704,7 +673,8 @@ void PasswordFormManager::OnFetchCompleted() {
           parser_.Parse(*observed_form(), FormDataParser::Mode::kFilling);
       client_->ShowPasswordManagerErrorMessage(
           password_form && (password_form->IsLikelySignupForm() ||
-                  password_form->IsLikelyChangePasswordForm())
+                            password_form->IsLikelyChangePasswordForm() ||
+                            password_form->IsLikelyResetPasswordForm())
               ? password_manager::ErrorMessageFlowType::kSaveFlow
               : password_manager::ErrorMessageFlowType::kFillFlow,
           backend_error->type);
@@ -731,18 +701,18 @@ void PasswordFormManager::OnFetchCompleted() {
   } else if (parser_.predictions() ||
              !wait_for_server_predictions_for_filling_) {
     ReportTimeBetweenStoreAndServerUMA();
-    Fill();
-  } else if (!waiting_for_server_predictions_) {
+    FillNow();
+  } else if (!async_predictions_waiter_.IsActive()) {
     DelayFillForServerSidePredictions();
   }
 }
 
 void PasswordFormManager::OnWaitCompleted() {
-  Fill();
+  FillNow();
 }
 
 void PasswordFormManager::OnTimeout() {
-  Fill();
+  FillNow();
 }
 
 bool PasswordFormManager::WebAuthnCredentialsAvailable() const {
@@ -799,6 +769,7 @@ bool PasswordFormManager::ProvisionallySave(
   is_submitted_ = true;
   CalculateFillingAssistanceMetric(submitted_form);
   CalculateSubmittedFormFrameMetric();
+  CalculateSubmittedFormTypeMetric();
   metrics_recorder_->set_possible_username_used(false);
   votes_uploader_.clear_single_username_vote_data();
 
@@ -892,16 +863,26 @@ void PasswordFormManager::ProcessServerPredictions(
       // other callbacks still outstanding.
       std::move(server_predictions_closure_).Run();
     } else {
-      Fill();
+      FillNow();
     }
   }
 }
 
 void PasswordFormManager::Fill() {
+  if (parser_.predictions() || !wait_for_server_predictions_for_filling_) {
+    FillNow();
+    return;
+  }
+
+  // Start a waiter for predictions if there is currently no active one.
+  if (!async_predictions_waiter_.IsActive()) {
+    DelayFillForServerSidePredictions();
+  }
+}
+
+void PasswordFormManager::FillNow() {
   if (!driver_)
     return;
-
-  waiting_for_server_predictions_ = false;
 
   if (form_fetcher_->GetState() == FormFetcher::State::WAITING)
     return;
@@ -946,25 +927,6 @@ void PasswordFormManager::Fill() {
       metrics_recorder_.get(), WebAuthnCredentialsAvailable());
 }
 
-void PasswordFormManager::FillForm(
-    const FormData& observed_form_data,
-    const std::map<FormSignature, FormPredictions>& predictions) {
-  CHECK(observed_form());
-  uint32_t differences_bitmask =
-      FindFormsDifferences(*observed_form(), observed_form_data);
-  metrics_recorder_->RecordFormChangeBitmask(differences_bitmask);
-
-  bool new_predictions_available = false;
-  if (differences_bitmask) {
-    UpdateFormManagerWithFormChanges(observed_form_data, predictions);
-    new_predictions_available = parser_.predictions().has_value();
-  }
-  // Fill the form if relevant form predictions were found or if the
-  // manager is not waiting for new server predictions.
-  if (new_predictions_available || !waiting_for_server_predictions_)
-    Fill();
-}
-
 void PasswordFormManager::OnGeneratedPasswordAccepted(
     FormData form_data,
     autofill::FieldRendererId generation_element_id,
@@ -987,10 +949,6 @@ void PasswordFormManager::OnGeneratedPasswordAccepted(
   }
   parsed_form->password_value = password;
   password_save_manager_->GeneratedPasswordAccepted(*parsed_form, driver_);
-}
-
-void PasswordFormManager::MarkWasUnblocklisted() {
-  was_unblocklisted_while_on_page_ = true;
 }
 
 bool PasswordFormManager::FormHasPossibleUsername(
@@ -1162,6 +1120,26 @@ void PasswordFormManager::CalculateSubmittedFormFrameMetric() {
   metrics_recorder_->set_submitted_form_frame(frame);
 }
 
+void PasswordFormManager::CalculateSubmittedFormTypeMetric() {
+  if (!parsed_submitted_form_) {
+    return;
+  }
+  metrics_util::SubmittedFormType form_type(
+      metrics_util::SubmittedFormType::kUndefined);
+  if (parsed_submitted_form_->IsLikelyLoginForm()) {
+    form_type = metrics_util::SubmittedFormType::kLogin;
+  } else if (parsed_submitted_form_->IsLikelySignupForm()) {
+    form_type = metrics_util::SubmittedFormType::kSignup;
+  } else if (parsed_submitted_form_->IsLikelyChangePasswordForm()) {
+    form_type = metrics_util::SubmittedFormType::kChangePassword;
+  } else if (parsed_submitted_form_->IsLikelyResetPasswordForm()) {
+    form_type = metrics_util::SubmittedFormType::kResetPassword;
+  } else if (parsed_submitted_form_->IsSingleUsername()) {
+    form_type = metrics_util::SubmittedFormType::kSingleUsername;
+  }
+  metrics_recorder_->SetSubmittedFormType(form_type);
+}
+
 bool PasswordFormManager::IsPossibleSingleUsernameAvailable(
     const PossibleUsernameData* possible_username) const {
   if (!possible_username) {
@@ -1181,19 +1159,16 @@ bool PasswordFormManager::IsPossibleSingleUsernameAvailable(
     return false;
   }
 
-  // PasswordManager does not upload votes for fields that have no names or
-  // ids to avoid aggregation of multiple unrelated fields during single
-  // username detection. (crbug.com/1209143)
-  // TODO(crbug.com/1260336): Delete after fields are not distinguished by
-  // |field_name|.
-  if (possible_username->field_name.empty()) {
-    LogUsingPossibleUsername(client_, /*is_used*/ false, "Empty field name");
-    return false;
-  }
-
   if (possible_username->IsStale()) {
     LogUsingPossibleUsername(client_, /*is_used*/ false,
                              "Possible username data expired");
+    return false;
+  }
+
+  if (possible_username->is_likely_otp &&
+      !possible_username->HasSingleUsernameServerPrediction()) {
+    LogUsingPossibleUsername(client_, /*is_used*/ false,
+                             "Possible username field is an OTP field");
     return false;
   }
 
@@ -1249,11 +1224,52 @@ void PasswordFormManager::UpdateFormManagerWithFormChanges(
   *mutable_observed_form() = observed_form_data;
 
   // If the observed form has changed, it might be autofilled again.
+  async_predictions_waiter_.Reset();
+  server_predictions_closure_.Reset();
   autofills_left_ = kMaxTimesAutofill;
   parser_.reset_predictions();
   UpdatePredictionsForObservedForm(predictions);
+}
 
-  DelayFillForServerSidePredictions();
+// Returns bit masks with differences in forms attributes which are important
+// for parsing. Bits are set according to enum FormDataDifferences.
+bool HasObservedFormChanged(const FormData& form_data,
+                            PasswordFormManager& form_manager) {
+  CHECK(form_manager.observed_form());
+  const FormData& lhs = form_data;
+  const FormData& rhs = *form_manager.observed_form();
+
+  if (lhs.fields.size() != rhs.fields.size()) {
+    form_manager.GetMetricsRecorder()->RecordFormChangeBitmask(
+        PasswordFormMetricsRecorder::kFieldsNumber);
+    return true;
+  }
+  size_t differences_bitmask = 0;
+  for (size_t i = 0; i < lhs.fields.size(); ++i) {
+    const FormFieldData& lhs_field = lhs.fields[i];
+    const FormFieldData& rhs_field = rhs.fields[i];
+
+    if (lhs_field.unique_renderer_id != rhs_field.unique_renderer_id) {
+      differences_bitmask |= PasswordFormMetricsRecorder::kRendererFieldIDs;
+    }
+
+    if (lhs_field.form_control_type != rhs_field.form_control_type) {
+      differences_bitmask |= PasswordFormMetricsRecorder::kFormControlTypes;
+    }
+
+    if (lhs_field.autocomplete_attribute != rhs_field.autocomplete_attribute) {
+      differences_bitmask |=
+          PasswordFormMetricsRecorder::kAutocompleteAttributes;
+    }
+
+    if (lhs_field.name != rhs_field.name) {
+      differences_bitmask |= PasswordFormMetricsRecorder::kFormFieldNames;
+    }
+  }
+
+  form_manager.GetMetricsRecorder()->RecordFormChangeBitmask(
+      differences_bitmask);
+  return differences_bitmask != 0;
 }
 
 }  // namespace password_manager

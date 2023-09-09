@@ -32,6 +32,7 @@
 #import "ios/chrome/browser/ui/authentication/cells/table_view_account_item.h"
 #import "ios/chrome/browser/ui/authentication/cells/table_view_signin_promo_item.h"
 #import "ios/chrome/browser/ui/autofill/cells/autofill_edit_item.h"
+#import "ios/chrome/browser/ui/settings/address_bar_preference/cells/address_bar_options_item.h"
 #import "ios/chrome/browser/ui/settings/cells/account_sign_in_item.h"
 #import "ios/chrome/browser/ui/settings/cells/copied_to_chrome_item.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_check_cell.h"
@@ -43,10 +44,6 @@
 #import "ios/chrome/common/ui/util/image_util.h"
 #import "ios/public/provider/chrome/browser/signin/signin_resources_api.h"
 #import "url/gurl.h"
-
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
 
 namespace {
 
@@ -80,6 +77,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeTextSettingsDetail,
   ItemTypeTableViewWithBlueDot,
   ItemTypeLinkFooter,
+  ItemAddressBarOptions,
   ItemTypeDetailText,
   ItemTypeMultiDetailText,
   ItemTypeAccountSignInItem,
@@ -147,7 +145,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   TableViewDetailIconItem* tableViewBlueDotItem =
       [[TableViewDetailIconItem alloc]
           initWithType:ItemTypeTableViewWithBlueDot];
-  tableViewBlueDotItem.showNotificationDot = YES;
+  tableViewBlueDotItem.badgeType = BadgeType::kNotificationDot;
   tableViewBlueDotItem.text = @"I have a blue dot badge!";
   tableViewBlueDotItem.iconImage =
       DefaultSettingsRootSymbol(kDefaultBrowserSymbol);
@@ -529,6 +527,12 @@ typedef NS_ENUM(NSInteger, ItemType) {
   checkWithInfoButton.indicatorHidden = YES;
   checkWithInfoButton.infoButtonHidden = NO;
   [model addItem:checkWithInfoButton
+      toSectionWithIdentifier:SectionIdentifierSettings];
+
+  AddressBarOptionsItem* addressBarOptions =
+      [[AddressBarOptionsItem alloc] initWithType:ItemAddressBarOptions];
+  addressBarOptions.bottomAddressBarOptionSelected = YES;
+  [model addItem:addressBarOptions
       toSectionWithIdentifier:SectionIdentifierSettings];
 
   TableViewLinkHeaderFooterItem* linkFooter =

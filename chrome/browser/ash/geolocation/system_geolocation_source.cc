@@ -7,9 +7,9 @@
 #include <utility>
 
 #include "ash/constants/ash_pref_names.h"
-#include "ash/public/cpp/sensor_disabled_notification_delegate.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
+#include "ash/system/privacy_hub/sensor_disabled_notification_delegate.h"
 #include "base/check.h"
 #include "base/functional/callback_helpers.h"
 #include "chrome/browser/ash/privacy_hub/privacy_hub_util.h"
@@ -83,11 +83,17 @@ void SystemGeolocationSource::OnPrefChanged(const std::string& pref_name) {
   device::LocationSystemPermissionStatus status =
       device::LocationSystemPermissionStatus::kNotDetermined;
 
-  PrefService* pref_service = pref_change_registrar_->prefs();
-  if (pref_service) {
-    status = pref_service->GetBoolean(prefs::kUserGeolocationAllowed)
-                 ? device::LocationSystemPermissionStatus::kAllowed
-                 : device::LocationSystemPermissionStatus::kDenied;
+  if (ash::features::IsCrosPrivacyHubV1Enabled()) {
+    PrefService* pref_service = pref_change_registrar_->prefs();
+    if (pref_service) {
+      status = pref_service->GetBoolean(prefs::kUserGeolocationAllowed)
+                   ? device::LocationSystemPermissionStatus::kAllowed
+                   : device::LocationSystemPermissionStatus::kDenied;
+    }
+  } else {
+    // If the global switch feature is not enabled, we allow explicitly to be
+    // backward compatible.
+    status = device::LocationSystemPermissionStatus::kAllowed;
   }
   permission_update_callback_.Run(status);
 }

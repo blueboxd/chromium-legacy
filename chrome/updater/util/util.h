@@ -15,6 +15,7 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/task/sequenced_task_runner.h"
+#include "base/types/cxx23_to_underlying.h"
 #include "build/build_config.h"
 #include "chrome/updater/tag.h"
 #include "chrome/updater/updater_scope.h"
@@ -46,7 +47,7 @@ template <typename T>
 std::ostream& operator<<(
     typename std::enable_if<std::is_enum<T>::value, std::ostream>::type& stream,
     const T& e) {
-  return stream << static_cast<typename std::underlying_type<T>::type>(e);
+  return stream << base::to_underlying(e);
 }
 
 namespace tagging {
@@ -124,16 +125,6 @@ absl::optional<base::FilePath> GetLogFilePath(UpdaterScope scope);
 
 // Initializes logging for an executable.
 void InitLogging(UpdaterScope updater_scope);
-
-// Functor used by associative containers of strings as a case-insensitive ASCII
-// compare. `StringT` could be either UTF-8 or UTF-16.
-struct CaseInsensitiveASCIICompare {
- public:
-  template <typename StringT>
-  bool operator()(const StringT& x, const StringT& y) const {
-    return base::CompareCaseInsensitiveASCII(x, y) > 0;
-  }
-};
 
 // Returns a new GURL by appending the given query parameter name and the
 // value. Unsafe characters in the name and the value are escaped like

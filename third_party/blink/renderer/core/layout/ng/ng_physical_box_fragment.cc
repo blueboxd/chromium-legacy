@@ -232,6 +232,7 @@ NGPhysicalBoxFragment::CloneWithPostLayoutFragments(
   bool has_layout_overflow = other.HasLayoutOverflow();
 
   if (updated_layout_overflow) {
+    DCHECK(!RuntimeEnabledFeatures::LayoutOverflowNoCloneEnabled());
     layout_overflow = *updated_layout_overflow;
     has_layout_overflow = layout_overflow != PhysicalRect({}, other.Size());
   }
@@ -305,14 +306,21 @@ size_t NGPhysicalBoxFragment::AdditionalByteSize(bool has_fragment_items,
   if (has_fragment_items) {
     AccountSizeAndPadding<NGFragmentItems>(additional_size);
   }
-  if (has_layout_overflow)
+  if (has_layout_overflow &&
+      !RuntimeEnabledFeatures::LayoutOverflowNoCloneEnabled()) {
     AccountSizeAndPadding<PhysicalRect>(additional_size);
-  if (has_borders)
-    AccountSizeAndPadding<NGPhysicalBoxStrut>(additional_size);
-  if (has_padding)
-    AccountSizeAndPadding<NGPhysicalBoxStrut>(additional_size);
-  if (has_inflow_bounds)
-    AccountSizeAndPadding<PhysicalRect>(additional_size);
+  }
+  if (!RuntimeEnabledFeatures::RareBorderPaddingInflowEnabled()) {
+    if (has_borders) {
+      AccountSizeAndPadding<NGPhysicalBoxStrut>(additional_size);
+    }
+    if (has_padding) {
+      AccountSizeAndPadding<NGPhysicalBoxStrut>(additional_size);
+    }
+    if (has_inflow_bounds) {
+      AccountSizeAndPadding<PhysicalRect>(additional_size);
+    }
+  }
 
   return additional_size;
 }
@@ -367,36 +375,53 @@ NGPhysicalBoxFragment::NGPhysicalBoxFragment(
       size_ = *new_size;
   }
 
-  bit_field_.set<HasLayoutOverflowFlag>(has_layout_overflow);
-  if (has_layout_overflow) {
-    *const_cast<PhysicalRect*>(ComputeLayoutOverflowAddress()) =
-        layout_overflow;
+  const bool layout_overflow_no_clone =
+      RuntimeEnabledFeatures::LayoutOverflowNoCloneEnabled();
+  if (!layout_overflow_no_clone) {
+    bit_field_.set<HasLayoutOverflowFlag>(has_layout_overflow);
+    if (has_layout_overflow) {
+      *const_cast<PhysicalRect*>(ComputeLayoutOverflowAddress()) =
+          layout_overflow;
+    }
   }
   SetInkOverflowType(NGInkOverflow::Type::kNotSet);
-  bit_field_.set<HasBordersFlag>(has_borders);
-  if (has_borders)
-    *const_cast<NGPhysicalBoxStrut*>(ComputeBordersAddress()) = borders;
-  bit_field_.set<HasPaddingFlag>(has_padding);
-  if (has_padding)
-    *const_cast<NGPhysicalBoxStrut*>(ComputePaddingAddress()) = padding;
-  bit_field_.set<HasInflowBoundsFlag>(inflow_bounds.has_value());
-  if (HasInflowBounds())
-    *const_cast<PhysicalRect*>(ComputeInflowBoundsAddress()) = *inflow_bounds;
+
+  if (!RuntimeEnabledFeatures::RareBorderPaddingInflowEnabled()) {
+    bit_field_.set<HasBordersFlag>(has_borders);
+    if (has_borders) {
+      *const_cast<NGPhysicalBoxStrut*>(ComputeBordersAddress()) = borders;
+    }
+    bit_field_.set<HasPaddingFlag>(has_padding);
+    if (has_padding) {
+      *const_cast<NGPhysicalBoxStrut*>(ComputePaddingAddress()) = padding;
+    }
+    bit_field_.set<HasInflowBoundsFlag>(inflow_bounds.has_value());
+    if (HasInflowBounds()) {
+      *const_cast<PhysicalRect*>(ComputeInflowBoundsAddress()) = *inflow_bounds;
+    }
+  }
 
   wtf_size_t rare_fields_size =
+      (layout_overflow_no_clone && has_layout_overflow) +
       !!builder->frame_set_layout_data_ + !!builder->mathml_paint_info_ +
       !!builder->table_grid_rect_ + !!builder->table_collapsed_borders_ +
       !!builder->table_collapsed_borders_geometry_ +
       !!builder->table_cell_column_index_ +
       (builder->table_section_row_offsets_.empty() ? 0 : 2) +
       !!builder->page_name_;
+  if (RuntimeEnabledFeatures::RareBorderPaddingInflowEnabled()) {
+    rare_fields_size += has_borders + has_padding + inflow_bounds.has_value();
+  }
   if (RuntimeEnabledFeatures::LayoutNGNoCopyBackEnabled()) {
     rare_fields_size += !!builder->Style().MayHaveMargin();
   }
 
   if (rare_fields_size > 0 || !builder->table_column_geometries_.empty()) {
     rare_data_ = MakeGarbageCollected<PhysicalFragmentRareData>(
-        *builder, rare_fields_size);
+        (layout_overflow_no_clone && has_layout_overflow) ? &layout_overflow
+                                                          : nullptr,
+        has_borders ? &borders : nullptr, has_padding ? &padding : nullptr,
+        inflow_bounds, *builder, rare_fields_size);
   }
 
   bit_field_.set<IsFirstForNodeFlag>(builder->is_first_for_node_);
@@ -458,22 +483,26 @@ NGPhysicalBoxFragment::NGPhysicalBoxFragment(
         const_cast<NGFragmentItems*>(ComputeItemsAddress());
     new (items) NGFragmentItems(*other.ComputeItemsAddress());
   }
-  bit_field_.set<HasLayoutOverflowFlag>(has_layout_overflow);
-  if (has_layout_overflow) {
-    *const_cast<PhysicalRect*>(ComputeLayoutOverflowAddress()) =
-        layout_overflow;
+  if (!RuntimeEnabledFeatures::LayoutOverflowNoCloneEnabled()) {
+    bit_field_.set<HasLayoutOverflowFlag>(has_layout_overflow);
+    if (has_layout_overflow) {
+      *const_cast<PhysicalRect*>(ComputeLayoutOverflowAddress()) =
+          layout_overflow;
+    }
   }
-  if (HasBorders()) {
-    *const_cast<NGPhysicalBoxStrut*>(ComputeBordersAddress()) =
-        *other.ComputeBordersAddress();
-  }
-  if (HasPadding()) {
-    *const_cast<NGPhysicalBoxStrut*>(ComputePaddingAddress()) =
-        *other.ComputePaddingAddress();
-  }
-  if (HasInflowBounds()) {
-    *const_cast<PhysicalRect*>(ComputeInflowBoundsAddress()) =
-        *other.ComputeInflowBoundsAddress();
+  if (!RuntimeEnabledFeatures::RareBorderPaddingInflowEnabled()) {
+    if (HasBorders()) {
+      *const_cast<NGPhysicalBoxStrut*>(ComputeBordersAddress()) =
+          *other.ComputeBordersAddress();
+    }
+    if (HasPadding()) {
+      *const_cast<NGPhysicalBoxStrut*>(ComputePaddingAddress()) =
+          *other.ComputePaddingAddress();
+    }
+    if (HasInflowBounds()) {
+      *const_cast<PhysicalRect*>(ComputeInflowBoundsAddress()) =
+          *other.ComputeInflowBoundsAddress();
+    }
   }
   if (other.rare_data_) {
     rare_data_ =
@@ -1088,6 +1117,42 @@ NGPhysicalBoxFragment::InlineContainerFragmentIfOutlineOwner() const {
   }
 }
 
+PhysicalFragmentRareData::RareField& NGPhysicalBoxFragment::EnsureRareField(
+    FieldId id) {
+  if (!rare_data_) {
+    rare_data_ = MakeGarbageCollected<PhysicalFragmentRareData>(1);
+  }
+  return rare_data_->EnsureField(id);
+}
+
+NGPhysicalBoxFragment::MutableForStyleRecalc::MutableForStyleRecalc(
+    base::PassKey<NGPhysicalBoxFragment>,
+    NGPhysicalBoxFragment& fragment)
+    : fragment_(fragment) {}
+
+void NGPhysicalBoxFragment::MutableForStyleRecalc::SetLayoutOverflow(
+    const PhysicalRect& layout_overflow) {
+  bool has_layout_overflow =
+      layout_overflow != PhysicalRect({}, fragment_.Size());
+  if (has_layout_overflow) {
+    // This can be called even without rare_data_.
+    fragment_.EnsureRareField(FieldId::kLayoutOverflow).layout_overflow =
+        layout_overflow;
+  } else if (fragment_.HasLayoutOverflow()) {
+    fragment_.rare_data_->RemoveField(FieldId::kLayoutOverflow);
+  }
+}
+
+NGPhysicalBoxFragment::MutableForStyleRecalc
+NGPhysicalBoxFragment::GetMutableForStyleRecalc() const {
+  DCHECK(layout_object_->GetDocument().Lifecycle().GetState() ==
+             DocumentLifecycle::kInStyleRecalc ||
+         layout_object_->GetDocument().Lifecycle().GetState() ==
+             DocumentLifecycle::kInPerformLayout);
+  return MutableForStyleRecalc(base::PassKey<NGPhysicalBoxFragment>(),
+                               const_cast<NGPhysicalBoxFragment&>(*this));
+}
+
 NGPhysicalBoxFragment::MutableForContainerLayout::MutableForContainerLayout(
     base::PassKey<NGPhysicalBoxFragment>,
     NGPhysicalBoxFragment& fragment)
@@ -1097,10 +1162,7 @@ void NGPhysicalBoxFragment::MutableForContainerLayout::SetMargins(
     const NGPhysicalBoxStrut& margins) {
   DCHECK(RuntimeEnabledFeatures::LayoutNGNoCopyBackEnabled());
   // This can be called even without rare_data_.
-  if (!fragment_.rare_data_) {
-    fragment_.rare_data_ = MakeGarbageCollected<PhysicalFragmentRareData>(1);
-  }
-  fragment_.rare_data_->EnsureField(FieldId::kMargins).margins = margins;
+  fragment_.EnsureRareField(FieldId::kMargins).margins = margins;
 }
 
 NGPhysicalBoxFragment::MutableForContainerLayout

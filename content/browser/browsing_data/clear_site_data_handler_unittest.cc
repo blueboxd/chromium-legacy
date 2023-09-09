@@ -15,7 +15,6 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
-#include "content/public/common/content_features.h"
 #include "content/public/test/browser_task_environment.h"
 #include "net/base/features.h"
 #include "net/base/load_flags.h"
@@ -25,6 +24,7 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
 #include "net/url_request/url_request_test_util.h"
+#include "services/network/public/cpp/features.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features_generated.h"
@@ -178,9 +178,11 @@ TEST_P(ClearSiteDataHandlerTest, ParseHeaderAndExecuteClearingTask) {
   std::vector<base::test::FeatureRef> features_to_enable;
   std::vector<base::test::FeatureRef> features_to_disable;
   if (IsClientHintsSupportEnabled()) {
-    features_to_enable.push_back(features::kClearSiteDataClientHintsSupport);
+    features_to_enable.push_back(
+        network::features::kClearSiteDataClientHintsSupport);
   } else {
-    features_to_disable.push_back(features::kClearSiteDataClientHintsSupport);
+    features_to_disable.push_back(
+        network::features::kClearSiteDataClientHintsSupport);
   }
   if (IsWildcardSupportEnabled()) {
     features_to_enable.push_back(net::features::kClearSiteDataWildcardSupport);
@@ -646,15 +648,24 @@ TEST_F(ClearSiteDataHandlerTest, FormattedConsoleOutput) {
     // |NetworkServiceClient| creates a new |ClearSiteDataHandler| for each
     // navigation, redirect, or subresource header responses.
     for (const auto& test : kTestCases) {
-      std::vector<base::test::FeatureRef> features;
+      std::vector<base::test::FeatureRef> enabled_features;
+      std::vector<base::test::FeatureRef> disabled_features;
       if (test.wildcard) {
-        features.push_back(net::features::kClearSiteDataWildcardSupport);
+        enabled_features.push_back(
+            net::features::kClearSiteDataWildcardSupport);
+      } else {
+        disabled_features.push_back(
+            net::features::kClearSiteDataWildcardSupport);
       }
       if (test.client_hints) {
-        features.push_back(features::kClearSiteDataClientHintsSupport);
+        enabled_features.push_back(
+            network::features::kClearSiteDataClientHintsSupport);
+      } else {
+        disabled_features.push_back(
+            network::features::kClearSiteDataClientHintsSupport);
       }
       base::test::ScopedFeatureList scoped_feature_list;
-      scoped_feature_list.InitWithFeatures(features, {});
+      scoped_feature_list.InitWithFeatures(enabled_features, disabled_features);
       TestHandler handler(
           base::BindRepeating(&FakeBrowserContextGetter),
           base::BindRepeating(&FakeWebContentsGetter), GURL(test.url),

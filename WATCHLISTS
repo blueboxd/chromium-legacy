@@ -738,7 +738,6 @@
       'filepath': 'chrome/test/chromedriver|'\
                   'chrome/test/data/chromedriver|'\
                   'third_party/blink/web_tests/external/wpt/webdriver|'\
-                  'third_party/blink/web_tests/WebDriverExpectations|'\
                   'third_party/webdriver'
     },
     'chromeos': {
@@ -1691,6 +1690,9 @@
     'plugin_metadata': {
       'filepath': 'chrome/browser/resources/plugin_metadata/'
     },
+    'plus_addresses': {
+      'filepath': 'components/plus_addresses/',
+    },
     'policy_features': {
       'filepath' : 'third_party/blink/renderer/core/permissions_policy/document_policy_features.json5|'\
                    'third_party/blink/renderer/core/permissions_policy/permissions_policy_features.json5'
@@ -1845,6 +1847,11 @@
                   '|chrome/browser/ui/webui/settings/chromeos/'\
                   '|chrome/test/data/webui/settings/chromeos/'\
                   '|ui/webui/resources/cr_elements/chromeos/',
+    },
+    'settings_os_settings_languages': {
+      'filepath': 'chrome/browser/resources/ash/settings/os_languages_page/'\
+                  '|chrome/browser/ui/webui/settings/ash/languages_'\
+                  '|chrome/test/data/webui/settings/chromeos/os_languages_page/'
     },
     'share_sheet': {
       'filepath': 'chrome/android/java/src/org/chromium/chrome/browser/share/'\
@@ -2178,7 +2185,7 @@
         'filepath': 'third_party/blink/renderer/modules/webgpu/',
     },
     'webid': {
-        'filepath': 'third_party/blink/renderer/modules/webid/'\
+        'filepath': 'third_party/blink/renderer/modules/credentialmanagement/'\
                     '|third_party/blink/public/mojom/webid/'\
                     '|content/browser/webid'\
                     '|chrome/browser/.*webid',
@@ -2930,6 +2937,9 @@
                  'pushi+watch-phonehub@google.com'],
     'picture_in_picture': ['beaufort.francois+pip@gmail.com'],
     'plugin_metadata': ['wfh+watch@chromium.org'],
+    'plus_addresses': ['mreichhoff+watch-plus_addresses@chromium.org',
+             'kaklilu+watch-plus_addresses@chromium.org',
+             'bcb+watch-plus_addresses@chromium.org'],
     'policy_features': ['feature-control+watch@chromium.org'],
     'polymer': ['michaelpg+watch-polymer@chromium.org'],
     'popup_blocker': ['csharrison+watch-popups@chromium.org'],
@@ -2990,6 +3000,8 @@
     'settings': ['michaelpg+watch-settings@chromium.org'],
     'settings_os_settings': ['croissant-eng+reviews@chromium.org',
                              'cros-settings+reviews@google.com'],
+    'settings_os_settings_languages':
+        ['mlcui+watch-os-settings-languages@google.com'],
     'share_sheet': ['chrome-sharing-eng+watch@google.com'],
     'sharing': ['knollr+watch-sharing@chromium.org',
                 'mvanouwerkerk+watch-sharing@chromium.org'],
@@ -3122,6 +3134,7 @@
                          'ericwilligers+watch-bmo@chromium.org',
                          'glenrob+watch@chromium.org',
                          'kuragin+web-applications-cls@chromium.org',
+                         'laurila+watch@google.com',
                          'loyso+watch@chromium.org',
                          'mgiuca+watch@chromium.org',
                          'phillis+watch@chromium.org',
@@ -3129,6 +3142,7 @@
                          'zelin+watch-web_applications@chromium.org'],
     'web_package': ['cmfcmf+watch@chromium.org',
                     'hayato+watch@chromium.org',
+                    'laurila+watch@google.com',
                     'twifkak+watch@chromium.org'],
     'web_share': ['mgiuca+watch@chromium.org'],
     'webauthn': ['webauthn-reviews@chromium.org'],

@@ -11,14 +11,12 @@
 #include <utility>
 
 #include "base/check_op.h"
-#include "base/debug/stack_trace.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/default_tick_clock.h"
 #include "base/trace_event/trace_event.h"
-#include "components/crash/core/common/crash_key.h"
 #include "components/page_load_metrics/browser/page_load_metrics_embedder_interface.h"
 #include "components/page_load_metrics/browser/page_load_metrics_forward_observer.h"
 #include "components/page_load_metrics/browser/page_load_metrics_memory_tracker.h"
@@ -33,34 +31,6 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
-
-namespace {
-using ArrayItemKey = crash_reporter::CrashKeyString<16>;
-ArrayItemKey soft_nav_count_crash_key[] = {
-    {"soft-nav-count-incoming", ArrayItemKey::Tag::kArray},
-    {"soft-nav-count-current", ArrayItemKey::Tag::kArray},
-};
-
-ArrayItemKey soft_nav_start_time_crash_key[] = {
-    {"soft-nav-start-time-incoming", ArrayItemKey::Tag::kArray},
-    {"soft-nav-start-time-current", ArrayItemKey::Tag::kArray},
-};
-
-ArrayItemKey soft_nav_nav_id_crash_key[] = {
-    {"soft-nav-nav-id-incoming", ArrayItemKey::Tag::kArray},
-    {"soft-nav-nav-id-current", ArrayItemKey::Tag::kArray},
-};
-
-crash_reporter::CrashKeyString<64> soft_nav_url_crash_key("soft-nav-url");
-crash_reporter::CrashKeyString<64> original_url_crash_key("original-url");
-crash_reporter::CrashKeyString<16> user_initiation_info_crash_key(
-    "user-init-info");
-crash_reporter::CrashKeyString<16> is_outer_most_tracker_crash_key(
-    "is-outer-most-tracker");
-crash_reporter::CrashKeyString<1024> stack_trace_crash_key(
-    "soft-nav-update-stack-trace");
-
-}  // namespace
 
 namespace page_load_metrics {
 
@@ -324,6 +294,7 @@ PageLoadTracker::PageLoadTracker(
       source_id_(source_id),
       web_contents_(navigation_handle->GetWebContents()),
       is_first_navigation_in_web_contents_(is_first_navigation_in_web_contents),
+      soft_navigation_metrics_(CreateSoftNavigationMetrics()),
       page_type_(CalculatePageType(navigation_handle)),
       parent_tracker_(std::move(parent_tracker)) {
   DCHECK(!navigation_handle->HasCommitted());
@@ -1095,35 +1066,6 @@ void PageLoadTracker::OnSoftNavigationChanged(
     return;
   }
 
-  // Update crash keys.
-  soft_nav_url_crash_key.Set(potential_soft_navigation_url_.GetContent());
-  original_url_crash_key.Set(GetStartUrl().GetContent());
-  std::string user_initiation_info =
-      user_initiated_info().BrowserInitiated().browser_initiated
-          ? "browser-initiated"
-          : (user_initiated_info().user_gesture ? "user-gesture"
-                                                : "user-input-event");
-  user_initiation_info_crash_key.Set(user_initiation_info);
-
-  is_outer_most_tracker_crash_key.Set(IsOutermostTracker() ? "True" : "False");
-
-  soft_nav_count_crash_key[0].Set(
-      base::NumberToString(new_soft_navigation_metrics.count));
-  soft_nav_count_crash_key[1].Set(
-      base::NumberToString(soft_navigation_metrics_->count));
-
-  soft_nav_start_time_crash_key[0].Set(base::NumberToString(
-      new_soft_navigation_metrics.start_time.InMillisecondsF()));
-  soft_nav_start_time_crash_key[1].Set(base::NumberToString(
-      soft_navigation_metrics_->start_time.InMillisecondsF()));
-
-  soft_nav_nav_id_crash_key[0].Set(new_soft_navigation_metrics.navigation_id);
-  soft_nav_nav_id_crash_key[1].Set(soft_navigation_metrics_->navigation_id);
-
-  // Set stack trace.
-  crash_reporter::SetCrashKeyStringToStackTrace(&stack_trace_crash_key,
-                                                base::debug::StackTrace());
-
   // TODO(crbug.com/1451911): For soft navigation detections, the count and
   // start time should be monotonically increasing and navigation id different
   // each time. But we do see check failures on
@@ -1131,16 +1073,20 @@ void PageLoadTracker::OnSoftNavigationChanged(
   // OnSoftNavigationChanged is only invoked by soft navigation detection.
   // we should investigate this issue.
 
-  CHECK(new_soft_navigation_metrics.count >= soft_navigation_metrics_->count);
-  CHECK(new_soft_navigation_metrics.start_time >=
-        soft_navigation_metrics_->start_time);
-
   for (const auto& observer : observers_) {
     observer->OnSoftNavigationUpdated(new_soft_navigation_metrics);
   }
 
   largest_contentful_paint_handler_.UpdateSoftNavigationLargestContentfulPaint(
       *new_soft_navigation_metrics.largest_contentful_paint);
+
+  // Reset the soft_navigation_interval_responsiveness_metrics_normalization_
+  // when a new soft nav comes in.
+  if (new_soft_navigation_metrics.count > soft_navigation_metrics_->count) {
+    metrics_update_dispatcher_
+        .ResetSoftNavigationIntervalNormalizedResponsivenessMetrics();
+    metrics_update_dispatcher_.ResetSoftNavigationIntervalLayoutShift();
+  }
 
   soft_navigation_metrics_ = new_soft_navigation_metrics.Clone();
 }
@@ -1323,9 +1269,22 @@ const NormalizedCLSData& PageLoadTracker::GetNormalizedCLSData(
   return metrics_update_dispatcher_.normalized_cls_data(bfcache_strategy);
 }
 
+const NormalizedCLSData&
+PageLoadTracker::GetSoftNavigationIntervalNormalizedCLSData() const {
+  return metrics_update_dispatcher_
+      .soft_navigation_interval_normalized_layout_shift();
+}
+
 const NormalizedResponsivenessMetrics&
 PageLoadTracker::GetNormalizedResponsivenessMetrics() const {
   return metrics_update_dispatcher_.normalized_responsiveness_metrics();
+}
+
+const NormalizedResponsivenessMetrics&
+PageLoadTracker::GetSoftNavigationIntervalNormalizedResponsivenessMetrics()
+    const {
+  return metrics_update_dispatcher_
+      .soft_navigation_interval_normalized_responsiveness_metrics();
 }
 
 const mojom::InputTiming& PageLoadTracker::GetPageInputTiming() const {

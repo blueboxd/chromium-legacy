@@ -420,18 +420,18 @@ bool DualLayerUserPrefStore::ShouldSetValueInAccountStore(
   // corresponding pref type is active, and falls under the current user
   // consent, i.e. "privacy-sensitive" prefs require history opt-in.
 
-  if (!pref_model_associator_client_) {
-    // Safer this way.
+  // Never write to the account store if it's not read from the account store.
+  if (!ShouldGetValueFromAccountStore(key)) {
     return false;
   }
   auto metadata = pref_model_associator_client_->GetSyncablePrefsDatabase()
                       .GetSyncablePrefMetadata(key);
-  // Checks if the pref is syncable and the pref type is active.
-  if (!metadata.has_value() || !active_types_.count(metadata->model_type())) {
-    return false;
-  }
-  // Checks if the pref requires a history opt-in.
-  if (metadata->is_history_opt_in_required() && !IsHistorySyncEnabled()) {
+  // Checks if the pref type is active.
+  if (!active_types_.count(metadata->model_type()) &&
+      // Checks if the pref already exists in the account store.
+      // This is to handle cases where a pref might pre-exist before sync is
+      // initialized and the type is marked as active.
+      !account_pref_store_->GetValue(key, nullptr)) {
     return false;
   }
   return true;
@@ -493,7 +493,10 @@ void DualLayerUserPrefStore::DisableTypeAndClearAccountStore(
 
   // Clear all synced preferences from the account store.
   for (const std::string& pref_name : GetPrefNamesInAccountStore()) {
-    if (!ShouldSetValueInAccountStore(pref_name)) {
+    if (auto metadata =
+            pref_model_associator_client_->GetSyncablePrefsDatabase()
+                .GetSyncablePrefMetadata(pref_name);
+        metadata.has_value() && metadata->model_type() == model_type) {
       const base::Value* value = nullptr;
       CHECK(GetValue(pref_name, &value));
 
@@ -741,6 +744,25 @@ void DualLayerUserPrefStore::OnStateChanged(syncer::SyncService* sync_service) {
 void DualLayerUserPrefStore::OnSyncShutdown(syncer::SyncService* sync_service) {
   // Pref service and hence the pref store outlives sync service.
   sync_service->RemoveObserver(this);
+}
+
+void DualLayerUserPrefStore::SetValueInAccountStoreOnly(const std::string& key,
+                                                        base::Value value,
+                                                        uint32_t flags) {
+  const base::Value* initial_value = nullptr;
+  // Only notify if the effective value actually changes.
+  bool should_notify =
+      !GetValue(key, &initial_value) || (*initial_value != value);
+  {
+    base::AutoReset<bool> setting_prefs(&is_setting_prefs_, true);
+    account_pref_store_->SetValue(key, std::move(value), flags);
+  }
+
+  if (should_notify) {
+    for (PrefStore::Observer& observer : observers_) {
+      observer.OnPrefValueChanged(key);
+    }
+  }
 }
 
 }  // namespace sync_preferences

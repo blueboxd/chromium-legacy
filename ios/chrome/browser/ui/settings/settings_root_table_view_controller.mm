@@ -21,10 +21,6 @@
 #import "ui/base/device_form_factor.h"
 #import "ui/base/l10n/l10n_util.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 namespace {
 // Height of the space used by header/footer when none is set. Default is
 // `estimatedSection{Header|Footer}Height`.
@@ -191,8 +187,14 @@ const CGFloat kActivityIndicatorDimensionIPhone = 56;
   // can leave the new top view controller with a toolbar when it doesn't
   // require one. Disabling editing mode to avoid this. See crbug.com/1404111 as
   // an example.
-  if (parent == nullptr && self.isEditing) {
-    [self setEditing:NO animated:NO];
+  if (parent == nullptr) {
+    if ([self respondsToSelector:@selector(settingsWillBeDismissed)]) {
+      [self performSelector:@selector(settingsWillBeDismissed)];
+    }
+
+    if (self.isEditing) {
+      [self setEditing:NO animated:NO];
+    }
   }
 
   [self.navigationController setToolbarHidden:YES animated:YES];

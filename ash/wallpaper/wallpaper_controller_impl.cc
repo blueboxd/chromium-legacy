@@ -971,6 +971,12 @@ void WallpaperControllerImpl::SetTimeOfDayWallpaper(
       std::move(on_fetch));
 }
 
+bool WallpaperControllerImpl::IsTimeOfDayWallpaper() const {
+  return current_wallpaper_ &&
+         current_wallpaper_->wallpaper_info().collection_id ==
+             wallpaper_constants::kTimeOfDayWallpaperCollectionId;
+}
+
 void WallpaperControllerImpl::SetDefaultWallpaper(
     const AccountId& account_id,
     bool show_wallpaper,
@@ -1267,9 +1273,7 @@ void WallpaperControllerImpl::ShowSigninWallpaper() {
     return;
   }
 
-  session_manager::SessionState session_state =
-      Shell::Get()->session_controller()->GetSessionState();
-  if (session_state == session_manager::SessionState::OOBE) {
+  if (IsOobeState()) {
     ShowOobeWallpaper();
     return;
   }
@@ -3157,7 +3161,7 @@ bool WallpaperControllerImpl::IsOobeState() const {
       session_state == session_manager::SessionState::LOGIN_PRIMARY &&
       oobe_state_ != OobeDialogState::HIDDEN;
   DVLOG(1) << __func__ << " is_default_oobe_flow=" << is_default_oobe_flow
-           << " is_add_person_flow" << is_add_person_flow;
+           << " is_add_person_flow=" << is_add_person_flow;
   return is_default_oobe_flow || is_add_person_flow;
 }
 

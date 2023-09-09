@@ -46,7 +46,7 @@ const base::flat_map<ui::KeyboardCode, std::u16string>& GetKeyDisplayMap() {
           {ui::KeyboardCode::VKEY_PRIVACY_SCREEN_TOGGLE,
            u"PrivacyScreenToggle"},
           {ui::KeyboardCode::VKEY_ALL_APPLICATIONS, u"ViewAllApps"},
-          {ui::KeyboardCode::VKEY_DICTATE, u"ToggleDictation"},
+          {ui::KeyboardCode::VKEY_DICTATE, u"EnableOrToggleDictation"},
           {ui::KeyboardCode::VKEY_WLAN, u"ToggleWifi"},
           {ui::KeyboardCode::VKEY_EMOJI_PICKER, u"EmojiPicker"},
           {ui::KeyboardCode::VKEY_MENU, u"alt"},
@@ -96,8 +96,8 @@ TextAcceleratorPart::TextAcceleratorPart(ui::EventFlags modifier) {
 }
 
 TextAcceleratorPart::TextAcceleratorPart(ui::KeyboardCode key_code) {
-  text = GetKeyDisplay(key_code);
   type = mojom::TextAcceleratorPartType::kKey;
+  keycode = key_code;
 }
 
 TextAcceleratorPart::TextAcceleratorPart(const std::u16string& plain_text) {
@@ -183,10 +183,6 @@ const NonConfigurableActionsMap& GetNonConfigurableActionsMap() {
                {TextAcceleratorPart(ui::EF_ALT_DOWN),
                 TextAcceleratorPart(ui::EF_SHIFT_DOWN),
                 TextAcceleratorPart(ui::KeyboardCode::VKEY_TAB)})},
-          {NonConfigurableActions::kBrowserRightClick,
-           NonConfigurableAcceleratorDetails(
-               IDS_AMBIENT_ACCELERATOR_RIGHT_CLICK,
-               {TextAcceleratorPart(ui::EF_ALT_DOWN)})},
           {NonConfigurableActions::kAmbientLaunchNumberedApp,
            NonConfigurableAcceleratorDetails(
                IDS_AMBIENT_ACCELERATOR_LAUNCH_NUMBERED_APP,

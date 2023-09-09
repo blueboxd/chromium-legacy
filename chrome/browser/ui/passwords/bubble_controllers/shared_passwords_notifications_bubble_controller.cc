@@ -11,6 +11,7 @@
 #include "components/password_manager/core/browser/manage_passwords_referrer.h"
 #include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
+#include "components/url_formatter/elide_url.h"
 #include "ui/base/l10n/l10n_util.h"
 
 using password_manager::PasswordForm;
@@ -30,6 +31,34 @@ SharedPasswordsNotificationBubbleController::
   OnBubbleClosing();
 }
 
+std::u16string
+SharedPasswordsNotificationBubbleController::GetNotificationBody() {
+  std::vector<PasswordForm*> credentials_to_notifiy =
+      GetSharedCredentialsRequiringNotification();
+  std::u16string website = url_formatter::FormatOriginForSecurityDisplay(
+      delegate_->GetOrigin(),
+      url_formatter::SchemeDisplay::OMIT_HTTP_AND_HTTPS);
+
+  if (credentials_to_notifiy.size() > 1) {
+    return l10n_util::GetStringFUTF16(
+        IDS_SHARED_PASSWORDS_NOTIFICATION_TEXT_MULTIPLE_PASSWORD, website);
+  }
+  CHECK_EQ(credentials_to_notifiy.size(), 1U);
+  std::vector<size_t> offsets;
+  std::u16string text = l10n_util::GetStringFUTF16(
+      IDS_SHARED_PASSWORDS_NOTIFICATION_TEXT_SINGLE_PASSWORD,
+      credentials_to_notifiy[0]->sender_name, website, &offsets);
+  sender_name_range_ = gfx::Range(
+      offsets.at(0),
+      offsets.at(0) + credentials_to_notifiy[0]->sender_name.length());
+  return text;
+}
+
+gfx::Range SharedPasswordsNotificationBubbleController::GetSenderNameRange()
+    const {
+  return sender_name_range_;
+}
+
 void SharedPasswordsNotificationBubbleController::OnAcknowledgeClicked() {
   MarkSharedCredentialAsNotifiedInPasswordStore();
 }
@@ -39,6 +68,10 @@ void SharedPasswordsNotificationBubbleController::OnManagePasswordsClicked() {
   delegate_->NavigateToPasswordManagerSettingsPage(
       password_manager::ManagePasswordsReferrer::
           kSharedPasswordsNotificationBubble);
+}
+
+void SharedPasswordsNotificationBubbleController::OnCloseBubbleClicked() {
+  MarkSharedCredentialAsNotifiedInPasswordStore();
 }
 
 std::u16string SharedPasswordsNotificationBubbleController::GetTitle() const {

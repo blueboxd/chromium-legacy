@@ -20,6 +20,7 @@
 #include "base/check.h"
 #include "base/check_is_test.h"
 #include "base/command_line.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/environment.h"
 #include "base/feature_list.h"
 #include "base/files/file.h"
@@ -90,6 +91,7 @@
 #include "components/account_id/account_id.h"
 #include "components/crash/core/app/crashpad.h"
 #include "components/crash/core/common/crash_key.h"
+#include "components/feature_engagement/public/tracker.h"
 #include "components/nacl/common/buildflags.h"
 #include "components/nacl/common/nacl_switches.h"
 #include "components/policy/core/common/cloud/cloud_policy_core.h"
@@ -124,7 +126,7 @@ namespace crosapi {
 
 BASE_FEATURE(kLacrosLaunchAtLoginScreen,
              "LacrosLaunchAtLoginScreen",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 namespace {
 
@@ -578,7 +580,6 @@ BrowserManager::BrowserManager(
     std::unique_ptr<BrowserLoader> browser_loader,
     component_updater::ComponentUpdateService* update_service)
     : browser_loader_(std::move(browser_loader)),
-      component_update_service_(update_service),
       environment_provider_(std::make_unique<EnvironmentProvider>()),
       launch_at_login_screen_(
           // NOTE: We only want to pre-launch Lacros if Ash is launched in login
@@ -933,6 +934,7 @@ void BrowserManager::Shutdown() {
   // `shutdown_requested_` has been set.
   UpdateKeepAliveInBrowserIfNecessary(false);
   shutdown_requested_ = true;
+  shutdown_requested_while_prelaunched_ = (state_ == State::PRE_LAUNCHED);
   pending_actions_.Clear();
 
   // The lacros-chrome process may have already been terminated as the result of
@@ -1282,6 +1284,13 @@ void BrowserManager::StartWithLogFile(bool launching_at_login_screen,
     command_line.AppendSwitch(switches::kEnableCrashpad);
   }
 
+  // Ensure that child processes have the same rules about what help features
+  // may show as the current process.
+  //
+  // NOTE: this may add an --enable-features flag to the command line if not
+  // already present, or append to the flag if it is.
+  feature_engagement::Tracker::PropagateTestStateToChildProcess(command_line);
+
   if (params.enable_resource_file_sharing) {
     // Pass a flag to enable resources file sharing to Lacros.
     // To use resources file sharing feature on Lacros, it's required for ash to
@@ -1455,7 +1464,18 @@ void BrowserManager::OnLacrosChromeTerminated() {
   // Relaunch lacros-chrome if it was closed due to ash shutting down.
   // Note that this only matters for side-by-side lacros.
   if (!reload_requested_) {
-    SetLaunchOnLoginPref(shutdown_requested_);
+    auto* primary_user = user_manager::UserManager::Get()->GetPrimaryUser();
+    if (primary_user && primary_user->is_profile_created()) {
+      // We check that the user profile is available, to avoid the case
+      // in which Lacros is terminated before the profile is initialized.
+      SetLaunchOnLoginPref(shutdown_requested_);
+    } else if (shutdown_requested_ && !shutdown_requested_while_prelaunched_) {
+      // TODO(andreaorru): We expect that the case in which the profile isn't
+      // initialized when shutting down only happens when prelaunching at login
+      // screen. Here we collect other instances. Remove once we verify there
+      // are no such cases.
+      base::debug::DumpWithoutCrashing();
+    }
   }
 
   if (reload_requested_) {
@@ -1872,18 +1892,6 @@ void BrowserManager::RecordLacrosLaunchMode() {
     lacros_mode = LacrosLaunchMode::kLacrosOnly;
     lacros_mode_and_source =
         LacrosLaunchModeAndSource::kPossiblySetByUserLacrosOnly;
-  } else if (browser_util::IsLacrosPrimaryBrowser()) {
-    // Lacros is the primary browser - but Ash is still available.
-    lacros_mode = LacrosLaunchMode::kLacrosPrimary;
-    lacros_mode_and_source =
-        LacrosLaunchModeAndSource::kPossiblySetByUserLacrosPrimary;
-  } else if (browser_util::IsLacrosEnabled()) {
-    // If Lacros is enabled but not primary or the only browser, the
-    // side by side mode is active.
-    lacros_mode = LacrosLaunchMode::kSideBySide;
-    lacros_mode_and_source =
-        LacrosLaunchModeAndSource::kPossiblySetByUserSideBySide;
-
   } else {
     lacros_mode = LacrosLaunchMode::kLacrosDisabled;
     lacros_mode_and_source =

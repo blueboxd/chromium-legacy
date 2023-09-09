@@ -500,6 +500,17 @@ std::vector<std::u16string> TransformFileExtensionsForDisplay(
   return extensions_for_display;
 }
 
+bool IsRunOnOsLoginModeEnabledForAutostart(RunOnOsLoginMode login_mode) {
+  switch (login_mode) {
+    case RunOnOsLoginMode::kWindowed:
+      return true;
+    case RunOnOsLoginMode::kMinimized:
+      return true;
+    case RunOnOsLoginMode::kNotRun:
+      return false;
+  }
+}
+
 #if BUILDFLAG(IS_CHROMEOS)
 bool IsWebAppsCrosapiEnabled() {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -709,6 +720,10 @@ content::mojom::AlternativeErrorPageOverrideInfoPtr ConstructWebAppErrorPage(
   alternative_error_page_info->alternative_error_page_params = std::move(dict);
   alternative_error_page_info->resource_id = IDR_WEBAPP_ERROR_PAGE_HTML;
   return alternative_error_page_info;
+}
+
+bool IsValidScopeForLinkCapturing(const GURL& scope) {
+  return scope.is_valid() && scope.has_scheme() && scope.SchemeIsHTTPOrHTTPS();
 }
 
 }  // namespace web_app

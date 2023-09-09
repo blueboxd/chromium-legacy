@@ -23,6 +23,7 @@ namespace ash {
 //
 // The added enum member is kNewAction. Its string name is NewAction.
 //
+// LINT.IfChange
 #define ACCELERATOR_ACTIONS                                             \
   ACCELERATOR_ACTION_ENTRY(BrightnessDown)                              \
   ACCELERATOR_ACTION_ENTRY(BrightnessUp)                                \
@@ -46,6 +47,7 @@ namespace ash {
   ACCELERATOR_ACTION_ENTRY(DesksActivate7)                              \
   ACCELERATOR_ACTION_ENTRY(DesksToggleAssignToAllDesks)                 \
   ACCELERATOR_ACTION_ENTRY(DisableCapsLock)                             \
+  ACCELERATOR_ACTION_ENTRY(EnableOrToggleDictation)                     \
   ACCELERATOR_ACTION_ENTRY(Exit)                                        \
   ACCELERATOR_ACTION_ENTRY(FocusCameraPreview)                          \
   ACCELERATOR_ACTION_ENTRY(FocusNextPane)                               \
@@ -123,7 +125,6 @@ namespace ash {
   ACCELERATOR_ACTION_ENTRY(ToggleCalendar)                              \
   ACCELERATOR_ACTION_ENTRY(ToggleCapsLock)                              \
   ACCELERATOR_ACTION_ENTRY(ToggleClipboardHistory)                      \
-  ACCELERATOR_ACTION_ENTRY(ToggleDictation)                             \
   ACCELERATOR_ACTION_ENTRY(ToggleDockedMagnifier)                       \
   ACCELERATOR_ACTION_ENTRY(ToggleFloating)                              \
   ACCELERATOR_ACTION_ENTRY(ToggleFullscreen)                            \
@@ -158,6 +159,7 @@ namespace ash {
   /* Debug accelerators are intentionally at the end, so that if you */ \
   /* remove one, you don't need to update tests which check*/           \
   /* hashes of the ids.*/                                               \
+  ACCELERATOR_ACTION_ENTRY(DebugClearUseKMeansPref)                     \
   ACCELERATOR_ACTION_ENTRY(DebugKeyboardBacklightToggle)                \
   ACCELERATOR_ACTION_ENTRY(DebugMicrophoneMuteToggle)                   \
   ACCELERATOR_ACTION_ENTRY(DebugPrintLayerHierarchy)                    \
@@ -186,6 +188,7 @@ namespace ash {
   /* rules for enabling the accelerator. */                             \
   ACCELERATOR_ACTION_ENTRY(DevToggleAppList)                            \
   ACCELERATOR_ACTION_ENTRY(DevToggleUnifiedDesktop)
+// LINT.ThenChange(//ash/public/mojom/accelerator_actions.mojom)
 
 enum AcceleratorAction {
 #define ACCELERATOR_ACTION_ENTRY(action) k##action,

@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 source_set("tab_pickup") {
-  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "tab_pickup_browser_agent.h",
     "tab_pickup_browser_agent.mm",
@@ -13,10 +12,13 @@ source_set("tab_pickup") {
     ":infobar_delegate",
     "//base",
     "//components/infobars/core",
+    "//components/prefs",
     "//components/sync_sessions",
     "//ios/chrome/browser/infobars",
+    "//ios/chrome/browser/shared/model/application_context",
     "//ios/chrome/browser/shared/model/browser",
     "//ios/chrome/browser/shared/model/browser_state",
+    "//ios/chrome/browser/shared/model/prefs:pref_names",
     "//ios/chrome/browser/shared/model/web_state_list",
     "//ios/chrome/browser/sync",
     "//ios/chrome/browser/synced_sessions",
@@ -24,7 +26,6 @@ source_set("tab_pickup") {
 }
 
 source_set("infobar_delegate") {
-  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "tab_pickup_infobar_delegate.h",
     "tab_pickup_infobar_delegate.mm",
@@ -39,6 +40,7 @@ source_set("infobar_delegate") {
     "//ios/chrome/browser/shared/model/browser",
     "//ios/chrome/browser/shared/model/browser_state",
     "//ios/chrome/browser/shared/model/web_state_list",
+    "//ios/chrome/browser/shared/public/commands",
     "//ios/chrome/browser/snapshots",
     "//ios/chrome/browser/sync",
     "//ios/chrome/browser/synced_sessions",
@@ -49,11 +51,15 @@ source_set("infobar_delegate") {
 }
 
 source_set("features") {
-  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "features.h",
     "features.mm",
   ]
   public_deps = [ "//base" ]
-  deps = [ "//ui/base" ]
+  deps = [
+    "//components/prefs",
+    "//ios/chrome/browser/shared/model/application_context",
+    "//ios/chrome/browser/shared/model/prefs:pref_names",
+    "//ui/base",
+  ]
 }

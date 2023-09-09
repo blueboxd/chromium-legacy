@@ -340,6 +340,7 @@ int GetFieldTypeGroupPredictionQualityMetric(
         case IBAN_VALUE:
         case MAX_VALID_FIELD_TYPE:
         case CREDIT_CARD_STANDALONE_VERIFICATION_CODE:
+        case SINGLE_USERNAME_FORGOT_PASSWORD:
           NOTREACHED() << field_type << " type is not in that group.";
           group = GROUP_AMBIGUOUS;
           break;
@@ -380,6 +381,7 @@ int GetFieldTypeGroupPredictionQualityMetric(
           group = GROUP_CREDIT_CARD_DATE;
           break;
         case CREDIT_CARD_VERIFICATION_CODE:
+        case CREDIT_CARD_STANDALONE_VERIFICATION_CODE:
           group = GROUP_CREDIT_CARD_VERIFICATION;
           break;
         default:
@@ -2312,16 +2314,18 @@ void AutofillMetrics::FormInteractionsUkmLogger::LogSuggestionsShown(
 }
 
 void AutofillMetrics::FormInteractionsUkmLogger::LogDidFillSuggestion(
-    int record_type,
-    bool is_for_credit_card,
+    absl::variant<AutofillProfile::RecordType, CreditCard::RecordType>
+        record_type,
     const FormStructure& form,
     const AutofillField& field) {
   if (!CanLog())
     return;
 
   ukm::builders::Autofill_SuggestionFilled(source_id_)
-      .SetRecordType(record_type)
-      .SetIsForCreditCard(is_for_credit_card)
+      .SetRecordType(absl::visit(
+          [](auto value) { return base::to_underlying(value); }, record_type))
+      .SetIsForCreditCard(
+          absl::holds_alternative<CreditCard::RecordType>(record_type))
       .SetMillisecondsSinceFormParsed(
           MillisecondsSinceFormParsed(form.form_parsed_timestamp()))
       .SetFormSignature(HashFormSignature(form.form_signature()))
@@ -3238,9 +3242,7 @@ std::string AutofillMetrics::GetHistogramStringForCardType(
       case CreditCard::VIRTUAL_CARD:
         return ".VirtualCard";
       case CreditCard::LOCAL_CARD:
-        // We do not offer CVC auth for local cards.
-        NOTREACHED();
-        break;
+        return ".LocalCard";
     }
   }
 

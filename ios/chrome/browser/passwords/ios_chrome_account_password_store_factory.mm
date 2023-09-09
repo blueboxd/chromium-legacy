@@ -25,10 +25,6 @@
 #import "ios/chrome/browser/shared/model/browser_state/browser_state_otr_helper.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 using password_manager::AffiliatedMatchHelper;
 using password_manager::AffiliationService;
 
@@ -83,7 +79,8 @@ IOSChromeAccountPasswordStoreFactory::BuildServiceInstanceFor(
 
   auto password_store = base::MakeRefCounted<password_manager::PasswordStore>(
       std::make_unique<password_manager::PasswordStoreBuiltInBackend>(
-          std::move(login_db)));
+          std::move(login_db),
+          syncer::WipeModelUponSyncDisabledBehavior::kAlways));
 
   AffiliationService* affiliation_service =
       IOSChromeAffiliationServiceFactory::GetForBrowserState(context);

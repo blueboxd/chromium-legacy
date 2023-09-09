@@ -16,7 +16,7 @@
 #include "chrome/browser/ash/policy/dlp/dlp_files_controller_ash.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager_factory.h"
-#include "chrome/browser/chromeos/policy/dlp/mock_dlp_rules_manager.h"
+#include "chrome/browser/chromeos/policy/dlp/test/mock_dlp_rules_manager.h"
 #include "chrome/browser/nearby_sharing/common/nearby_share_features.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sharesheet/sharesheet_metrics.h"
@@ -128,11 +128,6 @@ class SharesheetBubbleViewPolicyBrowserTest
                 (const apps::AppUpdate&, const apps::IntentPtr&),
                 (override));
   };
-
-  void TearDownOnMainThread() override {
-    mock_files_controller_.reset();
-    SharesheetBubbleViewBrowserTest::TearDownOnMainThread();
-  }
 
   void SetupRulesManager(bool is_dlp_blocked) {
     policy::DlpRulesManagerFactory::GetInstance()->SetTestingFactory(

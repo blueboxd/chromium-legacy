@@ -207,7 +207,7 @@ public class PartialCustomTabBottomSheetStrategy extends PartialCustomTabBaseStr
                 end = initialY();
                 break;
             case HeightStatus.CLOSE:
-                end = mDisplayHeight - mNavbarHeight;
+                end = mDisplayHeight;
                 if (isFullHeight()) {
                     attrs.y = getFullyExpandedY();
                     window.setAttributes(attrs);
@@ -534,8 +534,7 @@ public class PartialCustomTabBottomSheetStrategy extends PartialCustomTabBaseStr
     @Override
     protected boolean isFullHeight() {
         if (ChromeFeatureList.sCctResizableSideSheet.isEnabled()) {
-            return MultiWindowUtils.getInstance().isInMultiWindowMode(mActivity)
-                    && !ChromeFeatureList.sCctResizableMultiWindowMode.isEnabled();
+            return MultiWindowUtils.getInstance().isInMultiWindowMode(mActivity);
         } else {
             return isLandscape() || MultiWindowUtils.getInstance().isInMultiWindowMode(mActivity);
         }

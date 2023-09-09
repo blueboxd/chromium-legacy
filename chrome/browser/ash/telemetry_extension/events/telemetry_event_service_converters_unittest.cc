@@ -11,14 +11,16 @@
 #include <vector>
 
 #include "ash/system/diagnostics/mojom/input.mojom.h"
+#include "chrome/browser/ash/telemetry_extension/telemetry/probe_service_converters.h"
 #include "chromeos/ash/services/cros_healthd/public/mojom/cros_healthd_events.mojom.h"
+#include "chromeos/crosapi/mojom/probe_service.mojom.h"
 #include "chromeos/crosapi/mojom/telemetry_event_service.mojom.h"
 #include "chromeos/crosapi/mojom/telemetry_extension_exception.mojom.h"
 #include "chromeos/crosapi/mojom/telemetry_keyboard_event.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace ash::converters {
+namespace ash::converters::events {
 
 // Tests that `ConvertStructPtr` function returns nullptr if input is
 // nullptr. `ConvertStructPtr` is a template, so we can test this function
@@ -29,11 +31,9 @@ TEST(TelemetryEventServiceConvertersTest, ConvertStructPtrTakesNullPtr) {
 
 TEST(TelemetryEventServiceConvertersTest, OptionalUint32) {
   constexpr double kValue = (1ULL << 31) + 1000;
-  EXPECT_EQ(ConvertEventNullablePrimitivePtr(
-                cros_healthd::mojom::NullableUint32Ptr()),
+  EXPECT_EQ(ConvertStructPtr(cros_healthd::mojom::NullableUint32Ptr()),
             absl::nullopt);
-  EXPECT_EQ(ConvertEventNullablePrimitivePtr(
-                cros_healthd::mojom::NullableUint32::New(kValue)),
+  EXPECT_EQ(ConvertStructPtr(cros_healthd::mojom::NullableUint32::New(kValue)),
             kValue);
 }
 
@@ -201,11 +201,12 @@ TEST(TelemetryEventServiceConvertersTest, ConvertKeyboardTopRightKey) {
             crosapi::mojom::TelemetryKeyboardTopRightKey::kControlPanel);
 }
 
-TEST(TelemetryEventServiceConvertersTest, ConvertNullableUint32Ptr) {
-  EXPECT_EQ(ConvertStructPtr(cros_healthd::mojom::NullableUint32::New(10)),
-            crosapi::mojom::UInt32Value::New(10));
+TEST(TelemetryEventServiceConvertersTest, LegacyConvertNullableUint32Ptr) {
+  EXPECT_EQ(
+      LegacyConvertStructPtr(cros_healthd::mojom::NullableUint32::New(10)),
+      crosapi::mojom::UInt32Value::New(10));
 
-  EXPECT_EQ(ConvertStructPtr(cros_healthd::mojom::NullableUint32Ptr()),
+  EXPECT_EQ(LegacyConvertStructPtr(cros_healthd::mojom::NullableUint32Ptr()),
             crosapi::mojom::UInt32ValuePtr());
 }
 
@@ -265,16 +266,19 @@ TEST(TelemetryEventServiceConvertersTest, ConvertTelemetryUsbEventInfo_State) {
             crosapi::mojom::TelemetryUsbEventInfo::State::kRemove);
 }
 
-TEST(TelemetryEventServiceConvertersTest, ConvertTelemetryHdmiEventInfo_State) {
+TEST(TelemetryEventServiceConvertersTest,
+     ConvertTelemetryExternalDisplayEventInfo_State) {
+  EXPECT_EQ(Convert(cros_healthd::mojom::ExternalDisplayEventInfo::State::
+                        kUnmappedEnumField),
+            crosapi::mojom::TelemetryExternalDisplayEventInfo::State::
+                kUnmappedEnumField);
+
+  EXPECT_EQ(Convert(cros_healthd::mojom::ExternalDisplayEventInfo::State::kAdd),
+            crosapi::mojom::TelemetryExternalDisplayEventInfo::State::kAdd);
+
   EXPECT_EQ(
-      Convert(cros_healthd::mojom::HdmiEventInfo::State::kUnmappedEnumField),
-      crosapi::mojom::TelemetryHdmiEventInfo::State::kUnmappedEnumField);
-
-  EXPECT_EQ(Convert(cros_healthd::mojom::HdmiEventInfo::State::kAdd),
-            crosapi::mojom::TelemetryHdmiEventInfo::State::kAdd);
-
-  EXPECT_EQ(Convert(cros_healthd::mojom::HdmiEventInfo::State::kRemove),
-            crosapi::mojom::TelemetryHdmiEventInfo::State::kRemove);
+      Convert(cros_healthd::mojom::ExternalDisplayEventInfo::State::kRemove),
+      crosapi::mojom::TelemetryExternalDisplayEventInfo::State::kRemove);
 }
 
 TEST(TelemetryEventServiceConvertersTest,
@@ -382,8 +386,9 @@ TEST(TelemetryEventServiceConvertersTest, ConvertTelemetryEventCategoryEnum) {
   EXPECT_EQ(Convert(crosapi::mojom::TelemetryEventCategoryEnum::kUsb),
             cros_healthd::mojom::EventCategoryEnum::kUsb);
 
-  EXPECT_EQ(Convert(crosapi::mojom::TelemetryEventCategoryEnum::kHdmi),
-            cros_healthd::mojom::EventCategoryEnum::kHdmi);
+  EXPECT_EQ(
+      Convert(crosapi::mojom::TelemetryEventCategoryEnum::kExternalDisplay),
+      cros_healthd::mojom::EventCategoryEnum::kExternalDisplay);
 
   EXPECT_EQ(Convert(crosapi::mojom::TelemetryEventCategoryEnum::kSdCard),
             cros_healthd::mojom::EventCategoryEnum::kSdCard);
@@ -582,14 +587,49 @@ TEST(TelemetryEventServiceConvertersTest, ConvertTelemetryUsbEventInfoPtr) {
                 crosapi::mojom::TelemetryUsbEventInfo::State::kAdd));
 }
 
-TEST(TelemetryEventServiceConvertersTest, ConvertTelemetryHdmiEventInfoPtr) {
-  auto input = cros_healthd::mojom::HdmiEventInfo::New();
-  input->state = cros_healthd::mojom::HdmiEventInfo::State::kAdd;
+TEST(TelemetryEventServiceConvertersTest,
+     ConvertTelemetryExternalDisplayEventInfoPtr) {
+  constexpr uint32_t kDisplayWidth = 0;
+  constexpr uint32_t kDisplayHeight = 1;
+  constexpr uint32_t kResolutionHorizontal = 2;
+  constexpr uint32_t kResolutionVertical = 3;
+  constexpr double kRefreshRate = 4.4;
+  constexpr char kManufacturer[] = "manufacturer";
+  constexpr uint16_t kModelId = 5;
+  constexpr uint32_t kSerialNumber = 6;
+  constexpr uint8_t kManufactureWeek = 7;
+  constexpr uint16_t kManufactureYear = 8;
+  constexpr char kEdidVersion[] = "1.4";
+  constexpr cros_healthd::mojom::DisplayInputType kInputType =
+      cros_healthd::mojom::DisplayInputType::kDigital;
+  constexpr char kDisplayName[] = "external_display_1";
 
-  EXPECT_EQ(ConvertStructPtr(std::move(input)),
-            crosapi::mojom::TelemetryHdmiEventInfo::New(
-                crosapi::mojom::TelemetryHdmiEventInfo::State::kAdd));
+  auto input = cros_healthd::mojom::ExternalDisplayEventInfo::New();
+  input->state = cros_healthd::mojom::ExternalDisplayEventInfo::State::kAdd;
+  input->display_info = cros_healthd::mojom::ExternalDisplayInfo::New(
+      cros_healthd::mojom::NullableUint32::New(kDisplayWidth),
+      cros_healthd::mojom::NullableUint32::New(kDisplayHeight),
+      cros_healthd::mojom::NullableUint32::New(kResolutionHorizontal),
+      cros_healthd::mojom::NullableUint32::New(kResolutionVertical),
+      cros_healthd::mojom::NullableDouble::New(kRefreshRate),
+      std::string(kManufacturer),
+      cros_healthd::mojom::NullableUint16::New(kModelId),
+      cros_healthd::mojom::NullableUint32::New(kSerialNumber),
+      cros_healthd::mojom::NullableUint8::New(kManufactureWeek),
+      cros_healthd::mojom::NullableUint16::New(kManufactureYear),
+      std::string(kEdidVersion), kInputType, std::string(kDisplayName));
+
+  EXPECT_EQ(
+      ConvertStructPtr(std::move(input)),
+      crosapi::mojom::TelemetryExternalDisplayEventInfo::New(
+          crosapi::mojom::TelemetryExternalDisplayEventInfo::State::kAdd,
+          crosapi::mojom::ProbeExternalDisplayInfo::New(
+              kDisplayWidth, kDisplayHeight, kResolutionHorizontal,
+              kResolutionVertical, kRefreshRate, kManufacturer, kModelId,
+              kSerialNumber, kManufactureWeek, kManufactureYear, kEdidVersion,
+              ash::converters::telemetry::Convert(kInputType), kDisplayName)));
 }
+
 TEST(TelemetryEventServiceConvertersTest, ConvertTelemetrySdCardEventInfoPtr) {
   auto input = cros_healthd::mojom::SdCardEventInfo::New();
   input->state = cros_healthd::mojom::SdCardEventInfo::State::kAdd;
@@ -797,4 +837,4 @@ TEST(TelemetryEventServiceConvertersTest,
             static_cast<uint32_t>(kMaxPressure));
 }
 
-}  // namespace ash::converters
+}  // namespace ash::converters::events

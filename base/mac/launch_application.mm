@@ -11,10 +11,6 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/types/expected.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 namespace base::mac {
 
 namespace {
@@ -43,6 +39,8 @@ NSArray* CommandLineArgsToArgsArray(const CommandLineArgs& command_line_args) {
     for (const auto& arg : *string_vector) {
       [args_array addObject:base::SysUTF8ToNSString(arg)];
     }
+
+    return args_array;
   }
 
   return @[];

@@ -16,6 +16,7 @@
 #import "components/reading_list/core/fake_reading_list_model_storage.h"
 #import "components/reading_list/core/reading_list_model_impl.h"
 #import "components/sync/base/storage_type.h"
+#import "components/sync/model/wipe_model_upon_sync_disabled_behavior.h"
 #import "components/sync/test/test_sync_service.h"
 #import "components/url_formatter/url_formatter.h"
 #import "ios/chrome/browser/favicon/favicon_loader.h"
@@ -29,10 +30,6 @@
 #import "testing/gtest/include/gtest/gtest.h"
 #import "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
-
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
 
 using testing::_;
 
@@ -55,7 +52,8 @@ class ReadingListMediatorTest
     base::WeakPtr<FakeReadingListModelStorage> storage_ptr =
         storage->AsWeakPtr();
     model_ = std::make_unique<ReadingListModelImpl>(
-        std::move(storage), syncer::StorageType::kUnspecified, &clock_);
+        std::move(storage), syncer::StorageType::kUnspecified,
+        syncer::WipeModelUponSyncDisabledBehavior::kNever, &clock_);
     // Complete the initial model load from storage.
     storage_ptr->TriggerLoadCompletion();
     sync_service_ = std::make_unique<syncer::TestSyncService>();

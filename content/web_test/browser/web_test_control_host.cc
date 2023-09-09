@@ -37,6 +37,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "cc/paint/skia_paint_canvas.h"
+#include "content/browser/aggregation_service/aggregation_service.h"
 #include "content/browser/attribution_reporting/attribution_manager.h"
 #include "content/browser/renderer_host/frame_tree.h"
 #include "content/browser/renderer_host/frame_tree_node.h"
@@ -70,6 +71,7 @@
 #include "content/shell/browser/shell_content_browser_client.h"
 #include "content/shell/browser/shell_content_index_provider.h"
 #include "content/shell/browser/shell_devtools_frontend.h"
+#include "content/shell/browser/shell_federated_permission_context.h"
 #include "content/test/mock_platform_notification_service.h"
 #include "content/test/storage_partition_test_helpers.h"
 #include "content/web_test/browser/devtools_protocol_test_bindings.h"
@@ -263,7 +265,6 @@ void ApplyWebTestDefaultPreferences(blink::web_pref::WebPreferences* prefs) {
   prefs->enable_scroll_animator =
       !command_line.HasSwitch(switches::kDisableSmoothScrolling);
   prefs->threaded_scrolling_enabled =
-      command_line.HasSwitch(switches::kEnableThreadedCompositing) &&
       !command_line.HasSwitch(blink::switches::kDisableThreadedScrolling);
   prefs->minimum_logical_font_size = 9;
   prefs->accelerated_2d_canvas_enabled =
@@ -517,7 +518,6 @@ WebTestControlHost::WebTestControlHost() {
                                     ->GetDefaultStoragePartition());
 
   GpuDataManager::GetInstance()->AddObserver(this);
-  ResetBrowserAfterWebTest();
 }
 
 WebTestControlHost::~WebTestControlHost() {
@@ -685,6 +685,7 @@ bool WebTestControlHost::ResetBrowserAfterWebTest() {
   expected_pixel_hash_.clear();
   test_url_ = GURL();
   prefs_ = blink::web_pref::WebPreferences();
+  lcpp_hint_ = absl::nullopt;
   should_override_prefs_ = false;
   WebTestContentBrowserClient::Get()->SetPopupBlockingEnabled(true);
   WebTestContentBrowserClient::Get()->ResetMockClipboardHosts();
@@ -710,7 +711,7 @@ bool WebTestControlHost::ResetBrowserAfterWebTest() {
   SetBluetoothManualChooser(false);
   SetDatabaseQuota(content::kDefaultDatabaseQuota);
 
-  // Delete all cookies and Attribution Reporting data.
+  // Delete all cookies, Attribution Reporting data and Aggregation service data
   {
     BrowserContext* browser_context =
         ShellContentBrowserClient::Get()->browser_context();
@@ -719,13 +720,21 @@ bool WebTestControlHost::ResetBrowserAfterWebTest() {
     storage_partition->GetCookieManagerForBrowserProcess()->DeleteCookies(
         network::mojom::CookieDeletionFilter::New(), base::DoNothing());
 
-    if (auto* manager =
+    if (auto* attribution_manager =
             AttributionManager::FromBrowserContext(browser_context)) {
-      manager->ClearData(
+      attribution_manager->ClearData(
           /*delete_begin=*/base::Time::Min(), /*delete_end=*/base::Time::Max(),
           /*filter=*/StoragePartition::StorageKeyMatcherFunction(),
           /*filter_builder=*/nullptr,
           /*delete_rate_limit_data=*/true,
+          /*done=*/base::DoNothing());
+    }
+
+    if (auto* aggregation_service =
+            AggregationService::GetService(browser_context)) {
+      aggregation_service->ClearData(
+          /*delete_begin=*/base::Time::Min(), /*delete_end=*/base::Time::Max(),
+          /*filter=*/StoragePartition::StorageKeyMatcherFunction(),
           /*done=*/base::DoNothing());
     }
   }
@@ -1065,10 +1074,18 @@ void WebTestControlHost::RenderViewDeleted(RenderViewHost* render_view_host) {
   main_window_render_view_hosts_.erase(render_view_host);
 }
 
+void WebTestControlHost::DidStartNavigation(
+    NavigationHandle* navigation_handle) {
+  if (lcpp_hint_) {
+    navigation_handle->SetLCPPNavigationHint(lcpp_hint_.value());
+  }
+}
+
 void WebTestControlHost::ReadyToCommitNavigation(
     NavigationHandle* navigation_handle) {
   NavigationRequest* request = NavigationRequest::From(navigation_handle);
-  RenderFrameHostImpl* rfh = request->rfh_restored_from_back_forward_cache();
+  RenderFrameHostImpl* rfh =
+      request->GetRenderFrameHostRestoredFromBackForwardCache();
   if (rfh)
     GetWebTestRenderFrameRemote(rfh)->OnReactivated();
 }
@@ -1783,6 +1800,11 @@ void WebTestControlHost::DisableAutoResize(const gfx::Size& new_size) {
   main_window_->ResizeWebContentForTests(new_size);
 }
 
+void WebTestControlHost::SetLCPPNavigationHint(
+    blink::mojom::LCPCriticalPathPredictorNavigationTimeHintPtr hint) {
+  lcpp_hint_ = *hint.get();
+}
+
 void WebTestControlHost::GoToOffset(int offset) {
   main_window_->GoBackOrForward(offset);
 }
@@ -1844,6 +1866,10 @@ void WebTestControlHost::PrepareRendererForNextWebTest() {
   //
   // Note: this navigation might happen in a new process, depending on the
   // COOP policy of the previous document.
+
+  // Avoid sending LCPP hint on the about:blank navigation.
+  lcpp_hint_ = absl::nullopt;
+
   NavigationController::LoadURLParams params((GURL(kAboutBlankResetWebTest)));
   params.transition_type = ui::PageTransitionFromInt(ui::PAGE_TRANSITION_TYPED);
   params.should_clear_history_list = true;
@@ -1993,6 +2019,9 @@ void WebTestControlHost::BlockThirdPartyCookies(bool block) {
       browser_context->GetDefaultStoragePartition();
   storage_partition->GetCookieManagerForBrowserProcess()
       ->BlockThirdPartyCookies(block);
+  ShellFederatedPermissionContext* federated_context =
+      browser_context->GetShellFederatedPermissionContext();
+  federated_context->SetThirdPartyCookiesBlocked(block);
 }
 
 void WebTestControlHost::BindWebTestControlHostForRenderer(
@@ -2001,12 +2030,16 @@ void WebTestControlHost::BindWebTestControlHostForRenderer(
   receiver_bindings_.Add(this, std::move(receiver), render_process_id);
 }
 
+void WebTestControlHost::BindNonAssociatedWebTestControlHost(
+    mojo::PendingReceiver<mojom::NonAssociatedWebTestControlHost> receiver) {
+  non_associated_receiver_bindings_.Add(this, std::move(receiver));
+}
+
 mojo::AssociatedRemote<mojom::WebTestRenderFrame>&
 WebTestControlHost::GetWebTestRenderFrameRemote(RenderFrameHost* frame) {
   GlobalRenderFrameHostId key(frame->GetProcess()->GetID(),
                               frame->GetRoutingID());
-  if (web_test_render_frame_map_.find(key) ==
-      web_test_render_frame_map_.end()) {
+  if (!base::Contains(web_test_render_frame_map_, key)) {
     mojo::AssociatedRemote<mojom::WebTestRenderFrame>& new_ptr =
         web_test_render_frame_map_[key];
     frame->GetRemoteAssociatedInterfaces()->GetInterface(&new_ptr);
@@ -2020,8 +2053,7 @@ WebTestControlHost::GetWebTestRenderFrameRemote(RenderFrameHost* frame) {
 
 mojo::AssociatedRemote<mojom::WebTestRenderThread>&
 WebTestControlHost::GetWebTestRenderThreadRemote(RenderProcessHost* process) {
-  if (web_test_render_thread_map_.find(process) ==
-      web_test_render_thread_map_.end()) {
+  if (!base::Contains(web_test_render_thread_map_, process)) {
     IPC::ChannelProxy* channel = process->GetChannel();
     // channel might be null in tests.
     if (process->IsInitializedAndNotDead() && channel) {

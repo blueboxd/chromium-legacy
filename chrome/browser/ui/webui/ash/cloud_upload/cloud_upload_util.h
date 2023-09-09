@@ -43,10 +43,37 @@ enum class UploadType {
   kMaxValue = kMove,
 };
 
+constexpr char kGoogleDriveTaskResultMetricName[] =
+    "FileBrowser.OfficeFiles.TaskResult.Drive";
+constexpr char kOneDriveTaskResultMetricName[] =
+    "FileBrowser.OfficeFiles.TaskResult.OneDrive";
+constexpr char kGoogleDriveUploadResultMetricName[] =
+    "FileBrowser.OfficeFiles.Open.UploadResult.GoogleDrive";
+constexpr char kOneDriveUploadResultMetricName[] =
+    "FileBrowser.OfficeFiles.Open.UploadResult.OneDrive";
+
+// List of UMA enum value for Web Drive Office task results. The enum values
+// must be kept in sync with OfficeTaskResult in
+// tools/metrics/histograms/enums.xml.
+enum class OfficeTaskResult {
+  kFallbackQuickOffice = 0,
+  kFallbackOther = 1,
+  kOpened = 2,
+  kMoved = 3,
+  kCancelled = 4,
+  kFailedToUpload = 5,
+  kFailedToOpen = 6,
+  kCopied = 7,
+  kMaxValue = kCopied,
+};
+
 // The result of the "Upload to cloud" workflow for Office files.
 //
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
+//
+// The enum values must be kept in sync with OfficeFilesUploadResult in
+// tools/metrics/histograms/enums.xml.
 enum class OfficeFilesUploadResult {
   kSuccess = 0,
   kOtherError = 1,
@@ -63,7 +90,9 @@ enum class OfficeFilesUploadResult {
   kCloudQuotaFull = 12,
   kCloudError = 13,
   kNoConnection = 14,
-  kMaxValue = kNoConnection,
+  kDestinationUrlError = 15,
+  kInvalidURL = 16,
+  kMaxValue = kInvalidURL,
 };
 
 // Query actions for this path to get ODFS Metadata.
@@ -110,9 +139,8 @@ UploadType GetUploadType(Profile* profile,
 absl::optional<file_system_provider::ProvidedFileSystemInfo> GetODFSInfo(
     Profile* profile);
 
-// Get currently provided ODFS.
-absl::optional<file_system_provider::ProvidedFileSystemInterface*> GetODFS(
-    Profile* profile);
+// Get currently provided ODFS, or null if not mounted.
+file_system_provider::ProvidedFileSystemInterface* GetODFS(Profile* profile);
 
 // Get ODFS metadata as actions by doing a special GetActions request (for the
 // root directory) and return the actions to |OnODFSMetadataActions| which will

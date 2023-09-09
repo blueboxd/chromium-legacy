@@ -18,6 +18,7 @@
 #include "components/attribution_reporting/aggregatable_values.h"
 #include "components/attribution_reporting/aggregation_keys.h"
 #include "components/attribution_reporting/destination_set.h"
+#include "components/attribution_reporting/event_report_windows.h"
 #include "components/attribution_reporting/event_trigger_data.h"
 #include "components/attribution_reporting/filters.h"
 #include "components/attribution_reporting/os_registration.h"
@@ -92,6 +93,24 @@ struct COMPONENT_EXPORT(ATTRIBUTION_REPORTING_REGISTRATION_MOJOM_TRAITS)
 
 template <>
 struct COMPONENT_EXPORT(ATTRIBUTION_REPORTING_REGISTRATION_MOJOM_TRAITS)
+    StructTraits<attribution_reporting::mojom::FilterConfigDataView,
+                 attribution_reporting::FilterConfig> {
+  static const absl::optional<base::TimeDelta>& lookback_window(
+      const attribution_reporting::FilterConfig& filter_config) {
+    return filter_config.lookback_window();
+  }
+
+  static const attribution_reporting::FilterValues& filter_values(
+      const attribution_reporting::FilterConfig& filter_config) {
+    return filter_config.filter_values();
+  }
+
+  static bool Read(attribution_reporting::mojom::FilterConfigDataView data,
+                   attribution_reporting::FilterConfig* out);
+};
+
+template <>
+struct COMPONENT_EXPORT(ATTRIBUTION_REPORTING_REGISTRATION_MOJOM_TRAITS)
     StructTraits<attribution_reporting::mojom::AggregationKeysDataView,
                  attribution_reporting::AggregationKeys> {
   static const attribution_reporting::AggregationKeys::Keys& keys(
@@ -114,6 +133,25 @@ struct COMPONENT_EXPORT(ATTRIBUTION_REPORTING_REGISTRATION_MOJOM_TRAITS)
 
   static bool Read(attribution_reporting::mojom::DestinationSetDataView data,
                    attribution_reporting::DestinationSet* out);
+};
+
+template <>
+struct COMPONENT_EXPORT(ATTRIBUTION_REPORTING_REGISTRATION_MOJOM_TRAITS)
+    StructTraits<attribution_reporting::mojom::EventReportWindowsDataView,
+                 attribution_reporting::EventReportWindows> {
+  static base::TimeDelta start_time(
+      const attribution_reporting::EventReportWindows& event_report_windows) {
+    return event_report_windows.start_time();
+  }
+
+  static const base::flat_set<base::TimeDelta>& end_times(
+      const attribution_reporting::EventReportWindows& event_report_windows) {
+    return event_report_windows.end_times();
+  }
+
+  static bool Read(
+      attribution_reporting::mojom::EventReportWindowsDataView data,
+      attribution_reporting::EventReportWindows* out);
 };
 
 template <>
@@ -143,6 +181,17 @@ struct COMPONENT_EXPORT(ATTRIBUTION_REPORTING_REGISTRATION_MOJOM_TRAITS)
   static absl::optional<base::TimeDelta> aggregatable_report_window(
       const attribution_reporting::SourceRegistration& source) {
     return source.aggregatable_report_window;
+  }
+
+  static const absl::optional<attribution_reporting::EventReportWindows>&
+  event_report_windows(
+      const attribution_reporting::SourceRegistration& source) {
+    return source.event_report_windows;
+  }
+
+  static int max_event_level_reports(
+      const attribution_reporting::SourceRegistration& source) {
+    return source.max_event_level_reports.value_or(-1);
   }
 
   static int64_t priority(

@@ -14,11 +14,12 @@
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/ui/hats/hats_service_factory.h"
+#include "components/prefs/pref_service.h"
 #include "components/safe_browsing/content/browser/web_ui/safe_browsing_ui.h"
 #include "components/safe_browsing/core/browser/ping_manager.h"
 #include "components/safe_browsing/core/browser/sync/safe_browsing_primary_account_token_fetcher.h"
 #include "components/safe_browsing/core/browser/sync/sync_utils.h"
-#include "components/safe_browsing/core/common/features.h"
+#include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace safe_browsing {
@@ -71,10 +72,7 @@ KeyedService* ChromePingManagerFactory::BuildServiceInstanceFor(
       safe_browsing::WebUIInfoSingleton::GetInstance(),
       content::GetUIThreadTaskRunner({}),
       base::BindRepeating(&safe_browsing::GetUserPopulationForProfile, profile),
-      base::FeatureList::IsEnabled(
-          safe_browsing::kAddPageLoadTokenToClientSafeBrowsingReport)
-          ? base::BindRepeating(&safe_browsing::GetPageLoadTokenForURL, profile)
-          : base::NullCallback(),
+      base::BindRepeating(&safe_browsing::GetPageLoadTokenForURL, profile),
       std::move(hats_delegate));
 }
 

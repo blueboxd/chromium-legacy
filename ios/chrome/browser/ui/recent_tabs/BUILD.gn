@@ -3,12 +3,12 @@
 # found in the LICENSE file.
 
 source_set("recent_tabs") {
-  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "closed_tabs_observer_bridge.h",
     "closed_tabs_observer_bridge.mm",
     "recent_tabs_coordinator.h",
     "recent_tabs_coordinator.mm",
+    "recent_tabs_coordinator_delegate.h",
     "recent_tabs_mediator.h",
     "recent_tabs_mediator.mm",
     "recent_tabs_menu_helper.h",
@@ -19,6 +19,7 @@ source_set("recent_tabs") {
     "//base",
     "//components/sessions",
     "//components/signin/public/identity_manager",
+    "//components/signin/public/identity_manager/objc",
     "//components/sync",
     "//ios/chrome/browser/default_browser:utils",
     "//ios/chrome/browser/favicon",
@@ -35,10 +36,13 @@ source_set("recent_tabs") {
     "//ios/chrome/browser/signin",
     "//ios/chrome/browser/sync",
     "//ios/chrome/browser/synced_sessions",
+    "//ios/chrome/browser/ui/authentication/history_sync",
     "//ios/chrome/browser/ui/menu",
     "//ios/chrome/browser/ui/menu:tab_context_menu_delegate",
     "//ios/chrome/browser/ui/sharing",
     "//ios/chrome/browser/ui/tab_switcher/tab_grid:tab_grid_page_mutator",
+    "//ios/chrome/browser/ui/tab_switcher/tab_grid/grid:grid_toolbars_mutator",
+    "//ios/chrome/browser/ui/tab_switcher/tab_grid/toolbars",
     "//ios/chrome/browser/url_loading",
     "//ios/chrome/browser/url_loading:url_loading_params_header",
     "//ios/chrome/common/ui/favicon:favicon_constants",
@@ -48,7 +52,6 @@ source_set("recent_tabs") {
 }
 
 source_set("recent_tabs_ui_constants") {
-  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "recent_tabs_constants.h",
     "recent_tabs_constants.mm",
@@ -56,7 +59,6 @@ source_set("recent_tabs_ui_constants") {
 }
 
 source_set("recent_tabs_ui") {
-  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "recent_tabs_consumer.h",
     "recent_tabs_menu_provider.h",
@@ -116,7 +118,6 @@ source_set("recent_tabs_ui") {
 }
 
 source_set("unit_tests") {
-  configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [ "recent_tabs_coordinator_unittest.mm" ]
   deps = [
@@ -148,10 +149,7 @@ source_set("unit_tests") {
 }
 
 source_set("eg_app_support+eg2") {
-  configs += [
-    "//build/config/compiler:enable_arc",
-    "//build/config/ios:xctest_config",
-  ]
+  configs += [ "//build/config/ios:xctest_config" ]
   testonly = true
   sources = [
     "recent_tabs_app_interface.h",
@@ -167,10 +165,7 @@ source_set("eg_app_support+eg2") {
 }
 
 source_set("eg_test_support+eg2") {
-  configs += [
-    "//build/config/compiler:enable_arc",
-    "//build/config/ios:xctest_config",
-  ]
+  configs += [ "//build/config/ios:xctest_config" ]
   testonly = true
   sources = [
     "recent_tabs_app_interface.h",
@@ -183,10 +178,7 @@ source_set("eg_test_support+eg2") {
 }
 
 source_set("eg2_tests") {
-  configs += [
-    "//build/config/compiler:enable_arc",
-    "//build/config/ios:xctest_config",
-  ]
+  configs += [ "//build/config/ios:xctest_config" ]
   testonly = true
   sources = [ "recent_tabs_egtest.mm" ]
   deps = [
@@ -204,6 +196,7 @@ source_set("eg2_tests") {
     "//ios/chrome/browser/shared/ui/list_model",
     "//ios/chrome/browser/shared/ui/table_view:constants",
     "//ios/chrome/browser/signin:fake_system_identity",
+    "//ios/chrome/browser/signin:test_constants",
     "//ios/chrome/browser/ui/authentication:eg_test_support+eg2",
     "//ios/chrome/browser/ui/authentication/cells:constants",
     "//ios/chrome/browser/ui/authentication/signin:constants",

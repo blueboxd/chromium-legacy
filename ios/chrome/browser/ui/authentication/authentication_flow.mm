@@ -32,10 +32,6 @@
 #import "ios/public/provider/chrome/browser/signin/signin_error_api.h"
 #import "ui/base/l10n/l10n_util.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 using signin_ui::CompletionCallback;
 
 namespace {
@@ -280,13 +276,20 @@ enum AuthenticationState {
           return COMMIT_SYNC;
         case PostSignInAction::kShowSnackbar:
           _shouldShowSigninSnackbar = YES;
-          return COMPLETE_WITH_SUCCESS;
+          [[fallthrough]];
         case PostSignInAction::kNone:
-          return COMPLETE_WITH_SUCCESS;
+          if (policy::IsAnyUserPolicyFeatureEnabled() &&
+              _shouldFetchUserPolicy) {
+            return REGISTER_FOR_USER_POLICY;
+          } else {
+            return COMPLETE_WITH_SUCCESS;
+          }
       }
     case COMMIT_SYNC:
-      if (policy::IsUserPolicyEnabled() && _shouldFetchUserPolicy)
+      if (policy::IsUserPolicyEnabledForSigninOrSyncConsentLevel() &&
+          _shouldFetchUserPolicy) {
         return REGISTER_FOR_USER_POLICY;
+      }
       return COMPLETE_WITH_SUCCESS;
     case REGISTER_FOR_USER_POLICY:
       if (!_dmToken.length || !_clientID.length) {

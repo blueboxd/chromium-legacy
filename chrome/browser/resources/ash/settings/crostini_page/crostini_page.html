@@ -1,8 +1,6 @@
 <style include="settings-shared"></style>
 
-<os-settings-animated-pages id="pages"
-    section="[[section_]]"
-    focus-config="[[focusConfig_]]">
+<os-settings-animated-pages id="pages" section="[[section_]]">
   <div route-path="default">
     <settings-card header-text="$i18n{crostiniPageTitle}">
       <div id="crostini" class="settings-box two-line first"
@@ -60,6 +58,8 @@
               </localized-link>
             </div>
           </div>
+          <cr-policy-indicator indicator-type="userPolicy">
+          </cr-policy-indicator>
           <template is="dom-if" if="[[prefs.bruschetta.installed.value]]">
             <cr-icon-button class="subpage-arrow"
                 aria-label="$i18n{bruschettaPageLabel}"

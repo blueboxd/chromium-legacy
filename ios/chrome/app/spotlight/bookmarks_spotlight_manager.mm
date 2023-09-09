@@ -21,10 +21,6 @@
 #import "ios/chrome/browser/bookmarks/local_or_syncable_bookmark_model_factory.h"
 #import "ios/chrome/browser/favicon/ios_chrome_large_icon_service_factory.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 namespace {
 // Limit the size of the initial indexing. This will not limit the size of the
 // index as new bookmarks can be added afterwards.
@@ -49,8 +45,7 @@ class SpotlightBookmarkModelBridge;
 
 // Refreshes all nodes in the subtree of node.
 // If `initial` is YES, limit the number of nodes to kMaxInitialIndexSize.
-- (void)refreshNodeInIndex:(const bookmarks::BookmarkNode*)node
-                   initial:(BOOL)initial;
+- (void)refreshNodeInIndex:(const bookmarks::BookmarkNode*)node;
 
 // Returns true is the current index is too old or from an incompatible version.
 - (BOOL)shouldReindex;
@@ -95,7 +90,7 @@ class SpotlightBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
                          const bookmarks::BookmarkNode* parent,
                          size_t index,
                          bool added_by_user) override {
-    [owner_ refreshNodeInIndex:parent->children()[index].get() initial:NO];
+    [owner_ refreshNodeInIndex:parent->children()[index].get()];
   }
 
   void OnWillChangeBookmarkNode(bookmarks::BookmarkModel* model,
@@ -105,13 +100,13 @@ class SpotlightBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
 
   void BookmarkNodeChanged(bookmarks::BookmarkModel* model,
                            const bookmarks::BookmarkNode* node) override {
-    [owner_ refreshNodeInIndex:node initial:NO];
+    [owner_ refreshNodeInIndex:node];
   }
 
   void BookmarkNodeFaviconChanged(
       bookmarks::BookmarkModel* model,
       const bookmarks::BookmarkNode* node) override {
-    [owner_ refreshNodeInIndex:node initial:NO];
+    [owner_ refreshNodeInIndex:node];
   }
 
   void BookmarkAllUserNodesRemoved(
@@ -129,8 +124,7 @@ class SpotlightBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
                          size_t old_index,
                          const bookmarks::BookmarkNode* new_parent,
                          size_t new_index) override {
-    [owner_ refreshNodeInIndex:new_parent->children()[new_index].get()
-                       initial:NO];
+    [owner_ refreshNodeInIndex:new_parent->children()[new_index].get()];
   }
 
  private:
@@ -138,8 +132,6 @@ class SpotlightBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
 };
 
 @implementation BookmarksSpotlightManager {
-  __weak id<BookmarkUpdatedDelegate> _delegate;
-
   // Bridge to register for bookmark changes.
   std::unique_ptr<SpotlightBookmarkModelBridge> _bookmarkModelBridge;
 
@@ -168,7 +160,8 @@ class SpotlightBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
          searchableItemFactory:
              [[SearchableItemFactory alloc]
                  initWithLargeIconService:largeIconService
-                                   domain:spotlight::DOMAIN_BOOKMARKS]];
+                                   domain:spotlight::DOMAIN_BOOKMARKS
+                    useTitleInIdentifiers:YES]];
 }
 
 - (instancetype)
@@ -193,14 +186,6 @@ class SpotlightBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
     _bookmarkModel->RemoveObserver(_bookmarkModelBridge.get());
     _bookmarkModelBridge.reset();
   }
-}
-
-- (id<BookmarkUpdatedDelegate>)delegate {
-  return _delegate;
-}
-
-- (void)setDelegate:(id<BookmarkUpdatedDelegate>)delegate {
-  _delegate = delegate;
 }
 
 - (void)clearAllBookmarkSpotlightItems:(BlockWithError)completionHandler {
@@ -257,7 +242,6 @@ class SpotlightBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
 // Completion helper for URL node deletion.
 - (void)onCompletedDeleteItemsWithURL:(const GURL&)URL title:(NSString*)title {
   [self refreshItemWithURL:URL title:title];
-  [_delegate bookmarkUpdated];
 }
 
 - (BOOL)shouldReindex {
@@ -339,22 +323,18 @@ class SpotlightBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
   }
 }
 
-- (void)refreshNodeInIndex:(const bookmarks::BookmarkNode*)node
-                   initial:(BOOL)initial {
-  if (initial && _nodesIndexed > kMaxInitialIndexSize) {
+- (void)refreshNodeInIndex:(const bookmarks::BookmarkNode*)node {
+  if (_nodesIndexed > kMaxInitialIndexSize) {
     return;
   }
   if (node->is_url()) {
     _nodesIndexed++;
     [self refreshItemWithURL:node->url()
                        title:base::SysUTF16ToNSString(node->GetTitle())];
-    if (!initial) {
-      [_delegate bookmarkUpdated];
-    }
     return;
   }
   for (const auto& child : node->children())
-    [self refreshNodeInIndex:child.get() initial:initial];
+    [self refreshNodeInIndex:child.get()];
 }
 
 - (void)shutdown {
@@ -380,7 +360,7 @@ class SpotlightBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
   const base::Time startOfReindexing = base::Time::Now();
   _nodesIndexed = 0;
   _pendingLargeIconTasksCount = 0;
-  [self refreshNodeInIndex:_bookmarkModel->root_node() initial:YES];
+  [self refreshNodeInIndex:_bookmarkModel->root_node()];
   const base::Time endOfReindexing = base::Time::Now();
 
   UMA_HISTOGRAM_TIMES("IOS.Spotlight.BookmarksIndexingDuration",
@@ -395,8 +375,6 @@ class SpotlightBookmarkModelBridge : public bookmarks::BookmarkModelObserver {
   [[NSUserDefaults standardUserDefaults]
       setObject:@(spotlight::kCurrentSpotlightIndexVersion)
          forKey:@(spotlight::kSpotlightLastIndexingVersionKey)];
-
-  [_delegate bookmarkUpdated];
 }
 
 @end

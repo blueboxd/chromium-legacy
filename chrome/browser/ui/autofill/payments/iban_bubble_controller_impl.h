@@ -56,7 +56,6 @@ class IbanBubbleControllerImpl
   const IBAN& GetIBAN() const override;
 
   void OnAcceptButton(const std::u16string& nickname) override;
-  void OnCancelButton() override;
   void OnManageSavedIbanExtraButtonClicked() override;
   void OnBubbleClosed(PaymentsBubbleClosedReason closed_reason) override;
   IbanBubbleType GetBubbleType() const override;
@@ -70,6 +69,7 @@ class IbanBubbleControllerImpl
   bool IsIconVisible() const override;
   AutofillBubbleBase* GetPaymentBubbleView() const override;
   PaymentBubbleType GetPaymentBubbleType() const override;
+  int GetSaveSuccessAnimationStringId() const override;
 
   // For testing.
   void SetEventObserverForTesting(ObserverForTest* observer) {

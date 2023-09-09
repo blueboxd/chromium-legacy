@@ -16,10 +16,6 @@
 #import "testing/platform_test.h"
 #import "url/gurl.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 namespace {
 void CheckLaunchSourceForURL(first_run::ExternalLaunch expectedSource,
                              NSString* urlString) {
@@ -407,6 +403,50 @@ TEST_F(AppStartupParametersTest, ParseQuickActionsWidgetKitLens) {
   EXPECT_TRUE(params.externalURL.is_empty());
   EXPECT_EQ(params.postOpeningAction, START_LENS_FROM_HOME_SCREEN_WIDGET);
   histogram_tester.ExpectUniqueSample("IOS.WidgetKit.Action", 10, 1);
+}
+
+// Tests that shortcuts action search is parsed correctly, and the
+// right metric is recorded.
+TEST_F(AppStartupParametersTest, ParseShortcutWidgetSearch) {
+  base::HistogramTester histogram_tester;
+  NSURL* url =
+      [NSURL URLWithString:@"chromewidgetkit://shortcuts-widget/search"];
+  ChromeAppStartupParameters* params =
+      [ChromeAppStartupParameters newChromeAppStartupParametersWithURL:url
+                                                 fromSourceApplication:nil];
+
+  EXPECT_EQ(params.externalURL, kChromeUINewTabURL);
+  EXPECT_EQ(params.postOpeningAction, FOCUS_OMNIBOX);
+  histogram_tester.ExpectUniqueSample("IOS.WidgetKit.Action", 11, 1);
+}
+
+// Tests that shortcuts action open is parsed correctly, and the
+// right metric is recorded.
+TEST_F(AppStartupParametersTest, ParseShortcutWidgetOpen) {
+  base::HistogramTester histogram_tester;
+  NSURL* url = [NSURL URLWithString:@"chromewidgetkit://shortcuts-widget/"
+                                    @"open?url=https://www.example.org"];
+  ChromeAppStartupParameters* params =
+      [ChromeAppStartupParameters newChromeAppStartupParametersWithURL:url
+                                                 fromSourceApplication:nil];
+
+  EXPECT_EQ(params.externalURL, "https://www.example.org/");
+  EXPECT_EQ(params.postOpeningAction, NO_ACTION);
+  histogram_tester.ExpectUniqueSample("IOS.WidgetKit.Action", 12, 1);
+}
+
+// Tests that shortcuts action open with invalid URL is parsed correctly, and
+// no metric is recorded.
+TEST_F(AppStartupParametersTest, ParseShortcutWidgetOpenInvalid) {
+  base::HistogramTester histogram_tester;
+  NSURL* url = [NSURL
+      URLWithString:@"chromewidgetkit://shortcuts-widget/open?url=not_a_url"];
+  ChromeAppStartupParameters* params =
+      [ChromeAppStartupParameters newChromeAppStartupParametersWithURL:url
+                                                 fromSourceApplication:nil];
+
+  EXPECT_EQ(params, nil);
+  histogram_tester.ExpectTotalCount("IOS.WidgetKit.Action", 0);
 }
 
 // Tests that dino widget game url is parsed correctly, and the right metric is

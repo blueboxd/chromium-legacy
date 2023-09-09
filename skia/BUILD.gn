@@ -81,6 +81,7 @@ config("skia_config") {
     "SK_DISABLE_LEGACY_IMAGE_SUBSET_METHODS",
     "SK_DISABLE_LEGACY_IMAGE_COLORSPACE_METHODS",
     "SK_DISABLE_LEGACY_IMAGE_RELEASE_PROCS",
+    "SK_DISABLE_LEGACY_GL_BACKEND_SURFACE",
   ]
 
   include_dirs = [
@@ -325,9 +326,6 @@ component("skia") {
   }
   if (is_linux || is_chromeos) {
     sources += [ "ext/fontmgr_default_linux.cc" ]
-  }
-  if (is_apple) {
-    configs += [ "//build/config/compiler:enable_arc" ]
   }
   if (is_ios) {
     public += [ "ext/skia_utils_ios.h" ]
@@ -713,6 +711,12 @@ template("skia_source_set") {
     ]
     public_configs = [ ":skia_config" ]
 
+    if (is_apple) {
+      # Do not compile with ARC because Skia code is not compatible with being
+      # compiled with ARC.
+      configs -= [ "//build/config/compiler:enable_arc" ]
+    }
+
     # Android, the only user of mismatched sample files (for now), gets a small
     # binary size decrease by using AFDO to optimize for size in these
     # source_sets. However, that also comes at a relatively big performance
@@ -970,7 +974,6 @@ source_set("test_fonts") {
   if (is_mac) {
     public = [ "ext/test_fonts.h" ]
     sources = [ "ext/test_fonts_mac.mm" ]
-    configs += [ "//build/config/compiler:enable_arc" ]
     deps += [ "//base" ]
   }
 }
@@ -986,9 +989,6 @@ test("skia_unittests") {
     "ext/skia_memory_dump_provider_unittest.cc",
     "ext/skia_utils_base_unittest.cc",
   ]
-  if (is_apple) {
-    configs += [ "//build/config/compiler:enable_arc" ]
-  }
   if (is_ios) {
     sources += [ "ext/skia_utils_ios_unittest.mm" ]
   }

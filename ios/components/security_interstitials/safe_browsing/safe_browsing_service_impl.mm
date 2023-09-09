@@ -31,10 +31,6 @@
 #import "net/url_request/url_request_context_builder.h"
 #import "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 #pragma mark - SafeBrowsingServiceImpl
 
 namespace {
@@ -81,7 +77,8 @@ void SafeBrowsingServiceImpl::Initialize(
   safe_browsing_db_manager_ = safe_browsing::V4LocalDatabaseManager::Create(
       safe_browsing_data_path, web::GetUIThreadTaskRunner({}),
       web::GetIOThreadTaskRunner({}),
-      safe_browsing::ExtendedReportingLevelCallback());
+      safe_browsing::ExtendedReportingLevelCallback(),
+      safe_browsing::V4LocalDatabaseManager::RecordMigrationMetricsCallback());
 
   io_thread_enabler_ =
       base::MakeRefCounted<IOThreadEnabler>(safe_browsing_db_manager_);
@@ -156,7 +153,9 @@ SafeBrowsingServiceImpl::CreateUrlChecker(
       request_destination, url_checker_delegate, web_state->GetWeakPtr(),
       can_perform_full_url_lookup, can_url_realtime_check_subresource_url,
       web::GetUIThreadTaskRunner({}),
-      url_lookup_service ? url_lookup_service->GetWeakPtr() : nullptr);
+      url_lookup_service ? url_lookup_service->GetWeakPtr() : nullptr,
+      /*hash_realtime_service_on_ui=*/nullptr,
+      safe_browsing::hash_realtime_utils::HashRealTimeSelection::kNone);
 }
 
 bool SafeBrowsingServiceImpl::CanCheckUrl(const GURL& url) const {
@@ -171,6 +170,10 @@ SafeBrowsingServiceImpl::GetURLLoaderFactory() {
 scoped_refptr<safe_browsing::SafeBrowsingDatabaseManager>
 SafeBrowsingServiceImpl::GetDatabaseManager() {
   return safe_browsing_db_manager_;
+}
+
+network::mojom::NetworkContext* SafeBrowsingServiceImpl::GetNetworkContext() {
+  return network_context_client_.get();
 }
 
 void SafeBrowsingServiceImpl::ClearCookies(

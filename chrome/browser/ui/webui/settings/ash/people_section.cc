@@ -38,6 +38,7 @@
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/webui_url_constants.h"
+#include "chrome/grit/browser_resources.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/ash/components/account_manager/account_manager_factory.h"
@@ -262,8 +263,13 @@ void AddLockScreenPageStrings(content::WebUIDataSource* html_source,
       {"lockScreenOptionsLock", IDS_SETTINGS_PEOPLE_LOCK_SCREEN_OPTIONS_LOCK},
       {"lockScreenOptionsLoginLock",
        IDS_SETTINGS_PEOPLE_LOCK_SCREEN_OPTIONS_LOGIN_LOCK},
+      {"lockScreenRemovePinButton",
+       IDS_SETTINGS_PEOPLE_LOCK_SCREEN_REMOVE_PIN_BUTTON},
+      {"lockScreenPinLabel", IDS_SETTINGS_PEOPLE_LOCK_SCREEN_PIN_LABEL},
       {"lockScreenSetupPinButton",
        IDS_SETTINGS_PEOPLE_LOCK_SCREEN_SETUP_PIN_BUTTON},
+      {"lockScreenSignInOptions",
+       IDS_SETTINGS_PEOPLE_LOCK_SCREEN_SIGN_IN_OPTIONS},
       {"lockScreenTitleLock", IDS_SETTINGS_PEOPLE_LOCK_SCREEN_TITLE_LOCK},
       {"lockScreenTitleLoginLock",
        IDS_SETTINGS_PEOPLE_LOCK_SCREEN_TITLE_LOGIN_LOCK_V2},
@@ -327,6 +333,9 @@ void AddFingerprintResources(content::WebUIDataSource* html_source,
                              bool are_fingerprint_settings_allowed) {
   html_source->AddBoolean("fingerprintUnlockEnabled",
                           are_fingerprint_settings_allowed);
+
+  html_source->AddResourcePath("fingerprint_scanner_animation.json",
+                               IDR_FINGERPRINT_DEFAULT_ANIMATION);
 
   if (are_fingerprint_settings_allowed)
     quick_unlock::AddFingerprintResources(html_source);
@@ -649,7 +658,7 @@ mojom::SearchResultIcon PeopleSection::GetSectionIcon() const {
   return mojom::SearchResultIcon::kAvatar;
 }
 
-std::string PeopleSection::GetSectionPath() const {
+const char* PeopleSection::GetSectionPath() const {
   return mojom::kPeopleSectionPath;
 }
 

@@ -22,7 +22,6 @@
 #include "base/task/sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
-#include "components/invalidation/public/invalidation_service.h"
 #include "components/signin/public/base/gaia_id_hash.h"
 #include "components/signin/public/base/signin_metrics.h"
 #include "components/signin/public/identity_manager/account_info.h"
@@ -292,29 +291,31 @@ void SyncServiceImpl::Initialize() {
       GetSyncAccountStateForPrefs(),
       signin::GaiaIdHash::FromGaiaId(GetAccountInfo().gaia));
 
-  if (!IsLocalSyncEnabled()) {
-    // TODO(crbug.com/1454037): Record these histograms only if
-    // `is_regular_profile_for_uma_` is true.
+  if (!IsLocalSyncEnabled() && is_regular_profile_for_uma_) {
     const bool account_info_fully_loaded =
         auth_manager_->IsActiveAccountInfoFullyLoaded();
-    base::UmaHistogramBoolean("Sync.Startup.AccountInfoFullyLoaded",
+    base::UmaHistogramBoolean("Sync.Startup.AccountInfoFullyLoaded2",
                               account_info_fully_loaded);
     if (!account_info_fully_loaded) {
-      base::UmaHistogramBoolean("Sync.Startup.SignedInWithoutAccountInfo",
+      base::UmaHistogramBoolean("Sync.Startup.SignedInWithoutAccountInfo2",
                                 IsSignedIn());
     }
   }
 
   // If sync is disabled permanently, clean up old data that may be around (e.g.
   // crash during signout).
-  // TODO(crbug.com/1456707): The IsActiveAccountInfoFullyLoaded() here
-  // shouldn't be necessary - the signin state is known even before refresh
-  // tokens are fully loaded. But on ChromeOS-Ash, on the very first startup of
-  // a fresh profile, the signed-in account isn't known yet.
-  if (HasDisableReason(DISABLE_REASON_ENTERPRISE_POLICY) ||
-      (HasDisableReason(DISABLE_REASON_NOT_SIGNED_IN) &&
-       auth_manager_->IsActiveAccountInfoFullyLoaded())) {
+  if (HasDisableReason(DISABLE_REASON_ENTERPRISE_POLICY)) {
     StopAndClear();
+  } else if (HasDisableReason(DISABLE_REASON_NOT_SIGNED_IN)) {
+    // On ChromeOS-Ash, signout is not possible, so it's not necessary to handle
+    // this case.
+    // TODO(crbug.com/1454037): It *should* be harmless to handle this case on
+    // ChromeOS-Ash since it's supposedly unreachable, *but* during the very
+    // first startup of a fresh profile, the signed-in account isn't known yet
+    // at this point (see also https://crbug.com/1458701#c7).
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
+    StopAndClear();
+#endif
   }
 
   if (is_regular_profile_for_uma_) {
@@ -545,8 +546,7 @@ void SyncServiceImpl::TryStartImpl() {
   }
 
   engine_ = sync_client_->GetSyncApiComponentFactory()->CreateSyncEngine(
-      debug_identifier_, sync_client_->GetInvalidationService(),
-      sync_client_->GetSyncInvalidationsService());
+      debug_identifier_, sync_client_->GetSyncInvalidationsService());
   DCHECK(engine_);
 
   // Clear any old errors the first time sync starts.
@@ -564,11 +564,6 @@ void SyncServiceImpl::TryStartImpl() {
       create_http_post_provider_factory_cb_, MakeUserAgentForSync(channel_),
       url_loader_factory_->Clone());
   params.authenticated_account_info = authenticated_account_info;
-
-  invalidation::InvalidationService* invalidator =
-      sync_client_->GetInvalidationService();
-  params.invalidator_client_id =
-      invalidator ? invalidator->GetInvalidatorClientId() : std::string();
 
   params.sync_manager_factory =
       std::make_unique<SyncManagerFactory>(network_connection_tracker_);
@@ -1076,6 +1071,9 @@ void SyncServiceImpl::OnActionableProtocolError(
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
       // On every platform except ash, revoke the Sync consent/Clear primary
       // account after a dashboard clear.
+      // TODO(crbug.com/1462552): Simplify once kSync becomes unreachable or is
+      // deleted from the codebase. See ConsentLevel::kSync documentation for
+      // details.
       if (!IsLocalSyncEnabled() &&
           identity_manager_->HasPrimaryAccount(signin::ConsentLevel::kSync)) {
         signin::PrimaryAccountMutator* account_mutator =
@@ -1240,6 +1238,22 @@ void SyncServiceImpl::ReconfigureDataTypesDueToCrypto() {
 
 void SyncServiceImpl::SetPassphraseType(PassphraseType passphrase_type) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // if kReplaceSyncPromosWithSignInPromos is enabled, kAutofill should be
+  // disabled for newly sign in users who have already custom passphrase set.
+  // The first `SetPassphraseType()` call reflects the server-side passphrase
+  // type before signing in.
+  if (!sync_prefs_.GetCachedPassphraseType().has_value() &&
+      IsExplicitPassphrase(passphrase_type) &&
+      GetSyncAccountStateForPrefs() ==
+          SyncPrefs::SyncAccountState::kSignedInNotSyncing &&
+      base::FeatureList::IsEnabled(kReplaceSyncPromosWithSignInPromos)) {
+    GetUserSettings()->SetSelectedType(UserSelectableType::kAutofill, false);
+    // When the auto fill data type is updated, the payments should be updated
+    // too. Payments should not be enabled when auto fill data type disabled.
+    // TODO(crbug.com/1435431): This can be removed once kPayments is decoupled
+    // from kAutofill.
+    GetUserSettings()->SetSelectedType(UserSelectableType::kPayments, false);
+  }
   sync_prefs_.SetCachedPassphraseType(passphrase_type);
 }
 
@@ -1376,6 +1390,9 @@ bool SyncServiceImpl::IsSyncFeatureConsideredRequested() const {
     return false;
   }
 
+  // TODO(crbug.com/1462552): Simplify once kSync becomes unreachable or is
+  // deleted from the codebase. See ConsentLevel::kSync documentation for
+  // details.
   const bool has_sync_consent = HasSyncConsent();
   const bool is_sync_requested = sync_prefs_.IsSyncRequested();
 
@@ -1525,10 +1542,17 @@ void SyncServiceImpl::ConfigureDataTypeManager(ConfigureReason reason) {
                                     ? ConfigureDataTypeManagerOption::kTransport
                                     : ConfigureDataTypeManagerOption::kFeature);
 
-  // Only if it's the full Sync feature, also record the user's choice of data
-  // types.
-  // TODO(crbug.com/1431212): Record the selected types in transport mode too.
-  if (!use_transport_only_mode) {
+  // Record the user's choice of data types - in different ways depending on
+  // whether Sync-the-feature is enabled (which uses "SyncEverything") or not
+  // (which doesn't).
+  if (use_transport_only_mode) {
+    for (UserSelectableType type : user_settings_->GetSelectedTypes()) {
+      ModelTypeForHistograms canonical_model_type =
+          ModelTypeHistogramValue(UserSelectableTypeToCanonicalModelType(type));
+      base::UmaHistogramEnumeration("Sync.SelectedTypesInTransportMode",
+                                    canonical_model_type);
+    }
+  } else {
     bool sync_everything = sync_prefs_.HasKeepEverythingSynced();
     base::UmaHistogramBoolean("Sync.SyncEverything2", sync_everything);
 
@@ -1657,14 +1681,14 @@ base::Value::List SyncServiceImpl::GetTypeStatusMapForDebugging() const {
   const ModelTypeSet& throttled_types(detailed_status.throttled_types);
   const ModelTypeSet& backed_off_types(detailed_status.backed_off_types);
 
-  base::Value::Dict type_status_header;
-  type_status_header.Set("status", "header");
-  type_status_header.Set("name", "Model Type");
-  type_status_header.Set("num_entries", "Total Entries");
-  type_status_header.Set("num_live", "Live Entries");
-  type_status_header.Set("message", "Message");
-  type_status_header.Set("state", "State");
-  result.Append(base::Value(std::move(type_status_header)));
+  auto type_status_header = base::Value::Dict()
+                                .Set("status", "header")
+                                .Set("name", "Model Type")
+                                .Set("num_entries", "Total Entries")
+                                .Set("num_live", "Live Entries")
+                                .Set("message", "Message")
+                                .Set("state", "State");
+  result.Append(std::move(type_status_header));
 
   for (const auto& [type, controller] : data_type_controllers_) {
     base::Value::Dict type_status;
@@ -1723,7 +1747,7 @@ base::Value::List SyncServiceImpl::GetTypeStatusMapForDebugging() const {
     type_status.Set("state",
                     DataTypeController::StateToString(controller->state()));
 
-    result.Append(base::Value(std::move(type_status)));
+    result.Append(std::move(type_status));
   }
   return result;
 }
@@ -1892,9 +1916,9 @@ void GetAllNodesRequestHelper::OnReceivedNodesForType(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   // Add these results to our list.
-  base::Value::Dict type_dict;
-  type_dict.Set("type", ModelTypeToDebugString(type));
-  type_dict.Set("nodes", std::move(node_list));
+  auto type_dict = base::Value::Dict()
+                       .Set("type", ModelTypeToDebugString(type))
+                       .Set("nodes", std::move(node_list));
   result_accumulator_.Append(std::move(type_dict));
 
   // Remember that this part of the request is satisfied.
@@ -2117,20 +2141,19 @@ void SyncServiceImpl::ReconfigureDatatypeManager(
     } else {
       DVLOG(0) << "ConfigureDataTypeManager not invoked because datatypes "
                << "cannot be configured now";
-      // If we can't configure the data type manager yet, we should still notify
-      // observers. This is to support multiple setup UIs being open at once.
-      NotifyObservers();
     }
   } else if (HasDisableReason(DISABLE_REASON_UNRECOVERABLE_ERROR)) {
-    // There is nothing more to configure. So inform the listeners,
-    NotifyObservers();
-
+    // There is nothing more to configure.
     DVLOG(1) << "ConfigureDataTypeManager not invoked because of an "
              << "Unrecoverable error.";
   } else {
     DVLOG(0) << "ConfigureDataTypeManager not invoked because engine is not "
              << "initialized";
   }
+
+  // In any case, notify the observers. Whatever triggered the reconfigure
+  // (attempt) might be interesting to them.
+  NotifyObservers();
 }
 
 bool SyncServiceImpl::IsRetryingAccessTokenFetchForTest() const {

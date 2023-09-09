@@ -135,9 +135,19 @@ FakePageLoadMetricsObserverDelegate::GetNormalizedCLSData(
   return normalized_cls_data_;
 }
 
+const NormalizedCLSData& FakePageLoadMetricsObserverDelegate::
+    GetSoftNavigationIntervalNormalizedCLSData() const {
+  return normalized_cls_data_;
+}
+
 const NormalizedResponsivenessMetrics&
 FakePageLoadMetricsObserverDelegate::GetNormalizedResponsivenessMetrics()
     const {
+  return normalized_responsiveness_metrics_;
+}
+
+const NormalizedResponsivenessMetrics& FakePageLoadMetricsObserverDelegate::
+    GetSoftNavigationIntervalNormalizedResponsivenessMetrics() const {
   return normalized_responsiveness_metrics_;
 }
 

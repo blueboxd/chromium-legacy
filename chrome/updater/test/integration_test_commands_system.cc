@@ -105,6 +105,11 @@ class IntegrationTestCommandsSystem : public IntegrationTestCommands {
                {Param("values", StringFromValue(base::Value(values.Clone())))});
   }
 
+  void SetMachineManaged(bool is_managed_device) const override {
+    RunCommand("set_machine_managed",
+               {Param("managed", is_managed_device ? "true" : "false")});
+  }
+
   void ExpectSelfUpdateSequence(ScopedServer* test_server) const override {
     updater::test::ExpectSelfUpdateSequence(updater_scope_, test_server);
   }
@@ -133,6 +138,18 @@ class IntegrationTestCommandsSystem : public IntegrationTestCommands {
     updater::test::ExpectUpdateSequence(updater_scope_, test_server, app_id,
                                         install_data_index, priority,
                                         from_version, to_version);
+  }
+
+  void ExpectUpdateSequenceBadHash(
+      ScopedServer* test_server,
+      const std::string& app_id,
+      const std::string& install_data_index,
+      UpdateService::Priority priority,
+      const base::Version& from_version,
+      const base::Version& to_version) const override {
+    updater::test::ExpectUpdateSequenceBadHash(
+        updater_scope_, test_server, app_id, install_data_index, priority,
+        from_version, to_version);
   }
 
   void ExpectInstallSequence(ScopedServer* test_server,
@@ -255,8 +272,10 @@ class IntegrationTestCommandsSystem : public IntegrationTestCommands {
     RunCommand("delete_file", {Param("path", path.MaybeAsASCII())});
   }
 
-  void InstallApp(const std::string& app_id) const override {
-    RunCommand("install_app", {Param("app_id", app_id)});
+  void InstallApp(const std::string& app_id,
+                  const base::Version& version) const override {
+    RunCommand("install_app", {Param("app_id", app_id),
+                               Param("version", version.GetString())});
   }
 
   bool WaitForUpdaterExit() const override {

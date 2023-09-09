@@ -94,6 +94,7 @@
 <translation id="174937106936716857">מספר הקבצים הכולל</translation>
 <translation id="1755345808328621801">‏הקובץ הזה מיועד למחשב PC עם מערכת ההפעלה Windows. הוא לא מתאים למכשיר שלך, שבו פועלת מערכת ההפעלה ChromeOS. יש לחפש אפליקציה חלופית מתאימה בחנות האינטרנט של Chrome.</translation>
 <translation id="1757915090001272240">Wide Latin</translation>
+<translation id="1761091787730831947">שיתוף עם <ph name="VM_NAME" /></translation>
 <translation id="1773212559869067373">אישור האימות נדחה מקומית</translation>
 <translation id="1775381402323441512">פרטי הסרטון</translation>
 <translation id="180035236176489073">עליך להיות במצב מקוון כדי לגשת לקבצים אלה.</translation>
@@ -166,11 +167,11 @@
 <translation id="2312704192806647271">{COUNT,plural, =1{לא ניתן למצוא תוסף עם המזהה <ph name="BEGIN_LIST" /><ph name="END_LIST" />. יש לפנות לאדמין.}one{לא ניתן למצוא תוספים עם המזהים <ph name="BEGIN_LIST" /><ph name="END_LIST" />. יש לפנות לאדמין.}two{לא ניתן למצוא תוספים עם המזהים <ph name="BEGIN_LIST" /><ph name="END_LIST" />. יש לפנות לאדמין.}other{לא ניתן למצוא תוספים עם המזהים <ph name="BEGIN_LIST" /><ph name="END_LIST" />. יש לפנות לאדמין.}}</translation>
 <translation id="2325650632570794183">‏סוג קובץ זה אינו נתמך. יש לבקר בחנות האינטרנט של Chrome כדי למצוא יישום שיכול לפתוח קובץ מסוג זה.</translation>
 <translation id="2326539130272988168">בולגרית</translation>
-<translation id="2337715497728194187">‏שיתוף עם Bruschetta</translation>
 <translation id="233822363739146957">אין מספיק נפח אחסון לסנכרון כל הקבצים שלך</translation>
 <translation id="23721837607121582">הורדה של פרופיל נייד, רשת <ph name="NETWORK_INDEX" /> מתוך <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" /></translation>
 <translation id="2377319039870049694">מעבר לתצוגת רשימה</translation>
 <translation id="2377590462528165447">‏<ph name="NUMBER_OF_ITEMS" /> תיקיות שותפו עם Linux</translation>
+<translation id="2379576081295865700">נפח האחסון בבדיקה… נמצא פריט אחד</translation>
 <translation id="2383454254762599978">העברה לאשפה</translation>
 <translation id="2387458720915042159">‏סוג חיבור לשרת proxy</translation>
 <translation id="2389832672041313158">בורמזית/מיאנמר</translation>
@@ -197,7 +198,6 @@
 <translation id="2544853746127077729">אישור האימות נדחה על ידי הרשת</translation>
 <translation id="255937426064304553">ארה"ב - בינלאומית</translation>
 <translation id="2563185590376525700">צפרדע</translation>
-<translation id="2574327434504608656">‏תיקייה אחת שותפה עם Bruschetta</translation>
 <translation id="2578394532502990878">טמילית פונטית</translation>
 <translation id="2579959351793446050">אודיה</translation>
 <translation id="2587195714949534472">בהכנה לסנכרון של <ph name="FILE_NAME" />…</translation>
@@ -213,6 +213,7 @@
 <translation id="2718540689505416944">‏התקנת אפליקציה עם Linux</translation>
 <translation id="2719020180254996569">רשת <ph name="NETWORK_INDEX" /> מתוך <ph name="NETWORK_COUNT" />,‏ <ph name="NETWORK_NAME" />,‏ <ph name="CONNECTION_STATUS" />, פרטים</translation>
 <translation id="2724954091494693138">‏טורקית עם מקלדת F</translation>
+<translation id="2732288874651063549">ניהול השיתוף עם <ph name="VM_NAME" /></translation>
 <translation id="2732839045120506979">‏וייטנאמית VNI</translation>
 <translation id="2735623501230989521">‏מתן הרשאת גישה ל-Parallels Desktop לקבצים בתיקייה <ph name="FOLDER_NAME" /></translation>
 <translation id="2764206540577097904">‏השתמשת בכל נפח האחסון לשימוש פרטי שלך ב-Google Workspace.</translation>
@@ -297,7 +298,6 @@
 <translation id="3408072735282270043">הפעלה, <ph name="NETWORK_NAME" /></translation>
 <translation id="3408236822532681288">‏גרמנית (גרמניה) עם מקלדת Neo 2</translation>
 <translation id="3414856743105198592">פרמוט המדיה הנשלפת יגרום למחיקת כל הנתונים. האם ברצונך להמשיך?</translation>
-<translation id="3435143625481187092">‏הענקת הרשאה ל-Bruschetta לגשת לקבצים בתיקייה <ph name="FOLDER_NAME" /></translation>
 <translation id="3437801641691368414">שעת יצירה</translation>
 <translation id="343907260260897561">מצלמת פיתוח מיידי</translation>
 <translation id="3455931012307786678">אסטונית</translation>
@@ -308,6 +308,7 @@
 <translation id="3509680540198371098">‏רשת <ph name="NETWORK_INDEX" /> מתוך <ph name="NETWORK_COUNT" />,‏ <ph name="NETWORK_NAME" />,‏ <ph name="SECURITY_STATUS" />,‏ <ph name="CONNECTION_STATUS" />, עוצמת האות: ‎<ph name="SIGNAL_STRENGTH" />%‎, פרטים</translation>
 <translation id="3511705761158917664">בהכנה לסנכרון של <ph name="NUMBER_OF_ITEMS" /> פריטים…</translation>
 <translation id="3522708245912499433">פורטוגזית</translation>
+<translation id="3523225005467146490">תיקייה אחת שותפה עם <ph name="VM_NAME" /></translation>
 <translation id="3524311639100184459">זהירות: הקבצים האלה זמניים, וייתכן שהם יימחקו באופן אוטומטי כדי לפנות מקום בכונן.  <ph name="BEGIN_LINK" />מידע נוסף<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">תיקייה</translation>
 <translation id="3548125359243647069">הוזן קוד אימות שגוי יותר מדי פעמים.</translation>
@@ -385,7 +386,6 @@
 <translation id="4159731583141908892">ההעברה של <ph name="FILE_NAME" /> הסתיימה.</translation>
 <translation id="4176286497474237543">לריקון האשפה</translation>
 <translation id="4179621117429069925">הפריט הזה נמצא באשפה</translation>
-<translation id="4181839429935094755">‏<ph name="NUMBER_OF_ITEMS" /> תיקיות שותפו עם Bruschetta</translation>
 <translation id="4186579485882418952">הפעלת מצב אופליין</translation>
 <translation id="4193154014135846272">‏מסמך Google</translation>
 <translation id="4197674956721858839">כיווץ הקבצים שנבחרו</translation>
@@ -452,7 +452,6 @@
 <translation id="4646813851450205600">‏צ'כית עם מקלדת Qwerty</translation>
 <translation id="4656777537938206294">הגדרת גישה אופליין לקבצים</translation>
 <translation id="4658782175094886150">אדם בשלג</translation>
-<translation id="466782788172479199">‏הענקת הרשאה ל-Bruschetta לגשת לקבצים ב-Google Drive. השינויים יסתנכרנו עם המכשירים האחרים שלך.</translation>
 <translation id="4669606053856530811">אם הפריטים האלה לא ישותפו עם החברים באחסון השיתופי '<ph name="SOURCE_NAME" />', הם יאבדו את הגישה אליהם.</translation>
 <translation id="467809019005607715">Google Slides</translation>
 <translation id="4690246192099372265">שוודית</translation>
@@ -565,7 +564,6 @@
 <translation id="5323213332664049067">אמריקאית לטינית</translation>
 <translation id="5330145655348521461">הקבצים האלה נפתחו בשולחן עבודה אחר. יש לעבור אל <ph name="USER_NAME" />‏ (<ph name="MAIL_ADDRESS" />) כדי להציג אותם.</translation>
 <translation id="5330512191124428349">פרטי קובץ</translation>
-<translation id="5344246330454251646">‏ניהול השיתוף עם Bruschetta</translation>
 <translation id="535792325654997756">אדם עם חתולים</translation>
 <translation id="5358764674931277">קצב פריימים</translation>
 <translation id="5363339716524495120">שפת הקלט היא סינית</translation>
@@ -671,6 +669,8 @@
 <translation id="6164412158936057769">פרפרים</translation>
 <translation id="6165508094623778733">למידע נוסף</translation>
 <translation id="6170470584681422115">כריך</translation>
+<translation id="6177854567773392726">נפח האחסון בבדיקה… נמצאו <ph name="ITEMS_FOUND" /> פריטים</translation>
+<translation id="6181912134988520389">‏הענקת הרשאה ל-<ph name="VM_NAME" /> לגשת לקבצים ב-Google Drive. השינויים יסתנכרנו עם המכשירים האחרים שלך.</translation>
 <translation id="6187719147498869044">הונגרית</translation>
 <translation id="6198252989419008588">שינוי קוד אימות</translation>
 <translation id="6199801702437275229">בהמתנה למידע על נפח האחסון...</translation>
@@ -733,7 +733,6 @@
 <translation id="6710213216561001401">הקודם</translation>
 <translation id="6732801395666424405">האישורים לא נטענו</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY" /> ‏[<ph name="ISSUED_TO" />]‏</translation>
-<translation id="6740270213273127264">‏שיתוף התיקייה עם Bruschetta</translation>
 <translation id="6750737795876287924">הספרייה הנוכחית</translation>
 <translation id="6751256176799620176">תיקייה אחת נבחרה</translation>
 <translation id="6755827872271341378">‏מכשיר עם ChromeOS Flex</translation>
@@ -775,6 +774,7 @@
 <translation id="6989942356279143254">שוודית</translation>
 <translation id="6990081529015358884">לא נשאר לך מקום פנוי</translation>
 <translation id="6993826899923627728">הפריטים האלה נמצאים באשפה</translation>
+<translation id="6996593023542748157">שיתוף התיקייה עם <ph name="VM_NAME" /></translation>
 <translation id="7008426324576352165">על פי דרישת הארגון שלך, יש צורך בנפח אחסון נוסף כדי להשלים את ההעלאה.</translation>
 <translation id="7009985720488544166">בהתאם למדיניות האדמין, ההעברה של <ph name="COUNT" /> קבצים חסומה</translation>
 <translation id="7012943028104619157"><ph name="ROOT_TITLE" /> (<ph name="ROOT_SUMMARY" />)</translation>
@@ -960,6 +960,7 @@
 <translation id="8335837413233998004">בלארוסית</translation>
 <translation id="8336153091935557858">אתמול <ph name="YESTERDAY_DAYTIME" /></translation>
 <translation id="8342318071240498787">קובץ או ספרייה עם אותו שם כבר קיימים.</translation>
+<translation id="83651606385705612">הענקת הרשאה ל-<ph name="VM_NAME" /> לגשת לקבצים בתיקייה <ph name="FOLDER_NAME" /></translation>
 <translation id="8372369524088641025">‏מקש WEP גרוע</translation>
 <translation id="8372852072747894550">יוונית</translation>
 <translation id="8386903983509584791">הסריקה הושלמה</translation>
@@ -969,6 +970,7 @@
 <translation id="8408068190360279472">רשת <ph name="NETWORK_TYPE" />, מתבצעת התחברות</translation>
 <translation id="8425213833346101688">שינוי</translation>
 <translation id="8428213095426709021">הגדרות</translation>
+<translation id="8429998526804961548"><ph name="NUMBER_OF_ITEMS" /> תיקיות שותפו עם <ph name="VM_NAME" /></translation>
 <translation id="8431909052837336408">‏שינוי קוד האימות של ה-SIM</translation>
 <translation id="8437209419043462667">ארה"ב</translation>
 <translation id="8452135315243592079">‏כרטיס SIM חסר</translation>

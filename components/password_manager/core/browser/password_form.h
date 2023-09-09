@@ -325,10 +325,10 @@ struct PasswordForm {
   // When parsing an HTML form, this is typically empty.
   std::u16string password_value;
 
-  // The current encrypted password. Must be non-empty for PasswordForm
-  // instances retrieved from the password store or coming in a
-  // PasswordStoreChange that is not of type REMOVE.
-  std::string encrypted_password;
+  // The current keychain identifier where the password is stored password. Only
+  // non-empty on iOS for PasswordForm instances retrieved from the password
+  // store or coming in a PasswordStoreChange that is not of type REMOVE.
+  std::string keychain_identifier;
 
   // If the form was a sign-up or a change password form, the name of the input
   // element corresponding to the new password. Optional, and not persisted.
@@ -499,13 +499,20 @@ struct PasswordForm {
   // on heuristics and may be inaccurate.
   bool IsLikelyLoginForm() const;
 
-  // Returns true if we consider this form to be a signup form. It's based on
-  // heuristics and may be inaccurate.
+  // Returns true if we consider this form to be a signup form, i.e. it has
+  // a username field, a new password field and no current password field. It's
+  // based on heuristics and may be inaccurate.
   bool IsLikelySignupForm() const;
 
-  // Returns true if we consider this form to be a change password form and not
-  // a signup form. It's based on heuristics and may be inaccurate.
+  // Returns true if we consider this form to be a change password form, i.e.
+  // it has a current password field and a new password field. It's based on
+  // heuristics and may be inaccurate.
   bool IsLikelyChangePasswordForm() const;
+
+  // Returns true if we consider this form to be a reset password form, i.e.
+  // it has a new password field and no current password field or username.
+  // It's based on heuristics and may be inaccurate.
+  bool IsLikelyResetPasswordForm() const;
 
   // Returns true if current password element is set.
   bool HasUsernameElement() const;
@@ -591,6 +598,11 @@ constexpr PasswordForm::MatchType operator|(PasswordForm::MatchType lhs,
                                             PasswordForm::MatchType rhs) {
   return static_cast<PasswordForm::MatchType>(static_cast<int>(lhs) |
                                               static_cast<int>(rhs));
+}
+
+constexpr void operator|=(absl::optional<PasswordForm::MatchType>& lhs,
+                          PasswordForm::MatchType rhs) {
+  lhs = lhs.has_value() ? (lhs.value() | rhs) : rhs;
 }
 
 }  // namespace password_manager

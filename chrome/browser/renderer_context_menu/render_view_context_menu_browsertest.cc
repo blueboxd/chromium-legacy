@@ -135,11 +135,11 @@
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
 #include "components/supervised_user/core/browser/kids_chrome_management_client.h"
-#include "components/supervised_user/core/browser/kids_chrome_management_test_utils.h"
 #include "components/supervised_user/core/browser/supervised_user_service.h"
 #include "components/supervised_user/core/browser/supervised_user_url_filter.h"
 #include "components/supervised_user/core/common/features.h"
 #include "components/supervised_user/core/common/supervised_user_constants.h"
+#include "components/supervised_user/test_support/kids_chrome_management_test_utils.h"
 #endif
 
 #if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
@@ -1948,11 +1948,10 @@ class InterestGroupContentBrowserClient : public ChromeContentBrowserClient {
   // ChromeContentBrowserClient overrides:
   // This is needed so that the interest group related APIs can run without
   // failing with the result AuctionResult::kSellerRejected.
-  bool IsInterestGroupAPIAllowed(
-      content::RenderFrameHost* render_frame_host,
-      content::ContentBrowserClient::InterestGroupApiOperation operation,
-      const url::Origin& top_frame_origin,
-      const url::Origin& api_origin) override {
+  bool IsInterestGroupAPIAllowed(content::RenderFrameHost* render_frame_host,
+                                 content::InterestGroupApiOperation operation,
+                                 const url::Origin& top_frame_origin,
+                                 const url::Origin& api_origin) override {
     return true;
   }
 };

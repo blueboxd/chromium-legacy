@@ -18,6 +18,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/values.h"
+#include "chrome/browser/enterprise/browser_management/management_service_factory.h"
 #include "chrome/browser/policy/messaging_layer/upload/file_upload_job.h"
 #include "chrome/browser/policy/messaging_layer/upload/file_upload_job_test_util.h"
 #include "chrome/browser/policy/messaging_layer/util/dm_token_retriever_provider.h"
@@ -27,6 +28,7 @@
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
 #include "components/policy/core/common/cloud/encrypted_reporting_job_configuration.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_client.h"
+#include "components/policy/core/common/management/scoped_management_service_override_for_testing.h"
 #include "components/reporting/client/dm_token_retriever.h"
 #include "components/reporting/client/mock_dm_token_retriever.h"
 #include "components/reporting/client/report_queue_configuration.h"
@@ -36,16 +38,11 @@
 #include "components/reporting/encryption/primitives.h"
 #include "components/reporting/encryption/testing_primitives.h"
 #include "components/reporting/proto/synced/record_constants.pb.h"
-#include "components/reporting/storage_selector/storage_selector.h"
 #include "components/reporting/util/status.h"
 #include "components/reporting/util/statusor.h"
 #include "components/reporting/util/test_support_callbacks.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "chromeos/ash/components/install_attributes/stub_install_attributes.h"
-#endif
 
 using ::testing::_;
 using ::testing::Eq;
@@ -108,7 +105,7 @@ class ReportClientTest : public ::testing::TestWithParam<bool> {
   }
 
   SignedEncryptionInfo GenerateAndSignKey() {
-    DCHECK(decryptor_) << "Decryptor not created";
+    CHECK(decryptor_) << "Decryptor not created";
     // Generate new pair of private key and public value.
     uint8_t private_key[kKeySize];
     Encryptor::PublicKeyId public_key_id;
@@ -120,7 +117,7 @@ class ReportClientTest : public ::testing::TestWithParam<bool> {
         std::string(reinterpret_cast<const char*>(public_value), kKeySize),
         prepare_key_pair.cb());
     auto prepare_key_result = prepare_key_pair.result();
-    DCHECK(prepare_key_result.ok());
+    CHECK_OK(prepare_key_result) << prepare_key_result.status();
     public_key_id = prepare_key_result.ValueOrDie();
     // Prepare public key to be delivered to Storage.
     SignedEncryptionInfo signed_encryption_key;
@@ -141,7 +138,7 @@ class ReportClientTest : public ::testing::TestWithParam<bool> {
     signed_encryption_key.set_signature(
         std::string(reinterpret_cast<const char*>(signature), kSignatureSize));
     // Double check signature.
-    DCHECK(VerifySignature(
+    EXPECT_TRUE(VerifySignature(
         signature_verification_public_key_,
         std::string_view(reinterpret_cast<const char*>(value_to_sign),
                          sizeof(value_to_sign)),
@@ -285,13 +282,11 @@ class ReportClientTest : public ::testing::TestWithParam<bool> {
   ReportQueueConfiguration::PolicyCheckCallback policy_checker_callback_ =
       base::BindRepeating([]() { return Status::StatusOK(); });
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  // Required when production code checks device management status.
-  std::unique_ptr<ash::ScopedStubInstallAttributes> install_attributes_ =
-      std::make_unique<ash::ScopedStubInstallAttributes>(
-          ash::StubInstallAttributes::CreateCloudManaged("fake-domain-name",
-                                                         "fake-device-id"));
-#endif
+  // Set up this device as a managed device.
+  policy::ScopedManagementServiceOverrideForTesting scoped_management_service_ =
+      policy::ScopedManagementServiceOverrideForTesting(
+          policy::ManagementServiceFactory::GetForPlatform(),
+          policy::EnterpriseManagementAuthority::CLOUD_DOMAIN);
 };
 
 // Tests that a ReportQueue can be created using the ReportingClient with a DM

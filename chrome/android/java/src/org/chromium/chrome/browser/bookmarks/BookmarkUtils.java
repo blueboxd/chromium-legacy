@@ -36,6 +36,7 @@ import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.app.bookmarks.BookmarkActivity;
 import org.chromium.chrome.browser.app.bookmarks.BookmarkAddEditFolderActivity;
 import org.chromium.chrome.browser.app.bookmarks.BookmarkEditActivity;
+import org.chromium.chrome.browser.app.bookmarks.BookmarkFolderPickerActivity;
 import org.chromium.chrome.browser.app.bookmarks.BookmarkFolderSelectActivity;
 import org.chromium.chrome.browser.bookmarks.BookmarkUiPrefs.BookmarkRowDisplayPref;
 import org.chromium.chrome.browser.commerce.ShoppingServiceFactory;
@@ -523,6 +524,41 @@ public class BookmarkUtils {
         }
     }
 
+    /** Starts an {@link BookmarkFolderPickerActivity} for the given {@link BookmarkId}. */
+    public static void startFolderPickerActivity(Context context, BookmarkId... bookmarkIds) {
+        // TODO(crbug.com/1465757): Record user action.
+        Intent intent = new Intent(context, BookmarkFolderPickerActivity.class);
+        intent.putStringArrayListExtra(BookmarkFolderPickerActivity.INTENT_BOOKMARK_IDS,
+                bookmarkIdsToStringList(bookmarkIds));
+        context.startActivity(intent);
+    }
+
+    /** Given the {@link BookmarkId}s, return a list of those ids serialized to string. */
+    public static ArrayList<String> bookmarkIdsToStringList(BookmarkId... bookmarkIds) {
+        ArrayList<String> bookmarkStrings = new ArrayList<>(bookmarkIds.length);
+        for (BookmarkId id : bookmarkIds) {
+            bookmarkStrings.add(id.toString());
+        }
+
+        return bookmarkStrings;
+    }
+
+    /**
+     * Given the {@link BookmarkId}s serialized {@link String}s, return a list of the
+     * {@link BookmarkIds}.
+     */
+    public static List<BookmarkId> stringListToBookmarkIds(
+            BookmarkModel bookmarkModel, List<String> bookmarkIdStrings) {
+        List<BookmarkId> bookmarkIds = new ArrayList<>(bookmarkIdStrings.size());
+        for (String string : bookmarkIdStrings) {
+            BookmarkId bookmarkId = BookmarkId.getBookmarkIdFromString(string);
+            if (bookmarkModel.doesBookmarkExist(bookmarkId)) {
+                bookmarkIds.add(bookmarkId);
+            }
+        }
+        return bookmarkIds;
+    }
+
     /** Starts an {@link BookmarkFolderSelectActivity} for the given {@link BookmarkId}. */
     public static void startFolderSelectActivity(Context context, BookmarkId bookmarkId) {
         BookmarkFolderSelectActivity.startFolderSelectActivity(context, bookmarkId);
@@ -634,8 +670,9 @@ public class BookmarkUtils {
     }
 
     /** Returns whether this bookmark can be moved */
-    public static boolean isMovable(BookmarkItem node) {
-        return ReadingListUtils.isSwappableReadingListItem(node.getId()) || node.isReorderable();
+    public static boolean isMovable(BookmarkModel bookmarkModel, BookmarkItem item) {
+        if (Objects.equals(item.getParentId(), bookmarkModel.getPartnerFolderId())) return false;
+        return ReadingListUtils.isSwappableReadingListItem(item.getId()) || item.isEditable();
     }
 
     /**
@@ -746,6 +783,23 @@ public class BookmarkUtils {
     }
 
     /**
+     * Given a {@link BookmarkId}, returns the parent bookmark that should be used when going up.
+     * All bookmarks will skip over mobile bookmarks and other bookmarks.
+     * @param bookmarkModel The {@link BookmarkModel}.
+     * @param bookmarkId The {@link BookmarkId} to get the bparent for.
+     */
+    public static BookmarkId getParentFolderForViewing(
+            BookmarkModel bookmarkModel, BookmarkId bookmarkId) {
+        BookmarkItem item = bookmarkModel.getBookmarkById(bookmarkId);
+        BookmarkId parent = item.getParentId();
+        if (!BookmarkFeatures.isAndroidImprovedBookmarksEnabled()) return parent;
+
+        boolean skipToRoot = Objects.equals(parent, bookmarkModel.getOtherFolderId())
+                || Objects.equals(parent, bookmarkModel.getMobileFolderId());
+        return skipToRoot ? bookmarkModel.getRootFolderId() : parent;
+    }
+
+    /**
      * Moves the given {@link BookmarkId}s to the new parent if the parent is valid. Type-swaps
      * Reading List items as necessary. This method assumes that the bookmark ids that are passed
      * in are valid bookmarks that are moveable. See the {@link canAddFolderWhileViewingParent} and
@@ -765,7 +819,7 @@ public class BookmarkUtils {
 
         if (BookmarkFeatures.isAndroidImprovedBookmarksEnabled()
                 && Objects.equals(newParent, bookmarkModel.getRootFolderId())) {
-            newParent = bookmarkModel.getDesktopFolderId();
+            newParent = bookmarkModel.getOtherFolderId();
         }
         List<BookmarkId> typeSwappedReadingListItems = new ArrayList<>();
         ReadingListUtils.typeSwapBookmarksIfNecessary(

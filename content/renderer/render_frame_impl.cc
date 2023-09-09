@@ -12,6 +12,7 @@
 
 #include "base/auto_reset.h"
 #include "base/command_line.h"
+#include "base/containers/contains.h"
 #include "base/containers/flat_map.h"
 #include "base/debug/alias.h"
 #include "base/debug/asan_invalid_access.h"
@@ -1492,7 +1493,7 @@ RenderFrameImpl* RenderFrameImpl::CreateMainFrame(
 
   CHECK(!render_frame->in_frame_tree_);
   render_frame->in_frame_tree_ = true;
-#if !((BUILDFLAG(IS_ANDROID) && defined(ARCH_CPU_32_BITS)) || \
+#if !(BUILDFLAG(IS_ANDROID) || \
       (BUILDFLAG(IS_CHROMEOS) && defined(ARCH_CPU_ARM64)))
   render_frame->added_to_frame_tree_stack_trace_.emplace();
 #endif
@@ -1605,7 +1606,7 @@ void RenderFrameImpl::CreateFrame(
     // call to createLocalChild.
     CHECK(!render_frame->in_frame_tree_);
     render_frame->in_frame_tree_ = true;
-#if !((BUILDFLAG(IS_ANDROID) && defined(ARCH_CPU_32_BITS)) || \
+#if !(BUILDFLAG(IS_ANDROID) || \
       (BUILDFLAG(IS_CHROMEOS) && defined(ARCH_CPU_ARM64)))
     render_frame->added_to_frame_tree_stack_trace_.emplace();
 #endif
@@ -2267,13 +2268,14 @@ void RenderFrameImpl::DidMeaningfulLayout(
 
 void RenderFrameImpl::DidCommitAndDrawCompositorFrame() {
 #if BUILDFLAG(ENABLE_PPAPI)
-  // Notify all instances that we painted.  The same caveats apply as for
+  // Notify all instances that we painted. The same caveats apply as for
   // ViewFlushedPaint regarding instances closing themselves, so we take
   // similar precautions.
   PepperPluginSet plugins = active_pepper_instances_;
   for (auto* plugin : plugins) {
-    if (active_pepper_instances_.find(plugin) != active_pepper_instances_.end())
+    if (base::Contains(active_pepper_instances_, plugin)) {
       plugin->ViewInitiatedPaint();
+    }
   }
 #endif
 }
@@ -2801,9 +2803,7 @@ void RenderFrameImpl::CommitNavigationWithParams(
     CHECK(!commit_params->not_restored_reasons);
   }
 
-  if (commit_params->lcpp_hint) {
-    frame_->SetLCPPHint(std::move(commit_params->lcpp_hint));
-  }
+  frame_->SetLCPPHint(std::move(commit_params->lcpp_hint));
 
   // Note: this intentionally does not call |Detach()| before |reset()|. If
   // there is an active |MHTMLBodyLoaderClient|, the browser-side navigation
@@ -3569,7 +3569,7 @@ blink::WebLocalFrame* RenderFrameImpl::CreateChildFrame(
 
   CHECK(!child_render_frame->in_frame_tree_);
   child_render_frame->in_frame_tree_ = true;
-#if !((BUILDFLAG(IS_ANDROID) && defined(ARCH_CPU_32_BITS)) || \
+#if !(BUILDFLAG(IS_ANDROID) || \
       (BUILDFLAG(IS_CHROMEOS) && defined(ARCH_CPU_ARM64)))
   child_render_frame->added_to_frame_tree_stack_trace_.emplace();
 #endif
@@ -4181,7 +4181,7 @@ base::UnguessableToken RenderFrameImpl::GetDevToolsFrameToken() {
 
 void RenderFrameImpl::AbortClientNavigation() {
   CHECK(in_frame_tree_);
-  browser_side_navigation_pending_ = false;
+  is_requesting_navigation_ = false;
   if (mhtml_body_loader_client_) {
     mhtml_body_loader_client_->Detach();
     mhtml_body_loader_client_.reset();
@@ -4592,7 +4592,7 @@ void RenderFrameImpl::RemoveObserver(RenderFrameObserver* observer) {
 }
 
 void RenderFrameImpl::OnDroppedNavigation() {
-  browser_side_navigation_pending_ = false;
+  is_requesting_navigation_ = false;
   frame_->DidDropNavigation();
 }
 
@@ -4980,7 +4980,7 @@ void RenderFrameImpl::DidCommitNavigationInternal(
 void RenderFrameImpl::PrepareFrameForCommit(
     const GURL& url,
     const blink::mojom::CommitNavigationParams& commit_params) {
-  browser_side_navigation_pending_ = false;
+  is_requesting_navigation_ = false;
   GetContentClient()->SetActiveURL(
       url, frame_->Top()->GetSecurityOrigin().ToString().Utf8());
 
@@ -5077,7 +5077,7 @@ bool RenderFrameImpl::SwapIn(WebFrame* previous_web_frame) {
 
   CHECK(!in_frame_tree_);
   in_frame_tree_ = true;
-#if !((BUILDFLAG(IS_ANDROID) && defined(ARCH_CPU_32_BITS)) || \
+#if !(BUILDFLAG(IS_ANDROID) || \
       (BUILDFLAG(IS_CHROMEOS) && defined(ARCH_CPU_ARM64)))
   added_to_frame_tree_stack_trace_.emplace();
 #endif
@@ -5344,6 +5344,16 @@ void RenderFrameImpl::BeginNavigation(
       !info->is_fullscreen_requested;
 
   if (should_do_synchronous_about_blank_navigation) {
+    if (!IsMainFrame()) {
+      // Synchronous about:blank commits on iframes should only be triggered
+      // when first creating the iframe with an unset/about:blank URL, which
+      // means the origin should inherit from the parent.
+      WebLocalFrame* parent = static_cast<WebLocalFrame*>(frame_->Parent());
+      CHECK(parent);
+      CHECK(parent->GetDocument().GetSecurityOrigin().IsSameOriginWith(
+          info->url_request.RequestorOrigin()));
+    }
+
     for (auto& observer : observers_)
       observer.DidStartNavigation(url, info->navigation_type);
     SynchronouslyCommitAboutBlankForBug778318(std::move(info));
@@ -5762,7 +5772,7 @@ void RenderFrameImpl::BeginNavigationInternal(
 
   for (auto& observer : observers_)
     observer.DidStartNavigation(info->url_request.Url(), info->navigation_type);
-  browser_side_navigation_pending_ = true;
+  is_requesting_navigation_ = true;
 
   // Set SiteForCookies.
   WebDocument frame_document = frame_->GetDocument();
@@ -6076,8 +6086,8 @@ void RenderFrameImpl::DraggableRegionsChanged() {
     observer.DraggableRegionsChanged();
 }
 
-bool RenderFrameImpl::IsBrowserSideNavigationPending() {
-  return browser_side_navigation_pending_;
+bool RenderFrameImpl::IsRequestingNavigation() {
+  return is_requesting_navigation_;
 }
 
 void RenderFrameImpl::LoadHTMLStringForTesting(const std::string& html,
@@ -6119,7 +6129,7 @@ int RenderFrameImpl::GetEnabledBindings() {
 }
 
 void RenderFrameImpl::SetAccessibilityModeForTest(ui::AXMode new_mode) {
-  render_accessibility_manager_->SetMode(new_mode);
+  render_accessibility_manager_->SetMode(new_mode, 1);
 }
 
 const RenderFrameMediaPlaybackOptions&
@@ -6491,7 +6501,7 @@ void RenderFrameImpl::ResetMembersUsedForDurationOfCommit() {
   pending_code_cache_host_.reset();
   pending_cookie_manager_info_.reset();
   pending_storage_info_.reset();
-  browser_side_navigation_pending_ = false;
+  is_requesting_navigation_ = false;
 }
 
 }  // namespace content

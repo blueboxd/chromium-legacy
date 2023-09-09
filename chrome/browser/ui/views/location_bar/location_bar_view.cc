@@ -24,6 +24,7 @@
 #include "chrome/browser/apps/intent_helper/intent_picker_features.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/command_updater.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/extensions/api/omnibox/omnibox_api.h"
 #include "chrome/browser/extensions/extension_ui_util.h"
 #include "chrome/browser/extensions/tab_helper.h"
@@ -76,6 +77,7 @@
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/commerce/core/commerce_feature_list.h"
+#include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/features.h"
 #include "components/dom_distiller/core/dom_distiller_features.h"
 #include "components/favicon/content/content_favicon_driver.h"
@@ -245,8 +247,8 @@ void LocationBarView::Init() {
           /*location_bar=*/this, browser_, profile_),
       is_popup_mode_,
       /*location_bar_view=*/this, font_list);
-  omnibox_view->Init();
   omnibox_view_ = AddChildView(std::move(omnibox_view));
+  omnibox_view_->Init();
   // LocationBarView directs mouse button events from
   // |omnibox_additional_text_view_| to |omnibox_view_| so that e.g., clicking
   // the former will focus the latter. In order to receive |ShowContextMenu()|
@@ -890,7 +892,8 @@ void LocationBarView::Update(WebContents* contents) {
   RefreshContentSettingViews();
 
   RefreshPageActionIconViews();
-  location_icon_view_->Update(/*suppress_animations=*/contents);
+  location_icon_view_->Update(/*suppress_animations=*/contents,
+                              omnibox_view_->model()->PopupIsOpen());
 
   if (intent_chip_)
     intent_chip_->Update();
@@ -975,9 +978,8 @@ SkColor LocationBarView::GetIconLabelBubbleSurroundingForegroundColor() const {
 }
 
 SkAlpha LocationBarView::GetIconLabelBubbleSeparatorAlpha() const {
-  if (features::GetChromeRefresh2023Level() ==
-          features::ChromeRefresh2023Level::kLevel2 ||
-      base::FeatureList::IsEnabled(omnibox::kExpandedStateColors)) {
+  if (omnibox::IsOmniboxCr23CustomizeGuardedFeatureEnabled(
+          omnibox::kExpandedStateColors)) {
     return 0xFF;
   }
   return IconLabelBubbleView::Delegate::GetIconLabelBubbleSeparatorAlpha();
@@ -987,9 +989,55 @@ SkColor LocationBarView::GetIconLabelBubbleBackgroundColor() const {
   return GetColorProvider()->GetColor(kColorLocationBarBackground);
 }
 
-bool LocationBarView::ShouldHideContentSettingImage() {
+bool LocationBarView::ShouldHideContentSettingImage(ImageType type) {
   // Content setting icons are hidden at the same time as page action icons.
-  return ShouldHidePageActionIcons();
+  if (ShouldHidePageActionIcons()) {
+    return true;
+  }
+
+  auto* web_contents = GetWebContents();
+  if (web_contents) {
+    auto* hcsm = HostContentSettingsMapFactory::GetForProfile(profile_);
+    switch (type) {
+      case ImageType::COOKIES:
+      case ImageType::IMAGES:
+      case ImageType::JAVASCRIPT:
+      case ImageType::POPUPS:
+        break;
+      case ImageType::GEOLOCATION: {
+        ContentSetting value =
+            hcsm->GetContentSetting(web_contents->GetLastCommittedURL(), GURL(),
+                                    ContentSettingsType::GEOLOCATION);
+        return value == CONTENT_SETTING_ASK;
+      }
+      case ImageType::MIXEDSCRIPT:
+      case ImageType::PROTOCOL_HANDLERS:
+        break;
+      case ImageType::MEDIASTREAM: {
+        ContentSetting mic_value =
+            hcsm->GetContentSetting(web_contents->GetLastCommittedURL(), GURL(),
+                                    ContentSettingsType::MEDIASTREAM_MIC);
+
+        ContentSetting camera_value =
+            hcsm->GetContentSetting(web_contents->GetLastCommittedURL(), GURL(),
+                                    ContentSettingsType::MEDIASTREAM_CAMERA);
+        return mic_value == CONTENT_SETTING_ASK &&
+               camera_value == CONTENT_SETTING_ASK;
+      }
+      case ImageType::ADS:
+      case ImageType::AUTOMATIC_DOWNLOADS:
+      case ImageType::MIDI_SYSEX:
+      case ImageType::SOUND:
+      case ImageType::FRAMEBUST:
+      case ImageType::SENSORS:
+      case ImageType::NOTIFICATIONS_QUIET_PROMPT:
+      case ImageType::CLIPBOARD_READ_WRITE:
+      case ImageType::STORAGE_ACCESS:
+      case ImageType::NUM_IMAGE_TYPES:
+        break;
+    }
+  }
+  return false;
 }
 
 content::WebContents* LocationBarView::GetContentSettingWebContents() {
@@ -1190,7 +1238,7 @@ OmniboxPopupView* LocationBarView::GetOmniboxPopupView() {
 }
 
 const OmniboxPopupView* LocationBarView::GetOmniboxPopupView() const {
-  DCHECK(IsInitialized());
+  DCHECK(omnibox_view_ && omnibox_view_->model());
   return omnibox_view_->model()->get_popup_view();
 }
 
@@ -1389,7 +1437,8 @@ void LocationBarView::OnChildViewRemoved(View* observed_view, View* child) {
 void LocationBarView::OnChanged() {
   // Ensure that background colors get updated on tab-switch.
   RefreshBackground();
-  location_icon_view_->Update(/*suppress_animations=*/false);
+  location_icon_view_->Update(/*suppress_animations=*/false,
+                              omnibox_view_->model()->PopupIsOpen());
   clear_all_button_->SetVisible(
       omnibox_view_ && omnibox_view_->model()->user_input_in_progress() &&
       !omnibox_view_->GetText().empty() &&
@@ -1471,7 +1520,8 @@ void LocationBarView::OnTouchUiChanged() {
   for (ContentSettingImageView* view : content_setting_views_)
     view->SetFontList(font_list);
   page_action_icon_controller_->SetFontList(font_list);
-  location_icon_view_->Update(/*suppress_animations=*/false);
+  location_icon_view_->Update(/*suppress_animations=*/false,
+                              omnibox_view_->model()->PopupIsOpen());
   PreferredSizeChanged();
 }
 

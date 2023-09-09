@@ -103,10 +103,14 @@ void FedCmAccountSelectionView::Show(
 
   bool create_bubble = !bubble_widget_;
   if (create_bubble) {
-    bubble_widget_ = CreateBubbleWithAccessibleTitle(
-                         top_frame_for_display_, iframe_for_display_, idp_title,
-                         rp_context, show_auto_reauthn_checkbox)
-                         ->GetWeakPtr();
+    views::Widget* widget = CreateBubbleWithAccessibleTitle(
+        top_frame_for_display_, iframe_for_display_, idp_title, rp_context,
+        show_auto_reauthn_checkbox);
+    if (!widget) {
+      delegate_->OnDismiss(DismissReason::kOther);
+      return;
+    }
+    bubble_widget_ = widget->GetWeakPtr();
 
     // Initialize InputEventActivationProtector to handle potentially unintended
     // input events. Do not override `input_protector_` set by
@@ -157,8 +161,6 @@ void FedCmAccountSelectionView::Show(
         "IdpClosePopupToBrowserShowAccountsDuration",
         base::TimeTicks::Now() - idp_close_popup_time_);
   }
-
-  accounts_dialog_shown_time_ = base::TimeTicks::Now();
 }
 
 void FedCmAccountSelectionView::ShowFailureDialog(
@@ -175,12 +177,15 @@ void FedCmAccountSelectionView::ShowFailureDialog(
 
   bool create_bubble = !bubble_widget_;
   if (create_bubble) {
-    bubble_widget_ = CreateBubbleWithAccessibleTitle(
-                         base::UTF8ToUTF16(top_frame_etld_plus_one),
-                         iframe_etld_plus_one_u16,
-                         base::UTF8ToUTF16(idp_etld_plus_one), rp_context,
-                         /*show_auto_reauthn_checkbox=*/false)
-                         ->GetWeakPtr();
+    views::Widget* widget = CreateBubbleWithAccessibleTitle(
+        base::UTF8ToUTF16(top_frame_etld_plus_one), iframe_etld_plus_one_u16,
+        base::UTF8ToUTF16(idp_etld_plus_one), rp_context,
+        /*show_auto_reauthn_checkbox=*/false);
+    if (!widget) {
+      delegate_->OnDismiss(DismissReason::kOther);
+      return;
+    }
+    bubble_widget_ = widget->GetWeakPtr();
 
     // Initialize InputEventActivationProtector to handle potentially unintended
     // input events. Do not override `input_protector_` set by
@@ -203,8 +208,6 @@ void FedCmAccountSelectionView::ShowFailureDialog(
   // Else:
   // The bubble is not guaranteed to be shown. The bubble will be hidden if the
   // associated web contents are hidden.
-
-  mismatch_dialog_shown_time_ = base::TimeTicks::Now();
 }
 
 std::string FedCmAccountSelectionView::GetTitle() const {
@@ -278,6 +281,14 @@ views::Widget* FedCmAccountSelectionView::CreateBubbleWithAccessibleTitle(
     bool show_auto_reauthn_checkbox) {
   Browser* browser =
       chrome::FindBrowserWithWebContents(delegate_->GetWebContents());
+
+  // Reject the API if the browser is not found or its tab strip model does not
+  // exist, as we require those to show UI. It is unclear why there are callers
+  // attempting FedCM when some of these checks fail.
+  if (!browser || !browser->tab_strip_model()) {
+    return nullptr;
+  }
+
   browser->tab_strip_model()->AddObserver(this);
 
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
@@ -402,19 +413,6 @@ void FedCmAccountSelectionView::OnSigninToIdP() {
       PopupWindowResult::kAccountsNotReceivedAndPopupNotClosedByIdp;
   UMA_HISTOGRAM_ENUMERATION("Blink.FedCm.IdpSigninStatus.MismatchDialogResult",
                             MismatchDialogResult::kContinued);
-
-  // Samples are at most 10 minutes. This metric is used to determine a
-  // reasonable minimum duration for the mismatch dialog to be shown to prevent
-  // abuse through flashing UI. When users trigger the IDP sign-in flow, the
-  // mismatch dialog is hidden so we record this metric upon user triggering the
-  // flow.
-  if (mismatch_dialog_shown_time_.has_value()) {
-    UMA_HISTOGRAM_CUSTOM_TIMES(
-        "Blink.FedCm.Timing.MismatchDialogShownDuration",
-        base::TimeTicks::Now() - mismatch_dialog_shown_time_.value(),
-        base::Milliseconds(1), base::Minutes(10), 50);
-    mismatch_dialog_shown_time_ = absl::nullopt;
-  }
 }
 
 content::WebContents* FedCmAccountSelectionView::ShowModalDialog(
@@ -530,26 +528,6 @@ void FedCmAccountSelectionView::OnDismiss(DismissReason dismiss_reason) {
   if (is_mismatch_continue_clicked_) {
     UMA_HISTOGRAM_ENUMERATION("Blink.FedCm.IdpSigninStatus.PopupWindowResult",
                               popup_window_state_);
-  }
-
-  if (accounts_dialog_shown_time_.has_value()) {
-    // Samples are at most 10 minutes. This metric is used to determine a
-    // reasonable minimum duration for the accounts dialog to be shown to
-    // prevent abuse through flashing UI.
-    UMA_HISTOGRAM_CUSTOM_TIMES(
-        "Blink.FedCm.Timing.AccountsDialogShownDuration",
-        base::TimeTicks::Now() - accounts_dialog_shown_time_.value(),
-        base::Milliseconds(1), base::Minutes(10), 50);
-  }
-
-  if (mismatch_dialog_shown_time_.has_value()) {
-    // Samples are at most 10 minutes. This metric is used to determine a
-    // reasonable minimum duration for the mismatch dialog to be shown to
-    // prevent abuse through flashing UI.
-    UMA_HISTOGRAM_CUSTOM_TIMES(
-        "Blink.FedCm.Timing.MismatchDialogShownDuration",
-        base::TimeTicks::Now() - mismatch_dialog_shown_time_.value(),
-        base::Milliseconds(1), base::Minutes(10), 50);
   }
 
   bubble_widget_->RemoveObserver(this);

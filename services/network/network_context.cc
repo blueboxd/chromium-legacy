@@ -651,6 +651,8 @@ NetworkContext::NetworkContext(
 }
 
 NetworkContext::~NetworkContext() {
+  is_destructing_ = true;
+
   // May be nullptr in tests.
   if (network_service_)
     network_service_->DeregisterNetworkContext(this);
@@ -708,6 +710,12 @@ NetworkContext::~NetworkContext() {
     }
   }
 #endif  // BUILDFLAG(IS_DIRECTORY_TRANSFER_REQUIRED)
+
+  // Clear `url_loader_factories_` before deleting the contents, as it can
+  // result in re-entrant calls to DestroyURLLoaderFactory().
+  std::set<std::unique_ptr<cors::CorsURLLoaderFactory>,
+           base::UniquePtrComparator>
+      url_loader_factories = std::move(url_loader_factories_);
 }
 
 void NetworkContext::OnCookieManagerSettingsChanged() {
@@ -951,6 +959,9 @@ void NetworkContext::DisableQuic() {
 
 void NetworkContext::DestroyURLLoaderFactory(
     cors::CorsURLLoaderFactory* url_loader_factory) {
+  if (is_destructing_) {
+    return;
+  }
   auto it = url_loader_factories_.find(url_loader_factory);
   DCHECK(it != url_loader_factories_.end());
   url_loader_factories_.erase(it);
@@ -2591,7 +2602,7 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext(
   auto quic_context = std::make_unique<net::QuicContext>();
   network_session_configurator::ParseCommandLineAndFieldTrials(
       *base::CommandLine::ForCurrentProcess(), is_quic_force_disabled,
-      params_->quic_user_agent_id, &session_params, quic_context->params());
+      &session_params, quic_context->params());
 
   session_params.disable_idle_sockets_close_on_memory_pressure =
       params_->disable_idle_sockets_close_on_memory_pressure;
@@ -3019,6 +3030,18 @@ void NetworkContext::GetSharedDictionaryInfo(
   }
   shared_dictionary_manager_->GetSharedDictionaryInfo(isolation_key,
                                                       std::move(callback));
+}
+
+void NetworkContext::GetSharedDictionaryOriginsBetween(
+    base::Time start_time,
+    base::Time end_time,
+    GetSharedDictionaryOriginsBetweenCallback callback) {
+  if (!shared_dictionary_manager_) {
+    std::move(callback).Run({});
+    return;
+  }
+  shared_dictionary_manager_->GetOriginsBetween(start_time, end_time,
+                                                std::move(callback));
 }
 
 void NetworkContext::ResourceSchedulerClientVisibilityChanged(

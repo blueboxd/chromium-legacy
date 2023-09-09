@@ -69,6 +69,7 @@ class SupervisedUserRegionalURLFilterTest
     feature_list_.InitWithFeatures(
         GetEnabledFeatures(),
         /*disabled_features=*/{features::kHttpsUpgrades});
+    supervision_mixin_.InitFeatures();
   }
 
  protected:
@@ -151,10 +152,7 @@ class SupervisedUserRegionalURLFilterTest
     return true;
 #else
     return base::FeatureList::IsEnabled(
-               supervised_user::kEnableSupervisionOnDesktopAndIOS) &&
-           base::FeatureList::IsEnabled(
-               supervised_user::
-                   kFilterWebsitesForSupervisedUsersOnDesktopAndIOS);
+        supervised_user::kFilterWebsitesForSupervisedUsersOnDesktopAndIOS);
 #endif
   }
 
@@ -226,8 +224,7 @@ INSTANTIATE_TEST_SUITE_P(
         testing::Values(
             std::vector<base::test::FeatureRef>(),
             std::vector<base::test::FeatureRef>(
-                {supervised_user::kEnableSupervisionOnDesktopAndIOS,
-                 supervised_user::
+                {supervised_user::
                      kFilterWebsitesForSupervisedUsersOnDesktopAndIOS}))),
     &PrettyPrintTestCaseName);
 }  // namespace

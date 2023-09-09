@@ -11,6 +11,8 @@
 #import "base/metrics/user_metrics_action.h"
 #import "base/strings/sys_string_conversions.h"
 #import "components/strings/grit/components_strings.h"
+#import "components/sync/base/model_type.h"
+#import "components/sync/service/sync_service.h"
 #import "components/url_formatter/elide_url.h"
 #import "components/url_formatter/url_formatter.h"
 #import "ios/chrome/app/tests_hook.h"
@@ -35,15 +37,14 @@
 #import "ios/chrome/browser/shared/ui/table_view/table_view_navigation_controller_constants.h"
 #import "ios/chrome/browser/shared/ui/table_view/table_view_utils.h"
 #import "ios/chrome/browser/shared/ui/util/pasteboard_util.h"
-#import "ios/chrome/browser/sync/sync_setup_service.h"
-#import "ios/chrome/browser/sync/sync_setup_service_factory.h"
+#import "ios/chrome/browser/sync/sync_service_factory.h"
 #import "ios/chrome/browser/ui/history/history_entries_status_item.h"
 #import "ios/chrome/browser/ui/history/history_entries_status_item_delegate.h"
 #import "ios/chrome/browser/ui/history/history_entry_inserter.h"
 #import "ios/chrome/browser/ui/history/history_entry_item.h"
 #import "ios/chrome/browser/ui/history/history_menu_provider.h"
+#import "ios/chrome/browser/ui/history/history_table_view_controller_delegate.h"
 #import "ios/chrome/browser/ui/history/history_ui_constants.h"
-#import "ios/chrome/browser/ui/history/history_ui_delegate.h"
 #import "ios/chrome/browser/ui/history/history_util.h"
 #import "ios/chrome/browser/ui/history/public/history_presentation_delegate.h"
 #import "ios/chrome/browser/ui/keyboard/UIKeyCommand+Chrome.h"
@@ -60,10 +61,6 @@
 #import "ui/base/l10n/l10n_util.h"
 #import "ui/base/l10n/l10n_util_mac.h"
 #import "ui/strings/grit/ui_strings.h"
-
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
 
 using history::BrowsingHistoryService;
 
@@ -255,11 +252,10 @@ const CGFloat kButtonHorizontalPadding = 30.0;
 
   // If history sync is enabled and there hasn't been a response from synced
   // history, try fetching again.
-  SyncSetupService* syncSetupService =
-      SyncSetupServiceFactory::GetForBrowserState(
-          self.browser->GetBrowserState());
-  if (syncSetupService->IsSyncFeatureEnabled() &&
-      syncSetupService->IsDataTypeActive(syncer::HISTORY_DELETE_DIRECTIVES) &&
+  syncer::SyncService* syncService =
+      SyncServiceFactory::GetForBrowserState(self.browser->GetBrowserState());
+  if (syncService->GetActiveDataTypes().Has(
+          syncer::HISTORY_DELETE_DIRECTIVES) &&
       queryResultsInfo.sync_timed_out) {
     [self showHistoryMatchingQuery:_currentQuery];
     return;
@@ -490,9 +486,9 @@ const CGFloat kButtonHorizontalPadding = 30.0;
 - (void)presentationControllerDidDismiss:
     (UIPresentationController*)presentationController {
   base::RecordAction(base::UserMetricsAction("IOSHistoryCloseWithSwipe"));
-  // Call the delegate dismissHistoryWithCompletion to clean up state and
-  // stop the Coordinator.
-  [self.delegate dismissHistoryWithCompletion:nil];
+  // Call the delegate dismissHistoryTableViewController:withCompletion: to
+  // clean up state and stop the Coordinator.
+  [self.delegate dismissHistoryTableViewController:self withCompletion:nil];
 }
 
 #pragma mark - History Data Updates
@@ -714,7 +710,7 @@ const CGFloat kButtonHorizontalPadding = 30.0;
 
 - (void)keyCommand_close {
   base::RecordAction(base::UserMetricsAction("MobileKeyCommandClose"));
-  [self.delegate dismissHistoryWithCompletion:nil];
+  [self.delegate dismissHistoryTableViewController:self withCompletion:nil];
 }
 
 #pragma mark - TableViewURLDragDataSource
@@ -1117,9 +1113,13 @@ const CGFloat kButtonHorizontalPadding = 30.0;
       base::UserMetricsAction("MobileHistoryPage_EntryLinkOpenNewTab"));
   UrlLoadParams params = UrlLoadParams::InNewTab(URL);
   __weak __typeof(self) weakSelf = self;
-  [self.delegate dismissHistoryWithCompletion:^{
-    [weakSelf loadAndActivateTabFromHistoryWithParams:params incognito:NO];
-  }];
+  [self.delegate
+      dismissHistoryTableViewController:self
+                         withCompletion:^{
+                           [weakSelf
+                               loadAndActivateTabFromHistoryWithParams:params
+                                                             incognito:NO];
+                         }];
 }
 
 // Opens URL in a new non-incognito tab in a new window and dismisses the
@@ -1142,9 +1142,13 @@ const CGFloat kButtonHorizontalPadding = 30.0;
   UrlLoadParams params = UrlLoadParams::InNewTab(URL);
   params.in_incognito = YES;
   __weak __typeof(self) weakSelf = self;
-  [self.delegate dismissHistoryWithCompletion:^{
-    [weakSelf loadAndActivateTabFromHistoryWithParams:params incognito:YES];
-  }];
+  [self.delegate
+      dismissHistoryTableViewController:self
+                         withCompletion:^{
+                           [weakSelf
+                               loadAndActivateTabFromHistoryWithParams:params
+                                                             incognito:YES];
+                         }];
 }
 
 #pragma mark Helper Methods
@@ -1222,27 +1226,31 @@ const CGFloat kButtonHorizontalPadding = 30.0;
   params.web_params.transition_type = ui::PAGE_TRANSITION_AUTO_BOOKMARK;
   params.load_strategy = self.loadStrategy;
   __weak __typeof(self) weakSelf = self;
-  [self.delegate dismissHistoryWithCompletion:^{
-    [weakSelf loadAndActivateTabFromHistoryWithParams:params incognito:NO];
-  }];
+  [self.delegate
+      dismissHistoryTableViewController:self
+                         withCompletion:^{
+                           [weakSelf
+                               loadAndActivateTabFromHistoryWithParams:params
+                                                             incognito:NO];
+                         }];
 }
 
 // Dismisses this ViewController.
 - (void)dismissHistory {
   base::RecordAction(base::UserMetricsAction("MobileHistoryClose"));
-  [self.delegate dismissHistoryWithCompletion:nil];
+  [self.delegate dismissHistoryTableViewController:self withCompletion:nil];
 }
 
 - (void)openPrivacySettings {
   base::RecordAction(
       base::UserMetricsAction("HistoryPage_InitClearBrowsingData"));
-  [self.delegate displayPrivacySettings];
+  [self.delegate displayClearHistoryData];
 }
 
 #pragma mark - Accessibility
 
 - (BOOL)accessibilityPerformEscape {
-  [self.delegate dismissHistoryWithCompletion:nil];
+  [self.delegate dismissHistoryTableViewController:self withCompletion:nil];
   return YES;
 }
 

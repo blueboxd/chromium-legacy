@@ -44,10 +44,6 @@
 #include "ui/gfx/canvas.h"
 #include "ui/views/cocoa/native_widget_mac_ns_window_host.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 namespace {
 
 // Keep in sync with web_app_frame_toolbar_browsertest.cc
@@ -57,6 +53,7 @@ constexpr int kResizeHandleHeight = 1;
 
 // Empirical measurements of the traffic lights.
 constexpr int kCaptionButtonsWidth = 52;
+constexpr int kCaptionButtonsInsetsCatalinaOrOlder = 70;
 constexpr int kCaptionButtonsLeadingPadding = 20;
 
 FullscreenToolbarStyle GetUserPreferredToolbarStyle(bool always_show) {
@@ -226,11 +223,17 @@ void BrowserNonClientFrameViewMac::LayoutWebAppWindowTitle(
 }
 
 int BrowserNonClientFrameViewMac::GetTopInset(bool restored) const {
-  if (!browser_view()->GetTabStripVisible())
+  if (!browser_view()->GetTabStripVisible()) {
     return 0;
+  }
+
+  // In Refresh, the tabstrip controls its own top padding.
+  if (features::IsChromeRefresh2023()) {
+    return 0;
+  }
 
   // Mac seems to reserve 1 DIP of the top inset as a resize handle.
-  constexpr int kTabstripTopInset = 8;
+  const int kTabstripTopInset = 8;
   int top_inset = kTabstripTopInset;
   if (EverHasVisibleBackgroundTabShapes()) {
     top_inset =
@@ -453,9 +456,11 @@ void BrowserNonClientFrameViewMac::PaintChildren(const views::PaintInfo& info) {
 }
 
 gfx::Insets BrowserNonClientFrameViewMac::GetCaptionButtonInsets() const {
-  const int kCaptionButtonInset = kCaptionButtonsWidth +
-                                  (kCaptionButtonsLeadingPadding * 2) -
-                                  TabStyle::Get()->GetBottomCornerRadius();
+  const int kCaptionButtonInset =
+      base::mac::IsOS10_15()
+          ? kCaptionButtonsInsetsCatalinaOrOlder
+          : (kCaptionButtonsWidth + (kCaptionButtonsLeadingPadding * 2) -
+             TabStyle::Get()->GetBottomCornerRadius());
   if (CaptionButtonsOnLeadingEdge()) {
     return gfx::Insets::TLBR(0, kCaptionButtonInset, 0, 0);
   } else {

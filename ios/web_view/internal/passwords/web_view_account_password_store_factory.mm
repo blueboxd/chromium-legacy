@@ -23,10 +23,6 @@
 #import "ios/web_view/internal/passwords/web_view_affiliation_service_factory.h"
 #import "ios/web_view/internal/passwords/web_view_affiliations_prefetcher_factory.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 namespace ios_web_view {
 
 // static
@@ -82,7 +78,8 @@ WebViewAccountPasswordStoreFactory::BuildServiceInstanceFor(
   scoped_refptr<password_manager::PasswordStore> ps =
       new password_manager::PasswordStore(
           std::make_unique<password_manager::PasswordStoreBuiltInBackend>(
-              std::move(login_db)));
+              std::move(login_db),
+              syncer::WipeModelUponSyncDisabledBehavior::kAlways));
 
   password_manager::AffiliationService* affiliation_service =
       WebViewAffiliationServiceFactory::GetForBrowserState(context);

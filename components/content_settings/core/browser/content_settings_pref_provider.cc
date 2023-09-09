@@ -275,6 +275,22 @@ bool PrefProvider::UpdateSetting(
   return false;
 }
 
+bool PrefProvider::UpdateLastUsedTime(const GURL& primary_url,
+                                      const GURL& secondary_url,
+                                      ContentSettingsType content_type,
+                                      const base::Time time) {
+  return UpdateSetting(
+      content_type,
+      [&](const Rule& rule) -> bool {
+        return rule.primary_pattern.Matches(primary_url) &&
+               rule.secondary_pattern.Matches(secondary_url);
+      },
+      [&](Rule& rule) -> bool {
+        rule.metadata.set_last_used(time);
+        return true;
+      });
+}
+
 bool PrefProvider::ResetLastVisitTime(
     const ContentSettingsPattern& primary_pattern,
     const ContentSettingsPattern& secondary_pattern,
@@ -308,7 +324,9 @@ bool PrefProvider::RenewContentSetting(
       [&](Rule& rule) -> bool {
         // Only settings whose lifetimes are non-zero can be
         // renewed.
-        CHECK_NE(rule.metadata.lifetime(), base::TimeDelta());
+        if (rule.metadata.lifetime().is_zero()) {
+          return false;
+        }
 
         if (rule.metadata.expiration() < clock_->Now()) {
           return false;

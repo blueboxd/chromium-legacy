@@ -7,6 +7,7 @@
 #include <iomanip>
 #include <locale>
 #include <sstream>
+#include <string_view>
 #include <type_traits>
 
 #include "base/files/file_path.h"
@@ -31,7 +32,6 @@ namespace {
 
 using ash::SpacedClient;
 using base::SequencedTaskRunner;
-using base::StringPiece;
 using base::TimeDelta;
 using base::UmaHistogramBoolean;
 using mojom::FileMetadata;
@@ -94,7 +94,7 @@ ostream& operator<<(ostream& out, Quoter<T> q) {
   // Does the string start with 'k'?
   if (!s.empty() && s.front() == 'k') {
     // Skip the 'k' prefix.
-    return out << StringPiece(s).substr(1);
+    return out << std::string_view(s).substr(1);
   }
 
   // No 'k' prefix. Print between parentheses.
@@ -126,7 +126,25 @@ ostream& operator<<(ostream& out, Quoter<TimeDelta> q) {
 }
 
 ostream& operator<<(ostream& out, Quoter<Path> q) {
-  return out << "'" << (*q.value) << "'";
+  const std::string& s = q.value->value();
+  if (VLOG_IS_ON(1)) {
+    return out << "'" << s << "'";
+  }
+
+  for (const std::string_view prefix :
+       {"/root", "/.files-by-id", "/.shortcuts-by-id"}) {
+    if (s.starts_with(prefix)) {
+      if (s.size() == prefix.size()) {
+        return out << "'" << prefix << "'";
+      }
+      DCHECK_GT(s.size(), prefix.size());
+      if (s[prefix.size()] == '/') {
+        return out << "'" << prefix << "/***'";
+      }
+    }
+  }
+
+  return out << "'***'";
 }
 
 ostream& operator<<(ostream& out, Quoter<std::string> q) {
@@ -636,10 +654,12 @@ bool PinManager::Update(Files::value_type& entry,
 
 PinManager::PinManager(Path profile_path,
                        Path mount_path,
-                       mojom::DriveFs* const drivefs)
+                       mojom::DriveFs* const drivefs,
+                       int64_t max_queue_size)
     : profile_path_(std::move(profile_path)),
       mount_path_(std::move(mount_path)),
       drivefs_(drivefs),
+      max_queue_size_(max_queue_size),
       space_getter_(base::BindRepeating(&GetFreeSpace)) {
   DCHECK(drivefs_);
   ash::UserDataAuthClient::Get()->AddObserver(this);
@@ -1200,7 +1220,7 @@ void PinManager::PinSomeFiles() {
     return NotifyProgress();
   }
 
-  while (progress_.syncing_files < kMaxQueueSize && !files_to_pin_.empty()) {
+  while (progress_.syncing_files < max_queue_size_ && !files_to_pin_.empty()) {
     const Id id = files_to_pin_.extract(files_to_pin_.begin()).value();
     const Files::iterator it = files_to_track_.find(id);
     DCHECK(it != files_to_track_.end()) << "Not tracked: " << id;

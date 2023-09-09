@@ -10,10 +10,6 @@
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
 #import "ios/web/public/web_state.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 SnapshotCacheWebStateListObserver::SnapshotCacheWebStateListObserver(
     SnapshotCache* snapshot_cache)
     : snapshot_cache_(snapshot_cache) {
@@ -23,23 +19,27 @@ SnapshotCacheWebStateListObserver::SnapshotCacheWebStateListObserver(
 SnapshotCacheWebStateListObserver::~SnapshotCacheWebStateListObserver() =
     default;
 
-void SnapshotCacheWebStateListObserver::WebStateActivatedAt(
+#pragma mark - WebStateListObserver
+
+void SnapshotCacheWebStateListObserver::WebStateListDidChange(
     WebStateList* web_state_list,
-    web::WebState* old_web_state,
-    web::WebState* new_web_state,
-    int active_index,
-    ActiveWebStateChangeReason reason) {
-  if (reason == ActiveWebStateChangeReason::Replaced)
+    const WebStateListChange& change,
+    const WebStateListStatus& status) {
+  if (!status.active_web_state_change() ||
+      change.type() == WebStateListChange::Type::kReplace) {
     return;
+  }
 
   NSMutableSet<NSString*>* set = [NSMutableSet set];
-  if (active_index > 0) {
-    web::WebState* web_state = web_state_list->GetWebStateAt(active_index - 1);
+  if (web_state_list->active_index() > 0) {
+    web::WebState* web_state =
+        web_state_list->GetWebStateAt(web_state_list->active_index() - 1);
     [set addObject:SnapshotTabHelper::FromWebState(web_state)->GetSnapshotID()];
   }
 
-  if (active_index + 1 < web_state_list->count()) {
-    web::WebState* web_state = web_state_list->GetWebStateAt(active_index + 1);
+  if (web_state_list->active_index() + 1 < web_state_list->count()) {
+    web::WebState* web_state =
+        web_state_list->GetWebStateAt(web_state_list->active_index() + 1);
     [set addObject:SnapshotTabHelper::FromWebState(web_state)->GetSnapshotID()];
   }
 

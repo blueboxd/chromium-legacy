@@ -52,10 +52,6 @@
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
 #import "ios/web/public/navigation/navigation_manager.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 @interface OmniboxCoordinator () <OmniboxViewControllerTextInputDelegate>
 // Object taking care of adding the accessory views to the keyboard.
 @property(nonatomic, strong)
@@ -221,6 +217,12 @@
     }
 
     [self.textField becomeFirstResponder];
+    if (IsBottomOmniboxSteadyStateEnabled()) {
+      // Ensures that the accessibility system focuses the text field instead of
+      // the popup crbug.com/1469173.
+      UIAccessibilityPostNotification(UIAccessibilityScreenChangedNotification,
+                                      self.textField);
+    }
   }
 }
 

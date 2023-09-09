@@ -14,6 +14,7 @@
 #include "ui/color/color_id.h"
 #include "ui/color/color_mixer.h"
 #include "ui/color/color_provider.h"
+#include "ui/color/color_provider_key.h"
 #include "ui/color/color_recipe.h"
 #include "ui/color/color_transform.h"
 #include "ui/gfx/color_palette.h"
@@ -27,11 +28,8 @@ constexpr float kOmniboxHighContrastRatio = 6.0f;
 // Apply updates to the Omnibox text color tokens per GM3 spec.
 void ApplyGM3OmniboxTextColor(ui::ColorMixer& mixer,
                               const ui::ColorProviderKey& key) {
-  const bool gm3_text_color_enabled =
-      features::GetChromeRefresh2023Level() ==
-          features::ChromeRefresh2023Level::kLevel2 ||
-      base::FeatureList::IsEnabled(omnibox::kOmniboxSteadyStateTextColor);
-  if (!gm3_text_color_enabled) {
+  if (!omnibox::IsOmniboxCr23CustomizeGuardedFeatureEnabled(
+          omnibox::kOmniboxSteadyStateTextColor)) {
     return;
   }
 
@@ -64,12 +62,8 @@ void ApplyGM3OmniboxTextColor(ui::ColorMixer& mixer,
 
 void ApplyCR2023OmniboxIconColors(ui::ColorMixer& mixer,
                                   const ui::ColorProviderKey& key) {
-  const bool cr2023_icons_colors_enabled =
-      features::GetChromeRefresh2023Level() ==
-          features::ChromeRefresh2023Level::kLevel2 ||
-      base::FeatureList::IsEnabled(omnibox::kOmniboxCR23SteadyStateIcons);
-
-  if (!cr2023_icons_colors_enabled) {
+  if (!omnibox::IsOmniboxCr23CustomizeGuardedFeatureEnabled(
+          omnibox::kOmniboxCR23SteadyStateIcons)) {
     return;
   }
 
@@ -80,17 +74,21 @@ void ApplyCR2023OmniboxIconColors(ui::ColorMixer& mixer,
   mixer[kColorPageInfoIconHover] = {ui::kColorSysStateHoverDimBlendProtection};
   mixer[kColorPageInfoIconPressed] = {ui::kColorSysStateRippleNeutralOnSubtle};
   mixer[kColorPageActionIcon] = {ui::kColorSysOnSurfaceSubtle};
+
+  // Security chip.
+  mixer[kColorOmniboxSecurityChipDangerousBackground] = {ui::kColorSysError};
+  mixer[kColorOmniboxSecurityChipText] = {ui::kColorSysOnError};
+  mixer[kColorOmniboxSecurityChipInkDropHover] = {
+      ui::kColorSysStateHoverOnProminent};
+  mixer[kColorOmniboxSecurityChipInkDropRipple] = {
+      ui::kColorSysStateRippleNeutralOnProminent};
 }
 
 // Apply updates to the Omnibox "expanded state" color tokens per CR2023 spec.
 void ApplyCR2023OmniboxExpandedStateColors(ui::ColorMixer& mixer,
                                            const ui::ColorProviderKey& key) {
-  const bool cr2023_expanded_state_colors_enabled =
-      features::GetChromeRefresh2023Level() ==
-          features::ChromeRefresh2023Level::kLevel2 ||
-      base::FeatureList::IsEnabled(omnibox::kExpandedStateColors);
-
-  if (!cr2023_expanded_state_colors_enabled) {
+  if (!omnibox::IsOmniboxCr23CustomizeGuardedFeatureEnabled(
+          omnibox::kExpandedStateColors)) {
     return;
   }
 
@@ -341,6 +339,18 @@ void AddOmniboxColorMixer(ui::ColorProvider* provider,
     mixer[kColorOmniboxSecurityChipSecure] =
         security_chip_color(gfx::kGoogleGrey500, gfx::kGoogleGrey700);
     mixer[kColorOmniboxSecurityChipDefault] = {kColorOmniboxSecurityChipSecure};
+    mixer[kColorOmniboxSecurityChipDangerousBackground] =
+        ui::SelectBasedOnDarkInput(kColorOmniboxResultsBackground,
+                                   gfx::kGoogleRed300, gfx::kGoogleRed800);
+    mixer[kColorOmniboxSecurityChipText] = ui::SelectBasedOnDarkInput(
+        kColorOmniboxSecurityChipDangerousBackground,
+        ui::GetColorWithMaxContrast(
+            kColorOmniboxSecurityChipDangerousBackground),
+        gfx::kGoogleRed800);
+    mixer[kColorOmniboxSecurityChipInkDropHover] = {
+        ui::SetAlpha(kColorOmniboxSecurityChipText, std::ceil(0.10f * 255.0f))};
+    mixer[kColorOmniboxSecurityChipInkDropRipple] = {
+        ui::SetAlpha(kColorOmniboxSecurityChipText, std::ceil(0.16f * 255.0f))};
   }
 
   // TODO(manukh): `kColorOmniboxResultsIconGM3Background` is unused currently,

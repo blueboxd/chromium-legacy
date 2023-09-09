@@ -447,9 +447,9 @@ extern const char kChromeUILinuxProxyConfigHost[];
 extern const char kChromeUISandboxHost[];
 #endif
 
-#if BUILDFLAG(ENABLE_WAFFLE_DESKTOP)
-extern const char kChromeUIWaffleURL[];
-extern const char kChromeUIWaffleHost[];
+#if BUILDFLAG(ENABLE_SEARCH_ENGINE_CHOICE)
+extern const char kChromeUISearchEngineChoiceURL[];
+extern const char kChromeUISearchEngineChoiceHost[];
 #endif
 
 // TODO(crbug.com/1052397): Revisit the macro expression once build flag switch
@@ -462,6 +462,8 @@ extern const char kChromeUIEnterpriseProfileWelcomeHost[];
 extern const char kChromeUIEnterpriseProfileWelcomeURL[];
 extern const char kChromeUIIntroHost[];
 extern const char kChromeUIIntroURL[];
+extern const char kChromeUIIntroDefaultBrowserSubPage[];
+extern const char kChromeUIIntroDefaultBrowserURL[];
 extern const char kChromeUIProfileCustomizationHost[];
 extern const char kChromeUIProfileCustomizationURL[];
 extern const char kChromeUIProfilePickerHost[];

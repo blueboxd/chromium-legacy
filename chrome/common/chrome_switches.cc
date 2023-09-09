@@ -249,6 +249,11 @@ const char kEnableCriticalPersistedTabData[] =
 // Enables Domain Reliability Monitoring.
 const char kEnableDomainReliability[] = "enable-domain-reliability";
 
+// Enables a number of UI improvements to downloads, download scanning, and
+// download warnings.
+const char kEnableDownloadWarningImprovements[] =
+    "enable-download-warning-improvements";
+
 // Enables the early process singleton feature. The process singleton will be
 // held for the whole lifetime of BrowserImpl (see https://crbug.com/1340599).
 const char kEnableEarlyProcessSingleton[] = "enable-early-process-singleton";
@@ -865,6 +870,10 @@ const char kListApps[] = "list-apps";
 // Pass the basename of the profile directory to specify which profile to get
 // information. Only relevant when used with --list-apps switch.
 const char kProfileBaseName[] = "profile-base-name";
+
+// Domains and associated SAML attributes for which third-party profile
+// management should be enabled. Input should be in JSON format.
+const char kProfileManagementAttributes[] = "profile-management-attributes";
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_ANDROID)

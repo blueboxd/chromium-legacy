@@ -208,6 +208,8 @@ std::u16string DownloadShelfContextMenu::GetLabelForCommandId(
     case DownloadCommands::REVIEW:
     case DownloadCommands::RETRY:
     case DownloadCommands::CANCEL_DEEP_SCAN:
+    case DownloadCommands::LEARN_MORE_DOWNLOAD_BLOCKED:
+    case DownloadCommands::OPEN_SAFE_BROWSING_SETTING:
     case DownloadCommands::MAX:
       NOTREACHED();
       break;

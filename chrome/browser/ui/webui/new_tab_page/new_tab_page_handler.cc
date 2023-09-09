@@ -475,6 +475,11 @@ NewTabPageHandler::NewTabPageHandler(
       base::BindRepeating(&NewTabPageHandler::UpdateDisabledModules,
                           base::Unretained(this)));
 
+  pref_change_registrar_.Add(
+      prefs::kSeedColorChangeCount,
+      base::BindRepeating(&NewTabPageHandler::MaybeShowWebstoreToast,
+                          base::Unretained(this)));
+
   if (customize_chrome::IsSidePanelEnabled()) {
     auto* customize_chrome_tab_helper =
         CustomizeChromeTabHelper::FromWebContents(web_contents_);
@@ -870,9 +875,6 @@ void NewTabPageHandler::IncrementCustomizeChromeButtonOpenCount() {
 void NewTabPageHandler::MaybeShowCustomizeChromeFeaturePromo() {
   CHECK(profile_);
   CHECK(profile_->GetPrefs());
-  const auto customize_chrome_button_open_count =
-      profile_->GetPrefs()->GetInteger(
-          prefs::kNtpCustomizeChromeButtonOpenCount);
 
   // If a sign-in dialog is being currently displayed, the promo should not be
   // shown to avoid conflict. The sign-in dialog would be shown as soon as the
@@ -880,9 +882,22 @@ void NewTabPageHandler::MaybeShowCustomizeChromeFeaturePromo() {
   bool is_signin_modal_dialog_open =
       customize_chrome_feature_promo_helper_->IsSigninModalDialogOpen(
           web_contents_.get());
-  if (customize_chrome_button_open_count == 0 && !is_signin_modal_dialog_open) {
+  if (is_signin_modal_dialog_open) {
+    return;
+  }
+
+  if (features::IsChromeRefresh2023()) {
     customize_chrome_feature_promo_helper_
         ->MaybeShowCustomizeChromeFeaturePromo(web_contents_.get());
+  } else {
+    const auto customize_chrome_button_open_count =
+        profile_->GetPrefs()->GetInteger(
+            prefs::kNtpCustomizeChromeButtonOpenCount);
+
+    if (customize_chrome_button_open_count == 0) {
+      customize_chrome_feature_promo_helper_
+          ->MaybeShowCustomizeChromeFeaturePromo(web_contents_.get());
+    }
   }
 }
 
@@ -1364,4 +1379,10 @@ bool NewTabPageHandler::IsShortcutsVisible() const {
 void NewTabPageHandler::NotifyCustomizeChromeSidePanelVisibilityChanged(
     bool is_open) {
   page_->SetCustomizeChromeSidePanelVisibility(is_open);
+}
+
+void NewTabPageHandler::MaybeShowWebstoreToast() {
+  if (profile_->GetPrefs()->GetInteger(prefs::kSeedColorChangeCount) <= 3) {
+    page_->ShowWebstoreToast();
+  }
 }

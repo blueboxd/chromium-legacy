@@ -93,8 +93,11 @@ bool ShouldOpenPrimaryDialog(DownloadCommands::Command command) {
 bool ShouldReturnToPrimaryDialog(download::DownloadDangerType danger_type) {
   // The only non-terminal danger type where the security subpage view shows is
   // `DOWNLOAD_DANGER_TYPE_ASYNC_SCANNING`. We should then return to the row
-  // view for safe deep scans.
-  return danger_type == download::DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_SAFE;
+  // view when the deep scan completes and is in a state that doesn't have a
+  // security subpage. Specificaly, that's both safe and failed deep scans, but
+  // not scans that find malware.
+  return danger_type == download::DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_SAFE ||
+         danger_type == download::DOWNLOAD_DANGER_TYPE_DEEP_SCANNED_FAILED;
 }
 
 }  // namespace
@@ -237,12 +240,14 @@ void DownloadBubbleSecurityView::AddHeader() {
       views::kFlexBehaviorKey,
       views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToZero,
                                views::MaximumFlexSizeRule::kUnbounded,
-                               /*adjust_height_for_width=*/false));
+                               /*adjust_height_for_width=*/true));
   const int icon_label_spacing = ChromeLayoutProvider::Get()->GetDistanceMetric(
       views::DISTANCE_RELATED_LABEL_HORIZONTAL);
   title_->SetProperty(views::kMarginsKey,
                       gfx::Insets::VH(0, icon_label_spacing));
   title_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  title_->SetMultiLine(true);
+  title_->SetAllowCharacterBreak(true);
   if (features::IsChromeRefresh2023()) {
     title_->SetTextStyle(views::style::STYLE_HEADLINE_4);
   }
@@ -274,6 +279,7 @@ void DownloadBubbleSecurityView::BackButtonPressed() {
 
 void DownloadBubbleSecurityView::UpdateHeader() {
   title_->SetText(model_->GetFileNameToReportUser().LossyDisplayName());
+  title_->SizeToFit(GetMinimumTitleWidth());
 }
 
 void DownloadBubbleSecurityView::CloseBubble() {
@@ -296,8 +302,12 @@ void DownloadBubbleSecurityView::OnCheckboxClicked() {
                                 DownloadBubbleSubpageAction::kClickedCheckbox);
 }
 
+DownloadUIModel::BubbleUIInfo& DownloadBubbleSecurityView::GetUiInfo() {
+  return download_row_view_->ui_info();
+}
+
 void DownloadBubbleSecurityView::UpdateIconAndText() {
-  DownloadUIModel::BubbleUIInfo& ui_info = download_row_view_->ui_info();
+  DownloadUIModel::BubbleUIInfo& ui_info = GetUiInfo();
   icon_->SetImage(ui::ImageModel::FromVectorIcon(
       *(ui_info.icon_model_override), ui_info.secondary_color,
       GetLayoutConstant(DOWNLOAD_ICON_SIZE)));
@@ -317,6 +327,7 @@ void DownloadBubbleSecurityView::UpdateIconAndText() {
     checkbox_->SetText(ui_info.checkbox_label);
   }
 
+  // TODO(chlily): Implement deep_scanning_link_ as a learn_more_link_.
   if (model_->GetDangerType() == download::DownloadDangerType::
                                      DOWNLOAD_DANGER_TYPE_PROMPT_FOR_SCANNING &&
       base::FeatureList::IsEnabled(safe_browsing::kDeepScanningUpdatedUX)) {
@@ -335,10 +346,30 @@ void DownloadBubbleSecurityView::UpdateIconAndText() {
   } else {
     deep_scanning_link_->SetVisible(false);
   }
+
+  if (ui_info.learn_more_link) {
+    learn_more_link_->SetText(ui_info.learn_more_link->label_and_link_text);
+    size_t link_start_offset =
+        ui_info.learn_more_link->linked_range.start_offset;
+    gfx::Range link_range{
+        link_start_offset,
+        link_start_offset + ui_info.learn_more_link->linked_range.length};
+    views::StyledLabel::RangeStyleInfo link_style =
+        views::StyledLabel::RangeStyleInfo::CreateForLink(base::BindRepeating(
+            &DownloadBubbleUIController::ProcessDownloadButtonPress,
+            bubble_controller_, model_.get(),
+            ui_info.learn_more_link->linked_range.command,
+            /*is_main_view=*/false));
+    learn_more_link_->AddStyleRange(link_range, link_style);
+    learn_more_link_->SetVisible(true);
+    learn_more_link_->SizeToFit(GetMinimumLabelWidth());
+  } else {
+    learn_more_link_->SetVisible(false);
+  }
 }
 
 void DownloadBubbleSecurityView::UpdateSecondaryIconAndText() {
-  DownloadUIModel::BubbleUIInfo& ui_info = download_row_view_->ui_info();
+  DownloadUIModel::BubbleUIInfo& ui_info = GetUiInfo();
 
   secondary_icon_->SetVisible(!ui_info.warning_secondary_text.empty());
   secondary_styled_label_->SetVisible(!ui_info.warning_secondary_text.empty());
@@ -435,14 +466,24 @@ void DownloadBubbleSecurityView::AddIconAndText() {
   // Set min height for checkbox, so that it can layout label accordingly.
   checkbox_->SetMinSize(gfx::Size(0, kCheckboxHeight));
 
+  // TODO(chlily): Implement deep_scanning_link_ as a learn_more_link_.
   deep_scanning_link_ =
       wrapper->AddChildView(std::make_unique<views::StyledLabel>());
   deep_scanning_link_->SetTextContext(views::style::CONTEXT_DIALOG_BODY_TEXT);
-  deep_scanning_link_->SetDefaultTextStyle(views::style::STYLE_SECONDARY);
+  deep_scanning_link_->SetDefaultTextStyle(views::style::STYLE_PRIMARY);
   // `deep_scanning_link_` is after `paragraphs_`, and we should have the
   // paragraph spacing between them.
   deep_scanning_link_->SetProperty(
       views::kMarginsKey, gfx::Insets().set_top(kAfterParagraphSpacing));
+
+  learn_more_link_ =
+      wrapper->AddChildView(std::make_unique<views::StyledLabel>());
+  learn_more_link_->SetTextContext(views::style::CONTEXT_DIALOG_BODY_TEXT);
+  learn_more_link_->SetDefaultTextStyle(views::style::STYLE_PRIMARY);
+  // `learn_more_link_` is after `paragraphs_`, and we should have the
+  // paragraph spacing between them.
+  learn_more_link_->SetProperty(views::kMarginsKey,
+                                gfx::Insets().set_top(kAfterParagraphSpacing));
 }
 
 void DownloadBubbleSecurityView::AddSecondaryIconAndText() {
@@ -593,7 +634,7 @@ void DownloadBubbleSecurityView::UpdateButtons() {
   bubble_delegate_->SetButtons(ui::DIALOG_BUTTON_NONE);
   bubble_delegate_->SetDefaultButton(ui::DIALOG_BUTTON_NONE);
   secondary_button_ = nullptr;
-  DownloadUIModel::BubbleUIInfo& ui_info = download_row_view_->ui_info();
+  DownloadUIModel::BubbleUIInfo& ui_info = GetUiInfo();
 
   if (ui_info.subpage_buttons.size() > 0) {
     bubble_delegate_->SetButtons(ui::DIALOG_BUTTON_OK);
@@ -607,10 +648,14 @@ void DownloadBubbleSecurityView::UpdateButtons() {
     UpdateButton(ui_info.subpage_buttons[1], /*is_secondary_button=*/true,
                  ui_info.HasCheckbox());
   }
+  // After we have updated the buttons, set the minimum width to avoid the rest
+  // of the contents stretching out the dialog unnecessarily.
+  bubble_delegate_->set_fixed_width(GetMinimumBubbleWidth());
+  PreferredSizeChanged();
 }
 
 void DownloadBubbleSecurityView::UpdateProgressBar() {
-  DownloadUIModel::BubbleUIInfo& ui_info = download_row_view_->ui_info();
+  DownloadUIModel::BubbleUIInfo& ui_info = GetUiInfo();
   progress_bar_->SetVisible(ui_info.has_progress_bar);
   // The progress bar is only supported for deep scanning currently, which
   // requires a looping progress bar.
@@ -622,6 +667,7 @@ void DownloadBubbleSecurityView::UpdateProgressBar() {
 }
 
 void DownloadBubbleSecurityView::ClearWideFields() {
+  bubble_delegate_->set_fixed_width(0);
   bubble_delegate_->SetButtonLabel(ui::DIALOG_BUTTON_CANCEL, std::u16string());
   bubble_delegate_->SetButtonLabel(ui::DIALOG_BUTTON_OK, std::u16string());
   paragraphs_->SetText(std::u16string());
@@ -660,6 +706,14 @@ void DownloadBubbleSecurityView::RecordWarningActionTime(
 
 void DownloadBubbleSecurityView::UpdateSecurityView(
     DownloadBubbleRowView* download_row_view) {
+  if (!download_row_view) {
+    // Release the raw_ptr so that it is not dangling when the row view is
+    // destroyed.
+    download_row_view_ = nullptr;
+    warning_time_ = absl::nullopt;
+    model_ = nullptr;
+    return;
+  }
   warning_time_ = absl::optional<base::Time>(base::Time::Now());
   download_row_view_ = download_row_view;
   DCHECK(download_row_view_->model());
@@ -706,7 +760,10 @@ void DownloadBubbleSecurityView::UpdateViews() {
 }
 
 void DownloadBubbleSecurityView::UpdateAccessibilityTextAndFocus() {
-  DownloadUIModel::BubbleUIInfo& ui_info = download_row_view_->ui_info();
+  if (!IsInitialized()) {
+    return;
+  }
+  DownloadUIModel::BubbleUIInfo& ui_info = GetUiInfo();
   // Announce that the subpage was opened to inform the user about the changes
   // in the UI.
 #if BUILDFLAG(IS_MAC)
@@ -749,15 +806,29 @@ DownloadBubbleSecurityView::~DownloadBubbleSecurityView() {
         DownloadItemWarningData::WarningSurface::BUBBLE_SUBPAGE,
         DownloadItemWarningData::WarningAction::DISMISS);
   }
+  UpdateSecurityView(nullptr);
+}
+
+int DownloadBubbleSecurityView::GetMinimumBubbleWidth() const {
+  return ChromeLayoutProvider::Get()->GetSnappedDialogWidth(
+      bubble_delegate_->GetDialogClientView()->GetMinimumSize().width());
+}
+
+int DownloadBubbleSecurityView::GetMinimumTitleWidth() const {
+  // The title's width is similar to the subpage summary's width except it is
+  // narrower to accommodate the close button.
+  const int icon_label_spacing = ChromeLayoutProvider::Get()->GetDistanceMetric(
+      views::DISTANCE_RELATED_LABEL_HORIZONTAL);
+  return GetMinimumLabelWidth() - GetLayoutConstant(DOWNLOAD_ICON_SIZE) -
+         icon_label_spacing;
 }
 
 int DownloadBubbleSecurityView::GetMinimumLabelWidth() const {
   const int side_margin = GetLayoutInsets(DOWNLOAD_ROW).width();
   const int icon_label_spacing = ChromeLayoutProvider::Get()->GetDistanceMetric(
       views::DISTANCE_RELATED_LABEL_HORIZONTAL);
-  const int bubble_width = ChromeLayoutProvider::Get()->GetSnappedDialogWidth(
-      bubble_delegate_->GetDialogClientView()->GetMinimumSize().width());
-  return bubble_width - side_margin - GetLayoutConstant(DOWNLOAD_ICON_SIZE) -
+  return GetMinimumBubbleWidth() - side_margin -
+         GetLayoutConstant(DOWNLOAD_ICON_SIZE) -
          GetLayoutInsets(DOWNLOAD_ICON).width() - icon_label_spacing;
 }
 

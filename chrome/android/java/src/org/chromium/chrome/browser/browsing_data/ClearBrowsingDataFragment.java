@@ -60,7 +60,6 @@ import org.chromium.ui.widget.ButtonCompat;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -74,6 +73,9 @@ public abstract class ClearBrowsingDataFragment extends PreferenceFragmentCompat
                    Preference.OnPreferenceClickListener, Preference.OnPreferenceChangeListener,
                    SignOutDialogCoordinator.Listener, SigninManager.SignInStateObserver,
                    CustomDividerFragment, ProfileDependentSetting {
+    static final String FETCHER_SUPPLIED_FROM_OUTSIDE =
+            "ClearBrowsingDataFetcherSuppliedFromOutside";
+
     private static final String CLEAR_DATA_PROGRESS_DIALOG_TAG = "clear_data_progress";
 
     /**
@@ -285,6 +287,19 @@ public abstract class ClearBrowsingDataFragment extends PreferenceFragmentCompat
     }
 
     /**
+     * A method to create the {@link ClearBrowsingDataFragment} arguments.
+     *
+     * @param isFetcherSuppliedFromOutside A boolean indicating whether the {@link
+     *         ClearBrowsingDataFetcher} would be supplied later or it needs to be re-created.
+     */
+    public static Bundle createFragmentArgs(boolean isFetcherSuppliedFromOutside) {
+        Bundle bundle = new Bundle();
+        bundle.putBoolean(ClearBrowsingDataFragment.FETCHER_SUPPLIED_FROM_OUTSIDE,
+                isFetcherSuppliedFromOutside);
+        return bundle;
+    }
+
+    /**
      * @return The currently selected {@link DialogOption} entries.
      */
     protected final Set<Integer> getSelectedOptions() {
@@ -309,6 +324,7 @@ public abstract class ClearBrowsingDataFragment extends PreferenceFragmentCompat
      * @param fetcher A ClearBrowsingDataFetcher.
      */
     public void setClearBrowsingDataFetcher(ClearBrowsingDataFetcher fetcher) {
+        assert mFetcher == null : "Fetcher previously set already.";
         mFetcher = fetcher;
     }
 
@@ -358,8 +374,7 @@ public abstract class ClearBrowsingDataFragment extends PreferenceFragmentCompat
                 ((SpinnerPreference) findPreference(PREF_TIME_RANGE)).getSelectedOption();
         @TimePeriod
         int timePeriod = ((TimePeriodSpinnerOption) spinnerSelection).getTimePeriod();
-        // TODO(bsazonov): Change integerListToIntArray to handle Collection<Integer>.
-        int[] dataTypesArray = CollectionUtil.integerListToIntArray(new ArrayList<>(dataTypes));
+        int[] dataTypesArray = CollectionUtil.integerCollectionToIntArray(dataTypes);
         if (excludedDomains != null && excludedDomains.length != 0) {
             BrowsingDataBridge.getInstance().clearBrowsingDataExcludingDomains(this, dataTypesArray,
                     timePeriod, excludedDomains, excludedDomainReasons, ignoredDomains,
@@ -513,11 +528,28 @@ public abstract class ClearBrowsingDataFragment extends PreferenceFragmentCompat
         return spinnerOptionIndex;
     }
 
-    @Override
-    public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
+    private void setUpClearBrowsingDataFetcher(Bundle savedInstanceState) {
         if (savedInstanceState != null) {
             mFetcher = savedInstanceState.getParcelable(CLEAR_BROWSING_DATA_FETCHER);
+            return;
         }
+
+        Bundle fragmentArgs = getArguments();
+        assert fragmentArgs != null : "A valid fragment argument is required.";
+
+        boolean isSuppliedFromOutside = fragmentArgs.getBoolean(
+                ClearBrowsingDataFragment.FETCHER_SUPPLIED_FROM_OUTSIDE, false);
+        if (!isSuppliedFromOutside) {
+            assert mFetcher == null : "Fetcher previously re-assigned";
+            mFetcher = new ClearBrowsingDataFetcher();
+            mFetcher.fetchImportantSites();
+            mFetcher.requestInfoAboutOtherFormsOfBrowsingHistory();
+        }
+    }
+
+    @Override
+    public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
+        setUpClearBrowsingDataFetcher(savedInstanceState);
         getActivity().setTitle(R.string.clear_browsing_data_title);
         SettingsUtils.addPreferencesFromResource(this, R.xml.clear_browsing_data_preferences_tab);
         mSigninManager = IdentityServicesProvider.get().getSigninManager(mProfile);

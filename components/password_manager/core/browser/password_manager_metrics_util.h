@@ -405,6 +405,15 @@ enum class GenerationDialogChoice {
   kMaxValue = kRejected
 };
 
+enum class SignInState {
+  // The user is signed out.
+  kSignedOut = 0,
+  // The user is signed in but has not enabled Sync.
+  kSignedInSyncDisabled = 1,
+  // The user has enabled Sync.
+  kSyncing = 2,
+};
+
 // Represents the state of the user wrt. sign-in and account-scoped storage.
 // Used for metrics. Always keep this enum in sync with the corresponding
 // histogram_suffixes in histograms.xml!
@@ -644,6 +653,7 @@ enum class PasswordManagementBubbleInteractions {
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused. Always keep this enum in sync with the
 // corresponding PasswordMigrationWarningTriggers in enums.xml.
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.pwd_migration
 enum class PasswordMigrationWarningTriggers {
   kChromeStartup = 0,
   kPasswordSaveUpdateMessage = 1,
@@ -665,6 +675,20 @@ enum class PasswordManagerShortcutMetric {
   // User switched profile in the standalone password manager app.
   kProfileSwitched = 2,
   kMaxValue = kProfileSwitched,
+};
+
+// Presumed password form type. Calculated using heuristics after form parsing.
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+// Needs to stay in sync with PasswordFormType2 in enums.xml.
+enum class SubmittedFormType {
+  kUndefined = 0,
+  kLogin = 1,
+  kSignup = 2,
+  kChangePassword = 3,
+  kResetPassword = 4,
+  kSingleUsername = 5,
+  kMaxValue = kSingleUsername,
 };
 
 std::string GetPasswordAccountStorageUsageLevelHistogramSuffix(
@@ -721,10 +745,6 @@ void LogSaveUIDismissalReason(
     UIDismissalReason reason,
     autofill::mojom::SubmissionIndicatorEvent submission_event,
     absl::optional<PasswordAccountStorageUserState> user_state);
-
-// Log the |reason| a user dismissed the save password prompt after previously
-// having unblocklisted the origin while on the page.
-void LogSaveUIDismissalReasonAfterUnblocklisting(UIDismissalReason reason);
 
 // Log the |reason| a user dismissed the update password bubble. If the
 // submission is detected on a cleared change password form, dismissal reason is
@@ -838,11 +858,8 @@ void LogIsSyncPasswordHashSaved(IsSyncPasswordHashSaved state,
 // privacy of individual data points, we will log with 10% noise.
 void LogIsPasswordProtected(bool is_password_protected);
 
-// Log the number of Gaia password hashes saved. Currently only called on
-// profile start up.
 void LogProtectedPasswordHashCounts(size_t gaia_hash_count,
-                                    bool does_primary_account_exists,
-                                    bool is_signed_in);
+                                    SignInState sign_in_state);
 
 // Log the user interaction events when creating a new credential from settings.
 void LogUserInteractionsWhenAddingCredentialFromSettings(
@@ -874,6 +891,39 @@ base::OnceCallback<R(Args...)> TimeCallback(
       histogram, base::ElapsedTimer(), std::move(callback));
 }
 
+#if BUILDFLAG(IS_IOS)
+// This enum indicates migration status from Keychain to OSCrypt on iOS in the
+// version 39.
+//
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+//
+// Needs to stay in sync with PasswordManagerMatchedFormType in
+// enums.xml.
+enum class MigrationToOSCrypt {
+  kStarted = 0,
+  kFailedToCopyPasswordColumn = 1,
+  kFailedToDecryptFromKeychain = 2,
+  kFailedToEncrypt = 3,
+  kFailedToUpdate = 4,
+  kSuccess = 5,
+  kFailedToDelete = 6,
+  kMaxValue = kFailedToDelete,
+};
+
+// Records the latency of the migration to OSCrypt of the login db on iOS
+// separated by password store type and whether the migration was successful or
+// not.
+void RecordMigrationToOSCryptLatency(bool success,
+                                     base::TimeDelta latency,
+                                     base::StringPiece store_infix);
+
+// Records the status of the migration to OSCrypt of the login db on iOS
+// separated by password store type.
+void RecordMigrationToOSCryptStatus(base::TimeTicks migration_start_time,
+                                    bool is_account_store,
+                                    MigrationToOSCrypt status);
+#endif
 }  // namespace password_manager::metrics_util
 
 #endif  // COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_MANAGER_METRICS_UTIL_H_

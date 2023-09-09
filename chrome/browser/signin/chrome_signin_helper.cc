@@ -71,8 +71,6 @@
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
 #include "chrome/browser/signin/dice_response_handler.h"
 #include "chrome/browser/signin/process_dice_header_delegate_impl.h"
-#include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
-#include "chrome/browser/ui/webui/signin/turn_sync_on_helper.h"
 #endif
 
 namespace signin {
@@ -373,36 +371,6 @@ void ProcessMirrorHeader(
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
 
-// Creates a TurnSyncOnHelper.
-void CreateTurnSyncOnHelper(Profile* profile,
-                            signin_metrics::AccessPoint access_point,
-                            signin_metrics::PromoAction promo_action,
-                            signin_metrics::Reason reason,
-                            content::WebContents* web_contents,
-                            const CoreAccountId& account_id) {
-  DCHECK(profile);
-  Browser* browser = web_contents
-                         ? chrome::FindBrowserWithWebContents(web_contents)
-                         : chrome::FindBrowserWithProfile(profile);
-  // TurnSyncOnHelper is suicidal (it will kill itself once it finishes enabling
-  // sync).
-  new TurnSyncOnHelper(profile, browser, access_point, promo_action, reason,
-                       account_id,
-                       TurnSyncOnHelper::SigninAbortedMode::REMOVE_ACCOUNT);
-}
-
-// Shows UI for signin errors.
-void ShowDiceSigninError(Profile* profile,
-                         content::WebContents* web_contents,
-                         const SigninUIError& error) {
-  DCHECK(profile);
-  Browser* browser = web_contents
-                         ? chrome::FindBrowserWithWebContents(web_contents)
-                         : chrome::FindBrowserWithProfile(profile);
-  LoginUIServiceFactory::GetForProfile(profile)->DisplayLoginResult(
-      browser, error, /*from_profile_picker=*/false);
-}
-
 void ProcessDiceHeader(
     const DiceResponseParams& dice_params,
     const content::WebContents::Getter& web_contents_getter) {
@@ -423,9 +391,7 @@ void ProcessDiceHeader(
   DiceResponseHandler* dice_response_handler =
       DiceResponseHandler::GetForProfile(profile);
   dice_response_handler->ProcessDiceHeader(
-      dice_params, ProcessDiceHeaderDelegateImpl::Create(
-                       web_contents, base::BindOnce(&CreateTurnSyncOnHelper),
-                       base::BindOnce(&ShowDiceSigninError)));
+      dice_params, ProcessDiceHeaderDelegateImpl::Create(web_contents));
 }
 #endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
 

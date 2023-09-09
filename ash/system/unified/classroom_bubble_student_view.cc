@@ -10,14 +10,18 @@
 
 #include "ash/glanceables/classroom/glanceables_classroom_client.h"
 #include "ash/glanceables/classroom/glanceables_classroom_types.h"
+#include "ash/glanceables/common/glanceables_progress_bar_view.h"
 #include "ash/glanceables/glanceables_v2_controller.h"
 #include "ash/shell.h"
+#include "ash/strings/grit/ash_strings.h"
 #include "ash/system/tray/detailed_view_delegate.h"
 #include "base/check.h"
 #include "base/functional/bind.h"
 #include "base/strings/string_piece_forward.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/views/controls/combobox/combobox.h"
+#include "ui/views/controls/label.h"
 #include "url/gurl.h"
 
 namespace ash {
@@ -54,6 +58,16 @@ constexpr char kClassroomWebUIMissingUrl[] =
 constexpr char kClassroomWebUIDoneUrl[] =
     "https://classroom.google.com/u/0/a/turned-in/all";
 
+std::u16string GetAssignmentListName(size_t index) {
+  CHECK(index >= 0 || index < kStudentAssignmentsListTypeOrdered.size());
+
+  const auto* const iter = kStudentAssignmentsListTypeToLabel.find(
+      kStudentAssignmentsListTypeOrdered[index]);
+  CHECK(iter != kStudentAssignmentsListTypeToLabel.end());
+
+  return base::UTF8ToUTF16(iter->second);
+}
+
 class ClassroomStudentComboboxModel : public ui::ComboboxModel {
  public:
   ClassroomStudentComboboxModel() = default;
@@ -67,13 +81,7 @@ class ClassroomStudentComboboxModel : public ui::ComboboxModel {
   }
 
   std::u16string GetItemAt(size_t index) const override {
-    CHECK(index >= 0 || index < kStudentAssignmentsListTypeOrdered.size());
-
-    const auto* const iter = kStudentAssignmentsListTypeToLabel.find(
-        kStudentAssignmentsListTypeOrdered[index]);
-    CHECK(iter != kStudentAssignmentsListTypeToLabel.end());
-
-    return base::UTF8ToUTF16(iter->second);
+    return GetAssignmentListName(index);
   }
 
   absl::optional<size_t> GetDefaultIndex() const override { return 0; }
@@ -125,18 +133,32 @@ void ClassroomBubbleStudentView::SelectedAssignmentListChanged() {
   CHECK(selected_index >= 0 ||
         selected_index < kStudentAssignmentsListTypeOrdered.size());
 
+  // Cancel any old pending assignment requests.
+  weak_ptr_factory_.InvalidateWeakPtrs();
+
+  AboutToRequestAssignments();
+
   auto callback = base::BindOnce(&ClassroomBubbleStudentView::OnGetAssignments,
-                                 weak_ptr_factory_.GetWeakPtr());
+                                 weak_ptr_factory_.GetWeakPtr(),
+                                 GetAssignmentListName(selected_index));
   switch (kStudentAssignmentsListTypeOrdered[selected_index]) {
     case StudentAssignmentsListType::kAssigned:
+      empty_list_label_->SetText(l10n_util::GetStringUTF16(
+          IDS_GLANCEABLES_CLASSROOM_STUDENT_EMPTY_ITEM_DUE_LIST));
       return client->GetStudentAssignmentsWithApproachingDueDate(
           std::move(callback));
     case StudentAssignmentsListType::kNoDueDate:
+      empty_list_label_->SetText(l10n_util::GetStringUTF16(
+          IDS_GLANCEABLES_CLASSROOM_STUDENT_EMPTY_ITEM_DUE_LIST));
       return client->GetStudentAssignmentsWithoutDueDate(std::move(callback));
     case StudentAssignmentsListType::kMissing:
+      empty_list_label_->SetText(l10n_util::GetStringUTF16(
+          IDS_GLANCEABLES_CLASSROOM_STUDENT_EMPTY_ITEM_MISSING_LIST));
       return client->GetStudentAssignmentsWithMissedDueDate(
           std::move(callback));
     case StudentAssignmentsListType::kDone:
+      empty_list_label_->SetText(l10n_util::GetStringUTF16(
+          IDS_GLANCEABLES_CLASSROOM_STUDENT_EMPTY_ITEM_DONE_LIST));
       return client->GetCompletedStudentAssignments(std::move(callback));
   }
 }

@@ -23,22 +23,21 @@ class CookieControlsBubbleCoordinator : public views::ViewObserver {
  public:
   ~CookieControlsBubbleCoordinator() override;
 
-  explicit CookieControlsBubbleCoordinator(views::View* anchor_view);
+  CookieControlsBubbleCoordinator();
 
   // Shows the CookieControlsBubbleView. If the bubble is currently shown it
   // simply returns.
-  void ShowBubble(content::WebContents* web_contents,
-                  content_settings::CookieControlsController* controller);
+  virtual void ShowBubble(
+      content::WebContents* web_contents,
+      content_settings::CookieControlsController* controller);
 
-  CookieControlsBubbleViewImpl* GetBubble();
+  virtual CookieControlsBubbleViewImpl* GetBubble() const;
 
   void SetDisplayNameForTesting(const std::u16string& name);
 
  private:
   // views::ViewObserver
   void OnViewIsDeleting(views::View* observed_view) override;
-
-  raw_ptr<views::View> anchor_view_;
 
   std::unique_ptr<CookieControlsBubbleViewController> view_controller_;
   raw_ptr<CookieControlsBubbleViewImpl> bubble_view_ = nullptr;

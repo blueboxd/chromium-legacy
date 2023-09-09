@@ -119,8 +119,7 @@ reclient = struct(
         LOW_JOBS_FOR_CI = 80,
         HIGH_JOBS_FOR_CI = 500,
         LOW_JOBS_FOR_CQ = 150,
-        # TODO(b/285080767): increase this to 500 gradually.
-        HIGH_JOBS_FOR_CQ = 400,
+        HIGH_JOBS_FOR_CQ = 500,
     ),
 )
 
@@ -174,8 +173,10 @@ xcode = struct(
     x14main = xcode_enum("14c18"),
     # A newer Xcode 14 RC  used on beta bots.
     x14betabots = xcode_enum("14e222b"),
+    # Default Xcode 15 for chromium iOS
+    x15main = xcode_enum("15a5209g"),
     # A newer Xcode 15 version used on beta bots.
-    x15betabots = xcode_enum("15a5195m"),
+    x15betabots = xcode_enum("15a5209g"),
     # in use by ios-webkit-tot
     x14wk = xcode_enum("14c18wk"),
 )
@@ -412,6 +413,7 @@ defaults = args.defaults(
     # Variables for modifying builder characteristics in a shadow bucket
     shadow_pool = None,
     shadow_service_account = None,
+    shadow_reclient_instance = None,
 
     # Provide vars for bucket and executable so users don't have to
     # unnecessarily make wrapper functions
@@ -483,6 +485,7 @@ def builder(
         health_spec = args.DEFAULT,
         shadow_pool = args.DEFAULT,
         shadow_service_account = args.DEFAULT,
+        shadow_reclient_instance = args.DEFAULT,
         **kwargs):
     """Define a builder.
 
@@ -674,6 +677,10 @@ def builder(
             set to use this alternate pool instead.
         shadow_service_account: If set, then led builds created for this builder
             will use this service account instead.
+        shadow_reclient_instance: If set, then led builds for this builder will
+            use this as the reclient instance instead of reclient_instance. The
+            other reclient_* values will continue to be used for the shadow
+            build.
         **kwargs: Additional keyword arguments to forward on to `luci.builder`.
 
     Returns:
@@ -709,6 +716,8 @@ def builder(
         fail('Setting "$build/reclient" property is not supported: ' +
              "use reclient_instance and reclient_rewrapper_env instead")
     properties = dict(properties)
+
+    shadow_properties = {}
 
     # bucket might be the args.COMPUTE sentinel value if the caller didn't set
     # bucket in some way, which will result in a weird fully-qualified builder
@@ -818,9 +827,9 @@ def builder(
         reclient_scandeps_server,
     )
 
-    # Enable scandeps_server on Mac by default.
+    # Enable scandeps_server by default.
     if reclient_scandeps_server == args.COMPUTE:
-        reclient_scandeps_server = os and os.category == os_category.MAC
+        reclient_scandeps_server = True
 
     reclient = _reclient_property(
         instance = reclient_instance,
@@ -837,6 +846,22 @@ def builder(
     )
     if reclient != None:
         properties["$build/reclient"] = reclient
+        shadow_reclient_instance = defaults.get_value("shadow_reclient_instance", shadow_reclient_instance)
+        shadow_reclient = _reclient_property(
+            instance = shadow_reclient_instance,
+            service = reclient_service,
+            jobs = reclient_jobs,
+            rewrapper_env = reclient_rewrapper_env,
+            bootstrap_env = reclient_bootstrap_env,
+            profiler_service = reclient_profiler_service,
+            publish_trace = reclient_publish_trace,
+            scandeps_server = reclient_scandeps_server,
+            cache_silo = reclient_cache_silo,
+            ensure_verified = reclient_ensure_verified,
+            disable_bq_upload = reclient_disable_bq_upload,
+        )
+        if shadow_reclient:
+            shadow_properties["$build/reclient"] = shadow_reclient
 
     siso_project = defaults.get_value("siso_project", siso_project)
     if defaults.get_value("siso_enabled", siso_enabled) and siso_project:
@@ -880,6 +905,7 @@ def builder(
         ),
         shadow_pool = defaults.get_value("shadow_pool", shadow_pool),
         shadow_service_account = defaults.get_value("shadow_service_account", shadow_service_account),
+        shadow_properties = shadow_properties,
         **kwargs
     )
 

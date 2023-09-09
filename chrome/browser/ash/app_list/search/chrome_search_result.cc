@@ -201,6 +201,17 @@ void ChromeSearchResult::SetSystemInfoAnswerCardData(
   SetSearchResultMetadata();
 }
 
+void ChromeSearchResult::SetFilePath(base::FilePath file_path) {
+  metadata_->file_path = file_path;
+  SetSearchResultMetadata();
+}
+
+void ChromeSearchResult::SetMetadataLoaderCallback(
+    MetadataLoaderCallback callback) {
+  metadata_->file_metadata_loader.SetLoaderCallback(std::move(callback));
+  SetSearchResultMetadata();
+}
+
 void ChromeSearchResult::SetSearchResultMetadata() {
   AppListModelUpdater* updater = model_updater();
   if (updater)

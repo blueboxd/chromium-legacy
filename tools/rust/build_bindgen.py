@@ -25,7 +25,7 @@ sys.path.append(
                  'scripts'))
 
 from build import (CheckoutGitRepo, DownloadAndUnpack, LLVM_BUILD_TOOLS_DIR,
-                   MaybeDownloadHostGcc, RunCommand)
+                   DownloadDebianSysroot, RunCommand)
 from update import (RmTree)
 
 # The git hash to use.
@@ -63,7 +63,6 @@ def InstallRustBetaSysroot(rust_git_hash, target_triples):
         InstallBetaPackage(
             FetchBetaPackage('rust-std', rust_git_hash, triple=t),
             RUST_BETA_SYSROOT_DIR)
-    return RUST_BETA_SYSROOT_DIR
 
 
 def FetchNcurseswLibrary():
@@ -96,13 +95,6 @@ def main():
         print('--build-mac-arm only valid on intel to cross-build arm')
         return 1
 
-    args.gcc_toolchain = None
-    if sys.platform.startswith('linux'):
-        # Fetch GCC package to build against same libstdc++ as Clang. This
-        # function will only download it if necessary, and it will set the
-        # `args.gcc_toolchain` if so.
-        MaybeDownloadHostGcc(args)
-
     ncursesw_dir = None
     if sys.platform.startswith('linux'):
         ncursesw_dir = FetchNcurseswLibrary()
@@ -111,12 +103,12 @@ def main():
         # When cross-compiling, the binaries in RUST_TOOLCHAIN_OUT_DIR are not
         # usable on this machine, so we have to fetch them. We install them,
         # along with the host and target stdlib to a sysroot dir.
-        root = InstallRustBetaSysroot(
+        InstallRustBetaSysroot(
             RUST_REVISION,
             [RustTargetTriple(),
              RustTargetTriple(build_mac_arm=True)])
-        cargo_bin = os.path.join(root, 'bin', f'cargo{EXE}')
-        rustc_bin = os.path.join(root, 'bin', f'rustc{EXE}')
+        cargo_bin = os.path.join(RUST_BETA_SYSROOT_DIR, 'bin', f'cargo{EXE}')
+        rustc_bin = os.path.join(RUST_BETA_SYSROOT_DIR, 'bin', f'rustc{EXE}')
 
         if not os.path.exists(cargo_bin):
             print(f'Missing cargo at {cargo_bin}. The sysroot was not setup '
@@ -193,13 +185,15 @@ def main():
     env['LD'] = linker
     env['RUSTFLAGS'] += f' -Clinker={linker}'
 
-    if args.gcc_toolchain:
+    if sys.platform.startswith('linux'):
         # We use these flags to avoid linking with the system libstdc++.
-        gcc_toolchain_flag = f'--gcc-toolchain={args.gcc_toolchain}'
-        env['CFLAGS'] += f' {gcc_toolchain_flag}'
-        env['CXXFLAGS'] += f' {gcc_toolchain_flag}'
-        env['LDFLAGS'] += f' {gcc_toolchain_flag}'
-        env['RUSTFLAGS'] += f' -Clink-arg={gcc_toolchain_flag}'
+        sysroot = DownloadDebianSysroot('amd64')
+        sysroot_flag = f'--sysroot={sysroot}'
+        env['CFLAGS'] += f' {sysroot_flag}'
+        env['CXXFLAGS'] += f' {sysroot_flag}'
+        env['LDFLAGS'] += f' {sysroot_flag}'
+        env['RUSTFLAGS'] += f' -Clink-arg={sysroot_flag}'
+
     if ncursesw_dir:
         env['CFLAGS'] += f' -I{ncursesw_dir}/include'
         env['CXXFLAGS'] += f' -I{ncursesw_dir}/include'

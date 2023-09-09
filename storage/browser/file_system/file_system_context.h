@@ -54,7 +54,6 @@ namespace storage {
 
 class AsyncFileUtil;
 class CopyOrMoveFileValidatorFactory;
-class ExternalFileSystemBackend;
 class ExternalMountPoints;
 class FileStreamReader;
 class FileStreamWriter;
@@ -153,7 +152,8 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) FileSystemContext
       const FileSystemOptions& options,
       base::PassKey<FileSystemContext>);
 
-  bool DeleteDataForStorageKeyOnFileTaskRunner(
+  // Called by CookiesTreeModel, to be removed in crbug.com/1304449.
+  void DeleteDataForStorageKeyOnFileTaskRunner(
       const blink::StorageKey& storage_key);
 
   // Creates a new QuotaReservation for the given `storage_key` and `type`.
@@ -208,11 +208,6 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) FileSystemContext
 
   // Returns all registered filesystem types.
   std::vector<FileSystemType> GetFileSystemTypes() const;
-
-  // Returns a FileSystemBackend instance for external filesystem
-  // type, which is used only by chromeos for now.  This is equivalent to
-  // calling GetFileSystemBackend(kFileSystemTypeExternal).
-  ExternalFileSystemBackend* external_backend() const;
 
   // Used for OpenFileSystem.
   using OpenFileSystemCallback =
@@ -400,7 +395,11 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) FileSystemContext
                                       const GURL& filesystem_root,
                                       const std::string& filesystem_name,
                                       base::File::Error error);
-
+  void OnGetBucketForDeleteFileSystem(FileSystemType type,
+                                      StatusCallback callback,
+                                      QuotaErrorOr<BucketInfo> result);
+  void OnGetBucketForStorageKeyDeletion(std::vector<FileSystemType> type,
+                                        QuotaErrorOr<BucketInfo> result);
   // OnGetOrCreateBucket is the callback for calling
   // QuotaManagerProxy::GetOrCreateDefault.
   void OnGetOrCreateBucket(const blink::StorageKey& storage_key,

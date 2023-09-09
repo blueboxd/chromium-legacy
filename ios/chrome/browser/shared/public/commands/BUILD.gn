@@ -3,8 +3,6 @@
 # found in the LICENSE file.
 
 source_set("commands") {
-  configs += [ "//build/config/compiler:enable_arc" ]
-
   sources = [
     "activity_service_commands.h",
     "application_commands.h",
@@ -24,6 +22,7 @@ source_set("commands") {
     "help_commands.h",
     "lens_commands.h",
     "load_query_commands.h",
+    "mini_map_commands.h",
     "new_tab_page_commands.h",
     "omnibox_commands.h",
     "open_lens_input_selection_command.h",
@@ -53,6 +52,7 @@ source_set("commands") {
     "show_signin_command.h",
     "show_signin_command.mm",
     "snackbar_commands.h",
+    "tab_strip_commands.h",
     "text_zoom_commands.h",
     "toolbar_commands.h",
     "tos_commands.h",
@@ -81,7 +81,6 @@ source_set("commands") {
 
 source_set("unit_tests") {
   testonly = true
-  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [ "command_dispatcher_unittest.mm" ]
   deps = [
     ":commands",

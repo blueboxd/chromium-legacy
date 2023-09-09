@@ -46,6 +46,10 @@ class BrowserAutofillManagerTestApi : public AutofillManagerTestApi {
     manager_->external_delegate_ = std::move(external_delegate);
   }
 
+  AutofillExternalDelegate* external_delegate() {
+    return manager_->external_delegate_.get();
+  }
+
   bool ShouldTriggerRefill(const FormStructure& form_structure) {
     return manager_->ShouldTriggerRefill(form_structure);
   }
@@ -92,7 +96,7 @@ class BrowserAutofillManagerTestApi : public AutofillManagerTestApi {
   }
 
   void FillOrPreviewDataModelForm(
-      mojom::RendererFormDataAction action,
+      mojom::AutofillActionPersistence action_persistence,
       const FormData& form,
       const FormFieldData& field,
       absl::variant<const AutofillProfile*, const CreditCard*>
@@ -101,8 +105,13 @@ class BrowserAutofillManagerTestApi : public AutofillManagerTestApi {
       FormStructure* form_structure,
       AutofillField* autofill_field) {
     return manager_->FillOrPreviewDataModelForm(
-        action, form, field, profile_or_credit_card, optional_cvc,
+        action_persistence, form, field, profile_or_credit_card, optional_cvc,
         form_structure, autofill_field, AutofillTriggerSource::kPopup);
+  }
+
+  base::flat_map<std::string, VirtualCardUsageData::VirtualCardLastFour>
+  GetVirtualCreditCardsForStandaloneCvcField(const url::Origin& origin) {
+    return manager_->GetVirtualCreditCardsForStandaloneCvcField(origin);
   }
 
   FormData* pending_form_data() { return manager_->pending_form_data_.get(); }
@@ -110,6 +119,11 @@ class BrowserAutofillManagerTestApi : public AutofillManagerTestApi {
   void OnFormProcessed(const FormData& form,
                        const FormStructure& form_structure) {
     manager_->OnFormProcessed(form, form_structure);
+  }
+
+  void SetFourDigitCombinationsInDOM(
+      const std::vector<std::string>& combinations) {
+    manager_->four_digit_combinations_in_dom_ = combinations;
   }
 
  private:

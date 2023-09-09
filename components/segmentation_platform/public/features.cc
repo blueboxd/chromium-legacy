@@ -14,7 +14,11 @@ BASE_FEATURE(kSegmentationPlatformFeature,
 
 BASE_FEATURE(kSegmentationPlatformUkmEngine,
              "SegmentationPlatformUkmEngine",
-             base::FEATURE_ENABLED_BY_DEFAULT);
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kSegmentationPlatformUserVisibleTaskRunner,
+             "SegmentationPlatformUserVisibleTaskRunner",
+             base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kSegmentationPlatformAdaptiveToolbarV2Feature,
              "SegmentationPlatformAdaptiveToolbarV2Feature",
@@ -87,4 +91,28 @@ BASE_FEATURE(kSegmentationPlatformTabletProductivityUser,
 BASE_FEATURE(kSegmentationPlatformModelExecutionSampling,
              "SegmentationPlatformModelExecutionSampling",
              base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kSegmentationPlatformCrossDeviceUser,
+             "SegmentationPlatformCrossDeviceUser",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kSegmentationPlatformIntentionalUser,
+             "SegmentationPlatformIntentionalUser",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kSegmentationPlatformPasswordManagerUser,
+             "SegmentationPlatformPasswordManagerUser",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kSegmentationPlatformTabResumptionRanker,
+             "SegmentationPlatformTabResumptionRanker",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+BASE_FEATURE(kSegmentationPlatformIosModuleRanker,
+             "SegmentationPlatformIosModuleRanker",
+#if BUILDFLAG(IS_IOS)
+             base::FEATURE_DISABLED_BY_DEFAULT);
+#else
+             base::FEATURE_DISABLED_BY_DEFAULT);
+#endif
 }  // namespace segmentation_platform::features

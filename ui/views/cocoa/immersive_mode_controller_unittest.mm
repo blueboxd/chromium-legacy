@@ -16,10 +16,6 @@
 #import "ui/base/cocoa/window_size_constants.h"
 #import "ui/base/test/cocoa_helper.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 namespace {
 const double kBrowserHeight = 200;
 const double kBrowserWidth = 400;
@@ -121,7 +117,7 @@ TEST_F(CocoaImmersiveModeControllerTest, ImmersiveModeController) {
   auto immersive_mode_controller =
       std::make_unique<ImmersiveModeController>(browser(), overlay());
   immersive_mode_controller->Enable();
-  EXPECT_EQ(browser().titlebarAccessoryViewControllers.count, 2u);
+  EXPECT_EQ(browser().titlebarAccessoryViewControllers.count, 1u);
 }
 
 // Test that reveal locks work as expected.
@@ -134,10 +130,11 @@ TEST_F(CocoaImmersiveModeControllerTest, RevealLock) {
   // Autohide top chrome.
   immersive_mode_controller->UpdateToolbarVisibility(
       mojom::ToolbarVisibilityStyle::kAutohide);
-  EXPECT_EQ(
+  // Hidden height is > 0 as a workaround for https://crbug.com/1369643
+  EXPECT_LT(
       browser()
           .titlebarAccessoryViewControllers.firstObject.fullScreenMinHeight,
-      0);
+      1);
 
   // Grab 3 reveal locks and make sure that top chrome is displayed.
   EXPECT_EQ(immersive_mode_controller->reveal_lock_count(), 0);
@@ -162,10 +159,10 @@ TEST_F(CocoaImmersiveModeControllerTest, RevealLock) {
 
   // Let go of the final reveal lock and make sure top chrome is hidden.
   immersive_mode_controller->RevealUnlock();
-  EXPECT_EQ(
+  EXPECT_LT(
       browser()
           .titlebarAccessoryViewControllers.firstObject.fullScreenMinHeight,
-      0);
+      1);
 }
 
 // Test ImmersiveModeController titlebar frame KVO.
@@ -289,10 +286,10 @@ TEST_F(CocoaImmersiveModeControllerTest, Tabbed) {
                                                       tab_overlay());
   immersive_mode_controller->Enable();
 
-  EXPECT_EQ(browser().titlebarAccessoryViewControllers.count, 3u);
+  EXPECT_EQ(browser().titlebarAccessoryViewControllers.count, 2u);
   immersive_mode_controller->UpdateToolbarVisibility(
       mojom::ToolbarVisibilityStyle::kNone);
-  EXPECT_EQ(browser().titlebarAccessoryViewControllers.count, 2u);
+  EXPECT_EQ(browser().titlebarAccessoryViewControllers.count, 1u);
 }
 
 // Test ImmersiveModeTabbedController reveal lock tests.

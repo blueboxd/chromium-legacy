@@ -18,9 +18,7 @@ class WebNNGraphImpl : public mojom::WebNNGraph {
   ~WebNNGraphImpl() override;
 
   // Return false if the graph is invalid.
-  static bool ValidateAndBuildGraph(
-      mojom::WebNNContext::CreateGraphCallback callback,
-      const mojom::GraphInfoPtr& graph_info);
+  static bool ValidateGraph(const mojom::GraphInfoPtr& graph_info);
 };
 
 }  // namespace webnn

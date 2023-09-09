@@ -19,10 +19,6 @@
 #import "ui/base/l10n/l10n_util.h"
 #import "ui/base/l10n/time_format.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 @interface TabPickupBannerOverlayMediator ()
 
 // The tab pickup banner config from the request.
@@ -54,6 +50,13 @@
 #pragma mark - InfobarOverlayRequestMediator
 
 - (void)bannerInfobarButtonWasPressed:(UIButton*)sender {
+  // This can happen if the user quickly navigates to another website while the
+  // banner is still appearing, causing the banner to be triggered before being
+  // removed.
+  if (!self.tabPickupDelegate) {
+    return;
+  }
+
   self.tabPickupDelegate->OpenDistantTab();
 
   [self dismissOverlay];
@@ -93,7 +96,15 @@
   [self.consumer
       setButtonText:l10n_util::GetNSString(IDS_IOS_TAB_PICKUP_BANNER_BUTTON)];
   [self.consumer setFaviconImage:faviconImage];
-  [self.consumer setPresentsModal:NO];
+  [self.consumer setPresentsModal:YES];
+}
+
+#pragma mark InfobarBannerDelegate
+
+- (void)presentInfobarModalFromBanner {
+  [self dismissOverlay];
+
+  self.tabPickupDelegate->OpenTabPickupSettings();
 }
 
 #pragma mark - Private

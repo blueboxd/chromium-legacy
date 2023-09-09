@@ -94,6 +94,7 @@
 <translation id="174937106936716857">Reconto total de ficheiros</translation>
 <translation id="1755345808328621801">Este ficheiro está deseñado para un ordenador con software Windows. Non é compatible co teu dispositivo, que ten Chrome OS. Busca en Chrome Web Store unha aplicación equivalente axeitada.</translation>
 <translation id="1757915090001272240">Alfabeto latino amplo</translation>
+<translation id="1761091787730831947">Compartir con <ph name="VM_NAME" /></translation>
 <translation id="1773212559869067373">Certificado de autenticación rexeitado localmente</translation>
 <translation id="1775381402323441512">Información do vídeo</translation>
 <translation id="180035236176489073">Debes estar conectado para poder acceder a estes ficheiros.</translation>
@@ -166,11 +167,11 @@
 <translation id="2312704192806647271">{COUNT,plural, =1{A extensión co código <ph name="BEGIN_LIST" /><ph name="END_LIST" /> non se pode localizar. Ponte en contacto co teu administrador.}other{As extensións cos códigos <ph name="BEGIN_LIST" /><ph name="END_LIST" /> non se poden localizar. Ponte en contacto co teu administrador.}}</translation>
 <translation id="2325650632570794183">Este tipo de ficheiro non é compatible. Visita a Chrome Web Store para atopar unha aplicación que poida abrir este tipo de ficheiro.</translation>
 <translation id="2326539130272988168">Búlgaro</translation>
-<translation id="2337715497728194187">Compartir con Bruschetta</translation>
 <translation id="233822363739146957">Non hai suficiente espazo de almacenamento para sincronizar todos os ficheiros</translation>
 <translation id="23721837607121582">Descargar perfil para móbiles, rede <ph name="NETWORK_INDEX" /> de <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" /></translation>
 <translation id="2377319039870049694">Cambiar á vista de lista</translation>
 <translation id="2377590462528165447">Compartíronse <ph name="NUMBER_OF_ITEMS" /> cartafoles con Linux</translation>
+<translation id="2379576081295865700">Comprobando espazo de almacenamento… 1 elemento atopado</translation>
 <translation id="2383454254762599978">Mover á papeleira</translation>
 <translation id="2387458720915042159">Tipo de conexión mediante proxy</translation>
 <translation id="2389832672041313158">Birmano (Myanmar)</translation>
@@ -197,7 +198,6 @@
 <translation id="2544853746127077729">A rede rexeitou o certificado de autenticación</translation>
 <translation id="255937426064304553">Internacional dos EUA</translation>
 <translation id="2563185590376525700">Ra</translation>
-<translation id="2574327434504608656">Compartiuse 1 cartafol con Bruschetta</translation>
 <translation id="2578394532502990878">Támil (fonético)</translation>
 <translation id="2579959351793446050">Odiá</translation>
 <translation id="2587195714949534472">Preparando sincronización de <ph name="FILE_NAME" />...</translation>
@@ -213,6 +213,7 @@
 <translation id="2718540689505416944">Instalar aplicación con Linux</translation>
 <translation id="2719020180254996569">Rede <ph name="NETWORK_INDEX" /> de <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, detalles</translation>
 <translation id="2724954091494693138">Turco con teclado F</translation>
+<translation id="2732288874651063549">Xestionar uso compartido con <ph name="VM_NAME" /></translation>
 <translation id="2732839045120506979">Vietnamita (VNI)</translation>
 <translation id="2735623501230989521">Concede permiso a Parallels Desktop para acceder aos ficheiros do cartafol <ph name="FOLDER_NAME" /></translation>
 <translation id="2764206540577097904">Tes ocupado todo o espazo de almacenamento individual de Google Workspace.</translation>
@@ -297,7 +298,6 @@
 <translation id="3408072735282270043">Activar, <ph name="NETWORK_NAME" /></translation>
 <translation id="3408236822532681288">Alemán (Alemaña) con teclado Neo 2</translation>
 <translation id="3414856743105198592">Se formatas as unidades extraíbles borraranse todos os datos. Queres continuar?</translation>
-<translation id="3435143625481187092">Concede permiso a Bruschetta para acceder aos ficheiros do cartafol <ph name="FOLDER_NAME" /></translation>
 <translation id="3437801641691368414">Hora de creación</translation>
 <translation id="343907260260897561">Cámara instantánea</translation>
 <translation id="3455931012307786678">Estoniano</translation>
@@ -308,6 +308,7 @@
 <translation id="3509680540198371098">Rede <ph name="NETWORK_INDEX" /> de <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, intensidade do sinal do <ph name="SIGNAL_STRENGTH" /> %, detalles</translation>
 <translation id="3511705761158917664">Preparando sincronización de <ph name="NUMBER_OF_ITEMS" /> elementos...</translation>
 <translation id="3522708245912499433">Portugués</translation>
+<translation id="3523225005467146490">Compartiuse 1 ficheiro con <ph name="VM_NAME" /></translation>
 <translation id="3524311639100184459">Precaución: Estes ficheiros son temporais e pódense eliminar automaticamente para liberar espazo no disco.  <ph name="BEGIN_LINK" />Máis información<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">Cartafol</translation>
 <translation id="3548125359243647069">Meteuse un PIN incorrecto demasiadas veces.</translation>
@@ -385,7 +386,6 @@
 <translation id="4159731583141908892">Moveuse <ph name="FILE_NAME" />.</translation>
 <translation id="4176286497474237543">Baleirar papeleira agora</translation>
 <translation id="4179621117429069925">Este elemento está na papeleira</translation>
-<translation id="4181839429935094755">Compartíronse <ph name="NUMBER_OF_ITEMS" /> cartafoles con Bruschetta</translation>
 <translation id="4186579485882418952">Activar modo sen conexión</translation>
 <translation id="4193154014135846272">Documento de Google</translation>
 <translation id="4197674956721858839">Selección para comprimir</translation>
@@ -452,7 +452,6 @@
 <translation id="4646813851450205600">Checo con teclado QWERTY</translation>
 <translation id="4656777537938206294">Activa o acceso sen conexión a estes ficheiros</translation>
 <translation id="4658782175094886150">Persoa na neve</translation>
-<translation id="466782788172479199">Concede permiso a Bruschetta para acceder aos ficheiros de Google Drive. Os cambios sincronizaranse cos teus outros dispositivos.</translation>
 <translation id="4669606053856530811">Os membros de "<ph name="SOURCE_NAME" />" perderán o acceso a menos que estes elementos se compartan con eles.</translation>
 <translation id="467809019005607715">Presentacións de Google</translation>
 <translation id="4690246192099372265">Sueco</translation>
@@ -563,7 +562,6 @@
 <translation id="5323213332664049067">Latinoamericano</translation>
 <translation id="5330145655348521461">Estes ficheiros abríronse nun ordenador diferente. Diríxete a <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />) para velo.</translation>
 <translation id="5330512191124428349">Obter información</translation>
-<translation id="5344246330454251646">Xestionar contido compartido con Bruschetta</translation>
 <translation id="535792325654997756">Persoa con gatos</translation>
 <translation id="5358764674931277">Fotogramas por segundo</translation>
 <translation id="5363339716524495120">O idioma de escritura é o chinés</translation>
@@ -669,6 +667,8 @@
 <translation id="6164412158936057769">Bolboretas</translation>
 <translation id="6165508094623778733">Máis información</translation>
 <translation id="6170470584681422115">Sándwich</translation>
+<translation id="6177854567773392726">Comprobando espazo de almacenamento… <ph name="ITEMS_FOUND" /> elementos atopados</translation>
+<translation id="6181912134988520389">Concede permiso a <ph name="VM_NAME" /> para acceder aos ficheiros de Google Drive. Os cambios sincronizaranse cos teus outros dispositivos.</translation>
 <translation id="6187719147498869044">Húngaro</translation>
 <translation id="6198252989419008588">Cambiar PIN</translation>
 <translation id="6199801702437275229">Esperando pola información do espazo...</translation>
@@ -731,7 +731,6 @@
 <translation id="6710213216561001401">Anterior</translation>
 <translation id="6732801395666424405">Non se poden cargar os certificados</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />]</translation>
-<translation id="6740270213273127264">Compartir cartafol con Bruschetta</translation>
 <translation id="6750737795876287924">Directorio actual</translation>
 <translation id="6751256176799620176">Seleccionouse 1 cartafol</translation>
 <translation id="6755827872271341378">Dispositivo Chrome OS Flex</translation>
@@ -773,6 +772,7 @@
 <translation id="6989942356279143254">Sueco</translation>
 <translation id="6990081529015358884">Quedaches sen espazo</translation>
 <translation id="6993826899923627728">Estes elementos están na papeleira</translation>
+<translation id="6996593023542748157">Compartir o cartafol con <ph name="VM_NAME" /></translation>
 <translation id="7008426324576352165">Para completar a carga, a túa organización precisa máis espazo de almacenamento.</translation>
 <translation id="7009985720488544166">A política do administrador bloqueou a función de mover <ph name="COUNT" /> ficheiros</translation>
 <translation id="7012943028104619157"><ph name="ROOT_TITLE" /> (<ph name="ROOT_SUMMARY" />)</translation>
@@ -958,6 +958,7 @@
 <translation id="8335837413233998004">Belaruso</translation>
 <translation id="8336153091935557858">Onte ás <ph name="YESTERDAY_DAYTIME" /></translation>
 <translation id="8342318071240498787">Xa existe un ficheiro ou un directorio co mesmo nome.</translation>
+<translation id="83651606385705612">Concede permiso a <ph name="VM_NAME" /> para acceder aos ficheiros do cartafol <ph name="FOLDER_NAME" /></translation>
 <translation id="8372369524088641025">Clave WEP incorrecta</translation>
 <translation id="8372852072747894550">Grego</translation>
 <translation id="8386903983509584791">Finalizou a busca</translation>
@@ -967,6 +968,7 @@
 <translation id="8408068190360279472">Rede de tipo <ph name="NETWORK_TYPE" />, conectando</translation>
 <translation id="8425213833346101688">Cambiar</translation>
 <translation id="8428213095426709021">Configuración</translation>
+<translation id="8429998526804961548">Compartíronse <ph name="NUMBER_OF_ITEMS" /> cartafoles con <ph name="VM_NAME" /></translation>
 <translation id="8431909052837336408">Cambiar PIN da SIM</translation>
 <translation id="8437209419043462667">EUA</translation>
 <translation id="8452135315243592079">Falta a tarxeta SIM</translation>

@@ -71,6 +71,7 @@ const EnrollTriageMethod = {
 const UserAction = {
   SIGNIN: 'signin',
   SIGNIN_TRIAGE: 'signin-triage',
+  SIGNIN_SCHOOL: 'signin-school',
   ADD_CHILD: 'add-child',
   ENROLL: 'enroll',
   TRIAGE: 'triage',
@@ -190,6 +191,7 @@ class UserCreation extends UserCreationScreenElementBase {
 
   onBeforeShow() {
     if (this.isOobeSoftwareUpdateEnabled_) {
+      this.restoreOobeUIState();
       this.selectedUserType = '';
       this.titleKey_ = this.isBackButtonVisible_ ?
           'userCreationAddPersonUpdatedTitle' :
@@ -220,6 +222,22 @@ class UserCreation extends UserCreationScreenElementBase {
     return OOBE_UI_STATE.USER_CREATION;
   }
 
+  // this will allows to restore the oobe UI state
+  // ex: click for child -> choose google account -> AddChild Screen is shown
+  // clicking back will display user creation screen with child setup step
+  // and we need to restore the oobe ui state.
+  restoreOobeUIState() {
+    if (this.uiStep === UserCreationUIState.ENROLL_TRIAGE) {
+      Oobe.getInstance().setOobeUIState(OOBE_UI_STATE.ENROLL_TRIAGE);
+    }
+    if (this.uiStep === UserCreationUIState.CREATE) {
+      Oobe.getInstance().setOobeUIState(OOBE_UI_STATE.USER_CREATION);
+    }
+    if (this.uiStep === UserCreationUIState.CHILD_SETUP) {
+      Oobe.getInstance().setOobeUIState(OOBE_UI_STATE.SETUP_CHILD);
+    }
+  }
+
   setIsBackButtonVisible(isVisible) {
     this.isBackButtonVisible_ = isVisible;
   }
@@ -234,6 +252,7 @@ class UserCreation extends UserCreationScreenElementBase {
     if (this.uiStep === UserCreationUIState.ENROLL_TRIAGE ||
         this.uiStep === UserCreationUIState.CHILD_SETUP) {
       this.setUIStep(UserCreationUIState.CREATE);
+      this.selectedUserType = '';
       Oobe.getInstance().setOobeUIState(OOBE_UI_STATE.USER_CREATION);
     } else {
       this.userActed(UserAction.CANCEL);
@@ -265,6 +284,7 @@ class UserCreation extends UserCreationScreenElementBase {
   }
 
   setTriageStep() {
+    Oobe.getInstance().setOobeUIState(OOBE_UI_STATE.ENROLL_TRIAGE);
     this.setUIStep(UserCreationUIState.ENROLL_TRIAGE);
   }
 
@@ -286,7 +306,7 @@ class UserCreation extends UserCreationScreenElementBase {
       this.userActed(UserAction.ADD_CHILD);
     } else if (
         this.selectedChildSetupMethod === ChildSetupMethod.SCHOOL_ACCOUNT) {
-      this.userActed(UserAction.SIGNIN);
+      this.userActed(UserAction.SIGNIN_SCHOOL);
     }
   }
 

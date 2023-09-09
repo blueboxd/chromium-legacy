@@ -206,6 +206,7 @@
 #include "chrome/browser/ash/net/system_proxy_manager.h"
 #include "chrome/browser/ash/platform_keys/key_permissions/key_permissions_manager_impl.h"
 #include "chrome/browser/ash/policy/networking/euicc_status_uploader.h"
+#include "chrome/browser/ash/policy/remote_commands/crd_admin_session_controller.h"
 #include "chrome/browser/ash/settings/hardware_data_usage_controller.h"
 #include "chrome/browser/ash/settings/stats_reporting_controller.h"
 #include "chrome/browser/component_updater/metadata_table_chromeos.h"
@@ -275,6 +276,7 @@
 #include "chrome/browser/ui/commerce/price_tracking/shopping_list_ui_tab_helper.h"
 #include "chrome/browser/ui/safety_hub/safety_hub_prefs.h"
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
+#include "chrome/browser/ui/webui/cr_components/theme_color_picker/theme_color_picker_handler.h"
 #include "chrome/browser/ui/webui/history/foreign_session_handler.h"
 #include "chrome/browser/ui/webui/new_tab_page/new_tab_page_handler.h"
 #include "chrome/browser/ui/webui/new_tab_page/new_tab_page_ui.h"
@@ -300,6 +302,7 @@
 #include "chrome/browser/chromeos/extensions/echo_private/echo_private_api.h"
 #include "chrome/browser/chromeos/extensions/login_screen/login/login_api_prefs.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager_impl.h"
+#include "chrome/browser/chromeos/reporting/metric_reporting_prefs.h"
 #include "chrome/browser/extensions/api/enterprise_platform_keys/enterprise_platform_keys_api.h"
 #include "chrome/browser/memory/oom_kills_monitor.h"
 #include "chrome/browser/policy/networking/policy_cert_service.h"
@@ -938,6 +941,24 @@ const char kPowerMetricsLidClosedSuspendCount[] =
     "power.metrics.lid_closed_suspend_count";
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
+// Deprecated 07/2023.
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+const char kHatsPrivacyHubBaselineIsSelected[] =
+    "hats_privacy_hub_baseline_is_selected";
+const char kHatsPrivacyHubBaselineCycleEndTs[] =
+    "hats_privacy_hub_baseline_end_timestamp";
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+// Deprecated 07/2023.
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+const char kClearUserDataDir1Pref[] = "lacros.clear_user_data_dir_1";
+#endif
+
+// Deprecated 07/2023.
+const char kShutdownNumProcesses[] = "shutdown.num_processes";
+const char kShutdownNumProcessesSlow[] = "shutdown.num_processes_slow";
+const char kShutdownType[] = "shutdown.type";
+
 // Register local state used only for migration (clearing or moving to a new
 // key).
 void RegisterLocalStatePrefsForMigration(PrefRegistrySimple* registry) {
@@ -1068,6 +1089,11 @@ void RegisterLocalStatePrefsForMigration(PrefRegistrySimple* registry) {
 #if !BUILDFLAG(IS_ANDROID)
   registry->RegisterBooleanPref(kLegacyHoverCardImagesEnabled, false);
 #endif  // !BUILDFLAG(IS_ANDROID)
+
+  // Deprecated 07/2023.
+  registry->RegisterIntegerPref(kShutdownNumProcesses, 0);
+  registry->RegisterIntegerPref(kShutdownNumProcessesSlow, 0);
+  registry->RegisterIntegerPref(kShutdownType, 0);
 }
 
 // Register prefs used only for migration (clearing or moving to a new key).
@@ -1356,7 +1382,14 @@ void RegisterProfilePrefsForMigration(
   registry->RegisterIntegerPref(kPowerMetricsIdleSuspendCount, 0);
   registry->RegisterIntegerPref(kPowerMetricsLidClosedSuspendCount, 0);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+// Deprecated 07/2023.
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  registry->RegisterIntegerPref(kHatsPrivacyHubBaselineIsSelected, false);
+  registry->RegisterIntegerPref(kHatsPrivacyHubBaselineCycleEndTs, 0);
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 }
+
 }  // namespace
 
 void RegisterLocalState(PrefRegistrySimple* registry) {
@@ -1370,9 +1403,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   browser_shutdown::RegisterPrefs(registry);
   BrowserProcessImpl::RegisterPrefs(registry);
   ChromeContentBrowserClient::RegisterLocalStatePrefs(registry);
-#if !BUILDFLAG(IS_CHROMEOS_ASH)
   chrome_labs_prefs::RegisterLocalStatePrefs(registry);
-#endif
   ChromeMetricsServiceClient::RegisterPrefs(registry);
   chrome::enterprise_util::RegisterLocalStatePrefs(registry);
   component_updater::RegisterPrefs(registry);
@@ -1394,6 +1425,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   optimization_guide::prefs::RegisterLocalStatePrefs(registry);
   password_manager::PasswordManager::RegisterLocalPrefs(registry);
   policy::BrowserPolicyConnector::RegisterPrefs(registry);
+  policy::LocalTestPolicyProvider::RegisterLocalStatePrefs(registry);
   policy::ManagementService::RegisterLocalStatePrefs(registry);
   policy::PolicyStatisticsCollector::RegisterPrefs(registry);
   PrefProxyConfigTrackerImpl::RegisterPrefs(registry);
@@ -1535,6 +1567,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   // TODO(b/265923216): Replace with EnrollmentStateFetcher::RegisterPrefs.
   policy::AutoEnrollmentClientImpl::RegisterPrefs(registry);
   policy::BrowserPolicyConnectorAsh::RegisterPrefs(registry);
+  policy::CrdAdminSessionController::RegisterLocalStatePrefs(registry);
   policy::DeviceCloudPolicyManagerAsh::RegisterPrefs(registry);
   policy::DeviceStatusCollector::RegisterPrefs(registry);
   policy::DeviceWallpaperImageExternalDataHandler::RegisterPrefs(registry);
@@ -1656,7 +1689,6 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   permissions::RegisterProfilePrefs(registry);
   PermissionBubbleMediaAccessHandler::RegisterProfilePrefs(registry);
   PlatformNotificationServiceImpl::RegisterProfilePrefs(registry);
-  policy::LocalTestPolicyProvider::RegisterProfilePrefs(registry);
   policy::URLBlocklistManager::RegisterProfilePrefs(registry);
   PolicyUI::RegisterProfilePrefs(registry);
   PrefProxyConfigTrackerImpl::RegisterProfilePrefs(registry);
@@ -1799,6 +1831,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   signin::RegisterProfilePrefs(registry);
   StartupBrowserCreator::RegisterProfilePrefs(registry);
   tab_search_prefs::RegisterProfilePrefs(registry);
+  ThemeColorPickerHandler::RegisterProfilePrefs(registry);
   RecipesService::RegisterProfilePrefs(registry);
   UnifiedAutoplayConfig::RegisterProfilePrefs(registry);
   CartService::RegisterProfilePrefs(registry);
@@ -1823,6 +1856,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   registry->RegisterListPref(
       chromeos::prefs::kKeepFullscreenWithoutNotificationUrlAllowList,
       PrefRegistry::PUBLIC);
+  ::reporting::RegisterProfilePrefs(registry);
 #if BUILDFLAG(USE_CUPS)
   extensions::PrintingAPIHandler::RegisterProfilePrefs(registry);
 #endif  // BUILDFLAG(USE_CUPS)
@@ -1996,10 +2030,12 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   registry->RegisterTimePref(prefs::kDIPSTimerLastUpdate, base::Time());
 
 #if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
-  registry->RegisterBooleanPref(
-      prefs::kAccessibilityPdfOcrAlwaysActive, false,
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterBooleanPref(prefs::kAccessibilityPdfOcrAlwaysActive, false);
 #endif  // BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  registry->RegisterBooleanPref(kClearUserDataDir1Pref, false);
+#endif
 }
 
 void RegisterUserProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
@@ -2170,6 +2206,11 @@ void MigrateObsoleteLocalStatePrefs(PrefService* local_state) {
 #if !BUILDFLAG(IS_ANDROID)
   local_state->ClearPref(kLegacyHoverCardImagesEnabled);
 #endif
+
+  // Added 07/2023.
+  local_state->ClearPref(kShutdownNumProcesses);
+  local_state->ClearPref(kShutdownNumProcessesSlow);
+  local_state->ClearPref(kShutdownType);
 
   // Please don't delete the following line. It is used by PRESUBMIT.py.
   // END_MIGRATE_OBSOLETE_LOCAL_STATE_PREFS
@@ -2518,6 +2559,24 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
   profile_prefs->ClearPref(kPowerMetricsLidClosedSuspendCount);
 #endif
   syncer::SyncPrefs::MigrateAutofillWalletImportEnabledPref(profile_prefs);
+
+// Added 07/2023.
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  profile_prefs->ClearPref(kHatsPrivacyHubBaselineIsSelected);
+  profile_prefs->ClearPref(kHatsPrivacyHubBaselineCycleEndTs);
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+// Added 07/2023.
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  profile_prefs->ClearPref(kClearUserDataDir1Pref);
+#endif
+
+  // Added 08/2023.
+  invalidation::InvalidatorRegistrarWithMemory::ClearDeprecatedPrefs(
+      profile_prefs);
+  invalidation::PerUserTopicSubscriptionManager::ClearDeprecatedPrefs(
+      profile_prefs);
+  invalidation::FCMInvalidationService::ClearDeprecatedPrefs(profile_prefs);
 
   // Please don't delete the following line. It is used by PRESUBMIT.py.
   // END_MIGRATE_OBSOLETE_PROFILE_PREFS

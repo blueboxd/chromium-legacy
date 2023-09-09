@@ -3,9 +3,11 @@
 // found in the LICENSE file.
 
 #include "base/run_loop.h"
+#include "base/test/gtest_tags.h"
 #include "base/test/test_switches.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/test/base/chromeos/crosier/chromeos_integration_test_mixin.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/test/browser_test.h"
 #include "net/dns/mock_host_resolver.h"
@@ -61,7 +63,7 @@
 // 1. See http://go/crosint-run for instructions.
 // 2. You can optionally add --test-launcher-interactive to play with the
 //    browser after the test finishes.
-class DemoIntegrationTest : public InProcessBrowserTest {
+class DemoIntegrationTest : public MixinBasedInProcessBrowserTest {
  public:
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   void SetUpCommandLine(base::CommandLine* cmd_line) override {
@@ -99,9 +101,15 @@ class DemoIntegrationTest : public InProcessBrowserTest {
     InProcessBrowserTest::TearDownOnMainThread();
   }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+ private:
+  ChromeOSIntegrationTestMixin chromeos_integration_test_mixin_{&mixin_host_};
 };
 
 IN_PROC_BROWSER_TEST_F(DemoIntegrationTest, NewTab) {
+  base::AddFeatureIdTagToTestResult(
+      "screenplay-351d628b-e4a4-41c6-91e4-a4036ad12360");
+
   GURL version_url{"chrome://version"};
 
   ASSERT_TRUE(AddTabAtIndex(0, version_url, ui::PAGE_TRANSITION_TYPED));

@@ -25,6 +25,7 @@
 #include "chrome/browser/web_applications/test/web_app_test_utils.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/browser/content_settings_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -44,6 +45,7 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/device/public/cpp/test/fake_usb_device_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -105,9 +107,9 @@ class SiteSettingsHelperTest : public testing::Test {
     service->RecordNotificationDisplayed(url, total_count);
   }
 
-  base::Time GetReferenceTime() {
+  static base::Time GetReferenceTime() {
     base::Time time;
-    EXPECT_TRUE(base::Time::FromString("Sat, 1 Sep 2018 11:00:00 GMT", &time));
+    EXPECT_TRUE(base::Time::FromString("Sat, 1 Sep 2018 11:00:00", &time));
     return time;
   }
 
@@ -601,6 +603,66 @@ TEST_F(SiteSettingsHelperTest, CookieExceptions) {
   }
 }
 
+TEST_F(SiteSettingsHelperTest, GetExpirationDescription) {
+  base::subtle::ScopedTimeClockOverrides time_override(
+      &SiteSettingsHelperTest::GetReferenceTime,
+      /*time_ticks_override=*/nullptr, /*thread_ticks_override=*/nullptr);
+
+  auto description =
+      GetExpirationDescription(GetReferenceTime() + base::Days(0));
+
+  EXPECT_EQ(description, l10n_util::GetPluralStringFUTF16(
+                             IDS_SETTINGS_EXPIRES_AFTER_TIME_LABEL, 0));
+}
+
+TEST_F(SiteSettingsHelperTest, GetExpirationDescription_Tomorrow) {
+  base::subtle::ScopedTimeClockOverrides time_override(
+      &SiteSettingsHelperTest::GetReferenceTime,
+      /*time_ticks_override=*/nullptr, /*thread_ticks_override=*/nullptr);
+
+  auto description =
+      GetExpirationDescription(GetReferenceTime() + base::Days(1));
+
+  EXPECT_EQ(description, l10n_util::GetPluralStringFUTF16(
+                             IDS_SETTINGS_EXPIRES_AFTER_TIME_LABEL, 1));
+}
+
+TEST_F(SiteSettingsHelperTest,
+       GetExpirationDescription_Tomorrow_LessThan24_AfterMidnight) {
+  base::subtle::ScopedTimeClockOverrides time_override(
+      &SiteSettingsHelperTest::GetReferenceTime,
+      /*time_ticks_override=*/nullptr, /*thread_ticks_override=*/nullptr);
+
+  auto description =
+      GetExpirationDescription(GetReferenceTime() + base::Hours(14));
+
+  EXPECT_EQ(description, l10n_util::GetPluralStringFUTF16(
+                             IDS_SETTINGS_EXPIRES_AFTER_TIME_LABEL, 1));
+}
+
+TEST_F(SiteSettingsHelperTest,
+       GetExpirationDescription_Tomorrow_LessThan24_BeforeMidnight) {
+  base::subtle::ScopedTimeClockOverrides time_override(
+      &SiteSettingsHelperTest::GetReferenceTime,
+      /*time_ticks_override=*/nullptr, /*thread_ticks_override=*/nullptr);
+
+  auto description =
+      GetExpirationDescription(GetReferenceTime() + base::Hours(12));
+  EXPECT_EQ(description, l10n_util::GetPluralStringFUTF16(
+                             IDS_SETTINGS_EXPIRES_AFTER_TIME_LABEL, 0));
+}
+
+TEST_F(SiteSettingsHelperTest, GetExpirationDescription_Expired) {
+  base::subtle::ScopedTimeClockOverrides time_override(
+      &SiteSettingsHelperTest::GetReferenceTime,
+      /*time_ticks_override=*/nullptr, /*thread_ticks_override=*/nullptr);
+
+  auto description =
+      GetExpirationDescription(GetReferenceTime() - base::Days(4));
+  EXPECT_EQ(description, l10n_util::GetPluralStringFUTF16(
+                             IDS_SETTINGS_EXPIRES_AFTER_TIME_LABEL, 0));
+}
+
 namespace {
 
 void ExpectValidChooserExceptionObject(
@@ -1081,7 +1143,9 @@ TEST_F(PersistentPermissionsSiteSettingsHelperTest,
   // Initialize and populate the `grants` object with permissions.
   ChromeFileSystemAccessPermissionContext* context =
       FileSystemAccessPermissionContextFactory::GetForProfile(&profile);
-  auto empty_grants = context->GetPermissionGrants(kTestOrigin);
+  context->SetOriginHasExtendedPermissionForTesting();
+  auto empty_grants =
+      context->ConvertObjectsToGrants(context->GetGrantedObjects(kTestOrigin));
   EXPECT_TRUE(empty_grants.file_write_grants.empty());
 
   auto file_write_grant = context->GetWritePermissionGrant(
@@ -1092,7 +1156,8 @@ TEST_F(PersistentPermissionsSiteSettingsHelperTest,
       kTestOrigin, kTestPath2,
       ChromeFileSystemAccessPermissionContext::HandleType::kFile,
       ChromeFileSystemAccessPermissionContext::UserAction::kSave);
-  auto populated_grants = context->GetPermissionGrants(kTestOrigin);
+  auto populated_grants =
+      context->ConvertObjectsToGrants(context->GetGrantedObjects(kTestOrigin));
   EXPECT_FALSE(populated_grants.file_write_grants.empty());
 
   base::Value::List exceptions;

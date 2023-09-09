@@ -124,7 +124,10 @@ enum class NetworkSandboxState {
   kEnabledByPolicy = 3,
   // Disabled because of a previous failed launch attempt.
   kDisabledBecauseOfFailedLaunch = 4,
-  kMaxValue = kDisabledBecauseOfFailedLaunch
+  // Disabled because the user (might) want kerberos, which is incompatible with
+  // the Linux/Cros sandbox.
+  kDisabledBecauseOfKerberos = 5,
+  kMaxValue = kDisabledBecauseOfKerberos
 };
 
 // The global instance of the SystemNetworkContextManager.
@@ -133,6 +136,12 @@ SystemNetworkContextManager* g_system_network_context_manager = nullptr;
 // Whether or not any instance of the system network context manager has
 // received a failed launch for a sandboxed network service.
 bool g_previously_failed_to_launch_sandboxed_service = false;
+
+#if BUILDFLAG(IS_CHROMEOS)
+// Whether kerberos library loading will work in the network service due to the
+// sandbox.
+bool g_network_service_will_allow_gssapi_library_load = false;
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
 // Constructs HttpAuthStaticParams based on |local_state|.
 network::mojom::HttpAuthStaticParamsPtr CreateHttpAuthStaticParams(
@@ -198,28 +207,71 @@ network::mojom::HttpAuthDynamicParamsPtr CreateHttpAuthDynamicParams(
   return auth_dynamic_params;
 }
 
+void OnNewHttpAuthDynamicParams(
+    network::mojom::HttpAuthDynamicParamsPtr& params) {
+#if BUILDFLAG(IS_CHROMEOS)
+  // The kerberos library is incompatible with the network service sandbox, so
+  // if library loading is now enabled, the network service needs to be
+  // restarted. It will be restarted unsandboxed because is
+  // `g_network_service_will_allow_gssapi_library_load` will be set.
+  if (params->allow_gssapi_library_load &&
+      !g_network_service_will_allow_gssapi_library_load) {
+    g_network_service_will_allow_gssapi_library_load = true;
+    // The network service, if sandboxed, will still not allow gssapi library
+    // loading until it is shut down. On restart the network service will get
+    // the correct value.
+    params->allow_gssapi_library_load = false;
+    // Post a shutdown task because the current task probably holds a raw
+    // pointer to the remote.
+    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
+        FROM_HERE, base::BindOnce(&content::RestartNetworkService));
+  }
+#endif  // BUILDFLAG(IS_CHROMEOS)
+}
+
 void OnAuthPrefsChanged(PrefService* local_state,
                         const std::string& pref_name) {
-  content::GetNetworkService()->ConfigureHttpAuthPrefs(
-      CreateHttpAuthDynamicParams(local_state));
+  auto params = CreateHttpAuthDynamicParams(local_state);
+  OnNewHttpAuthDynamicParams(params);
+  content::GetNetworkService()->ConfigureHttpAuthPrefs(std::move(params));
 }
 
 NetworkSandboxState IsNetworkSandboxEnabledInternal() {
   // If previously an attempt to launch the sandboxed process failed, then
   // launch unsandboxed.
-  if (g_previously_failed_to_launch_sandboxed_service)
+  if (g_previously_failed_to_launch_sandboxed_service) {
     return NetworkSandboxState::kDisabledBecauseOfFailedLaunch;
-#if BUILDFLAG(IS_WIN)
-  if (!sandbox::features::IsAppContainerSandboxSupported())
-    return NetworkSandboxState::kDisabledByPlatform;
+  }
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_LINUX)
   auto* local_state = g_browser_process->local_state();
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS)
+  // The network service sandbox and the kerberos library are incompatible.
+  // If kerberos is enabled by policy, disable the network service sandbox.
+  if (g_network_service_will_allow_gssapi_library_load ||
+      (local_state && local_state->HasPrefPath(prefs::kKerberosEnabled) &&
+       local_state->GetBoolean(prefs::kKerberosEnabled))) {
+    g_network_service_will_allow_gssapi_library_load = true;
+    return NetworkSandboxState::kDisabledBecauseOfKerberos;
+  }
+#endif  // BUILDFLAG(IS_CHROMEOS)
+
+#if BUILDFLAG(IS_WIN)
+  if (!sandbox::features::IsAppContainerSandboxSupported()) {
+    return NetworkSandboxState::kDisabledByPlatform;
+  }
+#endif  // BUILDFLAG(IS_WIN)
+
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX)
   if (local_state &&
       local_state->HasPrefPath(prefs::kNetworkServiceSandboxEnabled)) {
     return local_state->GetBoolean(prefs::kNetworkServiceSandboxEnabled)
                ? NetworkSandboxState::kEnabledByPolicy
                : NetworkSandboxState::kDisabledByPolicy;
   }
-#endif  // BUILDFLAG(IS_WIN)
+#endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX)
+
   // If no policy is specified, then delegate to global sandbox configuration.
   return sandbox::policy::features::IsNetworkSandboxEnabled()
              ? NetworkSandboxState::kEnabledByPlatform
@@ -576,9 +628,9 @@ void SystemNetworkContextManager::RegisterPrefs(PrefRegistrySimple* registry) {
 
   registry->RegisterListPref(prefs::kExplicitlyAllowedNetworkPorts);
 
-#if BUILDFLAG(IS_WIN)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX)
   registry->RegisterBooleanPref(prefs::kNetworkServiceSandboxEnabled, true);
-#endif  // BUILDFLAG(IS_WIN)
+#endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX)
 }
 
 // static
@@ -621,8 +673,9 @@ void SystemNetworkContextManager::OnNetworkServiceCreated(
   }
 
   network_service->SetUpHttpAuth(CreateHttpAuthStaticParams(local_state_));
-  network_service->ConfigureHttpAuthPrefs(
-      CreateHttpAuthDynamicParams(local_state_));
+  auto http_auth_dynamic_params = CreateHttpAuthDynamicParams(local_state_);
+  OnNewHttpAuthDynamicParams(http_auth_dynamic_params);
+  network_service->ConfigureHttpAuthPrefs(std::move(http_auth_dynamic_params));
 
   // Configure the Certificate Transparency logs.
   if (IsCertificateTransparencyEnabled()) {
@@ -673,7 +726,7 @@ void SystemNetworkContextManager::OnNetworkServiceCreated(
     network_service->SetMaxConnectionsPerProxy(max_connections_per_proxy);
 
   network_service_network_context_.reset();
-  network_service->CreateNetworkContext(
+  content::CreateNetworkContextInNetworkService(
       network_service_network_context_.BindNewPipeAndPassReceiver(),
       CreateNetworkContextParams());
 
@@ -734,11 +787,6 @@ void SystemNetworkContextManager::ConfigureDefaultNetworkContextParams(
 
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
-
-  // TODO(crbug.com/1448657) Chrome no longer supports versions of QUIC which
-  // send the quic_user_agent_id. We should remove quic_user_agent_id from
-  // Chrome completely.
-  network_context_params->quic_user_agent_id = "";
 
   // TODO(eroman): Figure out why this doesn't work in single-process mode,
   // or if it does work, now.
@@ -812,6 +860,8 @@ bool SystemNetworkContextManager::IsNetworkSandboxEnabled() {
       "Chrome.SystemNetworkContextManager.NetworkSandboxState", state);
 
   switch (state) {
+    case NetworkSandboxState::kDisabledBecauseOfKerberos:
+      return false;
     case NetworkSandboxState::kDisabledByPlatform:
       return false;
     case NetworkSandboxState::kEnabledByPlatform:
@@ -865,13 +915,8 @@ bool SystemNetworkContextManager::IsCertificateTransparencyEnabled() {
 //   - by default for Chrome-branded builds
 //   - on an opt-in basis for other builds and embedders, controlled with the
 //     kCertificateTransparencyAskBeforeEnabling flag
-#if BUILDFLAG(IS_ANDROID)
-  return base::FeatureList::IsEnabled(
-      features::kCertificateTransparencyAndroid);
-#else
   return base::FeatureList::IsEnabled(
       features::kCertificateTransparencyAskBeforeEnabling);
-#endif  // BUILDFLAG(IS_ANDROID)
 #else
   return false;
 #endif  // defined(OFFICIAL_BUILD)

@@ -6,10 +6,13 @@
 
 #import "base/metrics/histogram_functions.h"
 #import "components/infobars/core/infobar.h"
+#import "components/prefs/pref_service.h"
 #import "components/sync_sessions/session_sync_service.h"
 #import "ios/chrome/browser/infobars/infobar_ios.h"
 #import "ios/chrome/browser/infobars/infobar_manager_impl.h"
+#import "ios/chrome/browser/shared/model/application_context/application_context.h"
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/shared/model/prefs/pref_names.h"
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/sync/session_sync_service_factory.h"
 #import "ios/chrome/browser/synced_sessions/distant_session.h"
@@ -18,9 +21,15 @@
 #import "ios/chrome/browser/tabs/tab_pickup/tab_pickup_infobar_delegate.h"
 #import "ios/web/public/web_state.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
+namespace {
+
+// The minimum delay between the presentation of two tab pickup banners.
+const base::TimeDelta kDelayBetweenTwoBanners = base::Hours(2);
+
+// The maximum length of the last distant tab URL.
+size_t kMaxLengthLastDistantTabURL = 2 * 1024;
+
+}  // namespace
 
 BROWSER_USER_DATA_KEY_IMPL(TabPickupBrowserAgent)
 
@@ -109,7 +118,7 @@ void TabPickupBrowserAgent::OnInfoBarRemoved(infobars::InfoBar* infobar,
 void TabPickupBrowserAgent::ForeignSessionsChanged() {
   RecordTransitionTime();
 
-  if (!IsTabPickupEnabled()) {
+  if (!CanShowTabPickupBanner()) {
     return;
   }
 
@@ -139,10 +148,15 @@ void TabPickupBrowserAgent::ForeignSessionsChanged() {
 }
 
 void TabPickupBrowserAgent::SetupInfoBarDelegate() {
-  DCHECK(IsTabPickupEnabled());
-  infobar_in_progress_ = true;
+  CHECK(IsTabPickupEnabled());
+  CHECK(!IsTabPickupDisabledByUser());
 
   delegate_ = std::make_unique<TabPickupInfobarDelegate>(browser_, session_);
+  if (!UpdateNewDistantTab(delegate_->GetTabURL())) {
+    return;
+  }
+
+  infobar_in_progress_ = true;
   delegate_->FetchFavIconImage(^{
     // Once the favicon image is fetched, display the infobar.
     ShowInfoBar();
@@ -172,6 +186,43 @@ void TabPickupBrowserAgent::ShowInfoBar() {
                                          /*replace_existing=*/true);
   infobar_web_state_ = active_web_state_;
   infobar_displayed = true;
+  GetApplicationContext()->GetLocalState()->SetTime(
+      prefs::kTabPickupLastDisplayedTime, base::Time::Now());
+}
+
+bool TabPickupBrowserAgent::CanShowTabPickupBanner() {
+  if (!IsTabPickupEnabled() || IsTabPickupDisabledByUser()) {
+    return false;
+  }
+
+  if (!IsTabPickupMinimumDelayEnabled()) {
+    return true;
+  }
+
+  const base::TimeDelta time_since_last_display =
+      base::Time::Now() - GetApplicationContext()->GetLocalState()->GetTime(
+                              prefs::kTabPickupLastDisplayedTime);
+  return kDelayBetweenTwoBanners < time_since_last_display;
+}
+
+bool TabPickupBrowserAgent::UpdateNewDistantTab(GURL distant_tab_url) {
+  PrefService* prefs = GetApplicationContext()->GetLocalState();
+
+  std::string distant_tab_without_ref =
+      GURL(distant_tab_url).GetWithoutRef().spec();
+  if (distant_tab_without_ref.length() > kMaxLengthLastDistantTabURL) {
+    distant_tab_without_ref =
+        distant_tab_without_ref.substr(0, kMaxLengthLastDistantTabURL);
+  }
+  std::string previous_tab_with_no_ref =
+      prefs->GetString(prefs::kTabPickupLastDisplayedURL);
+
+  if (distant_tab_without_ref.compare(previous_tab_with_no_ref) == 0) {
+    return false;
+  }
+
+  prefs->SetString(prefs::kTabPickupLastDisplayedURL, distant_tab_without_ref);
+  return true;
 }
 
 void TabPickupBrowserAgent::RecordTransitionTime() {

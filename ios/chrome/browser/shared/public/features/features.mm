@@ -6,10 +6,6 @@
 
 #import "ui/base/device_form_factor.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 BASE_FEATURE(kDefaultBrowserBlueDotPromo,
              "DefaultBrowserBlueDotPromo",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -139,19 +135,19 @@ BASE_FEATURE(kIOSNewOmniboxImplementation,
 
 BASE_FEATURE(kIOSLensUseDirectUpload,
              "IOSLensUseDirectUpload",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kEnableLensInHomeScreenWidget,
              "EnableLensInHomeScreenWidget",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kEnableLensInKeyboard,
              "EnableLensInKeyboard",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kEnableLensInNTP,
              "EnableLensInNTP",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kEnableLensContextMenuAltText,
              "EnableLensContextMenuAltText",
@@ -184,18 +180,6 @@ BASE_FEATURE(kEnableShortenedPasswordAutoFillInstruction,
 BASE_FEATURE(kEnableExpKitAppleCalendar,
              "EnableExpKitAppleCalendar",
              base::FEATURE_ENABLED_BY_DEFAULT);
-
-BASE_FEATURE(kTabGridRecencySort,
-             "TabGridRecencySort",
-             base::FEATURE_DISABLED_BY_DEFAULT);
-
-bool IsTabGridSortedByRecency() {
-  if (ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET) {
-    return false;
-  }
-
-  return base::FeatureList::IsEnabled(kTabGridRecencySort);
-}
 
 BASE_FEATURE(kTabGridNewTransitions,
              "TabGridNewTransitions",
@@ -240,10 +224,20 @@ bool IsConsistencyNewAccountInterfaceEnabled() {
 
 BASE_FEATURE(kNewNTPOmniboxLayout,
              "kNewNTPOmniboxLayout",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kBottomOmniboxSteadyState,
              "BottomOmniboxSteadyState",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
+const char kBottomOmniboxDefaultSettingParam[] =
+    "BottomOmniboxDefaultSettingParam";
+const char kBottomOmniboxDefaultSettingParamTop[] = "Top";
+const char kBottomOmniboxDefaultSettingParamBottom[] = "Bottom";
+const char kBottomOmniboxDefaultSettingParamSafariSwitcher[] =
+    "BottomSafariSwitcher";
+BASE_FEATURE(kBottomOmniboxDefaultSetting,
+             "BottomOmniboxDefaultSetting",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 bool IsBottomOmniboxSteadyStateEnabled() {
@@ -275,7 +269,7 @@ BASE_FEATURE(kThemeColorInToolbar,
 
 BASE_FEATURE(kTabGridRefactoring,
              "TabGridRefactoring",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 bool IsSafetyCheckMagicStackEnabled() {
   return base::FeatureList::IsEnabled(kSafetyCheckMagicStack);

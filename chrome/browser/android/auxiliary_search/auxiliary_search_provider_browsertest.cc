@@ -1,0 +1,163 @@
+// Copyright 2023 The Chromium Authors
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "chrome/browser/android/auxiliary_search/auxiliary_search_provider.h"
+
+#include "base/android/jni_android.h"
+#include "base/run_loop.h"
+#include "chrome/browser/android/persisted_tab_data/persisted_tab_data_android.h"
+#include "chrome/browser/android/persisted_tab_data/sensitivity_persisted_tab_data_android.h"
+#include "chrome/browser/android/tab_android.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/android/tab_model/tab_model.h"
+#include "chrome/browser/ui/android/tab_model/tab_model_list.h"
+#include "chrome/test/base/android/android_browser_test.h"
+#include "chrome/test/base/chrome_test_utils.h"
+#include "content/public/test/browser_test.h"
+#include "net/dns/mock_host_resolver.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
+#include "url/gurl.h"
+#include "url/url_constants.h"
+
+class AuxiliarySearchProviderBrowserTest : public AndroidBrowserTest {
+ public:
+  AuxiliarySearchProviderBrowserTest() = default;
+
+  void SetUpOnMainThread() override {
+    host_resolver()->AddRule("*", "127.0.0.1");
+    ASSERT_TRUE(embedded_test_server()->Start());
+    ASSERT_TRUE(content::NavigateToURL(
+        web_contents(),
+        embedded_test_server()->GetURL("/android/google.html")));
+    auxiliary_search_provider_ =
+        std::make_unique<AuxiliarySearchProvider>(profile());
+    PersistedTabDataAndroid::OnDeferredStartup();
+  }
+
+  content::WebContents* web_contents() {
+    return chrome_test_utils::GetActiveWebContents(this);
+  }
+
+  AuxiliarySearchProvider* provider() {
+    return auxiliary_search_provider_.get();
+  }
+
+  Profile* profile() {
+    auto* web_contents = chrome_test_utils::GetActiveWebContents(this);
+    return Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  }
+
+  std::vector<TabAndroid*> CreateOneTab(bool is_sensitive) {
+    std::vector<TabAndroid*> tab_vec;
+    TabAndroid* tab_android = TabAndroid::FromWebContents(web_contents());
+    tab_vec.push_back(tab_android);
+    std::unique_ptr<SensitivityPersistedTabDataAndroid> sptda =
+        std::make_unique<SensitivityPersistedTabDataAndroid>(tab_android);
+    sptda->set_is_sensitive(is_sensitive);
+    tab_android->SetUserData(SensitivityPersistedTabDataAndroid::UserDataKey(),
+                             std::move(sptda));
+    return tab_vec;
+  }
+
+ private:
+  std::unique_ptr<AuxiliarySearchProvider> auxiliary_search_provider_;
+};
+
+IN_PROC_BROWSER_TEST_F(AuxiliarySearchProviderBrowserTest, QuerySensitiveTab) {
+  base::RunLoop run_loop;
+  std::vector<TabAndroid*> tab_vec = CreateOneTab(true);
+
+  provider()->GetNonSensitiveTabsInternal(
+      tab_vec,
+      base::BindOnce(
+          [](base::OnceClosure done,
+             std::unique_ptr<std::vector<TabAndroid*>> non_Sensitive_tab) {
+            EXPECT_EQ(0u, non_Sensitive_tab->size());
+            std::move(done).Run();
+          },
+          run_loop.QuitClosure()));
+  run_loop.Run();
+}
+
+IN_PROC_BROWSER_TEST_F(AuxiliarySearchProviderBrowserTest,
+                       QueryNonSensitiveTab) {
+  base::RunLoop run_loop;
+  std::vector<TabAndroid*> tab_vec = CreateOneTab(false);
+
+  TabModel* tab_model = TabModelList::GetTabModelForWebContents(web_contents());
+  TabAndroid* second_tab = TabAndroid::FromWebContents(web_contents());
+  std::unique_ptr<content::WebContents> contents = content::WebContents::Create(
+      content::WebContents::CreateParams(profile()));
+  content::WebContents* second_web_contents = contents.release();
+  tab_model->CreateTab(second_tab, second_web_contents);
+  std::unique_ptr<SensitivityPersistedTabDataAndroid> sptda2 =
+      std::make_unique<SensitivityPersistedTabDataAndroid>(second_tab);
+  sptda2->set_is_sensitive(false);
+  tab_vec.push_back(second_tab);
+
+  provider()->GetNonSensitiveTabsInternal(
+      tab_vec,
+      base::BindOnce(
+          [](base::OnceClosure done,
+             std::unique_ptr<std::vector<TabAndroid*>> non_sensitive_tab) {
+            EXPECT_EQ(2u, non_sensitive_tab->size());
+            std::move(done).Run();
+          },
+          run_loop.QuitClosure()));
+  run_loop.Run();
+}
+
+IN_PROC_BROWSER_TEST_F(AuxiliarySearchProviderBrowserTest, QueryEmptyTabList) {
+  base::RunLoop run_loop;
+
+  provider()->GetNonSensitiveTabsInternal(
+      std::vector<TabAndroid*>(),
+      base::BindOnce(
+          [](base::OnceClosure done,
+             std::unique_ptr<std::vector<TabAndroid*>> non_sensitive_tab) {
+            EXPECT_EQ(0u, non_sensitive_tab->size());
+            std::move(done).Run();
+          },
+          run_loop.QuitClosure()));
+  run_loop.Run();
+}
+
+IN_PROC_BROWSER_TEST_F(AuxiliarySearchProviderBrowserTest, NativeTabTest) {
+  base::RunLoop run_loop;
+  ASSERT_TRUE(
+      content::NavigateToURL(web_contents(), GURL(url::kAboutBlankURL)));
+  std::vector<TabAndroid*> tab_vec = CreateOneTab(false);
+
+  provider()->GetNonSensitiveTabsInternal(
+      tab_vec,
+      base::BindOnce(
+          [](base::OnceClosure done,
+             std::unique_ptr<std::vector<TabAndroid*>> non_Sensitive_tab) {
+            EXPECT_EQ(0u, non_Sensitive_tab->size());
+            std::move(done).Run();
+          },
+          run_loop.QuitClosure()));
+  run_loop.Run();
+}
+
+IN_PROC_BROWSER_TEST_F(AuxiliarySearchProviderBrowserTest, FilterTabsTest) {
+  struct {
+    const GURL url;
+    bool should_be_filtered;
+  } test_cases[]{
+      {GURL(url::kAboutBlankURL), true},
+      {GURL("chrome://version"), true},
+      {GURL("chrome-native://newtab"), true},
+      {embedded_test_server()->GetURL("/android/google.html"), false},
+  };
+
+  for (const auto& test_case : test_cases) {
+    ASSERT_TRUE(content::NavigateToURL(web_contents(), test_case.url));
+    std::vector<TabAndroid*> tab_vec = CreateOneTab(false);
+
+    std::vector<TabAndroid*> filtered_tabs =
+        AuxiliarySearchProvider::FilterTabsByScheme(tab_vec);
+    EXPECT_EQ(test_case.should_be_filtered ? 0u : 1u, filtered_tabs.size());
+  }
+}

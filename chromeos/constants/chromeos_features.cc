@@ -22,7 +22,7 @@ BASE_FEATURE(kBluetoothPhoneFilter,
 // related to clipboard history.
 BASE_FEATURE(kClipboardHistoryRefresh,
              "ClipboardHistoryRefresh",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables cloud game features. A separate flag "LauncherGameSearch" controls
 // launcher-only cloud gaming features, since they can also be enabled on
@@ -36,9 +36,6 @@ BASE_FEATURE(kCloudGamingDevice,
 BASE_FEATURE(kCrosComponents,
              "CrosComponents",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-// Enables Demo Mode System Web App migration
-BASE_FEATURE(kDemoModeSWA, "DemoModeSWA", base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Disable idle sockets closing on memory pressure for NetworkContexts that
 // belong to Profiles. It only applies to Profiles because the goal is to
@@ -77,11 +74,11 @@ BASE_FEATURE(kIWAForTelemetryExtensionAPI,
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 // Enables Jelly features. go/jelly-flags
-BASE_FEATURE(kJelly, "Jelly", base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kJelly, "Jelly", base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Enables Jellyroll features. Jellyroll is a feature flag for CrOSNext, which
 // controls all system UI updates and new system components. go/jelly-flags
-BASE_FEATURE(kJellyroll, "Jellyroll", base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kJellyroll, "Jellyroll", base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Controls whether to enable quick answers V2 settings sub-toggles.
 BASE_FEATURE(kQuickAnswersV2SettingsSubToggle,
@@ -125,10 +122,6 @@ bool IsCrosComponentsEnabled() {
   return base::FeatureList::IsEnabled(kCrosComponents) && IsJellyEnabled();
 }
 
-bool IsDemoModeSWAEnabled() {
-  return base::FeatureList::IsEnabled(kDemoModeSWA);
-}
-
 bool IsIWAForTelemetryExtensionAPIEnabled() {
   return base::FeatureList::IsEnabled(kIWAForTelemetryExtensionAPI);
 }
@@ -138,9 +131,9 @@ bool IsJellyEnabled() {
 }
 
 bool IsJellyrollEnabled() {
-  // Force Jellyroll features on if Jelly is enabled since they need to be
-  // tested together. b/270742469
-  return IsJellyEnabled() || base::FeatureList::IsEnabled(kJellyroll);
+  // Only enable Jellyroll if Jelly is also enabled as this is how tests expect
+  // this to behave.
+  return IsJellyEnabled() && base::FeatureList::IsEnabled(kJellyroll);
 }
 
 bool IsQuickAnswersV2TranslationDisabled() {

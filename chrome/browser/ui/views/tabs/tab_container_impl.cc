@@ -805,7 +805,7 @@ gfx::Size TabContainerImpl::GetMinimumSize() const {
     minimum_width = layout_helper_->CalculateMinimumWidth();
   }
 
-  return gfx::Size(minimum_width.value(), GetLayoutConstant(TAB_HEIGHT));
+  return gfx::Size(minimum_width.value(), GetLayoutConstant(TAB_STRIP_HEIGHT));
 }
 
 gfx::Size TabContainerImpl::CalculatePreferredSize() const {
@@ -821,7 +821,8 @@ gfx::Size TabContainerImpl::CalculatePreferredSize() const {
         layout_helper_->CalculatePreferredWidth());
   }
 
-  return gfx::Size(preferred_width.value(), GetLayoutConstant(TAB_HEIGHT));
+  return gfx::Size(preferred_width.value(),
+                   GetLayoutConstant(TAB_STRIP_HEIGHT));
 }
 
 views::View* TabContainerImpl::GetTooltipHandlerForPoint(
@@ -1115,7 +1116,7 @@ void TabContainerImpl::StartInsertTabAnimation(int model_index) {
   ExitTabClosingMode();
 
   gfx::Rect bounds = GetTabAtModelIndex(model_index)->bounds();
-  bounds.set_height(GetLayoutConstant(TAB_HEIGHT));
+  bounds.set_height(GetLayoutConstant(TAB_STRIP_HEIGHT));
 
   // Adjust the starting bounds of the new tab.
   const int tab_overlap = TabStyle::Get()->GetTabOverlap();
@@ -1421,8 +1422,9 @@ bool TabContainerImpl::IsPointInTab(
   if (tab->parent() != this)
     return false;
 
-  return tab->HitTestPoint(
-      View::ConvertPointToTarget(this, tab, point_in_tabstrip_coords));
+  const gfx::Point point_in_tab_coords =
+      View::ConvertPointToTarget(this, tab, point_in_tabstrip_coords);
+  return tab->HitTestPoint(point_in_tab_coords);
 }
 
 Tab* TabContainerImpl::FindTabHitByPoint(const gfx::Point& point) {

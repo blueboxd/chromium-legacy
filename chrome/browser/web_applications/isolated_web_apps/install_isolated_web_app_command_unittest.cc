@@ -22,10 +22,12 @@
 #include "base/strings/string_piece.h"
 #include "base/test/bind.h"
 #include "base/test/gmock_callback_support.h"
+#include "base/test/gmock_expected_support.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_future.h"
 #include "base/types/expected.h"
+#include "chrome/browser/ui/web_applications/test/isolated_web_app_builder.h"
 #include "chrome/browser/ui/web_applications/test/isolated_web_app_test_utils.h"
 #include "chrome/browser/web_applications/isolated_web_apps/error/unusable_swbn_file_error.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_install_command_helper.h"
@@ -71,6 +73,8 @@ namespace web_app {
 namespace {
 
 using ::base::BucketsAre;
+using ::base::test::ErrorIs;
+using ::base::test::HasValue;
 using ::base::test::IsNotNullCallback;
 using ::base::test::RunOnceCallback;
 using ::testing::_;
@@ -362,39 +366,6 @@ class InstallIsolatedWebAppCommandTest : public ::testing::Test {
   }();
 };
 
-MATCHER_P(IsExpectedValue, value_matcher, "") {
-  if (!arg.has_value()) {
-    *result_listener << "which is not engaged";
-    return false;
-  }
-
-  return ExplainMatchResult(value_matcher, arg.value(), result_listener);
-}
-
-MATCHER_P(IsUnexpectedValue, error_matcher, "") {
-  if (arg.has_value()) {
-    *result_listener << "which is not engaged";
-    return false;
-  }
-
-  return ExplainMatchResult(error_matcher, arg.error(), result_listener);
-}
-
-MATCHER_P(IsInstallationError, message_matcher, "") {
-  return ExplainMatchResult(
-      IsUnexpectedValue(ResultOf(
-          "error.message",
-          [](const InstallIsolatedWebAppCommandError& error) {
-            return error.message;
-          },
-          message_matcher)),
-      arg, result_listener);
-}
-
-MATCHER(IsInstallationError, "") {
-  return ExplainMatchResult(IsUnexpectedValue(_), arg, result_listener);
-}
-
 TEST_F(InstallIsolatedWebAppCommandTest, PropagateErrorWhenURLLoaderFails) {
   IsolatedWebAppUrlInfo url_info = CreateRandomIsolatedWebAppUrlInfo();
   auto url_loader = std::make_unique<TestWebAppUrlLoader>();
@@ -407,7 +378,8 @@ TEST_F(InstallIsolatedWebAppCommandTest, PropagateErrorWhenURLLoaderFails) {
                   .url_info = url_info,
                   .url_loader = std::move(url_loader),
               }),
-              IsInstallationError(HasSubstr("Error during URL loading: ")));
+              ErrorIs(Field(&InstallIsolatedWebAppCommandError::message,
+                            HasSubstr("Error during URL loading: "))));
 }
 
 TEST_F(InstallIsolatedWebAppCommandTest,
@@ -419,12 +391,14 @@ TEST_F(InstallIsolatedWebAppCommandTest,
           ".well-known/_generated_install_page.html"),
       WebAppUrlLoaderResult::kFailedWebContentsDestroyed);
 
-  EXPECT_THAT(ExecuteCommand(Parameters{
-                  .url_info = url_info,
-                  .url_loader = std::move(url_loader),
-              }),
-              IsInstallationError(HasSubstr(
-                  "Error during URL loading: FailedWebContentsDestroyed")));
+  EXPECT_THAT(
+      ExecuteCommand(Parameters{
+          .url_info = url_info,
+          .url_loader = std::move(url_loader),
+      }),
+      ErrorIs(Field(
+          &InstallIsolatedWebAppCommandError::message,
+          HasSubstr("Error during URL loading: FailedWebContentsDestroyed"))));
 }
 
 TEST_F(InstallIsolatedWebAppCommandTest,
@@ -443,9 +417,11 @@ TEST_F(InstallIsolatedWebAppCommandTest,
   scoped_feature_list.InitAndDisableFeature(features::kIsolatedWebAppDevMode);
 
   IsolatedWebAppUrlInfo url_info = CreateRandomIsolatedWebAppUrlInfo();
-  EXPECT_THAT(ExecuteCommand(Parameters{.url_info = url_info}),
-              IsInstallationError(
-                  HasSubstr("Isolated Web App Developer Mode is not enabled")));
+  EXPECT_THAT(
+      ExecuteCommand(Parameters{.url_info = url_info}),
+      ErrorIs(
+          Field(&InstallIsolatedWebAppCommandError::message,
+                HasSubstr("Isolated Web App Developer Mode is not enabled"))));
 }
 
 TEST_F(InstallIsolatedWebAppCommandTest,
@@ -490,17 +466,17 @@ TEST_F(InstallIsolatedWebAppCommandTest,
                       .url_info = url_info,
                   },
                   std::move(fake_data_retriever)),
-              IsInstallationError(HasSubstr("App is not installable")));
+              ErrorIs(Field(&InstallIsolatedWebAppCommandError::message,
+                            HasSubstr("App is not installable"))));
 }
 
 TEST_F(InstallIsolatedWebAppCommandTest, PendingUpdateInfoIsEmpty) {
   IsolatedWebAppUrlInfo url_info = CreateRandomIsolatedWebAppUrlInfo();
 
-  EXPECT_THAT(ExecuteCommand(Parameters{
+  EXPECT_TRUE(ExecuteCommand(Parameters{
                                  .url_info = url_info,
                              })
-                  .has_value(),
-              IsTrue());
+                  .has_value());
   EXPECT_THAT(web_app_registrar().GetAppById(url_info.app_id()),
               Pointee(Property(
                   &WebApp::isolation_data,
@@ -518,8 +494,9 @@ TEST_F(InstallIsolatedWebAppCommandTest,
       ExecuteCommand(Parameters{.url_info = url_info,
                                 .expected_version = base::Version("99.99.99")},
                      std::move(fake_data_retriever)),
-      IsInstallationError(
-          HasSubstr("does not match the version provided in the manifest")));
+      ErrorIs(Field(
+          &InstallIsolatedWebAppCommandError::message,
+          HasSubstr("does not match the version provided in the manifest"))));
 }
 
 TEST_F(InstallIsolatedWebAppCommandTest, CommandLocksOnAppId) {
@@ -653,7 +630,8 @@ TEST_F(InstallIsolatedWebAppCommandManifestTest,
   manifest->id = url_info.origin().GetURL().Resolve("/test-manifest-id");
 
   EXPECT_THAT(ExecuteCommandWithManifest(url_info, manifest.Clone()),
-              IsInstallationError(HasSubstr(R"(Manifest `id` must be "/")")));
+              ErrorIs(Field(&InstallIsolatedWebAppCommandError::message,
+                            HasSubstr(R"(Manifest `id` must be "/")"))));
 
   EXPECT_THAT(web_app_registrar().GetAppById(url_info.app_id()), IsNull());
 }
@@ -855,13 +833,15 @@ TEST_F(InstallIsolatedWebAppCommandManifestIconsTest,
       .WillOnce(RunOnceCallback<4>(IconsDownloadedResult::kAbortedDueToFailure,
                                    std::move(icons), http_result));
 
-  EXPECT_THAT(ExecuteCommand(
-                  Parameters{
-                      .url_info = url_info,
-                  },
-                  std::move(fake_data_retriever)),
-              IsInstallationError(HasSubstr(
-                  "Error during icon downloading: AbortedDueToFailure")));
+  EXPECT_THAT(
+      ExecuteCommand(
+          Parameters{
+              .url_info = url_info,
+          },
+          std::move(fake_data_retriever)),
+      ErrorIs(Field(
+          &InstallIsolatedWebAppCommandError::message,
+          HasSubstr("Error during icon downloading: AbortedDueToFailure"))));
 }
 
 using InstallIsolatedWebAppCommandMetricsTest =
@@ -896,7 +876,7 @@ TEST_F(InstallIsolatedWebAppCommandMetricsTest, ReportErrorWhenUrlLoaderFails) {
                   .url_info = url_info,
                   .url_loader = std::move(url_loader),
               }),
-              IsInstallationError());
+              Not(HasValue()));
 
   EXPECT_THAT(histogram_tester.GetAllSamples("WebApp.Install.Result"),
               BucketsAre(base::Bucket(false, 1)));
@@ -922,7 +902,7 @@ TEST_F(InstallIsolatedWebAppCommandMetricsTest,
                       .url_info = url_info,
                   },
                   std::move(fake_data_retriever)),
-              IsInstallationError());
+              Not(HasValue()));
 
   EXPECT_THAT(histogram_tester.GetAllSamples("WebApp.Install.Result"),
               BucketsAre(base::Bucket(false, 1)));
@@ -948,7 +928,7 @@ TEST_F(InstallIsolatedWebAppCommandMetricsTest,
                       .url_info = url_info,
                   },
                   std::move(fake_data_retriever)),
-              IsInstallationError());
+              Not(HasValue()));
 
   EXPECT_THAT(histogram_tester.GetAllSamples("WebApp.Install.Result"),
               BucketsAre(base::Bucket(false, 1)));
@@ -964,7 +944,7 @@ TEST_F(InstallIsolatedWebAppCommandMetricsTest,
   base::HistogramTester histogram_tester;
 
   EXPECT_THAT(ExecuteCommandWithManifest(url_info, manifest.Clone()),
-              IsInstallationError());
+              Not(HasValue()));
   EXPECT_THAT(histogram_tester.GetAllSamples("WebApp.Install.Result"),
               BucketsAre(base::Bucket(false, 1)));
 }

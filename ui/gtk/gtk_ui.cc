@@ -169,6 +169,23 @@ std::unique_ptr<GtkUiPlatform> CreateGtkUiPlatform(ui::LinuxUiBackend backend) {
   }
 }
 
+double FontScale() {
+  double resolution = 0;
+  if (GtkCheckVersion(4)) {
+    auto* settings = gtk_settings_get_default();
+    int dpi = 0;
+    g_object_get(settings, "gtk-xft-dpi", &dpi, nullptr);
+    resolution = dpi / 1024.0;
+  } else {
+    GdkScreen* screen = gdk_screen_get_default();
+    resolution = gdk_screen_get_resolution(screen);
+  }
+  const double font_scale = resolution > 0 ? resolution / kDefaultDPI : 1.0;
+  // Round to the nearest 1/64th so that UI can losslessly multiply and divide
+  // the scale factor.
+  return std::round(font_scale * 64) / 64;
+}
+
 }  // namespace
 
 GtkUi::GtkUi() : window_frame_actions_() {
@@ -237,11 +254,19 @@ bool GtkUi::Initialize() {
 
   // Listen for scale factor changes.
   GdkDisplay* display = gdk_display_get_default();
-  g_signal_connect_after(display, "monitor-added",
-                         G_CALLBACK(OnMonitorAddedThunk), this);
-  const int n_monitors = gdk_display_get_n_monitors(display);
-  for (int i = 0; i < n_monitors; i++) {
-    TrackMonitor(gdk_display_get_monitor(display, i));
+  if (GtkCheckVersion(4)) {
+    GListModel* monitors = gdk_display_get_monitors(display);
+    g_signal_connect_after(monitors, "items-changed",
+                           G_CALLBACK(OnMonitorsChangedThunk), this);
+    const guint n_monitors = g_list_model_get_n_items(monitors);
+    OnMonitorsChanged(monitors, 0, 0, n_monitors);
+  } else {
+    g_signal_connect_after(display, "monitor-added",
+                           G_CALLBACK(OnMonitorAddedThunk), this);
+    const int n_monitors = gdk_display_get_n_monitors(display);
+    for (int i = 0; i < n_monitors; i++) {
+      TrackMonitor(gdk_display_get_monitor(display, i));
+    }
   }
 
   LoadGtkValues();
@@ -463,6 +488,14 @@ bool GtkUi::PreferDarkTheme() const {
   return dark;
 }
 
+void GtkUi::SetDarkTheme(bool dark) {
+  auto* settings = gtk_settings_get_default();
+  g_object_set(settings, "gtk-application-prefer-dark-theme", dark, nullptr);
+  // OnThemeChanged() will be called via the
+  // notify::gtk-application-prefer-dark-theme handler to update the native
+  // theme.
+}
+
 bool GtkUi::AnimationsEnabled() const {
   gboolean animations_enabled = false;
   g_object_get(gtk_settings_get_default(), "gtk-enable-animations",
@@ -651,6 +684,16 @@ void GtkUi::OnMonitorAdded(GdkDisplay* display, GdkMonitor* monitor) {
   UpdateDeviceScaleFactor();
 }
 
+void GtkUi::OnMonitorsChanged(GListModel* monitors,
+                              guint position,
+                              guint removed,
+                              guint added) {
+  for (size_t i = position; i < position + added; i++) {
+    TrackMonitor(static_cast<GdkMonitor*>(g_list_model_get_item(monitors, i)));
+  }
+  UpdateDeviceScaleFactor();
+}
+
 void GtkUi::LoadGtkValues() {
   // TODO(thomasanderson): GtkThemeService had a comment here about having to
   // muck with the raw Prefs object to remove prefs::kCurrentThemeImages or else
@@ -830,21 +873,25 @@ void GtkUi::UpdateDefaultFont() {
       base::SplitString(pango_font_description_get_family(desc), ",",
                         base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
 
+  constexpr double kPangoScale = PANGO_SCALE;
+  double size_pixels;
   if (pango_font_description_get_size_is_absolute(desc)) {
     // If the size is absolute, it's specified in Pango units. There are
     // PANGO_SCALE Pango units in a device unit (pixel).
-    const int size_pixels = pango_font_description_get_size(desc) / PANGO_SCALE;
-    default_font_size_pixels_ = size_pixels;
-    query.pixel_size = size_pixels;
+    size_pixels = pango_font_description_get_size(desc) / kPangoScale;
+    query.pixel_size = std::round(size_pixels);
   } else {
     // Non-absolute sizes are in points (again scaled by PANGO_SIZE).
     // Round the value when converting to pixels to match GTK's logic.
-    const double size_points = pango_font_description_get_size(desc) /
-                               static_cast<double>(PANGO_SCALE);
-    default_font_size_pixels_ =
-        static_cast<int>(kDefaultDPI / 72.0 * size_points + 0.5);
-    query.point_size = static_cast<int>(size_points);
+    const double size_points =
+        pango_font_description_get_size(desc) / kPangoScale;
+    size_pixels = kDefaultDPI / 72.0 * size_points;
+    query.point_size = std::round(size_points);
   }
+  if (!platform_->IncludeFontScaleInDeviceScale()) {
+    size_pixels *= FontScale();
+  }
+  default_font_size_pixels_ = std::round(size_pixels);
 
   query.style = gfx::Font::NORMAL;
   query.weight =
@@ -872,32 +919,39 @@ ui::DisplayConfig GtkUi::GetDisplayConfig() const {
     return config;
   }
 
-  double resolution = 0;
-  if (GtkCheckVersion(4)) {
-    auto* settings = gtk_settings_get_default();
-    int dpi = 0;
-    g_object_get(settings, "gtk-xft-dpi", &dpi, nullptr);
-    resolution = dpi / 1024.0;
-  } else {
-    GdkScreen* screen = gdk_screen_get_default();
-    resolution = gdk_screen_get_resolution(screen);
-  }
-  double font_scale = resolution > 0 ? resolution / kDefaultDPI : 1.0;
-  // Round to the nearest 1/64th so that UI can losslessly multiply and divide
-  // the scale factor.
-  font_scale = std::round(font_scale * 64) / 64;
+  const double font_scale =
+      platform_->IncludeFontScaleInDeviceScale() ? FontScale() : 1.0;
 
   GdkDisplay* display = gdk_display_get_default();
-  GdkMonitor* primary = gdk_display_get_primary_monitor(display);
+  GdkMonitor* primary = nullptr;
+  std::vector<GdkMonitor*> monitors;
+  if (GtkCheckVersion(4)) {
+    GListModel* list = gdk_display_get_monitors(display);
+    auto n_monitors = g_list_model_get_n_items(list);
+    if (!n_monitors) {
+      return config;
+    }
+    primary = static_cast<GdkMonitor*>(g_list_model_get_item(list, 0));
+    monitors.reserve(n_monitors);
+    for (unsigned int i = 0; i < n_monitors; ++i) {
+      monitors.push_back(
+          static_cast<GdkMonitor*>(g_list_model_get_item(list, i)));
+    }
+  } else {
+    primary = gdk_display_get_primary_monitor(display);
+    const int n_monitors = gdk_display_get_n_monitors(display);
+    monitors.reserve(n_monitors);
+    for (int i = 0; i < n_monitors; i++) {
+      monitors.push_back(gdk_display_get_monitor(display, i));
+    }
+  }
   if (!primary) {
     return config;
   }
   config.primary_scale =
       std::max(1, gdk_monitor_get_scale_factor(primary)) * font_scale;
-  const int n_monitors = gdk_display_get_n_monitors(display);
-  config.display_geometries.reserve(n_monitors);
-  for (int i = 0; i < n_monitors; i++) {
-    GdkMonitor* monitor = gdk_display_get_monitor(display, i);
+  config.display_geometries.reserve(monitors.size());
+  for (GdkMonitor* monitor : monitors) {
     GdkRectangle geometry;
     gdk_monitor_get_geometry(monitor, &geometry);
     int monitor_scale = std::max(1, gdk_monitor_get_scale_factor(monitor));

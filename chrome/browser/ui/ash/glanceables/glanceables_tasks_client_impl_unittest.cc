@@ -92,7 +92,8 @@ constexpr char kDefaultTasksResponseContent[] = R"(
           "id": "zxc",
           "title": "Parent task 2, level 1",
           "status": "needsAction",
-          "links": [{"type": "email"}]
+          "links": [{"type": "email"}],
+          "notes": "Lorem ipsum dolor sit amet"
         }
       ]
     }
@@ -210,6 +211,10 @@ TEST_F(GlanceablesTasksClientImplTest, GetTaskLists) {
   histogram_tester()->ExpectUniqueSample(
       "Ash.Glanceables.Api.Tasks.GetTaskLists.Status",
       ApiErrorCode::HTTP_SUCCESS,
+      /*expected_bucket_count=*/1);
+  histogram_tester()->ExpectUniqueSample(
+      "Ash.Glanceables.Api.Tasks.GetTaskLists.PagesCount",
+      /*sample=*/1,
       /*expected_bucket_count=*/1);
 }
 
@@ -454,6 +459,11 @@ TEST_F(GlanceablesTasksClientImplTest, GetTaskListsFetchesAllPages) {
   EXPECT_EQ(task_lists->GetItemAt(0)->id, "task-list-from-page-1");
   EXPECT_EQ(task_lists->GetItemAt(1)->id, "task-list-from-page-2");
   EXPECT_EQ(task_lists->GetItemAt(2)->id, "task-list-from-page-3");
+
+  histogram_tester()->ExpectUniqueSample(
+      "Ash.Glanceables.Api.Tasks.GetTaskLists.PagesCount",
+      /*sample=*/3,
+      /*expected_bucket_count=*/1);
 }
 
 TEST_F(GlanceablesTasksClientImplTest,
@@ -571,6 +581,7 @@ TEST_F(GlanceablesTasksClientImplTest, GetTasks) {
             "2023-04-19T00:00:00.000Z");
   EXPECT_TRUE(root_tasks->GetItemAt(0)->has_subtasks);
   EXPECT_FALSE(root_tasks->GetItemAt(0)->has_email_link);
+  EXPECT_FALSE(root_tasks->GetItemAt(0)->has_notes);
 
   EXPECT_EQ(root_tasks->GetItemAt(1)->id, "zxc");
   EXPECT_EQ(root_tasks->GetItemAt(1)->title, "Parent task 2, level 1");
@@ -578,11 +589,16 @@ TEST_F(GlanceablesTasksClientImplTest, GetTasks) {
   EXPECT_FALSE(root_tasks->GetItemAt(1)->due);
   EXPECT_FALSE(root_tasks->GetItemAt(1)->has_subtasks);
   EXPECT_TRUE(root_tasks->GetItemAt(1)->has_email_link);
+  EXPECT_TRUE(root_tasks->GetItemAt(1)->has_notes);
 
   histogram_tester()->ExpectTotalCount(
       "Ash.Glanceables.Api.Tasks.GetTasks.Latency", /*expected_count=*/1);
   histogram_tester()->ExpectUniqueSample(
       "Ash.Glanceables.Api.Tasks.GetTasks.Status", ApiErrorCode::HTTP_SUCCESS,
+      /*expected_bucket_count=*/1);
+  histogram_tester()->ExpectUniqueSample(
+      "Ash.Glanceables.Api.Tasks.GetTasks.PagesCount",
+      /*sample=*/1,
       /*expected_bucket_count=*/1);
 }
 
@@ -915,6 +931,11 @@ TEST_F(GlanceablesTasksClientImplTest, GetTasksFetchesAllPages) {
 
   EXPECT_EQ(root_tasks->GetItemAt(1)->id, "parent-task-from-page-3");
   EXPECT_FALSE(root_tasks->GetItemAt(1)->has_subtasks);
+
+  histogram_tester()->ExpectUniqueSample(
+      "Ash.Glanceables.Api.Tasks.GetTasks.PagesCount",
+      /*sample=*/3,
+      /*expected_bucket_count=*/1);
 }
 
 TEST_F(GlanceablesTasksClientImplTest,

@@ -19,6 +19,7 @@
 #include "base/task/thread_pool.h"
 #include "chrome/browser/ash/arc/fileapi/arc_documents_provider_util.h"
 #include "chrome/browser/ash/fileapi/file_access_permissions.h"
+#include "chrome/browser/ash/fileapi/file_system_backend.h"
 #include "chrome/browser/ash/fileapi/file_system_backend_delegate.h"
 #include "chrome/browser/ash/fileapi/observable_file_system_operation_impl.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
@@ -45,13 +46,6 @@
 namespace ash {
 namespace {
 
-// TODO(mtomasz): Remove this hacky allowlist.
-// See: crbug.com/271946
-const char* kOemAccessibleExtensions[] = {
-    "mlbmkoenclnokonejhlfakkeabdlmpek",  // TimeScapes,
-    "nhpmmldpbfjofkipjaieeomhnmcgihfm",  // Retail Demo (public session),
-};
-
 // Returns the `AccountId` associated with the specified `profile`.
 AccountId GetAccountId(Profile* profile) {
   user_manager::User* user =
@@ -66,7 +60,6 @@ bool FileSystemBackend::CanHandleURL(const storage::FileSystemURL& url) {
   if (!url.is_valid())
     return false;
   return url.type() == storage::kFileSystemTypeLocal ||
-         url.type() == storage::kFileSystemTypeRestrictedLocal ||
          url.type() == storage::kFileSystemTypeProvided ||
          url.type() == storage::kFileSystemTypeDeviceMediaAsFileStorage ||
          url.type() == storage::kFileSystemTypeArcContent ||
@@ -101,6 +94,13 @@ FileSystemBackend::FileSystemBackend(
 
 FileSystemBackend::~FileSystemBackend() {}
 
+// static
+FileSystemBackend* FileSystemBackend::Get(
+    const storage::FileSystemContext& context) {
+  return static_cast<FileSystemBackend*>(
+      context.GetFileSystemBackend(storage::kFileSystemTypeExternal));
+}
+
 void FileSystemBackend::AddSystemMountPoints() {
   // RegisterFileSystem() is no-op if the mount point with the same name
   // already exists, hence it's safe to call without checking if a mount
@@ -113,16 +113,11 @@ void FileSystemBackend::AddSystemMountPoints() {
       kSystemMountNameRemovable, storage::kFileSystemTypeLocal,
       storage::FileSystemMountOption(storage::FlushPolicy::FLUSH_ON_COMPLETION),
       CrosDisksClient::GetRemovableDiskMountPoint());
-  system_mount_points_->RegisterFileSystem(
-      kSystemMountNameOem, storage::kFileSystemTypeRestrictedLocal,
-      storage::FileSystemMountOption(),
-      base::FilePath(FILE_PATH_LITERAL("/usr/share/oem")));
 }
 
 bool FileSystemBackend::CanHandleType(storage::FileSystemType type) const {
   switch (type) {
     case storage::kFileSystemTypeExternal:
-    case storage::kFileSystemTypeRestrictedLocal:
     case storage::kFileSystemTypeLocal:
     case storage::kFileSystemTypeLocalForPlatformApp:
     case storage::kFileSystemTypeDeviceMediaAsFileStorage:
@@ -251,14 +246,6 @@ bool FileSystemBackend::IsAccessAllowed(
     return true;
   }
 
-  const std::string& extension_id = origin.host();
-  if (url.type() == storage::kFileSystemTypeRestrictedLocal) {
-    for (size_t i = 0; i < std::size(kOemAccessibleExtensions); ++i) {
-      if (extension_id == kOemAccessibleExtensions[i])
-        return true;
-    }
-  }
-
   return file_access_permissions_->HasAccessPermission(origin,
                                                        url.virtual_path());
 }
@@ -302,7 +289,6 @@ storage::AsyncFileUtil* FileSystemBackend::GetAsyncFileUtil(
     case storage::kFileSystemTypeProvided:
       return file_system_provider_delegate_->GetAsyncFileUtil(type);
     case storage::kFileSystemTypeLocal:
-    case storage::kFileSystemTypeRestrictedLocal:
     case storage::kFileSystemTypeFuseBox:
       return local_file_util_.get();
     case storage::kFileSystemTypeDeviceMediaAsFileStorage:
@@ -366,7 +352,6 @@ FileSystemBackend::CreateFileSystemOperation(
             context, MediaFileSystemBackend::MediaTaskRunner().get()));
   }
   if (url.type() == storage::kFileSystemTypeLocal ||
-      url.type() == storage::kFileSystemTypeRestrictedLocal ||
       url.type() == storage::kFileSystemTypeDriveFs ||
       url.type() == storage::kFileSystemTypeSmbFs ||
       url.type() == storage::kFileSystemTypeFuseBox) {
@@ -405,7 +390,6 @@ bool FileSystemBackend::HasInplaceCopyImplementation(
     // crbug.com/953603.
     case storage::kFileSystemTypeArcDocumentsProvider:
     case storage::kFileSystemTypeLocal:
-    case storage::kFileSystemTypeRestrictedLocal:
     case storage::kFileSystemTypeArcContent:
     // TODO(crbug.com/939235): Implement in-place copy in SmbFs.
     case storage::kFileSystemTypeSmbFs:
@@ -437,7 +421,6 @@ FileSystemBackend::CreateFileStreamReader(
           url, offset, max_bytes_to_read, expected_modification_time, context);
     // The dlp file_access callback is needed for the local filesystem only.
     case storage::kFileSystemTypeLocal:
-    case storage::kFileSystemTypeRestrictedLocal:
       return storage::FileStreamReader::CreateForLocalFile(
           base::ThreadPool::CreateTaskRunner(
               {base::MayBlock(), base::TaskPriority::USER_VISIBLE})
@@ -496,7 +479,6 @@ FileSystemBackend::CreateFileStreamWriter(
       return arc_documents_provider_delegate_->CreateFileStreamWriter(
           url, offset, context);
     // Read only file systems.
-    case storage::kFileSystemTypeRestrictedLocal:
     case storage::kFileSystemTypeArcContent:
       return nullptr;
     default:
@@ -530,7 +512,6 @@ void FileSystemBackend::GetRedirectURLForContents(
       mtp_delegate_->GetRedirectURLForContents(url, std::move(callback));
       return;
     case storage::kFileSystemTypeLocal:
-    case storage::kFileSystemTypeRestrictedLocal:
     case storage::kFileSystemTypeArcContent:
     case storage::kFileSystemTypeArcDocumentsProvider:
     case storage::kFileSystemTypeDriveFs:

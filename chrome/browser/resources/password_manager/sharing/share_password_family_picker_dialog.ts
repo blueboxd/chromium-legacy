@@ -5,6 +5,7 @@
 import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.js';
 import 'chrome://resources/cr_elements/cr_button/cr_button.js';
 import './share_password_dialog_header.js';
+import './share_password_recipient.js';
 import '../shared_style.css.js';
 
 import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
@@ -18,7 +19,7 @@ export interface SharePasswordFamilyPickerDialogElement {
   $: {
     header: HTMLElement,
     description: HTMLElement,
-    action: HTMLElement,
+    action: HTMLButtonElement,
     cancel: HTMLElement,
     avatar: HTMLImageElement,
     manageLink: HTMLAnchorElement,
@@ -37,14 +38,63 @@ export class SharePasswordFamilyPickerDialogElement extends UserUtilMixin
   }
 
   static get properties() {
-    return {dialogTitle: {type: String}};
+    return {
+      dialogTitle: String,
+      members: Array,
+
+      selectedRecipients: {
+        type: Array,
+        value: [],
+        reflectToAttribute: true,
+        notify: true,
+      },
+
+      eligibleRecipients_: {
+        type: Array,
+        computed: 'computeEligible_(members)',
+      },
+
+      ineligibleRecipients_: {
+        type: Array,
+        computed: 'computeIneligible_(members)',
+      },
+    };
   }
 
   dialogTitle: string;
+  members: chrome.passwordsPrivate.RecipientInfo[];
+  selectedRecipients: chrome.passwordsPrivate.RecipientInfo[];
+  private eligibleRecipients_: chrome.passwordsPrivate.RecipientInfo[];
+  private ineligibleRecipients_: chrome.passwordsPrivate.RecipientInfo[];
 
   private onClickCancel_() {
     this.dispatchEvent(
         new CustomEvent('close', {bubbles: true, composed: true}));
+  }
+
+  private computeEligible_(): chrome.passwordsPrivate.RecipientInfo[] {
+    const eligibleMembers = this.members.filter(member => member.isEligible);
+    eligibleMembers.sort((a, b) => (a.displayName > b.displayName ? 1 : -1));
+    return eligibleMembers;
+  }
+
+  private computeIneligible_(): chrome.passwordsPrivate.RecipientInfo[] {
+    const inEligibleMembers = this.members.filter(member => !member.isEligible);
+    inEligibleMembers.sort((a, b) => (a.displayName > b.displayName ? 1 : -1));
+    return inEligibleMembers;
+  }
+
+  private recipientSelected_(): void {
+    this.selectedRecipients =
+        Array
+            .from(this.shadowRoot!.querySelectorAll('share-password-recipient'))
+            .filter(item => item.selected)
+            .map(item => item.recipient);
+  }
+
+  private onClickShare_() {
+    this.dispatchEvent(
+        new CustomEvent('start-share', {bubbles: true, composed: true}));
   }
 }
 

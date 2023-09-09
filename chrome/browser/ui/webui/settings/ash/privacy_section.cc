@@ -426,7 +426,7 @@ void PrivacySection::AddLoadTimeData(content::WebUIDataSource* html_source) {
   html_source->AddBoolean(
       "isPrivacyHubHatsEnabled",
       base::FeatureList::IsEnabled(
-          ::features::kHappinessTrackingPrivacyHubBaseline));
+          ::features::kHappinessTrackingPrivacyHubPostLaunch));
   html_source->AddBoolean("showPrivacyHubPage",
                           ash::features::IsCrosPrivacyHubEnabled());
   html_source->AddBoolean("showPrivacyHubMVPPage",
@@ -491,7 +491,7 @@ mojom::SearchResultIcon PrivacySection::GetSectionIcon() const {
   return mojom::SearchResultIcon::kShield;
 }
 
-std::string PrivacySection::GetSectionPath() const {
+const char* PrivacySection::GetSectionPath() const {
   return mojom::kPrivacyAndSecuritySectionPath;
 }
 

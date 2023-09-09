@@ -11,6 +11,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/trace_event/trace_config.h"
 #include "content/shell/app/resource.h"
+#include "content/shell/browser/color_chooser/shell_color_chooser_ios.h"
 #include "content/shell/browser/shell.h"
 #include "content/shell/browser/shell_file_select_helper.h"
 #include "services/tracing/public/cpp/perfetto/perfetto_config.h"
@@ -19,10 +20,6 @@
 #include "third_party/perfetto/include/perfetto/tracing/tracing.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/native_widget_types.h"
-
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
 
 namespace {
 
@@ -629,6 +626,14 @@ bool ShellPlatformDelegate::DestroyShell(Shell* shell) {
 
   [shell_data.window resignKeyWindow];
   return false;  // We have not destroyed the shell here.
+}
+
+std::unique_ptr<ColorChooser> ShellPlatformDelegate::OpenColorChooser(
+    WebContents* web_contents,
+    SkColor color,
+    const std::vector<blink::mojom::ColorSuggestionPtr>& suggestions) {
+  return ShellColorChooserIOS::OpenColorChooser(web_contents, color,
+                                                suggestions);
 }
 
 void ShellPlatformDelegate::RunFileChooser(

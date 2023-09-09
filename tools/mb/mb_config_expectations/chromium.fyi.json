@@ -349,14 +349,27 @@
     }
   },
   "android-build-perf-developer": {
-    "gn_args": {
-      "enable_nacl": false,
-      "is_component_build": true,
-      "is_debug": true,
-      "symbol_level": 2,
-      "target_cpu": "arm64",
-      "target_os": "android",
-      "use_remoteexec": true
+    "builtin": {
+      "gn_args": {
+        "enable_nacl": false,
+        "enable_precompiled_headers": false,
+        "is_component_build": true,
+        "is_debug": true,
+        "symbol_level": 2,
+        "target_cpu": "arm64",
+        "target_os": "android"
+      }
+    },
+    "reproxy": {
+      "gn_args": {
+        "enable_nacl": false,
+        "is_component_build": true,
+        "is_debug": true,
+        "symbol_level": 2,
+        "target_cpu": "arm64",
+        "target_os": "android",
+        "use_remoteexec": true
+      }
     }
   },
   "android-fieldtrial-rel": {
@@ -422,6 +435,7 @@
         "coverage_instrumentation_input_file": "//.code-coverage/files_to_instrument.txt",
         "dcheck_always_on": true,
         "debuggable_apks": false,
+        "enable_precompiled_headers": false,
         "fail_on_android_expectations": true,
         "ffmpeg_branding": "Chrome",
         "is_component_build": false,
@@ -488,6 +502,7 @@
         "enable_backup_ref_ptr_feature_flag": true,
         "enable_dangling_raw_ptr_checks": true,
         "enable_dangling_raw_ptr_feature_flag": true,
+        "enable_precompiled_headers": false,
         "ffmpeg_branding": "Chrome",
         "is_component_build": false,
         "is_debug": false,
@@ -541,6 +556,7 @@
         "dcheck_always_on": true,
         "enable_dangling_raw_ptr_checks": true,
         "enable_dangling_raw_ptr_feature_flag": true,
+        "enable_precompiled_headers": false,
         "enable_resource_allowlist_generation": false,
         "ffmpeg_branding": "Chrome",
         "is_component_build": false,
@@ -902,12 +918,23 @@
     }
   },
   "linux-build-perf-developer": {
-    "gn_args": {
-      "enable_nacl": false,
-      "is_component_build": true,
-      "is_debug": true,
-      "symbol_level": 2,
-      "use_remoteexec": true
+    "builtin": {
+      "gn_args": {
+        "enable_nacl": false,
+        "enable_precompiled_headers": false,
+        "is_component_build": true,
+        "is_debug": true,
+        "symbol_level": 2
+      }
+    },
+    "reproxy": {
+      "gn_args": {
+        "enable_nacl": false,
+        "is_component_build": true,
+        "is_debug": true,
+        "symbol_level": 2,
+        "use_remoteexec": true
+      }
     }
   },
   "linux-chromeos-annotator-rel": {
@@ -948,6 +975,7 @@
         "enable_backup_ref_ptr_feature_flag": true,
         "enable_dangling_raw_ptr_checks": true,
         "enable_dangling_raw_ptr_feature_flag": true,
+        "enable_precompiled_headers": false,
         "ffmpeg_branding": "ChromeOS",
         "is_component_build": false,
         "is_debug": false,
@@ -1269,12 +1297,23 @@
     }
   },
   "win-build-perf-developer": {
-    "gn_args": {
-      "enable_nacl": false,
-      "is_component_build": true,
-      "is_debug": true,
-      "symbol_level": 2,
-      "use_remoteexec": true
+    "builtin": {
+      "gn_args": {
+        "enable_nacl": false,
+        "enable_precompiled_headers": false,
+        "is_component_build": true,
+        "is_debug": true,
+        "symbol_level": 2
+      }
+    },
+    "reproxy": {
+      "gn_args": {
+        "enable_nacl": false,
+        "is_component_build": true,
+        "is_debug": true,
+        "symbol_level": 2,
+        "use_remoteexec": true
+      }
     }
   },
   "win-celab-builder-rel": {

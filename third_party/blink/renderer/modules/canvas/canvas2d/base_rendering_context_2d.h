@@ -32,6 +32,7 @@ namespace blink {
 
 MODULES_EXPORT BASE_DECLARE_FEATURE(kDisableCanvasOverdrawOptimization);
 
+class BeginLayerOptions;
 class CanvasColorCache;
 class CanvasImageSource;
 class Color;
@@ -105,7 +106,7 @@ class MODULES_EXPORT BaseRenderingContext2D : public CanvasPath {
   void restore(ExceptionState& exception_state);
   // Push state on state stack and creates bitmap for subsequent draw ops.
   void beginLayer(ScriptState*,
-                  const V8CanvasFilterInput* filter_init,
+                  const BeginLayerOptions* options,
                   ExceptionState& exception_state);
   // Pop state stack if top state was pushed by beginLayer, restore state and draw the bitmap.
   void endLayer(ExceptionState& exception_state);
@@ -250,7 +251,6 @@ class MODULES_EXPORT BaseRenderingContext2D : public CanvasPath {
 
   virtual bool OriginClean() const = 0;
   virtual void SetOriginTainted() = 0;
-  virtual bool WouldTaintOrigin(CanvasImageSource*) = 0;
 
   virtual int Width() const = 0;
   virtual int Height() const = 0;

@@ -18,10 +18,6 @@
 #import "ui/base/cocoa/user_interface_item_command_handler.h"
 #import "ui/base/cocoa/window_size_constants.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 @interface NSWindow (Private)
 // Available in later point releases of 10.10. On 10.11+, use the public
 // -performWindowDragWithEvent: instead.
@@ -61,8 +57,9 @@ void OrderChildWindow(NSWindow* child_window,
   // `ordered_children` sorts children windows back to front.
   NSArray<NSWindow*>* children = [[child_window parentWindow] childWindows];
   std::vector<std::pair<NSInteger, NSWindow*>> ordered_children;
-  for (NSWindow* child in children)
+  for (NSWindow* child in children) {
     ordered_children.emplace_back([child orderedIndex], child);
+  }
   std::sort(ordered_children.begin(), ordered_children.end(), std::greater<>());
 
   // If `other_window` is nullptr, place `child_window` in front of (or behind)
@@ -73,20 +70,23 @@ void OrderChildWindow(NSWindow* child_window,
                        : parent;
   }
 
-  if (child_window == other_window)
+  if (child_window == other_window) {
     return;
+  }
 
   const bool relative_to_parent = parent == other_window;
   DCHECK(ordering_mode != NSWindowBelow || !relative_to_parent)
       << "Placing a child window behind its parent is not supported.";
 
-  for (NSWindow* child in children)
+  for (NSWindow* child in children) {
     [parent removeChildWindow:child];
+  }
 
   // If `relative_to_parent` is true, `child_window` is the first child of its
   // parent.
-  if (relative_to_parent)
+  if (relative_to_parent) {
     [parent addChildWindow:child_window ordered:NSWindowAbove];
+  }
 
   // Re-parent children windows in the desired order.
   for (auto [ordered_index, child] : ordered_children) {
@@ -135,40 +135,50 @@ void OrderChildWindow(NSWindow* child_window,
 - (void)cr_mouseDownOnFrameView:(NSEvent*)event;
 @end
 
-@implementation NSView (CRFrameViewAdditions) 
+@implementation NSView (CRFrameViewAdditions)
 NSPoint clickedLocation;
 // If a mouseDown: falls through to the frame view, turn it into a window drag.
 - (void)cr_mouseDownOnFrameView:(NSEvent*)event {
   if ([self.window _resizeDirectionForMouseLocation:event.locationInWindow] !=
-      -1)
+      -1) {
     return;
-  if (@available(macOS 10.11, *))
+  }
+  if (@available(macOS 10.11, *)) {
     [self.window performWindowDragWithEvent:event];
-  else if ([self.window
-               respondsToSelector:@selector(beginWindowDragWithEvent:)])
+  } else if ([self.window
+                 respondsToSelector:@selector(beginWindowDragWithEvent:)]) {
     [self.window beginWindowDragWithEvent:event];
-  else
+  } else {
     clickedLocation = [event locationInWindow];
+  }
 }
 
 - (void)cr_mouseDraggedOnFrameView:(NSEvent*)event {
   static bool isAtMostMavericks = !(@available(macOS 10.10, *));
-  if(isAtMostMavericks && !([self.window styleMask]&NSFullScreenWindowMask)) {
+  if (isAtMostMavericks &&
+      !([self.window styleMask] & NSFullScreenWindowMask)) {
     NSPoint mouseLocation = [NSEvent mouseLocation];
-    [self.window setFrame:NSMakeRect(mouseLocation.x - clickedLocation.x, mouseLocation.y - clickedLocation.y, self.frame.size.width, self.frame.size.height) display:YES animate:NO];
+    [self.window
+        setFrame:NSMakeRect(mouseLocation.x - clickedLocation.x,
+                            mouseLocation.y - clickedLocation.y,
+                            self.frame.size.width, self.frame.size.height)
+         display:YES
+         animate:NO];
   }
 }
 @end
 
 @implementation NativeWidgetMacNSWindowTitledFrame
 - (void)mouseDown:(NSEvent*)event {
-  if (self.window.isMovable)
+  if (self.window.isMovable) {
     [self cr_mouseDownOnFrameView:event];
+  }
   [super mouseDown:event];
 }
-- (void)mouseDragged:(NSEvent *)event {
-  if (self.window.isMovable)
+- (void)mouseDragged:(NSEvent*)event {
+  if (self.window.isMovable) {
     [self cr_mouseDraggedOnFrameView:event];
+  }
   [super mouseDragged:event];
 }
 - (BOOL)usesCustomDrawing {
@@ -191,13 +201,13 @@ NSPoint clickedLocation;
 }
 
 - viewWillStartLiveResize {
-    [super setWantsLayer:YES];
-    [super viewWillStartLiveResize];
+  [super setWantsLayer:YES];
+  [super viewWillStartLiveResize];
 }
 
 - viewDidEndLiveResize {
-    [super setWantsLayer:NO];
-    [super viewDidEndLiveResize];
+  [super setWantsLayer:NO];
+  [super viewDidEndLiveResize];
 }
 @end
 
@@ -222,6 +232,7 @@ NSPoint clickedLocation;
 @synthesize isHeadless = _isHeadless;
 @synthesize childWindowAddedHandler = _childWindowAddedHandler;
 @synthesize childWindowRemovedHandler = _childWindowRemovedHandler;
+@synthesize commandDispatchParentOverride = _commandDispatchParentOverride;
 
 - (instancetype)initWithContentRect:(NSRect)contentRect
                           styleMask:(NSUInteger)windowStyle
@@ -282,8 +293,9 @@ NSPoint clickedLocation;
 }
 
 - (void)enforceNeverMadeVisible {
-  if (_isEnforcingNeverMadeVisible)
+  if (_isEnforcingNeverMadeVisible) {
     return;
+  }
   _isEnforcingNeverMadeVisible = YES;
   [self addObserver:self
          forKeyPath:@"visible"
@@ -299,8 +311,9 @@ NSPoint clickedLocation;
     DCHECK(_isEnforcingNeverMadeVisible);
     DCHECK_EQ(object, self);
     DCHECK_EQ(context, nil);
-    if ([change[NSKeyValueChangeNewKey] boolValue])
+    if ([change[NSKeyValueChangeNewKey] boolValue]) {
       base::debug::DumpWithoutCrashing();
+    }
   }
   [super observeValueForKeyPath:keyPath
                        ofObject:object
@@ -373,8 +386,9 @@ NSPoint clickedLocation;
 
 - (BOOL)hasViewsMenuActive {
   bool hasMenuController = false;
-  if (_bridge)
+  if (_bridge) {
     _bridge->host()->GetHasMenuController(&hasMenuController);
+  }
   return hasMenuController;
 }
 
@@ -396,8 +410,9 @@ NSPoint clickedLocation;
 
 + (Class)frameViewClassForStyleMask:(NSWindowStyleMask)windowStyle {
   if (windowStyle & NSWindowStyleMaskTitled) {
-    if (Class customFrame = [NativeWidgetMacNSWindowTitledFrame class])
+    if (Class customFrame = [NativeWidgetMacNSWindowTitledFrame class]) {
       return customFrame;
+    }
   } else if (Class customFrame =
                  [NativeWidgetMacNSWindowBorderlessFrame class]) {
     return customFrame;
@@ -407,8 +422,9 @@ NSPoint clickedLocation;
 
 - (BOOL)_isTitleHidden {
   bool shouldShowWindowTitle = YES;
-  if (_bridge && (@available(macOS 10.10, *)))
+  if (_bridge && (@available(macOS 10.10, *))) {
     _bridge->host()->GetShouldShowWindowTitle(&shouldShowWindowTitle);
+  }
   return !shouldShowWindowTitle;
 }
 
@@ -424,25 +440,30 @@ NSPoint clickedLocation;
 // Note these can be called via -[NSWindow close] while the widget is being torn
 // down, so check for a delegate.
 - (BOOL)canBecomeKeyWindow {
-  if (_preventKeyWindow)
+  if (_preventKeyWindow) {
     return NO;
+  }
   bool canBecomeKey = NO;
-  if (_bridge)
+  if (_bridge) {
     _bridge->host()->GetCanWindowBecomeKey(&canBecomeKey);
+  }
   return canBecomeKey;
 }
 
 - (BOOL)canBecomeMainWindow {
-  if (!_bridge)
+  if (!_bridge) {
     return NO;
+  }
 
   // Dialogs and bubbles shouldn't take large shadows away from their parent.
-  if (_bridge->parent())
+  if (_bridge->parent()) {
     return NO;
+  }
 
   bool canBecomeKey = NO;
-  if (_bridge)
+  if (_bridge) {
     _bridge->host()->GetCanWindowBecomeKey(&canBecomeKey);
+  }
   return canBecomeKey;
 }
 
@@ -452,13 +473,15 @@ NSPoint clickedLocation;
   // it is not safe to access the mojo interface or the ui::Widget, as they are
   // not reentrant.
   // https://crbug.com/941506.
-  if (![NSThread isMainThread])
+  if (![NSThread isMainThread]) {
     return [super hasKeyAppearance];
+  }
   if (_bridge) {
     bool isAlwaysRenderWindowAsKey = NO;
     _bridge->host()->GetAlwaysRenderWindowAsKey(&isAlwaysRenderWindowAsKey);
-    if (isAlwaysRenderWindowAsKey)
+    if (isAlwaysRenderWindowAsKey) {
       return YES;
+    }
   }
   return [super hasKeyAppearance];
 }
@@ -525,8 +548,9 @@ NSPoint clickedLocation;
   // `self` at the top / bottom, depending on `orderingMode`.
   NSWindow* otherWindow = [NSApp windowWithWindowNumber:otherWindowNumber];
   if (otherWindow == nullptr || parent == [otherWindow parentWindow] ||
-      parent == otherWindow)
+      parent == otherWindow) {
     OrderChildWindow(self, otherWindow, orderingMode);
+  }
 
   [[self viewsNSWindowDelegate] onWindowOrderChanged:nil];
 }
@@ -613,10 +637,11 @@ NSPoint clickedLocation;
   }
 
   NSCursor* cursor = [[self viewsNSWindowDelegate] cursor];
-  if (cursor)
+  if (cursor) {
     [cursor set];
-  else
+  } else {
     [super cursorUpdate:theEvent];
+  }
 }
 
 - (NSTouchBar*)makeTouchBar API_AVAILABLE(macos(10.12.2)) {
@@ -629,21 +654,24 @@ NSPoint clickedLocation;
 // responder. When AppKit calls |-encodeRestorableStateWithCoder:|, it
 // accomplishes the same thing by passing a custom coder.
 - (id)archiver:(NSKeyedArchiver*)archiver willEncodeObject:(id)object {
-  if (object == self)
+  if (object == self) {
     return nil;
-  if ([object isKindOfClass:[NSView class]])
+  }
+  if ([object isKindOfClass:[NSView class]]) {
     return nil;
+  }
   return object;
 }
 
 - (void)saveRestorableState {
-  if (!_bridge)
+  if (!_bridge) {
     return;
-  if (![self _isConsideredOpenForPersistentState])
+  }
+  if (![self _isConsideredOpenForPersistentState]) {
     return;
+  }
 
-  NSMutableData* restorableStateData(
-      [[NSMutableData alloc] init]);
+  NSMutableData* restorableStateData([[NSMutableData alloc] init]);
   NSKeyedArchiver* encoder([[NSKeyedArchiver alloc]
       initForWritingWithMutableData:restorableStateData]);
   encoder.delegate = self;
@@ -661,8 +689,9 @@ NSPoint clickedLocation;
 - (void)invalidateRestorableState {
   [super invalidateRestorableState];
   if ([self _isConsideredOpenForPersistentState]) {
-    if (_willUpdateRestorableState)
+    if (_willUpdateRestorableState) {
       return;
+    }
     _willUpdateRestorableState = YES;
     [self performSelectorOnMainThread:@selector(saveRestorableState)
                            withObject:nil
@@ -688,7 +717,7 @@ NSPoint clickedLocation;
       aSelector == @selector(commandDispatch:) ||
       aSelector == @selector(commandDispatchUsingKeyModifiers:);
   if (isCommandDispatch && _commandHandler == nil &&
-      [_commandDispatcher bubbleParent] == nil) {
+      self.commandDispatchParent == nil) {
     return NO;
   }
 
@@ -736,8 +765,9 @@ NSPoint clickedLocation;
 // NSWindow overrides (NSAccessibility informal protocol implementation).
 
 - (id)accessibilityFocusedUIElement {
-  if (![self delegate])
+  if (![self delegate]) {
     return [super accessibilityFocusedUIElement];
+  }
 
   // The SDK documents this as "The deepest descendant of the accessibility
   // hierarchy that has the focus" and says "if a child element does not have
@@ -750,8 +780,9 @@ NSPoint clickedLocation;
   // properties on the NSWindow and repeats them when focusing an item in the
   // RootView's a11y group. See http://crbug.com/748221.
   id superFocus = [super accessibilityFocusedUIElement];
-  if (!_bridge || superFocus != self)
+  if (!_bridge || superFocus != self) {
     return superFocus;
+  }
 
   return _bridge->host_helper()->GetNativeViewAccessible();
 }
@@ -763,6 +794,18 @@ NSPoint clickedLocation;
   // from NSWindow's behavior can easily break VoiceOver integration.
   NSString* viewsValue = self.rootAccessibilityObject.accessibilityTitle;
   return viewsValue ? viewsValue : [super accessibilityTitle];
+}
+
+- (NSWindow<CommandDispatchingWindow>*)commandDispatchParent {
+  if (_commandDispatchParentOverride) {
+    return _commandDispatchParentOverride;
+  }
+  NSWindow* parent = self.parentWindow;
+  if (parent && [parent hasKeyAppearance] &&
+      [parent conformsToProtocol:@protocol(CommandDispatchingWindow)]) {
+    return static_cast<NSWindow<CommandDispatchingWindow>*>(parent);
+  }
+  return nil;
 }
 
 @end

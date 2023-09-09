@@ -94,6 +94,7 @@
 <translation id="174937106936716857">إجمالي عدد الملفات</translation>
 <translation id="1755345808328621801">‏هذا الملف غير متوافق مع جهازك الذي يعمل بنظام التشغيل Chrome لأنّه مُصمّم لأجهزة الكمبيوتر التي تستخدم نظام التشغيل Windows. يُرجى البحث في سوق Chrome الإلكتروني للحصول على تطبيق بديل مناسب.</translation>
 <translation id="1757915090001272240">اللاتينية الواسعة</translation>
+<translation id="1761091787730831947">المشاركة مع "<ph name="VM_NAME" />"</translation>
 <translation id="1773212559869067373">تمّ رفض شهادة المصادقة محليًا</translation>
 <translation id="1775381402323441512">معلومات الفيديو</translation>
 <translation id="180035236176489073">يجب أن تكون متصلاً بالإنترنت للدخول إلى هذه الملفات.</translation>
@@ -166,11 +167,11 @@
 <translation id="2312704192806647271">{COUNT,plural, =1{لا يمكن تحديد مكان الإضافة التي تتضمّن المعرّف: <ph name="BEGIN_LIST" /><ph name="END_LIST" /> يُرجى التواصل مع المشرف.}zero{لا يمكن تحديد مكان الإضافات التي تتضمّن المعرّفات: <ph name="BEGIN_LIST" /><ph name="END_LIST" /> يُرجى التواصل مع المشرف.}two{لا يمكن تحديد مكان الإضافتَين اللتَين تتضمّنَان المعرّفَين: <ph name="BEGIN_LIST" /><ph name="END_LIST" /> يُرجى التواصل مع المشرف.}few{لا يمكن تحديد مكان الإضافات التي تتضمّن المعرّفات: <ph name="BEGIN_LIST" /><ph name="END_LIST" /> يُرجى التواصل مع المشرف.}many{لا يمكن تحديد مكان الإضافات التي تتضمّن المعرّفات: <ph name="BEGIN_LIST" /><ph name="END_LIST" /> يُرجى التواصل مع المشرف.}other{لا يمكن تحديد مكان الإضافات التي تتضمّن المعرّفات: <ph name="BEGIN_LIST" /><ph name="END_LIST" /> يُرجى التواصل مع المشرف.}}</translation>
 <translation id="2325650632570794183">‏نوع الملف هذا غير متوافق. يُرجى الانتقال إلى سوق Chrome الإلكتروني للعثور على تطبيق يمكنه فتح هذا النوع من الملفات.</translation>
 <translation id="2326539130272988168">البلغارية</translation>
-<translation id="2337715497728194187">‏المشاركة مع الجهاز الافتراضي Bruschetta</translation>
 <translation id="233822363739146957">لا تتوفّر مساحة تخزين كافية لمزامنة جميع ملفاتك.</translation>
 <translation id="23721837607121582">‏تنزيل الملف الشخصي لشريحة eSIM على الجهاز الجوّال، الشبكة رقم <ph name="NETWORK_INDEX" /> من أصل <ph name="NETWORK_COUNT" />، <ph name="NETWORK_NAME" /></translation>
 <translation id="2377319039870049694">تبديل إلى عرض القائمة</translation>
 <translation id="2377590462528165447">‏<ph name="NUMBER_OF_ITEMS" /> من المجلَّدات المشتركة مع نظام التشغيل Linux.</translation>
+<translation id="2379576081295865700">جارٍ التحقّق من مساحة التخزين… تم العثور على ملف واحد.</translation>
 <translation id="2383454254762599978">نقل إلى "المهملات"</translation>
 <translation id="2387458720915042159">نوع الاتصال بالخادم الوكيل</translation>
 <translation id="2389832672041313158">البورمية/ميانمار</translation>
@@ -197,7 +198,6 @@
 <translation id="2544853746127077729">تمّ رفض شهادة المصادقة بواسطة الشبكة</translation>
 <translation id="255937426064304553">الأمريكية الدولية</translation>
 <translation id="2563185590376525700">ضفدع</translation>
-<translation id="2574327434504608656">‏تمت مشاركة مجلد واحد مع الجهاز الافتراضي Bruschetta.</translation>
 <translation id="2578394532502990878">التاميلية الصوتية</translation>
 <translation id="2579959351793446050">الأوديا</translation>
 <translation id="2587195714949534472">يجري الإعداد لمزامنة <ph name="FILE_NAME" />…</translation>
@@ -213,6 +213,7 @@
 <translation id="2718540689505416944">‏تثبيت التطبيق باستخدام نظام التشغيل Linux</translation>
 <translation id="2719020180254996569">الشبكة <ph name="NETWORK_INDEX" /> من <ph name="NETWORK_COUNT" />، الشبكة <ph name="NETWORK_NAME" />، حالة الاتصال <ph name="CONNECTION_STATUS" />، التفاصيل</translation>
 <translation id="2724954091494693138">‏التركية باستخدام لوحة مفاتيح F</translation>
+<translation id="2732288874651063549">إدارة المشاركة مع "<ph name="VM_NAME" />"</translation>
 <translation id="2732839045120506979">‏الفيتنامية باستخدام لوحة مفاتيح VNI</translation>
 <translation id="2735623501230989521">‏يمكنك منح نظام Parallels Desktop الإذن للوصول إلى الملفات في مجلد <ph name="FOLDER_NAME" />.</translation>
 <translation id="2764206540577097904">‏لقد استهلكت كل مساحة التخزين الشخصية على Google Workspace.</translation>
@@ -297,7 +298,6 @@
 <translation id="3408072735282270043">تفعيل، <ph name="NETWORK_NAME" /></translation>
 <translation id="3408236822532681288">‏الألمانية (ألمانيا) باستخدام لوحة مفاتيح Neo 2</translation>
 <translation id="3414856743105198592">يؤدي تنسيق الوسائط القابلة للإزالة إلى مسح جميع البيانات. هل تريد المتابعة؟</translation>
-<translation id="3435143625481187092">‏سيتم منح الجهاز الافتراضي Bruschetta إذن الوصول إلى الملفات في مجلد "<ph name="FOLDER_NAME" />".</translation>
 <translation id="3437801641691368414">وقت الإنشاء</translation>
 <translation id="343907260260897561">كاميرا فورية</translation>
 <translation id="3455931012307786678">الإستونية</translation>
@@ -308,6 +308,7 @@
 <translation id="3509680540198371098">الشبكة <ph name="NETWORK_INDEX" /> من <ph name="NETWORK_COUNT" />، الشبكة <ph name="NETWORK_NAME" />، حالة الأمان <ph name="SECURITY_STATUS" />، حالة الاتصال <ph name="CONNECTION_STATUS" />، قوة الإشارة <ph name="SIGNAL_STRENGTH" />%، التفاصيل</translation>
 <translation id="3511705761158917664">يجري الإعداد لمزامنة <ph name="NUMBER_OF_ITEMS" /> عنصر…</translation>
 <translation id="3522708245912499433">البرتغالية</translation>
+<translation id="3523225005467146490">تمت مشاركة مجلد واحد مع "<ph name="VM_NAME" />".</translation>
 <translation id="3524311639100184459">تنبيه: هذه الملفات مؤقتة وقد يتم حذفها تلقائيًا لتوفير مساحة على القرص.  <ph name="BEGIN_LINK" />مزيد من المعلومات<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">المجلد</translation>
 <translation id="3548125359243647069">لقد أدخلت رقم تعريف شخصي غير صحيح عدّة مرات.</translation>
@@ -385,7 +386,6 @@
 <translation id="4159731583141908892">تم نقل <ph name="FILE_NAME" />.</translation>
 <translation id="4176286497474237543">إفراغ المهملات الآن</translation>
 <translation id="4179621117429069925">هذا العنصر موضوع في "المهملات"</translation>
-<translation id="4181839429935094755">‏ستتم مشاركة <ph name="NUMBER_OF_ITEMS" /> مجلد مع الجهاز الافتراضي Bruschetta.</translation>
 <translation id="4186579485882418952">‏تفعيل "مستندات Google بلا إنترنت"</translation>
 <translation id="4193154014135846272">‏مستند Google</translation>
 <translation id="4197674956721858839">تحديد ملف مضغوط</translation>
@@ -452,7 +452,6 @@
 <translation id="4646813851450205600">‏التشيكية باستخدام لوحة مفاتيح Qwerty</translation>
 <translation id="4656777537938206294">إتاحة الوصول إلى الملفات بلا اتصال بالإنترنت</translation>
 <translation id="4658782175094886150">شخص مغطّى بالثلج</translation>
-<translation id="466782788172479199">‏سيتم منح الجهاز الافتراضي Bruschetta إذن الوصول إلى الملفات في Google Drive. ستتمّ مزامنة التغييرات مع الأجهزة الأخرى.</translation>
 <translation id="4669606053856530811">سيفقد أعضاء '<ph name="SOURCE_NAME" />' إمكانية الوصول ما لم تتم مشاركة هذه العناصر معهم.</translation>
 <translation id="467809019005607715">‏العروض التقديمية من Google</translation>
 <translation id="4690246192099372265">السويدية</translation>
@@ -469,7 +468,7 @@
 <translation id="4725511304875193254">كورجي</translation>
 <translation id="4737050008115666127">هبوط</translation>
 <translation id="4747271164117300400">المقدونية</translation>
-<translation id="4759238208242260848">الملفات التي تم تنزيلها</translation>
+<translation id="4759238208242260848">عمليات التنزيل</translation>
 <translation id="4779041693283480986">البرتغالية (البرتغال)</translation>
 <translation id="4779136857077979611">كرات الأرز</translation>
 <translation id="4784330909746505604">‏عرض تقديمي من PowerPoint</translation>
@@ -564,7 +563,6 @@
 <translation id="5323213332664049067">أمريكا اللاتينية</translation>
 <translation id="5330145655348521461">تم فتح هذه الملفات على جهاز سطح مكتب آخر. يمكنك الانتقال إلى <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />) للاطلاع عليها.</translation>
 <translation id="5330512191124428349">الحصول على معلومات</translation>
-<translation id="5344246330454251646">‏إدارة إعدادات المشاركة مع الجهاز الافتراضي Bruschetta</translation>
 <translation id="535792325654997756">شخص مع قطط</translation>
 <translation id="5358764674931277">عدد اللقطات في الثانية</translation>
 <translation id="5363339716524495120">لغة الإدخال هي الصينية</translation>
@@ -670,6 +668,8 @@
 <translation id="6164412158936057769">فراشات</translation>
 <translation id="6165508094623778733">مزيد من المعلومات</translation>
 <translation id="6170470584681422115">ساندويتش</translation>
+<translation id="6177854567773392726">جارٍ التحقّق من مساحة التخزين… تم العثور على <ph name="ITEMS_FOUND" /> ملف.</translation>
+<translation id="6181912134988520389">‏سيتم منح "<ph name="VM_NAME" />" إذن الوصول إلى الملفات في Google Drive. ستتم مزامنة التغييرات مع الأجهزة الأخرى.</translation>
 <translation id="6187719147498869044">المجرية</translation>
 <translation id="6198252989419008588">تغيير رقم التعريف الشخصي</translation>
 <translation id="6199801702437275229">في انتظار معلومات المساحة...</translation>
@@ -732,7 +732,6 @@
 <translation id="6710213216561001401">السابق</translation>
 <translation id="6732801395666424405">لم يتم تحميل الشهادات</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />]</translation>
-<translation id="6740270213273127264">‏مشاركة المجلد مع الجهاز الافتراضي Bruschetta</translation>
 <translation id="6750737795876287924">الدليل الحالي</translation>
 <translation id="6751256176799620176">تم اختيار مجلد واحد</translation>
 <translation id="6755827872271341378">‏جهاز ChromeOS Flex</translation>
@@ -774,6 +773,7 @@
 <translation id="6989942356279143254">السويدية</translation>
 <translation id="6990081529015358884">لقد نفدت المساحة</translation>
 <translation id="6993826899923627728">هذه العناصر موضوعة في "المهملات"</translation>
+<translation id="6996593023542748157">مشاركة المجلد مع "<ph name="VM_NAME" />"</translation>
 <translation id="7008426324576352165">تحتاج مؤسستك إلى مساحة تخزين إضافية لإكمال التحميل.</translation>
 <translation id="7009985720488544166">تحظر سياسة المشرف إمكانية نقل الملفات البالغ عددها <ph name="COUNT" />.</translation>
 <translation id="7012943028104619157"><ph name="ROOT_TITLE" /> (<ph name="ROOT_SUMMARY" />)</translation>
@@ -959,6 +959,7 @@
 <translation id="8335837413233998004">البيلاروسية</translation>
 <translation id="8336153091935557858">الأمس <ph name="YESTERDAY_DAYTIME" /></translation>
 <translation id="8342318071240498787">هناك ملف أو دليل موجود بهذا الاسم فعلاً.</translation>
+<translation id="83651606385705612">سيتم منح "<ph name="VM_NAME" />" إذن الوصول إلى الملفات في مجلد "<ph name="FOLDER_NAME" />".</translation>
 <translation id="8372369524088641025">‏مفتاح WEP غير صالح</translation>
 <translation id="8372852072747894550">اليونانية</translation>
 <translation id="8386903983509584791">اكتملت عملية الفحص.</translation>
@@ -968,6 +969,7 @@
 <translation id="8408068190360279472">شبكة <ph name="NETWORK_TYPE" />، جارٍ الاتصال</translation>
 <translation id="8425213833346101688">تغيير</translation>
 <translation id="8428213095426709021">الإعدادات</translation>
+<translation id="8429998526804961548">تمت مشاركة <ph name="NUMBER_OF_ITEMS" /> مجلد مع "<ph name="VM_NAME" />".</translation>
 <translation id="8431909052837336408">‏تغيير رمز PIN لشريحة SIM</translation>
 <translation id="8437209419043462667">الأمريكية</translation>
 <translation id="8452135315243592079">‏شريحة SIM مفقودة</translation>

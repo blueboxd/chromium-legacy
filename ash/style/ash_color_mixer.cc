@@ -672,10 +672,14 @@ void AddAshColorMixer(ui::ColorProvider* provider,
 
   mixer[ui::kColorAshSystemUIMenuBackground] = {
       is_jelly_enabled
-          ? static_cast<ui::ColorId>(cros_tokens::kCrosSysBaseElevated)
+          ? static_cast<ui::ColorId>(cros_tokens::kCrosSysSystemBaseElevated)
           : kColorAshShieldAndBase80};
   mixer[ui::kColorAshSystemUIMenuIcon] = {kColorAshIconColorPrimary};
-  mixer[ui::kColorAshSystemUIMenuItemBackgroundSelected] = {kColorAshInkDrop};
+  mixer[ui::kColorAshSystemUIMenuItemBackgroundSelected] = {
+      is_jelly_enabled
+          ? static_cast<ui::ColorId>(cros_tokens::kCrosSysHoverOnSubtle)
+          : kColorAshInkDrop};
+
   mixer[ui::kColorAshSystemUIMenuSeparator] = {kColorAshSeparatorColor};
 
   mixer[kColorAshDialogBackgroundColor] =
@@ -695,11 +699,16 @@ void AddAshColorMixer(ui::ColorProvider* provider,
 
   mixer[kColorAshEcheIconColorStreaming] = {ui::ColorTransform(SK_ColorGREEN)};
 
-  mixer[kColorAshSystemInfoBarChartColorBackground] =
-      use_dark_color ? ui::ColorTransform(gfx::kGoogleGrey500)
-                     : ui::ColorTransform(gfx::kGoogleGrey400);
+  mixer[kColorAshSystemInfoBarChartColorBackground] = {
+      cros_tokens::kCrosSysSystemOnBase};
 
-  mixer[kColorAshSystemInfoBarChartColorForeground] = {gfx::kGoogleBlue300};
+  mixer[kColorAshSystemInfoBarChartColorForeground] = {
+      use_dark_color
+          ? static_cast<ui::ColorId>(cros_tokens::kCrosSysPrimaryDark)
+          : static_cast<ui::ColorId>(cros_tokens::kCrosSysPrimary)};
+
+  mixer[kColorAshSystemInfoBarChartWarningColorForeground] = {
+      cros_tokens::kCrosSysError};
 
   mixer[kColorAshMultiSelectTextColor] =
       use_dark_color ? ui::ColorTransform(gfx::kGoogleBlue100)
@@ -776,9 +785,10 @@ void AddAshColorMixer(ui::ColorProvider* provider,
   mixer[ui::kColorTooltipBackground] = {cros_tokens::kCrosSysOnSurface};
   mixer[ui::kColorTooltipForeground] = {cros_tokens::kCrosSysInverseOnSurface};
 
-  if (is_jelly_enabled && !key.custom_theme) {
-    // Only override frame color if there's no custom theme or we'll
-    // override the value from the theme.
+  if (is_jelly_enabled && !key.custom_theme && !key.is_grayscale) {
+    // Only override frame color if there's no custom theme or we'll override
+    // the value from the theme. Fallback to the default ui/color definition for
+    // grayscale headers.
     mixer[ui::kColorFrameActive] = {cros_tokens::kCrosSysHeader};
     mixer[ui::kColorFrameInactive] = {cros_tokens::kCrosSysHeaderUnfocused};
   }

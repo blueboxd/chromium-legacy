@@ -81,24 +81,30 @@ void GlanceablesClassroomCourseWorkItem::SetCourseWorkItem(
     const google_apis::classroom::CourseWorkItem* course_work) {
   CHECK(!course_work_item_set_);
   course_work_item_set_ = true;
+  can_course_work_item_be_revalidated_ = false;
 
   title_ = course_work->title();
   link_ = course_work->alternate_link();
   due_ = ConvertCourseWorkItemDue(course_work->due_date_time());
+  creation_time_ = course_work->creation_time();
   last_update_ = course_work->last_update();
 }
 
 void GlanceablesClassroomCourseWorkItem::AddStudentSubmission(
     const google_apis::classroom::StudentSubmission* submission) {
-  ++total_submissions_;
+  ++current_submissions_state_.total_count;
+  if (submission->last_update().has_value() &&
+      submission->last_update() > most_recent_submission_update_time_) {
+    most_recent_submission_update_time_ = submission->last_update().value();
+  }
 
   switch (CalculateStudentSubmissionState(submission)) {
     case GlanceablesClassroomStudentSubmissionState::kGraded:
-      ++turned_in_submissions_;
-      ++graded_submissions_;
+      ++current_submissions_state_.number_turned_in;
+      ++current_submissions_state_.number_graded;
       break;
     case GlanceablesClassroomStudentSubmissionState::kTurnedIn:
-      ++turned_in_submissions_;
+      ++current_submissions_state_.number_turned_in;
       break;
     case GlanceablesClassroomStudentSubmissionState::kAssigned:
     case GlanceablesClassroomStudentSubmissionState::kOther:
@@ -107,50 +113,65 @@ void GlanceablesClassroomCourseWorkItem::AddStudentSubmission(
 }
 
 void GlanceablesClassroomCourseWorkItem::InvalidateStudentSubmissions() {
-  last_submissions_fetch_ = base::Time();
+  previous_submissions_state_ = current_submissions_state_;
 
-  total_submissions_ = 0;
-  turned_in_submissions_ = 0;
-  graded_submissions_ = 0;
+  current_submissions_state_.Reset();
+}
+
+void GlanceablesClassroomCourseWorkItem::RestorePreviousStudentSubmissions() {
+  if (!previous_submissions_state_) {
+    return;
+  }
+
+  current_submissions_state_ = *previous_submissions_state_;
+  previous_submissions_state_.reset();
 }
 
 void GlanceablesClassroomCourseWorkItem::InvalidateCourseWorkItem() {
+  can_course_work_item_be_revalidated_ = course_work_item_set_;
   course_work_item_set_ = false;
 }
 
-std::unique_ptr<GlanceablesClassroomAssignment>
-GlanceablesClassroomCourseWorkItem::CreateClassroomAssignment(
-    const std::string& course_name,
-    bool include_aggregated_submissions_state,
+void GlanceablesClassroomCourseWorkItem::RevalidateCourseWorkItem() {
+  if (can_course_work_item_be_revalidated_) {
+    course_work_item_set_ = true;
+  }
+}
+
+bool GlanceablesClassroomCourseWorkItem::SatisfiesPredicates(
     base::RepeatingCallback<bool(const absl::optional<base::Time>&)>
         due_predicate,
     base::RepeatingCallback<bool(GlanceablesClassroomStudentSubmissionState)>
         submission_state_predicate) const {
   if (!IsValid()) {
-    return nullptr;
+    return false;
   }
 
   if (!due_predicate.Run(due_)) {
-    return nullptr;
+    return false;
   }
 
   GlanceablesClassroomStudentSubmissionState effective_state =
       GlanceablesClassroomStudentSubmissionState::kAssigned;
-  if (total_submissions_ == graded_submissions_) {
+  if (total_submissions() == graded_submissions()) {
     effective_state = GlanceablesClassroomStudentSubmissionState::kGraded;
-  } else if (total_submissions_ == turned_in_submissions_) {
+  } else if (total_submissions() == turned_in_submissions()) {
     effective_state = GlanceablesClassroomStudentSubmissionState::kTurnedIn;
   }
 
-  if (!submission_state_predicate.Run(effective_state)) {
-    return nullptr;
-  }
+  return submission_state_predicate.Run(effective_state);
+}
+
+std::unique_ptr<GlanceablesClassroomAssignment>
+GlanceablesClassroomCourseWorkItem::CreateClassroomAssignment(
+    const std::string& course_name,
+    bool include_aggregated_submissions_state) const {
+  CHECK(IsValid());
 
   absl::optional<GlanceablesClassroomAggregatedSubmissionsState>
       aggregated_submissions_state;
   if (include_aggregated_submissions_state) {
-    aggregated_submissions_state.emplace(
-        total_submissions_, turned_in_submissions_, graded_submissions_);
+    aggregated_submissions_state = current_submissions_state_;
   }
   return std::make_unique<GlanceablesClassroomAssignment>(
       course_name, title_, link_, due_, last_update_,
@@ -158,7 +179,7 @@ GlanceablesClassroomCourseWorkItem::CreateClassroomAssignment(
 }
 
 bool GlanceablesClassroomCourseWorkItem::IsValid() const {
-  return course_work_item_set_ && total_submissions_ > 0;
+  return course_work_item_set_ && total_submissions() > 0;
 }
 
 bool GlanceablesClassroomCourseWorkItem::StudentSubmissionsNeedRefetch(
@@ -182,7 +203,7 @@ bool GlanceablesClassroomCourseWorkItem::StudentSubmissionsNeedRefetch(
     return true;
   }
 
-  if (graded_submissions_ < total_submissions_ &&
+  if (graded_submissions() < total_submissions() &&
       time_from_last_refresh > base::Days(7)) {
     return true;
   }
@@ -213,6 +234,7 @@ void GlanceablesClassroomCourseWorkItem::SetHasFreshSubmissionsState(
     const base::Time& now) {
   has_fresh_submissions_state_ = value;
   if (has_fresh_submissions_state_) {
+    previous_submissions_state_.reset();
     last_submissions_fetch_ = now;
   }
 }

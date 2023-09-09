@@ -64,11 +64,14 @@ class LayerTreeFrameSinkHolder : public cc::LayerTreeFrameSinkClient,
   // If a frame is submitted "now" (meaning before returning to event loop)
   // via SubmitCompositorFrame(), whether it needs full damage.
   bool NeedsFullDamageForNextFrame() const { return cached_frame_.has_value(); }
-  void SubmitCompositorFrame(viz::CompositorFrame frame);
+  void SubmitCompositorFrame(viz::CompositorFrame frame,
+                             bool submit_now = false);
   void SetLocalSurfaceId(const viz::LocalSurfaceId& local_surface_id);
 
-  float LastSubmittedDeviceScaleFactor() const;
-  const gfx::Size& LastSubmittedSizeInPixels() const;
+  // Properties of the `frame` from the last `SubmitCompositorFrame()` call,
+  // either from `cached_frame_`, or `frame_sink_`.
+  float LastDeviceScaleFactor() const;
+  const gfx::Size& LastSizeInPixels() const;
 
   // Returns true if owned LayerTreeFrameSink has been lost.
   bool is_lost() const { return is_lost_; }

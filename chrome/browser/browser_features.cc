@@ -166,17 +166,10 @@ BASE_FEATURE(kWebUsbDeviceDetection,
              "WebUsbDeviceDetection",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
-#if BUILDFLAG(IS_ANDROID)
-// Enables Certificate Transparency on Android.
-BASE_FEATURE(kCertificateTransparencyAndroid,
-             "CertificateTransparencyAndroid",
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-             base::FEATURE_ENABLED_BY_DEFAULT);
-#else
-             base::FEATURE_DISABLED_BY_DEFAULT);
-#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
-#else
 // Enables Certificate Transparency on Desktop.
+// Enabling CT enforcement requires maintaining a log policy, and the ability to
+// update the list of accepted logs. Embedders who are planning to enable this
+// should first reach out to chrome-certificate-transparency@google.com.
 BASE_FEATURE(kCertificateTransparencyAskBeforeEnabling,
              "CertificateTransparencyAskBeforeEnabling",
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
@@ -184,7 +177,6 @@ BASE_FEATURE(kCertificateTransparencyAskBeforeEnabling,
 #else
              base::FEATURE_DISABLED_BY_DEFAULT);
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
-#endif  // BUILDFLAG(IS_ANDROID)
 
 BASE_FEATURE(kLargeFaviconFromGoogle,
              "LargeFaviconFromGoogle",
@@ -215,7 +207,7 @@ BASE_FEATURE(kAppBoundEncryptionMetrics,
 // TODO(crbug.com/1430226): Remove after fully launched.
 BASE_FEATURE(kLockProfileCookieDatabase,
              "LockProfileCookieDatabase",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 #endif
 
 // Enables showing the email of the flex org admin that setup CBCM in the

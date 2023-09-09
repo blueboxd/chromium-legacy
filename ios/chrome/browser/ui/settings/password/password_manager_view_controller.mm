@@ -85,10 +85,6 @@
 #import "ui/base/l10n/l10n_util_mac.h"
 #import "url/gurl.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 using base::UmaHistogramEnumeration;
 using password_manager::features::IsPasswordCheckupEnabled;
 using password_manager::metrics_util::PasswordCheckInteraction;
@@ -197,16 +193,6 @@ bool AreIssuesEqual(const std::vector<password_manager::AffiliatedGroup>& lhs,
     ChromeAccountManagerServiceObserver,
     PopoverLabelViewControllerDelegate,
     TableViewIllustratedEmptyViewDelegate> {
-  // The header for save passwords switch section.
-  TableViewLinkHeaderFooterItem* _manageAccountLinkItem;
-  // The item related to the password check status.
-  SettingsCheckItem* _passwordProblemsItem;
-  // The button to start password check.
-  TableViewTextItem* _checkForProblemsItem;
-  // The button to add a password.
-  TableViewTextItem* _addPasswordItem;
-  // The list of the user's saved passwords.
-  std::vector<password_manager::CredentialUIEntry> _passwords;
   // Boolean indicating that passwords are being saved in an account if YES,
   // and locally if NO.
   BOOL _savingPasswordsToAccount;
@@ -225,6 +211,9 @@ bool AreIssuesEqual(const std::vector<password_manager::AffiliatedGroup>& lhs,
   BOOL _tableIsInSearchMode;
   // Whether the favicon metric was already logged.
   BOOL _faviconMetricLogged;
+  // Whether the search controller should be set as active when the view is
+  // presented.
+  BOOL _shouldOpenInSearchMode;
 }
 
 // Current passwords search term.
@@ -279,16 +268,35 @@ bool AreIssuesEqual(const std::vector<password_manager::AffiliatedGroup>& lhs,
 // The PrefService passed to this instance.
 @property(nonatomic, assign) PrefService* prefService;
 
+// The header for save passwords switch section.
+@property(nonatomic, readonly)
+    TableViewLinkHeaderFooterItem* manageAccountLinkItem;
+
+// The item related to the password check status.
+@property(nonatomic, readonly) SettingsCheckItem* passwordProblemsItem;
+
+// The button to start password check.
+@property(nonatomic, readonly) TableViewTextItem* checkForProblemsItem;
+
+// The button to add a password.
+@property(nonatomic, readonly) TableViewTextItem* addPasswordItem;
+
 @end
 
 @implementation PasswordManagerViewController
+
+@synthesize manageAccountLinkItem = _manageAccountLinkItem;
+@synthesize passwordProblemsItem = _passwordProblemsItem;
+@synthesize checkForProblemsItem = _checkForProblemsItem;
+@synthesize addPasswordItem = _addPasswordItem;
 
 #pragma mark - Initialization
 
 - (instancetype)initWithChromeAccountManagerService:
                     (ChromeAccountManagerService*)accountManagerService
                                         prefService:(PrefService*)prefService
-                                        requireAuth:(BOOL)requireAuth {
+                             shouldOpenInSearchMode:
+                                 (BOOL)shouldOpenInSearchMode {
   self = [super initWithStyle:ChromeTableViewStyle()];
   if (self) {
     _prefService = prefService;
@@ -301,8 +309,7 @@ bool AreIssuesEqual(const std::vector<password_manager::AffiliatedGroup>& lhs,
 
     // Default behavior: search bar is enabled.
     self.shouldEnableSearchBar = YES;
-
-    // TODO(crbug.com/1462419): Configure for Auth Mode.
+    _shouldOpenInSearchMode = shouldOpenInSearchMode;
 
     [self updateUIForEditState];
   }
@@ -347,7 +354,6 @@ bool AreIssuesEqual(const std::vector<password_manager::AffiliatedGroup>& lhs,
   UISearchController* searchController =
       [[UISearchController alloc] initWithSearchResultsController:nil];
   self.searchController = searchController;
-
   searchController.obscuresBackgroundDuringPresentation = NO;
   searchController.delegate = self;
 
@@ -387,8 +393,21 @@ bool AreIssuesEqual(const std::vector<password_manager::AffiliatedGroup>& lhs,
 
 - (void)viewWillAppear:(BOOL)animated {
   [super viewWillAppear:animated];
-
   self.navigationController.toolbarHidden = NO;
+}
+
+- (void)viewDidAppear:(BOOL)animated {
+  [super viewDidAppear:animated];
+  if (_shouldOpenInSearchMode) {
+    // Queue search bar focus so the keyboard animation doesn't collide with
+    // other animations.
+    __weak __typeof(self.searchController.searchBar) weakSearchBar =
+        self.searchController.searchBar;
+    base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
+        FROM_HERE, base::BindOnce(^{
+          [weakSearchBar becomeFirstResponder];
+        }));
+  }
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
@@ -400,11 +419,16 @@ bool AreIssuesEqual(const std::vector<password_manager::AffiliatedGroup>& lhs,
     [self logMetricsForFavicons];
     _faviconMetricLogged = YES;
   }
+}
+
+- (void)viewDidDisappear:(BOOL)animated {
+  [super viewDidDisappear:animated];
 
   // Dismiss the search bar if presented; otherwise UIKit may retain it and
   // cause a memory leak. If this dismissal happens before viewWillDisappear
   // (e.g., settingsWillBeDismissed) an internal UIKit crash occurs. See also:
-  // crbug.com/947417, crbug.com/1350625.
+  // crbug.com/947417, crbug.com/1350625. Dismissing in viewDidDisappear to make
+  // sure that it happens when the view is well and truly gone.
   if (self.navigationItem.searchController.active == YES) {
     self.navigationItem.searchController.active = NO;
   }
@@ -451,30 +475,19 @@ bool AreIssuesEqual(const std::vector<password_manager::AffiliatedGroup>& lhs,
 
   TableViewModel* model = self.tableViewModel;
 
-  if (!_manageAccountLinkItem) {
-    _manageAccountLinkItem = [self manageAccountLinkItem];
-  }
-
   // Don't show sections hidden when search controller is displayed.
   if (!_tableIsInSearchMode) {
     // Manage account header.
     [model addSectionWithIdentifier:SectionIdentifierManageAccountHeader];
-    [model setHeader:_manageAccountLinkItem
+    [model setHeader:self.manageAccountLinkItem
         forSectionWithIdentifier:SectionIdentifierManageAccountHeader];
 
     // Password check.
     [model addSectionWithIdentifier:SectionIdentifierPasswordCheck];
-    if (!_passwordProblemsItem) {
-      _passwordProblemsItem = [self passwordProblemsItem];
-    }
 
     [self updatePasswordCheckStatusLabelWithState:_passwordCheckState];
-    [model addItem:_passwordProblemsItem
+    [model addItem:self.passwordProblemsItem
         toSectionWithIdentifier:SectionIdentifierPasswordCheck];
-
-    if (!_checkForProblemsItem) {
-      _checkForProblemsItem = [self checkForProblemsItem];
-    }
 
     [self updatePasswordCheckButtonWithState:_passwordCheckState];
 
@@ -482,7 +495,7 @@ bool AreIssuesEqual(const std::vector<password_manager::AffiliatedGroup>& lhs,
     // enabled and the current PasswordCheckUIState requires the button to be
     // shown.
     if (!IsPasswordCheckupEnabled() || self.shouldShowCheckButton) {
-      [model addItem:_checkForProblemsItem
+      [model addItem:self.checkForProblemsItem
           toSectionWithIdentifier:SectionIdentifierPasswordCheck];
     }
 
@@ -498,8 +511,7 @@ bool AreIssuesEqual(const std::vector<password_manager::AffiliatedGroup>& lhs,
     // Add Password button.
     if ([self allowsAddPassword]) {
       [model addSectionWithIdentifier:SectionIdentifierAddPasswordButton];
-      _addPasswordItem = [self addPasswordItem];
-      [model addItem:_addPasswordItem
+      [model addItem:self.addPasswordItem
           toSectionWithIdentifier:SectionIdentifierAddPasswordButton];
     }
   }
@@ -631,51 +643,63 @@ bool AreIssuesEqual(const std::vector<password_manager::AffiliatedGroup>& lhs,
 
 #pragma mark - Items
 - (TableViewLinkHeaderFooterItem*)manageAccountLinkItem {
-  TableViewLinkHeaderFooterItem* header =
+  if (_manageAccountLinkItem) {
+    return _manageAccountLinkItem;
+  }
+
+  _manageAccountLinkItem =
       [[TableViewLinkHeaderFooterItem alloc] initWithType:ItemTypeLinkHeader];
 
   if (_savingPasswordsToAccount) {
-    header.text =
+    _manageAccountLinkItem.text =
         l10n_util::GetNSString(IDS_IOS_SAVE_PASSWORDS_MANAGE_ACCOUNT_HEADER);
 
-    header.urls = @[ [[CrURL alloc]
+    _manageAccountLinkItem.urls = @[ [[CrURL alloc]
         initWithGURL:
             google_util::AppendGoogleLocaleParam(
                 GURL(password_manager::kPasswordManagerHelpCenteriOSURL),
                 GetApplicationContext()->GetApplicationLocale())] ];
   } else {
-    header.text =
+    _manageAccountLinkItem.text =
         l10n_util::GetNSString(IDS_IOS_PASSWORD_MANAGER_HEADER_NOT_SYNCING);
-    header.urls = @[];
+    _manageAccountLinkItem.urls = @[];
   }
 
-  return header;
+  return _manageAccountLinkItem;
 }
 
 - (SettingsCheckItem*)passwordProblemsItem {
-  SettingsCheckItem* passwordProblemsItem =
+  if (_passwordProblemsItem) {
+    return _passwordProblemsItem;
+  }
+
+  _passwordProblemsItem =
       [[SettingsCheckItem alloc] initWithType:ItemTypePasswordCheckStatus];
-  passwordProblemsItem.enabled = NO;
-  passwordProblemsItem.text =
+  _passwordProblemsItem.enabled = NO;
+  _passwordProblemsItem.text =
       IsPasswordCheckupEnabled()
           ? l10n_util::GetNSString(IDS_IOS_PASSWORD_CHECKUP)
           : l10n_util::GetNSString(IDS_IOS_CHECK_PASSWORDS);
-  passwordProblemsItem.detailText =
+  _passwordProblemsItem.detailText =
       IsPasswordCheckupEnabled()
           ? l10n_util::GetNSString(IDS_IOS_PASSWORD_CHECKUP_DESCRIPTION)
           : l10n_util::GetNSString(IDS_IOS_CHECK_PASSWORDS_DESCRIPTION);
-  passwordProblemsItem.accessibilityTraits = UIAccessibilityTraitHeader;
-  return passwordProblemsItem;
+  _passwordProblemsItem.accessibilityTraits = UIAccessibilityTraitHeader;
+  return _passwordProblemsItem;
 }
 
 - (TableViewTextItem*)checkForProblemsItem {
-  TableViewTextItem* checkForProblemsItem =
+  if (_checkForProblemsItem) {
+    return _checkForProblemsItem;
+  }
+
+  _checkForProblemsItem =
       [[TableViewTextItem alloc] initWithType:ItemTypeCheckForProblemsButton];
-  checkForProblemsItem.text =
+  _checkForProblemsItem.text =
       l10n_util::GetNSString(IDS_IOS_CHECK_PASSWORDS_NOW_BUTTON);
-  checkForProblemsItem.textColor = [UIColor colorNamed:kTextSecondaryColor];
-  checkForProblemsItem.accessibilityTraits = UIAccessibilityTraitButton;
-  return checkForProblemsItem;
+  _checkForProblemsItem.textColor = [UIColor colorNamed:kTextSecondaryColor];
+  _checkForProblemsItem.accessibilityTraits = UIAccessibilityTraitButton;
+  return _checkForProblemsItem;
 }
 
 - (TableViewLinkHeaderFooterItem*)lastCompletedCheckTime {
@@ -687,33 +711,17 @@ bool AreIssuesEqual(const std::vector<password_manager::AffiliatedGroup>& lhs,
 }
 
 - (TableViewTextItem*)addPasswordItem {
-  TableViewTextItem* addPasswordItem =
-      [[TableViewTextItem alloc] initWithType:ItemTypeAddPasswordButton];
-  addPasswordItem.text = l10n_util::GetNSString(IDS_IOS_ADD_PASSWORD);
-  addPasswordItem.accessibilityIdentifier = kAddPasswordButtonId;
-  addPasswordItem.accessibilityTraits = UIAccessibilityTraitButton;
-  addPasswordItem.textColor = [UIColor colorNamed:kBlueColor];
-  return addPasswordItem;
-}
-
-- (CredentialTableViewItem*)savedFormItemForCredential:
-    (const password_manager::CredentialUIEntry&)credential {
-  CredentialTableViewItem* passwordItem =
-      [[CredentialTableViewItem alloc] initWithType:ItemTypeSavedPassword];
-  passwordItem.credential = credential;
-  passwordItem.showLocalOnlyIcon =
-      [self.delegate shouldShowLocalOnlyIconForCredential:credential];
-  passwordItem.accessibilityTraits |= UIAccessibilityTraitButton;
-  passwordItem.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
-  if (self.mostRecentlyUpdatedPassword) {
-    if (self.mostRecentlyUpdatedPassword->username == credential.username &&
-        self.mostRecentlyUpdatedPassword->GetFirstSignonRealm() ==
-            credential.GetFirstSignonRealm()) {
-      self.mostRecentlyUpdatedItem = passwordItem;
-      self.mostRecentlyUpdatedPassword = absl::nullopt;
-    }
+  if (_addPasswordItem) {
+    return _addPasswordItem;
   }
-  return passwordItem;
+
+  _addPasswordItem =
+      [[TableViewTextItem alloc] initWithType:ItemTypeAddPasswordButton];
+  _addPasswordItem.text = l10n_util::GetNSString(IDS_IOS_ADD_PASSWORD);
+  _addPasswordItem.accessibilityIdentifier = kAddPasswordButtonId;
+  _addPasswordItem.accessibilityTraits = UIAccessibilityTraitButton;
+  _addPasswordItem.textColor = [UIColor colorNamed:kBlueColor];
+  return _addPasswordItem;
 }
 
 - (AffiliatedGroupTableViewItem*)savedFormItemForAffiliatedGroup:
@@ -736,13 +744,11 @@ bool AreIssuesEqual(const std::vector<password_manager::AffiliatedGroup>& lhs,
   return passwordItem;
 }
 
-- (CredentialTableViewItem*)blockedSiteItem:
+- (BlockedSiteTableViewItem*)blockedSiteItem:
     (const password_manager::CredentialUIEntry&)credential {
-  CredentialTableViewItem* passwordItem =
-      [[CredentialTableViewItem alloc] initWithType:ItemTypeBlocked];
+  BlockedSiteTableViewItem* passwordItem =
+      [[BlockedSiteTableViewItem alloc] initWithType:ItemTypeBlocked];
   passwordItem.credential = credential;
-  passwordItem.showLocalOnlyIcon =
-      [self.delegate shouldShowLocalOnlyIconForCredential:credential];
   passwordItem.accessibilityTraits |= UIAccessibilityTraitButton;
   passwordItem.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
   return passwordItem;
@@ -755,25 +761,6 @@ bool AreIssuesEqual(const std::vector<password_manager::AffiliatedGroup>& lhs,
 }
 
 #pragma mark - Actions
-
-// Called when the user clicks on the information button of the managed
-// setting's UI. Shows a textual bubble with the information of the enterprise.
-- (void)didTapManagedUIInfoButton:(UIButton*)buttonView {
-  EnterpriseInfoPopoverViewController* bubbleViewController =
-      [[EnterpriseInfoPopoverViewController alloc] initWithEnterpriseName:nil];
-  bubbleViewController.delegate = self;
-  [self presentViewController:bubbleViewController animated:YES completion:nil];
-
-  // Disable the button when showing the bubble.
-  buttonView.enabled = NO;
-
-  // Set the anchor and arrow direction of the bubble.
-  bubbleViewController.popoverPresentationController.sourceView = buttonView;
-  bubbleViewController.popoverPresentationController.sourceRect =
-      buttonView.bounds;
-  bubbleViewController.popoverPresentationController.permittedArrowDirections =
-      UIPopoverArrowDirectionAny;
-}
 
 // Called when user tapped on the information button of the password check
 // item. Shows popover with detailed description of an error.
@@ -828,33 +815,6 @@ bool AreIssuesEqual(const std::vector<password_manager::AffiliatedGroup>& lhs,
   }
 
   _passwordCheckState = state;
-}
-
-// TODO(crbug.com/1359392): Remove this.
-- (void)setPasswords:(std::vector<password_manager::CredentialUIEntry>)passwords
-        blockedSites:
-            (std::vector<password_manager::CredentialUIEntry>)blockedSites {
-  if (!_didReceivePasswords) {
-    _blockedSites = std::move(blockedSites);
-    _passwords = std::move(passwords);
-    [self hideLoadingSpinnerBackground];
-  } else {
-    // The CredentialUIEntry equality operator ignores the password stores, but
-    // this UI cares, c.f. password_manager::ShouldShowLocalOnlyIcon().
-    // The CredentialUIEntry equality operator ignores password notes, but the
-    // UI should be updated so that any changes to just notes are visible.
-    if (_passwords == passwords && _blockedSites == blockedSites &&
-        AreStoresEqual(_passwords, passwords) &&
-        AreIssuesEqual(_passwords, passwords) &&
-        AreNotesEqual(_passwords, passwords)) {
-      return;
-    }
-
-    _blockedSites = std::move(blockedSites);
-    _passwords = std::move(passwords);
-
-    [self updatePasswordManagerUI];
-  }
 }
 
 - (void)setSavingPasswordsToAccount:(BOOL)savingPasswordsToAccount {
@@ -1012,7 +972,7 @@ bool AreIssuesEqual(const std::vector<password_manager::AffiliatedGroup>& lhs,
         // Add manage account header.
         [model insertSectionWithIdentifier:SectionIdentifierManageAccountHeader
                                    atIndex:sectionIndex];
-        [model setHeader:_manageAccountLinkItem
+        [model setHeader:self.manageAccountLinkItem
             forSectionWithIdentifier:SectionIdentifierManageAccountHeader];
         [self.tableView
               insertSections:[NSIndexSet indexSetWithIndex:sectionIndex]
@@ -1029,7 +989,7 @@ bool AreIssuesEqual(const std::vector<password_manager::AffiliatedGroup>& lhs,
         [self.tableView
               insertSections:[NSIndexSet indexSetWithIndex:sectionIndex]
             withRowAnimation:UITableViewRowAnimationTop];
-        [model addItem:_passwordProblemsItem
+        [model addItem:self.passwordProblemsItem
             toSectionWithIdentifier:SectionIdentifierPasswordCheck];
         [rowsIndexPaths addObject:[NSIndexPath indexPathForRow:0
                                                      inSection:checkSection]];
@@ -1037,7 +997,7 @@ bool AreIssuesEqual(const std::vector<password_manager::AffiliatedGroup>& lhs,
         // enabled and the current PasswordCheckUIState requires the button to
         // be shown.
         if (!IsPasswordCheckupEnabled() || self.shouldShowCheckButton) {
-          [model addItem:_checkForProblemsItem
+          [model addItem:self.checkForProblemsItem
               toSectionWithIdentifier:SectionIdentifierPasswordCheck];
 
           [rowsIndexPaths addObject:[NSIndexPath indexPathForRow:1
@@ -1052,7 +1012,7 @@ bool AreIssuesEqual(const std::vector<password_manager::AffiliatedGroup>& lhs,
           [self.tableView
                 insertSections:[NSIndexSet indexSetWithIndex:sectionIndex]
               withRowAnimation:UITableViewRowAnimationTop];
-          [model addItem:_addPasswordItem
+          [model addItem:self.addPasswordItem
               toSectionWithIdentifier:SectionIdentifierAddPasswordButton];
           [rowsIndexPaths
               addObject:
@@ -1229,7 +1189,7 @@ bool AreIssuesEqual(const std::vector<password_manager::AffiliatedGroup>& lhs,
   if (!_blockedSites.empty()) {
     [model deleteAllItemsFromSectionWithIdentifier:SectionIdentifierBlocked];
     for (const auto& credential : _blockedSites) {
-      CredentialTableViewItem* item = [self blockedSiteItem:credential];
+      BlockedSiteTableViewItem* item = [self blockedSiteItem:credential];
       bool hidden =
           searchTerm.length > 0 &&
           ![item.title localizedCaseInsensitiveContainsString:searchTerm];
@@ -1308,16 +1268,14 @@ bool AreIssuesEqual(const std::vector<password_manager::AffiliatedGroup>& lhs,
 
 // Updates password check button according to provided state.
 - (void)updatePasswordCheckButtonWithState:(PasswordCheckUIState)state {
-  if (!_checkForProblemsItem) {
-    return;
-  }
-
-  _checkForProblemsItem.text =
+  self.checkForProblemsItem.text =
       l10n_util::GetNSString(IDS_IOS_CHECK_PASSWORDS_NOW_BUTTON);
 
   if (self.editing) {
-    _checkForProblemsItem.textColor = [UIColor colorNamed:kTextSecondaryColor];
-    _checkForProblemsItem.accessibilityTraits |= UIAccessibilityTraitNotEnabled;
+    self.checkForProblemsItem.textColor =
+        [UIColor colorNamed:kTextSecondaryColor];
+    self.checkForProblemsItem.accessibilityTraits |=
+        UIAccessibilityTraitNotEnabled;
     return;
   }
 
@@ -1371,23 +1329,20 @@ bool AreIssuesEqual(const std::vector<password_manager::AffiliatedGroup>& lhs,
 
 // Updates password check status label according to provided state.
 - (void)updatePasswordCheckStatusLabelWithState:(PasswordCheckUIState)state {
-  if (!_passwordProblemsItem)
-    return;
-
-  _passwordProblemsItem.trailingImage = nil;
-  _passwordProblemsItem.trailingImageTintColor = nil;
-  _passwordProblemsItem.enabled = !self.editing;
-  _passwordProblemsItem.indicatorHidden = YES;
-  _passwordProblemsItem.infoButtonHidden = YES;
-  _passwordProblemsItem.accessoryType =
+  self.passwordProblemsItem.trailingImage = nil;
+  self.passwordProblemsItem.trailingImageTintColor = nil;
+  self.passwordProblemsItem.enabled = !self.editing;
+  self.passwordProblemsItem.indicatorHidden = YES;
+  self.passwordProblemsItem.infoButtonHidden = YES;
+  self.passwordProblemsItem.accessoryType =
       IsPasswordCheckTappable(state)
           ? UITableViewCellAccessoryDisclosureIndicator
           : UITableViewCellAccessoryNone;
-  _passwordProblemsItem.text =
+  self.passwordProblemsItem.text =
       IsPasswordCheckupEnabled()
           ? l10n_util::GetNSString(IDS_IOS_PASSWORD_CHECKUP)
           : l10n_util::GetNSString(IDS_IOS_CHECK_PASSWORDS);
-  _passwordProblemsItem.detailText =
+  self.passwordProblemsItem.detailText =
       IsPasswordCheckupEnabled()
           ? l10n_util::GetNSString(IDS_IOS_PASSWORD_CHECKUP_DESCRIPTION)
           : l10n_util::GetNSString(IDS_IOS_CHECK_PASSWORDS_DESCRIPTION);
@@ -1395,28 +1350,28 @@ bool AreIssuesEqual(const std::vector<password_manager::AffiliatedGroup>& lhs,
   switch (state) {
     case PasswordCheckStateRunning: {
       if (IsPasswordCheckupEnabled()) {
-        _passwordProblemsItem.text =
+        self.passwordProblemsItem.text =
             l10n_util::GetNSString(IDS_IOS_PASSWORD_CHECKUP_ONGOING);
-        _passwordProblemsItem.detailText =
+        self.passwordProblemsItem.detailText =
             base::SysUTF16ToNSString(l10n_util::GetPluralStringFUTF16(
                 IDS_IOS_PASSWORD_CHECKUP_SITES_AND_APPS_COUNT,
                 _affiliatedGroups.size()));
       }
-      _passwordProblemsItem.indicatorHidden = NO;
+      self.passwordProblemsItem.indicatorHidden = NO;
       break;
     }
     case PasswordCheckStateDisabled: {
-      _passwordProblemsItem.enabled = NO;
+      self.passwordProblemsItem.enabled = NO;
       break;
     }
     case PasswordCheckStateUnmutedCompromisedPasswords: {
-      _passwordProblemsItem.detailText =
+      self.passwordProblemsItem.detailText =
           base::SysUTF16ToNSString(l10n_util::GetPluralStringFUTF16(
               IsPasswordCheckupEnabled()
                   ? IDS_IOS_PASSWORD_CHECKUP_COMPROMISED_COUNT
                   : IDS_IOS_CHECK_PASSWORDS_COMPROMISED_COUNT,
               self.insecurePasswordsCount));
-      _passwordProblemsItem.warningState = WarningState::kSevereWarning;
+      self.passwordProblemsItem.warningState = WarningState::kSevereWarning;
 
       // The red tint color for the compromised password warning here depends on
       // the Password Grouping feature (which will be enabled before Password
@@ -1424,50 +1379,50 @@ bool AreIssuesEqual(const std::vector<password_manager::AffiliatedGroup>& lhs,
       // state to make sure it is the correct one for the Password Grouping
       // feature. TODO(crbug.com/1406871): Remove line when kIOSPasswordCheckup
       // is enabled by default.
-      _passwordProblemsItem.trailingImageTintColor =
+      self.passwordProblemsItem.trailingImageTintColor =
           [UIColor colorNamed:kRed500Color];
       break;
     }
     case PasswordCheckStateReusedPasswords: {
-      _passwordProblemsItem.detailText = l10n_util::GetNSStringF(
+      self.passwordProblemsItem.detailText = l10n_util::GetNSStringF(
           IDS_IOS_PASSWORD_CHECKUP_REUSED_COUNT,
           base::NumberToString16(self.insecurePasswordsCount));
-      _passwordProblemsItem.warningState = WarningState::kWarning;
+      self.passwordProblemsItem.warningState = WarningState::kWarning;
       break;
     }
     case PasswordCheckStateWeakPasswords: {
-      _passwordProblemsItem.detailText = base::SysUTF16ToNSString(
+      self.passwordProblemsItem.detailText = base::SysUTF16ToNSString(
           l10n_util::GetPluralStringFUTF16(IDS_IOS_PASSWORD_CHECKUP_WEAK_COUNT,
                                            self.insecurePasswordsCount));
-      _passwordProblemsItem.warningState = WarningState::kWarning;
+      self.passwordProblemsItem.warningState = WarningState::kWarning;
       break;
     }
     case PasswordCheckStateDismissedWarnings: {
-      _passwordProblemsItem.detailText =
+      self.passwordProblemsItem.detailText =
           base::SysUTF16ToNSString(l10n_util::GetPluralStringFUTF16(
               IDS_IOS_PASSWORD_CHECKUP_DISMISSED_COUNT,
               self.insecurePasswordsCount));
-      _passwordProblemsItem.warningState = WarningState::kWarning;
+      self.passwordProblemsItem.warningState = WarningState::kWarning;
       break;
     }
     case PasswordCheckStateSafe: {
-      _passwordProblemsItem.detailText =
+      self.passwordProblemsItem.detailText =
           IsPasswordCheckupEnabled()
               ? [self.delegate formattedElapsedTimeSinceLastCheck]
               : base::SysUTF16ToNSString(l10n_util::GetPluralStringFUTF16(
                     IDS_IOS_PASSWORD_CHECKUP_COMPROMISED_COUNT, 0));
-      _passwordProblemsItem.warningState = WarningState::kSafe;
+      self.passwordProblemsItem.warningState = WarningState::kSafe;
       break;
     }
     case PasswordCheckStateDefault:
       break;
     case PasswordCheckStateError:
     case PasswordCheckStateSignedOut: {
-      _passwordProblemsItem.detailText =
+      self.passwordProblemsItem.detailText =
           IsPasswordCheckupEnabled()
               ? l10n_util::GetNSString(IDS_IOS_PASSWORD_CHECKUP_ERROR)
               : l10n_util::GetNSString(IDS_IOS_PASSWORD_CHECK_ERROR);
-      _passwordProblemsItem.infoButtonHidden = NO;
+      self.passwordProblemsItem.infoButtonHidden = NO;
       break;
     }
   }
@@ -1479,35 +1434,30 @@ bool AreIssuesEqual(const std::vector<password_manager::AffiliatedGroup>& lhs,
   }
 }
 
-// Enables or disables the `_checkForProblemsItem` and sets it up accordingly.
+// Enables or disables the `checkForProblemsItem` and sets it up accordingly.
 - (void)setCheckForProblemsItemEnabled:(BOOL)enabled {
-  if (!_checkForProblemsItem) {
-    return;
-  }
-
-  _checkForProblemsItem.enabled = enabled;
+  self.checkForProblemsItem.enabled = enabled;
   if (enabled) {
-    _checkForProblemsItem.textColor = [UIColor colorNamed:kBlueColor];
-    _checkForProblemsItem.accessibilityTraits &=
+    self.checkForProblemsItem.textColor = [UIColor colorNamed:kBlueColor];
+    self.checkForProblemsItem.accessibilityTraits &=
         ~UIAccessibilityTraitNotEnabled;
   } else {
-    _checkForProblemsItem.textColor = [UIColor colorNamed:kTextSecondaryColor];
-    _checkForProblemsItem.accessibilityTraits |= UIAccessibilityTraitNotEnabled;
+    self.checkForProblemsItem.textColor =
+        [UIColor colorNamed:kTextSecondaryColor];
+    self.checkForProblemsItem.accessibilityTraits |=
+        UIAccessibilityTraitNotEnabled;
   }
 }
 
 - (void)setAddPasswordButtonEnabled:(BOOL)enabled {
-  if (!_addPasswordItem) {
-    return;
-  }
   if (enabled) {
-    _addPasswordItem.textColor = [UIColor colorNamed:kBlueColor];
-    _addPasswordItem.accessibilityTraits &= ~UIAccessibilityTraitNotEnabled;
+    self.addPasswordItem.textColor = [UIColor colorNamed:kBlueColor];
+    self.addPasswordItem.accessibilityTraits &= ~UIAccessibilityTraitNotEnabled;
   } else {
-    _addPasswordItem.textColor = [UIColor colorNamed:kTextSecondaryColor];
-    _addPasswordItem.accessibilityTraits |= UIAccessibilityTraitNotEnabled;
+    self.addPasswordItem.textColor = [UIColor colorNamed:kTextSecondaryColor];
+    self.addPasswordItem.accessibilityTraits |= UIAccessibilityTraitNotEnabled;
   }
-  [self reconfigureCellsForItems:@[ _addPasswordItem ]];
+  [self reconfigureCellsForItems:@[ self.addPasswordItem ]];
 }
 
 // Removes the given section if it exists.
@@ -1546,7 +1496,7 @@ bool AreIssuesEqual(const std::vector<password_manager::AffiliatedGroup>& lhs,
                                  affiliatedGroup.GetCredentials().end());
     } else if (itemType == ItemTypeBlocked) {
       password_manager::CredentialUIEntry credential =
-          base::mac::ObjCCastStrict<CredentialTableViewItem>(item).credential;
+          base::mac::ObjCCastStrict<BlockedSiteTableViewItem>(item).credential;
 
       auto removeCredential =
           [](std::vector<password_manager::CredentialUIEntry>& credentials,
@@ -1870,19 +1820,19 @@ bool AreIssuesEqual(const std::vector<password_manager::AffiliatedGroup>& lhs,
 
   [self.tableView
       performBatchUpdates:^{
-        if (_passwordProblemsItem) {
-          [self reconfigureCellsForItems:@[ _passwordProblemsItem ]];
+        if (self.passwordProblemsItem) {
+          [self reconfigureCellsForItems:@[ self.passwordProblemsItem ]];
           // When in safe state, a custom accessibility label needs to be set
           // for the Password Checkup cell.
           if (state == PasswordCheckStateSafe) {
             [self setPasswordProblemsItemAccessibilityLabelForSafeState];
           }
         }
-        if (_checkForProblemsItem) {
+        if (self.checkForProblemsItem) {
           // If kIOSPasswordCheckup feature is disabled, only reconfigure the
           // check button cell.
           if (!IsPasswordCheckupEnabled()) {
-            [self reconfigureCellsForItems:@[ _checkForProblemsItem ]];
+            [self reconfigureCellsForItems:@[ self.checkForProblemsItem ]];
           } else {
             BOOL checkForProblemsItemIsInModel = [self.tableViewModel
                 hasItemForItemType:ItemTypeCheckForProblemsButton
@@ -1896,10 +1846,10 @@ bool AreIssuesEqual(const std::vector<password_manager::AffiliatedGroup>& lhs,
                          removeItemWithType:ItemTypeCheckForProblemsButton
                   fromSectionWithIdentifier:SectionIdentifierPasswordCheck];
             } else if (self.shouldShowCheckButton) {
-              [self reconfigureCellsForItems:@[ _checkForProblemsItem ]];
+              [self reconfigureCellsForItems:@[ self.checkForProblemsItem ]];
               // Check if the check button should be added to the table view.
               if (!checkForProblemsItemIsInModel) {
-                [self.tableViewModel addItem:_checkForProblemsItem
+                [self.tableViewModel addItem:self.checkForProblemsItem
                      toSectionWithIdentifier:SectionIdentifierPasswordCheck];
                 [self.tableView
                     insertRowsAtIndexPaths:@[ [self checkButtonIndexPath] ]
@@ -1980,7 +1930,7 @@ bool AreIssuesEqual(const std::vector<password_manager::AffiliatedGroup>& lhs,
       DCHECK_EQ(SectionIdentifierBlocked,
                 [model sectionIdentifierForSectionIndex:indexPath.section]);
       password_manager::CredentialUIEntry credential =
-          base::mac::ObjCCastStrict<CredentialTableViewItem>(
+          base::mac::ObjCCastStrict<BlockedSiteTableViewItem>(
               [model itemAtIndexPath:indexPath])
               .credential;
       [self.handler showDetailedViewForCredential:credential];
@@ -2024,7 +1974,7 @@ bool AreIssuesEqual(const std::vector<password_manager::AffiliatedGroup>& lhs,
     case ItemTypePasswordCheckStatus:
       return IsPasswordCheckTappable(self.passwordCheckState);
     case ItemTypeCheckForProblemsButton:
-      return _checkForProblemsItem.isEnabled;
+      return self.checkForProblemsItem.isEnabled;
     case ItemTypeAddPasswordButton:
       return [self allowsAddPassword];
   }

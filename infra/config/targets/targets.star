@@ -550,14 +550,6 @@ targets.script(
     ],
 )
 
-targets.generated_script(
-    name = "chrome_variations_tast_tests",
-    label = "//chromeos:chrome_variations_tast_tests",
-    args = [
-        "--logs-dir=${ISOLATED_OUTDIR}",
-    ],
-)
-
 targets.compile_target(
     name = "chromedriver_webview_shell_apk",
     label = "//chrome/test/chromedriver/test/webview_shell:chromedriver_webview_shell_apk",
@@ -572,12 +564,8 @@ targets.generated_script(
     name = "webdriver_wpt_tests",
     label = "//:webdriver_wpt_tests",
     args = [
-        "../../chrome/test/chromedriver/test/run_webdriver_tests.py",
-        "-v",
-        "--chromedriver=chromedriver",
-        "--log-path=${ISOLATED_OUTDIR}/chromedriver.log",
-        "--output-dir=${ISOLATED_OUTDIR}",
-        "--test-path=../../third_party/blink/web_tests/external/wpt/webdriver/tests/",
+        "--results-directory",
+        "${ISOLATED_OUTDIR}",
     ],
 )
 
@@ -638,14 +626,9 @@ targets.generated_script(
     label = "//chrome/test:variations_smoke_tests",
 )
 
-targets.script(
+targets.generated_script(
     name = "variations_desktop_smoke_tests",
     label = "//chrome/test/variations:variations_desktop_smoke_tests",
-    script = "//testing/scripts/run_isolated_script_test.py",
-    args = [
-        "--xvfb",
-        "../../chrome/test/variations/run_variations_tests.py",
-    ],
 )
 
 targets.script(
@@ -1432,6 +1415,11 @@ targets.script(
     ],
 )
 
+targets.console_test_launcher(
+    name = "minidump_uploader_test",
+    label = "//components/minidump_uploader:minidump_uploader_test",
+)
+
 targets.generated_script(
     name = "module_installer_junit_tests",
     label = "//components/module_installer/android:module_installer_junit_tests",
@@ -2065,13 +2053,6 @@ targets.console_test_launcher(
     label = "//build/rust/tests/test_serde_json_lenient:test_serde_json_lenient",
 )
 
-# TODO(crbug.com/1080749): Re-add this once the test is fixed and re-enabled.
-# targets.script(
-#     name = "test_buildbucket_api_gpu_use_cases",
-#     label = "//content/test:test_buildbucket_api_gpu_use_cases",
-#     script = "//testing/scripts/test_buildbucket_api_gpu_use_cases.py",
-# )
-
 targets.script(
     name = "testing_pytype",
     label = "//testing:testing_pytype",
@@ -2485,6 +2466,7 @@ targets.windowed_test_launcher(
         "--enable-gpu",
         "--test-launcher-bot-mode",
         "--test-launcher-jobs=1",
+        "--test-launcher-retry-limit=0",
         "--enable-pixel-output-in-tests",
     ],
 )

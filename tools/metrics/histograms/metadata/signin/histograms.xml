@@ -93,7 +93,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Signin.AccountConsistencyPromoAction"
-    enum="AccountConsistencyPromoAction" expires_after="2023-12-24">
+    enum="AccountConsistencyPromoAction" expires_after="2024-02-04">
   <owner>bsazonov@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
   <summary>
@@ -307,7 +307,7 @@ prefs when the profile is loaded.  -->
 </histogram>
 
 <histogram name="Signin.AndroidAccountInfoFetchTime" units="ms"
-    expires_after="2023-12-04">
+    expires_after="2024-02-04">
   <owner>samarchehade@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
   <summary>
@@ -372,6 +372,18 @@ prefs when the profile is loaded.  -->
   <summary>
     Log the type of GAIA authentication error that occur whenever the error
     state changes.
+  </summary>
+</histogram>
+
+<histogram name="Signin.BoundSessionCredentials.DeferredRequestDelay"
+    units="ms" expires_after="2024-01-14">
+  <owner>alexilin@chromium.org</owner>
+  <owner>msalama@chromium.org</owner>
+  <owner>chrome-signin-team@google.com</owner>
+  <summary>
+    Records for how long a request was delayed due to a missing bound cookie.
+    Recorded every time a request was deferred by the bound session credentials
+    throttle, right before the request is resumed or canceled.
   </summary>
 </histogram>
 
@@ -484,7 +496,7 @@ prefs when the profile is loaded.  -->
 </histogram>
 
 <histogram name="Signin.Enterprise.WorkProfile.ProfileCreatedWithPolicySet"
-    enum="BooleanCreated" expires_after="2023-11-19">
+    enum="BooleanCreated" expires_after="2024-01-21">
   <owner>pastarmovj@chromium.org</owner>
   <owner>ydago@chromium.org</owner>
   <summary>
@@ -600,6 +612,39 @@ prefs when the profile is loaded.  -->
   </summary>
 </histogram>
 
+<histogram name="Signin.HistorySyncOptIn.{OptInFlowEvent}"
+    enum="SigninAccessPoint" expires_after="2024-08-17">
+  <owner>myuu@google.com</owner>
+  <owner>bsazonov@chromium.org</owner>
+  <owner>jlebel@chromium.org</owner>
+  <owner>chrome-signin-team@google.com</owner>
+  <summary>
+    Records that {OptInFlowEvent}, and logs the original access point associated
+    with this event.
+  </summary>
+  <token key="OptInFlowEvent">
+    <variant name="Aborted"
+        summary="the history sync screen has been dismissed due to some
+                 reasons (identity disappears during the flow, user swipped
+                 down to dismiss the screen, Chrome shutdown)"/>
+    <variant name="AlreadyOptedIn"
+        summary="the history sync screen has been skipped since the user has
+                 already opted-in for history sync previously"/>
+    <variant name="Completed"
+        summary="the user completed the flow to enable history sync by
+                 tapping on the accept button in the history sync screen"/>
+    <variant name="Declined"
+        summary="the user declined the flow to enable history sync by tapping
+                 on the decline button in the history sync screen"/>
+    <variant name="Skipped"
+        summary="the history sync screen has been skipped (due to enterprise
+                 policies disabling sync, history sync, or tabs sync; or if
+                 user is signed out)"/>
+    <variant name="Started"
+        summary="the user started the flow to enable history sync"/>
+  </token>
+</histogram>
+
 <histogram name="Signin.Intercept.FRE.Event"
     enum="SigninInterceptFREDialogEvent" expires_after="2023-12-10">
   <owner>alexilin@chromium.org</owner>
@@ -687,7 +732,7 @@ prefs when the profile is loaded.  -->
 </histogram>
 
 <histogram name="Signin.IOSDeviceRestoreSignedInState"
-    enum="IOSDeviceRestoreSignedinState" expires_after="2023-10-15">
+    enum="IOSDeviceRestoreSignedinState" expires_after="2024-01-28">
   <owner>jlebel@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
   <summary>
@@ -711,26 +756,8 @@ prefs when the profile is loaded.  -->
   </summary>
 </histogram>
 
-<histogram name="Signin.IOSLoginMethodAndSyncState"
-    enum="SigninIOSLoginMethodAndSyncState" expires_after="2023-11-19">
-  <owner>jlebel@chromium.org</owner>
-  <owner>msarda@chromium.org</owner>
-  <owner>chrome-signin-team@google.com</owner>
-  <summary>
-    Tracks the combination of sign-in method and sync state for signed-in users
-    on iOS. If the user is signed in, this histogram is updated with the sign-in
-    method and the sync state each time the application goes to foregrond.
-    &quot;Client Login&quot; corresponds to users that have signed in via the
-    legacy client login flow (Chrome iOS M27 and before). &quot;Shared
-    Authentication&quot; corresponds to user that have signed in via the iOS
-    Shared Authentication library. &quot;Sync off&quot; corresponds to users
-    that have sync turned off. &quot;Sync on&quot; corresponds to users that
-    have sync turned on.
-  </summary>
-</histogram>
-
 <histogram name="Signin.IOSNumberOfDeviceAccounts" units="accounts"
-    expires_after="2023-11-19">
+    expires_after="2024-01-28">
   <owner>jlebel@chromium.org</owner>
   <owner>msarda@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
@@ -783,7 +810,7 @@ the browser and content area. -->
 </histogram>
 
 <histogram name="Signin.ListFamilyMembersRequest.HttpStatusOrNetError"
-    enum="CombinedHttpResponseAndNetErrorCode" expires_after="2023-11-01">
+    enum="CombinedHttpResponseAndNetErrorCode" expires_after="2024-02-04">
   <owner>tju@google.com</owner>
   <owner>chrome-kids-eng@google.com</owner>
   <summary>
@@ -798,6 +825,16 @@ the browser and content area. -->
   <owner>tju@google.com</owner>
   <owner>chrome-kids-eng@google.com</owner>
   <summary>Tracks the latency of calls to the Kids Management API.</summary>
+</histogram>
+
+<histogram name="Signin.ListFamilyMembersRequest.RetryCount" units="retries"
+    expires_after="2023-11-30">
+  <owner>tju@google.com</owner>
+  <owner>chrome-kids-eng@google.com</owner>
+  <summary>
+    Tracks the number of retries before a decisive status (OK or permanent
+    error).
+  </summary>
 </histogram>
 
 <histogram name="Signin.ListFamilyMembersRequest.Status"
@@ -1183,7 +1220,7 @@ OAuth Multilogin call. -->
 </histogram>
 
 <histogram name="Signin.SigninCompletedAccessPoint" enum="SigninAccessPoint"
-    expires_after="2023-12-04">
+    expires_after="2024-02-04">
   <owner>msarda@chromium.org</owner>
   <owner>bsazonov@chromium.org</owner>
   <owner>droger@chromium.org</owner>
@@ -1267,8 +1304,8 @@ kept as long as profile signout is possible -->
   <summary>Track how a profile gets signed out.</summary>
 </histogram>
 
-<histogram name="Signin.SSOAuth.GetIdentities.ErrorCode"
-    enum="SigninSSOAuthGetIdentitiesErrorCode" expires_after="2023-11-19">
+<histogram name="Signin.SSOAuth.GetIdentities.ErrorCode" enum="ErrSecOSStatus"
+    expires_after="2024-02-11">
   <owner>jlebel@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
   <summary>
@@ -1353,7 +1390,7 @@ kept as long as profile signout is possible -->
 </histogram>
 
 <histogram name="Signin.SyncDisabledNotificationShown" enum="SigninAccessPoint"
-    expires_after="2023-12-04">
+    expires_after="2024-02-04">
   <owner>birnie@google.com</owner>
   <owner>bsazonov@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
@@ -1506,7 +1543,7 @@ name="TransactionalReauthEntryPoint" -->
 </histogram>
 
 <histogram name="Signin.TransactionalReauthUserAction"
-    enum="SigninReauthUserAction" expires_after="2023-10-22">
+    enum="SigninReauthUserAction" expires_after="2024-01-28">
 <!-- Name completed by histogram_suffixes
 name="TransactionalReauthEntryPoint" -->
 

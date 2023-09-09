@@ -24,6 +24,7 @@
 #import "ios/chrome/app/chrome_overlay_window.h"
 #import "ios/chrome/app/main_application_delegate_testing.h"
 #import "ios/chrome/app/main_controller.h"
+#import "ios/chrome/app/startup/app_launch_metrics.h"
 #import "ios/chrome/browser/commerce/push_notification/push_notification_feature.h"
 #import "ios/chrome/browser/crash_report/crash_keys_helper.h"
 #import "ios/chrome/browser/download/background_service/background_download_service_factory.h"
@@ -39,10 +40,6 @@
 #import "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/ui/keyboard/menu_builder.h"
 #import "ios/web/common/uikit_ui_util.h"
-
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
 
 namespace {
 // The time delay after firstSceneWillEnterForeground: before checking for main
@@ -348,6 +345,8 @@ const int kMainIntentCheckDelay = 1;
           }
         }
         if (!appStartupFromExternalIntent) {
+          base::UmaHistogramEnumeration(kAppLaunchSource,
+                                        AppLaunchSource::APP_ICON);
           base::RecordAction(base::UserMetricsAction("IOSOpenByMainIntent"));
         } else {
           [self notifyFETAppStartupFromExternalIntent];

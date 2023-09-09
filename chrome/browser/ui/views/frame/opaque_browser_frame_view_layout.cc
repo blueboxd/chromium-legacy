@@ -14,6 +14,7 @@
 #include "base/i18n/rtl.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
+#include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/views/frame/caption_button_placeholder_container.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/compositor/layer.h"
@@ -266,10 +267,13 @@ int OpaqueBrowserFrameViewLayout::GetWindowCaptionSpacing(
 }
 
 int OpaqueBrowserFrameViewLayout::GetNonClientRestoredExtraThickness() const {
+  // In Refresh, the tabstrip controls its own top padding.
+  if (features::IsChromeRefresh2023()) {
+    return 0;
+  }
   // Besides the frame border, there's empty space atop the window in restored
-  // mode, to use to drag the window around. In Refresh the empty space also
-  // visually balances the bottom padding below the detached tab shape.
-  int thickness = features::IsChromeRefresh2023() ? 6 : 4;
+  // mode, to use to drag the window around.
+  int thickness = 4;
   if (delegate_->EverHasVisibleBackgroundTabShapes()) {
     thickness =
         std::max(thickness, BrowserNonClientFrameView::kMinimumDragHeight);

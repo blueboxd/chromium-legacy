@@ -14,10 +14,6 @@
 #include "base/mac/wrap_cg_display.h"
 #include "base/task/thread_pool.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 namespace ui {
 
 // Note that the SDK has `CGPreflightScreenCaptureAccess()` and
@@ -44,13 +40,15 @@ bool IsScreenCaptureAllowed() {
 
       NSString* window_name =
           [window objectForKey:base::apple::CFToNSPtrCast(kCGWindowName)];
-      if (!window_name)
+      if (!window_name) {
         continue;
+      }
 
       NSNumber* layer =
           [window objectForKey:base::apple::CFToNSPtrCast(kCGWindowLayer)];
-      if (!layer)
+      if (!layer) {
         continue;
+      }
 
       NSInteger layer_integer = layer.integerValue;
       if (layer_integer == CGWindowLevelForKey(kCGNormalWindowLevelKey) ||

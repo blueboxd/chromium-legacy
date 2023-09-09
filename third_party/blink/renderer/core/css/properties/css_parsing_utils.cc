@@ -72,6 +72,7 @@
 #include "third_party/blink/renderer/core/css/style_color.h"
 #include "third_party/blink/renderer/core/css_value_keywords.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/deprecation/deprecation.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/style_property_shorthand.h"
@@ -1884,18 +1885,21 @@ static bool ColorChannelIsHue(Color::ColorSpace color_space, int channel) {
 
 // Parses the color inputs rgb(), rgba(), hsl(), hsla(), hwb(), lab(), oklab(),
 // lch(), oklch() and color(). https://www.w3.org/TR/css-color-4/
-static bool ParseFunctionalSyntaxColor(CSSParserTokenRange& range,
+static bool ParseFunctionalSyntaxColor(CSSParserTokenRange& input_range,
                                        const CSSParserContext& context,
                                        Color& result) {
+  // Copy the range so that it is not consumed if the parsing fails.
+  CSSParserTokenRange consumed_range = input_range;
+
   // Get the color space. This will either be the name of the function, or it
   // will be the first argument of the "color" function.
-  CSSValueID function_id = range.Peek().FunctionId();
+  CSSValueID function_id = input_range.Peek().FunctionId();
   Color::ColorSpace color_space = CSSValueIDToColorSpace(function_id);
   if (color_space == Color::ColorSpace::kNone &&
       function_id != CSSValueID::kColor) {
     return false;
   }
-  CSSParserTokenRange args = ConsumeFunction(range);
+  CSSParserTokenRange args = ConsumeFunction(consumed_range);
   if (function_id == CSSValueID::kColor) {
     color_space =
         CSSValueIDToColorSpace(args.ConsumeIncludingWhitespace().Id());
@@ -2080,9 +2084,15 @@ static bool ParseFunctionalSyntaxColor(CSSParserTokenRange& range,
     }
   }
 
+  if (!args.AtEnd()) {
+    return false;
+  }
+
   result = Color::FromColorSpace(color_space, params[0], params[1], params[2],
                                  alpha);
-  return args.AtEnd();
+  // The parsing was successful, so we need to consume the input.
+  input_range = consumed_range;
+  return true;
 }
 
 namespace {
@@ -3497,8 +3507,8 @@ void CountKeywordOnlyPropertyUsage(CSSPropertyID property,
   }
   switch (property) {
     case CSSPropertyID::kAppearance:
-      // TODO(crbug.com/924486): Remove CSS value slider-horizontal,
-      // slider-vertical and the associated warnings.
+      // TODO(crbug.com/924486): Remove CSS value slider-vertical
+      // and the associated warnings.
       if (value_id == CSSValueID::kSliderVertical ||
           (!RuntimeEnabledFeatures::RemoveNonStandardAppearanceValueEnabled() &&
            (value_id == CSSValueID::kInnerSpinButton ||
@@ -3514,13 +3524,15 @@ void CountKeywordOnlyPropertyUsage(CSSPropertyID property,
             value_id == CSSValueID::kSearchfieldCancelButton))) {
         if (const auto* document = context.GetDocument()) {
           document->AddConsoleMessage(MakeGarbageCollected<ConsoleMessage>(
-              mojom::blink::ConsoleMessageSource::kOther,
+              mojom::blink::ConsoleMessageSource::kDeprecation,
               mojom::blink::ConsoleMessageLevel::kWarning,
               String("The keyword '") + getValueName(value_id) +
                   "' specified to an 'appearance' property is not "
                   "standardized. It will be removed in the future."));
+          Deprecation::CountDeprecation(
+              document->GetExecutionContext(),
+              WebFeature::kCSSValueAppearanceNonStandard);
         }
-        context.Count(WebFeature::kCSSValueAppearanceNonStandard);
       }
       [[fallthrough]];
       // This function distinguishes 'appearance' and '-webkit-appearance'
@@ -5176,6 +5188,25 @@ CSSValueList* ConsumeFontFamily(CSSParserTokenRange& range) {
       } else {
         return nullptr;
       }
+    }
+  } while (ConsumeCommaIncludingWhitespace(range));
+  return list;
+}
+
+CSSValueList* ConsumeNonGenericFamilyNameList(CSSParserTokenRange& range) {
+  CSSValueList* list = CSSValueList::CreateCommaSeparated();
+  do {
+    CSSValue* parsed_value = ConsumeGenericFamily(range);
+    // Consume only if all families in the list are regular family names and
+    // none of them are generic ones.
+    if (parsed_value) {
+      return nullptr;
+    }
+    parsed_value = ConsumeFamilyName(range);
+    if (parsed_value) {
+      list->Append(*parsed_value);
+    } else {
+      return nullptr;
     }
   } while (ConsumeCommaIncludingWhitespace(range));
   return list;
@@ -7113,14 +7144,23 @@ bool IsValidPropertyList(const CSSValueList& value_list) {
   return true;
 }
 
-bool IsValidTransitionAnimationTypeList(const CSSValueList& value_list) {
+bool IsValidTransitionBehavior(const CSSValueID& value) {
+  switch (value) {
+    case CSSValueID::kNormal:
+    case CSSValueID::kAllowDiscrete:
+      return true;
+    default:
+      return false;
+  }
+}
+
+bool IsValidTransitionBehaviorList(const CSSValueList& value_list) {
   for (auto& value : value_list) {
     auto* ident_value = DynamicTo<CSSIdentifierValue>(value.Get());
     if (!ident_value) {
       return false;
     }
-    if (ident_value->GetValueID() != CSSValueID::kNormal &&
-        ident_value->GetValueID() != CSSValueID::kDiscrete) {
+    if (!IsValidTransitionBehavior(ident_value->GetValueID())) {
       return false;
     }
   }

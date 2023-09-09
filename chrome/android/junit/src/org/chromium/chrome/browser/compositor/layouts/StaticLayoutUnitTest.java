@@ -23,9 +23,11 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Color;
 import android.util.DisplayMetrics;
+import android.view.View;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -40,6 +42,7 @@ import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider
 import org.chromium.chrome.browser.compositor.layouts.components.LayoutTab;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.compositor.scene_layer.StaticTabSceneLayer;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.layouts.CompositorModelChangeProcessor;
 import org.chromium.chrome.browser.layouts.animation.CompositorAnimationHandler;
 import org.chromium.chrome.browser.tab.Tab;
@@ -49,6 +52,8 @@ import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.theme.TopUiThemeColorProvider;
+import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
+import org.chromium.chrome.test.util.browser.Features.JUnitProcessor;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.url.GURL;
@@ -62,7 +67,11 @@ import java.util.Collections;
  */
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
+@EnableFeatures(ChromeFeatureList.AVOID_SELECTED_TAB_FOCUS_ON_LAYOUT_DONE_SHOWING)
 public class StaticLayoutUnitTest {
+    @Rule
+    public JUnitProcessor mFeaturesProcessor = new JUnitProcessor();
+
     private static final int TAB1_ID = 0;
     private static final int TAB2_ID = 789;
     private static final int POSITION1 = 0;
@@ -112,6 +121,9 @@ public class StaticLayoutUnitTest {
     private UserDataHost mUserDataHost = new UserDataHost();
     @Mock
     private TopUiThemeColorProvider mTopUiThemeColorProvider;
+
+    @Mock
+    private View mTabView;
 
     private Tab mTab1;
     private Tab mTab2;
@@ -388,5 +400,22 @@ public class StaticLayoutUnitTest {
 
         assertEquals(0.0f, mModel.get(LayoutTab.RENDER_X), 0);
         assertEquals(0.0f, mModel.get(LayoutTab.RENDER_Y), 0);
+    }
+
+    @Test
+    @Config(qualifiers = "sw320dp")
+    public void testTabGainsFocusOnPhoneOnLayoutDoneShowing() {
+        doReturn(mTabView).when(mTab1).getView();
+        doReturn(true).when(mTabView).requestFocus();
+
+        mStaticLayout.doneShowing();
+        verify(mTabView).requestFocus();
+    }
+
+    @Test
+    @Config(qualifiers = "sw600dp")
+    public void testTabDoesNotGainFocusOnTabletOnLayoutDoneShowing() {
+        mStaticLayout.doneShowing();
+        verify(mTabView, never()).requestFocus();
     }
 }

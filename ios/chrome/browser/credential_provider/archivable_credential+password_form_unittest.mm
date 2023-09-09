@@ -11,10 +11,6 @@
 #import "testing/platform_test.h"
 #import "url/gurl.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 namespace {
 
 using password_manager::PasswordForm;
@@ -32,7 +28,8 @@ TEST_F(ArchivableCredentialPasswordFormTest, Creation) {
   passwordForm.username_element = u"username_element";
   passwordForm.password_element = u"password_element";
   passwordForm.username_value = base::SysNSStringToUTF16(username);
-  passwordForm.encrypted_password = base::SysNSStringToUTF8(keychainIdentifier);
+  passwordForm.keychain_identifier =
+      base::SysNSStringToUTF8(keychainIdentifier);
   passwordForm.url = GURL(base::SysNSStringToUTF16(url));
   ArchivableCredential* credential =
       [[ArchivableCredential alloc] initWithPasswordForm:passwordForm
@@ -119,7 +116,7 @@ TEST_F(ArchivableCredentialPasswordFormTest, PasswordFormFromCredential) {
   PasswordForm passwordForm = PasswordFormFromCredential(credential);
   EXPECT_EQ(passwordForm.times_used_in_html_form, credential.rank);
   EXPECT_EQ(passwordForm.username_value, base::SysNSStringToUTF16(username));
-  EXPECT_EQ(passwordForm.encrypted_password,
+  EXPECT_EQ(passwordForm.keychain_identifier,
             base::SysNSStringToUTF8(keychainIdentifier));
   EXPECT_EQ(passwordForm.url, GURL("http://www.alpha.example.com/path/and"));
   EXPECT_EQ(passwordForm.signon_realm, "http://www.alpha.example.com/");
@@ -138,7 +135,8 @@ TEST_F(ArchivableCredentialPasswordFormTest, CreationWithMobileURL) {
   passwordForm.username_element = u"username_element";
   passwordForm.password_element = u"password_element";
   passwordForm.username_value = base::SysNSStringToUTF16(username);
-  passwordForm.encrypted_password = base::SysNSStringToUTF8(keychainIdentifier);
+  passwordForm.keychain_identifier =
+      base::SysNSStringToUTF8(keychainIdentifier);
   passwordForm.url = GURL(base::SysNSStringToUTF16(url));
   ArchivableCredential* credential =
       [[ArchivableCredential alloc] initWithPasswordForm:passwordForm

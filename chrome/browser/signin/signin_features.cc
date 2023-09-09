@@ -51,6 +51,17 @@ const base::FeatureParam<WithDefaultBrowserStep>
         /*default_value=*/WithDefaultBrowserStep::kNo,
         /*options=*/&kWithDefaultBrowserStepOptions};
 
+constexpr base::FeatureParam<DefaultBrowserVariant>::Option
+    kDefaultBrowserVariantOptions[] = {
+        {DefaultBrowserVariant::kCurrent, "current"},
+        {DefaultBrowserVariant::kNew, "new"},
+};
+
+const base::FeatureParam<DefaultBrowserVariant> kForYouFreDefaultBrowserVariant{
+    &kForYouFre, /*name=*/"default_browser_variant",
+    /*default_value=*/DefaultBrowserVariant::kCurrent,
+    /*options=*/&kDefaultBrowserVariantOptions};
+
 // Feature that indicates that we should put the client in a study group
 // (provided through `kForYouFreStudyGroup`) to be able to look at metrics in
 // the long term. Does not affect the client's behavior by itself, instead this
@@ -83,7 +94,7 @@ BASE_FEATURE(kShowEnterpriseDialogForAllManagedAccountsSignin,
 // Disables signout for enteprise managed profiles
 BASE_FEATURE(kDisallowManagedProfileSignout,
              "DisallowManagedProfileSignout",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+             base::FEATURE_ENABLED_BY_DEFAULT);
 
 #if BUILDFLAG(ENABLE_MIRROR)
 BASE_FEATURE(kVerifyRequestInitiatorForMirrorHeaders,

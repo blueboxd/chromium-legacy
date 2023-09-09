@@ -50,7 +50,6 @@
 #include "content/browser/indexed_db/indexed_db_data_format_version.h"
 #include "content/browser/indexed_db/indexed_db_database_error.h"
 #include "content/browser/indexed_db/indexed_db_leveldb_operations.h"
-#include "content/browser/indexed_db/indexed_db_metadata_coding.h"
 #include "content/browser/indexed_db/indexed_db_pre_close_task_queue.h"
 #include "content/browser/indexed_db/indexed_db_reporting.h"
 #include "content/browser/indexed_db/indexed_db_task_helper.h"
@@ -254,7 +253,7 @@ void IndexedDBFactory::Open(
       GetOrOpenBucketFactory(bucket_locator, data_directory,
                              /*create_if_missing=*/true);
   if (!bucket_state_handle.IsHeld() || !bucket_state_handle.bucket_state()) {
-    connection->callbacks->OnError(error);
+    connection->factory_client->OnError(error);
     if (s.IsCorruption()) {
       HandleBackingStoreCorruption(bucket_locator, error);
     }
@@ -274,13 +273,12 @@ void IndexedDBFactory::Open(
       base::BindRepeating(&IndexedDBFactory::MaybeRunTasksForBucket,
                           bucket_state_destruction_weak_factory_.GetWeakPtr(),
                           bucket_locator),
-      std::make_unique<IndexedDBMetadataCoding>(), std::move(unique_identifier),
-      factory->lock_manager());
+      std::move(unique_identifier), factory->lock_manager());
   if (!database.get()) {
     error = IndexedDBDatabaseError(
         blink::mojom::IDBException::kUnknownError,
         u"Internal error creating database backend for indexedDB.open.");
-    connection->callbacks->OnError(error);
+    connection->factory_client->OnError(error);
     if (s.IsCorruption()) {
       HandleBackingStoreCorruption(bucket_locator, error);
     }
@@ -298,7 +296,7 @@ void IndexedDBFactory::Open(
 
 void IndexedDBFactory::DeleteDatabase(
     const std::u16string& name,
-    std::unique_ptr<IndexedDBCallbacks> callbacks,
+    std::unique_ptr<IndexedDBFactoryClient> callbacks,
     const storage::BucketLocator& bucket_locator,
     const base::FilePath& data_directory,
     bool force_close) {
@@ -353,7 +351,7 @@ void IndexedDBFactory::DeleteDatabase(
 
   if (!base::Contains(names, name)) {
     const int64_t version = 0;
-    callbacks->OnSuccess(version);
+    callbacks->OnDeleteSuccess(version);
     return;
   }
 
@@ -363,8 +361,7 @@ void IndexedDBFactory::DeleteDatabase(
       base::BindRepeating(&IndexedDBFactory::MaybeRunTasksForBucket,
                           bucket_state_destruction_weak_factory_.GetWeakPtr(),
                           bucket_locator),
-      std::make_unique<IndexedDBMetadataCoding>(), unique_identifier,
-      factory->lock_manager());
+      unique_identifier, factory->lock_manager());
   if (!database.get()) {
     error = IndexedDBDatabaseError(blink::mojom::IDBException::kUnknownError,
                                    u"Internal error creating database backend "

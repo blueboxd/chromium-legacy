@@ -9,6 +9,7 @@
 #import "ios/chrome/browser/policy/policy_util.h"
 #import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/signin/fake_system_identity.h"
+#import "ios/chrome/browser/signin/test_constants.h"
 #import "ios/chrome/browser/ui/authentication/signin/signin_constants.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey_ui_test_util.h"
@@ -21,10 +22,6 @@
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #import "ios/testing/earl_grey/earl_grey_test.h"
 #import "ui/base/l10n/l10n_util.h"
-
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
 
 using chrome_test_util::GoogleSyncSettingsButton;
 using chrome_test_util::SettingsSignInRowMatcher;
@@ -56,6 +53,8 @@ using chrome_test_util::SettingsSignInRowMatcher;
   }
   if ([self isRunningTest:@selector
             (testSigninRowOpensSheetIfSignedOutAndSomeDeviceAccounts)] ||
+      [self isRunningTest:@selector
+            (testSigninRowOpensAuthActivityIfSignedOutAndNoDeviceAccounts)] ||
       [self isRunningTest:@selector(testSigninRowNotDisabledBySyncPolicy)]) {
     config.features_enabled.push_back(
         syncer::kReplaceSyncPromosWithSignInPromos);
@@ -122,9 +121,9 @@ using chrome_test_util::SettingsSignInRowMatcher;
 
   [ChromeEarlGreyUI openSettingsMenu];
 
-  [[EarlGrey selectElementWithMatcher:
-                 grey_accessibilityLabel(l10n_util::GetNSString(
-                     IDS_IOS_IDENTITY_DISC_SIGNED_OUT_PROMO_LABEL))]
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityLabel(l10n_util::GetNSString(
+                                   IDS_IOS_IDENTITY_DISC_SIGN_IN_PROMO_LABEL))]
       assertWithMatcher:grey_sufficientlyVisible()];
 
   [[EarlGrey selectElementWithMatcher:SettingsSignInRowMatcher()]
@@ -133,6 +132,24 @@ using chrome_test_util::SettingsSignInRowMatcher;
   [[EarlGrey
       selectElementWithMatcher:
           grey_accessibilityID(kWebSigninPrimaryButtonAccessibilityIdentifier)]
+      assertWithMatcher:grey_sufficientlyVisible()];
+}
+
+// For a signed out user with no device accounts, tests that the sign-in row is
+// shown with the correct strings and opens the auth activity on tap.
+- (void)testSigninRowOpensAuthActivityIfSignedOutAndNoDeviceAccounts {
+  [ChromeEarlGreyUI openSettingsMenu];
+
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityLabel(l10n_util::GetNSString(
+                                   IDS_IOS_IDENTITY_DISC_SIGN_IN_PROMO_LABEL))]
+      assertWithMatcher:grey_sufficientlyVisible()];
+
+  [[EarlGrey selectElementWithMatcher:SettingsSignInRowMatcher()]
+      performAction:grey_tap()];
+
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          kFakeAuthActivityViewIdentifier)]
       assertWithMatcher:grey_sufficientlyVisible()];
 }
 
@@ -171,9 +188,9 @@ using chrome_test_util::SettingsSignInRowMatcher;
   // bottom sheet.
   policy_test_utils::SetPolicy(true, policy::key::kSyncDisabled);
 
-  [[EarlGrey selectElementWithMatcher:
-                 grey_accessibilityLabel(l10n_util::GetNSString(
-                     IDS_IOS_IDENTITY_DISC_SIGNED_OUT_PROMO_LABEL))]
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityLabel(l10n_util::GetNSString(
+                                   IDS_IOS_IDENTITY_DISC_SIGN_IN_PROMO_LABEL))]
       assertWithMatcher:grey_sufficientlyVisible()];
 
   [[EarlGrey selectElementWithMatcher:SettingsSignInRowMatcher()]

@@ -124,6 +124,18 @@ class BrowserView : public BrowserWindow,
                     public webapps::AppBannerManager::Observer {
  public:
   METADATA_HEADER(BrowserView);
+
+  // Enumerates where the devtools are docked relative to the browser's main
+  // web contents.
+  enum class DevToolsDockedPlacement {
+    kLeft,
+    kRight,
+    kBottom,
+    // Devtools are not docked.
+    kNone,
+    kUnknown
+  };
+
   explicit BrowserView(std::unique_ptr<Browser> browser);
   BrowserView(const BrowserView&) = delete;
   BrowserView& operator=(const BrowserView&) = delete;
@@ -252,8 +264,13 @@ class BrowserView : public BrowserWindow,
     return exclusive_access_bubble_.get();
   }
 
-  // Accessor for the contents WebView.
+  // Accessor for the contents and devtools WebViews.
   ContentsWebView* contents_web_view() { return contents_web_view_; }
+  views::WebView* devtools_web_view() { return devtools_web_view_; }
+
+  DevToolsDockedPlacement devtools_docked_placement() const {
+    return current_devtools_docked_placement_;
+  }
 
   base::WeakPtr<BrowserView> GetAsWeakPtr() {
     return weak_ptr_factory_.GetWeakPtr();
@@ -1050,7 +1067,6 @@ class BrowserView : public BrowserWindow,
   // during immersive reveal.
   // On Aura, this view is owned by the browser frame. On mac, this view is
   // owned by `overlay_widget_`.
-  std::unique_ptr<views::ViewTargeterDelegate> overlay_view_targeter_;
   raw_ptr<views::View, DanglingUntriaged> overlay_view_ = nullptr;
 
 #if BUILDFLAG(IS_MAC)
@@ -1067,10 +1083,6 @@ class BrowserView : public BrowserWindow,
 
   // The hosting view of TabStripRegionView during immersive fullscreen.
   raw_ptr<views::View, DanglingUntriaged> tab_overlay_view_ = nullptr;
-
-  // Targeter for the tab_overlay_view_. Ensures tab_overlay_view_ does not
-  // handle events, while allowing for child views to handle events.
-  std::unique_ptr<views::ViewTargeterDelegate> tab_overlay_view_targeter_;
 
 #endif
 
@@ -1245,6 +1257,9 @@ class BrowserView : public BrowserWindow,
       window_management_subscription_id_;
 
   base::CallbackListSubscription paint_as_active_subscription_;
+
+  DevToolsDockedPlacement current_devtools_docked_placement_ =
+      DevToolsDockedPlacement::kNone;
 
   mutable base::WeakPtrFactory<BrowserView> weak_ptr_factory_{this};
 };

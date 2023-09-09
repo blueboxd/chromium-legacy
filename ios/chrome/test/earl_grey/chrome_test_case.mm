@@ -30,10 +30,6 @@
 #import "net/test/embedded_test_server/default_handlers.h"
 #import "net/test/embedded_test_server/embedded_test_server.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 namespace {
 
 // This flag indicates whether +setUpForTestCase has been executed in a test
@@ -50,57 +46,65 @@ NSString* const kFlakyEarlGreyTestTargetSuffix =
 NSString* const kMultitaskingEarlGreyTestTargetName =
     @"ios_chrome_multitasking_eg2tests_module-Runner";
 
-// Contains a list of test names that run in multitasking test suite.
-NSArray* multitaskingTests = @[
-  // Integration tests
-  @"testContextMenuOpenInNewTab",     // ContextMenuTestCase
-  @"testContextMenuOpenInNewWindow",  // ContextMenuTestCase
-  @"testSwitchToMain",                // CookiesTestCase
-  // TODO(crbug.com/1422238) Re-enable this flaky test on multitasking.
-  // @"testSwitchToIncognito",              // CookiesTestCase
-  @"testFindDefaultFormAssistControls",  // FormInputTestCase
-  @"testTabDeletion",                    // TabUsageRecorderTestCase
-  @"testAutoTranslate",                  // TranslateTestCase
+// Returns a list of test names that run in multitasking test suite.
+NSArray* multitaskingTests() {
+  NSMutableArray* tests = [NSMutableArray arrayWithArray:@[
+    // Integration tests
+    @"testContextMenuOpenInNewTab",     // ContextMenuTestCase
+    @"testContextMenuOpenInNewWindow",  // ContextMenuTestCase
+    @"testSwitchToMain",                // CookiesTestCase
+    // TODO(crbug.com/1422238) Re-enable this flaky test on multitasking.
+    // @"testSwitchToIncognito",              // CookiesTestCase
+    @"testFindDefaultFormAssistControls",  // FormInputTestCase
+    @"testTabDeletion",                    // TabUsageRecorderTestCase
+    @"testAutoTranslate",                  // TranslateTestCase
 
-  // Settings tests
-  @"testSignInPopUpAccountOnSyncSettings",   // AccountCollectionsTestCase
-  @"testAutofillProfileEditing",             // AutofillSettingsTestCase
-  @"testAccessibilityOfBlockPopupSettings",  // BlockPopupsTestCase
-  @"testClearCookies",                       // SettingsTestCase
-  @"testAccessibilityOfTranslateSettings",   // TranslateUITestCase
+    // Settings tests
+    @"testSignInPopUpAccountOnSyncSettings",   // AccountCollectionsTestCase
+    @"testAutofillProfileEditing",             // AutofillSettingsTestCase
+    @"testAccessibilityOfBlockPopupSettings",  // BlockPopupsTestCase
+    @"testClearCookies",                       // SettingsTestCase
+    @"testAccessibilityOfTranslateSettings",   // TranslateUITestCase
 
-  // UI tests
-  @"testActivityServiceControllerPrintAfterRedirectionToUnprintablePage",
-  // ActivityServiceControllerTestCase
-  @"testDismissOnDestroy",           // AlertCoordinatorTestCase
-  @"testAddRemoveBookmark",          // BookmarksTestCase
-  @"testJavaScriptInOmnibox",        // BrowserViewControllerTestCase
-  @"testChooseCastReceiverChooser",  // CastReceiverTestCase
-  @"testErrorPage",                  // ErrorPageTestCase
-  @"testFindInPage",                 // FindInPageTestCase
-  @"testDismissFirstRun",            // FirstRunTestCase
-  // TODO(crbug.com/872788) Failing after move to Xcode 10.
-  // @"testLongPDFScroll",                         // FullscreenTestCase
-  @"testDeleteHistory",                         // HistoryUITestCase
-  @"testInfobarsDismissOnNavigate",             // InfobarTestCase
-  @"testShowJavaScriptAlert",                   // JavaScriptDialogTestCase
-  @"testKeyboardCommands_RecentTabsPresented",  // KeyboardCommandsTestCase
-  @"testAccessibilityOnMostVisited",            // NewTabPageTestCase
-  @"testPrintNormalPage",                       // PrintCoordinatorTestCase
-  @"testQRScannerUIIsShown",                 // QRScannerViewControllerTestCase
-  @"testMarkMixedEntriesRead",               // ReadingListTestCase
-  @"testClosedTabAppearsInRecentTabsPanel",  // RecentTabsTableTestCase
-  @"testSafeModeSendingCrashReport",         // SafeModeTestCase
-  @"testSignInOneUser",          // SigninInteractionControllerTestCase
-  @"testSwitchTabs",             // StackViewTestCase
-  @"testTabStripSwitchTabs",     // TabStripTestCase
-  @"testTabHistoryMenu",         // TabHistoryPopupControllerTestCase
-  @"testEnteringTabSwitcher",    // TabSwitcherControllerTestCase
-  @"testEnterURL",               // ToolbarTestCase
-  @"testOpenAndCloseToolsMenu",  // ToolsPopupMenuTestCase
-  @"testUserFeedbackPageOpenPrivacyPolicy",  // UserFeedbackTestCase
-  @"testVersion",                            // WebUITestCase
-];
+    // UI tests
+    @"testActivityServiceControllerPrintAfterRedirectionToUnprintablePage",
+    // ActivityServiceControllerTestCase
+    @"testDismissOnDestroy",           // AlertCoordinatorTestCase
+    @"testAddRemoveBookmark",          // BookmarksTestCase
+    @"testJavaScriptInOmnibox",        // BrowserViewControllerTestCase
+    @"testChooseCastReceiverChooser",  // CastReceiverTestCase
+    @"testErrorPage",                  // ErrorPageTestCase
+    @"testFindInPage",                 // FindInPageTestCase
+    @"testDismissFirstRun",            // FirstRunTestCase
+    // TODO(crbug.com/872788) Failing after move to Xcode 10.
+    // @"testLongPDFScroll",                         // FullscreenTestCase
+    @"testDeleteHistory",                         // HistoryUITestCase
+    @"testInfobarsDismissOnNavigate",             // InfobarTestCase
+    @"testShowJavaScriptAlert",                   // JavaScriptDialogTestCase
+    @"testKeyboardCommands_RecentTabsPresented",  // KeyboardCommandsTestCase
+    @"testAccessibilityOnMostVisited",            // NewTabPageTestCase
+    @"testPrintNormalPage",                       // PrintCoordinatorTestCase
+    @"testQRScannerUIIsShown",    // QRScannerViewControllerTestCase
+    @"testMarkMixedEntriesRead",  // ReadingListTestCase
+    @"testClosedTabAppearsInRecentTabsPanel",  // RecentTabsTableTestCase
+    @"testSafeModeSendingCrashReport",         // SafeModeTestCase
+    @"testSignInOneUser",          // SigninInteractionControllerTestCase
+    @"testSwitchTabs",             // StackViewTestCase
+    @"testTabStripSwitchTabs",     // TabStripTestCase
+    @"testTabHistoryMenu",         // TabHistoryPopupControllerTestCase
+    @"testEnteringTabSwitcher",    // TabSwitcherControllerTestCase
+    @"testEnterURL",               // ToolbarTestCase
+    @"testOpenAndCloseToolsMenu",  // ToolsPopupMenuTestCase
+    @"testUserFeedbackPageOpenPrivacyPolicy",  // UserFeedbackTestCase
+    @"testVersion",                            // WebUITestCase
+  ]];
+
+  if (base::ios::IsRunningOnIOS17OrLater()) {
+    // TODO(crbug.com/1469233): Test is failing on iOS17.
+    [tests removeObject:@"testQRScannerUIIsShown"];
+  }
+  return tests;
+}
 
 const CFTimeInterval kDrainTimeout = 5;
 
@@ -385,7 +389,7 @@ void ResetAuthentication() {
   NSMutableArray* multitaskingTestNames = [NSMutableArray array];
   for (unsigned int i = 0; i < count; i++) {
     SEL selector = method_getName(methods[i]);
-    if ([multitaskingTests
+    if ([multitaskingTests()
             containsObject:base::SysUTF8ToNSString(sel_getName(selector))]) {
       NSMethodSignature* methodSignature =
           [self instanceMethodSignatureForSelector:selector];

@@ -42,7 +42,6 @@
 #include "net/first_party_sets/first_party_set_metadata.h"
 #include "net/http/http_auth_preferences.h"
 #include "net/net_buildflags.h"
-#include "services/network/cache_transparency_settings.h"
 #include "services/network/cors/preflight_controller.h"
 #include "services/network/first_party_sets/first_party_sets_access_delegate.h"
 #include "services/network/http_cache_data_counter.h"
@@ -524,6 +523,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   void GetSharedDictionaryInfo(
       const net::SharedDictionaryIsolationKey& isolation_key,
       GetSharedDictionaryInfoCallback callback) override;
+  void GetSharedDictionaryOriginsBetween(
+      base::Time start_time,
+      base::Time end_time,
+      GetSharedDictionaryOriginsBetweenCallback callback) override;
   void ResourceSchedulerClientVisibilityChanged(
       const base::UnguessableToken& client_token,
       bool visible) override;
@@ -655,10 +658,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   void OnEndpointsUpdatedForOrigin(
       const std::vector<net::ReportingEndpoint>& endpoints) override;
 #endif  // BUILDFLAG(ENABLE_REPORTING)
-
-  const CacheTransparencySettings* cache_transparency_settings() const {
-    return &cache_transparency_settings_;
-  }
 
  private:
   // To be called back from CookieManager on settings change.
@@ -957,6 +956,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   // according to the spec.
   bool acam_preflight_spec_conformant_ = true;
 
+  // True once the destructor has been called. Used to guard against re-entrant
+  // calls to DestroyURLLoaderFactory().
+  bool is_destructing_ = false;
+
   // Indicating whether
   // https://fetch.spec.whatwg.org/#cors-non-wildcard-request-header-name is
   // supported.
@@ -965,13 +968,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
 
   // CorsURLLoaderFactory assumes that fields owned by the NetworkContext always
   // live longer than the factory.  Therefore we want the factories to be
-  // destroyed before other fields above.  In particular:
-  // - This must be below |url_request_context_| so that the URLRequestContext
-  //   outlives all the URLLoaderFactories and URLLoaders that depend on it;
-  //   for the same reason, it must also be below |network_context_|.
-  // - This must be below |loader_count_per_process_| that is touched by
-  //   CorsURLLoaderFactory::DestroyURLLoader (see also
-  //   https://crbug.com/1174943).
+  // destroyed before other fields above.  This is accomplished by explicitly
+  // clearing `url_loader_factories_` in the destructor.
   std::set<std::unique_ptr<cors::CorsURLLoaderFactory>,
            base::UniquePtrComparator>
       url_loader_factories_;
@@ -980,8 +978,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
 
   scoped_refptr<MojoBackendFileOperationsFactory>
       http_cache_file_operations_factory_;
-
-  const CacheTransparencySettings cache_transparency_settings_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

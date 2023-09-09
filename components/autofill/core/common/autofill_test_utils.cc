@@ -14,6 +14,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/unguessable_token.h"
+#include "components/autofill/core/common/autocomplete_parsing_util.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
@@ -182,19 +183,8 @@ FormFieldData CreateTestSelectField(std::string_view label,
                                     std::string_view value,
                                     const std::vector<const char*>& values,
                                     const std::vector<const char*>& contents) {
-  FormFieldData field;
-  CreateTestSelectField(label, name, value, values, contents, &field);
-  return field;
-}
-
-void CreateTestSelectField(std::string_view label,
-                           std::string_view name,
-                           std::string_view value,
-                           const std::vector<const char*>& values,
-                           const std::vector<const char*>& contents,
-                           FormFieldData* field) {
-  CreateTestSelectField(label, name, value, /*autocomplete=*/"", values,
-                        contents, field);
+  return CreateTestSelectField(label, name, value, /*autocomplete=*/"", values,
+                               contents);
 }
 
 FormFieldData CreateTestSelectField(std::string_view label,
@@ -203,32 +193,15 @@ FormFieldData CreateTestSelectField(std::string_view label,
                                     std::string_view autocomplete,
                                     const std::vector<const char*>& values,
                                     const std::vector<const char*>& contents) {
-  FormFieldData field;
-  CreateTestSelectField(label, name, value, autocomplete, values, contents,
-                        &field);
-  return field;
-}
-
-void CreateTestSelectField(std::string_view label,
-                           std::string_view name,
-                           std::string_view value,
-                           std::string_view autocomplete,
-                           const std::vector<const char*>& values,
-                           const std::vector<const char*>& contents,
-                           FormFieldData* field) {
-  CreateTestSelectOrSelectMenuField(label, name, value, autocomplete, values,
-                                    contents, "select-one", field);
+  return CreateTestSelectOrSelectMenuField(label, name, value, autocomplete,
+                                           values, contents,
+                                           /*field_type=*/"select-one");
 }
 
 FormFieldData CreateTestSelectField(const std::vector<const char*>& values) {
-  FormFieldData field;
-  CreateTestSelectField(values, &field);
-  return field;
-}
-
-void CreateTestSelectField(const std::vector<const char*>& values,
-                           FormFieldData* field) {
-  CreateTestSelectField("", "", "", values, values, field);
+  return CreateTestSelectField(/*label=*/"", /*name=*/"", /*value=*/"",
+                               /*autocomplete=*/"", values,
+                               /*contents=*/values);
 }
 
 FormFieldData CreateTestSelectOrSelectMenuField(
@@ -239,33 +212,20 @@ FormFieldData CreateTestSelectOrSelectMenuField(
     const std::vector<const char*>& values,
     const std::vector<const char*>& contents,
     std::string_view field_type) {
-  FormFieldData field;
-  CreateTestSelectOrSelectMenuField(label, name, value, autocomplete, values,
-                                    contents, field_type, &field);
-  return field;
-}
-
-void CreateTestSelectOrSelectMenuField(std::string_view label,
-                                       std::string_view name,
-                                       std::string_view value,
-                                       std::string_view autocomplete,
-                                       const std::vector<const char*>& values,
-                                       const std::vector<const char*>& contents,
-                                       std::string_view field_type,
-                                       FormFieldData* field) {
   CHECK(field_type == "select-one" || field_type == "selectmenu");
-  CreateTestFormField(label, name, value, field_type, field);
-  field->autocomplete_attribute = autocomplete;
-  field->parsed_autocomplete = ParseAutocompleteAttribute(autocomplete);
+  FormFieldData field = CreateTestFormField(label, name, value, field_type);
+  field.autocomplete_attribute = autocomplete;
+  field.parsed_autocomplete = ParseAutocompleteAttribute(autocomplete);
 
-  field->options.clear();
   CHECK_EQ(values.size(), contents.size());
-  for (size_t i = 0; i < std::min(values.size(), contents.size()); ++i) {
-    field->options.push_back({
+  field.options.reserve(values.size());
+  for (size_t i = 0; i < values.size(); ++i) {
+    field.options.push_back({
         .value = base::UTF8ToUTF16(values[i]),
         .content = base::UTF8ToUTF16(contents[i]),
     });
   }
+  return field;
 }
 
 FormFieldData CreateTestDatalistField(std::string_view label,
@@ -273,32 +233,19 @@ FormFieldData CreateTestDatalistField(std::string_view label,
                                       std::string_view value,
                                       const std::vector<const char*>& values,
                                       const std::vector<const char*>& labels) {
-  FormFieldData field;
-  CreateTestDatalistField(label, name, value, values, labels, &field);
-  return field;
-}
-
-void CreateTestDatalistField(std::string_view label,
-                             std::string_view name,
-                             std::string_view value,
-                             const std::vector<const char*>& values,
-                             const std::vector<const char*>& labels,
-                             FormFieldData* field) {
   // Fill the base attributes.
-  CreateTestFormField(label, name, value, "text", field);
+  FormFieldData field = CreateTestFormField(label, name, value, "text");
 
-  std::vector<std::u16string> values16(values.size());
-  for (size_t i = 0; i < values.size(); ++i) {
-    values16[i] = base::UTF8ToUTF16(values[i]);
+  field.datalist_values.reserve(values.size());
+  for (const auto* x : values) {
+    field.datalist_values.emplace_back(base::UTF8ToUTF16(x));
+  }
+  field.datalist_labels.reserve(labels.size());
+  for (const auto* x : values) {
+    field.datalist_labels.emplace_back(base::UTF8ToUTF16(x));
   }
 
-  std::vector<std::u16string> label16(labels.size());
-  for (size_t i = 0; i < labels.size(); ++i) {
-    label16[i] = base::UTF8ToUTF16(labels[i]);
-  }
-
-  field->datalist_values = values16;
-  field->datalist_labels = label16;
+  return field;
 }
 
 FormData CreateTestPersonalInformationFormData() {

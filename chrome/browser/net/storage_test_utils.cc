@@ -44,7 +44,9 @@ std::string GetFrameContent(content::RenderFrameHost* frame) {
   return content::EvalJs(frame, "document.body.textContent").ExtractString();
 }
 
-void SetStorageForFrame(content::RenderFrameHost* frame, bool include_cookies) {
+void SetStorageForFrame(content::RenderFrameHost* frame,
+                        bool include_cookies,
+                        const base::Location& location) {
   base::flat_map<std::string, bool> actual;
   base::flat_map<std::string, bool> expected;
   for (const auto& data_type : GetStorageTypesForFrame(include_cookies)) {
@@ -59,10 +61,12 @@ void SetStorageForFrame(content::RenderFrameHost* frame, bool include_cookies) {
       expected[data_type] = true;
     }
   }
-  EXPECT_THAT(actual, testing::UnorderedElementsAreArray(expected));
+  EXPECT_THAT(actual, testing::UnorderedElementsAreArray(expected))
+      << "(expected at " << location.ToString() << ")";
 }
 
-void SetStorageForWorker(content::RenderFrameHost* frame) {
+void SetStorageForWorker(content::RenderFrameHost* frame,
+                         const base::Location& location) {
   base::flat_map<std::string, bool> actual;
   base::flat_map<std::string, bool> expected;
   for (const auto& data_type : kStorageTypesForWorker) {
@@ -70,15 +74,16 @@ void SetStorageForWorker(content::RenderFrameHost* frame) {
         content::EvalJs(frame, "set" + data_type + "()").ExtractBool();
     expected[data_type] = true;
   }
-  EXPECT_THAT(actual, testing::UnorderedElementsAreArray(expected));
+  EXPECT_THAT(actual, testing::UnorderedElementsAreArray(expected))
+      << "(expected at " << location.ToString() << ")";
 }
 
 void ExpectStorageForFrame(content::RenderFrameHost* frame,
-                           bool include_cookies,
-                           bool expected) {
+                           bool expected,
+                           const base::Location& location) {
   base::flat_map<std::string, bool> actual;
   base::flat_map<std::string, bool> expected_elts;
-  for (const auto& data_type : GetStorageTypesForFrame(include_cookies)) {
+  for (const auto& data_type : GetStorageTypesForFrame(false)) {
     actual[data_type] =
         content::EvalJs(frame, "has" + data_type + "();").ExtractBool();
     if (frame->GetLastCommittedOrigin() !=
@@ -90,10 +95,13 @@ void ExpectStorageForFrame(content::RenderFrameHost* frame,
       expected_elts[data_type] = expected;
     }
   }
-  EXPECT_THAT(actual, testing::UnorderedElementsAreArray(expected_elts));
+  EXPECT_THAT(actual, testing::UnorderedElementsAreArray(expected_elts))
+      << "(expected at " << location.ToString() << ")";
 }
 
-void ExpectStorageForWorker(content::RenderFrameHost* frame, bool expected) {
+void ExpectStorageForWorker(content::RenderFrameHost* frame,
+                            bool expected,
+                            const base::Location& location) {
   base::flat_map<std::string, bool> actual;
   base::flat_map<std::string, bool> expected_elts;
   for (const auto& data_type : kStorageTypesForWorker) {
@@ -101,10 +109,12 @@ void ExpectStorageForWorker(content::RenderFrameHost* frame, bool expected) {
         content::EvalJs(frame, "has" + data_type + "();").ExtractBool();
     expected_elts[data_type] = expected;
   }
-  EXPECT_THAT(actual, testing::UnorderedElementsAreArray(expected_elts));
+  EXPECT_THAT(actual, testing::UnorderedElementsAreArray(expected_elts))
+      << "(expected at " << location.ToString() << ")";
 }
 
-void SetCrossTabInfoForFrame(content::RenderFrameHost* frame) {
+void SetCrossTabInfoForFrame(content::RenderFrameHost* frame,
+                             const base::Location& location) {
   base::flat_map<std::string, bool> actual;
   base::flat_map<std::string, bool> expected;
   for (const auto& data_type : kCrossTabCommunicationTypes) {
@@ -112,11 +122,13 @@ void SetCrossTabInfoForFrame(content::RenderFrameHost* frame) {
         content::EvalJs(frame, "set" + data_type + "()").ExtractBool();
     expected[data_type] = true;
   }
-  EXPECT_THAT(actual, testing::UnorderedElementsAreArray(expected));
+  EXPECT_THAT(actual, testing::UnorderedElementsAreArray(expected))
+      << "(expected at " << location.ToString() << ")";
 }
 
 void ExpectCrossTabInfoForFrame(content::RenderFrameHost* frame,
-                                bool expected) {
+                                bool expected,
+                                const base::Location& location) {
   base::flat_map<std::string, bool> actual;
   base::flat_map<std::string, bool> expected_elts;
   for (const auto& data_type : kCrossTabCommunicationTypes) {
@@ -124,7 +136,8 @@ void ExpectCrossTabInfoForFrame(content::RenderFrameHost* frame,
         content::EvalJs(frame, "has" + data_type + "();").ExtractBool();
     expected_elts[data_type] = expected;
   }
-  EXPECT_THAT(actual, testing::UnorderedElementsAreArray(expected_elts));
+  EXPECT_THAT(actual, testing::UnorderedElementsAreArray(expected_elts))
+      << "(expected at " << location.ToString() << ")";
 }
 
 bool RequestAndCheckStorageAccessForFrame(content::RenderFrameHost* frame) {

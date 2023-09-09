@@ -24,6 +24,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import org.chromium.base.test.util.DisabledTest;
 
 import static org.chromium.base.test.util.Batch.PER_CLASS;
 import static org.chromium.components.content_settings.PrefNames.COOKIE_CONTROLS_MODE;
@@ -449,6 +450,19 @@ public class PageInfoViewTest {
     }
 
     /**
+     * Tests PageInfo on a website with cookie controls and permissions with User Bypass enabled.
+     */
+    @Test
+    @MediumTest
+    @Feature({"RenderTest"})
+    @Features.EnableFeatures(PageInfoFeatures.USER_BYPASS_UI_NAME)
+    public void testShowWithPermissionsAndCookieBlockingUserBypass() throws IOException {
+        addSomePermissions(mTestServerRule.getServer().getURL("/"));
+        loadUrlAndOpenPageInfo(mTestServerRule.getServer().getURL(sSimpleHtml));
+        mRenderTestRule.render(getPageInfoView(), "PageInfo_Permissions");
+    }
+
+    /**
      * Tests PageInfo on a website with default setting permissions.
      */
     @Test
@@ -556,6 +570,7 @@ public class PageInfoViewTest {
     @Test
     @MediumTest
     @Feature({"RenderTest"})
+    @DisabledTest(message = "Flaky - https://crbug.com/1469675")
     public void testShowCookiesSubpage() throws IOException {
         setThirdPartyCookieBlocking(CookieControlsMode.BLOCK_THIRD_PARTY);
         loadUrlAndOpenPageInfo(mTestServerRule.getServer().getURL(sSimpleHtml));
@@ -641,8 +656,8 @@ public class PageInfoViewTest {
         // Check that cookies usage is displayed.
         onViewWaiting(allOf(withText(containsString("stored data")), isDisplayed()));
         // Check that the cookie toggle is displayed and try clicking it.
-        onViewWaiting(allOf(withText(containsString("Block third-party cookies")), isDisplayed()));
-        onView(withText(containsString("Block third-party cookies"))).perform(click());
+        onViewWaiting(allOf(withText(containsString("Third-party cookies")), isDisplayed()));
+        onView(withText(containsString("Third-party cookies"))).perform(click());
         // Clear cookies in page info.
         onView(withText(containsString("stored data"))).perform(click());
         onViewWaiting(allOf(withText("Delete"), isDisplayed()));

@@ -539,9 +539,9 @@ failure:
   *   1 - FAILED\_CUSTOM\_ERROR
   *   2 - FAILED\_MSI\_ERROR
   *   3 - FAILED\_SYSTEM\_ERROR
-  *   4 - FAILED\_EXIT\_CODE (default)
+  *   4 - FAILED\_EXIT\_CODE (default)
 * `InstallerResultUIString` : A string to be displayed to the user, if
-`InstallerResult` is FAILED*.
+`InstallerResult` is FAILED*.
 * `InstallerSuccessLaunchCmdLine` : On success, the installer writes a command
 line to be launched by the updater. The command line will be launched at medium
 integrity on Vista with UAC on, even if the application being installed is a
@@ -605,21 +605,21 @@ deterministic with the design above:
 
 * --uninstall-if-unused for active version A calls --uninstall-self for inactive
 version B.
-* At the same time, version B is trying to install itself via –install, and
-–install is waiting for `GetVersion`.
+* At the same time, version B is trying to install itself via -install, and
+-install is waiting for `GetVersion`.
 * `GetVersion` is waiting on the global prefs lock, because
 --uninstall-if-unused is holding the global prefs lock.
 
 In this example flow, the following scenarios may occur:
 
-* `GetVersion` may timeout and fail –install on version B, in which case the
-–uninstall-self for version B gets the version-specific setup lock and proceeds
-to uninstall. Result: The user gets an error, and retries –install.
-* Version B’s uninstall may timeout getting the version-specific setup lock,
+* `GetVersion` may timeout and fail -install on version B, in which case the
+-uninstall-self for version B gets the version-specific setup lock and proceeds
+to uninstall. Result: The user gets an error, and retries -install.
+* Version B's uninstall may timeout getting the version-specific setup lock,
 returning back to version A, and version A proceeds to uninstall itself and
-releasing the global prefs lock, which allows version B’s –install to proceed.
-Result: the user gets a successful –install.
-* Version B’s uninstall may timeout getting the version-specific setup lock, and
+releasing the global prefs lock, which allows version B's -install to proceed.
+Result: the user gets a successful -install.
+* Version B's uninstall may timeout getting the version-specific setup lock, and
 `GetVersion` may also timeout and fail the install on version B. Result: The
 user gets an error, and retries the install.
 
@@ -743,6 +743,10 @@ The policy searching order:
 * Group Policy
 * Device Management policy
 * Policy from default value provider
+>**_NOTE:_** If the global policy `CloudPolicyOverridesPlatformPolicy` is set
+to a non-zero DWORD value, then the search order of `Group policy` and
+`Device Management policy` is reversed.
+
 
 ##### macOS
 * Policy dictionary defined in
@@ -1343,6 +1347,12 @@ overridden by the execution environment:
     the ecPublicKey algorithm and containing a named elliptic curve.
 *   `group_policies`: Allows setting group policies, such as install and update
     policies.
+*   `crx_verifier_format`: An integer value to guide how to verify the CRX file.
+       - 0: CRX3.
+       - 1: CRX3 with test publisher proof.
+       - 2: CRX3 with production publisher proof.
+*   `idle_check_period`: The idleness check period.
+*   `managed_device`: Whether the device is enterprise managed.
 
 Overrides are specified in an overrides.json file placed in the updater data
 directory.

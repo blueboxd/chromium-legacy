@@ -194,7 +194,6 @@ PillButton::PillButton(PressedCallback callback,
                                    /*background_color=*/
                                    gfx::kPlaceholderColor);
   views::FocusRing::Get(this)->SetColorId(ui::kColorAshFocusRing);
-  SetTooltipText(text);
 
   // Initialize image and icon spacing.
   SetImageLabelSpacing(kIconPillButtonImageLabelSpacingDp);
@@ -306,6 +305,11 @@ views::PropertyEffects PillButton::UpdateStyleToIndicateDefaultStatus() {
   return views::kPropertyEffectsNone;
 }
 
+std::u16string PillButton::GetTooltipText(const gfx::Point& p) const {
+  const auto& tooltip = views::LabelButton::GetTooltipText(p);
+  return tooltip.empty() ? GetText() : tooltip;
+}
+
 void PillButton::SetBackgroundColor(const SkColor background_color) {
   if (MaybeUpdateColorVariant(background_color_, background_color)) {
     UpdateBackgroundColor();
@@ -381,6 +385,14 @@ void PillButton::Init() {
     views::FocusRing::Get(this)->SetPathGenerator(
         std::make_unique<views::RoundRectHighlightPathGenerator>(
             gfx::Insets(-kFocusRingPadding), height / 2.f + kFocusRingPadding));
+  }
+
+  // TODO(b/290639214): We no longer need this after deprecating
+  // SetPillButtonType since the whether using background should be settled on
+  // initialization. For now, we should remove the background if the client
+  // changes from non-floating type button to floating type button.
+  if (IsFloatingPillButton(type_)) {
+    SetBackground(nullptr);
   }
 
   UpdateBackgroundColor();

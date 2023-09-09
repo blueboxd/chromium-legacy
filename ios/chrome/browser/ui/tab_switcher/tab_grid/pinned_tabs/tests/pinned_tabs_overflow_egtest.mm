@@ -18,10 +18,6 @@
 #import "ios/testing/earl_grey/matchers.h"
 #import "ui/base/l10n/l10n_util.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 namespace {
 
 // Matcher for the overflow pin action.
@@ -90,9 +86,6 @@ id<GREYMatcher> UndoSnackbarAction() {
     EARL_GREY_TEST_SKIPPED(@"Skipped for iPad. The Pinned Tabs feature is only "
                            @"supported on iPhone.");
   }
-  if (!base::ios::IsRunningOnIOS15OrLater()) {
-    EARL_GREY_TEST_SKIPPED(@"Skipped on iOS 14.");
-  }
 
   [ChromeEarlGreyUI openToolsMenu];
 
@@ -111,9 +104,6 @@ id<GREYMatcher> UndoSnackbarAction() {
 - (void)testOverflowMenuOniPad {
   if (![ChromeEarlGrey isIPadIdiom]) {
     EARL_GREY_TEST_SKIPPED(@"Skipped for iPhone.");
-  }
-  if (!base::ios::IsRunningOnIOS15OrLater()) {
-    EARL_GREY_TEST_SKIPPED(@"Skipped on iOS 14.");
   }
 
   [ChromeEarlGreyUI openToolsMenu];
@@ -135,9 +125,6 @@ id<GREYMatcher> UndoSnackbarAction() {
   if ([ChromeEarlGrey isIPadIdiom]) {
     EARL_GREY_TEST_SKIPPED(@"Skipped for iPad. The Pinned Tabs feature is only "
                            @"supported on iPhone.");
-  }
-  if (!base::ios::IsRunningOnIOS15OrLater()) {
-    EARL_GREY_TEST_SKIPPED(@"Skipped on iOS 14.");
   }
 
   [ChromeEarlGreyUI openToolsMenu];
@@ -181,9 +168,6 @@ id<GREYMatcher> UndoSnackbarAction() {
     EARL_GREY_TEST_SKIPPED(@"Skipped for iPad. The Pinned Tabs feature is only "
                            @"supported on iPhone.");
   }
-  if (!base::ios::IsRunningOnIOS15OrLater()) {
-    EARL_GREY_TEST_SKIPPED(@"Skipped on iOS 14.");
-  }
 
   [ChromeEarlGreyUI openToolsMenu];
 
@@ -214,9 +198,6 @@ id<GREYMatcher> UndoSnackbarAction() {
   if ([ChromeEarlGrey isIPadIdiom]) {
     EARL_GREY_TEST_SKIPPED(@"Skipped for iPad. The Pinned Tabs feature is only "
                            @"supported on iPhone.");
-  }
-  if (!base::ios::IsRunningOnIOS15OrLater()) {
-    EARL_GREY_TEST_SKIPPED(@"Skipped on iOS 14.");
   }
 
   [ChromeEarlGreyUI openToolsMenu];

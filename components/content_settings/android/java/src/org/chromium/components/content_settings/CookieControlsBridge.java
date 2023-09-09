@@ -34,6 +34,12 @@ public class CookieControlsBridge {
                 CookieControlsBridge.this, webContents, originalBrowserContext);
     }
 
+    public void updateWebContents(
+            WebContents webContents, @Nullable BrowserContextHandle originalBrowserContext) {
+        CookieControlsBridgeJni.get().updateWebContents(
+                mNativeCookieControlsBridge, webContents, originalBrowserContext);
+    }
+
     public void setThirdPartyCookieBlockingEnabledForSite(boolean blockCookies) {
         if (mNativeCookieControlsBridge != 0) {
             CookieControlsBridgeJni.get().setThirdPartyCookieBlockingEnabledForSite(
@@ -44,6 +50,12 @@ public class CookieControlsBridge {
     public void onUiClosing() {
         if (mNativeCookieControlsBridge != 0) {
             CookieControlsBridgeJni.get().onUiClosing(mNativeCookieControlsBridge);
+        }
+    }
+
+    public void onEntryPointAnimated() {
+        if (mNativeCookieControlsBridge != 0) {
+            CookieControlsBridgeJni.get().onEntryPointAnimated(mNativeCookieControlsBridge);
         }
     }
 
@@ -60,6 +72,22 @@ public class CookieControlsBridge {
 
     public static boolean isCookieControlsEnabled(BrowserContextHandle handle) {
         return CookieControlsBridgeJni.get().isCookieControlsEnabled(handle);
+    }
+
+    public @CookieControlsStatus int getCookieControlsStatus() {
+        if (mNativeCookieControlsBridge != 0) {
+            return CookieControlsBridgeJni.get().getCookieControlsStatus(
+                    mNativeCookieControlsBridge);
+        }
+        return CookieControlsStatus.UNINITIALIZED;
+    }
+
+    public @CookieControlsBreakageConfidenceLevel int getBreakageConfidenceLevel() {
+        if (mNativeCookieControlsBridge != 0) {
+            return CookieControlsBridgeJni.get().getBreakageConfidenceLevel(
+                    mNativeCookieControlsBridge);
+        }
+        return CookieControlsBreakageConfidenceLevel.UNINITIALIZED;
     }
 
     @CalledByNative
@@ -91,13 +119,18 @@ public class CookieControlsBridge {
     }
 
     @NativeMethods
-    interface Natives {
+    public interface Natives {
         long init(CookieControlsBridge caller, WebContents webContents,
                 BrowserContextHandle originalContextHandle);
+        void updateWebContents(long nativeCookieControlsBridge, WebContents webContents,
+                @Nullable BrowserContextHandle originalBrowserContext);
         void destroy(long nativeCookieControlsBridge, CookieControlsBridge caller);
         void setThirdPartyCookieBlockingEnabledForSite(
                 long nativeCookieControlsBridge, boolean blockCookies);
         void onUiClosing(long nativeCookieControlsBridge);
+        void onEntryPointAnimated(long nativeCookieControlsBridge);
         boolean isCookieControlsEnabled(BrowserContextHandle browserContextHandle);
+        int getCookieControlsStatus(long nativeCookieControlsBridge);
+        int getBreakageConfidenceLevel(long nativeCookieControlsBridge);
     }
 }

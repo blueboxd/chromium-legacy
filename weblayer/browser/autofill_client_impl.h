@@ -87,6 +87,9 @@ class AutofillClientImpl : public autofill::ContentAutofillClient,
       const std::vector<autofill::MigratableCreditCard>&
           migratable_credit_cards,
       MigrationDeleteCardCallback delete_local_card_callback) override;
+  void ConfirmSaveIBANLocally(const autofill::IBAN& iban,
+                              bool should_show_prompt,
+                              LocalSaveIBANPromptCallback callback) override;
   void ShowWebauthnOfferDialog(
       WebauthnDialogCallback offer_dialog_callback) override;
   void ShowWebauthnVerifyPendingDialog(
@@ -149,12 +152,13 @@ class AutofillClientImpl : public autofill::ContentAutofillClient,
   void HideAutofillPopup(autofill::PopupHidingReason reason) override;
   bool IsAutocompleteEnabled() const override;
   bool IsPasswordManagerEnabled() override;
-  void PropagateAutofillPredictions(
+  void PropagateAutofillPredictionsDeprecated(
       autofill::AutofillDriver* driver,
       const std::vector<autofill::FormStructure*>& forms) override;
-  void DidFillOrPreviewForm(autofill::mojom::RendererFormDataAction action,
-                            autofill::AutofillTriggerSource trigger_source,
-                            bool is_refill) override;
+  void DidFillOrPreviewForm(
+      autofill::mojom::AutofillActionPersistence action_persistence,
+      autofill::AutofillTriggerSource trigger_source,
+      bool is_refill) override;
   void DidFillOrPreviewField(const std::u16string& autofilled_value,
                              const std::u16string& profile_full_name) override;
   bool IsContextSecure() const override;

@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 source_set("safety_check") {
-  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "ios_chrome_safety_check_manager.h",
     "ios_chrome_safety_check_manager.mm",
@@ -19,11 +18,16 @@ source_set("safety_check") {
   deps = [
     "//components/password_manager/core/browser",
     "//components/safe_browsing/core/common:safe_browsing_prefs",
+    "//components/version_info",
+    "//ios/chrome/browser/omaha",
+    "//ios/chrome/browser/shared/model/prefs:pref_names",
+    "//ios/chrome/browser/upgrade",
+    "//ios/chrome/browser/upgrade:public",
+    "//ios/chrome/common",
   ]
 }
 
 source_set("factory") {
-  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "ios_chrome_safety_check_manager_factory.h",
     "ios_chrome_safety_check_manager_factory.mm",
@@ -37,18 +41,24 @@ source_set("factory") {
     "//components/keyed_service/core",
     "//components/prefs",
     "//ios/chrome/browser/passwords",
+    "//ios/chrome/browser/shared/model/application_context",
     "//ios/chrome/browser/shared/model/browser_state",
     "//ios/chrome/browser/shared/public/features",
   ]
 }
 
 source_set("constants") {
-  configs += [ "//build/config/compiler:enable_arc" ]
-  sources = [ "ios_chrome_safety_check_manager_constants.h" ]
+  sources = [
+    "ios_chrome_safety_check_manager_constants.cc",
+    "ios_chrome_safety_check_manager_constants.h",
+  ]
+  public_deps = [
+    "//base",
+    "//third_party/abseil-cpp:absl",
+  ]
 }
 
 source_set("utils") {
-  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "ios_chrome_safety_check_manager_utils.h",
     "ios_chrome_safety_check_manager_utils.mm",
@@ -64,7 +74,6 @@ source_set("utils") {
 }
 
 source_set("unit_tests") {
-  configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [ "ios_chrome_safety_check_manager_unittest.mm" ]
   deps = [
@@ -81,9 +90,11 @@ source_set("unit_tests") {
     "//components/safe_browsing/core/common:safe_browsing_prefs",
     "//ios/chrome/browser/passwords",
     "//ios/chrome/browser/shared/model/browser_state:test_support",
+    "//ios/chrome/browser/shared/model/prefs:pref_names",
     "//ios/chrome/browser/shared/public/features",
     "//ios/chrome/browser/sync",
     "//ios/chrome/browser/sync:test_support",
+    "//ios/chrome/browser/upgrade",
     "//ios/web/public/test",
     "//testing/gtest",
   ]

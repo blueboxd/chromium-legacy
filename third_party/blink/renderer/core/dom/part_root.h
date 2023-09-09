@@ -7,7 +7,9 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/v8_union_childnodepart_documentpartroot.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/part.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_linked_hash_set.h"
 #include "third_party/blink/renderer/platform/heap/collection_support/heap_vector.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
@@ -17,7 +19,6 @@ namespace blink {
 class ContainerNode;
 class Document;
 class DocumentPartRoot;
-class Part;
 
 using PartRootUnion = V8UnionChildNodePartOrDocumentPartRoot;
 
@@ -35,7 +36,9 @@ class CORE_EXPORT PartRoot : public GarbageCollectedMixin {
   void AddPart(Part& new_part);
   void RemovePart(Part& part);
   void MarkPartsDirty() { cached_parts_list_dirty_ = true; }
+
   virtual Document& GetDocument() const = 0;
+  virtual bool IsDocumentPartRoot() const = 0;
 
   // Utilities to convert to/from the IDL union.
   static PartRootUnion* GetUnionFromPartRoot(PartRoot* root);
@@ -51,15 +54,22 @@ class CORE_EXPORT PartRoot : public GarbageCollectedMixin {
  protected:
   PartRoot() = default;
   virtual const PartRoot* GetParentPartRoot() const = 0;
-  bool IsDocumentPartRoot() { return !GetParentPartRoot(); }
+
+  // This function is only used directly after a Clone() operation, during
+  // which all parts are constructed in tree order, as they're walked.
+  // Therefore, the parts order in parts_unordered_ is actually the correct
+  // order. Further, only valid parts are cloned, so there's no need to check
+  // validity either.
+  void CachePartOrderAfterClone();
 
  private:
   const DocumentPartRoot* GetDocumentPartRoot();
   HeapVector<Member<Part>> RebuildPartsList();
 
-  HeapVector<Member<Part>> parts_unordered_;
+  // |parts_unordered_| will be in Part construction order.
+  HeapLinkedHashSet<WeakMember<Part>> parts_unordered_;
   HeapVector<Member<Part>> cached_ordered_parts_;
-  bool cached_parts_list_dirty_{true};
+  bool cached_parts_list_dirty_{false};
 };
 
 }  // namespace blink

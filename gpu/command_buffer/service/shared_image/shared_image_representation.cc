@@ -386,7 +386,9 @@ SkiaGaneshImageRepresentation::ScopedGaneshReadAccess::CreateSkImage(
     DCHECK_EQ(static_cast<int>(promise_image_textures_.size()), 1);
     auto alpha_type = representation()->alpha_type();
     auto color_type =
-        viz::ToClosestSkColorType(/*gpu_compositing=*/true, format);
+        format.PrefersExternalSampler()
+            ? ToClosestSkColorTypeExternalSampler(format)
+            : viz::ToClosestSkColorType(/*gpu_compositing=*/true, format);
     return SkImages::BorrowTextureFrom(
         context_state->gr_context(), promise_image_texture()->backendTexture(),
         surface_origin, color_type, alpha_type, sk_color_space,
@@ -612,7 +614,9 @@ SkiaGraphiteImageRepresentation::ScopedGraphiteReadAccess::CreateSkImage(
     CHECK_EQ(static_cast<int>(graphite_textures_.size()), 1);
     auto alpha_type = representation()->alpha_type();
     auto color_type =
-        viz::ToClosestSkColorType(/*gpu_compositing=*/true, format);
+        format.PrefersExternalSampler()
+            ? ToClosestSkColorTypeExternalSampler(format)
+            : viz::ToClosestSkColorType(/*gpu_compositing=*/true, format);
     return SkImages::AdoptTextureFrom(recorder, graphite_texture(), color_type,
                                       alpha_type, sk_color_space);
   } else {
@@ -765,12 +769,19 @@ std::unique_ptr<DawnImageRepresentation::ScopedAccess>
 DawnImageRepresentation::BeginScopedAccess(
     wgpu::TextureUsage usage,
     AllowUnclearedAccess allow_uncleared) {
+  return BeginScopedAccess(usage, allow_uncleared, gfx::Rect(size()));
+}
+
+std::unique_ptr<DawnImageRepresentation::ScopedAccess>
+DawnImageRepresentation::BeginScopedAccess(wgpu::TextureUsage usage,
+                                           AllowUnclearedAccess allow_uncleared,
+                                           const gfx::Rect& update_rect) {
   if (allow_uncleared != AllowUnclearedAccess::kYes && !IsCleared()) {
     LOG(ERROR) << "Attempt to access an uninitialized SharedImage";
     return nullptr;
   }
 
-  wgpu::Texture texture = BeginAccess(usage);
+  wgpu::Texture texture = BeginAccess(usage, update_rect);
   if (!texture) {
     LOG(ERROR) << "Error creating wgpu::Texture";
     return nullptr;
@@ -788,6 +799,15 @@ DawnImageRepresentation::BeginScopedAccess(
   return std::make_unique<ScopedAccess>(
       base::PassKey<DawnImageRepresentation>(), this, std::move(texture),
       access_mode);
+}
+
+wgpu::Texture DawnImageRepresentation::BeginAccess(
+    wgpu::TextureUsage usage,
+    const gfx::Rect& update_rect) {
+  // If the implementation doesn't support partial updates, we need to update
+  // the whole image.
+  DCHECK_EQ(update_rect, gfx::Rect(size()));
+  return this->BeginAccess(usage);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

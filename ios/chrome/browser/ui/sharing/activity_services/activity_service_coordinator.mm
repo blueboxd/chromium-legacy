@@ -38,10 +38,6 @@
 
 #import <LinkPresentation/LinkPresentation.h>
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 namespace {
 
 // MIME type of PDF.
@@ -85,6 +81,12 @@ constexpr CGFloat kAppIconPointSize = 80;
 #pragma mark - Public methods
 
 - (void)start {
+  NSNotificationCenter* defaultCenter = [NSNotificationCenter defaultCenter];
+  [defaultCenter addObserver:self
+                    selector:@selector(applicationDidEnterBackground:)
+                        name:UIApplicationDidEnterBackgroundNotification
+                      object:nil];
+
   self.handler =
       static_cast<id<BrowserCoordinatorCommands, FindInPageCommands>>(
           self.browser->GetCommandDispatcher());
@@ -406,6 +408,14 @@ constexpr CGFloat kAppIconPointSize = 80;
                                                       kAppIconPointSize);
 #endif  // BUILDFLAG(IOS_USE_BRANDED_SYMBOLS)
   return [[NSItemProvider alloc] initWithObject:image];
+}
+
+#pragma mark - Notification callback
+
+- (void)applicationDidEnterBackground:(NSNotification*)note {
+  [self.viewController.presentingViewController
+      dismissViewControllerAnimated:YES
+                         completion:nil];
 }
 
 @end

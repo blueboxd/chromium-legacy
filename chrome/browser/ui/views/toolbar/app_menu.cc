@@ -965,8 +965,6 @@ AppMenu::AppMenu(Browser* browser, ui::MenuModel* model, int run_types)
 
   DCHECK(!root_);
   root_ = new MenuItemView(this);
-  root_->set_has_icons(true);  // We have checks, radios and icons, set this
-                               // so we get the taller menu style.
   PopulateMenu(root_, model);
 
   int32_t types = views::MenuRunner::HAS_MNEMONICS;
@@ -1317,8 +1315,9 @@ void AppMenu::PopulateMenu(MenuItemView* parent, MenuModel* model) {
         AddMenuItem(parent, menu_index, model, i, model->GetTypeAt(i));
 
 #if BUILDFLAG(IS_CHROMEOS)
-    if (model->GetCommandIdAt(i) == IDC_EDIT_MENU ||
-        model->GetCommandIdAt(i) == IDC_ZOOM_MENU) {
+    if (!features::IsChromeRefresh2023() &&
+        (model->GetCommandIdAt(i) == IDC_EDIT_MENU ||
+         model->GetCommandIdAt(i) == IDC_ZOOM_MENU)) {
       // ChromeOS adds extra vertical space for the menu buttons.
       const MenuConfig& config = views::MenuConfig::instance();
       item->set_vertical_margin(config.item_vertical_margin * 2 +
@@ -1461,7 +1460,7 @@ MenuItemView* AppMenu::AddMenuItem(MenuItemView* parent,
   if (menu_item) {
     menu_item->SetVisible(model->IsVisibleAt(model_index));
 
-    if (menu_type == MenuModel::TYPE_COMMAND && model->HasIcons()) {
+    if (menu_type == MenuModel::TYPE_COMMAND) {
       menu_item->SetIcon(model->GetIconAt(model_index));
     }
   }

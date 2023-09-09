@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_UI_VIEWS_FRAME_PICTURE_IN_PICTURE_BROWSER_FRAME_VIEW_H_
 
 #include "base/scoped_observation.h"
+#include "build/build_config.h"
+#include "chrome/browser/ui/content_settings/content_setting_image_model_states.h"
 #include "chrome/browser/ui/toolbar/chrome_location_bar_model_delegate.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
@@ -14,6 +16,7 @@
 #include "chrome/browser/ui/views/overlay/close_image_button.h"
 #include "components/omnibox/browser/location_bar_model.h"
 #include "content/public/browser/web_contents.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/gfx/animation/multi_animation.h"
 #include "ui/gfx/animation/slide_animation.h"
@@ -33,6 +36,10 @@ class Label;
 namespace {
 class WindowEventObserver;
 }
+
+#if !BUILDFLAG(IS_ANDROID)
+class AutoPipSettingOverlayView;
+#endif
 
 class PictureInPictureBrowserFrameView
     : public BrowserNonClientFrameView,
@@ -101,13 +108,15 @@ class PictureInPictureBrowserFrameView
   LocationBarModel* GetLocationBarModel() const override;
   ui::ImageModel GetLocationIcon(LocationIconView::Delegate::IconFetchedCallback
                                      on_icon_fetched) const override;
+  absl::optional<ui::ColorId> GetLocationIconBackgroundColorOverride()
+      const override;
 
   // IconLabelBubbleView::Delegate:
   SkColor GetIconLabelBubbleSurroundingForegroundColor() const override;
   SkColor GetIconLabelBubbleBackgroundColor() const override;
 
   // ContentSettingImageView::Delegate:
-  bool ShouldHideContentSettingImage() override;
+  bool ShouldHideContentSettingImage(ImageType type) override;
   content::WebContents* GetContentSettingWebContents() override;
   ContentSettingBubbleModelDelegate* GetContentSettingBubbleModelDelegate()
       override;
@@ -117,6 +126,7 @@ class PictureInPictureBrowserFrameView
   void OnWidgetDestroying(views::Widget* widget) override;
 
   // gfx::AnimationDelegate:
+  void AnimationEnded(const gfx::Animation* animation) override;
   void AnimationProgressed(const gfx::Animation* animation) override;
 
   // views::View:
@@ -195,7 +205,7 @@ class PictureInPictureBrowserFrameView
     kOther = 0,
     kBackToTabButton = 1,
     kCloseButton = 2,
-    kMaxValue = kCloseButton,
+    kMaxValue = kCloseButton
   };
 
   CloseReason close_reason_ = CloseReason::kOther;
@@ -244,6 +254,10 @@ class PictureInPictureBrowserFrameView
   gfx::MultiAnimation show_close_button_animation_;
   gfx::MultiAnimation hide_close_button_animation_;
 
+  // The foreground color given the current state of the
+  // `top_bar_color_animation_`.
+  absl::optional<SkColor> current_foreground_color_;
+
 #if BUILDFLAG(IS_LINUX)
   // Used to draw window frame borders and shadow on Linux when GTK theme is
   // enabled.
@@ -256,6 +270,11 @@ class PictureInPictureBrowserFrameView
 
   // Used to monitor key and mouse events from native window.
   std::unique_ptr<WindowEventObserver> window_event_observer_;
+
+#if !BUILDFLAG(IS_ANDROID)
+  // If non-null, this displays the allow / block setting overlay for autopip.
+  raw_ptr<AutoPipSettingOverlayView> auto_pip_setting_overlay_ = nullptr;
+#endif
 };
 
 #endif  // CHROME_BROWSER_UI_VIEWS_FRAME_PICTURE_IN_PICTURE_BROWSER_FRAME_VIEW_H_

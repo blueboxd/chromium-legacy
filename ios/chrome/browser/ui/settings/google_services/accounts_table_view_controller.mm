@@ -4,6 +4,7 @@
 
 #import "ios/chrome/browser/ui/settings/google_services/accounts_table_view_controller.h"
 
+#import "base/feature_list.h"
 #import "base/mac/foundation_util.h"
 #import "base/metrics/histogram_macros.h"
 #import "base/metrics/user_metrics.h"
@@ -54,6 +55,7 @@
 #import "ios/chrome/browser/ui/authentication/authentication_ui_util.h"
 #import "ios/chrome/browser/ui/authentication/cells/table_view_account_item.h"
 #import "ios/chrome/browser/ui/authentication/enterprise/enterprise_utils.h"
+#import "ios/chrome/browser/ui/authentication/signin/signin_constants.h"
 #import "ios/chrome/browser/ui/authentication/signout_action_sheet_coordinator.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_image_detail_text_item.h"
 #import "ios/chrome/browser/ui/settings/google_services/accounts_table_view_controller_constants.h"
@@ -65,10 +67,6 @@
 #import "net/base/mac/url_conversions.h"
 #import "ui/base/l10n/l10n_util_mac.h"
 #import "url/gurl.h"
-
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
 
 using signin_metrics::AccessPoint;
 using signin_metrics::PromoAction;
@@ -194,11 +192,6 @@ constexpr CGFloat kErrorSymbolSize = 22.;
   return self;
 }
 
-- (void)dealloc {
-  // TODO(crbug.com/1454777)
-  DUMP_WILL_BE_CHECK(!_browser);
-}
-
 - (void)viewDidLoad {
   [super viewDidLoad];
   self.tableView.accessibilityIdentifier = kSettingsAccountsTableViewId;
@@ -261,7 +254,9 @@ constexpr CGFloat kErrorSymbolSize = 22.;
       title = authenticatedIdentity.userEmail;
     }
   }
-  if ([self isAccountSignedInNotSyncing]) {
+  if ([self isAccountSignedInNotSyncing] ||
+      base::FeatureList::IsEnabled(
+          syncer::kReplaceSyncPromosWithSignInPromos)) {
     title = l10n_util::GetNSString(
         IDS_IOS_GOOGLE_ACCOUNTS_MANAGEMENT_FROM_ACCOUNT_SETTINGS_TITLE);
   }
@@ -325,6 +320,9 @@ constexpr CGFloat kErrorSymbolSize = 22.;
   [model addItem:[self signOutItem]
       toSectionWithIdentifier:SectionIdentifierSignOut];
 
+  // TODO(crbug.com/1462552): Simplify once kSync becomes unreachable or is
+  // deleted from the codebase. See ConsentLevel::kSync documentation for
+  // details.
   BOOL hasSyncConsent =
       authService->HasPrimaryIdentity(signin::ConsentLevel::kSync);
   TableViewLinkHeaderFooterItem* footerItem = nil;
@@ -645,11 +643,12 @@ constexpr CGFloat kErrorSymbolSize = 22.;
   [self preventUserInteraction];
   __weak __typeof(self) weakSelf = self;
   ShowSigninCommand* command = [[ShowSigninCommand alloc]
-      initWithOperation:AuthenticationOperationAddAccount
+      initWithOperation:AuthenticationOperation::kAddAccount
                identity:nil
             accessPoint:AccessPoint::ACCESS_POINT_SETTINGS
             promoAction:PromoAction::PROMO_ACTION_NO_SIGNIN_PROMO
-               callback:^(BOOL success) {
+               callback:^(SigninCoordinatorResult result) {
+                 BOOL success = result == SigninCoordinatorResultSuccess;
                  [weakSelf handleDidAddAccount:success];
                }];
   [self.applicationCommandsHandler showSignin:command baseViewController:self];
@@ -747,14 +746,14 @@ constexpr CGFloat kErrorSymbolSize = 22.;
   [self.removeAccountCoordinator
       addItemWithTitle:l10n_util::GetNSString(IDS_IOS_REMOVE_ACCOUNT_LABEL)
                 action:^{
-                  [weakSelf removeSecondaryIdentity:identity];
+                  [weakSelf removeIdentity:identity];
                   [weakSelf dismissRemoveAccountCoordinator];
                 }
                  style:UIAlertActionStyleDestructive];
   [self.removeAccountCoordinator start];
 }
 
-- (void)removeSecondaryIdentity:(id<SystemIdentity>)identity {
+- (void)removeIdentity:(id<SystemIdentity>)identity {
   DCHECK(self.removeAccountCoordinator);
   self.removeAccountCoordinator = nil;
   self.uiDisabled = YES;
@@ -821,7 +820,7 @@ constexpr CGFloat kErrorSymbolSize = 22.;
     // Don't pop this view based on intermediary values.
     return;
   }
-  if (_isBeingDismissed) {
+  if (_isBeingDismissed || self.signoutDismissalByParentCoordinator) {
     return;
   }
   _isBeingDismissed = YES;
@@ -993,6 +992,9 @@ constexpr CGFloat kErrorSymbolSize = 22.;
 
 // Returns YES if the account is signed in not syncing, NO otherwise.
 - (BOOL)isAccountSignedInNotSyncing {
+  // TODO(crbug.com/1462552): Simplify once kSync becomes unreachable or is
+  // deleted from the codebase. See ConsentLevel::kSync documentation for
+  // details.
   return base::FeatureList::IsEnabled(
              syncer::kReplaceSyncPromosWithSignInPromos) &&
          !SyncServiceFactory::GetForBrowserState(_browser->GetBrowserState())

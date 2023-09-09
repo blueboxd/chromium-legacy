@@ -20,10 +20,6 @@
 #import "ios/chrome/grit/ios_strings.h"
 #import "ui/base/l10n/l10n_util.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 namespace {
 
 const CGFloat kExtraSpacingForSmallerCompleteIcon = 16.0f;
@@ -203,8 +199,7 @@ NSAttributedString* Strikethrough(NSString* text) {
 - (NSString*)descriptionText {
   switch (_data.type) {
     case SetUpListItemType::kSignInSync:
-      return l10n_util::GetNSString(
-          IDS_IOS_SET_UP_LIST_SIGN_IN_SYNC_SEE_MORE_DESCRIPTION);
+      return l10n_util::GetNSString(IDS_IOS_IDENTITY_DISC_SIGN_IN_PROMO_LABEL);
     case SetUpListItemType::kDefaultBrowser:
       return l10n_util::GetNSString(
           IDS_IOS_SET_UP_LIST_DEFAULT_BROWSER_SEE_MORE_DESCRIPTION);

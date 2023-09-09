@@ -15,7 +15,6 @@
 #include <vector>
 
 #include "base/containers/flat_map.h"
-#include "base/containers/stack_container.h"
 #include "base/functional/callback_forward.h"
 #include "base/time/time.h"
 #include "base/uuid.h"
@@ -27,6 +26,7 @@
 #include "components/query_parser/snippet.h"
 #include "components/sessions/core/session_id.h"
 #include "components/sync_device_info/device_info.h"
+#include "third_party/abseil-cpp/absl/container/inlined_vector.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/page_transition_types.h"
 #include "url/gurl.h"
@@ -106,6 +106,14 @@ class VisitRow {
   // one. 0 (kInvalidVisitId) indicates no referrer/redirect.
   // Note that this corresponds to the "from_visit" column in the visit DB.
   VisitID referring_visit = kInvalidVisitID;
+
+  // In some cases, a visit can have a referrer that is *not* an actual visit in
+  // the history DB. In those cases (and only those), this field contains the
+  // referrer URL.
+  // This can happen e.g. if a URL is opened from the side panel into the main
+  // frame, or for visits coming from outside of Chrome, e.g. from the Android
+  // Google app.
+  GURL external_referrer_url;
 
   // A combination of bits from PageTransition.
   ui::PageTransition transition = ui::PAGE_TRANSITION_LINK;
@@ -256,7 +264,7 @@ class QueryResults {
   // time an entry with that URL appears. Normally, each URL will have one or
   // very few indices after it, so we optimize this to use statically allocated
   // memory when possible.
-  typedef std::map<GURL, base::StackVector<size_t, 4>> URLToResultIndices;
+  typedef std::map<GURL, absl::InlinedVector<size_t, 4>> URLToResultIndices;
 
   // Inserts an entry into the `url_to_results_` map saying that the given URL
   // is at the given index in the results_.
@@ -1135,7 +1143,7 @@ struct HistoryAddPageArgs {
   // The default constructor is equivalent to:
   //
   //   HistoryAddPageArgs(
-  //       GURL(), base::Time(), nullptr, 0, GURL(),
+  //       GURL(), base::Time(), nullptr, 0, absl::nullopt, GURL(),
   //       RedirectList(), ui::PAGE_TRANSITION_LINK,
   //       false, SOURCE_BROWSED, false, true,
   //       absl::nullopt, absl::nullopt, absl::nullopt)
@@ -1144,6 +1152,7 @@ struct HistoryAddPageArgs {
                      base::Time time,
                      ContextID context_id,
                      int nav_entry_id,
+                     absl::optional<int64_t> local_navigation_id,
                      const GURL& referrer,
                      const RedirectList& redirects,
                      ui::PageTransition transition,
@@ -1163,6 +1172,7 @@ struct HistoryAddPageArgs {
   base::Time time;
   ContextID context_id;
   int nav_entry_id;
+  absl::optional<int64_t> local_navigation_id;
   GURL referrer;
   RedirectList redirects;
   ui::PageTransition transition;

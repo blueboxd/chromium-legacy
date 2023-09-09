@@ -98,12 +98,13 @@ public class Fido2CredentialRequest implements Callback<Pair<Integer, Intent>> {
     // library, not the framework.
     @VisibleForTesting
     public static final String CRED_MAN_EXCEPTION_CREATE_CREDENTIAL_TYPE_INVALID_STATE_ERROR =
-            "androidx.credentials.TYPE_CREATE_PUBLIC_KEY_CREDENTIAL_DOM_EXCEPTIONandroidx.credentials.TYPE_CREATE_PUBLIC_KEY_CREDENTIAL_INVALID_STATE_ERROR";
+            "androidx.credentials.TYPE_CREATE_PUBLIC_KEY_CREDENTIAL_DOM_EXCEPTION/androidx.credentials.TYPE_INVALID_STATE_ERROR";
     static final String CRED_MAN_EXCEPTION_GET_CREDENTIAL_TYPE_USER_CANCEL =
             "android.credentials.GetCredentialException.TYPE_USER_CANCELED";
     static final String CRED_MAN_EXCEPTION_GET_CREDENTIAL_TYPE_NO_CREDENTIAL =
             "android.credentials.GetCredentialException.TYPE_NO_CREDENTIAL";
     public static final int GMSCORE_MIN_VERSION_HYBRID_API = 231206000;
+    private static final int GMSCORE_MIN_VERSION_CREDMAN = 233100000;
 
     private static Boolean sIsCredManEnabled;
 
@@ -171,9 +172,14 @@ public class Fido2CredentialRequest implements Callback<Pair<Integer, Intent>> {
     @OptIn(markerClass = androidx.core.os.BuildCompat.PrereleaseSdkCheck.class)
     private boolean isCredManEnabled() {
         if (sIsCredManEnabled == null) {
-            sIsCredManEnabled =
-                    DeviceFeatureMap.isEnabled(DeviceFeatureList.WEBAUTHN_ANDROID_CRED_MAN)
-                    && (BuildCompat.isAtLeastU() || mOverrideVersionCheckForTesting);
+            sIsCredManEnabled = (BuildCompat.isAtLeastU() || mOverrideVersionCheckForTesting)
+                    && DeviceFeatureMap.isEnabled(DeviceFeatureList.WEBAUTHN_ANDROID_CRED_MAN);
+            int packageVersion = PackageUtils.getPackageVersion("com.google.android.gms");
+
+            if (sIsCredManEnabled && packageVersion != -1) {
+                sIsCredManEnabled = packageVersion >= GMSCORE_MIN_VERSION_CREDMAN
+                        || mOverrideVersionCheckForTesting;
+            }
         }
         return sIsCredManEnabled;
     }
@@ -777,6 +783,9 @@ public class Fido2CredentialRequest implements Callback<Pair<Integer, Intent>> {
                 GetAssertionAuthenticatorResponse r = (GetAssertionAuthenticatorResponse) response;
                 if (mClientDataJson != null) {
                     r.info.clientDataJson = mClientDataJson;
+                    if (mFrameHost != null) {
+                        mFrameHost.notifyWebAuthnAssertionRequestSucceeded();
+                    }
                 }
                 r.echoAppidExtension = mAppIdExtensionUsed;
                 mGetAssertionCallback.onSignResponse(AuthenticatorStatus.SUCCESS, r);
@@ -1165,6 +1174,9 @@ public class Fido2CredentialRequest implements Callback<Pair<Integer, Intent>> {
                 notifyBrowserOnCredManClosed(true);
                 mMetricsHelper.reportGetCredentialMetrics(
                         CredManGetRequestEnum.SUCCESS_PASSKEY, mConditionalUiState);
+                if (mFrameHost != null) {
+                    mFrameHost.notifyWebAuthnAssertionRequestSucceeded();
+                }
                 mGetAssertionCallback.onSignResponse(AuthenticatorStatus.SUCCESS, response);
                 mGetAssertionCallback = null;
             }
@@ -1264,7 +1276,7 @@ public class Fido2CredentialRequest implements Callback<Pair<Integer, Intent>> {
 
                 if (mBrowserBridge == null) {
                     mBrowserBridge = new WebAuthnBrowserBridge();
-                };
+                }
                 mConditionalUiState = ConditionalUiState.WAITING_FOR_SELECTION;
                 mBrowserBridge.onCredManConditionalRequestPending(mFrameHost,
                         hasPublicKeyCredentials,

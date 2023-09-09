@@ -19,6 +19,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ApplicationStatus;
+import org.chromium.base.Callback;
 import org.chromium.base.IntentUtils;
 import org.chromium.base.ResettersForTesting;
 import org.chromium.base.TimeUtils;
@@ -29,6 +30,7 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.ObservableSupplierImpl;
+import org.chromium.base.supplier.OneshotSupplier;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ChromeInactivityTracker;
@@ -40,7 +42,9 @@ import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.IntCachedFieldTrialParameter;
 import org.chromium.chrome.browser.homepage.HomepageManager;
 import org.chromium.chrome.browser.homepage.HomepagePolicyManager;
+import org.chromium.chrome.browser.layouts.LayoutManager;
 import org.chromium.chrome.browser.layouts.LayoutStateProvider;
+import org.chromium.chrome.browser.layouts.LayoutStateProvider.LayoutStateObserver;
 import org.chromium.chrome.browser.layouts.LayoutType;
 import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.ntp.NewTabPage;
@@ -87,6 +91,8 @@ import java.lang.annotation.RetentionPolicy;
  * Chrome for a while.
  */
 public final class ReturnToChromeUtil {
+    private static ChromeActivity sActivityPresentingOverivewWithOmniboxForTesting;
+
     /**
      * The reasons of failing to show the home surface UI on a NTP.
      *
@@ -131,6 +137,11 @@ public final class ReturnToChromeUtil {
     // Whether to skip the check of the initialization of HomepagePolicyManager.
     private static boolean sSkipInitializationCheckForTesting;
 
+    public static void setActivityPresentingOverivewWithOmniboxForTesting(ChromeActivity value) {
+        sActivityPresentingOverivewWithOmniboxForTesting = value;
+        ResettersForTesting.register(() -> sActivityPresentingOverivewWithOmniboxForTesting = null);
+    }
+
     private ReturnToChromeUtil() {}
 
     /**
@@ -141,17 +152,19 @@ public final class ReturnToChromeUtil {
     public static class ReturnToChromeBackPressHandler implements BackPressHandler, Destroyable {
         private final ObservableSupplierImpl<Boolean> mBackPressChangedSupplier =
                 new ObservableSupplierImpl<>();
-        private final Runnable mOnBackPressedCallback;
+        private final Callback<Boolean> mOnBackPressedCallback;
         private final ActivityTabProvider.ActivityTabTabObserver mActivityTabObserver;
         private final ActivityTabProvider mActivityTabProvider;
         private final Supplier<Tab> mTabSupplier; // for debugging only
-        private final Supplier<LayoutStateProvider> mLayoutStateProviderSupplier;
         private final Supplier<Long> mLastBackPressMsSupplier;
+        private LayoutStateProvider mLayoutStateProvider;
+        private LayoutStateObserver mLayoutStateObserver;
+        private boolean mIsHandleTabSwitcherShownEnabled;
 
         public ReturnToChromeBackPressHandler(ActivityTabProvider activityTabProvider,
-                Runnable onBackPressedCallback, Supplier<Tab> tabSupplier,
-                Supplier<LayoutStateProvider> layoutStateProviderSupplier,
-                Supplier<Long> lastBackPressMsSupplier) {
+                Callback<Boolean> onBackPressedCallback, Supplier<Tab> tabSupplier,
+                OneshotSupplier<LayoutStateProvider> layoutStateProviderSupplier,
+                Supplier<Long> lastBackPressMsSupplier, boolean isHandleTabSwitcherShownEnabled) {
             mActivityTabProvider = activityTabProvider;
             mActivityTabObserver =
                     new ActivityTabProvider.ActivityTabTabObserver(activityTabProvider, true) {
@@ -162,24 +175,45 @@ public final class ReturnToChromeUtil {
                     };
             mOnBackPressedCallback = onBackPressedCallback;
             mTabSupplier = tabSupplier;
-            mLayoutStateProviderSupplier = layoutStateProviderSupplier;
             mLastBackPressMsSupplier = lastBackPressMsSupplier;
+            mIsHandleTabSwitcherShownEnabled = isHandleTabSwitcherShownEnabled;
+            if (mIsHandleTabSwitcherShownEnabled) {
+                layoutStateProviderSupplier.onAvailable(this::onLayoutStateProviderAvailable);
+            }
             onBackPressStateChanged();
+        }
+
+        private void onLayoutStateProviderAvailable(LayoutStateProvider layoutStateProvider) {
+            mLayoutStateProvider = layoutStateProvider;
+            if (mLayoutStateObserver == null) {
+                mLayoutStateObserver = new LayoutStateObserver() {
+                    @Override
+                    public void onFinishedShowing(int layoutType) {
+                        onBackPressStateChanged();
+                    }
+                };
+            }
+            mLayoutStateProvider.addObserver(mLayoutStateObserver);
         }
 
         private void onBackPressStateChanged() {
             Tab tab = mActivityTabProvider.get();
-            mBackPressChangedSupplier.set(tab != null && isTabFromStartSurface(tab));
+            mBackPressChangedSupplier.set(tab != null && isTabFromStartSurface(tab)
+                    || shouldHandleTabSwitcherShown(
+                            mIsHandleTabSwitcherShownEnabled, mLayoutStateProvider));
         }
 
         @Override
         public @BackPressResult int handleBackPress() {
             Tab tab = mActivityTabProvider.get();
-            boolean res = tab != null && !tab.canGoBack() && isTabFromStartSurface(tab);
+            boolean handleTabSwitcherShown = shouldHandleTabSwitcherShown(
+                    mIsHandleTabSwitcherShownEnabled, mLayoutStateProvider);
+            boolean res = tab != null && !tab.canGoBack() && isTabFromStartSurface(tab)
+                    || handleTabSwitcherShown;
             if (!res) {
                 var controlTab = mTabSupplier.get();
-                int layoutType = mLayoutStateProviderSupplier.hasValue()
-                        ? mLayoutStateProviderSupplier.get().getActiveLayoutType()
+                int layoutType = mLayoutStateProvider != null
+                        ? mLayoutStateProvider.getActiveLayoutType()
                         : LayoutType.NONE;
                 long interval = -1;
                 if (mLastBackPressMsSupplier.get() != -1) {
@@ -194,7 +228,7 @@ public final class ReturnToChromeUtil {
                     return BackPressResult.FAILURE;
                 }
             }
-            mOnBackPressedCallback.run();
+            mOnBackPressedCallback.onResult(handleTabSwitcherShown);
             return res ? BackPressResult.SUCCESS : BackPressResult.FAILURE;
         }
 
@@ -206,7 +240,40 @@ public final class ReturnToChromeUtil {
         @Override
         public void destroy() {
             mActivityTabObserver.destroy();
+            if (mLayoutStateProvider != null) {
+                mLayoutStateProvider.removeObserver(mLayoutStateObserver);
+                mLayoutStateProvider = null;
+            }
         }
+    }
+
+    /**
+     * Returns whether to handle the back operation if the Tab switcher is showing.
+     * @param shouldHandleTabSwitcherShown Whether the back operation should be handled when the
+     *     Tab switcher is showing. It is only true when both Start surface and Start surface
+     * refactor feature flags are enabled.
+     * @param layoutStateProvider The provider of the current layout state.
+     */
+    public static boolean shouldHandleTabSwitcherShown(
+            boolean shouldHandleTabSwitcherShown, LayoutStateProvider layoutStateProvider) {
+        return shouldHandleTabSwitcherShown && layoutStateProvider != null
+                && layoutStateProvider.isLayoutVisible(LayoutType.TAB_SWITCHER);
+    }
+
+    /**
+     * Shows the Start surface if the given {@link handleTabSwitcherShown} is true.
+     * @param handleTabSwitcherShown Whether to handle the back operation from the current showing
+     *                               Tab switcher.
+     * @param layoutManager The {@link LayoutManager} object.
+     */
+    public static boolean mayReturnToStartSurface(
+            boolean handleTabSwitcherShown, LayoutManager layoutManager) {
+        if (!handleTabSwitcherShown) return false;
+
+        recordStartSurfaceState(StartSurfaceState.SHOWING_HOMEPAGE);
+        recordBackNavigationToStart("FromTabSwitcher");
+        layoutManager.showLayout(LayoutType.START_SURFACE, false);
+        return true;
     }
 
     /**
@@ -383,6 +450,9 @@ public final class ReturnToChromeUtil {
      * @return The ChromeActivity if it is presenting the omnibox on the tab switcher, else null.
      */
     private static ChromeActivity getActivityPresentingOverviewWithOmnibox(String url) {
+        if (sActivityPresentingOverivewWithOmniboxForTesting != null) {
+            return sActivityPresentingOverivewWithOmniboxForTesting;
+        }
         Activity activity = ApplicationStatus.getLastTrackedFocusedActivity();
         if (activity == null || !isStartSurfaceEnabled(activity)
                 || !(activity instanceof ChromeActivity)) {

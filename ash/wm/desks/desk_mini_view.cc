@@ -19,6 +19,7 @@
 #include "ash/wm/desks/desk_name_view.h"
 #include "ash/wm/desks/desk_preview_view.h"
 #include "ash/wm/desks/desk_textfield.h"
+#include "ash/wm/desks/desks_constants.h"
 #include "ash/wm/desks/desks_restore_util.h"
 #include "ash/wm/float/float_controller.h"
 #include "ash/wm/overview/overview_constants.h"
@@ -99,6 +100,8 @@ DeskMiniView::DeskMiniView(DeskBarViewBase* owner_bar,
                            aura::Window* root_window,
                            Desk* desk)
     : owner_bar_(owner_bar), root_window_(root_window), desk_(desk) {
+  TRACE_EVENT0("ui", "DeskMiniView::DeskMiniView");
+
   DCHECK(root_window_);
   DCHECK(root_window_->IsRootWindow());
 
@@ -292,7 +295,8 @@ void DeskMiniView::UpdateDeskButtonVisibility() {
   if (!desk_->is_desk_being_removed() &&
       owner_bar_->type() == DeskBarViewBase::Type::kDeskButton) {
     const int desk_index = controller->GetDeskIndex(desk_);
-    desk_shortcut_view_->SetVisible(visible && desk_index <= 7);
+    desk_shortcut_view_->SetVisible(visible &&
+                                    desk_index < kDeskBarMaxDeskShortcut);
     desk_shortcut_label_->SetText(u"+ " +
                                   base::NumberToString16(desk_index + 1));
   }
@@ -410,17 +414,23 @@ void DeskMiniView::OnRemovingDesk(DeskCloseType close_type) {
   if (!controller->CanRemoveDesks())
     return;
 
-  if (owner_bar_->type() == DeskBarViewBase::Type::kDeskButton) {
-    switch (close_type) {
-      case DeskCloseType::kCloseAllWindowsAndWait:
-        base::UmaHistogramBoolean(kDeskBarCloseDeskHistogramName, true);
-        break;
-      case DeskCloseType::kCombineDesks:
-        base::UmaHistogramBoolean(kDeskBarCombineDesksHistogramName, true);
-        break;
-      default:
-        break;
-    }
+  switch (close_type) {
+    case DeskCloseType::kCloseAllWindowsAndWait:
+      base::UmaHistogramBoolean(
+          owner_bar_->type() == DeskBarViewBase::Type::kDeskButton
+              ? kDeskButtonDeskBarCloseDeskHistogramName
+              : kOverviewDeskBarCloseDeskHistogramName,
+          true);
+      break;
+    case DeskCloseType::kCombineDesks:
+      base::UmaHistogramBoolean(
+          owner_bar_->type() == DeskBarViewBase::Type::kDeskButton
+              ? kDeskButtonDeskBarCombineDesksHistogramName
+              : kOverviewDeskBarCombineDesksHistogramName,
+          true);
+      break;
+    default:
+      break;
   }
 
   // We want to avoid the possibility of getting triggered multiple times. We
@@ -673,9 +683,11 @@ void DeskMiniView::OnViewBlurred(views::View* observed_view) {
                                  /*trim_sequences_with_line_breaks=*/false),
         /*set_by_user=*/true);
 
-    if (owner_bar_->type() == DeskBarViewBase::Type::kDeskButton) {
-      base::UmaHistogramBoolean(kDeskBarRenameDeskHistogramName, true);
-    }
+    base::UmaHistogramBoolean(
+        owner_bar_->type() == DeskBarViewBase::Type::kDeskButton
+            ? kDeskButtonDeskBarRenameDeskHistogramName
+            : kOverviewDeskBarRenameDeskHistogramName,
+        true);
   }
 
   // When committing the name, do not allow an empty desk name. Revert back to
@@ -715,6 +727,11 @@ void DeskMiniView::OnDeskPreviewPressed() {
   // If there is an ongoing desk activation, do nothing.
   DesksController* desks_controller = DesksController::Get();
   if (!desks_controller->AreDesksBeingModified()) {
+    base::UmaHistogramBoolean(
+        owner_bar_->type() == DeskBarViewBase::Type::kDeskButton
+            ? kDeskButtonDeskBarActivateDeskHistogramName
+            : kOverviewDeskBarActivateDeskHistogramName,
+        true);
     desk_preview_->RequestFocus();
     owner_bar_->HandleClickEvent(this);
   }

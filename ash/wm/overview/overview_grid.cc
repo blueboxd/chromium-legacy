@@ -27,6 +27,7 @@
 #include "ash/wm/desks/cros_next_desk_icon_button.h"
 #include "ash/wm/desks/desk_bar_view_base.h"
 #include "ash/wm/desks/desk_mini_view.h"
+#include "ash/wm/desks/desk_mini_view_animations.h"
 #include "ash/wm/desks/desk_name_view.h"
 #include "ash/wm/desks/desks_controller.h"
 #include "ash/wm/desks/desks_util.h"
@@ -40,8 +41,8 @@
 #include "ash/wm/desks/templates/saved_desk_save_desk_button.h"
 #include "ash/wm/desks/templates/saved_desk_util.h"
 #include "ash/wm/desks/zero_state_button.h"
+#include "ash/wm/gestures/wm_gesture_handler.h"
 #include "ash/wm/mru_window_tracker.h"
-#include "ash/wm/overview/delayed_animation_observer_impl.h"
 #include "ash/wm/overview/overview_constants.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_grid_event_handler.h"
@@ -73,7 +74,6 @@
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/presentation_time_recorder.h"
-#include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/compositor/throughput_tracker.h"
 #include "ui/gfx/geometry/transform.h"
 #include "ui/gfx/geometry/transform_util.h"
@@ -130,12 +130,6 @@ constexpr base::TimeDelta kOcclusionUnpauseDurationForScroll =
 
 constexpr base::TimeDelta kOcclusionUnpauseDurationForRotation =
     base::Milliseconds(300);
-
-// The animiation duration of desks bar slide out animation when exiting
-// overview mode.
-constexpr base::TimeDelta kExpandedDesksBarSlideDuration =
-    base::Milliseconds(350);
-constexpr base::TimeDelta kZeroDesksBarSlideDuration = base::Milliseconds(250);
 
 // Toast id for the toast that is displayed when a user tries to move a window
 // that is visible on all desks to another desk.
@@ -411,59 +405,21 @@ bool ShouldExcludeItemFromGridLayout(
   return item->animating_to_close() || ignored_items.contains(item);
 }
 
+bool IsUnsupportedWindow(aura::Window* window) {
+  const bool has_restore_id = !wm::GetTransientParent(window) &&
+                              (Shell::Get()
+                                   ->overview_controller()
+                                   ->disable_app_id_check_for_saved_desks() ||
+                               !saved_desk_util::GetAppId(window).empty());
+
+  return !DeskTemplate::IsAppTypeSupported(window) || !has_restore_id;
+}
+
+bool IsIncognitoWindow(aura::Window* window) {
+  return !Shell::Get()->saved_desk_delegate()->IsWindowPersistable(window);
+}
+
 }  // namespace
-
-// A self-deleting object that performs slide out animation for the desks
-// bar when exiting the overview mode. It owns the desks bar widget, thus when
-// the slide out animation is done, it will delete itself and destroy the desks
-// bar widget as well.
-class DesksBarSlideAnimation {
- public:
-  DesksBarSlideAnimation(std::unique_ptr<views::Widget> desk_bar_widget,
-                         bool is_zero_state) {
-    gfx::Transform transform;
-    transform.Translate(0,
-                        -desk_bar_widget->GetWindowBoundsInScreen().height());
-
-    // Create layer copies, get rid of the original desk bar widget, and add the
-    // layer copies to the parent layer.
-    ui::Layer* parent_layer = desk_bar_widget->GetLayer()->parent();
-    layer_tree_ = wm::RecreateLayers(desk_bar_widget->GetContentsView());
-    ui::Layer* layer_tree_root = layer_tree_->root();
-    parent_layer->Add(layer_tree_root);
-    desk_bar_widget.reset();
-
-    // Add slide out animation as part of the overview exit animation.
-    ui::ScopedLayerAnimationSettings settings{parent_layer->GetAnimator()};
-    auto exit_observer = std::make_unique<ExitAnimationObserver>();
-    settings.AddObserver(exit_observer.get());
-    Shell::Get()->overview_controller()->AddExitAnimationObserver(
-        std::move(exit_observer));
-
-    views::AnimationBuilder()
-        .OnEnded(base::BindOnce(
-            [](DesksBarSlideAnimation* animation) { delete animation; },
-            base::Unretained(this)))
-        .OnAborted(base::BindOnce(
-            [](DesksBarSlideAnimation* animation) { delete animation; },
-            base::Unretained(this)))
-        .SetPreemptionStrategy(
-            ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET)
-        .Once()
-        .SetDuration(is_zero_state ? kZeroDesksBarSlideDuration
-                                   : kExpandedDesksBarSlideDuration)
-        .SetTransform(layer_tree_root, transform,
-                      gfx::Tween::ACCEL_20_DECEL_100);
-  }
-
-  DesksBarSlideAnimation(const DesksBarSlideAnimation&) = delete;
-  DesksBarSlideAnimation& operator=(const DesksBarSlideAnimation&) = delete;
-
-  ~DesksBarSlideAnimation() = default;
-
- private:
-  std::unique_ptr<ui::LayerTreeOwner> layer_tree_;
-};
 
 OverviewGrid::OverviewGrid(aura::Window* root_window,
                            const std::vector<aura::Window*>& windows,
@@ -475,6 +431,8 @@ OverviewGrid::OverviewGrid(aura::Window* root_window,
               ? std::make_unique<SplitViewDragIndicators>(root_window)
               : nullptr),
       bounds_(GetGridBoundsInScreen(root_window)) {
+  TRACE_EVENT0("ui", "OverviewGrid::OverviewGrid");
+
   for (auto* window : windows) {
     if (window->GetRootWindow() != root_window)
       continue;
@@ -498,6 +456,8 @@ OverviewGrid::OverviewGrid(aura::Window* root_window,
 OverviewGrid::~OverviewGrid() = default;
 
 void OverviewGrid::Shutdown(OverviewEnterExitType exit_type) {
+  TRACE_EVENT0("ui", "OverviewGrid::Shutdown");
+
   EndNudge();
 
   SplitViewController::Get(root_window_)->RemoveObserver(this);
@@ -552,24 +512,15 @@ void OverviewGrid::Shutdown(OverviewEnterExitType exit_type) {
   }
 
   // After this, the desk bar widget will not be owned by this overview grid
-  // anymore. It's either owned by the slide animation for a short period of
-  // time for the animation, or destroyed right away. When applying the slide
-  // out animation to the `desks_widget_` during overview grid shutdown phase,
-  // we need to make the lifetime of the `desks_widget_` longer than its owner
-  // (overview grid). Thus move the ownership of `desks_widget_` from the
-  // overview grid to `DesksBarSlideAnimation` which is a self-deleting object,
-  // when the animation is done, it will delete itself and destroy
-  // `desks_widget_` as well.
+  // anymore.
   if (desks_widget_) {
     if (chromeos::features::IsJellyrollEnabled() &&
         exit_type != OverviewEnterExitType::kImmediateExit) {
-      new DesksBarSlideAnimation(std::move(desks_widget_),
-                                 desks_bar_view_->IsZeroState());
-      desks_bar_view_ = nullptr;
-    } else {
-      desks_widget_.reset();
-      desks_bar_view_ = nullptr;
+      PerformDeskBarSlideAnimation(std::move(desks_widget_),
+                                   desks_bar_view_->IsZeroState());
     }
+    desks_widget_.reset();
+    desks_bar_view_ = nullptr;
   }
 }
 
@@ -585,6 +536,59 @@ void OverviewGrid::PrepareForOverview() {
 
   grid_event_handler_ = std::make_unique<OverviewGridEventHandler>(this);
   Shell::Get()->wallpaper_controller()->AddObserver(this);
+}
+
+void OverviewGrid::PositionWindowsContinuously(float y_offset) {
+  // If it's the first scroll, the rects will need to be re-calculated.
+  bool first_scroll = false;
+  if (cached_rects_.empty()) {
+    first_scroll = true;
+    cached_rects_ = ShouldUseScrollingLayout(/*ignored_items_size=*/0)
+                        ? GetWindowRectsForScrollingLayout({})
+                        : GetWindowRects({});
+    // When starting a continuous scroll to EXIT overview mode, hide the save
+    // desk button immediately.
+    // When starting a continuous scroll to ENTER overview mode, the save desk
+    // button will be shown once overview mode is fully entered.
+    if (IsSaveDeskButtonContainerVisible()) {
+      UpdateSaveDeskButtons();
+    }
+  }
+
+  // Fade in/out the minimized windows and position non-minimized windows.
+  float scroll_ratio = y_offset / WmGestureHandler::kVerticalThresholdDp;
+  for (size_t i = 0; i < window_list_.size(); ++i) {
+    OverviewItem* window_item = window_list_[i].get();
+    gfx::RectF rect = cached_rects_[i];
+    // If this is the first scroll update, position minimized windows
+    // and hide the headers of non-minimized windows.
+    if (first_scroll) {
+      if (WindowState::Get(window_item->GetWindow())->IsMinimized()) {
+        window_item->SetBounds(rect, OVERVIEW_ANIMATION_NONE);
+      } else {
+        window_item->overview_item_view()->layer()->SetOpacity(0.0f);
+      }
+    }
+    // For all scroll updates, set the opacity of minimized windows and
+    // reposition non-minimized windows.
+    if (WindowState::Get(window_item->GetWindow())->IsMinimized()) {
+      float opacity = std::clamp(0.01f, scroll_ratio, 1.f);
+      window_item->overview_item_view()->layer()->SetOpacity(opacity);
+    } else {
+      rect = gfx::Tween::RectFValueBetween(
+          scroll_ratio, gfx::RectF(window_item->GetWindow()->bounds()), rect);
+      window_item->SetBounds(rect, OVERVIEW_ANIMATION_NONE);
+    }
+  }
+
+  // Move the desk bar up/down.
+  if (auto* desks_bar = desks_bar_view()) {
+    gfx::Transform transform;
+    transform.Translate(
+        0, -desks_bar->GetBoundsInScreen().height() +
+               (desks_bar->GetBoundsInScreen().height() * scroll_ratio));
+    desks_bar->layer()->SetTransform(transform);
+  }
 }
 
 bool OverviewGrid::ShouldUseScrollingLayout(size_t ignored_items_size) const {
@@ -700,6 +704,11 @@ void OverviewGrid::PositionWindows(
   }
 
   UpdateSaveDeskButtons();
+
+  // This is a no-op if the feature ContinuousOverviewScrollAnimation is not
+  // enabled. Once windows are placed at their final positions, clear rects so
+  // that they get re-calculated when a continuous downward scroll begins.
+  cached_rects_.clear();
 }
 
 OverviewItem* OverviewGrid::GetOverviewItemContaining(
@@ -1959,7 +1968,6 @@ void OverviewGrid::UpdateNoWindowsWidget(bool no_items) {
     params.message_id = IDS_ASH_OVERVIEW_NO_RECENT_ITEMS;
     params.parent =
         root_window_->GetChildById(desks_util::GetActiveDeskContainerId());
-    params.hide_in_mini_view = true;
     if (overview_session_ &&
         overview_session_->ShouldEnterWithoutAnimations()) {
       params.disable_default_visibility_animation = true;
@@ -2001,11 +2009,17 @@ void OverviewGrid::UpdateSaveDeskButtons() {
 
   // Do not create or show the save desk buttons if there are no
   // windows in this grid, during a window drag or in tablet mode, the saved
-  // desk grid is visible, or if the desks bar hasn't been created yet.
+  // desk grid is visible, if the desks bar hasn't been created yet, or if the
+  // feature ContinuousOverviewScrollAnimation is enabled and a continuous
+  // scroll is in progress.
   const bool target_visible =
       !no_items && !overview_session_->GetCurrentDraggedOverviewItem() &&
       !Shell::Get()->tablet_mode_controller()->InTabletMode() &&
-      !IsShowingSavedDeskLibrary() && desks_widget_;
+      !IsShowingSavedDeskLibrary() && desks_widget_ &&
+      (!features::IsContinuousOverviewScrollAnimationEnabled() ||
+       !Shell::Get()
+            ->overview_controller()
+            ->is_continuous_scroll_in_progress());
 
   const bool visibility_changed =
       target_visible != IsSaveDeskButtonContainerVisible();
@@ -2062,6 +2076,21 @@ void OverviewGrid::UpdateSaveDeskButtons() {
                        /*animate=*/!in_desk_animation);
   }
 
+  auto* split_view_controller = SplitViewController::Get(root_window_);
+  int snapped_unsupported_window = 0;
+  int snapped_incognito_window = 0;
+  int snapped_supported_window = 0;
+  if (split_view_controller->InSplitViewMode()) {
+    aura::Window* window = split_view_controller->GetDefaultSnappedWindow();
+    if (IsUnsupportedWindow(window)) {
+      snapped_unsupported_window = 1;
+    } else if (IsIncognitoWindow(window)) {
+      snapped_incognito_window = 1;
+    } else {
+      snapped_supported_window = 1;
+    }
+  }
+
   // Enable/disable button and update tooltip.
   const SavedDeskPresenter* saved_desk_presenter =
       overview_session_->saved_desk_presenter();
@@ -2072,12 +2101,18 @@ void OverviewGrid::UpdateSaveDeskButtons() {
       SavedDeskSaveDeskButton::Type::kSaveAsTemplate,
       saved_desk_presenter->GetEntryCount(DeskTemplateType::kTemplate),
       saved_desk_presenter->GetMaxEntryCount(DeskTemplateType::kTemplate),
-      num_incognito_windows_, num_unsupported_windows_, size());
+      num_incognito_windows_ + snapped_incognito_window,
+      num_unsupported_windows_ + snapped_unsupported_window,
+      size() + snapped_incognito_window + snapped_unsupported_window +
+          snapped_supported_window);
   container->UpdateButtonEnableStateAndTooltip(
       SavedDeskSaveDeskButton::Type::kSaveForLater,
       saved_desk_presenter->GetEntryCount(DeskTemplateType::kSaveAndRecall),
       saved_desk_presenter->GetMaxEntryCount(DeskTemplateType::kSaveAndRecall),
-      num_incognito_windows_, num_unsupported_windows_, size());
+      num_incognito_windows_ + snapped_incognito_window,
+      num_unsupported_windows_ + snapped_unsupported_window,
+      size() + snapped_incognito_window + snapped_unsupported_window +
+          snapped_supported_window);
 
   // Set the widget position above the overview item window and default width
   // and height.
@@ -2096,11 +2131,11 @@ void OverviewGrid::UpdateSaveDeskButtons() {
   // with the first overview item.
   // If `ShouldUseScrollingLayout()`, don't animate because it becomes
   // distracting to the user to have the button animate behind moving windows.
+  const bool animate = !visibility_changed && !in_desk_animation &&
+                       !ShouldUseScrollingLayout(/*ignored_items_size=*/0);
   ScopedOverviewAnimationSettings settings(
-      visibility_changed || in_desk_animation ||
-              ShouldUseScrollingLayout(/*ignored_items_size=*/0)
-          ? OVERVIEW_ANIMATION_NONE
-          : OVERVIEW_ANIMATION_LAYOUT_OVERVIEW_ITEMS_IN_OVERVIEW,
+      animate ? OVERVIEW_ANIMATION_LAYOUT_OVERVIEW_ITEMS_IN_OVERVIEW
+              : OVERVIEW_ANIMATION_NONE,
       save_desk_button_container_widget_->GetNativeWindow());
   gfx::Point available_origin =
       gfx::ToRoundedPoint(first_overview_item_bounds.origin()) +
@@ -2251,6 +2286,7 @@ SavedDeskLibraryView* OverviewGrid::GetSavedDeskLibraryView() const {
 }
 
 void OverviewGrid::MaybeInitDesksWidget() {
+  TRACE_EVENT0("ui", "OverviewGrid::MaybeInitDesksWidget");
   if (!desks_util::ShouldDesksBarBeCreated() || desks_widget_)
     return;
 
@@ -2264,6 +2300,17 @@ void OverviewGrid::MaybeInitDesksWidget() {
   desks_bar_view_ = desks_widget_->SetContentsView(
       std::make_unique<LegacyDeskBarView>(weak_ptr_factory_.GetWeakPtr()));
   desks_bar_view_->Init();
+
+  // If the feature ContinuousOverviewScrollAnimation is enabled and a
+  // continuous scroll is now starting, move the desk bar up so we can slowly
+  // place it downward in relation to the scroll offset.
+  if (overview_session_->enter_exit_overview_type() ==
+      OverviewEnterExitType::kContinuousAnimationEnterOnScrollUpdate) {
+    gfx::Transform transform;
+    transform.Translate(0, -desks_bar_view_->GetBoundsInScreen().height());
+    auto* layer = desks_bar_view_->layer();
+    layer->SetTransform(transform);
+  }
 
   desks_widget_->Show();
 
@@ -2735,21 +2782,13 @@ void OverviewGrid::UpdateNumSavedDeskUnsupportedWindows(aura::Window* window,
   if (!saved_desk_util::IsSavedDesksEnabled())
     return;
 
-  // Count apps without full restore in `num_unsupported_windows_`. This is to
-  // ensure Save Template behavior, which will disable the button if
-  // num_unsupported_windows_ == window_list.size().
-  // TODO(crbug.com/1297710): Separate apps without Full Restore app id from
-  // unsupported apps so that they are not labeled as "Linux" apps in text.
-  const bool has_restore_id = !wm::GetTransientParent(window) &&
-                              (Shell::Get()
-                                   ->overview_controller()
-                                   ->disable_app_id_check_for_saved_desks() ||
-                               !saved_desk_util::GetAppId(window).empty());
   int addend = increment ? 1 : -1;
-  if (!DeskTemplate::IsAppTypeSupported(window) || !has_restore_id) {
+
+  // Track the number of unsupported and incognito windows. The saved desk
+  // buttons are disabled if there are no supported or non-incognito windows.
+  if (IsUnsupportedWindow(window)) {
     num_unsupported_windows_ += addend;
-  } else if (!Shell::Get()->saved_desk_delegate()->IsWindowPersistable(
-                 window)) {
+  } else if (IsIncognitoWindow(window)) {
     num_incognito_windows_ += addend;
   }
 

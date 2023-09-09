@@ -266,6 +266,7 @@ void InputDeviceSettingsControllerImpl::RegisterProfilePrefs(
   pref_registry->RegisterDictionaryPref(
       prefs::kPointingStickDeviceSettingsDictPref);
   pref_registry->RegisterDictionaryPref(prefs::kTouchpadDeviceSettingsDictPref);
+  pref_registry->RegisterListPref(prefs::kKeyboardDeviceImpostersListPref);
 }
 
 void InputDeviceSettingsControllerImpl::OnActiveUserPrefServiceChanged(
@@ -277,6 +278,7 @@ void InputDeviceSettingsControllerImpl::OnActiveUserPrefServiceChanged(
     pref_service->SetDict(prefs::kMouseDeviceSettingsDictPref, {});
     pref_service->SetDict(prefs::kPointingStickDeviceSettingsDictPref, {});
     pref_service->SetDict(prefs::kTouchpadDeviceSettingsDictPref, {});
+    pref_service->SetList(prefs::kKeyboardDeviceImpostersListPref, {});
     return;
   }
 
@@ -765,12 +767,31 @@ void InputDeviceSettingsControllerImpl::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
+void InputDeviceSettingsControllerImpl::RecordComboDeviceMetric(
+    const mojom::Keyboard& keyboard) {
+  for (const auto& [_, mouse] : mice_) {
+    if (mouse->device_key == keyboard.device_key) {
+      metrics_manager_->RecordKeyboardMouseComboDeviceMetric(keyboard, *mouse);
+    }
+  }
+}
+
+void InputDeviceSettingsControllerImpl::RecordComboDeviceMetric(
+    const mojom::Mouse& mouse) {
+  for (const auto& [_, keyboard] : keyboards_) {
+    if (keyboard->device_key == mouse.device_key) {
+      metrics_manager_->RecordKeyboardMouseComboDeviceMetric(*keyboard, mouse);
+    }
+  }
+}
+
 void InputDeviceSettingsControllerImpl::DispatchKeyboardConnected(DeviceId id) {
   DCHECK(base::Contains(keyboards_, id));
   const auto& keyboard = *keyboards_.at(id);
   for (auto& observer : observers_) {
     observer.OnKeyboardConnected(keyboard);
   }
+  RecordComboDeviceMetric(keyboard);
 }
 
 void InputDeviceSettingsControllerImpl::
@@ -827,6 +848,7 @@ void InputDeviceSettingsControllerImpl::DispatchMouseConnected(DeviceId id) {
   for (auto& observer : observers_) {
     observer.OnMouseConnected(mouse);
   }
+  RecordComboDeviceMetric(mouse);
 }
 
 void InputDeviceSettingsControllerImpl::

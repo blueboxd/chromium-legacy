@@ -24,7 +24,6 @@
 #include "chrome/browser/ash/system_web_apps/test_support/system_web_app_integration_test.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/test/base/chrome_test_utils.h"
-#include "chromeos/constants/chromeos_features.h"
 #include "content/public/browser/webui_config_map.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
@@ -55,9 +54,7 @@ const char kFakeAppId[] = "fake_app_id";
 // cannot run outside of Demo Mode.
 class DemoModeAppIntegrationTestBase : public ash::SystemWebAppIntegrationTest {
  public:
-  DemoModeAppIntegrationTestBase() {
-    scoped_feature_list_.InitAndEnableFeature(chromeos::features::kDemoModeSWA);
-  }
+  DemoModeAppIntegrationTestBase() = default;
 
  protected:
   void SetUpOnMainThread() override {
@@ -79,7 +76,6 @@ class DemoModeAppIntegrationTestBase : public ash::SystemWebAppIntegrationTest {
   }
 
   base::ScopedTempDir component_dir_;
-  base::test::ScopedFeatureList scoped_feature_list_;
   base::HistogramTester histogram_tester_;
 };
 
@@ -249,14 +245,19 @@ IN_PROC_BROWSER_TEST_P(DemoModeAppIntegrationTest,
 IN_PROC_BROWSER_TEST_P(DemoModeAppIntegrationTest,
                        DemoModeAppRecordMetricsFromComponentContent) {
   const std::string kTestJs =
-      "import {metricsService, Page, PillarButton} from "
+      "import {metricsService, Page, PillarButton, DetailsPage} from "
       "'./demo_mode_metrics_service.js'; "
       "document.addEventListener('DOMContentLoaded', () => {"
       "  metricsService.recordAttractLoopBreak();"
+      "  metricsService.recordAttractLoopBreakTimestamp(10000);"
       "  metricsService.recordHomePageButtonClick(Page.EASY); "
+      "  metricsService.recordHomePageButtonClick(Page.CHROMEOS); "
       "  metricsService.recordPageViewDuration(Page.EASY, 10000); "
       "  metricsService.recordPillarPageButtonClick(PillarButton.NEXT); "
       "  metricsService.recordNavbarButtonClick(Page.FAST); "
+      "  metricsService.recordDetailsPageClicked(DetailsPage.MOBILE_GAMING); "
+      "  metricsService.recordDetailsPageViewDuration(DetailsPage.PROCESSOR, "
+      "10000); "
       "});";
 
   base::UserActionTester user_action_tester;
@@ -278,10 +279,16 @@ IN_PROC_BROWSER_TEST_P(DemoModeAppIntegrationTest,
                 "DemoMode_Highlights_HomePage_Click_EasyButton"),
             1);
   EXPECT_EQ(user_action_tester.GetActionCount(
+                "DemoMode_Highlights_HomePage_Click_ChromeOSButton"),
+            1);
+  EXPECT_EQ(user_action_tester.GetActionCount(
                 "DemoMode_Highlights_PillarPage_Click_NextButton"),
             1);
   EXPECT_EQ(user_action_tester.GetActionCount(
                 "DemoMode_Highlights_Navbar_Click_FastButton"),
+            1);
+  EXPECT_EQ(user_action_tester.GetActionCount(
+                "DemoMode_Highlights_DetailsPage_Clicked_MobileGamingButton"),
             1);
   histogram_tester_.ExpectBucketCount("DemoMode.Highlights.FirstInteraction",
                                       1 /* Easy button click */, 1);
@@ -289,6 +296,11 @@ IN_PROC_BROWSER_TEST_P(DemoModeAppIntegrationTest,
                                       2 /* Fast button click */, 0);
   histogram_tester_.ExpectTimeBucketCount(
       "DemoMode.Highlights.PageStayDuration.EasyPage", base::Seconds(10), 1);
+  histogram_tester_.ExpectTimeBucketCount(
+      "DemoMode.Highlights.DetailsPageStayDuration.ProcessorPage",
+      base::Seconds(10), 1);
+  histogram_tester_.ExpectTimeBucketCount("DemoMode.AttractLoop.Timestamp",
+                                          base::Seconds(10), 1);
 }
 
 // TODO(b/232945108): Change this to instead verify default resource if

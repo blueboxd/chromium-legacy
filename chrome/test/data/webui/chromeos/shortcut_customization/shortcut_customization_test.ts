@@ -9,6 +9,7 @@ import {strictQuery} from 'chrome://resources/ash/common/typescript_utils/strict
 import {CrButtonElement} from 'chrome://resources/cr_elements/cr_button/cr_button.js';
 import {CrDialogElement} from 'chrome://resources/cr_elements/cr_dialog/cr_dialog.js';
 import {CrDrawerElement} from 'chrome://resources/cr_elements/cr_drawer/cr_drawer.js';
+import {CrIconButtonElement} from 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
 import {IronIconElement} from 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
@@ -17,7 +18,7 @@ import {AcceleratorLookupManager} from 'chrome://shortcut-customization/js/accel
 import {AcceleratorRowElement} from 'chrome://shortcut-customization/js/accelerator_row.js';
 import {AcceleratorSubsectionElement} from 'chrome://shortcut-customization/js/accelerator_subsection.js';
 import {AcceleratorViewElement} from 'chrome://shortcut-customization/js/accelerator_view.js';
-import {fakeAcceleratorConfig, fakeLayoutInfo, fakeSearchResults} from 'chrome://shortcut-customization/js/fake_data.js';
+import {fakeAcceleratorConfig, fakeDefaultAccelerators, fakeLayoutInfo, fakeSearchResults} from 'chrome://shortcut-customization/js/fake_data.js';
 import {FakeShortcutProvider} from 'chrome://shortcut-customization/js/fake_shortcut_provider.js';
 import {setShortcutProviderForTesting, setUseFakeProviderForTesting} from 'chrome://shortcut-customization/js/mojo_interface_provider.js';
 import {stringToMojoString16} from 'chrome://shortcut-customization/js/mojo_utils.js';
@@ -71,6 +72,7 @@ suite('shortcutCustomizationAppTest', function() {
     provider = new FakeShortcutProvider();
     provider.setFakeAcceleratorConfig(fakeAcceleratorConfig);
     provider.setFakeAcceleratorLayoutInfos(fakeLayoutInfo);
+    provider.setFakeGetDefaultAcceleratorsForId(fakeDefaultAccelerators);
     provider.setFakeHasLauncherButton(true);
 
     setShortcutProviderForTesting(provider);
@@ -145,9 +147,10 @@ suite('shortcutCustomizationAppTest', function() {
     // open.
     const acceleratorView =
         accelerators[0]!.shadowRoot!.querySelectorAll('accelerator-view');
-    const editIconContainer = acceleratorView[0]!.shadowRoot!.querySelector(
-                                  '.edit-icon-container') as HTMLDivElement;
-    editIconContainer.click();
+    const editButton = strictQuery(
+        '.edit-button', acceleratorView[0]!.shadowRoot, CrIconButtonElement);
+
+    editButton.click();
     await flushTasks();
   }
 
@@ -320,9 +323,10 @@ suite('shortcutCustomizationAppTest', function() {
     const acceleratorView =
         accelerators[0]!.shadowRoot!.querySelectorAll('accelerator-view');
     assertEquals(1, acceleratorView.length);
-    const editIconContainer = acceleratorView[0]!.shadowRoot!.querySelector(
-                                  '.edit-icon-container') as HTMLDivElement;
-    editIconContainer.click();
+    const editButton = strictQuery(
+        '.edit-button', acceleratorView[0]!.shadowRoot, CrIconButtonElement);
+
+    editButton.click();
 
     await flushTasks();
     editDialog = getPage().shadowRoot!.querySelector('#editDialog');
@@ -493,9 +497,9 @@ suite('shortcutCustomizationAppTest', function() {
 
     assertTrue(editElement.hasError);
     const expected_error_message =
-        'Shortcut is used by TestConflictName. Press a new shortcut or press ' +
-        'the same one again to use it for this action instead.';
-
+        'Shortcut is being used for "TestConflictName". Press a new ' +
+        'shortcut. To replace the original shortcut, press this shortcut ' +
+        'again.';
     assertEquals(
         expected_error_message,
         editElement!.shadowRoot!.querySelector('#acceleratorInfoText')!
@@ -521,9 +525,7 @@ suite('shortcutCustomizationAppTest', function() {
     await flushTasks();
 
     const expected_error_message2 =
-        'Shortcut is used by TestConflictName. Press a new shortcut to ' +
-        'replace.';
-
+        'Shortcut is being used for "TestConflictName". Press a new shortcut.';
     assertEquals(
         expected_error_message2,
         editElement!.shadowRoot!.querySelector('#acceleratorInfoText')!
@@ -566,8 +568,9 @@ suite('shortcutCustomizationAppTest', function() {
     const acceleratorConfigResult =
         AcceleratorConfigResult.kShiftOnlyNotAllowed;
     const expectedErrorMessage =
-        'Shortcut is not valid. Shift can not be used as the only modifier ' +
-        'key. Press a new shortcut.';
+        'Shortcut not available. Press a new shortcut using shift and 1 ' +
+        'more modifier key (ctrl, alt, search, or launcher).';
+
     await validateAcceleratorInDialog(
         acceleratorConfigResult, expectedErrorMessage);
   });
@@ -575,8 +578,8 @@ suite('shortcutCustomizationAppTest', function() {
   test('ValidateAcceleratorMissingAccelerator', async () => {
     const acceleratorConfigResult = AcceleratorConfigResult.kMissingModifier;
     const expectedErrorMessage =
-        'Shortcut is not valid. Must include at least one modifier key. ' +
-        'Press a new shortcut.';
+        'Shortcut not available. Press a new shortcut using a modifier key ' +
+        '(ctrl, alt, shift, search, or launcher).';
     await validateAcceleratorInDialog(
         acceleratorConfigResult, expectedErrorMessage);
   });
@@ -592,7 +595,7 @@ suite('shortcutCustomizationAppTest', function() {
   test('ValidateAcceleratorConflict', async () => {
     const acceleratorConfigResult = AcceleratorConfigResult.kConflict;
     const expectedErrorMessage =
-        'Shortcut is used by BRIGHTNESS_UP. Press a new shortcut to replace.';
+        'Shortcut is being used for "BRIGHTNESS_UP". Press a new shortcut.';
     await validateAcceleratorInDialog(
         acceleratorConfigResult, expectedErrorMessage);
   });
@@ -601,8 +604,8 @@ suite('shortcutCustomizationAppTest', function() {
     const acceleratorConfigResult =
         AcceleratorConfigResult.kConflictCanOverride;
     const expectedErrorMessage =
-        'Shortcut is used by BRIGHTNESS_UP. Press a new shortcut or press ' +
-        'the same one again to use it for this action instead.';
+        'Shortcut is being used for "BRIGHTNESS_UP". Press a new shortcut. ' +
+        'To replace the original shortcut, press this shortcut again.';
     await validateAcceleratorInDialog(
         acceleratorConfigResult, expectedErrorMessage);
   });

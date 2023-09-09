@@ -22,22 +22,6 @@
 #include "device/bluetooth/bluetooth_remote_gatt_service_mac.h"
 #include "device/bluetooth/public/cpp/bluetooth_address.h"
 
-// Remove when Chrome no longer supports 10.12.
-#if defined(MAC_OS_X_VERSION_10_13)
-
-// In the 10.13 SDK, CBPeripheral became a subclass of CBPeer, which defines
-// -[CBPeer identifier] as partially available. Pretend it still exists on
-// CBPeripheral. At runtime the implementation on CBPeer will be invoked.
-@interface CBPeripheral (HighSierraSDK)
-@property(readonly, nonatomic) NSUUID* identifier;
-@end
-
-#endif  // MAC_OS_X_VERSION_10_13
-
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 namespace device {
 
 BluetoothLowEnergyDeviceMac::BluetoothLowEnergyDeviceMac(
@@ -107,8 +91,9 @@ uint16_t BluetoothLowEnergyDeviceMac::GetAppearance() const {
 }
 
 absl::optional<std::string> BluetoothLowEnergyDeviceMac::GetName() const {
-  if ([peripheral_ name])
+  if ([peripheral_ name]) {
     return base::SysNSStringToUTF8([peripheral_ name]);
+  }
   return absl::nullopt;
 }
 
@@ -492,8 +477,9 @@ BluetoothLowEnergyDeviceMac::GetBluetoothRemoteGattServiceMac(
     BluetoothRemoteGattService* gatt_service = it.second.get();
     BluetoothRemoteGattServiceMac* gatt_service_mac =
         static_cast<BluetoothRemoteGattServiceMac*>(gatt_service);
-    if (gatt_service_mac->GetService() == cb_service)
+    if (gatt_service_mac->GetService() == cb_service) {
       return gatt_service_mac;
+    }
   }
   return nullptr;
 }

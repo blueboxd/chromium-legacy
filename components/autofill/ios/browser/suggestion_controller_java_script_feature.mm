@@ -12,10 +12,7 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #import "components/autofill/ios/browser/autofill_java_script_feature.h"
-
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
+#import "components/autofill/ios/common/javascript_feature_util.h"
 
 namespace autofill {
 
@@ -67,7 +64,7 @@ SuggestionControllerJavaScriptFeature::GetInstance() {
 
 SuggestionControllerJavaScriptFeature::SuggestionControllerJavaScriptFeature()
     : web::JavaScriptFeature(
-          web::ContentWorld::kIsolatedWorld,
+          ContentWorldForAutofillJavascriptFeatures(),
           {FeatureScript::CreateWithFilename(
               kScriptName,
               FeatureScript::InjectionTime::kDocumentStart,

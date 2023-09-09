@@ -7,7 +7,6 @@ import("//ios/web/public/js_messaging/optimize_js.gni")
 import("//ios/web/public/js_messaging/optimize_ts.gni")
 
 source_set("browser") {
-  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "autofill_agent.h",
     "autofill_agent.mm",
@@ -44,6 +43,7 @@ source_set("browser") {
     "//base",
     "//components/autofill/core/browser",
     "//components/autofill/core/common",
+    "//components/autofill/ios/common",
     "//components/autofill/ios/form_util",
     "//components/autofill/ios/form_util:form_handler_feature",
     "//components/autofill/ios/form_util:form_util_feature",
@@ -66,7 +66,6 @@ source_set("browser") {
 }
 
 source_set("util") {
-  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "autofill_util.h",
     "autofill_util.mm",
@@ -106,7 +105,6 @@ optimize_ts("suggestion_controller_js") {
 
 source_set("test_support") {
   testonly = true
-  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "credit_card_save_manager_test_observer_bridge.h",
     "credit_card_save_manager_test_observer_bridge.mm",
@@ -128,7 +126,6 @@ source_set("test_support") {
 
 source_set("unit_tests") {
   testonly = true
-  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "autofill_agent_unittests.mm",
     "autofill_util_unittests.mm",

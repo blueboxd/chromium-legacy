@@ -763,5 +763,19 @@
       </message>
     </if>
 
+    <!-- Default Browser Promo -->
+    <message name="IDS_FRE_DEFAULT_BROWSER_TITLE_NEW" desc="Title for the page that prompts user to set Chrome as their default browser in the first run experience.">
+      Set your default browser
+    </message>
+    <message name="IDS_FRE_DEFAULT_BROWSER_SUBTITLE" desc="Subtitle for the page that prompts user to set Chrome as their default browser in the first run experience.">
+      Get Google Search and Google smarts every time you browse
+    </message>
+    <message name="IDS_FRE_DEFAULT_BROWSER_SET_AS_DEFAULT" desc="The label for a button to confirm setting Chrome as their default browser.">
+      Set as default
+    </message>
+    <message name="IDS_FRE_DEFAULT_BROWSER_SKIP" desc="The label for a button to skip setting Chrome as their default browser.">
+      Skip
+    </message>
+
   </if>
 </grit-part>

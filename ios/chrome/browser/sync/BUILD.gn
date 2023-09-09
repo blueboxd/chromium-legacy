@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 source_set("sync") {
-  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "device_info_sync_service_factory.h",
     "device_info_sync_service_factory.mm",
@@ -49,6 +48,8 @@ source_set("sync") {
     "//components/send_tab_to_self",
     "//components/sessions",
     "//components/signin/public/identity_manager",
+    "//components/supervised_user/core/browser",
+    "//components/supervised_user/core/common:buildflags",
     "//components/sync",
     "//components/sync_device_info",
     "//components/sync_preferences",
@@ -79,6 +80,7 @@ source_set("sync") {
     "//ios/chrome/browser/shared/model/prefs:pref_names",
     "//ios/chrome/browser/shared/model/url:constants",
     "//ios/chrome/browser/signin",
+    "//ios/chrome/browser/supervised_user:sync_settings_factory",
     "//ios/chrome/browser/sync/glue",
     "//ios/chrome/browser/sync/sessions",
     "//ios/chrome/browser/tabs",
@@ -104,7 +106,6 @@ source_set("sync") {
 }
 
 source_set("model_type_store_service_factory") {
-  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "model_type_store_service_factory.cc",
     "model_type_store_service_factory.h",
@@ -118,7 +119,6 @@ source_set("model_type_store_service_factory") {
 }
 
 source_set("sync_error_browser_agent") {
-  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "sync_error_browser_agent.h",
     "sync_error_browser_agent.mm",
@@ -162,7 +162,6 @@ source_set("test_support") {
 }
 
 source_set("unit_tests") {
-  configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
     "ios_chrome_synced_tab_delegate_unittest.mm",
@@ -174,6 +173,7 @@ source_set("unit_tests") {
     "//base",
     "//components/autofill/core/common/",
     "//components/browser_sync",
+    "//components/supervised_user/core/common:buildflags",
     "//components/sync",
     "//ios/chrome/browser/favicon",
     "//ios/chrome/browser/history",

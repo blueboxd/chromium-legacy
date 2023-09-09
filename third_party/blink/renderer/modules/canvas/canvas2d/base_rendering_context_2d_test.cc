@@ -14,6 +14,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_begin_layer_options.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_union_canvasfilter_string.h"
 #include "third_party/blink/renderer/core/style/filter_operations.h"
 #include "third_party/blink/renderer/modules/canvas/canvas2d/canvas_filter.h"
@@ -121,7 +122,6 @@ class TestRenderingContext2D final
 
   bool OriginClean() const override { return true; }
   void SetOriginTainted() override {}
-  bool WouldTaintOrigin(CanvasImageSource*) override { return false; }
 
   int Width() const override { return 300; }
   int Height() const override { return 300; }
@@ -185,6 +185,13 @@ V8UnionCanvasFilterOrString* MakeBlurCanvasFilter(float std_deviation) {
       MakeGarbageCollected<CanvasFilter>(ops));
 }
 
+BeginLayerOptions* FilterOption(blink::V8TestingScope& scope,
+                                const std::string& filter) {
+  BeginLayerOptions* options = BeginLayerOptions::Create();
+  options->setFilter(ParseFilter(scope, filter));
+  return options;
+}
+
 TEST(BaseRenderingContextLayerTests, ContextLost) {
   ScopedCanvas2dLayersForTest layer_feature(/*enabled=*/true);
   V8TestingScope scope;
@@ -192,8 +199,8 @@ TEST(BaseRenderingContextLayerTests, ContextLost) {
   NonThrowableExceptionState exception_state;
 
   context->SetContextLost(true);
-  context->beginLayer(scope.GetScriptState(),
-                      /*filter_init=*/nullptr, exception_state);
+  context->beginLayer(scope.GetScriptState(), BeginLayerOptions::Create(),
+                      exception_state);
   context->endLayer(exception_state);
 
   EXPECT_THAT(context->GetRecordedOps(), IsEmpty());
@@ -215,8 +222,8 @@ TEST(BaseRenderingContextLayerTests, ResetsAndRestoresShadowStates) {
   EXPECT_EQ(context->shadowOffsetY(), 3.0);
   EXPECT_EQ(context->shadowColor(), "#ff0000");
 
-  context->beginLayer(scope.GetScriptState(),
-                      /*filter_init=*/nullptr, exception_state);
+  context->beginLayer(scope.GetScriptState(), BeginLayerOptions::Create(),
+                      exception_state);
 
   EXPECT_EQ(context->shadowBlur(), 0.0);
   EXPECT_EQ(context->shadowOffsetX(), 0.0);
@@ -243,8 +250,8 @@ TEST(BaseRenderingContextLayerTests, ResetsAndRestoresCompositeStates) {
   EXPECT_EQ(context->globalAlpha(), 0.7);
   EXPECT_EQ(context->globalCompositeOperation(), "xor");
 
-  context->beginLayer(scope.GetScriptState(),
-                      /*filter_init=*/nullptr, exception_state);
+  context->beginLayer(scope.GetScriptState(), BeginLayerOptions::Create(),
+                      exception_state);
 
   EXPECT_EQ(context->globalAlpha(), 1.0);
   EXPECT_EQ(context->globalCompositeOperation(), "source-over");
@@ -267,10 +274,11 @@ TEST(BaseRenderingContextLayerTests, ResetsAndRestoresFilterStates) {
   ASSERT_TRUE(context->filter()->IsCanvasFilter());
   EXPECT_EQ(context->filter()->GetAsCanvasFilter()->Operations(),
             filter->GetAsCanvasFilter()->Operations());
-  context->beginLayer(scope.GetScriptState(),
-                      /*filter_init=*/nullptr, exception_state);
-  ASSERT_TRUE(context->filter()->IsString());
-  EXPECT_EQ(context->filter()->GetAsString(), "none");
+  context->beginLayer(scope.GetScriptState(), BeginLayerOptions::Create(),
+                      exception_state);
+  ASSERT_TRUE(context->filter()->IsCanvasFilter());
+  EXPECT_EQ(context->filter()->GetAsCanvasFilter()->Operations(),
+            filter->GetAsCanvasFilter()->Operations());
 
   context->endLayer(exception_state);
 
@@ -279,13 +287,29 @@ TEST(BaseRenderingContextLayerTests, ResetsAndRestoresFilterStates) {
             filter->GetAsCanvasFilter()->Operations());
 }
 
-TEST(BaseRenderingContextLayerTests, DefaultRenderingStates) {
+TEST(BaseRenderingContextLayerTests, BeginLayerThrowsOnInvalidFilterParam) {
+  ScopedCanvas2dLayersForTest layer_feature(/*enabled=*/true);
+  V8TestingScope scope;
+  auto* context = MakeGarbageCollected<TestRenderingContext2D>(scope);
+  context->beginLayer(
+      scope.GetScriptState(),
+      FilterOption(scope, "({name: 'colorMatrix', values: 'invalid'})"),
+      scope.GetExceptionState());
+
+  EXPECT_EQ(scope.GetExceptionState().CodeAs<ESErrorType>(),
+            ESErrorType::kTypeError);
+  // `beginLayer` should be a no-op if an exception is raised.
+  EXPECT_EQ(context->StateStackDepth(), 0);
+  EXPECT_EQ(context->OpenedLayerCount(), 0);
+}
+
+TEST(BaseRenderingContextLayerGlobalStateTests, DefaultRenderingStates) {
   ScopedCanvas2dLayersForTest layer_feature(/*enabled=*/true);
   V8TestingScope scope;
   auto* context = MakeGarbageCollected<TestRenderingContext2D>(scope);
   NonThrowableExceptionState exception_state;
-  context->beginLayer(scope.GetScriptState(),
-                      /*filter_init=*/nullptr, exception_state);
+  context->beginLayer(scope.GetScriptState(), BeginLayerOptions::Create(),
+                      exception_state);
   context->endLayer(exception_state);
 
   EXPECT_THAT(
@@ -293,15 +317,15 @@ TEST(BaseRenderingContextLayerTests, DefaultRenderingStates) {
       ElementsAre(PaintOpEq<SaveLayerAlphaOp>(1.0f), PaintOpEq<RestoreOp>()));
 }
 
-TEST(BaseRenderingContextLayerTests, GlobalAlpha) {
+TEST(BaseRenderingContextLayerGlobalStateTests, GlobalAlpha) {
   ScopedCanvas2dLayersForTest layer_feature(/*enabled=*/true);
   V8TestingScope scope;
   auto* context = MakeGarbageCollected<TestRenderingContext2D>(scope);
   NonThrowableExceptionState exception_state;
 
   context->setGlobalAlpha(0.3);
-  context->beginLayer(scope.GetScriptState(),
-                      /*filter_init=*/nullptr, exception_state);
+  context->beginLayer(scope.GetScriptState(), BeginLayerOptions::Create(),
+                      exception_state);
   context->endLayer(exception_state);
 
   EXPECT_THAT(
@@ -309,15 +333,15 @@ TEST(BaseRenderingContextLayerTests, GlobalAlpha) {
       ElementsAre(PaintOpEq<SaveLayerAlphaOp>(0.3f), PaintOpEq<RestoreOp>()));
 }
 
-TEST(BaseRenderingContextLayerTests, BlendingOperation) {
+TEST(BaseRenderingContextLayerGlobalStateTests, BlendingOperation) {
   ScopedCanvas2dLayersForTest layer_feature(/*enabled=*/true);
   V8TestingScope scope;
   auto* context = MakeGarbageCollected<TestRenderingContext2D>(scope);
   NonThrowableExceptionState exception_state;
 
   context->setGlobalCompositeOperation("multiply");
-  context->beginLayer(scope.GetScriptState(),
-                      /*filter_init=*/nullptr, exception_state);
+  context->beginLayer(scope.GetScriptState(), BeginLayerOptions::Create(),
+                      exception_state);
   context->endLayer(exception_state);
 
   cc::PaintFlags flags;
@@ -328,15 +352,15 @@ TEST(BaseRenderingContextLayerTests, BlendingOperation) {
       ElementsAre(PaintOpEq<SaveLayerOp>(flags), PaintOpEq<RestoreOp>()));
 }
 
-TEST(BaseRenderingContextLayerTests, CompositeOperation) {
+TEST(BaseRenderingContextLayerGlobalStateTests, CompositeOperation) {
   ScopedCanvas2dLayersForTest layer_feature(/*enabled=*/true);
   V8TestingScope scope;
   auto* context = MakeGarbageCollected<TestRenderingContext2D>(scope);
   NonThrowableExceptionState exception_state;
 
   context->setGlobalCompositeOperation("source-in");
-  context->beginLayer(scope.GetScriptState(),
-                      /*filter_init=*/nullptr, exception_state);
+  context->beginLayer(scope.GetScriptState(), BeginLayerOptions::Create(),
+                      exception_state);
   context->endLayer(exception_state);
 
   cc::PaintFlags flags;
@@ -347,7 +371,7 @@ TEST(BaseRenderingContextLayerTests, CompositeOperation) {
       ElementsAre(PaintOpEq<SaveLayerOp>(flags), PaintOpEq<RestoreOp>()));
 }
 
-TEST(BaseRenderingContextLayerTests, Shadow) {
+TEST(BaseRenderingContextLayerGlobalStateTests, Shadow) {
   ScopedCanvas2dLayersForTest layer_feature(/*enabled=*/true);
   V8TestingScope scope;
   auto* context = MakeGarbageCollected<TestRenderingContext2D>(scope);
@@ -355,8 +379,8 @@ TEST(BaseRenderingContextLayerTests, Shadow) {
 
   context->setShadowBlur(2.0);
   context->setShadowColor("red");
-  context->beginLayer(scope.GetScriptState(),
-                      /*filter_init=*/nullptr, exception_state);
+  context->beginLayer(scope.GetScriptState(), BeginLayerOptions::Create(),
+                      exception_state);
   context->endLayer(exception_state);
 
   cc::PaintFlags flags;
@@ -368,7 +392,7 @@ TEST(BaseRenderingContextLayerTests, Shadow) {
       ElementsAre(PaintOpEq<SaveLayerOp>(flags), PaintOpEq<RestoreOp>()));
 }
 
-TEST(BaseRenderingContextLayerTests, GlobalAlphaAndBlending) {
+TEST(BaseRenderingContextLayerGlobalStateTests, GlobalAlphaAndBlending) {
   ScopedCanvas2dLayersForTest layer_feature(/*enabled=*/true);
   V8TestingScope scope;
   auto* context = MakeGarbageCollected<TestRenderingContext2D>(scope);
@@ -376,8 +400,8 @@ TEST(BaseRenderingContextLayerTests, GlobalAlphaAndBlending) {
 
   context->setGlobalAlpha(0.3);
   context->setGlobalCompositeOperation("multiply");
-  context->beginLayer(scope.GetScriptState(),
-                      /*filter_init=*/nullptr, exception_state);
+  context->beginLayer(scope.GetScriptState(), BeginLayerOptions::Create(),
+                      exception_state);
   context->endLayer(exception_state);
 
   cc::PaintFlags flags;
@@ -389,7 +413,7 @@ TEST(BaseRenderingContextLayerTests, GlobalAlphaAndBlending) {
       ElementsAre(PaintOpEq<SaveLayerOp>(flags), PaintOpEq<RestoreOp>()));
 }
 
-TEST(BaseRenderingContextLayerTests, GlobalAlphaAndComposite) {
+TEST(BaseRenderingContextLayerGlobalStateTests, GlobalAlphaAndComposite) {
   ScopedCanvas2dLayersForTest layer_feature(/*enabled=*/true);
   V8TestingScope scope;
   auto* context = MakeGarbageCollected<TestRenderingContext2D>(scope);
@@ -397,8 +421,8 @@ TEST(BaseRenderingContextLayerTests, GlobalAlphaAndComposite) {
 
   context->setGlobalAlpha(0.3);
   context->setGlobalCompositeOperation("source-in");
-  context->beginLayer(scope.GetScriptState(),
-                      /*filter_init=*/nullptr, exception_state);
+  context->beginLayer(scope.GetScriptState(), BeginLayerOptions::Create(),
+                      exception_state);
   context->endLayer(exception_state);
 
   cc::PaintFlags composite_flags;
@@ -410,7 +434,7 @@ TEST(BaseRenderingContextLayerTests, GlobalAlphaAndComposite) {
                           PaintOpEq<RestoreOp>(), PaintOpEq<RestoreOp>()));
 }
 
-TEST(BaseRenderingContextLayerTests, GlobalAlphaAndShadow) {
+TEST(BaseRenderingContextLayerGlobalStateTests, GlobalAlphaAndShadow) {
   ScopedCanvas2dLayersForTest layer_feature(/*enabled=*/true);
   V8TestingScope scope;
   auto* context = MakeGarbageCollected<TestRenderingContext2D>(scope);
@@ -419,8 +443,8 @@ TEST(BaseRenderingContextLayerTests, GlobalAlphaAndShadow) {
   context->setShadowBlur(2.0);
   context->setShadowColor("red");
   context->setGlobalAlpha(0.5);
-  context->beginLayer(scope.GetScriptState(),
-                      /*filter_init=*/nullptr, exception_state);
+  context->beginLayer(scope.GetScriptState(), BeginLayerOptions::Create(),
+                      exception_state);
   context->endLayer(exception_state);
 
   cc::PaintFlags shadow_flags;
@@ -434,7 +458,7 @@ TEST(BaseRenderingContextLayerTests, GlobalAlphaAndShadow) {
                           PaintOpEq<RestoreOp>(), PaintOpEq<RestoreOp>()));
 }
 
-TEST(BaseRenderingContextLayerTests, GlobalAlphaBlendingAndShadow) {
+TEST(BaseRenderingContextLayerGlobalStateTests, GlobalAlphaBlendingAndShadow) {
   ScopedCanvas2dLayersForTest layer_feature(/*enabled=*/true);
   V8TestingScope scope;
   auto* context = MakeGarbageCollected<TestRenderingContext2D>(scope);
@@ -444,8 +468,8 @@ TEST(BaseRenderingContextLayerTests, GlobalAlphaBlendingAndShadow) {
   context->setShadowColor("red");
   context->setGlobalAlpha(0.5);
   context->setGlobalCompositeOperation("multiply");
-  context->beginLayer(scope.GetScriptState(),
-                      /*filter_init=*/nullptr, exception_state);
+  context->beginLayer(scope.GetScriptState(), BeginLayerOptions::Create(),
+                      exception_state);
   context->endLayer(exception_state);
 
   cc::PaintFlags shadow_flags;
@@ -460,7 +484,7 @@ TEST(BaseRenderingContextLayerTests, GlobalAlphaBlendingAndShadow) {
                           PaintOpEq<RestoreOp>(), PaintOpEq<RestoreOp>()));
 }
 
-TEST(BaseRenderingContextLayerTests, GlobalAlphaCompositeAndShadow) {
+TEST(BaseRenderingContextLayerGlobalStateTests, GlobalAlphaCompositeAndShadow) {
   ScopedCanvas2dLayersForTest layer_feature(/*enabled=*/true);
   V8TestingScope scope;
   auto* context = MakeGarbageCollected<TestRenderingContext2D>(scope);
@@ -470,8 +494,8 @@ TEST(BaseRenderingContextLayerTests, GlobalAlphaCompositeAndShadow) {
   context->setShadowColor("red");
   context->setGlobalAlpha(0.5);
   context->setGlobalCompositeOperation("source-in");
-  context->beginLayer(scope.GetScriptState(),
-                      /*filter_init=*/nullptr, exception_state);
+  context->beginLayer(scope.GetScriptState(), BeginLayerOptions::Create(),
+                      exception_state);
   context->endLayer(exception_state);
 
   cc::PaintFlags shadow_flags;
@@ -486,7 +510,7 @@ TEST(BaseRenderingContextLayerTests, GlobalAlphaCompositeAndShadow) {
                           PaintOpEq<RestoreOp>(), PaintOpEq<RestoreOp>()));
 }
 
-TEST(BaseRenderingContextLayerTests, BlendingAndShadow) {
+TEST(BaseRenderingContextLayerGlobalStateTests, BlendingAndShadow) {
   ScopedCanvas2dLayersForTest layer_feature(/*enabled=*/true);
   V8TestingScope scope;
   auto* context = MakeGarbageCollected<TestRenderingContext2D>(scope);
@@ -495,8 +519,8 @@ TEST(BaseRenderingContextLayerTests, BlendingAndShadow) {
   context->setShadowBlur(2.0);
   context->setShadowColor("red");
   context->setGlobalCompositeOperation("multiply");
-  context->beginLayer(scope.GetScriptState(),
-                      /*filter_init=*/nullptr, exception_state);
+  context->beginLayer(scope.GetScriptState(), BeginLayerOptions::Create(),
+                      exception_state);
   context->endLayer(exception_state);
 
   cc::PaintFlags shadow_flags;
@@ -510,7 +534,7 @@ TEST(BaseRenderingContextLayerTests, BlendingAndShadow) {
                           PaintOpEq<RestoreOp>()));
 }
 
-TEST(BaseRenderingContextLayerTests, CompositeAndShadow) {
+TEST(BaseRenderingContextLayerGlobalStateTests, CompositeAndShadow) {
   ScopedCanvas2dLayersForTest layer_feature(/*enabled=*/true);
   V8TestingScope scope;
   auto* context = MakeGarbageCollected<TestRenderingContext2D>(scope);
@@ -519,8 +543,8 @@ TEST(BaseRenderingContextLayerTests, CompositeAndShadow) {
   context->setShadowBlur(2.0);
   context->setShadowColor("red");
   context->setGlobalCompositeOperation("source-in");
-  context->beginLayer(scope.GetScriptState(),
-                      /*filter_init=*/nullptr, exception_state);
+  context->beginLayer(scope.GetScriptState(), BeginLayerOptions::Create(),
+                      exception_state);
   context->endLayer(exception_state);
 
   cc::PaintFlags shadow_flags;
@@ -534,7 +558,7 @@ TEST(BaseRenderingContextLayerTests, CompositeAndShadow) {
                           PaintOpEq<RestoreOp>()));
 }
 
-TEST(BaseRenderingContextLayerTests, Filter) {
+TEST(BaseRenderingContextLayerGlobalStateTests, Filter) {
   ScopedCanvas2dLayersForTest layer_feature(/*enabled=*/true);
   V8TestingScope scope;
   auto* context = MakeGarbageCollected<TestRenderingContext2D>(scope);
@@ -542,7 +566,7 @@ TEST(BaseRenderingContextLayerTests, Filter) {
 
   context->beginLayer(
       scope.GetScriptState(),
-      ParseFilter(scope, "({filter: 'gaussianBlur', stdDeviation: 10})"),
+      FilterOption(scope, "({name: 'gaussianBlur', stdDeviation: 10})"),
       exception_state);
   context->endLayer(exception_state);
 
@@ -554,7 +578,7 @@ TEST(BaseRenderingContextLayerTests, Filter) {
       ElementsAre(PaintOpEq<SaveLayerOp>(flags), PaintOpEq<RestoreOp>()));
 }
 
-TEST(BaseRenderingContextLayerTests, FilterAndGlobalAlpha) {
+TEST(BaseRenderingContextLayerGlobalStateTests, FilterAndGlobalAlpha) {
   ScopedCanvas2dLayersForTest layer_feature(/*enabled=*/true);
   V8TestingScope scope;
   auto* context = MakeGarbageCollected<TestRenderingContext2D>(scope);
@@ -563,7 +587,7 @@ TEST(BaseRenderingContextLayerTests, FilterAndGlobalAlpha) {
   context->setGlobalAlpha(0.3);
   context->beginLayer(
       scope.GetScriptState(),
-      ParseFilter(scope, "({filter: 'gaussianBlur', stdDeviation: 20})"),
+      FilterOption(scope, "({name: 'gaussianBlur', stdDeviation: 20})"),
       exception_state);
   context->endLayer(exception_state);
 
@@ -576,7 +600,7 @@ TEST(BaseRenderingContextLayerTests, FilterAndGlobalAlpha) {
       ElementsAre(PaintOpEq<SaveLayerOp>(flags), PaintOpEq<RestoreOp>()));
 }
 
-TEST(BaseRenderingContextLayerTests, FilterAndBlending) {
+TEST(BaseRenderingContextLayerGlobalStateTests, FilterAndBlending) {
   ScopedCanvas2dLayersForTest layer_feature(/*enabled=*/true);
   V8TestingScope scope;
   auto* context = MakeGarbageCollected<TestRenderingContext2D>(scope);
@@ -585,7 +609,7 @@ TEST(BaseRenderingContextLayerTests, FilterAndBlending) {
   context->setGlobalCompositeOperation("multiply");
   context->beginLayer(
       scope.GetScriptState(),
-      ParseFilter(scope, "({filter: 'gaussianBlur', stdDeviation: 20})"),
+      FilterOption(scope, "({name: 'gaussianBlur', stdDeviation: 20})"),
       exception_state);
   context->endLayer(exception_state);
 
@@ -598,7 +622,7 @@ TEST(BaseRenderingContextLayerTests, FilterAndBlending) {
       ElementsAre(PaintOpEq<SaveLayerOp>(flags), PaintOpEq<RestoreOp>()));
 }
 
-TEST(BaseRenderingContextLayerTests, FilterAndComposite) {
+TEST(BaseRenderingContextLayerGlobalStateTests, FilterAndComposite) {
   ScopedCanvas2dLayersForTest layer_feature(/*enabled=*/true);
   V8TestingScope scope;
   auto* context = MakeGarbageCollected<TestRenderingContext2D>(scope);
@@ -607,7 +631,7 @@ TEST(BaseRenderingContextLayerTests, FilterAndComposite) {
   context->setGlobalCompositeOperation("source-in");
   context->beginLayer(
       scope.GetScriptState(),
-      ParseFilter(scope, "({filter: 'gaussianBlur', stdDeviation: 20})"),
+      FilterOption(scope, "({name: 'gaussianBlur', stdDeviation: 20})"),
       exception_state);
   context->endLayer(exception_state);
 
@@ -624,7 +648,7 @@ TEST(BaseRenderingContextLayerTests, FilterAndComposite) {
                           PaintOpEq<RestoreOp>(), PaintOpEq<RestoreOp>()));
 }
 
-TEST(BaseRenderingContextLayerTests, FilterAndShadow) {
+TEST(BaseRenderingContextLayerGlobalStateTests, FilterAndShadow) {
   ScopedCanvas2dLayersForTest layer_feature(/*enabled=*/true);
   V8TestingScope scope;
   auto* context = MakeGarbageCollected<TestRenderingContext2D>(scope);
@@ -634,7 +658,7 @@ TEST(BaseRenderingContextLayerTests, FilterAndShadow) {
   context->setShadowColor("red");
   context->beginLayer(
       scope.GetScriptState(),
-      ParseFilter(scope, "({filter: 'gaussianBlur', stdDeviation: 20})"),
+      FilterOption(scope, "({name: 'gaussianBlur', stdDeviation: 20})"),
       exception_state);
   context->endLayer(exception_state);
 
@@ -653,7 +677,7 @@ TEST(BaseRenderingContextLayerTests, FilterAndShadow) {
                           PaintOpEq<RestoreOp>(), PaintOpEq<RestoreOp>()));
 }
 
-TEST(BaseRenderingContextLayerTests, FilterGlobalAlphaAndBlending) {
+TEST(BaseRenderingContextLayerGlobalStateTests, FilterGlobalAlphaAndBlending) {
   ScopedCanvas2dLayersForTest layer_feature(/*enabled=*/true);
   V8TestingScope scope;
   auto* context = MakeGarbageCollected<TestRenderingContext2D>(scope);
@@ -663,7 +687,7 @@ TEST(BaseRenderingContextLayerTests, FilterGlobalAlphaAndBlending) {
   context->setGlobalCompositeOperation("multiply");
   context->beginLayer(
       scope.GetScriptState(),
-      ParseFilter(scope, "({filter: 'gaussianBlur', stdDeviation: 20})"),
+      FilterOption(scope, "({name: 'gaussianBlur', stdDeviation: 20})"),
       exception_state);
   context->endLayer(exception_state);
 
@@ -677,7 +701,7 @@ TEST(BaseRenderingContextLayerTests, FilterGlobalAlphaAndBlending) {
       ElementsAre(PaintOpEq<SaveLayerOp>(flags), PaintOpEq<RestoreOp>()));
 }
 
-TEST(BaseRenderingContextLayerTests, FilterGlobalAlphaAndComposite) {
+TEST(BaseRenderingContextLayerGlobalStateTests, FilterGlobalAlphaAndComposite) {
   ScopedCanvas2dLayersForTest layer_feature(/*enabled=*/true);
   V8TestingScope scope;
   auto* context = MakeGarbageCollected<TestRenderingContext2D>(scope);
@@ -687,7 +711,7 @@ TEST(BaseRenderingContextLayerTests, FilterGlobalAlphaAndComposite) {
   context->setGlobalCompositeOperation("source-in");
   context->beginLayer(
       scope.GetScriptState(),
-      ParseFilter(scope, "({filter: 'gaussianBlur', stdDeviation: 20})"),
+      FilterOption(scope, "({name: 'gaussianBlur', stdDeviation: 20})"),
       exception_state);
   context->endLayer(exception_state);
 
@@ -705,7 +729,7 @@ TEST(BaseRenderingContextLayerTests, FilterGlobalAlphaAndComposite) {
                           PaintOpEq<RestoreOp>(), PaintOpEq<RestoreOp>()));
 }
 
-TEST(BaseRenderingContextLayerTests, FilterGlobalAlphaAndShadow) {
+TEST(BaseRenderingContextLayerGlobalStateTests, FilterGlobalAlphaAndShadow) {
   ScopedCanvas2dLayersForTest layer_feature(/*enabled=*/true);
   V8TestingScope scope;
   auto* context = MakeGarbageCollected<TestRenderingContext2D>(scope);
@@ -716,7 +740,7 @@ TEST(BaseRenderingContextLayerTests, FilterGlobalAlphaAndShadow) {
   context->setShadowColor("red");
   context->beginLayer(
       scope.GetScriptState(),
-      ParseFilter(scope, "({filter: 'gaussianBlur', stdDeviation: 20})"),
+      FilterOption(scope, "({name: 'gaussianBlur', stdDeviation: 20})"),
       exception_state);
   context->endLayer(exception_state);
 
@@ -736,7 +760,8 @@ TEST(BaseRenderingContextLayerTests, FilterGlobalAlphaAndShadow) {
                           PaintOpEq<RestoreOp>(), PaintOpEq<RestoreOp>()));
 }
 
-TEST(BaseRenderingContextLayerTests, FilterGlobalAlphaBlendingAndShadow) {
+TEST(BaseRenderingContextLayerGlobalStateTests,
+     FilterGlobalAlphaBlendingAndShadow) {
   ScopedCanvas2dLayersForTest layer_feature(/*enabled=*/true);
   V8TestingScope scope;
   auto* context = MakeGarbageCollected<TestRenderingContext2D>(scope);
@@ -748,7 +773,7 @@ TEST(BaseRenderingContextLayerTests, FilterGlobalAlphaBlendingAndShadow) {
   context->setShadowColor("red");
   context->beginLayer(
       scope.GetScriptState(),
-      ParseFilter(scope, "({filter: 'gaussianBlur', stdDeviation: 20})"),
+      FilterOption(scope, "({name: 'gaussianBlur', stdDeviation: 20})"),
       exception_state);
   context->endLayer(exception_state);
 
@@ -769,7 +794,8 @@ TEST(BaseRenderingContextLayerTests, FilterGlobalAlphaBlendingAndShadow) {
                           PaintOpEq<RestoreOp>(), PaintOpEq<RestoreOp>()));
 }
 
-TEST(BaseRenderingContextLayerTests, FilterGlobalAlphaCompositeAndShadow) {
+TEST(BaseRenderingContextLayerGlobalStateTests,
+     FilterGlobalAlphaCompositeAndShadow) {
   ScopedCanvas2dLayersForTest layer_feature(/*enabled=*/true);
   V8TestingScope scope;
   auto* context = MakeGarbageCollected<TestRenderingContext2D>(scope);
@@ -781,7 +807,7 @@ TEST(BaseRenderingContextLayerTests, FilterGlobalAlphaCompositeAndShadow) {
   context->setShadowColor("red");
   context->beginLayer(
       scope.GetScriptState(),
-      ParseFilter(scope, "({filter: 'gaussianBlur', stdDeviation: 20})"),
+      FilterOption(scope, "({name: 'gaussianBlur', stdDeviation: 20})"),
       exception_state);
   context->endLayer(exception_state);
 
@@ -802,7 +828,7 @@ TEST(BaseRenderingContextLayerTests, FilterGlobalAlphaCompositeAndShadow) {
                           PaintOpEq<RestoreOp>(), PaintOpEq<RestoreOp>()));
 }
 
-TEST(BaseRenderingContextLayerTests, FilterBlendingAndShadow) {
+TEST(BaseRenderingContextLayerGlobalStateTests, FilterBlendingAndShadow) {
   ScopedCanvas2dLayersForTest layer_feature(/*enabled=*/true);
   V8TestingScope scope;
   auto* context = MakeGarbageCollected<TestRenderingContext2D>(scope);
@@ -813,7 +839,7 @@ TEST(BaseRenderingContextLayerTests, FilterBlendingAndShadow) {
   context->setShadowColor("red");
   context->beginLayer(
       scope.GetScriptState(),
-      ParseFilter(scope, "({filter: 'gaussianBlur', stdDeviation: 20})"),
+      FilterOption(scope, "({name: 'gaussianBlur', stdDeviation: 20})"),
       exception_state);
   context->endLayer(exception_state);
 
@@ -833,7 +859,7 @@ TEST(BaseRenderingContextLayerTests, FilterBlendingAndShadow) {
                           PaintOpEq<RestoreOp>(), PaintOpEq<RestoreOp>()));
 }
 
-TEST(BaseRenderingContextLayerTests, FilterCompositeAndShadow) {
+TEST(BaseRenderingContextLayerGlobalStateTests, FilterCompositeAndShadow) {
   ScopedCanvas2dLayersForTest layer_feature(/*enabled=*/true);
   V8TestingScope scope;
   auto* context = MakeGarbageCollected<TestRenderingContext2D>(scope);
@@ -844,7 +870,7 @@ TEST(BaseRenderingContextLayerTests, FilterCompositeAndShadow) {
   context->setShadowColor("red");
   context->beginLayer(
       scope.GetScriptState(),
-      ParseFilter(scope, "({filter: 'gaussianBlur', stdDeviation: 20})"),
+      FilterOption(scope, "({name: 'gaussianBlur', stdDeviation: 20})"),
       exception_state);
   context->endLayer(exception_state);
 
@@ -864,15 +890,21 @@ TEST(BaseRenderingContextLayerTests, FilterCompositeAndShadow) {
                           PaintOpEq<RestoreOp>(), PaintOpEq<RestoreOp>()));
 }
 
-TEST(BaseRenderingContextLayerTests, BeginLayerIgnoresGlobalFilter) {
+TEST(BaseRenderingContextLayerGlobalStateTests, BeginLayerIgnoresGlobalFilter) {
   ScopedCanvas2dLayersForTest layer_feature(/*enabled=*/true);
   V8TestingScope scope;
   auto* context = MakeGarbageCollected<TestRenderingContext2D>(scope);
   NonThrowableExceptionState exception_state;
 
-  context->setFilter(scope.GetScriptState(), MakeBlurCanvasFilter(20.0f));
-  context->beginLayer(scope.GetScriptState(),
-                      /*filter_init=*/nullptr, exception_state);
+  V8UnionCanvasFilterOrString* filter = MakeBlurCanvasFilter(20.0f);
+  context->setFilter(scope.GetScriptState(), filter);
+  context->beginLayer(scope.GetScriptState(), BeginLayerOptions::Create(),
+                      exception_state);
+
+  ASSERT_TRUE(context->filter()->IsCanvasFilter());
+  EXPECT_EQ(context->filter()->GetAsCanvasFilter()->Operations(),
+            filter->GetAsCanvasFilter()->Operations());
+
   context->endLayer(exception_state);
 
   EXPECT_THAT(
@@ -1053,7 +1085,7 @@ TEST(BaseRenderingContextRestoreStackTests, RestoresLayers) {
   context->setShadowColor("red");
   context->beginLayer(
       scope.GetScriptState(),
-      ParseFilter(scope, "({filter: 'gaussianBlur', stdDeviation: 20})"),
+      FilterOption(scope, "({name: 'gaussianBlur', stdDeviation: 20})"),
       exception_state);
 
   cc::PaintFlags shadow_flags;
@@ -1084,7 +1116,7 @@ TEST(BaseRenderingContextRestoreStackTests, RestoresLayers) {
                           PaintOpEq<RestoreOp>(), PaintOpEq<RestoreOp>()));
 }
 
-TEST(BaseRenderingContextReset, DiscardsRenderStates) {
+TEST(BaseRenderingContextResetTest, DiscardsRenderStates) {
   ScopedCanvas2dLayersForTest layer_feature(/*enabled=*/true);
   V8TestingScope scope;
   auto* context = MakeGarbageCollected<TestRenderingContext2D>(scope);
@@ -1094,8 +1126,8 @@ TEST(BaseRenderingContextReset, DiscardsRenderStates) {
   context->setShadowColor("red");
   context->setGlobalAlpha(0.5);
   context->setGlobalCompositeOperation("source-in");
-  context->beginLayer(scope.GetScriptState(),
-                      /*filter_init=*/nullptr, exception_state);
+  context->beginLayer(scope.GetScriptState(), BeginLayerOptions::Create(),
+                      exception_state);
 
   // Discard the rendering states:
   context->reset();
@@ -1105,8 +1137,8 @@ TEST(BaseRenderingContextReset, DiscardsRenderStates) {
   ASSERT_THAT(context->GetRecordedOps(), IsEmpty());
 
   // Do some operation and check that the rendering state was reset:
-  context->beginLayer(scope.GetScriptState(),
-                      /*filter_init=*/nullptr, exception_state);
+  context->beginLayer(scope.GetScriptState(), BeginLayerOptions::Create(),
+                      exception_state);
   EXPECT_THAT(
       context->GetRecordedOps(),
       ElementsAre(PaintOpEq<SaveLayerAlphaOp>(1.0f), PaintOpEq<RestoreOp>()));
@@ -1114,18 +1146,18 @@ TEST(BaseRenderingContextReset, DiscardsRenderStates) {
   EXPECT_EQ(context->OpenedLayerCount(), 1);
 }
 
-TEST(BaseRenderingContextLayersCallOrder, LoneBeginLayer) {
+TEST(BaseRenderingContextLayersCallOrderTests, LoneBeginLayer) {
   ScopedCanvas2dLayersForTest layer_feature(/*enabled=*/true);
   V8TestingScope scope;
   auto* context = MakeGarbageCollected<TestRenderingContext2D>(scope);
-  context->beginLayer(scope.GetScriptState(),
-                      /*filter_init=*/nullptr, scope.GetExceptionState());
+  context->beginLayer(scope.GetScriptState(), BeginLayerOptions::Create(),
+                      scope.GetExceptionState());
   EXPECT_FALSE(scope.GetExceptionState().HadException());
   EXPECT_EQ(context->StateStackDepth(), 1);
   EXPECT_EQ(context->OpenedLayerCount(), 1);
 }
 
-TEST(BaseRenderingContextLayersCallOrder, LoneRestore) {
+TEST(BaseRenderingContextLayersCallOrderTests, LoneRestore) {
   V8TestingScope scope;
   auto* context = MakeGarbageCollected<TestRenderingContext2D>(scope);
   context->restore(scope.GetExceptionState());
@@ -1134,7 +1166,7 @@ TEST(BaseRenderingContextLayersCallOrder, LoneRestore) {
   EXPECT_EQ(context->OpenedLayerCount(), 0);
 }
 
-TEST(BaseRenderingContextLayersCallOrder, LoneEndLayer) {
+TEST(BaseRenderingContextLayersCallOrderTests, LoneEndLayer) {
   ScopedCanvas2dLayersForTest layer_feature(/*enabled=*/true);
   V8TestingScope scope;
   auto* context = MakeGarbageCollected<TestRenderingContext2D>(scope);
@@ -1145,7 +1177,7 @@ TEST(BaseRenderingContextLayersCallOrder, LoneEndLayer) {
   EXPECT_EQ(context->OpenedLayerCount(), 0);
 }
 
-TEST(BaseRenderingContextLayersCallOrder, SaveRestore) {
+TEST(BaseRenderingContextLayersCallOrderTests, SaveRestore) {
   V8TestingScope scope;
   auto* context = MakeGarbageCollected<TestRenderingContext2D>(scope);
   context->save();
@@ -1155,7 +1187,7 @@ TEST(BaseRenderingContextLayersCallOrder, SaveRestore) {
   EXPECT_EQ(context->OpenedLayerCount(), 0);
 }
 
-TEST(BaseRenderingContextLayersCallOrder, SaveResetRestore) {
+TEST(BaseRenderingContextLayersCallOrderTests, SaveResetRestore) {
   V8TestingScope scope;
   auto* context = MakeGarbageCollected<TestRenderingContext2D>(scope);
   context->save();
@@ -1166,12 +1198,12 @@ TEST(BaseRenderingContextLayersCallOrder, SaveResetRestore) {
   EXPECT_EQ(context->OpenedLayerCount(), 0);
 }
 
-TEST(BaseRenderingContextLayersCallOrder, BeginLayerEndLayer) {
+TEST(BaseRenderingContextLayersCallOrderTests, BeginLayerEndLayer) {
   ScopedCanvas2dLayersForTest layer_feature(/*enabled=*/true);
   V8TestingScope scope;
   auto* context = MakeGarbageCollected<TestRenderingContext2D>(scope);
-  context->beginLayer(scope.GetScriptState(),
-                      /*filter_init=*/nullptr, scope.GetExceptionState());
+  context->beginLayer(scope.GetScriptState(), BeginLayerOptions::Create(),
+                      scope.GetExceptionState());
   EXPECT_FALSE(scope.GetExceptionState().HadException());
   context->endLayer(scope.GetExceptionState());
   EXPECT_FALSE(scope.GetExceptionState().HadException());
@@ -1179,12 +1211,12 @@ TEST(BaseRenderingContextLayersCallOrder, BeginLayerEndLayer) {
   EXPECT_EQ(context->OpenedLayerCount(), 0);
 }
 
-TEST(BaseRenderingContextLayersCallOrder, BeginLayerResetEndLayer) {
+TEST(BaseRenderingContextLayersCallOrderTests, BeginLayerResetEndLayer) {
   ScopedCanvas2dLayersForTest layer_feature(/*enabled=*/true);
   V8TestingScope scope;
   auto* context = MakeGarbageCollected<TestRenderingContext2D>(scope);
-  context->beginLayer(scope.GetScriptState(),
-                      /*filter_init=*/nullptr, scope.GetExceptionState());
+  context->beginLayer(scope.GetScriptState(), BeginLayerOptions::Create(),
+                      scope.GetExceptionState());
   EXPECT_FALSE(scope.GetExceptionState().HadException());
   context->reset();
   context->endLayer(scope.GetExceptionState());
@@ -1194,19 +1226,19 @@ TEST(BaseRenderingContextLayersCallOrder, BeginLayerResetEndLayer) {
   EXPECT_EQ(context->OpenedLayerCount(), 0);
 }
 
-TEST(BaseRenderingContextLayersCallOrder, SaveBeginLayer) {
+TEST(BaseRenderingContextLayersCallOrderTests, SaveBeginLayer) {
   ScopedCanvas2dLayersForTest layer_feature(/*enabled=*/true);
   V8TestingScope scope;
   auto* context = MakeGarbageCollected<TestRenderingContext2D>(scope);
   context->save();
-  context->beginLayer(scope.GetScriptState(),
-                      /*filter_init=*/nullptr, scope.GetExceptionState());
+  context->beginLayer(scope.GetScriptState(), BeginLayerOptions::Create(),
+                      scope.GetExceptionState());
   EXPECT_FALSE(scope.GetExceptionState().HadException());
   EXPECT_EQ(context->StateStackDepth(), 2);
   EXPECT_EQ(context->OpenedLayerCount(), 1);
 }
 
-TEST(BaseRenderingContextLayersCallOrder, SaveEndLayer) {
+TEST(BaseRenderingContextLayersCallOrderTests, SaveEndLayer) {
   ScopedCanvas2dLayersForTest layer_feature(/*enabled=*/true);
   V8TestingScope scope;
   auto* context = MakeGarbageCollected<TestRenderingContext2D>(scope);
@@ -1218,12 +1250,12 @@ TEST(BaseRenderingContextLayersCallOrder, SaveEndLayer) {
   EXPECT_EQ(context->OpenedLayerCount(), 0);
 }
 
-TEST(BaseRenderingContextLayersCallOrder, BeginLayerSave) {
+TEST(BaseRenderingContextLayersCallOrderTests, BeginLayerSave) {
   ScopedCanvas2dLayersForTest layer_feature(/*enabled=*/true);
   V8TestingScope scope;
   auto* context = MakeGarbageCollected<TestRenderingContext2D>(scope);
-  context->beginLayer(scope.GetScriptState(),
-                      /*filter_init=*/nullptr, scope.GetExceptionState());
+  context->beginLayer(scope.GetScriptState(), BeginLayerOptions::Create(),
+                      scope.GetExceptionState());
   EXPECT_FALSE(scope.GetExceptionState().HadException());
   context->save();
   EXPECT_FALSE(scope.GetExceptionState().HadException());
@@ -1231,12 +1263,12 @@ TEST(BaseRenderingContextLayersCallOrder, BeginLayerSave) {
   EXPECT_EQ(context->OpenedLayerCount(), 1);
 }
 
-TEST(BaseRenderingContextLayersCallOrder, BeginLayerRestore) {
+TEST(BaseRenderingContextLayersCallOrderTests, BeginLayerRestore) {
   ScopedCanvas2dLayersForTest layer_feature(/*enabled=*/true);
   V8TestingScope scope;
   auto* context = MakeGarbageCollected<TestRenderingContext2D>(scope);
-  context->beginLayer(scope.GetScriptState(),
-                      /*filter_init=*/nullptr, scope.GetExceptionState());
+  context->beginLayer(scope.GetScriptState(), BeginLayerOptions::Create(),
+                      scope.GetExceptionState());
   EXPECT_FALSE(scope.GetExceptionState().HadException());
   context->restore(scope.GetExceptionState());
   EXPECT_EQ(scope.GetExceptionState().CodeAs<DOMExceptionCode>(),
@@ -1245,13 +1277,13 @@ TEST(BaseRenderingContextLayersCallOrder, BeginLayerRestore) {
   EXPECT_EQ(context->OpenedLayerCount(), 1);
 }
 
-TEST(BaseRenderingContextLayersCallOrder, SaveBeginLayerRestore) {
+TEST(BaseRenderingContextLayersCallOrderTests, SaveBeginLayerRestore) {
   ScopedCanvas2dLayersForTest layer_feature(/*enabled=*/true);
   V8TestingScope scope;
   auto* context = MakeGarbageCollected<TestRenderingContext2D>(scope);
   context->save();
-  context->beginLayer(scope.GetScriptState(),
-                      /*filter_init=*/nullptr, scope.GetExceptionState());
+  context->beginLayer(scope.GetScriptState(), BeginLayerOptions::Create(),
+                      scope.GetExceptionState());
   EXPECT_FALSE(scope.GetExceptionState().HadException());
   context->restore(scope.GetExceptionState());
   EXPECT_EQ(scope.GetExceptionState().CodeAs<DOMExceptionCode>(),
@@ -1260,12 +1292,12 @@ TEST(BaseRenderingContextLayersCallOrder, SaveBeginLayerRestore) {
   EXPECT_EQ(context->OpenedLayerCount(), 1);
 }
 
-TEST(BaseRenderingContextLayersCallOrder, BeginLayerSaveEndLayer) {
+TEST(BaseRenderingContextLayersCallOrderTests, BeginLayerSaveEndLayer) {
   ScopedCanvas2dLayersForTest layer_feature(/*enabled=*/true);
   V8TestingScope scope;
   auto* context = MakeGarbageCollected<TestRenderingContext2D>(scope);
-  context->beginLayer(scope.GetScriptState(),
-                      /*filter_init=*/nullptr, scope.GetExceptionState());
+  context->beginLayer(scope.GetScriptState(), BeginLayerOptions::Create(),
+                      scope.GetExceptionState());
   EXPECT_FALSE(scope.GetExceptionState().HadException());
   context->save();
   context->endLayer(scope.GetExceptionState());

@@ -90,7 +90,7 @@ import org.chromium.chrome.browser.omnibox.OmniboxStub;
 import org.chromium.chrome.browser.omnibox.OverrideUrlLoadingDelegate;
 import org.chromium.chrome.browser.omnibox.SearchEngineLogoUtils;
 import org.chromium.chrome.browser.omnibox.UrlFocusChangeListener;
-import org.chromium.chrome.browser.omnibox.suggestions.base.HistoryClustersProcessor.OpenHistoryClustersDelegate;
+import org.chromium.chrome.browser.omnibox.suggestions.history_clusters.HistoryClustersProcessor.OpenHistoryClustersDelegate;
 import org.chromium.chrome.browser.omnibox.voice.VoiceRecognitionHandler;
 import org.chromium.chrome.browser.page_info.ChromePageInfo;
 import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomizations;
@@ -264,6 +264,7 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
     private final TabObscuringHandler mTabObscuringHandler;
     private ToolbarDragDropCoordinator mToolbarDragDropCoordinator;
     private final SnackbarManager mSnackbarManager;
+    private OnAttachStateChangeListener mAttachStateChangeListener;
     private final OneshotSupplier<TabReparentingController> mTabReparentingControllerSupplier;
 
     private HomeButtonCoordinator mHomeButtonCoordinator;
@@ -689,8 +690,9 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
                 ViewStub targetViewStub =
                         ((ViewStub) mActivity.findViewById(R.id.target_view_stub));
                 assert targetViewStub != null;
-                mToolbarDragDropCoordinator = new ToolbarDragDropCoordinator(
-                        (FrameLayout) targetViewStub.inflate(), locationBarCoordinator);
+                mToolbarDragDropCoordinator =
+                        new ToolbarDragDropCoordinator((FrameLayout) targetViewStub.inflate(),
+                                locationBarCoordinator, locationBarCoordinator.getOmniboxStub());
                 mControlContainer.setOnDragListener(mToolbarDragDropCoordinator);
             }
         }
@@ -797,6 +799,7 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
                 onBackPressStateChanged();
                 if (!toDifferentDocument) return;
                 updateTabLoadingState(true);
+                mLocationBarModel.onPageLoadStopped();
             }
 
             @Override
@@ -1152,7 +1155,8 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
                 DownloadUtils::downloadOfflinePage, initializeWithIncognitoColors,
                 logoClickedCallback, mIsStartSurfaceRefactorEnabled, constraintsSupplier,
                 mCompositorViewHolder.getInMotionSupplier(), mControlsVisibilityDelegate,
-                !ReturnToChromeUtil.shouldImproveStartWhenFeedIsDisabled(mActivity));
+                !ReturnToChromeUtil.shouldImproveStartWhenFeedIsDisabled(mActivity),
+                mFullscreenManager);
 
         // clang-format on
         mHomepageStateListener = () -> {
@@ -1412,7 +1416,7 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
                 mAppMenuDelegate, layoutManager, mActivityTabProvider, mBrowserControlsSizer,
                 mTopUiThemeColorProvider);
 
-        mToolbar.addOnAttachStateChangeListener(new OnAttachStateChangeListener() {
+        mAttachStateChangeListener = new OnAttachStateChangeListener() {
             @Override
             public void onViewDetachedFromWindow(View v) {}
 
@@ -1423,7 +1427,9 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
                 // the initial selection notification.
                 refreshSelectedTab(mActivityTabProvider.get());
             }
-        });
+        };
+
+        mToolbar.addOnAttachStateChangeListener(mAttachStateChangeListener);
 
         if (layoutManager != null) {
             mLayoutManager = layoutManager;
@@ -1580,6 +1586,10 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
             mLocationBar = null;
         }
 
+        if (mAttachStateChangeListener != null) {
+            mToolbar.removeOnAttachStateChangeListener(mAttachStateChangeListener);
+            mAttachStateChangeListener = null;
+        }
         mToolbar.removeUrlExpansionObserver(mStatusBarColorController);
         mToolbar.destroy();
 

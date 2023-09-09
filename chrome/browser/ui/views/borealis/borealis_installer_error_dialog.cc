@@ -106,7 +106,7 @@ class Space : public ErrorBehaviourProvider {
   std::vector<std::pair<std::u16string, GURL>> GetLinks() const override {
     return {{l10n_util::GetStringUTF16(IDS_LEARN_MORE),
              GURL("https://support.google.com/"
-                  "chromebook?p=Steam_kDlcNeedSpaceError")}};
+                  "chromebook?p=Steam_DlcNeedSpaceError")}};
   }
 };
 
@@ -170,6 +170,7 @@ class BorealisInstallerErrorDialog : public views::DialogDelegate {
       std::unique_ptr<ErrorBehaviourProvider> behaviour,
       DialogCallback callback)
       : behaviour_(std::move(behaviour)), callback_(std::move(callback)) {
+    SetTitle(IDS_BOREALIS_INSTALLER_APP_NAME);
     set_internal_name("BorealisInstallerErrorDialog");
     InitializeButtons();
     InitializeView(*behaviour_);
@@ -198,6 +199,8 @@ class BorealisInstallerErrorDialog : public views::DialogDelegate {
     alert_icon_->SetEnabledColor(
         color_provider->GetColor(cros_tokens::kIconColorAlert));
   }
+
+  bool ShouldShowWindowTitle() const override { return false; }
 
  private:
   void InitializeButtons() {

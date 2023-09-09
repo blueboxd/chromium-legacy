@@ -25,10 +25,6 @@
 #import "ios/chrome/browser/shared/public/features/features.h"
 #import "ios/chrome/browser/signin/signin_util.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 #import <UIKit/UIKit.h>
 
 // Key in NSUserDefaults containing an NSDictionary used to store all the
@@ -492,6 +488,11 @@ void StoreCurrentTimestampForKey(NSString* key) {
   StoreTimestampsForKey(key, timestamps);
 }
 
+std::string GetVideoPromoVariant() {
+  return base::GetFieldTrialParamValueByFeature(
+      kDefaultBrowserVideoPromo, "default_browser_video_promo_variant");
+}
+
 }  // namespace
 
 NSString* const kLastTimeUserInteractedWithNonModalPromo =
@@ -507,6 +508,20 @@ NSString* const kAllTimestampsAppLaunchIndirectStart =
 NSString* const kLastSignificantUserEventStaySafe =
     @"lastSignificantUserEventStaySafe";
 NSString* const kOmniboxUseCount = @"OmniboxUseCount";
+NSString* const kBookmarkUseCount = @"BookmarkUseCount";
+NSString* const kAutofillUseCount = @"AutofillUseCount";
+NSString* const kSpecialTabsUseCount = @"SpecialTabUseCount";
+
+const char kVideoConditionsFullscreenPromo[] =
+    "video_conditions_fullscreen_promo";
+const char kVideoConditionsHalfscreenPromo[] =
+    "video_conditions_halfscreen_promo";
+const char kGenericConditionsFullscreenPromo[] =
+    "generic_conditions_fullscreen_promo";
+const char kGenericConditionsHalfscreenPromo[] =
+    "generic_conditions_halfscreen_promo";
+const char kDefaultBrowserVideoPromoVariant[] =
+    "default_browser_video_promo_variant";
 
 void SetObjectIntoStorageForKey(NSString* key, NSObject* data) {
   UpdateStorageWithDictionary(@{key : data});
@@ -653,10 +668,20 @@ bool ShouldTriggerDefaultBrowserPromoOnOmniboxCopyPaste() {
       kDefaultBrowserTriggerOnOmniboxCopyPaste, false);
 }
 
-bool IsDefaultBrowserVideoPromoHalfscreenEnabled() {
-  return base::GetFieldTrialParamByFeatureAsBool(
-      kDefaultBrowserVideoPromo, "default_browser_video_promo_halfscreen",
-      false);
+bool IsDBVideoPromoHalfscreenEnabled() {
+  return GetVideoPromoVariant().compare(kVideoConditionsHalfscreenPromo) == 0;
+}
+
+bool IsDBVideoPromoFullscreenEnabled() {
+  return GetVideoPromoVariant().compare(kVideoConditionsFullscreenPromo) == 0;
+}
+
+bool IsDBVideoPromoWithGenericFullscreenEnabled() {
+  return GetVideoPromoVariant().compare(kGenericConditionsFullscreenPromo) == 0;
+}
+
+bool IsDBVideoPromoWithGenericHalfscreenEnabled() {
+  return GetVideoPromoVariant().compare(kGenericConditionsHalfscreenPromo) == 0;
 }
 
 bool IsNonModalDefaultBrowserPromoCooldownRefactorEnabled() {
@@ -743,6 +768,24 @@ void LogUserInteractionWithFirstRunPromo(BOOL openedSettings) {
 void LogCopyPasteInOmniboxForDefaultBrowserPromo() {
   LogLikelyInterestedDefaultBrowserUserActivity(DefaultPromoTypeGeneral);
   StoreCurrentTimestampForKey(kOmniboxUseCount);
+}
+
+void LogBookmarkUseForDefaultBrowserPromo() {
+  LogLikelyInterestedDefaultBrowserUserActivity(DefaultPromoTypeAllTabs);
+  StoreCurrentTimestampForKey(kBookmarkUseCount);
+}
+
+void LogAutofillUseForDefaultBrowserPromo() {
+  StoreCurrentTimestampForKey(kAutofillUseCount);
+}
+
+void LogRemoteTabsUsedForDefaultBrowserPromo() {
+  LogLikelyInterestedDefaultBrowserUserActivity(DefaultPromoTypeAllTabs);
+  StoreCurrentTimestampForKey(kSpecialTabsUseCount);
+}
+
+void LogPinnedTabsUsedForDefaultBrowserPromo() {
+  StoreCurrentTimestampForKey(kSpecialTabsUseCount);
 }
 
 bool HasRecentFirstPartyIntentLaunchesAndRecordsCurrentLaunch() {
@@ -1102,6 +1145,15 @@ void RecordPromoStatsToUMAForActionString(PromoStatistics* promo_stats,
   base::UmaHistogramCounts100(
       base::StrCat({histogram_prefix, ".OmniboxClipboardUseCount"}),
       promo_stats.omniboxClipboardUseCount);
+  base::UmaHistogramCounts100(
+      base::StrCat({histogram_prefix, ".BookmarkUseCount"}),
+      promo_stats.bookmarkUseCount);
+  base::UmaHistogramCounts100(
+      base::StrCat({histogram_prefix, ".AutofllUseCount"}),
+      promo_stats.autofillUseCount);
+  base::UmaHistogramCounts100(
+      base::StrCat({histogram_prefix, ".SpecialTabsUseCount"}),
+      promo_stats.specialTabsUseCount);
 }
 
 PromoStatistics* CalculatePromoStatistics() {
@@ -1127,7 +1179,12 @@ PromoStatistics* CalculatePromoStatistics() {
       kTriggerCriteriaExperimentStatExpiration);
   promo_stats.omniboxClipboardUseCount = NumRecordedEventForKeyLessThanDelay(
       kOmniboxUseCount, kTriggerCriteriaExperimentStatExpiration);
-
+  promo_stats.bookmarkUseCount = NumRecordedEventForKeyLessThanDelay(
+      kBookmarkUseCount, kTriggerCriteriaExperimentStatExpiration);
+  promo_stats.autofillUseCount = NumRecordedEventForKeyLessThanDelay(
+      kAutofillUseCount, kTriggerCriteriaExperimentStatExpiration);
+  promo_stats.specialTabsUseCount = NumRecordedEventForKeyLessThanDelay(
+      kSpecialTabsUseCount, kTriggerCriteriaExperimentStatExpiration);
   return promo_stats;
 }
 

@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/test/base/web_ui_mocha_browser_test.h"
+#include "components/history_clusters/core/features.h"
 #include "components/search/ntp_features.h"
 #include "content/public/test/browser_test.h"
 
@@ -77,6 +79,14 @@ IN_PROC_BROWSER_TEST_F(NewTabPageTest, BackgroundManager) {
 
 IN_PROC_BROWSER_TEST_F(NewTabPageTest, MiddleSlotPromo) {
   RunTest("new_tab_page/middle_slot_promo_test.js", "mocha.run()");
+}
+
+IN_PROC_BROWSER_TEST_F(NewTabPageTest, ImageProcessor) {
+  RunTest("new_tab_page/image_processor_test.js", "mocha.run()");
+}
+
+IN_PROC_BROWSER_TEST_F(NewTabPageTest, Transparency) {
+  RunTest("new_tab_page/transparency_test.js", "mocha.run()");
 }
 
 using NewTabPageModulesTest = NewTabPageBrowserTest;
@@ -219,9 +229,15 @@ IN_PROC_BROWSER_TEST_F(NewTabPageAppTest, LensUploadDialog) {
 
 class NewTabPageModulesHistoryClustersModuleTest
     : public NewTabPageBrowserTest {
+ protected:
+  NewTabPageModulesHistoryClustersModuleTest() {
+    scoped_feature_list_.InitWithFeatures(
+        /*enabled_features=*/{ntp_features::kNtpHistoryClustersModule},
+        /*disabled_features=*/{history_clusters::kRenameJourneys});
+  }
+
  private:
-  base::test::ScopedFeatureList scoped_feature_list_{
-      ntp_features::kNtpHistoryClustersModule};
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 IN_PROC_BROWSER_TEST_F(NewTabPageModulesHistoryClustersModuleTest, Core) {
@@ -232,6 +248,11 @@ IN_PROC_BROWSER_TEST_F(NewTabPageModulesHistoryClustersModuleTest, Core) {
 IN_PROC_BROWSER_TEST_F(NewTabPageModulesHistoryClustersModuleTest, CoreV2) {
   RunTest("new_tab_page/modules/v2/history_clusters/module_test.js",
           "runMochaSuite('NewTabPageModulesHistoryClustersV2ModuleTest Core')");
+}
+
+IN_PROC_BROWSER_TEST_F(NewTabPageModulesHistoryClustersModuleTest, CartTileV2) {
+  RunTest("new_tab_page/modules/v2/history_clusters/cart/cart_tile_test.js",
+          "mocha.run()");
 }
 
 IN_PROC_BROWSER_TEST_F(NewTabPageModulesHistoryClustersModuleTest, Layouts) {

@@ -3808,16 +3808,13 @@ class ObserverView : public View {
 
   ~ObserverView() override;
 
-  void ResetTestState();
+  void ForgetOldDetails();
 
-  bool has_add_details() const { return has_add_details_; }
-  bool has_remove_details() const { return has_remove_details_; }
-
-  const ViewHierarchyChangedDetails& add_details() const {
+  absl::optional<ViewHierarchyChangedDetails> add_details() {
     return add_details_;
   }
 
-  const ViewHierarchyChangedDetails& remove_details() const {
+  absl::optional<ViewHierarchyChangedDetails> remove_details() {
     return remove_details_;
   }
 
@@ -3826,164 +3823,153 @@ class ObserverView : public View {
   void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) override;
 
-  bool has_add_details_ = false;
-  bool has_remove_details_ = false;
-  ViewHierarchyChangedDetails add_details_;
-  ViewHierarchyChangedDetails remove_details_;
+  absl::optional<ViewHierarchyChangedDetails> add_details_;
+  absl::optional<ViewHierarchyChangedDetails> remove_details_;
 };
 
 ObserverView::ObserverView() = default;
 
 ObserverView::~ObserverView() = default;
 
-void ObserverView::ResetTestState() {
-  has_add_details_ = false;
-  has_remove_details_ = false;
-  add_details_ = ViewHierarchyChangedDetails();
-  remove_details_ = ViewHierarchyChangedDetails();
+void ObserverView::ForgetOldDetails() {
+  add_details_.reset();
+  remove_details_.reset();
 }
 
 void ObserverView::ViewHierarchyChanged(
     const ViewHierarchyChangedDetails& details) {
-  if (details.is_add) {
-    has_add_details_ = true;
-    add_details_ = details;
-  } else {
-    has_remove_details_ = true;
-    remove_details_ = details;
+  (details.is_add ? add_details_ : remove_details_).emplace(details);
+}
+
+using ViewHierarchyChangedTest = ViewTest;
+
+void ForgetAllOldDetails(std::vector<ObserverView*> views) {
+  for (auto* view : views) {
+    view->ForgetOldDetails();
   }
 }
 
-// Verifies that the ViewHierarchyChanged() notification is sent correctly when
-// a child view is added or removed to all the views in the hierarchy (up and
-// down).
-// The tree looks like this:
-// v1
-// +-- v2(view2)
-//     +-- v3
-//     +-- v4 (starts here, then get reparented to v1)
-TEST_F(ViewTest, ViewHierarchyChanged) {
-  auto view1 = std::make_unique<ObserverView>();
-  ObserverView* v1 = view1.get();
+TEST_F(ViewHierarchyChangedTest, ParentReceivesAdd) {
+  auto parent = std::make_unique<ObserverView>();
+  auto* child = parent->AddChildView(std::make_unique<ObserverView>());
 
-  auto view3 = std::make_unique<ObserverView>();
+  ASSERT_TRUE(parent->add_details().has_value());
+  EXPECT_FALSE(parent->remove_details().has_value());
+  EXPECT_EQ(parent.get(), parent->add_details()->parent);
+  EXPECT_EQ(child, parent->add_details()->child);
+  EXPECT_EQ(nullptr, parent->add_details()->move_view);
 
-  auto view2 = std::make_unique<ObserverView>();
-  ObserverView* v3 = view2->AddChildView(std::move(view3));
+  ForgetAllOldDetails({parent.get(), child});
+}
 
-  // Make sure both |view2| and |v3| receive the ViewHierarchyChanged()
-  // notification.
-  EXPECT_TRUE(view2->has_add_details());
-  EXPECT_FALSE(view2->has_remove_details());
-  EXPECT_EQ(view2.get(), view2->add_details().parent);
-  EXPECT_EQ(v3, view2->add_details().child);
-  EXPECT_EQ(nullptr, view2->add_details().move_view);
+TEST_F(ViewHierarchyChangedTest, ChildReceivesAdd) {
+  auto parent = std::make_unique<ObserverView>();
+  auto* child = parent->AddChildView(std::make_unique<ObserverView>());
 
-  EXPECT_TRUE(v3->has_add_details());
-  EXPECT_FALSE(v3->has_remove_details());
-  EXPECT_EQ(view2.get(), v3->add_details().parent);
-  EXPECT_EQ(v3, v3->add_details().child);
-  EXPECT_EQ(nullptr, v3->add_details().move_view);
+  ASSERT_TRUE(child->add_details().has_value());
+  EXPECT_FALSE(child->remove_details().has_value());
+  EXPECT_EQ(parent.get(), child->add_details()->parent);
+  EXPECT_EQ(child, child->add_details()->child);
+  EXPECT_EQ(nullptr, child->add_details()->move_view);
 
-  // Reset everything to the initial state.
-  view2->ResetTestState();
-  v3->ResetTestState();
+  ForgetAllOldDetails({parent.get(), child});
+}
 
-  // Add |view2| to |view1|.
-  ObserverView* v2 = view1->AddChildView(std::move(view2));
+TEST_F(ViewHierarchyChangedTest, HierarchyReceivesAdd) {
+  auto child = std::make_unique<ObserverView>();
+  auto* grandchild = child->AddChildView(std::make_unique<ObserverView>());
 
-  // Verifies that |v2| is the child view *added* and the parent view is
-  // |v1|. Make sure all the views (v1, v2, v3) received _that_ information.
-  EXPECT_TRUE(v1->has_add_details());
-  EXPECT_FALSE(v1->has_remove_details());
-  EXPECT_EQ(v1, view1->add_details().parent);
-  EXPECT_EQ(v2, view1->add_details().child);
-  EXPECT_EQ(nullptr, view1->add_details().move_view);
+  ForgetAllOldDetails({child.get(), grandchild});
 
-  EXPECT_TRUE(v2->has_add_details());
-  EXPECT_FALSE(v2->has_remove_details());
-  EXPECT_EQ(v1, v2->add_details().parent);
-  EXPECT_EQ(v2, v2->add_details().child);
-  EXPECT_EQ(nullptr, v2->add_details().move_view);
+  auto parent = std::make_unique<ObserverView>();
+  auto* weak_child = parent->AddChildView(std::move(child));
 
-  EXPECT_TRUE(v3->has_add_details());
-  EXPECT_FALSE(v3->has_remove_details());
-  EXPECT_EQ(v1, v3->add_details().parent);
-  EXPECT_EQ(v2, v3->add_details().child);
-  EXPECT_EQ(nullptr, v3->add_details().move_view);
+  for (auto* view : {parent.get(), weak_child, grandchild}) {
+    ASSERT_TRUE(view->add_details().has_value());
+    EXPECT_FALSE(view->remove_details().has_value());
+    EXPECT_EQ(parent.get(), view->add_details()->parent);
+    EXPECT_EQ(weak_child, view->add_details()->child);
+    EXPECT_EQ(nullptr, view->add_details()->move_view);
+  }
 
-  v1->ResetTestState();
-  v2->ResetTestState();
-  v3->ResetTestState();
+  ForgetAllOldDetails({parent.get(), weak_child, grandchild});
+}
 
-  view2 = view1->RemoveChildViewT(v2);
+TEST_F(ViewHierarchyChangedTest, HierarchyReceivesRemove) {
+  auto parent = std::make_unique<ObserverView>();
+  auto* weak_child = parent->AddChildView(std::make_unique<ObserverView>());
+  auto* grandchild = weak_child->AddChildView(std::make_unique<ObserverView>());
 
-  // view2 now owns v2 from here.
-  // Verifies that |view2| is the child view *removed* and the parent view is
-  // |v1|. Make sure all the views (v1, v2, v3) received _that_ information.
-  EXPECT_FALSE(v1->has_add_details());
-  EXPECT_TRUE(v1->has_remove_details());
-  EXPECT_EQ(v1, v1->remove_details().parent);
-  EXPECT_EQ(v2, v1->remove_details().child);
-  EXPECT_EQ(nullptr, v1->remove_details().move_view);
+  ForgetAllOldDetails({parent.get(), weak_child, grandchild});
 
-  EXPECT_FALSE(v2->has_add_details());
-  EXPECT_TRUE(v2->has_remove_details());
-  EXPECT_EQ(v1, view2->remove_details().parent);
-  EXPECT_EQ(v2, view2->remove_details().child);
-  EXPECT_EQ(nullptr, view2->remove_details().move_view);
+  auto child = parent->RemoveChildViewT(weak_child);
 
-  EXPECT_FALSE(v3->has_add_details());
-  EXPECT_TRUE(v3->has_remove_details());
-  EXPECT_EQ(v1, v3->remove_details().parent);
-  EXPECT_EQ(v3, v3->remove_details().child);
-  EXPECT_EQ(nullptr, v3->remove_details().move_view);
+  // The parent and child both receive a remove:
+  for (auto* view : {parent.get(), weak_child}) {
+    EXPECT_FALSE(view->add_details().has_value());
+    ASSERT_TRUE(view->remove_details().has_value());
+    EXPECT_EQ(parent.get(), view->remove_details()->parent);
+    EXPECT_EQ(weak_child, view->remove_details()->child);
+    EXPECT_EQ(nullptr, view->remove_details()->move_view);
+  }
 
-  // Verifies notifications when reparenting a view.
-  // Add |v4| to |view2|.
-  auto* v4 = view2->AddChildView(std::make_unique<ObserverView>());
+  // The grandchild also receives a remove, but the removed view is marked as
+  // the *grandchild*, not as the child.
+  // TODO(ellyjones): Why does that happen? It seems like either:
+  // a) The grandchild should receive no notification,
+  // b) The grandchild should receive a notification with parent == parent and
+  //    child == child (same as the other two views receive), or
+  // c) The grandchild should receive a notification with parent == child and
+  //    child == grandchild
+  EXPECT_FALSE(grandchild->add_details().has_value());
+  ASSERT_TRUE(grandchild->remove_details().has_value());
+  EXPECT_EQ(parent.get(), grandchild->remove_details()->parent);
+  EXPECT_EQ(grandchild, grandchild->remove_details()->child);
+  EXPECT_EQ(nullptr, grandchild->remove_details()->move_view);
 
-  // Reset everything to the initial state.
-  v1->ResetTestState();
-  v2->ResetTestState();
-  v3->ResetTestState();
-  v4->ResetTestState();
+  ForgetAllOldDetails({parent.get(), weak_child, grandchild});
+}
 
-  // Reparent |v4| to |view1|.
-  v1->AddChildView(v4);
+TEST_F(ViewHierarchyChangedTest, HierarchyReceivesMove) {
+  auto new_parent = std::make_unique<ObserverView>();
+  auto old_parent = std::make_unique<ObserverView>();
+  auto* sibling = old_parent->AddChildView(std::make_unique<ObserverView>());
+  auto* child = old_parent->AddChildView(std::make_unique<ObserverView>());
 
-  // Verifies that all views receive the correct information for all the child,
-  // parent and move views.
+  ForgetAllOldDetails({new_parent.get(), old_parent.get(), sibling, child});
 
-  // |v1| is the new parent, |v4| is the child for add, |v2| is the old parent.
-  EXPECT_TRUE(v1->has_add_details());
-  EXPECT_FALSE(v1->has_remove_details());
-  EXPECT_EQ(v1, view1->add_details().parent);
-  EXPECT_EQ(v4, view1->add_details().child);
-  EXPECT_EQ(v2, view1->add_details().move_view);
+  new_parent->AddChildView(child);
 
-  // |v2| is the old parent, |v4| is the child for remove, |v1| is the new
-  // parent.
-  EXPECT_FALSE(v2->has_add_details());
-  EXPECT_TRUE(v2->has_remove_details());
-  EXPECT_EQ(v2, view2->remove_details().parent);
-  EXPECT_EQ(v4, view2->remove_details().child);
-  EXPECT_EQ(v1, view2->remove_details().move_view);
+  // The new parent receives an add:
+  ASSERT_TRUE(new_parent->add_details().has_value());
+  EXPECT_FALSE(new_parent->remove_details().has_value());
+  EXPECT_EQ(new_parent.get(), new_parent->add_details()->parent);
+  EXPECT_EQ(child, new_parent->add_details()->child);
+  EXPECT_EQ(old_parent.get(), new_parent->add_details()->move_view);
 
-  // |v3| is not impacted by this operation, and hence receives no notification.
-  EXPECT_FALSE(v3->has_add_details());
-  EXPECT_FALSE(v3->has_remove_details());
+  // The old parent receives a remove:
+  EXPECT_FALSE(old_parent->add_details().has_value());
+  ASSERT_TRUE(old_parent->remove_details().has_value());
+  EXPECT_EQ(old_parent.get(), old_parent->remove_details()->parent);
+  EXPECT_EQ(child, old_parent->remove_details()->child);
+  EXPECT_EQ(new_parent.get(), old_parent->remove_details()->move_view);
 
-  // |v4| is the reparented child, so it receives notifications for the remove
-  // and then the add. |view2| is its old parent, |v1| is its new parent.
-  EXPECT_TRUE(v4->has_remove_details());
-  EXPECT_TRUE(v4->has_add_details());
-  EXPECT_EQ(v2, v4->remove_details().parent);
-  EXPECT_EQ(v1, v4->add_details().parent);
-  EXPECT_EQ(v4, v4->add_details().child);
-  EXPECT_EQ(v4, v4->remove_details().child);
-  EXPECT_EQ(v1, v4->remove_details().move_view);
-  EXPECT_EQ(v2, v4->add_details().move_view);
+  // The sibling is not affected and receives neither:
+  EXPECT_FALSE(sibling->add_details().has_value());
+  EXPECT_FALSE(sibling->remove_details().has_value());
+
+  // The reparented child receives a remove from the old parent and an add to
+  // the new parent:
+  ASSERT_TRUE(child->remove_details().has_value());
+  EXPECT_EQ(old_parent.get(), child->remove_details()->parent);
+  EXPECT_EQ(child, child->remove_details()->child);
+  EXPECT_EQ(new_parent.get(), child->remove_details()->move_view);
+  ASSERT_TRUE(child->add_details().has_value());
+  EXPECT_EQ(new_parent.get(), child->add_details()->parent);
+  EXPECT_EQ(child, child->add_details()->child);
+  EXPECT_EQ(old_parent.get(), child->add_details()->move_view);
+
+  ForgetAllOldDetails({old_parent.get(), new_parent.get(), sibling, child});
 }
 
 class WidgetObserverView : public View {
@@ -4525,7 +4511,7 @@ class TestingLayerViewObserver : public ViewObserver {
 
  private:
   // ViewObserver:
-  void OnLayerTargetBoundsChanged(View* view) override {
+  void OnViewLayerBoundsSet(View* view) override {
     last_layer_bounds_ = view->layer()->bounds();
   }
 
@@ -6547,6 +6533,79 @@ TEST_F(ViewObserverTest, ChildViewLayerNotificationTest) {
   child_view->SetPaintToLayer(ui::LAYER_SOLID_COLOR);
   EXPECT_TRUE(parent_view->received_layer_change_notification());
   EXPECT_EQ(1, parent_view->layer_change_count());
+}
+
+namespace {
+
+// This view always resizes the associated layer when bounds change.
+class LayerResizingView : public View {
+ public:
+  explicit LayerResizingView(ui::Layer* layer) : layer_(layer) {}
+
+ private:
+  void OnBoundsChanged(const gfx::Rect& previous_bounds) override {
+    // Drop the coordinate since the layer should always be aligned.
+    gfx::Rect layer_rect = gfx::Rect(size());
+    layer_->SetBounds(layer_rect);
+  }
+
+  raw_ptr<ui::Layer> layer_;
+};
+
+}  // namespace
+
+// Confirms that the size of a View and the size of a region-attached layer stay
+// in sync.
+TEST(ViewTestUnfixtured, ViewLayerSizeStayInSync) {
+  // Make a layer with implicit animations.
+  std::unique_ptr<ui::Layer> region_layer = std::make_unique<ui::Layer>();
+  region_layer->SetAnimator(ui::LayerAnimator::CreateImplicitAnimator());
+
+  // Make a view, attach the layer to a region. The view keeps the bounds of the
+  // layer in sync. See implementation of LayerResizingView::OnBoundsChanged().
+  std::unique_ptr<View> view_owned =
+      std::make_unique<LayerResizingView>(region_layer.get());
+  view_owned->SetPaintToLayer(ui::LAYER_SOLID_COLOR);
+  view_owned->AddLayerToRegion(region_layer.get(), views::LayerRegion::kBelow);
+  raw_ptr<View> view = view_owned.get();
+
+  // Make a parent view. All it does is keep the child view the same size.
+  std::unique_ptr<View> parent_view = std::make_unique<View>();
+  parent_view->AddChildView(std::move(view_owned));
+  parent_view->SetUseDefaultFillLayout(true);
+
+  // Initial conditions: everything has 0 width.
+  EXPECT_EQ(0, view->width());
+  EXPECT_EQ(0, region_layer->bounds().width());
+  EXPECT_EQ(0, region_layer->GetTargetBounds().width());
+
+  // Setting bounds on the parent view will propagate the size to the child
+  // view. The child view then propagates the size to its layer. Note that the
+  // layer's bounds are not immediately updated as the animation has not yet
+  // started. Instead, the layer's target bounds is updated.
+  gfx::Rect bounds = gfx::Rect(0, 0, 60, 80);
+  parent_view->SetBoundsRect(bounds);
+  EXPECT_EQ(60, view->width());
+  EXPECT_EQ(0, region_layer->bounds().width());
+  EXPECT_EQ(60, region_layer->GetTargetBounds().width());
+
+  // Now we move the parent view without changing the size. This does not
+  // propagate a size change to the child view. However, it does cause the layer
+  // to reset its target bounds to its current bounds.
+  gfx::Rect new_bounds = bounds;
+  new_bounds.set_x(10);
+  parent_view->SetBoundsRect(new_bounds);
+  EXPECT_EQ(60, view->width());
+  EXPECT_EQ(0, region_layer->bounds().width());
+
+  // This is the expected behavior: target bounds does not change.
+  // EXPECT_EQ(60, region_layer->GetTargetBounds().width());
+
+  // This is the broken behavior: target bounds is set to the current value of
+  // bounds.
+  EXPECT_EQ(0, region_layer->GetTargetBounds().width());
+
+  view = nullptr;
 }
 
 }  // namespace views

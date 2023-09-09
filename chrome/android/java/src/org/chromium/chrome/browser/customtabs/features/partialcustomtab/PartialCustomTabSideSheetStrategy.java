@@ -127,7 +127,7 @@ public class PartialCustomTabSideSheetStrategy extends PartialCustomTabBaseStrat
             closeAnimation = (animator) -> setWindowY((int) animator.getAnimatedValue());
         } else {
             start = window.getAttributes().x;
-            end = mSheetOnRight ? mVersionCompat.getDisplayWidth() : -window.getAttributes().width;
+            end = mSheetOnRight ? mVersionCompat.getScreenWidth() : -window.getAttributes().width;
             closeAnimation = (animator) -> setWindowX((int) animator.getAnimatedValue());
         }
         startAnimation(start, end, closeAnimation, this::onCloseAnimationEnd, true);
@@ -208,19 +208,15 @@ public class PartialCustomTabSideSheetStrategy extends PartialCustomTabBaseStrat
     private void onMaximizeEnd() {
         setContentVisible(false);
         if (isMaximized()) {
-            if (mSheetOnRight) {
-                configureLayoutBeyondScreen(false);
-                maybeResetTalkbackFocus();
-            }
+            if (mSheetOnRight) configureLayoutBeyondScreen(false);
+            maybeResetTalkbackFocus();
             maybeInvokeResizeCallback();
             setContentVisible(true);
         } else {
             // System UI dimensions are not settled yet. Post the task.
             new Handler().post(() -> {
-                if (mSheetOnRight) {
-                    configureLayoutBeyondScreen(false);
-                    maybeResetTalkbackFocus();
-                }
+                if (mSheetOnRight) configureLayoutBeyondScreen(false);
+                maybeResetTalkbackFocus();
                 initializeSize();
                 if (shouldDrawDividerLine()) drawDividerLine();
                 // We have a delay before showing the resized web contents so it has to be done

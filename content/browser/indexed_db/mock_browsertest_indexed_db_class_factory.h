@@ -19,12 +19,10 @@
 #include "content/browser/indexed_db/indexed_db_class_factory.h"
 #include "content/browser/indexed_db/indexed_db_database.h"
 #include "content/browser/indexed_db/indexed_db_task_helper.h"
-#include "third_party/blink/public/common/indexeddb/web_idb_types.h"
 
 namespace content {
 
 class IndexedDBConnection;
-class IndexedDBMetadataCoding;
 class LevelDBDirectTransaction;
 class LevelDBScope;
 class LevelDBScopes;
@@ -48,7 +46,6 @@ class MockBrowserTestIndexedDBClassFactory
       IndexedDBBackingStore* backing_store,
       IndexedDBFactory* factory,
       TasksAvailableCallback tasks_available_callback,
-      std::unique_ptr<IndexedDBMetadataCoding> metadata_coding,
       const IndexedDBDatabase::Identifier& unique_identifier,
       PartitionedLockManager* transaction_lock_manager) override;
   std::unique_ptr<IndexedDBTransaction> CreateIndexedDBTransaction(

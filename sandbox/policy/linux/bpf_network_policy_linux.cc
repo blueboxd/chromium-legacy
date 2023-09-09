@@ -104,8 +104,8 @@ ResultExpr RestrictSetSockoptForNetworkService() {
                   SO_SNDBUF, SO_BROADCAST},
                  Allow())
           .Default(CrashSIGSYSSockopt());
-  // glibc's getaddrinfo() needs to enable icmp with IP_RECVERR, for both ipv4
-  // and ipv6.
+  // glibc's getaddrinfo() needs to enable icmp with IP[V6]_RECVERR, for both
+  // ipv4 and ipv6.
   //
   // A number of optnames are for APIs of pepper and extensions. These include:
   // * IP[V6[_MULTICAST_LOOP for UDPSocketPosix::SetMulticastOptions().
@@ -126,7 +126,7 @@ ResultExpr RestrictSetSockoptForNetworkService() {
           .Default(CrashSIGSYSSockopt());
   ResultExpr ipv6_optname_switch =
       Switch(optname)
-          .Cases({IP_RECVERR, IPV6_MTU_DISCOVER, IPV6_MULTICAST_LOOP,
+          .Cases({IPV6_RECVERR, IPV6_MTU_DISCOVER, IPV6_MULTICAST_LOOP,
                   IPV6_MULTICAST_HOPS, IPV6_MULTICAST_IF, IPV6_JOIN_GROUP,
                   IPV6_LEAVE_GROUP, IPV6_TCLASS, IPV6_V6ONLY},
                  Allow())
@@ -282,10 +282,10 @@ ResultExpr NetworkProcessPolicy::EvaluateSyscall(int sysno) const {
 #if defined(__NR_socketcall)
     case __NR_socketcall:
       // Unfortunately there's no easy way to restrict socketcall as it uses a
-      // struct pointer to pass its arguments.
-      // TODO(crbug.com/1429416): consider rewriting socketcall()s into the
-      // direct syscalls if the kernel supports it, and remove this allowance.
-      return Allow();
+      // struct pointer to pass its arguments. So this rewrites socketcall()
+      // calls into direct sockets-API syscalls, which will be filtered like
+      // normal.
+      return CanRewriteSocketcall() ? RewriteSocketcallSIGSYS() : Allow();
 #endif
   }
 

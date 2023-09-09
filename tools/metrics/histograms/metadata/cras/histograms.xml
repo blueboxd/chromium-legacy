@@ -318,7 +318,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cras.HfpBatteryIndicatorSupported"
-    enum="CrasHfpBatteryIndicator" expires_after="2023-12-01">
+    enum="CrasHfpBatteryIndicator" expires_after="2024-02-04">
   <owner>enshuo@chromium.org</owner>
   <owner>chromeos-audio@google.com</owner>
   <summary>
@@ -327,7 +327,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Cras.HfpBatteryReport" enum="CrasHfpBatteryIndicator"
-    expires_after="2023-12-01">
+    expires_after="2024-02-04">
   <owner>enshuo@chromium.org</owner>
   <owner>chromeos-audio@google.com</owner>
   <summary>
@@ -455,6 +455,16 @@ chromium-metrics-reviews@google.com.
   <owner>yuhsuan@chromium.org</owner>
   <owner>chromeos-audio@google.com</owner>
   <summary>Records the source of muting/unmuting the input gain.</summary>
+</histogram>
+
+<histogram name="Cras.InternalSoundcardStatus" enum="InternalSoundcardStatus"
+    expires_after="2024-08-01">
+  <owner>yuhsuan@chromium.org</owner>
+  <owner>chromeos-audio@google.com</owner>
+  <summary>
+    Checks whether an internal soundcard has been detected after CRAS runs for 5
+    seconds.
+  </summary>
 </histogram>
 
 <histogram name="Cras.kHfpWidebandSpeechSelectedCodec" enum="CrasHfpCodec"
@@ -733,18 +743,19 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Cras.StreamConnectError" enum="CrasStreamConnectError"
-    expires_after="2023-03-26">
+<histogram name="Cras.StreamConnectStatus" enum="CrasStreamConnectStatus"
+    expires_after="2024-08-01">
+  <owner>yuhsuan@chromium.org</owner>
   <owner>hychao@chromium.org</owner>
   <owner>chromeos-audio@google.com</owner>
   <summary>
-    Record the errors happen when CRAS server handles the client requests to
-    connect new streams.
+    Record the status when CRAS server handles the client requests to connect
+    new streams.
   </summary>
 </histogram>
 
 <histogram name="Cras.StreamCreateError" enum="CrasStreamCreateError"
-    expires_after="2023-11-19">
+    expires_after="2024-01-21">
   <owner>hychao@chromium.org</owner>
   <owner>chromeos-audio@google.com</owner>
   <summary>Record the errors happen when CRAS server creats a stream.</summary>

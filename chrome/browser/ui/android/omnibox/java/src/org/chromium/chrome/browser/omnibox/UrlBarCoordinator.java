@@ -253,6 +253,11 @@ public class UrlBarCoordinator implements UrlBarEditingTextStateProvider, UrlFoc
         }
     }
 
+    /** @param hasSuggestions Whether suggestions are showing in the URL bar. */
+    public void onUrlBarSuggestionsChanged(boolean hasSuggestions) {
+        mMediator.onUrlBarSuggestionsChanged(hasSuggestions);
+    }
+
     /**
      * @param softInputMode The software input resize mode.
      * @param delay Delay the change in input mode.
@@ -294,6 +299,9 @@ public class UrlBarCoordinator implements UrlBarEditingTextStateProvider, UrlFoc
             // focus blur indiscriminately here. Note that hiding keyboard may lower FPS of other
             // animation effects, but we found it tolerable in an experiment.
             if (imm.isActive(mUrlBar)) setKeyboardVisibility(false, false);
+            // Manually set that the URL bar is no longer showing suggestions when focus is lost as
+            // this won't happen automatically.
+            mMediator.onUrlBarSuggestionsChanged(false);
         }
         mFocusChangeCallback.onResult(hasFocus);
     }

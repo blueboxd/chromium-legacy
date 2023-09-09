@@ -4,6 +4,7 @@
 <translation id="1006017844123154345">ऑनलाइन खोलें</translation>
 <translation id="1036348656032585052">बंद करें</translation>
 <translation id="1044891598689252897">साइटें सामान्य रूप से काम करेंगी</translation>
+<translation id="1073417869336441572">हमें बताएं कि आपने तीसरे पक्ष की कुकी को अनुमति क्यों दी है. इससे हमें Chrome को बेहतर बनाने में मदद मिलेगी. <ph name="BEGIN_LINK" />सुझाव/राय दें या शिकायत करें<ph name="END_LINK" /></translation>
 <translation id="1124090076051167250">इससे वे <ph name="DATASIZE" /> डेटा और कुकी मिट जाएंगे जिन्हें साइटों या ऐप्लिकेशन ने आपकी होम स्क्रीन पर सेव किया है.</translation>
 <translation id="1178581264944972037">रोकें</translation>
 <translation id="1181037720776840403">हटाएं</translation>
@@ -50,6 +51,7 @@
 <translation id="1984937141057606926">तृतीय-पक्ष को छोड़कर अनुमति है</translation>
 <translation id="1989112275319619282">ब्राउज़ करें</translation>
 <translation id="1994173015038366702">साइट URL</translation>
+<translation id="1999195646219379110">{COUNT,plural, =1{समयसीमा 1 दिन में खत्म हो जाएगी}one{समयसीमा # दिन में खत्म हो जाएगी}other{समयसीमा # दिन में खत्म हो जाएगी}}</translation>
 <translation id="2004697686368036666">हो सकता है कि कुछ साइटों पर खास सुविधाएं काम न करें</translation>
 <translation id="2025115093177348061">ऑगमेंटेड रिएलिटी (एआर)</translation>
 <translation id="2030769033451695672"><ph name="URL_OF_THE_CURRENT_TAB" /> पर वापस जाने के लिए टैप करें</translation>
@@ -99,6 +101,7 @@
 <translation id="2621115761605608342">किसी खास साइट के लिए JavaScript चलाने की अनुमति दें.</translation>
 <translation id="2653659639078652383">सबमिट करें</translation>
 <translation id="2677748264148917807">छोड़ें</translation>
+<translation id="2678468611080193228">कुछ समय के लिए तीसरे पक्ष की कुकी को अनुमति दें. इसका मतलब है कि साइट की सुविधाएं काम करेंगी, लेकिन आपकी सुरक्षा का स्तर कम हो जाएगा</translation>
 <translation id="2687403674020088961">सभी कुकी ब्लॉक करें (हम ऐसा करने का सुझाव नहीं देते)</translation>
 <translation id="2713106313042589954">कैमरा बंद करें</translation>
 <translation id="2717722538473713889">ईमेल पते</translation>
@@ -138,6 +141,8 @@
 <translation id="3362437373201486687">ब्लूटूथ डिवाइस के लिए स्कैन किया जा रहा है</translation>
 <translation id="3386292677130313581">साइटों को अपनी जगह की जानकारी देने से पहले अनुमति लेना ज़रूरी बनाएं (सुझाया गया)</translation>
 <translation id="3403537308306431953"><ph name="ZOOM_LEVEL" />%%</translation>
+<translation id="344449859752187052">तीसरे पक्ष की कुकी ब्लॉक की गईं</translation>
+<translation id="3465378418721443318">{DAYS,plural, =1{Chrome कल फिर से कुकी ब्लॉक करेगा}one{Chrome # दिन बाद फिर से कुकी ब्लॉक करेगा}other{Chrome # दिन बाद फिर से कुकी ब्लॉक करेगा}}</translation>
 <translation id="3521663503435878242"><ph name="DOMAIN" /> की साइटें</translation>
 <translation id="3538390592868664640">साइटों को अपने आस-पास की जगह का 3D मैप बनाने या कैमरे की स्थिति ट्रैक करने से रोकें</translation>
 <translation id="3544058026430919413">कंपनी ऐसी साइटों का एक ग्रुप बना सकती है जो ग्रुप में आपकी गतिविधि शेयर करने के लिए, कुकी का इस्तेमाल कर सके. यह सुविधा गुप्त मोड में काम नहीं करती.</translation>
@@ -160,6 +165,7 @@
 <translation id="381841723434055211">फ़ोन नंबर</translation>
 <translation id="3826050100957962900">तीसरे पक्ष की सेवा के लिए साइन इन</translation>
 <translation id="3835233591525155343">आपके डिवाइस का इस्तेमाल</translation>
+<translation id="3843916486309149084">Chrome आज फिर से कुकी ब्लॉक करेगा</translation>
 <translation id="385051799172605136">वापस जाएं</translation>
 <translation id="3859306556332390985">आगे जाएं</translation>
 <translation id="3895926599014793903">ज़बरदस्ती ज़ूम करना चालू करें</translation>
@@ -212,6 +218,7 @@
 <translation id="4962975101802056554">डिवाइस की सभी अनुमतियां निरस्त करें</translation>
 <translation id="497421865427891073">आगे जाएं</translation>
 <translation id="4976702386844183910">पिछली बार <ph name="DATE" /> को देखा गया</translation>
+<translation id="4985206706500620449">आपने इस साइट के लिए तीसरे पक्ष की कुकी को अनुमति दी है</translation>
 <translation id="4994033804516042629">कोई संपर्क नहीं मिला</translation>
 <translation id="4996978546172906250">इससे शेयर करें</translation>
 <translation id="5001526427543320409">तीसरे पक्ष की कुकी</translation>
@@ -256,6 +263,7 @@
 <translation id="5677928146339483299">ब्लॉक किया गया है</translation>
 <translation id="5689516760719285838">जगह की जानकारी</translation>
 <translation id="5690795753582697420">Android की सेटिंग में कैमरा बंद है</translation>
+<translation id="5700761515355162635">तीसरे पक्ष की कुकी को अनुमति है</translation>
 <translation id="5706552988683188916">इससे, <ph name="WEBSITE" /> की कुकी और साइट का अन्य डेटा मिट जाता है</translation>
 <translation id="5719847187258001597">इससे वे सभी डेटा और कुकी मिट जाएंगे जिन्हें <ph name="ORIGIN" /> या इसके ऐप्लिकेशन ने आपकी होम स्क्रीन पर सेव किया है.</translation>
 <translation id="5723967018671998714">गुप्त मोड में तीसरे पक्ष की कुकी ब्लॉक हैं</translation>
@@ -297,11 +305,14 @@
 <translation id="6367753977865761591">किसी साइट पर, तीसरे पक्ष के खाते से साइन इन को ब्लॉक करें.</translation>
 <translation id="6388207532828177975">साफ़ करें और रीसेट करें</translation>
 <translation id="6398765197997659313">फ़ुल स्क्रीन से बाहर निकलें</translation>
+<translation id="640163077447496506">समयसीमा आज खत्म हो जाएगी</translation>
 <translation id="6405650995156823521"><ph name="FIRST_PART" /> • <ph name="SECOND_PART" /></translation>
 <translation id="6439114592976064011">साइटों को अपने वर्चुअल रिएलिटी वाले डिवाइस और डेटा का इस्तेमाल करने से रोकें</translation>
 <translation id="6447842834002726250">कुकी</translation>
 <translation id="6467852467360539617">डेटा मिटाएं और अनुमतियां रीसेट करें</translation>
+<translation id="6500423977866688905">जब विंडो छोटी हो, तब साइट को मोबाइल व्यू में दिखाने का अनुरोध करें</translation>
 <translation id="6527303717912515753">शेयर करें</translation>
+<translation id="652937045869844725">तीसरे पक्ष की कुकी को अनुमति दें. इसका मतलब है कि साइट की सुविधाएं काम करेंगी, लेकिन आपकी सुरक्षा का स्तर कम हो जाएगा</translation>
 <translation id="6545864417968258051">ब्लूटूथ स्कैन करना</translation>
 <translation id="6552800053856095716">{PERMISSIONS_SUMMARY_BLOCKED,plural, =1{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" />, और <ph name="NUM_MORE" /> अन्य सुविधा को ब्लॉक किया गया}one{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" />, और <ph name="NUM_MORE" /> अन्य सुविधा को ब्लॉक किया गया}other{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" />, और <ph name="NUM_MORE" /> अन्य सुविधाओं को ब्लॉक किया गया}}</translation>
 <translation id="6554732001434021288">साइट पर पिछली बार <ph name="NUM_DAYS" /> दिन पहले गए</translation>
@@ -390,6 +401,7 @@
 <translation id="8131740175452115882">पुष्टि करें</translation>
 <translation id="8154912474061769055">हो सकता है कि कई साइटों पर कुछ खास सुविधाएं काम न करें</translation>
 <translation id="8168435359814927499">कॉन्टेंट</translation>
+<translation id="8186479265534291036">साइट काम नहीं कर रही है? तीसरे पक्ष की कुकी ब्लॉक की गईं</translation>
 <translation id="8197286292360124385"><ph name="PERMISSION_1" /> इस्तेमाल करने की अनुमति दी गई</translation>
 <translation id="8200772114523450471">फिर से शुरू करें</translation>
 <translation id="8206354486702514201">इस सेटिंग को आपके व्‍यवस्थापक द्वारा लागू किया जाता है.</translation>
@@ -434,6 +446,7 @@
 <translation id="8736193154595564524">{NUM_SELECTED,plural, =1{1 साइट को अनुमति है}one{# साइट को अनुमति है}other{# साइटों को अनुमति है}}</translation>
 <translation id="8737217482364735741">इससे वे सभी डेटा और कुकी मिट जाएंगे जिन्हें <ph name="ORIGIN" /> ने सेव किया है.</translation>
 <translation id="8751914237388039244">इमेज चुनें</translation>
+<translation id="8800034312320686233">साइट काम नहीं कर रही है?</translation>
 <translation id="8801436777607969138">किसी खास साइट के लिए JavaScript पर रोक लगाएं.</translation>
 <translation id="8803526663383843427">यह सुविधा चालू होने पर</translation>
 <translation id="8805385115381080995">ब्राउज़िंग की स्पीड तेज़ होती है, क्योंकि इस बात की संभावना कम होती है कि कोई साइट आपको असली उपयोगकर्ता होने की पुष्टि करने के लिए कहे</translation>

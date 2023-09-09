@@ -8,8 +8,10 @@
 #include <memory>
 #include <utility>
 
+#include "ash/constants/ash_features.h"
 #include "ash/glanceables/classroom/glanceables_classroom_client.h"
 #include "ash/glanceables/classroom/glanceables_classroom_types.h"
+#include "ash/glanceables/common/glanceables_progress_bar_view.h"
 #include "ash/glanceables/glanceables_v2_controller.h"
 #include "ash/shell.h"
 #include "ash/system/tray/detailed_view_delegate.h"
@@ -19,6 +21,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/views/controls/combobox/combobox.h"
+#include "ui/views/controls/label.h"
 #include "url/gurl.h"
 
 namespace ash {
@@ -53,6 +56,16 @@ constexpr char kClassroomWebUIToReviewUrl[] =
 constexpr char kClassroomWebUIReviewedUrl[] =
     "https://classroom.google.com/u/0/ta/reviewed/all";
 
+std::u16string GetAssignmentListName(size_t index) {
+  CHECK(index >= 0 || index < kTeacherAssignmentsListTypeOrdered.size());
+
+  const auto* const iter = kTeacherAssignmentsListTypeToLabel.find(
+      kTeacherAssignmentsListTypeOrdered[index]);
+  CHECK(iter != kTeacherAssignmentsListTypeToLabel.end());
+
+  return base::UTF8ToUTF16(iter->second);
+}
+
 class ClassroomTeacherComboboxModel : public ui::ComboboxModel {
  public:
   ClassroomTeacherComboboxModel() = default;
@@ -66,13 +79,7 @@ class ClassroomTeacherComboboxModel : public ui::ComboboxModel {
   }
 
   std::u16string GetItemAt(size_t index) const override {
-    CHECK(index >= 0 || index < kTeacherAssignmentsListTypeOrdered.size());
-
-    const auto* const iter = kTeacherAssignmentsListTypeToLabel.find(
-        kTeacherAssignmentsListTypeOrdered[index]);
-    CHECK(iter != kTeacherAssignmentsListTypeToLabel.end());
-
-    return base::UTF8ToUTF16(iter->second);
+    return GetAssignmentListName(index);
   }
 
   absl::optional<size_t> GetDefaultIndex() const override { return 0; }
@@ -85,6 +92,7 @@ ClassroomBubbleTeacherView::ClassroomBubbleTeacherView(
     : ClassroomBubbleBaseView(
           delegate,
           std::make_unique<ClassroomTeacherComboboxModel>()) {
+  CHECK(features::IsGlanceablesV2ClassroomTeacherViewEnabled());
   combo_box_view_->SetCallback(base::BindRepeating(
       &ClassroomBubbleTeacherView::SelectedAssignmentListChanged,
       base::Unretained(this)));
@@ -123,8 +131,14 @@ void ClassroomBubbleTeacherView::SelectedAssignmentListChanged() {
   CHECK(selected_index >= 0 ||
         selected_index < kTeacherAssignmentsListTypeOrdered.size());
 
+  // Cancel any old pending assignment callbacks.
+  weak_ptr_factory_.InvalidateWeakPtrs();
+
+  AboutToRequestAssignments();
+
   auto callback = base::BindOnce(&ClassroomBubbleTeacherView::OnGetAssignments,
-                                 weak_ptr_factory_.GetWeakPtr());
+                                 weak_ptr_factory_.GetWeakPtr(),
+                                 GetAssignmentListName(selected_index));
   switch (kTeacherAssignmentsListTypeOrdered[selected_index]) {
     case TeacherAssignmentsListType::kDueSoon:
       return client->GetTeacherAssignmentsWithApproachingDueDate(

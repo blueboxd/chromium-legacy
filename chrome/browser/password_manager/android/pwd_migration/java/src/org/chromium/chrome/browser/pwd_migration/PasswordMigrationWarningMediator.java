@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.pwd_migration;
 
+import static org.chromium.chrome.browser.password_manager.PasswordMetricsUtil.logPasswordMigrationWarningUserAction;
 import static org.chromium.chrome.browser.pwd_migration.PasswordMigrationWarningProperties.ACCOUNT_DISPLAY_NAME;
 import static org.chromium.chrome.browser.pwd_migration.PasswordMigrationWarningProperties.CURRENT_SCREEN;
 import static org.chromium.chrome.browser.pwd_migration.PasswordMigrationWarningProperties.SHOULD_OFFER_SYNC;
@@ -11,11 +12,10 @@ import static org.chromium.chrome.browser.pwd_migration.PasswordMigrationWarning
 
 import android.net.Uri;
 
-import androidx.annotation.IntDef;
-import androidx.annotation.VisibleForTesting;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.FragmentManager;
 
-import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.chrome.browser.password_manager.PasswordMetricsUtil.PasswordMigrationWarningUserActions;
 import org.chromium.chrome.browser.password_manager.settings.PasswordListObserver;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -37,45 +37,16 @@ import org.chromium.components.sync.UserSelectableType;
 import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.ui.modelutil.PropertyModel;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-
 /**
  * Contains the logic for the local passwords migration warning. It sets the state of the model and
  * reacts to events.
  */
 class PasswordMigrationWarningMediator
         implements PasswordMigrationWarningOnClickHandler, PasswordListObserver {
-    /**
-     * The action users take on the password migration warning sheet.
-     *
-     * Entries should not be renumbered and numeric values should never be reused. Needs to stay
-     * in sync with PasswordMigrationWarningUserActions in enums.xml.
-     */
-    @IntDef({PasswordMigrationWarningUserActions.GOT_IT,
-            PasswordMigrationWarningUserActions.MORE_OPTIONS,
-            PasswordMigrationWarningUserActions.SYNC, PasswordMigrationWarningUserActions.EXPORT,
-            PasswordMigrationWarningUserActions.CANCEL,
-            PasswordMigrationWarningUserActions.DISMISS_INTRODUCTION,
-            PasswordMigrationWarningUserActions.DISMISS_MORE_OPTIONS,
-            PasswordMigrationWarningUserActions.COUNT})
-    @Retention(RetentionPolicy.SOURCE)
-    @interface PasswordMigrationWarningUserActions {
-        int GOT_IT = 0;
-        int MORE_OPTIONS = 1;
-        int SYNC = 2;
-        int EXPORT = 3;
-        int CANCEL = 4;
-        int DISMISS_INTRODUCTION = 5;
-        int DISMISS_MORE_OPTIONS = 6;
-        int COUNT = 7;
-    }
-    @VisibleForTesting
-    static final String PASSWORD_MIGRATION_WARNING_USER_ACTIONS =
-            "PasswordManager.PasswordMigrationWarning.UserAction";
     private PropertyModel mModel;
     private Profile mProfile;
     private MigrationWarningOptionsHandler mOptionsHandler;
+    private @PasswordMigrationWarningTriggers int mReferrer;
 
     public interface MigrationWarningOptionsHandler {
         /**
@@ -113,21 +84,30 @@ class PasswordMigrationWarningMediator
         void passwordsAvailable();
     }
 
-    PasswordMigrationWarningMediator(
-            Profile profile, MigrationWarningOptionsHandler optionsHandler) {
+    PasswordMigrationWarningMediator(Profile profile, MigrationWarningOptionsHandler optionsHandler,
+            @PasswordMigrationWarningTriggers int referrer) {
         mProfile = profile;
         mOptionsHandler = optionsHandler;
+        mReferrer = referrer;
     }
 
     void initializeModel(PropertyModel model) {
         mModel = model;
     }
 
-    void showWarning(int screenType) {
+    void showWarning(@ScreenType int screenType) {
         mModel.set(SHOULD_OFFER_SYNC, shouldOfferSync());
         mModel.set(VISIBLE, true);
         mModel.set(CURRENT_SCREEN, screenType);
         mModel.set(ACCOUNT_DISPLAY_NAME, getAccountDisplayName(mProfile));
+    }
+
+    void onShown() {
+        if (mReferrer != PasswordMigrationWarningTriggers.CHROME_STARTUP) {
+            return;
+        }
+        PrefService prefService = UserPrefs.get(mProfile);
+        prefService.setBoolean(Pref.LOCAL_PASSWORD_MIGRATION_WARNING_SHOWN_AT_STARTUP, true);
     }
 
     void onDismissed(@StateChangeReason int reason) {
@@ -137,11 +117,11 @@ class PasswordMigrationWarningMediator
         if (reason == StateChangeReason.SWIPE || reason == StateChangeReason.BACK_PRESS
                 || reason == StateChangeReason.TAP_SCRIM
                 || reason == StateChangeReason.OMNIBOX_FOCUS) {
-            RecordHistogram.recordEnumeratedHistogram(PASSWORD_MIGRATION_WARNING_USER_ACTIONS,
-                    mModel.get(CURRENT_SCREEN) == ScreenType.INTRO_SCREEN
-                            ? PasswordMigrationWarningUserActions.DISMISS_INTRODUCTION
-                            : PasswordMigrationWarningUserActions.DISMISS_MORE_OPTIONS,
-                    PasswordMigrationWarningUserActions.COUNT);
+            int dismissalKind = mModel.get(CURRENT_SCREEN) == ScreenType.INTRO_SCREEN
+                    ? PasswordMigrationWarningUserActions.DISMISS_INTRODUCTION
+                    : PasswordMigrationWarningUserActions.DISMISS_MORE_OPTIONS;
+
+            logPasswordMigrationWarningUserAction(dismissalKind);
         }
     }
 
@@ -152,9 +132,7 @@ class PasswordMigrationWarningMediator
         PrefService prefService = UserPrefs.get(mProfile);
         prefService.setBoolean(Pref.USER_ACKNOWLEDGED_LOCAL_PASSWORDS_MIGRATION_WARNING, true);
 
-        RecordHistogram.recordEnumeratedHistogram(PASSWORD_MIGRATION_WARNING_USER_ACTIONS,
-                PasswordMigrationWarningUserActions.GOT_IT,
-                PasswordMigrationWarningUserActions.COUNT);
+        logPasswordMigrationWarningUserAction(PasswordMigrationWarningUserActions.GOT_IT);
     }
 
     @Override
@@ -162,9 +140,7 @@ class PasswordMigrationWarningMediator
         assert mModel.get(VISIBLE);
         mModel.set(CURRENT_SCREEN, ScreenType.OPTIONS_SCREEN);
 
-        RecordHistogram.recordEnumeratedHistogram(PASSWORD_MIGRATION_WARNING_USER_ACTIONS,
-                PasswordMigrationWarningUserActions.MORE_OPTIONS,
-                PasswordMigrationWarningUserActions.COUNT);
+        logPasswordMigrationWarningUserAction(PasswordMigrationWarningUserActions.MORE_OPTIONS);
     }
 
     @Override
@@ -173,15 +149,11 @@ class PasswordMigrationWarningMediator
             mModel.set(VISIBLE, false);
             startSyncFlow();
 
-            RecordHistogram.recordEnumeratedHistogram(PASSWORD_MIGRATION_WARNING_USER_ACTIONS,
-                    PasswordMigrationWarningUserActions.SYNC,
-                    PasswordMigrationWarningUserActions.COUNT);
+            logPasswordMigrationWarningUserAction(PasswordMigrationWarningUserActions.SYNC);
         } else {
             mOptionsHandler.startExportFlow(fragmentManager);
 
-            RecordHistogram.recordEnumeratedHistogram(PASSWORD_MIGRATION_WARNING_USER_ACTIONS,
-                    PasswordMigrationWarningUserActions.EXPORT,
-                    PasswordMigrationWarningUserActions.COUNT);
+            logPasswordMigrationWarningUserAction(PasswordMigrationWarningUserActions.EXPORT);
         }
     }
 
@@ -194,21 +166,23 @@ class PasswordMigrationWarningMediator
     public void onCancel(BottomSheetController bottomSheetController) {
         mModel.set(VISIBLE, false);
 
-        RecordHistogram.recordEnumeratedHistogram(PASSWORD_MIGRATION_WARNING_USER_ACTIONS,
-                PasswordMigrationWarningUserActions.CANCEL,
-                PasswordMigrationWarningUserActions.COUNT);
+        logPasswordMigrationWarningUserAction(PasswordMigrationWarningUserActions.CANCEL);
     }
 
-    private String getAccountDisplayName(Profile profile) {
+    private @Nullable String getAccountDisplayName(Profile profile) {
         IdentityManager identityManager =
                 IdentityServicesProvider.get().getIdentityManager(profile);
         CoreAccountInfo coreAccountInfo =
                 identityManager.getPrimaryAccountInfo(ConsentLevel.SIGNIN);
-        if (coreAccountInfo == null) {
+        if (coreAccountInfo == null || coreAccountInfo.getEmail().isEmpty()) {
             return null;
         }
+        @Nullable
         AccountInfo account =
                 identityManager.findExtendedAccountInfoByEmailAddress(coreAccountInfo.getEmail());
+        if (account == null) {
+            return coreAccountInfo.getEmail();
+        }
         boolean canHaveEmailAddressDisplayed =
                 account.getAccountCapabilities().canHaveEmailAddressDisplayed() != Tribool.FALSE;
         return canHaveEmailAddressDisplayed ? account.getEmail() : account.getFullName();

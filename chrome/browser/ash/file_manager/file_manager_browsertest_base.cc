@@ -1523,6 +1523,13 @@ class DriveFsTestVolume : public TestVolume {
     drivefs_delegate->OnFilesChanged(std::move(file_changes));
   }
 
+  void SetPooledStorageQuotaUsage(int64_t used_user_bytes,
+                                  int64_t total_user_bytes,
+                                  bool organization_limit_exceeded) {
+    fake_drivefs_helper_->fake_drivefs().SetPooledStorageQuotaUsage(
+        used_user_bytes, total_user_bytes, organization_limit_exceeded);
+  }
+
  private:
   base::RepeatingCallback<std::unique_ptr<drivefs::DriveFsBootstrapListener>()>
   CreateDriveFsBootstrapListener() {
@@ -2230,6 +2237,14 @@ void FileManagerBrowserTestBase::SetUpCommandLine(
     enabled_features.push_back(chromeos::features::kJelly);
   } else {
     disabled_features.push_back(chromeos::features::kJelly);
+  }
+
+  if (options.enable_cros_components) {
+    enabled_features.push_back(chromeos::features::kCrosComponents);
+    DCHECK(options.enable_jellybean)
+        << "Cannot enable cros-components without jellybean";
+  } else {
+    disabled_features.push_back(chromeos::features::kCrosComponents);
   }
 
   if (options.feature_ids.size() > 0) {
@@ -3673,6 +3688,23 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
     return;
   }
 
+  if (name == "setPooledStorageQuotaUsage") {
+    absl::optional<int64_t> used_user_bytes = value.FindInt("usedUserBytes");
+    ASSERT_TRUE(used_user_bytes.has_value())
+        << "Need usedUserBytes to set pooled storage quota used";
+    absl::optional<int64_t> total_user_bytes = value.FindInt("totalUserBytes");
+    ASSERT_TRUE(total_user_bytes.has_value())
+        << "Need totalUserBytes to set pooled storage quota used";
+    absl::optional<bool> organization_limit_exceeded =
+        value.FindBool("organizationLimitExceeded");
+    ASSERT_TRUE(organization_limit_exceeded.has_value())
+        << "Need organizationLimitExceeded to set pooled storage quota used";
+    drive_volume_->SetPooledStorageQuotaUsage(
+        used_user_bytes.value(), total_user_bytes.value(),
+        organization_limit_exceeded.value());
+    return;
+  }
+
   if (name == "sendDriveCloudDeleteEvent") {
     const std::string* path = value.FindString("path");
     ASSERT_TRUE(path) << "No supplied path to sendDriveFilesChangedEvent";
@@ -3682,6 +3714,11 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
 
   if (name == "isJellybean") {
     *output = options.enable_jellybean ? "true" : "false";
+    return;
+  }
+
+  if (name == "isCrosComponents") {
+    *output = options.enable_cros_components ? "true" : "false";
     return;
   }
 

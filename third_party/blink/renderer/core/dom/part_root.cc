@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/dom/document_part_root.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/dom/part.h"
+#include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 
 namespace blink {
 
@@ -19,15 +20,15 @@ void PartRoot::Trace(Visitor* visitor) const {
 }
 
 void PartRoot::AddPart(Part& new_part) {
-  CHECK(!parts_unordered_.Contains(&new_part));
-  parts_unordered_.push_back(new_part);
+  // DCHECK because this will be slow.
+  DCHECK(!parts_unordered_.Contains(&new_part));
+  parts_unordered_.insert(&new_part);
   MarkPartsDirty();
 }
 
 void PartRoot::RemovePart(Part& part) {
-  auto index = parts_unordered_.Find(&part);
-  CHECK_NE(index, kNotFound);
-  parts_unordered_.EraseAt(index);
+  DCHECK(parts_unordered_.Contains(&part));
+  parts_unordered_.erase(&part);
   MarkPartsDirty();
 }
 
@@ -85,6 +86,10 @@ using NodesToParts =
 //    (and a progress marker within it) during the entire sort, and doing a
 //    sort-of-quicksort-like splitting whenever there are branches in the
 //    ancestor chain.
+//  - (Orthogonal) Convert cached_parts_list_dirty_ to a "range" of dirty
+//    parts within the sorted parts list. Then you only need to rebuild that
+//    chunk of parts and not all of them. You can maintain this during Node
+//    insertions and removals by just expanding the range accordingly.
 // It might be worthwhile to switch between these approaches depending on the
 // sizes of things, or add additional algorithms.
 HeapVector<Member<Part>> SortPartsInTreeOrder(
@@ -135,6 +140,25 @@ const DocumentPartRoot* PartRoot::GetDocumentPartRoot() {
     root = next;
   }
   return static_cast<const DocumentPartRoot*>(root);
+}
+
+void PartRoot::CachePartOrderAfterClone() {
+#if DCHECK_IS_ON()
+  {
+    // This will set cached_ordered_parts_ as a side effect, but we'll reset it
+    // again below anyway.
+    auto correct_parts_order = getParts();
+    DCHECK_EQ(correct_parts_order.size(), parts_unordered_.size());
+    auto unordered_iter = parts_unordered_.begin();
+    for (auto& correct : correct_parts_order) {
+      DCHECK_EQ(*unordered_iter, correct);
+      ++unordered_iter;
+    }
+  }
+#endif
+  cached_ordered_parts_ =
+      *MakeGarbageCollected<HeapVector<Member<Part>>>(parts_unordered_);
+  cached_parts_list_dirty_ = false;
 }
 
 // |getParts| must always return the contained parts list subject to these

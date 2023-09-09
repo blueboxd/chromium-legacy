@@ -21,10 +21,6 @@
 #import "ios/chrome/browser/ui/policy/user_policy_util.h"
 #import "ios/chrome/browser/ui/promos_manager/promos_manager_ui_handler.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 @interface DefaultBrowserPromoManager () <DefaultBrowserPromoCommands>
 
 // Default browser promo command handler.
@@ -42,6 +38,12 @@
 // Coordinator that manages the tailored promo modals.
 @property(nonatomic, strong) TailoredPromoCoordinator* tailoredPromoCoordinator;
 
+// Tracks whether or not the Video promo FET should be dismissed.
+@property(nonatomic, assign) BOOL shouldDismissVideoPromoFET;
+
+// Feature engagement tracker reference.
+@property(nonatomic, assign) feature_engagement::Tracker* tracker;
+
 @end
 
 @implementation DefaultBrowserPromoManager
@@ -53,6 +55,8 @@
   PrefService* prefService = browserState->GetPrefs();
   AuthenticationService* authService =
       AuthenticationServiceFactory::GetForBrowserState(browserState);
+  self.tracker = feature_engagement::TrackerFactory::GetForBrowserState(
+      self.browser->GetBrowserState());
 
   if (IsUserPolicyNotificationNeeded(authService, prefService)) {
     // Showing the User Policy notification has priority over showing the
@@ -77,22 +81,20 @@
   }
 
   if (IsDefaultBrowserTriggerCriteraExperimentEnabled()) {
+    if (IsDefaultBrowserVideoPromoEnabled()) {
+      [self showPromo:DefaultPromoTypeVideo];
+      return;
+    }
+
     [self showPromo:DefaultPromoTypeGeneral];
     return;
   }
 
-  feature_engagement::Tracker* tracker =
-      feature_engagement::TrackerFactory::GetForBrowserState(browserState);
-
   // Video promo takes priority over other default browser promos.
-  if (IsDefaultBrowserVideoPromoEnabled() && tracker &&
-      IsVideoPromoEligibleUser(tracker)) {
-    if (tracker->ShouldTriggerHelpUI(
-            feature_engagement::
-                kIPHiOSDefaultBrowserVideoPromoTriggerFeature)) {
-      [self showPromo:DefaultPromoTypeVideo];
-      return;
-    }
+  BOOL isDBVideoPromoEnabled =
+      IsDBVideoPromoHalfscreenEnabled() || IsDBVideoPromoFullscreenEnabled();
+  if (isDBVideoPromoEnabled && [self maybeTriggerVideoPromoWithFET]) {
+    return;
   }
 
   BOOL isSignedIn = [self isSignedIn];
@@ -104,6 +106,11 @@
     // arm.
     if (IsDefaultBrowserPromoGenericTailoredTrainEnabled() &&
         IsDefaultBrowserPromoOnlyGenericArmTrain()) {
+      if (IsDefaultBrowserVideoPromoEnabled()) {
+        [self showPromo:DefaultPromoTypeVideo];
+        return;
+      }
+
       [self showPromo:DefaultPromoTypeGeneral];
       return;
     }
@@ -121,11 +128,25 @@
     return;
   }
 
+  // When the default browser video promo with generic triggering conditions is
+  // enabled, the generic default btowser promo is replaced with the video
+  // promo.
+  BOOL isGenericPromoVideo = IsDBVideoPromoWithGenericFullscreenEnabled() ||
+                             IsDBVideoPromoWithGenericHalfscreenEnabled();
+  if (isGenericPromoVideo) {
+    [self showPromo:DefaultPromoTypeVideo];
+    return;
+  }
+
   [self showPromo:DefaultPromoTypeGeneral];
 }
 
 - (void)stop {
   [self.videoDefaultPromoCoordinator stop];
+  if (self.shouldDismissVideoPromoFET && self.tracker) {
+    self.tracker->Dismissed(
+        feature_engagement::kIPHiOSDefaultBrowserVideoPromoTriggerFeature);
+  }
   self.videoDefaultPromoCoordinator = nil;
 
   [self.genericDefaultPromoCoordinator stop];
@@ -193,6 +214,9 @@
           initWithBaseViewController:self.baseViewController
                              browser:self.browser];
   self.videoDefaultPromoCoordinator.handler = self;
+  self.videoDefaultPromoCoordinator.isHalfScreen =
+      IsDBVideoPromoHalfscreenEnabled() ||
+      IsDBVideoPromoWithGenericHalfscreenEnabled();
   [self.videoDefaultPromoCoordinator start];
 }
 
@@ -212,6 +236,19 @@
                             type:type];
   self.tailoredPromoCoordinator.handler = self;
   [self.tailoredPromoCoordinator start];
+}
+
+- (BOOL)maybeTriggerVideoPromoWithFET {
+  if (self.tracker && IsVideoPromoEligibleUser(self.tracker)) {
+    if (self.tracker->ShouldTriggerHelpUI(
+            feature_engagement::
+                kIPHiOSDefaultBrowserVideoPromoTriggerFeature)) {
+      self.shouldDismissVideoPromoFET = true;
+      [self showPromo:DefaultPromoTypeVideo];
+      return true;
+    }
+  }
+  return false;
 }
 
 @end

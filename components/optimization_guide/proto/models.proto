@@ -196,6 +196,16 @@ enum OptimizationTarget {
   OPTIMIZATION_TARGET_VISUAL_SEARCH_CLASSIFICATION = 34;
   // Target for classifying users to target bottom toolbar.
   OPTIMIZATION_TARGET_SEGMENTATION_BOTTOM_TOOLBAR = 35;
+  // Target for Autofill field type classification model.
+  OPTIMIZATION_TARGET_AUTOFILL_FIELD_CLASSIFICATION = 36;
+  // Target for ranking ios start page modules.
+  OPTIMIZATION_TARGET_SEGMENTATION_IOS_MODULE_RANKER = 37;
+  // Target for segmentation: Determine what modules a user should see on their
+  // Desktop New Tab Page.
+  OPTIMIZATION_TARGET_SEGMENTATION_DESKTOP_NTP_MODULE = 38;
+  // Target for predicting candidate links for speculation-rule based
+  // preloading.
+  OPTIMIZATION_TARGET_PRELOADING_HEURISTICS = 39;
 }
 
 // The model engine versions that can be used to do model inference.

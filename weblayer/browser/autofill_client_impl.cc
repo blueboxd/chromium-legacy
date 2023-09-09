@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "build/build_config.h"
-#include "components/android_autofill/browser/android_autofill_manager.h"
 #include "components/autofill/core/browser/autofill_download_manager.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/ui/popup_item_ids.h"
@@ -19,6 +18,12 @@
 #include "content/public/browser/web_contents.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "weblayer/browser/translate_client_impl.h"
+
+#if BUILDFLAG(IS_ANDROID)
+#include "components/android_autofill/browser/android_autofill_manager.h"
+#else
+#include "weblayer/browser/i18n_util.h"
+#endif
 
 namespace weblayer {
 
@@ -183,6 +188,13 @@ void AutofillClientImpl::ShowLocalCardMigrationResults(
   NOTREACHED();
 }
 
+void AutofillClientImpl::ConfirmSaveIBANLocally(
+    const autofill::IBAN& iban,
+    bool should_show_prompt,
+    LocalSaveIBANPromptCallback callback) {
+  NOTREACHED();
+}
+
 void AutofillClientImpl::ShowWebauthnOfferDialog(
     WebauthnDialogCallback offer_dialog_callback) {
   NOTREACHED();
@@ -343,14 +355,14 @@ bool AutofillClientImpl::IsPasswordManagerEnabled() {
   return false;
 }
 
-void AutofillClientImpl::PropagateAutofillPredictions(
+void AutofillClientImpl::PropagateAutofillPredictionsDeprecated(
     autofill::AutofillDriver* driver,
     const std::vector<autofill::FormStructure*>& forms) {
   NOTREACHED();
 }
 
 void AutofillClientImpl::DidFillOrPreviewForm(
-    autofill::mojom::RendererFormDataAction action,
+    autofill::mojom::AutofillActionPersistence action_persistence,
     autofill::AutofillTriggerSource trigger_source,
     bool is_refill) {
   NOTREACHED();
@@ -386,7 +398,15 @@ void AutofillClientImpl::LoadRiskData(
 AutofillClientImpl::AutofillClientImpl(content::WebContents* web_contents)
     : autofill::ContentAutofillClient(
           web_contents,
-          base::BindRepeating(&autofill::AndroidDriverInitHook, this)),
-      content::WebContentsObserver(web_contents) {}
+#if BUILDFLAG(IS_ANDROID)
+          base::BindRepeating(&autofill::AndroidDriverInitHook, this)
+#else
+          base::BindRepeating(&autofill::BrowserDriverInitHook,
+                              this,
+                              i18n::GetApplicationLocale())
+#endif
+              ),
+      content::WebContentsObserver(web_contents) {
+}
 
 }  // namespace weblayer

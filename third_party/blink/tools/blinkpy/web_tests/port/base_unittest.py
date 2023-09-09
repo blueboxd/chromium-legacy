@@ -1595,25 +1595,40 @@ class PortTest(LoggingTestCase):
 
     def test_args_for_test(self):
         port = self.make_port(with_tests=True)
-        self.assertEqual([], port.args_for_test('non/virtual'))
-        self.assertEqual([], port.args_for_test('passes/text.html'))
-        self.assertEqual([],
-                         port.args_for_test('virtual/non-existing/test.html'))
+        self.assertEqual(
+            ['--disable-threaded-compositing', '--disable-threaded-animation'],
+            port.args_for_test('non/virtual'))
+        self.assertEqual(
+            ['--disable-threaded-compositing', '--disable-threaded-animation'],
+            port.args_for_test('passes/text.html'))
+        self.assertEqual(
+            ['--disable-threaded-compositing', '--disable-threaded-animation'],
+            port.args_for_test('virtual/non-existing/test.html'))
 
-        self.assertEqual(
-            ['--virtual-arg'],
-            port.args_for_test('virtual/virtual_passes/passes/text.html'))
-        self.assertEqual(
-            ['--virtual-arg'],
-            port.args_for_test('virtual/virtual_passes/passes/any.html'))
-        self.assertEqual(['--virtual-arg'],
-                         port.args_for_test('virtual/virtual_passes/passes/'))
-        self.assertEqual(['--virtual-arg'],
-                         port.args_for_test('virtual/virtual_passes/passes'))
-        self.assertEqual(['--virtual-arg'],
-                         port.args_for_test('virtual/virtual_passes/'))
-        self.assertEqual(['--virtual-arg'],
-                         port.args_for_test('virtual/virtual_passes'))
+        self.assertEqual([
+            '--virtual-arg', '--disable-threaded-compositing',
+            '--disable-threaded-animation'
+        ], port.args_for_test('virtual/virtual_passes/passes/text.html'))
+        self.assertEqual([
+            '--virtual-arg', '--disable-threaded-compositing',
+            '--disable-threaded-animation'
+        ], port.args_for_test('virtual/virtual_passes/passes/any.html'))
+        self.assertEqual([
+            '--virtual-arg', '--disable-threaded-compositing',
+            '--disable-threaded-animation'
+        ], port.args_for_test('virtual/virtual_passes/passes/'))
+        self.assertEqual([
+            '--virtual-arg', '--disable-threaded-compositing',
+            '--disable-threaded-animation'
+        ], port.args_for_test('virtual/virtual_passes/passes'))
+        self.assertEqual([
+            '--virtual-arg', '--disable-threaded-compositing',
+            '--disable-threaded-animation'
+        ], port.args_for_test('virtual/virtual_passes/'))
+        self.assertEqual([
+            '--virtual-arg', '--disable-threaded-compositing',
+            '--disable-threaded-animation'
+        ], port.args_for_test('virtual/virtual_passes'))
 
     def test_missing_virtual_test_suite_file(self):
         port = self.make_port()
@@ -1846,39 +1861,6 @@ class PortTest(LoggingTestCase):
             '# results: [ Skip ]\nfailures/expected/image.html [ Skip ]\n')
         self.assertTrue(port.skips_test('failures/expected/image.html'))
 
-    def test_split_webdriver_test_name(self):
-        self.assertEqual(
-            Port.split_webdriver_test_name(
-                "tests/accept_alert/accept.py>>foo"),
-            ("tests/accept_alert/accept.py", "foo"))
-        self.assertEqual(
-            Port.split_webdriver_test_name("tests/accept_alert/accept.py"),
-            ("tests/accept_alert/accept.py", None))
-
-    def test_split_webdriver_subtest_pytest_name(self):
-        self.assertEqual(
-            Port.split_webdriver_subtest_pytest_name(
-                "tests/accept_alert/accept.py::foo"),
-            ("tests/accept_alert/accept.py", "foo"))
-        self.assertEqual(
-            Port.split_webdriver_subtest_pytest_name(
-                "tests/accept_alert/accept.py"),
-            ("tests/accept_alert/accept.py", None))
-
-    def test_add_webdriver_subtest_suffix(self):
-        self.assertEqual(
-            Port.add_webdriver_subtest_suffix("abd", "bar"), "abd>>bar")
-        self.assertEqual(Port.add_webdriver_subtest_suffix("abd", None), "abd")
-
-    def test_add_webdriver_subtest_pytest_suffix(self):
-        wb_test_name = "abd"
-        sub_test_name = "bar"
-
-        full_webdriver_name = Port.add_webdriver_subtest_pytest_suffix(
-            wb_test_name, sub_test_name)
-
-        self.assertEqual(full_webdriver_name, "abd::bar")
-
     def test_disable_system_font_check_and_nocheck_sys_deps(self):
         port = self.make_port()
         self.assertNotIn('--disable-system-font-check',
@@ -1894,6 +1876,8 @@ class PortTest(LoggingTestCase):
         port = self.make_port(with_tests=True, options=options)
         with mock.patch('time.strftime', return_value='TIME'):
             self.assertEqual([
+                '--disable-threaded-compositing',
+                '--disable-threaded-animation',
                 '--trace-startup=*,-blink',
                 '--trace-startup-duration=0',
                 '--trace-startup-file=trace_layout_test_non_virtual_TIME.json',

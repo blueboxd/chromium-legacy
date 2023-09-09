@@ -4,6 +4,7 @@
 
 #include "ash/system/unified/buttons.h"
 
+#include "ash/ash_element_identifiers.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/quick_settings_catalogs.h"
 #include "ash/public/cpp/ash_view_ids.h"
@@ -38,6 +39,7 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
+#include "ui/views/view_class_properties.h"
 
 namespace ash {
 
@@ -181,6 +183,7 @@ EnterpriseManagedView::EnterpriseManagedView(
                            : kUnifiedMenuManagedIcon) {
   DCHECK(Shell::Get());
   SetID(VIEW_ID_QS_MANAGED_BUTTON);
+  SetProperty(views::kElementIdentifierKey, kEnterpriseManagedView);
   Shell::Get()->system_tray_model()->enterprise_domain()->AddObserver(this);
   Shell::Get()->session_controller()->AddObserver(this);
   Update();
@@ -286,18 +289,19 @@ BEGIN_METADATA(SupervisedUserView, ManagedStateView)
 END_METADATA
 
 ////////////////////////////////////////////////////////////////////////////////
-
 UserAvatarButton::UserAvatarButton(PressedCallback callback)
     : Button(std::move(callback)) {
-  // QsRevamp doesn't use an avatar button. DCHECK because it's a map lookup.
-  DCHECK(!features::IsQsRevampEnabled());
   SetLayoutManager(std::make_unique<views::FillLayout>());
-  SetBorder(views::CreateEmptyBorder(kUnifiedCircularButtonFocusPadding));
+  SetBorder(views::CreateEmptyBorder(features::IsQsRevampEnabled()
+                                         ? gfx::Insets(0)
+                                         : kUnifiedCircularButtonFocusPadding));
   AddChildView(CreateUserAvatarView(0 /* user_index */));
   SetTooltipText(GetUserItemAccessibleString(0 /* user_index */));
   SetInstallFocusRingOnFocus(true);
-  views::FocusRing::Get(this)->SetColorId(ui::kColorAshFocusRing);
-
+  views::FocusRing::Get(this)->SetColorId(
+      features::IsQsRevampEnabled()
+          ? cros_tokens::kCrosSysFocusRing
+          : static_cast<ui::ColorId>(ui::kColorAshFocusRing));
   views::InstallCircleHighlightPathGenerator(this);
 }
 

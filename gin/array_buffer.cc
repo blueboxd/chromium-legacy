@@ -58,12 +58,12 @@ void* ArrayBufferAllocator::AllocateInternal(size_t length,
 }
 
 void ArrayBufferAllocator::Free(void* data, size_t length) {
-  unsigned int flags = 0;
 #ifdef V8_ENABLE_SANDBOX
-  // See |AllocateInternal|.
-  flags |= partition_alloc::FreeFlags::kNoMemoryToolOverride;
+  // See |AllocateMemoryWithFlags|.
+  partition_->Free<partition_alloc::FreeFlags::kNoMemoryToolOverride>(data);
+#else
+  partition_->Free(data);
 #endif
-  partition_->FreeWithFlags(flags, data);
 }
 
 // static
@@ -76,7 +76,8 @@ ArrayBufferAllocator* ArrayBufferAllocator::SharedInstance() {
 void ArrayBufferAllocator::InitializePartition() {
   static base::NoDestructor<partition_alloc::PartitionAllocator>
       partition_allocator(partition_alloc::PartitionOptions{
-          .quarantine = partition_alloc::PartitionOptions::Quarantine::kAllowed,
+          .star_scan_quarantine =
+              partition_alloc::PartitionOptions::StarScanQuarantine::kAllowed,
           .backup_ref_ptr =
               partition_alloc::PartitionOptions::BackupRefPtr::kDisabled,
           .use_configurable_pool = partition_alloc::PartitionOptions::

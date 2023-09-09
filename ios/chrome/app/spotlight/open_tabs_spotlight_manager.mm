@@ -10,6 +10,7 @@
 #import "base/mac/foundation_util.h"
 #import "base/metrics/histogram_macros.h"
 #import "base/strings/sys_string_conversions.h"
+#import "base/timer/elapsed_timer.h"
 #import "ios/chrome/app/spotlight/searchable_item_factory.h"
 #import "ios/chrome/app/spotlight/spotlight_interface.h"
 #import "ios/chrome/app/spotlight/spotlight_logger.h"
@@ -21,10 +22,6 @@
 #import "ios/chrome/browser/shared/model/web_state_list/all_web_state_observation_forwarder.h"
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_list_observer_bridge.h"
 #import "ios/web/public/web_state_observer_bridge.h"
-
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
 
 using web::WebState;
 
@@ -65,7 +62,8 @@ using web::WebState;
       IOSChromeLargeIconServiceFactory::GetForBrowserState(browserState);
   SearchableItemFactory* searchableItemFactory = [[SearchableItemFactory alloc]
       initWithLargeIconService:largeIconService
-                        domain:spotlight::DOMAIN_OPEN_TABS];
+                        domain:spotlight::DOMAIN_OPEN_TABS
+         useTitleInIdentifiers:NO];
 
   return [[OpenTabsSpotlightManager alloc]
       initWithLargeIconService:largeIconService
@@ -178,14 +176,6 @@ using web::WebState;
   _webStateListObserverBridges.erase(webStateList);
 }
 
-- (void)webStateList:(WebStateList*)webStateList
-    didInsertWebState:(web::WebState*)webState
-              atIndex:(int)index
-           activating:(BOOL)activating {
-  [self updateLatestCommittedURLForWebState:webState];
-  webState->AddObserver(_webStateObserverBridge.get());
-}
-
 #pragma mark - CRWWebStateObserver
 
 // Invoked by WebStateObserverBridge::DidStartNavigation.
@@ -251,10 +241,17 @@ using web::WebState;
 /// Iterate over all non-incognito web states and adds them to the index
 /// immediately.
 - (void)indexAllOpenTabs {
+  const base::ElapsedTimer timer;
+
   for (Browser* browser : self.browserList->AllRegularBrowsers()) {
     WebStateList* webStateList = browser->GetWebStateList();
     [self addAllURLsFromWebStateList:webStateList];
   }
+
+  UMA_HISTOGRAM_TIMES("IOS.Spotlight.OpenTabsIndexingDuration",
+                      timer.Elapsed());
+  UMA_HISTOGRAM_COUNTS_1000("IOS.Spotlight.OpenTabsInitialIndexSize",
+                            _knownURLCounts.size());
 }
 
 /// NSError to throw when the browser list isn't available.
@@ -286,8 +283,7 @@ using web::WebState;
       // The URL doesn't correspond to any open tab anymore, remove it from the
       // index.
       [self.spotlightInterface deleteSearchableItemsWithIdentifiers:@[
-        // In Open Tabs model, URLs are unique keys. Titles are ignored.
-        [self.searchableItemFactory spotlightIDForURL:lastKnownURL title:@""]
+        [self.searchableItemFactory spotlightIDForURL:lastKnownURL]
       ]
                                                   completionHandler:nil];
     }

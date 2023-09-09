@@ -63,7 +63,7 @@ coverage_builder(
         chromium_config = builder_config.chromium_config(
             config = "android",
             apply_configs = [
-                "download_vr_test_apks",
+                "download_xr_test_apks",
                 "mb",
             ],
             build_config = builder_config.build_config.RELEASE,
@@ -131,7 +131,7 @@ coverage_builder(
         chromium_config = builder_config.chromium_config(
             config = "android",
             apply_configs = [
-                "download_vr_test_apks",
+                "download_xr_test_apks",
                 "mb",
             ],
             build_config = builder_config.build_config.RELEASE,
@@ -183,7 +183,7 @@ coverage_builder(
         consoles.console_view_entry(
             branch_selector = branches.selector.MAIN,
             console_view = "sheriff.fuchsia",
-            category = "fyi|x64",
+            category = "gardener|fuchsia ci|x64",
             short_name = "cov",
         ),
     ],
@@ -210,6 +210,7 @@ coverage_builder(
         ),
         build_gs_bucket = "chromium-fyi-archive",
     ),
+    builderless = True,
     cores = None,
     os = os.MAC_DEFAULT,
     console_view_entry = [
@@ -222,7 +223,7 @@ coverage_builder(
     coverage_test_types = ["overall", "unit"],
     export_coverage_to_zoss = True,
     use_clang_coverage = True,
-    xcode = xcode.x14main,
+    xcode = xcode.x15main,
 )
 
 coverage_builder(

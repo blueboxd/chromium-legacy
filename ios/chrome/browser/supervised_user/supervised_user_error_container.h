@@ -13,6 +13,7 @@
 #import "components/security_interstitials/core/controller_client.h"
 #import "components/supervised_user/core/browser/supervised_user_interstitial.h"
 #import "components/supervised_user/core/browser/supervised_user_service_observer.h"
+#import "components/supervised_user/core/browser/supervised_user_url_filter.h"
 #import "components/supervised_user/core/common/supervised_user_utils.h"
 #import "ios/components/security_interstitials/ios_blocking_page_controller_client.h"
 #import "ios/components/security_interstitials/ios_security_interstitial_page.h"
@@ -93,10 +94,14 @@ class SupervisedUserErrorContainer
   explicit SupervisedUserErrorContainer(web::WebState* web_state);
 
   void OnRequestCreated(RequestUrlAccessRemoteCallback callback,
-                        const std::string& host,
+                        const GURL& url,
                         bool successfully_created_request);
   void MaybeUpdatePendingApprovals();
-
+  void URLFilterCheckCallback(
+      const GURL& url,
+      supervised_user::SupervisedUserURLFilter::FilteringBehavior behavior,
+      supervised_user::FilteringBehaviorReason reason,
+      bool uncertain);
   WEB_STATE_USER_DATA_KEY_DECL();
 
   std::unique_ptr<SupervisedUserErrorInfo> supervised_user_error_info_;
@@ -119,6 +124,9 @@ class SupervisedUserInterstitialBlockingPage
       SupervisedUserErrorContainer* error_container,
       web::WebState* web_state);
   ~SupervisedUserInterstitialBlockingPage() override;
+  supervised_user::SupervisedUserInterstitial& interstitial() {
+    return *interstitial_;
+  }
 
  private:
   // security_interstitials::IOSSecurityInterstitialPage implementation:
@@ -127,16 +135,18 @@ class SupervisedUserInterstitialBlockingPage
   bool ShouldCreateNewNavigation() const override;
   void PopulateInterstitialStrings(
       base::Value::Dict& load_time_data) const override;
+  std::string_view GetInterstitialType() const override;
 
-  // Note: The SupervisedUserInterstitialBlockingPage has a pointer to
-  // error_container_ (which is WebStateUserData helper) and is managed by
-  // SupervisedUserInterstitialBlockingPage (another WebStateUserData helper).
-  // The order of their destruction is unspecified, so the present object
-  // observes the `web_state` to reset the pointer.
-  // web::WebStateObserver override:
+  // web::WebStateObserver implementation:
   void WebStateDestroyed(web::WebState* web_state) override;
+  void PageLoaded(
+      web::WebState* web_state,
+      web::PageLoadCompletionStatus load_completion_status) override;
 
-  std::unique_ptr<supervised_user::SupervisedUserInterstitial> interstitial_;
+  // Marks the SU interstitial first time banner as shown for a visible page.
+  void MaybeUpdateFirstTimeInterstitialBanner();
+
+  const std::unique_ptr<supervised_user::SupervisedUserInterstitial> interstitial_;
   std::unique_ptr<security_interstitials::IOSBlockingPageControllerClient>
       controller_client_;
   raw_ptr<web::WebState> web_state_;

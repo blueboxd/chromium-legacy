@@ -996,7 +996,14 @@ void ShellSurfaceBase::OnSurfaceCommit() {
     AllocateLocalSurfaceId();
   }
 
+  const gfx::Rect old_content_bounds =
+      root_surface()->surface_hierarchy_content_bounds();
+
   root_surface()->CommitSurfaceHierarchy(false);
+
+  set_bounds_is_dirty(bounds_is_dirty() ||
+                      old_content_bounds !=
+                          root_surface()->surface_hierarchy_content_bounds());
 
   if (!OnPreWidgetCommit())
     return;
@@ -1059,7 +1066,7 @@ void ShellSurfaceBase::OnSetFrame(SurfaceFrameType frame_type) {
   // window is animating.
   set_bounds_is_dirty(true);
   UpdateWidgetBounds();
-  UpdateSurfaceBounds();
+  UpdateHostWindowOrigin();
 }
 
 void ShellSurfaceBase::OnSetFrameColors(SkColor active_color,
@@ -1552,6 +1559,8 @@ void ShellSurfaceBase::CreateShellSurfaceWidget(
   else
     params.bounds = gfx::Rect(origin_, gfx::Size());
 
+  params.name = base::StringPrintf("ExoShellSurface-%d", shell_id++);
+
   WMHelper::AppPropertyResolver::Params property_resolver_params;
   if (application_id_)
     property_resolver_params.app_id = *application_id_;
@@ -1619,7 +1628,6 @@ void ShellSurfaceBase::CreateShellSurfaceWidget(
   UpdateTopInset();
 
   aura::Window* window = widget_->GetNativeWindow();
-  window->SetName(base::StringPrintf("ExoShellSurface-%d", shell_id++));
   window->AddChild(host_window());
   window->SetEventTargetingPolicy(
       aura::EventTargetingPolicy::kTargetAndDescendants);
@@ -1752,7 +1760,7 @@ void ShellSurfaceBase::UpdateWidgetBounds() {
   SetWidgetBounds(adjusted_bounds, adjusted_bounds != *bounds);
 }
 
-void ShellSurfaceBase::UpdateSurfaceBounds() {
+void ShellSurfaceBase::UpdateHostWindowOrigin() {
   gfx::Point origin = GetClientViewBounds().origin();
 
   origin += GetSurfaceOrigin().OffsetFromOrigin();
@@ -2009,7 +2017,7 @@ void ShellSurfaceBase::CommitWidget() {
   // type (e.g. caption height).
   UpdateFrameType();
   UpdateWidgetBounds();
-  UpdateHostWindowBounds();
+  UpdateHostWindowSizeAndRootSurfaceOrigin();
   gfx::Rect bounds = geometry_;
   if (!bounds.IsEmpty() && !widget_->GetNativeWindow()->GetProperty(
                                aura::client::kUseWindowBoundsForShadow)) {
@@ -2041,7 +2049,7 @@ void ShellSurfaceBase::CommitWidget() {
     }
   }
 
-  UpdateSurfaceBounds();
+  UpdateHostWindowOrigin();
   UpdateShape();
 
   // Don't show yet if the shell surface doesn't have content or is minimized

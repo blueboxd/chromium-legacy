@@ -105,7 +105,6 @@
 <translation id="4266252015790371705">{MONTHS,plural, =1{1 mis yn ôl}zero{# mis yn ôl}two{# fis yn ôl}few{# mis yn ôl}many{# mis yn ôl}other{# mis yn ôl}}</translation>
 <translation id="4289300219472526559">Dechrau Siarad</translation>
 <translation id="4289540628985791613">Trosolwg</translation>
-<translation id="4306392492252714209">Tynnu o'r clipfwrdd.</translation>
 <translation id="4491109536499578614">Llun</translation>
 <translation id="4565377596337484307">Cuddio'r cyfrinair</translation>
 <translation id="4588090240171750605">Sgrolio i'r Dde</translation>
@@ -126,6 +125,7 @@
 <translation id="5329858601952122676">&amp;Dileu</translation>
 <translation id="5361107212971249203">testun</translation>
 <translation id="5463830097259460683">Emoji a Symbolau</translation>
+<translation id="5505748296268090374">Tynnu <ph name="ITEM_TEXT" />.</translation>
 <translation id="5528053674512161860">Methwyd â llwytho'r dudalen gan nad yw modiwl UI y datblygwr (dev_ui) wedi'i osod</translation>
 <translation id="5574202486608032840">System <ph name="IDS_SHORT_PRODUCT_OS_NAME" /></translation>
 <translation id="5583640892426849032">Backspace</translation>
@@ -175,6 +175,7 @@
 <translation id="7170202025028120564">Bydd gosodiadau arddangos eich rhaglen yn dod i rym y tro nesaf y byddwch yn ei hailgychwyn.</translation>
 <translation id="7222373446505536781">F11</translation>
 <translation id="7238427729722629793">{MINUTES,plural, =1{1 funud ar ôl}zero{# munud ar ôl}two{# funud ar ôl}few{# munud ar ôl}many{# munud ar ôl}other{# munud ar ôl}}</translation>
+<translation id="7363164521834647158">Anfon ateb</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{1 funud yn ôl}zero{# munud yn ôl}two{# funud yn ôl}few{# munud yn ôl}many{# munud yn ôl}other{# munud yn ôl}}</translation>
 <translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{1 funud ar ôl}zero{# munud ar ôl}two{# funud ar ôl}few{# munud ar ôl}many{# munud ar ôl}other{# munud ar ôl}}</translation>

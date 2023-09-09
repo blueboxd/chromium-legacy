@@ -207,7 +207,7 @@ and **events**.
 | touchpad_button |
 | touchpad_touch |
 | touchpad_connected |
-| hdmi |
+| external_display |
 | stylus_touch |
 | stylus_connected |
 
@@ -352,16 +352,17 @@ and **events**.
 | categories | Array<string\> | USB device categories: https://www.usb.org/defined-class-codes |
 | event | UsbEvent | The event that occurred |
 
-### Enum HdmiEvent
+### Enum ExternalDisplayEvent
 | Property Name |
 ------------ |
 | connected |
 | disconnected |
 
-### HdmiEventInfo
+### ExternalDisplayEventInfo
 | Property Name | Type | Description |
 ------------ | ------- | ----------- |
-| event | HdmiEvent | The event that occurred |
+| event | ExternalDisplayEvent | The event that occurred |
+| display_info | ExternalDisplayInfo | The information related to the plugged in external display |
 
 ### Enum SdCardEvent
 | Property Name |
@@ -454,7 +455,7 @@ and **events**.
 | onKeyboardDiagnosticEvent | function(KeyboardDiagnosticEventInfo) | `os.events` | M117 | Informs the extension that a Keyboard diagnostic has been completed in the first party diagnostic tool |
 | onLidEvent | function(LidEventInfo) | `os.events` | M115 | The device lid was opened or closed |
 | onUsbEvent | function(UsbEventInfo) | `os.events` | M117 | Informs the extension that a `Usb` event occurred |
-| onHdmiEvent | function(HdmiEventInfo) | `os.events` | M117 | Informs the extension that a `Hdmi` event occurred |
+| onExternalDisplayEvent | function(ExternalDisplayEventInfo) | `os.events` | M117 | Informs the extension that a `ExternalDisplay` event occurred |
 | onSdCardEvent | function(SdCardEventInfo) | `os.events` | M117 | Informs the extension that a `SD Card` event occurred |
 | onPowerEvent | function(PowerEventInfo) | `os.events` | M117 | Informs the extension that a `Power` event occurred |
 | onStylusGarageEvent | function(StylusGarageEventInfo) | `os.events` | M117 | Informs the extension that a `Stylus Garage` event occurred |
@@ -605,8 +606,8 @@ and **events**.
 ### ExternalDisplayInfo
 | Property Name | Type | Description |
 ------------ | ------- | ----------- |
-| edpInfo | EmbeddedDisplayInfo | Embedded display info |
-| dpInfos | Array<ExternalDisplayInfo\> | External display info |
+| embeddedDisplay | EmbeddedDisplayInfo | Embedded display info |
+| externalDisplays | Array<ExternalDisplayInfo\> | External display info |
 
 ### Enum NetworkType
 | Property Name |

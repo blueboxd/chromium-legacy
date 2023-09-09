@@ -14,6 +14,7 @@
 #import "base/task/sequenced_task_runner.h"
 #import "base/threading/thread_restrictions.h"
 #import "components/bookmarks/browser/bookmark_model.h"
+#import "components/content_settings/core/browser/host_content_settings_map.h"
 #import "components/keyed_service/ios/browser_state_dependency_manager.h"
 #import "components/policy/core/common/cloud/user_cloud_policy_manager.h"
 #import "components/policy/core/common/configuration_policy_provider.h"
@@ -24,6 +25,7 @@
 #import "components/profile_metrics/browser_profile_type.h"
 #import "components/proxy_config/ios/proxy_service_factory.h"
 #import "components/proxy_config/pref_proxy_config_tracker.h"
+#import "components/supervised_user/core/browser/supervised_user_content_settings_provider.h"
 #import "components/supervised_user/core/browser/supervised_user_pref_store.h"
 #import "components/supervised_user/core/browser/supervised_user_settings_service.h"
 #import "components/supervised_user/core/common/features.h"
@@ -31,9 +33,9 @@
 #import "components/user_prefs/user_prefs.h"
 #import "ios/chrome/browser/bookmarks/account_bookmark_model_factory.h"
 #import "ios/chrome/browser/bookmarks/local_or_syncable_bookmark_model_factory.h"
-#import "ios/chrome/browser/browser_state/bookmark_model_loaded_observer.h"
 #import "ios/chrome/browser/browser_state/constants.h"
 #import "ios/chrome/browser/browser_state/off_the_record_chrome_browser_state_impl.h"
+#import "ios/chrome/browser/content_settings/host_content_settings_map_factory.h"
 #import "ios/chrome/browser/net/ios_chrome_url_request_context_getter.h"
 #import "ios/chrome/browser/policy/browser_policy_connector_ios.h"
 #import "ios/chrome/browser/policy/browser_state_policy_connector.h"
@@ -46,10 +48,6 @@
 #import "ios/chrome/browser/shared/model/prefs/pref_names.h"
 #import "ios/chrome/browser/supervised_user/supervised_user_settings_service_factory.h"
 #import "ios/web/public/thread/web_thread.h"
-
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
 
 // Returns a bool indicating whether the necessary directories were able to be
 // created (or already existed).
@@ -87,14 +85,11 @@ base::FilePath GetCachePath(const base::FilePath& base) {
 }  // namespace
 
 ChromeBrowserStateImpl::ChromeBrowserStateImpl(
-    scoped_refptr<base::SequencedTaskRunner> io_task_runner,
-    const base::FilePath& path)
-    : ChromeBrowserState(std::move(io_task_runner)),
-      state_path_(path),
+    const base::FilePath& state_path,
+    scoped_refptr<base::SequencedTaskRunner> io_task_runner)
+    : ChromeBrowserState(state_path, std::move(io_task_runner)),
       pref_registry_(new user_prefs::PrefRegistrySyncable),
       io_data_(new ChromeBrowserStateImplIOData::Handle(this)) {
-  otr_state_path_ = state_path_.Append(FILE_PATH_LITERAL("OTR"));
-
   profile_metrics::SetBrowserProfileType(
       this, profile_metrics::BrowserProfileType::kRegular);
 
@@ -102,10 +97,10 @@ ChromeBrowserStateImpl::ChromeBrowserStateImpl(
   // the cache directory depends on the browser state stash directory, which
   // isn't available to PathService.
   base::FilePath base_cache_path;
-  ios::GetUserCacheDirectory(state_path_, &base_cache_path);
+  ios::GetUserCacheDirectory(state_path, &base_cache_path);
 
   bool directories_created = EnsureBrowserStateDirectoriesCreated(
-      state_path_, otr_state_path_, base_cache_path);
+      state_path, GetOffTheRecordStatePath(), base_cache_path);
   DCHECK(directories_created);
 
   // Bring up the policy system before creating `prefs_`.
@@ -118,7 +113,7 @@ ChromeBrowserStateImpl::ChromeBrowserStateImpl(
   // Create the UserCloudPolicyManager and force it to load immediately since
   // BrowserState is loaded synchronously.
   user_cloud_policy_manager_ = policy::UserCloudPolicyManager::Create(
-      GetStatePath(), policy_schema_registry_.get(),
+      state_path, policy_schema_registry_.get(),
       /*force_immediate_load=*/true, GetIOTaskRunner(),
       base::BindRepeating(&ApplicationContext::GetNetworkConnectionTracker,
                           base::Unretained(GetApplicationContext())));
@@ -132,8 +127,7 @@ ChromeBrowserStateImpl::ChromeBrowserStateImpl(
       ->RegisterBrowserStatePrefsForServices(pref_registry_.get());
 
   scoped_refptr<SupervisedUserPrefStore> supervised_user_prefs;
-  if (base::FeatureList::IsEnabled(
-          supervised_user::kEnableSupervisionOnDesktopAndIOS)) {
+  if (supervised_user::IsChildAccountSupervisionEnabled()) {
     // Create a SupervisedUserPrefStore and initialize it with empty data.
     // The pref store will load SupervisedUserSettingsService disk data after
     // the creation of PrefService.
@@ -143,7 +137,7 @@ ChromeBrowserStateImpl::ChromeBrowserStateImpl(
   }
 
   prefs_ = CreateBrowserStatePrefs(
-      state_path_, GetIOTaskRunner().get(), pref_registry_,
+      state_path, GetIOTaskRunner().get(), pref_registry_,
       policy_connector_ ? policy_connector_->GetPolicyService() : nullptr,
       GetApplicationContext()->GetBrowserPolicyConnector(),
       supervised_user_prefs);
@@ -165,32 +159,28 @@ ChromeBrowserStateImpl::ChromeBrowserStateImpl(
       SupervisedUserSettingsServiceFactory::GetForBrowserState(this);
 
   // Initialize the settings service and have the pref store subscribe to it.
-  supervised_user_settings->Init(state_path_, GetIOTaskRunner(),
+  supervised_user_settings->Init(state_path, GetIOTaskRunner(),
                                  /*load_synchronously=*/true);
 
-  if (base::FeatureList::IsEnabled(
-          supervised_user::kEnableSupervisionOnDesktopAndIOS)) {
+  if (supervised_user::IsChildAccountSupervisionEnabled()) {
     supervised_user_prefs->Init(supervised_user_settings);
+
+    auto supervised_provider = std::make_unique<
+        supervised_user::SupervisedUserContentSettingsProvider>(
+        supervised_user_settings);
+
+    ios::HostContentSettingsMapFactory::GetForBrowserState(this)
+        ->RegisterProvider(HostContentSettingsMap::SUPERVISED_PROVIDER,
+                           std::move(supervised_provider));
   }
 
-  base::FilePath cookie_path = state_path_.Append(kIOSChromeCookieFilename);
+  base::FilePath cookie_path = state_path.Append(kIOSChromeCookieFilename);
   base::FilePath cache_path = GetCachePath(base_cache_path);
   int cache_max_size = 0;
 
   // Make sure we initialize the io_data_ after everything else has been
   // initialized that we might be reading from the IO thread.
-  io_data_->Init(cookie_path, cache_path, cache_max_size, state_path_);
-
-  // Listen for bookmark model load, to bootstrap the sync service.
-  // TODO(crbug.com/1427452): See if BookmarkModelLoadedObserver can be removed.
-  bookmarks::BookmarkModel* local_or_syncable_model =
-      ios::LocalOrSyncableBookmarkModelFactory::GetForBrowserState(this);
-  local_or_syncable_model->AddObserver(new BookmarkModelLoadedObserver(this));
-  bookmarks::BookmarkModel* account_model =
-      ios::AccountBookmarkModelFactory::GetForBrowserState(this);
-  if (account_model) {
-    account_model->AddObserver(new BookmarkModelLoadedObserver(this));
-  }
+  io_data_->Init(cookie_path, cache_path, cache_max_size, state_path);
 }
 
 ChromeBrowserStateImpl::~ChromeBrowserStateImpl() {
@@ -222,7 +212,7 @@ ChromeBrowserState*
 ChromeBrowserStateImpl::GetOffTheRecordChromeBrowserState() {
   if (!otr_state_) {
     otr_state_.reset(new OffTheRecordChromeBrowserStateImpl(
-        GetIOTaskRunner(), this, otr_state_path_));
+        GetIOTaskRunner(), this, GetOffTheRecordStatePath()));
   }
 
   return otr_state_.get();
@@ -255,10 +245,6 @@ ChromeBrowserStateImpl::GetSyncablePrefs() {
 
 bool ChromeBrowserStateImpl::IsOffTheRecord() const {
   return false;
-}
-
-base::FilePath ChromeBrowserStateImpl::GetStatePath() const {
-  return state_path_;
 }
 
 void ChromeBrowserStateImpl::SetOffTheRecordChromeBrowserState(

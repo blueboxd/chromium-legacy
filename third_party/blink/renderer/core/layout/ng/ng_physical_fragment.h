@@ -24,7 +24,9 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_ink_overflow.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_link.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_style_variant.h"
+#include "third_party/blink/renderer/core/scroll/scroll_start_targets.h"
 #include "third_party/blink/renderer/platform/graphics/touch_action.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_set.h"
 
 namespace blink {
 
@@ -152,6 +154,10 @@ class CORE_EXPORT NGPhysicalFragment
     if (const LayoutObject* layout_object = GetLayoutObject())
       return layout_object->IsPositioned();
     return false;
+  }
+  bool HasStickyConstrainedPosition() const {
+    return IsCSSBox() &&
+           layout_object_->StyleRef().HasStickyConstrainedPosition();
   }
   bool IsInitialLetterBox() const {
     return IsCSSBox() && layout_object_->IsInitialLetterBox();
@@ -626,6 +632,25 @@ class CORE_EXPORT NGPhysicalFragment
   void SetChildrenInvalid() const;
   bool ChildrenValid() const { return children_valid_; }
 
+  const HeapVector<Member<LayoutBoxModelObject>>* StickyDescendants() const {
+    return sticky_descendants_.Get();
+  }
+  const HeapVector<Member<LayoutBoxModelObject>>* PropagatedStickyDescendants()
+      const {
+    return IsScrollContainer() ? nullptr : sticky_descendants_.Get();
+  }
+
+  const ScrollStartTargetCandidates* ScrollStartTargets() const {
+    return scroll_start_targets_;
+  }
+  const ScrollStartTargetCandidates* PropagatedScrollStartTargets() const {
+    return IsScrollContainer() ? nullptr : scroll_start_targets_.Get();
+  }
+
+  bool HasPropagatedLayoutObjects() const {
+    return PropagatedStickyDescendants() || PropagatedScrollStartTargets();
+  }
+
   struct OutOfFlowData : public GarbageCollected<OutOfFlowData> {
    public:
     virtual ~OutOfFlowData() = default;
@@ -758,7 +783,11 @@ class CORE_EXPORT NGPhysicalFragment
   unsigned base_direction_ : 1;  // TextDirection
 
   Member<const NGBreakToken> break_token_;
+  Member<const HeapVector<Member<LayoutBoxModelObject>>> sticky_descendants_;
   Member<OutOfFlowData> oof_data_;
+  // TODO(awogbemila): Find a better location for this field to avoid paying
+  // the cost of the size of this field for every fragment of a page.
+  Member<ScrollStartTargetCandidates> scroll_start_targets_;
 };
 
 CORE_EXPORT std::ostream& operator<<(std::ostream&, const NGPhysicalFragment*);

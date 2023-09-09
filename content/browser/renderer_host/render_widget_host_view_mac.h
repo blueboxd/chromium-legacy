@@ -34,10 +34,6 @@
 #include "ui/display/display_list.h"
 #include "ui/events/gesture_detection/filtered_gesture_provider.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 namespace remote_cocoa {
 namespace mojom {
 class Application;
@@ -228,7 +224,9 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
                               RenderWidgetHostViewBase* updated_view) override;
   void OnImeCompositionRangeChanged(
       TextInputManager* text_input_manager,
-      RenderWidgetHostViewBase* updated_view) override;
+      RenderWidgetHostViewBase* updated_view,
+      bool character_bounds_changed,
+      const absl::optional<std::vector<gfx::Rect>>& line_bounds) override;
   void OnSelectionBoundsChanged(
       TextInputManager* text_input_manager,
       RenderWidgetHostViewBase* updated_view) override;

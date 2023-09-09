@@ -52,9 +52,8 @@
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/modules/indexed_db_names.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_database.h"
+#include "third_party/blink/renderer/modules/indexeddb/idb_factory_client.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_key.h"
-#include "third_party/blink/renderer/modules/indexeddb/web_idb_callbacks_impl.h"
-#include "third_party/blink/renderer/modules/indexeddb/web_idb_transaction.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
@@ -289,23 +288,35 @@ IDBOpenDBRequest* IDBFactory::OpenInternal(ScriptState* script_state,
 
   auto& factory = GetFactory(context);
 
-  auto transaction_backend = std::make_unique<WebIDBTransaction>(
-      context->GetTaskRunner(TaskType::kDatabaseAccess), transaction_id);
+  auto* execution_context = ExecutionContext::From(script_state);
+  IDBTransaction::TransactionMojoRemote transaction_remote(execution_context);
   mojo::PendingAssociatedReceiver<mojom::blink::IDBTransaction>
-      transaction_receiver = transaction_backend->CreateReceiver();
+      transaction_receiver = transaction_remote.BindNewEndpointAndPassReceiver(
+          execution_context->GetTaskRunner(TaskType::kDatabaseAccess));
+
   mojo::PendingAssociatedRemote<mojom::blink::IDBDatabaseCallbacks>
       callbacks_remote;
+
   auto* request = MakeGarbageCollected<IDBOpenDBRequest>(
       script_state, callbacks_remote.InitWithNewEndpointAndPassReceiver(),
-      std::move(transaction_backend), transaction_id, version,
+      std::move(transaction_remote), transaction_id, version,
       std::move(metrics), GetObservedFeature());
 
-  AllowIndexedDB(
-      context,
+  auto do_open =
       WTF::BindOnce(&IDBFactory::OpenInternalImpl, WrapWeakPersistent(this),
                     WrapPersistent(request), std::move(callbacks_remote),
                     std::move(transaction_receiver), std::ref(factory), name,
-                    version, transaction_id));
+                    version, transaction_id);
+  if (allowed_.has_value() && !*allowed_) {
+    // When the permission state is cached, `AllowIndexedDB` will invoke its
+    // callback synchronously, and thus we'd dispatch the error event
+    // synchronously. As per IDB spec, firing the event at the request has to be
+    // asynchronous.
+    context->GetTaskRunner(TaskType::kDatabaseAccess)
+        ->PostTask(FROM_HERE, std::move(do_open));
+  } else {
+    AllowIndexedDB(context, std::move(do_open));
+  }
   return request;
 }
 
@@ -319,14 +330,17 @@ void IDBFactory::OpenInternalImpl(
     const String& name,
     int64_t version,
     int64_t transaction_id) {
-  if (!request->GetExecutionContext() || !allowed_.value()) {
-    request->HandleResponse(MakeGarbageCollected<DOMException>(
+  if (!request->GetExecutionContext()) {
+    return;
+  }
+
+  if (!allowed_.value()) {
+    request->OnDBFactoryError(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kUnknownError, kPermissionDeniedErrorMessage));
     return;
   }
 
-  auto callbacks = request->CreateWebCallbacks();
-  factory->Open(GetCallbacksProxy(std::move(callbacks)),
+  factory->Open(AttachRemoteClient(request->CreateFactoryClient()),
                 std::move(callbacks_remote), name, version,
                 std::move(transaction_receiver), transaction_id);
 }
@@ -381,14 +395,23 @@ IDBOpenDBRequest* IDBFactory::DeleteDatabaseInternal(
   auto* request = MakeGarbageCollected<IDBOpenDBRequest>(
       script_state,
       /*callbacks_receiver=*/mojo::NullAssociatedReceiver(),
-      /*IDBTransactionAssociatedPtr=*/nullptr, 0,
+      IDBTransaction::TransactionMojoRemote(context), 0,
       IDBDatabaseMetadata::kDefaultVersion, std::move(metrics),
       GetObservedFeature());
 
-  AllowIndexedDB(
-      context, WTF::BindOnce(&IDBFactory::DeleteDatabaseInternalImpl,
-                             WrapWeakPersistent(this), WrapPersistent(request),
-                             std::ref(factory), name, force_close));
+  auto do_delete = WTF::BindOnce(
+      &IDBFactory::DeleteDatabaseInternalImpl, WrapWeakPersistent(this),
+      WrapPersistent(request), std::ref(factory), name, force_close);
+  if (allowed_.has_value() && !*allowed_) {
+    // When the permission state is cached, `AllowIndexedDB` will invoke its
+    // callback synchronously, and thus we'd dispatch the error event
+    // synchronously. As per IDB spec, firing the event at the request has to be
+    // asynchronous.
+    context->GetTaskRunner(TaskType::kDatabaseAccess)
+        ->PostTask(FROM_HERE, std::move(do_delete));
+  } else {
+    AllowIndexedDB(context, std::move(do_delete));
+  }
   return request;
 }
 
@@ -402,14 +425,13 @@ void IDBFactory::DeleteDatabaseInternalImpl(
   }
 
   if (!allowed_.value()) {
-    request->HandleResponse(MakeGarbageCollected<DOMException>(
+    request->OnDBFactoryError(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kUnknownError, kPermissionDeniedErrorMessage));
     return;
   }
 
-  auto callbacks = request->CreateWebCallbacks();
-  factory->DeleteDatabase(GetCallbacksProxy(std::move(callbacks)), name,
-                          force_close);
+  factory->DeleteDatabase(AttachRemoteClient(request->CreateFactoryClient()),
+                          name, force_close);
 }
 
 int16_t IDBFactory::cmp(ScriptState* script_state,
@@ -490,12 +512,13 @@ void IDBFactory::DidAllowIndexedDB(base::OnceCallback<void()> callback,
   return;
 }
 
-mojo::PendingAssociatedRemote<mojom::blink::IDBCallbacks>
-IDBFactory::GetCallbacksProxy(
-    std::unique_ptr<WebIDBCallbacksImpl> callbacks_impl) {
-  mojo::PendingAssociatedRemote<mojom::blink::IDBCallbacks> pending_callbacks;
+mojo::PendingAssociatedRemote<mojom::blink::IDBFactoryClient>
+IDBFactory::AttachRemoteClient(
+    std::unique_ptr<IDBFactoryClient> factory_client) {
+  mojo::PendingAssociatedRemote<mojom::blink::IDBFactoryClient>
+      pending_callbacks;
   mojo::MakeSelfOwnedAssociatedReceiver(
-      std::move(callbacks_impl),
+      std::move(factory_client),
       pending_callbacks.InitWithNewEndpointAndPassReceiver(), task_runner_);
   return pending_callbacks;
 }

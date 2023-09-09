@@ -109,15 +109,15 @@ class CONTENT_EXPORT TraceReportDatabase {
   // Deletes all rows (traces) from the local_traces.
   bool DeleteAllTraces();
 
+  // Delete traces between the |start| and |end| dates inclusively.
+  bool DeleteTracesInDateRange(const base::Time start, const base::Time end);
+
   bool UserRequestedUpload(base::Uuid uuid);
   bool UploadComplete(base::Uuid uuid, base::Time time);
   bool UploadSkipped(base::Uuid uuid);
 
   // Get string if the current Trace exists.
   absl::optional<std::string> GetProtoValue(base::Uuid uuid);
-
-  // Uses ExecuteScriptForTesting for creation of the table.
-  bool EnsureTableCreatedForTesting();
 
   // Returns all the reports currently stored in the database.
   std::vector<ClientReport> GetAllReports();

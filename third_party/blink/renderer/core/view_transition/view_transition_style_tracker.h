@@ -7,11 +7,13 @@
 
 #include "components/viz/common/view_transition_element_resource_id.h"
 #include "third_party/blink/public/common/frame/view_transition_state.h"
+#include "third_party/blink/renderer/core/css/css_rule.h"
 #include "third_party/blink/renderer/core/css/style_request.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/layout/geometry/physical_rect.h"
 #include "third_party/blink/renderer/platform/allow_discouraged_type.h"
+#include "third_party/blink/renderer/platform/graphics/graphics_types.h"
 #include "third_party/blink/renderer/platform/graphics/paint/effect_paint_property_node.h"
 #include "third_party/blink/renderer/platform/graphics/view_transition_element_id.h"
 #include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_map.h"
@@ -122,7 +124,7 @@ class ViewTransitionStyleTracker
   bool RunPostPrePaintSteps();
 
   // Provides a UA stylesheet applied to ::transition* pseudo elements.
-  StyleSheetContents& UAStyleSheet();
+  CSSStyleSheet& UAStyleSheet();
 
   void Trace(Visitor* visitor) const;
 
@@ -254,10 +256,18 @@ class ViewTransitionStyleTracker
     absl::optional<gfx::RectF> captured_rect_in_layout_space;
     absl::optional<gfx::RectF> cached_captured_rect_in_layout_space;
 
-    // The writing mode to use for the container. Note that initially this is
-    // the outgoing element's (if any) writing mode, and then switches to the
-    // incoming element's writing mode, if one exists.
+    // For the following properties, they are initially set to the outgoing
+    // element's value, and then switch to the incoming element's value, if one
+    // exists.
+
+    // The writing mode to use for the container.
     WritingMode container_writing_mode = WritingMode::kHorizontalTb;
+
+    // The mix blend mode to use for the container.
+    BlendMode mix_blend_mode = BlendMode::kNormal;
+
+    // Text orientation to use for the container.
+    ETextOrientation text_orientation = ETextOrientation::kMixed;
   };
 
   // In physical pixels. Returns the snapshot root rect, relative to the
@@ -299,6 +309,8 @@ class ViewTransitionStyleTracker
       ContainerProperties&,
       PhysicalRect& visual_overflow_rect_in_layout_space,
       WritingMode&,
+      BlendMode&,
+      ETextOrientation&,
       absl::optional<gfx::RectF>& captured_rect_in_layout_space) const;
 
   Member<Document> document_;
@@ -339,7 +351,7 @@ class ViewTransitionStyleTracker
 
   // The dynamically generated UA stylesheet for default styles on
   // pseudo-elements.
-  Member<StyleSheetContents> ua_style_sheet_;
+  Member<CSSStyleSheet> ua_style_sheet_;
 
   // The following state is buffered until the capture phase and populated again
   // by script for the start phase.

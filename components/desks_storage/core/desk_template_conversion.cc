@@ -100,6 +100,7 @@ constexpr char kLaunchContainerNone[] = "LAUNCH_CONTAINER_NONE";
 constexpr char kMaximumSize[] = "maximum_size";
 constexpr char kMinimumSize[] = "minimum_size";
 constexpr char kName[] = "name";
+constexpr char kOverrideUrl[] = "override_url";
 constexpr char kPolicy[] = "policy";
 constexpr char kPreMinimizedWindowState[] = "pre_minimized_window_state";
 constexpr char kTabRangeFirstIndex[] = "first_index";
@@ -460,6 +461,11 @@ std::unique_ptr<app_restore::AppLaunchInfo> ConvertJsonToAppLaunchInfo(
   if (GetString(app, kAppName, &app_name))
     app_launch_info->app_name = app_name;
 
+  std::string override_url;
+  if (GetString(app, kOverrideUrl, &override_url)) {
+    app_launch_info->override_url = GURL(override_url);
+  }
+
   // TODO(crbug.com/1311801): Add support for actual event_flag values.
   app_launch_info->event_flag = 0;
 
@@ -808,6 +814,17 @@ base::Value::List ConvertURLsToBrowserAppTabValues(
 
 std::string GetAppTypeForJson(apps::AppRegistryCache* apps_cache,
                               const std::string& app_id) {
+  // Browsers are special cases, in some cases we reach this function before
+  // apps cache is ready so we have these special cases to prevent data loss.
+  // TODO(b/293177225): Find a better solution for this issue,
+  if (app_id == app_constants::kChromeAppId) {
+    return kAppTypeBrowser;
+  }
+
+  if (app_id == app_constants::kLacrosAppId) {
+    return kAppTypeBrowser;
+  }
+
   // This switch should follow the same structure as DeskSyncBridge#FillApp.
   switch (apps_cache->GetAppType(app_id)) {
     case apps::AppType::kWeb:
@@ -959,6 +976,10 @@ base::Value ConvertWindowToDeskApp(const std::string& app_id,
     apps::LaunchContainer container =
         static_cast<apps::LaunchContainer>(app->container.value());
     app_data.Set(kLaunchContainer, LaunchContainerToString(container));
+  }
+
+  if (app->override_url.has_value()) {
+    app_data.Set(kOverrideUrl, app->override_url->spec());
   }
 
   return base::Value(std::move(app_data));
@@ -1223,6 +1244,10 @@ std::unique_ptr<app_restore::AppLaunchInfo> ConvertToAppLaunchInfo(
 
   if (app.has_app_name())
     app_launch_info->app_name = app.app_name();
+
+  if (app.has_override_url()) {
+    app_launch_info->override_url = GURL(app.override_url());
+  }
 
   // This is a short-term fix as `event_flag` is required to launch ArcApp.
   // Currently we don't support persisting user action in template
@@ -1583,6 +1608,14 @@ void FillAppWithAppNameAndTitle(
   }
 }
 
+void FillAppWithAppOverrideUrl(
+    const app_restore::AppRestoreData* app_restore_data,
+    WorkspaceDeskSpecifics_App* out_app) {
+  if (app_restore_data->override_url.has_value()) {
+    out_app->set_override_url(app_restore_data->override_url->spec());
+  }
+}
+
 void FillArcAppSize(const gfx::Size& size, ArcAppWindowSize* out_window_size) {
   out_window_size->set_width(size.width());
   out_window_size->set_height(size.height());
@@ -1725,6 +1758,10 @@ bool FillApp(const std::string& app_id,
   // information stored in the `app_restore_data`'s `app_name` and `title`
   // fields.
   FillAppWithAppNameAndTitle(app_restore_data, out_app);
+
+  // If present, fills the proto's `override_url` field with the information
+  // from `app_restore_data`.
+  FillAppWithAppOverrideUrl(app_restore_data, out_app);
 
   return true;
 }
@@ -2079,11 +2116,11 @@ ParseAdminTemplatesFromPolicyValue(const base::Value& value) {
   return desk_templates;
 }
 
-std::unique_ptr<ash::DeskTemplate> ParseDeskTemplateFromBaseValue(
+ParseSavedDeskResult ParseDeskTemplateFromBaseValue(
     const base::Value& value,
     ash::DeskTemplateSource source) {
   if (!value.is_dict()) {
-    return nullptr;
+    return base::unexpected(SavedDeskParseError::kBaseValueIsNotDict);
   }
 
   const base::Value::Dict& value_dict = value.GetDict();
@@ -2105,19 +2142,20 @@ std::unique_ptr<ash::DeskTemplate> ParseDeskTemplateFromBaseValue(
       !base::StringToInt64(updated_time_usec_str, &updated_time_usec) ||
       name.empty() || created_time_usec_str.empty() ||
       updated_time_usec_str.empty()) {
-    return nullptr;
+    return base::unexpected(SavedDeskParseError::kMissingRequiredFields);
   }
 
   base::Uuid uuid = base::Uuid::ParseCaseInsensitive(uuid_str);
-  if (!uuid.is_valid())
-    return nullptr;
+  if (!uuid.is_valid()) {
+    return base::unexpected(SavedDeskParseError::kInvalidUuid);
+  }
 
   // Set default value for the desk type to template.
   std::string desk_type_string;
   if (!GetString(value_dict, kDeskType, &desk_type_string)) {
     desk_type_string = kDeskTypeTemplate;
   } else if (!IsValidDeskTemplateType(desk_type_string)) {
-    return nullptr;
+    return base::unexpected(SavedDeskParseError::kInvalidDeskType);
   }
 
   // If policy template set auto launch bool.
@@ -2145,7 +2183,7 @@ std::unique_ptr<ash::DeskTemplate> ParseDeskTemplateFromBaseValue(
   desk_template->set_updated_time(updated_time);
   desk_template->set_desk_restore_data(ConvertJsonToRestoreData(desk));
 
-  return desk_template;
+  return base::ok(std::move(desk_template));
 }
 
 base::Value SerializeDeskTemplateAsBaseValue(

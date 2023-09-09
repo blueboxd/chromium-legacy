@@ -209,7 +209,7 @@ class BookmarkBridge {
         if (BookmarkId.SHOPPING_FOLDER.equals(id)) {
             return new BookmarkItem(id, /*title=*/null, /*url=*/null,
                     /*isFolder=*/true, /*parentId=*/getRootFolderId(), /*isEditable=*/false,
-                    /*isManaged=*/false, /*dateAdded=*/0L, /*read=*/false);
+                    /*isManaged=*/false, /*dateAdded=*/0L, /*read=*/false, /*dateLastOpened=*/0L);
         }
 
         return BookmarkBridgeJni.get().getBookmarkById(
@@ -541,6 +541,19 @@ class BookmarkBridge {
         if (mNativeBookmarkBridge == 0) return;
         BookmarkBridgeJni.get().deletePowerBookmarkMeta(
                 mNativeBookmarkBridge, BookmarkBridge.this, id.getId(), id.getType());
+    }
+
+    /**
+     * Returns whether all of the given {@link BookmarkId}s exist in the current bookmark model.
+     */
+    public boolean doAllBookmarksExist(List<BookmarkId> bookmarkIds) {
+        ThreadUtils.assertOnUiThread();
+        for (BookmarkId bookmarkId : bookmarkIds) {
+            if (!doesBookmarkExist(bookmarkId)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
@@ -892,11 +905,12 @@ class BookmarkBridge {
     }
 
     @CalledByNative
-    private static BookmarkItem createBookmarkItem(long id, @BookmarkType int type, String title,
-            GURL url, boolean isFolder, long parentId, @BookmarkType int parentIdType,
-            boolean isEditable, boolean isManaged, long dateAdded, boolean read) {
+    private static BookmarkItem createBookmarkItem(long id, int type, String title, GURL url,
+            boolean isFolder, long parentId, int parentIdType, boolean isEditable,
+            boolean isManaged, long dateAdded, boolean read, long dateLastOpened) {
         return new BookmarkItem(new BookmarkId(id, type), title, url, isFolder,
-                new BookmarkId(parentId, parentIdType), isEditable, isManaged, dateAdded, read);
+                new BookmarkId(parentId, parentIdType), isEditable, isManaged, dateAdded, read,
+                dateLastOpened);
     }
 
     @CalledByNative

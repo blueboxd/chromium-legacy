@@ -4,13 +4,21 @@
 
 #include "components/password_manager/core/browser/password_save_manager_impl.h"
 
+#include <algorithm>
+#include <memory>
+#include <string>
+#include <tuple>
+#include <utility>
+#include <vector>
+
 #include "base/containers/cxx20_erase.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/user_metrics.h"
 #include "base/ranges/algorithm.h"
+#include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
-#include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/validation.h"
+#include "components/autofill/core/common/signatures.h"
 #include "components/password_manager/core/browser/form_fetcher.h"
 #include "components/password_manager/core/browser/form_saver.h"
 #include "components/password_manager/core/browser/form_saver_impl.h"
@@ -26,7 +34,6 @@
 using autofill::FieldRendererId;
 using autofill::FormData;
 using autofill::FormFieldData;
-using autofill::FormStructure;
 
 namespace password_manager {
 
@@ -711,6 +718,14 @@ void PasswordSaveManagerImpl::SavePendingToStoreImpl(
       if (form_to_update.scheme == PasswordForm::Scheme::kHtml) {
         form_to_update.times_used_in_html_form++;
       }
+      // Password saving is mostly a result of a user action interacting with
+      // the password, (e.g. using a password to sign-in, results in updating
+      // the last_used_timestamp). Since the user interacts with the password,
+      // this counts as the user has been notified of the shared password and no
+      // need to display further notifications to the user.
+      if (form_to_update.type == PasswordForm::Type::kReceivedViaSharing) {
+        form_to_update.sharing_notification_displayed = true;
+      }
       profile_store_form_saver_->Update(form_to_update, profile_matches,
                                         old_profile_password);
     } break;
@@ -808,9 +823,6 @@ void PasswordSaveManagerImpl::UploadVotesAndMetrics(
 
   password_manager_util::UpdateMetadataForUsage(&pending_credentials_);
 
-  base::RecordAction(
-      base::UserMetricsAction("PasswordManager_LoginFollowingAutofill"));
-
   // Check to see if this form is a candidate for password generation.
   // Do not send votes if there was no observed form. Furthermore, don't send
   // votes on change password forms, since they were already sent in Update()
@@ -823,7 +835,8 @@ void PasswordSaveManagerImpl::UploadVotesAndMetrics(
     votes_uploader_->MaybeSendSingleUsernameVote();
     votes_uploader_->UploadPasswordVote(
         parsed_submitted_form, parsed_submitted_form, autofill::NEW_PASSWORD,
-        FormStructure(pending_credentials_.form_data).FormSignatureAsStr());
+        base::NumberToString(
+            *autofill::CalculateFormSignature(pending_credentials_.form_data)));
   }
 
   if (pending_credentials_.times_used_in_html_form == 1) {

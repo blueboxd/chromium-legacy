@@ -257,6 +257,8 @@ class PrerenderOmniboxUIBrowserTest : public InProcessBrowserTest,
       ukm_entry_builder_;
   bool is_prerendering_page_;
   std::unique_ptr<base::ScopedMockElapsedTimersForTest> scoped_test_timer_;
+  // Disable sampling of UKM preloading logs.
+  content::test::PreloadingConfigOverride preloading_config_override_;
 };
 
 // This test covers the path from starting a omnibox triggered prerendering
@@ -507,19 +509,14 @@ class PrerenderPreloaderHoldbackBrowserTest
     : public PrerenderOmniboxUIBrowserTest {
  public:
   PrerenderPreloaderHoldbackBrowserTest() {
-    feature_list_.InitAndEnableFeatureWithParameters(
-        features::kPreloadingConfig, {{"preloading_config", R"(
-  [{
-    "preloading_type": "Prerender",
-    "preloading_predictor": "OmniboxDirectURLInput",
-    "holdback": true
-  }]
-  )"}});
+    preloading_config_override_.SetHoldback(
+        content::PreloadingType::kPrerender,
+        chrome_preloading_predictor::kOmniboxDirectURLInput, true);
   }
   ~PrerenderPreloaderHoldbackBrowserTest() override = default;
 
  private:
-  base::test::ScopedFeatureList feature_list_;
+  content::test::PreloadingConfigOverride preloading_config_override_;
 };
 
 IN_PROC_BROWSER_TEST_F(PrerenderPreloaderHoldbackBrowserTest,

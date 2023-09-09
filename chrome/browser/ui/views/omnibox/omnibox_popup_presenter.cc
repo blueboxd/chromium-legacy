@@ -4,6 +4,12 @@
 
 #include "chrome/browser/ui/views/omnibox/omnibox_popup_presenter.h"
 
+#include "base/metrics/histogram_functions.h"
+#include "base/metrics/histogram_macros.h"
+#include "base/run_loop.h"
+#include "base/task/thread_pool.h"
+#include "base/threading/platform_thread.h"
+#include "base/time/time.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/omnibox/rounded_omnibox_results_frame.h"
@@ -18,7 +24,8 @@ OmniboxPopupPresenter::OmniboxPopupPresenter(LocationBarView* location_bar_view,
                                              OmniboxController* controller)
     : views::WebView(location_bar_view->profile()),
       location_bar_view_(location_bar_view),
-      widget_(nullptr) {
+      widget_(nullptr),
+      waited_for_handler_(false) {
   set_owned_by_client();
 
   // Prepare for instantiation of a `RealboxHandler` that will connect with
@@ -57,11 +64,20 @@ void OmniboxPopupPresenter::Show() {
         std::make_unique<RoundedOmniboxResultsFrame>(this, location_bar_view_));
     widget_->AddObserver(this);
 
-    // TODO(crbug.com/1396174): Should be dynamically sized based on
-    // WebContents.
+    // Ideally this would have no size until determined by web contents, but
+    // zero size causes problems on some platforms.
+    // TODO(crbug.com/1396174): Don't size dynamically. Set widget to maximum
+    //  possible popup size, and let the webui content render at the appropriate
+    //  size including decorations like rounded borders, frame shadows, etc.
+    //  Such holistic sizing and rendering is necessary to avoid latency & state
+    //  disconnects between renderer process and browser UI (Views). Blending
+    //  the two rendering engines results in flashes and jank because they're
+    //  updating and drawing in completely separate processes.
     SetPreferredSize(gfx::Size(640, 480));
-
-    widget_->SetBounds(GetTargetBounds());
+    gfx::Rect content_rect = GetTargetBounds(GetPreferredSize().height());
+    widget_->SetBounds(content_rect);
+    EnableSizingFromWebContents(gfx::Size(content_rect.width(), 1),
+                                content_rect.size());
   }
 }
 
@@ -76,18 +92,23 @@ bool OmniboxPopupPresenter::IsShown() const {
   return !!widget_;
 }
 
-bool OmniboxPopupPresenter::IsHandlerReady() {
-  OmniboxPopupUI* omnibox_popup_ui = static_cast<OmniboxPopupUI*>(
-      GetWebContents()->GetWebUI()->GetController());
-  return omnibox_popup_ui->handler() &&
-         omnibox_popup_ui->handler()->IsRemoteBound();
-}
-
 RealboxHandler* OmniboxPopupPresenter::GetHandler() {
+  if (!waited_for_handler_) {
+    waited_for_handler_ = true;
+    WaitForHandler();
+  }
   OmniboxPopupUI* omnibox_popup_ui = static_cast<OmniboxPopupUI*>(
       GetWebContents()->GetWebUI()->GetController());
   CHECK(IsHandlerReady());
   return omnibox_popup_ui->handler();
+}
+
+void OmniboxPopupPresenter::FrameSizeChanged(
+    content::RenderFrameHost* render_frame_host,
+    const gfx::Size& frame_size) {
+  if (widget_) {
+    widget_->SetBounds(GetTargetBounds(frame_size.height()));
+  }
 }
 
 void OmniboxPopupPresenter::OnWidgetDestroyed(views::Widget* widget) {
@@ -98,8 +119,8 @@ void OmniboxPopupPresenter::OnWidgetDestroyed(views::Widget* widget) {
   }
 }
 
-gfx::Rect OmniboxPopupPresenter::GetTargetBounds() const {
-  int popup_height = GetPreferredSize().height();
+gfx::Rect OmniboxPopupPresenter::GetTargetBounds(int start_height) const {
+  int popup_height = start_height;
 
   // Add enough space on the top and bottom so it looks like there is the same
   // amount of space between the text and the popup border as there is in the
@@ -120,6 +141,36 @@ gfx::Rect OmniboxPopupPresenter::GetTargetBounds() const {
   // Finally, expand the widget to accommodate the custom-drawn shadows.
   content_rect.Inset(-RoundedOmniboxResultsFrame::GetShadowInsets());
   return content_rect;
+}
+
+void OmniboxPopupPresenter::WaitForHandler() {
+  bool ready = IsHandlerReady();
+  base::UmaHistogramBoolean("Omnibox.WebUI.HandlerReady", ready);
+  if (!ready) {
+    SCOPED_UMA_HISTOGRAM_TIMER("Omnibox.WebUI.HandlerWait");
+    base::RunLoop loop;
+    auto quit = loop.QuitClosure();
+    auto runner = base::ThreadPool::CreateTaskRunner(base::TaskTraits());
+    runner->PostTask(FROM_HERE,
+                     base::BindOnce(&OmniboxPopupPresenter::WaitInternal,
+                                    weak_ptr_factory_.GetWeakPtr(), &quit));
+    loop.Run();
+    CHECK(IsHandlerReady());
+  }
+}
+
+void OmniboxPopupPresenter::WaitInternal(base::RepeatingClosure* closure) {
+  while (!IsHandlerReady()) {
+    base::PlatformThread::Sleep(base::Milliseconds(1));
+  }
+  closure->Run();
+}
+
+bool OmniboxPopupPresenter::IsHandlerReady() {
+  OmniboxPopupUI* omnibox_popup_ui = static_cast<OmniboxPopupUI*>(
+      GetWebContents()->GetWebUI()->GetController());
+  return omnibox_popup_ui->handler() &&
+         omnibox_popup_ui->handler()->IsRemoteBound();
 }
 
 void OmniboxPopupPresenter::ReleaseWidget(bool close) {

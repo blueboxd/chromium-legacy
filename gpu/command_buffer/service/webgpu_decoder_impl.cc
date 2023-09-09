@@ -369,7 +369,7 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
                           const WGPURequestAdapterOptions* options,
                           WGPURequestAdapterCallback callback,
                           void* userdata);
-  bool AdapterHasFeatureImpl(WGPUAdapter adapter, WGPUFeatureName feature);
+  WGPUBool AdapterHasFeatureImpl(WGPUAdapter adapter, WGPUFeatureName feature);
   size_t AdapterEnumerateFeaturesImpl(WGPUAdapter adapter,
                                       WGPUFeatureName* features);
   void RequestDeviceImpl(WGPUAdapter adapter,
@@ -1217,8 +1217,8 @@ void WebGPUDecoderImpl::RequestAdapterImpl(
            userdata);
 }
 
-bool WebGPUDecoderImpl::AdapterHasFeatureImpl(WGPUAdapter adapter,
-                                              WGPUFeatureName feature) {
+WGPUBool WebGPUDecoderImpl::AdapterHasFeatureImpl(WGPUAdapter adapter,
+                                                  WGPUFeatureName feature) {
   if (!IsFeatureExposed(static_cast<wgpu::FeatureName>(feature))) {
     return false;
   }
@@ -1783,11 +1783,11 @@ WebGPUDecoderImpl::AssociateMailboxDawn(
     return nullptr;
   }
 
-#if !BUILDFLAG(IS_WIN) && !BUILDFLAG(IS_CHROMEOS) && !BUILDFLAG(IS_APPLE)
+#if !BUILDFLAG(IS_WIN) && !BUILDFLAG(IS_CHROMEOS) && !BUILDFLAG(IS_APPLE) && \
+    !BUILDFLAG(IS_ANDROID)
   if (usage & wgpu::TextureUsage::StorageBinding) {
-    DLOG(ERROR)
-        << "AssociateMailbox: wgpu::TextureUsage::StorageBinding is NOT "
-           "supported yet.";
+    LOG(ERROR) << "AssociateMailbox: wgpu::TextureUsage::StorageBinding is NOT "
+                  "supported yet on this platform.";
     return nullptr;
   }
 #endif

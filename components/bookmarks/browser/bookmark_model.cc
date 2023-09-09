@@ -29,6 +29,7 @@
 #include "components/bookmarks/browser/bookmark_node_data.h"
 #include "components/bookmarks/browser/bookmark_storage.h"
 #include "components/bookmarks/browser/bookmark_utils.h"
+#include "components/bookmarks/browser/bookmark_uuids.h"
 #include "components/bookmarks/browser/model_loader.h"
 #include "components/bookmarks/browser/scoped_group_bookmark_actions.h"
 #include "components/bookmarks/browser/titled_url_index.h"
@@ -126,7 +127,7 @@ BookmarkModel::BookmarkModel(std::unique_ptr<BookmarkClient> client)
     : client_(std::move(client)),
       owned_root_(std::make_unique<BookmarkNode>(
           /*id=*/0,
-          base::Uuid::ParseLowercase(BookmarkNode::kRootNodeUuid),
+          base::Uuid::ParseLowercase(kRootNodeUuid),
           GURL())),
       root_(owned_root_.get()),
       observers_(base::ObserverListPolicy::EXISTING_ONLY) {
@@ -899,6 +900,8 @@ const BookmarkNode* BookmarkModel::AddURL(
     absl::optional<base::Time> creation_time,
     absl::optional<base::Uuid> uuid,
     bool added_by_user) {
+  // TODO(b/294100289): We should ensure that the specified UUID does not
+  //                    conflict with a reserved folder ID.
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(loaded_);
   DCHECK(url.is_valid());

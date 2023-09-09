@@ -10,7 +10,6 @@
 #include "base/cancelable_callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
-#include "base/memory/raw_ptr_exclusion.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
 #include "chrome/browser/ui/views/frame/browser_frame_header_chromeos.h"
@@ -80,6 +79,7 @@ class BrowserNonClientFrameViewChromeOS
   void UpdateWindowIcon() override;
   void UpdateWindowTitle() override;
   void SizeConstraintsChanged() override;
+  void UpdateWindowRoundedCorners() override;
 
   // views::View:
   void OnPaint(gfx::Canvas* canvas) override;
@@ -180,8 +180,6 @@ class BrowserNonClientFrameViewChromeOS
   // Updates the icon that indicates a teleported window.
   void UpdateProfileIcons();
 
-  void UpdateFrameRoundedCorners();
-
   void LayoutProfileIndicator();
 
   void UpdateBorderlessModeEnabled();
@@ -224,9 +222,7 @@ class BrowserNonClientFrameViewChromeOS
   raw_ptr<TabSearchBubbleHost> tab_search_bubble_host_ = nullptr;
 
   // For popups, the window icon.
-  // This field is not a raw_ptr<> because it was filtered by the rewriter
-  // for: #addr-of
-  RAW_PTR_EXCLUSION TabIconView* window_icon_ = nullptr;
+  raw_ptr<TabIconView> window_icon_ = nullptr;
 
   // This is used for teleported windows (in multi-profile mode).
   raw_ptr<ProfileIndicatorIcon> profile_indicator_icon_ = nullptr;

@@ -15,15 +15,17 @@ executable("evaluate_seed") {
 
 source_set("evaluate_seed_lib") {
   sources = [
+    "cros_safe_seed_manager.cc",
+    "cros_safe_seed_manager.h",
     "cros_variations_field_trial_creator.cc",
     "cros_variations_field_trial_creator.h",
     "evaluate_seed.cc",
     "evaluate_seed.h",
   ]
   deps = [
-    ":proto",
     "//base",
     "//build:branding_buildflags",
+    "//chromeos/ash/components/dbus/featured:proto",
     "//chromeos/crosapi/cpp",
     "//chromeos/crosapi/cpp:crosapi_constants",
     "//components/variations",
@@ -37,16 +39,20 @@ source_set("evaluate_seed_lib") {
 
 source_set("unit_tests") {
   testonly = true
-  sources = [ "evaluate_seed_unittest.cc" ]
+  sources = [
+    "cros_safe_seed_manager_unittest.cc",
+    "evaluate_seed_unittest.cc",
+  ]
   deps = [
     ":evaluate_seed_lib",
-    ":proto",
     "//base",
     "//base/test:test_support",
     "//build:branding_buildflags",
     "//build/config/chromebox_for_meetings:buildflags",
+    "//chromeos/ash/components/dbus/featured:proto",
     "//components/test:test_support",
     "//components/variations",
+    "//components/variations/service:service",
     "//testing/gmock",
     "//testing/gtest",
   ]
@@ -58,10 +64,4 @@ test("variations_cros_unittests") {
     ":unit_tests",
     "//components/test:test_support",
   ]
-}
-
-proto_library("proto") {
-  sources = [ "//third_party/cros_system_api/dbus/featured/featured.proto" ]
-
-  proto_out_dir = "components/variations/cros"
 }

@@ -11,6 +11,10 @@
     padding-inline-start: var(--cr-section-indent-padding);
   }
 
+  .dependent[align-with-options] {
+    padding-inline-start: calc(var(--cr-section-padding) * 2);
+  }
+
   .subtitle {
     display: block;
   }
@@ -33,9 +37,10 @@
             </cr-button>
           </template>
           <template is="dom-if" if="[[!isSubmenuButton_(option.uiType)]]">
-            <div class="start" id="option-label" aria-hidden="true">
+            <div class="start" id="option-label" role="heading"
+                 aria-hidden="[[shouldShowTitle(section)]]">
               [[option.label]]
-              <template is="dom-if" if="[[option.subtitle)]]">
+              <template is="dom-if" if="[[option.subtitle]]" aria-hidden="true">
                 <span class="secondary label subtitle">
                   [[option.subtitle]]
                 </span>
@@ -46,6 +51,7 @@
             <cr-toggle checked="{{option.value}}"
                 on-change="onToggleButtonOrDropdownChange_"
                 aria-label="[[option.label]]"
+                aria-description="[[option.subtitle]]"
                 deep-link-focus-id$="[[option.deepLink]]">
             </cr-toggle>
           </template>
@@ -73,27 +79,34 @@
         </div>
         <!--TODO(b/189280771): Reduce this duplication.-->
         <template is="dom-repeat" items="[[option.dependentOptions]]"
-            as="dependant" id="dependent-settings">
-          <div class="list-item dependent" >
+            as="dependent" id="dependent-settings">
+          <div class="list-item dependent"
+            align-with-options$="[[!shouldShowTitle(section)]]">
             <div class="start" aria-hidden="true">
-              [[dependant.label]]
+              [[dependent.label]]
+              <template is="dom-if" if="[[dependent.subtitle]]">
+                <span class="secondary label subtitle">
+                  [[dependent.subtitle]]
+                </span>
+              </template>
             </div>
             <template is="dom-if"
-                if="[[isToggleButton_(dependant.uiType)]]">
-              <cr-toggle checked="{{dependant.value}}"
+                if="[[isToggleButton_(dependent.uiType)]]">
+              <cr-toggle checked="{{dependent.value}}"
                   on-click="onToggleButtonOrDropdownChange_"
-                  aria-label="[[dependant.label]]"
+                  aria-label="[[dependent.label]]"
+                  aria-description="[[dependent.subtitle]]"
                   disabled="[[dependentOptionsDisabled_(option.value)]]">
               </cr-toggle>
             </template>
-            <template is="dom-if" if="[[isDropdown_(dependant.uiType)]]">
+            <template is="dom-if" if="[[isDropdown_(dependent.uiType)]]">
               <!-- TODO(b/265557721): Stop using Polymer "two-way native
                    binding" on <select>s as values are casted to strings, and
                    use <dom-repeat> events instead. -->
-              <select class="md-select" value="{{dependant.value::change}}"
+              <select class="md-select" value="{{dependent.value::change}}"
                   on-change="onToggleButtonOrDropdownChange_"
-                  aria-label="[[dependant.label]]">
-                <template is="dom-repeat" items="[[dependant.menuItems]]">
+                  aria-label="[[dependent.label]]">
+                <template is="dom-repeat" items="[[dependent.menuItems]]">
                   <option selected="[[item.selected]]"
                     value="[[item.value]]">
                     [[item.label]]
@@ -101,10 +114,10 @@
                 </template>
               </select>
             </template>
-            <template is="dom-if" if="[[isLink_(dependant.uiType)]]">
+            <template is="dom-if" if="[[isLink_(dependent.uiType)]]">
               <cr-icon-button class="icon-external"
                   on-click="navigateToOtherPageInSettings_"
-                  aria-label="[[dependant.label]]">
+                  aria-label="[[dependent.label]]">
               </cr-icon-button>
             </template>
           </div>

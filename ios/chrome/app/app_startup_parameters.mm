@@ -11,10 +11,6 @@
 #import "net/base/url_util.h"
 #import "url/gurl.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 @implementation AppStartupParameters {
   GURL _externalURL;
   GURL _completeURL;
@@ -112,6 +108,7 @@
       // NO_ACTION and SHOW_DEFAULT_BROWSER_SETTINGS are  allowed on any URL.
     case NO_ACTION:
     case SHOW_DEFAULT_BROWSER_SETTINGS:
+    case SEARCH_PASSWORDS:
       return YES;
 
       // Lens action are valid on empty URLs, in addition to

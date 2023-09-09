@@ -747,6 +747,8 @@ def AddJUnitTestOptions(parser):
   parser.add_argument(
       '--runner-filter',
       help='Filters tests by runner class. Must be fully qualified.')
+  parser.add_argument('--json-config',
+                      help='Runs only tests listed in this config.')
   parser.add_argument(
       '--shards',
       type=int,
@@ -935,7 +937,7 @@ def _SinkTestResult(test_result, test_file_name, result_sink_client):
   result_sink_client.Post(test_result.GetNameForResultSink(),
                           test_result.GetType(),
                           test_result.GetDuration(),
-                          log_decoded.encode('utf-8'),
+                          log_decoded,
                           test_file_name,
                           variant=test_result.GetVariantForResultSink(),
                           failure_reason=test_result.GetFailureReason(),

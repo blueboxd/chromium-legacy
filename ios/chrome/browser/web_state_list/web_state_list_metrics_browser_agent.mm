@@ -28,10 +28,6 @@
 // TODO(crbug.com/1383087): remove once the feature is fully launched.
 #import "ios/web/common/features.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 BROWSER_USER_DATA_KEY_IMPL(WebStateListMetricsBrowserAgent)
 
 WebStateListMetricsBrowserAgent::WebStateListMetricsBrowserAgent(
@@ -94,45 +90,22 @@ void WebStateListMetricsBrowserAgent::WebStateListDidChange(
     WebStateList* web_state_list,
     const WebStateListChange& change,
     const WebStateListStatus& status) {
-  switch (change.type()) {
-    case WebStateListChange::Type::kStatusOnly:
-      // TODO(crbug.com/1442546): Move the implementation from
-      // WebStateActivatedAt() to here. Note that here is reachable only when
-      // `reason` == ActiveWebStateChangeReason::Activated.
-      break;
-    case WebStateListChange::Type::kDetach:
-      // Do nothing when a WebState is detached.
-      break;
-    case WebStateListChange::Type::kMove:
-      // Do nothing when a WebState is moved.
-      break;
-    case WebStateListChange::Type::kReplace:
-      // Do nothing when a WebState is replaced.
-      break;
-    case WebStateListChange::Type::kInsert:
-      if (metric_collection_paused_) {
-        return;
-      }
-      base::RecordAction(base::UserMetricsAction("MobileNewTabOpened"));
-      break;
-  }
-}
-
-void WebStateListMetricsBrowserAgent::WebStateActivatedAt(
-    WebStateList* web_state_list,
-    web::WebState* old_web_state,
-    web::WebState* new_web_state,
-    int active_index,
-    ActiveWebStateChangeReason reason) {
   if (metric_collection_paused_) {
     return;
   }
-  session_metrics_->OnWebStateActivated();
-  if (reason == ActiveWebStateChangeReason::Replaced) {
-    return;
+
+  if (change.type() == WebStateListChange::Type::kInsert) {
+    base::RecordAction(base::UserMetricsAction("MobileNewTabOpened"));
   }
 
-  base::RecordAction(base::UserMetricsAction("MobileTabSwitched"));
+  if (status.active_web_state_change()) {
+    session_metrics_->OnWebStateActivated();
+    if (change.type() == WebStateListChange::Type::kReplace) {
+      return;
+    }
+
+    base::RecordAction(base::UserMetricsAction("MobileTabSwitched"));
+  }
 }
 
 #pragma mark - WebStateObserver

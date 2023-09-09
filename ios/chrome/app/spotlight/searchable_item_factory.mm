@@ -23,10 +23,6 @@
 #import "skia/ext/skia_utils_ios.h"
 #import "ui/base/l10n/l10n_util.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 namespace {
 // Minimum size of the icon to be used in Spotlight.
 const NSInteger kMinIconSize = 32;
@@ -94,12 +90,14 @@ UIImage* GetFallbackImageWithStringAndColor(NSString* string,
 
 - (instancetype)initWithLargeIconService:
                     (favicon::LargeIconService*)largeIconService
-                                  domain:(spotlight::Domain)domain {
+                                  domain:(spotlight::Domain)domain
+                   useTitleInIdentifiers:(BOOL)useTitleInIdentifiers {
   self = [super init];
   if (self) {
     _largeIconService = largeIconService;
     _spotlightDomain = domain;
     _largeIconTaskTracker = std::make_unique<base::CancelableTaskTracker>();
+    _useTitleInIdentifiers = useTitleInIdentifiers;
   }
   return self;
 }
@@ -116,7 +114,7 @@ UIImage* GetFallbackImageWithStringAndColor(NSString* string,
                          title:(NSString*)title
             additionalKeywords:(NSArray<NSString*>*)keywords
              completionHandler:(void (^)(CSSearchableItem*))completionHandler {
-  if (!URLToRefresh.is_valid()) {
+  if (!URLToRefresh.is_valid() || ![title length]) {
     return;
   }
 
@@ -155,11 +153,7 @@ UIImage* GetFallbackImageWithStringAndColor(NSString* string,
 }
 
 - (NSString*)spotlightIDForURL:(const GURL&)URL {
-  NSString* spotlightID = [NSString
-      stringWithFormat:@"%@.%016llx",
-                       spotlight::StringFromSpotlightDomain(_spotlightDomain),
-                       [self hashForURL:URL title:@""]];
-  return spotlightID;
+  return [self spotlightIDForURL:URL title:@""];
 }
 
 - (NSString*)spotlightIDForURL:(const GURL&)URL title:(NSString*)title {
@@ -252,7 +246,10 @@ UIImage* GetFallbackImageWithStringAndColor(NSString* string,
   [attributeSet setContentDescription:base::SysUTF8ToNSString(description)];
   [attributeSet setThumbnailData:UIImagePNGRepresentation(favicon)];
 
-  NSString* itemID = [self spotlightIDForURL:indexedURL title:defaultTitle];
+  NSString* itemID = self.useTitleInIdentifiers
+                         ? [self spotlightIDForURL:indexedURL
+                                             title:defaultTitle]
+                         : [self spotlightIDForURL:indexedURL];
   return [self spotlightItemWithItemID:itemID attributeSet:attributeSet];
 }
 
@@ -268,6 +265,9 @@ UIImage* GetFallbackImageWithStringAndColor(NSString* string,
               multiValued:NO];
   [attributeSet setValue:itemID forCustomKey:key];
   attributeSet.keywords = [self keywordsForSpotlightItems];
+  attributeSet.containerDisplayName =
+      spotlight::SpotlightItemSourceLabelFromDomain(_spotlightDomain);
+
   NSString* domainID = spotlight::StringFromSpotlightDomain(_spotlightDomain);
 
   return [[CSSearchableItem alloc] initWithUniqueIdentifier:itemID

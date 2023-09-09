@@ -13,6 +13,7 @@
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
+#include "chrome/browser/companion/core/features.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/download/download_core_service.h"
 #include "chrome/browser/download/download_core_service_factory.h"
@@ -81,7 +82,7 @@
 #include "chrome/browser/chromeos/policy/dlp/dlp_policy_constants.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager.h"
 #include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager_impl.h"
-#include "chrome/browser/chromeos/policy/dlp/dlp_rules_manager_test_utils.h"
+#include "chrome/browser/chromeos/policy/dlp/test/dlp_rules_manager_test_utils.h"
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -91,6 +92,7 @@
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "chromeos/ash/components/standalone_browser/feature_refs.h"
 #include "components/account_id/account_id.h"
 #include "components/user_manager/fake_user_manager.h"
 #include "components/user_manager/scoped_user_manager.h"
@@ -480,11 +482,7 @@ using RenderViewContextMenuDeveloperItemsTest = ChromeRenderViewHostTestHarness;
 TEST_F(RenderViewContextMenuDeveloperItemsTest,
        DeveloperItemsAreNotPresentByDefaultIfAshBrowserIsDisabled) {
   base::test::ScopedFeatureList features;
-  features.InitWithFeatures(
-      {ash::features::kLacrosSupport, ash::features::kLacrosPrimary,
-       ash::features::kLacrosOnly,
-       ash::features::kLacrosProfileMigrationForceOff},
-      {});
+  features.InitWithFeatures(ash::standalone_browser::GetFeatureRefs(), {});
 
   auto fake_user_manager = std::make_unique<user_manager::FakeUserManager>();
   auto* primary_user =
@@ -513,12 +511,10 @@ TEST_F(RenderViewContextMenuDeveloperItemsTest,
 TEST_F(RenderViewContextMenuDeveloperItemsTest,
        DeveloperItemsArePresentIfAshBrowserIsDisabledAndFlagIsEnabled) {
   base::test::ScopedFeatureList features;
-  features.InitWithFeatures(
-      {ash::features::kLacrosSupport, ash::features::kLacrosPrimary,
-       ash::features::kLacrosOnly,
-       ash::features::kLacrosProfileMigrationForceOff,
-       ash::features::kAllowDevtoolsInSystemUI},
-      {});
+  std::vector<base::test::FeatureRef> enabled =
+      ash::standalone_browser::GetFeatureRefs();
+  enabled.push_back(ash::features::kAllowDevtoolsInSystemUI);
+  features.InitWithFeatures(enabled, {});
 
   auto fake_user_manager = std::make_unique<user_manager::FakeUserManager>();
   auto* primary_user =
@@ -899,7 +895,12 @@ TEST_F(RenderViewContextMenuPrefsTest,
   std::unique_ptr<TestRenderViewContextMenu> menu(
       CreateContextMenuOnChromeLink());
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+  // We hide the item for links to WebUI.
+#else
   ASSERT_TRUE(menu->IsItemPresent(IDC_CONTENT_CONTEXT_OPENLINKOFFTHERECORD));
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
   EXPECT_FALSE(
       menu->IsCommandIdEnabled(IDC_CONTENT_CONTEXT_OPENLINKOFFTHERECORD));
 }
@@ -1139,61 +1140,6 @@ TEST_F(RenderViewContextMenuPrefsTest, FollowOrUnfollow) {
   }
 }
 
-class RenderViewContextMenuAutofillTest
-    : public RenderViewContextMenuPrefsTest,
-      public testing::WithParamInterface<bool> {
- public:
-  RenderViewContextMenuAutofillTest() = default;
-
-  void SetUp() override {
-    RenderViewContextMenuPrefsTest::SetUp();
-    if (IsIncognito()) {
-      SetContents(content::WebContentsTester::CreateTestWebContents(
-          profile()->GetPrimaryOTRProfile(/*create_if_needed=*/true), nullptr));
-    }
-  }
-
- protected:
-  // Returns true if the test needs to run in incognito mode.
-  bool IsIncognito() const { return GetParam(); }
-
-  autofill::TestContentAutofillClient* autofill_client() {
-    return autofill_client_injector_[web_contents()];
-  }
-
- private:
-  base::test::ScopedFeatureList feature_list_{
-      autofill::features::kAutofillShowManualFallbackInContextMenu};
-  autofill::TestAutofillClientInjector<autofill::TestContentAutofillClient>
-      autofill_client_injector_;
-};
-
-// Verify that Autofill context menu items are displayed on a plain text field.
-TEST_P(RenderViewContextMenuAutofillTest, ShowAutofillOptions) {
-  autofill::PersonalDataManager* pdm =
-      autofill::PersonalDataManagerFactory::GetForProfile(profile());
-  DCHECK(pdm);
-  pdm->AddServerCreditCardForTest(
-      std::make_unique<autofill::CreditCard>(autofill::test::GetCreditCard()));
-
-  NavigateAndCommit(GURL("http://www.foo.com/"));
-  content::ContextMenuParams params = CreateParams(MenuItem::EDITABLE);
-  params.input_field_type =
-      blink::mojom::ContextMenuDataInputFieldType::kPlainText;
-
-  auto menu = std::make_unique<TestRenderViewContextMenu>(
-      *web_contents()->GetPrimaryMainFrame(), params);
-  menu->Init();
-
-  EXPECT_TRUE(
-      menu->IsItemInRangePresent(IDC_CONTENT_CONTEXT_AUTOFILL_CUSTOM_FIRST,
-                                 IDC_CONTENT_CONTEXT_AUTOFILL_CUSTOM_LAST));
-}
-
-INSTANTIATE_TEST_SUITE_P(AutofillContextMenuTest,
-                         RenderViewContextMenuAutofillTest,
-                         testing::Bool());
-
 class RenderViewContextMenuHideAutofillPopupTest
     : public RenderViewContextMenuPrefsTest {
  public:
@@ -1296,12 +1242,12 @@ TEST_F(RenderViewContextMenuPrefsTest, LensImageSearchEnabled) {
 TEST_F(RenderViewContextMenuPrefsTest,
        LensImageSearchDisabledIfAshBrowserIsDisabled) {
   base::test::ScopedFeatureList features;
-  features.InitWithFeatures(
-      {lens::features::kLensStandalone, lens::features::kEnableImageTranslate,
-       ash::features::kLacrosSupport, ash::features::kLacrosPrimary,
-       ash::features::kLacrosOnly,
-       ash::features::kLacrosProfileMigrationForceOff},
-      {});
+  std::vector<base::test::FeatureRef> enabled =
+      ash::standalone_browser::GetFeatureRefs();
+  enabled.push_back(lens::features::kLensStandalone);
+  enabled.push_back(lens::features::kEnableImageTranslate);
+  features.InitWithFeatures(enabled, {});
+
   auto fake_user_manager = std::make_unique<user_manager::FakeUserManager>();
   auto* primary_user =
       fake_user_manager->AddUser(AccountId::FromUserEmail("test@test"));
@@ -1516,11 +1462,11 @@ TEST_F(RenderViewContextMenuPrefsTest, LensRegionSearch) {
 TEST_F(RenderViewContextMenuPrefsTest,
        LensRegionSearchDisabledIfAshBrowserIsDisabled) {
   base::test::ScopedFeatureList features;
-  features.InitWithFeatures(
-      {lens::features::kLensStandalone, ash::features::kLacrosSupport,
-       ash::features::kLacrosPrimary, ash::features::kLacrosOnly,
-       ash::features::kLacrosProfileMigrationForceOff},
-      {});
+  std::vector<base::test::FeatureRef> enabled =
+      ash::standalone_browser::GetFeatureRefs();
+  enabled.push_back(lens::features::kLensStandalone);
+  features.InitWithFeatures(enabled, {});
+
   auto fake_user_manager = std::make_unique<user_manager::FakeUserManager>();
   auto* primary_user =
       fake_user_manager->AddUser(AccountId::FromUserEmail("test@test"));
@@ -1693,6 +1639,120 @@ TEST_F(RenderViewContextMenuPrefsTest, LensRegionSearchChromeUIScheme) {
   menu.Init();
 
   EXPECT_FALSE(menu.IsItemPresent(IDC_CONTENT_CONTEXT_LENS_REGION_SEARCH));
+}
+
+// Verify that the new badge is added to region search context menu items if
+// appropriate feature is enabled.
+TEST_F(RenderViewContextMenuPrefsTest,
+       CompanionNewBadgeEnabledForRegionSearchContextMenuItem) {
+  base::test::ScopedFeatureList features;
+  features.InitWithFeaturesAndParameters(
+      {{companion::features::internal::kSidePanelCompanion,
+        {{"open-companion-for-image-search", "true"}}},
+       {companion::features::kCompanionEnableNewBadgesInContextMenu, {}}},
+      {});
+  SetUserSelectedDefaultSearchProvider("https://www.google.com",
+                                       /*supports_image_search=*/true);
+  content::ContextMenuParams params = CreateParams(MenuItem::PAGE);
+  TestRenderViewContextMenu menu(*web_contents()->GetPrimaryMainFrame(),
+                                 params);
+  menu.SetBrowser(GetBrowser());
+  menu.Init();
+
+  size_t index = 0;
+  ui::MenuModel* model = nullptr;
+
+  ASSERT_TRUE(menu.GetMenuModelAndItemIndex(
+      IDC_CONTENT_CONTEXT_LENS_REGION_SEARCH, &model, &index));
+  EXPECT_TRUE(menu.IsItemPresent(IDC_CONTENT_CONTEXT_LENS_REGION_SEARCH));
+  EXPECT_TRUE(model->IsNewFeatureAt(index));
+}
+
+// Verify that the new badge is NOT added to region search context menu items if
+// appropriate feature is disabled.
+TEST_F(RenderViewContextMenuPrefsTest,
+       CompanionNewBadgeDisabledForRegionSearchContextMenuItem) {
+  base::test::ScopedFeatureList features;
+  features.InitWithFeaturesAndParameters(
+      {{companion::features::internal::kSidePanelCompanion,
+        {{"open-companion-for-image-search", "true"}}}},
+      {companion::features::kCompanionEnableNewBadgesInContextMenu});
+  SetUserSelectedDefaultSearchProvider("https://www.google.com",
+                                       /*supports_image_search=*/true);
+  content::ContextMenuParams params = CreateParams(MenuItem::PAGE);
+  TestRenderViewContextMenu menu(*web_contents()->GetPrimaryMainFrame(),
+                                 params);
+  menu.SetBrowser(GetBrowser());
+  menu.Init();
+
+  size_t index = 0;
+  ui::MenuModel* model = nullptr;
+
+  ASSERT_TRUE(menu.GetMenuModelAndItemIndex(
+      IDC_CONTENT_CONTEXT_LENS_REGION_SEARCH, &model, &index));
+  EXPECT_TRUE(menu.IsItemPresent(IDC_CONTENT_CONTEXT_LENS_REGION_SEARCH));
+  EXPECT_FALSE(model->IsNewFeatureAt(index));
+}
+
+// Verify that the new badge is added to image search context menu items if
+// appropriate feature is enabled.
+TEST_F(RenderViewContextMenuPrefsTest,
+       CompanionNewBadgeEnabledForImageSearchContextMenuItems) {
+  base::test::ScopedFeatureList features;
+  features.InitWithFeaturesAndParameters(
+      {{companion::features::internal::kSidePanelCompanion,
+        {{"open-companion-for-image-search", "true"}}},
+       {companion::features::kCompanionEnableNewBadgesInContextMenu, {}}},
+      {});
+  SetUserSelectedDefaultSearchProvider("https://www.google.com",
+                                       /*supports_image_search=*/true);
+  content::ContextMenuParams params = CreateParams(MenuItem::IMAGE);
+  params.has_image_contents = true;
+  TestRenderViewContextMenu menu(*web_contents()->GetPrimaryMainFrame(),
+                                 params);
+  menu.SetBrowser(GetBrowser());
+  menu.Init();
+
+  size_t index = 0;
+  ui::MenuModel* model = nullptr;
+
+  ASSERT_TRUE(menu.GetMenuModelAndItemIndex(
+      IDC_CONTENT_CONTEXT_SEARCHLENSFORIMAGE, &model, &index));
+  EXPECT_FALSE(menu.IsItemPresent(IDC_CONTENT_CONTEXT_SEARCHWEBFORIMAGE));
+  EXPECT_TRUE(menu.IsItemPresent(IDC_CONTENT_CONTEXT_SEARCHLENSFORIMAGE));
+  EXPECT_TRUE(model->IsNewFeatureAt(index));
+  EXPECT_FALSE(menu.IsItemPresent(IDC_CONTENT_CONTEXT_TRANSLATEIMAGEWITHWEB));
+  EXPECT_FALSE(menu.IsItemPresent(IDC_CONTENT_CONTEXT_TRANSLATEIMAGEWITHLENS));
+}
+
+// Verify that the new badge is NOT added to image search context menu items if
+// appropriate feature is disabled.
+TEST_F(RenderViewContextMenuPrefsTest,
+       CompanionNewBadgeDisabledForImageSearchContextMenuItems) {
+  base::test::ScopedFeatureList features;
+  features.InitWithFeaturesAndParameters(
+      {{companion::features::internal::kSidePanelCompanion,
+        {{"open-companion-for-image-search", "true"}}}},
+      {companion::features::kCompanionEnableNewBadgesInContextMenu});
+  SetUserSelectedDefaultSearchProvider("https://www.google.com",
+                                       /*supports_image_search=*/true);
+  content::ContextMenuParams params = CreateParams(MenuItem::IMAGE);
+  params.has_image_contents = true;
+  TestRenderViewContextMenu menu(*web_contents()->GetPrimaryMainFrame(),
+                                 params);
+  menu.SetBrowser(GetBrowser());
+  menu.Init();
+
+  size_t index = 0;
+  ui::MenuModel* model = nullptr;
+
+  ASSERT_TRUE(menu.GetMenuModelAndItemIndex(
+      IDC_CONTENT_CONTEXT_SEARCHLENSFORIMAGE, &model, &index));
+  EXPECT_FALSE(menu.IsItemPresent(IDC_CONTENT_CONTEXT_SEARCHWEBFORIMAGE));
+  EXPECT_TRUE(menu.IsItemPresent(IDC_CONTENT_CONTEXT_SEARCHLENSFORIMAGE));
+  EXPECT_FALSE(model->IsNewFeatureAt(index));
+  EXPECT_FALSE(menu.IsItemPresent(IDC_CONTENT_CONTEXT_TRANSLATEIMAGEWITHWEB));
+  EXPECT_FALSE(menu.IsItemPresent(IDC_CONTENT_CONTEXT_TRANSLATEIMAGEWITHLENS));
 }
 
 // Verify that the Lens Region Search menu item is enabled for Progressive Web

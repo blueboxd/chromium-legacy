@@ -14,7 +14,6 @@
 #include "base/numerics/safe_math.h"
 #include "base/sequence_checker.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/task/sequenced_task_runner.h"
 #include "content/browser/indexed_db/indexed_db_callback_helpers.h"
 #include "content/browser/indexed_db/indexed_db_connection.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
@@ -23,6 +22,7 @@
 #include "content/browser/indexed_db/indexed_db_transaction.h"
 #include "content/browser/indexed_db/transaction_impl.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
+#include "mojo/public/cpp/bindings/self_owned_associated_receiver.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
 
@@ -44,17 +44,26 @@ const char kTransactionAlreadyExists[] = "Transaction already exists";
 
 }  // namespace
 
+// static
+mojo::PendingAssociatedRemote<blink::mojom::IDBDatabase>
+DatabaseImpl::CreateAndBind(std::unique_ptr<IndexedDBConnection> connection,
+                            const storage::BucketInfo& bucket,
+                            IndexedDBDispatcherHost* dispatcher_host) {
+  mojo::PendingAssociatedRemote<blink::mojom::IDBDatabase> pending_remote;
+  mojo::MakeSelfOwnedAssociatedReceiver(
+      base::WrapUnique(
+          new DatabaseImpl(std::move(connection), bucket, dispatcher_host)),
+      pending_remote.InitWithNewEndpointAndPassReceiver());
+  return pending_remote;
+}
+
 DatabaseImpl::DatabaseImpl(std::unique_ptr<IndexedDBConnection> connection,
                            const storage::BucketInfo& bucket,
-                           IndexedDBDispatcherHost* dispatcher_host,
-                           scoped_refptr<base::SequencedTaskRunner> idb_runner)
+                           IndexedDBDispatcherHost* dispatcher_host)
     : dispatcher_host_(dispatcher_host),
       indexed_db_context_(dispatcher_host->context()),
       connection_(std::move(connection)),
-      bucket_info_(bucket),
-      idb_runner_(std::move(idb_runner)) {
-  DCHECK(idb_runner_->RunsTasksInCurrentSequence());
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+      bucket_info_(bucket) {
   DCHECK(connection_);
   indexed_db_context_->ConnectionOpened(bucket_locator());
 }
@@ -148,10 +157,9 @@ void DatabaseImpl::CreateTransaction(
           ->CreateTransaction(durability, mode)
           .release());
   connection_->database()->RegisterAndScheduleTransaction(transaction);
-
-  dispatcher_host_->CreateAndBindTransactionImpl(
-      std::move(transaction_receiver), bucket_locator(),
-      transaction->AsWeakPtr());
+  TransactionImpl::CreateAndBind(bucket_locator(), indexed_db_context_,
+                                 std::move(transaction_receiver),
+                                 transaction->AsWeakPtr());
 }
 
 void DatabaseImpl::Close() {
@@ -286,66 +294,6 @@ void DatabaseImpl::GetAll(int64_t transaction_id,
       std::make_unique<IndexedDBKeyRange>(key_range),
       key_only ? indexed_db::CURSOR_KEY_ONLY : indexed_db::CURSOR_KEY_AND_VALUE,
       max_count, std::move(aborting_callback)));
-}
-
-void DatabaseImpl::BatchGetAll(
-    int64_t transaction_id,
-    int64_t object_store_id,
-    int64_t index_id,
-    const std::vector<blink::IndexedDBKeyRange>& key_ranges,
-    uint32_t max_count,
-    blink::mojom::IDBDatabase::BatchGetAllCallback callback) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  if (!connection_->IsConnected()) {
-    IndexedDBDatabaseError error(blink::mojom::IDBException::kUnknownError,
-                                 "Not connected.");
-    std::move(callback).Run(
-        blink::mojom::IDBDatabaseBatchGetAllResult::NewErrorResult(
-            blink::mojom::IDBError::New(error.code(), error.message())));
-    return;
-  }
-
-  IndexedDBTransaction* transaction =
-      connection_->GetTransaction(transaction_id);
-  if (!transaction) {
-    IndexedDBDatabaseError error(blink::mojom::IDBException::kUnknownError,
-                                 "Unknown transaction.");
-    std::move(callback).Run(
-        blink::mojom::IDBDatabaseBatchGetAllResult::NewErrorResult(
-            blink::mojom::IDBError::New(error.code(), error.message())));
-    return;
-  }
-
-  if (!transaction->IsAcceptingRequests()) {
-    // TODO(https://crbug.com/1249908): If the transaction was already committed
-    // (or is in the process of being committed) we should kill the renderer.
-    // This branch however also includes cases where the browser process aborted
-    // the transaction, as currently we don't distinguish that state from the
-    // transaction having been committed. So for now simply ignore the request.
-    return;
-  }
-
-  if (key_ranges.size() > blink::mojom::kIDBBatchGetAllMaxInputSize) {
-    IndexedDBDatabaseError error(blink::mojom::IDBException::kUnknownError,
-                                 "key_ranges array's size is too large.");
-    std::move(callback).Run(
-        blink::mojom::IDBDatabaseBatchGetAllResult::NewErrorResult(
-            blink::mojom::IDBError::New(error.code(), error.message())));
-    return;
-  }
-
-  blink::mojom::IDBDatabase::BatchGetAllCallback aborting_callback =
-      CreateCallbackAbortOnDestruct<
-          blink::mojom::IDBDatabase::BatchGetAllCallback,
-          blink::mojom::IDBDatabaseBatchGetAllResultPtr>(
-          std::move(callback), transaction->AsWeakPtr());
-
-  transaction->ScheduleTask(BindWeakOperation(
-      &IndexedDBDatabase::BatchGetAllOperation,
-      connection_->database()->AsWeakPtr(), dispatcher_host_->AsWeakPtr(),
-      object_store_id, index_id, key_ranges, max_count,
-      std::move(aborting_callback)));
 }
 
 void DatabaseImpl::SetIndexKeys(

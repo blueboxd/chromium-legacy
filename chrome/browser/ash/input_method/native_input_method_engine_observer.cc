@@ -54,15 +54,6 @@ struct InputFieldContext {
   bool multiword_allowed = false;
 };
 
-// These are persisted to logs. Entries should not be renumbered. Numeric values
-// should not be reused. Must stay in sync with IMENonAutocorrectDiacriticStatus
-// enum in: tools/metrics/histograms/enums.xml
-enum class NonAutocorrectDiacriticStatus {
-  kWithoutDiacritics = 0,
-  kWithDiacritics = 1,
-  kMaxValue = kWithDiacritics,
-};
-
 bool ShouldRouteToFirstPartyVietnameseInput(const std::string& engine_id) {
   return base::FeatureList::IsEnabled(features::kFirstPartyVietnameseInput) &&
          (engine_id == "vkd_vi_vni" || engine_id == "vkd_vi_telex");
@@ -189,20 +180,6 @@ mojom::AutocorrectMode GetAutocorrectMode(
                  spellcheck_mode == SpellcheckMode::kDisabled
              ? mojom::AutocorrectMode::kDisabled
              : mojom::AutocorrectMode::kEnabled;
-}
-
-enum class ImeServiceEvent {
-  kUnknown = 0,
-  kInitSuccess = 1,
-  kInitFailed = 2,
-  kActivateImeSuccess = 3,
-  kActivateImeFailed = 4,
-  kServiceDisconnected = 5,
-  kMaxValue = kServiceDisconnected
-};
-
-void LogEvent(ImeServiceEvent event) {
-  UMA_HISTOGRAM_ENUMERATION("InputMethod.Mojo.Extension.Event", event);
 }
 
 enum class JapaneseStartupAction {
@@ -546,22 +523,8 @@ MultiWordSuggestionType ToUmaSuggestionType(
   }
 }
 
-void OnConnected(bool bound) {
-  LogEvent(bound ? ImeServiceEvent::kActivateImeSuccess
-                 : ImeServiceEvent::kActivateImeFailed);
-}
-
-void OnError(base::Time start) {
+void OnError() {
   LOG(ERROR) << "IME Service connection error";
-
-  // If the Mojo pipe disconnection happens in 1000 ms after the service
-  // is initialized, we consider it as a failure. Normally it's caused
-  // by the Mojo service itself or misconfigured on Chrome OS.
-  if (base::Time::Now() - start < base::Milliseconds(1000)) {
-    LogEvent(ImeServiceEvent::kInitFailed);
-  } else {
-    LogEvent(ImeServiceEvent::kServiceDisconnected);
-  }
 }
 
 InputFieldContext CreateInputFieldContext(
@@ -704,6 +667,7 @@ bool CanRouteToNativeMojoEngine(const std::string& engine_id) {
 
 NativeInputMethodEngineObserver::NativeInputMethodEngineObserver(
     PrefService* prefs,
+    EditorEventSink* editor_event_sink,
     std::unique_ptr<InputMethodEngineObserver> ime_base_observer,
     std::unique_ptr<AssistiveSuggester> assistive_suggester,
     std::unique_ptr<AutocorrectManager> autocorrect_manager,
@@ -711,6 +675,7 @@ NativeInputMethodEngineObserver::NativeInputMethodEngineObserver(
     std::unique_ptr<GrammarManager> grammar_manager,
     bool use_ime_service)
     : prefs_(prefs),
+      editor_event_sink_(editor_event_sink),
       ime_base_observer_(std::move(ime_base_observer)),
       assistive_suggester_(std::move(assistive_suggester)),
       autocorrect_manager_(std::move(autocorrect_manager)),
@@ -767,9 +732,7 @@ void NativeInputMethodEngineObserver::ConnectToImeService(
     auto* ime_manager = InputMethodManager::Get();
     ime_manager->ConnectInputEngineManager(
         remote_manager_.BindNewPipeAndPassReceiver());
-    remote_manager_.set_disconnect_handler(
-        base::BindOnce(&OnError, base::Time::Now()));
-    LogEvent(ImeServiceEvent::kInitSuccess);
+    remote_manager_.set_disconnect_handler(base::BindOnce(&OnError));
   }
 
   // Deactivate any existing engine.
@@ -814,7 +777,7 @@ void NativeInputMethodEngineObserver::ConnectToImeService(
   connection_factory_->ConnectToInputMethod(
       engine_id, input_method_.BindNewEndpointAndPassReceiver(),
       std::move(input_method_host), std::move(settings),
-      base::BindOnce(&OnConnected));
+      base::BindOnce([](bool) {}));
 }
 
 void NativeInputMethodEngineObserver::OnFocusAck(
@@ -900,7 +863,9 @@ void NativeInputMethodEngineObserver::OnFocus(
     const TextInputMethod::InputContext& context) {
   text_client_ =
       TextClient{.context_id = context_id, .state = TextClientState::kPending};
-
+  if (features::IsOrcaEnabled() && editor_event_sink_) {
+    editor_event_sink_->OnFocus(context_id);
+  }
   if (assistive_suggester_->IsAssistiveFeatureEnabled()) {
     assistive_suggester_->OnFocus(context_id, context);
   }
@@ -908,8 +873,7 @@ void NativeInputMethodEngineObserver::OnFocus(
   if (grammar_manager_->IsOnDeviceGrammarEnabled()) {
     grammar_manager_->OnFocus(context_id, context.spellcheck_mode);
   }
-  if (ShouldRouteToNativeMojoEngine(engine_id) ||
-      ShouldRouteToFirstPartyVietnameseInput(engine_id)) {
+  if (ShouldRouteToNativeMojoEngine(engine_id)) {
     if (IsInputMethodBound()) {
       if (assistive_suggester_.get()) {
         assistive_suggester_->FetchEnabledSuggestionsFromBrowserContextThen(
@@ -997,6 +961,9 @@ void NativeInputMethodEngineObserver::OnBlur(const std::string& engine_id,
 
   text_client_ = absl::nullopt;
 
+  if (features::IsOrcaEnabled() && editor_event_sink_) {
+    editor_event_sink_->OnBlur();
+  }
   if (assistive_suggester_->IsAssistiveFeatureEnabled())
     assistive_suggester_->OnBlur();
   autocorrect_manager_->OnBlur();
@@ -1355,15 +1322,6 @@ void NativeInputMethodEngineObserver::FinishComposition() {
           manager->GetActiveIMEState()->GetCurrentInputMethod().id())) {
     return;
   }
-
-  std::u16string composition_text = input_context->GetCompositionText();
-  base::TrimWhitespace(composition_text, base::TRIM_ALL, &composition_text);
-  bool has_diacritics = HasDiacritics(composition_text);
-
-  base::UmaHistogramEnumeration(
-      "InputMethod.MultilingualExperiment.NonAutocorrect",
-      has_diacritics ? NonAutocorrectDiacriticStatus::kWithDiacritics
-                     : NonAutocorrectDiacriticStatus::kWithoutDiacritics);
 }
 
 void NativeInputMethodEngineObserver::DeleteSurroundingText(
@@ -1437,8 +1395,6 @@ void NativeInputMethodEngineObserver::DEPRECATED_ReportKoreanSettings(
     mojom::KoreanSettingsPtr settings) {
   UMA_HISTOGRAM_BOOLEAN("InputMethod.PhysicalKeyboard.Korean.MultipleSyllables",
                         settings->input_multiple_syllables);
-  UMA_HISTOGRAM_ENUMERATION("InputMethod.PhysicalKeyboard.Korean.Layout",
-                            settings->layout);
 }
 
 void NativeInputMethodEngineObserver::DEPRECATED_ReportSuggestionOpportunity(

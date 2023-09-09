@@ -15,6 +15,7 @@
 #import "base/ios/ios_util.h"
 #import "base/logging.h"
 #import "base/memory/ptr_util.h"
+#import "base/metrics/histogram_functions.h"
 #import "base/metrics/histogram_macros.h"
 #import "base/numerics/checked_math.h"
 #import "base/strings/string_util.h"
@@ -32,10 +33,6 @@
 #import "ios/web/web_state/ui/crw_web_view_navigation_proxy.h"
 #import "net/base/mac/url_conversions.h"
 #import "ui/base/page_transition_types.h"
-
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
 
 namespace {
 
@@ -55,18 +52,41 @@ web::NavigationItemImpl* GetNavigationItemFromWKItem(
       navigationItem];
 }
 
+void RecordSessionRestorationHasFetchers(bool has_fetchers) {
+  base::UmaHistogramBoolean("Session.WebStates.NativeRestoreHasFetchers",
+                            has_fetchers);
+}
+
 // Records metrics about session restoration `success` from `source`.
 void RecordSessionRestorationResultForSource(
     bool success,
     web::NavigationManagerImpl::SessionDataBlobSource source) {
   switch (source) {
     case web::NavigationManagerImpl::SessionDataBlobSource::kSessionCache:
-      UMA_HISTOGRAM_BOOLEAN("Session.WebStates.NativeRestoreSessionFromCache",
-                            success);
+      base::UmaHistogramBoolean(
+          "Session.WebStates.NativeRestoreSessionFromCache", success);
       break;
 
     case web::NavigationManagerImpl::SessionDataBlobSource::kSynthesized:
-      UMA_HISTOGRAM_BOOLEAN("Session.WebStates.NativeRestoreSession", success);
+      base::UmaHistogramBoolean("Session.WebStates.NativeRestoreSession",
+                                success);
+      break;
+  }
+}
+
+void RecordSessionRestorationFetcherHasDataForSource(
+    web::NavigationManagerImpl::SessionDataBlobSource source,
+    bool fetcher_has_data) {
+  switch (source) {
+    case web::NavigationManagerImpl::SessionDataBlobSource::kSessionCache:
+      base::UmaHistogramBoolean(
+          "Session.WebStates.NativeRestoreSessionFromCacheHasData",
+          fetcher_has_data);
+      break;
+
+    case web::NavigationManagerImpl::SessionDataBlobSource::kSynthesized:
+      base::UmaHistogramBoolean("Session.WebStates.NativeRestoreSessionHasData",
+                                fetcher_has_data);
       break;
   }
 }
@@ -267,6 +287,7 @@ void NavigationManagerImpl::AddPendingItem(
     ui::PageTransition navigation_type,
     NavigationInitiationType initiation_type,
     bool is_post_navigation,
+    bool is_error_navigation,
     HttpsUpgradeType https_upgrade_type) {
   DiscardNonCommittedItems();
 
@@ -338,7 +359,7 @@ void NavigationManagerImpl::AddPendingItem(
       is_post_navigation &&
       (navigation_type & ui::PageTransition::PAGE_TRANSITION_FORM_SUBMIT);
   if (proxy.backForwardList.currentItem && isCurrentURLSameAsPending &&
-      !is_form_post) {
+      !is_form_post && !is_error_navigation) {
     pending_item_index_ = web_view_cache_.GetCurrentItemIndex();
 
     // If `currentItem` is not already associated with a NavigationItemImpl,
@@ -515,13 +536,17 @@ void NavigationManagerImpl::SetWKWebViewNextPendingUrlNotSerializable(
 
 void NavigationManagerImpl::RestoreNativeSession() {
   DCHECK(is_restore_session_in_progress_);
+  RecordSessionRestorationHasFetchers(!session_data_blob_fetchers_.empty());
 
   // Try to load session data blob from each registered source in order,
   // stopping at the first that is successfully loaded.
   bool success = false;
   for (auto& [fetcher, source] : session_data_blob_fetchers_) {
     NSData* data = std::move(fetcher).Run();
-    if (data.length != 0) {
+
+    bool fetcher_has_data = data.length != 0;
+    RecordSessionRestorationFetcherHasDataForSource(source, fetcher_has_data);
+    if (fetcher_has_data) {
       success = GetWebState()->SetSessionStateData(data);
       RecordSessionRestorationResultForSource(success, source);
       if (success) {
@@ -531,7 +556,6 @@ void NavigationManagerImpl::RestoreNativeSession() {
   }
 
   if (!success) {
-    DUMP_WILL_BE_CHECK(false);
     return;
   }
 
@@ -754,7 +778,7 @@ void NavigationManagerImpl::LoadURLWithParams(
           : NavigationInitiationType::BROWSER_INITIATED;
   AddPendingItem(params.url, params.referrer, params.transition_type,
                  initiation_type, /*is_post_navigation=*/false,
-                 params.https_upgrade_type);
+                 /*is_error_navigation=*/false, params.https_upgrade_type);
 
   // Mark pending item as created from hash change if necessary. This is needed
   // because window.hashchange message may not arrive on time.

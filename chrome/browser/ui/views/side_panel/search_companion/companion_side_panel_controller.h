@@ -14,6 +14,7 @@
 #include "chrome/browser/companion/core/mojom/companion.mojom.h"
 #include "chrome/browser/ui/side_panel/companion/companion_tab_helper.h"
 #include "chrome/browser/ui/side_panel/side_panel_enums.h"
+#include "chrome/browser/ui/views/side_panel/side_panel_entry_observer.h"
 #include "content/public/browser/web_contents_observer.h"
 
 namespace content {
@@ -28,7 +29,8 @@ namespace companion {
 
 // Controller for handling views specific logic for the CompanionTabHelper.
 class CompanionSidePanelController : public CompanionTabHelper::Delegate,
-                                     public content::WebContentsObserver {
+                                     public content::WebContentsObserver,
+                                     public SidePanelEntryObserver {
  public:
   explicit CompanionSidePanelController(content::WebContents* web_contents);
   CompanionSidePanelController(const CompanionSidePanelController&) = delete;
@@ -49,6 +51,10 @@ class CompanionSidePanelController : public CompanionTabHelper::Delegate,
   void UpdateNewTabButton(GURL url_to_open) override;
   void OnCompanionSidePanelClosed() override;
   content::WebContents* GetCompanionWebContentsForTesting() override;
+
+  // SidePanelEntryObserver:
+  void OnEntryShown(SidePanelEntry* entry) override;
+  void OnEntryHidden(SidePanelEntry* entry) override;
 
  private:
   std::unique_ptr<views::View> CreateCompanionWebView();
@@ -74,11 +80,16 @@ class CompanionSidePanelController : public CompanionTabHelper::Delegate,
                            bool started_from_context_menu,
                            bool renderer_initiated) override;
 
+  void AddObserver();
+  void RemoveObserver();
+
   GURL open_in_new_tab_url_;
   std::vector<CompanionTabHelper::CompanionLoadedCallback>
       companion_loaded_callbacks_;
   const raw_ptr<content::WebContents> web_contents_;
   bool has_companion_loaded = false;
+
+  base::WeakPtrFactory<CompanionSidePanelController> weak_ptr_factory_{this};
 };
 
 }  // namespace companion

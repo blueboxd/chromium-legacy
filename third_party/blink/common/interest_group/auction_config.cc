@@ -98,6 +98,12 @@ int AuctionConfig::NumPromises() const {
   if (direct_from_seller_signals.is_promise()) {
     ++total;
   }
+  if (expects_direct_from_seller_signals_header_ad_slot) {
+    ++total;
+  }
+  if (expects_additional_bids) {
+    ++total;
+  }
   for (const blink::AuctionConfig& sub_auction :
        non_shared_params.component_auctions) {
     total += sub_auction.NumPromises();

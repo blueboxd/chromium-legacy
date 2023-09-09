@@ -37,10 +37,6 @@
 #import "ui/base/l10n/l10n_util.h"
 #import "url/gurl.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 namespace {
 
 typedef NS_ENUM(NSInteger, SectionIdentifier) {
@@ -88,11 +84,6 @@ NSString* const kTranslateSettingsCategory = @"ChromeTranslateSettings";
     [_translationEnabled setObserver:self];
   }
   return self;
-}
-
-- (void)dealloc {
-  // TODO(crbug.com/1454777)
-  DUMP_WILL_BE_CHECK(!_prefs);
 }
 
 - (void)viewDidLoad {

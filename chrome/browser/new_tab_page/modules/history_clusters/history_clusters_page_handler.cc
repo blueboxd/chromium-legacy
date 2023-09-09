@@ -51,12 +51,12 @@ HistoryClustersPageHandler::HistoryClustersPageHandler(
     mojo::PendingReceiver<ntp::history_clusters::mojom::PageHandler>
         pending_receiver,
     content::WebContents* web_contents)
-    : receiver_(this, std::move(pending_receiver)),
-      profile_(Profile::FromBrowserContext(web_contents->GetBrowserContext())),
+    : profile_(Profile::FromBrowserContext(web_contents->GetBrowserContext())),
       web_contents_(web_contents),
       ranking_metrics_logger_(
           std::make_unique<HistoryClustersModuleRankingMetricsLogger>(
-              web_contents_->GetPrimaryMainFrame()->GetPageUkmSourceId())) {
+              web_contents_->GetPrimaryMainFrame()->GetPageUkmSourceId())),
+      receiver_(this, std::move(pending_receiver)) {
   if (base::FeatureList::IsEnabled(
           ntp_features::kNtpChromeCartInHistoryClusterModule)) {
     cart_processor_ = std::make_unique<CartProcessor>(
@@ -120,7 +120,7 @@ void HistoryClustersPageHandler::GetClusters(GetClustersCallback callback) {
     for (int i = 0; i < num_clusters; i++) {
       clusters_mojom.push_back(history_clusters::ClusterToMojom(
           TemplateURLServiceFactory::GetForProfile(profile_),
-          GenerateSampleCluster(num_visits, num_images)));
+          GenerateSampleCluster(i, num_visits, num_images)));
     }
     std::move(callback).Run(std::move(clusters_mojom));
     return;

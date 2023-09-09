@@ -89,7 +89,8 @@ class FedCmAccountSelectionView : public AccountSelectionView,
   friend class FedCmAccountSelectionViewBrowserTest;
 
   // Creates the bubble. Sets the bubble's accessible title. Registers any
-  // observers.
+  // observers. May fail and return nullptr if there is no browser or tab strip
+  // model.
   virtual views::Widget* CreateBubbleWithAccessibleTitle(
       const std::u16string& top_frame_etld_plus_one,
       const absl::optional<std::u16string>& iframe_etld_plus_one,
@@ -254,12 +255,6 @@ class FedCmAccountSelectionView : public AccountSelectionView,
 
   // Time when IdentityProvider.close() was called for metrics purposes.
   base::TimeTicks idp_close_popup_time_;
-
-  // Time when the accounts dialog is last shown for metrics purposes.
-  absl::optional<base::TimeTicks> accounts_dialog_shown_time_;
-
-  // Time when the mismatch dialog is last shown for metrics purposes.
-  absl::optional<base::TimeTicks> mismatch_dialog_shown_time_;
 
   // The current state of the IDP sign-in pop-up window, if initiated by user.
   PopupWindowResult popup_window_state_;

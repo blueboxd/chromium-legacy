@@ -21,12 +21,13 @@ namespace ash {
 namespace {
 
 constexpr char kUserActionSignIn[] = "signin";
-constexpr char kUserActionSignInTriage[] = "signin-triage";
 constexpr char kUserActionAddChild[] = "add-child";
 constexpr char kUserActionCancel[] = "cancel";
 
 // The following user actions are only possible when `OobeSoftwareUpdate` flag
 // is enabled.
+constexpr char kUserActionSignInTriage[] = "signin-triage";
+constexpr char kUserActionSignInSchool[] = "signin-school";
 constexpr char kUserActionEnroll[] = "enroll";
 constexpr char kUserActionTriage[] = "triage";
 constexpr char kUserActionChildSetup[] = "child-setup";
@@ -45,14 +46,18 @@ std::string UserCreationScreen::GetResultString(Result result) {
       return "SignInTriage";
     case Result::ADD_CHILD:
       return "AddChild";
-    case Result::ENTERPRISE_ENROLL:
-      return "EnterpriseEnroll";
+    case Result::ENTERPRISE_ENROLL_TRIAGE:
+      return "EnterpriseEnrollTriage";
+    case Result::ENTERPRISE_ENROLL_SHORTCUT:
+      return "EnterpriseEnrollShortcut";
     case Result::KIOSK_ENTERPRISE_ENROLL:
       return "KioskEnterpriseEnroll";
     case Result::CONTINUE_QUICK_START_FLOW:
       return "ContinueQuickStartFlow";
     case Result::CANCEL:
       return "Cancel";
+    case Result::SIGNIN_SCHOOL:
+      return "SignInSchool";
     case Result::SKIPPED:
       return BaseScreen::kNotApplicable;
   }
@@ -148,7 +153,7 @@ void UserCreationScreen::OnUserAction(const base::Value::List& args) {
     context()->is_user_creation_enabled = false;
     RunExitCallback(Result::CANCEL);
   } else if (action_id == kUserActionEnroll) {
-    RunExitCallback(Result::ENTERPRISE_ENROLL);
+    RunExitCallback(Result::ENTERPRISE_ENROLL_TRIAGE);
   } else if (action_id == kUserActionTriage) {
     if (context()->is_add_person_flow) {
       RunExitCallback(Result::SIGNIN);
@@ -159,6 +164,8 @@ void UserCreationScreen::OnUserAction(const base::Value::List& args) {
     RunExitCallback(Result::SIGNIN_TRIAGE);
   } else if (action_id == kUserActionChildSetup) {
     view_->SetChildSetupStep();
+  } else if (action_id == kUserActionSignInSchool) {
+    RunExitCallback(Result::SIGNIN_SCHOOL);
   } else {
     BaseScreen::OnUserAction(args);
   }
@@ -166,7 +173,7 @@ void UserCreationScreen::OnUserAction(const base::Value::List& args) {
 
 bool UserCreationScreen::HandleAccelerator(LoginAcceleratorAction action) {
   if (action == LoginAcceleratorAction::kStartEnrollment) {
-    RunExitCallback(Result::ENTERPRISE_ENROLL);
+    RunExitCallback(Result::ENTERPRISE_ENROLL_SHORTCUT);
     return true;
   }
   if (action == LoginAcceleratorAction::kStartKioskEnrollment) {

@@ -13,12 +13,35 @@ use std::process;
 
 use anyhow::{Context, Result};
 
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+pub enum SecurityCritical {
+    Yes,
+    No,
+}
+impl From<bool> for SecurityCritical {
+    fn from(b: bool) -> Self {
+        if b { Self::Yes } else { Self::No }
+    }
+}
+
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
+pub enum Shipped {
+    Yes,
+    No,
+}
+impl From<bool> for Shipped {
+    fn from(b: bool) -> Self {
+        if b { Self::Yes } else { Self::No }
+    }
+}
+
 /// Runs the download subcommand, which downloads a crate from crates.io and
 /// unpacks it into the Chromium tree.
 pub fn download(
     name: &str,
     version: semver::Version,
-    security: bool,
+    security: SecurityCritical,
+    shipped: Shipped,
     paths: &paths::ChromiumPaths,
 ) -> Result<()> {
     let vendored_crate = crates::VendoredCrate { name: name.into(), version: version.clone() };
@@ -95,7 +118,7 @@ pub fn download(
         }
     });
 
-    let readme = gen_readme_chromium_text(&cargo, readme_license, githash, security);
+    let readme = gen_readme_chromium_text(&cargo, readme_license, githash, security, shipped);
     std::fs::write(build_path.join("README.chromium"), readme)
         .expect("Failed to write README.chromium");
 
@@ -109,9 +132,11 @@ fn gen_readme_chromium_text(
     manifest: &CargoManifest,
     license: &str,
     githash: Option<&str>,
-    security: bool,
+    security: SecurityCritical,
+    shipped: Shipped,
 ) -> String {
-    let security = if security { "yes" } else { "no" };
+    let security = if security == SecurityCritical::Yes { "yes" } else { "no" };
+    let shipped = if shipped == Shipped::Yes { "yes" } else { "no" };
 
     let revision = githash.map_or_else(String::new, |s| format!("Revision: {s}\n"));
 
@@ -121,6 +146,7 @@ fn gen_readme_chromium_text(
          Description: {description}\n\
          Version: {version}\n\
          Security Critical: {security}\n\
+         Shipped: {shipped}\n\
          License: {license}\n\
          {revision}",
         crate_name = manifest.package.name,
@@ -136,7 +162,7 @@ static CRATES_IO_VIEW_URL: &str = "https://crates.io/crates";
 
 // Allowed licenses, in the format they are specified in Cargo.toml files from
 // crates.io, and the format to write to README.chromium.
-static ALLOWED_LICENSES: [(&str, &str); 15] = [
+static ALLOWED_LICENSES: [(&str, &str); 16] = [
     // ("Cargo.toml string", "License for README.chromium")
     ("Apache-2.0", "Apache 2.0"),
     ("MIT OR Apache-2.0", "Apache 2.0"),
@@ -151,6 +177,7 @@ static ALLOWED_LICENSES: [(&str, &str); 15] = [
     ("BSD-3-Clause", "BSD 3-Clause"),
     ("ISC", "ISC"),
     ("MIT OR Zlib OR Apache-2.0", "Apache 2.0"),
+    ("Zlib OR Apache-2.0 OR MIT", "Apache 2.0"),
     ("0BSD OR MIT OR Apache-2.0", "Apache 2.0"),
     (
         "(MIT OR Apache-2.0) AND Unicode-DFS-2016",

@@ -56,10 +56,6 @@
 #include "url/scheme_host_port.h"
 #include "url/url_util.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 namespace {
 
 // Request context getter for Cronet.
@@ -329,8 +325,6 @@ void CronetEnvironment::InitializeOnNetworkThread() {
 
   URLRequestContextConfigBuilder context_config_builder;
   context_config_builder.enable_quic = quic_enabled_;   // Enable QUIC.
-  context_config_builder.quic_user_agent_id =
-      getDefaultQuicUserAgentId();                      // QUIC User Agent ID.
   context_config_builder.enable_spdy = http2_enabled_;  // Enable HTTP/2.
   context_config_builder.http_cache = http_cache_;      // Set HTTP cache.
   context_config_builder.storage_path =
@@ -478,12 +472,6 @@ void CronetEnvironment::SetNetworkThreadPriorityOnNetworkThread(
     double priority) {
   DCHECK(GetNetworkThreadTaskRunner()->BelongsToCurrentThread());
   cronet::SetNetworkThreadPriorityOnNetworkThread(priority);
-}
-
-std::string CronetEnvironment::getDefaultQuicUserAgentId() const {
-  return base::SysNSStringToUTF8([[NSBundle mainBundle]
-             objectForInfoDictionaryKey:@"CFBundleDisplayName"]) +
-         " Cronet/" + CRONET_VERSION;
 }
 
 base::SingleThreadTaskRunner* CronetEnvironment::GetFileThreadRunnerForTesting()

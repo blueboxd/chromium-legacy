@@ -10,6 +10,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <string_view>
 #include <utility>
 
 #include "base/containers/contains.h"
@@ -47,6 +48,7 @@
 #include "components/autofill/core/browser/manual_testing_import.h"
 #include "components/autofill/core/browser/metrics/autofill_metrics.h"
 #include "components/autofill/core/browser/metrics/payments/iban_metrics.h"
+#include "components/autofill/core/browser/metrics/payments/mandatory_reauth_metrics.h"
 #include "components/autofill/core/browser/metrics/payments/offers_metrics.h"
 #include "components/autofill/core/browser/metrics/payments/wallet_usage_data_metrics.h"
 #include "components/autofill/core/browser/metrics/stored_profile_metrics.h"
@@ -130,6 +132,9 @@ bool ShouldDedupeDuplicateCard(autofill::CreditCard* original_card,
 
 namespace autofill {
 
+using autofill_metrics::LogMandatoryReauthOfferOptInDecision;
+using autofill_metrics::MandatoryReauthOfferOptInDecision;
+
 namespace {
 
 using ::i18n::addressinput::AddressField;
@@ -161,16 +166,25 @@ const T& Deref(const T& x) {
   return x;
 }
 
-template <typename C, typename StringType>
-typename C::const_iterator FindElementByGUID(const C& container,
-                                             const StringType& guid) {
+template <typename T>
+typename base::span<T>::iterator FindElementByGUID(base::span<T> container,
+                                                   std::string_view guid) {
   return base::ranges::find(container, guid, [](const auto& element) {
     return Deref(element).guid();
   });
 }
 
-template <typename C, typename StringType>
-bool FindByGUID(const C& container, const StringType& guid) {
+template <typename T>
+typename std::vector<T>::const_iterator FindElementByGUID(
+    const std::vector<T>& container,
+    std::string_view guid) {
+  return base::ranges::find(container, guid, [](const auto& element) {
+    return Deref(element).guid();
+  });
+}
+
+template <typename C>
+bool FindByGUID(const C& container, std::string_view guid) {
   return FindElementByGUID(container, guid) != container.end();
 }
 
@@ -682,7 +696,9 @@ CoreAccountInfo PersonalDataManager::GetAccountInfoForPaymentsServer() const {
       signin::ConsentLevel::kSignin);
 }
 
-bool PersonalDataManager::IsSyncFeatureEnabled() const {
+bool PersonalDataManager::IsSyncFeatureEnabledForPaymentsServerMetrics() const {
+  // TODO(crbug.com/1462552): Simplify once ConsentLevel::kSync and
+  // SyncService::IsSyncFeatureEnabled() are deleted from the codebase.
   return sync_service_ && sync_service_->IsSyncFeatureEnabled();
 }
 
@@ -700,6 +716,13 @@ absl::optional<CoreAccountInfo> PersonalDataManager::GetPrimaryAccountInfo()
   }
 
   return absl::nullopt;
+}
+
+bool PersonalDataManager::IsPaymentsDownloadActive() const {
+  return GetSyncSigninState() ==
+             AutofillSyncSigninState::kSignedInAndSyncFeatureEnabled ||
+         GetSyncSigninState() ==
+             AutofillSyncSigninState::kSignedInAndWalletSyncTransportEnabled;
 }
 
 AutofillSyncSigninState PersonalDataManager::GetSyncSigninState() const {
@@ -875,8 +898,6 @@ bool PersonalDataManager::IsEligibleForAddressAccountStorage() const {
   // based on their GeoIP.
   return sync_service_ &&
          sync_service_->GetActiveDataTypes().Has(syncer::CONTACT_INFO) &&
-         base::FeatureList::IsEnabled(
-             features::kAutofillAccountProfilesUnionView) &&
          base::FeatureList::IsEnabled(
              features::kAutofillAccountProfileStorage) &&
          (features::kAutofillAccountProfileStorageFromUnsupportedIPs.Get() ||
@@ -2017,6 +2038,9 @@ void PersonalDataManager::RemoveStrikesToBlockProfileUpdate(
 
 bool PersonalDataManager::IsSyncEnabledFor(
     syncer::UserSelectableType data_type) const {
+  // TODO(crbug.com/1462286): Investigate usage of IsSyncFeatureEnabled() below
+  // and consider if it can be removed, since GetSelectedTypes() deals well
+  // with all sign-in states.
   return sync_service_ != nullptr && sync_service_->IsSyncFeatureEnabled() &&
          sync_service_->GetUserSettings()->GetSelectedTypes().Has(data_type);
 }
@@ -2031,7 +2055,35 @@ bool PersonalDataManager::IsPaymentMethodsMandatoryReauthEnabled() {
 }
 
 bool PersonalDataManager::ShouldShowPaymentMethodsMandatoryReauthPromo() {
-  return prefs::ShouldShowPaymentMethodsMandatoryReauthPromo(pref_service_);
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_ANDROID)
+  if (!base::FeatureList::IsEnabled(
+          features::kAutofillEnablePaymentsMandatoryReauth)) {
+    return false;
+  }
+
+  // If the user has made a decision on this feature previously, then we should
+  // not show the opt-in promo.
+  if (prefs::IsPaymentMethodsMandatoryReauthSetExplicitly(pref_service_)) {
+    LogMandatoryReauthOfferOptInDecision(
+        prefs::IsPaymentMethodsMandatoryReauthEnabled(pref_service_)
+            ? MandatoryReauthOfferOptInDecision::kAlreadyOptedIn
+            : MandatoryReauthOfferOptInDecision::kAlreadyOptedOut);
+    return false;
+  }
+
+  // We should only show the opt-in promo if we have not reached the maximum
+  // number of shows for the promo.
+  bool allowed_by_strike_database =
+      prefs::IsPaymentMethodsMandatoryReauthPromoShownCounterBelowMaxCap(
+          pref_service_);
+  if (!allowed_by_strike_database) {
+    LogMandatoryReauthOfferOptInDecision(
+        MandatoryReauthOfferOptInDecision::kBlockedByStrikeDatabase);
+  }
+  return allowed_by_strike_database;
+#else
+  return false;
+#endif  // BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_ANDROID)
 }
 
 void PersonalDataManager::
@@ -2130,12 +2182,9 @@ void PersonalDataManager::LoadProfiles() {
   pending_synced_local_profiles_query_ =
       database_helper_->GetLocalDatabase()->GetAutofillProfiles(
           AutofillProfile::Source::kLocalOrSyncable, this);
-  if (base::FeatureList::IsEnabled(
-          features::kAutofillAccountProfilesUnionView)) {
-    pending_account_profiles_query_ =
-        database_helper_->GetLocalDatabase()->GetAutofillProfiles(
-            AutofillProfile::Source::kAccount, this);
-  }
+  pending_account_profiles_query_ =
+      database_helper_->GetLocalDatabase()->GetAutofillProfiles(
+          AutofillProfile::Source::kAccount, this);
   if (database_helper_->GetServerDatabase()) {
     pending_creditcard_billing_addresses_query_ =
         database_helper_->GetServerDatabase()->GetServerProfiles(this);
@@ -2256,23 +2305,6 @@ void PersonalDataManager::LoadPaymentsCustomerData() {
       database_helper_->GetServerDatabase()->GetPaymentsCustomerData(this);
 }
 
-std::string PersonalDataManager::SaveImportedProfile(
-    const AutofillProfile& imported_profile) {
-  std::vector<AutofillProfile> profiles;
-  std::string guid = AutofillProfileComparator::MergeProfile(
-      imported_profile, GetProfileStorage(imported_profile.source()),
-      app_locale_, &profiles);
-  // Keep profiles from other sources. `SetProfilesForSource()` cannot be used,
-  // since it doesn't notify observers.
-  for (AutofillProfile* profile : GetProfiles()) {
-    if (profile->source() != imported_profile.source()) {
-      profiles.push_back(*profile);
-    }
-  }
-  SetProfilesForAllSources(&profiles);
-  return guid;
-}
-
 std::string PersonalDataManager::OnAcceptedLocalCreditCardSave(
     const CreditCard& imported_card) {
   DCHECK(!imported_card.number().empty());
@@ -2358,9 +2390,7 @@ void PersonalDataManager::LogStoredDataMetrics() const {
 
   const std::vector<AutofillProfile*> profiles = GetProfiles();
   autofill_metrics::LogStoredProfileMetrics(profiles);
-  if (base::FeatureList::IsEnabled(
-          features::kAutofillAccountProfilesUnionView) &&
-      base::FeatureList::IsEnabled(features::kAutofillAccountProfileStorage)) {
+  if (base::FeatureList::IsEnabled(features::kAutofillAccountProfileStorage)) {
     autofill_metrics::LogLocalProfileSupersetMetrics(std::move(profiles),
                                                      app_locale_);
   }
@@ -2564,24 +2594,12 @@ void PersonalDataManager::NotifyPersonalDataObserver() {
 void PersonalDataManager::OnCreditCardSaved(bool is_local_card) {}
 
 void PersonalDataManager::ConvertWalletAddressesAndUpdateWalletCards() {
-  // If the full Sync feature isn't enabled, then do NOT convert any Wallet
-  // addresses to local ones.
-  // When syncing of account profiles is enabled, converting wallet addresses
-  // is unnecessary, since they are available through the ContactInfoSyncBridge.
-  if (!IsSyncFeatureEnabled() ||
-      base::FeatureList::IsEnabled(
-          features::kAutofillAccountProfilesUnionView)) {
-    // PDM expects that each call to
-    // ConvertWalletAddressesAndUpdateWalletCards() is followed by a
-    // AutofillAddressConversionCompleted() notification, simulate the
-    // notification here.
-    AutofillAddressConversionCompleted();
-    return;
-  }
-
-  database_helper_->GetServerDatabase()
-      ->ConvertWalletAddressesAndUpdateWalletCards(
-          app_locale_, GetAccountInfoForPaymentsServer().email);
+  // PDM expects that each call to
+  // ConvertWalletAddressesAndUpdateWalletCards() is followed by a
+  // AutofillAddressConversionCompleted() notification, simulate the
+  // notification here.
+  // TODO(crbug.com/1348294): Simplify this code.
+  AutofillAddressConversionCompleted();
 }
 
 void PersonalDataManager::AddProfileToDB(const AutofillProfile& profile,

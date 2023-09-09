@@ -1130,6 +1130,16 @@ policies:
   1129: MidiAllowedForUrls
   1130: MidiBlockedForUrls
   1131: GlanceablesEnabled
+  1132: DeviceAuthenticationURLBlocklist
+  1133: DeviceAuthenticationURLAllowlist
+  1134: DeviceReportRuntimeCounters
+  1135: DeviceReportRuntimeCountersCheckingRateMs
+  1136: BruschettaInstallerConfiguration
+  1137: ForcePermissionPolicyUnloadDefaultEnabled
+  1138: ReportWebsiteActivity
+  1139: ReportWebsiteUsage
+  1140: ReportWebsiteUsageCollectionRateMs
+  1141: SafeBrowsingSurveysEnabled
 atomic_groups:
   1: Homepage
   2: RemoteAccess

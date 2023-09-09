@@ -43,10 +43,6 @@
 #import "net/base/mac/url_conversions.h"
 #import "url/gurl.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 @implementation SigninEarlGreyAppInterface
 
 + (void)addFakeIdentity:(FakeSystemIdentity*)fakeIdentity {
@@ -112,7 +108,7 @@
       chrome_test_util::GetOriginalBrowserState()->GetPrefs();
   prefService->SetString(prefs::kGoogleServicesLastUsername, emailAddress);
   ShowSigninCommand* command = [[ShowSigninCommand alloc]
-      initWithOperation:AuthenticationOperationSigninAndSyncReauth
+      initWithOperation:AuthenticationOperation::kSigninAndSyncReauth
             accessPoint:signin_metrics::AccessPoint::
                             ACCESS_POINT_RESIGNIN_INFOBAR];
   UIViewController* baseViewController =
@@ -194,6 +190,14 @@
   settings->SetSelectedTypes(/*sync_everything=*/false,
                              settings->GetSelectedTypes());
   settings->SetSelectedType(type, enabled);
+}
+
++ (BOOL)isSelectedTypeEnabled:(syncer::UserSelectableType)type {
+  syncer::SyncUserSettings* settings =
+      SyncServiceFactory::GetForBrowserState(
+          chrome_test_util::GetOriginalBrowserState())
+          ->GetUserSettings();
+  return settings->GetSelectedTypes().Has(type) ? YES : NO;
 }
 
 @end

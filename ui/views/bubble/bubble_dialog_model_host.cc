@@ -365,12 +365,12 @@ BubbleDialogModelHost::BubbleDialogModelHost(
   // Dialog callbacks can safely refer to |model_|, they can't be called after
   // Widget::Close() calls WidgetWillClose() synchronously so there shouldn't
   // be any dangling references after model removal.
-  SetAcceptCallback(base::BindOnce(&ui::DialogModel::OnDialogAcceptAction,
-                                   base::Unretained(model_.get()),
-                                   GetPassKey()));
-  SetCancelCallback(base::BindOnce(&ui::DialogModel::OnDialogCancelAction,
-                                   base::Unretained(model_.get()),
-                                   GetPassKey()));
+  SetAcceptCallbackWithClose(
+      base::BindRepeating(&ui::DialogModel::OnDialogAcceptAction,
+                          base::Unretained(model_.get()), GetPassKey()));
+  SetCancelCallbackWithClose(
+      base::BindRepeating(&ui::DialogModel::OnDialogCancelAction,
+                          base::Unretained(model_.get()), GetPassKey()));
   SetCloseCallback(base::BindOnce(&ui::DialogModel::OnDialogCloseAction,
                                   base::Unretained(model_.get()),
                                   GetPassKey()));
@@ -627,7 +627,13 @@ void BubbleDialogModelHost::OnFieldAdded(ui::DialogModelField* field) {
 }
 
 void BubbleDialogModelHost::OnFieldChanged(ui::DialogModelField* field) {
+  CHECK(field);
+
   UpdateFieldVisibility(field);
+
+  if (field->type(GetPassKey()) == ui::DialogModelField::kButton) {
+    UpdateButton(field->AsButton(GetPassKey()));
+  }
 }
 
 void BubbleDialogModelHost::AddInitialFields() {
@@ -726,6 +732,7 @@ void BubbleDialogModelHost::OnWindowClosing() {
 void BubbleDialogModelHost::AddOrUpdateParagraph(
     ui::DialogModelParagraph* model_field) {
   // TODO(pbos): Handle updating existing field.
+
   std::unique_ptr<View> view =
       model_field->header(GetPassKey()).empty()
           ? CreateViewForLabel(model_field->label(GetPassKey()))
@@ -869,6 +876,21 @@ void BubbleDialogModelHost::AddOrUpdateTextfield(
   const gfx::FontList& font_list = textfield->GetFontList();
   AddViewForLabelAndField(model_field, model_field->label(GetPassKey()),
                           std::move(textfield), font_list);
+}
+
+void BubbleDialogModelHost::UpdateButton(ui::DialogModelButton* model_field) {
+  std::u16string label = model_field->label(GetPassKey());
+  if (model_field == model_->ok_button(GetPassKey())) {
+    SetButtonLabel(ui::DIALOG_BUTTON_OK, label);
+  } else if (model_field == model_->cancel_button(GetPassKey())) {
+    SetButtonLabel(ui::DIALOG_BUTTON_CANCEL, label);
+  } else if (model_field == model_->extra_button(GetPassKey())) {
+    static_cast<MdTextButton*>(
+        GetTargetView(FindDialogModelHostField(model_field)))
+        ->SetText(label);
+  } else {
+    NOTIMPLEMENTED();
+  }
 }
 
 void BubbleDialogModelHost::AddViewForLabelAndField(

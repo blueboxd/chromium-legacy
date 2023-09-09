@@ -51,10 +51,6 @@
 #import "ui/gfx/mac/coordinate_conversion.h"
 #import "ui/gfx/mac/nswindow_frame_controls.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 using remote_cocoa::mojom::VisibilityTransition;
 using remote_cocoa::mojom::WindowVisibilityState;
 
@@ -471,8 +467,8 @@ void NativeWidgetNSWindowBridge::InitWindow(
 
   [[NSNotificationCenter defaultCenter]
       addObserver:window_delegate_
-         selector:@selector(onSystemControlTintChanged:)
-             name:NSControlTintDidChangeNotification
+         selector:@selector(onSystemColorsChanged:)
+             name:NSSystemColorsDidChangeNotification
            object:nil];
 
   // Validate the window's initial state, otherwise the bridge's initial
@@ -1130,7 +1126,7 @@ void NativeWidgetNSWindowBridge::OnVisibilityChanged() {
   host_->OnVisibilityChanged(window_visible_);
 }
 
-void NativeWidgetNSWindowBridge::OnSystemControlTintChanged() {
+void NativeWidgetNSWindowBridge::OnSystemColorsChanged() {
   host_->OnWindowNativeThemeChanged();
 }
 

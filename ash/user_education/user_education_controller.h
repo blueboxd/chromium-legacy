@@ -18,6 +18,8 @@
 #include "base/scoped_observation.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
+class PrefRegistrySimple;
+
 namespace ui {
 class ElementIdentifier;
 }  // namespace ui
@@ -42,12 +44,23 @@ class ASH_EXPORT UserEducationController : public SessionObserver {
   // NOTE: Exists if and only if user education features are enabled.
   static UserEducationController* Get();
 
+  // Registers user education prefs to the provided `registry`.
+  static void RegisterProfilePrefs(PrefRegistrySimple* registry);
+
   // Returns the identifier for an element associated with the specified
   // `app_id`, or an absent value if no such identifier exists. Note that
   // existence of an identifier does not imply the existence of an associated
   // element.
   absl::optional<ui::ElementIdentifier> GetElementIdentifierForAppId(
       const std::string& app_id) const;
+
+  // If present, indicates whether the currently active user is considered new.
+  // A user is considered new if the first app list sync in the session was the
+  // first sync ever across all ChromeOS devices and sessions for the given
+  // user. As such, this value is absent until the first app list sync of the
+  // session is completed.
+  // NOTE: Currently only the primary user profile is supported.
+  const absl::optional<bool>& IsNewUser(UserEducationPrivateApiKey) const;
 
   // Attempts to launch the system web app associated with the given type on
   // the display associated with the given ID asynchronously.

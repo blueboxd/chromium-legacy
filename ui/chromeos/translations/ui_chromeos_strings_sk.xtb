@@ -94,6 +94,7 @@
 <translation id="174937106936716857">Celkový počet súborov</translation>
 <translation id="1755345808328621801">Tento súbor je určený pre počítač so softvérom Windows. Nie je kompatibilný s vaším zariadením so systémom Chrome OS. Nájdite vhodnú náhradnú aplikáciu v Internetovom obchode Chrome.</translation>
 <translation id="1757915090001272240">Rozšírená latinka</translation>
+<translation id="1761091787730831947">Zdieľanie s virtuálnym počítačom <ph name="VM_NAME" /></translation>
 <translation id="1773212559869067373">Certifikát na overenie totožnosti bol zamietnutý miestne</translation>
 <translation id="1775381402323441512">Informácie o videu</translation>
 <translation id="180035236176489073">Ak chcete pristupovať k týmto súborom, musíte byť online.</translation>
@@ -166,11 +167,11 @@
 <translation id="2312704192806647271">{COUNT,plural, =1{Rozšírenie s identifikátorom <ph name="BEGIN_LIST" /><ph name="END_LIST" /> sa nedá nájsť. Kontaktujte svojho správcu.}few{Rozšírenia s identifikátormi <ph name="BEGIN_LIST" /><ph name="END_LIST" /> sa nedajú nájsť. Kontaktujte svojho správcu.}many{Extensions with the IDs <ph name="BEGIN_LIST" /><ph name="END_LIST" /> can’t be located. Contact your administrator.}other{Rozšírenia s identifikátormi <ph name="BEGIN_LIST" /><ph name="END_LIST" /> sa nedajú nájsť. Kontaktujte svojho správcu.}}</translation>
 <translation id="2325650632570794183">Tento typ súboru nie je podporovaný. Navštívte Internetový obchod Chrome, kde nájdete aplikáciu, pomocou ktorej môžete tento typ súboru otvoriť.</translation>
 <translation id="2326539130272988168">Bulharská klávesnica</translation>
-<translation id="2337715497728194187">Zdieľať s virtuálnym počítačom Bruschetta</translation>
 <translation id="233822363739146957">Na synchronizáciu všetkých súborov nie je dostatok priestoru</translation>
 <translation id="23721837607121582">Stiahnite si mobilný profil, sieť <ph name="NETWORK_INDEX" /> z <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" /></translation>
 <translation id="2377319039870049694">Prepnúť na zobrazenie zoznamu</translation>
 <translation id="2377590462528165447">Priečinky (<ph name="NUMBER_OF_ITEMS" />) zdieľané so systémom Linux</translation>
+<translation id="2379576081295865700">Kontroluje sa ukladací priestor… Našla sa jedna položka.</translation>
 <translation id="2383454254762599978">Presunúť do koša</translation>
 <translation id="2387458720915042159">Typ pripojenia proxy</translation>
 <translation id="2389832672041313158">Mjanmarská klávesnica</translation>
@@ -197,7 +198,6 @@
 <translation id="2544853746127077729">Certifikát na overenie totožnosti bol zamietnutý sieťou</translation>
 <translation id="255937426064304553">Americká klávesnica s medzinárodným rozložením klávesov</translation>
 <translation id="2563185590376525700">Žaba</translation>
-<translation id="2574327434504608656">S virtuálnym počítačom je zdieľaný 1 priečinok</translation>
 <translation id="2578394532502990878">Tamilská fonetická klávesnica</translation>
 <translation id="2579959351793446050">Uríjska klávesnica</translation>
 <translation id="2587195714949534472">Pripravuje sa synchronizácia súboru <ph name="FILE_NAME" />…</translation>
@@ -213,6 +213,7 @@
 <translation id="2718540689505416944">Inštalovať aplikáciu pomocou systému Linux</translation>
 <translation id="2719020180254996569"><ph name="NETWORK_INDEX" />. sieť z <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, podrobnosti</translation>
 <translation id="2724954091494693138">Turecká klávesnica (typ F)</translation>
+<translation id="2732288874651063549">Správa zdieľania s virtuálnym počítačom <ph name="VM_NAME" /></translation>
 <translation id="2732839045120506979">Vietnamská klávesnica s rozložením VNI</translation>
 <translation id="2735623501230989521">Povoľte aplikácii Parallels Desktop prístup k súborom v priečinku <ph name="FOLDER_NAME" /></translation>
 <translation id="2764206540577097904">Vyčerpali ste celý svoj osobný ukladací priestor v službe Google Workspace.</translation>
@@ -297,7 +298,6 @@
 <translation id="3408072735282270043">Aktivovať <ph name="NETWORK_NAME" /></translation>
 <translation id="3408236822532681288">Nemecká (Nemecko) klávesnica Neo 2</translation>
 <translation id="3414856743105198592">Formátovaním vymeniteľných médií sa vymažú všetky dáta. Chcete pokračovať?</translation>
-<translation id="3435143625481187092">Udeľte virtuálnemu počítaču Bruschetta povolenie získavať prístup k súborom v priečinku <ph name="FOLDER_NAME" /></translation>
 <translation id="3437801641691368414">Čas vytvorenia</translation>
 <translation id="343907260260897561">Okamžitý Fotoaparát</translation>
 <translation id="3455931012307786678">Estónska klávesnica</translation>
@@ -308,6 +308,7 @@
 <translation id="3509680540198371098"><ph name="NETWORK_INDEX" />. sieť z <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, sila signálu <ph name="SIGNAL_STRENGTH" /> %, podrobnosti</translation>
 <translation id="3511705761158917664">Pripravuje sa synchronizácia <ph name="NUMBER_OF_ITEMS" /> položiek…</translation>
 <translation id="3522708245912499433">Portugalčina</translation>
+<translation id="3523225005467146490">S virtuálnym počítačom <ph name="VM_NAME" /> bol zdieľaný 1 súbor</translation>
 <translation id="3524311639100184459">Upozornenie: Tieto súbory sú dočasné a môžu byť automaticky odstránené na uvoľnenie priestoru na disku.  <ph name="BEGIN_LINK" />Ďalšie informácie<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">Priečinok</translation>
 <translation id="3548125359243647069">Príliš veľakrát bol zadaný nesprávny kód PIN.</translation>
@@ -385,7 +386,6 @@
 <translation id="4159731583141908892">Súbor <ph name="FILE_NAME" /> bol presunutý.</translation>
 <translation id="4176286497474237543">Vyprázdniť kôš</translation>
 <translation id="4179621117429069925">Táto položka je vo vašom koši</translation>
-<translation id="4181839429935094755">S virtuálnym počítačom Bruschetta sú zdieľané viaceré priečinky (<ph name="NUMBER_OF_ITEMS" />)</translation>
 <translation id="4186579485882418952">Povoliť offline režim</translation>
 <translation id="4193154014135846272">Dokument Google</translation>
 <translation id="4197674956721858839">Výber súborov na komprimovanie</translation>
@@ -452,7 +452,6 @@
 <translation id="4646813851450205600">Česká klávesnica s rozložením Qwerty</translation>
 <translation id="4656777537938206294">Sprístupnite súbory offline</translation>
 <translation id="4658782175094886150">Osoba v snehu</translation>
-<translation id="466782788172479199">Udeľte virtuálnemu počítaču Bruschetta povolenie získavať prístup k súborom na vašom Disku Google. Zmeny sa budú synchronizovať do vašich ďalších zariadení.</translation>
 <translation id="4669606053856530811">Členovia zdroja <ph name="SOURCE_NAME" /> stratia prístup, pokiaľ s nimi tieto položky nezačnete zdieľať.</translation>
 <translation id="467809019005607715">Prezentácie Google</translation>
 <translation id="4690246192099372265">Švédčina</translation>
@@ -564,7 +563,6 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="5323213332664049067">Latinskoamerická</translation>
 <translation id="5330145655348521461">Tieto súbory sú otvorené na inej pracovnej ploche. Ak ich chcete zobraziť, prejdite do profilu <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />).</translation>
 <translation id="5330512191124428349">Získať informácie</translation>
-<translation id="5344246330454251646">Spravovať zdieľanie virtuálneho počítača Bruschetta</translation>
 <translation id="535792325654997756">Osoba s mačkami</translation>
 <translation id="5358764674931277">Snímková frekvencia</translation>
 <translation id="5363339716524495120">Jazyk vstupu je čínština</translation>
@@ -670,6 +668,8 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="6164412158936057769">Motýle</translation>
 <translation id="6165508094623778733">Ďalšie informácie</translation>
 <translation id="6170470584681422115">Sendvič</translation>
+<translation id="6177854567773392726">Kontroluje sa ukladací priestor… Našlo sa niekoľko (<ph name="ITEMS_FOUND" />) položiek.</translation>
+<translation id="6181912134988520389">Udeľte virtuálnemu počítaču <ph name="VM_NAME" /> povolenie získavať prístup k súborom na vašom Disku Google. Zmeny sa budú synchronizovať do vašich ostatných zariadení.</translation>
 <translation id="6187719147498869044">Maďarská klávesnica</translation>
 <translation id="6198252989419008588">Zmeniť PIN</translation>
 <translation id="6199801702437275229">Čaká sa na informácie o voľnom mieste...</translation>
@@ -732,7 +732,6 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="6710213216561001401">Späť</translation>
 <translation id="6732801395666424405">Certifikáty neboli načítané</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY" /> [ <ph name="ISSUED_TO" /> ]</translation>
-<translation id="6740270213273127264">Zdieľanie priečinka s virtuálnym počítačom Bruschetta</translation>
 <translation id="6750737795876287924">Aktuálny adresár</translation>
 <translation id="6751256176799620176">1 vybratý priečinok</translation>
 <translation id="6755827872271341378">Zariadenie so systémom Chrome OS Flex</translation>
@@ -774,6 +773,7 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="6989942356279143254">Švédska klávesnica</translation>
 <translation id="6990081529015358884">Nemáte dostatok miesta</translation>
 <translation id="6993826899923627728">Tieto položky sú vo vašom koši</translation>
+<translation id="6996593023542748157">Zdieľanie súboru s virtuálnym počítačom <ph name="VM_NAME" /></translation>
 <translation id="7008426324576352165">Vaša organizácia vyžaduje na dokončenie nahrávania viac priestoru.</translation>
 <translation id="7009985720488544166">Presun <ph name="COUNT" /> súborov je blokovaný pravidlami správcu</translation>
 <translation id="7012943028104619157"><ph name="ROOT_TITLE" /> (<ph name="ROOT_SUMMARY" />)</translation>
@@ -959,6 +959,7 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="8335837413233998004">Bieloruská klávesnica</translation>
 <translation id="8336153091935557858">Včera o <ph name="YESTERDAY_DAYTIME" /></translation>
 <translation id="8342318071240498787">Súbor alebo priečinok s daným názvom už existuje.</translation>
+<translation id="83651606385705612">Udeľte virtuálnemu počítaču <ph name="VM_NAME" /> povolenie získavať prístup k súborom v priečinku <ph name="FOLDER_NAME" /></translation>
 <translation id="8372369524088641025">Zlý kľúč WEP</translation>
 <translation id="8372852072747894550">Grécka klávesnica</translation>
 <translation id="8386903983509584791">Vyhľadávanie bolo dokončené</translation>
@@ -968,6 +969,7 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="8408068190360279472">Sieť <ph name="NETWORK_TYPE" /> sa pripája</translation>
 <translation id="8425213833346101688">Zmeniť</translation>
 <translation id="8428213095426709021">Nastavenia</translation>
+<translation id="8429998526804961548">S virtuálnym počítačom <ph name="VM_NAME" /> bolo zdieľaných viacero priečinkov (<ph name="NUMBER_OF_ITEMS" />)</translation>
 <translation id="8431909052837336408">Zmena kódu PIN pre SIM kartu</translation>
 <translation id="8437209419043462667">Americká klávesnica</translation>
 <translation id="8452135315243592079">Chýba SIM karta</translation>

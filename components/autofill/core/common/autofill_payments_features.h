@@ -13,12 +13,14 @@ namespace autofill {
 namespace features {
 
 // All features in alphabetical order.
+BASE_DECLARE_FEATURE(kAutofillEnableAndroidNKeyForFidoAuthentication);
 BASE_DECLARE_FEATURE(kAutofillEnableCardArtImage);
 BASE_DECLARE_FEATURE(kAutofillEnableCardArtServerSideStretching);
 BASE_DECLARE_FEATURE(kAutofillEnableCardProductName);
 BASE_DECLARE_FEATURE(kAutofillEnableCvcStorageAndFilling);
 BASE_DECLARE_FEATURE(kAutofillEnableEmailOtpForVcnYellowPath);
 BASE_DECLARE_FEATURE(kAutofillEnableFIDOProgressDialog);
+BASE_DECLARE_FEATURE(kAutofillEnableFpanRiskBasedAuthentication);
 BASE_DECLARE_FEATURE(kAutofillEnableIbanClientSideUrlFiltering);
 BASE_DECLARE_FEATURE(kAutofillEnableManualFallbackForVirtualCards);
 BASE_DECLARE_FEATURE(kAutofillEnableMerchantOptOutClientSideUrlFiltering);
@@ -47,8 +49,6 @@ BASE_DECLARE_FEATURE(kAutofillMoveLegalTermsAndIconForNewCardEnrollment);
 BASE_DECLARE_FEATURE(kAutofillOfferToSaveCardWithSameLastFour);
 BASE_DECLARE_FEATURE(kAutofillParseIBANFields);
 BASE_DECLARE_FEATURE(kAutofillParseVcnCardOnFileStandaloneCvcFields);
-BASE_DECLARE_FEATURE(kAutofillSaveCardInfobarEditSupport);
-BASE_DECLARE_FEATURE(kAutofillShowUnmaskedCachedCardInManualFillingView);
 BASE_DECLARE_FEATURE(kAutofillSuggestServerCardInsteadOfLocalCard);
 BASE_DECLARE_FEATURE(kAutofillUpstream);
 BASE_DECLARE_FEATURE(kAutofillUpstreamAllowAdditionalEmailDomains);

@@ -110,21 +110,7 @@ void LayoutMultiColumnSpannerPlaceholder::RecalcVisualOverflow() {
       layout_object_in_flow_thread_->VisualOverflowRect());
 }
 
-MinMaxSizes LayoutMultiColumnSpannerPlaceholder::PreferredLogicalWidths()
-    const {
-  NOT_DESTROYED();
-  NOTREACHED_NORETURN();
-}
-
 void LayoutMultiColumnSpannerPlaceholder::UpdateLayout() {
-  NOT_DESTROYED();
-  NOTREACHED_NORETURN();
-}
-
-void LayoutMultiColumnSpannerPlaceholder::ComputeLogicalHeight(
-    LayoutUnit,
-    LayoutUnit logical_top,
-    LogicalExtentComputedValues& computed_values) const {
   NOT_DESTROYED();
   NOTREACHED_NORETURN();
 }

@@ -442,7 +442,7 @@ AppPlatformMetrics::AppPlatformMetrics(
     apps::AppRegistryCache& app_registry_cache,
     InstanceRegistry& instance_registry)
     : profile_(profile), app_registry_cache_(app_registry_cache) {
-  apps::AppRegistryCache::Observer::Observe(&app_registry_cache);
+  app_registry_cache_observer_.Observe(&app_registry_cache);
   instance_registry_observation_.Observe(&instance_registry);
   user_type_by_device_type_ = GetUserTypeByDeviceTypeMetrics();
   InitRunningDuration();
@@ -482,11 +482,9 @@ ukm::SourceId AppPlatformMetrics::GetSourceId(Profile* profile,
     case AppType::kChromeApp:
     case AppType::kExtension:
     case AppType::kStandaloneBrowser:
-      return ukm::AppSourceUrlRecorder::GetSourceIdForChromeApp(app_id);
     case AppType::kStandaloneBrowserChromeApp:
     case AppType::kStandaloneBrowserExtension:
-      return ukm::AppSourceUrlRecorder::GetSourceIdForChromeApp(
-          GetStandaloneBrowserExtensionAppId(app_id));
+      return ukm::AppSourceUrlRecorder::GetSourceIdForChromeApp(app_id);
     case AppType::kArc:
     case AppType::kWeb:
     case AppType::kSystemWeb: {
@@ -542,25 +540,25 @@ ukm::SourceId AppPlatformMetrics::GetSourceIdForBorealis(
     return ukm::kInvalidSourceId;
   }
 
-  auto* registry =
-      guest_os::GuestOsRegistryServiceFactory::GetForProfile(profile);
-  auto registration = registry->GetRegistration(app_id);
-  if (!registration) {
-    // If there's no registration then we're not allowed to record anything that
-    // could identify the app (and we don't know the app name anyway), but
-    // recording every unregistered app in one big bucket is fine.
-    //
-    // In general all Borealis apps should be registered, so if we do see this
-    // Source ID being reported, that's a bug.
-    LOG(WARNING) << "Couldn't get Borealis ID for UNREGISTERED app " << app_id;
-    return ukm::AppSourceUrlRecorder::GetSourceIdForBorealis("UNREGISTERED");
+  // For most borealis apps, we convert to the "steam app id", which is a unique
+  // number valve assigns to each game.
+  //
+  // This is more robust, as it handles some unidentified apps (if they have a
+  // steam id).
+  absl::optional<int> borealis_id = borealis::SteamGameId(profile, app_id);
+  if (borealis_id.has_value()) {
+    return ukm::AppSourceUrlRecorder::GetSourceIdForBorealis(
+        base::NumberToString(borealis_id.value()));
   }
-  absl::optional<int> borealis_id =
-      borealis::ParseSteamGameId(registration->Exec());
-  if (!borealis_id)
-    LOG(WARNING) << "Couldn't get Borealis ID for registered app " << app_id;
-  return ukm::AppSourceUrlRecorder::GetSourceIdForBorealis(
-      borealis_id ? base::NumberToString(borealis_id.value()) : "NoId");
+
+  // If there's no steam id then we're not allowed to record anything that
+  // could identify the app (and we don't know the app name anyway), but
+  // recording every unregistered app in one big bucket is fine.
+  //
+  // In general all Borealis apps should have a steam id, so if we do see this
+  // Source ID being reported, that's a bug.
+  LOG(WARNING) << "Couldn't get Borealis ID for UNREGISTERED app " << app_id;
+  return ukm::AppSourceUrlRecorder::GetSourceIdForBorealis("UNREGISTERED");
 }
 
 // static
@@ -757,7 +755,7 @@ void AppPlatformMetrics::OnAppTypeInitialized(AppType app_type) {
 
 void AppPlatformMetrics::OnAppRegistryCacheWillBeDestroyed(
     apps::AppRegistryCache* cache) {
-  apps::AppRegistryCache::Observer::Observe(nullptr);
+  app_registry_cache_observer_.Reset();
 }
 
 void AppPlatformMetrics::OnAppUpdate(const apps::AppUpdate& update) {

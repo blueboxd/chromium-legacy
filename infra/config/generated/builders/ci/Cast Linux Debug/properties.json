@@ -7,7 +7,7 @@
             "builder_id": {
               "bucket": "ci",
               "builder": "Cast Linux Debug",
-              "project": "chromium"
+              "project": "chromium-m117"
             },
             "builder_spec": {
               "build_gs_bucket": "chromium-linux-archive",
@@ -32,7 +32,7 @@
         {
           "bucket": "ci",
           "builder": "Cast Linux Debug",
-          "project": "chromium"
+          "project": "chromium-m117"
         }
       ],
       "mirroring_builder_group_and_names": [
@@ -46,7 +46,8 @@
   "$build/reclient": {
     "instance": "rbe-chromium-trusted",
     "jobs": 500,
-    "metrics_project": "chromium-reclient-metrics"
+    "metrics_project": "chromium-reclient-metrics",
+    "scandeps_server": true
   },
   "$recipe_engine/resultdb/test_presentation": {
     "column_keys": [],
@@ -58,6 +59,6 @@
   "builder_group": "chromium.linux",
   "recipe": "chromium",
   "sheriff_rotations": [
-    "chromium"
+    "chrome_browser_release"
   ]
 }

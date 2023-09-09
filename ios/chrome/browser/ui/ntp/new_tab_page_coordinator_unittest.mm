@@ -54,10 +54,6 @@
 #import "third_party/ocmock/OCMock/OCMock.h"
 #import "third_party/ocmock/gtest_support.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 // Test fixture for testing NewTabPageCoordinator class.
 class NewTabPageCoordinatorTest : public PlatformTest {
  protected:
@@ -267,15 +263,20 @@ TEST_F(NewTabPageCoordinatorTest, StartOffTheRecord) {
 TEST_F(NewTabPageCoordinatorTest, StartIsStartShowing) {
   CreateCoordinator(/*off_the_record=*/false);
   SetupCommandHandlerMocks();
-  // Swizzle out `-configureNTPViewController` since it leaves a dangling
-  // pointer somewhere, and UI code does not need to be spun up for this test.
   void (^swizzle_block)() = ^void() {
     // no-op
   };
-  std::unique_ptr<ScopedBlockSwizzler> service_swizzler =
+  // Swizzle out `-configureNTPViewController` since UI code does not need to be
+  // spun up for this test.
+  std::unique_ptr<ScopedBlockSwizzler> configureNTPVCSwizzler =
       std::make_unique<ScopedBlockSwizzler>(
           [NewTabPageCoordinator class], @selector(configureNTPViewController),
           swizzle_block);
+  // Swizzle out `-restoreNTPState` to prevent NTP VC's view from being loaded.
+  std::unique_ptr<ScopedBlockSwizzler> restoreNTPStateSwizzler =
+      std::make_unique<ScopedBlockSwizzler>([NewTabPageCoordinator class],
+                                            @selector(restoreNTPState),
+                                            swizzle_block);
 
   id coordinator_mock = OCMClassMock([ContentSuggestionsCoordinator class]);
   ContentSuggestionsCoordinator* mockContentSuggestionsCoordinator =
@@ -313,7 +314,7 @@ TEST_F(NewTabPageCoordinatorTest, StartIsStartShowing) {
       NewTabPageTabHelper::FromWebState(web_state_)->ShouldShowStartSurface());
   [coordinator_ stop];
 
-  // Test `-didChangeActiveWebState:` updates NTP Start state to false if it
+  // Test the active WebState updates NTP Start state to false if it
   // began as true.
   // NewTabPageTabHelper::FromWebState(web_state_)->SetShowStartSurface(true);
   OCMExpect([coordinator_mock alloc]).andReturn(coordinator_mock);
@@ -327,7 +328,7 @@ TEST_F(NewTabPageCoordinatorTest, StartIsStartShowing) {
   EXPECT_OCMOCK_VERIFY(coordinator_mock);
   // Save reference before `web_state_` is set to new active WebState.
   web::WebState* start_web_state = web_state_;
-  // Simulate didChangeActiveWebState: callback.
+  // Simulate the active WebState change callback.
   InsertWebState(CreateWebStateWithURL(GURL("chrome://version")));
   [coordinator_ didNavigateAwayFromNTP];
   // Moved away from Start surface to a different WebState, Start config for
@@ -575,4 +576,38 @@ TEST_F(NewTabPageCoordinatorTest, IsNTPCleanOnStop) {
   EXPECT_EQ(nil, coordinator_.feedTopSectionCoordinator);
   EXPECT_EQ(nil, coordinator_.feedHeaderViewController);
   EXPECT_FALSE(coordinator_.started);
+}
+
+// Tests that the state of an NTP is saved and restored when leaving an NTP and
+// navigating back to it in the same web state.
+TEST_F(NewTabPageCoordinatorTest, TestSaveNTPState) {
+  CreateCoordinator(/*off_the_record=*/false);
+  SetupCommandHandlerMocks();
+  [coordinator_ start];
+  [coordinator_ didNavigateToNTPInWebState:web_state_];
+
+  // Check that initial NTP is scrolled to top.
+  EXPECT_NEAR(coordinator_.NTPViewController.scrollPosition,
+              -[coordinator_.NTPViewController heightAboveFeed], 1);
+
+  // Change the selected feed and set some scroll position.
+  [coordinator_ selectFeedType:FeedTypeFollowing];
+  [coordinator_.NTPViewController setContentOffsetToTopOfFeedOrLess:500];
+
+  FeedType selectedFeed = coordinator_.selectedFeed;
+  CGFloat scrollPosition = coordinator_.NTPViewController.scrollPosition;
+
+  // Navigate away from the NTP and stop the coordinator.
+  [coordinator_ didNavigateAwayFromNTP];
+  [coordinator_ stop];
+
+  // Navigate to another NTP in the same web state.
+  [coordinator_ start];
+  [coordinator_ didNavigateToNTPInWebState:web_state_];
+
+  // Check that newly opened NTP restores saved state.
+  EXPECT_EQ(coordinator_.selectedFeed, selectedFeed);
+  EXPECT_NEAR(coordinator_.NTPViewController.scrollPosition, scrollPosition, 1);
+
+  [coordinator_ stop];
 }

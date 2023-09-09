@@ -11,6 +11,7 @@
 #include "base/task/sequenced_task_runner.h"
 #include "components/password_manager/core/browser/password_store_backend.h"
 #include "components/password_manager/core/browser/password_store_sync.h"
+#include "components/sync/model/wipe_model_upon_sync_disabled_behavior.h"
 
 namespace syncer {
 class ModelTypeControllerDelegate;
@@ -22,7 +23,6 @@ class LoginDatabase;
 class PasswordSyncBridge;
 class UnsyncedCredentialsDeletionNotifier;
 
-struct FieldInfo;
 struct InteractionsStats;
 
 // Class which interacts directly with LoginDatabase. It is also responsible to
@@ -32,7 +32,9 @@ class LoginDatabaseAsyncHelper : private PasswordStoreSync {
   LoginDatabaseAsyncHelper(
       std::unique_ptr<LoginDatabase> login_db,
       std::unique_ptr<UnsyncedCredentialsDeletionNotifier> notifier,
-      scoped_refptr<base::SequencedTaskRunner> main_task_runner);
+      scoped_refptr<base::SequencedTaskRunner> main_task_runner,
+      syncer::WipeModelUponSyncDisabledBehavior
+          wipe_model_upon_sync_disabled_behavior);
 
   ~LoginDatabaseAsyncHelper() override;
 
@@ -69,11 +71,6 @@ class LoginDatabaseAsyncHelper : private PasswordStoreSync {
       const base::RepeatingCallback<bool(const GURL&)>& origin_filter,
       base::Time delete_begin,
       base::Time delete_end);
-
-  // Synchronous implementation of FieldInfoStore.
-  void AddFieldInfo(const FieldInfo& field_info);
-  std::vector<FieldInfo> GetAllFieldInfo();
-  void RemoveFieldInfoByTime(base::Time remove_begin, base::Time remove_end);
 
   // Instantiates a proxy controller delegate to react to sync events.
   base::WeakPtr<syncer::ModelTypeControllerDelegate>
@@ -125,6 +122,8 @@ class LoginDatabaseAsyncHelper : private PasswordStoreSync {
   std::unique_ptr<LoginDatabase> login_db_
       GUARDED_BY_CONTEXT(sequence_checker_);
 
+  const syncer::WipeModelUponSyncDisabledBehavior
+      wipe_model_upon_sync_disabled_behavior_;
   std::unique_ptr<PasswordSyncBridge> password_sync_bridge_
       GUARDED_BY_CONTEXT(sequence_checker_);
 

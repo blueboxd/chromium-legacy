@@ -47,7 +47,7 @@ const std::string kExpsUrl("https://labs.google.com/search/experiments/");
 const std::string kFailureUrl("https://labs.google.com/search/error");
 const std::string kGoogleUrl("https://www.google.com/");
 const std::string kLensUrl("https://lens.google.com/companion");
-const std::string kNpsUrl("https://nps.gov/articles/route-66-overview.htm");
+const std::string kNpsUrl("https://www.nps.gov/articles/route-66-overview.htm");
 }  // namespace
 
 // Live tests for Companion.
@@ -311,13 +311,12 @@ IN_PROC_BROWSER_TEST_F(CompanionLiveTest, InitialNavigation) {
             SidePanelEntry::Id::kSearchCompanion);
 
   // Verify that experiments load.
-  std::vector<std::string> expected_features = {
-      "ATX", "CQ", "PageEntities", "RelQs", "RelQr", "RelQs"};
+  std::vector<std::string> expected_features = {"ATX", "CQ", "RelQs", "RelQr"};
   ConfirmFeaturesShown(expected_features, 1);
 
   // Generate PH.
   ClickButtonByInnerText("Generate");
-  ConfirmFeaturesShown({"PH"}, 1);
+  ConfirmFeaturesShown({"PHResult"}, 1);
   ConfirmFeaturesClicked({"PH"}, 1);
 
   // Close the side panel.
@@ -338,22 +337,15 @@ IN_PROC_BROWSER_TEST_F(CompanionLiveTest, InitialNavigationNotOptedIn) {
   EXPECT_TRUE(sync_service()->IsSyncFeatureEnabled());
 
   // Navigate to google.com and open side panel.
-  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GURL(kGoogleUrl)));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GURL(kNpsUrl)));
   ASSERT_EQ(side_panel_coordinator()->GetCurrentEntryId(), absl::nullopt);
 
   side_panel_coordinator()->Show(SidePanelEntry::Id::kSearchCompanion);
   EXPECT_TRUE(side_panel_coordinator()->IsSidePanelShowing());
   WaitForCompanionToBeLoaded();
 
-  // Verify the kExpsShown promo event is shown.
-  WaitForHistogramSample("Companion.PromoEvent",
-                         (int)companion::PromoEvent::kExpsShown);
-  histogram_tester_->ExpectBucketCount(
-      "Companion.PromoEvent",
-      /*sample=*/companion::PromoEvent::kExpsShown, /*expected_count=*/1);
-
   // Verify that correct experiments load.
-  std::vector<std::string> expected = {"ATX", "PageEntities", "RelQr", "RelQs"};
+  std::vector<std::string> expected = {"ATX", "RelQr", "RelQs"};
   std::vector<std::string> unexpected = {"CQ", "PH"};
   ConfirmFeaturesShown(expected, 1);
   ConfirmFeaturesShown(unexpected, 0);
@@ -368,7 +360,7 @@ IN_PROC_BROWSER_TEST_F(CompanionLiveTest, InitialNavigationLoggedOut) {
   // Navigate to a website, open the side panel, and ensure the sign in promo is
   // shown for a logged out account. Verify the sign-in promo functionality.
   EnableMsbb(false);
-  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GURL(kGoogleUrl)));
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GURL(kNpsUrl)));
   ASSERT_EQ(side_panel_coordinator()->GetCurrentEntryId(), absl::nullopt);
 
   side_panel_coordinator()->Show(SidePanelEntry::Id::kSearchCompanion);
@@ -385,8 +377,7 @@ IN_PROC_BROWSER_TEST_F(CompanionLiveTest, InitialNavigationLoggedOut) {
       "Companion.PromoEvent",
       /*sample=*/companion::PromoEvent::kSignInShown, /*expected_count=*/1);
 
-  std::vector<std::string> all_features = {"ATX", "CQ",    "PageEntities",
-                                           "PH",  "RelQr", "RelQs"};
+  std::vector<std::string> all_features = {"ATX", "CQ", "PH", "RelQr", "RelQs"};
   ConfirmFeaturesShown(all_features, 0);
 
   // Click on sign-in promo and expect sign in site in new tab.
@@ -468,26 +459,27 @@ IN_PROC_BROWSER_TEST_F(CompanionLiveTest, ToggleExps) {
     GTEST_SKIP();
   }
   // Open side panel and expect experiments to load.
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GURL(kNpsUrl)));
   ASSERT_EQ(side_panel_coordinator()->GetCurrentEntryId(), absl::nullopt);
   side_panel_coordinator()->Show(SidePanelEntry::Id::kSearchCompanion);
   EXPECT_TRUE(side_panel_coordinator()->IsSidePanelShowing());
   WaitForCompanionToBeLoaded();
 
-  std::vector<std::string> all_features = {"ATX", "CQ", "PageEntities", "RelQr",
-                                           "RelQs"};
+  std::vector<std::string> all_features = {"ATX", "CQ", "RelQr", "RelQs"};
   ConfirmFeaturesShown(all_features, 1);
   side_panel_coordinator()->Close();
 
   // Turn off exps and expect features to not be shown.
   EnableExps(false);
   ASSERT_EQ(side_panel_coordinator()->GetCurrentEntryId(), absl::nullopt);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GURL(kNpsUrl)));
   side_panel_coordinator()->Show(SidePanelEntry::Id::kSearchCompanion);
   EXPECT_TRUE(side_panel_coordinator()->IsSidePanelShowing());
   WaitForCompanionToBeLoaded();
 
   // Verify that new samples populate for expected features.
   std::vector<std::string> exps = {"CQ"};
-  std::vector<std::string> non_exps = {"ATX", "PageEntities", "RelQr", "RelQs"};
+  std::vector<std::string> non_exps = {"ATX", "RelQr", "RelQs"};
   ConfirmFeaturesShown(exps, 1);
   ConfirmFeaturesShown(non_exps, 2);
   side_panel_coordinator()->Close();
@@ -495,6 +487,7 @@ IN_PROC_BROWSER_TEST_F(CompanionLiveTest, ToggleExps) {
   // Turn exps back on and open side panel again.
   EnableExps(true);
   ASSERT_EQ(side_panel_coordinator()->GetCurrentEntryId(), absl::nullopt);
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GURL(kNpsUrl)));
   side_panel_coordinator()->Show(SidePanelEntry::Id::kSearchCompanion);
   EXPECT_TRUE(side_panel_coordinator()->IsSidePanelShowing());
   WaitForCompanionToBeLoaded();

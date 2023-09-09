@@ -21,6 +21,9 @@ import org.chromium.chrome.browser.password_manager.settings.DialogManager;
  * An alert dialog that offers to delete passwords which were exported.
  */
 public class ExportDeletionDialogFragment extends DialogFragment implements PasswordStoreObserver {
+    /** The delay after which the progress bar will be displayed. */
+    private static final int PROGRESS_BAR_DELAY_MS = 500;
+
     private PasswordStoreBridge mPasswordStoreBridge;
     private Runnable mHideProgressBarCallback;
     private Dialog mDialog;
@@ -58,7 +61,8 @@ public class ExportDeletionDialogFragment extends DialogFragment implements Pass
                                         .getResources()
                                         .getString(R.string.exported_passwords_deletion_dialog_text)
                                         .replace("%1$s",
-                                                PasswordMigrationWarningUtil.getChannelString()))
+                                                PasswordMigrationWarningUtil.getChannelString(
+                                                        getActivity().getApplicationContext())))
                         .setTitle(getActivity().getResources().getString(
                                 R.string.exported_passwords_deletion_dialog_title))
                         .create();
@@ -99,8 +103,10 @@ public class ExportDeletionDialogFragment extends DialogFragment implements Pass
     }
 
     private void showProgressBar() {
-        ProgressBarDeletionDialog progressBarDialogFragment = new ProgressBarDeletionDialog();
-        mProgressBarManager.show(progressBarDialogFragment, mFragmentManager);
+        NonCancelableProgressBar progressBarDialogFragment = new NonCancelableProgressBar(
+                R.string.exported_passwords_deletion_in_progress_title);
+        mProgressBarManager.showWithDelay(
+                progressBarDialogFragment, mFragmentManager, PROGRESS_BAR_DELAY_MS);
     }
 
     private void hideProgressBar() {

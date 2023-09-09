@@ -7,7 +7,7 @@
             "builder_id": {
               "bucket": "ci",
               "builder": "Android WebView N (dbg)",
-              "project": "chromium"
+              "project": "chromium-m117"
             },
             "builder_spec": {
               "build_gs_bucket": "chromium-android-archive",
@@ -21,7 +21,7 @@
               },
               "legacy_chromium_config": {
                 "apply_configs": [
-                  "download_vr_test_apks"
+                  "download_xr_test_apks"
                 ],
                 "build_config": "Debug",
                 "config": "android",
@@ -37,7 +37,7 @@
               "parent": {
                 "bucket": "ci",
                 "builder": "Android arm64 Builder (dbg)",
-                "project": "chromium"
+                "project": "chromium-m117"
               }
             }
           },
@@ -45,7 +45,7 @@
             "builder_id": {
               "bucket": "ci",
               "builder": "Android WebView O (dbg)",
-              "project": "chromium"
+              "project": "chromium-m117"
             },
             "builder_spec": {
               "build_gs_bucket": "chromium-android-archive",
@@ -59,7 +59,7 @@
               },
               "legacy_chromium_config": {
                 "apply_configs": [
-                  "download_vr_test_apks"
+                  "download_xr_test_apks"
                 ],
                 "build_config": "Debug",
                 "config": "android",
@@ -75,7 +75,7 @@
               "parent": {
                 "bucket": "ci",
                 "builder": "Android arm64 Builder (dbg)",
-                "project": "chromium"
+                "project": "chromium-m117"
               }
             }
           },
@@ -83,7 +83,7 @@
             "builder_id": {
               "bucket": "ci",
               "builder": "Android WebView P (dbg)",
-              "project": "chromium"
+              "project": "chromium-m117"
             },
             "builder_spec": {
               "build_gs_bucket": "chromium-android-archive",
@@ -97,7 +97,7 @@
               },
               "legacy_chromium_config": {
                 "apply_configs": [
-                  "download_vr_test_apks"
+                  "download_xr_test_apks"
                 ],
                 "build_config": "Debug",
                 "config": "android",
@@ -113,7 +113,7 @@
               "parent": {
                 "bucket": "ci",
                 "builder": "Android arm64 Builder (dbg)",
-                "project": "chromium"
+                "project": "chromium-m117"
               }
             }
           },
@@ -121,7 +121,7 @@
             "builder_id": {
               "bucket": "ci",
               "builder": "Android arm64 Builder (dbg)",
-              "project": "chromium"
+              "project": "chromium-m117"
             },
             "builder_spec": {
               "build_gs_bucket": "chromium-android-archive",
@@ -132,7 +132,7 @@
               },
               "legacy_chromium_config": {
                 "apply_configs": [
-                  "download_vr_test_apks"
+                  "download_xr_test_apks"
                 ],
                 "build_config": "Debug",
                 "config": "android",
@@ -151,7 +151,7 @@
             "builder_id": {
               "bucket": "ci",
               "builder": "Nougat Phone Tester",
-              "project": "chromium"
+              "project": "chromium-m117"
             },
             "builder_spec": {
               "build_gs_bucket": "chromium-android-archive",
@@ -162,7 +162,7 @@
               },
               "legacy_chromium_config": {
                 "apply_configs": [
-                  "download_vr_test_apks"
+                  "download_xr_test_apks"
                 ],
                 "build_config": "Debug",
                 "config": "android",
@@ -178,7 +178,7 @@
               "parent": {
                 "bucket": "ci",
                 "builder": "Android arm64 Builder (dbg)",
-                "project": "chromium"
+                "project": "chromium-m117"
               }
             }
           },
@@ -186,7 +186,7 @@
             "builder_id": {
               "bucket": "ci",
               "builder": "Oreo Phone Tester",
-              "project": "chromium"
+              "project": "chromium-m117"
             },
             "builder_spec": {
               "build_gs_bucket": "chromium-android-archive",
@@ -197,7 +197,7 @@
               },
               "legacy_chromium_config": {
                 "apply_configs": [
-                  "download_vr_test_apks"
+                  "download_xr_test_apks"
                 ],
                 "build_config": "Debug",
                 "config": "android",
@@ -213,7 +213,7 @@
               "parent": {
                 "bucket": "ci",
                 "builder": "Android arm64 Builder (dbg)",
-                "project": "chromium"
+                "project": "chromium-m117"
               }
             }
           },
@@ -221,7 +221,7 @@
             "builder_id": {
               "bucket": "ci",
               "builder": "android-pie-arm64-dbg",
-              "project": "chromium"
+              "project": "chromium-m117"
             },
             "builder_spec": {
               "build_gs_bucket": "chromium-android-archive",
@@ -232,7 +232,7 @@
               },
               "legacy_chromium_config": {
                 "apply_configs": [
-                  "download_vr_test_apks"
+                  "download_xr_test_apks"
                 ],
                 "build_config": "Debug",
                 "config": "android",
@@ -248,7 +248,7 @@
               "parent": {
                 "bucket": "ci",
                 "builder": "Android arm64 Builder (dbg)",
-                "project": "chromium"
+                "project": "chromium-m117"
               }
             }
           }
@@ -258,39 +258,39 @@
         {
           "bucket": "ci",
           "builder": "Android arm64 Builder (dbg)",
-          "project": "chromium"
+          "project": "chromium-m117"
         }
       ],
       "builder_ids_in_scope_for_testing": [
         {
           "bucket": "ci",
           "builder": "Android WebView N (dbg)",
-          "project": "chromium"
+          "project": "chromium-m117"
         },
         {
           "bucket": "ci",
           "builder": "Android WebView O (dbg)",
-          "project": "chromium"
+          "project": "chromium-m117"
         },
         {
           "bucket": "ci",
           "builder": "Android WebView P (dbg)",
-          "project": "chromium"
+          "project": "chromium-m117"
         },
         {
           "bucket": "ci",
           "builder": "Nougat Phone Tester",
-          "project": "chromium"
+          "project": "chromium-m117"
         },
         {
           "bucket": "ci",
           "builder": "Oreo Phone Tester",
-          "project": "chromium"
+          "project": "chromium-m117"
         },
         {
           "bucket": "ci",
           "builder": "android-pie-arm64-dbg",
-          "project": "chromium"
+          "project": "chromium-m117"
         }
       ],
       "mirroring_builder_group_and_names": [
@@ -303,26 +303,6 @@
           "group": "tryserver.chromium.android"
         },
         {
-          "builder": "android-webview-nougat-arm64-dbg",
-          "group": "tryserver.chromium.android"
-        },
-        {
-          "builder": "android-webview-oreo-arm64-dbg",
-          "group": "tryserver.chromium.android"
-        },
-        {
-          "builder": "android-webview-pie-arm64-dbg",
-          "group": "tryserver.chromium.android"
-        },
-        {
-          "builder": "android_arm64_dbg_recipe",
-          "group": "tryserver.chromium.android"
-        },
-        {
-          "builder": "android_unswarmed_pixel_aosp",
-          "group": "tryserver.chromium.android"
-        },
-        {
           "builder": "try-nougat-phone-tester",
           "group": "tryserver.chromium.android"
         }
@@ -332,7 +312,8 @@
   "$build/reclient": {
     "instance": "rbe-chromium-trusted",
     "jobs": 500,
-    "metrics_project": "chromium-reclient-metrics"
+    "metrics_project": "chromium-reclient-metrics",
+    "scandeps_server": true
   },
   "$recipe_engine/resultdb/test_presentation": {
     "column_keys": [],
@@ -344,6 +325,6 @@
   "builder_group": "chromium.android",
   "recipe": "chromium",
   "sheriff_rotations": [
-    "android"
+    "chrome_browser_release"
   ]
 }

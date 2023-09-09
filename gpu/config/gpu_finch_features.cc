@@ -178,6 +178,11 @@ BASE_FEATURE(kDefaultEnableANGLEValidation,
              "DefaultEnableANGLEValidation",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+// Disables MSAA in Graphite if MSAA is reported as being slow for the device.
+BASE_FEATURE(kDisableSlowMSAAInGraphite,
+             "DisableSlowMSAAInGraphite",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 // Enables canvas to free its resources by default when it's running in
 // the background.
 BASE_FEATURE(kCanvasContextLostInBackground,
@@ -343,7 +348,14 @@ const base::FeatureParam<std::string> kDrDcBlockListByAndroidBuildFP{
 // Enable Skia Graphite. This will use the Dawn backend by default, but can be
 // overridden with command line flags for testing on non-official developer
 // builds. See --skia-graphite-backend flag in gpu_switches.h.
-BASE_FEATURE(kSkiaGraphite, "SkiaGraphite", base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kSkiaGraphite,
+             "SkiaGraphite",
+#if BUILDFLAG(IS_IOS)
+             base::FEATURE_ENABLED_BY_DEFAULT
+#else
+             base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+);
 
 #if BUILDFLAG(IS_WIN)
 BASE_FEATURE(kSkiaGraphiteDawnUseD3D12,

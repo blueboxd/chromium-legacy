@@ -58,6 +58,11 @@ const ClipboardHistoryItem* GetClipboardHistoryItemImpl(
 
 const gfx::Insets GetDeleteButtonMargins(
     crosapi::mojom::ClipboardHistoryDisplayFormat display_format) {
+  // When the refresh is enabled, delete buttons are fully top-right aligned.
+  if (chromeos::features::IsClipboardHistoryRefreshEnabled()) {
+    return gfx::Insets();
+  }
+
   switch (display_format) {
     case crosapi::mojom::ClipboardHistoryDisplayFormat::kUnknown:
       NOTREACHED_NORETURN();
@@ -471,7 +476,8 @@ std::unique_ptr<views::View> ClipboardHistoryItemView::CreateDeleteButton() {
       .SetMainAxisAlignment(views::BoxLayout::MainAxisAlignment::kEnd)
       .SetCrossAxisAlignment(views::BoxLayout::CrossAxisAlignment::kStart)
       .AddChild(views::Builder<views::Button>(
-                    std::make_unique<ClipboardHistoryDeleteButton>(this))
+                    std::make_unique<ClipboardHistoryDeleteButton>(
+                        this, item->display_text()))
                     .SetProperty(views::kMarginsKey,
                                  GetDeleteButtonMargins(item->display_format()))
                     .CopyAddressTo(&delete_button_))

@@ -10,10 +10,6 @@
 #include "base/path_service.h"
 #include "content/public/common/content_paths.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 namespace {
 
 base::FilePath GetContentsPath() {
@@ -73,7 +69,9 @@ void OverrideChildProcessPath() {
                                    .Append("MacOS")
                                    .Append("Content Shell Helper");
 
-  base::PathService::Override(content::CHILD_PROCESS_EXE, helper_path);
+  base::PathService::OverrideAndCreateIfNeeded(
+      content::CHILD_PROCESS_EXE, helper_path, /*is_absolute=*/true,
+      /*create=*/false);
 }
 
 void OverrideSourceRootPath() {

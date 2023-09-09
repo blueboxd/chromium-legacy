@@ -1152,17 +1152,6 @@ PaintLayer* LayoutObject::PaintingLayer(int max_depth) const {
   return nullptr;
 }
 
-bool LayoutObject::IsFixedPositionObjectInPagedMedia() const {
-  NOT_DESTROYED();
-  if (StyleRef().GetPosition() != EPosition::kFixed)
-    return false;
-  LayoutView* view = View();
-  return Container() == view && view->PageLogicalHeight() &&
-         // TODO(crbug.com/619094): Figure out the correct behaviour for fixed
-         // position objects in paged media with vertical writing modes.
-         view->IsHorizontalWritingMode();
-}
-
 LayoutBox* LayoutObject::EnclosingBox() const {
   NOT_DESTROYED();
   LayoutObject* curr = const_cast<LayoutObject*>(this);
@@ -1300,8 +1289,18 @@ static inline bool ObjectIsRelayoutBoundary(const LayoutObject* object) {
 
     const NGPhysicalFragment& fragment = layout_result->PhysicalFragment();
 
+    // Make sure our fragment is safe to use.
+    if (fragment.IsLayoutObjectDestroyedOrMoved()) {
+      return false;
+    }
+
     // Fragmented nodes cannot be relayout roots.
     if (fragment.BreakToken()) {
+      return false;
+    }
+
+    // Any propagated layout-objects will affect the our container chain.
+    if (fragment.HasPropagatedLayoutObjects()) {
       return false;
     }
 
@@ -1422,6 +1421,21 @@ void LayoutObject::SetChildNeedsCollectInlines() {
   } while (object);
 }
 
+namespace {
+
+bool HasPropagatedLayoutObjects(const LayoutObject* object) {
+  if (auto* box = DynamicTo<LayoutBox>(object)) {
+    for (const auto& fragment : box->PhysicalFragments()) {
+      if (fragment.HasPropagatedLayoutObjects()) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
+}  // namespace
+
 void LayoutObject::MarkContainerChainForLayout(bool schedule_relayout) {
   NOT_DESTROYED();
 #if DCHECK_IS_ON()
@@ -1452,7 +1466,8 @@ void LayoutObject::MarkContainerChainForLayout(bool schedule_relayout) {
     // it's not enough to check |object|, since the element that is actually
     // locked needs its child bits set properly, we need to go one more
     // iteration after that.
-    if (!last->SelfNeedsLayout() && last->ChildLayoutBlockedByDisplayLock()) {
+    if (!last->SelfNeedsLayout() && last->ChildLayoutBlockedByDisplayLock() &&
+        !HasPropagatedLayoutObjects(last)) {
       return;
     }
 
@@ -2486,8 +2501,9 @@ void LayoutObject::SetPseudoElementStyle(
   //
   if (IsImage() || IsQuote()) {
     ComputedStyleBuilder builder =
-        GetDocument().GetStyleResolver().CreateComputedStyleBuilder();
-    builder.InheritFrom(*pseudo_style);
+        GetDocument()
+            .GetStyleResolver()
+            .CreateComputedStyleBuilderInheritingFrom(*pseudo_style);
     if (match_parent_size) {
       DCHECK(IsImage());
       builder.SetWidth(Length::Percent(100));
@@ -2510,8 +2526,9 @@ void LayoutObject::SetPseudoElementStyle(
   if (IsText() && UNLIKELY(IsA<LayoutNGTextCombine>(Parent()))) {
     // See http://crbug.com/1222640
     ComputedStyleBuilder combined_text_style_builder =
-        GetDocument().GetStyleResolver().CreateComputedStyleBuilder();
-    combined_text_style_builder.InheritFrom(*pseudo_style);
+        GetDocument()
+            .GetStyleResolver()
+            .CreateComputedStyleBuilderInheritingFrom(*pseudo_style);
     StyleAdjuster::AdjustStyleForCombinedText(combined_text_style_builder);
     SetStyle(combined_text_style_builder.TakeStyle());
     return;
@@ -4542,6 +4559,15 @@ void LayoutObject::SetShouldCheckForPaintInvalidation() {
 
   bitfields_.SetShouldCheckForPaintInvalidation(true);
   bitfields_.SetShouldCheckLayoutForPaintInvalidation(true);
+
+  // This is not a good place to be during pre-paint. Marking the the ancestry
+  // for paint invalidation checking during pre-paint is bad, since we may
+  // already be done with those objects, and never get to visit them again in
+  // the pre-paint phase. LayoutObject ancestors as they may be, the structure
+  // of the physical fragment tree could be different.
+  DCHECK(GetDocument().Lifecycle().GetState() !=
+         DocumentLifecycle::kInPrePaint);
+
   for (LayoutObject* ancestor = Parent();
        ancestor && !ancestor->DescendantShouldCheckLayoutForPaintInvalidation();
        ancestor = ancestor->Parent()) {

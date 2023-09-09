@@ -90,10 +90,6 @@
 // TODO(crbug.com/1383087): remove once the feature is fully launched.
 #import "ios/web/common/features.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 #pragma mark -
 
 namespace {
@@ -257,6 +253,7 @@ class BrowserViewControllerTest : public BlockCleanupTest {
                                                    settings_map
                                loadingNotifier:urlLoadingNotifier_
                                     sceneState:scene_state_
+                       tabStripCommandsHandler:nil
                                        tracker:(feature_engagement::Tracker*)
                                                    tracker
                                   webStateList:browser_->GetWebStateList()];
@@ -323,13 +320,9 @@ class BrowserViewControllerTest : public BlockCleanupTest {
     id mockReauthHandler = OCMProtocolMock(@protocol(IncognitoReauthCommands));
     bvc_.reauthHandler = mockReauthHandler;
 
-    SessionRestorationBrowserAgent* sessionRestorationBrowserAgent_ =
-        SessionRestorationBrowserAgent::FromBrowser(browser_.get());
-
     tab_events_mediator_ = [[TabEventsMediator alloc]
         initWithWebStateList:browser_.get()->GetWebStateList()
               ntpCoordinator:NTPCoordinator_
-            restorationAgent:sessionRestorationBrowserAgent_
                 browserState:chrome_browser_state_.get()
              loadingNotifier:urlLoadingNotifier_];
     tab_events_mediator_.consumer = bvc_;
@@ -349,6 +342,7 @@ class BrowserViewControllerTest : public BlockCleanupTest {
     [popup_menu_coordinator_ stop];
     [NTPCoordinator_ stop];
     [side_swipe_mediator_ disconnect];
+    [bubble_presenter_ stop];
 
     BlockCleanupTest::TearDown();
   }

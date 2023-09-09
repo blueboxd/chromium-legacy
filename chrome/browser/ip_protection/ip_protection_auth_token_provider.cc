@@ -32,7 +32,7 @@ void IpProtectionAuthTokenProvider::TryGetAuthTokens(
     uint32_t batch_size,
     TryGetAuthTokensCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (try_get_auth_token_callback_) {
+  if (try_get_auth_tokens_callback_) {
     mojo::ReportBadMessage(
         "Concurrent calls to TryGetAuthTokens are not allowed");
     return;
@@ -43,7 +43,7 @@ void IpProtectionAuthTokenProvider::TryGetAuthTokens(
     mojo::ReportBadMessage("Invalid batch_size");
     return;
   }
-  try_get_auth_token_callback_ = std::move(callback);
+  try_get_auth_tokens_callback_ = std::move(callback);
   batch_size_ = batch_size;
   RequestOAuthToken();
 }
@@ -56,20 +56,8 @@ void IpProtectionAuthTokenProvider::RequestOAuthToken() {
     return;
   }
 
-  // If the user is not eligible, do not even try to fetch tokens. If unknown,
-  // fall back to trying anyway.
-  const CoreAccountId account_id =
-      identity_manager_->GetPrimaryAccountId(signin::ConsentLevel::kSignin);
-  CHECK(!account_id.empty());
-  const AccountInfo account_info =
-      identity_manager_->FindExtendedAccountInfoByAccountId(account_id);
-  if (!account_info.IsEmpty() &&
-      account_info.capabilities.can_use_chrome_ip_protection() ==
-          signin::Tribool::kFalse) {
-    TryGetAuthTokensComplete(
-        absl::nullopt, IpProtectionTryGetAuthTokensResult::kFailedNotEligible);
-    return;
-  }
+  // TODO(https://crbug.com/1444621): Add a client side account capabilities
+  // check to compliment the server-side checks.
 
   signin::ScopeSet scopes;
   scopes.insert(GaiaConstants::kIpProtectionAuthScope);
@@ -99,6 +87,8 @@ void IpProtectionAuthTokenProvider::OnRequestOAuthTokenCompleted(
   // If we fail to get an OAuth token don't attempt to fetch from Phosphor as
   // the request is guaranteed to fail.
   if (error.state() != GoogleServiceAuthError::NONE) {
+    VLOG(1) << "IP Protection OAuth token fetch failed with error: "
+            << base::NumberToString(static_cast<int>(error.state()));
     TryGetAuthTokensComplete(
         absl::nullopt, IpProtectionTryGetAuthTokensResult::kFailedOAuthToken);
     return;
@@ -173,7 +163,64 @@ void IpProtectionAuthTokenProvider::TryGetAuthTokensComplete(
     IpProtectionTryGetAuthTokensResult result) {
   base::UmaHistogramEnumeration(
       "NetworkService.IpProtection.TryGetAuthTokensResult", result);
-  std::move(try_get_auth_token_callback_).Run(std::move(bsa_tokens));
+
+  absl::optional<base::TimeDelta> backoff = CalculateBackoff(result);
+  absl::optional<base::Time> try_again_after;
+  if (backoff) {
+    try_again_after = base::Time::Now() + *backoff;
+  }
+  DCHECK(bsa_tokens.has_value() || try_again_after.has_value());
+  std::move(try_get_auth_tokens_callback_)
+      .Run(std::move(bsa_tokens), try_again_after);
+}
+
+absl::optional<base::TimeDelta> IpProtectionAuthTokenProvider::CalculateBackoff(
+    IpProtectionTryGetAuthTokensResult result) {
+  absl::optional<base::TimeDelta> backoff;
+  bool exponential = false;
+  switch (result) {
+    case IpProtectionTryGetAuthTokensResult::kSuccess:
+      break;
+    case IpProtectionTryGetAuthTokensResult::kFailedNoAccount:
+      // A primary account may become available at any time, so do not wait very
+      // long.
+      //
+      // TODO(djmitche): coordinate this with changes to the primary account's
+      // status instead of polling.
+      backoff = kNoAccountBackoff;
+      break;
+    case IpProtectionTryGetAuthTokensResult::kFailedNotEligible:
+    case IpProtectionTryGetAuthTokensResult::kFailedBSA403:
+      // Eligibility, whether determined locally or on the server, is unlikely
+      // to change quickly.
+      backoff = kNotEligibleBackoff;
+      break;
+    case IpProtectionTryGetAuthTokensResult::kFailedOAuthToken:
+    case IpProtectionTryGetAuthTokensResult::kFailedBSAOther:
+      // Failure to fetch an OAuth token, or some other error from BSA, is
+      // probably transient.
+      backoff = kTransientBackoff;
+      exponential = true;
+      break;
+    case IpProtectionTryGetAuthTokensResult::kFailedBSA400:
+    case IpProtectionTryGetAuthTokensResult::kFailedBSA401:
+      // Both 400 and 401 suggest a bug, so do not retry aggressively.
+      backoff = kBugBackoff;
+      exponential = true;
+      break;
+  }
+
+  if (exponential) {
+    if (last_try_get_auth_tokens_backoff_ &&
+        last_try_get_auth_tokens_result_ == result) {
+      backoff = *last_try_get_auth_tokens_backoff_ * 2;
+    }
+  }
+
+  last_try_get_auth_tokens_result_ = result;
+  last_try_get_auth_tokens_backoff_ = backoff;
+
+  return backoff;
 }
 
 void IpProtectionAuthTokenProvider::Shutdown() {
@@ -202,7 +249,7 @@ void IpProtectionAuthTokenProvider::SetReceiver(
     receiver_.reset();
     // Reset any pending callbacks as well since this class only expects to have
     // only one pending call to `TryGetAuthTokens()` at any given time.
-    try_get_auth_token_callback_.Reset();
+    try_get_auth_tokens_callback_.Reset();
   }
   receiver_.Bind(std::move(pending_receiver));
 }

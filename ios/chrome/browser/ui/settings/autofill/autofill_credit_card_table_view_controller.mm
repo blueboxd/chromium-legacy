@@ -30,6 +30,7 @@
 #import "ios/chrome/browser/shared/ui/table_view/table_view_utils.h"
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/settings/autofill/autofill_add_credit_card_coordinator.h"
+#import "ios/chrome/browser/ui/settings/autofill/autofill_add_credit_card_coordinator_delegate.h"
 #import "ios/chrome/browser/ui/settings/autofill/autofill_constants.h"
 #import "ios/chrome/browser/ui/settings/autofill/autofill_credit_card_edit_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/autofill/cells/autofill_card_item.h"
@@ -40,10 +41,6 @@
 #import "ios/chrome/grit/ios_strings.h"
 #import "net/base/mac/url_conversions.h"
 #import "ui/base/l10n/l10n_util.h"
-
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
 
 namespace {
 
@@ -65,6 +62,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 #pragma mark - AutofillCreditCardTableViewController
 
 @interface AutofillCreditCardTableViewController () <
+    AutofillAddCreditCardCoordinatorDelegate,
     PersonalDataManagerObserver,
     PopoverLabelViewControllerDelegate> {
   autofill::PersonalDataManager* _personalDataManager;
@@ -114,11 +112,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
     _personalDataManager->AddObserver(_observer.get());
   }
   return self;
-}
-
-- (void)dealloc {
-  // TODO(crbug.com/1454777)
-  DUMP_WILL_BE_CHECK(_settingsAreDismissed);
 }
 
 #pragma mark - UIViewController
@@ -274,6 +267,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   DCHECK(!_settingsAreDismissed);
 
   _personalDataManager->RemoveObserver(_observer.get());
+  [self stopAutofillAddCreditCardCoordinator];
 
   // Remove observer bridges.
   _observer.reset();
@@ -564,7 +558,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   self.addCreditCardCoordinator = [[AutofillAddCreditCardCoordinator alloc]
       initWithBaseViewController:self
                          browser:_browser];
-
+  self.addCreditCardCoordinator.delegate = self;
   [self.addCreditCardCoordinator start];
 }
 
@@ -615,6 +609,20 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 - (void)addButtonCallback {
   [self handleAddPayment];
+}
+
+- (void)stopAutofillAddCreditCardCoordinator {
+  [self.addCreditCardCoordinator stop];
+  self.addCreditCardCoordinator.delegate = nil;
+  self.addCreditCardCoordinator = nil;
+}
+
+#pragma mark - AutofillAddCreditCardCoordinatorDelegate
+
+- (void)autofillAddCreditCardCoordinatorWantsToBeStopped:
+    (AutofillAddCreditCardCoordinator*)coordinator {
+  CHECK_EQ(coordinator, self.addCreditCardCoordinator);
+  [self stopAutofillAddCreditCardCoordinator];
 }
 
 @end

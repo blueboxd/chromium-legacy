@@ -1110,7 +1110,9 @@ void ContainerNode::ClonePartsFrom(const ContainerNode& node,
   if (node.HasDOMParts()) {
     data.ConnectNodeToClone(node, *this);
     for (Part* part : node.GetDOMParts()) {
-      data.QueueForCloning(*part);
+      if (part->NodeToSortBy() == node) {
+        data.QueueForCloning(*part);
+      }
     }
   }
 }
@@ -1119,7 +1121,7 @@ void ContainerNode::CloneChildNodesFrom(const ContainerNode& node,
                                         NodeCloningData& data) {
   CHECK(data.Has(CloneOption::kIncludeDescendants));
   for (const Node& child : NodeTraversal::ChildrenOf(node)) {
-    AppendChild(child.Clone(GetDocument(), data));
+    child.Clone(GetDocument(), data, this);
   }
 }
 

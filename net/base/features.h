@@ -176,6 +176,9 @@ NET_EXPORT BASE_DECLARE_FEATURE(kPartitionNelAndReportingByNetworkIsolationKey);
 // `is_cross_site_` -> a boolean indicating whether the frame site is
 // schemefully cross-site from the top-level site.
 NET_EXPORT BASE_DECLARE_FEATURE(kEnableCrossSiteFlagNetworkIsolationKey);
+NET_EXPORT BASE_DECLARE_FEATURE(
+    kEnableFrameSiteSharedOpaqueNetworkIsolationKey);
+NET_EXPORT BASE_DECLARE_FEATURE(kHttpCacheKeyingExperimentControlGroup);
 
 // Enables sending TLS 1.3 Key Update messages on TLS 1.3 connections in order
 // to ensure that this corner of the spec is exercised. This is currently
@@ -327,6 +330,9 @@ NET_EXPORT BASE_DECLARE_FEATURE(kBlockSetCookieHeader);
 NET_EXPORT BASE_DECLARE_FEATURE(kThirdPartyStoragePartitioning);
 NET_EXPORT BASE_DECLARE_FEATURE(kSupportPartitionedBlobUrl);
 
+// Feature to enable consideration of 3PCD Support settings.
+NET_EXPORT BASE_DECLARE_FEATURE(kTpcdSupportSettings);
+
 // Whether ALPS parsing is on for any type of frame.
 NET_EXPORT BASE_DECLARE_FEATURE(kAlpsParsing);
 
@@ -421,6 +427,9 @@ NET_EXPORT BASE_DECLARE_FEATURE(kZstdContentEncoding);
 // When enabled, the Clear-Site-Data HTTP Response header supports clearing all
 // targets as "*" rather than requiring all targets be listed out.
 NET_EXPORT BASE_DECLARE_FEATURE(kClearSiteDataWildcardSupport);
+
+// Enables SHA-256 and username hashing support for HTTP Digest auth.
+NET_EXPORT BASE_DECLARE_FEATURE(kDigestAuthEnableSecureAlgorithms);
 
 }  // namespace net::features
 

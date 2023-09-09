@@ -35,19 +35,20 @@ import org.mockito.junit.MockitoRule;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.LooperMode;
 
-import org.chromium.base.Callback;
 import org.chromium.base.supplier.OneshotSupplierImpl;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Batch;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.app.bookmarks.BookmarkAddEditFolderActivity;
 import org.chromium.chrome.browser.app.bookmarks.BookmarkEditActivity;
+import org.chromium.chrome.browser.app.bookmarks.BookmarkFolderPickerActivity;
 import org.chromium.chrome.browser.app.bookmarks.BookmarkFolderSelectActivity;
 import org.chromium.chrome.browser.bookmarks.BookmarkUiPrefs.BookmarkRowDisplayPref;
 import org.chromium.chrome.browser.bookmarks.BookmarkUiPrefs.BookmarkRowSortOrder;
 import org.chromium.chrome.browser.bookmarks.BookmarkUiState.BookmarkUiMode;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.test.util.browser.Features;
+import org.chromium.chrome.test.util.browser.Features.DisableFeatures;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.bookmarks.BookmarkItem;
@@ -89,7 +90,7 @@ public class BookmarkToolbarMediatorTest {
     @Mock
     private SelectionDelegate mSelectionDelegate;
     @Mock
-    private Callback mOpenFolderCallback;
+    private Runnable mNavigateBackRunnable;
     @Mock
     private BookmarkId mBookmarkId;
     @Mock
@@ -130,7 +131,8 @@ public class BookmarkToolbarMediatorTest {
                          .with(BookmarkToolbarProperties.BOOKMARK_UI_MODE, BookmarkUiMode.LOADING)
                          .with(BookmarkToolbarProperties.IS_DIALOG_UI, false)
                          .with(BookmarkToolbarProperties.DRAG_ENABLED, false)
-                         .with(BookmarkToolbarProperties.OPEN_FOLDER_CALLBACK, mOpenFolderCallback)
+                         .with(BookmarkToolbarProperties.NAVIGATE_BACK_RUNNABLE,
+                                 mNavigateBackRunnable)
                          .build();
         mBookmarkDelegateSupplier = new OneshotSupplierImpl<>();
         mMediator =
@@ -322,11 +324,20 @@ public class BookmarkToolbarMediatorTest {
     }
 
     @Test
+    @DisableFeatures(ChromeFeatureList.ANDROID_IMPROVED_BOOKMARKS)
     public void testOnMenuItemClick_selectionModeMoveMenu() {
         setCurrentSelection(mBookmarkId);
         assertTrue(mModel.get(BookmarkToolbarProperties.MENU_ID_CLICKED_FUNCTION)
                            .apply(R.id.selection_mode_move_menu_id));
         verifyActivityLaunched(BookmarkFolderSelectActivity.class);
+    }
+
+    @Test
+    public void testOnMenuItemClick_selectionModeMoveMenu_improvedBookmarksEnabled() {
+        setCurrentSelection(mBookmarkId);
+        assertTrue(mModel.get(BookmarkToolbarProperties.MENU_ID_CLICKED_FUNCTION)
+                           .apply(R.id.selection_mode_move_menu_id));
+        verifyActivityLaunched(BookmarkFolderPickerActivity.class);
     }
 
     @Test
@@ -361,17 +372,20 @@ public class BookmarkToolbarMediatorTest {
     public void testAddNewFolder() {
         mMediator.onFolderStateSet(mBookmarkId);
         assertTrue(mModel.get(BookmarkToolbarProperties.NEW_FOLDER_BUTTON_VISIBLE));
+        assertTrue(mModel.get(BookmarkToolbarProperties.NEW_FOLDER_BUTTON_ENABLED));
         assertTrue(mMediator.onMenuIdClick(R.id.create_new_folder_menu_id));
         verify(mBookmarkAddNewFolderCoordinator).show(any());
 
         doReturn(mBookmarkId).when(mBookmarkModel).getReadingListFolder();
         mMediator.onFolderStateSet(mBookmarkId);
-        assertFalse(mModel.get(BookmarkToolbarProperties.NEW_FOLDER_BUTTON_VISIBLE));
+        assertTrue(mModel.get(BookmarkToolbarProperties.NEW_FOLDER_BUTTON_VISIBLE));
+        assertFalse(mModel.get(BookmarkToolbarProperties.NEW_FOLDER_BUTTON_ENABLED));
 
         doReturn(null).when(mBookmarkModel).getReadingListFolder();
         doReturn(mBookmarkId).when(mBookmarkModel).getPartnerFolderId();
         mMediator.onFolderStateSet(mBookmarkId);
-        assertFalse(mModel.get(BookmarkToolbarProperties.NEW_FOLDER_BUTTON_VISIBLE));
+        assertTrue(mModel.get(BookmarkToolbarProperties.NEW_FOLDER_BUTTON_VISIBLE));
+        assertFalse(mModel.get(BookmarkToolbarProperties.NEW_FOLDER_BUTTON_ENABLED));
     }
 
     @Test

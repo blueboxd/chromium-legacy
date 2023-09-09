@@ -49,6 +49,10 @@ AutofillDownloadManager* AutofillClient::GetDownloadManager() {
   return nullptr;
 }
 
+const PersonalDataManager* AutofillClient::GetPersonalDataManager() const {
+  return const_cast<AutofillClient*>(this)->GetPersonalDataManager();
+}
+
 AutofillOptimizationGuide* AutofillClient::GetAutofillOptimizationGuide()
     const {
   return nullptr;
@@ -199,13 +203,6 @@ void AutofillClient::CloseAutofillProgressDialog(
     base::OnceClosure no_interactive_authentication_callback) {
   // This is overridden by platform subclasses. Currently only
   // ChromeAutofillClient (Chrome Desktop & Android) implements this.
-}
-
-void AutofillClient::HandleParsedForms(
-    AutofillDriver* driver,
-    const std::vector<autofill::FormStructure*>& forms) {
-  // This is overridden by platform subclasses. Currently only
-  // ChromeAutofillClientIOS implements this.
 }
 
 LogManager* AutofillClient::GetLogManager() const {

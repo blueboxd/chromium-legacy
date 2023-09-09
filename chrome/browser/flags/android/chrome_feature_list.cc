@@ -102,6 +102,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &commerce::kShoppingList,
     &commerce::kShoppingPDPMetrics,
     &content_settings::kDarkenWebsitesCheckboxInThemesSetting,
+    &content_settings::features::kUserBypassUI,
     &download::features::kSmartSuggestionForLargeDownloads,
     &download::features::kUseDownloadOfflineContentProvider,
     &features::kPWAsDefaultOfflinePage,
@@ -109,7 +110,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &features::kGenericSensorExtraClasses,
     &features::kBackForwardCache,
     &features::kBackForwardTransitions,
-    &features::kHttpsOnlyMode,
     &features::kMetricsSettingsAndroid,
     &features::kNetworkServiceInProcess,
     &shared_highlighting::kPreemptiveLinkToTextGeneration,
@@ -169,6 +169,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kAndroidImprovedBookmarks,
     &kAnimatedImageDragShadow,
     &kAppMenuMobileSiteOption,
+    &kAvoidSelectedTabFocusOnLayoutDoneShowing,
     &kBackGestureActivityTabProvider,
     &kBackGestureRefactorActivityAndroid,
     &kBackGestureRefactorAndroid,
@@ -194,6 +195,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kCCTPageInsightsHub,
     &kCCTPostMessageAPI,
     &kCCTPrefetchDelayShowOnStart,
+    &kCCTPreventTouches,
     &kCCTRealTimeEngagementSignals,
     &kCCTRealTimeEngagementSignalsAlternativeImpl,
     &kCCTRedirectPreconnect,
@@ -201,7 +203,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kCCTReportParallelRequestStatus,
     &kCCTResizable90MaximumHeight,
     &kCCTResizableForThirdParties,
-    &kCCTResizableMultiWindowMode,
     &kCCTResizableSideSheet,
     &kCCTResizableSideSheetForThirdParties,
     &kCCTResourcePrefetch,
@@ -253,6 +254,8 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kBookmarksImprovedSaveFlow,
     &kBookmarksRefresh,
     &kOmahaMinSdkVersionAndroid,
+    &kAvoidRelayoutDuringFocusAnimation,
+    &kShortCircuitUnfocusAnimation,
     &kOmniboxAdaptNarrowTabletWindows,
     &kOmniboxCacheSuggestionResources,
     &kOmniboxConsumesImeInsets,
@@ -266,7 +269,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kReadAloud,
     &kReaderModeInCCT,
     &kRecordSuppressionMetrics,
-    &kReduceToolbarUpdatesForSameDocNavigations,
     &kReengagementNotification,
     &kRelatedSearches,
     &kReportParentalControlSitesChild,
@@ -302,11 +304,11 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kStoreHoursAndroid,
     &kSwapPixelFormatToFixConvertFromTranslucent,
     &kTabDragDropAndroid,
+    &kTabAndLinkDragDropAndroid,
     &kTabEngagementReportingAndroid,
     &kTabGroupsAndroid,
     &kTabGroupsContinuationAndroid,
     &kTabGroupsForTablets,
-    &kDiscoverFeedMultiColumn,
     &kTabStripRedesign,
     &kTabletToolbarReordering,
     &kTabStripStartupRefactoring,
@@ -366,7 +368,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &password_manager::features::kPasskeyManagementUsingAccountSettingsAndroid,
     &password_manager::features::kPasswordEditDialogWithDetails,
     &password_manager::features::kRecoverFromNeverSaveAndroid,
-    &password_manager::features::kUnifiedCredentialManagerDryRun,
     &password_manager::features::kUnifiedPasswordManagerAndroid,
     &password_manager::features::kUnifiedPasswordManagerAndroidBranding,
     &password_manager::features::
@@ -379,6 +380,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &query_tiles::features::kQueryTilesInNTP,
     &query_tiles::features::kQueryTilesOnStart,
     &query_tiles::features::kQueryTilesSegmentation,
+    &safe_browsing::kFriendlierSafeBrowsingSettingsStandardProtection,
     &segmentation_platform::features::kContextualPageActions,
     &segmentation_platform::features::kContextualPageActionPriceTracking,
     &segmentation_platform::features::kContextualPageActionReaderMode,
@@ -449,6 +451,10 @@ BASE_FEATURE(kAdvancedPeripheralsSupportTabStrip,
 
 BASE_FEATURE(kAllowNewIncognitoTabIntents,
              "AllowNewIncognitoTabIntents",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kAvoidSelectedTabFocusOnLayoutDoneShowing,
+             "AvoidSelectedTabFocusOnLayoutDoneShowing",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kFocusOmniboxInIncognitoTabIntents,
@@ -566,6 +572,10 @@ BASE_FEATURE(kCCTPrefetchDelayShowOnStart,
              "CCTPrefetchDelayShowOnStart",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
+BASE_FEATURE(kCCTPreventTouches,
+             "CCTPreventTouches",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
 BASE_FEATURE(kCCTRealTimeEngagementSignals,
              "CCTRealTimeEngagementSignals",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -593,10 +603,6 @@ BASE_FEATURE(kCCTResizable90MaximumHeight,
 BASE_FEATURE(kCCTResizableForThirdParties,
              "CCTResizableForThirdParties",
              base::FEATURE_ENABLED_BY_DEFAULT);
-
-BASE_FEATURE(kCCTResizableMultiWindowMode,
-             "CCTResizableMultiWindowMode",
-             base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kCCTResizableSideSheet,
              "CCTResizableSideSheet",
@@ -735,7 +741,7 @@ BASE_FEATURE(kDrawEdgeToEdge,
              "DrawEdgeToEdge",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
-BASE_FEATURE(kEmptyStates, "EmptyStates", base::FEATURE_DISABLED_BY_DEFAULT);
+BASE_FEATURE(kEmptyStates, "EmptyStates", base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kExperimentsForAgsa,
              "ExperimentsForAgsa",
@@ -814,6 +820,14 @@ BASE_FEATURE(kOmahaMinSdkVersionAndroid,
              "OmahaMinSdkVersionAndroid",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+BASE_FEATURE(kAvoidRelayoutDuringFocusAnimation,
+             "AvoidRelayoutDuringFocusAnimation",
+             base::FEATURE_ENABLED_BY_DEFAULT);
+
+BASE_FEATURE(kShortCircuitUnfocusAnimation,
+             "ShortCircuitUnfocusAnimation",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kOmniboxAdaptNarrowTabletWindows,
              "OmniboxAdaptNarrowTabletWindows",
              base::FEATURE_ENABLED_BY_DEFAULT);
@@ -862,10 +876,6 @@ BASE_FEATURE(kReaderModeInCCT,
 BASE_FEATURE(kRecordSuppressionMetrics,
              "RecordSuppressionMetrics",
              base::FEATURE_ENABLED_BY_DEFAULT);
-
-BASE_FEATURE(kReduceToolbarUpdatesForSameDocNavigations,
-             "ReduceToolbarUpdatesForSameDocNavigations",
-             base::FEATURE_DISABLED_BY_DEFAULT);
 
 BASE_FEATURE(kReengagementNotification,
              "ReengagementNotification",
@@ -995,6 +1005,10 @@ BASE_FEATURE(kTabDragDropAndroid,
              "TabDragDropAndroid",
              base::FEATURE_DISABLED_BY_DEFAULT);
 
+BASE_FEATURE(kTabAndLinkDragDropAndroid,
+             "TabAndLinkDragDropAndroid",
+             base::FEATURE_DISABLED_BY_DEFAULT);
+
 BASE_FEATURE(kTabEngagementReportingAndroid,
              "TabEngagementReportingAndroid",
              base::FEATURE_DISABLED_BY_DEFAULT);
@@ -1016,10 +1030,6 @@ BASE_FEATURE(kTabGroupsForTablets,
 
 BASE_FEATURE(kTabGridLayoutAndroid,
              "TabGridLayoutAndroid",
-             base::FEATURE_ENABLED_BY_DEFAULT);
-
-BASE_FEATURE(kDiscoverFeedMultiColumn,
-             "DiscoverFeedMultiColumn",
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 BASE_FEATURE(kTabStripRedesign,

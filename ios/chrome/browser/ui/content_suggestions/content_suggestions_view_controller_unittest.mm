@@ -6,8 +6,10 @@
 
 #import "base/test/metrics/histogram_tester.h"
 #import "base/test/scoped_feature_list.h"
+#import "components/sync_preferences/testing_pref_service_syncable.h"
 #import "ios/chrome/browser/first_run/first_run.h"
 #import "ios/chrome/browser/ntp/features.h"
+#import "ios/chrome/browser/shared/model/prefs/pref_names.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_constants.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_feature.h"
@@ -20,15 +22,17 @@
 #import "third_party/ocmock/OCMock/OCMock.h"
 #import "third_party/ocmock/gtest_support.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 class ContentSuggestionsViewControllerTest : public PlatformTest {
  public:
   ContentSuggestionsViewControllerTest() {
     view_controller_ = [[ContentSuggestionsViewController alloc] init];
-    metrics_recorder_ = [[ContentSuggestionsMetricsRecorder alloc] init];
+    metrics_recorder_ = [[ContentSuggestionsMetricsRecorder alloc]
+        initWithLocalState:&pref_service_];
+    pref_service_.registry()->RegisterIntegerPref(
+        prefs::kIosMagicStackSegmentationMVTImpressionsSinceFreshness, -1);
+    pref_service_.registry()->RegisterIntegerPref(
+        prefs::kIosMagicStackSegmentationShortcutsImpressionsSinceFreshness,
+        -1);
     view_controller_.contentSuggestionsMetricsRecorder = metrics_recorder_;
     histogram_tester_.reset(new base::HistogramTester());
   }
@@ -36,6 +40,7 @@ class ContentSuggestionsViewControllerTest : public PlatformTest {
  protected:
   web::WebTaskEnvironment task_environment_;
   base::test::ScopedFeatureList scoped_feature_list_;
+  sync_preferences::TestingPrefServiceSyncable pref_service_;
   ContentSuggestionsViewController* view_controller_;
   id metrics_recorder_;
   std::unique_ptr<base::HistogramTester> histogram_tester_;

@@ -13,6 +13,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/test_future.h"
 #include "base/types/expected.h"
+#include "chrome/browser/ui/web_applications/test/isolated_web_app_builder.h"
 #include "chrome/browser/ui/web_applications/test/isolated_web_app_test_utils.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_location.h"
 #include "chrome/browser/web_applications/isolated_web_apps/isolated_web_app_trust_checker.h"
@@ -96,7 +97,8 @@ class IsolatedWebAppUpdatePrepareAndStoreCommandTest : public WebAppTest {
 
   void WriteUpdateBundleToDisk() {
     base::ScopedAllowBlockingForTesting allow_blocking;
-    auto bundle = BuildDefaultTestSignedWebBundle(update_version_);
+    auto bundle =
+        TestSignedWebBundleBuilder::BuildDefault({.version = update_version_});
     ASSERT_THAT(base::WriteFile(update_bundle_path_, bundle.data), IsTrue());
   }
 

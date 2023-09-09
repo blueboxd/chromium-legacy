@@ -6,21 +6,18 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_INDEXEDDB_WEB_IDB_DATABASE_H_
 
 #include <stdint.h>
-#include <cstdint>
 #include <memory>
 
 #include "base/task/single_thread_task_runner.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
-#include "third_party/blink/public/common/indexeddb/web_idb_types.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-blink.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_cursor.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 
 namespace blink {
 class IDBRequest;
-class WebIDBCallbacksImpl;
 
 class MODULES_EXPORT WebIDBDatabase final {
  public:
@@ -58,12 +55,6 @@ class MODULES_EXPORT WebIDBDatabase final {
               int64_t max_count,
               bool key_only,
               IDBRequest*);
-  void BatchGetAll(int64_t transaction_id,
-                   int64_t object_store_id,
-                   int64_t index_id,
-                   Vector<mojom::blink::IDBKeyRangePtr> key_ranges,
-                   uint32_t max_count,
-                   IDBRequest* request);
   void SetIndexKeys(int64_t transaction_id,
                     int64_t object_store_id,
                     std::unique_ptr<IDBKey> primary_key,
@@ -116,9 +107,6 @@ class MODULES_EXPORT WebIDBDatabase final {
   void DidBecomeInactive();
 
  private:
-  mojo::PendingAssociatedRemote<mojom::blink::IDBCallbacks> GetCallbacksProxy(
-      std::unique_ptr<WebIDBCallbacksImpl> callbacks);
-
   mojo::AssociatedRemote<mojom::blink::IDBDatabase> database_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 };

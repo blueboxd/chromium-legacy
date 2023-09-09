@@ -4,57 +4,17 @@
   "Fake Tester": {
     "gtest_tests": [
       {
-        "args": [
-          "--anarg"
-        ],
-        "merge": {
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "name": "swarming_test args",
-        "swarming": {
-          "dimension_sets": [
-            {
-              "foo": "bar",
-              "os": "Linux"
-            }
-          ],
-          "foo": "bar"
-        },
-        "test": "swarming_test",
-        "variant_id": "args"
-      },
-      {
-        "merge": {
-          "script": "//testing/merge_scripts/standard_gtest_merge.py"
-        },
-        "name": "swarming_test mixins",
-        "swarming": {
-          "dimension_sets": [
-            {
-              "foo": "bar",
-              "iama": "mixin",
-              "os": "Linux"
-            }
-          ],
-          "foo": "bar"
-        },
-        "test": "swarming_test",
-        "variant_id": "mixins"
-      },
-      {
         "merge": {
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
         "name": "swarming_test swarming",
         "swarming": {
           "a": "b",
-          "dimension_sets": [
-            {
-              "foo": "bar",
-              "hello": "world",
-              "os": "Linux"
-            }
-          ],
+          "dimensions": {
+            "foo": "bar",
+            "hello": "world",
+            "os": "Linux"
+          },
           "foo": "bar"
         },
         "test": "swarming_test",

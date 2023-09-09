@@ -7,6 +7,20 @@
     #import-policies-file-input {
       display:none;
     }
+
+    button {
+      padding: 5px;
+      margin-right: 5px;
+      border: 1px solid rgba(0, 0, 0, .06);
+    }
+
+    button:hover {
+      filter: brightness(90%);
+    }
+
+    button:active {
+      filter: brightness(85%);
+    }
   </style>
 </head>
 <body>
@@ -27,6 +41,10 @@
       $i18n{testRevertAppliedPolicies}
     </button>
     <button id="clear-policies">$i18n{testClearPolicies}</button>
+    <label>
+      <input type="checkbox" id="user-affiliated" checked></input>
+      $i18n{testUserAffiliated}
+    </label>
   </div>
   <p>$i18n{testDesc}</p>
   <policy-test-table id="policy-test-table"></policy-test-table>

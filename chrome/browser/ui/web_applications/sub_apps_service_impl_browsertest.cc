@@ -12,8 +12,10 @@
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_future.h"
+#include "chrome/browser/notifications/notification_display_service_tester.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/web_applications/sub_apps_install_dialog_controller.h"
 #include "chrome/browser/ui/web_applications/web_app_controller_browsertest.h"
 #include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
 #include "chrome/browser/web_applications/web_app.h"
@@ -82,6 +84,22 @@ using AddResults =
 
 class SubAppsServiceImplBrowserTest : public WebAppControllerBrowserTest {
  public:
+  SubAppsServiceImplBrowserTest()
+      : dialog_override_(
+            SubAppsInstallDialogController::SetAutomaticActionForTesting(
+                SubAppsInstallDialogController::DialogActionForTesting::
+                    kAccept)) {}
+  void SetUpOnMainThread() override {
+    WebAppControllerBrowserTest::SetUpOnMainThread();
+    notification_display_service_ =
+        std::make_unique<NotificationDisplayServiceTester>(profile());
+  }
+
+  void TearDownOnMainThread() override {
+    notification_display_service_.reset();
+    WebAppControllerBrowserTest::TearDownOnMainThread();
+  }
+
   content::RenderFrameHost* render_frame_host(
       content::WebContents* web_contents = nullptr) {
     if (!web_contents) {
@@ -205,10 +223,21 @@ class SubAppsServiceImplBrowserTest : public WebAppControllerBrowserTest {
     return list;
   }
 
+  bool UninstallNotificationShown() {
+    return notification_display_service_
+        ->GetNotification(SubAppsServiceImpl::kSubAppsUninstallNotificationId)
+        .has_value();
+  }
+
  protected:
   base::test::ScopedFeatureList features_{blink::features::kDesktopPWAsSubApps};
   AppId parent_app_id_;
   mojo::Remote<SubAppsService> remote_;
+  base::AutoReset<
+      absl::optional<SubAppsInstallDialogController::DialogActionForTesting>>
+      dialog_override_;
+  std::unique_ptr<NotificationDisplayServiceTester>
+      notification_display_service_;
 };
 
 /********** End-to-end test (one is enough!). **********/
@@ -465,6 +494,31 @@ IN_PROC_BROWSER_TEST_F(SubAppsServiceImplBrowserTest, AddZero) {
   EXPECT_EQ(0ul, GetAllSubAppIds(parent_app_id_).size());
 }
 
+/******** Tests for the Add API call - dialog behaviour ********/
+
+// Verify that all sub apps are returned with the failure result code when the
+// permissions dialog is declined.
+IN_PROC_BROWSER_TEST_F(SubAppsServiceImplBrowserTest,
+                       DialogNotAcceptedReturnsAllSubApps) {
+  NavigateToParentApp();
+  InstallParentApp();
+  BindRemote();
+
+  auto dialog_override =
+      SubAppsInstallDialogController::SetAutomaticActionForTesting(
+          SubAppsInstallDialogController::DialogActionForTesting::kCancel);
+
+  ExpectCallAdd(
+      {{GetURLFromPath(kSubAppPath), SubAppsServiceResultCode::kFailure},
+       {GetURLFromPath(kSubAppPath2), SubAppsServiceResultCode::kFailure},
+       {GetURLFromPath(kSubAppPath3), SubAppsServiceResultCode::kFailure}},
+      {{kSubAppPath, kSubAppPath},
+       {kSubAppPath2, kSubAppPath2},
+       {kSubAppPath3, kSubAppPath3}});
+
+  EXPECT_EQ(0ul, GetAllSubAppIds(parent_app_id_).size());
+}
+
 /********** Tests for uninstallation behaviour. **********/
 
 // Verify that uninstalling an app with sub-apps causes sub-apps to be
@@ -693,6 +747,7 @@ IN_PROC_BROWSER_TEST_F(SubAppsServiceImplBrowserTest, RemoveOneApp) {
       CallRemove({kSubAppPath}));
   EXPECT_EQ(0ul, GetAllSubAppIds(parent_app_id_).size());
   EXPECT_FALSE(provider().registrar_unsafe().IsInstalled(app_id));
+  EXPECT_TRUE(UninstallNotificationShown());
 }
 
 // Remove works with a list of apps.
@@ -728,6 +783,16 @@ IN_PROC_BROWSER_TEST_F(SubAppsServiceImplBrowserTest, RemoveListOfApps) {
       GenerateAppIdFromManifestId(sub_app_id_1)));
   EXPECT_FALSE(provider().registrar_unsafe().IsInstalled(
       GenerateAppIdFromManifestId(sub_app_id_2)));
+
+  absl::optional<message_center::Notification> uninstall_notification =
+      notification_display_service_->GetNotification(
+          SubAppsServiceImpl::kSubAppsUninstallNotificationId);
+  ASSERT_TRUE(uninstall_notification.has_value());
+  // Confirm the string generated for the notification title mentions the
+  // correct number of uninstalls (i.e. successful uninstalls rather than
+  // the number of requested installs).
+  ASSERT_TRUE(uninstall_notification->title().find(u" 2 "));
+  ASSERT_TRUE(uninstall_notification->never_timeout());
 }
 
 // Calling remove with an empty list doesn't crash.
@@ -747,6 +812,7 @@ IN_PROC_BROWSER_TEST_F(SubAppsServiceImplBrowserTest, RemoveEmptyList) {
   CallRemove({});
   EXPECT_EQ(1ul, GetAllSubAppIds(parent_app_id_).size());
   EXPECT_TRUE(provider().registrar_unsafe().IsInstalled(app_id));
+  EXPECT_FALSE(UninstallNotificationShown());
 }
 
 // Remove fails for a regular installed app.
@@ -761,6 +827,7 @@ IN_PROC_BROWSER_TEST_F(SubAppsServiceImplBrowserTest, RemoveFailRegularApp) {
   EXPECT_EQ(
       SingleRemoveResultMojo(kSubAppPath, SubAppsServiceResultCode::kFailure),
       CallRemove({kSubAppPath}));
+  EXPECT_FALSE(UninstallNotificationShown());
 }
 
 // Remove fails for a sub-app with a different parent_app_id.
@@ -783,6 +850,7 @@ IN_PROC_BROWSER_TEST_F(SubAppsServiceImplBrowserTest, RemoveFailWrongParent) {
   EXPECT_EQ(
       SingleRemoveResultMojo(kSubAppPath2, SubAppsServiceResultCode::kFailure),
       CallRemove({kSubAppPath2}));
+  EXPECT_FALSE(UninstallNotificationShown());
 }
 
 // Remove call returns failure if the calling app isn't installed.
@@ -794,6 +862,7 @@ IN_PROC_BROWSER_TEST_F(SubAppsServiceImplBrowserTest,
   EXPECT_EQ(
       SingleRemoveResultMojo(kSubAppPath, SubAppsServiceResultCode::kFailure),
       CallRemove({kSubAppPath}));
+  EXPECT_FALSE(UninstallNotificationShown());
 }
 
 // Remove call closes the mojo connection if the argument is wrong origin to the
@@ -814,6 +883,7 @@ IN_PROC_BROWSER_TEST_F(SubAppsServiceImplBrowserTest, RemoveFailWrongOrigin) {
                       }));
   ASSERT_TRUE(disconnect_handler_future.Wait())
       << "Disconnect handler not invoked.";
+  EXPECT_FALSE(UninstallNotificationShown());
 }
 
 }  // namespace web_app

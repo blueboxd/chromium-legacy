@@ -32,10 +32,6 @@
 #include "ui/views/view_observer.h"
 #include "ui/views/widget/widget.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 namespace {
 
 // The width of the traffic lights. Used to layout the tab strip leaving a hole
@@ -234,7 +230,10 @@ void ImmersiveModeControllerMac::SetEnabled(bool enabled) {
       // This will leave a hole for the traffic light to appear.
       // Without this +1 top inset the tabs sit 1px too high. I assume this is
       // because in fullscreen there is no resize handle.
-      gfx::Insets insets = gfx::Insets::TLBR(1, kTrafficLightsWidth, 0, 0);
+      gfx::Insets insets =
+          browser_view_->frame()->GetFrameView()->CaptionButtonsOnLeadingEdge()
+              ? gfx::Insets::TLBR(1, kTrafficLightsWidth, 0, 0)
+              : gfx::Insets::TLBR(1, 0, 0, kTrafficLightsWidth);
       browser_view_->tab_strip_region_view()->SetBorder(
           views::CreateEmptyBorder(insets));
 

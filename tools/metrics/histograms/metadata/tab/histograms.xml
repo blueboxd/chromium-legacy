@@ -196,7 +196,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Tab.CloseAllTabsDialog.ClosedAllTabs.{CloseType}"
-    enum="Boolean" expires_after="2023-09-11">
+    enum="Boolean" expires_after="2024-09-11">
   <owner>ckitagawa@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
   <summary>
@@ -308,7 +308,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Tab.Preview.TimeToFirstUsableFrameAfterStartCapture"
-    units="ms" expires_after="2023-08-06">
+    units="ms" expires_after="2023-11-06">
   <owner>dfried@chromium.org</owner>
   <owner>collinbaker@chromium.org</owner>
   <summary>
@@ -352,7 +352,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Tab.Preview.TimeToStoreAfterTabSwitch" units="ms"
-    expires_after="2023-08-20">
+    expires_after="2024-01-28">
   <owner>dfried@chromium.org</owner>
   <owner>collinbaker@chromium.org</owner>
   <summary>
@@ -394,7 +394,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Tab.RendererTermination.AliveRenderersCount" units="renderers"
-    expires_after="2023-11-19">
+    expires_after="2024-01-28">
   <owner>ajuma@chromium.org</owner>
   <owner>bling-fundamentals@google.com</owner>
   <summary>
@@ -423,7 +423,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Tab.RestoreClosedTab" enum="Boolean"
-    expires_after="2023-11-30">
+    expires_after="2024-02-04">
   <owner>sreejakshetty@chromium.org</owner>
   <owner>chrome-brapp-loading@google.com</owner>
   <summary>
@@ -457,7 +457,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Tab.StateAtRendererTermination" enum="TabForegroundState"
-    expires_after="2023-11-19">
+    expires_after="2024-01-28">
   <owner>gambard@chromium.org</owner>
   <owner>olivierrobin@chromium.org</owner>
   <summary>
@@ -992,24 +992,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="TabManager.Discarding.DiscardedTabCouldFastShutdown"
-    enum="BooleanTabDiscardFastShutdown" expires_after="M77">
-  <owner>oysteine@chromium.org</owner>
-  <summary>
-    Recorded for each discarding, indicates whether the discarded tab succeeded
-    in doing a render process fast shutdown or not.
-  </summary>
-</histogram>
-
-<histogram name="TabManager.Discarding.DiscardedTabCouldUnsafeFastShutdown"
-    enum="BooleanTabDiscardFastShutdown" expires_after="M77">
-  <owner>oysteine@chromium.org</owner>
-  <summary>
-    Recorded for each discarding, allowing us to know whether the discarded tab
-    succeeded an unsafe process shutdown (not invoking unload handlers).
-  </summary>
-</histogram>
-
 <histogram name="TabManager.Discarding.DiscardedTabHasBeforeUnloadHandler"
     enum="Boolean" expires_after="M77">
   <owner>georgesak@chromium.org</owner>
@@ -1052,7 +1034,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="TabManager.Discarding.ReloadToCloseTime" units="ms"
-    expires_after="2023-11-19">
+    expires_after="2024-01-21">
   <owner>chrisha@chromium.org</owner>
   <owner>catan-team@chromium.org</owner>
   <summary>
@@ -1306,7 +1288,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Tabs.NTPCountAtStartup" units="tabs"
-    expires_after="2023-11-19">
+    expires_after="2024-01-28">
   <owner>gogerald@chromium.org</owner>
   <owner>nasims@google.com</owner>
   <summary>[iOS] The number of NTP tabs open at cold launch.</summary>
@@ -1480,7 +1462,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Tabs.PersistedTabData.Storage.Restore.File"
-    enum="BooleanSuccess" expires_after="2023-11-21">
+    enum="BooleanSuccess" expires_after="2024-01-21">
   <owner>yusufo@chromium.org</owner>
   <owner>nyquist@chromium.org</owner>
   <owner>dtrainor@chromium.org</owner>
@@ -1541,7 +1523,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Tabs.RecentlyClosed.EntriesRestoredInPage.{RecentlyClosedType}"
-    units="entries restored" expires_after="2023-08-05">
+    units="entries restored" expires_after="2024-08-05">
   <owner>ckitagawa@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
   <summary>
@@ -1554,7 +1536,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Tabs.RecentlyClosed.EntriesShownInPage.{RecentlyClosedType}"
-    units="entries shown" expires_after="2023-08-05">
+    units="entries shown" expires_after="2024-08-05">
   <owner>ckitagawa@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
   <summary>
@@ -1566,7 +1548,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Tabs.RecentlyClosed.HistoricalSaverCloseType"
-    enum="HistoricalSaverCloseType" expires_after="2023-08-05">
+    enum="HistoricalSaverCloseType" expires_after="2024-08-05">
   <owner>ckitagawa@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
   <summary>
@@ -1580,7 +1562,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Tabs.RecentlyClosed.PercentOfEntriesRestoredInPage.{RecentlyClosedType}"
-    units="percentage restored" expires_after="2023-08-05">
+    units="percentage restored" expires_after="2024-08-05">
   <owner>ckitagawa@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
   <summary>
@@ -1918,6 +1900,27 @@ chromium-metrics-reviews@google.com.
     imperative we can compare the success rate of each system vs. how many Tabs
     are re-created or failed to be restored. This metric is emitted once for
     each Tab restoration on startup.
+  </summary>
+</histogram>
+
+<histogram name="Tabs.TabSearch.ButtonPressedToNextFramePresented" units="ms"
+    expires_after="2024-07-27">
+  <owner>temao@chromium.org</owner>
+  <owner>tluk@chromium.org</owner>
+  <owner>robliao@chromium.org</owner>
+  <summary>
+    Tab Search is a feature that allows users to better search for and switch to
+    their desired tabs. The Tab Search UI is shown in a bubble anchored to an
+    element of the UI in the browser window.
+
+    This metric is intended to measure the time from when the Tab Search button
+    is pressed to the next visual update of the bubble widget (which may or may
+    not already be visible). It is recorded on successful presentation of the
+    bubble's next compositor frame.
+
+    We also have metrics measuring time for widget construction. Please refer to
+    Tabs.TabSearch.WindowTimeToShowUncachedWebView and
+    Tabs.TabSearch.WindowTimeToShowCachedWebView.
   </summary>
 </histogram>
 
@@ -2329,7 +2332,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Tabs.Tasks.OrderValidOnStartup" units="boolean"
-    expires_after="2023-11-19">
+    expires_after="2024-01-21">
   <owner>ckitagawa@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
   <summary>

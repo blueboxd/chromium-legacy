@@ -33,10 +33,6 @@
 #import "ios/public/provider/chrome/browser/lens/lens_api.h"
 #import "ui/base/l10n/l10n_util.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 using base::UserMetricsAction;
 
 namespace {
@@ -600,32 +596,35 @@ const NSString* kScribbleOmniboxElementId = @"omnibox";
   }
 
   // Show Top or Bottom Address Bar action.
-  if (IsBottomOmniboxSteadyStateEnabled() && _prefService) {
+  if (IsBottomOmniboxSteadyStateEnabled() && _prefService &&
+      IsSplitToolbarMode(self)) {
     NSString* title = nil;
-    NSString* imageName = nil;
+    UIImage* image = nil;
     ToolbarType targetToolbarType;
     if (_prefService->GetBoolean(prefs::kBottomOmnibox)) {
       title = l10n_util::GetNSString(IDS_IOS_TOOLBAR_MENU_TOP_OMNIBOX);
-      // TODO(crbug.com/1466420): Add the symbols so it's available on 15.0.
       if (@available(iOS 15.1, *)) {
-        imageName = kMovePlatterToTopPhoneSymbol;
+        image = DefaultSymbolWithPointSize(kMovePlatterToTopPhoneSymbol,
+                                           kSymbolActionPointSize);
       } else {
-        imageName = @"arrow.up.square";
+        image = CustomSymbolWithPointSize(kCustomMovePlatterToTopPhoneSymbol,
+                                          kSymbolActionPointSize);
       }
       targetToolbarType = ToolbarType::kPrimary;
     } else {
       title = l10n_util::GetNSString(IDS_IOS_TOOLBAR_MENU_BOTTOM_OMNIBOX);
       if (@available(iOS 15.1, *)) {
-        imageName = kMovePlatterToBottomPhoneSymbol;
+        image = DefaultSymbolWithPointSize(kMovePlatterToBottomPhoneSymbol,
+                                           kSymbolActionPointSize);
       } else {
-        imageName = @"arrow.down.square";
+        image = CustomSymbolWithPointSize(kCustomMovePlatterToBottomPhoneSymbol,
+                                          kSymbolActionPointSize);
       }
       targetToolbarType = ToolbarType::kSecondary;
     }
     UIAction* moveAddressBarAction = [UIAction
         actionWithTitle:title
-                  image:DefaultSymbolWithPointSize(imageName,
-                                                   kSymbolActionPointSize)
+                  image:image
              identifier:nil
                 handler:^(UIAction* action) {
                   [weakSelf moveOmniboxToToolbarType:targetToolbarType];
@@ -749,6 +748,14 @@ const NSString* kScribbleOmniboxElementId = @"omnibox";
   if (_prefService) {
     _prefService->SetBoolean(prefs::kBottomOmnibox,
                              toolbarType == ToolbarType::kSecondary);
+
+    if (toolbarType == ToolbarType::kPrimary) {
+      RecordAction(
+          UserMetricsAction("Mobile.OmniboxContextMenu.MoveAddressBarToTop"));
+    } else {
+      RecordAction(UserMetricsAction(
+          "Mobile.OmniboxContextMenu.MoveAddressBarToBottom"));
+    }
   }
 }
 

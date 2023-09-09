@@ -382,7 +382,7 @@ class CONTENT_EXPORT RenderFrameImpl
   void AddMessageToConsole(blink::mojom::ConsoleMessageLevel level,
                            const std::string& message) override;
   bool IsPasting() override;
-  bool IsBrowserSideNavigationPending() override;
+  bool IsRequestingNavigation() override;
   void LoadHTMLStringForTesting(const std::string& html,
                                 const GURL& base_url,
                                 const std::string& text_encoding,
@@ -1194,9 +1194,14 @@ class CONTENT_EXPORT RenderFrameImpl
   // Blink Web* layer to check for provisional frames.
   bool in_frame_tree_;
   // TODO(crbug.com/1425281): Temporary for debugging. Note that collecting this
-  // stack trace is limited to non-aarch64 platforms because
-  // base::debug::StackTrace appears to crash on CrOS aarch64 in the renderer
-  // sandbox. See https://crbug.com/1457701.
+  // stack trace is limited to non-Android/non-aarch64 CrOS platforms because:
+  // - https://crbug.com/1457701: unwinding doesn't work inside the sandbox on
+  //   CrOS aarch64
+  // - https://crbug.com/1461901: libunwind crashes on invalid inputs on 32-bit
+  //   Android.
+  // - https://crbug.com/1470012: libunwind crashes on invalid inputs on 64-bit
+  //   Android (which shouldn't have been the case since 64-bit should just be
+  //   able to use the frame pointers rather than relying on unwind tables...)
   absl::optional<base::debug::StackTrace> added_to_frame_tree_stack_trace_;
 
   const int routing_id_;
@@ -1381,7 +1386,7 @@ class CONTENT_EXPORT RenderFrameImpl
   // This flag is true while browser process is processing a pending navigation,
   // as a result of mojom::FrameHost::BeginNavigation call. It is reset when the
   // navigation is either committed or cancelled.
-  bool browser_side_navigation_pending_ = false;
+  bool is_requesting_navigation_ = false;
 
   // Set to true on the first time the RenderFrame started any navigation.
   // Note that when a frame is created it will trigger a navigation (either

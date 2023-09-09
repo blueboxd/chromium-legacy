@@ -99,6 +99,7 @@ SharedDictionaryStorage::MaybeCreateWriter(
     const GURL& url,
     base::Time response_time,
     const net::HttpResponseHeaders& headers,
+    bool was_fetched_via_cache,
     base::OnceCallback<bool()> access_allowed_check_callback) {
   absl::optional<UseAsDictionaryHeaderInfo> info =
       ParseUseAsDictionaryHeaderInfo(headers);
@@ -126,6 +127,16 @@ SharedDictionaryStorage::MaybeCreateWriter(
       return nullptr;
     }
   }
+  // Do not write an existing shared dictionary from the HTTP caches to the
+  // shared dictionary storage. Note that IsAlreadyRegistered() can return false
+  // even when `was_fetched_via_cache` is true. This is because the shared
+  // dictionary storage has its own cache eviction logic, which is different
+  // from the HTTP Caches's eviction logic.
+  if (was_fetched_via_cache &&
+      IsAlreadyRegistered(url, response_time, expiration, info->match)) {
+    return nullptr;
+  }
+
   if (!std::move(access_allowed_check_callback).Run()) {
     return nullptr;
   }

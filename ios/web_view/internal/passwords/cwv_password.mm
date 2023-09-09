@@ -11,10 +11,6 @@
 #include "components/password_manager/core/browser/password_ui_utils.h"
 #import "ios/web_view/internal/utils/nsobject_description_utils.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 @implementation CWVPassword {
   password_manager::PasswordForm _passwordForm;
 }
@@ -60,7 +56,7 @@
   // "encrypted" version of the password is a unique ID (UUID) that is
   // stored as an attribute along with the password in the keychain.
   // See login_database_ios.cc for more info.
-  return base::SysUTF8ToNSString(_passwordForm.encrypted_password);
+  return base::SysUTF8ToNSString(_passwordForm.keychain_identifier);
 }
 
 #pragma mark - NSObject

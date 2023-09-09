@@ -23,6 +23,7 @@
 #include "base/strings/utf_string_conversions.h"
 #import "base/task/single_thread_task_runner.h"
 #include "base/time/time.h"
+#include "components/device_event_log/device_event_log.h"
 #include "components/remote_cocoa/browser/ns_view_ids.h"
 #include "components/remote_cocoa/common/application.mojom.h"
 #include "components/viz/common/features.h"
@@ -76,10 +77,6 @@
 #include "ui/events/keycodes/dom/dom_keyboard_layout_map.h"
 #include "ui/gfx/geometry/dip_util.h"
 #include "ui/gfx/mac/coordinate_conversion.h"
-
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
 
 using blink::WebInputEvent;
 using blink::WebMouseEvent;
@@ -210,6 +207,13 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget)
   screen_infos_ = screen->GetScreenInfosNearestDisplay(
       screen->GetDisplayNearestWindow([NSApp keyWindow]).id());
   original_screen_infos_ = screen_infos_;
+
+  // TODO(crbug.com/1457025): Fix isInternal inaccuracies and remove logging.
+  DISPLAY_LOG(DEBUG) << "RWHVMac ScreenInfos initialized, count: "
+                     << screen_infos_.screen_infos.size();
+  for (const auto& screen_info : screen_infos_.screen_infos) {
+    DISPLAY_LOG(DEBUG) << screen_info.ToString();
+  }
 
   viz::FrameSinkId frame_sink_id = host()->GetFrameSinkId();
 
@@ -679,7 +683,9 @@ void RenderWidgetHostViewMac::OnImeCancelComposition(
 
 void RenderWidgetHostViewMac::OnImeCompositionRangeChanged(
     TextInputManager* text_input_manager,
-    RenderWidgetHostViewBase* updated_view) {
+    RenderWidgetHostViewBase* updated_view,
+    bool character_bounds_changed,
+    const absl::optional<std::vector<gfx::Rect>>& line_bounds) {
   const TextInputManager::CompositionRangeInfo* info =
       GetCompositionRangeInfo();
   if (!info)
@@ -871,6 +877,15 @@ void RenderWidgetHostViewMac::UpdateScreenInfo() {
   if (dip_size_changed || current_display_changed) {
     browser_compositor_->UpdateSurfaceFromNSView(
         view_bounds_in_window_dip_.size());
+  }
+
+  // TODO(crbug.com/1457025): Fix isInternal innacuracies and remove logging.
+  if (any_display_changed) {
+    DISPLAY_LOG(DEBUG) << "RWHVMac ScreenInfos updated, count: "
+                       << screen_infos_.screen_infos.size();
+    for (const auto& screen_info : screen_infos_.screen_infos) {
+      DISPLAY_LOG(DEBUG) << screen_info.ToString();
+    }
   }
 
   // TODO(crbug.com/1169312): Unify display info caching and change detection.

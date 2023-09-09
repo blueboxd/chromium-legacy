@@ -106,6 +106,7 @@ class GtkUi : public ui::LinuxUiAndTheme {
   void GetInactiveSelectionBgColor(SkColor* color) const override;
   void GetInactiveSelectionFgColor(SkColor* color) const override;
   bool PreferDarkTheme() const override;
+  void SetDarkTheme(bool dark) override;
   std::unique_ptr<ui::NavButtonProvider> CreateNavButtonProvider() override;
   ui::WindowFrameProvider* GetWindowFrameProvider(bool solid_frame) override;
 
@@ -133,6 +134,14 @@ class GtkUi : public ui::LinuxUiAndTheme {
                      GParamSpec*);
 
   CHROMEG_CALLBACK_1(GtkUi, void, OnMonitorAdded, GdkDisplay*, GdkMonitor*);
+
+  CHROMEG_CALLBACK_3(GtkUi,
+                     void,
+                     OnMonitorsChanged,
+                     GListModel*,
+                     guint,
+                     guint,
+                     guint);
 
   // Loads all GTK-provided settings.
   void LoadGtkValues();

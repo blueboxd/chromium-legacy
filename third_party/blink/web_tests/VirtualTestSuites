@@ -51,6 +51,22 @@
     "expires": "Jan 1, 2024"
   },
   {
+    "prefix": "pna-iframes-enabled",
+    "platforms": ["Linux", "Mac", "win"],
+    "bases": ["external/wpt/fetch/private-network-access"],
+    "args": ["--enable-features=PrivateNetworkAccessForIframes"],
+    "owners": ["phao@google.com", "lyf@google.com"],
+    "expires": "Jan 1, 2024"
+  },
+  {
+    "prefix": "pna-iframes-warning",
+    "platforms": ["Linux", "Mac", "win"],
+    "bases": ["external/wpt/fetch/private-network-access"],
+    "args": ["--enable-features=PrivateNetworkAccessForIframes,PrivateNetworkAccessForIframesWarningOnly"],
+    "owners": ["phao@google.com", "lyf@google.com"],
+    "expires": "Jan 1, 2024"
+  },
+  {
     "prefix": "reduce-accept-language",
     "platforms": ["Linux", "Mac", "Win"],
     "bases": ["http/tests/navigation/language",
@@ -782,6 +798,7 @@
   },
   {
     "prefix": "dark-color-scheme",
+    "owners": ["futhark@chromium.org", "andruud@chromium.org"],
     "platforms": ["Linux", "Mac", "Win"],
     "bases": ["external/wpt/css/css-color/system-color-consistency.html",
               "external/wpt/css/css-color-adjust/rendering/dark-color-scheme",
@@ -791,7 +808,7 @@
               "fast/loader/plain-text-document-appearance.html",
               "http/tests/eye-dropper"],
     "args": ["--blink-settings=preferredColorScheme=0"],
-    "expires": "Jul 1, 2023"
+    "expires": "Jan 1, 2024"
   },
   {
     "prefix": "force-eager",
@@ -810,6 +827,7 @@
   },
   {
     "prefix": "css-trigonometric-functions-disabled",
+    "owners": ["seokho@chromium.org"],
     "platforms": ["Linux", "Mac", "Win"],
     "bases": [
       "external/wpt/css/css-values/sin-cos-tan-serialize.html",
@@ -822,8 +840,36 @@
     "args": ["--disable-blink-features=CSSTrigonometricFunctions"],
     "expires": "Jul 1, 2023"
   },
-   {
+  {
+    "prefix": "css-text-autospace",
+    "owners": [
+      "kojii@chromium.org",
+      "lingqi@chromium.org"
+    ],
+    "platforms": [
+      "Linux"
+    ],
+    "bases": [
+      "fast/css/getComputedStyle/computed-style-listing.html",
+      "fast/css/getComputedStyle/computed-style-without-renderer-listing.html",
+      "svg/css/getComputedStyle-listing.xhtml",
+      "webexposed/css-properties-as-js-properties.html",
+      "webexposed/css-property-listing.html",
+      "external/wpt/css/css-highlight-api/highlight-pseudo-computed.html",
+      "external/wpt/css/css-text/parsing/text-autospace-computed.html",
+      "external/wpt/css/css-text/parsing/text-autospace-valid.html",
+      "external/wpt/web-animations/animation-model/animation-types/accumulation-per-property-002.html",
+      "external/wpt/web-animations/animation-model/animation-types/addition-per-property-002.html",
+      "external/wpt/web-animations/animation-model/animation-types/interpolation-per-property-002.html"
+    ],
+    "args": [
+      "--enable-blink-features=CSSTextAutoSpace"
+    ],
+    "expires": "Dec 1, 2023"
+  },
+  {
     "prefix": "css-sign-related-functions-disabled",
+    "owners": ["seokho@chromium.org", "sakhapov@chromium.org"],
     "platforms": ["Linux", "Mac", "Win"],
     "bases": [
       "external/wpt/css/css-values/signs-abs-computed.html",
@@ -831,10 +877,11 @@
       "external/wpt/css/css-values/signs-abs-invalid.html"
     ],
     "args": ["--disable-blink-features=CSSSignRelatedFunctions"],
-    "expires": "Jul 1, 2023"
+    "expires": "Aug 1, 2024"
   },
   {
     "prefix": "css-nesting-ident",
+    "owners": ["andruud@chromium.org", "futhark@chromium.org"],
     "platforms": ["Linux"],
     "bases": [
       "wpt_internal/css/css-nesting/ident"
@@ -1041,6 +1088,29 @@
     "expires": "Feb 1, 2024"
   },
   {
+    "prefix": "optimized-node-cloning-disabled",
+    "owners": ["masonf@chromium.org", "dom-dev@chromium.org"],
+    "platforms": ["Linux"],
+    "bases": [
+      "external/wpt/dom/nodes/Node-cloneNode.html",
+      "external/wpt/dom/parts/basic-dom-part-objects.tentative.html"
+    ],
+    "args": ["--disable-features=OptimizedNodeCloneOrder"],
+    "expires": "Feb 1, 2024"
+  },
+  {
+    "prefix": "details-styling-disabled",
+    "owners": ["dbaron@chromium.org", "dom-dev@chromium.org"],
+    "platforms": ["Linux"],
+    "bases": [
+      "external/wpt/html/rendering/the-details-element",
+      "fast/multicol/span/summary-split.html",
+      "html/details_summary/details-inline.html"
+    ],
+    "args": ["--disable-blink-features=DetailsStyling"],
+    "expires": "Apr 1, 2024"
+  },
+  {
     "prefix": "backface-visibility-interop",
     "owners": ["dbaron@chromium.org", "paint-dev@chromium.org"],
     "platforms": ["Linux"],
@@ -1067,6 +1137,14 @@
     "bases": [ "external/wpt/gamepad" ],
     "args": [ "--enable-features=RestrictGamepadAccess" ],
     "expires": "Jul 1, 2023"
+  },
+  {
+    "prefix": "third-party-cookie-phaseout-enabled",
+    "platforms": ["Linux", "Mac", "Win"],
+    "bases": ["http/tests/inspector-protocol/issues/third-party-cookie-phaseout-exclusion.js"],
+    "exclusive_tests": "ALL",
+    "args": ["--test-third-party-cookie-phaseout"],
+    "expires": "Mar 1, 2024"
   },
   {
     "prefix": "third-party-storage-partitioning",
@@ -1230,16 +1308,6 @@
     "expires": "Jul 1, 2023"
   },
   {
-    "prefix": "force-renderer-accessibility-form-controls",
-    "platforms": ["Linux", "Mac", "Win"],
-    "bases": ["external/wpt/accessibility/crashtests/bdo-table-cell.html",
-              "external/wpt/accessibility/crashtests/displaylocked-serialize.html",
-              "external/wpt/accessibility/crashtests/img-map-pseudo.html",
-              "external/wpt/accessibility/crashtests/map-inside-map.html"],
-    "args": ["--force-renderer-accessibility=form-controls"],
-    "expires": "never"
-  },
-  {
   "prefix": "force-renderer-accessibility-parser-yield-and-delay-often",
     "platforms": ["Linux"],
     "bases": ["external/wpt/accessibility/crashtests/removed-from-flat-tree.html"],
@@ -1399,10 +1467,11 @@
     "expires": "Jul 1, 2023"
   },
   {
-    "prefix": "fledge",
+    "prefix": "fledge-rounding",
     "platforms": ["Linux", "Mac", "Win"],
+    "owners": ["behamilton@google.com", "caraitto@chromium.org", "pauljensen@chromium.org", "mmenke@chromium.org", "morlovich@chromium.org", "qingxinwu@google.com"],
     "bases": [
-      "external/wpt/fledge",
+      "external/wpt/fledge/tentative/round-a-value.https.sub.window.js",
       "http/tests/inspector-protocol/target/auto-attach-auction-worklet.js",
       "http/tests/inspector-protocol/target/target-auction-worklet.js",
       "http/tests/inspector-protocol/timeline/auction-worklet.js",
@@ -1411,7 +1480,7 @@
       "http/tests/inspector-protocol/storage/interest-groups.js"
     ],
     "args": [
-      "--enable-features=InterestGroupStorage,AdInterestGroupAPI,Fledge,FledgeBiddingAndAuctionServer,PrivacySandboxAdsAPIsOverride,FencedFrames:implementation_type/mparch,FencedFramesAPIChanges,FencedFramesDefaultMode"
+      "--enable-features=InterestGroupStorage,AdInterestGroupAPI,Fledge,FledgeBiddingAndAuctionServer,PrivacySandboxAdsAPIsOverride,FencedFrames:implementation_type/mparch,FencedFramesAPIChanges,FencedFramesDefaultMode,FledgeRounding:fledge_bid_reporting_bits/8/fledge_score_reporting_bits/8/fledge_ad_cost_reporting_bits/8"
     ],
     "expires": "Dec 1, 2023"
   },
@@ -1510,6 +1579,7 @@
   },
   {
     "prefix": "css-highlight-inheritance",
+    "owners": ["schenney@chromium.org", "andruud@chromium.org"],
     "platforms": ["Linux", "Mac", "Win"],
     "bases": [
       "external/wpt/css/css-pseudo",
@@ -1518,7 +1588,7 @@
       "http/tests/inspector-protocol/css/highlight-pseudo-inheritance.js"
     ],
     "args": ["--enable-blink-features=HighlightInheritance"],
-    "expires": "Jul 1, 2023"
+    "expires": "Mar 1, 2024"
   },
   {
     "prefix": "browsing-topics",
@@ -1576,7 +1646,7 @@
     "exclusive_tests": [
       "external/wpt/shared-storage"
     ],
-    "args": ["--enable-features=SharedStorageAPI,FencedFrames:implementation_type/mparch,PrivacySandboxAdsAPIsOverride,FencedFramesAPIChanges,FencedFramesDefaultMode,SharedStorageAPIM117"],
+    "args": ["--enable-features=SharedStorageAPI,FencedFrames:implementation_type/mparch,PrivacySandboxAdsAPIsOverride,FencedFramesAPIChanges,FencedFramesDefaultMode,SharedStorageAPIM118"],
     "expires": "Jan 1, 2024"
   },
   {
@@ -1684,35 +1754,6 @@
       "--enable-features=SystemCursorSizeSupported",
       "--disable-headless-mode"
     ],
-    "expires": "Jul 1, 2023"
-  },
-
-  "Tests URL processing in IDNA 2008 Transitional Mode. Explicitly disables ",
-  "the Non-Transitional Mode feature flag to do so.",
-  {
-    "prefix": "idna-2008",
-    "platforms": ["Linux"],
-    "bases": [ "external/wpt/url", "fast/url"],
-    "args": ["--disable-features=UseIDNA2008NonTransitional"],
-    "expires": "Jul 1, 2023"
-  },
-
-  {
-    "prefix": "strict-ipv4-embedded-ipv6",
-    "platforms": ["Linux"],
-    "bases": [ "external/wpt/url", "fast/url"],
-    "args": ["--enable-features=StrictIPv4EmbeddedIPv6AddressParsing"],
-    "expires": "Jul 1, 2023"
-  },
-
-  {
-    "prefix": "url-port-overflow",
-    "platforms": ["Linux"],
-    "bases": [
-      "external/wpt/url/url-setters.any.js",
-      "external/wpt/url/url-setters-a-area.window.js"
-    ],
-    "args": ["--enable-features=URLSetPortCheckOverflow"],
     "expires": "Jul 1, 2023"
   },
 
@@ -1855,7 +1896,10 @@
   {
     "prefix": "cookie-reject-domain-non-ascii",
     "platforms": ["Linux", "Mac", "Win"],
-    "bases": [ "http/tests/inspector-protocol/issues/cookie-domain-non-ascii.js" ],
+    "bases": [
+      "http/tests/inspector-protocol/issues/cookie-domain-non-ascii.js",
+      "external/wpt/cookies/domain/domain-attribute-idn-host.sub.https.html"
+    ],
     "args": ["--enable-features=CookieDomainRejectNonASCII"],
     "owners": ["johannhof@chromium.org"],
     "expires": "Jul 1, 2024"
@@ -1882,6 +1926,15 @@
     "args": ["--enable-features=PendingBeaconAPI:requires_origin_trial/true"],
     "expires": "Jul 1, 2023"
   },
+
+  "---------------------------- Close watchers -------------------------------",
+  "These cannot be run in the normal web platform tests environment because of",
+  "https://github.com/web-platform-tests/wpt/issues/23364#issuecomment-1661452441.",
+  "If we figure out how to properly reset user activation and history-action",
+  "activation between tests, then we can remove ",
+  "--reset-browsing-instance-between-tests and remove this virtual test suite.",
+  "(Also, the feature is currently behind the CloseWatcher Blink feature, but ",
+  "hopefully that is temporary.)",
   {
     "prefix": "close-watcher",
     "owners": ["jarhar@chromium.org", "dom-dev@chromium.org"],
@@ -1889,8 +1942,14 @@
     "bases": [
       "external/wpt/close-watcher"
     ],
-    "args": ["--enable-blink-features=CloseWatcher"],
-    "expires": "Jul 1, 2023"
+    "exclusive_tests": [
+      "external/wpt/close-watcher"
+    ],
+    "args": [
+      "--enable-blink-features=CloseWatcher",
+      "--reset-browsing-instance-between-tests"
+    ],
+    "expires": "never"
   },
   {
     "prefix": "orb-v02",
@@ -2112,15 +2171,6 @@
     "args": ["--disable-features=BoostImagePriority"]
   },
   {
-    "prefix": "html-pattern-regexp-unicodesets",
-    "platforms": ["Linux", "Mac", "Win"],
-    "bases": ["fast/forms/text/pattern.html"],
-    "args": [
-      "--enable-blink-features=HTMLPatternRegExpUnicodeSets"
-    ],
-    "expires": "Dec 1, 2023"
-  },
-  {
     "prefix": "clone-for-branch2-disabled",
     "platforms": ["Linux"],
     "bases": ["external/wpt/fetch/api/response"],
@@ -2193,8 +2243,8 @@
     "bases": [
       "external/wpt/client-hints/clear-site-data"
     ],
-    "args": ["--enable-features=ClearSiteDataClientHintsSupport"],
-    "expires": "Jun 28, 2024",
+    "args": ["--disable-features=ClearSiteDataClientHintsSupport"],
+    "expires": "Oct 31, 2023",
     "owners": ["arichiv@chromium.org"]
   },
   {
@@ -2203,8 +2253,8 @@
     "bases": [
       "external/wpt/clear-site-data"
     ],
-    "args": ["--enable-features=ClearSiteDataWildcardSupport"],
-    "expires": "Jun 28, 2024",
+    "args": ["--disable-features=ClearSiteDataWildcardSupport"],
+    "expires": "Oct 31, 2023",
     "owners": ["arichiv@chromium.org"]
   },
   {
@@ -2214,8 +2264,8 @@
       "external/wpt/clear-site-data",
       "external/wpt/client-hints/clear-site-data"
     ],
-    "args": ["--enable-features=ClearSiteDataClientHintsSupport,ClearSiteDataWildcardSupport"],
-    "expires": "Jun 28, 2024",
+    "args": ["--disable-features=ClearSiteDataClientHintsSupport,ClearSiteDataWildcardSupport"],
+    "expires": "Oct 31, 2023",
     "owners": ["arichiv@chromium.org"]
   },
   {
@@ -2227,5 +2277,47 @@
     "args": ["--enable-features=ServiceWorkerStaticRouter"],
     "expires": "Jul 14, 2024",
     "owners": ["yyanagisawa@chromium.org", "sisidovski@chromium.org"]
+  },
+  {
+    "prefix": "lcpp",
+    "platforms": [
+      "Linux",
+      "Mac",
+      "Win"
+    ],
+    "bases": [
+      "http/tests/lcp_critical_path_predictor"
+    ],
+    "args": [
+      "--enable-features=LCPCriticalPathPredictor"
+    ],
+    "expires": "Jul 10, 2024",
+    "owners": [
+      "chikamune@chromium.org",
+      "kouhei@chromium.org"
+    ]
+  },
+  {
+    "prefix": "fetch-later",
+    "platforms": ["Linux", "Mac", "Win"],
+    "bases": [
+      "external/wpt/fetch/fetch-later"
+    ],
+    "args": [
+      "--enable-blink-features=FetchLaterAPI"
+    ],
+    "expires": "Jul 24, 2024",
+    "owners": ["mych@chromium.org"]
+  },
+  {
+    "prefix": "deprecated-css-apperarance-values-disabled",
+    "platforms": ["Linux", "Mac", "Win"],
+    "bases": [
+      "http/tests/inspector-protocol/issues/css-appearance-non-standard-issue.js",
+      "http/tests/inspector-protocol/issues/css-webkit-appearance-non-standard-issue.js"
+    ],
+    "args": ["--disable-blink-features=RemoveNonStandardAppearanceValue"],
+    "owners": ["dizhangg@chromium.org"],
+    "expires": "Dec 21, 2023"
   }
 ]

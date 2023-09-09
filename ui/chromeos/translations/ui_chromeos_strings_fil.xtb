@@ -94,6 +94,7 @@
 <translation id="174937106936716857">Kabuuang bilang ng file</translation>
 <translation id="1755345808328621801">Idinisenyo ang file na ito para sa isang PC na gumagamit ng Windows software. Hindi ito compatible sa iyong device na nagpapatakbo ng ChromeOS. Maghanap sa Chrome Web Store ng naaangkop na pamalit na app.</translation>
 <translation id="1757915090001272240">Wide Latin</translation>
+<translation id="1761091787730831947">I-share sa <ph name="VM_NAME" /></translation>
 <translation id="1773212559869067373">Lokal na tinanggihan ang certificate ng pagpapatunay</translation>
 <translation id="1775381402323441512">Impormasyon ng video</translation>
 <translation id="180035236176489073">Kailangan kang mag-online upang ma-access ang mga file na ito.</translation>
@@ -166,11 +167,11 @@
 <translation id="2312704192806647271">{COUNT,plural, =1{Ang extension na may ID na <ph name="BEGIN_LIST" /><ph name="END_LIST" /> ay hindi mahanap. Makipag-ugnayan sa iyong administrator.}one{Ang mga extension na may mga ID na <ph name="BEGIN_LIST" /><ph name="END_LIST" /> ay hindi mahanap. Makipag-ugnayan sa iyong administrator.}other{Ang mga extension na may mga ID na <ph name="BEGIN_LIST" /><ph name="END_LIST" /> ay hindi mahanap. Makipag-ugnayan sa iyong administrator.}}</translation>
 <translation id="2325650632570794183">Hindi sinusuportahan ang uri ng file na ito. Pakibisita ang Chrome Web Store upang makahanap ng app na makakapagbukas ng ganitong uri ng file.</translation>
 <translation id="2326539130272988168">Bulgarian</translation>
-<translation id="2337715497728194187">I-share sa Bruschetta</translation>
 <translation id="233822363739146957">Walang sapat na storage space para ma-sync ang lahat ng iyong file</translation>
 <translation id="23721837607121582">I-download ang mobile profile, Network <ph name="NETWORK_INDEX" /> ng <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" /></translation>
 <translation id="2377319039870049694">Lumipat sa list view</translation>
 <translation id="2377590462528165447">Nagbahagi ng <ph name="NUMBER_OF_ITEMS" /> (na) folder sa Linux</translation>
+<translation id="2379576081295865700">Tinitingnan ang storage space… may 1 item na nakita</translation>
 <translation id="2383454254762599978">Ilipat sa trash</translation>
 <translation id="2387458720915042159">Uri ng koneksyon sa proxy</translation>
 <translation id="2389832672041313158">Burmese/Myanmar</translation>
@@ -197,7 +198,6 @@
 <translation id="2544853746127077729">Tinanggihan ng network ang certificate sa pagpapatunay</translation>
 <translation id="255937426064304553">US international</translation>
 <translation id="2563185590376525700">Palaka</translation>
-<translation id="2574327434504608656">1 folder ang na-share sa Bruschetta</translation>
 <translation id="2578394532502990878">Tamil Phonetic</translation>
 <translation id="2579959351793446050">Odia</translation>
 <translation id="2587195714949534472">Inihahandang i-sync ang <ph name="FILE_NAME" />...</translation>
@@ -213,6 +213,7 @@
 <translation id="2718540689505416944">I-install ang app gamit ang Linux</translation>
 <translation id="2719020180254996569">Network <ph name="NETWORK_INDEX" /> sa <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="CONNECTION_STATUS" />, Mga Detalye</translation>
 <translation id="2724954091494693138">Turkish na may F-keyboard</translation>
+<translation id="2732288874651063549">Pamahalaan ang pag-share sa <ph name="VM_NAME" /></translation>
 <translation id="2732839045120506979">Vietnamese VNI</translation>
 <translation id="2735623501230989521">Bigyan ng pahintulot ang Parallels Desktop na ma-access ang mga file sa folder na <ph name="FOLDER_NAME" /></translation>
 <translation id="2764206540577097904">Nagamit mo na ang lahat ng iyong indibidwal na storage sa Google Workspace.</translation>
@@ -297,7 +298,6 @@
 <translation id="3408072735282270043">I-activate, <ph name="NETWORK_NAME" /></translation>
 <translation id="3408236822532681288">German (Germany) na may Neo 2 keyboard</translation>
 <translation id="3414856743105198592">Buburahin ng pag-format sa naaalis na media ang lahat ng data. Nais mo bang magpatuloy?</translation>
-<translation id="3435143625481187092">Bigyan ng pahintulot ang Bruschetta na ma-access ang mga file sa folder na <ph name="FOLDER_NAME" /></translation>
 <translation id="3437801641691368414">Oras ng pagkakagawa</translation>
 <translation id="343907260260897561">Instant Camera</translation>
 <translation id="3455931012307786678">Estonian</translation>
@@ -308,6 +308,7 @@
 <translation id="3509680540198371098">Network <ph name="NETWORK_INDEX" /> ng <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="SECURITY_STATUS" />, <ph name="CONNECTION_STATUS" />, Lakas ng Signal <ph name="SIGNAL_STRENGTH" />%, Mga Detalye</translation>
 <translation id="3511705761158917664">Inihahandang i-sync ang <ph name="NUMBER_OF_ITEMS" /> (na) item...</translation>
 <translation id="3522708245912499433">Portuguese</translation>
+<translation id="3523225005467146490">1 folder ang na-share sa <ph name="VM_NAME" /></translation>
 <translation id="3524311639100184459">Mag-ingat: Ang mga file na ito ay pansamantala lang at puwedeng awtomatikong ma-delete para magbakante ng espasyo sa disk.  <ph name="BEGIN_LINK" />Matuto Pa<ph name="END_LINK" /></translation>
 <translation id="3527085408025491307">Folder</translation>
 <translation id="3548125359243647069">Napakaraming beses nang naglagay ng maling PIN.</translation>
@@ -385,7 +386,6 @@
 <translation id="4159731583141908892">Inilipat ang <ph name="FILE_NAME" />.</translation>
 <translation id="4176286497474237543">Bakantehin ang trash ngayon</translation>
 <translation id="4179621117429069925">Nasa trash mo ang item na ito</translation>
-<translation id="4181839429935094755"><ph name="NUMBER_OF_ITEMS" /> (na) folder na na-share sa Bruschetta</translation>
 <translation id="4186579485882418952">I-enable ang Offline</translation>
 <translation id="4193154014135846272">Dokumento ng Google</translation>
 <translation id="4197674956721858839">Pagpili ng zip</translation>
@@ -452,7 +452,6 @@
 <translation id="4646813851450205600">Czech na may Qwerty keyboard</translation>
 <translation id="4656777537938206294">Gawing available offline ang mga file</translation>
 <translation id="4658782175094886150">Tao sa snow</translation>
-<translation id="466782788172479199">Bigyan ang Bruschetta ng pahintulot na ma-access ang mga file sa iyong Google Drive. Masi-sync sa iba mo pang device ang mga pagbabago.</translation>
 <translation id="4669606053856530811">Mawawalan ng access ang mga miyembro ng '<ph name="SOURCE_NAME" />' maliban na lang kung ibinahagi sa kanila ang mga item na ito.</translation>
 <translation id="467809019005607715">Google Slides</translation>
 <translation id="4690246192099372265">Swedish</translation>
@@ -564,7 +563,6 @@
 <translation id="5323213332664049067">Latin American</translation>
 <translation id="5330145655348521461">Ang mga file na ito na binuksan sa ibang desktop. Ilipat sa <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />) upang tingnan ito.</translation>
 <translation id="5330512191124428349">Kumuha ng impormasyon</translation>
-<translation id="5344246330454251646">Pamahalaan ang pag-share sa Bruschetta</translation>
 <translation id="535792325654997756">Taong may mga pusa</translation>
 <translation id="5358764674931277">Frame rate</translation>
 <translation id="5363339716524495120">Chinese ang wika sa pag-input</translation>
@@ -670,6 +668,8 @@
 <translation id="6164412158936057769">Mga Paru-paro</translation>
 <translation id="6165508094623778733">Matuto pa</translation>
 <translation id="6170470584681422115">Sandwich</translation>
+<translation id="6177854567773392726">Tinitingnan ang storage space… may <ph name="ITEMS_FOUND" /> (na) item na nakita</translation>
+<translation id="6181912134988520389">Bigyan ng pahintulot ang <ph name="VM_NAME" /> na ma-access ang mga file sa iyong Google Drive. Masi-sync sa iba mo pang device ang mga pagbabago.</translation>
 <translation id="6187719147498869044">Hungarian</translation>
 <translation id="6198252989419008588">Palitan ang PIN</translation>
 <translation id="6199801702437275229">Hinihintay ang impormasyon ng espasyo...</translation>
@@ -732,7 +732,6 @@
 <translation id="6710213216561001401">Nauna</translation>
 <translation id="6732801395666424405">Hindi na-load ang mga certificate</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />]</translation>
-<translation id="6740270213273127264">I-share ang folder sa Bruschetta</translation>
 <translation id="6750737795876287924">Kasalukuyang directory</translation>
 <translation id="6751256176799620176">1 folder ang napili</translation>
 <translation id="6755827872271341378">ChromeOS Flex device</translation>
@@ -774,6 +773,7 @@
 <translation id="6989942356279143254">Swedish</translation>
 <translation id="6990081529015358884">Naubusan ka na ng espasyo</translation>
 <translation id="6993826899923627728">Nasa iyong trash ang mga item na ito</translation>
+<translation id="6996593023542748157">I-share ang folder sa <ph name="VM_NAME" /></translation>
 <translation id="7008426324576352165">Kailangan ng iyong organisasyon ng mas malaking storage para makumpleto ang pag-upload.</translation>
 <translation id="7009985720488544166">Na-block ng patakaran ng administrator ang paglipat ng <ph name="COUNT" /> (na) file</translation>
 <translation id="7012943028104619157"><ph name="ROOT_TITLE" /> (<ph name="ROOT_SUMMARY" />)</translation>
@@ -959,6 +959,7 @@
 <translation id="8335837413233998004">Belarusian</translation>
 <translation id="8336153091935557858">Kahapon <ph name="YESTERDAY_DAYTIME" /></translation>
 <translation id="8342318071240498787">Umiiral na ang isang file o direktoryong may parehong pangalan.</translation>
+<translation id="83651606385705612">Bigyan ng pahintulot ang <ph name="VM_NAME" /> na ma-access ang mga file sa folder na <ph name="FOLDER_NAME" /></translation>
 <translation id="8372369524088641025">Mahinang WEP key</translation>
 <translation id="8372852072747894550">Greek</translation>
 <translation id="8386903983509584791">Nakumpleto ang pag-scan</translation>
@@ -968,6 +969,7 @@
 <translation id="8408068190360279472"><ph name="NETWORK_TYPE" /> network, kumokonekta</translation>
 <translation id="8425213833346101688">Baguhin</translation>
 <translation id="8428213095426709021">Mga Setting</translation>
+<translation id="8429998526804961548"><ph name="NUMBER_OF_ITEMS" /> (na) folder ang na-share sa <ph name="VM_NAME" /></translation>
 <translation id="8431909052837336408">Palitan ang PIN ng SIM</translation>
 <translation id="8437209419043462667">US</translation>
 <translation id="8452135315243592079">Walang nakalagay na SIM card</translation>

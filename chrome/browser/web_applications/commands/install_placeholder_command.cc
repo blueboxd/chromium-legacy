@@ -13,11 +13,11 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/external_install_options.h"
 #include "chrome/browser/web_applications/install_bounce_metric.h"
+#include "chrome/browser/web_applications/jobs/uninstall/web_app_uninstall_and_replace_job.h"
 #include "chrome/browser/web_applications/locks/app_lock.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_install_finalizer.h"
 #include "chrome/browser/web_applications/web_app_install_utils.h"
-#include "chrome/browser/web_applications/web_app_uninstall_and_replace_job.h"
 #include "chrome/browser/web_applications/web_contents/web_app_data_retriever.h"
 #include "components/webapps/browser/install_result_code.h"
 #include "content/public/browser/web_contents.h"
@@ -199,8 +199,7 @@ void InstallPlaceholderCommand::OnInstallFinalized(
 
   DCHECK(lock_);
   uninstall_and_replace_job_.emplace(
-      profile_, lock_->AsWeakPtr(), install_options_.uninstall_and_replace,
-      app_id,
+      profile_, *lock_, install_options_.uninstall_and_replace, app_id,
       base::BindOnce(&InstallPlaceholderCommand::OnUninstallAndReplaced,
                      weak_factory_.GetWeakPtr(), app_id, std::move(code)));
   uninstall_and_replace_job_->Start();

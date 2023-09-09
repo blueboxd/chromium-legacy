@@ -74,6 +74,7 @@ mojom("mojom_platform") {
     "file/file_utilities.mojom",
     "file_system_access/file_system_access_access_handle_host.mojom",
     "file_system_access/file_system_access_capacity_allocation_host.mojom",
+    "file_system_access/file_system_access_cloud_identifier.mojom",
     "file_system_access/file_system_access_data_transfer_token.mojom",
     "file_system_access/file_system_access_directory_handle.mojom",
     "file_system_access/file_system_access_error.mojom",
@@ -81,6 +82,8 @@ mojom("mojom_platform") {
     "file_system_access/file_system_access_file_handle.mojom",
     "file_system_access/file_system_access_file_writer.mojom",
     "file_system_access/file_system_access_manager.mojom",
+    "file_system_access/file_system_access_observer.mojom",
+    "file_system_access/file_system_access_observer_host.mojom",
     "file_system_access/file_system_access_transfer_token.mojom",
     "filesystem/file_system.mojom",
     "font_access/font_access.mojom",
@@ -352,7 +355,7 @@ mojom("mojom_platform") {
   if (use_ozone) {
     enabled_features += [ "is_selection_clipboard_buffer_possible" ]
   }
-  if (is_android || is_mac) {
+  if (is_android || is_apple) {
     enabled_features += [ "is_using_open_color_chooser" ]
   }
 
@@ -1605,7 +1608,6 @@ mojom("mojom_modules") {
       ]
       traits_private_headers = [ "//third_party/blink/renderer/modules/indexeddb/indexed_db_blink_mojom_traits.h" ]
       traits_headers = [
-        "//third_party/blink/public/common/indexeddb/web_idb_types.h",
         "//third_party/blink/renderer/modules/indexeddb/idb_key_path.h",
         "//third_party/blink/renderer/modules/indexeddb/idb_key_range.h",
         "//third_party/blink/renderer/modules/indexeddb/idb_metadata.h",
@@ -1671,7 +1673,6 @@ mojom("mojom_modules") {
         "//third_party/blink/public/common/indexeddb/indexeddb_key_path.h",
         "//third_party/blink/public/common/indexeddb/indexeddb_key_range.h",
         "//third_party/blink/public/common/indexeddb/indexeddb_metadata.h",
-        "//third_party/blink/public/common/indexeddb/web_idb_types.h",
       ]
       traits_private_headers = [ "//third_party/blink/public/common/indexeddb/indexed_db_default_mojom_traits.h" ]
     },

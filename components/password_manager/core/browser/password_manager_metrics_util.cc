@@ -119,12 +119,6 @@ void LogSaveUIDismissalReason(
   }
 }
 
-void LogSaveUIDismissalReasonAfterUnblocklisting(UIDismissalReason reason) {
-  base::UmaHistogramEnumeration(
-      "PasswordManager.SaveUIDismissalReasonAfterUnblacklisting", reason,
-      NUM_UI_RESPONSES);
-}
-
 void LogUpdateUIDismissalReason(
     UIDismissalReason reason,
     autofill::mojom::SubmissionIndicatorEvent submission_event) {
@@ -358,22 +352,26 @@ void LogIsPasswordProtected(bool is_password_protected) {
 }
 
 void LogProtectedPasswordHashCounts(size_t gaia_hash_count,
-                                    bool does_primary_account_exists,
-                                    bool is_signed_in) {
+                                    SignInState sign_in_state) {
   base::UmaHistogramCounts100("PasswordManager.SavedGaiaPasswordHashCount2",
                               static_cast<int>(gaia_hash_count));
 
   // Log parallel metrics for sync and signed-in non-sync accounts in addition
   // to above to be able to tell what fraction of signed-in non-sync users we
   // are protecting compared to syncing users.
-  if (does_primary_account_exists) {
-    base::UmaHistogramCounts100(
-        "PasswordManager.SavedGaiaPasswordHashCount2.Sync",
-        static_cast<int>(gaia_hash_count));
-  } else if (is_signed_in) {
-    base::UmaHistogramCounts100(
-        "PasswordManager.SavedGaiaPasswordHashCount2.SignedInNonSync",
-        static_cast<int>(gaia_hash_count));
+  switch (sign_in_state) {
+    case SignInState::kSignedOut:
+      break;
+    case SignInState::kSignedInSyncDisabled:
+      base::UmaHistogramCounts100(
+          "PasswordManager.SavedGaiaPasswordHashCount2.SignedInNonSync",
+          static_cast<int>(gaia_hash_count));
+      break;
+    case SignInState::kSyncing:
+      base::UmaHistogramCounts100(
+          "PasswordManager.SavedGaiaPasswordHashCount2.Sync",
+          static_cast<int>(gaia_hash_count));
+      break;
   }
 }
 
@@ -399,5 +397,40 @@ void LogUserInteractionsInPasswordManagementBubble(
       "PasswordManager.PasswordManagementBubble.UserAction",
       password_management_bubble_interaction);
 }
+
+#if BUILDFLAG(IS_IOS)
+void RecordMigrationToOSCryptLatency(bool success,
+                                     base::TimeDelta latency,
+                                     base::StringPiece store_infix) {
+  if (success) {
+    base::UmaHistogramLongTimes(
+        base::StrCat({"PasswordManager.MigrationToOSCrypt.", store_infix,
+                      ".SuccessLatency"}),
+        latency);
+    return;
+  }
+  base::UmaHistogramLongTimes(
+      base::StrCat({"PasswordManager.MigrationToOSCrypt.", store_infix,
+                    ".ErrorLatency"}),
+      latency);
+}
+
+void RecordMigrationToOSCryptStatus(base::TimeTicks migration_start_time,
+                                    bool is_account_store,
+                                    MigrationToOSCrypt status) {
+  base::StringPiece infix_for_store =
+      is_account_store ? "AccountStore" : "ProfileStore";
+  if (status != MigrationToOSCrypt::kStarted) {
+    RecordMigrationToOSCryptLatency(
+        status == MigrationToOSCrypt::kSuccess,
+        base::TimeTicks::Now() - migration_start_time, infix_for_store);
+  }
+
+  base::UmaHistogramEnumeration("PasswordManager.MigrationToOSCrypt", status);
+  base::UmaHistogramEnumeration(
+      base::StrCat({"PasswordManager.MigrationToOSCrypt.", infix_for_store}),
+      status);
+}
+#endif  // BUILDFLAG(IS_IOS)
 
 }  // namespace password_manager::metrics_util

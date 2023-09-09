@@ -137,10 +137,6 @@ chrome_internal_verifier(
 )
 
 chrome_internal_verifier(
-    builder = "fuchsia-smoke-astro",
-)
-
-chrome_internal_verifier(
     builder = "fuchsia-smoke-nelson",
 )
 
@@ -220,6 +216,11 @@ chrome_internal_verifier(
 
 chrome_internal_verifier(
     builder = "test-o-emulator",
+)
+
+chrome_internal_verifier(
+    branch_selector = branches.selector.WINDOWS_BRANCHES,
+    builder = "win-arm64-pgo",
 )
 
 chrome_internal_verifier(

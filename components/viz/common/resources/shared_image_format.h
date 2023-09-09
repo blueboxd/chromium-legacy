@@ -58,8 +58,6 @@ class COMPONENT_EXPORT(VIZ_SHARED_IMAGE_FORMAT) SharedImageFormat {
   // on the planes in the PlaneConfig. For individual planes like Y_V_U, U and V
   // are both 8 bit channel formats whereas for Y_UV, the UV plane contains 2
   // channels with each being an 8 bit channel format.
-  // TODO(hitawala): Add a helper function that gets the channel format for UV
-  // plane.
   enum class ChannelFormat : uint8_t {
     k8,   // 8 bit unorm
     k10,  // 10 bit unorm
@@ -96,7 +94,9 @@ class COMPONENT_EXPORT(VIZ_SHARED_IMAGE_FORMAT) SharedImageFormat {
   // external sampling is supported only on Ozone.
   bool PrefersExternalSampler() const {
 #if BUILDFLAG(IS_OZONE)
-    return prefers_external_sampler_;
+    return is_multi_plane()
+               ? format_.multiplanar_format.prefers_external_sampler
+               : false;
 #else
     return false;
 #endif
@@ -106,7 +106,7 @@ class COMPONENT_EXPORT(VIZ_SHARED_IMAGE_FORMAT) SharedImageFormat {
   // Sets this format (which must be multiplanar) as needing external sampling.
   void SetPrefersExternalSampler() {
     CHECK(is_multi_plane());
-    prefers_external_sampler_ = true;
+    format_.multiplanar_format.prefers_external_sampler = true;
   }
 #endif
 
@@ -179,13 +179,21 @@ class COMPONENT_EXPORT(VIZ_SHARED_IMAGE_FORMAT) SharedImageFormat {
       PlaneConfig plane_config;
       Subsampling subsampling;
       ChannelFormat channel_format;
+#if BUILDFLAG(IS_OZONE)
+      // NOTE: This field is intentionally not used as part of defining equality
+      // between two MultiplanarFormat instances as clients should not generally
+      // need to care. Clients who need to distinguish for a particular
+      // SharedImageFormat `format` should call
+      // format.PrefersExternalSampler().
+      bool prefers_external_sampler = false;
+#endif
 
       bool operator==(const MultiplanarFormat& o) const;
       bool operator!=(const MultiplanarFormat& o) const;
       bool operator<(const MultiplanarFormat& o) const;
     };
 
-    SharedImageFormatUnion() = default;
+    SharedImageFormatUnion() {}
     explicit constexpr SharedImageFormatUnion(
         mojom::SingleplanarFormat singleplanar_format)
         : singleplanar_format(singleplanar_format) {}
@@ -226,9 +234,6 @@ class COMPONENT_EXPORT(VIZ_SHARED_IMAGE_FORMAT) SharedImageFormat {
   }
 
   PlaneType plane_type_ = PlaneType::kUnknown;
-#if BUILDFLAG(IS_OZONE)
-  bool prefers_external_sampler_ = false;
-#endif
   // `format_` can only be SingleplanarFormat (for single plane, eg. RGBA) or
   // MultiplanarFormat at any given time.
   SharedImageFormatUnion format_;

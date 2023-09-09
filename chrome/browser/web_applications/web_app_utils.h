@@ -142,6 +142,9 @@ bool HasAppSettingsPage(Profile* profile, const GURL& url);
 // Returns whether `url` is in scope `scope`. False if scope is invalid.
 bool IsInScope(const GURL& url, const GURL& scope);
 
+// Returns whether the `login_mode` should force a start at OS login.
+bool IsRunOnOsLoginModeEnabledForAutostart(RunOnOsLoginMode login_mode);
+
 #if BUILDFLAG(IS_CHROMEOS)
 // Web apps crosapi (used for Lacros web app management) will be enabled if
 // Lacros is the primary browser.
@@ -218,6 +221,8 @@ content::mojom::AlternativeErrorPageOverrideInfoPtr ConstructWebAppErrorPage(
     content::BrowserContext* browser_context,
     std::u16string message,
     std::u16string supplementary_icon);
+
+bool IsValidScopeForLinkCapturing(const GURL& scope);
 
 }  // namespace web_app
 

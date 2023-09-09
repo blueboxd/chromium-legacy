@@ -400,7 +400,7 @@ void OnPrivateAggregationLoaded(
   std::move(loaded_callback).Run();
 }
 
-void OnQuotaManagedDataLoaded(
+void OnQuotaStorageLoaded(
     BrowsingDataModel* model,
     base::OnceClosure loaded_callback,
     const std::list<BrowsingDataQuotaHelper::QuotaInfo>& quota_info) {
@@ -466,6 +466,15 @@ BrowsingDataModel::BrowsingDataEntryView::BrowsingDataEntryView(
     const DataDetails& data_details)
     : data_owner(data_owner), data_key(data_key), data_details(data_details) {}
 BrowsingDataModel::BrowsingDataEntryView::~BrowsingDataEntryView() = default;
+
+// static
+const std::string BrowsingDataModel::GetHost(const DataOwner& data_owner) {
+  return absl::visit(
+      base::Overloaded{
+          [&](const std::string& host) { return host; },
+          [&](const url::Origin& origin) { return origin.host(); }},
+      data_owner);
+}
 
 bool BrowsingDataModel::BrowsingDataEntryView::Matches(
     const url::Origin& origin) const {
@@ -660,6 +669,37 @@ void BrowsingDataModel::RemovePartitionedBrowsingData(
   }
 }
 
+bool BrowsingDataModel::IsBlockedByThirdPartyCookieBlocking(
+    StorageType type) const {
+  if (delegate_) {
+    auto delegate_response =
+        delegate_->IsBlockedByThirdPartyCookieBlocking(type);
+    if (delegate_response.has_value()) {
+      return delegate_response.value();
+    }
+  }
+
+  // TODO(crbug.com/1469304, 1453783): When CHIPS is represented in the model,
+  // and partitioned storage stops respecting 3PC blocking, these will need to
+  // be accounted for. We will likely need to pass in the data key to
+  // disambiguate these cases from their storage types.
+  switch (type) {
+    case BrowsingDataModel::StorageType::kTrustTokens:
+    case BrowsingDataModel::StorageType::kSharedStorage:
+    case BrowsingDataModel::StorageType::kInterestGroup:
+    case BrowsingDataModel::StorageType::kAttributionReporting:
+    case BrowsingDataModel::StorageType::kPrivateAggregation:
+    case BrowsingDataModel::StorageType::kSharedDictionary:
+      return false;
+    case BrowsingDataModel::StorageType::kLocalStorage:
+    case BrowsingDataModel::StorageType::kSessionStorage:
+    case BrowsingDataModel::StorageType::kQuotaStorage:
+      return true;
+    case (BrowsingDataModel::StorageType::kExtendedDelegateRange):
+      NOTREACHED_NORETURN();
+  }
+}
+
 void BrowsingDataModel::PopulateFromDisk(base::OnceClosure finished_callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   bool is_shared_storage_enabled =
@@ -720,7 +760,7 @@ void BrowsingDataModel::PopulateFromDisk(base::OnceClosure finished_callback) {
 
   if (is_migrate_storage_to_bdm_enabled) {
     quota_helper_->StartFetching(
-        base::BindOnce(&OnQuotaManagedDataLoaded, this, completion));
+        base::BindOnce(&OnQuotaStorageLoaded, this, completion));
     storage_partition_->GetDOMStorageContext()->GetLocalStorageUsage(
         base::BindOnce(&OnLocalStorageLoaded, this, completion));
   }

@@ -16,7 +16,7 @@
 #import "ios/web/public/web_state_observer.h"
 
 class Browser;
-
+class GURL;
 class TabPickupInfobarDelegate;
 
 namespace sync_sessions {
@@ -59,6 +59,14 @@ class TabPickupBrowserAgent : public BrowserObserver,
 
   // Adds/replaces the infobar and show the banner.
   void ShowInfoBar();
+
+  // Returns whether a tab pickup can be presented or not.
+  bool CanShowTabPickupBanner();
+
+  // Returns true if the given `distant_tab_url` is different from the previous
+  // URL that was used to display the tab pickup banner. It also sets the
+  // distant_tab_url to be the previous URL.
+  bool UpdateNewDistantTab(GURL distant_tab_url);
 
   // Called when the app has been foregrounded.
   void AppWillEnterForeground();

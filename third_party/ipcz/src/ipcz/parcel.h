@@ -40,8 +40,8 @@ class Parcel {
 
   Parcel();
   explicit Parcel(SequenceNumber sequence_number);
-  Parcel(Parcel&& other);
-  Parcel& operator=(Parcel&& other);
+  Parcel(const Parcel& other) = delete;
+  Parcel& operator=(const Parcel& other) = delete;
   ~Parcel();
 
   void set_sequence_number(SequenceNumber n) { sequence_number_ = n; }
@@ -159,7 +159,7 @@ class Parcel {
     std::atomic<uint32_t> size;
 
     // Reserved padding for 8-byte parcel data alignment.
-    uint32_t reserved;
+    std::atomic<uint32_t> reserved;
   };
 
   // Holds a Fragment and a reference to its backing memory. Used when a
@@ -174,8 +174,8 @@ class Parcel {
       // Parcels can only be given data fragments which are already addressable.
       ABSL_ASSERT(is_valid());
     }
-    DataFragment(DataFragment&& other);
-    DataFragment& operator=(DataFragment&& other);
+    DataFragment(const DataFragment& other) = delete;
+    DataFragment& operator=(const DataFragment& other) = delete;
     ~DataFragment();
 
     bool is_valid() const { return memory_ && fragment_.is_addressable(); }
@@ -205,8 +205,8 @@ class Parcel {
   // the DataStorage. This subset is considered the Parcel's data.
   struct DataStorageWithView {
     DataStorageWithView() = default;
-    DataStorageWithView(DataStorageWithView&& other);
-    DataStorageWithView& operator=(DataStorageWithView&& other);
+    DataStorageWithView(const DataStorageWithView& other) = delete;
+    DataStorageWithView& operator=(const DataStorageWithView& other) = delete;
     ~DataStorageWithView() = default;
 
     DataStorage storage;

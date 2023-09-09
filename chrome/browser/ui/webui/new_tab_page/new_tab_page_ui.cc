@@ -16,6 +16,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "chrome/browser/browser_features.h"
 #include "chrome/browser/buildflags.h"
 #include "chrome/browser/cart/cart_handler.h"
 #include "chrome/browser/image_service/image_service_factory.h"
@@ -65,6 +66,7 @@
 #include "components/feed/feed_feature_list.h"
 #include "components/google/core/common/google_util.h"
 #include "components/grit/components_scaled_resources.h"
+#include "components/history_clusters/core/features.h"
 #include "components/page_image_service/image_service.h"
 #include "components/page_image_service/image_service_handler.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -196,6 +198,13 @@ content::WebUIDataSource* CreateAndAddNewTabPageUiHtmlSource(Profile* profile) {
       "handleMostVisitedNavigationExplicitly",
       base::FeatureList::IsEnabled(
           ntp_features::kNtpHandleMostVisitedNavigationExplicitly));
+
+  source->AddBoolean(
+      "prerenderEnabled",
+      base::FeatureList::IsEnabled(features::kNewTabPageTriggerForPrerender2));
+  source->AddInteger(
+      "prerenderStartTimeThreshold",
+      features::kNewTabPagePrerenderStartDelayOnMouseHoverByMiliSeconds.Get());
 
   source->AddBoolean(
       "oneGoogleBarEnabled",
@@ -374,6 +383,7 @@ content::WebUIDataSource* CreateAndAddNewTabPageUiHtmlSource(Profile* profile) {
       {"moduleInfoButtonTitle", IDS_NTP_MODULES_INFO_BUTTON_TITLE},
       {"modulesDismissButtonText", IDS_NTP_MODULES_DISMISS_BUTTON_TEXT},
       {"modulesDisableButtonText", IDS_NTP_MODULES_DISABLE_BUTTON_TEXT},
+      {"modulesDisableButtonTextV2", IDS_NTP_MODULES_DISABLE_BUTTON_TEXT_V2},
       {"modulesCustomizeButtonText", IDS_NTP_MODULES_CUSTOMIZE_BUTTON_TEXT},
       {"modulesRecipeInfo", IDS_NTP_MODULES_RECIPE_INFO},
       {"modulesRecipeExtendedInfo", IDS_NTP_MODULES_RECIPE_EXTENDED_INFO},
@@ -400,6 +410,7 @@ content::WebUIDataSource* CreateAndAddNewTabPageUiHtmlSource(Profile* profile) {
       {"modulesDriveFilesLower", IDS_NTP_MODULES_DRIVE_FILES_LOWER},
       {"modulesDummyLower", IDS_NTP_MODULES_DUMMY_LOWER},
       {"modulesDriveTitle", IDS_NTP_MODULES_DRIVE_TITLE},
+      {"modulesDriveTitleV2", IDS_NTP_MODULES_DRIVE_TITLE_V2},
       {"modulesDriveInfo", IDS_NTP_MODULES_DRIVE_INFO},
       {"modulesDummyTitle", IDS_NTP_MODULES_DUMMY_TITLE},
       {"modulesFeedTitle", IDS_NTP_MODULES_FEED_TITLE},
@@ -482,8 +493,17 @@ content::WebUIDataSource* CreateAndAddNewTabPageUiHtmlSource(Profile* profile) {
       {"modulesJourneysResumeJourney", IDS_NTP_MODULES_RESUME_YOUR_JOURNEY},
       {"modulesJourneysShowAll", IDS_NTP_MODULES_SHOW_ALL},
       {"modulesJourneysInfo", IDS_NTP_MODULES_HISTORY_CLUSTERS_INFO},
-      {"modulesJourneysSentence2", IDS_NTP_MODULES_HISTORY_CLUSTERS_SENTENCE2},
+      {"disableQuestsModuleToastName",
+       IDS_NTP_MODULES_HISTORY_CLUSTERS_SENTENCE2},
+      {"disableQuestsModuleToastMessage",
+       IDS_NTP_MODULES_DISABLE_TOAST_MESSAGE},
       {"modulesJourneyDisable", IDS_NTP_MODULES_HISTORY_CLUSTERS_DISABLE_TEXT},
+      {"modulesJourneysDismissButton",
+       IDS_NTP_MODULES_HISTORY_CLUSTERS_DISMISS_BUTTON},
+      {"modulesJourneysDoneButton",
+       IDS_NTP_MODULES_HISTORY_CLUSTERS_DONE_BUTTON},
+      {"modulesJourneysShowAllButton",
+       IDS_NTP_MODULES_HISTORY_CLUSTERS_SHOW_ALL_BUTTON},
       {"modulesJourneysShowAllAcc", IDS_ACCNAME_SHOW_ALL},
       {"modulesJourneysSearchSuggAcc", IDS_ACCNAME_SEARCH_SUGG},
       {"modulesJourneysBookmarked",
@@ -501,11 +521,32 @@ content::WebUIDataSource* CreateAndAddNewTabPageUiHtmlSource(Profile* profile) {
 
       // Middle slot promo.
       {"undoDismissPromoButtonToast", IDS_NTP_UNDO_DISMISS_PROMO_BUTTON_TOAST},
+
+      // Webstore toast.
+      {"webstoreThemesToastMessage", IDS_NTP_WEBSTORE_TOAST_MESSAGE},
+      {"webstoreThemesToastButtonText", IDS_NTP_WEBSTORE_TOAST_BUTTON_TEXT},
   };
   source->AddLocalizedStrings(kStrings);
 
   source->AddBoolean("wideModulesEnabled", base::FeatureList::IsEnabled(
                                                ntp_features::kNtpWideModules));
+
+  if (base::FeatureList::IsEnabled(history_clusters::kRenameJourneys)) {
+    source->AddLocalizedString(
+        "modulesJourneysResumeJourney",
+        IDS_NTP_MODULES_HISTORY_CLUSTERS_RESUME_BROWSING);
+    source->AddLocalizedString("modulesJourneysInfo",
+                               IDS_NTP_MODULES_HISTORY_CLUSTERS_INFO2);
+    source->AddLocalizedString(
+        "disableQuestsModuleToastName",
+        IDS_NTP_MODULES_HISTORY_CLUSTERS_DISABLE_TOAST_NAME);
+    source->AddLocalizedString(
+        "disableQuestsModuleToastMessage",
+        IDS_NTP_MODULES_HISTORY_CLUSTERS_DISABLE_TOAST_MESSAGE);
+    source->AddLocalizedString(
+        "modulesJourneyDisable",
+        IDS_NTP_MODULES_HISTORY_CLUSTERS_DISABLE_DROPDOWN_TEXT);
+  }
 
   source->AddBoolean(
       "modulesHeaderIconEnabled",

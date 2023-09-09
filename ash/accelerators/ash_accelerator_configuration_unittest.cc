@@ -351,6 +351,11 @@ TEST_F(AshAcceleratorConfigurationTest, IsDefaultAccelerator) {
           AcceleratorAction::kToggleMirrorMode);
   EXPECT_EQ(1u, default_accelerators.size());
   EXPECT_EQ(expected_default, default_accelerators[0]);
+
+  std::vector<ui::Accelerator> nonexistent_defaults =
+      config_->GetDefaultAcceleratorsForId(
+          /*id=*/789987);
+  EXPECT_EQ(0u, nonexistent_defaults.size());
 }
 
 TEST_F(AshAcceleratorConfigurationTest, MultipleDefaultAccelerators) {
@@ -967,6 +972,9 @@ TEST_F(AshAcceleratorConfigurationTest, AddAcceleratorDeprecatedConflict) {
   const AcceleratorData test_deprecated_accelerators[] = {
       {/*trigger_on_press=*/true, ui::VKEY_ESCAPE, ui::EF_SHIFT_DOWN,
        AcceleratorAction::kShowTaskManager},
+      {/*trigger_on_press=*/true, ui::VKEY_ESCAPE,
+       ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN,
+       AcceleratorAction::kShowTaskManager},
   };
 
   const AcceleratorData initial_expected_data[] = {
@@ -979,6 +987,9 @@ TEST_F(AshAcceleratorConfigurationTest, AddAcceleratorDeprecatedConflict) {
        ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN,
        AcceleratorAction::kCycleBackwardMru},
       {/*trigger_on_press=*/true, ui::VKEY_ESCAPE, ui::EF_SHIFT_DOWN,
+       AcceleratorAction::kShowTaskManager},
+      {/*trigger_on_press=*/true, ui::VKEY_ESCAPE,
+       ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN,
        AcceleratorAction::kShowTaskManager},
   };
 
@@ -995,6 +1006,10 @@ TEST_F(AshAcceleratorConfigurationTest, AddAcceleratorDeprecatedConflict) {
                                                ui::EF_SHIFT_DOWN);
   EXPECT_TRUE(config_->IsDeprecated(deprecated_accelerator));
 
+  const ui::Accelerator deprecated_accelerator_2(
+      ui::VKEY_ESCAPE, ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN);
+  EXPECT_TRUE(config_->IsDeprecated(deprecated_accelerator_2));
+
   // Add SHIFT + ESCAPE to AcceleratorAction::kSwitchToLastUsedIme, which
   // conflicts with a deprecated accelerator.
   const AcceleratorData updated_test_data[] = {
@@ -1008,6 +1023,9 @@ TEST_F(AshAcceleratorConfigurationTest, AddAcceleratorDeprecatedConflict) {
       {/*trigger_on_press=*/true, ui::VKEY_TAB,
        ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN,
        AcceleratorAction::kCycleBackwardMru},
+      {/*trigger_on_press=*/true, ui::VKEY_ESCAPE,
+       ui::EF_SHIFT_DOWN | ui::EF_ALT_DOWN,
+       AcceleratorAction::kShowTaskManager},
   };
 
   AcceleratorConfigResult result = config_->AddUserAccelerator(
@@ -1025,6 +1043,15 @@ TEST_F(AshAcceleratorConfigurationTest, AddAcceleratorDeprecatedConflict) {
 
   // Confirm that the deprecated accelerator was removed.
   EXPECT_FALSE(config_->IsDeprecated(deprecated_accelerator));
+
+  // Ensure that the second deprecated accelerator still maps to a deprecated
+  // action.
+  const DeprecatedAcceleratorData* task_manager_deprecated_data =
+      config_->GetDeprecatedAcceleratorData(
+          AcceleratorAction::kShowTaskManager);
+  EXPECT_EQ(AcceleratorAction::kShowTaskManager,
+            task_manager_deprecated_data->action);
+  EXPECT_TRUE(config_->IsDeprecated(deprecated_accelerator_2));
 }
 
 // Add and then remove an accelerator.
@@ -1776,7 +1803,7 @@ TEST_F(AshAcceleratorConfigurationTest,
       {/*trigger_on_press=*/true, ui::VKEY_C, ui::EF_COMMAND_DOWN,
        AcceleratorAction::kToggleCalendar},
       {/*trigger_on_press=*/true, ui::VKEY_A, ui::EF_COMMAND_DOWN,
-       AcceleratorAction::kToggleDictation},
+       AcceleratorAction::kEnableOrToggleDictation},
   };
 
   config_->Initialize(test_data);
@@ -1821,16 +1848,16 @@ TEST_F(AshAcceleratorConfigurationTest,
       {/*trigger_on_press=*/true, ui::VKEY_SPACE, ui::EF_CONTROL_DOWN,
        AcceleratorAction::kSwitchToLastUsedIme},
       {/*trigger_on_press=*/true, ui::VKEY_A, ui::EF_COMMAND_DOWN,
-       AcceleratorAction::kToggleDictation},
+       AcceleratorAction::kEnableOrToggleDictation},
   };
   // `AcceleratorAction::kSwitchToLastUsedIme_data` has all the available
   // accelerators.
   ExpectAllAcceleratorsEqual(expected_test_data, config_->GetAllAccelerators());
 
-  // Now have `AcceleratorAction::kToggleDictation` add Search + C, removing it
-  // from `AcceleratorAction::kSwitchToLastUsedIme`.
-  result = config_->AddUserAccelerator(AcceleratorAction::kToggleDictation,
-                                       new_accelerator);
+  // Now have `AcceleratorAction::kEnableOrToggleDictation` add Search + C,
+  // removing it from `AcceleratorAction::kSwitchToLastUsedIme`.
+  result = config_->AddUserAccelerator(
+      AcceleratorAction::kEnableOrToggleDictation, new_accelerator);
   EXPECT_EQ(AcceleratorConfigResult::kSuccess, result);
   // Expect just one entry, since `AcceleratorAction::kSwitchToLastUsedIme` no
   // longer holds the Search + C accelerator.
@@ -1839,7 +1866,7 @@ TEST_F(AshAcceleratorConfigurationTest,
 
   const base::Value::List* toggle_dictation_overrides =
       updated_overrides_2.FindList(
-          base::NumberToString(AcceleratorAction::kToggleDictation));
+          base::NumberToString(AcceleratorAction::kEnableOrToggleDictation));
   // Confirm that prefs are stored correctly.
   EXPECT_EQ(1u, toggle_dictation_overrides->size());
   AcceleratorModificationData toggle_dictation_data =
@@ -1853,9 +1880,9 @@ TEST_F(AshAcceleratorConfigurationTest,
 
   const AcceleratorData expected_test_data_2[] = {
       {/*trigger_on_press=*/true, ui::VKEY_C, ui::EF_COMMAND_DOWN,
-       AcceleratorAction::kToggleDictation},
+       AcceleratorAction::kEnableOrToggleDictation},
       {/*trigger_on_press=*/true, ui::VKEY_A, ui::EF_COMMAND_DOWN,
-       AcceleratorAction::kToggleDictation},
+       AcceleratorAction::kEnableOrToggleDictation},
       {/*trigger_on_press=*/true, ui::VKEY_SPACE, ui::EF_CONTROL_DOWN,
        AcceleratorAction::kSwitchToLastUsedIme},
   };
@@ -1879,7 +1906,7 @@ TEST_F(AshAcceleratorConfigurationTest,
   EXPECT_EQ(1u, relogin_overrides.size());
 
   // Verify pref overrides were applied correctly.
-  EXPECT_EQ(AcceleratorAction::kToggleDictation,
+  EXPECT_EQ(AcceleratorAction::kEnableOrToggleDictation,
             *config_->FindAcceleratorAction(new_accelerator));
 
   // `AcceleratorAction::kSwitchToLastUsedIme_data` has all the available

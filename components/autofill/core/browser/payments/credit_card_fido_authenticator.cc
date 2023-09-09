@@ -46,18 +46,11 @@ constexpr char kGooglePaymentsRpid[] = "google.com";
 constexpr char kGooglePaymentsRpName[] = "Google Payments";
 
 std::vector<uint8_t> Base64ToBytes(std::string base64) {
-  std::string bytes;
-  bool did_succeed = base::Base64Decode(base::StringPiece(base64), &bytes);
-  if (did_succeed) {
-    return std::vector<uint8_t>(bytes.begin(), bytes.end());
-  }
-  return std::vector<uint8_t>{};
+  return base::Base64Decode(base64).value_or(std::vector<uint8_t>());
 }
 
 base::Value BytesToBase64(const std::vector<uint8_t> bytes) {
-  std::string base64;
-  base::Base64Encode(std::string(bytes.begin(), bytes.end()), &base64);
-  return base::Value(std::move(base64));
+  return base::Value(base::Base64Encode(bytes));
 }
 }  // namespace
 
@@ -544,20 +537,15 @@ CreditCardFidoAuthenticator::ParseCreationOptions(
   options->relying_party.name =
       relying_party_name ? *relying_party_name : kGooglePaymentsRpName;
 
-  const std::string gaia =
-      autofill_client_->GetIdentityManager()
-          ->GetPrimaryAccountInfo(signin::ConsentLevel::kSync)
-          .gaia;
-  options->user.id = std::vector<uint8_t>(gaia.begin(), gaia.end());
-  options->user.name = autofill_client_->GetIdentityManager()
-                           ->GetPrimaryAccountInfo(signin::ConsentLevel::kSync)
-                           .email;
-
-  AccountInfo account_info =
-      autofill_client_->GetIdentityManager()->FindExtendedAccountInfo(
-          autofill_client_->GetPersonalDataManager()
-              ->GetAccountInfoForPaymentsServer());
-  options->user.display_name = account_info.given_name;
+  const CoreAccountInfo account_info =
+      autofill_client_->GetPersonalDataManager()
+          ->GetAccountInfoForPaymentsServer();
+  options->user.id =
+      std::vector<uint8_t>(account_info.gaia.begin(), account_info.gaia.end());
+  options->user.name = account_info.email;
+  options->user.display_name = autofill_client_->GetIdentityManager()
+                                   ->FindExtendedAccountInfo(account_info)
+                                   .given_name;
 
   const auto* challenge = creation_options.FindString("challenge");
   DCHECK(challenge);

@@ -1883,7 +1883,9 @@ void RenderWidgetHostViewAura::SetActiveCompositionForAccessibility(
     }
   }
 }
+#endif
 
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_CHROMEOS_ASH)
 ui::TextInputClient::EditingContext
 RenderWidgetHostViewAura::GetTextEditingContext() {
   ui::TextInputClient::EditingContext editing_context;
@@ -1900,6 +1902,14 @@ RenderWidgetHostViewAura::GetTextEditingContext() {
   if (frame)
     editing_context.page_url = frame->GetLastCommittedURL();
   return editing_context;
+}
+#endif
+
+#if BUILDFLAG(IS_WIN)
+void RenderWidgetHostViewAura::NotifyOnFrameFocusChanged() {
+  if (GetInputMethod()) {
+    GetInputMethod()->OnUrlChanged();
+  }
 }
 #endif
 

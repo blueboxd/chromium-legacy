@@ -23,6 +23,7 @@
 #include "components/autofill/core/browser/metrics/form_events/credit_card_form_event_logger.h"
 #include "components/autofill/core/browser/payments/credit_card_cvc_authenticator.h"
 #include "components/autofill/core/browser/payments/credit_card_otp_authenticator.h"
+#include "components/autofill/core/browser/payments/mandatory_reauth_manager.h"
 #include "components/autofill/core/browser/payments/payments_client.h"
 #include "components/autofill/core/browser/payments/wait_for_signal_or_timeout.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
@@ -416,11 +417,13 @@ class CreditCardAccessManager : public CreditCardCvcAuthenticator::Requester,
   // re-auth authentication in a flow where we might fill the card after the
   // response. If it is successful, we will fill `card` and `cvc` into the form
   // using `accessor`, otherwise we will handle the error. `successful_auth` is
-  // true if the authentication waas successful, false otherwise.
+  // true if the authentication waas successful, false otherwise. Pass
+  // `authenticate_method` for logging purpose.
   // TODO(crbug.com/1447084): Move authentication logic for re-auth into
   // MandatoryReauthManager.
   void OnDeviceAuthenticationResponseForFilling(
       base::WeakPtr<Accessor> accessor,
+      payments::MandatoryReauthAuthenticationMethod authentication_method,
       const CreditCard* card,
       const std::u16string& cvc,
       bool successful_auth);
@@ -433,23 +436,21 @@ class CreditCardAccessManager : public CreditCardCvcAuthenticator::Requester,
   bool is_authentication_in_progress_ = false;
 
   // The associated autofill driver. Weak reference.
-  const raw_ptr<AutofillDriver, DanglingUntriaged> driver_;
+  const raw_ptr<AutofillDriver> driver_;
 
   // The associated autofill client. Weak reference.
   const raw_ptr<AutofillClient> client_;
 
   // Client to interact with Payments servers.
-  raw_ptr<payments::PaymentsClient> payments_client_;
+  const raw_ptr<payments::PaymentsClient> payments_client_;
 
   // The personal data manager, used to save and load personal data to/from the
   // web database.
   // Weak reference.
-  raw_ptr<PersonalDataManager> personal_data_manager_;
+  const raw_ptr<PersonalDataManager> personal_data_manager_;
 
   // For logging metrics.
-  raw_ptr<autofill_metrics::CreditCardFormEventLogger,
-          AcrossTasksDanglingUntriaged>
-      form_event_logger_;
+  const raw_ptr<autofill_metrics::CreditCardFormEventLogger> form_event_logger_;
 
   // Timestamp used for preflight call metrics.
   absl::optional<base::TimeTicks> preflight_call_timestamp_;

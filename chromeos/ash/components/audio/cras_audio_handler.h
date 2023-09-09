@@ -284,6 +284,9 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_AUDIO) CrasAudioHandler
   // Returns true if audio input is muted.
   bool IsInputMuted();
 
+  // Returns true if audio input is muted for the system by security curtain.
+  bool IsInputMutedBySecurityCurtain();
+
   // Returns true if audio input is muted for a device.
   bool IsInputMutedForDevice(uint64_t device_id);
 
@@ -422,6 +425,9 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_AUDIO) CrasAudioHandler
                     InputMuteChangeMethod method,
                     CrasAudioHandler::AudioSettingsChangeSource source);
 
+  // Mutes or unmutes audio input device by security curtain
+  void SetInputMuteLockedBySecurityCurtain(bool mute);
+
   // Switches active audio device to |device|. |activate_by| indicates why
   // the device is switched to active: by user's manual choice, by priority,
   // or by restoring to its previous active state.
@@ -550,6 +556,9 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_AUDIO) CrasAudioHandler
   void SetPrefHandlerForTesting(
       scoped_refptr<AudioDevicesPrefHandler> audio_pref_handler);
 
+  int32_t NumberOfNonChromeOutputStreams() const;
+  int32_t NumberOfChromeOutputStreams() const;
+
  protected:
   CrasAudioHandler(
       mojo::PendingRemote<media_session::mojom::MediaControllerManager>
@@ -631,8 +640,8 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_AUDIO) CrasAudioHandler
   // change notification is received.
   void ApplyAudioPolicy();
 
-  // Helper method to apply the conditional audio mute change.
-  void UpdateAudioMute();
+  // Helper method to apply the conditional audio output mute change.
+  void UpdateAudioOutputMute();
 
   // Sets output volume of |node_id| to |volume|.
   void SetOutputNodeVolume(uint64_t node_id, int volume);
@@ -885,6 +894,7 @@ class COMPONENT_EXPORT(CHROMEOS_ASH_COMPONENTS_AUDIO) CrasAudioHandler
 
   bool output_mute_forced_by_policy_ = false;
   bool output_mute_forced_by_security_curtain_ = false;
+  bool input_mute_forced_by_security_curtain_ = false;
 
   // Audio output channel counts.
   int32_t output_channels_ = 2;

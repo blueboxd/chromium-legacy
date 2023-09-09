@@ -563,6 +563,8 @@ tflite_static_library("tflite") {
     "src/tensorflow/lite/core/interpreter_experimental.cc",
     "src/tensorflow/lite/core/model_builder.cc",
     "src/tensorflow/lite/core/model_builder.h",
+    "src/tensorflow/lite/core/signature_runner.cc",
+    "src/tensorflow/lite/core/signature_runner.h",
     "src/tensorflow/lite/core/subgraph.cc",
     "src/tensorflow/lite/core/tools/verifier.cc",
     "src/tensorflow/lite/core/tools/verifier_internal.cc",
@@ -610,7 +612,7 @@ tflite_static_library("tflite") {
     "src/tensorflow/lite/profiling/time.cc",
     "src/tensorflow/lite/profiling/time.h",
     "src/tensorflow/lite/schema/schema_utils.cc",
-    "src/tensorflow/lite/signature_runner.cc",
+    "src/tensorflow/lite/signature_runner.h",
     "src/tensorflow/lite/simple_memory_arena.cc",
     "src/tensorflow/lite/simple_memory_arena.h",
     "src/tensorflow/lite/stderr_reporter.cc",
@@ -691,6 +693,12 @@ tflite_static_library("tflite") {
     "//third_party/eigen3:eigen_includes",
     ":tflite_flags",
   ]
+
+  if (is_apple) {
+    # Do not compile with ARC because TFLite code is not compatible with
+    # being compiled with ARC.
+    configs_to_remove += [ "//build/config/compiler:enable_arc" ]
+  }
 
   public_configs = [ ":tflite_config" ]
 }

@@ -24,10 +24,6 @@
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
 #import "url/gurl.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 namespace {
 
 // Identifier for long press on notification and open menu categories.
@@ -159,6 +155,13 @@ void CommercePushNotificationClient::HandleNotificationInteraction(
   // Site'.
   if ([action_identifier isEqualToString:kVisitSiteActionIdentifier] ||
       [action_identifier isEqualToString:kDefaultActionIdentifier]) {
+    if ([action_identifier isEqualToString:kVisitSiteActionIdentifier]) {
+      base::RecordAction(base::UserMetricsAction(
+          "Commerce.PriceTracking.PushNotification.VisitSiteTapped"));
+    } else if ([action_identifier isEqualToString:kDefaultActionIdentifier]) {
+      base::RecordAction(base::UserMetricsAction(
+          "Commerce.PriceTracking.PushNotification.NotificationTapped"));
+    }
     // TODO(crbug.com/1403190) implement alternate Open URL handler which
     // attempts to find if a Tab with the URL already exists and switch
     // to that Tab.
@@ -173,14 +176,10 @@ void CommercePushNotificationClient::HandleNotificationInteraction(
     UrlLoadParams params = UrlLoadParams::InNewTab(
         GURL(price_drop_notification.destination_url()));
     UrlLoadingBrowserAgent::FromBrowser(browser)->Load(params);
-    if ([action_identifier isEqualToString:kVisitSiteActionIdentifier]) {
-      base::RecordAction(base::UserMetricsAction(
-          "Commerce.PriceTracking.PushNotification.VisitSiteTapped"));
-    } else if ([action_identifier isEqualToString:kDefaultActionIdentifier]) {
-      base::RecordAction(base::UserMetricsAction(
-          "Commerce.PriceTracking.PushNotification.NotificationTapped"));
-    }
   } else if ([action_identifier isEqualToString:kUntrackPriceIdentifier]) {
+    base::RecordAction(base::UserMetricsAction(
+        "Commerce.PriceTracking.PushNotification.UnTrackProductTapped"));
+
     const bookmarks::BookmarkNode* bookmark =
         GetBookmarkModel()->GetMostRecentlyAddedUserNodeForURL(
             GURL(price_drop_notification.destination_url()));
@@ -201,7 +200,5 @@ void CommercePushNotificationClient::HandleNotificationInteraction(
           base::UmaHistogramBoolean("Commerce.PriceTracking.Untrack.Success",
                                     success);
         }));
-    base::RecordAction(base::UserMetricsAction(
-        "Commerce.PriceTracking.PushNotification.UnTrackProductTapped"));
   }
 }

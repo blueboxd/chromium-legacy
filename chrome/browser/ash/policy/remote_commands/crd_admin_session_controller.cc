@@ -14,7 +14,8 @@
 #include "base/time/time.h"
 #include "chrome/browser/ash/policy/remote_commands/crd_logging.h"
 #include "chrome/browser/ash/policy/remote_commands/crd_remote_command_utils.h"
-#include "chrome/browser/ash/policy/remote_commands/device_command_start_crd_session_job.h"
+#include "chrome/common/pref_names.h"
+#include "components/prefs/pref_registry_simple.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "remoting/host/chromeos/remote_support_host_ash.h"
@@ -26,11 +27,10 @@
 
 namespace policy {
 
-using AccessCodeCallback = DeviceCommandStartCrdSessionJob::AccessCodeCallback;
-using ErrorCallback = DeviceCommandStartCrdSessionJob::ErrorCallback;
-using SessionEndCallback = DeviceCommandStartCrdSessionJob::SessionEndCallback;
-using SessionParameters =
-    DeviceCommandStartCrdSessionJob::Delegate::SessionParameters;
+using AccessCodeCallback = StartCrdSessionJobDelegate::AccessCodeCallback;
+using ErrorCallback = StartCrdSessionJobDelegate::ErrorCallback;
+using SessionEndCallback = StartCrdSessionJobDelegate::SessionEndCallback;
+using SessionParameters = StartCrdSessionJobDelegate::SessionParameters;
 
 namespace {
 
@@ -294,6 +294,10 @@ CrdAdminSessionController::CrdAdminSessionController(
 
 CrdAdminSessionController::~CrdAdminSessionController() = default;
 
+StartCrdSessionJobDelegate& CrdAdminSessionController::GetDelegate() {
+  return *this;
+}
+
 bool CrdAdminSessionController::HasActiveSession() const {
   return active_session_ != nullptr;
 }
@@ -323,6 +327,12 @@ void CrdAdminSessionController::StartCrdHostAndGetCode(
       std::move(error_callback), std::move(session_finished_callback));
 
   active_session_->Start(parameters);
+}
+
+// static
+void CrdAdminSessionController::RegisterLocalStatePrefs(
+    PrefRegistrySimple* registry) {
+  registry->RegisterBooleanPref(prefs::kRemoteAdminWasPresent, false);
 }
 
 }  // namespace policy

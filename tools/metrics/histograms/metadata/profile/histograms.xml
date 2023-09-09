@@ -54,7 +54,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Profile.AppCount" units="units" expires_after="2022-08-01">
+<histogram name="Profile.AppCount" units="units" expires_after="2023-12-10">
   <owner>etienneb@chromium.org</owner>
   <owner>gab@chromium.org</owner>
   <summary>The number of installed apps when a profile is opened.</summary>
@@ -210,7 +210,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Profile.Incognito.MovedToBackgroundAfterDuration"
-    units="minutes" expires_after="2023-12-04">
+    units="minutes" expires_after="2024-02-04">
   <owner>rhalavati@chromium.org</owner>
   <owner>chrome-incognito@google.com</owner>
   <summary>
@@ -312,7 +312,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Profile.LacrosPrimaryProfileFirstRunOutcome"
-    enum="ProfileSignedInFlowOutcome" expires_after="M120">
+    enum="ProfileSignedInFlowOutcome" expires_after="2024-02-04">
   <owner>dgn@chromium.org</owner>
   <owner>droger@chromium.org</owner>
   <summary>
@@ -357,7 +357,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Profile.NukeFromDisk.Result" enum="NukeProfileResult"
-    expires_after="2023-12-04">
+    expires_after="2024-02-04">
   <owner>nicolaso@chromium.org</owner>
   <owner>cbe-eng@google.com</owner>
   <summary>
@@ -423,7 +423,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Profile.NumberOfProfilesAtProfileSwitch" units="profiles"
-    expires_after="2023-11-19">
+    expires_after="2024-01-21">
   <owner>droger@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
   <summary>
@@ -510,17 +510,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram base="true" name="Profile.State.Name" enum="ProfileNameState"
-    expires_after="2023-06-04">
-  <owner>droger@chromium.org</owner>
-  <owner>chrome-signin-team@google.com</owner>
-  <summary>
-    The state of profile name as would be displayed to the user in the profile
-    picker. Recorded on startup of Chrome and whenever Chrome is used after at
-    least 30 minutes of inactivity.
-  </summary>
-</histogram>
-
 <histogram base="true" name="Profile.State.SyncEnabled" enum="BooleanEnabled"
     expires_after="2024-01-14">
   <owner>droger@chromium.org</owner>
@@ -541,7 +530,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Profile.TotalSize" units="MB" expires_after="2023-08-27">
+<histogram name="Profile.TotalSize" units="MB" expires_after="2023-12-10">
   <owner>etienneb@chromium.org</owner>
   <owner>gab@chromium.org</owner>
   <summary>Total size of the profile data (excluding sub-folders).</summary>
@@ -701,6 +690,17 @@ chromium-metrics-reviews@google.com.
     this metric is intended to capture the startup latency for a common case
     where Startup.FirstWebContents.NonEmptyPaint3 is not recorded due to the
     profile picker interrupting browser startup.
+  </summary>
+</histogram>
+
+<histogram name="ProfilePicker.FirstRun.DefaultBrowser"
+    enum="FirstRunDefaultBrowserChoice" expires_after="2024-08-03">
+  <owner>dgn@chromium.org</owner>
+  <owner>gabolvr@google.com</owner>
+  <owner>for-you-fre@google.com</owner>
+  <summary>
+    Records the user's choice for the prompt asking if they want to set Chrome
+    to be their default browser, in the first run experience.
   </summary>
 </histogram>
 
@@ -887,7 +887,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ProfilePicker.UiVisited" enum="ProfilePickerPages"
-    expires_after="2023-11-19">
+    expires_after="2024-02-04">
   <owner>msalama@chromium.org</owner>
   <owner>chrome-signin-team@google.com</owner>
   <summary>

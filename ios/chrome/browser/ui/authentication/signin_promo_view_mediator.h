@@ -12,7 +12,6 @@
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_delegate.h"
 
 class AuthenticationService;
-class Browser;
 class ChromeAccountManagerService;
 class PrefService;
 @protocol SigninPresenter;
@@ -32,25 +31,22 @@ namespace user_prefs {
 class PrefRegistrySyncable;
 }  // namespace user_prefs
 
-namespace ios {
-// TODO(crbug.com/1447012): Remove from ios namespace.
 // Enums for the sign-in promo view state. Those states are sequential, with no
 // way to go backwards. All states can be skipped except `NeverVisible` and
 // `Invalid`.
 enum class SigninPromoViewState {
   // Initial state. When -[SigninPromoViewMediator disconnect] is called with
   // that state, no metrics is recorded.
-  NeverVisible = 0,
+  kNeverVisible = 0,
   // None of the buttons has been used yet.
-  Unused,
+  kUnused,
   // Sign-in buttons have been used at least once.
-  UsedAtLeastOnce,
+  kUsedAtLeastOnce,
   // Sign-in promo has been closed.
-  Closed,
+  kClosed,
   // Sign-in promo view has been removed.
-  Invalid,
+  kInvalid,
 };
-}  // namespace ios
 
 // The action performed when accepting the promo.
 enum class SigninPromoAction {
@@ -61,7 +57,6 @@ enum class SigninPromoAction {
   // an account is tapped, it is signed in instantly.
   kInstantSignin,
   // Performs AuthenticationOperationSigninOnly.
-  // TODO(crbug.com/1447012): secondary button should auto-open account chooser.
   kSigninSheet,
 };
 
@@ -82,11 +77,11 @@ enum class SigninPromoAction {
 @property(nonatomic, strong, readonly) id<SystemIdentity> identity;
 
 // Sign-in promo view state.
-@property(nonatomic, assign) ios::SigninPromoViewState signinPromoViewState;
+@property(nonatomic, assign) SigninPromoViewState signinPromoViewState;
 
-// YES if the sign-in interaction controller is shown.
-@property(nonatomic, assign, readonly, getter=isSigninInProgress)
-    BOOL signinInProgress;
+// YES if the promo spinner should be displayed. Either the sign-in or the
+// initial sync is in progress.
+@property(nonatomic, assign, readonly) BOOL showSpinner;
 
 // Returns YES if the sign-in promo view is `Invalid`, `Closed` or invisible.
 @property(nonatomic, assign, readonly, getter=isInvalidClosedOrNeverVisible)
@@ -94,6 +89,13 @@ enum class SigninPromoAction {
 
 // The action performed when accepting the promo.
 @property(nonatomic, assign) SigninPromoAction signinPromoAction;
+
+// Set the data type that should be synced before the sign-in completes.
+// The default value is `syncer::ModelType::UNSPECIFIED`, therefore the sign-in
+// promo will not wait for the initial sync.
+// This value has to be set while the mediator is being set (right after the
+// init method).
+@property(nonatomic, assign) syncer::ModelType dataTypeToWaitForInitialSync;
 
 // Registers the feature preferences.
 + (void)registerBrowserStatePrefs:(user_prefs::PrefRegistrySyncable*)registry;
@@ -112,15 +114,15 @@ enum class SigninPromoAction {
 
 // Designated initializer.
 // `baseViewController` is the view to present UI for sign-in.
-- (instancetype)initWithBrowser:(Browser*)browser
-          accountManagerService:
-              (ChromeAccountManagerService*)accountManagerService
-                    authService:(AuthenticationService*)authService
-                    prefService:(PrefService*)prefService
-                    syncService:(syncer::SyncService*)syncService
-                    accessPoint:(signin_metrics::AccessPoint)accessPoint
-                      presenter:(id<SigninPresenter>)presenter
-             baseViewController:(UIViewController*)baseViewController
+- (instancetype)
+    initWithAccountManagerService:
+        (ChromeAccountManagerService*)accountManagerService
+                      authService:(AuthenticationService*)authService
+                      prefService:(PrefService*)prefService
+                      syncService:(syncer::SyncService*)syncService
+                      accessPoint:(signin_metrics::AccessPoint)accessPoint
+                        presenter:(id<SigninPresenter>)presenter
+               baseViewController:(UIViewController*)baseViewController
     NS_DESIGNATED_INITIALIZER;
 
 - (SigninPromoViewConfigurator*)createConfigurator;
@@ -133,9 +135,6 @@ enum class SigninPromoAction {
 // Called when the sign-in promo view is hidden. If the sign-in promo view has
 // never been shown, or it is already hidden, this method does nothing.
 - (void)signinPromoViewIsHidden;
-
-// Set the data type that should be synced before the sign-in completes.
-- (void)setDataTypeToWaitForInitialSync:(syncer::ModelType)dataType;
 
 // Disconnects the mediator, this method needs to be called when the sign-in
 // promo view is removed from the view hierarchy (it or one of its superviews is

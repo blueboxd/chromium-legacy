@@ -33,7 +33,7 @@
 #include "content/browser/bad_message.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/renderer_host/back_forward_cache_can_store_document_result.h"
-#include "content/browser/renderer_host/local_network_access_util.h"
+#include "content/browser/renderer_host/private_network_access_util.h"
 #include "content/browser/service_worker/payment_handler_support.h"
 #include "content/browser/service_worker/service_worker_consts.h"
 #include "content/browser/service_worker/service_worker_container_host.h"
@@ -714,8 +714,9 @@ int ServiceWorkerVersion::StartRequestWithCustomTimeout(
       // didn't come from a service worker.
       scoped_refptr<ServiceWorkerRegistration> registration =
           context_->GetLiveRegistration(registration_id_);
-      DCHECK(registration) << "running workers should have a live registration";
-      registration->set_self_update_delay(base::TimeDelta());
+      if (registration) {
+        registration->set_self_update_delay(base::TimeDelta());
+      }
     }
   }
 

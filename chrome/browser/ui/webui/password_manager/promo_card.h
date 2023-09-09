@@ -67,8 +67,6 @@ class PromoCardInterface {
   int number_of_times_shown_ = 0;
   base::Time last_time_shown_;
   bool was_dismissed_ = false;
-
- private:
   raw_ptr<PrefService> prefs_;
 };
 
@@ -88,7 +86,7 @@ class PasswordCheckupPromo : public PromoCardInterface {
   std::u16string GetDescription() const override;
   std::u16string GetActionButtonText() const override;
 
-  raw_ptr<extensions::PasswordsPrivateDelegate> delegate_ = nullptr;
+  base::WeakPtr<extensions::PasswordsPrivateDelegate> delegate_;
 };
 
 // Promoting web version of Password Manager. Has a link to the website in the

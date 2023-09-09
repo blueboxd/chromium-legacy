@@ -10,6 +10,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
 #include "build/chromeos_buildflags.h"
+#include "chrome/browser/web_applications/locks/all_apps_lock.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/browser/web_applications/web_app_registrar_observer.h"
 #include "components/services/app_service/public/cpp/app_registry_cache.h"
@@ -107,19 +108,23 @@ class AppManagementPageHandler : public app_management::mojom::PageHandler,
   void OnPreferredAppsListWillBeDestroyed(
       apps::PreferredAppsListHandle* handle) override;
 
+#if !BUILDFLAG(IS_CHROMEOS)
+  void MakeAppPreferredAndResetOthers(const web_app::AppId& app_id,
+                                      bool set_to_preferred,
+                                      web_app::AllAppsLock& lock);
+#endif  // !BUILDFLAG(IS_CHROMEOS)
+
   mojo::Receiver<app_management::mojom::PageHandler> receiver_;
 
   mojo::Remote<app_management::mojom::Page> page_;
 
   raw_ptr<Profile> profile_;
 
-  const raw_ref<Delegate> delegate_;
-
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   AppManagementShelfDelegate shelf_delegate_;
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
-  const raw_ref<apps::PreferredAppsListHandle> preferred_apps_list_handle_;
+  const raw_ref<Delegate> delegate_;
 
   base::ScopedObservation<apps::AppRegistryCache,
                           apps::AppRegistryCache::Observer>
@@ -132,6 +137,8 @@ class AppManagementPageHandler : public app_management::mojom::PageHandler,
   base::ScopedObservation<web_app::WebAppRegistrar,
                           web_app::WebAppRegistrarObserver>
       registrar_observation_{this};
+
+  base::WeakPtrFactory<AppManagementPageHandler> weak_ptr_factory_{this};
 };
 
 #endif  // CHROME_BROWSER_UI_WEBUI_APP_MANAGEMENT_APP_MANAGEMENT_PAGE_HANDLER_H_

@@ -51,7 +51,6 @@
 #ifndef EGL_ANGLE_external_context_and_surface
 #define EGL_ANGLE_external_context_and_surface 1
 #define EGL_EXTERNAL_CONTEXT_ANGLE 0x348E
-#define EGL_EXTERNAL_CONTEXT_SAVE_STATE_ANGLE 0x3490
 #endif /* EGL_ANGLE_external_context_and_surface */
 
 #ifndef EGL_ANGLE_create_context_client_arrays
@@ -331,10 +330,6 @@ bool GLContextEGL::Initialize(GLSurface* compatible_surface,
   if (gl_display_->ext->b_EGL_ANGLE_external_context_and_surface) {
     if (attribs.angle_create_from_external_context) {
       context_attributes.push_back(EGL_EXTERNAL_CONTEXT_ANGLE);
-      context_attributes.push_back(EGL_TRUE);
-    }
-    if (attribs.angle_restore_external_context_state) {
-      context_attributes.push_back(EGL_EXTERNAL_CONTEXT_SAVE_STATE_ANGLE);
       context_attributes.push_back(EGL_TRUE);
     }
   }

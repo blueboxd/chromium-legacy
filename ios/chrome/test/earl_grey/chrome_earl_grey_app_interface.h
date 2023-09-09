@@ -330,11 +330,6 @@
 
 #pragma mark - Bookmarks Utilities (EG2)
 
-// Waits for the bookmark internal state to be done loading.
-// If not succeed returns an NSError indicating  why the operation failed,
-// otherwise nil.
-+ (NSError*)waitForBookmarksToFinishinLoading;
-
 // Clears bookmarks. If not succeed returns an NSError indicating  why the
 // operation failed, otherwise nil.
 + (NSError*)clearBookmarks;
@@ -548,8 +543,8 @@
 // Returns whether UIButtonConfiguration changes are enabled.
 + (BOOL)isUIButtonConfigurationEnabled;
 
-// Returns whether TabGrid is sorted by recency (#tab-grid-recency-sort).
-+ (BOOL)isSortingTabsByRecency;
+// Returns whether the bottom omnibox steady state feature is enabled.
++ (BOOL)isBottomOmniboxSteadyStateEnabled;
 
 #pragma mark - ContentSettings
 
@@ -563,6 +558,11 @@
 
 // Resets the desktop content setting to its default value.
 + (void)resetDesktopContentSetting;
+
+// Sets the preference value of a content settings type for the original browser
+// state.
++ (void)setContentSetting:(ContentSetting)setting
+    forContentSettingsType:(ContentSettingsType)type;
 
 #pragma mark - Default Utilities (EG2)
 
@@ -579,10 +579,18 @@
 // returns a Value of type NONE.
 + (NSString*)localStatePrefValue:(NSString*)prefName;
 
-// Sets the integer values for the local state pref with `prefName`. `value`
+// Sets the integer value for the local state pref with `prefName`. `value`
 // can be either a casted enum or any other numerical value. Local State
 // contains the preferences that are shared between all browser states.
 + (void)setIntegerValue:(int)value forLocalStatePref:(NSString*)prefName;
+
+// Sets the time value for the local state pref with `prefName`. Local State
+// contains the preferences that are shared between all browser states.
++ (void)setTimeValue:(base::Time)value forLocalStatePref:(NSString*)prefName;
+
+// Sets the string value for the local state pref with `prefName`. Local State
+// contains the preferences that are shared between all browser states.
++ (void)setStringValue:(NSString*)value forLocalStatePref:(NSString*)prefName;
 
 // Gets the value of a user pref in the original browser state. Returns a
 // base::Value encoded as a JSON string. If the pref was not registered,

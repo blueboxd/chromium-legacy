@@ -17,6 +17,7 @@
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/gfx/animation/linear_animation.h"
 #include "ui/gfx/animation/tween.h"
+#include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_types.h"
 #include "ui/message_center/notification_view_controller.h"
 #include "ui/message_center/public/cpp/message_center_constants.h"
@@ -47,7 +48,7 @@ MessagePopupCollection::~MessagePopupCollection() {
   // Ignore calls to update which can cause crashes.
   is_updating_ = true;
   for (const auto& item : popup_items_)
-    item.popup->Close();
+    ClosePopupItem(item);
 }
 
 void MessagePopupCollection::Update() {
@@ -281,10 +282,8 @@ MessagePopupView* MessagePopupCollection::GetPopupViewForNotificationID(
   return nullptr;
 }
 
-bool MessagePopupCollection::AdjustAndEvaluateShouldDisplayPopupItem(
-    const PopupItem& item) {
-  // We will not display the popup if its y-edge is outside of the work area.
-  return !IsNextEdgeOutsideWorkArea(item);
+size_t MessagePopupCollection::GetPopupItemsCount() {
+  return popup_items_.size();
 }
 
 MessagePopupView* MessagePopupCollection::CreatePopup(
@@ -305,6 +304,10 @@ bool MessagePopupCollection::IsNextEdgeOutsideWorkArea(
                      : next_edge < work_area.y();
 }
 
+void MessagePopupCollection::ClosePopupItem(const PopupItem& item) {
+  item.popup->Close();
+}
+
 void MessagePopupCollection::MoveDownPopups() {
   CalculateAndUpdateBounds();
   for (auto& item : popup_items_) {
@@ -318,6 +321,21 @@ void MessagePopupCollection::RestartPopupTimers() {
 
 void MessagePopupCollection::PausePopupTimers() {
   MessageCenter::Get()->PausePopupTimers();
+}
+
+void MessagePopupCollection::CloseAllPopupsNow() {
+  for (auto& item : popup_items_) {
+    item.is_animating = true;
+
+    // Mark the popup as shown so that the popup item will not re-appear after
+    // any subsequent calls to `GetPopupNotifications()`.
+    MessageCenter::Get()->MarkSinglePopupAsShown(
+        item.id, /*mark_notification_as_read=*/true);
+  }
+  CloseAnimatingPopups();
+
+  state_ = State::IDLE;
+  animation_->End();
 }
 
 void MessagePopupCollection::TransitionFromAnimation() {
@@ -543,8 +561,8 @@ bool MessagePopupCollection::AddPopup() {
     item.is_animating = true;
     item.popup = CreatePopup(*new_notification);
 
-    if (!AdjustAndEvaluateShouldDisplayPopupItem(item)) {
-      item.popup->Close();
+    if (IsNextEdgeOutsideWorkArea(item)) {
+      ClosePopupItem(item);
       return false;
     }
 
@@ -599,7 +617,7 @@ void MessagePopupCollection::CloseAnimatingPopups() {
   for (auto& item : popup_items_) {
     if (!item.is_animating)
       continue;
-    item.popup->Close();
+    ClosePopupItem(item);
   }
   RemoveClosedPopupItems();
 }
@@ -609,7 +627,7 @@ bool MessagePopupCollection::CloseTransparentPopups() {
   for (auto& item : popup_items_) {
     if (item.popup->GetOpacity() > 0.0)
       continue;
-    item.popup->Close();
+    ClosePopupItem(item);
     removed = true;
   }
   RemoveClosedPopupItems();
@@ -621,22 +639,13 @@ void MessagePopupCollection::ClosePopupsOutsideWorkArea() {
   for (auto& item : popup_items_) {
     if (work_area.Contains(item.bounds))
       continue;
-    item.popup->Close();
+    ClosePopupItem(item);
   }
   RemoveClosedPopupItems();
 }
 
 void MessagePopupCollection::RemoveClosedPopupItems() {
   base::EraseIf(popup_items_, [](const auto& item) { return !item.popup; });
-}
-
-void MessagePopupCollection::CloseAllPopupsNow() {
-  for (auto& item : popup_items_)
-    item.is_animating = true;
-  CloseAnimatingPopups();
-
-  state_ = State::IDLE;
-  animation_->End();
 }
 
 bool MessagePopupCollection::CollapseAllPopups() {

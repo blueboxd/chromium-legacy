@@ -26,6 +26,7 @@ import com.google.common.util.concurrent.ListenableFuture;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
@@ -38,6 +39,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Locale;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -66,7 +68,8 @@ public class AttributionOsLevelManager {
             RegistrationResult.ERROR_ILLEGAL_ARGUMENT, RegistrationResult.ERROR_IO,
             RegistrationResult.ERROR_ILLEGAL_STATE, RegistrationResult.ERROR_SECURITY,
             RegistrationResult.ERROR_TIMEOUT, RegistrationResult.ERROR_LIMIT_EXCEEDED,
-            RegistrationResult.ERROR_INTERNAL, RegistrationResult.COUNT})
+            RegistrationResult.ERROR_INTERNAL, RegistrationResult.ERROR_BACKGROUND_CALLER,
+            RegistrationResult.COUNT})
     @Retention(RetentionPolicy.SOURCE)
     public @interface RegistrationResult {
         int SUCCESS = 0;
@@ -78,7 +81,8 @@ public class AttributionOsLevelManager {
         int ERROR_TIMEOUT = 6;
         int ERROR_LIMIT_EXCEEDED = 7;
         int ERROR_INTERNAL = 8;
-        int COUNT = 9;
+        int ERROR_BACKGROUND_CALLER = 9;
+        int COUNT = 10;
     }
 
     @CalledByNative
@@ -100,12 +104,12 @@ public class AttributionOsLevelManager {
         switch (type) {
             case RegistrationType.SOURCE:
                 RecordHistogram.recordEnumeratedHistogram(
-                        "Conversions.AndroidRegistrationResult.Source", result,
+                        "Conversions.AndroidRegistrationResult.Source2", result,
                         RegistrationResult.COUNT);
                 break;
             case RegistrationType.TRIGGER:
                 RecordHistogram.recordEnumeratedHistogram(
-                        "Conversions.AndroidRegistrationResult.Trigger", result,
+                        "Conversions.AndroidRegistrationResult.Trigger2", result,
                         RegistrationResult.COUNT);
 
                 break;
@@ -137,7 +141,13 @@ public class AttributionOsLevelManager {
                 } else if (thrown instanceof IOException) {
                     result = RegistrationResult.ERROR_IO;
                 } else if (thrown instanceof IllegalStateException) {
-                    result = RegistrationResult.ERROR_ILLEGAL_STATE;
+                    // The Android API doesn't break out this error as a separate exception so we
+                    // are forced to inspect the message for now.
+                    if (thrown.getMessage().toLowerCase(Locale.US).contains("background")) {
+                        result = RegistrationResult.ERROR_BACKGROUND_CALLER;
+                    } else {
+                        result = RegistrationResult.ERROR_ILLEGAL_STATE;
+                    }
                 } else if (thrown instanceof SecurityException) {
                     result = RegistrationResult.ERROR_SECURITY;
                 } else if (thrown instanceof TimeoutException) {
@@ -326,7 +336,9 @@ public class AttributionOsLevelManager {
      * https://developer.android.com/reference/androidx/privacysandbox/ads/adservices/java/measurement/MeasurementManagerFutures.
      */
     @CalledByNative
-    private void getMeasurementApiStatus() {
+    private static void getMeasurementApiStatus() {
+        ThreadUtils.assertOnBackgroundThread();
+
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
             AttributionOsLevelManagerJni.get().onMeasurementStateReturned(0);
             return;
@@ -338,7 +350,8 @@ public class AttributionOsLevelManager {
             AttributionOsLevelManagerJni.get().onMeasurementStateReturned(0);
             return;
         }
-        MeasurementManagerFutures mm = getManager();
+        MeasurementManagerFutures mm =
+                MeasurementManagerFutures.from(ContextUtils.getApplicationContext());
         if (mm == null) {
             AttributionOsLevelManagerJni.get().onMeasurementStateReturned(0);
             return;

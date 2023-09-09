@@ -25,9 +25,11 @@
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_list_observer.h"
 #import "ios/chrome/browser/shared/model/web_state_list/web_state_list_observer_bridge.h"
+#import "ios/chrome/browser/shared/public/commands/command_dispatcher.h"
+#import "ios/chrome/browser/shared/public/commands/tab_strip_commands.h"
 #import "ios/chrome/browser/shared/public/commands/toolbar_commands.h"
 #import "ios/chrome/browser/shared/public/features/system_flags.h"
-#import "ios/chrome/browser/shared/ui/util/named_guide.h"
+#import "ios/chrome/browser/shared/ui/util/layout_guide_names.h"
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/shared/ui/util/util_swift.h"
 #import "ios/chrome/browser/ui/bubble/bubble_presenter_delegate.h"
@@ -43,10 +45,6 @@
 #import "ios/web/public/web_state.h"
 #import "ui/base/device_form_factor.h"
 #import "ui/base/l10n/l10n_util.h"
-
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
 
 namespace {
 const CGFloat kBubblePresentationDelay = 1;
@@ -102,6 +100,8 @@ const CGFloat kBubblePresentationDelay = 1;
 
   segmentation_platform::DeviceSwitcherResultDispatcher*
       _deviceSwitcherResultDispatcher;
+
+  id<TabStripCommands> _tabStripCommandsHandler;
 }
 
 #pragma mark - Public
@@ -114,6 +114,8 @@ const CGFloat kBubblePresentationDelay = 1;
                            loadingNotifier:(UrlLoadingNotifierBrowserAgent*)
                                                urlLoadingNotifier
                                 sceneState:(SceneState*)sceneState
+                   tabStripCommandsHandler:
+                       (id<TabStripCommands>)tabStripCommandsHandler
                                    tracker:(feature_engagement::Tracker*)
                                                engagementTracker
                               webStateList:(WebStateList*)webStateList {
@@ -121,10 +123,12 @@ const CGFloat kBubblePresentationDelay = 1;
   if (self) {
     DCHECK(webStateList);
     DCHECK(urlLoadingNotifier);
+
     _webStateList = webStateList;
     _engagementTracker = engagementTracker;
     _settingsMap = settingsMap;
     _deviceSwitcherResultDispatcher = deviceSwitcherResultDispatcher;
+    _tabStripCommandsHandler = tabStripCommandsHandler;
     self.started = YES;
 
     _loadingObserverBridge = std::make_unique<UrlLoadingObserverBridge>(self);
@@ -246,7 +250,6 @@ const CGFloat kBubblePresentationDelay = 1;
   BubbleViewControllerPresenter* presenter = [self
       presentBubbleForFeature:feature_engagement::kIPHDiscoverFeedHeaderFeature
                     direction:arrowDirection
-                    alignment:BubbleAlignmentTrailing
                          text:text
         voiceOverAnnouncement:nil
                   anchorPoint:discoverFeedHeaderAnchor];
@@ -273,7 +276,6 @@ const CGFloat kBubblePresentationDelay = 1;
   BubbleViewControllerPresenter* presenter = [self
       presentBubbleForFeature:feature_engagement::kIPHFollowWhileBrowsingFeature
                     direction:arrowDirection
-                    alignment:BubbleAlignmentTrailing
                          text:text
         voiceOverAnnouncement:l10n_util::GetNSString(
                                   IDS_IOS_FOLLOW_WHILE_BROWSING_IPH)
@@ -307,7 +309,6 @@ const CGFloat kBubblePresentationDelay = 1;
   BubbleViewControllerPresenter* presenter = [self
       presentBubbleForFeature:feature_engagement::kIPHDefaultSiteViewFeature
                     direction:arrowDirection
-                    alignment:BubbleAlignmentTrailing
                          text:text
         voiceOverAnnouncement:l10n_util::GetNSString(
                                   IDS_IOS_DEFAULT_PAGE_MODE_TIP_VOICE_OVER)
@@ -335,7 +336,6 @@ const CGFloat kBubblePresentationDelay = 1;
   BubbleViewControllerPresenter* presenter = [self
       presentBubbleForFeature:feature_engagement::kIPHWhatsNewFeature
                     direction:arrowDirection
-                    alignment:BubbleAlignmentTrailing
                          text:text
         voiceOverAnnouncement:l10n_util::GetNSString(IDS_IOS_WHATS_NEW_IPH_TEXT)
                   anchorPoint:toolsMenuAnchor];
@@ -364,7 +364,6 @@ const CGFloat kBubblePresentationDelay = 1;
       [self presentBubbleForFeature:
                 feature_engagement::kIPHPriceNotificationsWhileBrowsingFeature
                           direction:arrowDirection
-                          alignment:BubbleAlignmentTrailing
                                text:text
               voiceOverAnnouncement:text
                         anchorPoint:toolsMenuAnchor];
@@ -397,7 +396,6 @@ const CGFloat kBubblePresentationDelay = 1;
   BubbleViewControllerPresenter* presenter =
       [self presentBubbleForFeature:feature_engagement::kIPHTabPinnedFeature
                           direction:arrowDirection
-                          alignment:BubbleAlignmentTrailing
                                text:text
               voiceOverAnnouncement:voiceOverAnnouncement
                         anchorPoint:tabGridAnchor];
@@ -443,7 +441,6 @@ const CGFloat kBubblePresentationDelay = 1;
   BubbleViewControllerPresenter* presenter = [self
       presentBubbleForFeature:feature_engagement::kIPHLongPressToolbarTipFeature
                     direction:arrowDirection
-                    alignment:BubbleAlignmentTrailing
                          text:text
         voiceOverAnnouncement:
             l10n_util::GetNSString(
@@ -455,6 +452,24 @@ const CGFloat kBubblePresentationDelay = 1;
   self.longPressToolbarTipBubblePresenter = presenter;
 }
 
+// Convenience method that calls -presentBubbleForFeature with default param
+// values for `alignment`, `presentAction`, and `dismissAction`.
+- (BubbleViewControllerPresenter*)
+    presentBubbleForFeature:(const base::Feature&)feature
+                  direction:(BubbleArrowDirection)direction
+                       text:(NSString*)text
+      voiceOverAnnouncement:(NSString*)voiceOverAnnouncement
+                anchorPoint:(CGPoint)anchorPoint {
+  return [self presentBubbleForFeature:feature
+                             direction:direction
+                             alignment:BubbleAlignmentBottomOrTrailing
+                                  text:text
+                 voiceOverAnnouncement:voiceOverAnnouncement
+                           anchorPoint:anchorPoint
+                         presentAction:nil
+                         dismissAction:nil];
+}
+
 // Presents and returns a bubble view controller for the `feature` with an arrow
 // `direction`, an arrow `alignment` and a `text` on an `anchorPoint`.
 - (BubbleViewControllerPresenter*)
@@ -463,13 +478,16 @@ const CGFloat kBubblePresentationDelay = 1;
                   alignment:(BubbleAlignment)alignment
                        text:(NSString*)text
       voiceOverAnnouncement:(NSString*)voiceOverAnnouncement
-                anchorPoint:(CGPoint)anchorPoint {
+                anchorPoint:(CGPoint)anchorPoint
+              presentAction:(ProceduralBlock)presentAction
+              dismissAction:(ProceduralBlock)dismissAction {
   DCHECK(self.engagementTracker);
   BubbleViewControllerPresenter* presenter =
       [self bubblePresenterForFeature:feature
                             direction:direction
                             alignment:alignment
-                                 text:text];
+                                 text:text
+                        dismissAction:dismissAction];
   if (!presenter)
     return nil;
   presenter.voiceOverAnnouncement = voiceOverAnnouncement;
@@ -480,6 +498,9 @@ const CGFloat kBubblePresentationDelay = 1;
     [presenter presentInViewController:self.rootViewController
                                   view:self.rootViewController.view
                            anchorPoint:anchorPoint];
+    if (presentAction) {
+      presentAction();
+    }
   }
   return presenter;
 }
@@ -511,7 +532,9 @@ const CGFloat kBubblePresentationDelay = 1;
         voiceOverAnnouncement:
             l10n_util::GetNSString(
                 IDS_IOS_BOTTOM_TOOLBAR_IPH_PROMOTION_VOICE_OVER)
-                  anchorPoint:newTabButtonAnchor];
+                  anchorPoint:newTabButtonAnchor
+                presentAction:nil
+                dismissAction:nil];
   if (!presenter)
     return;
 
@@ -550,6 +573,20 @@ const CGFloat kBubblePresentationDelay = 1;
   CGPoint newTabButtonAnchor = [self anchorPointToGuide:kNewTabButtonGuide
                                               direction:arrowDirection];
 
+  __weak id<ToolbarCommands> weakToolbarCommandsHandler =
+      _toolbarCommandsHandler;
+  __weak id<TabStripCommands> weakTabStripCommandsHandler =
+      _tabStripCommandsHandler;
+
+  ProceduralBlock presentAction = ^{
+    [weakTabStripCommandsHandler setNewTabButtonOnTabStripIPHHighlighted:YES];
+    [weakToolbarCommandsHandler setNewTabButtonIPHHighlighted:YES];
+  };
+  ProceduralBlock dismissAction = ^{
+    [weakTabStripCommandsHandler setNewTabButtonOnTabStripIPHHighlighted:NO];
+    [weakToolbarCommandsHandler setNewTabButtonIPHHighlighted:NO];
+  };
+
   // If the feature engagement tracker does not consider it valid to display
   // the new tab tip, then end early to prevent the potential reassignment
   // of the existing `openNewTabIPHBubblePresenter` to nil.
@@ -557,10 +594,12 @@ const CGFloat kBubblePresentationDelay = 1;
       [self presentBubbleForFeature:feature_engagement::
                                         kIPHiOSNewTabToolbarItemFeature
                           direction:arrowDirection
-                          alignment:BubbleAlignmentTrailing
+                          alignment:BubbleAlignmentBottomOrTrailing
                                text:text
-              voiceOverAnnouncement:nil
-                        anchorPoint:newTabButtonAnchor];
+              voiceOverAnnouncement:text
+                        anchorPoint:newTabButtonAnchor
+                      presentAction:presentAction
+                      dismissAction:dismissAction];
   if (!presenter)
     return;
 
@@ -596,6 +635,15 @@ const CGFloat kBubblePresentationDelay = 1;
   CGPoint tabGridButtonAnchor = [self anchorPointToGuide:kTabSwitcherGuide
                                                direction:arrowDirection];
 
+  __weak id<ToolbarCommands> weakToolbarCommandsHandler =
+      _toolbarCommandsHandler;
+  auto presentAction = ^() {
+    [weakToolbarCommandsHandler setTabGridButtonIPHHighlighted:YES];
+  };
+  auto dismissAction = ^() {
+    [weakToolbarCommandsHandler setTabGridButtonIPHHighlighted:NO];
+  };
+
   // If the feature engagement tracker does not consider it valid to display
   // the new tab tip, then end early to prevent the potential reassignment
   // of the existing `tabGridIPHBubblePresenter` to nil.
@@ -603,10 +651,12 @@ const CGFloat kBubblePresentationDelay = 1;
       [self presentBubbleForFeature:feature_engagement::
                                         kIPHiOSTabGridToolbarItemFeature
                           direction:arrowDirection
-                          alignment:BubbleAlignmentTrailing
+                          alignment:BubbleAlignmentBottomOrTrailing
                                text:text
-              voiceOverAnnouncement:nil
-                        anchorPoint:tabGridButtonAnchor];
+              voiceOverAnnouncement:text
+                        anchorPoint:tabGridButtonAnchor
+                      presentAction:presentAction
+                      dismissAction:dismissAction];
   if (!presenter) {
     return;
   }
@@ -636,7 +686,6 @@ const CGFloat kBubblePresentationDelay = 1;
   BubbleViewControllerPresenter* presenter = [self
       presentBubbleForFeature:feature_engagement::kIPHNewIncognitoTabTipFeature
                     direction:arrowDirection
-                    alignment:BubbleAlignmentTrailing
                          text:text
         voiceOverAnnouncement:nil
                   anchorPoint:toolsButtonAnchor];
@@ -708,7 +757,8 @@ const CGFloat kBubblePresentationDelay = 1;
     bubblePresenterForFeature:(const base::Feature&)feature
                     direction:(BubbleArrowDirection)direction
                     alignment:(BubbleAlignment)alignment
-                         text:(NSString*)text {
+                         text:(NSString*)text
+                dismissAction:(ProceduralBlock)dismissAction {
   DCHECK(self.engagementTracker);
   if ([self shouldForcePresentBubbleForFeature:feature] ||
       self.engagementTracker->WouldTriggerHelpUI(feature)) {
@@ -717,8 +767,11 @@ const CGFloat kBubblePresentationDelay = 1;
     // the feature engagement tracker will remain pointing to invalid memory if
     // its owner (the ChromeBrowserState) is deallocated.
     __weak BubblePresenter* weakSelf = self;
-    ProceduralBlockWithSnoozeAction dismissalCallback =
+    ProceduralBlockWithSnoozeAction dismissalCallbackWithSnoozeAction =
         ^(feature_engagement::Tracker::SnoozeAction snoozeAction) {
+          if (dismissAction) {
+            dismissAction();
+          }
           [weakSelf featureDismissed:feature withSnooze:snoozeAction];
         };
 
@@ -728,7 +781,7 @@ const CGFloat kBubblePresentationDelay = 1;
                        arrowDirection:direction
                             alignment:alignment
                  isLongDurationBubble:[self isLongDurationBubble:feature]
-                    dismissalCallback:dismissalCallback];
+                    dismissalCallback:dismissalCallbackWithSnoozeAction];
 
     return bubbleViewControllerPresenter;
   }

@@ -10,6 +10,7 @@
 #include <string>
 #include <utility>
 
+#include "base/barrier_closure.h"
 #include "base/check.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_util.h"
@@ -30,8 +31,11 @@
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_prefs.h"
+#include "chrome/browser/enterprise/reporting/cloud_profile_reporting_service.h"
+#include "chrome/browser/enterprise/reporting/cloud_profile_reporting_service_factory.h"
 #include "chrome/browser/enterprise/util/affiliation.h"
 #include "chrome/browser/infobars/simple_alert_infobar_creator.h"
+#include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "chrome/browser/policy/policy_ui_utils.h"
 #include "chrome/browser/policy/policy_value_and_status_aggregator.h"
@@ -49,6 +53,7 @@
 #include "components/enterprise/browser/controller/chrome_browser_cloud_management_controller.h"
 #include "components/enterprise/browser/reporting/common_pref_names.h"
 #include "components/infobars/content/content_infobar_manager.h"
+#include "components/infobars/core/infobar.h"
 #include "components/infobars/core/infobar_delegate.h"
 #include "components/policy/core/browser/configuration_policy_handler_list.h"
 #include "components/policy/core/browser/policy_conversions.h"
@@ -58,10 +63,11 @@
 #include "components/policy/core/common/cloud/cloud_policy_manager.h"
 #include "components/policy/core/common/cloud/cloud_policy_refresh_scheduler.h"
 #include "components/policy/core/common/cloud/cloud_policy_util.h"
+#include "components/policy/core/common/local_test_policy_loader.h"
 #include "components/policy/core/common/local_test_policy_provider.h"
 #include "components/policy/core/common/policy_details.h"
-#include "components/policy/core/common/policy_loader_local_test.h"
 #include "components/policy/core/common/policy_logger.h"
+#include "components/policy/core/common/policy_pref_names.h"
 #include "components/policy/core/common/policy_scheduler.h"
 #include "components/policy/core/common/policy_types.h"
 #include "components/policy/core/common/remote_commands/remote_commands_service.h"
@@ -72,6 +78,8 @@
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
+#include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/buildflags/buildflags.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -93,6 +101,16 @@
 #include "components/policy/core/common/cloud/user_cloud_policy_manager.h"
 #endif
 
+#if BUILDFLAG(IS_ANDROID)
+#include "chrome/browser/android/tab_android.h"
+#include "chrome/browser/ui/android/tab_model/tab_model.h"
+#include "chrome/browser/ui/android/tab_model/tab_model_list.h"
+#else
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_list.h"
+#endif
+
 namespace {
 
 // Key under which extension policies are grouped in JSON policy exports.
@@ -109,6 +127,9 @@ PolicyUIHandler::~PolicyUIHandler() {
   policy::RecordPolicyUIButtonUsage(reload_policies_count_,
                                     export_to_json_count_, copy_to_json_count_,
                                     upload_report_count_);
+  if (local_test_infobar_added_) {
+    DismissInfobarsForActiveLocalTestPoliciesAllTabs();
+  }
 }
 
 void PolicyUIHandler::AddCommonLocalizedStringsToSource(
@@ -199,6 +220,16 @@ void PolicyUIHandler::RegisterMessages() {
       base::BindRepeating(&PolicyUIHandler::HandleGetPolicyLogs,
                           base::Unretained(this)));
 
+  web_ui()->RegisterMessageCallback(
+      "restartBrowser",
+      base::BindRepeating(&PolicyUIHandler::HandleRestartBrowser,
+                          base::Unretained(this)));
+
+  web_ui()->RegisterMessageCallback(
+      "setUserAffiliation",
+      base::BindRepeating(&PolicyUIHandler::HandleSetUserAffiliated,
+                          base::Unretained(this)));
+
 #if !BUILDFLAG(IS_CHROMEOS)
   web_ui()->RegisterMessageCallback(
       "uploadReport", base::BindRepeating(&PolicyUIHandler::HandleUploadReport,
@@ -229,14 +260,126 @@ void PolicyUIHandler::FileSelectionCanceled(void* params) {
   export_policies_select_file_dialog_ = nullptr;
 }
 
-void PolicyUIHandler::AddInfobarForActiveLocalTestPolicies() {
-  content::WebContents* web_contents = web_ui()->GetWebContents();
+#if BUILDFLAG(IS_ANDROID)
+void PolicyUIHandler::DidAddTab(TabAndroid* tab, TabModel::TabLaunchType type) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (tab) {
+    AddInfobarForActiveLocalTestPolicies(tab->web_contents());
+  }
+}
+#else
+void PolicyUIHandler::OnBrowserAdded(Browser* browser) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  CHECK(browser);
 
+  browser->tab_strip_model()->AddObserver(this);
+}
+
+void PolicyUIHandler::OnBrowserRemoved(Browser* browser) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  CHECK(browser);
+
+  if (BrowserList::GetInstance()->empty()) {
+    BrowserList::GetInstance()->RemoveObserver(this);
+  }
+  browser->tab_strip_model()->RemoveObserver(this);
+}
+
+void PolicyUIHandler::OnTabStripModelChanged(
+    TabStripModel* tab_strip_model,
+    const TabStripModelChange& change,
+    const TabStripSelectionChange& selection) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (change.type() == TabStripModelChange::kInserted) {
+    for (const auto& contents : change.GetInsert()->contents) {
+      AddInfobarForActiveLocalTestPolicies(contents.contents);
+    }
+  } else if (change.type() == TabStripModelChange::kRemoved) {
+    tab_strip_model->RemoveObserver(this);
+  }
+}
+#endif  // BUILDFLAG(IS_ANDROID)
+
+void PolicyUIHandler::AddInfobarsForActiveLocalTestPoliciesAllTabs() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+#if BUILDFLAG(IS_ANDROID)
+  for (TabModel* model : TabModelList::models()) {
+    for (int index = 0; index < model->GetTabCount(); ++index) {
+      TabAndroid* tab = model->GetTabAt(index);
+      if (tab) {
+        AddInfobarForActiveLocalTestPolicies(tab->web_contents());
+      }
+    }
+    model->AddObserver(this);
+  }
+
+#else
+  for (auto* browser : *BrowserList::GetInstance()) {
+    CHECK(browser);
+
+    OnBrowserAdded(browser);
+
+    TabStripModel* tab_strip_model = browser->tab_strip_model();
+    for (int i = 0; i < tab_strip_model->count(); i++) {
+      AddInfobarForActiveLocalTestPolicies(
+          tab_strip_model->GetWebContentsAt(i));
+    }
+  }
+  BrowserList::GetInstance()->AddObserver(this);
+#endif  // BUILDFLAG(IS_ANDROID)
+  local_test_infobar_added_ = true;
+}
+
+void PolicyUIHandler::AddInfobarForActiveLocalTestPolicies(
+    content::WebContents* web_contents) {
   CreateSimpleAlertInfoBar(
       infobars::ContentInfoBarManager::FromWebContents(web_contents),
       infobars::InfoBarDelegate::LOCAL_TEST_POLICIES_APPLIED_INFOBAR, nullptr,
       l10n_util::GetStringUTF16(IDS_LOCAL_TEST_POLICIES_ENABLED),
-      /*auto_expire=*/false, /*should_animate=*/false);
+      /*auto_expire=*/false, /*should_animate=*/false, /*closeable=*/false);
+}
+
+void PolicyUIHandler::DismissInfobarsForActiveLocalTestPoliciesAllTabs() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+#if BUILDFLAG(IS_ANDROID)
+  for (TabModel* model : TabModelList::models()) {
+    for (int index = 0; index < model->GetTabCount(); ++index) {
+      TabAndroid* tab = model->GetTabAt(index);
+      if (tab) {
+        DismissInfobarForActiveLocalTestPolicies(tab->web_contents());
+      }
+    }
+    model->RemoveObserver(this);
+  }
+#else
+  for (auto* browser : *BrowserList::GetInstance()) {
+    CHECK(browser);
+
+    browser->tab_strip_model()->RemoveObserver(this);
+
+    TabStripModel* tab_strip_model = browser->tab_strip_model();
+    for (int i = 0; i < tab_strip_model->count(); i++) {
+      DismissInfobarForActiveLocalTestPolicies(
+          tab_strip_model->GetWebContentsAt(i));
+    }
+  }
+  BrowserList::GetInstance()->RemoveObserver(this);
+#endif  // BUILDFLAG(IS_ANDROID)
+  local_test_infobar_added_ = false;
+}
+
+void PolicyUIHandler::DismissInfobarForActiveLocalTestPolicies(
+    content::WebContents* web_contents) {
+  auto* infobar_manager =
+      infobars::ContentInfoBarManager::FromWebContents(web_contents);
+  for (size_t i = 0; i < infobar_manager->infobar_count(); i++) {
+    auto* infobar = infobar_manager->infobar_at(i);
+    if (infobar->delegate()->GetIdentifier() ==
+        infobars::InfoBarDelegate::LOCAL_TEST_POLICIES_APPLIED_INFOBAR) {
+      infobar_manager->RemoveInfoBar(infobar);
+      return;
+    }
+  }
 }
 
 void PolicyUIHandler::HandleExportPoliciesJson(const base::Value::List& args) {
@@ -340,7 +483,11 @@ void PolicyUIHandler::HandleSetLocalTestPolicies(
       ->UseLocalTestPolicyProvider();
 
   local_test_provider->LoadJsonPolicies(json_policies_string);
-  AddInfobarForActiveLocalTestPolicies();
+  if (!local_test_infobar_added_) {
+    AddInfobarsForActiveLocalTestPoliciesAllTabs();
+  }
+  AllowJavascript();
+  ResolveJavascriptCallback(args[0], true);
 }
 
 void PolicyUIHandler::HandleRevertLocalTestPolicies(
@@ -348,6 +495,34 @@ void PolicyUIHandler::HandleRevertLocalTestPolicies(
   Profile::FromWebUI(web_ui())
       ->GetProfilePolicyConnector()
       ->RevertUseLocalTestPolicyProvider();
+  if (local_test_infobar_added_) {
+    DismissInfobarsForActiveLocalTestPoliciesAllTabs();
+  }
+}
+
+void PolicyUIHandler::HandleRestartBrowser(const base::Value::List& args) {
+  CHECK(args.size() == 2);
+  std::string policies = args[1].GetString();
+
+  // Set policies to preference
+  PrefService* prefs = g_browser_process->local_state();
+  prefs->SetString(policy::policy_prefs::kLocalTestPoliciesForNextStartup,
+                   policies);
+
+  // Restart browser
+  chrome::AttemptRestart();
+}
+
+void PolicyUIHandler::HandleSetUserAffiliated(const base::Value::List& args) {
+  CHECK_EQ(static_cast<int>(args.size()), 2);
+  bool affiliated = args[1].GetBool();
+
+  auto* local_test_provider = static_cast<policy::LocalTestPolicyProvider*>(
+      g_browser_process->browser_policy_connector()
+          ->local_test_policy_provider());
+  local_test_provider->SetUserAffiliated(affiliated);
+  AllowJavascript();
+  ResolveJavascriptCallback(args[0], true);
 }
 
 void PolicyUIHandler::HandleGetPolicyLogs(const base::Value::List& args) {
@@ -365,12 +540,23 @@ void PolicyUIHandler::HandleUploadReport(const base::Value::List& args) {
   auto* report_scheduler = g_browser_process->browser_policy_connector()
                                ->chrome_browser_cloud_management_controller()
                                ->report_scheduler();
+
+  auto* profile_report_scheduler =
+      enterprise_reporting::CloudProfileReportingServiceFactory::GetForProfile(
+          Profile::FromWebUI(web_ui()))
+          ->report_scheduler();
+  CHECK(profile_report_scheduler);
+
   if (report_scheduler) {
-    report_scheduler->UploadFullReport(
+    const auto on_report_uploaded = base::BarrierClosure(
+        2, base::BindOnce(&PolicyUIHandler::OnReportUploaded,
+                          weak_factory_.GetWeakPtr(), callback_id));
+    report_scheduler->UploadFullReport(on_report_uploaded);
+    profile_report_scheduler->UploadFullReport(on_report_uploaded);
+  } else {
+    profile_report_scheduler->UploadFullReport(
         base::BindOnce(&PolicyUIHandler::OnReportUploaded,
                        weak_factory_.GetWeakPtr(), callback_id));
-  } else {
-    OnReportUploaded(callback_id);
   }
 }
 #endif  // !BUILDFLAG(IS_CHROMEOS)

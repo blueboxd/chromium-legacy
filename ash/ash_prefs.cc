@@ -13,7 +13,7 @@
 #include "ash/assistant/assistant_controller_impl.h"
 #include "ash/calendar/calendar_controller.h"
 #include "ash/capture_mode/capture_mode_controller.h"
-#include "ash/clipboard/clipboard_nudge_controller.h"
+#include "ash/clipboard/clipboard_history_controller_impl.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_pref_names.h"
 #include "ash/controls/contextual_tooltip.h"
@@ -67,6 +67,7 @@
 #include "ash/system/unified/unified_system_tray_controller.h"
 #include "ash/system/usb_peripheral/usb_peripheral_notification_controller.h"
 #include "ash/touch/touch_devices_controller.h"
+#include "ash/user_education/user_education_controller.h"
 #include "ash/wallpaper/wallpaper_pref_manager.h"
 #include "ash/wm/desks/desks_restore_util.h"
 #include "ash/wm/desks/templates/saved_desk_util.h"
@@ -102,7 +103,7 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry, bool for_test) {
   CellularSetupNotifier::RegisterProfilePrefs(registry);
   chromeos::MultitaskMenuNudgeController::RegisterProfilePrefs(registry);
   contextual_tooltip::RegisterProfilePrefs(registry);
-  ClipboardNudgeController::RegisterProfilePrefs(registry);
+  ClipboardHistoryControllerImpl::RegisterProfilePrefs(registry);
   ColorPaletteController::RegisterPrefs(registry);
   DarkLightModeControllerImpl::RegisterProfilePrefs(registry);
   desks_restore_util::RegisterProfilePrefs(registry);
@@ -142,6 +143,7 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry, bool for_test) {
   TabletModeTuckEducation::RegisterProfilePrefs(registry);
   TouchDevicesController::RegisterProfilePrefs(registry, for_test);
   UnifiedSystemTrayController::RegisterProfilePrefs(registry);
+  UserEducationController::RegisterProfilePrefs(registry);
   MediaTray::RegisterProfilePrefs(registry);
   UsbPeripheralNotificationController::RegisterProfilePrefs(registry);
   VpnDetailedView::RegisterProfilePrefs(registry);

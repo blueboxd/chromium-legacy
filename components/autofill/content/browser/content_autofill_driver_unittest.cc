@@ -174,9 +174,10 @@ class FakeAutofillAgent : public mojom::AutofillAgent {
   // mojom::AutofillAgent:
   void TriggerFormExtraction() override {}
 
-  void FillOrPreviewForm(const FormData& form,
-                         mojom::RendererFormDataAction action) override {
-    if (action == mojom::RendererFormDataAction::kPreview) {
+  void FillOrPreviewForm(
+      const FormData& form,
+      mojom::AutofillActionPersistence action_persistence) override {
+    if (action_persistence == mojom::AutofillActionPersistence::kPreview) {
       preview_form_form_ = form;
     } else {
       fill_form_form_ = form;
@@ -184,8 +185,9 @@ class FakeAutofillAgent : public mojom::AutofillAgent {
     CallDone();
   }
 
-  void UndoAutofill(const FormData& form,
-                    mojom::RendererFormDataAction renderer_action) override {}
+  void UndoAutofill(
+      const FormData& form,
+      mojom::AutofillActionPersistence action_persistence) override {}
 
   void FieldTypePredictionsAvailable(
       const std::vector<FormDataPredictions>& forms) override {
@@ -368,7 +370,7 @@ class ContentAutofillDriverTest : public content::RenderViewHostTestHarness {
     return *client()->GetAutofillDriverFactory();
   }
 
-  ContentAutofillRouter& router() { return test_api(factory()).router(); }
+  ContentAutofillRouter& router() { return factory().autofill_router(); }
 
   ContentAutofillDriver& driver() {
     return *autofill_driver_injector_[web_contents()];
@@ -586,8 +588,8 @@ TEST_F(ContentAutofillDriverTest, FormDataSentToRenderer_FillForm) {
   base::RunLoop run_loop;
   fake_agent_.SetQuitLoopClosure(run_loop.QuitClosure());
   driver().browser_events().FillOrPreviewForm(
-      mojom::RendererFormDataAction::kFill, input_form_data, triggered_origin,
-      {});
+      mojom::AutofillActionPersistence::kFill, input_form_data,
+      triggered_origin, {});
 
   run_loop.RunUntilIdle();
 
@@ -612,7 +614,7 @@ TEST_F(ContentAutofillDriverTest, FormDataSentToRenderer_PreviewForm) {
   base::RunLoop run_loop;
   fake_agent_.SetQuitLoopClosure(run_loop.QuitClosure());
   driver().browser_events().FillOrPreviewForm(
-      mojom::RendererFormDataAction::kPreview, input_form_data,
+      mojom::AutofillActionPersistence::kPreview, input_form_data,
       triggered_origin, {});
 
   run_loop.RunUntilIdle();
@@ -731,14 +733,6 @@ TEST_F(ContentAutofillDriverTest, PreviewFieldWithValue) {
   run_loop.RunUntilIdle();
 
   EXPECT_EQ(input_value, fake_agent_.GetString16PreviewFieldWithValue(field));
-}
-
-TEST_F(ContentAutofillDriverTest, SetShouldSuppressKeyboard) {
-  ASSERT_FALSE(test_api(driver()).should_suppress_keyboard());
-  test_api(router()).set_last_queried_source(&driver());
-
-  driver().SetShouldSuppressKeyboard(true);
-  EXPECT_TRUE(test_api(driver()).should_suppress_keyboard());
 }
 
 TEST_F(ContentAutofillDriverTest, TriggerFormExtractionInAllFrames) {

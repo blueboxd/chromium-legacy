@@ -139,6 +139,7 @@ void ScalableIphBrowserTestBase::TearDownOnMainThread() {
 
 void ScalableIphBrowserTestBase::InitializeScopedFeatureList() {
   base::FieldTrialParams params;
+  AppendVersionNumber(params);
   AppendFakeUiParamsNotification(params);
   base::test::FeatureRefAndParams test_config(kScalableIphTest, params);
 
@@ -146,6 +147,13 @@ void ScalableIphBrowserTestBase::InitializeScopedFeatureList() {
       ash::features::kScalableIph, {});
   scoped_feature_list_.InitWithFeaturesAndParameters(
       {scalable_iph_feature, test_config}, {});
+}
+
+void ScalableIphBrowserTestBase::AppendVersionNumber(
+    base::FieldTrialParams& params) {
+  params[FullyQualified(kScalableIphTest,
+                        scalable_iph::kCustomParamsVersionNumberParamName)] =
+      base::NumberToString(scalable_iph::kCurrentVersionNumber);
 }
 
 void ScalableIphBrowserTestBase::AppendFakeUiParamsNotification(
@@ -165,6 +173,12 @@ void ScalableIphBrowserTestBase::AppendFakeUiParamsNotification(
   params[FullyQualified(kScalableIphTest,
                         scalable_iph::kCustomNotificationButtonTextParamName)] =
       kTestNotificationButtonText;
+  params[FullyQualified(kScalableIphTest,
+                        scalable_iph::kCustomButtonActionTypeParamName)] =
+      kTestButtonActionTypeOpenChrome;
+  params[FullyQualified(kScalableIphTest,
+                        scalable_iph::kCustomButtonActionEventParamName)] =
+      kTestActionEventName;
 }
 
 void ScalableIphBrowserTestBase::AppendFakeUiParamsBubble(
@@ -181,6 +195,15 @@ void ScalableIphBrowserTestBase::AppendFakeUiParamsBubble(
   params[FullyQualified(kScalableIphTest,
                         scalable_iph::kCustomBubbleButtonTextParamName)] =
       kTestBubbleButtonText;
+  params[FullyQualified(kScalableIphTest,
+                        scalable_iph::kCustomButtonActionTypeParamName)] =
+      kTestButtonActionTypeOpenGoogleDocs;
+  params[FullyQualified(kScalableIphTest,
+                        scalable_iph::kCustomButtonActionEventParamName)] =
+      kTestActionEventName;
+  params[FullyQualified(kScalableIphTest,
+                        scalable_iph::kCustomBubbleIconParamName)] =
+      kTestBubbleIconString;
 }
 
 // static
@@ -212,10 +235,11 @@ const base::Feature& ScalableIphBrowserTestBase::TestIphFeature() const {
   return kScalableIphTest;
 }
 
-void ScalableIphBrowserTestBase::TriggerConditionsCheckWithAFakeEvent() {
+void ScalableIphBrowserTestBase::TriggerConditionsCheckWithAFakeEvent(
+    scalable_iph::ScalableIph::Event event) {
   scalable_iph::ScalableIph* scalable_iph =
       ScalableIphFactory::GetForBrowserContext(browser()->profile());
-  scalable_iph->RecordEvent(scalable_iph::ScalableIph::Event::kFiveMinTick);
+  scalable_iph->RecordEvent(event);
 }
 
 void ScalableIphBrowserTestBase::ShutdownScalableIph() {

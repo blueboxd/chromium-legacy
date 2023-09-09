@@ -9,9 +9,11 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import static org.chromium.chrome.browser.password_manager.PasswordMetricsUtil.PASSWORD_MIGRATION_WARNING_USER_ACTIONS;
 import static org.chromium.chrome.browser.pwd_migration.PasswordMigrationWarningProperties.ACCOUNT_DISPLAY_NAME;
 import static org.chromium.chrome.browser.pwd_migration.PasswordMigrationWarningProperties.CURRENT_SCREEN;
 import static org.chromium.chrome.browser.pwd_migration.PasswordMigrationWarningProperties.DISMISS_HANDLER;
@@ -29,16 +31,15 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
-import org.mockito.quality.Strictness;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Batch;
 import org.chromium.base.test.util.HistogramWatcher;
 import org.chromium.base.test.util.JniMocker;
+import org.chromium.chrome.browser.password_manager.PasswordMetricsUtil.PasswordMigrationWarningUserActions;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.pwd_migration.PasswordMigrationWarningMediator.MigrationWarningOptionsHandler;
-import org.chromium.chrome.browser.pwd_migration.PasswordMigrationWarningMediator.PasswordMigrationWarningUserActions;
 import org.chromium.chrome.browser.pwd_migration.PasswordMigrationWarningProperties.MigrationOption;
 import org.chromium.chrome.browser.pwd_migration.PasswordMigrationWarningProperties.ScreenType;
 import org.chromium.chrome.browser.signin.services.IdentityServicesProvider;
@@ -84,7 +85,7 @@ public class PasswordMigrationWarningMediatorTest {
                     false))));
 
     @Rule
-    public MockitoRule mMockitoRule = MockitoJUnit.rule().strictness(Strictness.STRICT_STUBS);
+    public MockitoRule mMockitoRule = MockitoJUnit.rule();
 
     @Rule
     public TestRule mProcessor = new Features.JUnitProcessor();
@@ -119,9 +120,10 @@ public class PasswordMigrationWarningMediatorTest {
     public void setUp() {
         MockitoAnnotations.initMocks(this);
         mJniMocker.mock(UserPrefsJni.TEST_HOOKS, mUserPrefsJni);
-        mMediator = new PasswordMigrationWarningMediator(mProfile, mOptionsHandler);
+        mMediator = new PasswordMigrationWarningMediator(
+                mProfile, mOptionsHandler, PasswordMigrationWarningTriggers.CHROME_STARTUP);
         mModel = PasswordMigrationWarningProperties.createDefaultModel(
-                mMediator::onDismissed, mMediator);
+                mMediator::onShown, mMediator::onDismissed, mMediator);
         mMediator.initializeModel(mModel);
 
         IdentityServicesProvider.setInstanceForTests(mIdentityServicesProvider);
@@ -147,8 +149,7 @@ public class PasswordMigrationWarningMediatorTest {
     public void testOnDismissedFromIntroScreenRecordsUserAction() {
         HistogramWatcher histogram =
                 HistogramWatcher.newBuilder()
-                        .expectIntRecord(PasswordMigrationWarningMediator
-                                                 .PASSWORD_MIGRATION_WARNING_USER_ACTIONS,
+                        .expectIntRecord(PASSWORD_MIGRATION_WARNING_USER_ACTIONS,
                                 PasswordMigrationWarningUserActions.DISMISS_INTRODUCTION)
                         .build();
 
@@ -164,8 +165,7 @@ public class PasswordMigrationWarningMediatorTest {
     public void testOnDismissedFromMoreOptionsScreenRecordsUserAction() {
         HistogramWatcher histogram =
                 HistogramWatcher.newBuilder()
-                        .expectIntRecord(PasswordMigrationWarningMediator
-                                                 .PASSWORD_MIGRATION_WARNING_USER_ACTIONS,
+                        .expectIntRecord(PASSWORD_MIGRATION_WARNING_USER_ACTIONS,
                                 PasswordMigrationWarningUserActions.DISMISS_MORE_OPTIONS)
                         .build();
 
@@ -197,8 +197,7 @@ public class PasswordMigrationWarningMediatorTest {
     public void testOnMoreOptionsRecordsUserAction() {
         HistogramWatcher histogram =
                 HistogramWatcher.newBuilder()
-                        .expectIntRecord(PasswordMigrationWarningMediator
-                                                 .PASSWORD_MIGRATION_WARNING_USER_ACTIONS,
+                        .expectIntRecord(PASSWORD_MIGRATION_WARNING_USER_ACTIONS,
                                 PasswordMigrationWarningUserActions.MORE_OPTIONS)
                         .build();
 
@@ -221,8 +220,7 @@ public class PasswordMigrationWarningMediatorTest {
     public void testOnAcknowledgeRecordsUserAction() {
         HistogramWatcher histogram =
                 HistogramWatcher.newBuilder()
-                        .expectIntRecord(PasswordMigrationWarningMediator
-                                                 .PASSWORD_MIGRATION_WARNING_USER_ACTIONS,
+                        .expectIntRecord(PASSWORD_MIGRATION_WARNING_USER_ACTIONS,
                                 PasswordMigrationWarningUserActions.GOT_IT)
                         .build();
 
@@ -251,8 +249,7 @@ public class PasswordMigrationWarningMediatorTest {
     public void testOnCancelRecordsUserAction() {
         HistogramWatcher histogram =
                 HistogramWatcher.newBuilder()
-                        .expectIntRecord(PasswordMigrationWarningMediator
-                                                 .PASSWORD_MIGRATION_WARNING_USER_ACTIONS,
+                        .expectIntRecord(PASSWORD_MIGRATION_WARNING_USER_ACTIONS,
                                 PasswordMigrationWarningUserActions.CANCEL)
                         .build();
 
@@ -287,8 +284,7 @@ public class PasswordMigrationWarningMediatorTest {
     public void testOnNextRecordsSyncUserAction() {
         HistogramWatcher histogram =
                 HistogramWatcher.newBuilder()
-                        .expectIntRecord(PasswordMigrationWarningMediator
-                                                 .PASSWORD_MIGRATION_WARNING_USER_ACTIONS,
+                        .expectIntRecord(PASSWORD_MIGRATION_WARNING_USER_ACTIONS,
                                 PasswordMigrationWarningUserActions.SYNC)
                         .build();
 
@@ -301,8 +297,7 @@ public class PasswordMigrationWarningMediatorTest {
     public void testOnNextRecordsExportUserAction() {
         HistogramWatcher histogram =
                 HistogramWatcher.newBuilder()
-                        .expectIntRecord(PasswordMigrationWarningMediator
-                                                 .PASSWORD_MIGRATION_WARNING_USER_ACTIONS,
+                        .expectIntRecord(PASSWORD_MIGRATION_WARNING_USER_ACTIONS,
                                 PasswordMigrationWarningUserActions.EXPORT)
                         .build();
 
@@ -399,5 +394,25 @@ public class PasswordMigrationWarningMediatorTest {
 
         mMediator.showWarning(ScreenType.INTRO_SCREEN);
         assertFalse(mModel.get(SHOULD_OFFER_SYNC));
+    }
+
+    @Test
+    public void testOnShownSetsPreForStartup() {
+        when(mUserPrefsJni.get(mProfile)).thenReturn(mPrefService);
+        PasswordMigrationWarningMediator mediator = new PasswordMigrationWarningMediator(
+                mProfile, mOptionsHandler, PasswordMigrationWarningTriggers.CHROME_STARTUP);
+        mediator.onShown();
+        verify(mPrefService)
+                .setBoolean(Pref.LOCAL_PASSWORD_MIGRATION_WARNING_SHOWN_AT_STARTUP, true);
+    }
+
+    @Test
+    public void testOnShownDoesntSetPrefIfNotOnStartup() {
+        when(mUserPrefsJni.get(mProfile)).thenReturn(mPrefService);
+        PasswordMigrationWarningMediator mediator = new PasswordMigrationWarningMediator(
+                mProfile, mOptionsHandler, PasswordMigrationWarningTriggers.TOUCH_TO_FILL);
+        mediator.onShown();
+        verify(mPrefService, never())
+                .setBoolean(Pref.LOCAL_PASSWORD_MIGRATION_WARNING_SHOWN_AT_STARTUP, true);
     }
 }

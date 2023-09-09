@@ -44,7 +44,6 @@
 #import "ios/chrome/browser/shared/public/features/system_flags.h"
 #import "ios/chrome/browser/shared/ui/symbols/symbols.h"
 #import "ios/chrome/browser/shared/ui/util/layout_guide_names.h"
-#import "ios/chrome/browser/shared/ui/util/named_guide.h"
 #import "ios/chrome/browser/shared/ui/util/rtl_geometry.h"
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/shared/ui/util/util_swift.h"
@@ -75,10 +74,6 @@
 #import "ios/web/public/web_state_observer_bridge.h"
 #import "ui/base/device_form_factor.h"
 #import "ui/gfx/image/image.h"
-
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
 
 using base::UserMetricsAction;
 
@@ -126,9 +121,13 @@ const CGFloat kAutoscrollDecrementWidth = 10.0;
 
 // The size of the new tab button.
 const CGFloat kNewTabButtonWidth = 44;
+const CGFloat kNewTabButtonSpotlightViewCornerRadius = 7;
 
-// Default image insets for the new tab button.
+// Default image insets for the new tab button. The negative value for leading
+// inset is shifting the image view to the left from the center.
 const CGFloat kNewTabButtonLeadingImageInset = -10.0;
+// The negative value for bottom inset is shifting the image view to the bottom
+// from the center.
 const CGFloat kNewTabButtonBottomImageInset = -2.0;
 
 // Identifier of the action that displays the UIMenu.
@@ -190,6 +189,9 @@ const CGFloat kSymbolSize = 18;
   TabStripContainerView* _view;
   TabStripView* _tabStripView;
   UIButton* _buttonNewTab;
+  // The spotlight view contained in the new tab button, serving for the
+  // highlighted effect.
+  UIView* _buttonNewTabSpotlightView;
 
   TabStripStyle _style;
 
@@ -538,6 +540,24 @@ const CGFloat kSymbolSize = 18;
       [_buttonNewTab.imageView setTintColor:[UIColor colorNamed:kGrey500Color]];
     }
 
+    _buttonNewTabSpotlightView = [[UIView alloc] init];
+    _buttonNewTabSpotlightView.hidden = YES;
+    _buttonNewTabSpotlightView.userInteractionEnabled = NO;
+    _buttonNewTabSpotlightView.layer.cornerRadius =
+        kNewTabButtonSpotlightViewCornerRadius;
+    // Position the spotlight view so that the image view is in its center.
+    // Cannot use the button's `backgroundColor` because the image view is not
+    // centered in the button by kNewTabButtonLeadingImageInset and
+    // kNewTabButtonBottomImageInset.
+    [_buttonNewTabSpotlightView
+        setFrame:CGRectMake(0, -kNewTabButtonBottomImageInset,
+                            kNewTabButtonWidth + kNewTabButtonLeadingImageInset,
+                            kTabStripHeight + kNewTabButtonBottomImageInset)];
+    // Make sure that the spotlightView is below the image to avoid changing the
+    // color of the image.
+    [_buttonNewTab insertSubview:_buttonNewTabSpotlightView
+                    belowSubview:_buttonNewTab.imageView];
+
     SetA11yLabelAndUiAutomationName(
         _buttonNewTab,
         _isIncognito ? IDS_IOS_TOOLS_MENU_NEW_INCOGNITO_TAB
@@ -611,6 +631,23 @@ const CGFloat kSymbolSize = 18;
 - (void)tabStripSizeDidChange {
   [self updateContentSizeAndRepositionViews];
   [self layoutTabStripSubviews];
+}
+
+#pragma mark - TabStripCommands
+
+- (void)setNewTabButtonOnTabStripIPHHighlighted:(BOOL)IPHHighlighted {
+  if (IsUIButtonConfigurationEnabled()) {
+    _buttonNewTab.tintColor = IPHHighlighted
+                                  ? [UIColor colorNamed:kSolidWhiteColor]
+                                  : [UIColor colorNamed:kGrey500Color];
+  } else {
+    _buttonNewTab.imageView.tintColor =
+        IPHHighlighted ? [UIColor colorNamed:kSolidWhiteColor]
+                       : [UIColor colorNamed:kGrey500Color];
+  }
+  _buttonNewTabSpotlightView.backgroundColor =
+      IPHHighlighted ? [UIColor colorNamed:kBlueColor] : nil;
+  _buttonNewTabSpotlightView.hidden = !IPHHighlighted;
 }
 
 #pragma mark - Private
@@ -1160,10 +1197,7 @@ const CGFloat kSymbolSize = 18;
                        status:(const WebStateListStatus&)status {
   switch (change.type()) {
     case WebStateListChange::Type::kStatusOnly:
-      // TODO(crbug.com/1442546): Move the implementation from
-      // webStateList:didChangeActiveWebState:oldWebState:atIndex:reason to
-      // here. Note that here is reachable only when `reason` ==
-      // ActiveWebStateChangeReason::Activated.
+      // The activation is handled after this switch statement.
       break;
     case WebStateListChange::Type::kDetach: {
       // Keep the actual view around while it is animating out.  Once the
@@ -1238,29 +1272,22 @@ const CGFloat kSymbolSize = 18;
       break;
     }
   }
-}
 
-// Observer method, active WebState changed.
-- (void)webStateList:(WebStateList*)webStateList
-    didChangeActiveWebState:(web::WebState*)newWebState
-                oldWebState:(web::WebState*)oldWebState
-                    atIndex:(int)atIndex
-                     reason:(ActiveWebStateChangeReason)reason {
-  if (!newWebState)
-    return;
+  if (status.active_web_state_change() && status.new_active_web_state) {
+    for (TabView* view in _tabArray) {
+      [view setSelected:NO];
+    }
 
-  for (TabView* view in _tabArray) {
-    [view setSelected:NO];
+    NSUInteger index =
+        [self indexForWebStateListIndex:webStateList->active_index()];
+    TabView* activeView = [_tabArray objectAtIndex:index];
+    [activeView setSelected:YES];
+
+    // No need to animate this change, as selecting a new tab simply changes the
+    // z-ordering of the TabViews.  If a new tab was selected as a result of a
+    // tab closure, then the animated layout has already been scheduled.
+    [_tabStripView setNeedsLayout];
   }
-
-  NSUInteger index = [self indexForWebStateListIndex:atIndex];
-  TabView* activeView = [_tabArray objectAtIndex:index];
-  [activeView setSelected:YES];
-
-  // No need to animate this change, as selecting a new tab simply changes the
-  // z-ordering of the TabViews.  If a new tab was selected as a result of a tab
-  // closure, then the animated layout has already been scheduled.
-  [_tabStripView setNeedsLayout];
 }
 
 - (void)tabViewAnimationCompletion:(UIView*)view {
@@ -1452,7 +1479,15 @@ const CGFloat kSymbolSize = 18;
 
 - (void)updateContentOffsetForWebStateIndex:(int)webStateIndex
                               isNewWebState:(BOOL)isNewWebState {
-  DCHECK_NE(WebStateList::kInvalidIndex, webStateIndex);
+  // Avoid the out-of-range access to `_tabArray`. The `webStateIndex` can be
+  // invalid when traitCollectionDidChange: is called before a TabView is
+  // inserted to `_tabArray` in didChangeWebStateList:change:selection:. In
+  // particular, this occurs when exiting from the fullscreen because it
+  // changes UI and triggers [TabStripView traitCollectionDidChange:], which
+  // reaches here and is called before calling the WebStateListObserver API.
+  if (webStateIndex < 0 || (NSUInteger)webStateIndex >= [_tabArray count]) {
+    return;
+  }
 
   if (isNewWebState) {
     [self scrollTabToVisible:webStateIndex];
@@ -1839,11 +1874,8 @@ const CGFloat kSymbolSize = 18;
   _useTabStacking = useTabStacking;
   [self updateScrollViewFrameForTabSwitcherButton];
   [self updateContentSizeAndRepositionViews];
-  int selectedModelIndex = _webStateList->active_index();
-  if (selectedModelIndex != WebStateList::kInvalidIndex) {
-    [self updateContentOffsetForWebStateIndex:selectedModelIndex
-                                isNewWebState:NO];
-  }
+  [self updateContentOffsetForWebStateIndex:_webStateList->active_index()
+                              isNewWebState:NO];
 }
 
 - (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {

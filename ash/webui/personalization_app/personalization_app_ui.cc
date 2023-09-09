@@ -335,7 +335,9 @@ void AddStrings(content::WebUIDataSource* source) {
       {"timeOfDayBannerDescription",
        IDS_PERSONALIZATION_APP_TIME_OF_DAY_BANNER_DESCRIPTION},
       {"timeOfDayBannerDescriptionNoScreensaver",
-       IDS_PERSONALIZATION_APP_TIME_OF_DAY_BANNER_DESCRIPTION_NO_SCREENSAVER}};
+       IDS_PERSONALIZATION_APP_TIME_OF_DAY_BANNER_DESCRIPTION_NO_SCREENSAVER},
+      {"timeOfDayWallpaperCollectionSublabel",
+       IDS_PERSONALIZATION_APP_TIME_OF_DAY_WALLPAPER_COLLECTION_SUBLABEL}};
 
   source->AddLocalizedStrings(kLocalizedStrings);
 
@@ -350,10 +352,7 @@ void AddStrings(content::WebUIDataSource* source) {
   // Product name does not need to be translated.
   auto product_name =
       l10n_util::GetStringUTF16(ui::GetChromeOSDeviceTypeResourceId());
-  // TODO(b/270597524): Switch to `IsTimeOfDayScreenSaverEnabled` once
-  // `kFeatureManagementTimeOfDayScreenSaver` is used.
-  if (base::FeatureList::IsEnabled(
-          features::kFeatureManagementTimeOfDayScreenSaver)) {
+  if (features::IsTimeOfDayScreenSaverEnabled()) {
     product_name = base::UTF8ToUTF16(
         GetAmbientBackendController()->GetTimeOfDayProductName());
   }

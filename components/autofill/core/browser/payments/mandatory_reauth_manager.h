@@ -9,6 +9,7 @@
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/form_data_importer.h"
+#include "components/autofill/core/browser/metrics/payments/mandatory_reauth_metrics.h"
 #include "components/device_reauth/device_authenticator.h"
 
 namespace autofill {
@@ -16,6 +17,19 @@ namespace autofill {
 class AutofillClient;
 
 namespace payments {
+
+enum class MandatoryReauthAuthenticationMethod {
+  kUnknown = 0,
+  kUnsupportedMethod = 1,
+  // Biometric auth is supported on this device, but this does not strictly
+  // mean that user is doing biometric auth since user can always fall back to
+  // use password.
+  kBiometric = 2,
+  // This screen lock category excludes biometric above. It normally refers to
+  // passcode/PIN/device code.
+  kScreenLock = 3,
+  kMaxValue = kScreenLock,
+};
 
 class MandatoryReauthManager {
  public:
@@ -94,6 +108,10 @@ class MandatoryReauthManager {
   // Triggered when the user closes the opt-in prompt.
   virtual void OnUserClosedOptInPrompt();
 
+  // Return the authentication method to be used on this device. Used for metric
+  // logging.
+  virtual MandatoryReauthAuthenticationMethod GetAuthenticationMethod();
+
   scoped_refptr<device_reauth::DeviceAuthenticator>
   GetDeviceAuthenticatorForTesting() {
     return device_authenticator_;
@@ -119,6 +137,10 @@ class MandatoryReauthManager {
   // `device_authenticator_` is destroyed if the tab owning this
   // MandatoryReauthManager is destroyed.
   scoped_refptr<device_reauth::DeviceAuthenticator> device_authenticator_;
+
+  // Used to store the opt in source for logging purposes.
+  autofill_metrics::MandatoryReauthOptInOrOutSource opt_in_source_ =
+      autofill_metrics::MandatoryReauthOptInOrOutSource::kUnknown;
 
   base::WeakPtrFactory<MandatoryReauthManager> weak_ptr_factory_{this};
 };

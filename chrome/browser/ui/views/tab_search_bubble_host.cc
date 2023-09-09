@@ -119,7 +119,8 @@ bool TabSearchBubbleHost::ShowTabSearchBubble(
     gfx::Rect bounds = button_->GetWidget()->GetWorkAreaBoundsInScreen();
     int offset = GetLayoutConstant(TABSTRIP_REGION_VIEW_CONTROL_PADDING);
 
-    int x = base::i18n::IsRTL() ? bounds.x() + offset : bounds.right() - offset;
+    int x = ShouldTabSearchRenderBeforeTabStrip() ? bounds.x() + offset
+                                                  : bounds.right() - offset;
 
     anchor.emplace(gfx::Rect(x, bounds.y() + offset, 0, 0));
   }
@@ -162,6 +163,18 @@ void TabSearchBubbleHost::ButtonPressed(const ui::Event& event) {
     // Tab Search bubble.
     base::UmaHistogramEnumeration("Tabs.TabSearch.OpenAction",
                                   GetActionForEvent(event));
+
+    webui_bubble_manager_.GetBubbleWidget()
+        ->GetCompositor()
+        ->RequestSuccessfulPresentationTimeForNextFrame(base::BindOnce(
+            [](base::TimeTicks button_pressed_time,
+               base::TimeTicks presentation_timestamp) {
+              base::UmaHistogramMediumTimes(
+                  "Tabs.TabSearch."
+                  "ButtonPressedToNextFramePresented",
+                  presentation_timestamp - button_pressed_time);
+            },
+            base::TimeTicks::Now()));
     return;
   }
   CloseTabSearchBubble();

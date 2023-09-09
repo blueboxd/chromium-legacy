@@ -189,6 +189,7 @@ class CONTENT_EXPORT ServiceWorkerMainResourceLoader
   void OnConnectionClosed();
   void DeleteIfNeeded();
 
+  std::string GetInitialServiceWorkerStatusString();
   bool IsEligibleForRecordingTimingMetrics();
   void RecordFindRegistrationToCompletedTrace();
   // Called when the fetch handler handles the request.
@@ -266,16 +267,26 @@ class CONTENT_EXPORT ServiceWorkerMainResourceLoader
   mojo::Receiver<network::mojom::URLLoader> receiver_{this};
 
   Status status_ = Status::kNotStarted;
-  // `initial_worker_status_` stores one of the string representations of
-  // EmbeddedWorkerStatus or "WARMING_UP" or "WARMED_UP".
-  absl::optional<std::string> initial_worker_status_;
+
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
+  enum class InitialServiceWorkerStatus {
+    kRunning = 0,
+    kStarting = 1,
+    kStopping = 2,
+    kStopped = 3,
+    kWarmingUp = 4,
+    kWarmedUp = 5,
+    kMaxValue = kWarmedUp,
+  };
+  absl::optional<InitialServiceWorkerStatus> initial_service_worker_status_;
   bool is_detached_ = false;
 
   scoped_refptr<network::SharedURLLoaderFactory>
       race_network_request_url_loader_factory_;
-  std::unique_ptr<ServiceWorkerRaceNetworkRequestURLLoaderClient>
-      race_network_request_loader_client_;
-  std::unique_ptr<ServiceWorkerForwardedRaceNetworkRequestURLLoaderFactory>
+  absl::optional<ServiceWorkerRaceNetworkRequestURLLoaderClient>
+      race_network_request_url_loader_client_;
+  absl::optional<ServiceWorkerForwardedRaceNetworkRequestURLLoaderFactory>
       forwarded_race_network_request_url_loader_factory_;
 
   base::TimeTicks find_registration_start_time_;

@@ -8,6 +8,7 @@
 #include <string>
 #include <tuple>
 
+#include "base/time/time.h"
 #include "base/values.h"
 #include "components/attribution_reporting/aggregatable_dedup_key.h"
 #include "components/attribution_reporting/aggregatable_trigger_data.h"
@@ -28,12 +29,16 @@
 
 namespace attribution_reporting {
 
-FiltersDisjunction FiltersForSourceType(mojom::SourceType source_type) {
-  return {{
+FiltersDisjunction FiltersForSourceType(
+    mojom::SourceType source_type,
+    absl::optional<base::TimeDelta> lookback_window) {
+  return {*FilterConfig::Create(
       {
-          {FilterData::kSourceTypeFilterKey, {SourceTypeName(source_type)}},
+          {
+              {FilterData::kSourceTypeFilterKey, {SourceTypeName(source_type)}},
+          },
       },
-  }};
+      lookback_window)};
 }
 
 bool operator==(const AggregationKeys& a, const AggregationKeys& b) {
@@ -47,6 +52,13 @@ std::ostream& operator<<(std::ostream& out,
 
 bool operator==(const FilterData& a, const FilterData& b) {
   return a.filter_values() == b.filter_values();
+}
+
+bool operator==(const FilterConfig& a, const FilterConfig& b) {
+  auto tie = [](const FilterConfig& c) {
+    return std::make_tuple(c.filter_values(), c.lookback_window());
+  };
+  return tie(a) == tie(b);
 }
 
 std::ostream& operator<<(std::ostream& out, const FilterData& filter_data) {
@@ -72,12 +84,22 @@ std::ostream& operator<<(std::ostream& out,
   return out << destination_set.ToJson();
 }
 
+bool operator==(const EventReportWindows& a, const EventReportWindows& b) {
+  return a.start_time() == b.start_time() && a.end_times() == b.end_times();
+}
+
+std::ostream& operator<<(std::ostream& out,
+                         const EventReportWindows& event_report_windows) {
+  return out << event_report_windows.ToJson();
+}
+
 bool operator==(const SourceRegistration& a, const SourceRegistration& b) {
   auto tie = [](const SourceRegistration& s) {
     return std::make_tuple(s.source_event_id, s.destination_set, s.expiry,
                            s.event_report_window, s.aggregatable_report_window,
                            s.priority, s.filter_data, s.debug_key,
-                           s.aggregation_keys, s.debug_reporting);
+                           s.aggregation_keys, s.debug_reporting,
+                           s.event_report_windows, s.max_event_level_reports);
   };
   return tie(a) == tie(b);
 }

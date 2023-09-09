@@ -39,10 +39,6 @@
 #import "ui/base/l10n/l10n_util_mac.h"
 #import "url/gurl.h"
 
-#if !defined(__has_feature) || !__has_feature(objc_arc)
-#error "This file requires ARC support."
-#endif
-
 namespace {
 
 typedef NS_ENUM(NSInteger, SectionIdentifier) {
@@ -90,11 +86,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
     _syncObserver = std::make_unique<SyncObserverBridge>(self, syncService);
   }
   return self;
-}
-
-- (void)dealloc {
-  // TODO(crbug.com/1454777)
-  DUMP_WILL_BE_CHECK(_settingsAreDismissed);
 }
 
 - (void)viewDidLoad {
@@ -193,11 +184,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
         SyncCreatePassphraseTableViewController* controller =
             [[SyncCreatePassphraseTableViewController alloc]
                 initWithBrowser:self.browser];
-        if (controller) {
-          controller.dispatcher = self.dispatcher;
-          [self.navigationController pushViewController:controller
-                                               animated:YES];
-        }
+        controller.dispatcher = self.dispatcher;
+        [self.navigationController pushViewController:controller animated:YES];
       }
       break;
     }

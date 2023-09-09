@@ -27,8 +27,12 @@ constexpr base::TimeDelta kSyncTaskTimeout = base::Seconds(30);
 LoginDatabaseAsyncHelper::LoginDatabaseAsyncHelper(
     std::unique_ptr<LoginDatabase> login_db,
     std::unique_ptr<UnsyncedCredentialsDeletionNotifier> notifier,
-    scoped_refptr<base::SequencedTaskRunner> main_task_runner)
+    scoped_refptr<base::SequencedTaskRunner> main_task_runner,
+    syncer::WipeModelUponSyncDisabledBehavior
+        wipe_model_upon_sync_disabled_behavior)
     : login_db_(std::move(login_db)),
+      wipe_model_upon_sync_disabled_behavior_(
+          wipe_model_upon_sync_disabled_behavior),
       deletion_notifier_(std::move(notifier)),
       main_task_runner_(std::move(main_task_runner)) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
@@ -75,6 +79,7 @@ bool LoginDatabaseAsyncHelper::Initialize(
       std::make_unique<syncer::ClientTagBasedModelTypeProcessor>(
           syncer::PASSWORDS, base::DoNothing()),
       static_cast<PasswordStoreSync*>(this),
+      wipe_model_upon_sync_disabled_behavior_,
       std::move(sync_enabled_or_disabled_cb));
 
 // On Windows encryption capability is expected to be available by default.
@@ -330,26 +335,6 @@ void LoginDatabaseAsyncHelper::RemoveStatisticsByOriginAndTime(
     login_db_->stats_table().RemoveStatsByOriginAndTime(
         origin_filter, delete_begin, delete_end);
   }
-}
-
-// Synchronous implementation for manipulating with field info.
-void LoginDatabaseAsyncHelper::AddFieldInfo(const FieldInfo& field_info) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (login_db_)
-    login_db_->field_info_table().AddRow(field_info);
-}
-
-std::vector<FieldInfo> LoginDatabaseAsyncHelper::GetAllFieldInfo() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return login_db_ ? login_db_->field_info_table().GetAllRows()
-                   : std::vector<FieldInfo>();
-}
-
-void LoginDatabaseAsyncHelper::RemoveFieldInfoByTime(base::Time remove_begin,
-                                                     base::Time remove_end) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (login_db_)
-    login_db_->field_info_table().RemoveRowsByTime(remove_begin, remove_end);
 }
 
 base::WeakPtr<syncer::ModelTypeControllerDelegate>

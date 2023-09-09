@@ -130,7 +130,11 @@ sk_sp<SkTypeface> WebFontTypefaceFactory::MakeTypefaceDefaultFontMgr(
 #if BUILDFLAG(IS_WIN)
   font_manager = FontCache::Get().FontManager();
 #else
+  if (!CoreTextVersionSupportsVariations()) {
+    font_manager = sk_sp<SkFontMgr>(SkFontMgr_New_Custom_Empty());
+  } else {
   font_manager = SkFontMgr::RefDefault();
+  }
 #endif
   return font_manager->makeFromData(data, 0);
 }
